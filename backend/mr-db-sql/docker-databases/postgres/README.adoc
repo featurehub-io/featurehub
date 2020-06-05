@@ -1,0 +1,19 @@
+== postgres
+
+This will automatcally create a postgres database for you with a featurehub database
+mounted with a featurehub user with featurehub as the password.
+
+This will allow you to set your `~/.featurehub/mr.properties` to
+
+----
+db.url=jdbc:postgresql://localhost:5432/featurehub
+db.username=featurehub
+db.password=featurehub`
+----
+
+If you are running postgres outside of docker, you can install it (use `brew` on a Mac). Then log
+in using the root user (`postgres` normally) and password. And then you can just use the same commands
+as in the initdb.sh to create the user + database + grants as you like.
+
+Ebean has the capability to have a separate DDL user to a database user
+but we do not expose that functionality.

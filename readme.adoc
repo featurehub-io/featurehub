@@ -1,0 +1,47 @@
+image::docs/images/fh_primary_navy.png[Feature Hub,500]
+
+FeatureHub is a platform to help software teams manage their features,
+from feature flags (also known as feature toggles) to A/B experiments and remote or
+centralised configuration management.  It's an essential ingredient for enabling the feedback loop see diagram below.
+
+Building software with feature management encourages DevOps practices like
+http://trunkbaseddevelopment.com[trunk based development], continuous delivery and importantly,
+separating deployment from releasing. Enabling teams to deliver value to customers early and often,
+whilst maintaining high quality and keeping risk low.
+
+FeatureHub can be used with small startups through to large enterprises
+with many applications and teams.  It's has an enterprise grade security and permission model, that's
+intuitive and easy to use, so you can be up and running quickly.
+
+image::docs/images/fh_learn_build_measure.svg[FeatureHub Feedback Loop,800]
+
+== Getting started
+
+Full documentation can be found at https://docs.featurehub.io[docs.featurehub.io]
+
+Out of the box FeatureHub uses Docker, to start simply run the following docker command
+
+`docker run featurehub`
+
+[NOTE]
+You'll need to https://docs.docker.com/get-docker/[install Docker] first.
+
+Once running, open up a browser and head to http://localhost:5000 there you can kick off the initial setup.
+
+There are several deployment options depending on your use case,
+we strongly recommend reading about these options in the https://docs.featurehub.io[documentation].
+
+For advanced users who want to run the stack from scratch,
+please see the <<docs/developers.adoc, developer docs>> for more details.
+
+== Built with
+* https://flutter.dev/web[Flutter Web]
+* https://search.maven.org/search?q=a:openapi-dart-generator[Open API Dart Generator]
+* https://openjdk.java.net/projects/jdk/11/[Java 11]
+* https://nats.io[NATS]
+
+//== Contributing
+
+//== License
+
+

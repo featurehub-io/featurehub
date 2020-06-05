@@ -1,0 +1,83 @@
+== Google Analytics Integration
+
+=== Setting up Experiments with Google Analytics
+Getting fast feedback on your features and understanding the impact to your customers and your business, is fundamental to building great digital products.  FeatureHub integrates with Google Analytics(GA) out of the box, so you can easily get the data you need into GA and quickly gain insights to guide the decisions you need to make.
+
+In the FeatureHub SDK you can create an analytic event at any point in your application.  This event doesn’t necessarily have to relate to any of your features.  They can be permanent recurring events or temporary analytical events to help improve your application.  Once these events are triggered we can use Google Analytics to analyse and gain insights on these events and how our features affect them.
+
+=== Configure Google Analytics integration
+
+Add your GA Tracking ID (UA number) to your applications environment.  This needs to be done by an administrator, in the environment section of an application.  We recommend creating a GA Tracking ID for each environment, this way your production data doesn’t get contaminated with testing data.  More details on your Google Analytics tracking ID can be found https://support.google.com/analytics/answer/7372977?hl=en&authuser=2[here].
+
+IMPORTANT: When you set a tracking ID for your environment, all your feature names will be exposed to your application. In most cases this isn’t a problem, however if your features names contain sensitive information, then we recommend either renaming them or don’t use GA integration.  There is an item in the FeatureHub roadmap to address this issue.
+
+=== Create your analytics events
+Using the FeatureHub SDK you can now simply start creating analytics events for your application.  These events don’t necessarily have to be associated with features. For example "Add to basket" oe "Checkout button clicked" or "Video played".  Analytics events are completely up to you to design, they can be generic and reusable or more experiment based, helping in the sense of A/B testing and multivariate testing.
+
+When you create an analytic event, the FeatureHub SDK will automatically create GA Events for every feature and it’s current value.
+
+==== What’s happening under the covers
+
+_Using the FeatureHub SDK I simply create an event "*Add to basket*"_
+
+For every feature with a value in my environment an event will be created.
+For example if I have two features with values, the following two events will automatically get sent to Google Analytics:
+
+[source]
+----
+
+{
+   "ec" : "FeatureHub Event",  // Event Category
+   "ea": "Add to Basket",      // Event Action
+   "el": "Display add to basket button on the right : on"  //Event Label
+   "ev": 123                   // Event Value
+}
+
+{
+   "ec" : "FeatureHub Event",
+   "ea": "Add to Basket",
+   "el": "Some other feature : off"
+   "ev": 123
+}
+
+----
+
+
+=== Simple experiment reporting
+You can now easily see your events inside Google Analytics (GA).
+
+Simply navigate to Behaviour > Events > Top Events
+
+Here you should see the Event Category "FeatureHub Events" drilling in on this you will see Event Actions, drill into your Analytic Event Eg "Add to basket" and you’ll see all the feature values that were exposed to your application over this period.
+
+You can now analyse which features (and their associated value) made the most impact on your event.  To do this, you need to isolate the features, this can be done by adding a filter, click the  "Advanced"  link just below the graph.
+
+image::images/analytics_simple_report.png[Simple report]
+Enter the feature name in the Event Label.
+
+You will now see all the events and feature values exposed to your application for this feature only.  You can check the values and plot them on the graph.
+
+image::images/analytics_simple_report_2.png[Simple report]
+
+=== Advanced experiment reporting
+For more advanced reporting you can take a similar approach and create custom segments for each feature value variation.
+
+==== Create custom segments
+Create segments for each potential value of a feature
+
+image::images/analytics_custom_segments.png[Custom segments]
+
+Set the filter with
+
+* Event Category <contains> "FeatureHub Event"  AND
+* Event Action <contains> "<your analytic event>" AND
+* Event Label <contains> "<your feature name> : <your feature value>
+* Event Value <contains> "Number value" (usually $ value of the event)
+
+image::images/analytics_segment_filters.png[Custom filters]
+
+==== Consume the custom segments in your standard reports
+Once you’ve created the custom segments for each experiment and feature with its value variants,
+you can use this segment in any of your reports, eg this ecommerce report.
+
+image::images/analytics_advanced_report.png[Advanced Report]

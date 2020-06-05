@@ -1,0 +1,28 @@
+name: build adocs
+
+on:
+  push:
+    branches:
+      - master
+jobs:
+  adoc_build:
+    runs-on: ubuntu-18.04
+    name: asciidoctor -D docs --backend=html5 -o index.html -a toc2 -a stylesheet=featurehub-skin.css ddocs/*.adoc
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Get build container
+        id: adocbuild
+        uses: avattathil/asciidoctor-action@master
+        with:
+          program: "asciidoctor -D docs --backend=html5 -a stylesheet=featurehub-skin.css -o index.html docs/*.adoc"
+      - name: Print execution time
+        run: echo "Time ${{ steps.adocbuild.outputs.timestamp }}"
+      - name: Deploy docs to ghpages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+          publish_dir: ./docs
+          external_repository: featurehub-io/featurehub-docs
+          publish_branch: master
+          cname: docs.featurehub.io

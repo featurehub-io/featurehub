@@ -1,0 +1,10 @@
+== SDK Examples
+ifdef::env-github,env-browser[:outfilesuffix: .adoc]
+
+The SDK Examples consist of  three variants
+
+- link:todo-backend-java/README{outfilesuffix}[Java backend server]
+- link:todo-backend-typescript/README{outfilesuffix}[Typescript backend server]
+
+Both of these will work for the link:todo-frontend-react-typescript/README{outfilesuffix}[React frontend] (which also uses features).
+

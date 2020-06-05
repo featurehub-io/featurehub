@@ -1,0 +1,50 @@
+# Feature Hub Web Application
+
+## Getting started with Flutter for web
+cmd to run:
+
+----
+ flutter channel master
+ flutter upgrade
+ flutter config --enable-web
+ flutter run -d chrome
+----
+
+Note: if you restart your IDE you should see the new device (Chrome)
+
+To run/debug from in IDE setup a flutter run configuration point to main.dart
+
+## Global error handling 
+
+Global error handling: 
+
+There are 3 simple functions in the main Bloc for helping with errors:
+
+
+`dialogError(e,s,{String messageTitle, bool showDetails = true,String messageBody=""})`
+
+This will show a popup dialog with optional messageTitle and messageBody for custom messages in a Material Design Alert Dialog
+You can optionally show exception and stacktrace details
+
+It can be called in the following ways:
+
+ justThrowError().catchError(bloc.mrClient.dialogError);
+
+    try {
+     throw (Exception("My exception"));}
+     catch (e, s) {
+        bloc.mrClient.dialogError(e, s);
+    }
+
+`void customError({String messageTitle="", String messageBody=""})`
+Use when there is no exception or stacktrace, both parameters are optional
+
+`consoleError(e,s)`
+Use for insignificant errors that you want to only show in the browser console, not to the users
+
+ justThrowError().catchError(bloc.mrClient.consoleError);
+
+
+
+```
+

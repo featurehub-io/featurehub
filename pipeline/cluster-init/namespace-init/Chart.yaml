@@ -1,0 +1,3 @@
+name: namespace-init
+version: 1.0.0
+description: The rules for the cluster when it has been created.

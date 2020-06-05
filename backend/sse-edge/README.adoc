@@ -1,0 +1,61 @@
+= Connecting to Edge
+
+Edge is an SSE (Server Side Events) based source of updates for features. It also allows
+certain types of Service Accounts to post changes back into the infrastructure - and is
+designed to be used by testing accounts to toggle features on and off during test.
+
+Because it is server side events, there is always a "name" and "data".
+
+== GET Features
+
+A client attempts to get the list of features by providing a named cache, an environment and an apiKey. This
+URL should be provided to them by the Management Repository and will come as an all-in-one url. 
+
+Edge uses the named cache to distribute the request among cache servers that hold environment details for that named
+cache. In an on-prem situation, this is simply likely to be a single set of cache servers called "default".
+
+The environmentId is used to determine which environment is being discovered and the apiKey indicates what access (if
+any) the service account has to that environment.
+
+When a client connects to the Edge server, Edge will 
+
+. Publish the environment/apiKey to a NATS Queue channel based on the named-cache.
+. All instances of the named-cache (and the cache servers can listen to multiple names) will pick it up and attempt to resolve it.
+. If they fail to do so (they can find no matching environment, find the environment but no matching apiKey, or find no features)
+they will send a success:false back on the incoming request. 
+. If they succeed they will respond with the features.
+
+The other thing the server will do is immediately start listening to the feature update traffic for that named cache and if
+it matches any environment/service-account pairing, it will push that change out to the client (but only if they have received
+features first, otherwise it will hold the changes and then broadcast them once the first feature list is released).
+
+NOTE: it is possible for a client to receive a feature they have not received in the original list of features, if this feature
+gets created and assigned a value in an environment for example.
+
+
+.Table Data packets
+|===
+
+| name | data | description
+| ack | discovery | sent on initial connection 
+| bye | closed | sent when connection closing
+| error | reason | when something fails
+| features | json packet containing list of features | list of features. can happen more than once in a lifetime if the environment introduces new features.
+| feature | json packet containing a feature
+| delete-feature | json packet containing feature to delete
+|===
+
+
+== UPDATE Feature
+
+TBD
+
+
+== Edge Operation
+
+On start, Edge will connect to MR on a NATS channel called `named-caches` and request the list of caches. It will
+keep listening to this channel and any updates that come through that elicit changes in the list of caches it will
+detect and correct for.
+
+It will then listen to each named cache list of feature updates. In the future this will change to listen to only
+ones it cares about (based on connected clients). 

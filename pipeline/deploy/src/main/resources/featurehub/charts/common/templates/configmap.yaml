@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: common-config
+data:
+  common.properties: |-
+    # Common properties
+    connect.logging.headers.from-environment=KUBERNETES_NODE_NAME=originServerName
+    connect.logging.headers.from-properties=app.name=originApp
+    {{ if .Values.global.testEnvironment }}
+    {{ end }}
+    app.environment={{ .Values.global.environment_name }}
+  log4j2.xml: |-
+    <Configuration packages="cd.connect.logging" monitorInterval="30" verbose="true">
+        <Appenders>
+            <Console name="STDOUT" target="SYSTEM_OUT">
+              <ConnectJsonLayout/>
+            </Console>
+        </Appenders>
+
+        <Loggers>
+            <AsyncLogger name="io.featurehub" level="debug"/>
+            <AsyncLogger name="io.ebean.SQL" level="info"/>
+            <AsyncLogger name="io.ebean.TXN" level="info"/>
+            <AsyncLogger name="io.ebean.SUM" level="info"/>
+            <AsyncLogger name="io.ebean.DDL" level="info"/>
+            <AsyncLogger name="io.ebean.cache.QUERY" level="info"/>
+            <AsyncLogger name="io.ebean.cache.BEAN" level="info"/>
+            <AsyncLogger name="io.ebean.cache.COLL" level="info"/>
+            <AsyncLogger name="io.ebean.cache.NATKEY" level="info"/>
+
+            <AsyncLogger name="jersey-logging" level="trace" />
+
+            <AsyncRoot level="info">
+                <AppenderRef ref="STDOUT"/>
+            </AsyncRoot>
+        </Loggers>
+    </Configuration>

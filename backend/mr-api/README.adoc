@@ -1,0 +1,5 @@
+=== Notes
+
+The tag `AllowedDuringPasswordReset` has special meaning. It means this API is allowed to be called by a person
+who has been authenticated when `passwordRequiresReset` is tagged against their account. This means that
+a person has to be both logged in _and_ in that mode to access the API. 

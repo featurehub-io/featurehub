@@ -1,0 +1,11 @@
+containerPort: 8080
+image:
+  prefix: gcr.io/featurehub/mr
+  tag: 1.0
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "512Mi"
+    cpu: "400m"

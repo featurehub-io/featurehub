@@ -1,0 +1,140 @@
+openapi: 3.0.1
+info:
+  title: Cache (Dache) API
+  description: This is used by the Edge servers to access features and environments quickly.
+  version: "1.1.1"
+paths:
+  /environment/{eId}/{serviceAccountId}:
+    parameters:
+      - name: eId
+        description: "id of environment"
+        in: path
+        schema:
+          type: string
+      - name: serviceAccountId
+        description: "id of service account"
+        in: path
+        schema:
+          type: string
+    get:
+      responses:
+        200:
+          description: "All feature values for this environment"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FeatureValue"
+        404:
+          description: "No such environment/account combo has read access"
+components:
+  schemas:
+    CacheManagementMessage:
+      required:
+        - id
+        - mit
+        - requestType
+        - cacheState
+      properties:
+        id:
+          type: string
+        destId:
+          description: "this allows one instance on the bus to communicate directly with another instance"
+          type: string
+        requestType:
+          $ref: "#/components/schemas/CacheRequestType"
+        mit:
+          description: "used only to negotiate master who is attempting to get data from MR"
+          type: integer
+          format: int64
+        cacheState:
+          $ref: "#/components/schemas/CacheState"
+    CacheRequestType:
+      type: string
+      enum:
+        - SEEKING_COMPLETE_CACHE
+        - SEEKING_REFRESH
+        - CLAIMING_MASTER
+        - CACHE_REMOVED
+        - CACHE_SOURCE
+        - DUPLICATE_MIT
+    CacheState:
+      type: string
+      enum:
+        - NONE
+        - REQUESTED
+        - COMPLETE
+    PublishAction:
+      type: string
+      enum:
+        - CREATE
+        - UPDATE
+        - DELETE
+    EnvironmentCacheItem:
+      properties:
+        environment:
+          $ref: "#/components/schemas/Environment"
+        featureValues:
+          type: array
+          items:
+            $ref: "#/components/schemas/FeatureValue"
+        serviceAccounts:
+          type: array
+          items:
+            $ref: "#/components/schemas/ServiceAccount"
+        action:
+          $ref: "#/components/schemas/PublishAction"
+        count:
+          type: integer
+    ServiceAccountCacheItem:
+      properties:
+        serviceAccount:
+          $ref: "#/components/schemas/ServiceAccount"
+        action:
+          $ref: "#/components/schemas/PublishAction"
+        count:
+          type: integer
+    # we will version based in different listening names
+    EdgeInitRequest:
+      required:
+        - environmentId
+        - serviceAccountId
+      properties:
+        environmentId:
+          type: string
+        apiKey:
+          type: string
+    EdgeInitResponse:
+      required:
+        - environmentId
+        - serviceAccountId
+        - success
+        - features
+      properties:
+        environmentId:
+          type: string
+        apiKey:
+          type: string
+        success:
+          type: boolean
+        features:
+          type: array
+          items:
+            $ref: "#/components/schemas/FeatureValueCacheItem"
+    FeatureValueCacheItem:
+      required:
+        - feature
+        - value
+        - environmentId
+        - action
+      properties:
+        environmentId:
+          description: "this needs to be passed because the feature value may be null"
+          type: string
+        feature:
+          $ref: "#/components/schemas/Feature"
+        value:
+          $ref: "#/components/schemas/FeatureValue"
+        action:
+          $ref: "#/components/schemas/PublishAction"

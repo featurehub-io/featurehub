@@ -1,0 +1,1565 @@
+openapi: 3.0.1
+info:
+  title: ManagementResourceApi
+  description: This describes the API clients use for accessing features
+  version: "1.1.1"
+#  CRUD for portfolios, environments, features, service account, people, and groups (edited)
+#  roles are fixed
+#  then people<->group association
+#  and group<->role association
+paths:
+  /portfolio:
+    parameters:
+      - name: includeGroups
+        description: "Include groups for this this portfolio in results"
+        in: query
+        schema:
+          type: boolean
+      - name: includeApplications
+        description: "Include applications for this portfolio in results"
+        in: query
+        schema:
+          type: boolean
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - PortfolioService
+      description: "Gets a list of portfolios."
+      operationId: findPortfolios
+      parameters:
+        - name: order
+          in: query
+          description: "how to order the results"
+          schema:
+            $ref: "#/components/schemas/SortOrder"
+        - name: filter
+          in: query
+          description: "What to filter the results by"
+          schema:
+            type: string
+        - name: parentPortfolioId
+          in: query
+          description: "The parent portfolio to search under. If none is provided, use the top level one"
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Gets all portfolios, alphabetically sorted"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Portfolio"
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - PortfolioService
+      description: "Create a new portfolio"
+      operationId: createPortfolio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Portfolio"
+      responses:
+        "200":
+          description: "Resulting portfolio"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Portfolio"
+  /portfolio/{id}:
+    parameters:
+      - name: id
+        description: "The id of the portfolio to find"
+        in: path
+        schema:
+          type: string
+        required: true
+      - name: includeGroups
+        description: "Include groups for this this portfolio in results"
+        in: query
+        schema:
+          type: boolean
+      - name: includeApplications
+        description: "Include applications for this portfolio in results"
+        in: query
+        schema:
+          type: boolean
+      - name: includeEnvironments
+        description: "Include the environments inside the applications"
+        in: query
+        schema:
+          type: boolean
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - PortfolioService
+      description: "Get portfolio"
+      operationId: getPortfolio
+      responses:
+        "200":
+          description: "Resulting portfolio"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Portfolio"
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - PortfolioService
+      description: "Update a portfolio"
+      operationId: updatePortfolio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Portfolio"
+      responses:
+        "200":
+          description: "Resulting portfolio"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Portfolio"
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - PortfolioService
+      description: "Delete a portfolio"
+      operationId: deletePortfolio
+      responses:
+        "200":
+          description: "How many portfolios were deleted."
+          content:
+            application/json:
+              schema:
+                type: boolean
+  /portfolio/{id}/application:
+    parameters:
+      - name: id
+        description: "The id of the portfolio to find"
+        in: path
+        schema:
+          type: string
+        required: true
+      - name: includeEnvironments
+        in: query
+        description: "Include the environments in the result"
+        schema:
+          type: boolean
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - ApplicationService
+      description: "Gets a list of applications."
+      operationId: findApplications
+      parameters:
+        - name: order
+          in: query
+          description: "how to order the results"
+          schema:
+            $ref: "#/components/schemas/SortOrder"
+        - name: filter
+          in: query
+          description: "What to filter the results by"
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Gets all portfolios, alphabetically sorted"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Application"
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - ApplicationService
+      description: "Create a new application"
+      operationId: createApplication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Application"
+      responses:
+        "200":
+          description: "Resulting application"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+  /portfolio/{id}/group:
+    parameters:
+      - name: id
+        description: "The id of the portfolio to find"
+        in: path
+        schema:
+          type: string
+        required: true
+      - name: includePeople
+        description: "include people in each group"
+        in: query
+        schema:
+          type: boolean
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - GroupService
+      description: "Gets a list of groups."
+      operationId: findGroups
+      parameters:
+        - name: order
+          in: query
+          description: "how to order the results"
+          schema:
+            $ref: "#/components/schemas/SortOrder"
+        - name: filter
+          in: query
+          description: "What to filter the results by"
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Gets groups, alphabetically sorted"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Group"
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - GroupService
+      description: "Create a new group"
+      operationId: createGroup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Group"
+      responses:
+        "200":
+          description: "Resulting group"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
+  /person:
+    parameters:
+      - name: includeGroups
+        description: "Include groups in result"
+        in: query
+        schema:
+          type: boolean
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - PersonService
+      description: "Gets a list of matching people."
+      operationId: findPeople
+      parameters:
+        - name: order
+          in: query
+          description: "how to order the results"
+          schema:
+            $ref: "#/components/schemas/SortOrder"
+        - name: filter
+          in: query
+          description: "What to filter the results by"
+          schema:
+            type: string
+        - name: startAt
+          in: query
+          description: "Where in the results to start"
+          schema:
+            type: integer
+        - name: pageSize
+          in: query
+          description: "How many results to return"
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: "Gets all persons, alphabetically sorted"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchPersonResult"
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - PersonService
+      description: "Create a new person"
+      operationId: createPerson
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePersonDetails"
+      responses:
+        "200":
+          description: "Registration url"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegistrationUrl"
+
+  /person/{id}:
+    parameters:
+      - name: id
+        description: "The id of the person to find"
+        in: path
+        schema:
+          type: string
+        required: true
+      - name: includeGroups
+        description: "Include groups in result"
+        in: query
+        schema:
+          type: boolean
+      - name: includeAcls
+        description: "include acls for each group"
+        in: query
+        schema:
+          type: boolean
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - PersonService
+      description: "Get person"
+      operationId: getPerson
+      parameters:
+        - name: includeGroups
+          description: "Include the groups for the user"
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: "Resulting person"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Person"
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - PersonService
+      description: "Update a person"
+      operationId: updatePerson
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Person"
+      responses:
+        "200":
+          description: "Resulting person"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Person"
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - PersonService
+      description: "Delete a person"
+      operationId: deletePerson
+      responses:
+        "200":
+          description: "How many people were deleted."
+          content:
+            application/json:
+              schema:
+                type: boolean
+  /authentication:
+    post:
+      tags:
+        - AuthService
+      description: "Create a new user"
+      operationId: registerPerson
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PersonRegistrationDetails"
+      responses:
+        "200":
+          description: "Tokenized person"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenizedPerson"
+  /login:
+    post:
+      tags:
+        - AuthService
+      description: "Login to Feature Hub"
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserCredentials"
+      responses:
+        "200":
+          description: "Successfully logged in"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenizedPerson"
+  /logout:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - AuthService
+      description: "Get person by token"
+      operationId: logout
+      responses:
+        "200":
+          description: "Token deactivated"
+  /authentication/{id}/replaceTempPassword:
+    parameters:
+      - name: id
+        description: "The id of the person to replace temporary password for"
+        in: path
+        schema:
+          type: string
+        required: true
+    put:
+      tags:
+        - AuthService
+        - AllowedDuringPasswordReset
+      description: "Replace temporary password"
+      security:
+        - bearerAuth: []
+      operationId: replaceTempPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordReset"
+      responses:
+        "200":
+          description: "Successfully reset temporary password"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenizedPerson"
+  /authentication/{id}/changePassword:
+    parameters:
+      - name: id
+        description: "The id of the person to change password for"
+        in: path
+        schema:
+          type: string
+        required: true
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - AuthService
+      description: "Change password"
+      operationId: changePassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordUpdate"
+      responses:
+        "200":
+          description: "Successfully updated password"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Person"
+  /authentication/{token}:
+    get:
+      tags:
+        - AuthService
+      description: "Get person by token"
+      operationId: personByToken
+      parameters:
+        - name: token
+          in: path
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: "Get user by token"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Person"
+  /authentication/{id}/resetPassword:
+    parameters:
+      - name: id
+        description: "The id of the person to reset password for"
+        in: path
+        schema:
+          type: string
+        required: true
+    put:
+      tags:
+        - AuthService
+      security:
+        - bearerAuth: []
+      description: "Reset password"
+      operationId: resetPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordReset"
+      responses:
+        "200":
+          description: "Successfully reset password"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Person"
+  /application/{eid}:
+    parameters:
+      - name: eid
+        description: "The id of the application to find"
+        in: path
+        schema:
+          type: string
+        required: true
+      - name: includeEnvironments
+        in: query
+        description: "Include the environments in the result"
+        schema:
+          type: boolean
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - ApplicationService
+      description: "Get application"
+      operationId: getApplication
+      responses:
+        "200":
+          description: "Resulting application"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - ApplicationService
+      description: "Update an application"
+      operationId: updateApplication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Application"
+      responses:
+        "200":
+          description: "Resulting portfolio"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - ApplicationService
+      description: "Delete an application"
+      operationId: deleteApplication
+      responses:
+        "200":
+          description: "Did we delete the application"
+          content:
+            application/json:
+              schema:
+                type: boolean
+  /application/{id}/features:
+    parameters:
+      - name: id
+        description: "The id of the application to find"
+        in: path
+        schema:
+          type: string
+        required: true
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - FeatureService
+      description: "get all features available in this application"
+      operationId: getAllFeaturesForApplication
+      responses:
+        "200":
+          description: "Gets all features, alphabetically sorted"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Feature"
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - FeatureService
+      description: "add a new feature to this application, returns all features."
+      operationId: createFeaturesForApplication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Feature"
+      responses:
+        "200":
+          description: "All features, alphabetically sorted"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Feature"
+  /application/{id}/features/{key}:
+    parameters:
+      - name: id
+        description: "The id of the application to find"
+        in: path
+        schema:
+          type: string
+        required: true
+      - name: key
+        description: "The key of the associated feature"
+        in: path
+        schema:
+          type: string
+        required: true
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - FeatureService
+      description: "get an individual feature"
+      operationId: getFeatureByKey
+      responses:
+        "200":
+          description: "All features, alphabetically sorted"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Feature"
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - FeatureService
+      description: "updates all named features in this application, returns all features."
+      operationId: updateFeatureForApplication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Feature"
+      responses:
+        "200":
+          description: "All features, alphabetically sorted"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Feature"
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - FeatureService
+      description: "updates all named features in this application, returns all features."
+      operationId: deleteFeatureForApplication
+      responses:
+        "200":
+          description: "All features, alphabetically sorted"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Feature"
+  /application/{id}/feature-environments/{key}:
+    parameters:
+      - name: id
+        description: "The id of the application to find"
+        in: path
+        schema:
+          type: string
+        required: true
+      - name: key
+        description: "The key of the associated feature"
+        in: path
+        schema:
+          type: string
+        required: true
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - FeatureService
+      description: "Get a list of all environments and features and their values that this user has access to"
+      operationId: getAllFeatureValuesByApplicationForKey
+      responses:
+        "200":
+          description: "Gets all feature values for all environments for an application"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FeatureEnvironment"
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - FeatureService
+      description: "Update a list of all environments and features and their values that this user has access to"
+      operationId: updateAllFeatureValuesByApplicationForKey
+      parameters:
+        - name: removeValuesNotPassed
+          description: "The id of the application to find"
+          in: query
+          schema:
+            type: boolean
+          required: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/FeatureValue"
+      responses:
+        "200":
+          description: "Gets all feature values for all environments for an application"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FeatureEnvironment"
+  /application/{id}/all-feature-environment:
+    parameters:
+      - name: id
+        description: "The id of the application to find"
+        in: path
+        schema:
+          type: string
+        required: true
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - FeatureService
+      description: "Get a list of all environments and features and their values that this user has access to"
+      operationId: findAllFeatureAndFeatureValuesForEnvironmentsByApplication
+      responses:
+        "200":
+          description: "Gets all portfolios, alphabetically sorted"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationFeatureValues"
+  /application/{id}/environment-ordering:
+    parameters:
+      - name: id
+        description: "The id of the application to find"
+        in: path
+        schema:
+          type: string
+        required: true
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - EnvironmentService
+      description: "this api is designed to update the ordering of environments. it will error on circular references or environments that don't exist."
+      operationId: environmentOrdering
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/Environment"
+      responses:
+        "200":
+          description: "returns all environments with no particular sort order."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Environment"
+  /application/{id}/environment:
+    parameters:
+      - name: id
+        description: "The id of the application to find"
+        in: path
+        schema:
+          type: string
+        required: true
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - EnvironmentService
+      description: "Gets a list of environments."
+      operationId: findEnvironments
+      parameters:
+        - name: order
+          in: query
+          description: "how to order the results"
+          schema:
+            $ref: "#/components/schemas/SortOrder"
+        - name: filter
+          in: query
+          description: "What to filter the results by"
+          schema:
+            type: string
+        - name: includeAcls
+          description: "Include the acls attached to this environment"
+          in: query
+          schema:
+            type: boolean
+        - name: includeFeatures
+          description: "Include the features attached to this environment"
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: "Gets all portfolios, alphabetically sorted"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Environment"
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - EnvironmentService
+      description: "Create a new environment"
+      operationId: createEnvironment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Environment"
+      responses:
+        "200":
+          description: "Resulting environment"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Environment"
+  /environment/{eid}:
+    parameters:
+      - name: eid
+        description: "The id of the environment to find"
+        in: path
+        schema:
+          type: string
+        required: true
+      - name: includeAcls
+        description: "Include the acls attached to this environment"
+        in: query
+        schema:
+          type: boolean
+      - name: includeFeatures
+        description: "Include the features attached to this environment"
+        in: query
+        schema:
+          type: boolean
+    get:
+      parameters:
+        - name: includeSdkUrl
+          description: "include the sdk url"
+          in: query
+          schema:
+            type: boolean
+        - name: includeServiceAccounts
+          description: "Include the service accounts attached to this environment"
+          in: query
+          schema:
+            type: boolean
+      security:
+        - bearerAuth: []
+      tags:
+        - EnvironmentService
+      description: "Get environment"
+      operationId: getEnvironment
+      responses:
+        "200":
+          description: "Resulting environment"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Environment"
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - EnvironmentService
+      description: "Update an environment"
+      operationId: updateEnvironment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Environment"
+      responses:
+        "200":
+          description: "Resulting portfolio"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Environment"
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - EnvironmentService
+      description: "Delete an environment"
+      operationId: deleteEnvironment
+      responses:
+        "200":
+          description: "Did we delete the environment."
+          content:
+            application/json:
+              schema:
+                type: boolean
+  /features/{eid}:
+    parameters:
+      - name: eid
+        description: "The id of the environment to find features or 'latest'"
+        in: path
+        schema:
+          type: string
+        required: true
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - EnvironmentFeatureService
+      description: "Get all features for this environment"
+      operationId: getFeaturesForEnvironment
+      responses:
+        "200":
+          description: "Resulting features"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnvironmentFeaturesResult"
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - EnvironmentFeatureService
+      description: "Update all features for this environment"
+      operationId: updateAllFeaturesForEnvironment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/FeatureValue"
+      responses:
+        "200":
+          description: "Resulting features"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FeatureValue"
+  /features/{eid}/feature/{key}:
+    parameters:
+      - name: eid
+        description: "The id of the environment to find features"
+        in: path
+        schema:
+          type: string
+        required: true
+      - name: key
+        description: "The key of the relevant feature"
+        in: path
+        schema:
+          type: string
+        required: true
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - EnvironmentFeatureService
+      description: "Update a specific feature in this environment."
+      operationId: getFeatureForEnvironment
+      responses:
+        "200":
+          description: "Resulting feature"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeatureValue"
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - EnvironmentFeatureService
+      description: "Update a specific feature in this environment."
+      operationId: updateFeatureForEnvironment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeatureValue"
+      responses:
+        "200":
+          description: "Resulting features"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeatureValue"
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - EnvironmentFeatureService
+      description: "Create a specific feature in this environment."
+      operationId: createFeatureForEnvironment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeatureValue"
+      responses:
+        "200":
+          description: "Resulting features"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeatureValue"
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - EnvironmentFeatureService
+      description: "Delete a specific feature in this environment."
+      operationId: deleteFeatureForEnvironment
+      responses:
+        "204":
+          description: "No data returned."
+  /group/{gid}:
+    parameters:
+      - name: gid
+        description: "The id of the group to find"
+        in: path
+        schema:
+          type: string
+        required: true
+      - name: includeMembers
+        description: "include people in each group"
+        in: query
+        schema:
+          type: boolean
+      - name: includeGroupRoles
+        description: "include environment and application roles in each group"
+        in: query
+        schema:
+          type: boolean
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - GroupService
+      description: "Get group"
+      operationId: getGroup
+      responses:
+        "200":
+          description: "Resulting group"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - GroupService
+      description: "Update a group"
+      operationId: updateGroup
+      parameters:
+        - name: updateMembers
+          description: "update members, deleting those that are not passed"
+          in: query
+          schema:
+            type: boolean
+        - name: updateEnvironmentGroupRoles
+          description: "update environment group roles, deleting any not passed"
+          in: query
+          schema:
+            type: boolean
+        - name: updateApplicationGroupRoles
+          description: "update application group roles, deleting any not passed"
+          in: query
+          schema:
+            type: boolean
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Group"
+      responses:
+        "200":
+          description: "Resulting group"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - GroupService
+      description: "Delete a group"
+      operationId: deleteGroup
+      responses:
+        "200":
+          description: "Did we delete the group?"
+          content:
+            application/json:
+              schema:
+                type: boolean
+  /group/{gid}/person/{pId}:
+    parameters:
+      - name: gid
+        description: "The id of the group to find"
+        in: path
+        schema:
+          type: string
+        required: true
+      - name: pId
+        description: "The id of the person to add/delete"
+        in: path
+        schema:
+          type: string
+        required: true
+      - name: includeMembers
+        description: "include people in each group"
+        in: query
+        schema:
+          type: boolean
+    post:
+      tags:
+        - GroupService
+      security:
+        - bearerAuth: []
+      description: "Add a person to a group"
+      operationId: addPersonToGroup
+      responses:
+        "200":
+          description: "Resulting group"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
+    delete:
+      tags:
+        - GroupService
+      security:
+        - bearerAuth: []
+      description: "Remove a person from a group"
+      operationId: deletePersonFromGroup
+      responses:
+        "200":
+          description: "Resulting group"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
+  /portfolio/{id}/service-account:
+    parameters:
+      - name: id
+        description: "the portfolio this service account belongs to"
+        in: path
+        schema:
+          type: string
+      - name: includePermissions
+        description: "include permissions in return"
+        in: query
+        schema:
+          type: boolean
+    get:
+      tags:
+        - ServiceAccountService
+      security:
+        - bearerAuth: []
+      description: "Get list of all service accounts this user can see"
+      parameters:
+        - name: filter
+          description: "include environments for each account"
+          in: query
+          schema:
+            type: string
+        - name: applicationId
+          description: "Application ID to filter on"
+          in: query
+          schema:
+            type: string
+      operationId: searchServiceAccountsInPortfolio
+      responses:
+        "200":
+          description: "List of service accounts found"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ServiceAccount"
+    post:
+      tags:
+        - ServiceAccountService
+      security:
+        - bearerAuth: []
+      description: "Add a new service account"
+      operationId: createServiceAccountInPortfolio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ServiceAccount"
+      responses:
+        "200":
+          description: "Newly created service account"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceAccount"
+  /service-account/{id}:
+    parameters:
+      - name: id
+        description: "the id for the service account to get"
+        in: path
+        schema:
+          type: string
+      - name: includePermissions
+        description: "include permissions in return"
+        in: query
+        schema:
+          type: boolean
+    get:
+      tags:
+        - ServiceAccountService
+      security:
+        - bearerAuth: []
+      description: "Get service account by id or 'self' if authenticated as this service account"
+      operationId: get
+      responses:
+        "200":
+          description: "Details of service account"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceAccount"
+    put:
+      tags:
+        - ServiceAccountService
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ServiceAccount"
+      description: "Update this service account, overwiting any attached environment permissions this user has access to"
+      operationId: update
+      responses:
+        "200":
+          description: "Details of service account"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceAccount"
+    delete:
+      tags:
+        - ServiceAccountService
+      security:
+        - bearerAuth: []
+      description: "Delete this service account, cascade removes all permissions"
+      operationId: delete
+      responses:
+        "200":
+          description: "Details of service account"
+          content:
+            application/json:
+              schema:
+                type: boolean
+  /service-account/{id}/reset-api-key:
+    post:
+      tags:
+        - ServiceAccountService
+      security:
+        - bearerAuth: []
+      description: "Causes a new API Key to be generated. Ensure you confirm this with the user."
+      operationId: resetApiKey
+      parameters:
+        - name: id
+          description: "the id for the service account to get"
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Details of service account"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceAccount"
+  /initialize:
+    get:
+      tags:
+      - SetupService
+      description: "Ping Feature Hub"
+      operationId: isInstalled
+      responses:
+        "200":
+          description: "Hello from Feature Hub"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Organization"
+        "404":
+          "description": "Feature Hub not found"
+          content:
+            application/json:
+              schema:
+                type: string
+    post:
+      tags:
+      - SetupService
+      description: "Setup site admin"
+      operationId: setupSiteAdmin
+      responses:
+        "200":
+          description: "Successfully setup site admin"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenizedPerson"
+        "400":
+          description: "Invalid input"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetupSiteAdmin'
+        description: 'setupSiteAdmin'
+        required: true
+components:
+  securitySchemes:
+    bearerAuth:            # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT    # optional, arbitrary value for documentation purposes
+  schemas:
+    EnvironmentFeaturesResult:
+      properties:
+        featureValues:
+          type: array
+          items:
+            $ref: "#/components/schemas/FeatureValue"
+        environments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Environment"
+        applications:
+          type: array
+          items:
+            $ref: "#/components/schemas/Application"
+        features:
+          type: array
+          items:
+            $ref: "#/components/schemas/Feature"
+    SearchPersonResult:
+      properties:
+        max:
+          type: integer
+        people:
+          type: array
+          items:
+            $ref: "#/components/schemas/Person"
+    SetupSiteAdmin:
+      required:
+      - name
+      - emailAddress
+      - password
+      - organizationName
+      - portfolio
+      properties:
+        portfolio:
+          type: string
+        organizationName:
+          type: string
+        emailAddress:
+          format: email
+          type: string
+        password:
+          type: string
+        name:
+          type: string
+      type: object
+    TokenizedPerson:
+      required:
+      - accessToken
+      - refreshToken
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        person:
+          $ref: "#/components/schemas/Person"
+    RegistrationUrl:
+      required:
+        - registrationUrl
+      properties:
+        registrationUrl:
+          type: string
+    PersonRegistrationDetails:
+      required:
+      - name
+      - email
+      - password
+      - confirmPassword
+      - registrationToken
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          minLength: 1
+        email:
+          type: string
+          maxLength: 100
+          minLength: 1
+          format: email
+        password:
+          type: string
+          maxLength: 40
+          minLength: 1
+          format: password
+        confirmPassword:
+          type: string
+          maxLength: 40
+          minLength: 1
+          format: password
+        registrationToken:
+          type: string
+    CreatePersonDetails:
+      required:
+      - email
+      properties:
+        email:
+          type: string
+          minLength: 1
+          maxLength: 100
+          format: email
+        groupIds:
+          type: array
+          items:
+            type: string
+    UserCredentials:
+      required:
+      - email
+      - password
+      properties:
+        email:
+          type: string
+          maxLength: 100
+          format: email
+        password:
+          type: string
+          format: password
+          maxLength: 100
+    PasswordReset:
+      required:
+      - password
+      properties:
+        password:
+          type: string
+        reactivate:
+          type: boolean
+    PasswordUpdate:
+      required:
+      - oldPassword
+      - newPassword
+      properties:
+        oldPassword:
+          maxLength: 100
+          format: password
+          type: string
+        newPassword:
+          maxLength: 100
+          format: password
+          type: string
+
+
+

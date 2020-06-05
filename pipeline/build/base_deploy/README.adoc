@@ -1,0 +1,7 @@
+== The base deployment image
+
+Holds
+
+- helm
+- kubectl
+- groovy 3

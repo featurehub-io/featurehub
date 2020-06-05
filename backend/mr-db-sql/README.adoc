@@ -1,0 +1,11 @@
+== DB API
+
+This is the data model for the Management Repository, and it is intentionally focused around what ebean
+is capable of. Ebean allows us to annotate the database model with required information which can be ignored
+if being used with another database set of infrastructure. 
+
+It is done for simplicity of maintenance and performance so there isn't a REST model, a database intermediate 
+model and then an actual database model which will for the 99% use case, be the same.
+
+In the future if it is a problem, we can get around it via code generation.
+ 

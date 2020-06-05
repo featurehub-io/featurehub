@@ -1,0 +1,1 @@
+cp ../../mr/target/mr

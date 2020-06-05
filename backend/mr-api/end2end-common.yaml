@@ -1,0 +1,9 @@
+components:
+  schemas:
+    FeatureValueType:
+      type: string
+      enum:
+        - BOOLEAN
+        - STRING
+        - NUMBER
+        - JSON

@@ -1,0 +1,108 @@
+= Cache Operation
+
+The purpose of a cache is to offload traffic to MR from Edge. Because of the nature of Server Side Events, they must disconnect their
+clients regularly (30-60 seconds) to prevent zombie traffic and stale caches at a CDN edge. This means the load on MR will be high
+even for an onsite system. Thus a cache is designed to hold onto the critical information that each Edge will require - the Environment/Service Account pairs
+and 
+
+A cache has to have a declared name - if it does not have one it will be called "default" (property: `cache.name`). This is the group of
+caches instances that it belongs to.
+
+== Cache Initialization
+
+=== the Master Identifying Token (MIT)
+
+It will assign itself an id (usually a UUID) and a random number in the int64 range. The latter is known as its _master identifying token_ (MIT).  
+
+=== Completeness
+
+On start it will immediately start listening to `${name}/environments`, `${name}/serviceaccounts` and `${name}/features`,
+and start filling its cache with whatever data comes down the wire. It will not indicate it is `COMPLETE` until it knows it
+has a complete list.
+
+It knows it has a complete list when the count of environments and service accounts are equal to the number indicated
+in them. Once a cache is `COMPLETE` it will not become (k8s style) un-ready until it has been shut down. 
+
+On start a cache will send a CacheRequest to `/${name}/cache-management` with its id, a random `MIT` and `requestType: SEEKING_COMPLETE_CACHE` 
+and wait for responses for up to a preconfigured time - this will default to `5 seconds` (property: `cache.timeout`) or finding a cache with `MIT`
+being other than 1 with `CacheState: COMPLETE`. All caches operating will respond and each cache will keep a list of known caches. 
+
+=== Cache shutdown
+
+When a cache is doing an orderly shutdown it will broadcast a `CacheRequestType: CACHE_REMOVED`. Because we only care
+about caches in startup mode, this is not a problem for disorderly shutdown. 
+
+=== Versions
+
+All Environments and Service Accounts have version numbers. If a version is < the one a cache already has it will be discarded.
+
+=== MR is always listening
+
+Instances of the Management Repository are also listening to `/${name}/cache-management` and they will _always_ respond (presuming they are
+up) and will indicate `CacheState: COMPLETE`, but with a `MIT: 1` (lowest priority).
+
+=== Non-MR COMPLETE caches
+
+If it finds a `MIT: !1` (i.e. not the Management Repository) with`CacheState: COMPLETE` then it will send a 
+`CacheRequest: {id: ${id}, MIT: ${their-MIT}, requestType: SEEKING_REFRESH}`. This will trigger the Cache with that `MIT`
+to start to broadcast its data down the _environment_ and _service account_ channels. If no refresh data appears within the `cache.timeout` period,
+it will start the negotiation process again.
+
+=== No Cache Ready
+
+If only `MIT: 1` is available the cache then
+every cache wishing for a cache refresh will publish a request on the `/${name}/cache-management` topic indicating that it is claiming master (CLAIMING_MASTER).
+It will put itself into this internal state. It will listen to messages from everyone else in a time period and if any `MIT` turns up higher than it
+it will simply put itself into a holding state and then re-publish a request for a cache after the timeout. At the end of the timeout period, only the
+cache with the highest `MIT` will be left in the "attempting to become master" state, and will proceed to become master.
+
+This could lead to stragglers who timeout slightly later and issue their own claim, but each cache that is still trying to become master should emit
+another request every 500ms until the main timeout occurs, when only one should be left. Once a cache is master, it will always respond REQUESTING to any
+requests for a cache, preventing any other cache attempting to become master. 
+
+Once a cache is master, it will send a SEEKING_REFRESH request with `MIT: 1` on it as per the _Non-MR COMPLETE caches_ section above.
+All other caches will be listening and once they have received all data they should go into `CacheState: COMPLETE` response mode
+and the `MIT` becomes irrelevant.
+
+If the other cache servers do not see a `SEEKING_REFRESH` request to `MIT: 1` withing a cache timeout period, they should
+attempt to renegotiate the master for it may have crashed. 
+
+=== Duplicate MITs
+
+If somehow another server has the same `MIT` then it should response with `CacheState: DUPLICATE_MIT` with its own id
+and `MIT` which must have the original cache which issued the request send its SEEKING_COMPLETE_CACHE out again even
+it has now already received a complete cache, with a new `MIT` and just ignore any responses it receives until it has
+a unique one.
+
+=== MR operation
+
+When MR starts, it will create an `id` for itself and listen to all of the named cache channels. It will
+always be `MIT: 1`. This means that it will always be able to respond to a `SEEKING_REFRESH`, and be
+able to identify that the request was sent to itself by the `id` field.
+
+== Updating features
+
+MR will publish feature updates on the channel `/named-cache/features`. These include the `feature` (as it holds alias, and value
+type information), the `feature-value` (if any) and `environmentId` (because there may be no feature-value). Edge and each cache
+listens to this channel to keep their data updated.
+
+
+== Caches and Organizations
+
+An environment can belong to many (usually at most two) caches because it can be transitioning from one cache to another (if organizational data
+is being transitioned). If an organization is moved from one named cache system to another all service accounts and all environments
+that were on a named cache will have a DELETE sent from the MR that is doing the operation. 
+
+== Cache Operation with Edge
+
+The URL given to a client must include three things: their cache id, their environment id, and their service account. 
+
+When each Edge starts, it will ask MR for the names of the caches. The onprem version will only have one - `default`. 
+Each Cache will also listen to a _async request/response queue_ (not topic) called `/$name/edge`. Using
+the cache id, the Edge will know which _queue_ to place the environment/service-account request on. Requests on this _queue_
+will be for an environment and service account and be load balanced across all caches with that name. They will either NAK,
+or response with the data for that environment+service account combination. 
+
+Edge also caches this set of data and listens for feature, environment and service account updates, and will cache the
+data for connected clients for a period of time after they lose connection. Thus an Edge server is able to decrease the 
+load on a cache 

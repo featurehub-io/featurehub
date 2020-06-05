@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>io.featurehub</groupId>
+  <artifactId>deploy-container</artifactId>
+  <version>1.1-SNAPSHOT</version>
+  <name>deploy-container</name>
+
+  <description>
+    Deploy container
+  </description>
+
+  <properties>
+    <build.version>1.7</build.version>
+    <docker.repository>gcr.io</docker.repository>
+  </properties>
+
+  <profiles>
+    <profile>
+      <id>docker-cloud-build</id>
+      <activation>
+        <property>
+          <name>docker-cloud-build</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>buildnumber-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>create</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <doCheck>false</doCheck>
+              <doUpdate>false</doUpdate>
+              <timestampFormat>{0,date,yyyy-MM-dd}</timestampFormat>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>com.google.cloud.tools</groupId>
+            <artifactId>jib-maven-plugin</artifactId>
+            <version>1.4.0</version>
+            <executions>
+              <execution>
+                <id>docker-build</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>build</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <allowInsecureRegistries>false</allowInsecureRegistries>
+              <from>
+                <image>gcr.io/featurehub/basedeploy:1.1</image>
+              </from>
+              <to>
+                <image>${docker.repository}/featurehub/${project.artifactId}:${collectosaurTimestamp}.${build.version}</image>
+              </to>
+              <container>
+                <entrypoint>/bin/sh</entrypoint>
+                <args>
+                  <arg>-c</arg>
+                  <arg>chmod +x /app/resources/deploy.sh &amp;&amp; /app/resources/deploy.sh</arg>
+                </args>
+                <labels>
+                  <buildSha>${collectosaurSha}</buildSha>
+                  <buildManifest>${collectosaurManifest}</buildManifest>
+                  <buildBranch>${collectosaurBranch}</buildBranch>
+                </labels>
+                <ports>
+                  <port>${app.port}</port>
+                </ports>
+              </container>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>cd.connect.pipeline</groupId>
+            <artifactId>docker-manifest-collectosaur-plugin</artifactId>
+            <version>1.2</version>
+            <executions>
+              <execution>
+                <id>mamasaur</id>
+                <phase>compile</phase>
+                <goals>
+                  <goal>babysaur</goal>
+                </goals>
+                <configuration>
+                  <fullImageName>${docker.repository}/featurehub/${project.artifactId}:${buildNumber}-${build.version}</fullImageName>
+                  <baseImageName>featurehub/${project.artifactId}:${buildNumber}-${build.version}</baseImageName>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>

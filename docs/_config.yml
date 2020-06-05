@@ -1,0 +1,4 @@
+theme: jekyll-theme-minimal
+title: FeatureHub
+description: FeatureHub is a platform for software and digital product teams to help manage features, from feature flags to A/B experimentation and analytics.
+logo: images/fh_icon.png

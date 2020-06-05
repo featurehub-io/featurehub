@@ -1,0 +1,54 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: deployment-manager-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: deployment-manager
+subjects:
+  - kind: ServiceAccount
+    name: deployment-manager
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: deployment-manager
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: Role
+metadata:
+  name: deployment-manager
+rules:
+  - apiGroups: [""]
+    resources: ["secrets", "configmaps", "services"]
+    verbs: ["get","list","create","delete","update"]
+
+  - apiGroups: ["extensions", "apps"]
+    resources: ["deployments"]
+    verbs: ["get","list","create","delete","watch","update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: Role
+metadata:
+  name: cloud-build-role
+rules:
+  - apiGroups: [""]
+    resources: ["secrets", "configmaps", "services","pods"]
+    verbs: ["get","list","create","delete","update","log"]
+
+  - apiGroups: ["extensions", "apps"]
+    resources: ["deployments"]
+    verbs: ["get","list","create","delete","watch","update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cloud-build-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cloud-build-role
+subjects:
+  - kind: User
+    name: 417968839103@cloudbuild.gserviceaccount.com

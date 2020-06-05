@@ -1,0 +1,85 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mr-service
+spec:
+  replicas: {{ .Values.replicas }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+   {{- if (eq .Values.global.environment_name "ci") }}
+      maxUnavailable: 1
+  {{- else }}
+      maxUnavailable: {{ .Values.max_unavailable }}
+  {{- end }}
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: mr-service
+        metrics: prometheus
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      containers:
+        - name: mr-service
+          image: {{ .Values.image.prefix }}:{{ .Values.image.tag }}
+          env:
+          - name: KUBERNETES_NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/app-config
+            - name: common-volume
+              mountPath: /etc/common-config
+          ports:
+          - name: mr-service
+            containerPort: {{ .Values.containerPort }}
+          readinessProbe:
+            httpGet:
+              path: /health/readiness
+              port: {{ .Values.containerPort }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health/liveness
+              port: {{ .Values.containerPort }}
+            initialDelaySeconds: 180
+            periodSeconds: 20
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+        # Define the secret file that contains the auth details for hub.docker.com
+  #    imagePullSecrets:
+  #      - name: regsecret
+      volumes:
+        - name: config-volume
+          configMap:
+            name: mr-service-config
+            items:
+              - key: application.properties
+                path: application.properties
+        - name: common-volume
+          configMap:
+            name: common-config
+            items:
+              - key: common.properties
+                path: common.properties
+              - key: log4j2.xml
+                path: log4j2.xml
+---
+#Define the Service we need to make available for external connectivity
+apiVersion: v1
+kind: Service
+metadata:
+  name: mr-service
+spec:
+  ports:
+    - name: pub
+      port: {{ .Values.containerPort }}
+      targetPort: {{ .Values.containerPort }}
+  selector:
+    app: mr-service

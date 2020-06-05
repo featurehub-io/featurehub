@@ -1,0 +1,28 @@
+== Description
+Backend Todo server app based on Java Jersey to demonstrate the usage of FeatureHub Java Jersey SDK 
+
+Demonstrates the Feature Flag ("BOOLEAN" type) usage
+
+Feature key: "FEATURE_TITLE_TO_UPPERCASE"
+
+If "FEATURE_TITLE_TO_UPPERCASE" is enabled - it will convert todo 'title' property to uppercase for every todo in the response for add/list/delete/resolve operations.
+
+If this feature is disabled it will have todo 'title' in whatever format it was sent when a todo was created.
+
+The app is based on the Open API description stored in todo-api folder. Uses codegen plugin to generate server code
+
+You need to setup a feature of type "Feature flag - boolean" in the FeatureHub application. Use the feature key provided above.
+You are required to have a Service Account created in the FeatureHub application with the "write" permissions for your desired environment.
+Once this is set, copy the SDK URL for your desired environment and set it in the properties file (which file is that?):
+
+feature-service.url=http://localhost:8553/features/default/863c912e-0000-4e32-9cee-96047d06edcf/XGuIDtG72m7iYlOVLvEYLIDcDzH0Ucs8N3jFbmF3WWEgWpkRBPW9NXecXhlREogQkVI7SkrcK5krOcKy
+
+
+
+== Installation Instructions
+mvn clean install
+
+run the app (whats the command?):  feature-mesh/examples/todo-backend-java/src/test/java/todo/backend/AppRunner.java
+
+
+

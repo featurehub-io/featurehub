@@ -1,0 +1,225 @@
+= The pipeline and cluster
+
+This document is intended to capture how to setup the entire infrastructure from scratch. It is intended to get split
+into different parts, but should be a living document as things change.
+
+== overview
+
+This document covers using Google Cloud Build - which has no current solution for being able to access private Git
+repositories. This means you have to essentially keep your builder elsewhere and submit the build rather than having
+it triggered. This isn't essentially a significant problem when one is using a proper review system like Winch, but
+it does need to be able to tie into that system to trigger the builds.
+
+An overview of what we will be doing is building a pipeline that will take an encrypted copy of the certificate to
+enable it to get access to the Git repository, decrypt it using Google Key Management Store, checkout the repository
+using that and then carry on with the build - but not using the `cloudbuild.yaml` that is in the repository itself.
+
+==== useful links
+
+https://console.cloud.google.com/home/activity?project=featurehub[Stack Driver]
+
+Pushing your images directly into gcr.io? https://cloud.google.com/container-registry/docs/advanced-authentication#docker_credential_helper
+
+== setting up your project on GCP
+
+It is assumed you have already given them your credit card details and you have `gcloud` installed on the command line.
+You may wish to run `gcloud components update` just to ensure you have the latest commands.
+
+Create your project with:
+----
+gcloud projects create featurehub
+----
+
+Now make it your default project:
+
+----
+gcloud config set project featurehub
+----
+
+Now you have to enable billing. The first command will give you a list of your billing accounts
+and you will use the result to link this new project to that billing account.
+
+----
+gcloud alpha billing accounts list
+#this gives you a billing account id in the form of XXXX
+gcloud alpha billing projects link featurehub --billing-account XXXX
+----
+
+And now your project is set up and ready to go.
+
+== enabling several services
+
+We need several services in this project:
+
+- Google Container Registry - to store our containers 
+- Google Cloud Build - to run our builds and tests
+- Google Container Engine (Kubernetes) - to run our containers 
+- Cloud Key Management Service (KMS) - to store the keys that encrypt our secrets
+
+To allow us to use them we need to enable them and we do that by checking the services list:
+
+----
+gcloud services list --available 
+----
+
+The specific commands for these are in the below sections
+
+== setting up cloud build
+
+Ensure you have enabled Container Registry API and Cloud Build
+
+----
+gcloud services list --available  | grep Registry
+containerregistry.googleapis.com                      Container Registry API
+gcloud services list --available  | grep Build
+cloudbuild.googleapis.com                             Cloud Build API
+remotebuildexecution.googleapis.com                   Remote Build Execution API
+----
+
+so this will enable those two and list the services so you can check it is done.
+
+----
+gcloud services enable containerregistry.googleapis.com cloudbuild.googleapis.com cloudkms.googleapis.com
+gcloud services list
+----
+
+Now we have our services enabled, we need to store our private key that lets us access the gitlab repository
+in 
+
+==== kms for the gitlab ssh key
+
+----
+gcloud kms keyrings create featurehub-keyring --location=global
+gcloud kms keys create featurehub-key --location=global --keyring=featurehub-keyring --purpose=encryption
+----
+
+You should setup a new key for gitlab, so:
+
+----
+ssh-keygen -t ed25519 -C "gitlab - featuehub"
+cd ~/.ssh
+pbcopy < ~/.ssh/id_ed25519.pub
+----
+
+go https://gitlab.com/profile/keys[Gitlab's SSH keys page] and add a new one in by pasting it.
+
+Now you need to ensure you are in the Featurehub repositories's `pipeline` directory and type:
+
+----
+gcloud kms encrypt --plaintext-file=$HOME/.ssh/id_ed25519 --ciphertext-file=id_rsa.enc --location=global --keyring=featurehub-keyring --key=featurehub-key
+----
+
+This will generate a id_rsa.enc file into the `pipeline` directory.
+
+Now you need to grant the Cloud Build service account access to KMS. To do this, you need to find the service user:
+
+----
+gcloud projects get-iam-policy featurehub --flatten="bindings[].members" --format="table(bindings.members)" | grep "@cloudbuild.gserviceaccount.com"
+----
+
+----
+gcloud kms keys add-iam-policy-binding \
+    featurehub-key --location=global --keyring=featurehub-keyring \
+    --member=serviceAccount:[SERVICE-ACCOUNT]@cloudbuild.gserviceaccount.com \
+    --role=roles/cloudkms.cryptoKeyDecrypter
+----
+
+==== kick off the build
+
+And now you should be able to kick off the build (from the `pipeline` directory).
+
+----
+gcloud builds submit --config=cloudbuild.yaml .
+----
+
+=== Optimising your build
+
+To avoid you having to download a large amount of dependencies over and over from Maven Central each time, you can create
+a base image of Maven that you can use yourself. You really need however to ensure that you have no settings.xml, as Maven's
+cache is relative to the repository it pulls the images from (i.e. it needs to have the same url otherwise it will throw
+the cache away).
+
+#TODO: make the build detect it is missing the cache and create it by uploading it# 
+
+To do so:
+
+----
+rm -rf ~/.m2/repository
+sh cloud-maven-build.sh
+cd pipeline/build/base-maven
+sh make-image.sh
+----
+
+You will want to change the version if you change the image (from 1.0) and push it to GCR.
+
+Then change the base build image to your image: 
+
+== enabling containers on your GCP project
+
+First off you need to specify a zone where you want your cluster to be created, otherwise it won't
+know where to create it by default (you can pass this on the command line, but its just easy to
+set the default).
+
+----
+gcloud config set compute/zone us-east1-b
+----
+
+Now you have to tell GCP to enable k8s as a service on this account. To find its name, you need to check the list
+of available services:
+
+
+
+This gives you that it is called `container.googleapis.com` - so enable that one.
+
+----
+gcloud services enable container.googleapis.com
+----
+
+And now, if you are ready, create your cluster. 
+
+----
+gcloud container clusters create featurehub-dev --num-nodes=1
+----
+
+Doing so will get `gcloud` to set the `kubeconfig` in your `~/.kube` folder to point to that cluster. 
+
+So once its finished, if you type `kubectl get nodes` you should see the nodes running in the cluster.
+
+
+=== deploying the infrastructure 
+
+If you wish to deploy into your own namespace then you can run helm locally and do so.
+
+Go into the `pipeline/cluster-init` folder. Create your namespace with:
+
+----
+kubectl create namespace ci
+kubectl config set-context `kubectl config current-context` --namespace=ci
+kubectl config get-contexts
+helm upgrade namespace-init namespace-init -i
+----
+
+if you swap to the `deploy/src/main/resources` folder, and type;
+
+----
+helm upgrade featurehub featurehub -f featurehub/ci-values.yaml --debug -i
+----
+
+#This as of alpha-3 of helm3, the -n namespace-name should make this easier when they fix that.#
+
+If you want to remove it, type:
+
+----
+helm uninstall featurehub
+----
+
+
+To ensure the pipeline can deploy the deploy container, it needs to be able to get the credentials of the cluster. Thus
+you need to give it basic access. In this case, this is just that it can view the cluster, nothing else. The namespace-init
+helm script will give this user the correct rights to the individual namespace.
+
+----
+gcloud projects add-iam-policy-binding featurehub \
+    --member=serviceAccount:417968839103@cloudbuild.gserviceaccount.com \
+    --role=roles/container.clusterViewer
+----

@@ -1,0 +1,71 @@
+import 'package:app_singleapp/widgets/common/fh_header.dart';
+import 'package:app_singleapp/widgets/common/fh_icon_text_button.dart';
+import 'package:app_singleapp/widgets/user/list/list_users_bloc.dart';
+import 'package:app_singleapp/widgets/user/list/list_users_widget.dart';
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
+
+/// Every user has access to portfolios, they can only see the ones they have access to
+/// and their access will be limited based on whether they are a super admin.
+class ManageUsersRoute extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(child: _PersonSearchWidget());
+  }
+}
+
+class _PersonSearchWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    ListUsersBloc bloc = BlocProvider.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        _headerRow(context, bloc),
+        _filterRow(context, bloc),
+        PersonListWidget(),
+      ],
+    );
+  }
+
+  Widget _headerRow(BuildContext context, ListUsersBloc bloc) {
+    return Container(
+        padding: const EdgeInsets.fromLTRB(0, 0, 30, 0),
+        child: FHHeader(
+          title: "Manage users",
+          children: [
+            if (bloc.mrClient.userIsSuperAdmin == true)
+              FHIconTextButton(
+                iconData: Icons.add,
+                label: 'Create new user',
+                onPressed: () =>
+                    {Navigator.of(context).pushNamed("/create-user")},
+                keepCase: true,
+              )
+          ],
+        ));
+  }
+
+  Widget _filterRow(BuildContext context, ListUsersBloc bloc) {
+    final BorderSide bs = BorderSide(color: Theme.of(context).dividerColor);
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 5, 30, 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: bs, left: bs, right: bs, top: bs),
+      ),
+      child: Row(
+        children: <Widget>[
+          Container(
+            width: 200,
+            child: TextField(
+              decoration: InputDecoration(hintText: 'Filter users'),
+              onChanged: (val) => bloc.triggerSearch(val),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

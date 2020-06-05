@@ -1,0 +1,3 @@
+- add lifecycle for kubernetes
+- remove prometheus and logging specific adapters, support hk2 some other way.
+

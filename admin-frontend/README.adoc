@@ -1,0 +1,8 @@
+To run this build on Mac Os X Catalina, you
+must have an 11.0.7+ version of Java that has been notarized, otherwise
+it cannot load the Docker extensions. The next valid version after 11 is 17.
+
+----
+brew tap adoptopenjdk/openjdk
+brew cask install adoptopenjdk11 --no-quarantine
+----

@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>io.featurehub</groupId>
+  <artifactId>party-server</artifactId>
+  <version>1.1-SNAPSHOT</version>
+  <name>party-server</name>
+
+  <description>
+    This includes the MR, the Dacha cache, and the SSE Edge all in one server.
+  </description>
+
+  <properties>
+    <app.entrypoint>io.featurehub.party.Application</app.entrypoint>
+    <app.baseimage>docker://featurehub/base_party:1.2</app.baseimage>
+    <app.port>8090</app.port>
+    <build.version>1.1</build.version>
+  </properties>
+
+  <url>https://featurehub.io</url>
+  <developers>
+    <developer>
+      <email>irina@featurehub.io</email>
+      <id>isouthwell</id>
+      <name>Irina Southwell</name>
+      <organization>Anyways Labs Ltd</organization>
+    </developer>
+
+    <developer>
+      <email>richard@featurehub.io</email>
+      <id>rvowles</id>
+      <name>Richard Vowles</name>
+      <organization>Anyways Labs Ltd</organization>
+    </developer>
+  </developers>
+
+  <licenses>
+    <license>
+      <name>Apache 2 with Commons Clause</name>
+      <url>https://github.com/featurehub-io/featurehub/blob/master/LICENSE.txt</url>
+    </license>
+  </licenses>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.featurehub.mr</groupId>
+      <artifactId>mr</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.featurehub.mr</groupId>
+      <artifactId>dacha</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.featurehub.edge</groupId>
+      <artifactId>edge</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.featurehub.composites</groupId>
+      <artifactId>composite-test</artifactId>
+      <version>1.1-SNAPSHOT</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <profiles>
+    <profile>
+      <id>docker-cloud-build</id>
+      <!-- otherwise don't active in tiles -->
+      <activation>
+        <property>
+          <name>docker-cloud-build</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>cd.connect.pipeline</groupId>
+            <artifactId>docker-manifest-collectosaur-plugin</artifactId>
+            <version>1.2</version>
+            <executions>
+              <execution>
+                <id>mamasaur</id>
+                <phase>compile</phase>
+                <goals>
+                  <goal>babysaur</goal>
+                </goals>
+                <configuration>
+                  <fullImageName>featurehub/${project.artifactId}:${build.version}</fullImageName>
+                  <baseImageName>featurehub/${project.artifactId}:${build.version}</baseImageName>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>com.google.cloud.tools</groupId>
+            <artifactId>jib-maven-plugin</artifactId>
+            <version>2.3.0</version>
+            <configuration>
+              <allowInsecureRegistries>false</allowInsecureRegistries>
+              <from>
+                <image>${app.baseimage}</image>
+              </from>
+              <to>
+                <image>featurehub/${project.artifactId}:${build.version}</image>
+              </to>
+              <extraDirectories>
+                <paths>
+                  <path>
+                    <from>${project.basedir}/../../admin-frontend/app_singleapp/build/web</from>
+                    <into>/var/www/html</into>
+                  </path>
+                </paths>
+              </extraDirectories>
+              <container>
+                <mainClass>bathe.BatheBooter</mainClass>
+                <jvmFlags>
+                  <jvmFlag>--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED</jvmFlag>
+                  <jvmFlag>--add-opens=java.base/java.nio=ALL-UNNAMED</jvmFlag>
+                  <jvmFlag>-Dlog4j.configurationFile=/etc/common-config/log4j2.xml</jvmFlag>
+                  <jvmFlag>-XX:+UseContainerSupport</jvmFlag>
+                  <jvmFlag>-XX:MaxRAMPercentage=80</jvmFlag>
+                </jvmFlags>
+                <args>
+                  <arg>-R${app.entrypoint}</arg>
+                  <arg>-P/etc/common-config/common.properties</arg>
+                  <arg>-P/etc/app-config/application.properties</arg>
+                </args>
+                <ports>
+                  <port>${app.port}</port>
+                </ports>
+              </container>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+  <build>
+    <plugins>
+
+      <plugin>
+        <groupId>io.repaint.maven</groupId>
+        <artifactId>tiles-maven-plugin</artifactId>
+        <version>2.17</version>
+        <extensions>true</extensions>
+        <configuration>
+          <filtering>false</filtering>
+          <tiles>
+            <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
+          </tiles>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+
+</project>

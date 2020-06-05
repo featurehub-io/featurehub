@@ -1,0 +1,644 @@
+{
+  "primarySwatch": 4278391389,
+  "brightness": 1,
+  "primaryColor": 4278391389,
+  "primaryColorBrightness": 1,
+  "primaryColorLight": 4291745533,
+  "primaryColorDark": 4278525332,
+  "accentColor": 4278726903,
+  "accentColorBrightness": 0,
+  "canvasColor": 4294638330,
+  "scaffoldBackgroundColor": 4294638330,
+  "bottomAppBarColor": 4294967295,
+  "cardColor": 4294967295,
+  "dividerColor": 520093696,
+  "highlightColor": 1723645116,
+  "splashColor": 1724434632,
+  "selectedRowColor": 4294309365,
+  "unselectedWidgetColor": 2315255808,
+  "disabledColor": 1627389952,
+  "buttonColor": 4283855337,
+  "toggleableActiveColor": 4278593222,
+  "secondaryHeaderColor": 4293323518,
+  "textSelectionColor": 4288457980,
+  "cursorColor": 4282549748,
+  "textSelectionHandleColor": 4285236218,
+  "backgroundColor": 4288457980,
+  "dialogBackgroundColor": 4294967295,
+  "indicatorColor": 4278726903,
+  "hintColor": 2315255808,
+  "errorColor": 4292030255,
+  "buttonTheme": {
+    "type": "ButtonThemeData",
+    "textTheme": 0,
+    "minWidth": 88,
+    "height": 36,
+    "padding": {
+      "top": 0,
+      "right": 16,
+      "bottom": 0,
+      "left": 16
+    },
+    "shape": {
+      "type": "RoundedRectangleBorder",
+      "radius": {
+        "topLeft": {
+          "x": 2,
+          "y": 2
+        },
+        "topRight": {
+          "x": 2,
+          "y": 2
+        },
+        "bottomLeft": {
+          "x": 2,
+          "y": 2
+        },
+        "bottomRight": {
+          "x": 2,
+          "y": 2
+        }
+      },
+      "side": "none"
+    },
+    "alignedDropdown": 1,
+    "buttonColor": 4283855337,
+    "disabledColor": 1627389952,
+    "highlightColor": 687865856,
+    "splashColor": 520093696,
+    "colorScheme": {
+      "primary": 4278391389,
+      "primaryVariant": 4278525332,
+      "secondary": 4278726903,
+      "secondaryVariant": 4278525332,
+      "surface": 4294967295,
+      "background": 4288457980,
+      "error": 4292030255,
+      "onPrimary": 4294967295,
+      "onSecondary": 4294967295,
+      "onSurface": 4278190080,
+      "onBackground": 4294967295,
+      "onError": 4294967295,
+      "brightness": 1
+    }
+  },
+  "textTheme": {
+    "display4": {
+      "color": 2315255808,
+      "fontSize": 96,
+      "fontWeight": 2,
+      "fontStyle": 0
+    },
+    "display3": {
+      "color": 2315255808,
+      "fontSize": 60,
+      "fontWeight": 2,
+      "fontStyle": 0
+    },
+    "display2": {
+      "color": 2315255808,
+      "fontSize": 48,
+      "fontWeight": 3,
+      "fontStyle": 0
+    },
+    "display1": {
+      "color": 2315255808,
+      "fontSize": 34,
+      "fontWeight": 3,
+      "fontStyle": 0
+    },
+    "headline": {
+      "color": 3707764736,
+      "fontSize": 24,
+      "fontWeight": 6,
+      "fontStyle": 0
+    },
+    "title": {
+      "color": 3707764736,
+      "fontSize": 20,
+      "fontWeight": 4,
+      "fontStyle": 0
+    },
+    "subhead": {
+      "color": 3707764736,
+      "fontSize": 16,
+      "fontWeight": 3,
+      "fontStyle": 0
+    },
+    "bodyText2": {
+      "color": 3707764736,
+      "fontSize": 14,
+      "fontWeight": 3,
+      "fontStyle": 0
+    },
+    "bodyText1": {
+      "color": 3707764736,
+      "fontSize": 16,
+      "fontWeight": 3,
+      "fontStyle": 0
+    },
+    "caption": {
+      "color": 2315255808,
+      "fontSize": 12,
+      "fontWeight": 3,
+      "fontStyle": 0
+    },
+    "button": {
+      "color": 3707764736,
+      "fontSize": 14,
+      "fontWeight": 4,
+      "fontStyle": 0
+    },
+    "subtitle2": {
+      "color": 4278190080,
+      "fontSize": 14,
+      "fontWeight": 4,
+      "fontStyle": 0
+    },
+    "overline": {
+      "color": 4278190080,
+      "fontSize": 10,
+      "fontWeight": 3,
+      "fontStyle": 0
+    }
+  },
+  "primaryTextTheme": {
+    "display4": {
+      "color": 3019898879,
+      "fontSize": 96,
+      "fontWeight": 2,
+      "fontStyle": 0
+    },
+    "display3": {
+      "color": 3019898879,
+      "fontSize": 60,
+      "fontWeight": 2,
+      "fontStyle": 0
+    },
+    "display2": {
+      "color": 3019898879,
+      "fontSize": 48,
+      "fontWeight": 3,
+      "fontStyle": 0
+    },
+    "display1": {
+      "color": 3019898879,
+      "fontSize": 34,
+      "fontWeight": 3,
+      "fontStyle": 0
+    },
+    "headline": {
+      "color": 4294967295,
+      "fontSize": 24,
+      "fontWeight": 3,
+      "fontStyle": 0
+    },
+    "title": {
+      "color": 4294967295,
+      "fontSize": 20,
+      "fontWeight": 4,
+      "fontStyle": 0
+    },
+    "subhead": {
+      "color": 4294967295,
+      "fontSize": 16,
+      "fontWeight": 3,
+      "fontStyle": 0
+    },
+    "bodyText2": {
+      "color": 4294967295,
+      "fontSize": 14,
+      "fontWeight": 3,
+      "fontStyle": 0
+    },
+    "bodyText1": {
+      "color": 4294967295,
+      "fontSize": 16,
+      "fontWeight": 3,
+      "fontStyle": 0
+    },
+    "caption": {
+      "color": 3019898879,
+      "fontSize": 12,
+      "fontWeight": 3,
+      "fontStyle": 0
+    },
+    "button": {
+      "color": 4294967295,
+      "fontSize": 14,
+      "fontWeight": 4,
+      "fontStyle": 0
+    },
+    "subtitle2": {
+      "color": 4294967295,
+      "fontSize": 14,
+      "fontWeight": 4,
+      "fontStyle": 0
+    },
+    "overline": {
+      "color": 4294967295,
+      "fontSize": 10,
+      "fontWeight": 3,
+      "fontStyle": 0
+    }
+  },
+  "accentTextTheme": {
+    "display4": {
+      "color": 3019898879,
+      "fontSize": 96,
+      "fontWeight": 2,
+      "fontStyle": 0
+    },
+    "display3": {
+      "color": 3019898879,
+      "fontSize": 60,
+      "fontWeight": 2,
+      "fontStyle": 0
+    },
+    "display2": {
+      "color": 3019898879,
+      "fontSize": 48,
+      "fontWeight": 3,
+      "fontStyle": 0
+    },
+    "display1": {
+      "color": 3019898879,
+      "fontSize": 34,
+      "fontWeight": 3,
+      "fontStyle": 0
+    },
+    "headline": {
+      "color": 4294967295,
+      "fontSize": 24,
+      "fontWeight": 3,
+      "fontStyle": 0
+    },
+    "title": {
+      "color": 4294967295,
+      "fontSize": 20,
+      "fontWeight": 4,
+      "fontStyle": 0
+    },
+    "subhead": {
+      "color": 4294967295,
+      "fontSize": 16,
+      "fontWeight": 3,
+      "fontStyle": 0
+    },
+    "bodyText2": {
+      "color": 4294967295,
+      "fontSize": 14,
+      "fontWeight": 3,
+      "fontStyle": 0
+    },
+    "bodyText1": {
+      "color": 4294967295,
+      "fontSize": 16,
+      "fontWeight": 3,
+      "fontStyle": 0
+    },
+    "caption": {
+      "color": 3019898879,
+      "fontSize": 12,
+      "fontWeight": 3,
+      "fontStyle": 0
+    },
+    "button": {
+      "color": 4294967295,
+      "fontSize": 14,
+      "fontWeight": 4,
+      "fontStyle": 0
+    },
+    "subtitle2": {
+      "color": 4294967295,
+      "fontSize": 14,
+      "fontWeight": 4,
+      "fontStyle": 0
+    },
+    "overline": {
+      "color": 4294967295,
+      "fontSize": 10,
+      "fontWeight": 3,
+      "fontStyle": 0
+    }
+  },
+  "inputDecorationTheme": {
+    "labelStyle": {
+      "color": 3707764736,
+      "fontSize": 16,
+      "fontWeight": 3,
+      "fontStyle": 0
+    },
+    "helperStyle": {
+      "color": 2315255808,
+      "fontSize": 12,
+      "fontWeight": 3,
+      "fontStyle": 0
+    },
+    "hintStyle": {
+      "color": 2315255808,
+      "fontSize": 12,
+      "fontWeight": 3,
+      "fontStyle": 0
+    },
+    "errorStyle": {
+      "color": 3707764736,
+      "fontSize": 16,
+      "fontWeight": 3,
+      "fontStyle": 0
+    },
+    "prefixStyle": {
+      "color": 3707764736,
+      "fontSize": 16,
+      "fontWeight": 3,
+      "fontStyle": 0
+    },
+    "suffixStyle": {
+      "color": 3707764736,
+      "fontSize": 16,
+      "fontWeight": 3,
+      "fontStyle": 0
+    },
+    "counterStyle": {
+      "color": 3707764736,
+      "fontSize": 16,
+      "fontWeight": 3,
+      "fontStyle": 0
+    },
+    "errorMaxLines": null,
+    "hasFloatingPlaceholder": true,
+    "isDense": false,
+    "contentPadding": {
+      "top": 12,
+      "right": 0,
+      "bottom": 12,
+      "left": 0
+    },
+    "isCollapsed": false,
+    "filled": false,
+    "fillColor": 0,
+    "errorBorder": {
+      "type": "UnderlineInputBorder",
+      "radius": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topRight": {
+          "x": 0,
+          "y": 0
+        },
+        "bottomLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "bottomRight": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "side": {
+        "color": 4278190080,
+        "width": "1",
+        "style": 1
+      }
+    },
+    "focusedBorder": {
+      "type": "UnderlineInputBorder",
+      "radius": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topRight": {
+          "x": 0,
+          "y": 0
+        },
+        "bottomLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "bottomRight": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "side": {
+        "color": 4278190080,
+        "width": "1",
+        "style": 1
+      }
+    },
+    "focusedErrorBorder": {
+      "type": "UnderlineInputBorder",
+      "radius": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topRight": {
+          "x": 0,
+          "y": 0
+        },
+        "bottomLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "bottomRight": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "side": {
+        "color": 4278190080,
+        "width": "1",
+        "style": 1
+      }
+    },
+    "disabledBorder": {
+      "type": "UnderlineInputBorder",
+      "radius": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topRight": {
+          "x": 0,
+          "y": 0
+        },
+        "bottomLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "bottomRight": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "side": {
+        "color": 4278190080,
+        "width": "1",
+        "style": 1
+      }
+    },
+    "enabledBorder": {
+      "type": "UnderlineInputBorder",
+      "radius": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topRight": {
+          "x": 0,
+          "y": 0
+        },
+        "bottomLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "bottomRight": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "side": {
+        "color": 4278190080,
+        "width": "1",
+        "style": 1
+      }
+    },
+    "border": {
+      "type": "UnderlineInputBorder",
+      "radius": {
+        "topLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "topRight": {
+          "x": 0,
+          "y": 0
+        },
+        "bottomLeft": {
+          "x": 0,
+          "y": 0
+        },
+        "bottomRight": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "side": {
+        "color": 4278190080,
+        "width": "1",
+        "style": 1
+      }
+    }
+  },
+  "iconTheme": {
+    "color": 3707764736,
+    "opacity": 1,
+    "size": 24
+  },
+  "primaryIconTheme": {
+    "color": 4294967295,
+    "opacity": 1,
+    "size": 24
+  },
+  "accentIconTheme": {
+    "color": 4294967295,
+    "opacity": 1,
+    "size": 24
+  },
+  "sliderTheme": {
+    "activeTrackColor": 4278391389,
+    "inactiveTrackColor": 1023611485,
+    "disabledActiveTrackColor": 1375865393,
+    "disabledInactiveTrackColor": 520227377,
+    "activeTickMarkColor": 2330389246,
+    "inactiveTickMarkColor": 2315457117,
+    "disabledActiveTickMarkColor": 535227134,
+    "disabledInactiveTickMarkColor": 520227377,
+    "thumbColor": 4278391389,
+    "disabledThumbColor": 1375865393,
+    "thumbShape": {
+      "type": "RoundSliderThumbShape"
+    },
+    "overlayColor": 520295005,
+    "valueIndicatorColor": 4278391389,
+    "valueIndicatorShape": {
+      "type": "PaddleSliderValueIndicatorShape"
+    },
+    "showValueIndicator": 0,
+    "valueIndicatorTextStyle": {
+      "color": 4294967295,
+      "fontSize": 14,
+      "fontWeight": 3,
+      "fontStyle": 0
+    }
+  },
+  "tabBarTheme": {
+    "indicatorSize": 0,
+    "labelColor": 4294967295,
+    "unselectedLabelColor": 3003121663
+  },
+  "chipTheme": {
+    "backgroundColor": 1023611485,
+    "brightness": 1,
+    "deleteIconColor": 3724743261,
+    "disabledColor": 201326592,
+    "labelPadding": {
+      "top": 0,
+      "right": 8,
+      "bottom": 0,
+      "left": 8
+    },
+    "labelStyle": {
+      "color": 3724743261,
+      "fontSize": 14,
+      "fontWeight": 3,
+      "fontStyle": 0
+    },
+    "padding": {
+      "top": 4,
+      "right": 4,
+      "bottom": 4,
+      "left": 4
+    },
+    "secondaryLabelStyle": {
+      "color": 1023611485,
+      "fontSize": 14,
+      "fontWeight": 3,
+      "fontStyle": 0
+    },
+    "secondarySelectedColor": 1023611485,
+    "selectedColor": 1023611485,
+    "shape": {
+      "type": "StadiumBorder",
+      "side": "none"
+    }
+  },
+  "dialogTheme": {
+    "shape": {
+      "type": "RoundedRectangleBorder",
+      "radius": {
+        "topLeft": {
+          "x": 4,
+          "y": 4
+        },
+        "topRight": {
+          "x": 4,
+          "y": 4
+        },
+        "bottomLeft": {
+          "x": 4,
+          "y": 4
+        },
+        "bottomRight": {
+          "x": 4,
+          "y": 4
+        }
+      },
+      "side": "none"
+    }
+  }
+}

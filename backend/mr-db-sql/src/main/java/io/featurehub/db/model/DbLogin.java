@@ -1,0 +1,80 @@
+package io.featurehub.db.model;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "fh_login")
+public class DbLogin {
+  @Id
+  private String token;
+
+  @Column(name = "fk_person")
+  @ManyToOne
+  private DbPerson person;
+
+  private LocalDateTime lastSeen;
+
+  private DbLogin(Builder builder) {
+    setToken(builder.token);
+    setPerson(builder.person);
+    setLastSeen(builder.lastSeen);
+  }
+
+  public String getToken() {
+    return token;
+  }
+
+  public void setToken(String token) {
+    this.token = token;
+  }
+
+  public DbPerson getPerson() {
+    return person;
+  }
+
+  public void setPerson(DbPerson person) {
+    this.person = person;
+  }
+
+  public LocalDateTime getLastSeen() {
+    return lastSeen;
+  }
+
+  public void setLastSeen(LocalDateTime lastSeen) {
+    this.lastSeen = lastSeen;
+  }
+
+
+  public static final class Builder {
+    private String token;
+    private DbPerson person;
+    private LocalDateTime lastSeen;
+
+    public Builder() {
+    }
+
+    public Builder token(String val) {
+      token = val;
+      return this;
+    }
+
+    public Builder person(DbPerson val) {
+      person = val;
+      return this;
+    }
+
+    public Builder lastSeen(LocalDateTime val) {
+      lastSeen = val;
+      return this;
+    }
+
+    public DbLogin build() {
+      return new DbLogin(this);
+    }
+  }
+}

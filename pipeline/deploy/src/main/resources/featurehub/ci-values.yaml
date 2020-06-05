@@ -1,0 +1,7 @@
+global:
+  environment_name: ci
+  testEnvironment: true
+
+mr-service:
+  image:
+    tag: "1.3"

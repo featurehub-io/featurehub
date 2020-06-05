@@ -1,0 +1,5 @@
+== Common Artifacts
+
+These exist because there are common properties that most services require. They are loaded into /etc/common-config
+as a general volume.
+

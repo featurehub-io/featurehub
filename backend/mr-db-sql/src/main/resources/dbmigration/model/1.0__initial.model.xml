@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <createTable name="fh_acl" identityType="external" pkName="pk_fh_acl">
+            <column name="id" type="uuid" primaryKey="true" identity="true"/>
+            <column name="environment_id" type="uuid" references="fh_environment.id" foreignKeyName="fk_fh_acl_environment_id" foreignKeyIndex="ix_fh_acl_environment_id"/>
+            <column name="application_id" type="uuid" references="fh_application.id" foreignKeyName="fk_fh_acl_application_id" foreignKeyIndex="ix_fh_acl_application_id"/>
+            <column name="group_id" type="uuid" references="fh_group.id" foreignKeyName="fk_fh_acl_group_id" foreignKeyIndex="ix_fh_acl_group_id"/>
+            <column name="roles" type="varchar"/>
+            <column name="version" type="bigint" notnull="true"/>
+            <column name="when_updated" type="timestamp" notnull="true"/>
+            <column name="when_created" type="timestamp" notnull="true"/>
+        </createTable>
+        <createTable name="fh_application" identityType="external" pkName="pk_fh_application">
+            <column name="id" type="uuid" primaryKey="true" identity="true"/>
+            <column name="name" type="varchar(100)" notnull="true"/>
+            <column name="description" type="varchar(400)"/>
+            <column name="fk_person_who_created" type="uuid" notnull="true" references="fh_person.id" foreignKeyName="fk_fh_application_fk_person_who_created" foreignKeyIndex="ix_fh_application_fk_person_who_created"/>
+            <column name="fk_portfolio_id" type="uuid" notnull="true" references="fh_portfolio.id" foreignKeyName="fk_fh_application_fk_portfolio_id" foreignKeyIndex="ix_fh_application_fk_portfolio_id"/>
+            <column name="when_archived" type="timestamp"/>
+            <column name="version" type="bigint" notnull="true"/>
+            <column name="when_updated" type="timestamp" notnull="true"/>
+            <column name="when_created" type="timestamp" notnull="true"/>
+        </createTable>
+        <createTable name="fh_app_feature" identityType="external" pkName="pk_fh_app_feature">
+            <column name="id" type="uuid" primaryKey="true" identity="true"/>
+            <column name="fk_app_id" type="uuid" notnull="true" references="fh_application.id" foreignKeyName="fk_fh_app_feature_fk_app_id" foreignKeyIndex="ix_fh_app_feature_fk_app_id"/>
+            <column name="when_archived" type="timestamp"/>
+            <column name="feature_key" type="varchar"/>
+            <column name="alias" type="varchar"/>
+            <column name="name" type="varchar"/>
+            <column name="secret" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="link" type="varchar(600)"/>
+            <column name="value_type" type="varchar(7)" checkConstraint="check ( value_type in ('BOOLEAN','STRING','NUMBER','JSON'))" checkConstraintName="ck_fh_app_feature_value_type"/>
+            <column name="version" type="bigint" notnull="true"/>
+            <column name="when_updated" type="timestamp" notnull="true"/>
+            <column name="when_created" type="timestamp" notnull="true"/>
+            <uniqueConstraint name="idx_app_features" columnNames="fk_app_id,feature_key" oneToOne="false" nullableColumns="feature_key"/>
+        </createTable>
+        <createTable name="fh_environment" identityType="external" pkName="pk_fh_environment">
+            <column name="id" type="uuid" primaryKey="true" identity="true"/>
+            <column name="is_prod_environment" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="fk_prior_env_id" type="uuid" references="fh_environment.id" foreignKeyName="fk_fh_environment_fk_prior_env_id" foreignKeyIndex="ix_fh_environment_fk_prior_env_id" foreignKeyOnDelete="SET_NULL" foreignKeyOnUpdate="RESTRICT"/>
+            <column name="fk_app_id" type="uuid" notnull="true" references="fh_application.id" foreignKeyName="fk_fh_environment_fk_app_id" foreignKeyIndex="ix_fh_environment_fk_app_id"/>
+            <column name="name" type="varchar(150)" notnull="true"/>
+            <column name="description" type="varchar(400)"/>
+            <column name="when_archived" type="timestamp"/>
+            <column name="version" type="bigint" notnull="true"/>
+            <column name="when_updated" type="timestamp" notnull="true"/>
+            <column name="when_created" type="timestamp" notnull="true"/>
+        </createTable>
+        <createTable name="fh_env_feature_strategy" identityType="external" pkName="pk_fh_env_feature_strategy">
+            <column name="id" type="uuid" primaryKey="true" identity="true"/>
+            <column name="fk_who_updated" type="uuid" references="fh_person.id" foreignKeyName="fk_fh_env_feature_strategy_fk_who_updated" foreignKeyIndex="ix_fh_env_feature_strategy_fk_who_updated" foreignKeyOnDelete="SET_NULL" foreignKeyOnUpdate="RESTRICT"/>
+            <column name="what_updated" type="varchar(400)"/>
+            <column name="fk_environment_id" type="uuid" notnull="true" references="fh_environment.id" foreignKeyName="fk_fh_env_feature_strategy_fk_environment_id" foreignKeyIndex="ix_fh_env_feature_strategy_fk_environment_id"/>
+            <column name="fk_feature_id" type="uuid" notnull="true" references="fh_app_feature.id" foreignKeyName="fk_fh_env_feature_strategy_fk_feature_id" foreignKeyIndex="ix_fh_env_feature_strategy_fk_feature_id"/>
+            <column name="feature_state" type="varchar(8)" checkConstraint="check ( feature_state in ('DISABLED','READY','ENABLED'))" checkConstraintName="ck_fh_env_feature_strategy_feature_state"/>
+            <column name="default_value" type="clob"/>
+            <column name="enabled_strategy" type="varchar(10)" checkConstraint="check ( enabled_strategy in ('ATTRIBUTE','PERCENTAGE'))" checkConstraintName="ck_fh_env_feature_strategy_enabled_strategy"/>
+            <column name="locked" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="rollout_strat" type="json"/>
+            <column name="version" type="bigint" notnull="true"/>
+            <column name="when_updated" type="timestamp" notnull="true"/>
+            <column name="when_created" type="timestamp" notnull="true"/>
+        </createTable>
+        <createTable name="fh_group" identityType="external" pkName="pk_fh_group">
+            <column name="id" type="uuid" primaryKey="true" identity="true"/>
+            <column name="when_archived" type="timestamp"/>
+            <column name="fk_person_who_created" type="uuid" notnull="true" references="fh_person.id" foreignKeyName="fk_fh_group_fk_person_who_created" foreignKeyIndex="ix_fh_group_fk_person_who_created"/>
+            <column name="fk_portfolio_id" type="uuid" references="fh_portfolio.id" foreignKeyName="fk_fh_group_fk_portfolio_id" foreignKeyIndex="ix_fh_group_fk_portfolio_id"/>
+            <column name="is_admin_group" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="fk_organization_id" type="uuid" references="fh_organization.id" foreignKeyName="fk_fh_group_fk_organization_id" foreignKeyIndex="ix_fh_group_fk_organization_id"/>
+            <column name="group_name" type="varchar"/>
+            <column name="when_updated" type="timestamp" notnull="true"/>
+            <column name="when_created" type="timestamp" notnull="true"/>
+            <column name="version" type="bigint" notnull="true"/>
+            <uniqueConstraint name="idx_group_names" columnNames="fk_portfolio_id,group_name" oneToOne="false" nullableColumns="fk_portfolio_id,group_name"/>
+        </createTable>
+        <createTable name="fh_login" identityType="external" pkName="pk_fh_login">
+            <column name="token" type="varchar" primaryKey="true"/>
+            <column name="person_id" type="uuid" references="fh_person.id" foreignKeyName="fk_fh_login_person_id" foreignKeyIndex="ix_fh_login_person_id"/>
+            <column name="last_seen" type="timestamp"/>
+        </createTable>
+        <createTable name="fh_cache" identityType="external" pkName="pk_fh_cache">
+            <column name="cache_name" type="varchar" primaryKey="true"/>
+        </createTable>
+        <createTable name="fh_organization" identityType="external" pkName="pk_fh_organization">
+            <column name="id" type="uuid" primaryKey="true" identity="true"/>
+            <column name="when_archived" type="timestamp"/>
+            <column name="name" type="varchar"/>
+            <column name="fk_named_cache" type="varchar" references="fh_cache.cache_name" foreignKeyName="fk_fh_organization_fk_named_cache" foreignKeyIndex="ix_fh_organization_fk_named_cache" foreignKeyOnDelete="SET_NULL" foreignKeyOnUpdate="RESTRICT"/>
+            <column name="group_id" type="uuid" uniqueOneToOne="uq_fh_organization_group_id" references="fh_group.id" foreignKeyName="fk_fh_organization_group_id"/>
+            <column name="version" type="bigint" notnull="true"/>
+            <column name="when_updated" type="timestamp" notnull="true"/>
+            <column name="when_created" type="timestamp" notnull="true"/>
+        </createTable>
+        <createTable name="fh_person" identityType="external" pkName="pk_fh_person">
+            <column name="id" type="uuid" primaryKey="true" identity="true"/>
+            <column name="when_last_authenticated" type="timestamp"/>
+            <column name="name" type="varchar(100)"/>
+            <column name="email" type="varchar(100)" notnull="true"/>
+            <column name="password" type="varchar"/>
+            <column name="password_requires_reset" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="token" type="varchar"/>
+            <column name="token_expiry" type="timestamp"/>
+            <column name="who_changed_id" type="uuid" references="fh_person.id" foreignKeyName="fk_fh_person_who_changed_id" foreignKeyIndex="ix_fh_person_who_changed_id"/>
+            <column name="when_archived" type="timestamp"/>
+            <column name="fk_person_who_created" type="uuid" references="fh_person.id" foreignKeyName="fk_fh_person_fk_person_who_created" foreignKeyIndex="ix_fh_person_fk_person_who_created"/>
+            <column name="version" type="bigint" notnull="true"/>
+            <column name="when_updated" type="timestamp" notnull="true"/>
+            <column name="when_created" type="timestamp" notnull="true"/>
+            <uniqueConstraint name="idx_person_email" columnNames="email" oneToOne="false" nullableColumns=""/>
+        </createTable>
+        <createTable name="fh_person_group_link" pkName="pk_fh_person_group_link">
+            <column name="fk_person_id" type="uuid" notnull="true" primaryKey="true"/>
+            <column name="fk_group_id" type="uuid" notnull="true" primaryKey="true"/>
+            <foreignKey name="fk_fh_person_group_link_fh_person" columnNames="fk_person_id" refColumnNames="id" refTableName="fh_person" indexName="ix_fh_person_group_link_fh_person"/>
+            <foreignKey name="fk_fh_person_group_link_fh_group" columnNames="fk_group_id" refColumnNames="id" refTableName="fh_group" indexName="ix_fh_person_group_link_fh_group"/>
+        </createTable>
+        <createTable name="fh_portfolio" identityType="external" pkName="pk_fh_portfolio">
+            <column name="id" type="uuid" primaryKey="true" identity="true"/>
+            <column name="when_archived" type="timestamp"/>
+            <column name="fk_person_who_created" type="uuid" notnull="true" references="fh_person.id" foreignKeyName="fk_fh_portfolio_fk_person_who_created" foreignKeyIndex="ix_fh_portfolio_fk_person_who_created"/>
+            <column name="fk_org_id" type="uuid" notnull="true" references="fh_organization.id" foreignKeyName="fk_fh_portfolio_fk_org_id" foreignKeyIndex="ix_fh_portfolio_fk_org_id"/>
+            <column name="name" type="varchar"/>
+            <column name="description" type="varchar"/>
+            <column name="when_updated" type="timestamp" notnull="true"/>
+            <column name="when_created" type="timestamp" notnull="true"/>
+            <column name="version" type="bigint" notnull="true"/>
+            <uniqueConstraint name="idx_portfolio_name" columnNames="name,fk_org_id" oneToOne="false" nullableColumns="name"/>
+        </createTable>
+        <createTable name="fh_service_account" identityType="external" pkName="pk_fh_service_account">
+            <column name="id" type="uuid" primaryKey="true" identity="true"/>
+            <column name="name" type="varchar(40)"/>
+            <column name="description" type="varchar(400)"/>
+            <column name="fk_person_who_created" type="uuid" notnull="true" references="fh_person.id" foreignKeyName="fk_fh_service_account_fk_person_who_created" foreignKeyIndex="ix_fh_service_account_fk_person_who_created"/>
+            <column name="api_key" type="varchar(100)" notnull="true" unique="uq_fh_service_account_api_key"/>
+            <column name="when_archived" type="timestamp"/>
+            <column name="fk_portfolio_id" type="uuid" notnull="true" references="fh_portfolio.id" foreignKeyName="fk_fh_service_account_fk_portfolio_id" foreignKeyIndex="ix_fh_service_account_fk_portfolio_id"/>
+            <column name="when_updated" type="timestamp" notnull="true"/>
+            <column name="when_created" type="timestamp" notnull="true"/>
+            <column name="version" type="bigint" notnull="true"/>
+            <uniqueConstraint name="idx_service_name" columnNames="fk_portfolio_id,name" oneToOne="false" nullableColumns="name"/>
+        </createTable>
+        <createTable name="fh_service_account_env" identityType="external" pkName="pk_fh_service_account_env">
+            <column name="id" type="uuid" primaryKey="true" identity="true"/>
+            <column name="fk_environment_id" type="uuid" notnull="true" references="fh_environment.id" foreignKeyName="fk_fh_service_account_env_fk_environment_id" foreignKeyIndex="ix_fh_service_account_env_fk_environment_id"/>
+            <column name="permissions" type="varchar(200)"/>
+            <column name="fk_service_account_id" type="uuid" notnull="true" references="fh_service_account.id" foreignKeyName="fk_fh_service_account_env_fk_service_account_id" foreignKeyIndex="ix_fh_service_account_env_fk_service_account_id"/>
+            <column name="when_updated" type="timestamp" notnull="true"/>
+            <column name="when_created" type="timestamp" notnull="true"/>
+            <column name="version" type="bigint" notnull="true"/>
+        </createTable>
+    </changeSet>
+</migration>

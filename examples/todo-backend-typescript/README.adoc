@@ -1,0 +1,58 @@
+== Description
+Backend Todo server app to demonstrate the usage of FeatureHub JavaScript/Typescript SDK with Typescript and restify. 
+
+Typescript and restify are used here as an example and can be replaced with any other npm module to perform REST requests and used with Javascript instead.
+
+Demonstrates the Feature Flag ("BOOLEAN" type)
+
+Feature key: "FEATURE_TITLE_TO_UPPERCASE"
+
+If "FEATURE_TITLE_TO_UPPERCASE" is enabled - it will convert todo 'title' property to uppercase for every todo in the response for add/list/delete/resolve operations.
+
+If this feature is disabled it will have todo 'title' in whatever format it was sent when a todo was created.
+
+Uses the `client-typescript-eventsource` library.
+
+The app is based on the Open API description stored in todo-api folder, however Open API code generators are not used in this case
+
+In addition, it demonstrates integration with Google Analytics. You will require to have valid GA Tracking ID, e.g. 'UA-XXXXXXXXX-X'.
+
+Feature key: `SUBMIT_COLOR_BUTTON`
+
+GA events:
+
+`name: "todo-add", value: "10"`
+
+`name: "todo-delete", value: "5"`
+
+Once you launch the server, any call to  "add" or "delete" to-do will generate a GA event accordingly.
+
+Note: The events will appear in your GA console with ~12 hours delay.
+
+More on GA integration can be found here https://docs.featurehub.io/#_google_analytics_integration
+
+== Prerequisites 
+Node @12 or higher
+
+Follow readme instructions to build  `client-typescript-core` module
+
+Follow readme instructions to build  `client-typescript-eventsource` module
+
+You need to setup a feature of type "Feature flag - boolean" in the FeatureHub application. Use the feature key provided above. 
+You are required to have a Service Account created in the FeatureHub application with the "write" permissions for your desired environment. 
+Once this is set, copy the SDK URL for your desired environment and set it as an environment variable:
+
+e.g. `'http://your-featurehub-url:8553/features/default/ff8635ef-ed28-4cc3-8067-b9ffd8882100/lOopBkGPALBcI0p6AGpf4jAdUi2HxR0RkhYvV00i1XsMQLWkltaoFvEfs7uFsZaQ45kF5FmhGE7rWTSg'`
+
+to be set in your run configuration as:
+
+`process.env.FEATUREHUB_APP_ENV_URL`
+
+== Installation Instructions
+
+----
+npm install && npm run-script start
+----
+
+
+

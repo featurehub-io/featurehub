@@ -1,0 +1,94 @@
+openapi: 3.0.0
+info:
+  version: ""
+  title: Todo
+  description: ""
+paths:
+  "/todo/{id}/resolve":
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    put:
+      operationId: resolveTodo
+      summary: resolveTodo
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Todo"
+  "/todo/{id}/remove":
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    delete:
+      operationId: removeTodo
+      summary: removeTodo
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Todo"
+  /todo/add:
+    post:
+      operationId: addTodo
+      summary: addTodo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Todo"
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Todo"
+  /todo/list:
+    get:
+      operationId: listTodos
+      summary: listTodos
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Todo"
+servers:
+  - url: http://localhost:3000
+components:
+  schemas:
+    Todo:
+      title: Todo
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        resolved:
+          type: boolean
+        when:
+          type: string
+          format: date-time

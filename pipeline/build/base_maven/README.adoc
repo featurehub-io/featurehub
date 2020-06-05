@@ -1,0 +1,7 @@
+== Base Maven
+
+This lets us control the maven version and JDK version (which is old on the Google Builders), and also lets
+us cache the maven repo. This should actually change to a different, more updatable mechanism by uploading the
+cache directly to the s3 bucket, which means you don't need to rebuild an image.
+
+see https://github.com/coollog/jib-google-cloud-build

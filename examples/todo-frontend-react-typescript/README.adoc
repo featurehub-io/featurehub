@@ -1,0 +1,61 @@
+== Description
+Frontend Todo app to demonstrate the usage of FeatureHub Javascript/Typescript SDK with React front-end framework
+
+Demonstrates the feature of "STRING" type that controls the colour of a "SUBMIT" button. For example, you can set it as "green", "orange" etc..
+
+In addition, it demonstrates integration with Google Analytics. You will require to have valid GA Tracking ID, e.g. 'UA-XXXXXXXXX-X'. 
+
+Feature key: `SUBMIT_COLOR_BUTTON`
+
+GA events:
+
+`name: "todo-add", value: "10"`
+
+`name: "todo-delete", value: "5"`
+
+Once you launch the app, any interaction with "add" or "delete" buttons will generate a GA event accordingly. 
+
+Note: The events will appear in your GA console with ~12 hours delay.
+
+More on GA integration can be found here https://docs.featurehub.io/#_google_analytics_integration
+
+
+== Prerequisites 
+Node @12 or higher  
+
+Follow readme instructions to build  `client-typescript-core` module
+
+Follow readme instructions to build  `client-typescript-eventsource` module
+
+== Installation Instructions
+
+Install dependencies
+
+`npm install`
+
+Generate AXIOS openapi client
+
+`mvn clean generate-sources`
+
+Link to local versions of feature-hub repositories
+
+`npm run-script local-link`
+
+Run back-end server: 
+
+`cd ./todo-backend-typescript` 
+
+`npm install && npm run-script start`
+
+After back-end server has started successfully:
+
+`cd ./todo-frontend-react-typescript`
+
+`npm run-script build`
+
+`npm run-script start`
+
+
+
+
+

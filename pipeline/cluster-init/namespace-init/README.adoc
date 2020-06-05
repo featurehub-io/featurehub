@@ -1,0 +1,10 @@
+=== namespace-init
+
+This is required for each namespace you wish to deploy into, and it gives the deployment container and the
+cloud builder permissions to deploy into that namespace. 
+
+`update` permission is required on everything as helm patches stuff.
+
+The Cloud Builder user needs everything the Deploy Container has, but also `pods` in this case as it deploys
+deletes and gets statuses for the deploy container pod.
+

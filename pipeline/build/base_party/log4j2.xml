@@ -1,0 +1,25 @@
+<Configuration packages="cd.connect.logging" monitorInterval="30" verbose="true">
+  <Appenders>
+    <Console name="STDOUT" target="SYSTEM_OUT">
+      <ConnectJsonLayout/>
+    </Console>
+  </Appenders>
+
+  <Loggers>
+    <AsyncLogger name="io.featurehub" level="debug"/>
+    <AsyncLogger name="io.ebean.SQL" level="trace"/>
+    <AsyncLogger name="io.ebean.TXN" level="trace"/>
+    <AsyncLogger name="io.ebean.SUM" level="trace"/>
+    <AsyncLogger name="io.ebean.DDL" level="trace"/>
+    <AsyncLogger name="io.ebean.cache.QUERY" level="trace"/>
+    <AsyncLogger name="io.ebean.cache.BEAN" level="trace"/>
+    <AsyncLogger name="io.ebean.cache.COLL" level="trace"/>
+    <AsyncLogger name="io.ebean.cache.NATKEY" level="trace"/>
+
+    <AsyncLogger name="jersey-logging" level="trace" />
+
+    <AsyncRoot level="info">
+      <AppenderRef ref="STDOUT"/>
+    </AsyncRoot>
+  </Loggers>
+</Configuration>

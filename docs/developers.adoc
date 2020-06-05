@@ -1,0 +1,63 @@
+== Building from scratch
+
+These instructions are for advanced engineers who want to run their own instance of FeatureHub.
+
+If you don't need to customise or enhance FeatureHub, we recommend using the prebuilt Docker images for running FeatureHub.
+
+=== Build Instructions
+
+This project requires you to have Java 11 as your primary Java and Maven 3.5 or later installed.
+
+- Java 11 should be downloaded from https://adoptopenjdk.net/ (do not download it from Oracle)
+
+==== Java 11 on Mac OS X
+
+This downloads as a gziped tar file, extract the folder and move it to `/Library/Java/JavaVirtualMachines` but ensure
+you tack a `.jdk` on the end, so `jdk-11.0.2+9` becomes  `/Library/Java/JavaVirtualMachines/jdk-11.0.2+9.jdk`.
+Then set the environment variable JAVA_HOME to that folder + /Contents/Home, i.e.
+
+If you have downloaded it from Oracle, use the following (or similar based on the version you have)
+----
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-11.0.2+9.jdk/Contents/Home
+----
+If you have downloaded it from AdoptOpenJDK, then use this:
+----
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-11.jdk/Contents/Home
+----
+
+This will cause the installed 'java' to swap to that version.
+Type `java -version` to confirm it has changed.
+
+=== Building from the command line
+
+Type `mvn clean install` and it should build everything, including the Docker ready
+tar file (see below).
+
+TIP: If you get an error like `--release` not known, you are using Java 8.
+
+==== Technology stack
+
+This application stack uses Java 11+.
+
+Ensure you do a:
+
+`mvn -f pom-first.xml clean install` before opening in IDE and before running main pom.
+
+==== Just the APIs
+
+If you just want to install the apis and ensure they are consistent, use:
+
+`mvn -f pom-api.xml clean install`
+
+=== Running NATS
+
+----
+docker run -d --name nats-main -p 4222:4222 -p 6222:6222 -p 8222:8222 nats:2.1.2-scratch
+----
+
+if you were running it and the container has shut down for some reason (machine reset for
+example):
+
+----
+docker restart nats-main
+----

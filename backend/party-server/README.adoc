@@ -1,0 +1,17 @@
+=== Party Server
+ifdef::env-github,env-browser[:outfilesuffix: .adoc]
+
+This server contains all three servers in one - MR, the Dacha Cache and the SSE Edge. It is intended
+to be used when you are running one of the simple configurations, an h2 test database (which is contained
+in the `docker-compose` subdirectory) or a postgres, mysql, sql-server, etc database.
+
+If you wish to split pieces out and run in a more scalable fashion, please use the individual docker
+containers for those images. In a normal environment you would not expose your Management Repository or
+Dacha servers outside of your company. You would normally not expose your Dacha servers to anything other
+than the SSE Edge servers.
+
+To build this server, you need first to have built the base image that contains the NATs server. This
+is documented in link:../../pipeline/build/base_party{outfilesuffix}[the base party image]. If you are
+simply modifying and working on this image and you don't need to build that image, you will need to override
+the base image so it comes directly from DockerHub. 
+

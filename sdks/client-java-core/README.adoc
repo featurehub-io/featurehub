@@ -1,0 +1,143 @@
+= Java Client SDK for FeatureHub
+
+Welcome to the Java implementation for FeatureHub. It is the supported version, but it does not mean
+you cannot write your own, the functionality is quite straightforward.
+
+== Overview
+
+This is the core library for Java.
+
+It provides the core functionality of the
+repository which holds features and creates events. It does not connect to the backend server. As that will
+depend on whatever HTTP client java library you use, we have provided one for Jersey. We expect to provide future
+libraries for various other popular HTTP libraries.
+
+This library only provides one recommended type of operation, which is that the server will update all the features
+all of the time.
+
+== Using the Java Feature SDK
+
+Because this is the Java SDK, and it can be used in a back-end service or Android, there are two ways of
+interacting with this service. Only one is currently supported and is not recommended for Android as
+it keeps the radio on. This will come in later in our roadmap.
+
+=== 1. All the Features, All the Time
+
+In this mode, you will make a connection to the FeatureHub Edge server, and any updates to any events will come
+through to you, updating the feature values in the repository. You can choose to listen for these updates and update
+some UI immediate, but every `if` statement will indicate the updated value, so listening is usually a better choice.
+
+A typical strategy will be:
+
+. create a feature hub repository, wire it into your application stack as appropriate. 
+. set up and wire up your application. initialize your server, but don't start it.
+. set up a readyness listener so you know when the features have loaded and you have an initial state for them. When
+you get a `Ready` state, start the server listening. If you get a `Failed` then shut your server down or continue
+without a set of features.
+. [optional] set up your per feature listeners so you can react to their changes in state. You can operate 
+in a imperative (is this feature on?) and/or reactive (callback) way with the repository.
+
+This kind of operation is perfect for servers. It can lead to instant change which could confuse users in a UI and
+isn't something our team recommends.
+
+An example using our Jersey client.
+
+[source,java]
+----
+ClientFeatureRepository cfr = new ClientFeatureRepository(5);
+
+// the static feature context is a convenience interface 
+StaticFeatureContext.repository = cfr;
+
+// configure and immediately connect and attempt to listen
+new JerseyClient(featureHubUrl, true, cfr);
+
+// ... 
+
+final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, config, false);
+
+cfr.addReadynessListener((ready) -> {
+  if (ready == Readyness.Ready) {
+    try {
+      server.start();
+    } catch (IOException e) {
+      log.error("Failed to start", e);
+      throw new RuntimeException(e);
+    }
+
+    log.info("Application started. (HTTP/2 enabled!) -> {}", BASE_URI);
+  } else if (ready == Readyness.Failed) {
+    server.shutdownNow(); // probably should wait in case we have inflight connections
+    log.error("Connect to feature server failed, shutting down server.");
+    System.exit(-1);
+  }
+});
+----
+
+
+NOTE: You will only get a Failed later if your connection drops out. You can choose to ignore the Failure 
+if you already have your features and deal with it by instantiating a new client. It won't generate a failure
+if the server has simply booted you off due to a timeout, only because of connection failure. 
+
+==== Static Feature Context
+
+The static feature context is a simple and easy way to allow you to use the repository.
+
+It allows you to determine if flags are on or off, if features exist or are set, and it allows you to do this from a 
+_enum_ basis. You need to have your enum implement `Feature` which just has a name function - which all enums do.
+
+You can if you wish add a convenience function to your enums to determine if they are active and people often do.
+
+[source,java]
+----
+public enum Features implements Feature {
+
+  FEATURE_TITLE_TO_UPPERCASE;
+
+  private Features() {
+  }
+
+  public boolean isActive() {
+    return StaticFeatureContext.getInstance().isActive(this);
+  }
+}
+----
+
+this means you can do something like this:
+
+[source,java]
+----
+if (Features.FEATURE_TITLE_TO_UPPERCASE.isActive()) {
+}
+----
+
+==== Local Feature Overrides
+
+If you set a system property `feature-toggles.FEATURE_NAME` then you can override the value of what the value
+is for feature flags. This is a further convenience feature and can be useful for an individual developer 
+working on a new feature, where it is off for everyone else but not for them.
+
+
+== Analytics
+
+The Analytics client layer currently only supports directly exporting data to 
+https://docs.featurehub.io/#_google_analytics_integration[Google Analytics]. It has the capability to add further
+adapters but this is not our medium term strategy to do it this way. 
+
+To configure it, you need three things:
+
+- a Google analytics key - usually in the form UA-
+- [optional] a CID - a customer id this is associate with this. We recommend you set on for the server
+and override it if you know what you are tracking against for the individual request.
+- a client implementation. We provide one for Jersey currently.
+
+[source,java]
+----
+cfr.addAnalyticCollector(new GoogleAnalyticsCollector(analyticsKey, analyticsCid, new GoogleAnalyticsJerseyApiClient()));
+----
+
+When you wish to lodge an event, simply call `logAnalyticsEvent` on the featurehub repository instance. You can
+simply pass the event, or you can pass the event plus some extra data, including the overridden CID and a `gaValue`
+for the value field in Google Analytics.
+
+
