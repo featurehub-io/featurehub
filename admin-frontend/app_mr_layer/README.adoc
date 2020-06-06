@@ -1,0 +1,15 @@
+== Prerequisites 
+
+Dart SDK > 2.7.0
+
+Maven 3.6 
+
+Run from terminal:
+
+----
+pub get
+mvn clean generate-sources 
+----
+
+
+
