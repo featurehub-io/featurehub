@@ -8,8 +8,8 @@ Run from command line:
 
 [source]
 ----
-pub get
 mvn clean generate-sources 
+pub get
 ----
 
 
