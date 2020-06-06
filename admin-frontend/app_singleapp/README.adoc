@@ -4,11 +4,10 @@
 Flutter SDK
 
 === To run the app
-cmd to run:
+Run from command line:
 
 ----
 cd $FLUTTER && git reset --hard 54524a7f9559d56783a70cc8b87be95d42121460 && echo "1.19.0-2.0.pre.209" >> $FLUTTER/version
- flutter channel master 
  flutter config  --no-analytics --enable-web
  flutter run -d chrome
 ----
@@ -17,12 +16,9 @@ Note: if you restart your IDE you should see the new device (Chrome)
 
 To run/debug from in IDE setup a flutter run configuration point to main.dart
 
-== Global error handling 
-
-Global error handling:
+== Global error handling
 
 There are 3 simple functions in the main Bloc for helping with errors:
-
 
 `dialogError(e,s,{String messageTitle, bool showDetails = true,String messageBody=""})`
 
