@@ -1,6 +1,22 @@
-The e2e project has tests that preloads fake data.
+== The e2e project has tests that preloads fake data.
 
-- run MR application
-- run ./run.sh for e2e tests and to preload the data
+== Prerequisites 
+
+Dart SDK >= 2.7.0
+
+== Run tests
+- start MR application, follow readme in backend/mr folder
+
+Run from the command line:
+
+[source]
+----
+pub get
+----
+
+For e2e tests and to preload the data:
+----
+sh ./run.sh 
+----
 - run Admin front-end, you should be able to see the data
 
