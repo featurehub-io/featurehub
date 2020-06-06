@@ -1,10 +1,10 @@
-package io.featurehub.mr.rest;
+package io.featurehub.mr.resources;
 
 import io.featurehub.db.api.AuthenticationApi;
 import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.Opts;
 import io.featurehub.db.api.PersonApi;
-import io.featurehub.mr.api.AuthenticationSecuredService;
+import io.featurehub.mr.api.AuthServiceDelegate;
 import io.featurehub.mr.auth.AuthManagerService;
 import io.featurehub.mr.auth.AuthenticationRepository;
 import io.featurehub.mr.model.PasswordReset;
@@ -12,34 +12,30 @@ import io.featurehub.mr.model.PasswordUpdate;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.PersonRegistrationDetails;
 import io.featurehub.mr.model.TokenizedPerson;
+import io.featurehub.mr.model.UserCredentials;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.SecurityContext;
 
-@Singleton
-public class AuthenticationResource implements AuthenticationSecuredService {
-  private static final Logger log = LoggerFactory.getLogger(AuthenticationResource.class);
+public class AuthResource implements AuthServiceDelegate {
+  private static final Logger log = LoggerFactory.getLogger(AuthResource.class);
   private final AuthenticationApi authenticationApi;
   private final AuthManagerService authManager;
   private final PersonApi personApi;
   private final AuthenticationRepository authRepository;
 
-
   @Inject
-  public AuthenticationResource(AuthenticationApi authenticationApi,
-                                AuthManagerService authManager, PersonApi personApi, AuthenticationRepository authRepository) {
+  public AuthResource(AuthenticationApi authenticationApi, AuthManagerService authManager, PersonApi personApi, AuthenticationRepository authRepository) {
     this.authenticationApi = authenticationApi;
     this.authManager = authManager;
     this.personApi = personApi;
     this.authRepository = authRepository;
   }
-
 
   @Override
   public Person changePassword(String id, PasswordUpdate passwordUpdate, SecurityContext securityContext) {
@@ -58,6 +54,22 @@ public class AuthenticationResource implements AuthenticationSecuredService {
     }
 
     throw new ForbiddenException();
+  }
+
+  @Override
+  public TokenizedPerson login(UserCredentials userCredentials) {
+    Person login = authenticationApi.login(userCredentials.getEmail(), userCredentials.getPassword());
+
+    if (login == null) {
+      throw new NotFoundException();
+    }
+
+    return new TokenizedPerson().accessToken(authRepository.put(login)).person(login);
+  }
+
+  @Override
+  public void logout(SecurityContext securityContext) {
+    authRepository.invalidate(securityContext);
   }
 
   @Override

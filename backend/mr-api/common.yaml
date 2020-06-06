@@ -263,9 +263,6 @@ components:
       allOf:
         - $ref: "#/components/schemas/Audit"
         - type: object
-          required:
-            - name
-            - email
           properties:
             id:
               allOf:

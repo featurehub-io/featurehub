@@ -1,28 +1,26 @@
-package io.featurehub.mr.rest;
+package io.featurehub.mr.resources;
 
 import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.GroupApi;
 import io.featurehub.db.api.OptimisticLockingException;
 import io.featurehub.db.api.Opts;
 import io.featurehub.db.api.PersonApi;
-import io.featurehub.mr.api.GroupSecuredService;
+import io.featurehub.mr.api.GroupServiceDelegate;
 import io.featurehub.mr.auth.AuthManagerService;
 import io.featurehub.mr.model.Group;
 import io.featurehub.mr.model.Person;
-import io.featurehub.mr.model.Portfolio;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import java.util.List;
 import java.util.function.Consumer;
 
-@Singleton
-public class GroupResource implements GroupSecuredService {
+public class GroupResource implements GroupServiceDelegate {
   private final PersonApi personApi;
   private final GroupApi groupApi;
   private final AuthManagerService authManager;
@@ -37,25 +35,6 @@ public class GroupResource implements GroupSecuredService {
   class GroupHolder {
     Group group;
     boolean delete = false;
-  }
-
-  @Override
-  public Group addPersonToGroup(String gid, String personId, Boolean includeMembers, SecurityContext securityContext) {
-    GroupHolder groupHolder = new GroupHolder();
-
-    groupCheck(gid, group -> {
-      personCheck(personId, person -> {
-        isAdminOfGroup(group, securityContext, "No permission to add user to group.",  adminGroup -> {
-          groupHolder.group = groupApi.addPersonToGroup(gid, personId, new Opts().add(FillOpts.Members, includeMembers));
-        });
-      });
-    });
-
-    if (groupHolder.group == null) {
-      throw new NotFoundException();
-    }
-
-    return groupHolder.group;
   }
 
   private void groupCheck(String gid, Consumer<Group> action) {
@@ -108,9 +87,42 @@ public class GroupResource implements GroupSecuredService {
   }
 
 
+  @Override
+  public Group addPersonToGroup(String gid, String personId, AddPersonToGroupHolder holder, SecurityContext securityContext) {
+    GroupHolder groupHolder = new GroupHolder();
+
+    groupCheck(gid, group -> {
+      personCheck(personId, person -> {
+        isAdminOfGroup(group, securityContext, "No permission to add user to group.",  adminGroup -> {
+          groupHolder.group = groupApi.addPersonToGroup(gid, personId, new Opts().add(FillOpts.Members, holder.includeMembers));
+        });
+      });
+    });
+
+    if (groupHolder.group == null) {
+      throw new NotFoundException();
+    }
+
+    return groupHolder.group;
+  }
 
   @Override
-  public Boolean deleteGroup(String gid, Boolean includeMembers, Boolean includeGroupRoles, SecurityContext securityContext) {
+  public Group createGroup(String id, Group group, CreateGroupHolder holder, SecurityContext securityContext) {
+    Person current = authManager.from(securityContext);
+
+    if (authManager.isPortfolioAdmin(id, current, null)) {
+      try {
+        return groupApi.createPortfolioGroup(id, group, current);
+      } catch (GroupApi.DuplicateGroupException e) {
+        throw new WebApplicationException(Response.Status.CONFLICT);
+      }
+    }
+
+    throw new ForbiddenException("No permission to add application");
+  }
+
+  @Override
+  public Boolean deleteGroup(String gid, DeleteGroupHolder holder, SecurityContext securityContext) {
     GroupHolder groupHolder = new GroupHolder();
 
     groupCheck(gid, group -> {
@@ -129,14 +141,14 @@ public class GroupResource implements GroupSecuredService {
   }
 
   @Override
-  public Group deletePersonFromGroup(String gid, String personId, Boolean includeMembers, SecurityContext securityContext) {
+  public Group deletePersonFromGroup(String gid, String personId, DeletePersonFromGroupHolder holder, SecurityContext securityContext) {
     GroupHolder groupHolder = new GroupHolder();
 
     groupCheck(gid, group -> {
       personCheck(personId, person -> {
         isAdminOfGroup(group, securityContext, "No permission to delete user to group.",
           adminGroup ->
-            groupHolder.group = groupApi.deletePersonFromGroup(gid, personId, new Opts().add(FillOpts.Members, includeMembers)));
+            groupHolder.group = groupApi.deletePersonFromGroup(gid, personId, new Opts().add(FillOpts.Members, holder.includeMembers)));
       });
     });
 
@@ -148,10 +160,21 @@ public class GroupResource implements GroupSecuredService {
   }
 
   @Override
-  public Group getGroup(String gid, Boolean includeMembers, Boolean includeGroupRoles, SecurityContext sc) {
-    Opts opts = new Opts().add(FillOpts.Acls, includeGroupRoles);
+  public List<Group> findGroups(String id, FindGroupsHolder holder, SecurityContext securityContext) {
+    final Person from = authManager.from(securityContext);
 
-    if (Boolean.TRUE.equals(includeMembers)) {
+    if (authManager.isOrgAdmin(from) || authManager.isPortfolioGroupMember(id, from)) {
+      return groupApi.findGroups(id, holder.filter, holder.order, new Opts().add(FillOpts.People, holder.includePeople));
+    }
+
+    throw new ForbiddenException();
+  }
+
+  @Override
+  public Group getGroup(String gid, GetGroupHolder holder, SecurityContext securityContext) {
+    Opts opts = new Opts().add(FillOpts.Acls, holder.includeGroupRoles);
+
+    if (Boolean.TRUE.equals(holder.includeMembers)) {
       opts.add(FillOpts.People);
       opts.add(FillOpts.Members);
     }
@@ -166,23 +189,23 @@ public class GroupResource implements GroupSecuredService {
   }
 
   @Override
-  public Group updateGroup(String gid, Group renameDetails, Boolean includeMembers, Boolean includeEnvironmentGroupRoles, Boolean updateMembers, Boolean updateEnvironmentGroupRoles, Boolean updateApplicationGroupRoles, SecurityContext sc) {
+  public Group updateGroup(String gid, Group renameDetails, UpdateGroupHolder holder, SecurityContext securityContext) {
     GroupHolder groupHolder = new GroupHolder();
 
     groupCheck(gid, group -> {
-        isAdminOfGroup(group, sc, "No permission to rename group.",  adminGroup -> {
-          try {
-            groupHolder.group = groupApi.updateGroup(gid, renameDetails,
-              Boolean.TRUE.equals(updateMembers),
-              Boolean.TRUE.equals(updateApplicationGroupRoles),
-              Boolean.TRUE.equals(updateEnvironmentGroupRoles),
-              new Opts().add(FillOpts.Members, includeMembers).add(FillOpts.Acls, includeEnvironmentGroupRoles));
-          } catch (OptimisticLockingException e) {
-            throw new WebApplicationException(422);
-          } catch (GroupApi.DuplicateGroupException e) {
-            throw new WebApplicationException(Response.Status.CONFLICT);
-          }
-        });
+      isAdminOfGroup(group, securityContext, "No permission to rename group.",  adminGroup -> {
+        try {
+          groupHolder.group = groupApi.updateGroup(gid, renameDetails,
+            Boolean.TRUE.equals(holder.updateMembers),
+            Boolean.TRUE.equals(holder.updateApplicationGroupRoles),
+            Boolean.TRUE.equals(holder.updateEnvironmentGroupRoles),
+            new Opts().add(FillOpts.Members, holder.includeMembers).add(FillOpts.Acls, holder.includeGroupRoles));
+        } catch (OptimisticLockingException e) {
+          throw new WebApplicationException(422);
+        } catch (GroupApi.DuplicateGroupException e) {
+          throw new WebApplicationException(Response.Status.CONFLICT);
+        }
+      });
     });
 
     if (groupHolder.group == null) {

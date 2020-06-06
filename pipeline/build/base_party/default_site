@@ -14,7 +14,12 @@ server {
                 try_files $uri $uri/ =404;
         }
 
-        location /api/ {
-            proxy_pass http://localhost:8903/api/;
+        location /mr-api/ {
+            proxy_pass http://localhost:8903/mr-api/;
         }
+
+        location /features/ {
+            proxy_pass http://localhost:8903/features/;
+        }
+
 }

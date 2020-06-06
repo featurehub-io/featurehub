@@ -2,7 +2,7 @@ version: '3.1'
 
 services:
   party-server:
-    image: featurehub/party-server:1.1
+    image: featurehub/party-server:0.0.1
     restart: always
     volumes:
       - featurehub-h2-data:/db

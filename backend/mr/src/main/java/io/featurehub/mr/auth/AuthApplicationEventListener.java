@@ -1,5 +1,6 @@
 package io.featurehub.mr.auth;
 
+import io.featurehub.mr.api.AllowedDuringPasswordReset;
 import io.swagger.annotations.ApiOperation;
 import org.glassfish.jersey.server.monitoring.ApplicationEvent;
 import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
@@ -15,7 +16,6 @@ import javax.ws.rs.core.SecurityContext;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -53,11 +53,9 @@ public class AuthApplicationEventListener implements ApplicationEventListener {
     boolean isAllowedDuringPasswordReset;
     boolean requiresAuth;
 
-    public AuthInfo(ApiOperation op) {
-      if (op != null) {
-        isAllowedDuringPasswordReset = Arrays.asList(op.tags()).contains("AllowedDuringPasswordReset");
-        requiresAuth = Arrays.stream(op.authorizations()).anyMatch(a -> "bearerAuth".equals(a.value()));
-      }
+    public AuthInfo(Method op) {
+      isAllowedDuringPasswordReset = op.isAnnotationPresent(AllowedDuringPasswordReset.class);
+      requiresAuth = Arrays.stream(op.getParameterTypes()).anyMatch(p -> p == SecurityContext.class);
     }
   }
 
@@ -87,7 +85,7 @@ public class AuthApplicationEventListener implements ApplicationEventListener {
     // class inheritance
     private void authCheck(RequestEvent event) {
       AuthInfo requiresAuth = methodRequiresAuth.computeIfAbsent(getMethod(event),
-        (method -> new AuthInfo(findAnnotationInInterfaces(method))));
+        (AuthInfo::new));
 
       if (requiresAuth.requiresAuth) {
         String authHeader = getHttpAuthHeader(event);

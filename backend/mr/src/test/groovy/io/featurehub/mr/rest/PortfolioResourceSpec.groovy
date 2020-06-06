@@ -8,6 +8,7 @@ import io.featurehub.db.api.Opts
 import io.featurehub.db.api.OrganizationApi
 import io.featurehub.db.api.PortfolioApi
 import io.featurehub.db.api.ServiceAccountApi
+import io.featurehub.mr.api.PortfolioServiceDelegate
 import io.featurehub.mr.auth.AuthManagerService
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.Environment
@@ -15,6 +16,7 @@ import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.Portfolio
 import io.featurehub.mr.model.SortOrder
+import io.featurehub.mr.resources.PortfolioResource
 import io.featurehub.mr.utils.PortfolioUtils
 import spock.lang.Specification
 
@@ -45,61 +47,9 @@ class PortfolioResourceSpec extends Specification {
 
     System.setProperty('portfolio.admin.group.suffix', 'Administrators')
 
-    pr = new PortfolioResource(authManager, applicationApi, groupApi, portfolioApi, organizationApi, serviceAccountApi, new PortfolioUtils(), environmentApi)
+    pr = new PortfolioResource(groupApi, authManager, portfolioApi, organizationApi, new PortfolioUtils())
   }
 
-  def "if you are not a portfolio admin you cannot create an application"() {
-    when: "i attempt to create an application"
-      pr.createApplication("1", new Application(), null, null)
-    then:
-      thrown ForbiddenException
-  }
-
-  def "if you are a portfolio admin you can create an application"() {
-    given: "i am a portfolio admin"
-      SecurityContext sc = Mock(SecurityContext)
-      Person person = new Person()
-      authManager.from(sc) >> person
-      String pId = "1"
-      authManager.isPortfolioAdmin(pId, person, null) >> true
-    and: "i have an application"
-      Application app = new Application()
-    when: "i attempt to create an application"
-      pr.createApplication(pId, app, null, sc)
-    then:
-      1 * applicationApi.createApplication(pId, app, person) >> new Application().id("fred")
-      1 * environmentApi.create({ Environment e -> e.applicationId == "fred"}, { Application a -> a.id == "fred"}, _)
-  }
-
-  def "if you are a portfolio admin you can create a group"() {
-    given: "i am a portfolio admin"
-      SecurityContext sc = Mock(SecurityContext)
-      Person person = new Person()
-      authManager.from(sc) >> person
-      String pId = "1"
-      authManager.isPortfolioAdmin(pId, person, null) >> true
-    and: "i have a group"
-      Group group = new Group()
-    when: "i attempt to create said Group"
-      pr.createGroup("1", group, true, sc)
-    then:
-      1 * groupApi.createPortfolioGroup(pId, group, person)
-  }
-
-  def "if you are not a portfolio admin, you cannot create a group"() {
-    given: "i am not a portfolio admin"
-      SecurityContext sc = Mock(SecurityContext)
-      Person person = new Person()
-      authManager.from(sc) >> person
-      String pId = "1"
-      authManager.isPortfolioAdmin(pId, person, null) >> false
-    and: "i have a group"
-      Group group = new Group()
-    when: "i attempt to create a group"
-      pr.createGroup("1", group, true, sc)
-    then:
-      thrown(ForbiddenException)
-  }
 
   def "if you are not an org admin, you cannot create a portfolio"() {
     given: "i am not an org admin"
@@ -108,7 +58,7 @@ class PortfolioResourceSpec extends Specification {
       authManager.from(sc) >> person
       authManager.isOrgAdmin(person) >> false
     when: "i try and create a portfolio"
-      pr.createPortfolio(new Portfolio().name("art"), false, false, sc)
+      pr.createPortfolio(new Portfolio().name("art"), new PortfolioServiceDelegate.CreatePortfolioHolder(), sc)
     then:
       thrown(ForbiddenException)
   }
@@ -122,7 +72,7 @@ class PortfolioResourceSpec extends Specification {
     and: "i have a portfolio"
       Portfolio p = new Portfolio().name("art")
     when: "i try and create a portfolio"
-      pr.createPortfolio(p, false, false, sc)
+      pr.createPortfolio(p, new PortfolioServiceDelegate.CreatePortfolioHolder(), sc)
     then:
       1 * portfolioApi.createPortfolio(p, (Opts)_, person) >> new Portfolio()
 //      1 * groupApi.addPersonToGroup(*_) > new Group()
@@ -134,7 +84,7 @@ class PortfolioResourceSpec extends Specification {
     and: "i create a new duplicate portfolio"
       Portfolio p = new Portfolio()
     when: "i try and create a portfolio"
-      pr.createPortfolio(p, false, false, null)
+      pr.createPortfolio(p, new PortfolioServiceDelegate.CreatePortfolioHolder(), null)
     then:
       1 * portfolioApi.createPortfolio(p, (Opts)_, _) >> { throw new PortfolioApi.DuplicatePortfolioException() }
       WebApplicationException ex = thrown()
@@ -148,7 +98,7 @@ class PortfolioResourceSpec extends Specification {
       authManager.from(sc) >> person
       authManager.isOrgAdmin(person) >> false
     when: "i try and delete a portfolio"
-      pr.deletePortfolio(UUID.randomUUID().toString(), true, true, true, sc)
+      pr.deletePortfolio(UUID.randomUUID().toString(), new PortfolioServiceDelegate.DeletePortfolioHolder(), sc)
     then:
       thrown(ForbiddenException)
   }
@@ -160,7 +110,7 @@ class PortfolioResourceSpec extends Specification {
       authManager.from(sc) >> person
       authManager.isOrgAdmin(person) >> true
     when: "i try and delete a portfolio"
-      def count = pr.deletePortfolio(UUID.randomUUID().toString(), true, true, true, sc)
+      def count = pr.deletePortfolio(UUID.randomUUID().toString(), new PortfolioServiceDelegate.DeletePortfolioHolder(), sc)
     then:
       !count
   }
@@ -175,38 +125,14 @@ class PortfolioResourceSpec extends Specification {
       String pId = "1"
       portfolioApi.getPortfolio(pId, (Opts)_, _) >> new Portfolio()
     when: "i try and delete a portfolio"
-      def count = pr.deletePortfolio(pId, true, true, true, sc)
+      def count = pr.deletePortfolio(pId, new PortfolioServiceDelegate.DeletePortfolioHolder(), sc)
     then:
       count
   }
 
-  def "findApplications works"() {
-    given:
-      SecurityContext sc = Mock(SecurityContext)
-      Person person = new Person()
-      authManager.from(sc) >> person
-      authManager.isOrgAdmin(person) >> true
-    when: "i find applications"
-      pr.findApplications("1", true, SortOrder.ASC, "fred", sc)
-    then:
-      1 * applicationApi.findApplications("1", "fred", SortOrder.ASC, Opts.opts(FillOpts.Environments), person, true) >> []
-  }
-
-  def "findGroups works"() {
-    given:
-      SecurityContext sc = Mock(SecurityContext)
-      Person person = new Person()
-      authManager.from(sc) >> person
-      authManager.isOrgAdmin(person) >> true
-    when: "i find groups"
-      pr.findGroups("1", true, SortOrder.DESC, "turn", sc)
-    then:
-      1 * groupApi.findGroups("1", "turn", SortOrder.DESC, Opts.opts(FillOpts.People))
-  }
-
   def "getting a non-existent portfolio throws 404"() {
     when:
-      pr.getPortfolio("1", true, true, true, null)
+      pr.getPortfolio("1", new PortfolioServiceDelegate.GetPortfolioHolder(includeEnvironments: true, includeApplications: true, includeGroups: true), null)
     then:
       thrown(NotFoundException)
   }
@@ -216,7 +142,7 @@ class PortfolioResourceSpec extends Specification {
       Portfolio p = new Portfolio().id("sheep")
       portfolioApi.getPortfolio("1", (Opts)_, _) >> p
     when:
-      Portfolio p1 = pr.getPortfolio("1", true, true, true, null)
+      Portfolio p1 = pr.getPortfolio("1", new PortfolioServiceDelegate.GetPortfolioHolder(includeEnvironments: true, includeApplications: true, includeGroups: true), null)
     then:
       p1 != null
       p1.id == 'sheep'
@@ -234,7 +160,7 @@ class PortfolioResourceSpec extends Specification {
       authManager.from(sc) >> person
       authManager.isPortfolioAdmin(pId, person, null) >> true
     when: "i rename the portfolio"
-      pr.updatePortfolio(pId, p, true, true, true, sc)
+      pr.updatePortfolio(pId, p, new PortfolioServiceDelegate.UpdatePortfolioHolder(), sc)
     then:
       1 * portfolioApi.updatePortfolio(p, (Opts)_) >> p
   }
@@ -250,7 +176,7 @@ class PortfolioResourceSpec extends Specification {
       Portfolio p = new Portfolio()
       portfolioApi.updatePortfolio(p, _) >> { throw new PortfolioApi.DuplicatePortfolioException() }
     when:
-      pr.updatePortfolio(portfolioId, p, null, null, true, sc)
+      pr.updatePortfolio(portfolioId, p, new PortfolioServiceDelegate.UpdatePortfolioHolder(), sc)
     then:
       WebApplicationException ex = thrown()
       ex.response.status == Response.Status.CONFLICT.statusCode
@@ -265,7 +191,7 @@ class PortfolioResourceSpec extends Specification {
       Person person = new Person()
       authManager.from(sc) >> person
     when: "i rename the portfolio"
-      pr.updatePortfolio("1", p, true, true, true, sc)
+      pr.updatePortfolio("1", p, new PortfolioServiceDelegate.UpdatePortfolioHolder(), sc)
     then:
       thrown(ForbiddenException)
   }
@@ -282,7 +208,7 @@ class PortfolioResourceSpec extends Specification {
       authManager.from(sc) >> person
       authManager.isPortfolioAdmin(pId, person, null) >> true
     when: "i rename the portfolio"
-      pr.updatePortfolio(pId, p, true, true, true, sc)
+      pr.updatePortfolio(pId, p, new PortfolioServiceDelegate.UpdatePortfolioHolder(), sc)
     then:
       thrown(NotFoundException)
   }

@@ -8,7 +8,7 @@ info:
 #  then people<->group association
 #  and group<->role association
 paths:
-  /portfolio:
+  /mr-api/portfolio:
     parameters:
       - name: includeGroups
         description: "Include groups for this this portfolio in results"
@@ -72,7 +72,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Portfolio"
-  /portfolio/{id}:
+  /mr-api/portfolio/{id}:
     parameters:
       - name: id
         description: "The id of the portfolio to find"
@@ -143,7 +143,7 @@ paths:
             application/json:
               schema:
                 type: boolean
-  /portfolio/{id}/application:
+  /mr-api/portfolio/{id}/application:
     parameters:
       - name: id
         description: "The id of the portfolio to find"
@@ -203,7 +203,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Application"
-  /portfolio/{id}/group:
+  /mr-api/portfolio/{id}/group:
     parameters:
       - name: id
         description: "The id of the portfolio to find"
@@ -263,7 +263,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Group"
-  /person:
+  /mr-api/person:
     parameters:
       - name: includeGroups
         description: "Include groups in result"
@@ -326,7 +326,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/RegistrationUrl"
 
-  /person/{id}:
+  /mr-api/person/{id}:
     parameters:
       - name: id
         description: "The id of the person to find"
@@ -398,7 +398,7 @@ paths:
             application/json:
               schema:
                 type: boolean
-  /authentication:
+  /mr-api/authentication:
     post:
       tags:
         - AuthService
@@ -417,7 +417,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TokenizedPerson"
-  /login:
+  /mr-api/login:
     post:
       tags:
         - AuthService
@@ -436,7 +436,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TokenizedPerson"
-  /logout:
+  /mr-api/logout:
     get:
       security:
         - bearerAuth: []
@@ -447,7 +447,7 @@ paths:
       responses:
         "200":
           description: "Token deactivated"
-  /authentication/{id}/replaceTempPassword:
+  /mr-api/authentication/{id}/replaceTempPassword:
     parameters:
       - name: id
         description: "The id of the person to replace temporary password for"
@@ -458,8 +458,8 @@ paths:
     put:
       tags:
         - AuthService
-        - AllowedDuringPasswordReset
       description: "Replace temporary password"
+      x-java-annotations: "@io.featurehub.mr.api.AllowedDuringPasswordReset"
       security:
         - bearerAuth: []
       operationId: replaceTempPassword
@@ -476,7 +476,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TokenizedPerson"
-  /authentication/{id}/changePassword:
+  /mr-api/authentication/{id}/changePassword:
     parameters:
       - name: id
         description: "The id of the person to change password for"
@@ -504,7 +504,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Person"
-  /authentication/{token}:
+  /mr-api/authentication/{token}:
     get:
       tags:
         - AuthService
@@ -523,7 +523,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Person"
-  /authentication/{id}/resetPassword:
+  /mr-api/authentication/{id}/resetPassword:
     parameters:
       - name: id
         description: "The id of the person to reset password for"
@@ -551,9 +551,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Person"
-  /application/{eid}:
+  /mr-api/application/{appId}:
     parameters:
-      - name: eid
+      - name: appId
         description: "The id of the application to find"
         in: path
         schema:
@@ -612,7 +612,7 @@ paths:
             application/json:
               schema:
                 type: boolean
-  /application/{id}/features:
+  /mr-api/application/{id}/features:
     parameters:
       - name: id
         description: "The id of the application to find"
@@ -658,7 +658,7 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Feature"
-  /application/{id}/features/{key}:
+  /mr-api/application/{id}/features/{key}:
     parameters:
       - name: id
         description: "The id of the application to find"
@@ -724,7 +724,7 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Feature"
-  /application/{id}/feature-environments/{key}:
+  /mr-api/application/{id}/feature-environments/{key}:
     parameters:
       - name: id
         description: "The id of the application to find"
@@ -785,7 +785,7 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/FeatureEnvironment"
-  /application/{id}/all-feature-environment:
+  /mr-api/application/{id}/all-feature-environment:
     parameters:
       - name: id
         description: "The id of the application to find"
@@ -807,7 +807,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationFeatureValues"
-  /application/{id}/environment-ordering:
+  /mr-api/application/{id}/environment-ordering:
     parameters:
       - name: id
         description: "The id of the application to find"
@@ -839,7 +839,7 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Environment"
-  /application/{id}/environment:
+  /mr-api/application/{id}/environment:
     parameters:
       - name: id
         description: "The id of the application to find"
@@ -904,7 +904,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Environment"
-  /environment/{eid}:
+  /mr-api/environment/{eid}:
     parameters:
       - name: eid
         description: "The id of the environment to find"
@@ -981,7 +981,7 @@ paths:
             application/json:
               schema:
                 type: boolean
-  /features/{eid}:
+  /mr-api/features/{eid}:
     parameters:
       - name: eid
         description: "The id of the environment to find features or 'latest'"
@@ -1027,7 +1027,7 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/FeatureValue"
-  /features/{eid}/feature/{key}:
+  /mr-api/features/{eid}/feature/{key}:
     parameters:
       - name: eid
         description: "The id of the environment to find features"
@@ -1105,7 +1105,7 @@ paths:
       responses:
         "204":
           description: "No data returned."
-  /group/{gid}:
+  /mr-api/group/{gid}:
     parameters:
       - name: gid
         description: "The id of the group to find"
@@ -1187,7 +1187,7 @@ paths:
             application/json:
               schema:
                 type: boolean
-  /group/{gid}/person/{pId}:
+  /mr-api/group/{gid}/person/{pId}:
     parameters:
       - name: gid
         description: "The id of the group to find"
@@ -1234,7 +1234,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Group"
-  /portfolio/{id}/service-account:
+  /mr-api/portfolio/{id}/service-account:
     parameters:
       - name: id
         description: "the portfolio this service account belongs to"
@@ -1293,7 +1293,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ServiceAccount"
-  /service-account/{id}:
+  /mr-api/service-account/{id}:
     parameters:
       - name: id
         description: "the id for the service account to get"
@@ -1353,7 +1353,7 @@ paths:
             application/json:
               schema:
                 type: boolean
-  /service-account/{id}/reset-api-key:
+  /mr-api/service-account/{id}/reset-api-key:
     post:
       tags:
         - ServiceAccountService
@@ -1374,10 +1374,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ServiceAccount"
-  /initialize:
+  /mr-api/initialize:
     get:
       tags:
-      - SetupService
+        - SetupService
       description: "Ping Feature Hub"
       operationId: isInstalled
       responses:
@@ -1395,7 +1395,7 @@ paths:
                 type: string
     post:
       tags:
-      - SetupService
+        - SetupService
       description: "Setup site admin"
       operationId: setupSiteAdmin
       responses:
@@ -1449,11 +1449,11 @@ components:
             $ref: "#/components/schemas/Person"
     SetupSiteAdmin:
       required:
-      - name
-      - emailAddress
-      - password
-      - organizationName
-      - portfolio
+        - name
+        - emailAddress
+        - password
+        - organizationName
+        - portfolio
       properties:
         portfolio:
           type: string
@@ -1469,8 +1469,8 @@ components:
       type: object
     TokenizedPerson:
       required:
-      - accessToken
-      - refreshToken
+        - accessToken
+        - refreshToken
       properties:
         accessToken:
           type: string
@@ -1486,11 +1486,11 @@ components:
           type: string
     PersonRegistrationDetails:
       required:
-      - name
-      - email
-      - password
-      - confirmPassword
-      - registrationToken
+        - name
+        - email
+        - password
+        - confirmPassword
+        - registrationToken
       properties:
         name:
           type: string
@@ -1515,7 +1515,7 @@ components:
           type: string
     CreatePersonDetails:
       required:
-      - email
+        - email
       properties:
         email:
           type: string
@@ -1528,8 +1528,8 @@ components:
             type: string
     UserCredentials:
       required:
-      - email
-      - password
+        - email
+        - password
       properties:
         email:
           type: string
@@ -1541,7 +1541,7 @@ components:
           maxLength: 100
     PasswordReset:
       required:
-      - password
+        - password
       properties:
         password:
           type: string
@@ -1549,8 +1549,8 @@ components:
           type: boolean
     PasswordUpdate:
       required:
-      - oldPassword
-      - newPassword
+        - oldPassword
+        - newPassword
       properties:
         oldPassword:
           maxLength: 100
@@ -1560,6 +1560,4 @@ components:
           maxLength: 100
           format: password
           type: string
-
-
 

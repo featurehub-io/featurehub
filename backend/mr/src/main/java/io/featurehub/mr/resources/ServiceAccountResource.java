@@ -1,10 +1,10 @@
-package io.featurehub.mr.rest;
+package io.featurehub.mr.resources;
 
 import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.OptimisticLockingException;
 import io.featurehub.db.api.Opts;
 import io.featurehub.db.api.ServiceAccountApi;
-import io.featurehub.mr.api.ServiceAccountSecuredService;
+import io.featurehub.mr.api.ServiceAccountServiceDelegate;
 import io.featurehub.mr.auth.AuthManagerService;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.ServiceAccount;
@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
@@ -22,11 +21,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@Singleton
-public class ServiceAccountResource implements ServiceAccountSecuredService {
+public class ServiceAccountResource implements ServiceAccountServiceDelegate {
   private static final Logger log = LoggerFactory.getLogger(ServiceAccountResource.class);
   private final AuthManagerService authManager;
   private final ServiceAccountApi serviceAccountApi;
@@ -38,8 +35,24 @@ public class ServiceAccountResource implements ServiceAccountSecuredService {
   }
 
   @Override
-  public Boolean delete(String id, Boolean includePermissions, SecurityContext ctx) {
-    Person person = authManager.from(ctx);
+  public ServiceAccount createServiceAccountInPortfolio(String id, ServiceAccount serviceAccount, CreateServiceAccountInPortfolioHolder holder, SecurityContext securityContext) {
+    Person person = authManager.from(securityContext);
+
+    if (authManager.isAnyAdmin(person)) {
+      try {
+        return serviceAccountApi.create(id, person, serviceAccount, new Opts().add(FillOpts.Permissions, holder.includePermissions));
+      } catch (ServiceAccountApi.DuplicateServiceAccountException e) {
+        log.warn("Attempt to create duplicate service account {}", serviceAccount.getName());
+        throw new WebApplicationException(Response.Status.CONFLICT);
+      }
+    }
+
+    throw new ForbiddenException();
+  }
+
+  @Override
+  public Boolean delete(String id, DeleteHolder holder, SecurityContext securityContext) {
+    Person person = authManager.from(securityContext);
 
     if (authManager.isAnyAdmin(person)) {
       if (serviceAccountApi.delete(person, id)) {
@@ -53,18 +66,18 @@ public class ServiceAccountResource implements ServiceAccountSecuredService {
   }
 
   @Override
-  public ServiceAccount get(String id, Boolean includePermissions, SecurityContext ctx) {
+  public ServiceAccount get(String id, GetHolder holder, SecurityContext securityContext) {
     if ("self".equals(id)) {
-      ServiceAccount account = authManager.serviceAccount(ctx);
+      ServiceAccount account = authManager.serviceAccount(securityContext);
       id = account.getId();
     } else {
-      Person person = authManager.from(ctx);
+      Person person = authManager.from(securityContext);
       if (!authManager.isAnyAdmin(person)) {
         throw new ForbiddenException();
       }
     }
 
-    ServiceAccount info = serviceAccountApi.get(id, new Opts().add(FillOpts.Permissions, includePermissions));
+    ServiceAccount info = serviceAccountApi.get(id, new Opts().add(FillOpts.Permissions, holder.includePermissions));
 
     if (info == null) {
       throw new NotFoundException();
@@ -74,8 +87,8 @@ public class ServiceAccountResource implements ServiceAccountSecuredService {
   }
 
   @Override
-  public ServiceAccount resetApiKey(String id, SecurityContext ctx) {
-    Person person = authManager.from(ctx);
+  public ServiceAccount resetApiKey(String id, SecurityContext securityContext) {
+    Person person = authManager.from(securityContext);
 
     if (authManager.isAnyAdmin(person)) {
       ServiceAccount sa = serviceAccountApi.resetApiKey(id);
@@ -91,8 +104,19 @@ public class ServiceAccountResource implements ServiceAccountSecuredService {
   }
 
   @Override
-  public ServiceAccount update(String id, ServiceAccount serviceAccount, Boolean includePermissions, SecurityContext ctx) {
-    Person person = authManager.from(ctx);
+  public List<ServiceAccount> searchServiceAccountsInPortfolio(String id, SearchServiceAccountsInPortfolioHolder holder, SecurityContext securityContext) {
+    Person person = authManager.from(securityContext);
+
+    if (authManager.isAnyAdmin(person)) {
+      return serviceAccountApi.search(id, holder.filter, holder.applicationId, new Opts().add(FillOpts.Permissions, holder.includePermissions));
+    }
+
+    throw new ForbiddenException();
+  }
+
+  @Override
+  public ServiceAccount update(String id, ServiceAccount serviceAccount, UpdateHolder holder, SecurityContext securityContext) {
+    Person person = authManager.from(securityContext);
 
     Set<String> envIds =
       serviceAccount.getPermissions().stream().map(ServiceAccountPermission::getEnvironmentId).collect(Collectors.toSet());
@@ -105,7 +129,7 @@ public class ServiceAccountResource implements ServiceAccountSecuredService {
       ServiceAccount result = null;
 
       try {
-        result = serviceAccountApi.update(id, person, serviceAccount, new Opts().add(FillOpts.Permissions, includePermissions));
+        result = serviceAccountApi.update(id, person, serviceAccount, new Opts().add(FillOpts.Permissions, holder.includePermissions));
       } catch (OptimisticLockingException e) {
         throw new WebApplicationException(422);
       }

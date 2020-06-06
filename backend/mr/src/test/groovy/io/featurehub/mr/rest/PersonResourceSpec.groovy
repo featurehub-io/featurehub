@@ -3,11 +3,13 @@ package io.featurehub.mr.rest
 import io.featurehub.db.api.GroupApi
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonApi
+import io.featurehub.mr.api.PersonServiceDelegate
 import io.featurehub.mr.auth.AuthManagerService
 import io.featurehub.mr.model.CreatePersonDetails
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.PersonId
 import io.featurehub.mr.model.RegistrationUrl
+import io.featurehub.mr.resources.PersonResource
 import spock.lang.Specification
 
 import javax.ws.rs.BadRequestException
@@ -37,7 +39,7 @@ class PersonResourceSpec extends Specification {
     given: "i am not an admin"
       authManager.isAnyAdmin(_) >> false
     when: "i ask to create a person"
-      resource.createPerson(null, null, null)
+      resource.createPerson(null, new PersonServiceDelegate.CreatePersonHolder(), null)
     then:
       thrown ForbiddenException
   }
@@ -48,7 +50,7 @@ class PersonResourceSpec extends Specification {
     and: "i am an admin"
       authManager.isAnyAdmin(_) >> true
     when: "i ask to create a new person"
-      resource.createPerson(cpd, true, null)
+      resource.createPerson(cpd, new PersonServiceDelegate.CreatePersonHolder(), null)
     then:
       thrown(BadRequestException)
   }
@@ -88,7 +90,7 @@ class PersonResourceSpec extends Specification {
     given: "i am not an admin"
       authManager.isAnyAdmin(_) >> false
     when: "i search for a person"
-      resource.findPeople(null, null, null, null, null, null)
+      resource.findPeople(new PersonServiceDelegate.FindPeopleHolder(), null)
     then:
       thrown ForbiddenException
   }
@@ -97,14 +99,14 @@ class PersonResourceSpec extends Specification {
     given: "i am not an admin"
       authManager.isAnyAdmin(_) >> false
     when: "i search for a person"
-      resource.getPerson(null, null, null, null)
+      resource.getPerson(null, new PersonServiceDelegate.GetPersonHolder(), null)
     then:
       thrown ForbiddenException
   }
 
   def "a person who updates must be an admin"() {
     when: "I try and update a person without being an admin"
-      resource.updatePerson("1", new Person(), false, false, null)
+      resource.updatePerson("1", new Person(), new PersonServiceDelegate.UpdatePersonHolder(), null)
     then:
       thrown ForbiddenException
   }
@@ -116,7 +118,7 @@ class PersonResourceSpec extends Specification {
     and:
       personApi.update(_, _, _, _) >> new Person()
     when: "I try and update a person and am an admin"
-      def person = resource.updatePerson("1", new Person(), false, false, sec)
+      def person = resource.updatePerson("1", new Person(), new PersonServiceDelegate.UpdatePersonHolder(), sec)
     then:
       person != null
   }
@@ -128,7 +130,7 @@ class PersonResourceSpec extends Specification {
     and: "no such person exists"
       personApi.update(_, _, _, _) >> null
     when: "I try and update a person and am an admin"
-      def person = resource.updatePerson("1", new Person(), false, false, sec)
+      def person = resource.updatePerson("1", new Person(), new PersonServiceDelegate.UpdatePersonHolder(), sec)
     then:
       thrown NotFoundException
   }

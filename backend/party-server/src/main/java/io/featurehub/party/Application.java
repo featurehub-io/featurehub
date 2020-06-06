@@ -36,7 +36,7 @@ public class Application {
   private static void seeIfWeNeedToRunNginx() {
     if (System.getProperty("run.nginx") != null) {
       try {
-        new ProcessBuilder("/bin/sh -c \"/etc/init.d/nginx start\"ls").start();
+        new ProcessBuilder("/usr/sbin/nginx").start();
       } catch (IOException e) {
         log.error("Requested to start nginx but failed", e);
       }
