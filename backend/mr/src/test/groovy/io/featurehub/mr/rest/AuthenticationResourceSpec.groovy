@@ -1,13 +1,13 @@
 package io.featurehub.mr.rest
 
 import io.featurehub.db.api.AuthenticationApi
-import io.featurehub.db.api.GroupApi
 import io.featurehub.db.api.PersonApi
 import io.featurehub.mr.auth.AuthManagerService
 import io.featurehub.mr.auth.AuthenticationRepository
 import io.featurehub.mr.model.PasswordReset
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.PersonId
+import io.featurehub.mr.resources.AuthResource
 import spock.lang.Specification
 
 import javax.ws.rs.ForbiddenException
@@ -18,7 +18,7 @@ class AuthenticationResourceSpec extends Specification {
   PersonApi personApi
   AuthManagerService authManager
   AuthenticationApi authApi
-  AuthenticationResource resource
+  AuthResource resource
   AuthenticationRepository authRepository
   Person fromPerson
 
@@ -30,7 +30,7 @@ class AuthenticationResourceSpec extends Specification {
     fromPerson = new Person().id(new PersonId().id("x"))
     authManager.from(_) >> fromPerson
 
-    resource = new AuthenticationResource(authApi, authManager, personApi, authRepository)
+    resource = new AuthResource(authApi, authManager, personApi, authRepository)
   }
 
   def "A non-admin cannot reset a password"() {

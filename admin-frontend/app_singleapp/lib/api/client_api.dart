@@ -131,7 +131,7 @@ class ManagementRepositoryClientBloc implements Bloc {
       return "http://[::1]:8903";
     } else {
       final url = Uri.parse(origin);
-      return url.replace(path: url.path + "/api").toString();
+      return url.replace(path: url.path).toString();
     }
   }
 

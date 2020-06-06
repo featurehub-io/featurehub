@@ -1,14 +1,19 @@
 package io.featurehub.mr.rest
 
+import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.GroupApi
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonApi
+import io.featurehub.mr.api.GroupServiceDelegate
 import io.featurehub.mr.auth.AuthManagerService
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.PersonId
+import io.featurehub.mr.model.SortOrder
+import io.featurehub.mr.resources.GroupResource
 import spock.lang.Specification
 
+import javax.ws.rs.ForbiddenException
 import javax.ws.rs.NotAuthorizedException
 import javax.ws.rs.NotFoundException
 import javax.ws.rs.core.SecurityContext
@@ -31,9 +36,54 @@ class GroupResourceSpec extends Specification {
     given: "the group does not exist"
       groupApi.getGroup("1", (Opts)_) >> null
     when: "i try and add a person to the group"
-      gr.addPersonToGroup("1", null, true, null)
+      gr.addPersonToGroup("1", null, new GroupServiceDelegate.AddPersonToGroupHolder(includeMembers: true), null)
     then:
       thrown(NotFoundException)
+  }
+
+  def "if you are a portfolio admin you can create a group"() {
+    given: "i am a portfolio admin"
+      SecurityContext sc = Mock(SecurityContext)
+      Person person = new Person()
+      authManager.from(sc) >> person
+      String pId = "1"
+      authManager.isPortfolioAdmin(pId, person, null) >> true
+    and: "i have a group"
+      Group group = new Group()
+    when: "i attempt to create said Group"
+      gr.createGroup("1", group, new GroupServiceDelegate.CreateGroupHolder(includePeople: true), sc)
+    then:
+      1 * groupApi.createPortfolioGroup(pId, group, person)
+  }
+
+
+
+  def "findGroups works"() {
+    given:
+      SecurityContext sc = Mock(SecurityContext)
+      Person person = new Person()
+      authManager.from(sc) >> person
+      authManager.isOrgAdmin(person) >> true
+    when: "i find groups"
+      gr.findGroups("1", new GroupServiceDelegate.FindGroupsHolder(includePeople: true, order: SortOrder.DESC, filter: "turn"), sc)
+    then:
+      1 * groupApi.findGroups("1", "turn", SortOrder.DESC, Opts.opts(FillOpts.People))
+  }
+
+
+  def "if you are not a portfolio admin, you cannot create a group"() {
+    given: "i am not a portfolio admin"
+      SecurityContext sc = Mock(SecurityContext)
+      Person person = new Person()
+      authManager.from(sc) >> person
+      String pId = "1"
+      authManager.isPortfolioAdmin(pId, person, null) >> false
+    and: "i have a group"
+      Group group = new Group()
+    when: "i attempt to create a group"
+      gr.createGroup("1", group, new GroupServiceDelegate.CreateGroupHolder(includePeople: true), sc)
+    then:
+      thrown(ForbiddenException)
   }
 
   SecurityContext setupGroupAndPortfoioAdmin(String portfolioId, String idPersonInChargeOfPortfolioAdminGroup, String currentPersonId, boolean groupIsAdmin = false, String personIdInAdminGroup = "admin-user") {
@@ -62,7 +112,7 @@ class GroupResourceSpec extends Specification {
     and: "the person to be added exists"
       personApi.get("7", (Opts)_) >> new Person()
     when:
-      gr.addPersonToGroup("1", "7", null, sc)
+      gr.addPersonToGroup("1", "7", new GroupServiceDelegate.AddPersonToGroupHolder(), sc)
     then: "the person is added to the group"
       1 * groupApi.addPersonToGroup("1", "7", (Opts)_) >> new Group()
   }
@@ -73,7 +123,7 @@ class GroupResourceSpec extends Specification {
     and: "the person to be added exists"
       personApi.get("7", (Opts)_) >> new Person()
     when:
-      gr.addPersonToGroup("1", "7", null, sc)
+      gr.addPersonToGroup("1", "7", new GroupServiceDelegate.AddPersonToGroupHolder(), sc)
     then: "the person is added to the group"
       1 * groupApi.addPersonToGroup("1", "7", (Opts)_) >> new Group()
   }
@@ -101,7 +151,7 @@ class GroupResourceSpec extends Specification {
     given: "i have setup the group as a portfolio admin group"
       def sc = setupGroupAndPortfoioAdmin("pId", "pid-owner", "pid-owner", true)
     when:
-      gr.deleteGroup("1", null, null, sc)
+      gr.deleteGroup("1", new GroupServiceDelegate.DeleteGroupHolder(), sc)
     then:
       thrown(NotAuthorizedException)
   }
@@ -110,7 +160,7 @@ class GroupResourceSpec extends Specification {
     given:
       def sc = setupGroupAndPortfoioAdmin("pId", "pid-owner", "pid-owner")
     when:
-      gr.deleteGroup("1", null, null, sc)
+      gr.deleteGroup("1", new GroupServiceDelegate.DeleteGroupHolder(), sc)
     then:
       1 * groupApi.deleteGroup("1")
   }
@@ -119,7 +169,7 @@ class GroupResourceSpec extends Specification {
     given:
       def sc = setupGroupAndPortfoioAdmin("pId", "pid-owner", "admin-user")
     when:
-      gr.deleteGroup("1", null, null, sc)
+      gr.deleteGroup("1", new GroupServiceDelegate.DeleteGroupHolder(), sc)
     then:
       1 * groupApi.deleteGroup("1")
   }
@@ -128,14 +178,14 @@ class GroupResourceSpec extends Specification {
     given:
       def sc = setupGroupAndPortfoioAdmin("pId", "pid-owner", "piddle")
     when:
-      gr.deleteGroup("1", null, null, sc)
+      gr.deleteGroup("1", new GroupServiceDelegate.DeleteGroupHolder(), sc)
     then:
       thrown(NotAuthorizedException)
   }
 
   def "cannot delete an unknown group"() {
     when: "i try and delete an unknown group"
-      gr.deleteGroup("1", null, null, null)
+      gr.deleteGroup("1", new GroupServiceDelegate.DeleteGroupHolder(), null)
     then:
       thrown(NotFoundException)
   }
@@ -151,7 +201,7 @@ class GroupResourceSpec extends Specification {
     and: "the person to be deleted exists"
       personApi.get("7", (Opts)_) >> new Person()
     when:
-      gr.deletePersonFromGroup("1", "7", null, sc)
+      gr.deletePersonFromGroup("1", "7", new GroupServiceDelegate.DeletePersonFromGroupHolder(), sc)
     then:
       thrown(NotAuthorizedException)
   }
@@ -162,7 +212,7 @@ class GroupResourceSpec extends Specification {
     and: "the person to be deleted exists"
       personApi.get("7", (Opts)_) >> new Person()
     when:
-      gr.deletePersonFromGroup("1", "7", null, sc)
+      gr.deletePersonFromGroup("1", "7", new GroupServiceDelegate.DeletePersonFromGroupHolder(), sc)
     then:
       1 * groupApi.deletePersonFromGroup("1", "7", (Opts)_)  >> new Group()
   }
@@ -173,14 +223,14 @@ class GroupResourceSpec extends Specification {
     and: "the person to be deleted exists"
       personApi.get("7", (Opts)_) >> new Person()
     when:
-      gr.deletePersonFromGroup("1", "7", null, sc)
+      gr.deletePersonFromGroup("1", "7", new GroupServiceDelegate.DeletePersonFromGroupHolder(), sc)
     then:
       1 * groupApi.deletePersonFromGroup("1", "7", (Opts)_)  >> new Group()
   }
 
   def "cannot delete person from non-existent group"() {
     when:
-      gr.deletePersonFromGroup("1", "7", null, null)
+      gr.deletePersonFromGroup("1", "7", new GroupServiceDelegate.DeletePersonFromGroupHolder(), null)
     then:
       thrown(NotFoundException)
   }
@@ -189,7 +239,7 @@ class GroupResourceSpec extends Specification {
     given:
       def sc = setupGroupAndPortfoioAdmin("pId", "pid-owner", "pid-owner")
     when: "known group, known current user, unknown person deleted"
-      gr.deletePersonFromGroup("1", "7", null, sc)
+      gr.deletePersonFromGroup("1", "7", new GroupServiceDelegate.DeletePersonFromGroupHolder(), sc)
     then:
       thrown(NotFoundException)
   }
@@ -198,14 +248,14 @@ class GroupResourceSpec extends Specification {
 
   def "non existent group cannot get"() {
     when:
-      gr.getGroup("1", true, null, null)
+      gr.getGroup("1", new GroupServiceDelegate.GetGroupHolder(), null)
     then:
       thrown(NotFoundException)
   }
 
   def "can get existing group"() {
     when:
-      gr.getGroup("1", true, null, null)
+      gr.getGroup("1", new GroupServiceDelegate.GetGroupHolder(), null)
     then:
       1 * groupApi.getGroup("1", (Opts)_) >> new Group()
   }
@@ -216,7 +266,7 @@ class GroupResourceSpec extends Specification {
     given:
       SecurityContext sc = setupGroupAndPortfoioAdmin("pId", "pid-owner", "pid-owner")
     when:
-      Group g = gr.updateGroup("1", new Group().name("sausage"), true, null, null, null, null, sc)
+      Group g = gr.updateGroup("1", new Group().name("sausage"), new GroupServiceDelegate.UpdateGroupHolder(), sc)
     then:
       1 * groupApi.updateGroup("1", { Group g1 -> g1.name == "sausage" }, false, false, false, (Opts)_) >> new Group().name("sausage")
       g.getName() == "sausage"
@@ -226,8 +276,7 @@ class GroupResourceSpec extends Specification {
     given:
       SecurityContext sc = setupGroupAndPortfoioAdmin("pId", "pid-owner", "admin-user")
     when:
-      Group g = gr.updateGroup("1", new Group().name("sausage"), true, null, Boolean.TRUE
-        , null, null, sc)
+      Group g = gr.updateGroup("1", new Group().name("sausage"), new GroupServiceDelegate.UpdateGroupHolder(updateMembers: true), sc)
     then:
       1 * groupApi.updateGroup("1", { Group g1 -> g1.name == "sausage" }, true, false, false, (Opts)_) >> new Group().name("sausage")
       g.getName() == "sausage"

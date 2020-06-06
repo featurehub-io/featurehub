@@ -5,7 +5,6 @@ import io.featurehub.db.api.GroupApi;
 import io.featurehub.db.api.Opts;
 import io.featurehub.db.api.OrganizationApi;
 import io.featurehub.db.api.PortfolioApi;
-import io.featurehub.db.services.ConvertUtils;
 import io.featurehub.mr.model.Group;
 import io.featurehub.mr.model.Organization;
 import io.featurehub.mr.model.Person;
@@ -13,7 +12,6 @@ import io.featurehub.mr.model.PersonId;
 import io.featurehub.mr.model.Portfolio;
 import io.featurehub.mr.model.ServiceAccount;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.SecurityContext;

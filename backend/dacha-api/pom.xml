@@ -75,7 +75,7 @@
           <dependency>
             <groupId>cd.connect.openapi</groupId>
             <artifactId>connect-openapi-jersey2</artifactId>
-            <version>4.11</version>
+            <version>5.1</version>
           </dependency>
         </dependencies>
         <executions>
@@ -91,8 +91,9 @@
               <!-- we overlap the models -->
               <modelPackage>io.featurehub.mr.model</modelPackage>
               <inputSpec>${project.basedir}/final.yaml</inputSpec>
-              <language>jersey2-api</language>
+              <generatorName>jersey2-api</generatorName>
               <library>jersey2-api</library>
+              <generateApis>false</generateApis>
 
               <additionalProperties>
                 <additionalProperty>server</additionalProperty>

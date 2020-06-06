@@ -1,4 +1,4 @@
-package io.featurehub.mr.rest;
+package io.featurehub.mr.resources;
 
 import cd.connect.app.config.ConfigKey;
 import cd.connect.app.config.DeclaredConfigResolver;
@@ -7,20 +7,16 @@ import io.featurehub.db.api.GroupApi;
 import io.featurehub.db.api.OptimisticLockingException;
 import io.featurehub.db.api.Opts;
 import io.featurehub.db.api.PersonApi;
-import io.featurehub.mr.api.PersonSecuredService;
+import io.featurehub.mr.api.PersonServiceDelegate;
 import io.featurehub.mr.auth.AuthManagerService;
 import io.featurehub.mr.model.CreatePersonDetails;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.RegistrationUrl;
 import io.featurehub.mr.model.SearchPersonResult;
-import io.featurehub.mr.model.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
@@ -29,8 +25,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.util.Optional;
 
-@Singleton
-public class PersonResource implements PersonSecuredService {
+public class PersonResource implements PersonServiceDelegate {
   private static final Logger log = LoggerFactory.getLogger(PersonResource.class);
   private final PersonApi personApi;
   private final GroupApi groupApi;
@@ -44,13 +39,13 @@ public class PersonResource implements PersonSecuredService {
     this.personApi = personApi;
     this.groupApi = groupApi;
     this.authManager = authManager;
+
     DeclaredConfigResolver.resolve(this);
   }
 
   @Override
-  public RegistrationUrl createPerson(CreatePersonDetails createPersonDetails, Boolean includeGroups, SecurityContext context) {
-
-    Person currentUser = authManager.from(context);
+  public RegistrationUrl createPerson(CreatePersonDetails createPersonDetails, CreatePersonHolder holder, SecurityContext securityContext) {
+    Person currentUser = authManager.from(securityContext);
 
     if (authManager.isAnyAdmin(currentUser.getId().getId())) {
       //create new user in the db
@@ -78,49 +73,14 @@ public class PersonResource implements PersonSecuredService {
     throw new ForbiddenException("Not admin");
   }
 
-  @Override
-  public Boolean deletePerson(String id, Boolean includeGroups, Boolean includeAcls, SecurityContext context) {
-    if (authManager.isOrgAdmin(authManager.from(context))) {
-      if (id.contains("@")) {
-        return personApi.delete(id);
-      } else {
-        Person p = getPerson(id, includeAcls, includeGroups, context);
-        if (p != null) {
-          return personApi.delete(p.getEmail());
-        } else {
-          return false;
-        }
-      }
-    }
-
-    throw new ForbiddenException("No permission");
-  }
-
-  @Override
-  public SearchPersonResult findPeople(Boolean includeGroups, SortOrder order, String filter, Integer startAt, Integer pageSize, SecurityContext context) {
-    Person currentUser = authManager.from(context);
-
-    if (authManager.isAnyAdmin(currentUser.getId().getId())) {
-
-      int start = startAt == null ? 0 : startAt;
-      int page = pageSize == null ? 20 : pageSize;
-
-      PersonApi.PersonPagination pp = personApi.search(filter, order, start, page, new Opts().add(FillOpts.Groups, includeGroups));
-
-      return new SearchPersonResult().people(pp.people).max(pp.max);
-    }
-
-    throw new ForbiddenException("Not admin");
-  }
-
   private Opts peopleOpts(Boolean includeAcls, Boolean includeGroups) {
     return new Opts()
       .add(FillOpts.Groups, includeGroups)
       .add(FillOpts.Acls, includeAcls);
   }
 
-  @Override
-  public Person getPerson(String id, Boolean includeAcls, Boolean includeGroups, SecurityContext securityContext) {
+
+  private Person getPerson(String id, Boolean includeAcls, Boolean includeGroups, SecurityContext securityContext) {
     Person currentUser = authManager.from(securityContext);
 
     if ("self".equals(id)) {
@@ -142,14 +102,54 @@ public class PersonResource implements PersonSecuredService {
   }
 
   @Override
-  public Person updatePerson(String id, @NotNull @Valid Person person, Boolean includeGroups, Boolean includeAcls, SecurityContext securityContext) {
+  public Boolean deletePerson(String id, DeletePersonHolder holder, SecurityContext securityContext) {
+    if (authManager.isOrgAdmin(authManager.from(securityContext))) {
+      if (id.contains("@")) {
+        return personApi.delete(id);
+      } else {
+        Person p = getPerson(id, holder.includeAcls, holder.includeGroups, securityContext);
+        if (p != null) {
+          return personApi.delete(p.getEmail());
+        } else {
+          return false;
+        }
+      }
+    }
+
+    throw new ForbiddenException("No permission");
+  }
+
+  @Override
+  public SearchPersonResult findPeople(FindPeopleHolder holder, SecurityContext securityContext) {
+    Person currentUser = authManager.from(securityContext);
+
+    if (authManager.isAnyAdmin(currentUser.getId().getId())) {
+
+      int start = holder.startAt == null ? 0 : holder.startAt;
+      int page = holder.pageSize == null ? 20 : holder.pageSize;
+
+      PersonApi.PersonPagination pp = personApi.search(holder.filter, holder.order, start, page, new Opts().add(FillOpts.Groups, holder.includeGroups));
+
+      return new SearchPersonResult().people(pp.people).max(pp.max);
+    }
+
+    throw new ForbiddenException("Not admin");
+  }
+
+  @Override
+  public Person getPerson(String id, GetPersonHolder holder, SecurityContext securityContext) {
+    return getPerson(id, holder.includeAcls, holder.includeGroups, securityContext);
+  }
+
+  @Override
+  public Person updatePerson(String id, Person person, UpdatePersonHolder holder, SecurityContext securityContext) {
     Person from = authManager.from(securityContext);
 
     if (authManager.isAnyAdmin(from)) {
       Person updatedPerson = null;
       try {
         updatedPerson = personApi.update(id, person,
-          peopleOpts(includeAcls, includeGroups),
+          peopleOpts(holder.includeAcls, holder.includeGroups),
           from.getId().getId());
       } catch (OptimisticLockingException e) {
         throw new WebApplicationException(422);

@@ -1,9 +1,9 @@
-package io.featurehub.mr.rest;
+package io.featurehub.mr.resources;
 
 import io.featurehub.db.api.EnvironmentApi;
 import io.featurehub.db.api.FeatureApi;
 import io.featurehub.db.api.OptimisticLockingException;
-import io.featurehub.mr.api.FeaturesSecuredService;
+import io.featurehub.mr.api.EnvironmentFeatureServiceDelegate;
 import io.featurehub.mr.auth.AuthManagerService;
 import io.featurehub.mr.model.EnvironmentFeaturesResult;
 import io.featurehub.mr.model.FeatureValue;
@@ -19,13 +19,13 @@ import javax.ws.rs.core.SecurityContext;
 import java.util.List;
 import java.util.Set;
 
-public class FeatureResource implements FeaturesSecuredService {
+public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDelegate {
   private final EnvironmentApi environmentApi;
   private final AuthManagerService authManagerService;
   private final FeatureApi featureApi;
 
   @Inject
-  public FeatureResource(EnvironmentApi environmentApi, AuthManagerService authManagerService, FeatureApi featureApi) {
+  public EnvironmentFeatureResource(EnvironmentApi environmentApi, AuthManagerService authManagerService, FeatureApi featureApi) {
     this.environmentApi = environmentApi;
     this.authManagerService = authManagerService;
     this.featureApi = featureApi;
@@ -87,7 +87,7 @@ public class FeatureResource implements FeaturesSecuredService {
   @Override
   public EnvironmentFeaturesResult getFeaturesForEnvironment(String eid, SecurityContext securityContext) {
     if ("latest".equalsIgnoreCase(eid)) {
-       return featureApi.lastFeatureValueChanges(authManagerService.from(securityContext));
+      return featureApi.lastFeatureValueChanges(authManagerService.from(securityContext));
     }
 
     if (requireRoleCheck(eid, securityContext).roles.size() == 0) {

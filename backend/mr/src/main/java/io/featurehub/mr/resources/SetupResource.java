@@ -1,22 +1,32 @@
-package io.featurehub.mr.rest;
+package io.featurehub.mr.resources;
 
-import io.featurehub.db.api.*;
-import io.featurehub.mr.api.InitializeSecuredService;
+import io.featurehub.db.api.AuthenticationApi;
+import io.featurehub.db.api.FillOpts;
+import io.featurehub.db.api.GroupApi;
+import io.featurehub.db.api.Opts;
+import io.featurehub.db.api.OrganizationApi;
+import io.featurehub.db.api.PersonApi;
+import io.featurehub.db.api.PortfolioApi;
+import io.featurehub.db.api.SetupApi;
+import io.featurehub.mr.api.SetupServiceDelegate;
 import io.featurehub.mr.auth.AuthenticationRepository;
-import io.featurehub.mr.model.*;
+import io.featurehub.mr.model.Group;
+import io.featurehub.mr.model.Organization;
+import io.featurehub.mr.model.Person;
+import io.featurehub.mr.model.Portfolio;
+import io.featurehub.mr.model.SetupSiteAdmin;
+import io.featurehub.mr.model.TokenizedPerson;
 import io.featurehub.mr.utils.PortfolioUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
-@Singleton
-public class InitializeResource implements InitializeSecuredService {
-  private static final Logger log = LoggerFactory.getLogger(InitializeResource.class);
+public class SetupResource implements SetupServiceDelegate {
+  private static final Logger log = LoggerFactory.getLogger(SetupResource.class);
   private final SetupApi setupApi;
   private final AuthenticationApi authenticationApi;
   private final OrganizationApi organizationApi;
@@ -27,7 +37,9 @@ public class InitializeResource implements InitializeSecuredService {
   private final PortfolioUtils portfolioUtils;
 
   @Inject
-  public InitializeResource(SetupApi setupApi, AuthenticationApi authenticationApi, OrganizationApi organizationApi, PortfolioApi portfolioApi, GroupApi groupApi, AuthenticationRepository authRepository, PersonApi personApi, PortfolioUtils portfolioUtils) {
+  public SetupResource(SetupApi setupApi, AuthenticationApi authenticationApi, OrganizationApi organizationApi,
+                       PortfolioApi portfolioApi, GroupApi groupApi, AuthenticationRepository authRepository,
+                       PersonApi personApi, PortfolioUtils portfolioUtils) {
     this.setupApi = setupApi;
     this.authenticationApi = authenticationApi;
     this.organizationApi = organizationApi;

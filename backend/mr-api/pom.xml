@@ -75,7 +75,7 @@
           <dependency>
             <groupId>cd.connect.openapi</groupId>
             <artifactId>connect-openapi-jersey2</artifactId>
-            <version>4.11</version>
+            <version>5.1</version>
           </dependency>
         </dependencies>
         <executions>
@@ -90,11 +90,10 @@
               <apiPackage>io.featurehub.mr.api</apiPackage>
               <modelPackage>io.featurehub.mr.model</modelPackage>
               <inputSpec>${project.basedir}/final.yaml</inputSpec>
-              <language>jersey2-api</language>
-              <library>jersey2-api</library>
-
+              <generatorName>jersey2-api</generatorName>
+              <enablePostProcessFile>true</enablePostProcessFile>
               <additionalProperties>
-                <additionalProperty>server-security</additionalProperty>
+                <additionalProperty>server-delegate</additionalProperty>
               </additionalProperties>
 
               <configOptions>
