@@ -7,8 +7,8 @@ Maven 3.6
 Run from command line:
 
 ----
-pub get
 mvn clean generate-sources 
+pub get
 ----
 
 
