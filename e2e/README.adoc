@@ -1,0 +1,6 @@
+The e2e project has tests that preloads fake data.
+
+- run MR application
+- run ./run.sh for e2e tests and to preload the data
+- run Admin front-end, you should be able to see the data
+
