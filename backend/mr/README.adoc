@@ -1,6 +1,6 @@
 == Prerequisites
 
-Java > 11
+Java >= 11
 Maven 3.6
 Ebean enhance plugin for IntelliJ
 
