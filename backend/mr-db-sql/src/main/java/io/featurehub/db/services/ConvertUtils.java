@@ -17,7 +17,9 @@ import io.featurehub.db.model.DbServiceAccount;
 import io.featurehub.db.model.DbServiceAccountEnvironment;
 import io.featurehub.db.model.query.QDbAcl;
 import io.featurehub.db.model.query.QDbApplication;
+import io.featurehub.db.model.query.QDbApplicationFeature;
 import io.featurehub.db.model.query.QDbEnvironment;
+import io.featurehub.db.model.query.QDbEnvironmentFeatureStrategy;
 import io.featurehub.db.model.query.QDbGroup;
 import io.featurehub.db.model.query.QDbNamedCache;
 import io.featurehub.db.model.query.QDbPerson;
@@ -298,7 +300,7 @@ public class ConvertUtils {
     }
 
     if (opts.contains(FillOpts.Groups)) {
-      dbp.getGroupsPersonIn().forEach(dbg -> {
+      new QDbGroup().whenArchived.isNull().peopleInGroup.eq(dbp).findList().forEach(dbg -> {
         p.addGroupsItem(toGroup(dbg, opts.minus(FillOpts.Groups)));
       });
     }
@@ -370,11 +372,16 @@ public class ConvertUtils {
       .portfolioId(app.getPortfolio().getId().toString());
 
     if (opts.contains(FillOpts.Environments)) {
-      application.setEnvironments(app.getEnvironments().stream().map(env -> toEnvironment(env, opts)).collect(Collectors.toList()));
+
+      application.setEnvironments(new QDbEnvironment()
+        .whenArchived.isNull().parentApplication.eq(app)
+        .findList().stream().map(env -> toEnvironment(env, opts)).collect(Collectors.toList()));
     }
 
     if (opts.contains(FillOpts.Features)) {
-      application.setFeatures(app.getFeatures().stream().map(af -> toApplicationFeature(af, opts)).collect(Collectors.toList()));
+      application.setFeatures(
+        new QDbApplicationFeature().whenArchived.isNull().parentApplication.eq(app).findList()
+          .stream().map(af -> toApplicationFeature(af, opts)).collect(Collectors.toList()));
     }
 
     return application;

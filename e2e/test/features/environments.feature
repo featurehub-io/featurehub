@@ -73,11 +73,17 @@ Feature: Environments exist under features and should be able to be managed only
     Given The superuser is the user
     And I ensure a portfolio named "<portfolio>" with description "<desc>" exists
     And I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
+    And I delete all existing environments
     And I ensure that an environments exist:
       | name | desc    |
       | dev  | devenv  |
       | test | testenv |
       | staging | testenv |
+    And I check that environment ordering:
+      | parent  | child   |
+      | dev        | test    |
+      | test       | staging |
+      | staging    |         |
     And I ensure that environment "dev" is before environment "test"
     And I ensure that environment "test" is before environment "staging"
     And I check to see that the prior environment for "test" is "dev"
