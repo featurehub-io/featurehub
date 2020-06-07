@@ -3,18 +3,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <tiles>
-    <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
-  </tiles>
-
-  <properties>
-    <app.entrypoint>io.featurehub.Application</app.entrypoint>
-    <app.port>8903</app.port>
-    <build.version>1.1</build.version>
-    <docker.repository>gcr.io</docker.repository>
-    <app.baseimage>adoptopenjdk:11-jre-hotspot</app.baseimage>
-  </properties>
-
   <profiles>
     <profile>
       <id>docker-cloud-build</id>
@@ -25,6 +13,14 @@
           <value>true</value>
         </property>
       </activation>
+      <dependencies>
+        <!-- this is only here to ensure build order for the docker image -->
+        <dependency>
+          <groupId>io.featurehub.admin_ui</groupId>
+          <artifactId>admin-frontend</artifactId>
+          <version>1.1-SNAPSHOT</version>
+        </dependency>
+      </dependencies>
       <build>
         <plugins>
           <plugin>
@@ -39,12 +35,40 @@
                   <goal>babysaur</goal>
                 </goals>
                 <configuration>
-                  <fullImageName>${docker.repository}/featurehub/${project.artifactId}:${build.version}</fullImageName>
+                  <fullImageName>featurehub/${project.artifactId}:${build.version}</fullImageName>
                   <baseImageName>featurehub/${project.artifactId}:${build.version}</baseImageName>
                 </configuration>
               </execution>
             </executions>
           </plugin>
+          <!-- grab the latest admin-ui and unzip into  the target folder -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>unpack admin-ui</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>unpack</goal>
+                </goals>
+                <configuration>
+                  <artifactItems>
+                    <artifactItem>
+                      <groupId>io.featurehub.admin_ui</groupId>
+                      <artifactId>admin-frontend</artifactId>
+                      <version>1.1-SNAPSHOT</version>
+                      <type>zip</type>
+                      <outputDirectory>${project.basedir}/target/admin-ui</outputDirectory>
+                    </artifactItem>
+                  </artifactItems>
+                  <overWriteReleases>true</overWriteReleases>
+                  <overWriteSnapshots>true</overWriteSnapshots>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
           <plugin>
             <groupId>com.google.cloud.tools</groupId>
             <artifactId>jib-maven-plugin</artifactId>
@@ -63,13 +87,20 @@
                 <image>${app.baseimage}</image>
               </from>
               <to>
-                <image>${docker.repository}/featurehub/${project.artifactId}:${build.version}</image>
+                <image>featurehub/${project.artifactId}:${build.version}</image>
               </to>
+              <extraDirectories>
+                <paths>
+                  <path>
+                    <from>${project.basedir}/target/admin-ui</from>
+                    <into>/var/www/html</into>
+                  </path>
+                </paths>
+              </extraDirectories>
               <container>
                 <mainClass>bathe.BatheBooter</mainClass>
                 <jvmFlags>
                   <jvmFlag>--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED</jvmFlag>
-<!--                  <jvmFlag>-Dio.netty.tryReflectionSetAccessible=true</jvmFlag>-->
                   <jvmFlag>--add-opens=java.base/java.nio=ALL-UNNAMED</jvmFlag>
                   <jvmFlag>-Dlog4j.configurationFile=/etc/common-config/log4j2.xml</jvmFlag>
                   <jvmFlag>-XX:+UseContainerSupport</jvmFlag>

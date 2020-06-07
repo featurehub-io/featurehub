@@ -36,5 +36,6 @@
   <modules>
     <module>backend/tile-java</module>
     <module>backend/tile-app</module>
+    <module>backend/tile-app-with-ui</module>
   </modules>
 </project>

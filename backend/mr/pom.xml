@@ -35,6 +35,14 @@
     </license>
   </licenses>
 
+  <properties>
+    <app.entrypoint>io.featurehub.Application</app.entrypoint>
+    <app.baseimage>docker://featurehub/base_mr:1.1</app.baseimage>
+    <app.port>8085</app.port>
+    <build.version>0.0.1</build.version>
+  </properties>
+
+
   <dependencies>
     <dependency>
       <groupId>io.featurehub.composites</groupId>
@@ -75,8 +83,6 @@
 
   </dependencies>
 
-  <!-- the api code is only temporarily in here -->
-
   <build>
     <plugins>
 
@@ -88,8 +94,8 @@
         <configuration>
           <filtering>false</filtering>
           <tiles>
-            <tile>io.featurehub.tiles:tile-app:[1.1,2)</tile>
             <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
+            <tile>io.featurehub.tiles:tile-app-with-ui:[1.1,2)</tile>
           </tiles>
         </configuration>
       </plugin>

@@ -4,12 +4,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.featurehub.admin_ui</groupId>
-  <artifactId>admin_ui</artifactId>
+  <artifactId>admin-frontend</artifactId>
   <version>1.1-SNAPSHOT</version>
-  <name>admin_ui</name>
+  <name>admin-frontend</name>
 
   <description>
-    admin ui builder
+    builds the requisite ui components ready for the management layer.
   </description>
 
   <url>https://featurehub.io</url>
@@ -47,6 +47,7 @@
 
   <build>
     <plugins>
+      <!--
       <plugin>
         <artifactId>exec-maven-plugin</artifactId>
         <groupId>org.codehaus.mojo</groupId>
@@ -63,6 +64,29 @@
           </execution>
         </executions>
       </plugin>
+      -->
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.6</version>
+        <executions>
+          <execution>
+            <id>make-admin-ui</id>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <appendAssemblyId>false</appendAssemblyId>
+              <descriptors>
+                <descriptor>${project.basedir}/assembly.xml</descriptor>
+              </descriptors>
+              <attach>true</attach>
+              <classifier>admin-ui</classifier>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
       <plugin>
         <groupId>io.repaint.maven</groupId>
         <artifactId>tiles-maven-plugin</artifactId>

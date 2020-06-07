@@ -2,21 +2,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>io.featurehub</groupId>
-  <artifactId>party-server</artifactId>
-  <version>1.1-SNAPSHOT</version>
-  <name>party-server</name>
+  <groupId>io.featurehub.tiles</groupId>
+  <artifactId>tile-app-with-ui</artifactId>
+  <version>1.1</version>
+  <packaging>tile</packaging>
+  <name>tile-app-with-ui</name>
 
   <description>
-    This includes the MR, the Dacha cache, and the SSE Edge all in one server.
+    tile java contains plugins required for java application creation. It is focused on Java 11.
   </description>
-
-  <properties>
-    <app.entrypoint>io.featurehub.party.Application</app.entrypoint>
-    <app.baseimage>docker://featurehub/base_party:1.2</app.baseimage>
-    <app.port>8085</app.port>
-    <build.version>0.0.1</build.version>
-  </properties>
 
   <url>https://featurehub.io</url>
   <developers>
@@ -43,35 +37,17 @@
   </licenses>
 
   <dependencies>
+    <!-- just forces a dep tree -->
     <dependency>
-      <groupId>io.featurehub.mr</groupId>
-      <artifactId>mr</artifactId>
+      <groupId>io.featurehub</groupId>
+      <artifactId>tile-java</artifactId>
       <version>1.1-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.featurehub.mr</groupId>
-      <artifactId>dacha</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.featurehub.edge</groupId>
-      <artifactId>edge</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-test</artifactId>
-      <version>1.1-SNAPSHOT</version>
-      <scope>test</scope>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 
   <build>
     <plugins>
-
       <plugin>
         <groupId>io.repaint.maven</groupId>
         <artifactId>tiles-maven-plugin</artifactId>
@@ -79,10 +55,6 @@
         <extensions>true</extensions>
         <configuration>
           <filtering>false</filtering>
-          <tiles>
-            <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
-            <tile>io.featurehub.tiles:tile-app-with-ui:[1.1,2)</tile>
-          </tiles>
         </configuration>
       </plugin>
     </plugins>
