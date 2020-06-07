@@ -8,6 +8,7 @@ import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
 import io.featurehub.mr.ManagementRepositoryFeature;
 import io.featurehub.mr.filters.CommonConfiguration;
+import io.featurehub.mr.utils.NginxUtils;
 import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
 import io.prometheus.client.hotspot.DefaultExports;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -21,6 +22,8 @@ public class Application {
   public static void main(String[] args) {
     System.setProperty("user.timezone", "UTC");
     try {
+      // in case we are running in the docker image
+      NginxUtils.seeIfWeNeedToRunNginx();
       new Application().run();
     } catch (Exception e) {
       log.error("failed", e);

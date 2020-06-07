@@ -1,0 +1,10 @@
+== the base_mr image
+
+This contains the base of the Management Repository, including nginx, the Admin UI and the Open JRE v11.
+
+It is used by the Management Repository build to create a build.
+
+It is built using make-image.sh
+
+Once built, you can login to DockerHub (`docker login` - use `docker logout` if you are logged in using 
+something else). 
