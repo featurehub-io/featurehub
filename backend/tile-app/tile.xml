@@ -10,8 +10,7 @@
   <properties>
     <app.entrypoint>io.featurehub.Application</app.entrypoint>
     <app.port>8903</app.port>
-    <build.version>1.1</build.version>
-    <docker.repository>gcr.io</docker.repository>
+    <build.version>0.0.1</build.version>
     <app.baseimage>adoptopenjdk:11-jre-hotspot</app.baseimage>
   </properties>
 
@@ -39,7 +38,7 @@
                   <goal>babysaur</goal>
                 </goals>
                 <configuration>
-                  <fullImageName>${docker.repository}/featurehub/${project.artifactId}:${build.version}</fullImageName>
+                  <fullImageName>featurehub/${project.artifactId}:${build.version}</fullImageName>
                   <baseImageName>featurehub/${project.artifactId}:${build.version}</baseImageName>
                 </configuration>
               </execution>
@@ -63,7 +62,7 @@
                 <image>${app.baseimage}</image>
               </from>
               <to>
-                <image>${docker.repository}/featurehub/${project.artifactId}:${build.version}</image>
+                <image>featurehub/${project.artifactId}:${build.version}</image>
               </to>
               <container>
                 <mainClass>bathe.BatheBooter</mainClass>

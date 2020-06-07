@@ -1,0 +1,49 @@
+version: '3.1'
+
+services:
+  nats:
+    image: nats:2.1.7-alpine
+    restart: always
+    ports:
+    - 4222:4222
+  mr-server:
+    image: featurehub/mr:0.0.1
+    restart: always
+    volumes:
+      - ./app-config:/etc/app-config
+    ports:
+      - 8085:8085
+    depends_on:
+      - "db"
+      - "nats"
+  dacha:
+    image: featurehub/dacha:0.0.1
+    restart: always
+    volumes:
+      - ./dacha-config:/etc/app-config
+      - ./common-config:/etc/common-config
+    depends_on:
+      - "mr-server"
+      - "nats"
+  edge:
+    image: featurehub/edge:0.0.1
+    restart: always
+    volumes:
+      - ./edge-config:/etc/app-config
+      - ./common-config:/etc/common-config
+    ports:
+      - 8553:8553
+    depends_on:
+      - "nats"
+  db:
+    image: postgres:12-alpine
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: mypassword
+    volumes:
+      - ./initdb:/docker-entrypoint-initdb.d
+      - featurehub-ps1-db:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+volumes:
+  featurehub-ps1-db:

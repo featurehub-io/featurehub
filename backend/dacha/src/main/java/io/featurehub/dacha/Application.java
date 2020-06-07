@@ -20,6 +20,7 @@ public class Application {
 
   public static void main(String[] args) {
     try {
+      init();
       ApplicationLifecycleManager.updateStatus(LifecycleStatus.STARTED);
 
       log.info("Cache has started");
