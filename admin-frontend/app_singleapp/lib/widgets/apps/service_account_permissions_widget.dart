@@ -1,13 +1,15 @@
 import 'dart:ui';
+
 import 'package:app_singleapp/api/client_api.dart';
-import 'package:bloc_provider/bloc_provider.dart';
 import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/common/fh_footer_button_bar.dart';
 import 'package:app_singleapp/widgets/common/fh_info_card.dart';
 import 'package:app_singleapp/widgets/common/fh_link.dart';
+import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+
 import 'manage_app_bloc.dart';
 
 class ServiceAccountPermissionsWidget extends StatefulWidget {
@@ -42,9 +44,9 @@ class _ServiceAccountPermissionState
                         Container(
                           padding: EdgeInsets.only(top: 20, bottom: 20),
                           child: FHLinkWidget(
-                              text: 'Manage service accounts for this portfolio?',
-                              href:
-                                  '/manage-service-accounts'),
+                              text:
+                                  'Manage service accounts for this portfolio?',
+                              href: '/manage-service-accounts'),
                         )
                       ],
                     )),
@@ -54,15 +56,38 @@ class _ServiceAccountPermissionState
           return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Container(
-                    padding: EdgeInsets.only(left: 10, top: 20),
-                    child: Text(
-                      "Service account",
-                      style: Theme.of(context).textTheme.caption,
-                    )),
-                Container(
-                    padding: EdgeInsets.fromLTRB(10, 0, 0, 5),
-                    child: serviceAccountDropdown(snapshot.data, bloc)),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                            padding: EdgeInsets.only(left: 10, top: 20),
+                            child: Text(
+                              "Service account",
+                              style: Theme
+                                  .of(context)
+                                  .textTheme
+                                  .caption,
+                            )),
+                        Container(
+                            padding: EdgeInsets.fromLTRB(10, 0, 0, 5),
+                            child: serviceAccountDropdown(snapshot.data, bloc)),
+                      ],
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 16.0, top: 16.0),
+                      child: FHInfoCardWidget(
+                          message:
+                          "The 'Lock/Unlock' and 'Change value' permissions \n"
+                              "are so you can change these states through the API's \n"
+                              "e.g., when running tests. \n \n"
+                              "We strongly recommend setting production environments \n"
+                              "with only 'Read' permission for service accounts."),
+                    ),
+                  ],
+                ),
                 _ServiceAccountPermissionDetailWidget(bloc: bloc, mr: mrBloc)
               ]);
         });
@@ -176,6 +201,7 @@ class _ServiceAccountPermissionDetailState
                 Widget table = Table(children: rows);
 
                 return Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     Container(
                         padding: EdgeInsets.fromLTRB(5, 10, 0, 15),
@@ -184,7 +210,10 @@ class _ServiceAccountPermissionDetailState
                           children: <Widget>[
                             Text(
                                 "Set the service account access to features for each environment",
-                                style: Theme.of(context).textTheme.caption),
+                                style: Theme
+                                    .of(context)
+                                    .textTheme
+                                    .caption),
                           ],
                         )),
                     table,
@@ -208,20 +237,16 @@ class _ServiceAccountPermissionDetailState
                             });
                             ServiceAccount newSa = saSnapshot.data;
                             newSa.permissions = newList;
-                            print("newSa: ${newSa.toString()}");
                             widget.bloc
                                 .updateServiceAccountPermissions(
-                              newSa.id, saSnapshot.data)
+                                newSa.id, saSnapshot.data)
                                 .then((serviceAccount) => widget.bloc.mrClient
-                                    .addSnackbar(Text(
-                                        "Service account '${serviceAccount?.name}' updated!")))
+                                .addSnackbar(Text(
+                                "Service account '${serviceAccount?.name}' updated!")))
                                 .catchError(widget.bloc.mrClient.dialogError);
                           },
                           title: 'Update'),
                     ]),
-                    FHInfoCardWidget(
-                        message:
-                            "The 'Lock/Unlock' and 'Change value' permissions are so you can change these states through the API's eg when running tests.  We strongly recommend setting production environments with only 'Read' permission, for service accounts.")
                   ],
                 );
               });
@@ -291,10 +316,9 @@ class _ServiceAccountPermissionDetailState
         Map<String, ServiceAccountPermission>();
     environments.forEach((environment) {
       ServiceAccountPermission sap = serviceAccount.permissions.firstWhere(
-          (item) =>
-              item.environmentId == environment.id,
+              (item) => item.environmentId == environment.id,
           orElse: () => null);
-      if(sap==null){
+      if (sap == null) {
         sap = ServiceAccountPermission();
         sap.environmentId = environment.id;
         sap.permissions = List<ServiceAccountPermissionType>();

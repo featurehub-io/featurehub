@@ -72,7 +72,7 @@ class ManagementRepositoryClientBloc implements Bloc {
     _menuOpened.add(value);
   }
 
-  Stream<RouteChange> get dashboardRoute => _router.stream;
+  Stream<RouteChange> get currentRoute => _router.stream;
 
   void swapRoutes(RouteChange route) {
     _router.add(route);
