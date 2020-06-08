@@ -55,6 +55,11 @@ public class InMemoryCache implements InternalCache {
   public Stream<EnvironmentCacheItem> environments() {
     // make sure we update how many we have
     int size = environments.size();
+
+    if (size == 0) {
+      return Stream.of(new EnvironmentCacheItem().action(PublishAction.EMPTY));
+    }
+
     return environments.values().stream().peek(sa -> sa.setCount(size));
   }
 
@@ -62,11 +67,28 @@ public class InMemoryCache implements InternalCache {
   public Stream<ServiceAccountCacheItem> serviceAccounts() {
     // make sure we update how many we have
     int size = serviceAccounts.size();
+
+    if (size == 0) {
+      return Stream.of(new ServiceAccountCacheItem().action(PublishAction.EMPTY));
+    }
+
     return serviceAccounts.values().stream().peek(sa -> sa.setCount(size));
   }
 
   @Override
   public void serviceAccount(ServiceAccountCacheItem sa) {
+    if (sa.getAction() == PublishAction.EMPTY) {
+      if (!wasServiceAccountComplete) {
+        wasServiceAccountComplete = true;
+        if (wasEnvironmentComplete && notify != null) {
+          logEmptyCacheOnStart();
+          notify.run();
+        }
+      }
+
+      return;
+    }
+
     ServiceAccountCacheItem existing = serviceAccounts.get(sa.getServiceAccount().getId());
 
     if (sa.getAction() == PublishAction.CREATE || sa.getAction() == PublishAction.UPDATE) {
@@ -80,6 +102,7 @@ public class InMemoryCache implements InternalCache {
           wasServiceAccountComplete = true;
 
           if (wasEnvironmentComplete && notify != null) {
+            logEmptyCacheOnStart();
             notify.run();
           }
         }
@@ -92,10 +115,30 @@ public class InMemoryCache implements InternalCache {
         apiKeyToServiceAccountKeyMap.remove(removeAccount.getServiceAccount().getApiKey());
       }
     }
+
+
+  }
+
+  private void logEmptyCacheOnStart() {
+    if (serviceAccounts.size() == 0 && environments.size() == 0) {
+      log.info("Started Dacha with an empty cache as we appear to be a new server.");
+    }
   }
 
   @Override
   public void environment(EnvironmentCacheItem e) {
+    if (e.getAction() == PublishAction.EMPTY) {
+      if (!wasEnvironmentComplete) {
+        wasEnvironmentComplete = true;
+        if (wasServiceAccountComplete && notify != null) {
+          logEmptyCacheOnStart();
+          notify.run();
+        }
+      }
+
+      return;
+    }
+
     EnvironmentCacheItem existing = environments.get(e.getEnvironment().getId());
 
     if (e.getAction() == PublishAction.CREATE || e.getAction() == PublishAction.UPDATE) {
@@ -115,6 +158,7 @@ public class InMemoryCache implements InternalCache {
           wasEnvironmentComplete = true;
 
           if (wasServiceAccountComplete && notify != null) {
+            logEmptyCacheOnStart();
             notify.run();
           }
 
@@ -171,7 +215,7 @@ public class InMemoryCache implements InternalCache {
     // todo: optimization
     if (env.getServiceAccounts().stream().anyMatch(sa -> serviceAccountId.equals(sa.getId()))) {
       final Map<String, FeatureValueCacheItem> fciMap = environmentFeatures.get(environmentId);
-      log.info("matched environment {}: {} vs {}", env.getEnvironment().getName(), env.getFeatureValues().size(), fciMap.size());
+//      log.info("matched environment {}: {} vs {}", env.getEnvironment().getName(), env.getFeatureValues().size(), fciMap.size());
       return fciMap.values();
     }
 
@@ -182,11 +226,11 @@ public class InMemoryCache implements InternalCache {
 
   @Override
   public void updateFeatureValue(FeatureValueCacheItem fv) {
-    log.debug("received update {}", fv);
+//    log.debug("received update {}", fv);
 
     EnvironmentCacheItem eci = environments.get(fv.getEnvironmentId());
     if (eci == null) {
-      log.debug("received feature for unknown environment: `{}`", fv.getEnvironmentId());
+      log.debug("received feature for unknown environment: `{}`: {}", fv.getEnvironmentId(), fv);
       List<FeatureValueCacheItem> fvs = valuesForUnpublishedEnvironments.computeIfAbsent(fv.getEnvironmentId(), key -> new ArrayList<>());
       fvs.add(fv);
     } else {
@@ -217,12 +261,12 @@ public class InMemoryCache implements InternalCache {
               feature.value(fv.getValue());
             } else if ( feature.getValue().getVersion() == null || (fv.getValue().getVersion() != null && feature.getValue().getVersion() < fv.getValue().getVersion())) {
               feature.value(fv.getValue());
-              log.info("replacing with {}", fv.getFeature());
+//              log.trace("replacing with {}", fv.getFeature());
             } else if (!featureChanged) {
               log.warn("attempted to remove/update envId:key {}:{} that is older than existing version, ignoring", fv.getEnvironmentId(), fv.getFeature().getKey());
             }
           } else {
-            log.debug("received feature update with no version {}", fv);
+//            log.debug("received feature update with no version {}", fv);
           }
         } else if (fv.getAction() == PublishAction.DELETE) {
           log.debug("removing feature value from feature key `{}` in environment `{}`", fv.getFeature().getKey(), fv.getEnvironmentId());

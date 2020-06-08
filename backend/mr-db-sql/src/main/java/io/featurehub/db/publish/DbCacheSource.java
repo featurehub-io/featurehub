@@ -78,16 +78,22 @@ public class DbCacheSource implements CacheSource {
     saFinder = serviceAccountsByCacheName(cacheName);
 
     int count = saFinder.findCount();
-    log.info("publishing {} service accounts to cache {}", count, cacheName);
 
-    saFinder.findEach(sa -> {
-      ServiceAccountCacheItem saci = new ServiceAccountCacheItem()
-        .action(PublishAction.CREATE)
-        .serviceAccount(fillServiceAccount(sa))
-        .count(count);
+    if (count == 0) {
+      log.info("database has no service accounts, publishing empty cache indicator.");
+      cacheBroadcast.publishServiceAccount(new ServiceAccountCacheItem().action(PublishAction.EMPTY));
+    } else {
+      log.info("publishing {} service accounts to cache {}", count, cacheName);
 
-      cacheBroadcast.publishServiceAccount(saci);
-    });
+      saFinder.findEach(sa -> {
+        ServiceAccountCacheItem saci = new ServiceAccountCacheItem()
+          .action(PublishAction.CREATE)
+          .serviceAccount(fillServiceAccount(sa))
+          .count(count);
+
+        cacheBroadcast.publishServiceAccount(saci);
+      });
+    }
   }
 
   private ServiceAccount fillServiceAccount(DbServiceAccount sa) {
@@ -106,13 +112,19 @@ public class DbCacheSource implements CacheSource {
     envFinder = environmentsByCacheName(cacheName);
 
     int count = envFinder.findCount();
-    log.info("publishing {} environments to cache {}", count, cacheName);
 
-    envFinder.findEach(env -> {
-      EnvironmentCacheItem eci = fillEnvironmentCacheItem(count, env, PublishAction.CREATE);
+    if (count == 0) {
+      log.info("database has no environments, publishing empty environments indicator.");
+      cacheBroadcast.publishEnvironment(new EnvironmentCacheItem().action(PublishAction.EMPTY));
+    } else {
+      log.info("publishing {} environments to cache {}", count, cacheName);
 
-      cacheBroadcast.publishEnvironment(eci);
-    });
+      envFinder.findEach(env -> {
+        EnvironmentCacheItem eci = fillEnvironmentCacheItem(count, env, PublishAction.CREATE);
+
+        cacheBroadcast.publishEnvironment(eci);
+      });
+    }
   }
 
   private EnvironmentCacheItem fillEnvironmentCacheItem(int count, DbEnvironment env, PublishAction publishAction) {
@@ -156,10 +168,11 @@ public class DbCacheSource implements CacheSource {
       CacheBroadcast cacheBroadcast = cacheBroadcasters.get(cacheName);
 
       if (cacheBroadcast != null) {
+        final FeatureValue value = convertUtils.toFeatureValue(strategy);
         cacheBroadcast.publishFeature(
           new FeatureValueCacheItem()
             .feature(convertUtils.toFeature(strategy))
-            .value(convertUtils.toFeatureValue(strategy))
+            .value(value)
             .environmentId(strategy.getEnvironment().getId().toString())
             .action(PublishAction.UPDATE));
       }

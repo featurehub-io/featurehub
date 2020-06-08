@@ -7,7 +7,7 @@ environment:
 
 dependencies:
   rxdart: 0.22.0
-  ogurets: ^3.1.5
+  ogurets: ^3.1.10
 #  ogurets:
 #    path: /Users/richard/projects/dart/ogurets
   mrapi:

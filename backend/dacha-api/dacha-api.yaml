@@ -67,10 +67,14 @@ components:
         - COMPLETE
     PublishAction:
       type: string
+      description: "Indicates what type of update this is. If CREATE, it is a new record, if UPDATE it updates an existing one,
+          if DELETE you should delete the record. If EMPTY then it indicates there are no records of this type and you shouldn't
+          expect to see any further. EMPTY is used to indicate that the Master process is complete."
       enum:
         - CREATE
         - UPDATE
         - DELETE
+        - EMPTY
     EnvironmentCacheItem:
       properties:
         environment:
