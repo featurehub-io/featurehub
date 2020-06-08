@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:app_singleapp/api/client_api.dart';
+import 'package:app_singleapp/api/router.dart';
 import 'package:app_singleapp/widgets/apps/app_delete_dialog_widget.dart';
 import 'package:app_singleapp/widgets/apps/app_update_dialog_widget.dart';
 import 'package:app_singleapp/widgets/apps/group_permissions_widget.dart';
@@ -161,91 +165,118 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
   }
 }
 
-class ManageAppWidget extends StatelessWidget {
+class ManageAppWidget extends StatefulWidget {
+  @override
+  _ManageAppWidgetState createState() => _ManageAppWidgetState();
+}
+
+class _ManageAppWidgetState extends State<ManageAppWidget>
+    with SingleTickerProviderStateMixin {
+  StreamSubscription<RouteChange> _routeChange;
+  TabController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = TabController(vsync: this, length: 3);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _controller.dispose();
+    if (_routeChange != null) {
+      _routeChange.cancel();
+      _routeChange = null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     ManageAppBloc bloc = BlocProvider.of(context);
-    int findTabIndex() {
-      switch (bloc.tabName) {
-        case "environments":
-          {
-            return 0;
-          }
-          break;
 
-        case "group-permissions":
-          {
-            return 1;
-          }
-          break;
-
-        case "service-accounts":
-          {
-            return 2;
-          }
-          break;
-
-        default:
-          {
-            return 0;
-          }
-          break;
-      }
-    }
-
-    return DefaultTabController(
-      initialIndex: findTabIndex(),
-      // The number of tabs / content sections to display.
-      length: 3,
-      child: Column(
-        children: <Widget>[
-          TabBar(
-            labelStyle: Theme.of(context).textTheme.bodyText1,
-            labelColor: Theme.of(context).textTheme.subtitle2.color,
-            unselectedLabelColor: Theme.of(context).textTheme.bodyText2.color,
-            tabs: [
-              Tab(text: "Environments"),
-              Tab(text: "Group permissions"),
-              Tab(text: "Service account permissions"),
+    // maybe should be a Column?
+    return Column(
+      children: <Widget>[
+        TabBar(
+          controller: _controller,
+          labelStyle: Theme.of(context).textTheme.bodyText1,
+          labelColor: Theme.of(context).textTheme.subtitle2.color,
+          unselectedLabelColor: Theme.of(context).textTheme.bodyText2.color,
+          tabs: [
+            Tab(text: "Environments"),
+            Tab(text: "Group permissions"),
+            Tab(text: "Service account permissions"),
+          ],
+        ),
+        SizedBox(
+          height: MediaQuery.of(context).size.height - 265,
+          child: TabBarView(
+            controller: _controller,
+            children: [
+              //Environments
+              SingleChildScrollView(
+                child: Column(
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12.0),
+                      child: AddEnvWidget(context, bloc),
+                    ),
+                    EnvListWidget()
+                  ],
+                ),
+              ),
+              // Groups permissions
+              SingleChildScrollView(
+                child: Column(
+                  children: <Widget>[
+                    GroupPermissionsWidget(),
+                  ],
+                ),
+              ),
+              // Service accounts
+              SingleChildScrollView(
+                child: Column(
+                  children: <Widget>[
+                    ServiceAccountPermissionsWidget(),
+                  ],
+                ),
+              ),
             ],
           ),
-          SizedBox(
-            height: MediaQuery.of(context).size.height - 265,
-            child: TabBarView(
-              children: [
-                //Environments
-                SingleChildScrollView(
-                  child: Column(
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.only(top: 12.0),
-                        child: AddEnvWidget(context, bloc),
-                      ),
-                      EnvListWidget()
-                    ],
-                  ),
-                ),
-                // Groups permissions
-                SingleChildScrollView(
-                  child: Column(
-                    children: <Widget>[
-                      GroupPermissionsWidget(),
-                    ],
-                  ),
-                ),
-                // Service accounts
-                SingleChildScrollView(
-                  child: Column(
-                    children: <Widget>[
-                      ServiceAccountPermissionsWidget(),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          )
-        ],
-      ),
+        )
+      ],
     );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (_routeChange != null) {
+      _routeChange.cancel();
+    }
+
+    _routeChange = BlocProvider.of<ManagementRepositoryClientBloc>(context)
+        .currentRoute
+        .listen((routeChange) {
+      if (routeChange.route == '/manage-app') {
+        switch (routeChange.params['tab-name'][0]) {
+          case "environments":
+            _controller.animateTo(0);
+            break;
+          case "group-permissions":
+            _controller.animateTo(1);
+            break;
+          case "service-accounts":
+            _controller.animateTo(2);
+            break;
+          default:
+            _controller.animateTo(0);
+            break;
+        }
+      }
+    });
   }
 }

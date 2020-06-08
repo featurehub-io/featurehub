@@ -6,6 +6,7 @@ import 'package:app_singleapp/utils/custom_cursor.dart';
 import 'package:app_singleapp/widgets/common/fh_circle_icon_button.dart';
 import 'package:app_singleapp/widgets/common/fh_portfolio_selector.dart';
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -94,27 +95,24 @@ class _MenuContainer extends StatelessWidget {
                           _MenuPortfolioAdminOptionsWidget(),
                           _MenuDivider(),
                         ],
-                )
+                      )
                     : Container(),
                 mrBloc.userIsSuperAdmin
                     ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Container(
-                      padding: EdgeInsets.only(
-                          left: 16.0, top: 32.0, bottom: 8.0),
-                      child: Text(
-                        'Global Settings',
-                        style: Theme
-                            .of(context)
-                            .textTheme
-                            .caption,
-                      ),
-                    ),
-                    _SiteAdminOptionsWidget(),
-                    _MenuDivider(),
-                  ],
-                )
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Container(
+                            padding: EdgeInsets.only(
+                                left: 16.0, top: 32.0, bottom: 8.0),
+                            child: Text(
+                              'Global Settings',
+                              style: Theme.of(context).textTheme.caption,
+                            ),
+                          ),
+                          _SiteAdminOptionsWidget(),
+                          _MenuDivider(),
+                        ],
+                      )
                     : Container(),
               ],
             )
@@ -149,8 +147,7 @@ class _SiteAdminOptionsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<String>(
-        stream: BlocProvider
-            .of<ManagementRepositoryClientBloc>(context)
+        stream: BlocProvider.of<ManagementRepositoryClientBloc>(context)
             .streamValley
             .currentPortfolioIdStream,
         builder: (context, snapshot) {
@@ -170,13 +167,11 @@ class _SiteAdminOptionsWidget extends StatelessWidget {
   }
 }
 
-
 class _MenuPortfolioAdminOptionsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<String>(
-        stream: BlocProvider
-            .of<ManagementRepositoryClientBloc>(context)
+        stream: BlocProvider.of<ManagementRepositoryClientBloc>(context)
             .streamValley
             .currentPortfolioIdStream,
         builder: (context, snapshot) {
@@ -204,8 +199,7 @@ class _ApplicationSettings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<String>(
-        stream: BlocProvider
-            .of<ManagementRepositoryClientBloc>(context)
+        stream: BlocProvider.of<ManagementRepositoryClientBloc>(context)
             .streamValley
             .currentPortfolioIdStream,
         builder: (context, snapshot) {
@@ -266,72 +260,67 @@ class _MenuItem extends StatelessWidget {
   const _MenuItem({Key key, this.name, this.iconData, this.path, this.params})
       : super(key: key);
 
+  bool equalsParams(Map<String, List<String>> snapParams) {
+    Map<String, List<String>> p1 = {}
+      ..addAll(snapParams ?? {})
+      ..remove('id');
+    Map<String, List<String>> p2 = {}..addAll(params ?? {});
+
+    return const MapEquality(
+            keys: const IdentityEquality(), values: const ListEquality())
+        .equals(p1, p2);
+  }
+
   @override
   Widget build(BuildContext context) {
     return CustomCursor(
         child: InkWell(
-          hoverColor: Theme
-              .of(context)
-              .selectedRowColor,
-          onTap: () {
-            return ManagementRepositoryClientBloc.router.navigateTo(
-                context, path,
-                replace: true,
-                transition: TransitionType.material,
-                params: params);
-          },
-          child: StreamBuilder<RouteChange>(
-              stream: BlocProvider
-                  .of<ManagementRepositoryClientBloc>(context)
-                  .currentRoute,
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  var selected =
-                      snapshot.data.route == path &&
-                          snapshot.data.params == params;
-                  return Container(
-                    padding: EdgeInsets.fromLTRB(16, 12, 0, 12),
-                    color: selected ? Color(0xffe5e7f1) : null,
-                    child: Row(
-                      children: <Widget>[
-                        Icon(
-                          iconData,
-                          color: selected
-                              ? Theme
-                              .of(context)
-                              .primaryColor
-                              : Color(0xff4a4a4a),
-                          size: 16.0,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 24.0),
-                          child: selected
-                              ? Text(" ${name}",
+      hoverColor: Theme.of(context).selectedRowColor,
+      onTap: () {
+        return ManagementRepositoryClientBloc.router.navigateTo(context, path,
+            replace: true, transition: TransitionType.material, params: params);
+      },
+      child: StreamBuilder<RouteChange>(
+          stream: BlocProvider.of<ManagementRepositoryClientBloc>(context)
+              .currentRoute,
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              final selected = snapshot.data.route == path &&
+                  equalsParams(snapshot.data.params);
+
+              return Container(
+                padding: EdgeInsets.fromLTRB(16, 12, 0, 12),
+                color: selected ? Color(0xffe5e7f1) : null,
+                child: Row(
+                  children: <Widget>[
+                    Icon(
+                      iconData,
+                      color: selected
+                          ? Theme.of(context).primaryColor
+                          : Color(0xff4a4a4a),
+                      size: 16.0,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 24.0),
+                      child: selected
+                          ? Text(" ${name}",
                               style: GoogleFonts.roboto(
                                 textStyle:
-                                Theme
-                                    .of(context)
-                                    .textTheme
-                                    .bodyText2,
+                                    Theme.of(context).textTheme.bodyText2,
                                 fontWeight: FontWeight.w600,
-                                color: Theme
-                                    .of(context)
-                                    .primaryColor,
+                                color: Theme.of(context).primaryColor,
                               ))
-                              : Text(" ${name}",
-                              style: Theme
-                                  .of(context)
-                                  .textTheme
-                                  .bodyText2),
-                        )
-                      ],
-                    ),
-                  );
-                } else {
-                  return SizedBox.shrink();
-                }
-              }),
-        ));
+                          : Text(" ${name}",
+                              style: Theme.of(context).textTheme.bodyText2),
+                    )
+                  ],
+                ),
+              );
+            } else {
+              return SizedBox.shrink();
+            }
+          }),
+    ));
   }
 }
 
@@ -342,6 +331,6 @@ class _MenuDivider extends StatelessWidget {
         padding: EdgeInsets.only(top: 16.0),
         decoration: BoxDecoration(
             border:
-            Border(bottom: BorderSide(color: Colors.black, width: 0.5))));
+                Border(bottom: BorderSide(color: Colors.black, width: 0.5))));
   }
 }
