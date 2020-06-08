@@ -13,6 +13,7 @@ import io.featurehub.db.model.query.QDbAcl;
 import io.featurehub.db.model.query.QDbEnvironment;
 import io.featurehub.db.model.query.QDbPortfolio;
 import io.featurehub.db.publish.CacheSource;
+import io.featurehub.db.utils.EnvironmentUtils;
 import io.featurehub.mr.model.Application;
 import io.featurehub.mr.model.Environment;
 import io.featurehub.mr.model.Person;
@@ -192,6 +193,14 @@ public class EnvironmentSqlApi implements EnvironmentApi {
       if (priorEnvironment != null && !priorEnvironment.getParentApplication().getId().equals(application.getId())) {
         throw new InvalidEnvironmentChangeException();
       }
+      // so we don't have an environment so lets order them and put this one before the 1st one
+      if (priorEnvironment == null) {
+        final List<DbEnvironment> environments = new QDbEnvironment().parentApplication.eq(application).whenArchived.isNull().findList();
+        if (!environments.isEmpty()) {
+          promotionSortedEnvironments(environments);
+          priorEnvironment = environments.get(environments.size()-1);
+        }
+      }
       DbEnvironment newEnv = new DbEnvironment.Builder()
         .description(env.getDescription())
         .name(env.getName())
@@ -203,6 +212,35 @@ public class EnvironmentSqlApi implements EnvironmentApi {
     }
 
     return null;
+  }
+
+  void promotionSortedEnvironments(List<DbEnvironment> environments) {
+    Map<UUID, DbEnvironment> environmentOrderingMap = environments.stream().collect(Collectors.toMap(DbEnvironment::getId, e -> e));
+
+    environments.sort((o1, o2) -> {
+      final DbEnvironment env1 = environmentOrderingMap.get(o1.getId());
+      final DbEnvironment env2 = environmentOrderingMap.get(o2.getId());
+
+      Integer w = EnvironmentUtils.walkAndCompare(env1, env2);
+      if (w == null) {
+        w = EnvironmentUtils.walkAndCompare(env2, env1);
+        if (w == null) {
+          if (env1.getPriorEnvironment() == null && env2.getPriorEnvironment() == null) {
+            return 0;
+          }
+          if (env1.getPriorEnvironment() != null && env2.getPriorEnvironment() == null) {
+            return 1;
+          }
+          return -1;
+        } else {
+          return w * -1;
+        }
+      }
+
+      return w;
+    });
+
+    environments.forEach(e -> log.info("ENVIRONMENT: {}", e.getName()));
   }
 
   @Transactional

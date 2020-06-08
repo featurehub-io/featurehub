@@ -68,12 +68,14 @@ public class DbArchiveStrategy implements ArchiveStrategy {
     database.save(environment);
     cacheSource.deleteEnvironment(environment.getId());
     new QDbEnvironment().priorEnvironment.eq(environment).findList().forEach(e -> {
-      if (e.getId().equals(environment.getPriorEnvironment().getId())) {
-        e.setPriorEnvironment(null);
-      } else {
-        e.setPriorEnvironment(environment.getPriorEnvironment());
+      if (environment.getPriorEnvironment() != null) {
+        if (e.getId().equals(environment.getPriorEnvironment().getId())) {
+          e.setPriorEnvironment(null);
+        } else {
+          e.setPriorEnvironment(environment.getPriorEnvironment());
+        }
+        database.save(e);
       }
-      database.save(e);
     });
   }
 

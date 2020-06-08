@@ -2,7 +2,6 @@ import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/api/router.dart';
 import 'package:app_singleapp/widgets/common/fh_card.dart';
 import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
-import 'package:app_singleapp/widgets/common/fh_link.dart';
 import 'package:app_singleapp/widgets/features/feature_value_row_boolean.dart';
 import 'package:app_singleapp/widgets/features/feature_value_row_generic.dart';
 import 'package:app_singleapp/widgets/features/feature_value_row_json.dart';
@@ -188,17 +187,6 @@ class _FeatureHeader extends StatelessWidget {
             children: <Widget>[
               Text(efv.environmentName,
                   style: Theme.of(context).textTheme.bodyText1),
-              if (index != 0 && efv.priorEnvironmentId == null)
-                FHLink(
-                  tooltip:
-                      efv.environmentName + " is not ordered - tap to order",
-                  href: '/manage-app',
-                  child: Icon(
-                    Icons.report_problem,
-                    size: 24.0,
-                    color: Colors.red,
-                  ),
-                ),
               SDKDetailsWidget(bloc: bloc, envId: efv.environmentId)
             ],
           )),
@@ -590,13 +578,11 @@ class NoEnvironmentMessage extends StatelessWidget {
                 return FHFlatButtonTransparent(
                     title: 'Manage application',
                     keepCase: true,
-                    onPressed: () =>
-                        ManagementRepositoryClientBloc.router.navigateTo(
-                            context,
-                            '/manage-app',
-                            replace: true,
-                            transition: TransitionType.material,
-                            params: {
+                    onPressed: () => ManagementRepositoryClientBloc.router
+                            .navigateTo(context, '/manage-app',
+                                replace: true,
+                                transition: TransitionType.material,
+                                params: {
                               "id": [bloc.applicationId],
                               "tab-name": ["environments"]
                             }));
