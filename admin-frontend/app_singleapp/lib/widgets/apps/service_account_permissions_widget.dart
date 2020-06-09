@@ -68,6 +68,13 @@ class _ServiceAccountPermissionState
               ],
             );
           }
+
+          // if there is only 1, force it to be selected
+          if (selectedServiceAccount == null && snapshot.data.length == 1) {
+            selectedServiceAccount = snapshot.data[0].id;
+            bloc.selectServiceAccount(selectedServiceAccount);
+          }
+
           return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
