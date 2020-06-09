@@ -13,12 +13,12 @@ import 'package:openapi_dart_common/openapi.dart';
 import 'package:rxdart/rxdart.dart';
 
 ///
-/// This represents the state of the whole application, which starts off in "unknown",
+/// This represents the state of the whole application, which starts off in 'unknown',
 /// makes a call to the backend which will (if found) return that it is initialized
 /// or uninitialized. Initialized transitions to a  login page, Uninitialized transitions
 /// to a setup page, which then transitions to initialized by calling the same method below.
 ///
-/// When they are in the "logged_in" state, we have a bearer token and information about the
+/// When they are in the 'logged_in' state, we have a bearer token and information about the
 /// organisation and their basic role within it (admin or not).
 
 enum InitializedCheckState {
@@ -53,10 +53,8 @@ class ManagementRepositoryClientBloc implements Bloc {
   FeatureServiceApi featureServiceApi;
   ApplicationServiceApi applicationServiceApi;
   static Router router;
-  String _currentPid;
-  String _currentAid;
-  List<Portfolio> _portfolios;
-  final _router = BehaviorSubject<RouteChange>();
+  final _routerSource = BehaviorSubject<RouteChange>();
+  final _routerRedrawRouteSource = BehaviorSubject<RouteChange>();
   final _menuOpened = BehaviorSubject<bool>.seeded(true);
   final _stepperOpened = BehaviorSubject<bool>.seeded(false);
 
@@ -72,10 +70,22 @@ class ManagementRepositoryClientBloc implements Bloc {
     _menuOpened.add(value);
   }
 
-  Stream<RouteChange> get dashboardRoute => _router.stream;
+  Stream<RouteChange> get routeChangedStream => _routerSource.stream;
+  Stream<RouteChange> get redrawChangedStream =>
+      _routerRedrawRouteSource.stream;
+
+  RouteChange get currentRoute => _routerSource.value;
 
   void swapRoutes(RouteChange route) {
-    _router.add(route);
+    // this is for gross route changes, and causes the widget to redraw
+    // for multi-tabbed routes, we don't want this to happen, so we separate the two
+    if (_routerRedrawRouteSource.value == null ||
+        _routerRedrawRouteSource.value.route != route.route) {
+      _routerRedrawRouteSource.add(route);
+    }
+
+    // this is for fine grained route changes, like tab changes
+    _routerSource.add(route);
   }
 
   bool get isLoggedIn => _personSource.hasValue;
@@ -100,9 +110,6 @@ class ManagementRepositoryClientBloc implements Bloc {
   final _personSource = BehaviorSubject<Person>();
   Stream<Person> get personStream => _personSource.stream;
 
-  final _portfoliosBS = BehaviorSubject<List<Portfolio>>();
-  Stream<List<Portfolio>> get portfoliosList => _portfoliosBS.stream;
-
   Organization organization;
   Person person;
   List<Group> groupList;
@@ -115,20 +122,21 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   String get currentPid => getCurrentPid();
   String get currentAid => getCurrentAid();
+  set currentAid(String aid) => setCurrentAid(aid);
+  set currentPid(String pid) => setCurrentPid(pid);
 
   Portfolio get currentPortfolio {
-    return _portfolios?.firstWhere((p) => p.id == _currentPid,
-        orElse: () => null);
+    return streamValley.currentPortfolio;
   }
 
   StreamValley streamValley;
 
   static String homeUrl() {
     final origin = window.location.origin;
-    if (overrideOrigin && origin.startsWith("http://localhost")) {
-      return "http://localhost:8903";
-    } else if (overrideOrigin && origin.startsWith("http://[::1]")) {
-      return "http://[::1]:8903";
+    if (overrideOrigin && origin.startsWith('http://localhost')) {
+      return 'http://localhost:8903';
+    } else if (overrideOrigin && origin.startsWith('http://[::1]')) {
+      return 'http://[::1]:8903';
     } else {
       final url = Uri.parse(origin);
       return url.replace(path: url.path).toString();
@@ -158,7 +166,7 @@ class ManagementRepositoryClientBloc implements Bloc {
     await isInitialized();
   }
 
-  isInitialized() async {
+  Future isInitialized() async {
     if (person != null) {
       _initializedSource.add(InitializedCheckState.zombie);
       return;
@@ -169,8 +177,8 @@ class ManagementRepositoryClientBloc implements Bloc {
       // to see if we have a bearer token. This would mean the user
       // has simply refreshed their page
 
-      String bearerToken = _getBearerCookie();
-      this.organization = org;
+      final bearerToken = _getBearerCookie();
+      organization = org;
       if (bearerToken != null) {
         setBearerToken(bearerToken);
         _requestOwnDetails();
@@ -192,12 +200,9 @@ class ManagementRepositoryClientBloc implements Bloc {
   static const bearerToken = 'bearer-token';
 
   String _getBearerCookie() {
-    List<String> cookies = document.cookie.split(";")
+    final cookies = document.cookie.split(';')
       ..retainWhere((s) => s.trim().startsWith('$bearerToken='));
 
-//    print("doc cookies " + html.document.cookie.split(";").toString());
-//    print("cookies $cookies");
-//
     if (cookies.isNotEmpty) {
       return cookies.first.trim().substring('$bearerToken='.length);
     }
@@ -217,22 +222,21 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   // ask for my own details and if there are some, set the person and transition
   // to logged in, otherwise ask them to log in.
-  _requestOwnDetails() {
+  void _requestOwnDetails() {
     personServiceApi
         .getPerson('self', includeAcls: true, includeGroups: true)
         .then((p) {
       setPerson(p);
       _initializedSource.add(InitializedCheckState.zombie);
     }).catchError((_) {
-      print("### couldn't get self");
       setBearerToken(null);
       _initializedSource.add(InitializedCheckState.initialized);
     });
   }
 
   Future logout() async {
-    await this.authServiceApi.logout();
-    this.setBearerToken(null);
+    await authServiceApi.logout();
+    setBearerToken(null);
     return;
   }
 
@@ -268,56 +272,41 @@ class ManagementRepositoryClientBloc implements Bloc {
     }
   }
 
-  void setCurrentAid(aid) {
-    _currentAid = aid;
+  void setCurrentAid(String aid) {
     streamValley.currentAppId = aid;
     _setAidSharedPrefs(aid);
   }
 
-  void setCurrentPid(pid) {
-    if (pid != null && _portfolios.any((p) => p.id == pid)) {
-      _currentPid = pid;
-    } else {
-      _currentPid = null;
-    }
-
-    //reset current app id to null
-    _currentAid = null;
+  void setCurrentPid(String pid) {
+    streamValley.currentPortfolioId = pid;
     _setAidSharedPrefs(null);
-    streamValley.currentPortfolioId = _currentPid;
-    streamValley.currentAppId = null;
-    _setPidSharedPrefs(_currentPid);
-    personState.currentPortfolioOrSuperAdminUpdateState(pid, this.groupList);
-    streamValley.getCurrentPortfolioApplications();
-    if (personState.isCurrentPortfolioOrSuperAdmin.value == true) {
-      streamValley.getCurrentPortfolioGroups();
-      streamValley.getCurrentPortfolioServiceAccounts();
-    }
+    _setPidSharedPrefs(pid);
+    personState.currentPortfolioOrSuperAdminUpdateState(pid, groupList);
   }
 
   String getCurrentPid() {
-    return _currentPid;
+    return streamValley.currentPortfolioId;
   }
 
   String getCurrentAid() {
-    return _currentAid;
+    return streamValley.currentAppId;
   }
 
   void setPerson(Person p) {
-    this.person = p;
-    this.groupList = p.groups;
+    person = p;
+    groupList = p.groups;
 
-    _userIsSuperAdmin = personState.isSuperAdminGroupFound(this.groupList);
+    _userIsSuperAdmin = personState.isSuperAdminGroupFound(groupList);
     _userIsAnyPortfolioOrSuperAdmin =
-        personState.isAnyPortfolioOrSuperAdmin(this.groupList);
+        personState.isAnyPortfolioOrSuperAdmin(groupList);
 
     _personSource.add(p);
     _addPortfoliosToStream();
   }
 
   bool isPortfolioOrSuperAdmin(String pid) {
-    return (personState.isSuperAdminGroupFound(this.groupList) ||
-        personState.userIsPortfolioAdmin(pid, this.groupList));
+    return (personState.isSuperAdminGroupFound(groupList) ||
+        personState.userIsPortfolioAdmin(pid, groupList));
   }
 
   void addOverlay(WidgetBuilder builder) {
@@ -336,7 +325,7 @@ class ManagementRepositoryClientBloc implements Bloc {
     _snackbarSource.add(content);
   }
 
-  void customError({String messageTitle = "", String messageBody = ""}) {
+  void customError({String messageTitle = '', String messageBody = ''}) {
     addError(FHError(messageTitle,
         exception: null,
         stackTrace: null,
@@ -345,7 +334,7 @@ class ManagementRepositoryClientBloc implements Bloc {
   }
 
   void dialogError(e, StackTrace s,
-      {String messageTitle, bool showDetails = true, String messageBody = ""}) {
+      {String messageTitle, bool showDetails = true, String messageBody = ''}) {
     if (messageTitle != null) {
       addError(FHError(messageTitle,
           exception: e,
@@ -357,12 +346,12 @@ class ManagementRepositoryClientBloc implements Bloc {
     }
   }
 
-  consoleError(e, s) {
+  void consoleError(e, s) {
     window.console.error(e?.toString());
     window.console.error(s?.toString());
   }
 
-  login(String email, String password) async {
+  Future login(String email, String password) async {
     await authServiceApi
         .login(UserCredentials()
           ..email = email
@@ -395,13 +384,10 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   void _addPortfoliosToStream() async {
     try {
-      List<Portfolio> portfolios = await portfolioServiceApi.findPortfolios(
-          includeApplications: true, order: SortOrder.ASC);
-      _portfoliosBS.add(portfolios);
-      _portfolios = portfolios;
-      if (await _sharedPreferences.getString("currentPid") != null) {
-        String aid = await _sharedPreferences.getString("currentAid");
-        setCurrentPid(await _sharedPreferences.getString("currentPid"));
+      final _portfolios = await streamValley.loadPortfolios();
+      if (await _sharedPreferences.getString('currentPid') != null) {
+        final aid = await _sharedPreferences.getString('currentAid');
+        setCurrentPid(await _sharedPreferences.getString('currentPid'));
         if (aid != null) {
           setCurrentAid(aid);
         }
@@ -413,47 +399,29 @@ class ManagementRepositoryClientBloc implements Bloc {
     }
   }
 
-  Map<String, Bloc> _blocs = {};
-
-  @deprecated
-  T getBloc<T>(String name, Function builder) {
-    Object o = _blocs[name];
-    if (o == null) {
-      o = builder();
-      _blocs[name] = o;
-    }
-    return o;
-  }
-
-  void clearBlocs() {
-    _blocs.forEach((k, v) => v.dispose());
-    _blocs = {};
-  }
-
   @override
   void dispose() {
     _initializedSource.close();
     _errorSource.close();
     _overlaySource.close();
     _snackbarSource.close();
-    _portfoliosBS.close();
     _personSource.close();
     streamValley.currentPortfolioAdminOrSuperAdminSubscription.cancel();
   }
 
   void _setPidSharedPrefs(pid) async {
-    await _sharedPreferences.saveString("currentPid", pid);
+    await _sharedPreferences.saveString('currentPid', pid);
   }
 
   void _setAidSharedPrefs(aid) async {
-    await _sharedPreferences.saveString("currentAid", aid);
+    await _sharedPreferences.saveString('currentAid', aid);
   }
 
   Future<String> lastUsername() async {
-    return await _sharedPreferences.getString("lastUsername");
+    return await _sharedPreferences.getString('lastUsername');
   }
 
   void setLastUsername(String lastUsername) async {
-    await _sharedPreferences.saveString("lastUsername", lastUsername);
+    await _sharedPreferences.saveString('lastUsername', lastUsername);
   }
 }

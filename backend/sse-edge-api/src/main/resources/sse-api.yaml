@@ -33,7 +33,6 @@ components:
     FeatureState:
       required:
         - name
-        - state
       properties:
         id:
           type: string

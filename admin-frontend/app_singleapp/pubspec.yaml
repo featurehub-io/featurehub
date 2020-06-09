@@ -27,6 +27,7 @@ dependencies:
   pedantic: ^1.8.0
   flutter_icons: 1.0.0+1
   auto_size_text: 2.1.0
+  collection: ^1.14.11
 
 
   flutter_chips_input: ^1.7.0

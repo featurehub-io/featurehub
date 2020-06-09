@@ -26,7 +26,6 @@ import 'package:app_singleapp/widgets/user/register/register_url_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 
-
 Handler handleRouteChangeRequest(builder) {
   return Handler(
       handlerFunc: (BuildContext context, Map<String, dynamic> params) {
@@ -118,8 +117,7 @@ Widget featureStatus(ManagementRepositoryClientBloc mrBloc, {params}) {
 
 Widget manageApp(mrBloc, {params}) {
   return BlocProvider<ManageAppBloc>(
-      creator: (_context, _bag) =>
-          ManageAppBloc(mrBloc, params['tab-name']?.elementAt(0)),
+      creator: (_context, _bag) => ManageAppBloc(mrBloc),
       child: ManageAppRoute());
 }
 

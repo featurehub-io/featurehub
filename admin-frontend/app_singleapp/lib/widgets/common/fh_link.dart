@@ -31,7 +31,7 @@ class FHLinkWidget extends StatelessWidget {
           ),
           onTap: () {
             ManagementRepositoryClientBloc.router.navigateTo(context, href,
-                replace: true, transition: TransitionType.material);
+                replace: true, transition: TransitionType.material, params: {});
           }),
     );
   }

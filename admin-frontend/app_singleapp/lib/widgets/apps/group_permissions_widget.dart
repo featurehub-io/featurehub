@@ -26,12 +26,18 @@ class _GroupPermissionState extends State<GroupPermissionsWidget> {
     return StreamBuilder<List<Group>>(
         stream: bloc.groupsStream,
         builder: (context, snapshot) {
-          if (!snapshot.hasData) {
+          if (!snapshot.hasData || snapshot.hasError) {
             return Container(
               padding: EdgeInsets.all(30),
               child: Text("Loading..."),
             );
           }
+
+          if (selectedGroup == null && snapshot.data.length > 0) {
+            selectedGroup = snapshot.data[0].id;
+            bloc.getGroupRoles(selectedGroup);
+          }
+
           return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[

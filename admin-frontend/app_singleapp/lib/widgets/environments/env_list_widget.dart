@@ -1,18 +1,18 @@
-
 import 'package:app_singleapp/utils/custom_cursor.dart';
-import 'package:app_singleapp/widgets/common/fh_alert_dialog.dart';
-import 'package:app_singleapp/widgets/common/fh_delete_thing.dart';
-import 'package:app_singleapp/widgets/common/fh_info_card.dart';
-import 'package:app_singleapp/widgets/common/fh_reorderable_list_view.dart';
-import 'package:bloc_provider/bloc_provider.dart';
 import 'package:app_singleapp/widgets/apps/manage_app_bloc.dart';
 import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
+import 'package:app_singleapp/widgets/common/fh_alert_dialog.dart';
+import 'package:app_singleapp/widgets/common/fh_delete_thing.dart';
 import 'package:app_singleapp/widgets/common/fh_icon_button.dart';
 import 'package:app_singleapp/widgets/common/fh_icon_text_button.dart';
+import 'package:app_singleapp/widgets/common/fh_info_card.dart';
+import 'package:app_singleapp/widgets/common/fh_outline_button.dart';
+import 'package:app_singleapp/widgets/common/fh_reorderable_list_view.dart';
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:openapi_dart_common/openapi.dart';
-import 'package:app_singleapp/widgets/common/fh_outline_button.dart';
 
 class EnvListWidget extends StatefulWidget {
   @override
@@ -36,7 +36,6 @@ class _EnvListState extends State<EnvListWidget> {
           _environments = _sortEnvironments(snapshot.data);
 
           return Container(
-            color: Theme.of(context).highlightColor,
             //height:(snapshot.data.length*50).toDouble(),
             height: 500.0,
             child: FHReorderableListView(
@@ -129,12 +128,11 @@ class _EnvWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final BorderSide bs = BorderSide(color: Theme.of(context).dividerColor);
-
     return Container(
       padding: const EdgeInsets.fromLTRB(30, 5, 30, 5),
       decoration: BoxDecoration(
-          color: Colors.white, border: Border(bottom: bs, left: bs, right: bs)),
+          color: Colors.white,
+          border: Border.all(color: Theme.of(context).dividerColor)),
       child: Container(
         height: 50,
         child: CustomCursor(
@@ -144,21 +142,23 @@ class _EnvWidget extends StatelessWidget {
               Container(
                   padding: EdgeInsets.only(right: 30),
                   child: Icon(
-                    Icons.menu,
-                    color: Colors.grey,
+                    Icons.drag_handle,
+                    size: 24.0,
                   )),
+//                  child: Icon(.)),
               Row(
                 children: <Widget>[
                   Text("${env.name}"),
                   Padding(
                       padding: EdgeInsets.only(left: 8.0),
-                      child:
-                      env.production ? _ProductionEnvironmentIndicatorWidget() : _NonProductionEnvironmentIndicatorWidget()
-                  ),
+                      child: env.production
+                          ? _ProductionEnvironmentIndicatorWidget()
+                          : _NonProductionEnvironmentIndicatorWidget()),
                 ],
               ),
               Expanded(child: Container()),
-              bloc.mrClient.isPortfolioOrSuperAdmin(bloc.application.portfolioId)
+              bloc.mrClient
+                  .isPortfolioOrSuperAdmin(bloc.application.portfolioId)
                   ? _adminFunctions(context)
                   : Container()
             ],
@@ -194,11 +194,10 @@ class _ProductionEnvironmentIndicatorWidget extends StatelessWidget {
       child: Container(
         width: 24.0,
         height: 24.0,
-        decoration: BoxDecoration(
-          color: Colors.red,
-          shape: BoxShape.circle
-        ),
-        child: Center(child: Text('P', style: TextStyle(color: Colors.white, fontSize: 18.0))),
+        decoration: BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+        child: Center(
+            child: Text('P',
+                style: TextStyle(color: Colors.white, fontSize: 18.0))),
       ),
     );
   }
@@ -212,9 +211,7 @@ class _NonProductionEnvironmentIndicatorWidget extends StatelessWidget {
       height: 24.0,
     );
   }
-
 }
-
 
 class EnvDeleteDialogWidget extends StatelessWidget {
   final Environment env;
@@ -231,13 +228,15 @@ class EnvDeleteDialogWidget extends StatelessWidget {
     return FHDeleteThingWarningWidget(
       bloc: bloc.mrClient,
       extraWarning: env.production,
-      wholeWarning: env.production ? "The environment `${env.name}` is your production environment, are you sure you wish to remove it?" : null,
+      wholeWarning: env.production
+          ? "The environment `${env
+          .name}` is your production environment, are you sure you wish to remove it?"
+          : null,
       thing: env.production ? null : "environment '${env.name}'",
       deleteSelected: () async {
         bool success = await bloc.deleteEnv(env.id);
         if (success) {
-          bloc.mrClient
-              .addSnackbar(Text("Environment '${env.name}' deleted!"));
+          bloc.mrClient.addSnackbar(Text("Environment '${env.name}' deleted!"));
         } else {
           bloc.mrClient.customError(
               messageTitle: "Couldn't delete environment ${env.name}");
@@ -329,7 +328,9 @@ class _EnvUpdateDialogWidgetState extends State<EnvUpdateDialogWidget> {
                 if (_formKey.currentState.validate()) {
                   try {
                     if (isUpdate) {
-                      await widget.bloc.updateEnv(widget.env..production = _isProduction, _envName.text);
+                      await widget.bloc.updateEnv(
+                          widget.env..production = _isProduction,
+                          _envName.text);
                       widget.bloc.mrClient.removeOverlay();
                       widget.bloc.mrClient.addSnackbar(
                           Text("Environment ${_envName.text} updated!"));
@@ -361,30 +362,33 @@ Widget AddEnvWidget(BuildContext context, ManageAppBloc bloc) {
   return Column(children: <Widget>[
     Container(
         padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
-        decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            border: Border(bottom: bs, left: bs, right: bs, top: bs)),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            if (bloc.mrClient.isPortfolioOrSuperAdmin(bloc.application.portfolioId))
+            if (bloc.mrClient
+                .isPortfolioOrSuperAdmin(bloc.application.portfolioId))
               Container(
-                  padding: EdgeInsets.only(left: 30),
+                  padding: EdgeInsets.only(left: 8),
                   child: FHIconTextButton(
                     iconData: Icons.add,
                     keepCase: true,
                     label: 'Create new environment',
                     onPressed: () =>
                         bloc.mrClient.addOverlay((BuildContext context) {
-                      return EnvUpdateDialogWidget(
-                        bloc: bloc,
-                      );
-                    }),
+                          return EnvUpdateDialogWidget(
+                            bloc: bloc,
+                          );
+                        }),
                   )),
-            Container(
-                padding: EdgeInsets.only(left: 20),
-                child: FHInfoCardWidget(
-                    message:
-                        "Tip: Ordering your environments, showing the path to production (top to bottom), helps your teams see their changes follow this path.")),
+            FHInfoCardWidget(
+              message:
+              ' Ordering your environments,\n'
+                  ' showing the path to production (top to bottom)\n'
+                  ' will be reflected on the "Features" dashboard.\n \n'
+                  ' It helps your teams see their changes\n'
+                  ' per environment in the correct order.',
+            ),
           ],
         ))
   ]);

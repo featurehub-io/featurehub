@@ -161,7 +161,6 @@ class FeatureStatusBloc implements Bloc {
   }
 
   Future<void> addApplicationsToStream(String pid) async {
-    print("got new pid $pid");
     portfolioId = pid;
     List<Application> appList;
     clearAppFeatureValuesStream();

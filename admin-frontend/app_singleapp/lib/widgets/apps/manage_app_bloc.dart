@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
@@ -17,10 +19,8 @@ class ManageAppBloc implements Bloc {
   GroupServiceApi _groupServiceApi;
   ServiceAccountServiceApi _serviceAccountServiceApi;
   List<Environment> environmentsList;
-  String tabName;
 
-  ManageAppBloc(this.mrClient, this.tabName)
-      : assert(mrClient != null) {
+  ManageAppBloc(this.mrClient) : assert(mrClient != null) {
     _appServiceApi = ApplicationServiceApi(mrClient.apiClient);
     _environmentServiceApi = EnvironmentServiceApi(mrClient.apiClient);
     _portfolioServiceApi = PortfolioServiceApi(mrClient.apiClient);
@@ -67,7 +67,7 @@ class ManageAppBloc implements Bloc {
   setApplicationId(String applicationId) {
     _pageStateBS.add(ManageAppPageState.loadingState);
     this.appId = applicationId;
-    if(applicationId!=null) {
+    if (applicationId != null) {
       _fetchGroups();
       _fetchEnvironments();
       _fetchServiceAccounts();
@@ -108,16 +108,16 @@ class ManageAppBloc implements Bloc {
         .catchError(mrClient.dialogError);
     List<ServiceAccount> serviceAccounts = await _serviceAccountServiceApi
         .searchServiceAccountsInPortfolio(application.portfolioId,
-        includePermissions: true)
+            includePermissions: true)
         .catchError(mrClient.dialogError);
     if (!_serviceAccountsBS.isClosed) {
       _serviceAccountsBS.add(serviceAccounts);
     }
   }
 
-  Future<void> getGroupRoles(groupId) async {
+  Future<void> getGroupRoles(String groupId) async {
     var group =
-    await _groupServiceApi.getGroup(groupId, includeGroupRoles: true);
+        await _groupServiceApi.getGroup(groupId, includeGroupRoles: true);
     if (!_groupWithRolesPS.isClosed) {
       _groupWithRolesPS.add(group);
     }
@@ -141,24 +141,24 @@ class ManageAppBloc implements Bloc {
     group.members = null;
     Group updatedGroup = await _groupServiceApi
         .updateGroup(gid, group,
-        includeGroupRoles: true,
-        includeMembers: false,
-        updateMembers: false,
-        updateApplicationGroupRoles: true,
-        updateEnvironmentGroupRoles: true)
+            includeGroupRoles: true,
+            includeMembers: false,
+            updateMembers: false,
+            updateApplicationGroupRoles: true,
+            updateEnvironmentGroupRoles: true)
         .catchError(mrClient.dialogError);
     unawaited(mrClient.streamValley.getCurrentApplicationEnvironments());
     return updatedGroup;
   }
 
-  Future<ServiceAccount> updateServiceAccountPermissions(String sid,
-      ServiceAccount serviceAccount) async {
+  Future<ServiceAccount> updateServiceAccountPermissions(
+      String sid, ServiceAccount serviceAccount) async {
     ServiceAccount updatedServiceAccount = await _serviceAccountServiceApi
         .update(
-      sid,
-      serviceAccount,
-      includePermissions: true,
-    )
+          sid,
+          serviceAccount,
+          includePermissions: true,
+        )
         .catchError(mrClient.dialogError);
     unawaited(mrClient.streamValley.getEnvironmentServiceAccountPermissions());
     return updatedServiceAccount;
@@ -166,8 +166,9 @@ class ManageAppBloc implements Bloc {
 
   Future<bool> deleteEnv(String eid) async {
     Environment toRemove = environmentsList.firstWhere((env) => env.id == eid);
-    Environment toUpdate = environmentsList.firstWhere((env) =>
-    env.priorEnvironmentId == toRemove.id, orElse: () => null);
+    Environment toUpdate = environmentsList.firstWhere(
+        (env) => env.priorEnvironmentId == toRemove.id,
+        orElse: () => null);
     if (toUpdate != null) {
       toUpdate.priorEnvironmentId = toRemove.priorEnvironmentId;
     }
@@ -200,8 +201,9 @@ class ManageAppBloc implements Bloc {
   }
 
   Future<void> createEnv(String name, bool _isProduction) async {
-    Environment toUpdate = environmentsList.firstWhere((env) =>
-    env.priorEnvironmentId == null, orElse: () => null);
+    Environment toUpdate = environmentsList.firstWhere(
+        (env) => env.priorEnvironmentId == null,
+        orElse: () => null);
     Environment env = Environment()
       ..name = name
       ..production = _isProduction;
@@ -222,26 +224,31 @@ class ManageAppBloc implements Bloc {
       application = null;
       mrClient.setCurrentAid(null);
       setApplicationId(null);
-    }
-    catch (e,s) {
+    } catch (e, s) {
       mrClient.dialogError(e, s);
-    };
+    }
+    ;
     return success;
   }
 
-  Future<void> updateApplication(Application application, String updatedAppName, String updateDescription) async {
+  Future<void> updateApplication(Application application, String updatedAppName,
+      String updateDescription) async {
     application.name = updatedAppName;
     application.description = updateDescription;
-    return _appServiceApi.updateApplication(application.id, application).then((onSuccess){
+    return _appServiceApi
+        .updateApplication(application.id, application)
+        .then((onSuccess) {
       mrClient.streamValley.getCurrentPortfolioApplications();
     });
   }
 
-  Future<void> createApplication (String applicationName, String appDescription) async {
+  Future<void> createApplication(
+      String applicationName, String appDescription) async {
     Application application = Application();
     application.name = applicationName;
     application.description = appDescription;
-    Application newApp = await _appServiceApi.createApplication(mrClient.currentPid, application);
+    Application newApp = await _appServiceApi.createApplication(
+        mrClient.currentPid, application);
     await mrClient.streamValley.getCurrentPortfolioApplications();
     mrClient.setCurrentAid(newApp.id);
   }

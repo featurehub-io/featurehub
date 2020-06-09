@@ -3,31 +3,33 @@ import 'package:flutter/rendering.dart';
 
 class FHInfoCardWidget extends StatelessWidget {
   final String message;
-  final double width;
 
-  const FHInfoCardWidget({Key key, @required this.message, this.width = 540}) : super(key: key);
+  const FHInfoCardWidget({Key key, @required this.message}) : super(key: key);
 
+  @override
   Widget build(BuildContext context) {
-    double _containerWidth = MediaQuery.of(context).size.width*0.5;
-    return Container(
-      width:_containerWidth,
-      child: Card(
-        margin: EdgeInsets.all(20),
-        color: Theme.of(context).backgroundColor,
-        child: Container(
-          padding: EdgeInsets.all(20),
-          child: Row(
-            children: <Widget>[
-              Container(padding:EdgeInsets.only(right:20),child: Icon(Icons.info, color: Color(0xff6DD3F4),size: 30,)),
-              Flexible(
-                child: Text(message,
-                  textAlign:TextAlign.left,
-                  style: Theme.of(context).textTheme.caption,),
-              ),
-            ],
-          ),
+    return Tooltip(
+      textStyle: Theme.of(context)
+          .textTheme
+          .bodyText2
+          .copyWith(color: Theme.of(context).primaryColor),
+      child: InkWell(
+        radius: 36.0,
+        onHover: (_) {},
+        onTap: () {},
+        child: Icon(
+          Icons.info,
+          size: 22.0,
         ),
       ),
+      message: message,
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Theme.of(context).primaryColorLight.withOpacity(0.9),
+        borderRadius: const BorderRadius.all(Radius.circular(4)),
+      ),
+      verticalOffset: 20,
+      waitDuration: Duration(milliseconds: 600),
     );
   }
 }
