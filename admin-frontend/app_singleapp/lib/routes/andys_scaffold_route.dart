@@ -14,8 +14,8 @@ class _AndysScaffoldRouteState extends State<AndysScaffoldRoute> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream:
-          BlocProvider.of<ManagementRepositoryClientBloc>(context).currentRoute,
+      stream: BlocProvider.of<ManagementRepositoryClientBloc>(context)
+          .routeChangedStream,
       builder: (BuildContext context, AsyncSnapshot<RouteChange> data) {
         if (data.hasData) {
           return ManagementRepositoryClientBloc.router

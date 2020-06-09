@@ -16,13 +16,13 @@ class ManageServiceAccountsBloc implements Bloc {
       _serviceAccountSearchResultSource.stream;
   final _serviceAccountSearchResultSource =
       BehaviorSubject<List<ServiceAccount>>();
-  StreamSubscription<String> _currentPid;
+  StreamSubscription<String> _currentPidSubscription;
 
   ManageServiceAccountsBloc(this.portfolioId, this.mrClient)
       : assert(mrClient != null) {
     _serviceAccountServiceApi = ServiceAccountServiceApi(mrClient.apiClient);
     // lets get this party started
-    _currentPid = mrClient.streamValley.currentPortfolioIdStream
+    _currentPidSubscription = mrClient.streamValley.currentPortfolioIdStream
         .listen(addServiceAccountsToStream);
   }
 
@@ -30,7 +30,8 @@ class ManageServiceAccountsBloc implements Bloc {
     portfolioId = portfolio;
     if (portfolioId != null) {
       List<ServiceAccount> serviceAccounts = await _serviceAccountServiceApi
-          .searchServiceAccountsInPortfolio(portfolioId, includePermissions: true)
+          .searchServiceAccountsInPortfolio(portfolioId,
+              includePermissions: true)
           .catchError(mrClient.dialogError);
       if (!_serviceAccountSearchResultSource.isClosed) {
         _serviceAccountSearchResultSource.add(serviceAccounts);
@@ -83,6 +84,6 @@ class ManageServiceAccountsBloc implements Bloc {
   @override
   void dispose() {
     _serviceAccountSearchResultSource.close();
-    _currentPid.cancel();
+    _currentPidSubscription.cancel();
   }
 }

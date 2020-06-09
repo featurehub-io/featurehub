@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:app_singleapp/api/client_api.dart';
+import 'package:app_singleapp/api/router.dart';
 import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/common/fh_footer_button_bar.dart';
@@ -23,6 +24,20 @@ class ServiceAccountPermissionsWidget extends StatefulWidget {
 class _ServiceAccountPermissionState
     extends State<ServiceAccountPermissionsWidget> {
   String selectedServiceAccount;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    RouteChange route =
+        BlocProvider.of<ManagementRepositoryClientBloc>(context).currentRoute;
+
+    if (route.params['service-account'] != null) {
+      selectedServiceAccount = route.params['service-account'][0];
+      ManageAppBloc bloc = BlocProvider.of(context);
+      bloc.selectServiceAccount(selectedServiceAccount);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,10 +81,7 @@ class _ServiceAccountPermissionState
                             padding: EdgeInsets.only(left: 10, top: 20),
                             child: Text(
                               "Service account",
-                              style: Theme
-                                  .of(context)
-                                  .textTheme
-                                  .caption,
+                              style: Theme.of(context).textTheme.caption,
                             )),
                         Container(
                             padding: EdgeInsets.fromLTRB(10, 0, 0, 5),
@@ -80,7 +92,7 @@ class _ServiceAccountPermissionState
                       padding: const EdgeInsets.only(left: 16.0, top: 16.0),
                       child: FHInfoCardWidget(
                           message:
-                          "The 'Lock/Unlock' and 'Change value' permissions \n"
+                              "The 'Lock/Unlock' and 'Change value' permissions \n"
                               "are so you can change these states through the API's \n"
                               "e.g., when running tests. \n \n"
                               "We strongly recommend setting production environments \n"
@@ -95,6 +107,7 @@ class _ServiceAccountPermissionState
 
   Widget serviceAccountDropdown(
       List<ServiceAccount> serviceAccounts, ManageAppBloc bloc) {
+    print("drawing with $selectedServiceAccount");
     return Container(
       child: DropdownButton(
         items: serviceAccounts.map((ServiceAccount serviceAccount) {
@@ -210,10 +223,7 @@ class _ServiceAccountPermissionDetailState
                           children: <Widget>[
                             Text(
                                 "Set the service account access to features for each environment",
-                                style: Theme
-                                    .of(context)
-                                    .textTheme
-                                    .caption),
+                                style: Theme.of(context).textTheme.caption),
                           ],
                         )),
                     table,
@@ -239,10 +249,10 @@ class _ServiceAccountPermissionDetailState
                             newSa.permissions = newList;
                             widget.bloc
                                 .updateServiceAccountPermissions(
-                                newSa.id, saSnapshot.data)
+                                    newSa.id, saSnapshot.data)
                                 .then((serviceAccount) => widget.bloc.mrClient
-                                .addSnackbar(Text(
-                                "Service account '${serviceAccount?.name}' updated!")))
+                                    .addSnackbar(Text(
+                                        "Service account '${serviceAccount?.name}' updated!")))
                                 .catchError(widget.bloc.mrClient.dialogError);
                           },
                           title: 'Update'),
@@ -316,7 +326,7 @@ class _ServiceAccountPermissionDetailState
         Map<String, ServiceAccountPermission>();
     environments.forEach((environment) {
       ServiceAccountPermission sap = serviceAccount.permissions.firstWhere(
-              (item) => item.environmentId == environment.id,
+          (item) => item.environmentId == environment.id,
           orElse: () => null);
       if (sap == null) {
         sap = ServiceAccountPermission();

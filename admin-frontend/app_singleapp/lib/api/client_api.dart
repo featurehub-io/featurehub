@@ -69,7 +69,9 @@ class ManagementRepositoryClientBloc implements Bloc {
     _menuOpened.add(value);
   }
 
-  Stream<RouteChange> get currentRoute => _router.stream;
+  Stream<RouteChange> get routeChangedStream => _router.stream;
+
+  RouteChange get currentRoute => _router.value;
 
   void swapRoutes(RouteChange route) {
     _router.add(route);

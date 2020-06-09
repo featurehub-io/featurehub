@@ -8,6 +8,11 @@ class RouteChange {
   Map<String, List<String>> params;
   TransitionType transition;
   String route;
+
+  @override
+  String toString() {
+    return "route: $route - params $params";
+  }
 }
 
 class Handler {

@@ -281,7 +281,7 @@ class _MenuItem extends StatelessWidget {
       },
       child: StreamBuilder<RouteChange>(
           stream: BlocProvider.of<ManagementRepositoryClientBloc>(context)
-              .currentRoute,
+              .routeChangedStream,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               final selected = snapshot.data.route == path &&

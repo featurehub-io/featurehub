@@ -259,7 +259,7 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
     }
 
     _routeChange = BlocProvider.of<ManagementRepositoryClientBloc>(context)
-        .currentRoute
+        .routeChangedStream
         .listen((routeChange) {
       if (routeChange.route == '/manage-app') {
         switch (routeChange.params['tab-name'][0]) {
