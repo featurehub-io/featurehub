@@ -122,6 +122,8 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   String get currentPid => getCurrentPid();
   String get currentAid => getCurrentAid();
+  set currentAid(String aid) => setCurrentAid(aid);
+  set currentPid(String pid) => setCurrentPid(pid);
 
   Portfolio get currentPortfolio {
     return streamValley.currentPortfolio;

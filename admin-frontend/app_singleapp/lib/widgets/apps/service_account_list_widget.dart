@@ -183,7 +183,10 @@ class _ServiceAccountEnvironment extends StatelessWidget {
                   FHFlatButtonTransparent(
                     keepCase: true,
                     title: found ? 'Change access' : 'Add access',
-                    onPressed: () => {
+                    onPressed: () {
+                      BlocProvider.of<ManagementRepositoryClientBloc>(context)
+                          .currentAid = application.id;
+
                       ManagementRepositoryClientBloc.router
                           .navigateTo(context, '/manage-app',
                               replace: true,
@@ -191,7 +194,7 @@ class _ServiceAccountEnvironment extends StatelessWidget {
                                 'service-account': [serviceAccount.id],
                                 'tab-name': ['service-accounts']
                               },
-                              transition: TransitionType.material)
+                              transition: TransitionType.material);
                     },
                   )
                 ],
