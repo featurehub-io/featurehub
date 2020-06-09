@@ -261,14 +261,13 @@ class _MenuItem extends StatelessWidget {
       : super(key: key);
 
   bool equalsParams(Map<String, List<String>> snapParams) {
-    Map<String, List<String>> p1 = {}
-      ..addAll(snapParams ?? {})
-      ..remove('id');
-    Map<String, List<String>> p2 = {}..addAll(params ?? {});
+    Map<String, List<String>> p1 = snapParams ?? {};
+    Map<String, List<String>> p2 = params ?? {};
 
-    return const MapEquality(
-            keys: const IdentityEquality(), values: const ListEquality())
-        .equals(p1, p2);
+    // the p2 keys are the keys _we_ care about, the other keys in the list like
+    // "id" or "service-name" can be there and don't impact the match.
+    return p2.keys
+        .every((p2Key) => const ListEquality().equals(p1[p2Key], p2[p2Key]));
   }
 
   @override

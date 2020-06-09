@@ -65,7 +65,8 @@ class _ServiceAccountWidget extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(30, 5, 30, 5),
         decoration: BoxDecoration(
-            color: Colors.white, border: Border(bottom: bs, left: bs, right: bs)),
+            color: Colors.white,
+            border: Border(bottom: bs, left: bs, right: bs)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -74,8 +75,8 @@ class _ServiceAccountWidget extends StatelessWidget {
               children: <Widget>[
                 _ServiceAccountDescription(serviceAccount: serviceAccount),
                 StreamBuilder<bool>(
-                    stream:
-                        bloc.mrClient.personState.isCurrentPortfolioOrSuperAdmin,
+                    stream: bloc
+                        .mrClient.personState.isCurrentPortfolioOrSuperAdmin,
                     builder: (context, snapshot) {
                       if (snapshot.hasData && snapshot.data) {
                         return _adminFunctions(context);
@@ -171,9 +172,10 @@ class _ServiceAccountEnvironment extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(application.name),
-              Text(found ?
-                      'This service account has permissions to one or more environments in this application.' :
-                      'This service account has no permissions to any environments in this application.',
+              Text(
+                  found
+                      ? 'This service account has permissions to one or more environments in this application.'
+                      : 'This service account has no permissions to any environments in this application.',
                   style: Theme.of(context).textTheme.caption),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -182,15 +184,14 @@ class _ServiceAccountEnvironment extends StatelessWidget {
                     keepCase: true,
                     title: found ? 'Change access' : 'Add access',
                     onPressed: () => {
-                      ManagementRepositoryClientBloc.router.navigateTo(
-                          context,
-                          '/manage-app',
-                          replace: true,
-                          params: {
-                            'id': [application.id],
-                            'tab-name': ['service-accounts']
-                          },
-                          transition: TransitionType.material)
+                      ManagementRepositoryClientBloc.router
+                          .navigateTo(context, '/manage-app',
+                              replace: true,
+                              params: {
+                                'service-account': [serviceAccount.id],
+                                'tab-name': ['service-accounts']
+                              },
+                              transition: TransitionType.material)
                     },
                   )
                 ],
@@ -221,7 +222,11 @@ class _ServiceAccountDescription extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text(serviceAccount.name, style: Theme.of(context).textTheme.subtitle1.copyWith(color: Theme.of(context).primaryColor)),
+                Text(serviceAccount.name,
+                    style: Theme.of(context)
+                        .textTheme
+                        .subtitle1
+                        .copyWith(color: Theme.of(context).primaryColor)),
                 Text(
                   serviceAccount.description != null
                       ? "${serviceAccount.description}"
