@@ -1,8 +1,10 @@
 import 'dart:async';
+
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart';
+
 import 'feature_value_status_tags.dart';
 
 class FeatureValuesBloc implements Bloc {
@@ -26,10 +28,12 @@ class FeatureValuesBloc implements Bloc {
   // provides back a stream of updates to any listener for this cell
   Stream<FeatureValue> featureValueByEnvironment(String envId) {
     return _fvUpdates.putIfAbsent(envId, () {
-      final fv = _newFeatureValues.putIfAbsent(envId, () => FeatureValue()
-        ..environmentId = envId
-        ..locked = false
-        ..key = feature.key);
+      final fv = _newFeatureValues.putIfAbsent(
+          envId,
+          () => FeatureValue()
+            ..environmentId = envId
+            ..locked = false
+            ..key = feature.key);
 
       return BehaviorSubject<FeatureValue>.seeded(fv);
     });
@@ -53,12 +57,9 @@ class FeatureValuesBloc implements Bloc {
     _dirtyBS.add(_dirty.values.any((d) => d == true));
   }
 
-  FeatureValuesBloc(
-    this.applicationId,
-    this.feature,
-    this.mrClient,
-    List<FeatureValue> featureValuesThisFeature
-  ) : assert(mrClient != null) {
+  FeatureValuesBloc(this.applicationId, this.feature, this.mrClient,
+      List<FeatureValue> featureValuesThisFeature)
+      : assert(mrClient != null) {
     _featureServiceApi = FeatureServiceApi(mrClient.apiClient);
     _environmentServiceApi = EnvironmentServiceApi(mrClient.apiClient);
     // lets get this party started
@@ -66,14 +67,12 @@ class FeatureValuesBloc implements Bloc {
     featureValuesThisFeature.forEach((fv) {
       // make a copy so our changes don't leak back into the main list
       _newFeatureValues[fv.environmentId] = fv.copyWith();
-      print("new features = ${_newFeatureValues[fv.environmentId]}");
       _originalFeatureValues[fv.environmentId] = fv.copyWith();
     });
   }
 
   @override
-  void dispose() {
-  }
+  void dispose() {}
 
   bool hasValue(FeatureEnvironment fe) {
     return this._newFeatureValues[fe.environment.id]?.valueBoolean != null ||
@@ -90,7 +89,10 @@ class FeatureValuesBloc implements Bloc {
   }
 
   Future<Environment> getEnvironment(String envId) async {
-    return _environmentServiceApi.getEnvironment(envId, includeServiceAccounts: true, includeSdkUrl: true).catchError(mrClient.dialogError);
+    return _environmentServiceApi
+        .getEnvironment(envId,
+            includeServiceAccounts: true, includeSdkUrl: true)
+        .catchError(mrClient.dialogError);
   }
 
   void reset() {
@@ -106,12 +108,14 @@ class FeatureValuesBloc implements Bloc {
 
   Future<bool> updateDirtyStates() async {
     List<FeatureValue> updates = [];
-    Map<String, FeatureValue> featureValuesWeAreCheckingForUpdates = {}..addAll(_newFeatureValues);
+    Map<String, FeatureValue> featureValuesWeAreCheckingForUpdates = {}
+      ..addAll(_newFeatureValues);
 
     _originalFeatureValues.forEach((envId, value) {
       final _newFeatureValue = featureValuesWeAreCheckingForUpdates[envId];
       if (_newFeatureValue != null) {
-        featureValuesWeAreCheckingForUpdates.remove(envId); // we are then left with ones that just have new data
+        featureValuesWeAreCheckingForUpdates.remove(
+            envId); // we are then left with ones that just have new data
 
         if (_newFeatureValue != value) {
           updates.add(_newFeatureValue);
@@ -126,12 +130,9 @@ class FeatureValuesBloc implements Bloc {
       }
     });
 
-//    updates.forEach((element) {
-//      print("sending update ${element.environmentId} version ${element.version}");
-//    });
-
     // TODO: catching of error, reporting of dialog
-    await _featureServiceApi.updateAllFeatureValuesByApplicationForKey(applicationId, feature.key, updates);
+    await _featureServiceApi.updateAllFeatureValuesByApplicationForKey(
+        applicationId, feature.key, updates);
 
     return true;
   }

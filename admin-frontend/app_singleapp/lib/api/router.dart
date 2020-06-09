@@ -11,7 +11,7 @@ class RouteChange {
 
   @override
   String toString() {
-    return "route: $route - params $params";
+    return 'route: $route - params $params';
   }
 }
 
@@ -40,7 +40,7 @@ class Router {
     return (f == null) ? notFoundHandler : f.handlerFunc;
   }
 
-  navigateTo(BuildContext context, String route,
+  void navigateTo(BuildContext context, String route,
       {bool replace,
       TransitionType transition,
       Map<String, List<String>> params}) {

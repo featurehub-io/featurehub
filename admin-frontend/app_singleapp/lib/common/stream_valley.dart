@@ -52,7 +52,7 @@ class StreamValley {
 
   final _currentPortfolioIdSource = BehaviorSubject<String>();
 
-  get currentPortfolioId => _currentPortfolioIdSource.value;
+  String get currentPortfolioId => _currentPortfolioIdSource.value;
 
   set currentPortfolioId(String value) {
     currentAppId = null;
@@ -78,7 +78,7 @@ class StreamValley {
   final _currentAppIdSource = BehaviorSubject<String>();
   Stream<String> get currentAppIdStream => _currentAppIdSource.stream;
 
-  get currentAppId => _currentAppIdSource.value;
+  String get currentAppId => _currentAppIdSource.value;
 
   set currentAppId(String value) {
     _currentAppIdSource.add(value);

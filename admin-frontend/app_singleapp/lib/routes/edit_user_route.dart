@@ -54,10 +54,10 @@ class _EditUserFormState extends State<EditUserFormWidget> {
   @override
   void initState() {
     super.initState();
-    if (_email.text == "") {
+    if (_email.text == '') {
       _email.text = widget.person.email;
     }
-    if (_name.text == "") {
+    if (_name.text == '') {
       _name.text = widget.person.name;
     }
   }
@@ -99,7 +99,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
                   controller: _email,
                   decoration: FHFilledInputDecoration(labelText: 'Email'),
                   //initialValue: bloc.person != null ? bloc.person.email : '',
-                  validator: (v) => v.isEmpty ? "Edit email address" : null,
+                  validator: (v) => v.isEmpty ? 'Edit email address' : null,
                 ),
                 Padding(
                   padding: EdgeInsets.only(top: 30),
@@ -107,7 +107,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
                     controller: _name,
                     decoration: FHFilledInputDecoration(labelText: 'Name'),
                     //  initialValue: bloc.person !=null ? bloc.person.name : '',
-                    validator: (v) => v.isEmpty ? "Edit names" : null,
+                    validator: (v) => v.isEmpty ? 'Edit names' : null,
                   ),
                 ),
                 Padding(
@@ -129,7 +129,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
                     _formKey.currentState.reset;
                   }
                   ManagementRepositoryClientBloc.router.navigateTo(
-                      context, "/manage-users",
+                      context, '/manage-users',
                       replace: true, transition: TransitionType.material);
                 },
                 title: 'Cancel',
@@ -145,7 +145,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
                           bloc.mrClient.addSnackbar(Text(
                               'User ${bloc.person.name} has been updated'));
                           ManagementRepositoryClientBloc.router.navigateTo(
-                              context, "/manage-users",
+                              context, '/manage-users',
                               replace: true,
                               transition: TransitionType.material);
                         } catch (e, s) {
@@ -198,20 +198,20 @@ class _UserPasswordUpdateDialogWidgetState
               ),
               TextFormField(
                   controller: _password,
-                  decoration: InputDecoration(labelText: "New password"),
+                  decoration: InputDecoration(labelText: 'New password'),
                   validator: ((v) {
                     if (v.isEmpty) {
-                      return "Please enter new password";
+                      return 'Please enter new password';
                     }
                     return null;
                   })),
               TextFormField(
                   controller: _passwordConfirm,
                   decoration:
-                      InputDecoration(labelText: "Confirm new password"),
+                      InputDecoration(labelText: 'Confirm new password'),
                   validator: ((v) {
                     if (v.isEmpty) {
-                      return "Please confirm new password";
+                      return 'Please confirm new password';
                     }
                     if (v != _password.text) {
                       return "Passwords don't match";
@@ -223,13 +223,13 @@ class _UserPasswordUpdateDialogWidgetState
         ),
         actions: <Widget>[
           FHOutlineButton(
-            title: "Cancel",
+            title: 'Cancel',
             onPressed: () {
               widget.bloc.mrClient.removeOverlay();
             },
           ),
           FHFlatButton(
-              title: "Save",
+              title: 'Save',
               onPressed: (() async {
                 if (_formKey.currentState.validate()) {
                   try {

@@ -18,12 +18,12 @@ class RegisterURLRoute extends StatefulWidget {
 }
 
 class RegisterURLState extends State<RegisterURLRoute> {
-  final _formKey = GlobalKey<FormState>(debugLabel: "registration url");
+  final _formKey = GlobalKey<FormState>(debugLabel: 'registration url');
   final _name = TextEditingController();
   final _pw1 = TextEditingController();
   final _pw2 = TextEditingController();
   final _PASSWORD_SCORE_THRESHOLD = 1;
-  Text _passwordStrength = Text("");
+  Text _passwordStrength = Text('');
   @override
   Widget build(BuildContext context) {
     var bloc = BlocProvider.of<RegisterBloc>(context);
@@ -39,8 +39,6 @@ class RegisterURLState extends State<RegisterURLRoute> {
                 stream: bloc.formState,
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
-                    print("snapshot.data=${snapshot.data}");
-                    print("bloc.person ${bloc.person}");
                     if (snapshot.data == RegisterUrlForm.initialState) {
                       return initialState(context, bloc);
                     } else if (snapshot.data == RegisterUrlForm.successState) {
@@ -53,14 +51,14 @@ class RegisterURLState extends State<RegisterURLRoute> {
                         'Please contact your FeatureHub administrator.';
 
                     if (snapshot.error is ApiException &&
-                        !snapshot.error.toString().contains("500")) {
+                        !snapshot.error.toString().contains('500')) {
                       humanErrorMessage =
                           'This Register URL is either expired or invalid.\n\n'
                           'Check your URL is correct or contact your FeatureHub administrator.';
                     }
                     return Text(humanErrorMessage);
                   }
-                  return Text("Validating your invitation URL");
+                  return Text('Validating your invitation URL');
                 })),
       ],
     ));
@@ -91,7 +89,6 @@ class RegisterURLState extends State<RegisterURLRoute> {
   }
 
   Widget initialState(BuildContext context, RegisterBloc bloc) {
-    print("init state ${bloc.person}");
     return Form(
       key: _formKey,
       child: Column(
@@ -118,7 +115,7 @@ class RegisterURLState extends State<RegisterURLRoute> {
             autofocus: true,
             decoration: InputDecoration(labelText: 'Name'),
             textInputAction: TextInputAction.next,
-            validator: (v) => v.isEmpty ? "Please enter your name" : null,
+            validator: (v) => v.isEmpty ? 'Please enter your name' : null,
           ),
           TextFormField(
               controller: _pw1,
@@ -127,10 +124,10 @@ class RegisterURLState extends State<RegisterURLRoute> {
               decoration: InputDecoration(labelText: 'Password'),
               validator: (v) {
                 if (v.isEmpty) {
-                  return "Please enter your password";
+                  return 'Please enter your password';
                 }
                 if (v.length < 7) {
-                  return "Password must be at least 7 characters!";
+                  return 'Password must be at least 7 characters!';
                 }
                 if (_pw2.text.isNotEmpty && v != _pw2.text) {
                   return "Passwords don't match";
@@ -149,7 +146,7 @@ class RegisterURLState extends State<RegisterURLRoute> {
               decoration: InputDecoration(labelText: 'Confirm Password'),
               validator: (v) {
                 if (v.isEmpty) {
-                  return "Please confirm your password";
+                  return 'Please confirm your password';
                 }
                 if (v != _pw1.text) {
                   return "Passwords don't match";
@@ -176,13 +173,13 @@ class RegisterURLState extends State<RegisterURLRoute> {
 
   void setPasswordStrength() {
     Result result = Xcvbnm().estimate(_pw1.text);
-    String state = "Weak";
+    String state = 'Weak';
     if (result.score == 1) {
-      state = "Below average";
+      state = 'Below average';
     } else if (result.score == 2) {
-      state = "Good";
+      state = 'Good';
     } else if (result.score == 3) {
-      state = "Strong";
+      state = 'Strong';
     }
     Color stateColor = result.score < this._PASSWORD_SCORE_THRESHOLD
         ? Colors.red

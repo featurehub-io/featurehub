@@ -16,28 +16,32 @@ abstract class FHSharedPrefsContract {
 }
 
 class FHSharedPrefs extends FHSharedPrefsContract {
-  SharedPreferences _prefs;
+  final SharedPreferences _prefs;
 
   static Future<FHSharedPrefs> getSharedInstance(
-      { SharedPreferences prefs }) async {
+      {SharedPreferences prefs}) async {
     final sharedPrefs = prefs ?? await SharedPreferences.getInstance();
     return Future.value(FHSharedPrefs._internal(sharedPrefs));
   }
 
   FHSharedPrefs._internal(this._prefs);
 
+  @override
   Future<bool> saveString(String key, String value) async {
     return await _prefs.setString(key, value);
   }
 
+  @override
   Future<String> getString(String key) async {
     return _prefs.getString(key);
   }
 
+  @override
   Future<void> delete(String key) async {
     await _prefs.remove(key);
   }
 
+  @override
   Future<void> deleteAll() async {
     await _prefs.clear();
   }

@@ -7,8 +7,8 @@ import 'package:app_singleapp/widgets/features/delete_feature_widget.dart';
 import 'package:app_singleapp/widgets/features/feature_status_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:timeago/timeago.dart' as timeago;
 import 'package:mrapi/api.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 import 'feature_values_bloc.dart';
 
@@ -37,7 +37,7 @@ class FeatureValueNameCell extends StatelessWidget {
                           .caption
                           .copyWith(color: Theme.of(context).buttonColor)),
                   FHCopyToClipboard(
-                    tooltipMessage: "Copy key",
+                    tooltipMessage: 'Copy key',
                     copyString: feature.key,
                   )
                 ],
@@ -48,7 +48,7 @@ class FeatureValueNameCell extends StatelessWidget {
                   Expanded(
                     child: Text(feature.key,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontFamily: "source", fontSize: 12)),
+                        style: TextStyle(fontFamily: 'source', fontSize: 12)),
                   ),
                 ],
               )
@@ -71,9 +71,9 @@ class FeatureValueNameCell extends StatelessWidget {
                       children: <Widget>[
                         Text(feature.alias,
                             style:
-                                TextStyle(fontFamily: "source", fontSize: 12)),
+                                TextStyle(fontFamily: 'source', fontSize: 12)),
                         FHCopyToClipboard(
-                          tooltipMessage: "Copy alias key",
+                          tooltipMessage: 'Copy alias key',
                           copyString: feature.alias,
                         )
                       ],
@@ -112,8 +112,8 @@ class FeatureEditDeleteCell extends StatelessWidget {
                           color: Theme.of(context).buttonColor,
                         ),
                         onPressed: () => bloc.mrClient.addOverlay(
-                  (BuildContext context) => CreateFeatureDialogWidget(
-                  bloc: bloc, feature: feature)))
+                            (BuildContext context) => CreateFeatureDialogWidget(
+                                bloc: bloc, feature: feature)))
                     : FHIconButton(
                         icon: Icon(
                           Icons.edit,
@@ -144,7 +144,6 @@ class FeatureEditDeleteCell extends StatelessWidget {
         });
   }
 }
-
 
 class FeatureValueUpdatedByCell extends StatelessWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
@@ -231,33 +230,29 @@ class FeatureValueActionCell extends StatelessWidget {
   }
 }
 
-
-
 class FeatureValueUpdatedBy {
   static TableRow build(BuildContext context, LineStatusFeature featureStatuses,
       Feature feature) {
     FeatureValuesBloc fvBloc = BlocProvider.of(context);
 
-    return TableRow(
-        children: [
-          Text(''),
-          ...featureStatuses.environmentFeatureValues
-              .map((e) => FeatureValueUpdatedByCell(
-                  environmentFeatureValue: e, feature: feature, fvBloc: fvBloc))
-              .toList()
-        ]);
+    return TableRow(children: [
+      Text(''),
+      ...featureStatuses.environmentFeatureValues
+          .map((e) => FeatureValueUpdatedByCell(
+              environmentFeatureValue: e, feature: feature, fvBloc: fvBloc))
+          .toList()
+    ]);
   }
 }
 
 class FeatureValueActions {
   static TableRow build(BuildContext context, LineStatusFeature featureStatuses,
       Feature feature, Function closeCallback) {
-    return TableRow(
-        children: [
-          ...featureStatuses.environmentFeatureValues
-              .map((e) => SizedBox.shrink())
-              .toList(),
-          FeatureValueActionCell(closeCallback: closeCallback),
-        ]);
+    return TableRow(children: [
+      ...featureStatuses.environmentFeatureValues
+          .map((e) => SizedBox.shrink())
+          .toList(),
+      FeatureValueActionCell(closeCallback: closeCallback),
+    ]);
   }
 }

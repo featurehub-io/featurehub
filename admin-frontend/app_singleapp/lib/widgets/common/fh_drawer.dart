@@ -153,14 +153,14 @@ class _SiteAdminOptionsWidget extends StatelessWidget {
         builder: (context, snapshot) {
           return Column(children: <Widget>[
             _MenuItem(
-                name: "Portfolios",
+                name: 'Portfolios',
                 iconData: Icons.business_center,
-                path: "/portfolios",
+                path: '/portfolios',
                 params: {}),
             _MenuItem(
-                name: "Users",
+                name: 'Users',
                 iconData: AntDesign.addusergroup,
-                path: "/manage-users",
+                path: '/manage-users',
                 params: {}),
           ]);
         });
@@ -206,25 +206,25 @@ class _ApplicationSettings extends StatelessWidget {
           if (snapshot.hasData) {
             return Column(children: <Widget>[
               _MenuItem(
-                  name: "Environments",
+                  name: 'Environments',
                   iconData: AntDesign.bars,
-                  path: "/manage-app",
+                  path: '/manage-app',
                   params: {
-                    "tab-name": ["environments"]
+                    'tab-name': ['environments']
                   }),
               _MenuItem(
-                  name: "Group permissions",
+                  name: 'Group permissions',
                   iconData: MaterialCommunityIcons.check_box_multiple_outline,
-                  path: "/manage-app",
+                  path: '/manage-app',
                   params: {
-                    "tab-name": ["group-permissions"]
+                    'tab-name': ['group-permissions']
                   }),
               _MenuItem(
-                  name: "Service account permissions",
+                  name: 'Service account permissions',
                   iconData: MaterialCommunityIcons.cogs,
-                  path: "/manage-app",
+                  path: '/manage-app',
                   params: {
-                    "tab-name": ["service-accounts"]
+                    'tab-name': ['service-accounts']
                   }),
             ]);
           } else {
@@ -243,9 +243,9 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _MenuItem(
-      name: "Features",
+      name: 'Features',
       iconData: Icons.dashboard,
-      path: "/feature-status",
+      path: '/feature-status',
       params: {},
     );
   }
@@ -265,7 +265,7 @@ class _MenuItem extends StatelessWidget {
     Map<String, List<String>> p2 = params ?? {};
 
     // the p2 keys are the keys _we_ care about, the other keys in the list like
-    // "id" or "service-name" can be there and don't impact the match.
+    // 'id' or 'service-name' can be there and don't impact the match.
     return p2.keys
         .every((p2Key) => const ListEquality().equals(p1[p2Key], p2[p2Key]));
   }
@@ -302,14 +302,14 @@ class _MenuItem extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(left: 24.0),
                       child: selected
-                          ? Text(" ${name}",
+                          ? Text(' ${name}',
                               style: GoogleFonts.roboto(
                                 textStyle:
                                     Theme.of(context).textTheme.bodyText2,
                                 fontWeight: FontWeight.w600,
                                 color: Theme.of(context).primaryColor,
                               ))
-                          : Text(" ${name}",
+                          : Text(' ${name}',
                               style: Theme.of(context).textTheme.bodyText2),
                     )
                   ],

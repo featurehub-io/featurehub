@@ -57,15 +57,14 @@ class _SetupPage2State extends State<SetupPage2Widget> {
               style: Theme.of(context).textTheme.headline6,
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(0,10,0,10),
+              padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
               child: Text(
                   'Nice work. Next step, before we can add an application we need a "Portfolio" to give your applications a home.',
-                  style: Theme.of(context).textTheme.bodyText1
-            ),
+                  style: Theme.of(context).textTheme.bodyText1),
             ),
             TextFormField(
               controller: _org,
-                autofocus: true,
+              autofocus: true,
               decoration: InputDecoration(
                   hintText: 'The name of your organization',
                   hintStyle: Theme.of(context).textTheme.caption,
@@ -83,7 +82,7 @@ class _SetupPage2State extends State<SetupPage2Widget> {
                   labelText: 'Portfolio'),
               textInputAction: TextInputAction.done,
               validator: (v) => v.isEmpty
-                  ? "Please enter the name of your first portfolio"
+                  ? 'Please enter the name of your first portfolio'
                   : null,
             ),
             Row(
@@ -126,8 +125,8 @@ class _SetupPage2State extends State<SetupPage2Widget> {
   }
 
   void copyIn() {
-    _org.text = widget.bloc.orgName ?? "";
-    _portfolio.text = widget.bloc.portfolio ?? "";
+    _org.text = widget.bloc.orgName ?? '';
+    _portfolio.text = widget.bloc.portfolio ?? '';
   }
 
   void copyState() {

@@ -140,13 +140,13 @@ class _FeatureValueJsonEnvironmentCellState
                       title: 'Cancel'),
                   enabled
                       ? FHOutlineButton(
-                          title: "set value",
+                          title: 'set value',
                           onPressed: (() {
                             if (validateJson(tec.text) != null) {
                               widget.fvBloc.mrClient.customError(
-                                  messageTitle: "JSON not valid!",
+                                  messageTitle: 'JSON not valid!',
                                   messageBody:
-                                      "Make sure your keys and values are in double quotes.");
+                                      'Make sure your keys and values are in double quotes.');
                             } else {
                               _valueChanged(snap);
                               widget.fvBloc.mrClient.removeOverlay();
@@ -180,8 +180,8 @@ class ConfigurationViewerField extends StatelessWidget {
           Flexible(
             flex: 4,
             child: Text(
-              fv.valueJson.replaceAll("\n", ""),
-              style: TextStyle(fontFamily: "source", fontSize: 12),
+              fv.valueJson.replaceAll('\n', ''),
+              style: TextStyle(fontFamily: 'source', fontSize: 12),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -190,10 +190,11 @@ class ConfigurationViewerField extends StatelessWidget {
       );
     } else if ((fv == null || fv.valueJson == null) && canEdit) {
       return Text(
-        "Edit value",
+        'Edit value',
         style: Theme.of(context).textTheme.caption,
       );
     }
-    return Text("No editing permissions", style: Theme.of(context).textTheme.caption);
+    return Text('No editing permissions',
+        style: Theme.of(context).textTheme.caption);
   }
 }

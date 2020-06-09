@@ -1,6 +1,6 @@
 import 'package:app_singleapp/api/client_api.dart';
-import 'package:bloc_provider/bloc_provider.dart';
 import 'package:app_singleapp/widgets/user/common/portfolio_group.dart';
+import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart' as rxdart;
 
@@ -22,7 +22,6 @@ class SelectPortfolioGroupBloc implements Bloc {
       _addedGroupsStream.stream;
 
   SelectPortfolioGroupBloc(this.mrClient) : assert(mrClient != null) {
-    print('Initialise select portfolio and group bloc');
     loadInitialData();
   }
 
@@ -39,7 +38,6 @@ class SelectPortfolioGroupBloc implements Bloc {
           .findPortfolios(includeGroups: true);
       _currentPortfoliosStream.add(data);
       portfoliosList = data;
-      print('Found portfolios');
     } catch (e, s) {
       mrClient.dialogError(e, s);
     }
@@ -57,9 +55,7 @@ class SelectPortfolioGroupBloc implements Bloc {
   }
 
   pushExistingGroupToStream(List<PortfolioGroup> groupList) {
-    groupList.forEach((group) => {
-          listOfAddedPortfolioGroups.add(group)
-        });
+    groupList.forEach((group) => {listOfAddedPortfolioGroups.add(group)});
     _addedGroupsStream.add(listOfAddedPortfolioGroups);
   }
 
@@ -68,7 +64,6 @@ class SelectPortfolioGroupBloc implements Bloc {
     Group foundGroup;
     if (currentPortfolio != null) {
       foundGroup = currentPortfolio.groups.firstWhere((g) => g.id == groupID);
-      print('found group ' + foundGroup.toString());
       listOfAddedPortfolioGroups
           .add(PortfolioGroup(currentPortfolio, foundGroup));
       //add both current portfolio and group so we can later display selected groups in chips
@@ -78,8 +73,7 @@ class SelectPortfolioGroupBloc implements Bloc {
 
   pushAdminGroupToStream() {
     Group adminGroup = mrClient.organization.orgGroup;
-    listOfAddedPortfolioGroups
-      .add(PortfolioGroup(null, adminGroup));
+    listOfAddedPortfolioGroups.add(PortfolioGroup(null, adminGroup));
     _addedGroupsStream.add(listOfAddedPortfolioGroups);
   }
 
@@ -108,6 +102,4 @@ class SelectPortfolioGroupBloc implements Bloc {
     listOfAddedPortfolioGroups.clear();
     currentPortfolio = null;
   }
-
-
 }

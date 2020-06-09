@@ -46,13 +46,13 @@ class _GroupUpdateDialogWidgetState extends State<GroupUpdateDialogWidget> {
             children: <Widget>[
               TextFormField(
                   controller: _groupName,
-                  decoration: InputDecoration(labelText: "Group name"),
+                  decoration: InputDecoration(labelText: 'Group name'),
                   validator: ((v) {
                     if (v.isEmpty) {
-                      return "Please enter a group name";
+                      return 'Please enter a group name';
                     }
                     if (v.length < 4) {
-                      return "Group name needs to be at least 4 characters long";
+                      return 'Group name needs to be at least 4 characters long';
                     }
                     return null;
                   })),
@@ -61,13 +61,13 @@ class _GroupUpdateDialogWidgetState extends State<GroupUpdateDialogWidget> {
         ),
         actions: <Widget>[
           FHOutlineButton(
-            title: "Cancel",
+            title: 'Cancel',
             onPressed: () {
               widget.bloc.mrClient.removeOverlay();
             },
           ),
           FHFlatButton(
-              title: widget.group == null ? "Create" : "Update",
+              title: widget.group == null ? 'Create' : 'Update',
               onPressed: (() {
                 if (_formKey.currentState.validate()) {
                   _callUpdateGroup(_groupName.text).then((onValue) {
@@ -80,7 +80,7 @@ class _GroupUpdateDialogWidgetState extends State<GroupUpdateDialogWidget> {
                       widget.bloc.mrClient.removeOverlay();
                       widget.bloc.mrClient.customError(
                           messageTitle:
-                          "Group '${_groupName.text}' already exists");
+                              "Group '${_groupName.text}' already exists");
                     } else {
                       widget.bloc.mrClient.dialogError(e, s);
                     }
@@ -118,17 +118,16 @@ class GroupDeleteDialogWidget extends StatelessWidget {
       bloc: bloc.mrClient,
       thing: "group '${group.name}'",
       content:
-      "All permissions belonging to this group will be deleted \n\nThis cannot be undone!",
+          'All permissions belonging to this group will be deleted \n\nThis cannot be undone!',
       deleteSelected: () async {
         try {
           await bloc.deleteGroup(group.id, true);
-          bloc.mrClient
-              .addSnackbar(Text("Group '${group.name}' deleted!"));
+          bloc.mrClient.addSnackbar(Text("Group '${group.name}' deleted!"));
           return true;
         } catch (e, s) {
           if (e is ApiException && e.code >= 400) {
             bloc.mrClient.customError(
-                messageTitle: "Could not delete group ${group.name}");
+                messageTitle: 'Could not delete group ${group.name}');
           } else {
             bloc.mrClient.dialogError(e, s);
           }

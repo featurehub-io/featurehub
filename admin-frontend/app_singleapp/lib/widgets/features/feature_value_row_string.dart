@@ -60,8 +60,8 @@ class _FeatureValueStringEnvironmentCellState
                       color: Colors.grey,
                     )),
                     hintText: canEdit
-                        ? "Enter string value"
-                        : "No editing permissions",
+                        ? 'Enter string value'
+                        : 'No editing permissions',
                     hintStyle: Theme.of(context).textTheme.caption),
                 onChanged: (value) {
                   snap.data.valueString = tec.text?.trim();
@@ -81,22 +81,21 @@ class FeatureValueEditString {
       Feature feature) {
     FeatureValuesBloc fvBloc = BlocProvider.of(context);
 
-    return TableRow(
-        children: [
-          FeatureEditDeleteCell(
-            feature: feature,
-          ),
-          ...featureStatuses.environmentFeatureValues
-              .map((e) => Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: <Widget>[
-                      FeatureValueStringEnvironmentCell(
-                          environmentFeatureValue: e,
-                          feature: feature,
-                          fvBloc: fvBloc),
-                    ],
-                  ))
-              .toList()
-        ]);
+    return TableRow(children: [
+      FeatureEditDeleteCell(
+        feature: feature,
+      ),
+      ...featureStatuses.environmentFeatureValues
+          .map((e) => Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  FeatureValueStringEnvironmentCell(
+                      environmentFeatureValue: e,
+                      feature: feature,
+                      fvBloc: fvBloc),
+                ],
+              ))
+          .toList()
+    ]);
   }
 }

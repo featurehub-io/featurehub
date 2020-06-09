@@ -69,9 +69,9 @@ class _PortfolioWidget extends StatelessWidget {
               child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text("${portfolio.name}"),
+              Text('${portfolio.name}'),
               Text(
-                portfolio.description != null ? "${portfolio.description}" : '',
+                portfolio.description != null ? '${portfolio.description}' : '',
                 style: Theme.of(context).textTheme.caption,
               ),
             ],
@@ -79,36 +79,39 @@ class _PortfolioWidget extends StatelessWidget {
           mr.isPortfolioOrSuperAdmin(portfolio.id)
               ? Row(children: [
                   FHFlatButtonTransparent(
-                    title: "Groups",
+                    title: 'Groups',
                     keepCase: true,
                     onPressed: () {
                       ManagementRepositoryClientBloc.router.navigateTo(
-                          context, "/manage-group",
-                          replace: true,
-                          transition: TransitionType.material,
-                         );
+                        context,
+                        '/manage-group',
+                        replace: true,
+                        transition: TransitionType.material,
+                      );
                     },
                   ),
                   FHFlatButtonTransparent(
-                    title: "Apps",
+                    title: 'Apps',
                     keepCase: true,
                     onPressed: () {
                       ManagementRepositoryClientBloc.router.navigateTo(
-                          context, "/manage-app",
-                          replace: true,
-                          transition: TransitionType.material,
-                        );
+                        context,
+                        '/manage-app',
+                        replace: true,
+                        transition: TransitionType.material,
+                      );
                     },
                   ),
                   FHFlatButtonTransparent(
-                    title: "Service accounts",
+                    title: 'Service accounts',
                     keepCase: true,
                     onPressed: () {
                       ManagementRepositoryClientBloc.router.navigateTo(
-                          context, "/manage-service-accounts",
-                          replace: true,
-                          transition: TransitionType.material,
-                         );
+                        context,
+                        '/manage-service-accounts',
+                        replace: true,
+                        transition: TransitionType.material,
+                      );
                     },
                   )
                 ])
@@ -159,12 +162,12 @@ class PortfolioDeleteDialogWidget extends StatelessWidget {
     return FHDeleteThingWarningWidget(
       bloc: bloc.mrClient,
       content:
-          "All Groups, Features, Environments and Applications belonging to this portfolio will be deleted \n\nThis cannot be undone!",
+          'All Groups, Features, Environments and Applications belonging to this portfolio will be deleted \n\nThis cannot be undone!',
       thing: "portfolio '${portfolio.name}'",
       deleteSelected: () async {
         try {
           await bloc.deletePortfolio(portfolio.id, true, true);
-          bloc.triggerSearch("");
+          bloc.triggerSearch('');
           bloc.mrClient
               .addSnackbar(Text("Portfolio '${portfolio.name}' deleted!"));
           return true;
@@ -216,26 +219,26 @@ class _PortfolioUpdateDialogWidgetState
                 children: <Widget>[
                   TextFormField(
                       controller: _portfolioName,
-                      decoration: InputDecoration(labelText: "Portfolio name"),
+                      decoration: InputDecoration(labelText: 'Portfolio name'),
                       validator: ((v) {
                         if (v.isEmpty) {
-                          return "Please enter a portfolio name";
+                          return 'Please enter a portfolio name';
                         }
                         if (v.length < 4) {
-                          return "Portfolio name needs to be at least 4 characters long";
+                          return 'Portfolio name needs to be at least 4 characters long';
                         }
                         return null;
                       })),
                   TextFormField(
                       controller: _portfolioDescription,
                       decoration:
-                          InputDecoration(labelText: "Portfolio description"),
+                          InputDecoration(labelText: 'Portfolio description'),
                       validator: ((v) {
                         if (v.isEmpty) {
-                          return "Please enter a portfolio description";
+                          return 'Please enter a portfolio description';
                         }
                         if (v.length < 4) {
-                          return "Portfolio description needs to be at least 4 characters long";
+                          return 'Portfolio description needs to be at least 4 characters long';
                         }
                         return null;
                       })),
@@ -244,13 +247,13 @@ class _PortfolioUpdateDialogWidgetState
             ),
             actions: <Widget>[
               FHOutlineButton(
-                title: "Cancel",
+                title: 'Cancel',
                 onPressed: () {
                   widget.bloc.mrClient.removeOverlay();
                 },
               ),
               FHFlatButton(
-                  title: widget.portfolio == null ? "Create" : "Update",
+                  title: widget.portfolio == null ? 'Create' : 'Update',
                   onPressed: (() async {
                     if (_formKey.currentState.validate()) {
                       try {
@@ -258,7 +261,7 @@ class _PortfolioUpdateDialogWidgetState
                             _portfolioName.text, _portfolioDescription.text);
                         // force list update
                         widget.bloc.mrClient.removeOverlay();
-                        widget.bloc.triggerSearch("");
+                        widget.bloc.triggerSearch('');
                         widget.bloc.mrClient.addSnackbar(Text(
                             "Portfolio '${_portfolioName.text}' ${widget.portfolio == null ? " created" : " updated"}!"));
                       } catch (e, s) {

@@ -28,7 +28,7 @@ class FeatureHubApp extends StatelessWidget {
     return MaterialApp(
       title: 'FeatureHub',
       theme: myTheme,
-      home: LandingRoute(title: "FeatureHub"),
+      home: LandingRoute(title: 'FeatureHub'),
     );
   }
 }

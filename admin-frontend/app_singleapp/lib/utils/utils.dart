@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:mrapi/api.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
@@ -32,28 +33,29 @@ String validateNumber(String numberToCheck) {
   try {
     double.parse(numberToCheck);
   } catch (e) {
-    return "Must be a valid number.";
+    return 'Must be a valid number.';
   }
   return null;
 }
 
 String condenseJson(initialJson) {
   return initialJson
-      .replaceAll("\n", "")
-      .replaceAll("  ", "")
-      .replaceAll("{ ", "{")
-      .replaceAll(": ", ":");
+      .replaceAll('\n', '')
+      .replaceAll('  ', '')
+      .replaceAll('{ ', '{')
+      .replaceAll(': ', ':');
 }
 
-extension ServiceAccountPermissionTypeExtensions on ServiceAccountPermissionType {
+extension ServiceAccountPermissionTypeExtensions
+    on ServiceAccountPermissionType {
   String humanReadable() {
     switch (this) {
       case ServiceAccountPermissionType.READ:
-        return "Read";
+        return 'Read';
       case ServiceAccountPermissionType.TOGGLE_ENABLED:
-        return "Change value";
+        return 'Change value';
       case ServiceAccountPermissionType.TOGGLE_LOCK:
-        return "Lock/Unlock";
+        return 'Lock/Unlock';
     }
 
     return '';
@@ -61,16 +63,14 @@ extension ServiceAccountPermissionTypeExtensions on ServiceAccountPermissionType
 }
 
 String parsePermissions(json) {
-  if(json == "TOGGLE_ENABLED") {
-    return "Change value";
+  if (json == 'TOGGLE_ENABLED') {
+    return 'Change value';
+  } else if (json == 'TOGGLE_LOCK') {
+    return 'Lock/Unlock';
+  } else if (json == 'READ') {
+    return 'Read';
   }
-  else if(json == "TOGGLE_LOCK") {
-    return "Lock/Unlock";
-  }
-  else if(json == "READ") {
-    return "Read";
-  }
-  return "";
+  return '';
 }
 
 class FHError {
@@ -104,18 +104,18 @@ class FHError {
   }
 
   factory FHError.createError(e, StackTrace s, {bool showDetails = true}) {
-    String message = "An unexpected error occured!";
-    String errorMessage = "Contact your FeatureHub administrator";
+    String message = 'An unexpected error occured!';
+    String errorMessage = 'Contact your FeatureHub administrator';
 
     if (_is5XX(e)) {
-      message = "There is an issue with FeatureHub";
+      message = 'There is an issue with FeatureHub';
     } else if (_noAuth(e)) {
-      message = "Looks like you are not authorised to perform this operation";
+      message = 'Looks like you are not authorised to perform this operation';
     } else if (e is ApiException && e.code == 409) {
-      message = "An item with this name already exists";
+      message = 'An item with this name already exists';
     } else if (e is ApiException && e.code == 422) {
       message =
-          "This item has been updated by another person since you loaded it, please check the value and try again.";
+          'This item has been updated by another person since you loaded it, please check the value and try again.';
     }
 
     return FHError(message,

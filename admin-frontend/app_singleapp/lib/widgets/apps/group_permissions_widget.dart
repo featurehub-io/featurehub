@@ -29,7 +29,7 @@ class _GroupPermissionState extends State<GroupPermissionsWidget> {
           if (!snapshot.hasData || snapshot.hasError) {
             return Container(
               padding: EdgeInsets.all(30),
-              child: Text("Loading..."),
+              child: Text('Loading...'),
             );
           }
 
@@ -44,7 +44,7 @@ class _GroupPermissionState extends State<GroupPermissionsWidget> {
                 Container(
                     padding: EdgeInsets.only(left: 10, top: 20),
                     child: Text(
-                      "Group",
+                      'Group',
                       style: Theme.of(context).textTheme.caption,
                     )),
                 Container(
@@ -164,16 +164,16 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                               });
                             }),
                         Text(
-                            "This group can create, edit and delete features for this application",
+                            'This group can create, edit and delete features for this application',
                             style: Theme.of(context).textTheme.caption),
                         Padding(
                           padding: const EdgeInsets.only(left: 32.0),
                           child: FHFlatButtonTransparent(
-                            title: "Manage group members",
+                            title: 'Manage group members',
                             keepCase: true,
                             onPressed: () {
                               ManagementRepositoryClientBloc.router.navigateTo(
-                                  context, "/manage-group",
+                                  context, '/manage-group',
                                   replace: true,
                                   transition: TransitionType.material,
                                   params: {
@@ -190,7 +190,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: <Widget>[
                             Text(
-                                "Set the group access to features for each environment",
+                                'Set the group access to features for each environment',
                                 style: Theme.of(context).textTheme.caption),
                           ],
                         )),
@@ -243,28 +243,28 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
           Container(
             padding: EdgeInsets.fromLTRB(5, 0, 0, 15),
             child: Text(
-              "Environment",
+              'Environment',
               style: Theme.of(context).textTheme.subtitle2,
             ),
           ),
           Center(
               child: Text(
-            "Read",
+            'Read',
             style: Theme.of(context).textTheme.subtitle2,
           )),
           Center(
               child: Text(
-            "Lock",
+            'Lock',
             style: Theme.of(context).textTheme.subtitle2,
           )),
           Center(
               child: Text(
-            "Unlock",
+            'Unlock',
             style: Theme.of(context).textTheme.subtitle2,
           )),
           Center(
               child: Text(
-            "Change value",
+            'Change value',
             style: Theme.of(context).textTheme.subtitle2,
           )),
         ]);

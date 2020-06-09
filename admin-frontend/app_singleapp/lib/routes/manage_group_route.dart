@@ -36,7 +36,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
         Container(
             padding: const EdgeInsets.fromLTRB(0, 0, 30, 10),
             child: FHHeader(
-              title: "Manage groups members",
+              title: 'Manage groups members',
               children: [],
             )),
         Row(
@@ -47,7 +47,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                   if (!snapshot.hasData) {
                     return Container(
                         padding: EdgeInsets.all(8),
-                        child: Text("Fetching Groups..."));
+                        child: Text('Fetching Groups...'));
                   } else {
                     return Container(
                       padding: EdgeInsets.only(top: 15, left: 8),
@@ -138,14 +138,14 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
 
   Widget _groupsDropdown(List<Group> groups, GroupBloc bloc) {
     return groups == null || groups.isEmpty
-        ? Text("No groups found in the portfolio")
+        ? Text('No groups found in the portfolio')
         : Container(
             padding: EdgeInsets.only(top: 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  "Portfolio groups",
+                  'Portfolio groups',
                   style: Theme.of(context).textTheme.caption,
                 ),
                 DropdownButton(
@@ -182,7 +182,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
         children: <Widget>[
           Container(
               child: Text(
-            "Group members",
+            'Group members',
             style: Theme.of(context).textTheme.subtitle2,
           )),
           Container(
@@ -233,12 +233,12 @@ class MemberWidget extends StatelessWidget {
               child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text("${member.name}"),
+              Text('${member.name}'),
             ],
           )),
           if (bloc.mrClient.isPortfolioOrSuperAdmin(group.portfolioId))
             FHFlatButtonTransparent(
-              title: "Remove from group",
+              title: 'Remove from group',
               keepCase: true,
               onPressed: () {
                 try {
@@ -279,7 +279,7 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
     return Form(
       key: _formKey,
       child: FHAlertDialog(
-        title: Text("Add members to group " + widget.group.name),
+        title: Text('Add members to group ' + widget.group.name),
         content: Container(
           width: 500,
           child: Column(
@@ -289,13 +289,13 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
         ),
         actions: <Widget>[
           FHOutlineButton(
-            title: "Cancel",
+            title: 'Cancel',
             onPressed: () {
               widget.bloc.mrClient.removeOverlay();
             },
           ),
           FHFlatButton(
-              title: "Add to group",
+              title: 'Add to group',
               onPressed: () async {
                 Group group = widget.group;
                 group.members = List.from(group.members)..addAll(membersToAdd);
@@ -320,7 +320,7 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
       initialValue: [],
       // none, but we could
       decoration:
-          InputDecoration(labelText: "Enter members to add to group..."),
+          InputDecoration(labelText: 'Enter members to add to group...'),
       findSuggestions: (String query) async {
         if (query.isNotEmpty) {
           var sp = await bloc.mrClient.personServiceApi

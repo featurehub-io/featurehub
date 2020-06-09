@@ -1,5 +1,3 @@
-
-
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:flutter/material.dart';
 
@@ -19,9 +17,17 @@ class FHDeleteThingWarningWidget extends StatelessWidget {
   final bool extraWarning;
   final String content;
 
-  const FHDeleteThingWarningWidget({Key key, @required this.deleteSelected, this.thing, this.wholeWarning, bool extraWarning, @required this.bloc, this.content}) :
-        this.extraWarning = extraWarning ?? false,
-        assert(bloc != null), // must be passed because alert dialogs are passed in overlays which no longer have access to the bloc
+  const FHDeleteThingWarningWidget(
+      {Key key,
+      @required this.deleteSelected,
+      this.thing,
+      this.wholeWarning,
+      bool extraWarning,
+      @required this.bloc,
+      this.content})
+      : this.extraWarning = extraWarning ?? false,
+        assert(bloc !=
+            null), // must be passed because alert dialogs are passed in overlays which no longer have access to the bloc
         assert(deleteSelected != null),
         assert(thing != null || wholeWarning != null),
         super(key: key);
@@ -31,28 +37,31 @@ class FHDeleteThingWarningWidget extends StatelessWidget {
     return FHAlertDialog(
       title: Row(
         children: <Widget>[
-          _WarningWidget(extra: extraWarning,),
-          Text( wholeWarning ?? 'Are you sure you want to delete the ${thing}?', style: TextStyle(color: extraWarning ? Colors.red : null)),
+          _WarningWidget(
+            extra: extraWarning,
+          ),
+          Text(wholeWarning ?? 'Are you sure you want to delete the ${thing}?',
+              style: TextStyle(color: extraWarning ? Colors.red : null)),
         ],
       ),
       content: Row(
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text(content ?? "This cannot be undone!"),
+            child: Text(content ?? 'This cannot be undone!'),
           ),
         ],
       ),
       actions: <Widget>[
         // usually buttons at the bottom of the dialog
         FHOutlineButton(
-          title: "Cancel",
+          title: 'Cancel',
           onPressed: () {
             bloc.removeOverlay();
           },
         ),
         FHFlatButton(
-            title: "Delete",
+            title: 'Delete',
             onPressed: () async {
               if (await deleteSelected()) {
                 bloc.removeOverlay();
@@ -66,7 +75,9 @@ class FHDeleteThingWarningWidget extends StatelessWidget {
 class _WarningWidget extends StatelessWidget {
   final bool extra;
 
-  const _WarningWidget({Key key, bool extra}) : this.extra = extra ?? false, super(key: key);
+  const _WarningWidget({Key key, bool extra})
+      : this.extra = extra ?? false,
+        super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -75,8 +86,11 @@ class _WarningWidget extends StatelessWidget {
     return Container(
       width: size,
       height: size,
-      child: Icon(Icons.warning, size: iconSize, color: Colors.red,),
+      child: Icon(
+        Icons.warning,
+        size: iconSize,
+        color: Colors.red,
+      ),
     );
   }
 }
-

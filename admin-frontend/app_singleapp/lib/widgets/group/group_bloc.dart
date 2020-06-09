@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
@@ -17,7 +18,7 @@ class GroupBloc implements Bloc {
   GroupBloc(this.groupId, this.mrClient) : assert(mrClient != null) {
     _groupServiceApi = GroupServiceApi(mrClient.apiClient);
     mrClient.streamValley.currentPortfolioIdStream.listen((event) {
-      if(!_groupSource.isClosed) {
+      if (!_groupSource.isClosed) {
         _groupSource.add(null);
       }
       groupId = null;
@@ -27,7 +28,7 @@ class GroupBloc implements Bloc {
 
   Future<void> getGroups({Group focusGroup}) async {
     await mrClient.streamValley.getCurrentPortfolioGroups();
-    if(!_groupSource.isClosed){
+    if (!_groupSource.isClosed) {
       _groupSource.add(focusGroup);
     }
   }
@@ -49,27 +50,27 @@ class GroupBloc implements Bloc {
     await _groupServiceApi
         .deleteGroup(groupId, includeMembers: includeMembers)
         .catchError(mrClient.dialogError);
-    this.group=null;
-    this.groupId =null;
+    this.group = null;
+    this.groupId = null;
     _groupSource.add(null);
     await mrClient.streamValley.getCurrentPortfolioGroups();
   }
 
   void removeFromGroup(Group group, Person person) async {
-    print("delete member,: " + person.toString());
     var data = await _groupServiceApi
         .deletePersonFromGroup(group.id, person.id.id, includeMembers: true);
-    if(!_groupSource.isClosed) {
+    if (!_groupSource.isClosed) {
       _groupSource.add(data);
     }
   }
 
   Future<void> updateGroup(Group groupToUpdate) async {
     await _groupServiceApi
-        .updateGroup(groupToUpdate.id, groupToUpdate, includeMembers: true, updateMembers: true)
+        .updateGroup(groupToUpdate.id, groupToUpdate,
+            includeMembers: true, updateMembers: true)
         .catchError(mrClient.dialogError);
-    await getGroups(focusGroup:groupToUpdate);
-    this.group=groupToUpdate;
+    await getGroups(focusGroup: groupToUpdate);
+    this.group = groupToUpdate;
     this.groupId = groupToUpdate.id;
   }
 
@@ -77,7 +78,7 @@ class GroupBloc implements Bloc {
     Group createdGroup = await _groupServiceApi
         .createGroup(mrClient.currentPid, newGroup)
         .catchError(mrClient.dialogError);
-    await getGroups(focusGroup:createdGroup);
+    await getGroups(focusGroup: createdGroup);
     this.groupId = createdGroup.id;
     this.group = createdGroup;
     return newGroup;

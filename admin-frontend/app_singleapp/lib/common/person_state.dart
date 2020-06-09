@@ -4,10 +4,13 @@ import 'package:rxdart/rxdart.dart';
 class PersonState {
   PersonServiceApi _personServiceApi;
   //stream if person user is current portfolio or super admin user
-  final BehaviorSubject<bool> _isCurrentPortfolioOrSuperAdmin = BehaviorSubject<bool>();
+  final BehaviorSubject<bool> _isCurrentPortfolioOrSuperAdmin =
+      BehaviorSubject<bool>();
 
-  Stream<bool> get currentPortfolioAdminOrSuperAdminStream => _isCurrentPortfolioOrSuperAdmin.stream;
-  get isCurrentPortfolioOrSuperAdmin => _isCurrentPortfolioOrSuperAdmin;
+  Stream<bool> get currentPortfolioAdminOrSuperAdminStream =>
+      _isCurrentPortfolioOrSuperAdmin.stream;
+  Stream<bool> get isCurrentPortfolioOrSuperAdmin =>
+      _isCurrentPortfolioOrSuperAdmin.stream;
 
   PersonState(PersonServiceApi personServiceApi) {
     _personServiceApi = personServiceApi;
@@ -21,11 +24,10 @@ class PersonState {
 
   Future<bool> personCanEditFeaturesForCurrentApplication(String appId) async {
     if (appId == null) {
-      print('cannotadd apps');
       return false;
     }
 
-    Person person = await _getSelfPersonWithGroups();
+    final person = await _getSelfPersonWithGroups();
     return person.groups.any((gp) => gp.applicationRoles.any((ar) =>
         ar.roles.contains(ApplicationRoleType.FEATURE_EDIT) &&
         ar.applicationId == appId));
@@ -44,7 +46,6 @@ class PersonState {
   }
 
   bool userIsPortfolioAdmin(String id, List<Group> groupList) {
-    print("in use port admin, pid = ${id}, groupList = ${groupList.toString()}");
     return groupList?.firstWhere(
             (group) => group.admin && group.portfolioId == id,
             orElse: () => null) !=
@@ -56,8 +57,8 @@ class PersonState {
   }
 
   void currentPortfolioOrSuperAdminUpdateState(String pid, List<Group> groups) {
-    bool isAdmin = isSuperAdminGroupFound(groups) ||
-        userIsPortfolioAdmin(pid, groups);
+    final isAdmin =
+        isSuperAdminGroupFound(groups) || userIsPortfolioAdmin(pid, groups);
     _isCurrentPortfolioOrSuperAdmin.add(isAdmin);
   }
 }
