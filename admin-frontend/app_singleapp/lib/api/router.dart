@@ -1,7 +1,8 @@
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:flutter/widgets.dart';
 
-typedef HandlerFunc(BuildContext context, Map<String, List<String>> params);
+typedef Widget HandlerFunc(
+    BuildContext context, Map<String, List<String>> params);
 
 class RouteChange {
   Map<String, List<String>> params;
@@ -12,7 +13,7 @@ class RouteChange {
 class Handler {
   HandlerFunc handlerFunc;
 
-  Handler({this.handlerFunc}) : assert(handlerFunc != null);
+  Handler({@required this.handlerFunc}) : assert(handlerFunc != null);
 }
 
 enum TransitionType { fadeIn, material }
@@ -29,7 +30,7 @@ class Router {
   }
 
   HandlerFunc getRoute(String route) {
-    Handler f = handlers[route];
+    final f = handlers[route];
 
     return (f == null) ? notFoundHandler : f.handlerFunc;
   }
