@@ -107,7 +107,6 @@ class _ServiceAccountPermissionState
 
   Widget serviceAccountDropdown(
       List<ServiceAccount> serviceAccounts, ManageAppBloc bloc) {
-    print("drawing with $selectedServiceAccount");
     return Container(
       child: DropdownButton(
         items: serviceAccounts.map((ServiceAccount serviceAccount) {

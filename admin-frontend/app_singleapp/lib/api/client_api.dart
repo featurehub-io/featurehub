@@ -53,7 +53,8 @@ class ManagementRepositoryClientBloc implements Bloc {
   FeatureServiceApi featureServiceApi;
   ApplicationServiceApi applicationServiceApi;
   static Router router;
-  final _router = BehaviorSubject<RouteChange>();
+  final _routerSource = BehaviorSubject<RouteChange>();
+  final _routerRedrawRouteSource = BehaviorSubject<RouteChange>();
   final _menuOpened = BehaviorSubject<bool>.seeded(true);
   final _stepperOpened = BehaviorSubject<bool>.seeded(false);
 
@@ -69,12 +70,22 @@ class ManagementRepositoryClientBloc implements Bloc {
     _menuOpened.add(value);
   }
 
-  Stream<RouteChange> get routeChangedStream => _router.stream;
+  Stream<RouteChange> get routeChangedStream => _routerSource.stream;
+  Stream<RouteChange> get redrawChangedStream =>
+      _routerRedrawRouteSource.stream;
 
-  RouteChange get currentRoute => _router.value;
+  RouteChange get currentRoute => _routerSource.value;
 
   void swapRoutes(RouteChange route) {
-    _router.add(route);
+    // this is for gross route changes, and causes the widget to redraw
+    // for multi-tabbed routes, we don't want this to happen, so we separate the two
+    if (_routerRedrawRouteSource.value == null ||
+        _routerRedrawRouteSource.value.route != route.route) {
+      _routerRedrawRouteSource.add(route);
+    }
+
+    // this is for fine grained route changes, like tab changes
+    _routerSource.add(route);
   }
 
   bool get isLoggedIn => _personSource.hasValue;
