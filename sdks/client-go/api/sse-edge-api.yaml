@@ -1,0 +1,101 @@
+openapi: 3.0.1
+info:
+  title: FeatureServiceApi
+  description: This describes the API clients use for accessing features
+  version: "1.1.1"
+paths:
+  /features/{namedCache}/{environmentId}/{apiKey}:
+    get:
+      tags:
+        - FeatureService
+      description: "Gets a list of features and their states. This is not accurate as it returns a text/event-stream."
+      operationId: allFeatures
+      parameters:
+        - name: namedCache
+          in: path
+          description: Name of the cache
+          required: true
+          schema:
+            type: string
+        - name: environmentId
+          in: path
+          description: ID of the environment
+          required: true
+          schema:
+            type: string
+        - name: apiKey
+          in: path
+          description: API key
+          required: true
+          schema:
+            type: string           
+      responses:
+        "200":
+          description: gets all of the features
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FeatureState"
+components:
+  schemas:
+    SSEResultState:
+      type: string
+      enum:
+        - ack
+        - bye
+        - error
+        - features
+        - feature
+        - delete_feature
+    FeatureState:
+      required:
+        - name
+        - state
+      properties:
+        id:
+          type: string
+        key:
+          type: string
+        version:
+          type: integer
+          format: int64
+        type:
+          $ref: "#/components/schemas/FeatureValueType"
+        value:
+          description: "the current value"
+        strategy:
+          $ref: "#/components/schemas/Strategy"
+    Strategy:
+#      description: "This tells the client which strategy for roll out is being used".
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          enum:
+            - ATTRIBUTE
+            - PERCENTAGE
+        value:
+          description: "this value is used if it is a simple attribute or percentage. If it is more complex then the pairs are passed"
+        pairs:
+          type: array
+          items:
+            $ref: "#/components/schemas/StrategyPair"
+    StrategyPair:
+ #     description: "This is simply information the feature wishes to pass"
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+    FeatureValueType:
+      type: string
+      enum:
+        - BOOLEAN
+        - STRING
+        - NUMBER
+        - JSON
