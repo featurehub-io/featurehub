@@ -53,9 +53,6 @@ class ManagementRepositoryClientBloc implements Bloc {
   FeatureServiceApi featureServiceApi;
   ApplicationServiceApi applicationServiceApi;
   static Router router;
-  String _currentPid;
-  String _currentAid;
-  List<Portfolio> _portfolios;
   final _router = BehaviorSubject<RouteChange>();
   final _menuOpened = BehaviorSubject<bool>.seeded(true);
   final _stepperOpened = BehaviorSubject<bool>.seeded(false);
@@ -100,9 +97,6 @@ class ManagementRepositoryClientBloc implements Bloc {
   final _personSource = BehaviorSubject<Person>();
   Stream<Person> get personStream => _personSource.stream;
 
-  final _portfoliosBS = BehaviorSubject<List<Portfolio>>();
-  Stream<List<Portfolio>> get portfoliosList => _portfoliosBS.stream;
-
   Organization organization;
   Person person;
   List<Group> groupList;
@@ -117,8 +111,7 @@ class ManagementRepositoryClientBloc implements Bloc {
   String get currentAid => getCurrentAid();
 
   Portfolio get currentPortfolio {
-    return _portfolios?.firstWhere((p) => p.id == _currentPid,
-        orElse: () => null);
+    return streamValley.currentPortfolio;
   }
 
   StreamValley streamValley;
@@ -195,9 +188,6 @@ class ManagementRepositoryClientBloc implements Bloc {
     final cookies = document.cookie.split(';')
       ..retainWhere((s) => s.trim().startsWith('$bearerToken='));
 
-//    print('doc cookies ' + html.document.cookie.split(';').toString());
-//    print('cookies $cookies');
-//
     if (cookies.isNotEmpty) {
       return cookies.first.trim().substring('$bearerToken='.length);
     }
@@ -268,38 +258,23 @@ class ManagementRepositoryClientBloc implements Bloc {
   }
 
   void setCurrentAid(String aid) {
-    _currentAid = aid;
     streamValley.currentAppId = aid;
     _setAidSharedPrefs(aid);
   }
 
   void setCurrentPid(String pid) {
-    if (pid != null && _portfolios.any((p) => p.id == pid)) {
-      _currentPid = pid;
-    } else {
-      _currentPid = null;
-    }
-
-    //reset current app id to null
-    _currentAid = null;
+    streamValley.currentPortfolioId = pid;
     _setAidSharedPrefs(null);
-    streamValley.currentAppId = null;
-    streamValley.currentPortfolioId = _currentPid;
-    _setPidSharedPrefs(_currentPid);
+    _setPidSharedPrefs(pid);
     personState.currentPortfolioOrSuperAdminUpdateState(pid, groupList);
-    streamValley.getCurrentPortfolioApplications();
-    if (personState.isCurrentPortfolioOrSuperAdmin.value == true) {
-      streamValley.getCurrentPortfolioGroups();
-      streamValley.getCurrentPortfolioServiceAccounts();
-    }
   }
 
   String getCurrentPid() {
-    return _currentPid;
+    return streamValley.currentPortfolioId;
   }
 
   String getCurrentAid() {
-    return _currentAid;
+    return streamValley.currentAppId;
   }
 
   void setPerson(Person p) {
@@ -394,10 +369,7 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   void _addPortfoliosToStream() async {
     try {
-      final portfolios = await portfolioServiceApi.findPortfolios(
-          includeApplications: true, order: SortOrder.ASC);
-      _portfoliosBS.add(portfolios);
-      _portfolios = portfolios;
+      final _portfolios = await streamValley.loadPortfolios();
       if (await _sharedPreferences.getString('currentPid') != null) {
         final aid = await _sharedPreferences.getString('currentAid');
         setCurrentPid(await _sharedPreferences.getString('currentPid'));
@@ -418,7 +390,6 @@ class ManagementRepositoryClientBloc implements Bloc {
     _errorSource.close();
     _overlaySource.close();
     _snackbarSource.close();
-    _portfoliosBS.close();
     _personSource.close();
     streamValley.currentPortfolioAdminOrSuperAdminSubscription.cancel();
   }

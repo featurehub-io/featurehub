@@ -15,13 +15,14 @@ class _PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
     return StreamBuilder<List<Portfolio>>(
-        stream: bloc.portfoliosList,
+        stream: bloc.streamValley.portfolioListStream,
         builder: (context, snapshot) {
           if (snapshot.hasData && snapshot.data.isNotEmpty) {
             return Flexible(
               fit: FlexFit.loose,
               child: Padding(
-                padding: const EdgeInsets.only(left: 16.0, right: 32.0, top: 8.0),
+                padding:
+                    const EdgeInsets.only(left: 16.0, right: 32.0, top: 8.0),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton(
                     style: Theme.of(context).textTheme.bodyText1,
@@ -32,7 +33,10 @@ class _PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
                           value: portfolio.id,
                           child: Text(
                             portfolio.name,
-                            style: GoogleFonts.poppins(textStyle: Theme.of(context).textTheme.bodyText2, fontWeight: FontWeight.w600),
+                            style: GoogleFonts.poppins(
+                                textStyle:
+                                    Theme.of(context).textTheme.bodyText2,
+                                fontWeight: FontWeight.w600),
                             overflow: TextOverflow.ellipsis,
                           ));
                     }).toList(),
