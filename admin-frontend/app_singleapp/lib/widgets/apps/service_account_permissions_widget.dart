@@ -69,8 +69,7 @@ class _ServiceAccountPermissionState
             );
           }
 
-          // if there is only 1, force it to be selected
-          if (selectedServiceAccount == null && snapshot.data.length == 1) {
+          if (selectedServiceAccount == null) {
             selectedServiceAccount = snapshot.data[0].id;
             bloc.selectServiceAccount(selectedServiceAccount);
           }

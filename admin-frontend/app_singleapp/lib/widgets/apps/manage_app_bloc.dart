@@ -115,7 +115,7 @@ class ManageAppBloc implements Bloc {
     }
   }
 
-  Future<void> getGroupRoles(groupId) async {
+  Future<void> getGroupRoles(String groupId) async {
     var group =
         await _groupServiceApi.getGroup(groupId, includeGroupRoles: true);
     if (!_groupWithRolesPS.isClosed) {
