@@ -57,66 +57,69 @@ class _MenuContainer extends StatelessWidget {
       height: MediaQuery.of(context).size.height - headerPadding,
       child: Drawer(
         child: SingleChildScrollView(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-            Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: CircleIconButton(
-                  icon: Icon(Icons.chevron_left),
-                  onTap: () => mrBloc.menuOpened.add(false)),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                PortfolioSelectorWidget(),
-                SizedBox(height: 16),
-                _MenuFeaturesOptionsWidget(),
-                Padding(
-                  padding:
-                      const EdgeInsets.only(left: 16.0, top: 32.0, bottom: 8.0),
-                  child: Text(
-                    'Application Settings',
-                    style: Theme.of(context).textTheme.caption,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  PortfolioSelectorWidget(),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                        left: 16.0, top: 16.0, right: 8.0, bottom: 16.0),
+                    child: CircleIconButton(
+                        icon: Icon(Icons.chevron_left),
+                        onTap: () => mrBloc.menuOpened.add(false)),
                   ),
+                ],
+              ),
+              SizedBox(height: 16),
+              _MenuFeaturesOptionsWidget(),
+              Padding(
+                padding:
+                    const EdgeInsets.only(left: 16.0, top: 32.0, bottom: 8.0),
+                child: Text(
+                  'Application Settings',
+                  style: Theme.of(context).textTheme.caption,
                 ),
-                _ApplicationSettings(),
-                mrBloc.userIsAnyPortfolioOrSuperAdmin
-                    ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.only(
-                                left: 16.0, top: 32.0, bottom: 8.0),
-                            child: Text(
-                              'Portfolio Settings',
-                              style: Theme.of(context).textTheme.caption,
-                            ),
+              ),
+              _ApplicationSettings(),
+              mrBloc.userIsAnyPortfolioOrSuperAdmin
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              left: 16.0, top: 32.0, bottom: 8.0),
+                          child: Text(
+                            'Portfolio Settings',
+                            style: Theme.of(context).textTheme.caption,
                           ),
-                          _MenuPortfolioAdminOptionsWidget(),
-                          _MenuDivider(),
-                        ],
-                      )
-                    : Container(),
-                mrBloc.userIsSuperAdmin
-                    ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Container(
-                            padding: EdgeInsets.only(
-                                left: 16.0, top: 32.0, bottom: 8.0),
-                            child: Text(
-                              'Global Settings',
-                              style: Theme.of(context).textTheme.caption,
-                            ),
+                        ),
+                        _MenuPortfolioAdminOptionsWidget(),
+                        _MenuDivider(),
+                      ],
+                    )
+                  : Container(),
+              mrBloc.userIsSuperAdmin
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Container(
+                          padding: EdgeInsets.only(
+                              left: 16.0, top: 32.0, bottom: 8.0),
+                          child: Text(
+                            'Global Settings',
+                            style: Theme.of(context).textTheme.caption,
                           ),
-                          _SiteAdminOptionsWidget(),
-                          _MenuDivider(),
-                        ],
-                      )
-                    : Container(),
-              ],
-            )
-          ]),
+                        ),
+                        _SiteAdminOptionsWidget(),
+                        _MenuDivider(),
+                      ],
+                    )
+                  : Container(),
+            ],
+          ),
         ),
       ),
     );
