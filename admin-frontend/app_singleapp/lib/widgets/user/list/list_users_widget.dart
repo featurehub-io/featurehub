@@ -1,11 +1,11 @@
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/api/router.dart';
+import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/fh_alert_dialog.dart';
 import 'package:app_singleapp/widgets/common/fh_delete_thing.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/fh_icon_button.dart';
 import 'package:app_singleapp/widgets/user/list/list_users_bloc.dart';
+import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 
@@ -46,48 +46,48 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                   sortColumnIndex: sortColumnIndex,
                   columns: [
                     DataColumn(
-                        label: Text("Name"),
+                        label: Text('Name'),
                         onSort: (columnIndex, ascending) {
                           onSortColumn(snapshot.data, columnIndex, ascending);
                         }),
                     DataColumn(
-                      label: Text("Email"),
+                      label: Text('Email'),
                       onSort: (columnIndex, ascending) {
                         onSortColumn(snapshot.data, columnIndex, ascending);
                       },
                     ),
                     DataColumn(
-                      label: Text("Groups"),
+                      label: Text('Groups'),
                       onSort: (columnIndex, ascending) {
                         onSortColumn(snapshot.data, columnIndex, ascending);
                       },
                     ),
-                    DataColumn(label: Text(""), onSort: (i, a) => {}),
+                    DataColumn(label: Text(''), onSort: (i, a) => {}),
                   ],
                   rows: [
                     for (Person p in snapshot.data)
                       DataRow(
                         cells: [
                           DataCell(p.name == null
-                              ? Text("Not yet registered",
+                              ? Text('Not yet registered',
                                   style: Theme.of(context).textTheme.caption)
                               : Text(
-                                  "${p.name}",
+                                  '${p.name}',
                                 )),
-                          DataCell(Text("${p.email}")),
-                          DataCell(Text("${p.groups.length}")),
+                          DataCell(Text('${p.email}')),
+                          DataCell(Text('${p.groups.length}')),
                           DataCell(Row(children: <Widget>[
                             FHIconButton(
                                 icon: Icon(Icons.edit,
                                     color: Theme.of(context).buttonColor),
                                 onPressed: () => {
                                       ManagementRepositoryClientBloc.router
-                                          .navigateTo(context,
-                                              "/manage-user",
-                                          params: {
-                                            'id': [p.id.id]
-                                          },
-                                      replace: true, transition: TransitionType.fadeIn)
+                                          .navigateTo(context, '/manage-user',
+                                              params: {
+                                                'id': [p.id.id]
+                                              },
+                                              replace: true,
+                                              transition: TransitionType.fadeIn)
                                     }),
                             FHIconButton(
                               icon: Icon(Icons.delete,
@@ -161,7 +161,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
       actions: <Widget>[
         // usually buttons at the bottom of the dialog
         FHFlatButton(
-          title: "Ok",
+          title: 'Ok',
           onPressed: () {
             bloc.mrClient.removeOverlay();
           },
@@ -185,12 +185,13 @@ class DeleteDialogWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return FHDeleteThingWarningWidget(
       thing: "user '${person.name == null ? person.email : person.name}",
-      content: "This users will be removed from all groups and delete from the system. \n\nThis cannot be undone!",
+      content:
+          'This users will be removed from all groups and delete from the system. \n\nThis cannot be undone!',
       bloc: bloc.mrClient,
       deleteSelected: () async {
         try {
           await bloc.deletePerson(person.id.id, true);
-          bloc.triggerSearch("");
+          bloc.triggerSearch('');
           bloc.mrClient.addSnackbar(Text("User '${person.name}' deleted!"));
           return true;
         } catch (e, s) {

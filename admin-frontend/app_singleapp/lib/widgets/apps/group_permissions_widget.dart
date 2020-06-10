@@ -21,7 +21,7 @@ class _GroupPermissionState extends State<GroupPermissionsWidget> {
 
   @override
   Widget build(BuildContext context) {
-    ManageAppBloc bloc = BlocProvider.of(context);
+    final bloc = BlocProvider.of<ManageAppBloc>(context);
     final mrBloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
     return StreamBuilder<List<Group>>(
         stream: bloc.groupsStream,
@@ -29,11 +29,11 @@ class _GroupPermissionState extends State<GroupPermissionsWidget> {
           if (!snapshot.hasData || snapshot.hasError) {
             return Container(
               padding: EdgeInsets.all(30),
-              child: Text("Loading..."),
+              child: Text('Loading...'),
             );
           }
 
-          if (selectedGroup == null && snapshot.data.length > 0) {
+          if (selectedGroup == null && snapshot.data.isNotEmpty) {
             selectedGroup = snapshot.data[0].id;
             bloc.getGroupRoles(selectedGroup);
           }
@@ -44,7 +44,7 @@ class _GroupPermissionState extends State<GroupPermissionsWidget> {
                 Container(
                     padding: EdgeInsets.only(left: 10, top: 20),
                     child: Text(
-                      "Group",
+                      'Group',
                       style: Theme.of(context).textTheme.caption,
                     )),
                 Container(
@@ -133,9 +133,9 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                       currentGroup, widget.bloc.application.id);
                 }
 
-                List<TableRow> rows = List();
+                final rows = <TableRow>[];
                 rows.add(getHeader());
-                for (Environment env in envSnapshot.data) {
+                for (var env in envSnapshot.data) {
                   rows.add(TableRow(
                       decoration: BoxDecoration(
                           border: Border(
@@ -160,20 +160,20 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                             value: editAccess,
                             onChanged: (value) {
                               setState(() {
-                                this.editAccess = value;
+                                editAccess = value;
                               });
                             }),
                         Text(
-                            "This group can create, edit and delete features for this application",
+                            'This group can create, edit and delete features for this application',
                             style: Theme.of(context).textTheme.caption),
                         Padding(
                           padding: const EdgeInsets.only(left: 32.0),
                           child: FHFlatButtonTransparent(
-                            title: "Manage group members",
+                            title: 'Manage group members',
                             keepCase: true,
                             onPressed: () {
                               ManagementRepositoryClientBloc.router.navigateTo(
-                                  context, "/manage-group",
+                                  context, '/manage-group',
                                   replace: true,
                                   transition: TransitionType.material,
                                   params: {
@@ -190,7 +190,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: <Widget>[
                             Text(
-                                "Set the group access to features for each environment",
+                                'Set the group access to features for each environment',
                                 style: Theme.of(context).textTheme.caption),
                           ],
                         )),
@@ -198,7 +198,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                     FHButtonBar(children: [
                       FHFlatButtonTransparent(
                           onPressed: () {
-                            this.currentGroup = null;
+                            currentGroup = null;
                             widget.bloc.resetGroup(groupSnapshot.data);
 
                             widget.bloc.mrClient.addSnackbar(Text(
@@ -207,11 +207,11 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                           title: 'Undo'),
                       FHFlatButton(
                           onPressed: () {
-                            List<EnvironmentGroupRole> newList = List();
-                            this.newEnvironmentRoles.forEach((key, value) {
+                            final newList = <EnvironmentGroupRole>[];
+                            newEnvironmentRoles.forEach((key, value) {
                               newList.add(value);
                             });
-                            Group newGroup = groupSnapshot.data;
+                            var newGroup = groupSnapshot.data;
                             newGroup.environmentRoles = newList;
                             newGroup = editAccess
                                 ? addEditPermission(
@@ -243,28 +243,28 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
           Container(
             padding: EdgeInsets.fromLTRB(5, 0, 0, 15),
             child: Text(
-              "Environment",
+              'Environment',
               style: Theme.of(context).textTheme.subtitle2,
             ),
           ),
           Center(
               child: Text(
-            "Read",
+            'Read',
             style: Theme.of(context).textTheme.subtitle2,
           )),
           Center(
               child: Text(
-            "Lock",
+            'Lock',
             style: Theme.of(context).textTheme.subtitle2,
           )),
           Center(
               child: Text(
-            "Unlock",
+            'Unlock',
             style: Theme.of(context).textTheme.subtitle2,
           )),
           Center(
               child: Text(
-            "Change value",
+            'Change value',
             style: Theme.of(context).textTheme.subtitle2,
           )),
         ]);
@@ -272,13 +272,13 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
 
   Checkbox getPermissionCheckbox(String envId, RoleType roleType) {
     return Checkbox(
-      value: this.newEnvironmentRoles[envId].roles.contains(roleType),
+      value: newEnvironmentRoles[envId].roles.contains(roleType),
       onChanged: (value) {
         setState(() {
           if (value) {
-            this.newEnvironmentRoles[envId].roles.add(roleType);
+            newEnvironmentRoles[envId].roles.add(roleType);
           } else {
-            this.newEnvironmentRoles[envId].roles.remove(roleType);
+            newEnvironmentRoles[envId].roles.remove(roleType);
           }
         });
       },
@@ -286,7 +286,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
   }
 
   bool hasEditPermission(Group group, String aid) {
-    ApplicationGroupRole agr = group.applicationRoles.firstWhere(
+    final agr = group.applicationRoles.firstWhere(
         (item) => item.applicationId == aid && item.groupId == group.id,
         orElse: () => null);
     if (agr == null || !agr.roles.contains(ApplicationRoleType.FEATURE_EDIT)) {

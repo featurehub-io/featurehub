@@ -20,10 +20,9 @@ class SigninWidget extends StatefulWidget {
 class _SigninState extends State<SigninWidget> {
   final _email = TextEditingController();
   final _password = TextEditingController();
-  final _formKey = GlobalKey<FormState>(debugLabel: "signin_widget");
+  final _formKey = GlobalKey<FormState>(debugLabel: 'signin_widget');
   ManagementRepositoryClientBloc bloc;
   bool displayError = false;
-
 
   @override
   void didChangeDependencies() {
@@ -96,7 +95,7 @@ class _SigninState extends State<SigninWidget> {
                       textInputAction: TextInputAction.next,
                       onFieldSubmitted: (_) => _handleSubmitted,
                       validator: (v) =>
-                          v.isEmpty ? "Please enter your email" : null,
+                          v.isEmpty ? 'Please enter your email' : null,
                       decoration: InputDecoration(labelText: 'Email address')),
                   TextFormField(
                       controller: _password,
@@ -104,7 +103,7 @@ class _SigninState extends State<SigninWidget> {
                       textInputAction: TextInputAction.next,
                       onFieldSubmitted: (_) => _handleSubmitted(),
                       validator: (v) =>
-                          v.isEmpty ? "Please enter your password" : null,
+                          v.isEmpty ? 'Please enter your password' : null,
                       decoration: InputDecoration(labelText: 'Password')),
                 ],
               ),
@@ -129,8 +128,8 @@ class _SigninState extends State<SigninWidget> {
                   children: <Widget>[
 //                    FHFlatButtonTransparent(
 //                      onPressed: () =>
-//                          Navigator.pushNamed(context, "/forgot-password"),
-//                      title: "Forgot password?",
+//                          Navigator.pushNamed(context, '/forgot-password'),
+//                      title: 'Forgot password?',
 //                      keepCase: true,
 //                    ),
                     FHFlatButton(

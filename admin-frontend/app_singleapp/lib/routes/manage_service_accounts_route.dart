@@ -24,7 +24,7 @@ class _ServiceAccountSearchState extends State<_ServiceAccountSearchWidget> {
 
   @override
   Widget build(BuildContext context) {
-    ManageServiceAccountsBloc bloc = BlocProvider.of(context);
+    final bloc = BlocProvider.of<ManageServiceAccountsBloc>(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,12 +40,12 @@ class _ServiceAccountSearchState extends State<_ServiceAccountSearchWidget> {
     return Container(
         padding: const EdgeInsets.fromLTRB(0, 8, 30, 10),
         child: FHHeader(
-          title: "Manage service accounts",
+          title: 'Manage service accounts',
         ));
   }
 
   Widget _filterRow(BuildContext context, ManageServiceAccountsBloc bloc) {
-    final BorderSide bs = BorderSide(color: Theme.of(context).dividerColor);
+    final bs = BorderSide(color: Theme.of(context).dividerColor);
     return Column(
       children: <Widget>[
         Container(

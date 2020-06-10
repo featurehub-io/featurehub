@@ -1,7 +1,7 @@
 import 'package:app_singleapp/api/client_api.dart';
-import 'package:bloc_provider/bloc_provider.dart';
 import 'package:app_singleapp/widgets/user/common/portfolio_group.dart';
 import 'package:app_singleapp/widgets/user/common/select_portfolio_group_bloc.dart';
+import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart' as rxdart;
 
@@ -18,7 +18,6 @@ class EditUserBloc implements Bloc {
 
   EditUserBloc(this.mrClient, this.personId, {this.selectGroupBloc})
       : assert(mrClient != null) {
-    print('Initialise edit user bloc');
     _loadInitialPersonData();
   }
 
@@ -44,9 +43,8 @@ class EditUserBloc implements Bloc {
       this.person = await mrClient.personServiceApi
           .getPerson(queryParameter, includeGroups: true);
       _formStateStream.add(EditUserForm.initialState);
-      print('Person is ${person}');
     } catch (e, s) {
-      mrClient.dialogError(e,s);
+      mrClient.dialogError(e, s);
     }
   }
 
@@ -56,37 +54,39 @@ class EditUserBloc implements Bloc {
         .toList();
     person.name = name;
     person.email = email;
-    await mrClient.personServiceApi.updatePerson(personId, person, includeGroups: true);
+    await mrClient.personServiceApi
+        .updatePerson(personId, person, includeGroups: true);
   }
 
   Future<List<Portfolio>> _findPortfolios() async {
     var portfolios;
     try {
       portfolios = await mrClient.portfolioServiceApi
-        .findPortfolios(includeGroups: true);
+          .findPortfolios(includeGroups: true);
     } catch (e, s) {
-      mrClient.dialogError(e,s);
-    };
+      mrClient.dialogError(e, s);
+    }
+    ;
     return portfolios;
   }
 
   _findPersonsGroupsAndPushToStream() async {
     if (person.groups != null) {
-      print('Persons groups' + person.groups.toString());
-
       List<Portfolio> portfoliosList = await _findPortfolios();
 
       List<PortfolioGroup> listOfExistingGroups = [];
       person.groups.forEach((group) => {
-        listOfExistingGroups.add(PortfolioGroup(
-          portfoliosList.firstWhere((p) => p.id == group.portfolioId, orElse: () => null), // null is set for Portfolio for super admin group which doesn't belong to any portfolio
-          group))
-      });
+            listOfExistingGroups.add(PortfolioGroup(
+                portfoliosList.firstWhere((p) => p.id == group.portfolioId,
+                    orElse: () =>
+                        null), // null is set for Portfolio for super admin group which doesn't belong to any portfolio
+                group))
+          });
       selectGroupBloc.pushExistingGroupToStream(listOfExistingGroups);
     }
   }
 
-  Portfolio isSuperAdminPortfolio(){
+  Portfolio isSuperAdminPortfolio() {
     return Portfolio()..name = "Super-Admin";
   }
 }

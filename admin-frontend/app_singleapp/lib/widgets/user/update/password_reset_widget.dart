@@ -16,7 +16,7 @@ class ResetPasswordWidget extends StatefulWidget {
 class _ResetPasswordState extends State<ResetPasswordWidget> {
   final _confirmPassword = TextEditingController();
   final _password = TextEditingController();
-  final _formKey = GlobalKey<FormState>(debugLabel: "reset_password_widget");
+  final _formKey = GlobalKey<FormState>(debugLabel: 'reset_password_widget');
 
   @override
   Widget build(BuildContext context) {
@@ -55,14 +55,14 @@ class _ResetPasswordState extends State<ResetPasswordWidget> {
                       autofocus: true,
                       textInputAction: TextInputAction.next,
                       validator: (v) =>
-                          v.isEmpty ? "Please enter your new password" : null,
+                          v.isEmpty ? 'Please enter your new password' : null,
                       decoration: InputDecoration(labelText: 'Password')),
                   TextFormField(
                       controller: _confirmPassword,
                       obscureText: true,
                       textInputAction: TextInputAction.next,
                       validator: (v) =>
-                          v.isEmpty ? "Please confirm your password" : null,
+                          v.isEmpty ? 'Please confirm your password' : null,
                       decoration:
                           InputDecoration(labelText: 'Confirm password')),
                 ],
@@ -82,8 +82,7 @@ class _ResetPasswordState extends State<ResetPasswordWidget> {
                           if (_formKey.currentState.validate()) {
                             try {
                               await bloc.replaceTempPassword(_password.text);
-                            }
-                            catch (e,s) {
+                            } catch (e, s) {
                               bloc.dialogError(e, s);
                             }
                           }

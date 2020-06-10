@@ -52,12 +52,12 @@ class _EnvListState extends State<EnvListWidget> {
   }
 
   List<Environment> _sortEnvironments(List<Environment> originalList,
-      {String parentId = "", List<Environment> sortedList}) {
+      {String parentId = '', List<Environment> sortedList}) {
     if (sortedList == null) {
       sortedList = [];
     }
     originalList.forEach((env) {
-      if (env.priorEnvironmentId == null && parentId == "") {
+      if (env.priorEnvironmentId == null && parentId == '') {
         sortedList.insert(0, env);
         _sortEnvironments(originalList,
             parentId: env.id, sortedList: sortedList);
@@ -100,7 +100,7 @@ class _EnvListState extends State<EnvListWidget> {
     _environments[0].priorEnvironmentId =
         null; // first environment should never have a parent
     await bloc.updateEnvs(bloc.appId, _environments);
-    bloc.mrClient.addSnackbar(Text("Environment order updated!"));
+    bloc.mrClient.addSnackbar(Text('Environment order updated!'));
   }
 
   List<Environment> swapPreviousIds(oldPid, newPid) {
@@ -136,7 +136,7 @@ class _EnvWidget extends StatelessWidget {
       child: Container(
         height: 50,
         child: CustomCursor(
-          cursorStyle: "move",
+          cursorStyle: 'move',
           child: Row(
             children: <Widget>[
               Container(
@@ -148,7 +148,7 @@ class _EnvWidget extends StatelessWidget {
 //                  child: Icon(.)),
               Row(
                 children: <Widget>[
-                  Text("${env.name}"),
+                  Text('${env.name}'),
                   Padding(
                       padding: EdgeInsets.only(left: 8.0),
                       child: env.production
@@ -158,7 +158,7 @@ class _EnvWidget extends StatelessWidget {
               ),
               Expanded(child: Container()),
               bloc.mrClient
-                  .isPortfolioOrSuperAdmin(bloc.application.portfolioId)
+                      .isPortfolioOrSuperAdmin(bloc.application.portfolioId)
                   ? _adminFunctions(context)
                   : Container()
             ],
@@ -229,8 +229,7 @@ class EnvDeleteDialogWidget extends StatelessWidget {
       bloc: bloc.mrClient,
       extraWarning: env.production,
       wholeWarning: env.production
-          ? "The environment `${env
-          .name}` is your production environment, are you sure you wish to remove it?"
+          ? "The environment `${env.name}` is your production environment, are you sure you wish to remove it?"
           : null,
       thing: env.production ? null : "environment '${env.name}'",
       deleteSelected: () async {
@@ -293,13 +292,13 @@ class _EnvUpdateDialogWidgetState extends State<EnvUpdateDialogWidget> {
             children: <Widget>[
               TextFormField(
                   controller: _envName,
-                  decoration: InputDecoration(labelText: "Environment name"),
+                  decoration: InputDecoration(labelText: 'Environment name'),
                   validator: ((v) {
                     if (v.isEmpty) {
-                      return "Please enter an environment name";
+                      return 'Please enter an environment name';
                     }
                     if (v.length < 2) {
-                      return "Environment name needs to be at least 2 characters long";
+                      return 'Environment name needs to be at least 2 characters long';
                     }
                     return null;
                   })),
@@ -317,13 +316,13 @@ class _EnvUpdateDialogWidgetState extends State<EnvUpdateDialogWidget> {
         ),
         actions: <Widget>[
           FHOutlineButton(
-            title: "Cancel",
+            title: 'Cancel',
             onPressed: () {
               widget.bloc.mrClient.removeOverlay();
             },
           ),
           FHFlatButton(
-              title: isUpdate ? "Update" : "Create",
+              title: isUpdate ? 'Update' : 'Create',
               onPressed: (() async {
                 if (_formKey.currentState.validate()) {
                   try {
@@ -333,18 +332,18 @@ class _EnvUpdateDialogWidgetState extends State<EnvUpdateDialogWidget> {
                           _envName.text);
                       widget.bloc.mrClient.removeOverlay();
                       widget.bloc.mrClient.addSnackbar(
-                          Text("Environment ${_envName.text} updated!"));
+                          Text('Environment ${_envName.text} updated!'));
                     } else {
                       await widget.bloc.createEnv(_envName.text, _isProduction);
                       widget.bloc.mrClient.removeOverlay();
                       widget.bloc.mrClient.addSnackbar(
-                          Text("Environment ${_envName.text} created!"));
+                          Text('Environment ${_envName.text} created!'));
                     }
                   } catch (e, s) {
                     if (e is ApiException && e.code == 409) {
                       widget.bloc.mrClient.customError(
                           messageTitle:
-                              "Environment with name ${_envName.text} already exists");
+                              'Environment with name ${_envName.text} already exists');
                     } else {
                       widget.bloc.mrClient.dialogError(e, s);
                     }
@@ -358,7 +357,6 @@ class _EnvUpdateDialogWidgetState extends State<EnvUpdateDialogWidget> {
 }
 
 Widget AddEnvWidget(BuildContext context, ManageAppBloc bloc) {
-  final BorderSide bs = BorderSide(color: Theme.of(context).dividerColor);
   return Column(children: <Widget>[
     Container(
         padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
@@ -376,14 +374,13 @@ Widget AddEnvWidget(BuildContext context, ManageAppBloc bloc) {
                     label: 'Create new environment',
                     onPressed: () =>
                         bloc.mrClient.addOverlay((BuildContext context) {
-                          return EnvUpdateDialogWidget(
-                            bloc: bloc,
-                          );
-                        }),
+                      return EnvUpdateDialogWidget(
+                        bloc: bloc,
+                      );
+                    }),
                   )),
             FHInfoCardWidget(
-              message:
-              ' Ordering your environments,\n'
+              message: ' Ordering your environments,\n'
                   ' showing the path to production (top to bottom)\n'
                   ' will be reflected on the "Features" dashboard.\n \n'
                   ' It helps your teams see their changes\n'

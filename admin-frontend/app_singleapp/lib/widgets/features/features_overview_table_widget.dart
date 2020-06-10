@@ -68,10 +68,10 @@ class TabsView extends StatelessWidget {
             labelColor: Theme.of(context).textTheme.subtitle2.color,
             unselectedLabelColor: Theme.of(context).textTheme.bodyText2.color,
             tabs: [
-              Tab(text: "FEATURE FLAGS", icon: Icon(Icons.flag)),
-              Tab(text: "FEATURE VALUES", icon: Icon(Icons.code)),
+              Tab(text: 'FEATURE FLAGS', icon: Icon(Icons.flag)),
+              Tab(text: 'FEATURE VALUES', icon: Icon(Icons.code)),
               Tab(
-                  text: "CONFIGURATIONS",
+                  text: 'CONFIGURATIONS',
                   icon: Icon(Icons.device_hub)), //find JSON icon
             ],
           ),
@@ -505,7 +505,7 @@ class _NotSetContainer extends StatelessWidget {
                   width: 1,
                 ),
               ),
-              child: Text("not set",
+              child: Text('not set',
                   style: GoogleFonts.openSans(
                       textStyle: Theme.of(context).textTheme.bodyText1))),
         ),
@@ -535,7 +535,7 @@ class _BooleanContainer extends StatelessWidget {
               ),
               child: Row(
                 children: <Widget>[
-                  Text(fv.valueBoolean ? "ON" : "OFF",
+                  Text(fv.valueBoolean ? 'ON' : 'OFF',
                       style: GoogleFonts.openSans(
                           textStyle:
                               Theme.of(context).primaryTextTheme.button)),
@@ -583,8 +583,8 @@ class NoEnvironmentMessage extends StatelessWidget {
                                 replace: true,
                                 transition: TransitionType.material,
                                 params: {
-                              "id": [bloc.applicationId],
-                              "tab-name": ["environments"]
+                              'id': [bloc.applicationId],
+                              'tab-name': ['environments']
                             }));
               } else {
                 return Container();

@@ -34,10 +34,6 @@ class LineStatusFeature {
     sortedByNameEnvironmentIds =
         afv.environments.map((e) => e.environmentId).toList();
     feature = afv.features.firstWhere((element) => element.id == featureId);
-//    afv.environments.forEach((e) {
-//      final fv = e.features.firstWhere((element) => element.key == feature.key, orElse: () => null);
-//      print("feature ${feature.name} environment: ${e.environmentId} - ${e.environmentName} is ${fv == null ? 'null' : fv.version}");
-//    });
     this.environmentFeatureValues = afv.environments;
     this.environmentFeatureValues.forEach((e) {
       applicationEnvironments[e.environmentId] = e;

@@ -85,11 +85,9 @@ class LandingRouteState extends State<LandingRoute> {
           }
 
           if (widget == null) {
-            print("no widget");
             return SizedBox.shrink();
           }
 
-          print("has widget");
           return FHScaffoldWidget(
             body: widget,
             bodyMainAxisAlignment: MainAxisAlignment.center,

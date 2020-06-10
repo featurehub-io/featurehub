@@ -42,7 +42,7 @@ class ChipsInput<T> extends StatefulWidget {
 class ChipsInputState<T> extends State<ChipsInput<T>>
     implements TextInputClient {
   static const kObjectReplacementChar = 0xFFFC;
-  Set<T> _chips = Set<T>();
+  Set<T> _chips = <T>{};
   List<T> _suggestions;
   StreamController<List<T>> _suggestionsStreamController;
   int _searchId = 0;
@@ -50,7 +50,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
   TextEditingValue _value = TextEditingValue();
   TextInputConnection _connection;
   _SuggestionsBoxController _suggestionsBoxController;
-  LayerLink _layerLink = LayerLink();
+  final LayerLink _layerLink = LayerLink();
   Size size;
 
   String get text => String.fromCharCodes(
@@ -65,42 +65,40 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
     _chips.addAll(widget.initialValue);
     _updateTextInputState();
     _initFocusNode();
-    this._suggestionsBoxController = _SuggestionsBoxController(context);
-    this._suggestionsStreamController = StreamController<List<T>>.broadcast();
+    _suggestionsBoxController = _SuggestionsBoxController(context);
+    _suggestionsStreamController = StreamController<List<T>>.broadcast();
   }
 
-  _initFocusNode() {
+  void _initFocusNode() {
     setState(() {
-      debugPrint("Initializing focus node");
       if (widget.enabled) {
         if (widget.maxChips == null || _chips.length < widget.maxChips) {
-          this._focusNode = FocusNode();
+          _focusNode = FocusNode();
           (() async {
-            await this._initOverlayEntry();
-            this._focusNode.addListener(_onFocusChanged);
+            await _initOverlayEntry();
+            _focusNode.addListener(_onFocusChanged);
             // in case we already missed the focus event
-            if (this._focusNode.hasFocus) {
-              this._suggestionsBoxController.open();
+            if (_focusNode.hasFocus) {
+              _suggestionsBoxController.open();
             }
           })();
         } else {
-          this._focusNode = AlwaysDisabledFocusNode();
+          _focusNode = AlwaysDisabledFocusNode();
         }
       } else {
-        this._focusNode = AlwaysDisabledFocusNode();
+        _focusNode = AlwaysDisabledFocusNode();
       }
     });
-    debugPrint(this._focusNode.toString());
   }
 
   void _onFocusChanged() {
     if (_focusNode.hasFocus) {
       _openInputConnection();
       // if()
-      this._suggestionsBoxController.open();
+      _suggestionsBoxController.open();
     } else {
       _closeInputConnectionIfNeeded();
-      this._suggestionsBoxController.close();
+      _suggestionsBoxController.close();
     }
     setState(() {
       /*rebuild so that _TextCursor is hidden.*/
@@ -123,7 +121,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
 
     size = renderBox.size;
 
-    this._suggestionsBoxController._overlayEntry = OverlayEntry(
+    _suggestionsBoxController._overlayEntry = OverlayEntry(
       builder: (context) {
         return StreamBuilder(
           stream: _suggestionsStreamController.stream,
@@ -133,7 +131,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
               return Positioned(
                 width: size.width,
                 child: CompositedTransformFollower(
-                  link: this._layerLink,
+                  link: _layerLink,
                   showWhenUnlinked: false,
                   offset: Offset(0.0, size.height / 2),
                   child: Material(
@@ -144,7 +142,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
                       itemCount: snapshot.data?.length ?? 0,
                       itemBuilder: (BuildContext context, int index) {
                         return widget.suggestionBuilder(
-                          context, this, _suggestions[index]);
+                            context, this, _suggestions[index]);
                       },
                     ),
                   ),
@@ -242,7 +240,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
     );
 
     return CompositedTransformTarget(
-      link: this._layerLink,
+      link: _layerLink,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: requestKeyboard,
@@ -293,9 +291,9 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
       selection: TextSelection.collapsed(offset: text.length),
       composing: TextRange(start: 0, end: text.length),
     );
-    if (_connection == null) {
-      _connection = TextInput.attach(this, TextInputConfiguration());
-    }
+
+    // if _connection is null, assign it something
+    _connection ??= TextInput.attach(this, TextInputConfiguration());
     _connection.setEditingState(_value);
   }
 
@@ -311,16 +309,13 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
   }
 
   @override
-  void updateFloatingCursor(RawFloatingCursorPoint point) {
-    print(point);
-  }
+  void updateFloatingCursor(RawFloatingCursorPoint point) {}
 
   @override
-  void connectionClosed() {
-  }
+  void connectionClosed() {}
 
-  void showAutocorrectionPromptRect(int start, int end) {
-  }
+  @override
+  void showAutocorrectionPromptRect(int start, int end) {}
 
   @override
   // TODO: implement currentTextEditingValue
@@ -396,25 +391,25 @@ class _SuggestionsBoxController {
 
   _SuggestionsBoxController(this.context);
 
-  open() {
-    if (this._isOpened) return;
-    assert(this._overlayEntry != null);
-    Overlay.of(context).insert(this._overlayEntry);
-    this._isOpened = true;
+  void open() {
+    if (_isOpened) return;
+    assert(_overlayEntry != null);
+    Overlay.of(context).insert(_overlayEntry);
+    _isOpened = true;
   }
 
-  close() {
-    if (!this._isOpened) return;
-    assert(this._overlayEntry != null);
-    this._overlayEntry.remove();
-    this._isOpened = false;
+  void close() {
+    if (!_isOpened) return;
+    assert(_overlayEntry != null);
+    _overlayEntry.remove();
+    _isOpened = false;
   }
 
   toggle() {
-    if (this._isOpened) {
-      this.close();
+    if (_isOpened) {
+      close();
     } else {
-      this.open();
+      open();
     }
   }
 }

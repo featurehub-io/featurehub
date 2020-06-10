@@ -232,7 +232,7 @@ class _ServiceAccountDescription extends StatelessWidget {
                         .copyWith(color: Theme.of(context).primaryColor)),
                 Text(
                   serviceAccount.description != null
-                      ? "${serviceAccount.description}"
+                      ? '${serviceAccount.description}'
                       : '',
                   style: Theme.of(context).textTheme.caption,
                 ),
@@ -260,7 +260,7 @@ class ServiceAccountDeleteDialogWidget extends StatelessWidget {
     return FHDeleteThingWarningWidget(
       thing: "service account '${serviceAccount.name}'",
       content:
-          "All applications using this service account will no longer have access to features! \n\nThis cannot be undone!",
+          'All applications using this service account will no longer have access to features! \n\nThis cannot be undone!',
       bloc: bloc.mrClient,
       deleteSelected: () async {
         bool success = await bloc
@@ -329,32 +329,32 @@ class _ServiceAccountUpdateDialogWidgetState
                   ? Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: <Widget>[
-                        Text("Name: ${_name.text}"),
+                        Text('Name: ${_name.text}'),
                       ],
                     )
                   : TextFormField(
                       controller: _name,
                       decoration:
-                          InputDecoration(labelText: "Service account name"),
+                          InputDecoration(labelText: 'Service account name'),
                       validator: ((v) {
                         if (v.isEmpty) {
-                          return "Please enter a service account name";
+                          return 'Please enter a service account name';
                         }
                         if (v.length < 4) {
-                          return "Service account name needs to be at least 4 characters long";
+                          return 'Service account name needs to be at least 4 characters long';
                         }
                         return null;
                       })),
               TextFormField(
                   controller: _description,
                   decoration:
-                      InputDecoration(labelText: "Service account description"),
+                      InputDecoration(labelText: 'Service account description'),
                   validator: ((v) {
                     if (v.isEmpty) {
-                      return "Please enter service account description";
+                      return 'Please enter service account description';
                     }
                     if (v.length < 4) {
-                      return "Service account description needs to be at least 4 characters long";
+                      return 'Service account description needs to be at least 4 characters long';
                     }
                     return null;
                   })),
@@ -363,13 +363,13 @@ class _ServiceAccountUpdateDialogWidgetState
         ),
         actions: <Widget>[
           FHOutlineButton(
-            title: "Cancel",
+            title: 'Cancel',
             onPressed: () {
               widget.bloc.mrClient.removeOverlay();
             },
           ),
           FHFlatButton(
-              title: isUpdate ? "Update" : "Create",
+              title: isUpdate ? 'Update' : 'Create',
               onPressed: (() async {
                 if (_formKey.currentState.validate()) {
                   try {

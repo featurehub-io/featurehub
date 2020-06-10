@@ -86,7 +86,7 @@ class _ServiceAccountPermissionState
                         Container(
                             padding: EdgeInsets.only(left: 10, top: 20),
                             child: Text(
-                              "Service account",
+                              'Service account',
                               style: Theme.of(context).textTheme.caption,
                             )),
                         Container(
@@ -227,7 +227,7 @@ class _ServiceAccountPermissionDetailState
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: <Widget>[
                             Text(
-                                "Set the service account access to features for each environment",
+                                'Set the service account access to features for each environment',
                                 style: Theme.of(context).textTheme.caption),
                           ],
                         )),
@@ -277,23 +277,23 @@ class _ServiceAccountPermissionDetailState
           Container(
             padding: EdgeInsets.fromLTRB(5, 0, 0, 15),
             child: Text(
-              "Environment",
+              'Environment',
               style: Theme.of(context).textTheme.subtitle2,
             ),
           ),
           Center(
               child: Text(
-            "Read",
+            'Read',
             style: Theme.of(context).textTheme.subtitle2,
           )),
           Center(
               child: Text(
-            "Lock/Unlock",
+            'Lock/Unlock',
             style: Theme.of(context).textTheme.subtitle2,
           )),
           Center(
               child: Text(
-            "Change value",
+            'Change value',
             style: Theme.of(context).textTheme.subtitle2,
           )),
         ]);
@@ -326,7 +326,6 @@ class _ServiceAccountPermissionDetailState
 
   Map<String, ServiceAccountPermission> createMap(
       List<Environment> environments, ServiceAccount serviceAccount) {
-    print("createMap serviceAccount: ${serviceAccount}");
     Map<String, ServiceAccountPermission> retMap =
         Map<String, ServiceAccountPermission>();
     environments.forEach((environment) {
@@ -338,7 +337,6 @@ class _ServiceAccountPermissionDetailState
         sap.environmentId = environment.id;
         sap.permissions = List<ServiceAccountPermissionType>();
       }
-      print("sapt: ${sap.toString()}");
       retMap[environment.id] = sap;
     });
     return retMap;

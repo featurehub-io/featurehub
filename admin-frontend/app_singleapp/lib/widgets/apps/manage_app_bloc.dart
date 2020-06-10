@@ -66,7 +66,7 @@ class ManageAppBloc implements Bloc {
 
   setApplicationId(String applicationId) {
     _pageStateBS.add(ManageAppPageState.loadingState);
-    this.appId = applicationId;
+    appId = applicationId;
     if (applicationId != null) {
       _fetchGroups();
       _fetchEnvironments();
@@ -75,15 +75,15 @@ class ManageAppBloc implements Bloc {
   }
 
   _fetchEnvironments() async {
-    this.application = await _appServiceApi
+    application = await _appServiceApi
         .getApplication(appId, includeEnvironments: true)
         .catchError(mrClient.dialogError);
-    this.environmentsList = application.environments;
+    environmentsList = application.environments;
     if (!_environmentBS.isClosed) {
       _environmentBS.add(environmentsList);
     }
-    this.portfolio = await _portfolioServiceApi
-        .getPortfolio(this.application.portfolioId)
+    portfolio = await _portfolioServiceApi
+        .getPortfolio(application.portfolioId)
         .catchError(mrClient.dialogError);
     if (!_pageStateBS.isClosed) {
       _pageStateBS.add(ManageAppPageState.initialState);
@@ -91,19 +91,19 @@ class ManageAppBloc implements Bloc {
   }
 
   Future<void> _fetchGroups() async {
-    this.application = await _appServiceApi
+    application = await _appServiceApi
         .getApplication(appId)
         .catchError(mrClient.dialogError);
-    this.portfolio = await _portfolioServiceApi
+    portfolio = await _portfolioServiceApi
         .getPortfolio(application.portfolioId, includeGroups: true)
         .catchError(mrClient.dialogError);
     if (!_groupsBS.isClosed) {
-      _groupsBS.add(this.portfolio.groups);
+      _groupsBS.add(portfolio.groups);
     }
   }
 
   _fetchServiceAccounts() async {
-    this.application = await _appServiceApi
+    application = await _appServiceApi
         .getApplication(appId)
         .catchError(mrClient.dialogError);
     List<ServiceAccount> serviceAccounts = await _serviceAccountServiceApi

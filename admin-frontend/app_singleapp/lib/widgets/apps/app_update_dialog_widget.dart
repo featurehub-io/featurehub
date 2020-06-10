@@ -44,84 +44,90 @@ class _AppUpdateDialogWidgetState extends State<AppUpdateDialogWidget> {
     return Form(
       key: _formKey,
       child: Stack(
-
-        children: [FHAlertDialog(
-          title: Text(widget.application == null
-              ? 'Create new application'
-              : 'Edit application'),
-          content: Container(
-            width: 500,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                TextFormField(
-                    controller: _appName,
-                    decoration: InputDecoration(labelText: "Application name"),
-                    validator: ((v) {
-                      if (v.isEmpty) {
-                        return "Please enter an application name";
-                      }
-                      if (v.length < 4) {
-                        return "Application name needs to be at least 4 characters long";
-                      }
-                      return null;
-                    })),
-                TextFormField(
-                    controller: _appDescription,
-                    decoration:
-                    InputDecoration(labelText: "Application description"),
-                    validator: ((v) {
-                      if (v.isEmpty) {
-                        return "Please enter app description";
-                      }
-                      if (v.length < 4) {
-                        return "Application description needs to be at least 4 characters long";
-                      }
-                      return null;
-                    })),
-              ],
+        children: [
+          FHAlertDialog(
+            title: Text(widget.application == null
+                ? 'Create new application'
+                : 'Edit application'),
+            content: Container(
+              width: 500,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  TextFormField(
+                      controller: _appName,
+                      decoration:
+                          InputDecoration(labelText: 'Application name'),
+                      validator: ((v) {
+                        if (v.isEmpty) {
+                          return 'Please enter an application name';
+                        }
+                        if (v.length < 4) {
+                          return 'Application name needs to be at least 4 characters long';
+                        }
+                        return null;
+                      })),
+                  TextFormField(
+                      controller: _appDescription,
+                      decoration:
+                          InputDecoration(labelText: 'Application description'),
+                      validator: ((v) {
+                        if (v.isEmpty) {
+                          return 'Please enter app description';
+                        }
+                        if (v.length < 4) {
+                          return 'Application description needs to be at least 4 characters long';
+                        }
+                        return null;
+                      })),
+                ],
+              ),
             ),
-          ),
-          actions: [
-            ButtonBar(
-              children: <Widget>[
-                FHOutlineButton(
-                  title: "Cancel",
-                  onPressed: () {
-                    widget.bloc.mrClient.removeOverlay();
-                  },
-                ),
-                FHFlatButton(
-                    title: isUpdate ? "Update" : "Create",
-                    onPressed: (() async {
-                      if (_formKey.currentState.validate()) {
-                        try {
-                          if (isUpdate) {
-                            await widget.bloc.updateApplication(widget.application,
-                                _appName.text, _appDescription.text);
-                            widget.bloc.mrClient.removeOverlay();
-                            widget.bloc.mrClient.addSnackbar(
-                                Text("Application ${_appName.text} updated!"));
-                          } else {
-                            await widget.bloc.createApplication(
-                                _appName.text, _appDescription.text);
-                            widget.bloc.mrClient.removeOverlay();
-                            widget.bloc.mrClient.addSnackbar(
-                                Text("Application ${_appName.text} created!"));
-                          }
-                        } catch (e, s) {
-                          if (e is ApiException && e.code == 409) {
-                            widget.bloc.mrClient.customError(messageTitle: "Application '${_appName.text}' already exists");
-                          } else {
-                            widget.bloc.mrClient.dialogError(e, s);
+            actions: [
+              ButtonBar(
+                children: <Widget>[
+                  FHOutlineButton(
+                    title: 'Cancel',
+                    onPressed: () {
+                      widget.bloc.mrClient.removeOverlay();
+                    },
+                  ),
+                  FHFlatButton(
+                      title: isUpdate ? 'Update' : 'Create',
+                      onPressed: (() async {
+                        if (_formKey.currentState.validate()) {
+                          try {
+                            if (isUpdate) {
+                              await widget.bloc.updateApplication(
+                                  widget.application,
+                                  _appName.text,
+                                  _appDescription.text);
+                              widget.bloc.mrClient.removeOverlay();
+                              widget.bloc.mrClient.addSnackbar(Text(
+                                  'Application ${_appName.text} updated!'));
+                            } else {
+                              await widget.bloc.createApplication(
+                                  _appName.text, _appDescription.text);
+                              widget.bloc.mrClient.removeOverlay();
+                              widget.bloc.mrClient.addSnackbar(Text(
+                                  'Application ${_appName.text} created!'));
+                            }
+                          } catch (e, s) {
+                            if (e is ApiException && e.code == 409) {
+                              widget.bloc.mrClient.customError(
+                                  messageTitle:
+                                      "Application '${_appName.text}' already exists");
+                            } else {
+                              widget.bloc.mrClient.dialogError(e, s);
+                            }
                           }
                         }
-                      }
-                    }))
-              ],
-            ),
-          ],
-        )],
+                      }))
+                ],
+              ),
+            ],
+          )
+        ],
       ),
     );
   }

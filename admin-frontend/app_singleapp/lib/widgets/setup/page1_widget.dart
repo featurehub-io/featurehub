@@ -25,9 +25,9 @@ class _SetupPage1State extends State<SetupPage1Widget> {
   final _pw2 = TextEditingController();
   final _PASSWORD_SCORE_THRESHOLD = 1;
 
-  Text _passwordStrength = Text("");
+  Text _passwordStrength = Text('');
 
-  final _formKey = GlobalKey<FormState>(debugLabel: "setup_page1");
+  final _formKey = GlobalKey<FormState>(debugLabel: 'setup_page1');
 
   @override
   Widget build(BuildContext context) {
@@ -43,20 +43,21 @@ class _SetupPage1State extends State<SetupPage1Widget> {
 
   void setPasswordStrength() {
     Result result = Xcvbnm().estimate(_pw1.text);
-    String state = "Weak";
+    String state = 'Weak';
     if (result.score == 1) {
-      state = "Below average";
+      state = 'Below average';
     } else if (result.score == 2) {
-      state = "Good";
+      state = 'Good';
     } else if (result.score == 3) {
-      state = "Strong";
+      state = 'Strong';
     }
     Color stateColor =
         result.score < _PASSWORD_SCORE_THRESHOLD ? Colors.red : Colors.green;
     if (result.score == 1) {
       stateColor = Colors.orange;
     }
-    Text stateText = Text(state, style: Theme.of(context).textTheme.caption.copyWith(color: stateColor));
+    Text stateText = Text(state,
+        style: Theme.of(context).textTheme.caption.copyWith(color: stateColor));
     setState(() {
       _passwordStrength = stateText;
     });
@@ -66,101 +67,101 @@ class _SetupPage1State extends State<SetupPage1Widget> {
     return Form(
       key: _formKey,
       child: FHCardWidget(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.only(bottom: 26.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Image.asset('FeatureHub-icon.png', width: 40, height: 40),
-                  ],
-                ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.only(bottom: 26.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Image.asset('FeatureHub-icon.png', width: 40, height: 40),
+                ],
               ),
-              Text(
-                'Lets get this party started!',
-                style: Theme.of(context).textTheme.headline6,
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
-                child: Text(
-                    'Well done, FeatureHub is up and running.  You\'ll be the first "Site administrator" of your FeatureHub account, lets get a few details.',
-                    style: Theme.of(context).textTheme.bodyText1),
-              ),
-              TextFormField(
-                controller: _name,
-                autofocus: true,
-                decoration: InputDecoration(labelText: 'Name'),
+            ),
+            Text(
+              'Lets get this party started!',
+              style: Theme.of(context).textTheme.headline6,
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+              child: Text(
+                  "Well done, FeatureHub is up and running.  You\'ll be the first 'Site administrator' of your FeatureHub account, lets get a few details.",
+                  style: Theme.of(context).textTheme.bodyText1),
+            ),
+            TextFormField(
+              controller: _name,
+              autofocus: true,
+              decoration: InputDecoration(labelText: 'Name'),
+              textInputAction: TextInputAction.next,
+              validator: (v) => v.isEmpty ? 'Please enter your name' : null,
+            ),
+            TextFormField(
+                controller: _email,
+                decoration: InputDecoration(labelText: 'Email address'),
                 textInputAction: TextInputAction.next,
-                validator: (v) => v.isEmpty ? "Please enter your name" : null,
-              ),
-              TextFormField(
-                  controller: _email,
-                  decoration: InputDecoration(labelText: 'Email address'),
-                  textInputAction: TextInputAction.next,
-                  validator: (v) {
-                    if (v.isEmpty) {
-                      return "Please enter your email address";
-                    }
-                    if (!validateEmail(v)) {
-                      return ("Please enter a valid email address");
-                    }
-                    return null;
-                  }),
-              TextFormField(
-                  controller: _pw1,
-                  obscureText: true,
-                  textInputAction: TextInputAction.next,
-                  decoration: InputDecoration(labelText: 'Password'),
-                  validator: (v) {
-                    if (v.isEmpty) {
-                      return "Please enter your password";
-                    }
-                    if (v.length<7) {
-                      return "Password must be at least 7 characters";
-                    }
-                    //this is quite sensitive and annoying at the moment, commenting out
+                validator: (v) {
+                  if (v.isEmpty) {
+                    return 'Please enter your email address';
+                  }
+                  if (!validateEmail(v)) {
+                    return ('Please enter a valid email address');
+                  }
+                  return null;
+                }),
+            TextFormField(
+                controller: _pw1,
+                obscureText: true,
+                textInputAction: TextInputAction.next,
+                decoration: InputDecoration(labelText: 'Password'),
+                validator: (v) {
+                  if (v.isEmpty) {
+                    return 'Please enter your password';
+                  }
+                  if (v.length < 7) {
+                    return 'Password must be at least 7 characters';
+                  }
+                  //this is quite sensitive and annoying at the moment, commenting out
 //                    Result result = Xcvbnm().estimate(v);
 //                    if (result.score < _PASSWORD_SCORE_THRESHOLD) {
-//                      return "Password not strong enough, try adding numbers and symbols";
+//                      return 'Password not strong enough, try adding numbers and symbols';
 //                    }
-                    return null;
-                  }),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
-                child: this._passwordStrength,
-              ),
-              TextFormField(
-                  controller: _pw2,
-                  obscureText: true,
-                  textInputAction: TextInputAction.next,
-                  decoration: InputDecoration(labelText: 'Confirm Password'),
-                  validator: (v) {
-                    if (v != _pw1.text) {
-                      return "Passwords don't match";
+                  return null;
+                }),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
+              child: this._passwordStrength,
+            ),
+            TextFormField(
+                controller: _pw2,
+                obscureText: true,
+                textInputAction: TextInputAction.next,
+                decoration: InputDecoration(labelText: 'Confirm Password'),
+                validator: (v) {
+                  if (v != _pw1.text) {
+                    return "Passwords don't match";
+                  }
+                  return null;
+                }),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: <Widget>[
+                FHFlatButton(
+                  onPressed: () {
+                    if (_formKey.currentState.validate()) {
+                      copyState();
+                      widget.bloc.nextPage();
                     }
-                    return null;
-                  }),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: <Widget>[
-                  FHFlatButton(
-                    onPressed: () {
-                      if (_formKey.currentState.validate()) {
-                        copyState();
-                        widget.bloc.nextPage();
-                      }
-                    },
-                    title: 'Next',
-                  )
-                ],
-              )
-            ],
-          ),
+                  },
+                  title: 'Next',
+                )
+              ],
+            )
+          ],
         ),
+      ),
     );
   }
 
@@ -174,10 +175,10 @@ class _SetupPage1State extends State<SetupPage1Widget> {
   }
 
   void copyIn() {
-    _name.text = widget.bloc.name ?? "";
-    _email.text = widget.bloc.email ?? "";
-    _pw1.text = widget.bloc.pw1 ?? "";
-    _pw2.text = widget.bloc.pw2 ?? "";
+    _name.text = widget.bloc.name ?? '';
+    _email.text = widget.bloc.email ?? '';
+    _pw1.text = widget.bloc.pw1 ?? '';
+    _pw2.text = widget.bloc.pw2 ?? '';
   }
 
   void copyState() {

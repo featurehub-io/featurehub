@@ -1,11 +1,11 @@
 import 'package:app_singleapp/utils/utils.dart';
 import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/fh_alert_dialog.dart';
+import 'package:app_singleapp/widgets/common/fh_outline_button.dart';
 import 'package:app_singleapp/widgets/features/feature_status_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:openapi_dart_common/openapi.dart';
-import 'package:app_singleapp/widgets/common/fh_outline_button.dart';
 
 class CreateFeatureDialogWidget extends StatefulWidget {
   final Feature feature;
@@ -61,13 +61,13 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
             children: <Widget>[
               TextFormField(
                   controller: _featureName,
-                  decoration: InputDecoration(labelText: "Feature name"),
+                  decoration: InputDecoration(labelText: 'Feature name'),
                   validator: ((v) {
                     if (v.isEmpty) {
-                      return "Please enter feature name";
+                      return 'Please enter feature name';
                     }
                     if (v.length < 4) {
-                      return "Feature name needs to be at least 4 characters long";
+                      return 'Feature name needs to be at least 4 characters long';
                     }
                     return null;
                   })),
@@ -75,17 +75,15 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                   controller: _featureKey,
                   // initialValue: _featureName.toString(),
                   decoration: InputDecoration(
-                    labelText: "Feature key",
-                    hintText:
-                    "To be used in the code with FeatureHub SDK",
-                    hintStyle: Theme.of(context).textTheme.caption
-                  ),
+                      labelText: 'Feature key',
+                      hintText: 'To be used in the code with FeatureHub SDK',
+                      hintStyle: Theme.of(context).textTheme.caption),
                   validator: ((v) {
                     if (v.isEmpty) {
-                      return "Please enter feature key";
+                      return 'Please enter feature key';
                     }
                     if (!validateFeatureKey(v)) {
-                      return ("Can only include letters and underscores");
+                      return ('Can only include letters and underscores');
                     }
                     return null;
                   })),
@@ -93,23 +91,22 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                   controller: _featureAlias,
                   // initialValue: _featureName.toString(),
                   decoration: InputDecoration(
-                    labelText: "Alias key (optional)",
-                    hintText:
-                    "Use alias key as a 'secret' alternative to the feature key",
-                    hintStyle: Theme.of(context).textTheme.caption
-                  ),
+                      labelText: 'Alias key (optional)',
+                      hintText:
+                          "Use alias key as a 'secret' alternative to the feature key",
+                      hintStyle: Theme.of(context).textTheme.caption),
                   validator: ((v) {
                     if (v.isNotEmpty && !validateFeatureKey(v)) {
-                      return ("Can only include letters, numbers and underscores");
+                      return ('Can only include letters, numbers and underscores');
                     }
                     return null;
                   })),
               TextFormField(
                 controller: _featureLink,
                 decoration: InputDecoration(
-                    labelText: "Reference link (optional)",
+                    labelText: 'Reference link (optional)',
                     hintText:
-                        "Optional link to external tracking system, e.g. Jira",
+                        'Optional link to external tracking system, e.g. Jira',
                     hintStyle: Theme.of(context).textTheme.caption),
               ),
               !isUpdate
@@ -122,14 +119,14 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                           return DropdownMenuItem<FeatureValueType>(
                               value: dropDownStringItem,
                               child: Text(
-                                  _transformValuesToString(
-                                      dropDownStringItem), style: Theme.of(context).textTheme.bodyText2));
+                                  _transformValuesToString(dropDownStringItem),
+                                  style:
+                                      Theme.of(context).textTheme.bodyText2));
                         }).toList(),
                         hint: Text('Select feature type',
                             style: Theme.of(context).textTheme.subtitle2),
                         onChanged: (value) {
                           setState(() {
-                            print(value);
                             _dropDownFeatureTypeValue = value;
                           });
                         },
@@ -140,7 +137,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
               Container(
                   child: isError
                       ? Text(
-                          "Select feature type",
+                          'Select feature type',
                           style: Theme.of(context)
                               .textTheme
                               .bodyText2
@@ -152,13 +149,13 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
         ),
         actions: <Widget>[
           FHOutlineButton(
-            title: "Cancel",
+            title: 'Cancel',
             onPressed: () {
               widget.bloc.mrClient.removeOverlay();
             },
           ),
           FHFlatButton(
-              title: isUpdate ? "Update" : "Create",
+              title: isUpdate ? 'Update' : 'Create',
               onPressed: (() async {
                 if (_formKey.currentState.validate()) {
                   try {
@@ -171,7 +168,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                           _featureLink.text);
                       widget.bloc.mrClient.removeOverlay();
                       widget.bloc.mrClient.addSnackbar(
-                          Text("Feature ${_featureName.text} updated!"));
+                          Text('Feature ${_featureName.text} updated!'));
                     } else {
                       if (_dropDownFeatureTypeValue != null) {
                         await widget.bloc.createFeature(
@@ -182,7 +179,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                             _featureLink.text);
                         widget.bloc.mrClient.removeOverlay();
                         widget.bloc.mrClient.addSnackbar(
-                            Text("Feature ${_featureName.text} created!"));
+                            Text('Feature ${_featureName.text} created!'));
                       } else {
                         setState(() {
                           isError = true;
@@ -209,12 +206,12 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
 _transformValuesToString(FeatureValueType featureValueType) {
   switch (featureValueType) {
     case FeatureValueType.STRING:
-      return "String";
+      return 'String';
     case FeatureValueType.NUMBER:
-      return "Number";
+      return 'Number';
     case FeatureValueType.BOOLEAN:
-     return "Feature flag";
+      return 'Feature flag';
     case FeatureValueType.JSON:
-      return "Configuration (JSON)";
+      return 'Configuration (JSON)';
   }
 }

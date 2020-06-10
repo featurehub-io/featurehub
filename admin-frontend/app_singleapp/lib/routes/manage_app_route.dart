@@ -24,7 +24,7 @@ class ManageAppRoute extends StatefulWidget {
 class _ManageAppRouteState extends State<ManageAppRoute> {
   @override
   Widget build(BuildContext context) {
-    ManageAppBloc bloc = BlocProvider.of(context);
+    final bloc = BlocProvider.of<ManageAppBloc>(context);
     return Container(
         padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
         child: Column(
@@ -33,7 +33,7 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
             Container(
               padding: EdgeInsets.only(bottom: 10),
               child: FHHeader(
-                title: "Application settings",
+                title: 'Application settings',
                 children: <Widget>[],
               ),
             ),
@@ -52,7 +52,7 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
                         bloc.setApplicationId(bloc.mrClient.currentAid);
                         return Container(
                             padding: EdgeInsets.only(left: 8, top: 15),
-                            child: Text("No applications found!"));
+                            child: Text('No applications found!'));
                       }
                     }),
                 bloc.mrClient.isPortfolioOrSuperAdmin(bloc.mrClient.currentPid)
@@ -137,7 +137,7 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            "Portfolio application",
+            'Portfolio application',
             style: Theme.of(context).textTheme.caption,
           ),
           DropdownButton(
@@ -194,7 +194,7 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
 
   @override
   Widget build(BuildContext context) {
-    ManageAppBloc bloc = BlocProvider.of(context);
+    final bloc = BlocProvider.of<ManageAppBloc>(context);
 
     // maybe should be a Column?
     return Column(
@@ -205,9 +205,9 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
           labelColor: Theme.of(context).textTheme.subtitle2.color,
           unselectedLabelColor: Theme.of(context).textTheme.bodyText2.color,
           tabs: [
-            Tab(text: "Environments"),
-            Tab(text: "Group permissions"),
-            Tab(text: "Service account permissions"),
+            Tab(text: 'Environments'),
+            Tab(text: 'Group permissions'),
+            Tab(text: 'Service account permissions'),
           ],
         ),
         SizedBox(
@@ -263,13 +263,13 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
         .listen((routeChange) {
       if (routeChange.route == '/manage-app') {
         switch (routeChange.params['tab-name'][0]) {
-          case "environments":
+          case 'environments':
             _controller.animateTo(0);
             break;
-          case "group-permissions":
+          case 'group-permissions':
             _controller.animateTo(1);
             break;
-          case "service-accounts":
+          case 'service-accounts':
             _controller.animateTo(2);
             break;
           default:

@@ -23,12 +23,10 @@ class FeatureHubApp extends StatelessWidget {
   // This widget is the root of the application.
   @override
   Widget build(BuildContext context) {
-    final mrBloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
-
     return MaterialApp(
       title: 'FeatureHub',
       theme: myTheme,
-      home: LandingRoute(title: "FeatureHub"),
+      home: LandingRoute(title: 'FeatureHub'),
     );
   }
 }

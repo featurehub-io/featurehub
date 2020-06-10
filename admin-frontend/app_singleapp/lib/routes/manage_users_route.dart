@@ -1,3 +1,4 @@
+import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/widgets/common/fh_header.dart';
 import 'package:app_singleapp/widgets/common/fh_icon_text_button.dart';
 import 'package:app_singleapp/widgets/user/list/list_users_bloc.dart';
@@ -17,7 +18,7 @@ class ManageUsersRoute extends StatelessWidget {
 class _PersonSearchWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    ListUsersBloc bloc = BlocProvider.of(context);
+    final bloc = BlocProvider.of<ListUsersBloc>(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,14 +34,16 @@ class _PersonSearchWidget extends StatelessWidget {
     return Container(
         padding: const EdgeInsets.fromLTRB(0, 0, 30, 0),
         child: FHHeader(
-          title: "Manage users",
+          title: 'Manage users',
           children: [
             if (bloc.mrClient.userIsSuperAdmin == true)
               FHIconTextButton(
                 iconData: Icons.add,
                 label: 'Create new user',
-                onPressed: () =>
-                    {Navigator.of(context).pushNamed("/create-user")},
+                onPressed: () {
+                  ManagementRepositoryClientBloc.router
+                      .navigateTo(context, '/create-user');
+                },
                 keepCase: true,
               )
           ],
@@ -48,7 +51,7 @@ class _PersonSearchWidget extends StatelessWidget {
   }
 
   Widget _filterRow(BuildContext context, ListUsersBloc bloc) {
-    final BorderSide bs = BorderSide(color: Theme.of(context).dividerColor);
+    final bs = BorderSide(color: Theme.of(context).dividerColor);
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 5, 30, 10),
       decoration: BoxDecoration(

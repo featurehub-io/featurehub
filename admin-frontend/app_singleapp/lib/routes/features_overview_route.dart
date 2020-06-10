@@ -25,7 +25,7 @@ class _FeatureStatusWidget extends StatefulWidget {
 class _FeatureStatusState extends State<_FeatureStatusWidget> {
   @override
   Widget build(BuildContext context) {
-    FeatureStatusBloc bloc = BlocProvider.of(context);
+    final bloc = BlocProvider.of<FeatureStatusBloc>(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -48,7 +48,7 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             FHHeader(
-              title: "Features and Configuration Statuses",
+              title: 'Features and Configuration Statuses',
             ),
             StreamBuilder<String>(
                 stream: bloc.mrClient.streamValley.currentAppIdStream,

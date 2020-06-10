@@ -1,4 +1,3 @@
-
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
@@ -7,11 +6,8 @@ import 'package:rxdart/rxdart.dart' as rxdart;
 
 /// this stores the state for the setup screen
 class SetupContext extends InheritedWidget {
-
-
-  SetupContext({Key key,
-    @required Widget child}) :
-        assert(child != null),
+  SetupContext({Key key, @required Widget child})
+      : assert(child != null),
         super(key: key, child: child);
 
   @override
@@ -24,9 +20,7 @@ class SetupContext extends InheritedWidget {
   }
 }
 
-enum SetupPage {
-  page1, page2, page3
-}
+enum SetupPage { page1, page2, page3 }
 
 class SetupBloc implements Bloc {
   String name;
@@ -47,7 +41,7 @@ class SetupBloc implements Bloc {
 
   SetupPage current;
 
-  SetupBloc(this.mrClient) : assert(mrClient != null){
+  SetupBloc(this.mrClient) : assert(mrClient != null) {
     current = SetupPage.page1;
     _pageSource.add(current);
   }
@@ -63,15 +57,12 @@ class SetupBloc implements Bloc {
     s.organizationName = orgName;
     s.portfolio = portfolio;
 
-    mrClient.setupApi.setupSiteAdmin(s)
-      .then((data) {
-        _setupSource.add(true);
-        mrClient.setBearerToken(data.accessToken);
-        mrClient.setPerson(data.person);
-        print('Person is set' + mrClient.person.toString());
-    //    client.setGroup(data.person.groups);
-      })
-      .catchError((e,s) => _setupSource.addError(e.toString()));
+    mrClient.setupApi.setupSiteAdmin(s).then((data) {
+      _setupSource.add(true);
+      mrClient.setBearerToken(data.accessToken);
+      mrClient.setPerson(data.person);
+      //    client.setGroup(data.person.groups);
+    }).catchError((e, s) => _setupSource.addError(e.toString()));
   }
 
   void reinitialize() {

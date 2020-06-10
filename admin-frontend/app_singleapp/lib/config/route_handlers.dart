@@ -41,14 +41,14 @@ Widget root(mrBloc, {params}) {
 Widget portfolios(mrBloc, {params}) {
   return BlocProvider<PortfolioBloc>(
       creator: (_context, _bag) =>
-          PortfolioBloc(params["search"]?.elementAt(0), mrBloc),
+          PortfolioBloc(params['search']?.elementAt(0), mrBloc),
       child: PortfolioRoute());
 }
 
 Widget users(mrBloc, {params}) {
   return BlocProvider<ListUsersBloc>(
       creator: (_context, _bag) =>
-          ListUsersBloc(params["search"]?.elementAt(0), mrBloc),
+          ListUsersBloc(params['search']?.elementAt(0), mrBloc),
       child: ManageUsersRoute());
 }
 
@@ -61,7 +61,7 @@ Widget group(mrBloc, {params}) {
 
 Widget forgotPassword(mrBloc, {params}) {
   return SimpleWidget(
-    message: "forgot-password, contact you system administrator.",
+    message: 'forgot-password, contact you system administrator.',
   );
 }
 
@@ -73,17 +73,17 @@ Widget registerUrl(mrBloc, {params}) {
 }
 
 Widget createUser(mrBloc, {params}) {
-  SelectPortfolioGroupBloc select = SelectPortfolioGroupBloc(mrBloc);
+  final select = SelectPortfolioGroupBloc(mrBloc);
   return BlocProvider<SelectPortfolioGroupBloc>(
       creator: (_context, _bag) => select,
       child: BlocProvider<CreateUserBloc>(
           creator: (_context, _bag) =>
               CreateUserBloc(mrBloc, selectGroupBloc: select),
-          child: CreateUserRoute(title: "Create User")));
+          child: CreateUserRoute(title: 'Create User')));
 }
 
 Widget manageUser(mrBloc, {params}) {
-  SelectPortfolioGroupBloc select = SelectPortfolioGroupBloc(mrBloc);
+  final select = SelectPortfolioGroupBloc(mrBloc);
   return BlocProvider<SelectPortfolioGroupBloc>(
       creator: (_context, _bag) => select,
       child: BlocProvider<EditUserBloc>(

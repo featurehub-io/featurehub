@@ -1,9 +1,9 @@
 import 'dart:async';
+
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart' as rxdart;
-
 
 enum RegisterUrlForm { loadingState, initialState, errorState, successState }
 
@@ -22,7 +22,6 @@ class RegisterBloc implements Bloc {
 
   RegisterBloc(this.mrClient) : assert(mrClient != null) {
     _formStateStream.add(RegisterUrlForm.loadingState);
-    print("RegisterBloc init");
   }
 
   // get the email address from the token
@@ -39,13 +38,16 @@ class RegisterBloc implements Bloc {
   }
 
   // complete the registration process
-  void completeRegistration(String token,String email, String name, String password, String confirmPassword) {
-    mrClient.authServiceApi.registerPerson(PersonRegistrationDetails()
-      ..email = email
-      ..password = password
-      ..confirmPassword = confirmPassword
-      ..name = name
-      ..registrationToken = token).then((data) {
+  void completeRegistration(String token, String email, String name,
+      String password, String confirmPassword) {
+    mrClient.authServiceApi
+        .registerPerson(PersonRegistrationDetails()
+          ..email = email
+          ..password = password
+          ..confirmPassword = confirmPassword
+          ..name = name
+          ..registrationToken = token)
+        .then((data) {
       _formStateStream.add(RegisterUrlForm.successState);
     }).catchError((e, s) {
       mrClient.dialogError(e, s);
