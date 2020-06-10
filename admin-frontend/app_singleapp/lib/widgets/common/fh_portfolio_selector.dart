@@ -23,33 +23,40 @@ class _PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
               child: Padding(
                 padding:
                     const EdgeInsets.only(left: 16.0, right: 32.0, top: 8.0),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton(
-                    style: Theme.of(context).textTheme.bodyText1,
-                    isDense: true,
-                    isExpanded: true,
-                    items: snapshot.data.map((Portfolio portfolio) {
-                      return DropdownMenuItem<String>(
-                          value: portfolio.id,
-                          child: Text(
-                            portfolio.name,
-                            style: GoogleFonts.poppins(
-                                textStyle:
-                                    Theme.of(context).textTheme.bodyText2,
-                                fontWeight: FontWeight.w600),
-                            overflow: TextOverflow.ellipsis,
-                          ));
-                    }).toList(),
-                    hint: Text('Select portfolio',
-                        style: Theme.of(context).textTheme.bodyText2),
-                    onChanged: (value) {
-                      setState(() {
-                        bloc.setCurrentPid(value);
-                        bloc.setCurrentAid(null);
-                      });
-                    },
-                    value: bloc.getCurrentPid(),
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Your current portfolio',
+                        style: Theme.of(context).textTheme.caption),
+                    DropdownButtonHideUnderline(
+                      child: DropdownButton(
+                        style: Theme.of(context).textTheme.bodyText1,
+                        isDense: true,
+                        isExpanded: true,
+                        items: snapshot.data.map((Portfolio portfolio) {
+                          return DropdownMenuItem<String>(
+                              value: portfolio.id,
+                              child: Text(
+                                portfolio.name,
+                                style: GoogleFonts.poppins(
+                                    textStyle:
+                                        Theme.of(context).textTheme.bodyText2,
+                                    fontWeight: FontWeight.w600),
+                                overflow: TextOverflow.ellipsis,
+                              ));
+                        }).toList(),
+                        hint: Text('Select portfolio',
+                            style: Theme.of(context).textTheme.bodyText2),
+                        onChanged: (value) {
+                          setState(() {
+                            bloc.setCurrentPid(value);
+                            bloc.setCurrentAid(null);
+                          });
+                        },
+                        value: bloc.getCurrentPid(),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             );

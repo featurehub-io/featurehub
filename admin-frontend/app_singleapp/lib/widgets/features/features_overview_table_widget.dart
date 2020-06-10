@@ -64,15 +64,23 @@ class TabsView extends StatelessWidget {
       child: Column(
         children: <Widget>[
           TabBar(
+            isScrollable: false,
             labelStyle: Theme.of(context).textTheme.bodyText1,
             labelColor: Theme.of(context).textTheme.subtitle2.color,
             unselectedLabelColor: Theme.of(context).textTheme.bodyText2.color,
             tabs: [
-              Tab(text: 'FEATURE FLAGS', icon: Icon(Icons.flag)),
-              Tab(text: 'FEATURE VALUES', icon: Icon(Icons.code)),
+              Tab(
+                  text: 'FEATURE FLAGS',
+                  icon:
+                      Icon(Icons.flag, color: Theme.of(context).primaryColor)),
+              Tab(
+                  text: 'FEATURE VALUES',
+                  icon:
+                      Icon(Icons.code, color: Theme.of(context).primaryColor)),
               Tab(
                   text: 'CONFIGURATIONS',
-                  icon: Icon(Icons.device_hub)), //find JSON icon
+                  icon: Icon(Icons.device_hub,
+                      color: Theme.of(context).primaryColor)), //find JSON icon
             ],
           ),
           SizedBox(
