@@ -42,7 +42,7 @@ class ChipsInput<T> extends StatefulWidget {
 class ChipsInputState<T> extends State<ChipsInput<T>>
     implements TextInputClient {
   static const kObjectReplacementChar = 0xFFFC;
-  Set<T> _chips = Set<T>();
+  Set<T> _chips = <T>{};
   List<T> _suggestions;
   StreamController<List<T>> _suggestionsStreamController;
   int _searchId = 0;
@@ -50,7 +50,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
   TextEditingValue _value = TextEditingValue();
   TextInputConnection _connection;
   _SuggestionsBoxController _suggestionsBoxController;
-  LayerLink _layerLink = LayerLink();
+  final LayerLink _layerLink = LayerLink();
   Size size;
 
   String get text => String.fromCharCodes(
@@ -69,7 +69,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
     _suggestionsStreamController = StreamController<List<T>>.broadcast();
   }
 
-  _initFocusNode() {
+  void _initFocusNode() {
     setState(() {
       if (widget.enabled) {
         if (widget.maxChips == null || _chips.length < widget.maxChips) {
@@ -291,9 +291,9 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
       selection: TextSelection.collapsed(offset: text.length),
       composing: TextRange(start: 0, end: text.length),
     );
-    if (_connection == null) {
-      _connection = TextInput.attach(this, TextInputConfiguration());
-    }
+
+    // if _connection is null, assign it something
+    _connection ??= TextInput.attach(this, TextInputConfiguration());
     _connection.setEditingState(_value);
   }
 
@@ -314,6 +314,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
   @override
   void connectionClosed() {}
 
+  @override
   void showAutocorrectionPromptRect(int start, int end) {}
 
   @override
@@ -390,14 +391,14 @@ class _SuggestionsBoxController {
 
   _SuggestionsBoxController(this.context);
 
-  open() {
+  void open() {
     if (_isOpened) return;
     assert(_overlayEntry != null);
     Overlay.of(context).insert(_overlayEntry);
     _isOpened = true;
   }
 
-  close() {
+  void close() {
     if (!_isOpened) return;
     assert(_overlayEntry != null);
     _overlayEntry.remove();

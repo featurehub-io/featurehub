@@ -73,7 +73,7 @@ Widget registerUrl(mrBloc, {params}) {
 }
 
 Widget createUser(mrBloc, {params}) {
-  SelectPortfolioGroupBloc select = SelectPortfolioGroupBloc(mrBloc);
+  final select = SelectPortfolioGroupBloc(mrBloc);
   return BlocProvider<SelectPortfolioGroupBloc>(
       creator: (_context, _bag) => select,
       child: BlocProvider<CreateUserBloc>(
@@ -83,7 +83,7 @@ Widget createUser(mrBloc, {params}) {
 }
 
 Widget manageUser(mrBloc, {params}) {
-  SelectPortfolioGroupBloc select = SelectPortfolioGroupBloc(mrBloc);
+  final select = SelectPortfolioGroupBloc(mrBloc);
   return BlocProvider<SelectPortfolioGroupBloc>(
       creator: (_context, _bag) => select,
       child: BlocProvider<EditUserBloc>(

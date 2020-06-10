@@ -159,7 +159,7 @@ class StreamValley {
 
   Future<void> getCurrentPortfolioGroups() async {
     if (_currentPortfolioIdSource.value != null) {
-      Portfolio portfolio = await portfolioServiceApi
+      final portfolio = await portfolioServiceApi
           .getPortfolio(_currentPortfolioIdSource.value, includeGroups: true)
           .catchError(mrClient.dialogError);
       currentPortfolioGroupsStream = portfolio.groups;
@@ -170,7 +170,7 @@ class StreamValley {
 
   Future<void> getCurrentPortfolioServiceAccounts() async {
     if (_currentPortfolioIdSource.value != null) {
-      List<ServiceAccount> accounts = await serviceAccountServiceApi
+      final accounts = await serviceAccountServiceApi
           .searchServiceAccountsInPortfolio(_currentPortfolioIdSource.value)
           .catchError(mrClient.dialogError);
       currentPortfolioServiceAccountsStream = accounts;
@@ -181,7 +181,7 @@ class StreamValley {
 
   Future<void> getCurrentApplicationEnvironments() async {
     if (_currentAppIdSource.value != null) {
-      List<Environment> envList = await environmentServiceApi
+      final envList = await environmentServiceApi
           .findEnvironments(_currentAppIdSource.value, includeAcls: true)
           .catchError(mrClient.dialogError);
       currentApplicationEnvironmentsStream = envList;
@@ -192,7 +192,7 @@ class StreamValley {
 
   Future<void> getCurrentApplicationFeatures() async {
     if (_currentAppIdSource.value != null) {
-      List<Feature> featureList = await featureServiceApi
+      final featureList = await featureServiceApi
           .getAllFeaturesForApplication(_currentAppIdSource.value)
           .catchError(mrClient.dialogError);
       currentApplicationFeaturesStream = featureList;
@@ -203,7 +203,7 @@ class StreamValley {
 
   Future<void> getEnvironmentServiceAccountPermissions() async {
     if (_currentAppIdSource.value != null) {
-      List<ServiceAccount> saList = await serviceAccountServiceApi
+      final saList = await serviceAccountServiceApi
           .searchServiceAccountsInPortfolio(_currentPortfolioIdSource.value,
               includePermissions: true,
               applicationId: _currentAppIdSource.value)

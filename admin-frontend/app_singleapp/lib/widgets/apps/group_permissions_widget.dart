@@ -21,7 +21,7 @@ class _GroupPermissionState extends State<GroupPermissionsWidget> {
 
   @override
   Widget build(BuildContext context) {
-    ManageAppBloc bloc = BlocProvider.of(context);
+    final bloc = BlocProvider.of<ManageAppBloc>(context);
     final mrBloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
     return StreamBuilder<List<Group>>(
         stream: bloc.groupsStream,
@@ -33,7 +33,7 @@ class _GroupPermissionState extends State<GroupPermissionsWidget> {
             );
           }
 
-          if (selectedGroup == null && snapshot.data.length > 0) {
+          if (selectedGroup == null && snapshot.data.isNotEmpty) {
             selectedGroup = snapshot.data[0].id;
             bloc.getGroupRoles(selectedGroup);
           }
@@ -133,9 +133,9 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                       currentGroup, widget.bloc.application.id);
                 }
 
-                List<TableRow> rows = List();
+                final rows = <TableRow>[];
                 rows.add(getHeader());
-                for (Environment env in envSnapshot.data) {
+                for (var env in envSnapshot.data) {
                   rows.add(TableRow(
                       decoration: BoxDecoration(
                           border: Border(
@@ -160,7 +160,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                             value: editAccess,
                             onChanged: (value) {
                               setState(() {
-                                this.editAccess = value;
+                                editAccess = value;
                               });
                             }),
                         Text(
@@ -198,7 +198,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                     FHButtonBar(children: [
                       FHFlatButtonTransparent(
                           onPressed: () {
-                            this.currentGroup = null;
+                            currentGroup = null;
                             widget.bloc.resetGroup(groupSnapshot.data);
 
                             widget.bloc.mrClient.addSnackbar(Text(
@@ -207,11 +207,11 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                           title: 'Undo'),
                       FHFlatButton(
                           onPressed: () {
-                            List<EnvironmentGroupRole> newList = List();
-                            this.newEnvironmentRoles.forEach((key, value) {
+                            final newList = <EnvironmentGroupRole>[];
+                            newEnvironmentRoles.forEach((key, value) {
                               newList.add(value);
                             });
-                            Group newGroup = groupSnapshot.data;
+                            var newGroup = groupSnapshot.data;
                             newGroup.environmentRoles = newList;
                             newGroup = editAccess
                                 ? addEditPermission(
@@ -272,13 +272,13 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
 
   Checkbox getPermissionCheckbox(String envId, RoleType roleType) {
     return Checkbox(
-      value: this.newEnvironmentRoles[envId].roles.contains(roleType),
+      value: newEnvironmentRoles[envId].roles.contains(roleType),
       onChanged: (value) {
         setState(() {
           if (value) {
-            this.newEnvironmentRoles[envId].roles.add(roleType);
+            newEnvironmentRoles[envId].roles.add(roleType);
           } else {
-            this.newEnvironmentRoles[envId].roles.remove(roleType);
+            newEnvironmentRoles[envId].roles.remove(roleType);
           }
         });
       },
@@ -286,7 +286,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
   }
 
   bool hasEditPermission(Group group, String aid) {
-    ApplicationGroupRole agr = group.applicationRoles.firstWhere(
+    final agr = group.applicationRoles.firstWhere(
         (item) => item.applicationId == aid && item.groupId == group.id,
         orElse: () => null);
     if (agr == null || !agr.roles.contains(ApplicationRoleType.FEATURE_EDIT)) {

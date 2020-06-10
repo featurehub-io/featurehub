@@ -8,7 +8,8 @@ class AppDeleteDialogWidget extends StatelessWidget {
   final Application application;
   final ManageAppBloc bloc;
 
-  const AppDeleteDialogWidget({Key key, @required this.bloc, this.application})
+  const AppDeleteDialogWidget(
+      {Key key, @required this.bloc, @required this.application})
       : assert(application != null),
         assert(bloc != null),
         super(key: key);
@@ -19,13 +20,13 @@ class AppDeleteDialogWidget extends StatelessWidget {
       bloc: bloc.mrClient,
       thing: "application '${application.name}'",
       deleteSelected: () async {
-        bool success = await bloc.deleteApp(application.id);
-        if(success) {
-          bloc.mrClient.addSnackbar(
-              Text("Application '${application.name}' deleted!"));
-        }
-        else  {
-          bloc.mrClient.customError(messageTitle: "Couldn't delete application ${application.name}");
+        final success = await bloc.deleteApp(application.id);
+        if (success) {
+          bloc.mrClient
+              .addSnackbar(Text("Application '${application.name}' deleted!"));
+        } else {
+          bloc.mrClient.customError(
+              messageTitle: "Couldn't delete application ${application.name}");
         }
         return success;
       },

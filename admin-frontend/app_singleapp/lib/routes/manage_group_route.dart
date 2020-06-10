@@ -172,7 +172,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
   }
 
   Widget _filterRow(BuildContext context, GroupBloc bloc, Group group) {
-    final BorderSide bs = BorderSide(color: Theme.of(context).dividerColor);
+    final bs = BorderSide(color: Theme.of(context).dividerColor);
     return Container(
       padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
       decoration: BoxDecoration(
@@ -221,7 +221,7 @@ class MemberWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final BorderSide bs = BorderSide(color: Theme.of(context).dividerColor);
+    final bs = BorderSide(color: Theme.of(context).dividerColor);
 
     return Container(
       padding: const EdgeInsets.fromLTRB(30, 5, 30, 5),
@@ -272,7 +272,7 @@ class AddMembersDialogWidget extends StatefulWidget {
 
 class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  List<Person> membersToAdd = List<Person>();
+  final membersToAdd = <Person>[];
 
   @override
   Widget build(BuildContext context) {
@@ -297,7 +297,7 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
           FHFlatButton(
               title: 'Add to group',
               onPressed: () async {
-                Group group = widget.group;
+                final group = widget.group;
                 group.members = List.from(group.members)..addAll(membersToAdd);
                 // remove duplicates
                 group.members = group.members.toSet().toList();
@@ -338,7 +338,7 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
       // when we need to build a chip because it has been selected, this is what is used
       // it can include an image, so we should perhaps consider this?
       chipBuilder: (context, state, p) {
-        Person person = p as Person;
+        final person = p as Person;
         return InputChip(
           key: ObjectKey(p),
           label: Text('${person.name} (${person.email})'),
@@ -348,7 +348,7 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
       },
       // this is what is used to show the suggestions.
       suggestionBuilder: (context, state, p) {
-        Person person = p as Person;
+        final person = p as Person;
         return ListTile(
           key: ObjectKey(p),
           title: Text(person.name),

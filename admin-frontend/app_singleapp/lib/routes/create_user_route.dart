@@ -45,7 +45,7 @@ class AddUserFormWidget extends StatelessWidget {
 class TopWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    CreateUserBloc bloc = BlocProvider.of(context);
+    final bloc = BlocProvider.of<CreateUserBloc>(context);
 
     return StreamBuilder<CreateUserForm>(
         stream: bloc.formState,
@@ -74,13 +74,13 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
   void didUpdateWidget(TopWidgetDefault oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    CreateUserBloc bloc = BlocProvider.of(context);
+    final bloc = BlocProvider.of<CreateUserBloc>(context);
     bloc.formKey = GlobalKey<FormState>();
   }
 
   @override
   Widget build(BuildContext context) {
-    CreateUserBloc bloc = BlocProvider.of(context);
+    final bloc = BlocProvider.of<CreateUserBloc>(context);
 
     return Form(
         key: bloc.formKey,
@@ -104,10 +104,10 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
                   ),
                   validator: (v) {
                     if (v.isEmpty) {
-                      return "Please enter email address";
+                      return 'Please enter email address';
                     }
                     if (!validateEmail(v)) {
-                      return ("Please enter a valid email address");
+                      return 'Please enter a valid email address';
                     }
                     return null;
                   },
@@ -130,7 +130,7 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
 class TopWidgetSuccess extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    CreateUserBloc bloc = BlocProvider.of(context);
+    final bloc = BlocProvider.of<CreateUserBloc>(context);
 
     return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,7 +189,7 @@ class TopWidgetSuccess extends StatelessWidget {
                 onPressed: () {
                   bloc.backToDefault();
                   ManagementRepositoryClientBloc.router.navigateTo(
-                      context, "/manage-users",
+                      context, '/manage-users',
                       replace: true, transition: TransitionType.material);
                 },
                 title: 'Close'),
@@ -207,7 +207,7 @@ class TopWidgetSuccess extends StatelessWidget {
 class BottomWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    CreateUserBloc bloc = BlocProvider.of(context);
+    final bloc = BlocProvider.of<CreateUserBloc>(context);
 
     return StreamBuilder<CreateUserForm>(
         stream: bloc.formState,
@@ -224,7 +224,7 @@ class BottomWidget extends StatelessWidget {
 class CreateUserFormButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    CreateUserBloc bloc = BlocProvider.of(context);
+    final bloc = BlocProvider.of<CreateUserBloc>(context);
 
     return FHButtonBar(children: <Widget>[
       FHOutlineButton(
@@ -233,7 +233,7 @@ class CreateUserFormButtons extends StatelessWidget {
               bloc.formKey.currentState.reset;
             }
             ManagementRepositoryClientBloc.router.navigateTo(
-                context, "/manage-users",
+                context, '/manage-users',
                 replace: true, transition: TransitionType.material);
           },
           title: 'Cancel'),

@@ -136,7 +136,7 @@ class RegisterURLState extends State<RegisterURLRoute> {
               }),
           Padding(
             padding: const EdgeInsets.fromLTRB(0, 5, 0, 10),
-            child: this._passwordStrength,
+            child: _passwordStrength,
           ),
           TextFormField(
               controller: _pw2,
@@ -172,8 +172,8 @@ class RegisterURLState extends State<RegisterURLRoute> {
   }
 
   void setPasswordStrength() {
-    Result result = Xcvbnm().estimate(_pw1.text);
-    String state = 'Weak';
+    final result = Xcvbnm().estimate(_pw1.text);
+    var state = 'Weak';
     if (result.score == 1) {
       state = 'Below average';
     } else if (result.score == 2) {
@@ -181,13 +181,12 @@ class RegisterURLState extends State<RegisterURLRoute> {
     } else if (result.score == 3) {
       state = 'Strong';
     }
-    Color stateColor = result.score < this._PASSWORD_SCORE_THRESHOLD
-        ? Colors.red
-        : Colors.green;
+    Color stateColor =
+        result.score < _PASSWORD_SCORE_THRESHOLD ? Colors.red : Colors.green;
     if (result.score == 1) {
       stateColor = Colors.orange;
     }
-    Text stateText = Text(state, style: TextStyle(color: stateColor));
+    final stateText = Text(state, style: TextStyle(color: stateColor));
     setState(() {
       _passwordStrength = stateText;
     });

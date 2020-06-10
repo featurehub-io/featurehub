@@ -24,7 +24,7 @@ class ManageAppRoute extends StatefulWidget {
 class _ManageAppRouteState extends State<ManageAppRoute> {
   @override
   Widget build(BuildContext context) {
-    ManageAppBloc bloc = BlocProvider.of(context);
+    final bloc = BlocProvider.of<ManageAppBloc>(context);
     return Container(
         padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
         child: Column(
@@ -194,7 +194,7 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
 
   @override
   Widget build(BuildContext context) {
-    ManageAppBloc bloc = BlocProvider.of(context);
+    final bloc = BlocProvider.of<ManageAppBloc>(context);
 
     // maybe should be a Column?
     return Column(

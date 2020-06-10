@@ -18,7 +18,7 @@ import 'package:mrapi/api.dart';
 class EditUserRoute extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    EditUserBloc bloc = BlocProvider.of(context);
+    final bloc = BlocProvider.of<EditUserBloc>(context);
 
     return FHCardWidget(
         width: 800,
@@ -43,9 +43,9 @@ class EditUserFormWidget extends StatefulWidget {
 }
 
 class _EditUserFormState extends State<EditUserFormWidget> {
-  var _formKey = GlobalKey<FormState>();
-  var _name = TextEditingController();
-  var _email = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final _name = TextEditingController();
+  final _email = TextEditingController();
 
   var selectedPortfolio;
   var selectedGroupID;
@@ -64,7 +64,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
 
   @override
   Widget build(BuildContext context) {
-    EditUserBloc bloc = BlocProvider.of(context);
+    final bloc = BlocProvider.of<EditUserBloc>(context);
 
     return Form(
       key: _formKey,
