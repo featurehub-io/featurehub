@@ -57,6 +57,7 @@ class ManagementRepositoryClientBloc implements Bloc {
   final _routerRedrawRouteSource = BehaviorSubject<RouteChange>();
   final _menuOpened = BehaviorSubject<bool>.seeded(true);
   final _stepperOpened = BehaviorSubject<bool>.seeded(false);
+  Uri _basePath;
 
   BehaviorSubject<bool> get stepperOpened => _stepperOpened;
 
@@ -131,8 +132,11 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   StreamValley streamValley;
 
+  static Uri originUri;
+
   static String homeUrl() {
     final origin = window.location.origin;
+    originUri = Uri.parse(origin);
     if (overrideOrigin && origin.startsWith('http://localhost')) {
       return 'http://localhost:8903';
     } else if (overrideOrigin && origin.startsWith('http://[::1]')) {
@@ -144,6 +148,7 @@ class ManagementRepositoryClientBloc implements Bloc {
   }
 
   ManagementRepositoryClientBloc() : _client = ApiClient(basePath: homeUrl()) {
+    _basePath = Uri.parse(_client.basePath);
     setupApi = SetupServiceApi(_client);
     personServiceApi = PersonServiceApi(_client);
     authServiceApi = AuthServiceApi(_client);
@@ -423,5 +428,21 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   void setLastUsername(String lastUsername) async {
     await _sharedPreferences.saveString('lastUsername', lastUsername);
+  }
+
+  // if a url comes back from the backend with a back-end url, we need to rewrite it to our
+  // own "window api" front end url
+  String rewriteUrl(String url) {
+    final uri = Uri.parse(url);
+
+    if (uri.host == _basePath.host && uri.port == _basePath.port) {
+      return uri.replace(host: originUri.host, port: originUri.port).toString();
+    }
+
+    return url;
+  }
+
+  void resetInitialized() {
+    _initializedSource.add(InitializedCheckState.initialized);
   }
 }

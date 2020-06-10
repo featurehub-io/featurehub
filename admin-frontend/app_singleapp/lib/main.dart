@@ -27,6 +27,16 @@ class FeatureHubApp extends StatelessWidget {
       title: 'FeatureHub',
       theme: myTheme,
       home: LandingRoute(title: 'FeatureHub'),
+      onGenerateRoute: (RouteSettings settings) {
+        final uri = Uri.parse(settings.name);
+
+        final params = uri.queryParametersAll;
+        ManagementRepositoryClientBloc.router
+            .navigateTo(context, uri.path, params: params);
+        BlocProvider.of<ManagementRepositoryClientBloc>(context)
+            .resetInitialized();
+        return null;
+      },
     );
   }
 }

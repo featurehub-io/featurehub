@@ -56,6 +56,7 @@ class _AppUpdateDialogWidgetState extends State<AppUpdateDialogWidget> {
                 children: <Widget>[
                   TextFormField(
                       controller: _appName,
+                      textInputAction: TextInputAction.next,
                       decoration:
                           InputDecoration(labelText: 'Application name'),
                       validator: ((v) {
@@ -69,6 +70,7 @@ class _AppUpdateDialogWidgetState extends State<AppUpdateDialogWidget> {
                       })),
                   TextFormField(
                       controller: _appDescription,
+                      textInputAction: TextInputAction.done,
                       decoration:
                           InputDecoration(labelText: 'Application description'),
                       validator: ((v) {
@@ -94,35 +96,7 @@ class _AppUpdateDialogWidgetState extends State<AppUpdateDialogWidget> {
                   ),
                   FHFlatButton(
                       title: isUpdate ? 'Update' : 'Create',
-                      onPressed: (() async {
-                        if (_formKey.currentState.validate()) {
-                          try {
-                            if (isUpdate) {
-                              await widget.bloc.updateApplication(
-                                  widget.application,
-                                  _appName.text,
-                                  _appDescription.text);
-                              widget.bloc.mrClient.removeOverlay();
-                              widget.bloc.mrClient.addSnackbar(Text(
-                                  'Application ${_appName.text} updated!'));
-                            } else {
-                              await widget.bloc.createApplication(
-                                  _appName.text, _appDescription.text);
-                              widget.bloc.mrClient.removeOverlay();
-                              widget.bloc.mrClient.addSnackbar(Text(
-                                  'Application ${_appName.text} created!'));
-                            }
-                          } catch (e, s) {
-                            if (e is ApiException && e.code == 409) {
-                              widget.bloc.mrClient.customError(
-                                  messageTitle:
-                                      "Application '${_appName.text}' already exists");
-                            } else {
-                              widget.bloc.mrClient.dialogError(e, s);
-                            }
-                          }
-                        }
-                      }))
+                      onPressed: () => _handleValidation())
                 ],
               ),
             ],
@@ -130,5 +104,32 @@ class _AppUpdateDialogWidgetState extends State<AppUpdateDialogWidget> {
         ],
       ),
     );
+  }
+
+  void _handleValidation() async {
+    if (_formKey.currentState.validate()) {
+      try {
+        if (isUpdate) {
+          await widget.bloc.updateApplication(
+              widget.application, _appName.text, _appDescription.text);
+          widget.bloc.mrClient.removeOverlay();
+          widget.bloc.mrClient
+              .addSnackbar(Text('Application ${_appName.text} updated!'));
+        } else {
+          await widget.bloc
+              .createApplication(_appName.text, _appDescription.text);
+          widget.bloc.mrClient.removeOverlay();
+          widget.bloc.mrClient
+              .addSnackbar(Text('Application ${_appName.text} created!'));
+        }
+      } catch (e, s) {
+        if (e is ApiException && e.code == 409) {
+          widget.bloc.mrClient.customError(
+              messageTitle: "Application '${_appName.text}' already exists");
+        } else {
+          widget.bloc.mrClient.dialogError(e, s);
+        }
+      }
+    }
   }
 }

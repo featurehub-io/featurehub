@@ -67,6 +67,8 @@ class SetupBloc implements Bloc {
 
   void reinitialize() {
     mrClient.isInitialized();
+    // automatically open the stepper to help them on their merry way
+    mrClient.stepperOpened = true;
   }
 
   void nextPage() {

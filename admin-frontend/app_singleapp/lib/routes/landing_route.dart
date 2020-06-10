@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:html';
 
 import 'package:app_singleapp/api/client_api.dart';
+import 'package:app_singleapp/config/route_handlers.dart';
 import 'package:app_singleapp/routes/andys_scaffold_route.dart';
 import 'package:app_singleapp/widgets/common/fh_scaffold.dart';
 import 'package:app_singleapp/widgets/setup/setup_bloc.dart';
@@ -46,13 +47,18 @@ class LandingRouteState extends State<LandingRoute> {
                     'Error getting initial state'); //return FailureWidget(error: snapshot.error);
             widget = Text('Error MF!');
           } else if (snapshot.data == InitializedCheckState.initialized) {
-            widget = Center(
-                child: MediaQuery.of(context).size.width > 400
-                    ? Container(
-                        width: 500,
-                        child: SigninWidget(),
-                      )
-                    : SigninWidget());
+            if (client.currentRoute != null &&
+                client.currentRoute.route == '/register-url') {
+              widget = registerUrl(client, params: client.currentRoute.params);
+            } else {
+              widget = Center(
+                  child: MediaQuery.of(context).size.width > 400
+                      ? Container(
+                          width: 500,
+                          child: SigninWidget(),
+                        )
+                      : SigninWidget());
+            }
           } else if (snapshot.data ==
               InitializedCheckState.requires_password_reset) {
             widget = Center(
