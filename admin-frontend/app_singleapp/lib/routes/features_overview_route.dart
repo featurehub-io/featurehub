@@ -31,11 +31,11 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         _filterRow(context, bloc),
+        _headerRow(context, bloc),
         Container(
             decoration: BoxDecoration(
                 border: Border(
                     bottom: BorderSide(color: Colors.black87, width: 0.5)))),
-        _headerRow(context, bloc),
         FeaturesOverviewTableWidget()
       ],
     );
@@ -43,7 +43,7 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
 
   Widget _headerRow(BuildContext context, FeatureStatusBloc bloc) {
     return Container(
-        padding: const EdgeInsets.fromLTRB(0, 8, 30, 10),
+        padding: const EdgeInsets.fromLTRB(0, 0, 30, 10),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
@@ -92,7 +92,7 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
     return Column(
       children: <Widget>[
         Container(
-          padding: const EdgeInsets.fromLTRB(0, 10, 30, 30),
+          padding: const EdgeInsets.fromLTRB(12, 16, 16, 16),
           child: StreamBuilder<List<Application>>(
               stream: bloc.applications,
               builder: (context, snapshot) {

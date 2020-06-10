@@ -179,12 +179,12 @@ class _MenuPortfolioAdminOptionsWidget extends StatelessWidget {
             return Column(children: <Widget>[
               _MenuItem(
                   name: 'Groups',
-                  iconData: Icons.group,
+                  iconData: MaterialIcons.people_outline,
                   path: '/manage-group',
                   params: {}),
               _MenuItem(
                   name: 'Service Accounts',
-                  iconData: Icons.build,
+                  iconData: AntDesign.tool,
                   path: '/manage-service-accounts',
                   params: {}),
             ]);
@@ -244,7 +244,8 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return _MenuItem(
       name: 'Features',
-      iconData: Icons.dashboard,
+      iconData: Ionicons.md_switch,
+      iconSize: 26,
       path: '/feature-status',
       params: {},
     );
@@ -254,10 +255,12 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
 class _MenuItem extends StatelessWidget {
   final String name;
   final IconData iconData;
+  final iconSize;
   final String path;
   final Map<String, List<String>> params;
 
-  const _MenuItem({Key key, this.name, this.iconData, this.path, this.params})
+  const _MenuItem(
+      {Key key, this.name, this.iconData, this.path, this.params, this.iconSize})
       : super(key: key);
 
   bool equalsParams(Map<String, List<String>> snapParams) {
@@ -295,22 +298,33 @@ class _MenuItem extends StatelessWidget {
                     Icon(
                       iconData,
                       color: selected
-                          ? Theme.of(context).primaryColor
+                          ? Theme
+                          .of(context)
+                          .primaryColor
                           : Color(0xff4a4a4a),
-                      size: 16.0,
+                      size: iconSize ?? 20.0,
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(left: 24.0),
+                      padding: EdgeInsets.only(
+                          left: iconSize != null ? 18.0 : 24.0),
                       child: selected
                           ? Text(' ${name}',
-                              style: GoogleFonts.roboto(
-                                textStyle:
-                                    Theme.of(context).textTheme.bodyText2,
-                                fontWeight: FontWeight.w600,
-                                color: Theme.of(context).primaryColor,
-                              ))
+                          style: GoogleFonts.roboto(
+                            textStyle:
+                            Theme
+                                .of(context)
+                                .textTheme
+                                .bodyText2,
+                            fontWeight: FontWeight.w600,
+                            color: Theme
+                                .of(context)
+                                .primaryColor,
+                          ))
                           : Text(' ${name}',
-                              style: Theme.of(context).textTheme.bodyText2),
+                          style: Theme
+                              .of(context)
+                              .textTheme
+                              .bodyText2),
                     )
                   ],
                 ),

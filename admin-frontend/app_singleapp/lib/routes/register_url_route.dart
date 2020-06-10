@@ -2,8 +2,10 @@ import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/fh_card.dart';
 import 'package:app_singleapp/widgets/user/register/register_url_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:openapi_dart_common/openapi.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:xcvbnm/xcvbnm.dart';
 
 class RegisterURLRoute extends StatefulWidget {
@@ -24,6 +26,7 @@ class RegisterURLState extends State<RegisterURLRoute> {
   final _pw2 = TextEditingController();
   final _PASSWORD_SCORE_THRESHOLD = 1;
   Text _passwordStrength = Text('');
+
   @override
   Widget build(BuildContext context) {
     var bloc = BlocProvider.of<RegisterBloc>(context);
@@ -75,11 +78,35 @@ class RegisterURLState extends State<RegisterURLRoute> {
             style: Theme.of(context).textTheme.headline6,
           ),
           Text(
-            'To get started using FeatureHub we recommend quickly reviewing out one page cheat sheet, or visit our russian '
-            'wonder woman, Irina on youtube, for a quick overview of FeatureHub and how it can help you and your team build '
-            'and manage amazing digital applications.',
+            'To get started using FeatureHub we recommend quickly reviewing our documentation on https://docs.featurehub.io/',
             style: Theme.of(context).textTheme.bodyText2,
           ),
+          RichText(
+              text: TextSpan(
+            children: [
+              TextSpan(
+                style: Theme.of(context).textTheme.bodyText2,
+                text:
+                    'To get started using FeatureHub we recommend quickly reviewing our documentation ',
+              ),
+              TextSpan(
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyText2
+                    .copyWith(color: Theme.of(context).primaryColorDark),
+                text: 'here',
+                recognizer: TapGestureRecognizer()
+                  ..onTap = () async {
+                    final url = 'https://docs.featurehub.io/';
+                    if (await canLaunch(url)) {
+                      await launch(
+                        url,
+                      );
+                    }
+                  },
+              ),
+            ],
+          )),
           FHFlatButton(
               onPressed: () {
                 Navigator.pop(context);
