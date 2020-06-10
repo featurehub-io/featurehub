@@ -96,12 +96,14 @@ class _SetupPage1State extends State<SetupPage1Widget> {
               autofocus: true,
               decoration: InputDecoration(labelText: 'Name'),
               textInputAction: TextInputAction.next,
+              onFieldSubmitted: (_) => _handleSubmitted(),
               validator: (v) => v.isEmpty ? 'Please enter your name' : null,
             ),
             TextFormField(
                 controller: _email,
                 decoration: InputDecoration(labelText: 'Email address'),
                 textInputAction: TextInputAction.next,
+                onFieldSubmitted: (_) => _handleSubmitted(),
                 validator: (v) {
                   if (v.isEmpty) {
                     return 'Please enter your email address';
@@ -115,6 +117,7 @@ class _SetupPage1State extends State<SetupPage1Widget> {
                 controller: _pw1,
                 obscureText: true,
                 textInputAction: TextInputAction.next,
+                onFieldSubmitted: (_) => _handleSubmitted(),
                 decoration: InputDecoration(labelText: 'Password'),
                 validator: (v) {
                   if (v.isEmpty) {
@@ -137,6 +140,7 @@ class _SetupPage1State extends State<SetupPage1Widget> {
             TextFormField(
                 controller: _pw2,
                 obscureText: true,
+                onFieldSubmitted: (_) => _handleSubmitted(),
                 textInputAction: TextInputAction.next,
                 decoration: InputDecoration(labelText: 'Confirm Password'),
                 validator: (v) {
@@ -149,12 +153,7 @@ class _SetupPage1State extends State<SetupPage1Widget> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
                 FHFlatButton(
-                  onPressed: () {
-                    if (_formKey.currentState.validate()) {
-                      copyState();
-                      widget.bloc.nextPage();
-                    }
-                  },
+                  onPressed: () => _handleSubmitted(),
                   title: 'Next',
                 )
               ],
@@ -163,6 +162,13 @@ class _SetupPage1State extends State<SetupPage1Widget> {
         ),
       ),
     );
+  }
+
+  void _handleSubmitted() {
+    if (_formKey.currentState.validate()) {
+      copyState();
+      widget.bloc.nextPage();
+    }
   }
 
   @override

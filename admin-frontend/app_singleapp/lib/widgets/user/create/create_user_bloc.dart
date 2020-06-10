@@ -37,8 +37,12 @@ class CreateUserBloc implements Bloc {
     cpd.email = email;
     cpd.groupIds = listOfAddedPortfolioGroups.map((pg) => pg.group.id).toList();
     return client.personServiceApi.createPerson(cpd).then((data) {
-      _formStateStream.add(CreateUserForm.successState);
       registrationUrl = data;
+      registrationUrl.registrationUrl =
+          client.rewriteUrl(registrationUrl.registrationUrl);
+
+      _formStateStream.add(CreateUserForm.successState);
+
       selectGroupBloc.clearAddedPortfoliosAndGroups();
     });
   }

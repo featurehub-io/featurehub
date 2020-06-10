@@ -65,17 +65,18 @@ class _SetupPage2State extends State<SetupPage2Widget> {
             TextFormField(
               controller: _org,
               autofocus: true,
+              onFieldSubmitted: (_) => _handleSubmitted(),
+              textInputAction: TextInputAction.next,
               decoration: InputDecoration(
                   hintText: 'The name of your organization',
                   hintStyle: Theme.of(context).textTheme.caption,
                   labelText: 'Organization Name'),
-              textInputAction: TextInputAction.done,
               validator: (v) =>
                   v.isEmpty ? "Please enter your organization's name" : null,
             ),
             TextFormField(
               controller: _portfolio,
-              autofocus: true,
+              onFieldSubmitted: (_) => _handleSubmitted(),
               decoration: InputDecoration(
                   hintText: 'The name of your first grouping of applications',
                   hintStyle: Theme.of(context).textTheme.caption,
@@ -94,19 +95,13 @@ class _SetupPage2State extends State<SetupPage2Widget> {
                     onPressed: () {
                       copyState();
                       widget.bloc.priorPage();
-//                      Navigator.pop(context);
                     },
                     title: 'Back',
                     keepCase: true,
                   ),
                 ),
                 FHFlatButton(
-                  onPressed: () {
-                    if (_formKey.currentState.validate()) {
-                      copyState();
-                      widget.bloc.nextPage();
-                    }
-                  },
+                  onPressed: () => _handleSubmitted(),
                   title: 'Submit',
                 )
               ],
@@ -115,6 +110,13 @@ class _SetupPage2State extends State<SetupPage2Widget> {
         ),
       ),
     );
+  }
+
+  void _handleSubmitted() {
+    if (_formKey.currentState.validate()) {
+      copyState();
+      widget.bloc.nextPage();
+    }
   }
 
   @override
