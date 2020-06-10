@@ -55,20 +55,22 @@ class StreamValley {
   String get currentPortfolioId => _currentPortfolioIdSource.value;
 
   set currentPortfolioId(String value) {
-    currentAppId = null;
+    if (_currentPortfolioIdSource.value != value) {
+      currentAppId = null;
 
-    // figure out which one we are
-    _currentPortfolioSource.add(
-        _portfoliosSource.value.firstWhere((element) => element.id == value));
-    _currentPortfolioIdSource.add(value);
+      // figure out which one we are
+      _currentPortfolioSource.add(
+          _portfoliosSource.value.firstWhere((element) => element.id == value));
+      _currentPortfolioIdSource.add(value);
 
-    // now load the applications for this portfolio, which may trigger selecting one
-    getCurrentPortfolioApplications();
+      // now load the applications for this portfolio, which may trigger selecting one
+      getCurrentPortfolioApplications();
 
-    // if we are an admin, load the groups and service accounts
-    if (_isCurrentPortfolioAdminOrSuperAdmin) {
-      getCurrentPortfolioGroups();
-      getCurrentPortfolioServiceAccounts();
+      // if we are an admin, load the groups and service accounts
+      if (_isCurrentPortfolioAdminOrSuperAdmin) {
+        getCurrentPortfolioGroups();
+        getCurrentPortfolioServiceAccounts();
+      }
     }
   }
 

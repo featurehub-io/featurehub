@@ -283,10 +283,11 @@ class ManagementRepositoryClientBloc implements Bloc {
   }
 
   void setCurrentPid(String pid) {
+    // do this first so that the permissions are set up
+    personState.currentPortfolioOrSuperAdminUpdateState(pid, groupList);
     streamValley.currentPortfolioId = pid;
     _setAidSharedPrefs(null);
     _setPidSharedPrefs(pid);
-    personState.currentPortfolioOrSuperAdminUpdateState(pid, groupList);
   }
 
   String getCurrentPid() {
