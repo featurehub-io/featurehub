@@ -239,7 +239,7 @@ class _ServiceAccountPermissionDetailState
                             widget.bloc.mrClient.addSnackbar(Text(
                                 "Service account '${saSnapshot.data.name}' reset!"));
                           },
-                          title: 'Undo'),
+                          title: 'Cancel'),
                       FHFlatButton(
                           onPressed: () {
                             final newList = <ServiceAccountPermission>[];

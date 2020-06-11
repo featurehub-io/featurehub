@@ -203,7 +203,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                             widget.bloc.mrClient.addSnackbar(Text(
                                 "Group '${groupSnapshot.data.name}' reset!"));
                           },
-                          title: 'Undo'),
+                          title: 'Cancel'),
                       FHFlatButton(
                           onPressed: () {
                             final newList = <EnvironmentGroupRole>[];
