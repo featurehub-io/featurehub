@@ -40,26 +40,52 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
               children: [],
             )),
         Row(
+          mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-            StreamBuilder<List<Group>>(
-                stream: bloc.mrClient.streamValley.currentPortfolioGroupsStream,
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return Container(
-                        padding: EdgeInsets.all(8),
-                        child: Text('Fetching Groups...'));
-                  } else {
-                    return Container(
-                      padding: EdgeInsets.only(top: 15, left: 8),
-                      child: _groupsDropdown(snapshot.data, bloc),
-                    );
-                  }
-                }),
-            bloc.mrClient.isPortfolioOrSuperAdmin(bloc.mrClient.currentPid)
-                ? Container(
-                    padding: EdgeInsets.only(left: 10, top: 30),
-                    child: _getAdminActions(bloc))
-                : Container()
+            Flexible(
+              flex: 1,
+              child: StreamBuilder<List<Group>>(
+                  stream:
+                      bloc.mrClient.streamValley.currentPortfolioGroupsStream,
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return Container(
+                          padding: EdgeInsets.all(8),
+                          child: Text('Fetching Groups...'));
+                    } else {
+                      return Container(
+                        padding: EdgeInsets.only(top: 15, left: 8),
+                        child: _groupsDropdown(snapshot.data, bloc),
+                      );
+                    }
+                  }),
+            ),
+            Flexible(
+              flex: 4,
+              child: bloc.mrClient
+                      .isPortfolioOrSuperAdmin(bloc.mrClient.currentPid)
+                  ? Row(
+                      children: [
+                        Flexible(flex: 1, child: _getAdminActions(bloc)),
+                        Flexible(
+                          flex: 4,
+                          child: Container(
+                              child: FHIconTextButton(
+                            iconData: Icons.add,
+                            keepCase: true,
+                            label: 'Create new group',
+                            onPressed: () => bloc.mrClient
+                                .addOverlay((BuildContext context) {
+                              return GroupUpdateDialogWidget(
+                                bloc: bloc,
+                              );
+                            }),
+                          )),
+                        ),
+                      ],
+                    )
+                  : Container(),
+            )
           ],
         ),
         Padding(
@@ -91,17 +117,6 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
 
   Widget _getAdminActions(GroupBloc bloc) {
     return Row(children: <Widget>[
-      Container(
-          child: FHIconTextButton(
-        iconData: Icons.add,
-        keepCase: true,
-        label: 'Create new group',
-        onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
-          return GroupUpdateDialogWidget(
-            bloc: bloc,
-          );
-        }),
-      )),
       StreamBuilder<Group>(
           stream: bloc.groupLoaded,
           builder: (context, snapshot) {
@@ -109,30 +124,37 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
               return Row(children: <Widget>[
                 FHIconButton(
                     icon:
-                        Icon(Icons.edit, color: Theme.of(context).buttonColor),
-                    onPressed: () => bloc.mrClient.addOverlay(
-                        (BuildContext context) => GroupUpdateDialogWidget(
-                              bloc: bloc,
-                              group: bloc.group,
-                            ))),
+                    Icon(Icons.edit, color: Theme
+                        .of(context)
+                        .buttonColor),
+                    onPressed: () =>
+                        bloc.mrClient.addOverlay(
+                                (BuildContext context) =>
+                                GroupUpdateDialogWidget(
+                                  bloc: bloc,
+                                  group: bloc.group,
+                                ))),
                 //hide the delete button for Admin groups
                 snapshot.data.admin
                     ? Container()
                     : FHIconButton(
-                        icon: Icon(Icons.delete,
-                            color: Theme.of(context).buttonColor),
-                        onPressed: () =>
-                            bloc.mrClient.addOverlay((BuildContext context) {
-                              return GroupDeleteDialogWidget(
-                                bloc: bloc,
-                                group: bloc.group,
-                              );
-                            }))
+                    icon: Icon(Icons.delete,
+                        color: Theme
+                            .of(context)
+                            .buttonColor),
+                    onPressed: () =>
+                        bloc.mrClient.addOverlay((BuildContext context) {
+                          return GroupDeleteDialogWidget(
+                            bloc: bloc,
+                            group: bloc.group,
+                          );
+                        }))
               ]);
             } else {
               return Container();
             }
-          })
+          }),
+
     ]);
   }
 
@@ -143,28 +165,40 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
             padding: EdgeInsets.only(top: 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
                 Text(
                   'Portfolio groups',
-                  style: Theme.of(context).textTheme.caption,
+                  style: Theme
+                      .of(context)
+                      .textTheme
+                      .caption,
                 ),
-                DropdownButton(
-                  items: groups.map((Group group) {
-                    return DropdownMenuItem<String>(
-                        value: group.id,
-                        child: Text(
-                          group.name,
-                        ));
-                  }).toList(),
-                  hint: Text('Select group',
-                      style: Theme.of(context).textTheme.subtitle2),
-                  onChanged: (value) {
-                    setState(() {
-                      bloc.getGroup(value);
-                      bloc.groupId = value;
-                    });
-                  },
-                  value: bloc.groupId,
+                Container(
+                  constraints: BoxConstraints(maxWidth: 200),
+                  child: DropdownButton(
+                    isDense: true,
+                    isExpanded: true,
+                    items: groups.map((Group group) {
+                      return DropdownMenuItem<String>(
+                          value: group.id,
+                          child: Text(
+                            group.name,
+                          ));
+                    }).toList(),
+                    hint: Text('Select group',
+                        style: Theme
+                            .of(context)
+                            .textTheme
+                            .subtitle2),
+                    onChanged: (value) {
+                      setState(() {
+                        bloc.getGroup(value);
+                        bloc.groupId = value;
+                      });
+                    },
+                    value: bloc.groupId,
+                  ),
                 ),
               ],
             ),
