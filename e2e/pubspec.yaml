@@ -6,7 +6,7 @@ environment:
   sdk: '>=2.3.0-dev.0.1 <3.0.0'
 
 dependencies:
-  rxdart: 0.22.0
+  rxdart: 0.24.1
   ogurets: ^3.1.10
 #  ogurets:
 #    path: /Users/richard/projects/dart/ogurets
