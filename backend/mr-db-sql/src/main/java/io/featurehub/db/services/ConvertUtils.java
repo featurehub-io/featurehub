@@ -275,7 +275,8 @@ public class ConvertUtils {
     return new Person().id(new PersonId().id(person.getId().toString()))
       .version(person.getVersion())
       .passwordRequiresReset(person.isPasswordRequiresReset())
-      .email(person.getEmail()).name(person.getName());
+      .email(person.getEmail()).name(person.getName())
+      .groups(null);
   }
 
   public Person toPerson(DbPerson dbp, Opts opts) {
@@ -434,7 +435,7 @@ public class ConvertUtils {
 
     final DbApplicationFeature feature = fs.getFeature();
     if (feature.getValueType() == FeatureValueType.BOOLEAN) {
-      featureValue.valueBoolean(fs.getDefaultValue() == null ? null : Boolean.parseBoolean(fs.getDefaultValue()));
+      featureValue.valueBoolean(fs.getDefaultValue() == null ? Boolean.FALSE : Boolean.parseBoolean(fs.getDefaultValue()));
     }
     if (feature.getValueType() == FeatureValueType.JSON) {
       featureValue.valueJson(fs.getDefaultValue());

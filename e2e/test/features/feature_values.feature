@@ -75,7 +75,7 @@ Feature: Create feature values
         | test    | false |
       And I get the details for feature "NEW_BUTTON" and set them as follows:
         | envName | value |
-        | prod    | null |
+        | prod    | false |
       And I get the details for feature "NEW_HOUSE" and set them as follows:
         | envName | value |
         | prod    | true |

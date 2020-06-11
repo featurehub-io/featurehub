@@ -8,16 +8,21 @@ import io.featurehub.db.api.OptimisticLockingException;
 import io.featurehub.db.api.Opts;
 import io.featurehub.db.model.DbApplication;
 import io.featurehub.db.model.DbEnvironment;
+import io.featurehub.db.model.DbEnvironmentFeatureStrategy;
 import io.featurehub.db.model.DbPerson;
+import io.featurehub.db.model.FeatureState;
 import io.featurehub.db.model.query.QDbAcl;
+import io.featurehub.db.model.query.QDbApplicationFeature;
 import io.featurehub.db.model.query.QDbEnvironment;
 import io.featurehub.db.model.query.QDbPortfolio;
 import io.featurehub.db.publish.CacheSource;
 import io.featurehub.db.utils.EnvironmentUtils;
 import io.featurehub.mr.model.Application;
 import io.featurehub.mr.model.Environment;
+import io.featurehub.mr.model.FeatureValueType;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.Portfolio;
+import io.featurehub.mr.model.PublishAction;
 import io.featurehub.mr.model.RoleType;
 import io.featurehub.mr.model.SortOrder;
 import org.slf4j.Logger;
@@ -147,9 +152,10 @@ public class EnvironmentSqlApi implements EnvironmentApi {
       // our purpose here is to make sure that if the newPriorEnvironment's tree as we walk up points to US (ennvironment)
       // then we have to point it to our old prior environment.
       DbEnvironment currentEnvOldPrior = environment.getPriorEnvironment();
+
       environment.setPriorEnvironment(newPriorEnvironment);
       DbEnvironment walk = newPriorEnvironment;
-      // so we walk up the NEW parent environment seeing if it points to us, and if so, point it to our old psrent
+      // so we walk up the NEW parent environment seeing if it points to us, and if so, point it to our old parent
       // make it null
       // otherwise walk up the tree until we can't walk anymore. Find any environments that
       // used to point to
@@ -208,10 +214,44 @@ public class EnvironmentSqlApi implements EnvironmentApi {
         .parentApplication(application)
         .productionEnvironment(Boolean.TRUE.equals(env.getProduction()))
         .build();
-      return convertUtils.toEnvironment(update(newEnv), Opts.empty());
+
+      final DbEnvironment createdEnvironment = update(newEnv);
+
+      cacheSource.updateEnvironment(createdEnvironment, PublishAction.CREATE);
+
+      discoverMissingBooleanApplicationFeaturesForThisEnvironment(createdEnvironment, whoCreated);
+
+      return convertUtils.toEnvironment(createdEnvironment, Opts.empty());
     }
 
     return null;
+  }
+
+  private void discoverMissingBooleanApplicationFeaturesForThisEnvironment(DbEnvironment createdEnvironment, Person whoCreated) {
+    final List<DbEnvironmentFeatureStrategy> newFeatures
+      = new QDbApplicationFeature().whenArchived.isNull().parentApplication.eq(createdEnvironment.getParentApplication()).valueType.eq(FeatureValueType.BOOLEAN).findList().stream()
+      .map(af -> {
+        return new DbEnvironmentFeatureStrategy.Builder()
+          .defaultValue(Boolean.FALSE.toString())
+          .environment(createdEnvironment)
+          .feature(af)
+          .featureState(FeatureState.ENABLED)
+          .locked(false)
+          .whoUpdated(convertUtils.uuidPerson(whoCreated))
+          .build();
+      }).collect(Collectors.toList());
+
+    saveAllFeatures(newFeatures);
+
+    for (DbEnvironmentFeatureStrategy nf : newFeatures) {
+      cacheSource.publishFeatureChange(nf);
+    }
+  }
+
+  @Transactional
+  private void saveAllFeatures(List<DbEnvironmentFeatureStrategy> newFeatures) {
+    newFeatures.forEach(database::save);
+
   }
 
   void promotionSortedEnvironments(List<DbEnvironment> environments) {
@@ -246,7 +286,7 @@ public class EnvironmentSqlApi implements EnvironmentApi {
   @Transactional
   private DbEnvironment update(DbEnvironment env) {
     database.save(env);
-    cacheSource.updateEnvironment(env);
+    cacheSource.updateEnvironment(env, PublishAction.UPDATE);
     return env;
   }
 

@@ -4,8 +4,6 @@ import io.featurehub.db.model.DbApplicationFeature;
 import io.featurehub.db.model.DbEnvironment;
 import io.featurehub.db.model.DbEnvironmentFeatureStrategy;
 import io.featurehub.db.model.DbServiceAccount;
-import io.featurehub.mr.model.Feature;
-import io.featurehub.mr.model.FeatureValue;
 import io.featurehub.mr.model.PublishAction;
 
 import java.util.UUID;
@@ -34,7 +32,7 @@ public interface CacheSource {
    *
    * This is used to cache environments and their feature values.
    */
-  void updateEnvironment(DbEnvironment environment);
+  void updateEnvironment(DbEnvironment environment, PublishAction publishAction);
 
   void deleteEnvironment(UUID id);
 

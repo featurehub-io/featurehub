@@ -8,16 +8,20 @@ import io.featurehub.db.api.OptimisticLockingException;
 import io.featurehub.db.api.Opts;
 import io.featurehub.db.model.DbApplication;
 import io.featurehub.db.model.DbApplicationFeature;
+import io.featurehub.db.model.DbEnvironmentFeatureStrategy;
 import io.featurehub.db.model.DbPerson;
 import io.featurehub.db.model.DbPortfolio;
+import io.featurehub.db.model.FeatureState;
 import io.featurehub.db.model.query.QDbAcl;
 import io.featurehub.db.model.query.QDbApplication;
 import io.featurehub.db.model.query.QDbApplicationFeature;
+import io.featurehub.db.model.query.QDbEnvironment;
 import io.featurehub.db.publish.CacheSource;
 import io.featurehub.mr.model.Application;
 import io.featurehub.mr.model.ApplicationGroupRole;
 import io.featurehub.mr.model.ApplicationRoleType;
 import io.featurehub.mr.model.Feature;
+import io.featurehub.mr.model.FeatureValueType;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.PublishAction;
 import io.featurehub.mr.model.SortOrder;
@@ -26,7 +30,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -184,7 +187,7 @@ public class ApplicationSqlApi implements ApplicationApi {
   }
 
   @Override
-  public List<Feature> createApplicationFeature(String appId, Feature feature) throws DuplicateFeatureException {
+  public List<Feature> createApplicationFeature(String appId, Feature feature, Person person) throws DuplicateFeatureException {
     DbApplication app = convertUtils.uuidApplication(appId);
 
     if (app != null) {
@@ -206,10 +209,38 @@ public class ApplicationSqlApi implements ApplicationApi {
 
       cacheSource.publishFeatureChange(appFeature, PublishAction.CREATE);
 
+      // if this is a boolean feature, create this feature with a default value of false in all environments we currently
+      // have
+      if (appFeature.getValueType() == FeatureValueType.BOOLEAN) {
+        createDefaultBooleanFeatureValuesForAllEnvironments(appFeature, app, person);
+      }
+
       return getAppFeatures(app);
     }
 
     return new ArrayList<>();
+  }
+
+  private void createDefaultBooleanFeatureValuesForAllEnvironments(DbApplicationFeature appFeature, DbApplication app, Person person) {
+    final List<DbEnvironmentFeatureStrategy> newFeatures = new QDbEnvironment().whenArchived.isNull().parentApplication.eq(app).findList().stream().map(env -> new DbEnvironmentFeatureStrategy.Builder()
+      .defaultValue(Boolean.FALSE.toString())
+      .environment(env)
+      .feature(appFeature)
+      .featureState(FeatureState.ENABLED)
+      .locked(false)
+      .whoUpdated(convertUtils.uuidPerson(person))
+      .build()).collect(Collectors.toList());
+
+    saveAllFeatures(newFeatures);
+
+    for (DbEnvironmentFeatureStrategy nf : newFeatures) {
+      cacheSource.publishFeatureChange(nf);
+    }
+  }
+
+  @Transactional
+  private void saveAllFeatures(List<DbEnvironmentFeatureStrategy> newFeatures) {
+    newFeatures.forEach(database::save);
   }
 
   private List<Feature> getAppFeatures(DbApplication app) {

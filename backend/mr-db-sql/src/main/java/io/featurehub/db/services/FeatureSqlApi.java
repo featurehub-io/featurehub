@@ -173,7 +173,7 @@ public class FeatureSqlApi implements FeatureApi {
       } else if (feature.getValueType() == FeatureValueType.JSON) {
         strategy.setDefaultValue(featureValue.getValueJson());
       } else if (feature.getValueType() == FeatureValueType.BOOLEAN) {
-        strategy.setDefaultValue(featureValue.getValueBoolean() == null ? null : featureValue.getValueBoolean().toString());
+        strategy.setDefaultValue(featureValue.getValueBoolean() == null ? Boolean.FALSE.toString() : featureValue.getValueBoolean().toString());
       }
 
       strategy.setEnabledStrategy(featureValue.getRolloutStrategy());

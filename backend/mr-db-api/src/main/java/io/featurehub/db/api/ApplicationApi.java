@@ -23,7 +23,7 @@ public interface ApplicationApi {
 
   Application updateApplication(@NotNull String appId, @NotNull Application application, @NotNull Opts opts) throws DuplicateApplicationException, OptimisticLockingException;
 
-  List<Feature> createApplicationFeature(@NotNull String appId, Feature feature) throws DuplicateFeatureException;
+  List<Feature> createApplicationFeature(@NotNull String appId, Feature feature, Person person) throws DuplicateFeatureException;
   List<Feature> updateApplicationFeature(@NotNull String appId, String key, Feature feature) throws DuplicateFeatureException, OptimisticLockingException;
   List<Feature> getApplicationFeatures(@NotNull String appId);
   List<Feature> deleteApplicationFeature(@NotNull String appId, String key);
