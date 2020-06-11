@@ -20,18 +20,16 @@ class FeatureValueBooleanEnvironmentCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
-
-
     return StreamBuilder<FeatureValue>(
         stream: fvBloc
             .featureValueByEnvironment(environmentFeatureValue.environmentId),
         builder: (ctx, snap) {
-
-          bool cannotLock = (!environmentFeatureValue.roles.contains(RoleType.UNLOCK) ||
+          final cannotLock =
+              (!environmentFeatureValue.roles.contains(RoleType.UNLOCK) ||
                   !environmentFeatureValue.roles.contains(RoleType.LOCK));
 
-          bool cannotWrite = (!environmentFeatureValue.roles.contains(RoleType.EDIT));
+          final cannotWrite =
+              (!environmentFeatureValue.roles.contains(RoleType.EDIT));
 
           if (snap.hasData) {
             if (snap.data.locked == true && snap.data.valueBoolean != null) {
@@ -48,7 +46,9 @@ class FeatureValueBooleanEnvironmentCell extends StatelessWidget {
               ]);
             }
 
-            if (snap.data.locked == false && snap.data.valueBoolean == null && !cannotLock) {
+            if (snap.data.locked == false &&
+                snap.data.valueBoolean == null &&
+                !cannotLock) {
               return Row(children: <Widget>[
                 Switch(
                     //Color(0xff11C8B5) : Color(0xffF44C49)
@@ -64,21 +64,20 @@ class FeatureValueBooleanEnvironmentCell extends StatelessWidget {
                       _dirtyCheck();
                     })
               ]);
-
-
-            }
-            else  if ((snap.data.locked == true && snap.data.valueBoolean == null) || cannotLock || cannotWrite) {
+            } else if ((snap.data.locked == true &&
+                    snap.data.valueBoolean == null) ||
+                cannotLock ||
+                cannotWrite) {
               return Row(children: <Widget>[
                 Switch(
-                  //Color(0xff11C8B5) : Color(0xffF44C49)
+                    //Color(0xff11C8B5) : Color(0xffF44C49)
                     activeTrackColor: Color(0xff11C8B5),
                     activeColor: Colors.white,
                     value: false,
                     inactiveTrackColor: Colors.black12,
-                    onChanged: null)]);
-            }
-
-            else {
+                    onChanged: null)
+              ]);
+            } else {
               return Row(children: <Widget>[
                 Switch(
                     //Color(0xff11C8B5) : Color(0xffF44C49)
@@ -104,7 +103,7 @@ class FeatureValueBooleanEnvironmentCell extends StatelessWidget {
         });
   }
 
-  _dirtyCheck() {
+  void _dirtyCheck() {
     fvBloc.updatedFeature(environmentFeatureValue.environmentId);
   }
 }
@@ -112,23 +111,22 @@ class FeatureValueBooleanEnvironmentCell extends StatelessWidget {
 class FeatureValueEditBoolean {
   static TableRow build(BuildContext context, LineStatusFeature featureStatuses,
       Feature feature) {
-    FeatureValuesBloc fvBloc = BlocProvider.of(context);
-    return TableRow(
-        children: [
-          FeatureEditDeleteCell(
-            feature: feature,
-          ),
-          ...featureStatuses.environmentFeatureValues
-              .map((e) => Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: <Widget>[
-                      FeatureValueBooleanEnvironmentCell(
-                          environmentFeatureValue: e,
-                          feature: feature,
-                          fvBloc: fvBloc),
-                    ],
-                  ))
-              .toList()
-        ]);
+    final fvBloc = BlocProvider.of<FeatureValuesBloc>(context);
+    return TableRow(children: [
+      FeatureEditDeleteCell(
+        feature: feature,
+      ),
+      ...featureStatuses.environmentFeatureValues
+          .map((e) => Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  FeatureValueBooleanEnvironmentCell(
+                      environmentFeatureValue: e,
+                      feature: feature,
+                      fvBloc: fvBloc),
+                ],
+              ))
+          .toList()
+    ]);
   }
 }

@@ -5,12 +5,12 @@ import 'package:openapi_dart_common/openapi.dart';
 
 import 'feature_status_bloc.dart';
 
-
 class FeatureDeleteDialogWidget extends StatelessWidget {
   final Feature feature;
   final FeatureStatusBloc bloc;
 
-  const FeatureDeleteDialogWidget({Key key, @required this.bloc, this.feature})
+  const FeatureDeleteDialogWidget(
+      {Key key, @required this.bloc, @required this.feature})
       : assert(feature != null),
         assert(bloc != null),
         super(key: key);
@@ -21,19 +21,18 @@ class FeatureDeleteDialogWidget extends StatelessWidget {
       bloc: bloc.mrClient,
       thing: "feature '${feature.name}'",
       content:
-          "You need to make sure all your code is cleaned up and can deal without this feature!\n\nThis cannot be undone!",
+          'You need to make sure all your code is cleaned up and can deal without this feature!\n\nThis cannot be undone!',
       deleteSelected: () async {
         try {
           await bloc.deleteFeature(feature.key);
           bloc.mrClient.removeOverlay();
-          bloc.mrClient
-              .addSnackbar(Text("Feature '${feature.name}' deleted!"));
+          bloc.mrClient.addSnackbar(Text("Feature '${feature.name}' deleted!"));
           return true;
         } catch (e) {
           if (e is ApiException && e.code == 401) {
             bloc.mrClient.customError(
                 messageTitle:
-                "You don't have permissions to perform this operation");
+                    "You don't have permissions to perform this operation");
           } else {
             bloc.mrClient.customError(
                 messageTitle: "Couldn't delete feature ${feature.name}");

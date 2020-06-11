@@ -11,8 +11,9 @@ class FHTagWidget extends StatelessWidget {
   const FHTagWidget({Key key, @required this.text, this.state, this.style})
       : super(key: key);
 
+  @override
   Widget build(BuildContext context) {
-    Color labelColor = Theme.of(context).dividerColor;
+    var labelColor = Theme.of(context).dividerColor;
     if (state == TagStatus.active) {
       labelColor = Theme.of(context).toggleableActiveColor;
     }
@@ -26,7 +27,7 @@ class FHTagWidget extends StatelessWidget {
         width: 100,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(10.0)),
-          color: labelColor != null ? labelColor : null,
+          color: labelColor,
         ),
         alignment: Alignment.center,
         padding: EdgeInsets.only(top: 5.0, left: 8, right: 8, bottom: 5.0),
@@ -34,8 +35,9 @@ class FHTagWidget extends StatelessWidget {
           text,
           style: style ??
               Theme.of(context).textTheme.bodyText2.copyWith(
-                  color: Theme.of(context).colorScheme.onPrimary,
-                  fontSize: 13,),
+                    color: Theme.of(context).colorScheme.onPrimary,
+                    fontSize: 13,
+                  ),
           overflow: TextOverflow.ellipsis,
         ),
       ),

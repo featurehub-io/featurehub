@@ -98,7 +98,7 @@ class _ExpansionTileState extends State<FHExpansionTile>
     _controller = AnimationController(duration: _kExpand, vsync: this);
     _heightFactor = _controller.drive(_easeInTween);
     _iconTurns = _controller.drive(_halfTween.chain(_easeInTween));
- //   _borderColor = _controller.drive(_borderColorTween.chain(_easeOutTween));
+    //   _borderColor = _controller.drive(_borderColorTween.chain(_easeOutTween));
     _headerColor = _controller.drive(_headerColorTween.chain(_easeInTween));
     _iconColor = _controller.drive(_iconColorTween.chain(_easeInTween));
     _backgroundColor =
@@ -136,15 +136,14 @@ class _ExpansionTileState extends State<FHExpansionTile>
   }
 
   Widget _buildChildren(BuildContext context, Widget child) {
-
     return Container(
-      width:225,
+      width: 225,
       decoration: BoxDecoration(
         color: _backgroundColor.value ?? Colors.transparent,
         //border: Border(
         //  top: BorderSide(color: borderSideColor),
         //  bottom: BorderSide(color: borderSideColor),
-        ),
+      ),
       //),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -157,9 +156,11 @@ class _ExpansionTileState extends State<FHExpansionTile>
             child: ListTile(
               onTap: _handleTap,
               leading: widget.leading,
-              title: Row(children:[RotationTransition(
-                turns: _iconTurns,
-                child: const Icon(Icons.expand_more)),widget.title,]),
+              title: Row(children: [
+                RotationTransition(
+                    turns: _iconTurns, child: const Icon(Icons.expand_more)),
+                widget.title,
+              ]),
               trailing: widget.trailing,
             ),
           ),
@@ -176,7 +177,7 @@ class _ExpansionTileState extends State<FHExpansionTile>
 
   @override
   void didChangeDependencies() {
-    final ThemeData theme = Theme.of(context);
+    final theme = Theme.of(context);
     _borderColorTween..end = theme.dividerColor;
     _headerColorTween
       ..begin = theme.textTheme.subtitle1.color
@@ -190,7 +191,7 @@ class _ExpansionTileState extends State<FHExpansionTile>
 
   @override
   Widget build(BuildContext context) {
-    final bool closed = !_isExpanded && _controller.isDismissed;
+    final closed = !_isExpanded && _controller.isDismissed;
     return AnimatedBuilder(
       animation: _controller.view,
       builder: _buildChildren,

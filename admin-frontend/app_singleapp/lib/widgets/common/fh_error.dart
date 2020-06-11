@@ -1,9 +1,10 @@
+import 'dart:html' as html;
+
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/utils/utils.dart';
 import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
-import 'dart:html' as html;
 
 import 'fh_alert_dialog.dart';
 
@@ -18,8 +19,9 @@ class FHErrorWidget extends StatefulWidget {
 
 class _FHErrorState extends State<FHErrorWidget> {
   bool showDetails = false;
-  String showDetailsButton = "View details";
+  String showDetailsButton = 'View details';
 
+  @override
   Widget build(BuildContext context) {
     return showErrorWidget(context, widget.error);
   }
@@ -45,7 +47,7 @@ class _FHErrorState extends State<FHErrorWidget> {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Visibility(
-                  visible: error.errorMessage != "",
+                  visible: error.errorMessage != '',
                   child: Text(error.errorMessage)),
               Visibility(
                   visible: error.showDetails,
@@ -65,17 +67,17 @@ class _FHErrorState extends State<FHErrorWidget> {
                             ),
                             onTap: () {
                               setState(() {
-                                this.showDetails = !this.showDetails;
-                                this.showDetailsButton = this.showDetails
-                                    ? "Hide details"
-                                    : "View details";
+                                showDetails = !showDetails;
+                                showDetailsButton = showDetails
+                                    ? 'Hide details'
+                                    : 'View details';
                               });
                             }),
                       ],
                       mainAxisAlignment: MainAxisAlignment.start,
                     ),
                     Visibility(
-                      visible: this.showDetails,
+                      visible: showDetails,
                       child: errorDetails(error),
                     )
                   ]))
@@ -83,7 +85,7 @@ class _FHErrorState extends State<FHErrorWidget> {
           ),
           actions: <Widget>[
             FHFlatButtonTransparent(
-                title: "Close",
+                title: 'Close',
                 onPressed: () {
                   //clear the error stream so we show the error only once
                   mrBloc.addError(null);
@@ -96,10 +98,11 @@ class _FHErrorState extends State<FHErrorWidget> {
     return Column(
       children: <Widget>[
         Container(
-          constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height / 3),
+          constraints:
+              BoxConstraints(maxHeight: MediaQuery.of(context).size.height / 3),
           child: SingleChildScrollView(
             child: Text(
-              "${error.exception.toString()}+\n\n${error.stackTrace.toString()}",
+              '${error.exception.toString()}+\n\n${error.stackTrace.toString()}',
               style: TextStyle(fontFamily: 'Source', fontSize: 12),
             ),
           ),
@@ -119,8 +122,10 @@ class _FHErrorState extends State<FHErrorWidget> {
                 color: Theme.of(context).buttonColor,
               ),
               Text(' Copy error details to clipboard',
-                  style: Theme.of(context).textTheme.subtitle2.merge(
-                      TextStyle(color: Theme.of(context).buttonColor))),
+                  style: Theme.of(context)
+                      .textTheme
+                      .subtitle2
+                      .merge(TextStyle(color: Theme.of(context).buttonColor))),
             ],
           ),
         ),

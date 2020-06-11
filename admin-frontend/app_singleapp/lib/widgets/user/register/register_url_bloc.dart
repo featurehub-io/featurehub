@@ -54,6 +54,7 @@ class RegisterBloc implements Bloc {
     });
   }
 
+  @override
   void dispose() {
     _formStateStream.close();
   }

@@ -5,7 +5,7 @@ import 'FHFlatButton.dart';
 import 'fh_alert_dialog.dart';
 import 'fh_outline_button.dart';
 
-typedef Future<bool> DeleteThingFunction();
+typedef DeleteThingFunction = Future<bool> Function();
 
 // when deleting a thing, call this as it provides the generic functionality.
 // it must be provided with a callback and either a part or whole message.
@@ -25,7 +25,7 @@ class FHDeleteThingWarningWidget extends StatelessWidget {
       bool extraWarning,
       @required this.bloc,
       this.content})
-      : this.extraWarning = extraWarning ?? false,
+      : extraWarning = extraWarning ?? false,
         assert(bloc !=
             null), // must be passed because alert dialogs are passed in overlays which no longer have access to the bloc
         assert(deleteSelected != null),
@@ -76,13 +76,13 @@ class _WarningWidget extends StatelessWidget {
   final bool extra;
 
   const _WarningWidget({Key key, bool extra})
-      : this.extra = extra ?? false,
+      : extra = extra ?? false,
         super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    double size = extra ? 50.0 : 40.0;
-    double iconSize = extra ? 48.0 : 36.0;
+    final size = extra ? 50.0 : 40.0;
+    final iconSize = extra ? 48.0 : 36.0;
     return Container(
       width: size,
       height: size,

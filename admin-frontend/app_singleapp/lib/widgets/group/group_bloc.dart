@@ -35,12 +35,12 @@ class GroupBloc implements Bloc {
 
   void getGroup(String groupId) async {
     if (groupId != null && groupId.length > 1) {
-      Group fetchedGroup = await _groupServiceApi
+      final fetchedGroup = await _groupServiceApi
           .getGroup(groupId, includeMembers: true)
           .catchError(mrClient.dialogError);
       // publish it out...
       if (fetchedGroup != null) {
-        this.group = fetchedGroup;
+        group = fetchedGroup;
         _groupSource.add(fetchedGroup);
       }
     }
@@ -50,7 +50,7 @@ class GroupBloc implements Bloc {
     await _groupServiceApi
         .deleteGroup(groupId, includeMembers: includeMembers)
         .catchError(mrClient.dialogError);
-    this.group = null;
+    group = null;
     this.groupId = null;
     _groupSource.add(null);
     await mrClient.streamValley.getCurrentPortfolioGroups();
@@ -70,17 +70,17 @@ class GroupBloc implements Bloc {
             includeMembers: true, updateMembers: true)
         .catchError(mrClient.dialogError);
     await getGroups(focusGroup: groupToUpdate);
-    this.group = groupToUpdate;
-    this.groupId = groupToUpdate.id;
+    group = groupToUpdate;
+    groupId = groupToUpdate.id;
   }
 
   Future<void> createGroup(Group newGroup) async {
-    Group createdGroup = await _groupServiceApi
+    final createdGroup = await _groupServiceApi
         .createGroup(mrClient.currentPid, newGroup)
         .catchError(mrClient.dialogError);
     await getGroups(focusGroup: createdGroup);
-    this.groupId = createdGroup.id;
-    this.group = createdGroup;
+    groupId = createdGroup.id;
+    group = createdGroup;
     return newGroup;
   }
 

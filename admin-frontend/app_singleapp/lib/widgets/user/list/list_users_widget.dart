@@ -20,8 +20,8 @@ class _PersonListWidgetState extends State<PersonListWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final BorderSide bs = BorderSide(color: Theme.of(context).dividerColor);
-    ListUsersBloc bloc = BlocProvider.of(context);
+    final bs = BorderSide(color: Theme.of(context).dividerColor);
+    final bloc = BlocProvider.of<ListUsersBloc>(context);
     return StreamBuilder<List<Person>>(
         stream: bloc.personSearch,
         builder: (context, snapshot) {
@@ -113,7 +113,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
         });
   }
 
-  onSortColumn(List<Person> people, int columnIndex, bool ascending) {
+  void onSortColumn(List<Person> people, int columnIndex, bool ascending) {
     setState(() {
       if (columnIndex == 0) {
         if (ascending) {
@@ -146,10 +146,10 @@ class _PersonListWidgetState extends State<PersonListWidget> {
           people.sort((a, b) => b.groups.length.compareTo(a.groups.length));
         }
       }
-      if (this.sortColumnIndex == columnIndex) {
-        this.sortToggle = !sortToggle;
+      if (sortColumnIndex == columnIndex) {
+        sortToggle = !sortToggle;
       }
-      this.sortColumnIndex = columnIndex;
+      sortColumnIndex = columnIndex;
     });
   }
 
@@ -184,7 +184,7 @@ class DeleteDialogWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FHDeleteThingWarningWidget(
-      thing: "user '${person.name == null ? person.email : person.name}",
+      thing: "user '${person.name ?? person.email}",
       content:
           'This users will be removed from all groups and delete from the system. \n\nThis cannot be undone!',
       bloc: bloc.mrClient,

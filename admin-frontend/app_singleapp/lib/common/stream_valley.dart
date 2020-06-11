@@ -87,59 +87,62 @@ class StreamValley {
     _refreshApplicationIdChanged();
   }
 
-  final _currentPortfolioApplicationsStream =
+  final _currentPortfolioApplicationsSource =
       BehaviorSubject<List<Application>>();
 
-  get currentPortfolioApplicationsStream => _currentPortfolioApplicationsStream;
+  Stream<List<Application>> get currentPortfolioApplicationsStream =>
+      _currentPortfolioApplicationsSource.stream;
 
-  set currentPortfolioApplicationsStream(List<Application> value) {
-    _currentPortfolioApplicationsStream.add(value);
+  set currentPortfolioApplications(List<Application> value) {
+    _currentPortfolioApplicationsSource.add(value);
   }
 
   final _currentPortfolioGroupsStream = BehaviorSubject<List<Group>>();
 
-  get currentPortfolioGroupsStream => _currentPortfolioGroupsStream;
+  Stream<List<Group>> get currentPortfolioGroupsStream =>
+      _currentPortfolioGroupsStream.stream;
 
-  set currentPortfolioGroupsStream(List<Group> value) {
+  set currentPortfolioGroups(List<Group> value) {
     _currentPortfolioGroupsStream.add(value);
   }
 
-  final _currentPortfolioServiceAccountsStream =
+  final _currentPortfolioServiceAccountsSource =
       BehaviorSubject<List<ServiceAccount>>();
 
-  get currentPortfolioServiceAccountsStream =>
-      _currentPortfolioServiceAccountsStream;
+  Stream<List<ServiceAccount>> get currentPortfolioServiceAccountsStream =>
+      _currentPortfolioServiceAccountsSource.stream;
 
-  set currentPortfolioServiceAccountsStream(List<ServiceAccount> value) {
-    _currentPortfolioServiceAccountsStream.add(value);
+  set currentPortfolioServiceAccounts(List<ServiceAccount> value) {
+    _currentPortfolioServiceAccountsSource.add(value);
   }
 
-  final _currentApplicationEnvironmentsStream =
+  final _currentApplicationEnvironmentsSource =
       BehaviorSubject<List<Environment>>();
 
-  get currentApplicationEnvironmentsStream =>
-      _currentApplicationEnvironmentsStream;
+  Stream<List<Environment>> get currentApplicationEnvironmentsStream =>
+      _currentApplicationEnvironmentsSource;
 
-  set currentApplicationEnvironmentsStream(List<Environment> value) {
-    _currentApplicationEnvironmentsStream.add(value);
+  set currentApplicationEnvironments(List<Environment> value) {
+    _currentApplicationEnvironmentsSource.add(value);
   }
 
-  final _currentApplicationFeaturesStream = BehaviorSubject<List<Feature>>();
+  final _currentApplicationFeaturesSource = BehaviorSubject<List<Feature>>();
 
-  get currentApplicationFeaturesStream => _currentApplicationFeaturesStream;
+  Stream<List<Feature>> get currentApplicationFeaturesStream =>
+      _currentApplicationFeaturesSource;
 
-  set currentApplicationFeaturesStream(List<Feature> value) {
-    _currentApplicationFeaturesStream.add(value);
+  set currentApplicationFeatures(List<Feature> value) {
+    _currentApplicationFeaturesSource.add(value);
   }
 
-  final _currentEnvironmentServiceAccountStream =
+  final _currentEnvironmentServiceAccountSource =
       BehaviorSubject<List<ServiceAccount>>();
 
-  get currentEnvironmentServiceAccountStream =>
-      _currentEnvironmentServiceAccountStream;
+  Stream<List<ServiceAccount>> get currentEnvironmentServiceAccountStream =>
+      _currentEnvironmentServiceAccountSource;
 
-  set currentEnvironmentServiceAccountStream(List<ServiceAccount> value) {
-    _currentEnvironmentServiceAccountStream.add(value);
+  set currentEnvironmentServiceAccount(List<ServiceAccount> value) {
+    _currentEnvironmentServiceAccountSource.add(value);
   }
 
   Future<void> getCurrentPortfolioApplications() async {
@@ -149,13 +152,13 @@ class StreamValley {
           .findApplications(_currentPortfolioIdSource.value,
               order: SortOrder.DESC)
           .catchError(mrClient.dialogError);
-      currentPortfolioApplicationsStream = appList;
+      currentPortfolioApplications = appList;
 
       if (appList.isNotEmpty && appList.length == 1) {
         currentAppId = appList[0].id;
       }
     } else {
-      currentPortfolioApplicationsStream = [];
+      currentPortfolioApplications = [];
     }
   }
 
@@ -164,9 +167,9 @@ class StreamValley {
       final portfolio = await portfolioServiceApi
           .getPortfolio(_currentPortfolioIdSource.value, includeGroups: true)
           .catchError(mrClient.dialogError);
-      currentPortfolioGroupsStream = portfolio.groups;
+      currentPortfolioGroups = portfolio.groups;
     } else {
-      currentPortfolioGroupsStream = [];
+      currentPortfolioGroups = [];
     }
   }
 
@@ -175,9 +178,9 @@ class StreamValley {
       final accounts = await serviceAccountServiceApi
           .searchServiceAccountsInPortfolio(_currentPortfolioIdSource.value)
           .catchError(mrClient.dialogError);
-      currentPortfolioServiceAccountsStream = accounts;
+      currentPortfolioServiceAccounts = accounts;
     } else {
-      currentPortfolioServiceAccountsStream = [];
+      currentPortfolioServiceAccounts = [];
     }
   }
 
@@ -186,9 +189,9 @@ class StreamValley {
       final envList = await environmentServiceApi
           .findEnvironments(_currentAppIdSource.value, includeAcls: true)
           .catchError(mrClient.dialogError);
-      currentApplicationEnvironmentsStream = envList;
+      currentApplicationEnvironments = envList;
     } else {
-      currentApplicationEnvironmentsStream = [];
+      currentApplicationEnvironments = [];
     }
   }
 
@@ -197,9 +200,9 @@ class StreamValley {
       final featureList = await featureServiceApi
           .getAllFeaturesForApplication(_currentAppIdSource.value)
           .catchError(mrClient.dialogError);
-      currentApplicationFeaturesStream = featureList;
+      currentApplicationFeatures = featureList;
     } else {
-      currentApplicationFeaturesStream = [];
+      currentApplicationFeatures = [];
     }
   }
 
@@ -210,9 +213,9 @@ class StreamValley {
               includePermissions: true,
               applicationId: _currentAppIdSource.value)
           .catchError(mrClient.dialogError);
-      currentEnvironmentServiceAccountStream = saList;
+      currentEnvironmentServiceAccount = saList;
     } else {
-      currentEnvironmentServiceAccountStream = [];
+      currentEnvironmentServiceAccount = [];
     }
   }
 

@@ -95,8 +95,7 @@ class _GroupPermissionDetailWidget extends StatefulWidget {
 }
 
 class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
-  Map<String, EnvironmentGroupRole> newEnvironmentRoles =
-      Map<String, EnvironmentGroupRole>();
+  Map<String, EnvironmentGroupRole> newEnvironmentRoles = {};
   Group currentGroup;
   bool editAccess;
 
@@ -204,7 +203,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                             widget.bloc.mrClient.addSnackbar(Text(
                                 "Group '${groupSnapshot.data.name}' reset!"));
                           },
-                          title: 'Undo'),
+                          title: 'Cancel'),
                       FHFlatButton(
                           onPressed: () {
                             final newList = <EnvironmentGroupRole>[];
@@ -297,7 +296,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
 
   Group addEditPermission(Group group, String aid) {
     if (!hasEditPermission(group, aid)) {
-      ApplicationGroupRole agr = ApplicationGroupRole()
+      final agr = ApplicationGroupRole()
         ..applicationId = aid
         ..groupId = group.id
         ..roles.add(ApplicationRoleType.FEATURE_EDIT);
@@ -314,18 +313,15 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
 
   Map<String, EnvironmentGroupRole> createMap(
       List<Environment> environments, Group group) {
-    Map<String, EnvironmentGroupRole> retMap =
-        Map<String, EnvironmentGroupRole>();
+    final retMap = <String, EnvironmentGroupRole>{};
     environments.forEach((environment) {
-      EnvironmentGroupRole egr = group.environmentRoles.firstWhere(
+      var egr = group.environmentRoles.firstWhere(
           (environmentRole) => environmentRole.environmentId == environment.id,
           orElse: () => null);
       egr == null ? egr = EnvironmentGroupRole() : {};
       egr.environmentId = environment.id;
       egr.groupId = group.id;
-      if (egr.roles == null) {
-        egr.roles = List<RoleType>();
-      }
+      egr.roles ??= [];
       retMap[environment.id] = egr;
     });
     return retMap;

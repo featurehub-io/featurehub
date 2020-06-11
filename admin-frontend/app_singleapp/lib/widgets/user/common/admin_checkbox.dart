@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 
 class AdminCheckboxWidget extends StatefulWidget {
-
   final Person person;
   const AdminCheckboxWidget({Key key, this.person}) : super(key: key);
 
@@ -14,15 +13,14 @@ class AdminCheckboxWidget extends StatefulWidget {
   }
 }
 
-class AdminCheckboxWidgetState extends State<AdminCheckboxWidget>{
+class AdminCheckboxWidgetState extends State<AdminCheckboxWidget> {
   bool createUser = true;
   final Person person;
   bool isAdmin = false;
 
-
   @override
   void initState() {
-    SelectPortfolioGroupBloc bloc = BlocProvider.of(context);
+    final bloc = BlocProvider.of<SelectPortfolioGroupBloc>(context);
     super.initState();
     if (widget.person != null) {
       createUser = false;
@@ -33,28 +31,28 @@ class AdminCheckboxWidgetState extends State<AdminCheckboxWidget>{
   AdminCheckboxWidgetState(this.person);
   @override
   Widget build(BuildContext context) {
+    final bloc = BlocProvider.of<SelectPortfolioGroupBloc>(context);
 
-    SelectPortfolioGroupBloc bloc = BlocProvider.of(context);
-
-    return  bloc.mrClient.userIsSuperAdmin ? Container(
-      constraints: BoxConstraints(maxWidth: 300),
-      child: CheckboxListTile(
-        title: Text('Set this user as a FeatureHub site admin.',
-          style: Theme.of(context).textTheme.caption,
-        ),
-        value: isAdmin,
-        onChanged: (bool value) {
-          setState(() {
-            isAdmin = value;
-            if (value) {
-              bloc.pushAdminGroupToStream();
-            }
-            else {
-              bloc.removeAdminGroupFromStream();
-            }
-          }
-          );
-        }),
-    ) : Container();
+    return bloc.mrClient.userIsSuperAdmin
+        ? Container(
+            constraints: BoxConstraints(maxWidth: 300),
+            child: CheckboxListTile(
+                title: Text(
+                  'Set this user as a FeatureHub site admin.',
+                  style: Theme.of(context).textTheme.caption,
+                ),
+                value: isAdmin,
+                onChanged: (bool value) {
+                  setState(() {
+                    isAdmin = value;
+                    if (value) {
+                      bloc.pushAdminGroupToStream();
+                    } else {
+                      bloc.removeAdminGroupFromStream();
+                    }
+                  });
+                }),
+          )
+        : Container();
   }
 }

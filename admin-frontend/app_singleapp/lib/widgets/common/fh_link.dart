@@ -16,6 +16,7 @@ class FHLinkWidget extends StatelessWidget {
     @required this.href,
   }) : super(key: key);
 
+  @override
   Widget build(BuildContext context) {
     return CustomCursor(
       child: GestureDetector(

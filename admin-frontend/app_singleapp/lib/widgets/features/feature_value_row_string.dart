@@ -79,7 +79,7 @@ class _FeatureValueStringEnvironmentCellState
 class FeatureValueEditString {
   static TableRow build(BuildContext context, LineStatusFeature featureStatuses,
       Feature feature) {
-    FeatureValuesBloc fvBloc = BlocProvider.of(context);
+    final fvBloc = BlocProvider.of<FeatureValuesBloc>(context);
 
     return TableRow(children: [
       FeatureEditDeleteCell(

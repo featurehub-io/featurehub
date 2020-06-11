@@ -61,8 +61,8 @@ class _FeatureValueNumberEnvironmentCellState
                           color: Colors.grey,
                         )),
                         hintText: canEdit
-                            ? "Enter number value"
-                            : "No editing permissions",
+                            ? 'Enter number value'
+                            : 'No editing permissions',
                         hintStyle: Theme.of(context).textTheme.caption,
                         errorText: validateNumber(tec.text) != null
                             ? 'Not a valid number'
@@ -86,24 +86,23 @@ class _FeatureValueNumberEnvironmentCellState
 class FeatureValueEditNumber {
   static TableRow build(BuildContext context, LineStatusFeature featureStatuses,
       Feature feature) {
-    FeatureValuesBloc fvBloc = BlocProvider.of(context);
+    final fvBloc = BlocProvider.of<FeatureValuesBloc>(context);
 
-    return TableRow(
-        children: [
-          FeatureEditDeleteCell(
-            feature: feature,
-          ),
-          ...featureStatuses.environmentFeatureValues
-              .map((e) => Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: <Widget>[
-                      FeatureValueNumberEnvironmentCell(
-                          environmentFeatureValue: e,
-                          feature: feature,
-                          fvBloc: fvBloc),
-                    ],
-                  ))
-              .toList()
-        ]);
+    return TableRow(children: [
+      FeatureEditDeleteCell(
+        feature: feature,
+      ),
+      ...featureStatuses.environmentFeatureValues
+          .map((e) => Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  FeatureValueNumberEnvironmentCell(
+                      environmentFeatureValue: e,
+                      feature: feature,
+                      fvBloc: fvBloc),
+                ],
+              ))
+          .toList()
+    ]);
   }
 }

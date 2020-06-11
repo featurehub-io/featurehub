@@ -1,8 +1,10 @@
 import 'dart:async';
+
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart';
+
 import 'FHStepper.dart';
 
 class StepperBloc implements Bloc {
@@ -22,29 +24,44 @@ class StepperBloc implements Bloc {
 
   StreamSubscription<String> _currentAppIdSubscriber;
   StreamSubscription<List<Group>> _currentPortfolioGroupsSubscriber;
-  StreamSubscription<List<ServiceAccount>> _currentPortfolioServiceAccountsSubscriber;
-  StreamSubscription<List<Environment>> _currentApplicationEnvironmentsSubscriber;
+  StreamSubscription<List<ServiceAccount>>
+      _currentPortfolioServiceAccountsSubscriber;
+  StreamSubscription<List<Environment>>
+      _currentApplicationEnvironmentsSubscriber;
   StreamSubscription<List<Feature>> _currentApplicationFeaturesSubscriber;
-  StreamSubscription<List<ServiceAccount>> _currentEnvironmentServiceAccountsSubscriber;
+  StreamSubscription<List<ServiceAccount>>
+      _currentEnvironmentServiceAccountsSubscriber;
   StreamSubscription<List<Application>> _currentPortfolioApplicationsSubscriber;
-
 
   StepperBloc(this.mrClient) : assert(mrClient != null) {
     _setStreamListeners();
   }
 
-  _setStreamListeners() {
-    _currentAppIdSubscriber = mrClient.streamValley.currentAppIdStream.listen(_getCurrentApplication);
-    _currentPortfolioGroupsSubscriber = mrClient.streamValley.currentPortfolioGroupsStream.listen(_getPortfolioGroups);
-    _currentPortfolioServiceAccountsSubscriber =  mrClient.streamValley.currentPortfolioServiceAccountsStream.listen(_getPortfolioServiceAccounts);
-    _currentPortfolioApplicationsSubscriber = mrClient.streamValley.currentPortfolioApplicationsStream.listen(_getPortfolioApplications);
-    _currentApplicationEnvironmentsSubscriber =  mrClient.streamValley.currentApplicationEnvironmentsStream.listen(_getApplicationEnvironments);
-    _currentApplicationFeaturesSubscriber = mrClient.streamValley.currentApplicationFeaturesStream.listen(_getApplicationFeatures);
-    _currentEnvironmentServiceAccountsSubscriber = mrClient.streamValley.currentEnvironmentServiceAccountStream.listen(_getEnvironmentServiceAccountPermissions);
+  void _setStreamListeners() {
+    _currentAppIdSubscriber =
+        mrClient.streamValley.currentAppIdStream.listen(_getCurrentApplication);
+    _currentPortfolioGroupsSubscriber = mrClient
+        .streamValley.currentPortfolioGroupsStream
+        .listen(_getPortfolioGroups);
+    _currentPortfolioServiceAccountsSubscriber = mrClient
+        .streamValley.currentPortfolioServiceAccountsStream
+        .listen(_getPortfolioServiceAccounts);
+    _currentPortfolioApplicationsSubscriber = mrClient
+        .streamValley.currentPortfolioApplicationsStream
+        .listen(_getPortfolioApplications);
+    _currentApplicationEnvironmentsSubscriber = mrClient
+        .streamValley.currentApplicationEnvironmentsStream
+        .listen(_getApplicationEnvironments);
+    _currentApplicationFeaturesSubscriber = mrClient
+        .streamValley.currentApplicationFeaturesStream
+        .listen(_getApplicationFeatures);
+    _currentEnvironmentServiceAccountsSubscriber = mrClient
+        .streamValley.currentEnvironmentServiceAccountStream
+        .listen(_getEnvironmentServiceAccountPermissions);
   }
 
   //this is called each time current app ID stream from mrBloc emits a value
-  void _getCurrentApplication(id) async{
+  void _getCurrentApplication(id) async {
     if (id != null) {
       fhStepper.application = true;
     } else {
@@ -55,27 +72,26 @@ class StepperBloc implements Bloc {
   }
 
   Future<void> _getPortfolioApplications(List<Application> appList) async {
-      _appsBS.add(appList);
+    _appsBS.add(appList);
   }
 
   void _getPortfolioGroups(List<Group> groups) {
-      fhStepper.group = groups.isNotEmpty;
+    fhStepper.group = groups.isNotEmpty;
     _FHStepperBS.add(fhStepper);
-
   }
 
   void _getPortfolioServiceAccounts(List<ServiceAccount> accounts) {
-     fhStepper.serviceAccount = accounts.isNotEmpty;
+    fhStepper.serviceAccount = accounts.isNotEmpty;
     _FHStepperBS.add(fhStepper);
   }
 
   void _getApplicationEnvironments(List<Environment> envList) {
-
-    if (applicationId != null)  //maybe check with app id from mr
+    if (applicationId != null) //maybe check with app id from mr
     {
       fhStepper.environment = envList.isNotEmpty;
       if (envList.isNotEmpty) {
-        fhStepper.groupPermission = envList.any((env) => env.groupRoles.isNotEmpty);
+        fhStepper.groupPermission =
+            envList.any((env) => env.groupRoles.isNotEmpty);
       }
       _FHStepperBS.add(fhStepper);
     }
@@ -88,11 +104,13 @@ class StepperBloc implements Bloc {
     }
   }
 
-  Future<void> _getEnvironmentServiceAccountPermissions(List<ServiceAccount> saList) async {
-      if (saList.isNotEmpty) {
-        fhStepper.serviceAccountPermission = saList.any((sa) => sa.permissions.isNotEmpty);
-        _FHStepperBS.add(fhStepper);
-      }
+  Future<void> _getEnvironmentServiceAccountPermissions(
+      List<ServiceAccount> saList) async {
+    if (saList.isNotEmpty) {
+      fhStepper.serviceAccountPermission =
+          saList.any((sa) => sa.permissions.isNotEmpty);
+      _FHStepperBS.add(fhStepper);
+    }
   }
 
   @override

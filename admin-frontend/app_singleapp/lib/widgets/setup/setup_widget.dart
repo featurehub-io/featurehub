@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 class SetupPageWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    SetupBloc setupBloc = BlocProvider.of(context);
+    final setupBloc = BlocProvider.of<SetupBloc>(context);
 
     return StreamBuilder<SetupPage>(
         stream: setupBloc.pageState,

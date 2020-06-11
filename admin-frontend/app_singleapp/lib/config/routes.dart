@@ -2,15 +2,18 @@ import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/api/router.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 
 import 'route_handlers.dart';
+
+final _log = Logger('Routes');
 
 class Routes {
   static final List<String> PUBLIC_URLS = ['/forgot-password', '/register-url'];
   static void configureRoutes(Router router) {
     router.notFoundHandler = Handler(
         handlerFunc: (BuildContext context, Map<String, List<String>> params) {
-      print('Route not found');
+      _log.severe('request for route not found');
       var mrBloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
       mrBloc.customError(messageTitle: 'Oops, page not found');
       return Container();

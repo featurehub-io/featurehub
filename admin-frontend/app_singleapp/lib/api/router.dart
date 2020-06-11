@@ -1,7 +1,7 @@
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:flutter/widgets.dart';
 
-typedef Widget HandlerFunc(
+typedef HandlerFunc = Widget Function(
     BuildContext context, Map<String, List<String>> params);
 
 class RouteChange {

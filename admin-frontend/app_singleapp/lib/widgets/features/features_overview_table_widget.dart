@@ -21,7 +21,7 @@ import 'feature_values_bloc.dart';
 class FeaturesOverviewTableWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    FeatureStatusBloc bloc = BlocProvider.of(context);
+    final bloc = BlocProvider.of<FeatureStatusBloc>(context);
 
     return StreamBuilder<FeatureStatusFeatures>(
         stream: bloc.appFeatureValues,
@@ -120,7 +120,7 @@ class FeatureFlagAndEnvironmentsTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    FeatureStatusBloc bloc = BlocProvider.of(context);
+    final bloc = BlocProvider.of<FeatureStatusBloc>(context);
 
     return Padding(
       padding: const EdgeInsets.only(top: 8.0),
@@ -159,7 +159,7 @@ class _FeatureHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    FeatureStatusBloc bloc = BlocProvider.of(context);
+    final bloc = BlocProvider.of<FeatureStatusBloc>(context);
 
     return Table(
       defaultVerticalAlignment: TableCellVerticalAlignment.middle,
@@ -181,7 +181,7 @@ class _FeatureHeader extends StatelessWidget {
 
   List<Widget> headerRow(ApplicationFeatureValues appFeatureValues,
       BuildContext context, FeatureStatusBloc bloc) {
-    List<Widget> hrow = [];
+    final hrow = <Widget>[];
 
     hrow.add(SizedBox.shrink()); // placebolder for name + action
 
@@ -221,10 +221,9 @@ class __FeatureRepresentationState extends State<_FeatureRepresentation> {
 
   @override
   Widget build(BuildContext context) {
-    FeatureStatusBloc bloc = BlocProvider.of(context);
+    final bloc = BlocProvider.of<FeatureStatusBloc>(context);
 
-    final List<FeatureValue> featureValuesThisFeature = widget
-        .lineStatus.environmentFeatureValues
+    final featureValuesThisFeature = widget.lineStatus.environmentFeatureValues
         .expand((e) => e.features.where((fv) => fv.key == widget.feature.key))
         .toList();
 
@@ -260,7 +259,7 @@ class __FeatureRepresentationState extends State<_FeatureRepresentation> {
   }
 
   List<TableRow> bearMeChildren(BuildContext context) {
-    List<TableRow> rows = [
+    final rows = [
       FeatureValueEditLocked.build(context, widget.lineStatus, widget.feature)
     ];
 
@@ -302,9 +301,9 @@ class __FeatureRepresentationState extends State<_FeatureRepresentation> {
   }
 
   TableRow generateCell(FeatureStatusBloc bloc) {
-    Feature feature = widget.feature;
+    final feature = widget.feature;
 
-    List<Widget> row = [];
+    final row = <Widget>[];
     row.add(GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => setState(() => _open = !_open),
@@ -572,7 +571,7 @@ class NoEnvironmentMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    FeatureStatusBloc bloc = BlocProvider.of(context);
+    final bloc = BlocProvider.of<FeatureStatusBloc>(context);
 
     return Row(
       children: <Widget>[

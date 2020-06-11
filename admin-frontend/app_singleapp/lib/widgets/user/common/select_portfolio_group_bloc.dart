@@ -9,7 +9,7 @@ class SelectPortfolioGroupBloc implements Bloc {
 
   List<Portfolio> portfoliosList = [];
   Portfolio currentPortfolio;
-  Set<PortfolioGroup> listOfAddedPortfolioGroups = Set<PortfolioGroup>();
+  Set<PortfolioGroup> listOfAddedPortfolioGroups = <PortfolioGroup>{};
 
   final _currentPortfoliosStream = rxdart.BehaviorSubject<List<Portfolio>>();
   Stream<List<Portfolio>> get portfolios => _currentPortfoliosStream.stream;
@@ -25,14 +25,14 @@ class SelectPortfolioGroupBloc implements Bloc {
     loadInitialData();
   }
 
-  loadInitialData() async {
+  void loadInitialData() async {
     await _findPortfoliosAndAddToTheStream();
     if (currentPortfolio != null) {
       _findGroupsAndPushToStream();
     }
   }
 
-  _findPortfoliosAndAddToTheStream() async {
+  void _findPortfoliosAndAddToTheStream() async {
     try {
       var data = await mrClient.portfolioServiceApi
           .findPortfolios(includeGroups: true);
@@ -43,23 +43,23 @@ class SelectPortfolioGroupBloc implements Bloc {
     }
   }
 
-  setCurrentPortfolioAndGroups(String portfolioID) {
+  void setCurrentPortfolioAndGroups(String portfolioID) {
     currentPortfolio = portfoliosList.firstWhere((p) => p.id == portfolioID);
     _findGroupsAndPushToStream();
   }
 
-  _findGroupsAndPushToStream() {
-    List<Group> groups =
+  void _findGroupsAndPushToStream() {
+    final groups =
         portfoliosList.firstWhere((p) => p.id == currentPortfolio.id).groups;
     _currentGroupsStream.add(groups);
   }
 
-  pushExistingGroupToStream(List<PortfolioGroup> groupList) {
+  void pushExistingGroupToStream(List<PortfolioGroup> groupList) {
     groupList.forEach((group) => {listOfAddedPortfolioGroups.add(group)});
     _addedGroupsStream.add(listOfAddedPortfolioGroups);
   }
 
-  pushAddedGroupToStream(String groupID) {
+  void pushAddedGroupToStream(String groupID) {
     //identify group and add to the list along with the portfolio
     Group foundGroup;
     if (currentPortfolio != null) {
@@ -71,18 +71,18 @@ class SelectPortfolioGroupBloc implements Bloc {
     }
   }
 
-  pushAdminGroupToStream() {
-    Group adminGroup = mrClient.organization.orgGroup;
+  void pushAdminGroupToStream() {
+    final adminGroup = mrClient.organization.orgGroup;
     listOfAddedPortfolioGroups.add(PortfolioGroup(null, adminGroup));
     _addedGroupsStream.add(listOfAddedPortfolioGroups);
   }
 
   void removeAdminGroupFromStream() {
-    Group adminGroup = mrClient.organization.orgGroup;
+    final adminGroup = mrClient.organization.orgGroup;
     removeGroupFromStream(PortfolioGroup(null, adminGroup));
   }
 
-  removeGroupFromStream(PortfolioGroup groupToBeDeleted) {
+  void removeGroupFromStream(PortfolioGroup groupToBeDeleted) {
     listOfAddedPortfolioGroups.remove(groupToBeDeleted);
     _addedGroupsStream.add(listOfAddedPortfolioGroups);
   }

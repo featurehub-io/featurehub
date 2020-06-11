@@ -14,8 +14,8 @@ import 'feature_values_bloc.dart';
 class FeatureValueEditJson {
   static TableRow build(BuildContext context, LineStatusFeature featureStatuses,
       Feature feature) {
-    FeatureValuesBloc fvBloc = BlocProvider.of(context);
-    BorderSide bs = BorderSide(
+    final fvBloc = BlocProvider.of<FeatureValuesBloc>(context);
+    final bs = BorderSide(
         color: Theme.of(context).buttonColor,
         width: 2.0,
         style: BorderStyle.solid);
@@ -121,7 +121,7 @@ class _FeatureValueJsonEnvironmentCellState
 
   void _viewJsonEditor(
       BuildContext context, AsyncSnapshot<FeatureValue> snap, bool enabled) {
-    String initialValue = tec.text;
+    var initialValue = tec.text;
     widget.fvBloc.mrClient.addOverlay((BuildContext context) => AlertDialog(
             content: Container(
           height: 575,

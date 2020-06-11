@@ -29,7 +29,7 @@ class ManageServiceAccountsBloc implements Bloc {
   void addServiceAccountsToStream(String portfolio) async {
     portfolioId = portfolio;
     if (portfolioId != null) {
-      List<ServiceAccount> serviceAccounts = await _serviceAccountServiceApi
+      final serviceAccounts = await _serviceAccountServiceApi
           .searchServiceAccountsInPortfolio(portfolioId,
               includePermissions: true)
           .catchError(mrClient.dialogError);
@@ -38,6 +38,7 @@ class ManageServiceAccountsBloc implements Bloc {
       }
 
       // we need to fill up a list of applications down to environments
+      // ignore: unawaited_futures
       mrClient.portfolioServiceApi
           .getPortfolio(portfolioId,
               includeApplications: true, includeEnvironments: true)
@@ -49,7 +50,7 @@ class ManageServiceAccountsBloc implements Bloc {
   }
 
   Future<bool> deleteServiceAccount(String sid) async {
-    bool result = await _serviceAccountServiceApi
+    final result = await _serviceAccountServiceApi
         .delete(sid)
         .catchError(mrClient.dialogError);
     await addServiceAccountsToStream(portfolioId);
@@ -70,7 +71,7 @@ class ManageServiceAccountsBloc implements Bloc {
 
   Future<void> createServiceAccount(
       String serviceAccountName, String description) async {
-    ServiceAccount serviceAccount = ServiceAccount();
+    final serviceAccount = ServiceAccount();
     serviceAccount.name = serviceAccountName;
     serviceAccount.description = description;
     await _serviceAccountServiceApi

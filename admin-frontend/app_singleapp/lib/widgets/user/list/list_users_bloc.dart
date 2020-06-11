@@ -22,8 +22,8 @@ class ListUsersBloc implements Bloc {
     // this should also change the url
 
     // debounce the search (i.e. if they are still typing, wait)
-    final String newSearch = s;
-    this.search = s;
+    final newSearch = s;
+    search = s;
 
     await Timer(Duration(milliseconds: 300), () {
       if (newSearch == search) {

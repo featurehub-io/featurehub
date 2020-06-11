@@ -22,12 +22,14 @@ class FeatureValueEditLockedCell extends StatelessWidget {
             .featureValueByEnvironment(environmentFeatureValue.environmentId),
         builder: (ctx, snap) {
           // must always return the same "shaped" data in a table cell
-          bool disabled = (!environmentFeatureValue.roles.contains(RoleType.UNLOCK) &&
-            snap.data?.locked == true) ||
-            (snap.data?.locked == false &&
-            !environmentFeatureValue.roles.contains(RoleType.LOCK));
+          final disabled =
+              (!environmentFeatureValue.roles.contains(RoleType.UNLOCK) &&
+                      snap.data?.locked == true) ||
+                  (snap.data?.locked == false &&
+                      !environmentFeatureValue.roles.contains(RoleType.LOCK));
 
-          bool locked = snap.data == null ? false : (snap.data.locked ?? false);
+          final locked =
+              snap.data == null ? false : (snap.data.locked ?? false);
 
           return Container(
             height: 60.0,
@@ -42,27 +44,29 @@ class FeatureValueEditLockedCell extends StatelessWidget {
                 Checkbox(
                   activeColor: Theme.of(context).primaryColor,
                   value: locked,
-                  onChanged: disabled ? null : (value) {
-                    snap.data.locked = value;
-                    fvBloc.updatedFeature(
-                        environmentFeatureValue.environmentId);
-                  },
+                  onChanged: disabled
+                      ? null
+                      : (value) {
+                          snap.data.locked = value;
+                          fvBloc.updatedFeature(
+                              environmentFeatureValue.environmentId);
+                        },
                 )
               ],
             ),
           );
-        }
-    );
-
+        });
   }
 }
 
 class FeatureValueEditLocked {
   static TableRow build(BuildContext context, LineStatusFeature featureStatuses,
       Feature feature) {
-    FeatureValuesBloc fvBloc = BlocProvider.of(context);
-    BorderSide bs =
-        BorderSide(color: Theme.of(context).dividerColor, width: 1.0, style: BorderStyle.solid);
+    final fvBloc = BlocProvider.of<FeatureValuesBloc>(context);
+    final bs = BorderSide(
+        color: Theme.of(context).dividerColor,
+        width: 1.0,
+        style: BorderStyle.solid);
     return TableRow(
         decoration: BoxDecoration(
           border: Border(top: bs),
