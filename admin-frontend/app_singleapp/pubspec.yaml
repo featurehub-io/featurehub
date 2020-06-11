@@ -12,6 +12,7 @@ dependencies:
 
   rxdart: ^0.24.1
   bloc_provider: ^0.6.2
+  logging: ^0.11.4
   mrapi:
     path: ../app_mr_layer
   openapi_dart_common: ^3.1.0

@@ -2,12 +2,22 @@ import 'package:app_singleapp/api/router.dart';
 import 'package:app_singleapp/theme/theme_data.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 
 import 'api/client_api.dart';
 import 'config/routes.dart';
 import 'routes/landing_route.dart';
 
 void main() async {
+  Logger.root.level = Level.ALL; // defaults to Level.INFO
+  Logger.root.onRecord.listen((record) {
+    // ignore: avoid_print
+    print('${record.level.name}: ${record.time}: ${record.message}');
+  });
+  mainApp();
+}
+
+void mainApp() async {
   runApp(BlocProvider(
       creator: (_context, _bag) {
         final bloc = ManagementRepositoryClientBloc();
