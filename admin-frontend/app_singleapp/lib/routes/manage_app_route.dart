@@ -7,6 +7,8 @@ import 'package:app_singleapp/widgets/apps/app_update_dialog_widget.dart';
 import 'package:app_singleapp/widgets/apps/group_permissions_widget.dart';
 import 'package:app_singleapp/widgets/apps/manage_app_bloc.dart';
 import 'package:app_singleapp/widgets/apps/service_account_permissions_widget.dart';
+import 'package:app_singleapp/widgets/common/application_drop_down.dart';
+import 'package:app_singleapp/widgets/common/decorations/fh_page_divider.dart';
 import 'package:app_singleapp/widgets/common/fh_card.dart';
 import 'package:app_singleapp/widgets/common/fh_header.dart';
 import 'package:app_singleapp/widgets/common/fh_icon_button.dart';
@@ -30,6 +32,58 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
+            Row(
+              children: <Widget>[
+                Flexible(
+                  flex: 1,
+                  child: StreamBuilder<List<Application>>(
+                      stream: bloc.mrClient.streamValley
+                          .currentPortfolioApplicationsStream,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData && snapshot.data.isNotEmpty) {
+                          return Container(
+                              padding: EdgeInsets.only(left: 8, bottom: 8),
+                              child: ApplicationDropDown(
+                                  applications: snapshot.data, bloc: bloc));
+                        } else {
+                          bloc.setApplicationId(bloc.mrClient.currentAid);
+                          return Container(
+                              padding: EdgeInsets.only(left: 8, top: 15),
+                              child: Text('No applications found!'));
+                        }
+                      }),
+                ),
+                Flexible(
+                  flex: 4,
+                  child: Row(
+                    children: [
+                      Flexible(
+                        flex: 1,
+                        child: bloc.mrClient.isPortfolioOrSuperAdmin(
+                                bloc.mrClient.currentPid)
+                            ? _getAdminActions(bloc)
+                            : Container(),
+                      ),
+                      Flexible(
+                        flex: 4,
+                        child: Container(
+                            child: FHIconTextButton(
+                          iconData: Icons.add,
+                          keepCase: true,
+                          label: 'Create new application',
+                          onPressed: () =>
+                              bloc.mrClient.addOverlay((BuildContext context) {
+                            return AppUpdateDialogWidget(
+                              bloc: bloc,
+                            );
+                          }),
+                        )),
+                      ),
+                    ],
+                  ),
+                )
+              ],
+            ),
             Container(
               padding: EdgeInsets.only(bottom: 10),
               child: FHHeader(
@@ -37,29 +91,7 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
                 children: <Widget>[],
               ),
             ),
-            Row(
-              children: <Widget>[
-                StreamBuilder<List<Application>>(
-                    stream: bloc.mrClient.streamValley
-                        .currentPortfolioApplicationsStream,
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData && snapshot.data.isNotEmpty) {
-                        return Container(
-                            padding: EdgeInsets.only(left: 8, bottom: 8),
-                            child: applicationsDropdown(
-                                snapshot.data, bloc, context));
-                      } else {
-                        bloc.setApplicationId(bloc.mrClient.currentAid);
-                        return Container(
-                            padding: EdgeInsets.only(left: 8, top: 15),
-                            child: Text('No applications found!'));
-                      }
-                    }),
-                bloc.mrClient.isPortfolioOrSuperAdmin(bloc.mrClient.currentPid)
-                    ? _getAdminActions(bloc)
-                    : Container()
-              ],
-            ),
+            FHPageDivider(),
             StreamBuilder(
                 stream: bloc.pageStateStream,
                 builder: (context, envSnapshot) {
@@ -83,19 +115,8 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
 
   Widget _getAdminActions(ManageAppBloc bloc) {
     return Container(
-      padding: EdgeInsets.only(left: 10, top: 12),
+      padding: EdgeInsets.only(left: 10),
       child: Row(children: <Widget>[
-        Container(
-            child: FHIconTextButton(
-          iconData: Icons.add,
-          keepCase: true,
-          label: 'Create new application',
-          onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
-            return AppUpdateDialogWidget(
-              bloc: bloc,
-            );
-          }),
-        )),
         StreamBuilder<String>(
             stream: bloc.mrClient.streamValley.currentAppIdStream,
             builder: (context, snapshot) {
@@ -103,15 +124,21 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
                 return Row(children: <Widget>[
                   FHIconButton(
                       icon: Icon(Icons.edit,
-                          color: Theme.of(context).buttonColor),
-                      onPressed: () => bloc.mrClient.addOverlay(
-                          (BuildContext context) => AppUpdateDialogWidget(
-                                bloc: bloc,
-                                application: bloc.application,
-                              ))),
+                          color: Theme
+                              .of(context)
+                              .buttonColor),
+                      onPressed: () =>
+                          bloc.mrClient.addOverlay(
+                                  (BuildContext context) =>
+                                  AppUpdateDialogWidget(
+                                    bloc: bloc,
+                                    application: bloc.application,
+                                  ))),
                   FHIconButton(
                       icon: Icon(Icons.delete,
-                          color: Theme.of(context).buttonColor),
+                          color: Theme
+                              .of(context)
+                              .buttonColor),
                       onPressed: () =>
                           bloc.mrClient.addOverlay((BuildContext context) {
                             return AppDeleteDialogWidget(
@@ -123,44 +150,8 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
               } else {
                 return Container();
               }
-            })
+            }),
       ]),
-    );
-  }
-
-  Widget applicationsDropdown(
-      List<Application> applications, ManageAppBloc bloc, context) {
-    bloc.setApplicationId(bloc.mrClient.currentAid);
-    return Container(
-      padding: EdgeInsets.only(top: 15),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            'Portfolio application',
-            style: Theme.of(context).textTheme.caption,
-          ),
-          DropdownButton(
-            items: applications != null && applications.isNotEmpty
-                ? applications.map((Application application) {
-                    return DropdownMenuItem<String>(
-                        value: application.id,
-                        child: Text(application.name,
-                            style: Theme.of(context).textTheme.bodyText2));
-                  }).toList()
-                : null,
-            hint: Text('Select application',
-                style: Theme.of(context).textTheme.subtitle2),
-            onChanged: (value) {
-              setState(() {
-                bloc.setApplicationId(value);
-                bloc.mrClient.setCurrentAid(value);
-              });
-            },
-            value: bloc.mrClient.currentAid,
-          ),
-        ],
-      ),
     );
   }
 }

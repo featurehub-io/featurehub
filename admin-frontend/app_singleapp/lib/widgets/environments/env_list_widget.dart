@@ -98,7 +98,7 @@ class _EnvListState extends State<EnvListWidget> {
     });
     _environments[0].priorEnvironmentId =
         null; // first environment should never have a parent
-    await bloc.updateEnvs(bloc.appId, _environments);
+    await bloc.updateEnvs(bloc.applicationId, _environments);
     bloc.mrClient.addSnackbar(Text('Environment order updated!'));
   }
 

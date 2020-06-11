@@ -1,5 +1,6 @@
 import 'package:app_singleapp/third_party/chips_input.dart';
 import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
+import 'package:app_singleapp/widgets/common/decorations/fh_page_divider.dart';
 import 'package:app_singleapp/widgets/common/fh_alert_dialog.dart';
 import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/common/fh_header.dart';
@@ -39,8 +40,8 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
               title: 'Manage groups members',
               children: [],
             )),
+        FHPageDivider(),
         Row(
-          mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             Flexible(
               flex: 1,
@@ -54,7 +55,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                           child: Text('Fetching Groups...'));
                     } else {
                       return Container(
-                        padding: EdgeInsets.only(top: 15, left: 8),
+                        padding: EdgeInsets.only(top: 24, left: 8),
                         child: _groupsDropdown(snapshot.data, bloc),
                       );
                     }
@@ -63,27 +64,31 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
             Flexible(
               flex: 4,
               child: bloc.mrClient
-                      .isPortfolioOrSuperAdmin(bloc.mrClient.currentPid)
-                  ? Row(
-                      children: [
-                        Flexible(flex: 1, child: _getAdminActions(bloc)),
-                        Flexible(
-                          flex: 4,
-                          child: Container(
-                              child: FHIconTextButton(
+                  .isPortfolioOrSuperAdmin(bloc.mrClient.currentPid)
+                  ? Padding(
+                padding: const EdgeInsets.only(top: 24.0, left: 16),
+                child: Row(
+                  children: [
+                    Flexible(flex: 1, child: _getAdminActions(bloc)),
+                    Flexible(
+                      flex: 4,
+                      child: Container(
+                          child: FHIconTextButton(
                             iconData: Icons.add,
                             keepCase: true,
                             label: 'Create new group',
-                            onPressed: () => bloc.mrClient
-                                .addOverlay((BuildContext context) {
-                              return GroupUpdateDialogWidget(
-                                bloc: bloc,
-                              );
-                            }),
+                            onPressed: () =>
+                                bloc.mrClient
+                                    .addOverlay((BuildContext context) {
+                                  return GroupUpdateDialogWidget(
+                                    bloc: bloc,
+                                  );
+                                }),
                           )),
-                        ),
-                      ],
-                    )
+                    ),
+                  ],
+                ),
+              )
                   : Container(),
             )
           ],
@@ -162,7 +167,6 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
     return groups == null || groups.isEmpty
         ? Text('No groups found in the portfolio')
         : Container(
-            padding: EdgeInsets.only(top: 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.end,
@@ -183,14 +187,14 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                       return DropdownMenuItem<String>(
                           value: group.id,
                           child: Text(
-                            group.name,
+                              group.name, overflow: TextOverflow.ellipsis
                           ));
                     }).toList(),
                     hint: Text('Select group',
-                        style: Theme
-                            .of(context)
-                            .textTheme
-                            .subtitle2),
+                      style: Theme
+                          .of(context)
+                          .textTheme
+                          .subtitle2,),
                     onChanged: (value) {
                       setState(() {
                         bloc.getGroup(value);
@@ -208,23 +212,19 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
   Widget _filterRow(BuildContext context, GroupBloc bloc, Group group) {
     final bs = BorderSide(color: Theme.of(context).dividerColor);
     return Container(
-      padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
+      padding: const EdgeInsets.fromLTRB(8, 10, 30, 10),
       decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
+          color: Theme
+              .of(context)
+              .cardColor,
           border: Border(bottom: bs, left: bs, right: bs, top: bs)),
       child: Row(
         children: <Widget>[
           Container(
-              child: Text(
-            'Group members',
-            style: Theme.of(context).textTheme.subtitle2,
-          )),
-          Container(
-            padding: EdgeInsets.only(left: 30),
             child: bloc.mrClient.isPortfolioOrSuperAdmin(group.portfolioId)
                 ? FHIconTextButton(
-                    iconData: Icons.add,
-                    label: 'Add members',
+              iconData: Icons.add,
+              label: 'Add members',
                     onPressed: () =>
                         bloc.mrClient.addOverlay((BuildContext context) {
                       return AddMembersDialogWidget(
