@@ -10,8 +10,8 @@ import 'features_latest_bloc.dart';
 class LatestFeaturesWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    FeaturesLatestBloc bloc = BlocProvider.of(context);
-    final BorderSide bs = BorderSide(color: Theme.of(context).dividerColor);
+    final bloc = BlocProvider.of<FeaturesLatestBloc>(context);
+    final bs = BorderSide(color: Theme.of(context).dividerColor);
 
     return StreamBuilder<EnvironmentFeaturesResult>(
         stream: bloc.featuresListStream,
@@ -117,7 +117,7 @@ class LatestFeaturesWidget extends StatelessWidget {
                   style: Theme.of(context).textTheme.caption)
             ],
           ),
-          Text(fv.whatUpdated != null ? fv.whatUpdated : ' ',
+          Text(fv.whatUpdated ?? ' ',
               style: Theme.of(context).textTheme.bodyText2),
         ]);
   }
@@ -130,7 +130,7 @@ class LatestFeaturesWidget extends StatelessWidget {
 
   Application _findApplication(
       FeatureValue fv, EnvironmentFeaturesResult featuresList) {
-    String appId = featuresList.environments
+    final appId = featuresList.environments
         .firstWhere((env) => env.id == fv.environmentId)
         .applicationId;
     return featuresList.applications
@@ -145,7 +145,7 @@ class LatestFeaturesWidget extends StatelessWidget {
 
   Portfolio _findPortfolio(FeatureValue fv,
       EnvironmentFeaturesResult featuresList, FeaturesLatestBloc bloc) {
-    String portfolioId = _findApplication(fv, featuresList).portfolioId;
+    final portfolioId = _findApplication(fv, featuresList).portfolioId;
     return bloc.portfolios.firstWhere(
         (portfolio) => portfolio.id == portfolioId,
         orElse: () => null);

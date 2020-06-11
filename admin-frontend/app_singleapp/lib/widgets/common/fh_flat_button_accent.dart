@@ -7,9 +7,13 @@ class FHFlatButtonAccent extends StatelessWidget {
   final String title;
   final bool keepCase;
 
-  const FHFlatButtonAccent({Key key, @required this.onPressed, @required this.title, this.keepCase = false}) :
-      assert(title != null),
-      super(key: key);
+  const FHFlatButtonAccent(
+      {Key key,
+      @required this.onPressed,
+      @required this.title,
+      this.keepCase = false})
+      : assert(title != null),
+        super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -18,12 +22,17 @@ class FHFlatButtonAccent extends StatelessWidget {
         padding: const EdgeInsets.all(8.0),
         child: FlatButton(
           onPressed: onPressed,
-          child: Text(this.keepCase ? title : title.toUpperCase(),
-              style: GoogleFonts.openSans(
-                  textStyle: Theme.of(context).textTheme.subtitle2.merge(TextStyle(color: Colors.white))),
+          child: Text(
+            keepCase ? title : title.toUpperCase(),
+            style: GoogleFonts.openSans(
+                textStyle: Theme.of(context)
+                    .textTheme
+                    .subtitle2
+                    .merge(TextStyle(color: Colors.white))),
           ),
           color: Colors.orange,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
         ),
       ),
     );

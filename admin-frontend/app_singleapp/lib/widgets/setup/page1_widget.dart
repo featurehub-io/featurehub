@@ -8,7 +8,7 @@ import 'package:xcvbnm/xcvbnm.dart';
 class SetupPage1Widget extends StatefulWidget {
   final SetupBloc bloc;
 
-  const SetupPage1Widget({Key key, this.bloc})
+  const SetupPage1Widget({Key key, @required this.bloc})
       : assert(bloc != null),
         super(key: key);
 
@@ -42,8 +42,8 @@ class _SetupPage1State extends State<SetupPage1Widget> {
   }
 
   void setPasswordStrength() {
-    Result result = Xcvbnm().estimate(_pw1.text);
-    String state = 'Weak';
+    final result = Xcvbnm().estimate(_pw1.text);
+    var state = 'Weak';
     if (result.score == 1) {
       state = 'Below average';
     } else if (result.score == 2) {
@@ -56,7 +56,7 @@ class _SetupPage1State extends State<SetupPage1Widget> {
     if (result.score == 1) {
       stateColor = Colors.orange;
     }
-    Text stateText = Text(state,
+    final stateText = Text(state,
         style: Theme.of(context).textTheme.caption.copyWith(color: stateColor));
     setState(() {
       _passwordStrength = stateText;
@@ -135,7 +135,7 @@ class _SetupPage1State extends State<SetupPage1Widget> {
                 }),
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
-              child: this._passwordStrength,
+              child: _passwordStrength,
             ),
             TextFormField(
                 controller: _pw2,

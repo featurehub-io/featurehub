@@ -34,8 +34,8 @@ class LineStatusFeature {
     sortedByNameEnvironmentIds =
         afv.environments.map((e) => e.environmentId).toList();
     feature = afv.features.firstWhere((element) => element.id == featureId);
-    this.environmentFeatureValues = afv.environments;
-    this.environmentFeatureValues.forEach((e) {
+    environmentFeatureValues = afv.environments;
+    environmentFeatureValues.forEach((e) {
       applicationEnvironments[e.environmentId] = e;
     });
   }
@@ -63,7 +63,7 @@ class FeatureStatusBloc implements Bloc {
   Stream<FeatureStatusFeatures> get appFeatureValues =>
       _appFeatureValuesBS.stream;
   // feature-id, environments for feature
-  Map<String, BehaviorSubject<LineStatusFeature>> _lines = {};
+  final _lines = <String, BehaviorSubject<LineStatusFeature>>{};
 
   StreamSubscription<String> _currentPid;
   StreamSubscription<String> _currentAppId;
@@ -79,8 +79,7 @@ class FeatureStatusBloc implements Bloc {
           () => BehaviorSubject<LineStatusFeature>.seeded(
               LineStatusFeature(afv, featureId)));
 
-  BehaviorSubject<bool> _getAllAppValuesDebounceStream =
-      BehaviorSubject<bool>();
+  final _getAllAppValuesDebounceStream = BehaviorSubject<bool>();
 
   FeatureStatusBloc(this.mrClient) : assert(mrClient != null) {
     _appServiceApi = ApplicationServiceApi(mrClient.apiClient);
@@ -118,7 +117,7 @@ class FeatureStatusBloc implements Bloc {
 
   void _actuallyCallAddAppFeatureValuesToStream() async {
     try {
-      ApplicationFeatureValues appFeatureValues = await _featureServiceApi
+      final appFeatureValues = await _featureServiceApi
           .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
               applicationId);
       if (!_appFeatureValuesBS.isClosed) {
@@ -189,7 +188,7 @@ class FeatureStatusBloc implements Bloc {
       FeatureValueType featureValueType,
       String featureAlias,
       String featureLink) async {
-    Feature feature = Feature()
+    final feature = Feature()
       ..name = name
       ..valueType = featureValueType
       ..key = key
@@ -203,7 +202,7 @@ class FeatureStatusBloc implements Bloc {
 
   Future<void> updateFeature(Feature feature, String newName, String newKey,
       String newFeatureAlias, String newFeatureLink) async {
-    Feature currentFeature =
+    final currentFeature =
         await _featureServiceApi.getFeatureByKey(applicationId, feature.key);
     final newFeature = currentFeature
       ..name = newName
@@ -231,9 +230,9 @@ class FeatureStatusBloc implements Bloc {
 
   // in this case it will need to go and get everything again and just filter
   // down for what we actually have
-  refreshFeature(String featureId) async {
+  void refreshFeature(String featureId) async {
     try {
-      ApplicationFeatureValues appFeatureValues = await _featureServiceApi
+      final appFeatureValues = await _featureServiceApi
           .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
               applicationId);
       getLineStatus(featureId);

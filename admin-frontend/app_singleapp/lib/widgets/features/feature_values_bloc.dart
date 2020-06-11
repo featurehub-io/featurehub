@@ -14,12 +14,12 @@ class FeatureValuesBloc implements Bloc {
   FeatureServiceApi _featureServiceApi;
   EnvironmentServiceApi _environmentServiceApi;
   // environment id, FeatureValue - there may be values in here that are not used, we honour `_dirty` to determine if we use them
-  Map<String, FeatureValue> _newFeatureValues = {};
-  Map<String, FeatureValue> _originalFeatureValues = {};
-  Map<String, BehaviorSubject<FeatureValue>> _fvUpdates = {};
+  final _newFeatureValues = <String, FeatureValue>{};
+  final _originalFeatureValues = <String, FeatureValue>{};
+  final _fvUpdates = <String, BehaviorSubject<FeatureValue>>{};
 
   // environmentId, true/false (if dirty)
-  Map<String, bool> _dirty = Map();
+  final _dirty = <String, bool>{};
 
   // if any of the values are updated, this stream shows true, it can flick on and off during its lifetime
   final _dirtyBS = BehaviorSubject<bool>();
@@ -75,17 +75,17 @@ class FeatureValuesBloc implements Bloc {
   void dispose() {}
 
   bool hasValue(FeatureEnvironment fe) {
-    return this._newFeatureValues[fe.environment.id]?.valueBoolean != null ||
-        this._newFeatureValues[fe.environment.id]?.valueString != null ||
-        this._newFeatureValues[fe.environment.id]?.valueJson != null ||
-        this._newFeatureValues[fe.environment.id]?.valueNumber != null;
+    return _newFeatureValues[fe.environment.id]?.valueBoolean != null ||
+        _newFeatureValues[fe.environment.id]?.valueString != null ||
+        _newFeatureValues[fe.environment.id]?.valueJson != null ||
+        _newFeatureValues[fe.environment.id]?.valueNumber != null;
   }
 
   void resetValue(FeatureEnvironment fe) {
-    this._newFeatureValues[fe.environment.id]?.valueBoolean = null;
-    this._newFeatureValues[fe.environment.id]?.valueString = null;
-    this._newFeatureValues[fe.environment.id]?.valueJson = null;
-    this._newFeatureValues[fe.environment.id]?.valueNumber = null;
+    _newFeatureValues[fe.environment.id]?.valueBoolean = null;
+    _newFeatureValues[fe.environment.id]?.valueString = null;
+    _newFeatureValues[fe.environment.id]?.valueJson = null;
+    _newFeatureValues[fe.environment.id]?.valueNumber = null;
   }
 
   Future<Environment> getEnvironment(String envId) async {
@@ -107,8 +107,8 @@ class FeatureValuesBloc implements Bloc {
   }
 
   Future<bool> updateDirtyStates() async {
-    List<FeatureValue> updates = [];
-    Map<String, FeatureValue> featureValuesWeAreCheckingForUpdates = {}
+    final updates = <FeatureValue>[];
+    final featureValuesWeAreCheckingForUpdates = <String, FeatureValue>{}
       ..addAll(_newFeatureValues);
 
     _originalFeatureValues.forEach((envId, value) {

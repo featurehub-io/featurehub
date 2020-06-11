@@ -1,5 +1,3 @@
-import 'dart:js' as js;
-
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/api/router.dart';
 import 'package:app_singleapp/utils/custom_cursor.dart';
@@ -126,26 +124,6 @@ class _MenuContainer extends StatelessWidget {
   }
 }
 
-void _logout(BuildContext context, ManagementRepositoryClientBloc client) {
-  client.logout().then((result) {
-    // the better way to do this is probably to reload the main app.
-    js.context['location']['href'] = '/';
-  }).catchError((e, s) => client.dialogError(e, s));
-}
-
-Widget _getHomeOptionsWidget(BuildContext context) {
-  return Column(children: [
-    _MenuItem(
-        name: 'Recent updates', iconData: Icons.home, path: '/', params: {}),
-    Container(
-      padding: EdgeInsets.only(left: 8, bottom: 20),
-      child: Divider(
-        thickness: 1.0,
-      ),
-    ),
-  ]);
-}
-
 class _SiteAdminOptionsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -263,12 +241,17 @@ class _MenuItem extends StatelessWidget {
   final Map<String, List<String>> params;
 
   const _MenuItem(
-      {Key key, this.name, this.iconData, this.path, this.params, this.iconSize})
+      {Key key,
+      this.name,
+      this.iconData,
+      this.path,
+      this.params,
+      this.iconSize})
       : super(key: key);
 
   bool equalsParams(Map<String, List<String>> snapParams) {
-    Map<String, List<String>> p1 = snapParams ?? {};
-    Map<String, List<String>> p2 = params ?? {};
+    final p1 = snapParams ?? {};
+    final p2 = params ?? {};
 
     // the p2 keys are the keys _we_ care about, the other keys in the list like
     // 'id' or 'service-name' can be there and don't impact the match.
@@ -301,33 +284,23 @@ class _MenuItem extends StatelessWidget {
                     Icon(
                       iconData,
                       color: selected
-                          ? Theme
-                          .of(context)
-                          .primaryColor
+                          ? Theme.of(context).primaryColor
                           : Color(0xff4a4a4a),
                       size: iconSize ?? 20.0,
                     ),
                     Padding(
-                      padding: EdgeInsets.only(
-                          left: iconSize != null ? 18.0 : 24.0),
+                      padding:
+                          EdgeInsets.only(left: iconSize != null ? 18.0 : 24.0),
                       child: selected
                           ? Text(' ${name}',
-                          style: GoogleFonts.roboto(
-                            textStyle:
-                            Theme
-                                .of(context)
-                                .textTheme
-                                .bodyText2,
-                            fontWeight: FontWeight.w600,
-                            color: Theme
-                                .of(context)
-                                .primaryColor,
-                          ))
+                              style: GoogleFonts.roboto(
+                                textStyle:
+                                    Theme.of(context).textTheme.bodyText2,
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(context).primaryColor,
+                              ))
                           : Text(' ${name}',
-                          style: Theme
-                              .of(context)
-                              .textTheme
-                              .bodyText2),
+                              style: Theme.of(context).textTheme.bodyText2),
                     )
                   ],
                 ),

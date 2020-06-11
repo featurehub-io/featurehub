@@ -96,7 +96,7 @@ class FeatureEditDeleteCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    FeatureStatusBloc bloc = BlocProvider.of(context);
+    final bloc = BlocProvider.of<FeatureStatusBloc>(context);
 
     return FutureBuilder<bool>(
         future: bloc.mrClient.personState
@@ -160,9 +160,9 @@ class FeatureValueUpdatedByCell extends StatelessWidget {
         stream: fvBloc
             .featureValueByEnvironment(environmentFeatureValue.environmentId),
         builder: (context, snapshot) {
-          String updatedBy = '';
-          String whenUpdated = '';
-          String whoUpdated = '';
+          var updatedBy = '';
+          var whenUpdated = '';
+          var whoUpdated = '';
 
           if (snapshot.hasData) {
             final fv = snapshot.data;
@@ -200,7 +200,7 @@ class FeatureValueActionCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    FeatureValuesBloc fvBloc = BlocProvider.of(context);
+    final fvBloc = BlocProvider.of<FeatureValuesBloc>(context);
 
     return Padding(
       padding: const EdgeInsets.only(top: 16.0),
@@ -218,7 +218,7 @@ class FeatureValueActionCell extends StatelessWidget {
               // delegate _everything_ to the bloc, don't fiddle with bloc internals here on pain of being hunted down
               // notify the FeatureValueBloc to persist and on success, notify the FeatureStatusBloc to refresh this line
               // do not automatically hide the bloc
-              bool success = await fvBloc.updateDirtyStates();
+              final success = await fvBloc.updateDirtyStates();
               if (success) {
                 closeCallback();
               }
@@ -233,7 +233,7 @@ class FeatureValueActionCell extends StatelessWidget {
 class FeatureValueUpdatedBy {
   static TableRow build(BuildContext context, LineStatusFeature featureStatuses,
       Feature feature) {
-    FeatureValuesBloc fvBloc = BlocProvider.of(context);
+    final fvBloc = BlocProvider.of<FeatureValuesBloc>(context);
 
     return TableRow(children: [
       Text(''),

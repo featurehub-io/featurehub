@@ -39,7 +39,7 @@ class _SigninState extends State<SigninWidget> {
     });
   }
 
-  _handleSubmitted() {
+  void _handleSubmitted() {
     if (_formKey.currentState.validate()) {
       bloc.login(_email.text, _password.text).catchError((e, s) => {
             if (e is ApiException && e.code == 404)

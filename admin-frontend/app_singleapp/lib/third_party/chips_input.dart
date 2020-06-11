@@ -405,7 +405,7 @@ class _SuggestionsBoxController {
     _isOpened = false;
   }
 
-  toggle() {
+  void toggle() {
     if (_isOpened) {
       close();
     } else {

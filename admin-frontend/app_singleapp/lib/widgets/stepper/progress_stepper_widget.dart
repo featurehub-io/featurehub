@@ -5,7 +5,7 @@ import 'package:app_singleapp/widgets/stepper/FHStepper.dart';
 import 'package:app_singleapp/widgets/stepper/custom_stepper.dart';
 import 'package:app_singleapp/widgets/stepper/progress_stepper_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
-import "package:flutter/material.dart";
+import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 
 import '../common/fh_flat_button_transparent.dart';
@@ -24,14 +24,19 @@ class _StepperState extends State<FHSetupProgressStepper> {
     final captionStyle = Theme.of(context).textTheme.caption;
     final cardWidgetTextPart =
         Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-          SizedBox(height: 16),
+      SizedBox(height: 16),
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             'Application setup progress',
           ),
-          CircleIconButton(icon: Icon(Icons.close, size: 16.0,), onTap: () => bloc.mrClient.stepperOpened = false)
+          CircleIconButton(
+              icon: Icon(
+                Icons.close,
+                size: 16.0,
+              ),
+              onTap: () => bloc.mrClient.stepperOpened = false)
         ],
       ),
       Divider(),
@@ -39,10 +44,10 @@ class _StepperState extends State<FHSetupProgressStepper> {
 
     return Card(
       elevation: 3.0,
-      child: Column(
-          children: <Widget>[
+      child: Column(children: <Widget>[
         Container(
-            padding: const EdgeInsets.only(bottom: 16.0, right: 16.0, left: 16.0),
+            padding:
+                const EdgeInsets.only(bottom: 16.0, right: 16.0, left: 16.0),
             color: Theme.of(context).cardColor,
             child: cardWidgetTextPart),
         StreamBuilder<FHStepper>(
@@ -64,11 +69,11 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                 title: 'Create application',
                                 keepCase: true,
                                 onPressed: () => {
-                                ManagementRepositoryClientBloc.router
-                                    .navigateTo(context, "/manage-app",
-                                replace: true,
-                                transition: TransitionType.material
-                                )},
+                                  ManagementRepositoryClientBloc.router
+                                      .navigateTo(context, '/manage-app',
+                                          replace: true,
+                                          transition: TransitionType.material)
+                                },
                               ),
                             ],
                           )),
@@ -90,7 +95,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                 keepCase: true,
                                 onPressed: () => {
                                   ManagementRepositoryClientBloc.router
-                                      .navigateTo(context, "/manage-group",
+                                      .navigateTo(context, '/manage-group',
                                           replace: true,
                                           transition: TransitionType.material)
                                 },
@@ -115,7 +120,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                 onPressed: () => {
                                   ManagementRepositoryClientBloc.router
                                       .navigateTo(
-                                          context, "/manage-service-accounts",
+                                          context, '/manage-service-accounts',
                                           replace: true,
                                           transition: TransitionType.material)
                                 },
@@ -140,15 +145,14 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                 title: 'Create environment',
                                 keepCase: true,
                                 onPressed: () => {
-                                  ManagementRepositoryClientBloc.router.navigateTo(
-                                      context,
-                                      '/manage-app',
-                                      replace: true,
-                                      params: {
-                                        'id': [bloc.applicationId],
-                                        'tab-name': ['environments']
-                                      },
-                                      transition: TransitionType.material)
+                                  ManagementRepositoryClientBloc.router
+                                      .navigateTo(context, '/manage-app',
+                                          replace: true,
+                                          params: {
+                                            'id': [bloc.applicationId],
+                                            'tab-name': ['environments']
+                                          },
+                                          transition: TransitionType.material)
                                 },
                               ),
                             ],
@@ -171,15 +175,14 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                 title: 'Set permissions',
                                 keepCase: true,
                                 onPressed: () => {
-                                  ManagementRepositoryClientBloc.router.navigateTo(
-                                      context,
-                                      '/manage-app',
-                                      params: {
-                                        'id': [bloc.applicationId],
-                                        'tab-name': ['group-permissions']
-                                      },
-                                      replace: true,
-                                      transition: TransitionType.material)
+                                  ManagementRepositoryClientBloc.router
+                                      .navigateTo(context, '/manage-app',
+                                          params: {
+                                            'id': [bloc.applicationId],
+                                            'tab-name': ['group-permissions']
+                                          },
+                                          replace: true,
+                                          transition: TransitionType.material)
                                 },
                               ),
                             ],
@@ -203,15 +206,14 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                 title: 'Set service account permissions',
                                 keepCase: true,
                                 onPressed: () => {
-                                  ManagementRepositoryClientBloc.router.navigateTo(
-                                      context,
-                                      '/manage-app',
-                                      replace: true,
-                                      params: {
-                                        'id': [bloc.applicationId],
-                                        'tab-name': ['service-accounts']
-                                      },
-                                      transition: TransitionType.material)
+                                  ManagementRepositoryClientBloc.router
+                                      .navigateTo(context, '/manage-app',
+                                          replace: true,
+                                          params: {
+                                            'id': [bloc.applicationId],
+                                            'tab-name': ['service-accounts']
+                                          },
+                                          transition: TransitionType.material)
                                 },
                               ),
                             ],
@@ -234,7 +236,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                 keepCase: true,
                                 onPressed: () => {
                                   ManagementRepositoryClientBloc.router
-                                      .navigateTo(context, "/feature-status",
+                                      .navigateTo(context, '/feature-status',
                                           replace: true,
                                           transition: TransitionType.material)
                                 },
@@ -270,10 +272,9 @@ class _StepperState extends State<FHSetupProgressStepper> {
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   Container(
-                      child: Text("Select application or create a new one",
+                      child: Text('Select application or create a new one',
                           style: Theme.of(context).textTheme.caption)),
-                  Container(
-                      child: applicationsDropdown(snapshot.data, bloc))
+                  Container(child: applicationsDropdown(snapshot.data, bloc))
                 ]);
           }
           return Container();

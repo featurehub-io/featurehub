@@ -201,17 +201,19 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
       ),
     );
   }
-}
 
-_transformValuesToString(FeatureValueType featureValueType) {
-  switch (featureValueType) {
-    case FeatureValueType.STRING:
-      return 'String';
-    case FeatureValueType.NUMBER:
-      return 'Number';
-    case FeatureValueType.BOOLEAN:
-      return 'Feature flag';
-    case FeatureValueType.JSON:
-      return 'Configuration (JSON)';
+  String _transformValuesToString(FeatureValueType featureValueType) {
+    switch (featureValueType) {
+      case FeatureValueType.STRING:
+        return 'String';
+      case FeatureValueType.NUMBER:
+        return 'Number';
+      case FeatureValueType.BOOLEAN:
+        return 'Feature flag';
+      case FeatureValueType.JSON:
+        return 'Configuration (JSON)';
+    }
+
+    return '';
   }
 }

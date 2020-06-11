@@ -24,7 +24,7 @@ class _EnvListState extends State<EnvListWidget> {
 
   @override
   Widget build(BuildContext context) {
-    ManageAppBloc bloc = BlocProvider.of(context);
+    final bloc = BlocProvider.of<ManageAppBloc>(context);
 
     return StreamBuilder<List<Environment>>(
         stream: bloc.environmentsStream,
@@ -53,9 +53,7 @@ class _EnvListState extends State<EnvListWidget> {
 
   List<Environment> _sortEnvironments(List<Environment> originalList,
       {String parentId = '', List<Environment> sortedList}) {
-    if (sortedList == null) {
-      sortedList = [];
-    }
+    sortedList ??= <Environment>[];
     originalList.forEach((env) {
       if (env.priorEnvironmentId == null && parentId == '') {
         sortedList.insert(0, env);
@@ -70,13 +68,14 @@ class _EnvListState extends State<EnvListWidget> {
     return sortedList;
   }
 
-  _reorderEnvironments(int oldIndex, int newIndex, ManageAppBloc bloc) async {
+  void _reorderEnvironments(
+      int oldIndex, int newIndex, ManageAppBloc bloc) async {
     setState(() {
       // These two lines are workarounds for ReorderableListView problems
       if (newIndex > _environments.length) newIndex = _environments.length;
       if (oldIndex < newIndex) newIndex--;
 
-      final Environment item = _environments[oldIndex];
+      final item = _environments[oldIndex];
       _environments.remove(item);
       _environments.insert(newIndex, item);
 
@@ -104,7 +103,7 @@ class _EnvListState extends State<EnvListWidget> {
   }
 
   List<Environment> swapPreviousIds(oldPid, newPid) {
-    List<Environment> updatedEnvs = [];
+    final updatedEnvs = <Environment>[];
     _environments.forEach((env) {
       if (env.priorEnvironmentId == oldPid) {
         env.priorEnvironmentId = newPid;
@@ -118,10 +117,8 @@ class _EnvListState extends State<EnvListWidget> {
 class _EnvWidget extends StatelessWidget {
   final Environment env;
   final ManageAppBloc bloc;
-  final Key key;
 
-  const _EnvWidget(
-      {@required this.key, @required this.env, @required this.bloc})
+  const _EnvWidget({Key key, @required this.env, @required this.bloc})
       : assert(env != null),
         assert(bloc != null),
         super(key: key);
@@ -217,7 +214,8 @@ class EnvDeleteDialogWidget extends StatelessWidget {
   final Environment env;
   final ManageAppBloc bloc;
 
-  const EnvDeleteDialogWidget({Key key, @required this.bloc, this.env})
+  const EnvDeleteDialogWidget(
+      {Key key, @required this.bloc, @required this.env})
       : assert(env != null),
         assert(bloc != null),
         super(key: key);
@@ -229,11 +227,11 @@ class EnvDeleteDialogWidget extends StatelessWidget {
       bloc: bloc.mrClient,
       extraWarning: env.production,
       wholeWarning: env.production
-          ? "The environment `${env.name}` is your production environment, are you sure you wish to remove it?"
+          ? 'The environment `${env.name}` is your production environment, are you sure you wish to remove it?'
           : null,
       thing: env.production ? null : "environment '${env.name}'",
       deleteSelected: () async {
-        bool success = await bloc.deleteEnv(env.id);
+        final success = await bloc.deleteEnv(env.id);
         if (success) {
           bloc.mrClient.addSnackbar(Text("Environment '${env.name}' deleted!"));
         } else {

@@ -1,6 +1,7 @@
 import 'package:app_singleapp/utils/utils.dart';
-import 'package:mrapi/api.dart';
 import 'package:flutter/material.dart';
+import 'package:mrapi/api.dart';
+
 import '../common/fh_tag.dart';
 
 String _getFeatureValue(FeatureValue fv) {
@@ -17,17 +18,19 @@ String _getFeatureValue(FeatureValue fv) {
 }
 
 extension FeatureValueSet on FeatureValue {
-  isSet(Feature feature) {
-    switch(feature.valueType) {
+  bool isSet(Feature feature) {
+    switch (feature.valueType) {
       case FeatureValueType.STRING:
-        return this.valueString != null;
+        return valueString != null;
       case FeatureValueType.NUMBER:
-        return this.valueNumber != null;
+        return valueNumber != null;
       case FeatureValueType.BOOLEAN:
-        return this.valueBoolean != null;
+        return valueBoolean != null;
       case FeatureValueType.JSON:
-        return this.valueJson != null;
+        return valueJson != null;
     }
+
+    return false;
   }
 }
 
@@ -35,26 +38,24 @@ extension FeatureValueSet on FeatureValue {
 @deprecated
 bool isFVSet(FeatureValue fv) {
   return fv.valueString != null ||
-    fv.valueJson != null ||
-    fv.valueNumber != null ||
-    fv.valueBoolean != null;
+      fv.valueJson != null ||
+      fv.valueNumber != null ||
+      fv.valueBoolean != null;
 }
 
 Widget inactiveTag(Feature feature, TextStyle textStyle) {
   return FHTagWidget(
-    text: 'NOT SET',
-    state: TagStatus.inactive,
-    style: textStyle);
+      text: 'NOT SET', state: TagStatus.inactive, style: textStyle);
 }
 
 Widget activeTag(Feature feature, FeatureValue fv, TextStyle textStyle) {
   return FHTagWidget(
-    text: '${condenseJson(_getFeatureValue(fv))}',
-    state: TagStatus.active,
-    style: textStyle);
+      text: '${condenseJson(_getFeatureValue(fv))}',
+      state: TagStatus.active,
+      style: textStyle);
 }
 
 Widget noAccessTag(TextStyle textStyle) {
   return FHTagWidget(
-    text: "NO ACCESS", state: TagStatus.disabled, style: textStyle);
+      text: 'NO ACCESS', state: TagStatus.disabled, style: textStyle);
 }

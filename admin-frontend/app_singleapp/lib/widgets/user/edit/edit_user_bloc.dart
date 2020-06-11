@@ -27,20 +27,20 @@ class EditUserBloc implements Bloc {
   }
 
   Future<void> resetUserPassword(String password) {
-    PasswordReset passwordReset = PasswordReset()..password = password;
+    final passwordReset = PasswordReset()..password = password;
     return mrClient.authServiceApi.resetPassword(personId, passwordReset);
   }
 
-  _loadInitialPersonData() async {
+  void _loadInitialPersonData() async {
     await _findPersonAndTriggerInitialState(personId);
     if (person != null) {
       _findPersonsGroupsAndPushToStream();
     }
   }
 
-  _findPersonAndTriggerInitialState(String queryParameter) async {
+  void _findPersonAndTriggerInitialState(String queryParameter) async {
     try {
-      this.person = await mrClient.personServiceApi
+      person = await mrClient.personServiceApi
           .getPerson(queryParameter, includeGroups: true);
       _formStateStream.add(EditUserForm.initialState);
     } catch (e, s) {
@@ -70,11 +70,11 @@ class EditUserBloc implements Bloc {
     return portfolios;
   }
 
-  _findPersonsGroupsAndPushToStream() async {
+  void _findPersonsGroupsAndPushToStream() async {
     if (person.groups != null) {
-      List<Portfolio> portfoliosList = await _findPortfolios();
+      final portfoliosList = await _findPortfolios();
 
-      List<PortfolioGroup> listOfExistingGroups = [];
+      final listOfExistingGroups = [];
       person.groups.forEach((group) => {
             listOfExistingGroups.add(PortfolioGroup(
                 portfoliosList.firstWhere((p) => p.id == group.portfolioId,
@@ -87,6 +87,6 @@ class EditUserBloc implements Bloc {
   }
 
   Portfolio isSuperAdminPortfolio() {
-    return Portfolio()..name = "Super-Admin";
+    return Portfolio()..name = 'Super-Admin';
   }
 }

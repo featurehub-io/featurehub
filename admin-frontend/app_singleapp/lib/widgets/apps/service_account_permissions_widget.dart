@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:app_singleapp/api/client_api.dart';
-import 'package:app_singleapp/api/router.dart';
 import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/common/fh_footer_button_bar.dart';
@@ -29,19 +28,19 @@ class _ServiceAccountPermissionState
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    RouteChange route =
+    final route =
         BlocProvider.of<ManagementRepositoryClientBloc>(context).currentRoute;
 
     if (route.params['service-account'] != null) {
       selectedServiceAccount = route.params['service-account'][0];
-      ManageAppBloc bloc = BlocProvider.of(context);
+      final bloc = BlocProvider.of<ManageAppBloc>(context);
       bloc.selectServiceAccount(selectedServiceAccount);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    ManageAppBloc bloc = BlocProvider.of(context);
+    final bloc = BlocProvider.of<ManageAppBloc>(context);
     final mrBloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
     return StreamBuilder<List<ServiceAccount>>(
         stream: bloc.serviceAccountsStream,
@@ -98,11 +97,11 @@ class _ServiceAccountPermissionState
                       padding: const EdgeInsets.only(left: 16.0, top: 16.0),
                       child: FHInfoCardWidget(
                           message:
-                              "The 'Lock/Unlock' and 'Change value' permissions \n"
-                              "are so you can change these states through the API's \n"
-                              "e.g., when running tests. \n \n"
-                              "We strongly recommend setting production environments \n"
-                              "with only 'Read' permission for service accounts."),
+                              """The 'Lock/Unlock' and 'Change value' permissions \n
+are so you can change these states through the API's \n
+e.g., when running tests. \n \n
+We strongly recommend setting production environments \n
+with only 'Read' permission for service accounts."""),
                     ),
                   ],
                 ),
@@ -157,8 +156,7 @@ class _ServiceAccountPermissionDetailWidget extends StatefulWidget {
 
 class _ServiceAccountPermissionDetailState
     extends State<_ServiceAccountPermissionDetailWidget> {
-  Map<String, ServiceAccountPermission> newServiceAccountPermission =
-      Map<String, ServiceAccountPermission>();
+  Map<String, ServiceAccountPermission> newServiceAccountPermission = {};
   ServiceAccount currentServiceAccount;
 
   @override
@@ -195,9 +193,9 @@ class _ServiceAccountPermissionDetailState
                   currentServiceAccount = saSnapshot.data;
                 }
 
-                List<TableRow> rows = List();
+                final rows = <TableRow>[];
                 rows.add(getHeader());
-                for (Environment env in envSnapshot.data) {
+                for (var env in envSnapshot.data) {
                   rows.add(TableRow(
                       decoration: BoxDecoration(
                           border: Border(
@@ -235,7 +233,7 @@ class _ServiceAccountPermissionDetailState
                     FHButtonBar(children: [
                       FHFlatButtonTransparent(
                           onPressed: () {
-                            this.currentServiceAccount = null;
+                            currentServiceAccount = null;
                             widget.bloc
                                 .selectServiceAccount(saSnapshot.data.id);
                             widget.bloc.mrClient.addSnackbar(Text(
@@ -244,13 +242,11 @@ class _ServiceAccountPermissionDetailState
                           title: 'Undo'),
                       FHFlatButton(
                           onPressed: () {
-                            List<ServiceAccountPermission> newList = List();
-                            this
-                                .newServiceAccountPermission
-                                .forEach((key, value) {
+                            final newList = <ServiceAccountPermission>[];
+                            newServiceAccountPermission.forEach((key, value) {
                               newList.add(value);
                             });
-                            ServiceAccount newSa = saSnapshot.data;
+                            final newSa = saSnapshot.data;
                             newSa.permissions = newList;
                             widget.bloc
                                 .updateServiceAccountPermissions(
@@ -302,20 +298,15 @@ class _ServiceAccountPermissionDetailState
   Checkbox getPermissionCheckbox(
       String envId, ServiceAccountPermissionType permissionType) {
     return Checkbox(
-      value: this
-          .newServiceAccountPermission[envId]
+      value: newServiceAccountPermission[envId]
           .permissions
           .contains(permissionType),
       onChanged: (value) {
         setState(() {
           if (value) {
-            this
-                .newServiceAccountPermission[envId]
-                .permissions
-                .add(permissionType);
+            newServiceAccountPermission[envId].permissions.add(permissionType);
           } else {
-            this
-                .newServiceAccountPermission[envId]
+            newServiceAccountPermission[envId]
                 .permissions
                 .remove(permissionType);
           }
@@ -326,17 +317,14 @@ class _ServiceAccountPermissionDetailState
 
   Map<String, ServiceAccountPermission> createMap(
       List<Environment> environments, ServiceAccount serviceAccount) {
-    Map<String, ServiceAccountPermission> retMap =
-        Map<String, ServiceAccountPermission>();
+    final retMap = <String, ServiceAccountPermission>{};
     environments.forEach((environment) {
-      ServiceAccountPermission sap = serviceAccount.permissions.firstWhere(
-          (item) => item.environmentId == environment.id,
-          orElse: () => null);
-      if (sap == null) {
-        sap = ServiceAccountPermission();
-        sap.environmentId = environment.id;
-        sap.permissions = List<ServiceAccountPermissionType>();
-      }
+      final sap = serviceAccount.permissions
+          .firstWhere((item) => item.environmentId == environment.id,
+              orElse: () => ServiceAccountPermission()
+                ..environmentId = environment.id
+                ..permissions = <ServiceAccountPermissionType>[]);
+
       retMap[environment.id] = sap;
     });
     return retMap;

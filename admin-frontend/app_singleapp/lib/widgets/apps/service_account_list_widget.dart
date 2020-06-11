@@ -16,7 +16,7 @@ import 'manage_service_accounts_bloc.dart';
 class ServiceAccountsListWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    ManageServiceAccountsBloc bloc = BlocProvider.of(context);
+    final bloc = BlocProvider.of<ManageServiceAccountsBloc>(context);
     final mrBloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
 
     return StreamBuilder<List<ServiceAccount>>(
@@ -58,7 +58,7 @@ class _ServiceAccountWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final BorderSide bs = BorderSide(color: Theme.of(context).dividerColor);
+    final bs = BorderSide(color: Theme.of(context).dividerColor);
 
     return Flexible(
       fit: FlexFit.loose,
@@ -120,7 +120,9 @@ class _ServiceAccountEnvironments extends StatelessWidget {
   final ManageServiceAccountsBloc serviceAccountBloc;
 
   const _ServiceAccountEnvironments(
-      {Key key, @required this.serviceAccount, this.serviceAccountBloc})
+      {Key key,
+      @required this.serviceAccount,
+      @required this.serviceAccountBloc})
       : assert(serviceAccount != null),
         assert(serviceAccountBloc != null),
         super(key: key);
@@ -250,7 +252,7 @@ class ServiceAccountDeleteDialogWidget extends StatelessWidget {
   final ManageServiceAccountsBloc bloc;
 
   const ServiceAccountDeleteDialogWidget(
-      {Key key, @required this.bloc, this.serviceAccount})
+      {Key key, @required this.bloc, @required this.serviceAccount})
       : assert(serviceAccount != null),
         assert(bloc != null),
         super(key: key);
@@ -263,7 +265,7 @@ class ServiceAccountDeleteDialogWidget extends StatelessWidget {
           'All applications using this service account will no longer have access to features! \n\nThis cannot be undone!',
       bloc: bloc.mrClient,
       deleteSelected: () async {
-        bool success = await bloc
+        final success = await bloc
             .deleteServiceAccount(serviceAccount.id)
             .catchError((e, s) => bloc.mrClient.dialogError(e, s,
                 messageTitle:
@@ -325,7 +327,7 @@ class _ServiceAccountUpdateDialogWidgetState
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              this.isUpdate
+              isUpdate
                   ? Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: <Widget>[

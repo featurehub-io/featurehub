@@ -1,5 +1,4 @@
 import 'package:app_singleapp/api/client_api.dart';
-import 'package:app_singleapp/widgets/user/common/portfolio_group.dart';
 import 'package:app_singleapp/widgets/user/common/select_portfolio_group_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
@@ -31,11 +30,12 @@ class CreateUserBloc implements Bloc {
   }
 
   Future<void> createUser(String email) {
-    Set<PortfolioGroup> listOfAddedPortfolioGroups =
+    final listOfAddedPortfolioGroups =
         selectGroupBloc.listOfAddedPortfolioGroups;
-    CreatePersonDetails cpd = CreatePersonDetails();
-    cpd.email = email;
-    cpd.groupIds = listOfAddedPortfolioGroups.map((pg) => pg.group.id).toList();
+    final cpd = CreatePersonDetails()
+      ..email = email
+      ..groupIds = listOfAddedPortfolioGroups.map((pg) => pg.group.id).toList();
+
     return client.personServiceApi.createPerson(cpd).then((data) {
       registrationUrl = data;
       registrationUrl.registrationUrl =

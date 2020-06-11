@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 class SetupPage2Widget extends StatefulWidget {
   final SetupBloc bloc;
 
-  const SetupPage2Widget({Key key, this.bloc})
+  const SetupPage2Widget({Key key, @required this.bloc})
       : assert(bloc != null),
         super(key: key);
 

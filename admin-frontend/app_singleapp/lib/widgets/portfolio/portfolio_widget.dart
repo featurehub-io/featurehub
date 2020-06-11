@@ -15,7 +15,7 @@ import 'package:openapi_dart_common/openapi.dart';
 class PortfolioListWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    PortfolioBloc bloc = BlocProvider.of(context);
+    final bloc = BlocProvider.of<PortfolioBloc>(context);
     final mrBloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
 
     return StreamBuilder<List<Portfolio>>(
@@ -57,7 +57,7 @@ class _PortfolioWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final BorderSide bs = BorderSide(color: Theme.of(context).dividerColor);
+    final bs = BorderSide(color: Theme.of(context).dividerColor);
 
     return Container(
       padding: const EdgeInsets.fromLTRB(30, 5, 30, 5),

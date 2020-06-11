@@ -1,6 +1,6 @@
-import 'package:bloc_provider/bloc_provider.dart';
 import 'package:app_singleapp/widgets/user/common/portfolio_group.dart';
 import 'package:app_singleapp/widgets/user/common/select_portfolio_group_bloc.dart';
+import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 
@@ -17,7 +17,7 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
 
   @override
   Widget build(BuildContext context) {
-    SelectPortfolioGroupBloc bloc = BlocProvider.of(context);
+    final bloc = BlocProvider.of<SelectPortfolioGroupBloc>(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,8 +89,7 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
             child: Container(
               constraints: BoxConstraints(maxWidth: 300),
               child: InputDecorator(
-                decoration: FHFilledInputDecoration(
-                    labelText: "Group"),
+                decoration: FHFilledInputDecoration(labelText: 'Group'),
                 child: DropdownButton(
                   isExpanded: true,
                   isDense: true,
@@ -131,7 +130,7 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
               child: Container(
                 constraints: BoxConstraints(maxWidth: 300),
                 child: InputDecorator(
-                  decoration: FHFilledInputDecoration(labelText: "Portfolio"),
+                  decoration: FHFilledInputDecoration(labelText: 'Portfolio'),
                   child: DropdownButton(
                     isExpanded: true,
                     isDense: true,
