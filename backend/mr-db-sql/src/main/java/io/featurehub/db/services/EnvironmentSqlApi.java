@@ -3,6 +3,7 @@ package io.featurehub.db.services;
 import io.ebean.Database;
 import io.ebean.annotation.Transactional;
 import io.featurehub.db.api.EnvironmentApi;
+import io.featurehub.db.api.EnvironmentRoles;
 import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.OptimisticLockingException;
 import io.featurehub.db.api.Opts;
@@ -18,6 +19,7 @@ import io.featurehub.db.model.query.QDbPortfolio;
 import io.featurehub.db.publish.CacheSource;
 import io.featurehub.db.utils.EnvironmentUtils;
 import io.featurehub.mr.model.Application;
+import io.featurehub.mr.model.ApplicationRoleType;
 import io.featurehub.mr.model.Environment;
 import io.featurehub.mr.model.FeatureValueType;
 import io.featurehub.mr.model.Person;
@@ -56,11 +58,12 @@ public class EnvironmentSqlApi implements EnvironmentApi {
   }
 
   @Override
-  public Set<RoleType> personRoles(Person current, String eid) {
+  public EnvironmentRoles personRoles(Person current, String eid) {
     DbEnvironment e = convertUtils.uuidEnvironment(eid);
     DbPerson p = convertUtils.uuidPerson(current);
 
     Set<RoleType> roles = new HashSet<>();
+    Set<ApplicationRoleType> appRoles = new HashSet<>();
 
     if (e != null && p != null) {
       new QDbAcl().environment.eq(e).group.peopleInGroup.eq(p).findList().forEach(fe -> {
@@ -69,9 +72,16 @@ public class EnvironmentSqlApi implements EnvironmentApi {
           roles.addAll(splitRoles);
         }
       });
+
+      new QDbAcl().application.eq(e.getParentApplication()).group.peopleInGroup.eq(p).findList().forEach(fe -> {
+        final List<ApplicationRoleType> splitRoles = convertUtils.splitApplicationRoles(fe.getRoles());
+        if (splitRoles != null && splitRoles.contains(ApplicationRoleType.FEATURE_EDIT)) {
+          appRoles.add(ApplicationRoleType.FEATURE_EDIT);
+        }
+      });
     }
 
-    return roles;
+    return new EnvironmentRoles.Builder().applicationRoles(appRoles).environmentRoles(roles).build();
   }
 
   @Override

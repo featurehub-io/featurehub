@@ -6,6 +6,7 @@ import io.featurehub.db.api.ApplicationApi
 import io.featurehub.db.api.FeatureApi
 import io.featurehub.db.api.OptimisticLockingException
 import io.featurehub.db.api.Opts
+import io.featurehub.db.api.PersonFeaturePermission
 import io.featurehub.db.model.DbApplication
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
@@ -195,7 +196,7 @@ class FeatureSpec extends Specification {
     given: "i have a feature"
       String k = "FEATURE_FV1"
       def features = appApi.createApplicationFeature(appId, new Feature().key(k).valueType(FeatureValueType.BOOLEAN), superPerson)
-      def pers = new FeatureApi.PersonFeaturePermission(superPerson, [RoleType.EDIT] as Set<RoleType>)
+      def pers = new PersonFeaturePermission(superPerson, [RoleType.EDIT] as Set<RoleType>)
     when: "i set the feature value"
       def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k);
       featureSqlApi.createFeatureValueForEnvironment(envIdApp1, k, f.valueBoolean(true).locked(true), pers)
@@ -221,7 +222,7 @@ class FeatureSpec extends Specification {
     given: "i have a feature"
       String k = "FEATURE_FV_UNLOCK1"
       def features = appApi.createApplicationFeature(appId, new Feature().key(k).valueType(FeatureValueType.BOOLEAN), superPerson)
-      def pers = new FeatureApi.PersonFeaturePermission(superPerson, [RoleType.EDIT] as Set<RoleType>)
+      def pers = new PersonFeaturePermission(superPerson, [RoleType.EDIT] as Set<RoleType>)
     when: "i set the feature value"
       def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k);
       featureSqlApi.createFeatureValueForEnvironment(envIdApp1, k, f.valueBoolean(true).locked(true), pers)
@@ -229,7 +230,7 @@ class FeatureSpec extends Specification {
       def fv = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k)
       fv.valueBoolean(false)
       fv.locked(false)
-      featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, fv, new FeatureApi.PersonFeaturePermission(superPerson, [RoleType.UNLOCK] as Set<RoleType>))
+      featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, fv, new PersonFeaturePermission(superPerson, [RoleType.UNLOCK] as Set<RoleType>))
       def fv2 = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k)
     then:
       !fv2.locked
@@ -240,7 +241,7 @@ class FeatureSpec extends Specification {
     given: "i have a feature"
       String k = "FEATURE_FV_UNLOCK2"
       def features = appApi.createApplicationFeature(appId, new Feature().key(k).valueType(FeatureValueType.BOOLEAN), superPerson)
-      def pers = new FeatureApi.PersonFeaturePermission(superPerson, [RoleType.EDIT] as Set<RoleType>)
+      def pers = new PersonFeaturePermission(superPerson, [RoleType.EDIT] as Set<RoleType>)
     when: "i set the feature value"
       def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k);
       featureSqlApi.createFeatureValueForEnvironment(envIdApp1, k, f.valueBoolean(false).locked(false), pers)
@@ -248,7 +249,7 @@ class FeatureSpec extends Specification {
       def fv = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k)
       fv.valueBoolean(false)
       fv.locked(true)
-      featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, fv, new FeatureApi.PersonFeaturePermission(superPerson, [RoleType.UNLOCK] as Set<RoleType>))
+      featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, fv, new PersonFeaturePermission(superPerson, [RoleType.UNLOCK] as Set<RoleType>))
     then:
       thrown(FeatureApi.NoAppropriateRole)
   }
@@ -258,7 +259,7 @@ class FeatureSpec extends Specification {
     given: "i have a list of features"
       String[] names = ['FEATURE_FVU_1', 'FEATURE_FVU_2', 'FEATURE_FVU_3', 'FEATURE_FVU_4', 'FEATURE_FVU_5']
       names.each { k -> appApi.createApplicationFeature(appId, new Feature().key(k).valueType(FeatureValueType.BOOLEAN), superPerson) }
-      def pers = new FeatureApi.PersonFeaturePermission(superPerson, [RoleType.EDIT] as Set<RoleType>)
+      def pers = new PersonFeaturePermission(superPerson, [RoleType.EDIT] as Set<RoleType>)
     when: "i set two of those values"
       def updatesForCreate = [featureSqlApi.getFeatureValueForEnvironment(envIdApp1, 'FEATURE_FVU_1').valueBoolean(true).locked(true),
                               featureSqlApi.getFeatureValueForEnvironment(envIdApp1, 'FEATURE_FVU_2').valueBoolean(true).locked(true)]

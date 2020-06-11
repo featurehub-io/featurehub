@@ -6,6 +6,7 @@ import io.featurehub.db.api.FeatureApi;
 import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.OptimisticLockingException;
 import io.featurehub.db.api.Opts;
+import io.featurehub.db.api.PersonFeaturePermission;
 import io.featurehub.db.model.DbAcl;
 import io.featurehub.db.model.DbApplication;
 import io.featurehub.db.model.DbApplicationFeature;
@@ -64,7 +65,7 @@ public class FeatureSqlApi implements FeatureApi {
   public FeatureValue createFeatureValueForEnvironment(String eid, String key, FeatureValue featureValue, PersonFeaturePermission person) throws OptimisticLockingException, NoAppropriateRole {
     UUID eId = ConvertUtils.ifUuid(eid);
 
-    if (person.roles.size() == 0) {
+    if (!person.hasWriteRole()) {
       DbEnvironment env = new QDbEnvironment().id.eq(eId).whenArchived.isNull().findOne();
       log.warn("User has no roles for environment {} key {}", eid, key);
       if (env == null) {
@@ -82,10 +83,10 @@ public class FeatureSqlApi implements FeatureApi {
       if (strategy != null) {
         // this is an update not a create, environment + app-feature key exists
         return onlyUpdateFeatureValueForEnvironment(featureValue, person, strategy);
-      } else if (person.roles.contains(RoleType.EDIT)) {
+      } else if (person.hasEditRole()) {
         return onlyCreateFeatureValueForEnvironment(eid, key, featureValue, person);
       } else {
-        log.info("roles for person are {} and are not enough for environment {} and key {}", person.roles, eid, key);
+        log.info("roles for person are {} and are not enough for environment {} and key {}", person.toString(), eid, key);
         throw new NoAppropriateRole();
       }
     }
@@ -165,7 +166,7 @@ public class FeatureSqlApi implements FeatureApi {
   private void updateStrategy(FeatureValue featureValue, PersonFeaturePermission person, DbEnvironmentFeatureStrategy strategy) throws NoAppropriateRole {
     final DbApplicationFeature feature = strategy.getFeature();
 
-    if (person.roles.contains(RoleType.EDIT)) {
+    if (person.hasEditRole()) {
       if (feature.getValueType() == FeatureValueType.NUMBER) {
         strategy.setDefaultValue(featureValue.getValueNumber() == null ? null : featureValue.getValueNumber().toString());
       } else if (feature.getValueType() == FeatureValueType.STRING) {
@@ -183,9 +184,9 @@ public class FeatureSqlApi implements FeatureApi {
 
     boolean newValue = featureValue.getLocked() == null ? false : featureValue.getLocked();
     if (newValue != strategy.isLocked()) {
-      if (!newValue && (person.roles.contains(RoleType.EDIT) || person.roles.contains(RoleType.UNLOCK))) {
+      if (!newValue && person.hasUnlockRole()) {
         strategy.setLocked(false);
-      } else if (newValue && (person.roles.contains(RoleType.EDIT) || person.roles.contains(RoleType.LOCK))) {
+      } else if (newValue && person.hasLockRole()) {
         strategy.setLocked(true);
       } else {
         throw new NoAppropriateRole();

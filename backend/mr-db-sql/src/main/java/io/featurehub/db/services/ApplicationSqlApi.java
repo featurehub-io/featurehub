@@ -6,9 +6,11 @@ import io.featurehub.db.api.ApplicationApi;
 import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.OptimisticLockingException;
 import io.featurehub.db.api.Opts;
+import io.featurehub.db.model.DbAcl;
 import io.featurehub.db.model.DbApplication;
 import io.featurehub.db.model.DbApplicationFeature;
 import io.featurehub.db.model.DbEnvironmentFeatureStrategy;
+import io.featurehub.db.model.DbGroup;
 import io.featurehub.db.model.DbPerson;
 import io.featurehub.db.model.DbPortfolio;
 import io.featurehub.db.model.FeatureState;
@@ -16,6 +18,7 @@ import io.featurehub.db.model.query.QDbAcl;
 import io.featurehub.db.model.query.QDbApplication;
 import io.featurehub.db.model.query.QDbApplicationFeature;
 import io.featurehub.db.model.query.QDbEnvironment;
+import io.featurehub.db.model.query.QDbGroup;
 import io.featurehub.db.publish.CacheSource;
 import io.featurehub.mr.model.Application;
 import io.featurehub.mr.model.ApplicationGroupRole;
@@ -31,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -68,7 +72,12 @@ public class ApplicationSqlApi implements ApplicationApi {
             .whoCreated(updater)
             .build();
 
-          saveApp(aApp);
+          // update the portfolio group to ensure it has permissions to add features to this new application
+          final DbGroup adminGroup = new QDbGroup().owningPortfolio.eq(aApp.getPortfolio()).whenArchived.isNull().adminGroup.isTrue().findOne();
+          if (adminGroup != null) {
+            adminGroup.getGroupRolesAcl().add(new DbAcl.Builder().application(aApp).roles(GroupSqlApi.appRolesToString(Collections.singletonList(ApplicationRoleType.FEATURE_EDIT))).build());
+          }
+          addApplicationFeatureCreationRoleToPortfolioAdminGroup(aApp, adminGroup);
 
           return convertUtils.toApplication(aApp, Opts.empty());
         } else {
@@ -78,6 +87,15 @@ public class ApplicationSqlApi implements ApplicationApi {
     }
 
     return null;
+  }
+
+  @Transactional
+  private void addApplicationFeatureCreationRoleToPortfolioAdminGroup(DbApplication aApp, DbGroup adminGroup) {
+    database.save(aApp);
+
+    if (adminGroup != null) {
+      database.save(adminGroup);
+    }
   }
 
   @Transactional

@@ -244,7 +244,7 @@ public class ConvertUtils {
     return roleTypes;
   }
 
-  private List<ApplicationRoleType> splitApplicationRoles(String roles) {
+  public List<ApplicationRoleType> splitApplicationRoles(String roles) {
     List<ApplicationRoleType> roleTypes = new ArrayList<>();
 
     if (roles != null) {

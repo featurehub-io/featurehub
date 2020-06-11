@@ -1,8 +1,10 @@
 package io.featurehub.mr.resources;
 
 import io.featurehub.db.api.EnvironmentApi;
+import io.featurehub.db.api.EnvironmentRoles;
 import io.featurehub.db.api.FeatureApi;
 import io.featurehub.db.api.OptimisticLockingException;
+import io.featurehub.db.api.PersonFeaturePermission;
 import io.featurehub.mr.api.EnvironmentFeatureServiceDelegate;
 import io.featurehub.mr.auth.AuthManagerService;
 import io.featurehub.mr.model.EnvironmentFeaturesResult;
@@ -17,7 +19,6 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.SecurityContext;
 import java.util.List;
-import java.util.Set;
 
 public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDelegate {
   private final EnvironmentApi environmentApi;
@@ -31,12 +32,12 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
     this.featureApi = featureApi;
   }
 
-  private FeatureApi.PersonFeaturePermission requireRoleCheck(String eid, SecurityContext ctx) {
+  private PersonFeaturePermission requireRoleCheck(String eid, SecurityContext ctx) {
     Person current = authManagerService.from(ctx);
 
-    final Set<RoleType> roles = environmentApi.personRoles(current, eid);
+    final EnvironmentRoles roles = environmentApi.personRoles(current, eid);
 
-    return new FeatureApi.PersonFeaturePermission(current, roles);
+    return new PersonFeaturePermission.Builder().person(current).appRoles(roles.applicationRoles).roles(roles.environmentRoles).build();
   }
 
   @Override
@@ -60,7 +61,7 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
 
   @Override
   public void deleteFeatureForEnvironment(String eid, String key, SecurityContext securityContext) {
-    if (!requireRoleCheck(eid, securityContext).roles.contains(RoleType.EDIT)) {
+    if (!requireRoleCheck(eid, securityContext).hasEditRole()) {
       throw new ForbiddenException();
     }
 
@@ -71,7 +72,7 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
 
   @Override
   public FeatureValue getFeatureForEnvironment(String eid, String key, SecurityContext securityContext) {
-    if (requireRoleCheck(eid, securityContext).roles.size() == 0) {
+    if (requireRoleCheck(eid, securityContext).hasReadRole()) {
       throw new ForbiddenException();
     }
 
@@ -90,7 +91,7 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
       return featureApi.lastFeatureValueChanges(authManagerService.from(securityContext));
     }
 
-    if (requireRoleCheck(eid, securityContext).roles.size() == 0) {
+    if (requireRoleCheck(eid, securityContext).hasReadRole()) {
       throw new ForbiddenException();
     }
 

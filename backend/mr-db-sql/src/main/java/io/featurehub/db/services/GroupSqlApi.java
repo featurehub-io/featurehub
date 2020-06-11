@@ -134,7 +134,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
     return null;
   }
 
-  private String appRolesToString(List<ApplicationRoleType> roles) {
+  public static String appRolesToString(List<ApplicationRoleType> roles) {
     return roles.stream().map(Enum::name).sorted().collect(Collectors.joining(","));
   }
 

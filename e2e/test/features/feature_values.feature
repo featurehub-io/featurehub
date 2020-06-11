@@ -33,6 +33,32 @@ Feature: Create feature values
       | FeatureTest1 | FeatureTest1 Desc | Feature Values | Feature Values Administrators | NEW_BOAT       | not_secret    | New boat       | http://featurehub.dev/new/boat | prod    | production | test     | test env | dev      | dev env  | boolean   |
 
 
+  Scenario Outline: I create a random portfolio, with a well known application then two environments, a feature and two environments and all feature flags should exist and be set to false
+    Given The superuser is the user
+    And I have a randomly named portfolio with the prefix "feature_env_test"
+    And I create an application with the name "<appName>"
+    And I create an environment "<envName>"
+    And I create an environment "<envName2>"
+    And I create a feature flag "<feature1>"
+    And I create a feature flag "<feature2>"
+    And I create an environment "<envName3>"
+    And I create an environment "<envName4>"
+    And I create a feature flag "<feature3>"
+    And I create a feature flag "<feature4>"
+    Then there should be 5 environments
+    And all environments should have 4 feature flags
+    And all feature flags for environment "<envName>" should be "false"
+    And all feature flags for environment "<envName4>" should be "false"
+    And all feature flags for environment "<envName2>" should be "false"
+    And all feature flags for environment "<envName3>" should be "false"
+    And all feature flags for environment "production" should be "false"
+
+    Examples:
+      | appName | envName | envName2 | envName3 | envName4 | feature1  | feature2  | feature3  | feature4  |
+      | nusella | dev1    | dev2     | test1    | test3    | FEATURE_1 | FEATURE_2 | FEATURE_3 | FEATURE_4 |
+
+
+
   Scenario Outline: I can set feature values per environment where the user doesn't have access to some of them
     Given I ensure a portfolio named "<portfolio>" with description "business application" exists
     And The superuser is the user
