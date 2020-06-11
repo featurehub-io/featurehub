@@ -1,5 +1,7 @@
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/api/router.dart';
+import 'package:app_singleapp/widgets/common/application_drop_down.dart';
+import 'package:app_singleapp/widgets/common/decorations/fh_page_divider.dart';
 import 'package:app_singleapp/widgets/common/fh_flat_button_accent.dart';
 import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/common/fh_header.dart';
@@ -32,10 +34,7 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
       children: <Widget>[
         _filterRow(context, bloc),
         _headerRow(context, bloc),
-        Container(
-            decoration: BoxDecoration(
-                border: Border(
-                    bottom: BorderSide(color: Colors.black87, width: 0.5)))),
+        FHPageDivider(),
         FeaturesOverviewTableWidget()
       ],
     );
@@ -97,15 +96,8 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
               stream: bloc.applications,
               builder: (context, snapshot) {
                 if (snapshot.hasData && snapshot.data.isNotEmpty) {
-                  return Container(
-                      padding: EdgeInsets.all(4.0),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(color: Colors.black87, width: 0.5),
-                        borderRadius: BorderRadius.all(Radius.circular(2.0)),
-                      ),
-                      child: ApplicationDropDown(
-                          applications: snapshot.data, bloc: bloc));
+                  return ApplicationDropDown(
+                      applications: snapshot.data, bloc: bloc);
                 }
                 if (snapshot.hasData && snapshot.data.isEmpty) {
                   return Container(
@@ -149,45 +141,3 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
   }
 }
 
-class ApplicationDropDown extends StatefulWidget {
-  final List<Application> applications;
-  final FeatureStatusBloc bloc;
-
-  const ApplicationDropDown({Key key, this.applications, this.bloc})
-      : super(key: key);
-
-  @override
-  _ApplicationDropDownState createState() => _ApplicationDropDownState();
-}
-
-class _ApplicationDropDownState extends State<ApplicationDropDown> {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton(
-          isExpanded: false,
-          isDense: true,
-          items: widget.applications != null && widget.applications.isNotEmpty
-              ? widget.applications.map((Application application) {
-                  return DropdownMenuItem<String>(
-                      value: application.id,
-                      child: Text(application.name,
-                          style: Theme.of(context).textTheme.bodyText2));
-                }).toList()
-              : null,
-          hint: Text('Select application',
-              style: Theme.of(context).textTheme.subtitle2),
-          onChanged: (value) {
-            setState(() {
-              widget.bloc.applicationId = value;
-              widget.bloc.mrClient.setCurrentAid(value);
-              widget.bloc.addAppFeatureValuesToStream();
-            });
-          },
-          value: widget.bloc.applicationId,
-        ),
-      ),
-    );
-  }
-}

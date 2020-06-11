@@ -9,7 +9,7 @@ import 'package:rxdart/rxdart.dart';
 enum ManageAppPageState { loadingState, initialState }
 
 class ManageAppBloc implements Bloc {
-  String appId;
+  String applicationId;
   Application application;
   Portfolio portfolio;
   ManagementRepositoryClientBloc mrClient;
@@ -19,6 +19,7 @@ class ManageAppBloc implements Bloc {
   GroupServiceApi _groupServiceApi;
   ServiceAccountServiceApi _serviceAccountServiceApi;
   List<Environment> environmentsList;
+  StreamSubscription<String> _currentAppId;
 
   ManageAppBloc(this.mrClient) : assert(mrClient != null) {
     _appServiceApi = ApplicationServiceApi(mrClient.apiClient);
@@ -27,6 +28,8 @@ class ManageAppBloc implements Bloc {
     _groupServiceApi = GroupServiceApi(mrClient.apiClient);
     _serviceAccountServiceApi = ServiceAccountServiceApi(mrClient.apiClient);
     _pageStateBS.add(ManageAppPageState.loadingState);
+    _currentAppId =
+        mrClient.streamValley.currentAppIdStream.listen(setApplicationId);
   }
 
   @override
@@ -37,6 +40,7 @@ class ManageAppBloc implements Bloc {
     _groupsBS.close();
     _serviceAccountsBS.close();
     _serviceAccountPS.close();
+    _currentAppId.cancel();
   }
 
   final _environmentBS = BehaviorSubject<List<Environment>>();
@@ -64,10 +68,10 @@ class ManageAppBloc implements Bloc {
 
   Stream<ManageAppPageState> get pageStateStream => _pageStateBS.stream;
 
-  void setApplicationId(String applicationId) {
+  void setApplicationId(String id) {
     _pageStateBS.add(ManageAppPageState.loadingState);
-    appId = applicationId;
-    if (applicationId != null) {
+    applicationId = id;
+    if (id != null) {
       _fetchGroups();
       _fetchEnvironments();
       _fetchServiceAccounts();
@@ -76,7 +80,7 @@ class ManageAppBloc implements Bloc {
 
   void _fetchEnvironments() async {
     application = await _appServiceApi
-        .getApplication(appId, includeEnvironments: true)
+        .getApplication(applicationId, includeEnvironments: true)
         .catchError(mrClient.dialogError);
     environmentsList = application.environments;
     if (!_environmentBS.isClosed) {
@@ -92,7 +96,7 @@ class ManageAppBloc implements Bloc {
 
   Future<void> _fetchGroups() async {
     application = await _appServiceApi
-        .getApplication(appId)
+        .getApplication(applicationId)
         .catchError(mrClient.dialogError);
     portfolio = await _portfolioServiceApi
         .getPortfolio(application.portfolioId, includeGroups: true)
@@ -104,7 +108,7 @@ class ManageAppBloc implements Bloc {
 
   void _fetchServiceAccounts() async {
     application = await _appServiceApi
-        .getApplication(appId)
+        .getApplication(applicationId)
         .catchError(mrClient.dialogError);
     final serviceAccounts = await _serviceAccountServiceApi
         .searchServiceAccountsInPortfolio(application.portfolioId,
@@ -177,7 +181,7 @@ class ManageAppBloc implements Bloc {
         .catchError(mrClient.dialogError);
     if (success) {
       environmentsList.remove(toRemove);
-      await updateEnvs(appId, environmentsList);
+      await updateEnvs(applicationId, environmentsList);
       unawaited(mrClient.streamValley.getCurrentApplicationEnvironments());
       return true;
     }
@@ -204,7 +208,7 @@ class ManageAppBloc implements Bloc {
         (env) => env.priorEnvironmentId == null,
         orElse: () => null);
     final env = await _environmentServiceApi.createEnvironment(
-        appId,
+        applicationId,
         Environment()
           ..name = name
           ..production = _isProduction);
@@ -212,7 +216,7 @@ class ManageAppBloc implements Bloc {
       toUpdate.priorEnvironmentId = env.id;
     }
     environmentsList.add(env);
-    updateEnvs(appId, environmentsList);
+    updateEnvs(applicationId, environmentsList);
     unawaited(mrClient.streamValley.getCurrentApplicationEnvironments());
   }
 
