@@ -11,6 +11,8 @@ import io.featurehub.mr.model.EnvironmentFeaturesResult;
 import io.featurehub.mr.model.FeatureValue;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.RoleType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
@@ -21,6 +23,7 @@ import javax.ws.rs.core.SecurityContext;
 import java.util.List;
 
 public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDelegate {
+  private static final Logger log = LoggerFactory.getLogger(EnvironmentFeatureResource.class);
   private final EnvironmentApi environmentApi;
   private final AuthManagerService authManagerService;
   private final FeatureApi featureApi;
@@ -72,7 +75,7 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
 
   @Override
   public FeatureValue getFeatureForEnvironment(String eid, String key, SecurityContext securityContext) {
-    if (requireRoleCheck(eid, securityContext).hasReadRole()) {
+    if (!requireRoleCheck(eid, securityContext).hasReadRole()) {
       throw new ForbiddenException();
     }
 
@@ -91,7 +94,7 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
       return featureApi.lastFeatureValueChanges(authManagerService.from(securityContext));
     }
 
-    if (requireRoleCheck(eid, securityContext).hasReadRole()) {
+    if (!requireRoleCheck(eid, securityContext).hasReadRole()) {
       throw new ForbiddenException();
     }
 
@@ -120,6 +123,7 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
     try {
       return featureApi.updateFeatureValueForEnvironment(eid, key, featureValue, requireRoleCheck(eid, securityContext));
     } catch (OptimisticLockingException e) {
+      log.error("optimistic locking", e);
       throw new WebApplicationException(422);
     } catch (FeatureApi.NoAppropriateRole noAppropriateRole) {
       throw new ForbiddenException(noAppropriateRole);

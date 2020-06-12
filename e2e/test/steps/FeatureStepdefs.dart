@@ -2,6 +2,7 @@ import 'package:app_singleapp/shared.dart';
 import 'package:app_singleapp/user_common.dart';
 import 'package:mrapi/api.dart';
 import 'package:ogurets/ogurets.dart' hide Feature;
+import 'package:openapi_dart_common/openapi.dart';
 
 class FeatureStepdefs {
   final UserCommon userCommon;
@@ -43,10 +44,13 @@ class FeatureStepdefs {
       featureValue = await userCommon.environmentFeatureServiceApi
           .getFeatureForEnvironment(environment.id, featureKey);
     } catch (e) {
-      featureValue = new FeatureValue()
-        ..environmentId = environment.id
-        ..locked = true
-        ..key = featureKey;
+      if (e is ApiException && e.code == 404) {
+        featureValue = new FeatureValue()
+          ..environmentId = environment.id
+          ..locked = true
+          ..key = featureKey;
+      } else
+        throw e;
     }
 
     await userCommon.environmentFeatureServiceApi.updateFeatureForEnvironment(

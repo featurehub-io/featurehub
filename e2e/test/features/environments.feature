@@ -71,9 +71,8 @@ Feature: Environments exist under features and should be able to be managed only
 
   Scenario Outline: An environment three layer promotion
     Given The superuser is the user
-    And I ensure a portfolio named "<portfolio>" with description "<desc>" exists
-    And I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
-    And I delete all existing environments
+    And I have a randomly named portfolio with the prefix "environment_order_test"
+    And I create an application with the name "<appName>"
     And I ensure that an environments exist:
       | name | desc    |
       | dev  | devenv  |
@@ -95,6 +94,6 @@ Feature: Environments exist under features and should be able to be managed only
     And I check to see that the prior environment for "test" is empty
 
     Examples:
-      | appName    | appDesc      | desc   | portfolio         |
-      | Sample2App | Sample1 Desc | Simple | Pizza Dough Guild |
+      | appName    |
+      | Sample2App |
 
