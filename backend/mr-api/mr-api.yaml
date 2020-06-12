@@ -8,6 +8,27 @@ info:
 #  then people<->group association
 #  and group<->role association
 paths:
+  /mr-api/organization/{id}/group:
+    get:
+      security:
+        -  bearerAuth: []
+      tags:
+        - GroupService
+      description: "Gets the superuser group for this organisation. There is no other way to ascertain which org you are dealing with"
+      operationId: getSuperuserGroup
+      parameters:
+        - name: id
+          in: path
+          description: "the id of the organisation"
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "The superuser group presuming the organization exists"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Group"
   /mr-api/portfolio:
     parameters:
       - name: includeGroups

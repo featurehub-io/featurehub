@@ -3,7 +3,7 @@ Feature: Here we explore the capabilities around Applications inside a portfolio
   Background: I ensure a portfolio exists and the user is logged in who owns it
     Given I ensure a portfolio named "Biscuit Makers" with description "Bakers of Biscuits" exists
     And I have a fully registered person "Brian" with email "brian@mailinator.com" and password "password123"
-    And The superuser is the user
+    And the first superuser is used for authentication
     And I ensure the "brian@mailinator.com" user is added to the portfolio admin group for "Biscuit Makers"
     And I can login as user "brian@mailinator.com" with password "password123"
 
@@ -49,7 +49,7 @@ Feature: Here we explore the capabilities around Applications inside a portfolio
   Scenario Outline: A user I create can be given permissions to add and edit a feature
     Given I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
     And I have a fully registered person "Katya" with email "<email>" and password "<password>"
-    And The superuser is the user
+    And the first superuser is used for authentication
     And I ensure a portfolio "<portfolio>" has created a group called "<group>"
     And I add the user "<email>" to the group "<group>" in the portfolio "<portfolio>"
     And I add the application role "FEATURE_EDIT" to the group called "<group>"

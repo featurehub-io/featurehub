@@ -10,6 +10,8 @@ public interface GroupApi {
 
   boolean isPersonMemberOfPortfolioGroup(String portfolioId, String personId);
 
+  Group getSuperuserGroup(String id, Person personAsking);
+
   class DuplicateGroupException extends Exception {}
   /**
    * Creates top level admin group for a given organization
@@ -30,7 +32,7 @@ public interface GroupApi {
    */
   Group addPersonToGroup(String groupId, String personId, Opts opts);
 
-  Group getGroup(String gid, Opts opts);
+  Group getGroup(String gid, Opts opts, Person person);
 
   Group findPortfolioAdminGroup(String portfolioId, Opts opts);
 

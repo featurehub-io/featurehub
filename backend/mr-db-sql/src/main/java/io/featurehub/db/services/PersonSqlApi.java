@@ -167,6 +167,17 @@ public class PersonSqlApi implements PersonApi {
 
   @Override
   public Person get(String id, Opts opts) {
+    if (id.contains("@")) {
+      QDbPerson search = new QDbPerson().email.eq(id.toLowerCase());
+      if (!opts.contains(FillOpts.Archived)) {
+        search = search.whenArchived.isNull();
+      }
+      return search.groupsPersonIn.fetch()
+        .findOneOrEmpty()
+        .map(p -> convertUtils.toPerson(p, opts))
+        .orElse(null);
+    }
+
     return ConvertUtils.uuid(id).map(pId -> {
       QDbPerson search = new QDbPerson().id.eq(pId);
       if (!opts.contains(FillOpts.Archived)) {

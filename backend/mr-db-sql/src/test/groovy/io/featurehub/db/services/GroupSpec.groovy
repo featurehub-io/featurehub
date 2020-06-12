@@ -9,7 +9,6 @@ import io.featurehub.db.model.DbApplication
 import io.featurehub.db.model.DbEnvironment
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
-import io.featurehub.db.model.query.QDbEnvironment
 import io.featurehub.db.model.query.QDbPerson
 import io.featurehub.db.publish.CacheSource
 import io.featurehub.mr.model.Application
@@ -95,7 +94,7 @@ class GroupSpec extends Specification {
     then: "the first admin group exists"
       g.id != null
       g.name != null
-      groupApi.getGroup(g.id, Opts.empty()).name == g.name
+      groupApi.getGroup(g.id, Opts.empty(), superPerson).name == g.name
     and: "the second one never got created"
       second == null
     and: "it was able to find the admin group from the portfolio"
@@ -113,11 +112,11 @@ class GroupSpec extends Specification {
     then: "the first group exists"
       g.id != null
       g.name != null
-      groupApi.getGroup(g.id, Opts.empty()).name == g.name
+      groupApi.getGroup(g.id, Opts.empty(), superPerson).name == g.name
     and: "the second one exists"
       second != null
       second.id != null
-      groupApi.getGroup(second.id, Opts.empty()).name == second.name
+      groupApi.getGroup(second.id, Opts.empty(), superPerson).name == second.name
   }
 
   def "i can't create a group for a non-existent portfolio"() {
@@ -260,7 +259,7 @@ class GroupSpec extends Specification {
     and: "i delete the whole group"
       groupApi.deleteGroup(g.id)
     and: "i try and find the group"
-      Group finding = groupApi.getGroup(g.id, Opts.empty())
+      Group finding = groupApi.getGroup(g.id, Opts.empty(), superPerson)
     and: "am not a portfolio member again"
       boolean amNotMemberAgain = !groupApi.isPersonMemberOfPortfolioGroup(g.portfolioId, person.id.toString())
     then:
@@ -299,7 +298,7 @@ class GroupSpec extends Specification {
     when: "i rename it"
       groupApi.updateGroup(g.id, g, true, true, true, Opts.empty())
     and: "find it again"
-      Group ng = groupApi.getGroup(g.id, Opts.empty())
+      Group ng = groupApi.getGroup(g.id, Opts.empty(), superPerson)
     then:
       ng.name == "new name"
   }
@@ -327,7 +326,7 @@ class GroupSpec extends Specification {
         new Person().id(new PersonId().id(p3.id.toString())),
       ]
       groupApi.updateGroup(g.id, g2_copy, true, true, true, new Opts().add(FillOpts.Members))
-      def g3 = groupApi.getGroup(g.id, new Opts().add(FillOpts.Members))
+      def g3 = groupApi.getGroup(g.id, new Opts().add(FillOpts.Members), superPerson)
     then:
       g2.members.size() == 2
       g2.members*.name.contains('Alena')
@@ -414,7 +413,7 @@ class GroupSpec extends Specification {
       g1.environmentRoles = [new EnvironmentGroupRole().environmentId(env.id.toString()).roles([RoleType.EDIT, RoleType.LOCK])]
       def updGroup = groupApi.updateGroup(g1.id, g1, true, true, true, new Opts().add(FillOpts.Acls))
     and: "i get the group with acls requested"
-      def getUpd = groupApi.getGroup(g1.id, new Opts().add(FillOpts.Acls))
+      def getUpd = groupApi.getGroup(g1.id, new Opts().add(FillOpts.Acls), superPerson)
     and: "the i update the roles"
       g1.environmentRoles = [new EnvironmentGroupRole().environmentId(env.id.toString()).roles([RoleType.LOCK, RoleType.READ])]
       def updGroup1 = groupApi.updateGroup(g1.id, g1, true, true, true, new Opts().add(FillOpts.Acls))
@@ -442,7 +441,7 @@ class GroupSpec extends Specification {
               .applicationId(commonApplication1.id)
           ]), superPerson)
     and: "i find the group including the acls"
-      def found = groupApi.getGroup(g1.id, Opts.opts(FillOpts.Acls))
+      def found = groupApi.getGroup(g1.id, Opts.opts(FillOpts.Acls), superPerson)
     and: "i update the group to include environment acls"
       def updating = found.copy()
       updating.environmentRoles = [
@@ -451,7 +450,7 @@ class GroupSpec extends Specification {
       updating.applicationRoles.add(new ApplicationGroupRole().roles([ApplicationRoleType.FEATURE_EDIT]).applicationId(commonApplication2.id))
       def up1 = groupApi.updateGroup(g1.id, updating, true, true, true, Opts.opts(FillOpts.Acls))
     when: "i find the group"
-      def found1 = groupApi.getGroup(g1.id, Opts.opts(FillOpts.Acls))
+      def found1 = groupApi.getGroup(g1.id, Opts.opts(FillOpts.Acls), superPerson)
     then:
       found.applicationRoles.size() == 1
       found1.environmentRoles.size() == 1

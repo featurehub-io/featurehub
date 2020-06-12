@@ -6,7 +6,7 @@ Feature: This should test the loading of new groups
     Given I ensure a portfolio named "<portfolio>" with description "<portfolio_desc>" exists
     And I have a fully registered person "<name>" with email "<email>" and password "password123"
     # previous step swapped to that user, so swap back to superuser
-    And The superuser is the user
+    And the first superuser is used for authentication
     # they are also the only ones who can add users initially to the portfolio admin group's group
     And I ensure the "<email>" user is added to the portfolio admin group for "<portfolio>"
     # lets swap to the newly created user and do the rest as them

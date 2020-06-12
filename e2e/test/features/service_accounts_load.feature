@@ -6,7 +6,7 @@ Feature: This should test the loading of new service accounts
     Given I ensure a portfolio named "<portfolio>" with description "<portfolio_desc>" exists
     And I have a fully registered person "<name>" with email "<email>" and password "password123"
     # previous step swapped to that user, so swap back to superuser
-    And The superuser is the user
+    And the first superuser is used for authentication
     And I ensure the "<email>" user is added to the portfolio admin group for "<portfolio>"
     # lets swap to the newly created user and do the rest as them
     When I can login as user "<email>" with password "password123"
@@ -31,7 +31,7 @@ Feature: This should test the loading of new service accounts
     Given I ensure a portfolio named "<portfolio>" with description "<portfolio_desc>" exists
     And I have a fully registered person "<name>" with email "<email>" and password "password123"
     # previous step swapped to that user, so swap back to superuser
-    And The superuser is the user
+    And the first superuser is used for authentication
     And I ensure the "<email>" user is added to the portfolio admin group for "<portfolio>"
     When I ensure a portfolio "<portfolio>" has created application called "<app>" and environment "<environment>" and service account called "<service_account>" and permission type "<permission_type>"
     Then portfolio "<portfolio>" has service account "<service_account>" and the permission "<permission_type>" for this "<app>" and "<environment>"

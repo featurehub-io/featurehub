@@ -37,8 +37,8 @@ public class GroupResource implements GroupServiceDelegate {
     boolean delete = false;
   }
 
-  private void groupCheck(String gid, Consumer<Group> action) {
-    Group group = groupApi.getGroup(gid, Opts.empty());
+  private void groupCheck(String gid, Person person, Consumer<Group> action) {
+    Group group = groupApi.getGroup(gid, Opts.empty(), person);
 
     if (group == null) {
       throw new NotFoundException("No such group");
@@ -91,7 +91,7 @@ public class GroupResource implements GroupServiceDelegate {
   public Group addPersonToGroup(String gid, String personId, AddPersonToGroupHolder holder, SecurityContext securityContext) {
     GroupHolder groupHolder = new GroupHolder();
 
-    groupCheck(gid, group -> {
+    groupCheck(gid, authManager.from(securityContext), group -> {
       personCheck(personId, person -> {
         isAdminOfGroup(group, securityContext, "No permission to add user to group.",  adminGroup -> {
           groupHolder.group = groupApi.addPersonToGroup(gid, personId, new Opts().add(FillOpts.Members, holder.includeMembers));
@@ -125,7 +125,7 @@ public class GroupResource implements GroupServiceDelegate {
   public Boolean deleteGroup(String gid, DeleteGroupHolder holder, SecurityContext securityContext) {
     GroupHolder groupHolder = new GroupHolder();
 
-    groupCheck(gid, group -> {
+    groupCheck(gid, authManager.from(securityContext), group -> {
       if (group.getAdmin()) {
         throw new NotAuthorizedException("Cannot delete admin group from deleteGroup method.");
       }
@@ -144,7 +144,7 @@ public class GroupResource implements GroupServiceDelegate {
   public Group deletePersonFromGroup(String gid, String personId, DeletePersonFromGroupHolder holder, SecurityContext securityContext) {
     GroupHolder groupHolder = new GroupHolder();
 
-    groupCheck(gid, group -> {
+    groupCheck(gid, authManager.from(securityContext), group -> {
       personCheck(personId, person -> {
         isAdminOfGroup(group, securityContext, "No permission to delete user to group.",
           adminGroup ->
@@ -179,7 +179,7 @@ public class GroupResource implements GroupServiceDelegate {
       opts.add(FillOpts.Members);
     }
 
-    Group group = groupApi.getGroup(gid, opts);
+    Group group = groupApi.getGroup(gid, opts, authManager.from(securityContext));
 
     if (group == null) {
       throw new NotFoundException("No such group");
@@ -189,10 +189,21 @@ public class GroupResource implements GroupServiceDelegate {
   }
 
   @Override
+  public Group getSuperuserGroup(String id, SecurityContext securityContext) {
+    Group g = groupApi.getSuperuserGroup(id, authManager.from(securityContext));
+
+    if (g == null) {
+      throw new NotFoundException();
+    }
+
+    return g;
+  }
+
+  @Override
   public Group updateGroup(String gid, Group renameDetails, UpdateGroupHolder holder, SecurityContext securityContext) {
     GroupHolder groupHolder = new GroupHolder();
 
-    groupCheck(gid, group -> {
+    groupCheck(gid, authManager.from(securityContext), group -> {
       isAdminOfGroup(group, securityContext, "No permission to rename group.",  adminGroup -> {
         try {
           groupHolder.group = groupApi.updateGroup(gid, renameDetails,

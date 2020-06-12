@@ -2,7 +2,7 @@ Feature: Environments exist under features and should be able to be managed only
 
   Scenario Outline: A new environment is not visible to those outside the portfolio
     Given I ensure a portfolio named "<portfolio>" with description "Simple" exists
-    And The superuser is the user
+    And the first superuser is used for authentication
     When I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
     And I ensure that an environment "<envName>" with description "<envDesc>" exists in the app "<appName>" in the portfolio "<portfolio>"
     Then I can find environment "<envName>" in the application
@@ -18,13 +18,13 @@ Feature: Environments exist under features and should be able to be managed only
       | Sample1App | Sample1 Desc | Pizza Dough Guild | Production | Production env  |
 
   Scenario Outline: A new environment can be seen by those in the groups inside the portfolio
-    Given The superuser is the user
+    Given the first superuser is used for authentication
     And I ensure a portfolio named "<portfolio>" with description "<desc>" exists
     And I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
     And I ensure that an environment "<envName>" with description "<envDesc>" exists in the app "<appName>" in the portfolio "<portfolio>"
     And I ensure a portfolio "<portfolio>" has created a group called "<groupName>"
     And I have a fully registered person "<personName>" with email "<email>" and password "password123"
-    And The superuser is the user
+    And the first superuser is used for authentication
     And I ensure the "<email>" user is added to the portfolio group "<groupName>" for portfolio "<portfolio>"
     Then I can login as user "<email>" with password "password123"
     And I can find environment "<envName>" in the application
@@ -36,11 +36,11 @@ Feature: Environments exist under features and should be able to be managed only
       | Sample1App | Sample1 Desc | Simple | Pizza Dough Guild | Dev     | Development env | #2 PizzaGuys R US | Doughboy   | pizza3@mailinator.com |
 
   Scenario Outline: A portfolio user can create environments
-    Given The superuser is the user
+    Given the first superuser is used for authentication
     And I ensure a portfolio named "<portfolio>" with description "Simple" exists
     And I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
     And I have a fully registered person "<personName>" with email "<email>" and password "password123"
-    And The superuser is the user
+    And the first superuser is used for authentication
     And I ensure the "<email>" user is added to the portfolio group "<portfolioGroup>" for portfolio "<portfolio>"
     Then I can login as user "<email>" with password "password123"
     And I ensure that an environment "<envName>" with description "<envDesc>" exists in the app "<appName>" in the portfolio "<portfolio>"
@@ -51,7 +51,7 @@ Feature: Environments exist under features and should be able to be managed only
       | VinegarApp | Sample1 Desc | Picalilly Guild | Picalilly Guild Administrators | Dev     | Development env | MustardGuy | mustardguy@mailinator.com |
 
   Scenario Outline: An environment can be set to be the prior environment of another
-    Given The superuser is the user
+    Given the first superuser is used for authentication
     And I ensure a portfolio named "<portfolio>" with description "<desc>" exists
     And I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
     And I ensure that an environments exist:
@@ -70,7 +70,7 @@ Feature: Environments exist under features and should be able to be managed only
       | Sample1App | Sample1 Desc | Simple | Pizza Dough Guild |
 
   Scenario Outline: An environment three layer promotion
-    Given The superuser is the user
+    Given the first superuser is used for authentication
     And I have a randomly named portfolio with the prefix "environment_order_test"
     And I create an application with the name "<appName>"
     And I delete all existing environments
@@ -99,7 +99,7 @@ Feature: Environments exist under features and should be able to be managed only
       | Sample2App |
 
   Scenario: A portfolio with an awful lot of environments exists
-    Given The superuser is the user
+    Given the first superuser is used for authentication
     And I have a randomly named portfolio with the prefix "Lots Of Envs"
     And I create an application with the name "Layout like a champ"
     And I ensure that an environments exist:

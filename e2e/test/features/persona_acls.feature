@@ -4,7 +4,7 @@ Feature: Create some personas with different feature access data
 
   Scenario Outline: Set some feature values and give all permissions
     Given I ensure a portfolio named "<portfolio>" with description "persona test" exists
-    And The superuser is the user
+    And the first superuser is used for authentication
     When I ensure a portfolio "<portfolio>" has created a group called "<group>"
     When I add the user "superuser@mailinator.com" to the group "<adminGroup>" in the portfolio "<portfolio>"
     Given I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
@@ -37,7 +37,7 @@ Feature: Create some personas with different feature access data
 
   Scenario Outline: Create app with one feature but no environments (user shouldn't see the app in the drop-down)
     Given I ensure a portfolio named "<portfolio>" with description "persona test" exists
-    And The superuser is the user
+    And the first superuser is used for authentication
     And I ensure a portfolio "<portfolio>" has created a group called "Just a portfolio group"
     And I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
     And I ensure that the feature with the key "<featureKey>" has been removed
@@ -53,7 +53,7 @@ Feature: Create some personas with different feature access data
 
   Scenario Outline: Create apps and setup different access, e.g read, lock..
     Given I ensure a portfolio named "<portfolio>" with description "persona test" exists
-    And The superuser is the user
+    And the first superuser is used for authentication
     When I ensure a portfolio "<portfolio>" has created a group called "<group>"
     When I add the user "superuser@mailinator.com" to the group "<adminGroup>" in the portfolio "<portfolio>"
     Given I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
@@ -86,7 +86,7 @@ Feature: Create some personas with different feature access data
 
   Scenario Outline: Create apps and add user to 2 groups with same permissions
     Given I ensure a portfolio named "<portfolio>" with description "persona test" exists
-    And The superuser is the user
+    And the first superuser is used for authentication
     When I ensure a portfolio "<portfolio>" has created a group called "<groupA>"
     When I ensure a portfolio "<portfolio>" has created a group called "<groupB>"
     When I add the user "superuser@mailinator.com" to the group "<adminGroup>" in the portfolio "<portfolio>"
@@ -112,7 +112,7 @@ Feature: Create some personas with different feature access data
 
   Scenario Outline: User is administrator for a portfolio and can read features
     Given I ensure a portfolio named "<portfolio>" with description "business application" exists
-    And The superuser is the user
+    And the first superuser is used for authentication
     When I ensure a portfolio "<portfolio>" has created a group called "<group1>"
     Given I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
     And I ensure that an environment "<envName>" with description "<envDesc>" exists in the app "<appName>" in the portfolio "<portfolio>"

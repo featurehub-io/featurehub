@@ -13,7 +13,6 @@ import io.featurehub.db.model.DbGroup;
 import io.featurehub.db.model.DbOrganization;
 import io.featurehub.db.model.DbPerson;
 import io.featurehub.db.model.DbPortfolio;
-import io.featurehub.db.model.query.QDbAcl;
 import io.featurehub.db.model.query.QDbGroup;
 import io.featurehub.db.model.query.QDbOrganization;
 import io.featurehub.db.model.query.QDbPerson;
@@ -30,7 +29,6 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -61,6 +59,24 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
     UUID persId = ConvertUtils.ifUuid(personId);
 
     return new QDbGroup().owningPortfolio.id.eq(portId).peopleInGroup.id.eq(persId).findCount() > 0;
+  }
+
+  @Override
+  public Group getSuperuserGroup(String id, Person personAsking) {
+    UUID orgId = ConvertUtils.ifUuid(id);
+    DbPerson person = convertUtils.uuidPerson(personAsking);
+    if (orgId == null || person == null) {
+      return null;
+    }
+    if (new QDbGroup().owningOrganization.id.eq(orgId).whenArchived.isNull().peopleInGroup.eq(person).findCount() > 0 ||
+      new QDbGroup().owningPortfolio.organization.id.eq(orgId).whenArchived.isNull().peopleInGroup.eq(person).findCount() > 0) {
+      final DbGroup g = new QDbGroup().owningOrganization.id.eq(orgId).peopleInGroup.fetch().findOne();
+      if (g != null) { // make sure you are a user in at least one group otherwise you can't see this group
+        return convertUtils.toGroup(g, Opts.opts(FillOpts.Members));
+      }
+    }
+
+    return null;
   }
 
   @Override
@@ -155,6 +171,10 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
   }
 
   private boolean isSuperuser(DbOrganization org, DbPerson person) {
+    if (org == null || person == null) {
+      return false;
+    }
+
     DbGroup superuserGroup = superuserGroup(org);
     return new QDbPerson().groupsPersonIn.eq(superuserGroup).id.eq(person.getId()).exists();
   }
@@ -193,7 +213,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
 
               saveGroup(dbGroup);
 
-              // they actually got removed from the superusers group, so lets update the portfolios
+              // they actually got added from the superusers group, so lets update the portfolios
               if (dbGroup.isAdminGroup() && dbGroup.getOwningPortfolio() == null) {
                 SuperuserChanges sc = new SuperuserChanges(dbGroup.getOwningOrganization());
                 sc.addedSuperusers = Collections.singletonList(person);
@@ -214,14 +234,23 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
   }
 
   @Override
-  public Group getGroup(String gid, Opts opts) {
+  public Group getGroup(String gid, Opts opts, Person person) {
     return ConvertUtils.uuid(gid).map(groupId ->
     {
-      QDbGroup eq = new QDbGroup().id.eq(groupId);
+      QDbGroup eq = new QDbGroup().id.eq(groupId).peopleInGroup.fetch();
+
       if (!opts.contains(FillOpts.Archived)) {
         eq = eq.whenArchived.isNull();
       }
-      return convertUtils.toGroup(eq.findOne(), opts);
+
+      final DbGroup one = eq.findOne();
+
+      if (one != null && (one.getPeopleInGroup().stream().anyMatch(p -> p.getId().toString().equals(person.getId().getId())) ||
+          isSuperuser(one.findOwningOrganisation(), convertUtils.uuidPerson(person)))) {
+        return convertUtils.toGroup(one, opts);
+      }
+
+      return null;
     })
       .orElse(null);
   }
@@ -270,7 +299,8 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
   }
 
   @Override
-  public Group deletePersonFromGroup(String groupId, String personId, Opts opts) {
+  public Group
+  deletePersonFromGroup(String groupId, String personId, Opts opts) {
     DbPerson person = convertUtils.uuidPerson(personId);
 
     if (person != null) {
@@ -377,6 +407,8 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
           }
         }
       }
+
+      database.save(pGroups);
     }
   }
 
@@ -539,6 +571,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
       SuperuserChanges sc = new SuperuserChanges(group.getOwningOrganization());
       sc.removedSuperusers = removedPerson;
       sc.addedSuperusers = actuallyAddedPeople;
+      return sc;
     }
 
     return null;
