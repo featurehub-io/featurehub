@@ -168,9 +168,11 @@ class _ServiceAccountEnvironment extends StatelessWidget {
     return Card(
       child: Container(
         width: 240,
+        height: 130,
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(application.name),
@@ -191,12 +193,12 @@ class _ServiceAccountEnvironment extends StatelessWidget {
 
                       ManagementRepositoryClientBloc.router
                           .navigateTo(context, '/manage-app',
-                              replace: true,
-                              params: {
-                                'service-account': [serviceAccount.id],
-                                'tab-name': ['service-accounts']
-                              },
-                              transition: TransitionType.material);
+                          replace: true,
+                          params: {
+                            'service-account': [serviceAccount.id],
+                            'tab-name': ['service-accounts']
+                          },
+                          transition: TransitionType.material);
                     },
                   )
                 ],
