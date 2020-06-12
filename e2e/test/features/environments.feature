@@ -73,6 +73,7 @@ Feature: Environments exist under features and should be able to be managed only
     Given The superuser is the user
     And I have a randomly named portfolio with the prefix "environment_order_test"
     And I create an application with the name "<appName>"
+    And I delete all existing environments
     And I ensure that an environments exist:
       | name | desc    |
       | dev  | devenv  |
@@ -96,4 +97,33 @@ Feature: Environments exist under features and should be able to be managed only
     Examples:
       | appName    |
       | Sample2App |
+
+  Scenario: A portfolio with an awful lot of environments exists
+    Given The superuser is the user
+    And I have a randomly named portfolio with the prefix "Lots Of Envs"
+    And I create an application with the name "Layout like a champ"
+    And I ensure that an environments exist:
+      | name                             | desc                                      |
+      | dev                              | devenv                                    |
+      | devirina                         | dev for irina                             |
+      | devrichard                       | dev for richard                           |
+      | test                             | testenv                                   |
+      | test-maws                        | test for mary anne                        |
+      | test-aleks                       | test for aleks                            |
+      | production-debug-JIRA-123        | sanitized prodouction for JIRA-123        |
+      | production-debug-JIRA-789        | sanitized prodouction for JIRA-789        |
+      | production-debug-JIRA-153        | sanitized prodouction for JIRA-153        |
+      | uat                              | uat environment                           |
+      | staging                          | testenv                                   |
+      | customer-marketing               | customer marketing demo env               |
+      | customer-training                | customer training env                     |
+      | integration-portal               | integration testing environment           |
+      | penetration-testing              | penetration testing environment           |
+      | companyx-new-feature-integration | development of feature with new company x |
+    And I create a feature flag "FEATURE_NEW_LAYOUT"
+    And I create a feature flag "FEATURE_COMPANYX"
+    And I create a feature flag "FEATURE_INTEGRATION_ENHANCEMENT_BOB"
+    And I create a feature flag "FEATURE_LAYOUT_ALEKS"
+
+
 

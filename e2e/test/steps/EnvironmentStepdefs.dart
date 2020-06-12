@@ -263,7 +263,8 @@ class EnvironmentStepdefs {
     final appId = shared.application.id;
     Environment env = await common.findExactEnvironment(priorEnvName, appId);
 
-    assert(env.priorEnvironmentId == null, 'Prior environment id is empty!');
+    assert(env.priorEnvironmentId == null,
+        'Prior environment id is not empty! ${env.priorEnvironmentId}');
   }
 
   @And(r'I delete all existing environments')

@@ -245,7 +245,7 @@ public class ApplicationSqlApi implements ApplicationApi {
       .environment(env)
       .feature(appFeature)
       .featureState(FeatureState.ENABLED)
-      .locked(false)
+      .locked(true)
       .whoUpdated(convertUtils.uuidPerson(person))
       .build()).collect(Collectors.toList());
 

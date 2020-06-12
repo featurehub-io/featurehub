@@ -246,7 +246,7 @@ public class EnvironmentSqlApi implements EnvironmentApi {
           .environment(createdEnvironment)
           .feature(af)
           .featureState(FeatureState.ENABLED)
-          .locked(false)
+          .locked(true)
           .whoUpdated(convertUtils.uuidPerson(whoCreated))
           .build();
       }).collect(Collectors.toList());

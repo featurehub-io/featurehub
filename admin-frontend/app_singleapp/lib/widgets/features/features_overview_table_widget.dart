@@ -23,30 +23,36 @@ class FeaturesOverviewTableWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<FeatureStatusBloc>(context);
 
-    return StreamBuilder<FeatureStatusFeatures>(
-        stream: bloc.appFeatureValues,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return SizedBox.shrink();
-          }
+    try {
+      return StreamBuilder<FeatureStatusFeatures>(
+          stream: bloc.appFeatureValues,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return SizedBox.shrink();
+            }
 
-          if (snapshot.hasData &&
-              snapshot.data.sortedByNameEnvironmentIds.isEmpty) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                NoEnvironmentMessage(),
-              ],
-            );
-          }
-          if (snapshot.hasData &&
-              snapshot.data.applicationFeatureValues.features.isEmpty) {
-            return NoFeaturesMessage();
-          }
-          return FHCardWidget(
-              child: TabsView(featureStatus: snapshot.data),
-              width: double.infinity);
-        });
+            if (snapshot.hasData &&
+                snapshot.data.sortedByNameEnvironmentIds.isEmpty) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  NoEnvironmentMessage(),
+                ],
+              );
+            }
+            if (snapshot.hasData &&
+                snapshot.data.applicationFeatureValues.features.isEmpty) {
+              return NoFeaturesMessage();
+            }
+            return FHCardWidget(
+                child: TabsView(featureStatus: snapshot.data),
+                width: double.infinity);
+          });
+    } catch (e, s) {
+      print(e);
+      print(s);
+      return SizedBox.shrink();
+    }
   }
 }
 

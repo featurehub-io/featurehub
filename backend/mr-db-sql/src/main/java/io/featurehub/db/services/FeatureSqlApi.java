@@ -23,6 +23,7 @@ import io.featurehub.db.model.query.QDbGroup;
 import io.featurehub.db.publish.CacheSource;
 import io.featurehub.db.utils.EnvironmentUtils;
 import io.featurehub.mr.model.ApplicationFeatureValues;
+import io.featurehub.mr.model.ApplicationRoleType;
 import io.featurehub.mr.model.EnvironmentFeatureValues;
 import io.featurehub.mr.model.EnvironmentFeaturesResult;
 import io.featurehub.mr.model.FeatureEnvironment;
@@ -293,11 +294,13 @@ public class FeatureSqlApi implements FeatureApi {
     public Map<UUID, DbEnvironmentFeatureStrategy> strategies;
     public Map<UUID, List<RoleType>> roles;
     public Map<UUID, DbEnvironment> environments;
+    public Set<ApplicationRoleType> appRolesForThisPerson;
 
-    public EnvironmentsAndStrategies(Map<UUID, DbEnvironmentFeatureStrategy> strategies, Map<UUID, List<RoleType>> roles, Map<UUID, DbEnvironment> environments) {
+    public EnvironmentsAndStrategies(Map<UUID, DbEnvironmentFeatureStrategy> strategies, Map<UUID, List<RoleType>> roles, Map<UUID, DbEnvironment> environments, Set<ApplicationRoleType> appRoles) {
       this.strategies = strategies;
       this.roles = roles;
       this.environments = environments;
+      this.appRolesForThisPerson = appRoles;
     }
   }
 
@@ -356,7 +359,14 @@ public class FeatureSqlApi implements FeatureApi {
       });
     }
 
-    return new EnvironmentsAndStrategies(strategiesResult, roles, environments);
+    Set<ApplicationRoleType> appRoles =
+      new QDbAcl().application.isNotNull()
+        .select(QDbAcl.Alias.roles).roles.isNotNull()
+        .group.whenArchived.isNotNull()
+        .group.owningPortfolio.eq(app.getPortfolio())
+        .group.peopleInGroup.eq(dbPerson).findList().stream().map(appAcl -> convertUtils.splitApplicationRoles(appAcl.getRoles())).flatMap(List::stream).collect(Collectors.toSet());
+
+    return new EnvironmentsAndStrategies(strategiesResult, roles, environments, appRoles);
   }
 
   private boolean isPersonAdmin(DbPerson dbPerson, DbApplication app) {
@@ -389,6 +399,8 @@ public class FeatureSqlApi implements FeatureApi {
       // environment -> feature value
       Map<UUID, DbEnvironmentFeatureStrategy> strategiesToDelete = result.strategies;
 
+
+
       for (FeatureValue fv : featureValue) {
         UUID envId = ConvertUtils.ifUuid(fv.getEnvironmentId());
         if (envId == null) {
@@ -402,7 +414,11 @@ public class FeatureSqlApi implements FeatureApi {
           throw new NoAppropriateRole();
         }
 
-        createFeatureValueForEnvironment(fv.getEnvironmentId(), key, fv, new PersonFeaturePermission(person, new HashSet<>(roles)));
+        createFeatureValueForEnvironment(fv.getEnvironmentId(), key, fv,
+          new PersonFeaturePermission.Builder()
+            .person(person)
+            .appRoles(result.appRolesForThisPerson)
+            .roles(new HashSet<>(roles)).build());
 
         strategiesToDelete.remove(envId); // we processed this environment ok, didn't throw a wobbly
       }

@@ -4,6 +4,7 @@ import io.featurehub.mr.model.ApplicationRoleType;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.RoleType;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class PersonFeaturePermission {
@@ -11,9 +12,11 @@ public class PersonFeaturePermission {
   private Set<RoleType> roles;
   private Set<ApplicationRoleType> appRoles;
 
+  @Deprecated
   public PersonFeaturePermission(Person person, Set<RoleType> roles) {
     this.person = person;
     this.roles = roles;
+    this.appRoles = new HashSet<>();
   }
 
   private PersonFeaturePermission(Builder builder) {
