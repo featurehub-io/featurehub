@@ -75,6 +75,7 @@ class _MenuContainer extends StatelessWidget {
               _MenuFeaturesOptionsWidget(),
               if (mrBloc.userIsAnyPortfolioOrSuperAdmin)
                 Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(
