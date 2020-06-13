@@ -26,7 +26,7 @@ components:
       enum:
         - ack
         - bye
-        - error
+        - failure
         - features
         - feature
         - delete_feature
@@ -53,16 +53,18 @@ components:
         - name
       properties:
         name:
-          type: string
-          enum:
-            - ATTRIBUTE
-            - PERCENTAGE
+          $ref: "#/components/schemas/StrategyNameType"
         value:
           description: "this value is used if it is a simple attribute or percentage. If it is more complex then the pairs are passed"
         pairs:
           type: array
           items:
             $ref: "#/components/schemas/StrategyPair"
+    StrategyNameType:
+      type: string
+      enum:
+        - ATTRIBUTE
+        - PERCENTAGE
     StrategyPair:
  #     description: "This is simply information the feature wishes to pass"
       required:

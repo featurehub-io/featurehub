@@ -86,7 +86,7 @@ public class TimedBucketClientConnection {
 
   public void failed(String reason) {
     try {
-      writeMessage(SSEResultState.ERROR, SSEStatusMessage.status(reason));
+      writeMessage(SSEResultState.FAILURE, SSEStatusMessage.status(reason));
       close();
     } catch (IOException e) {
       log.warn("Failed to fail client connection", e);

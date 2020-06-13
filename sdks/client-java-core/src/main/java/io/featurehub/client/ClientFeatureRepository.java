@@ -71,7 +71,7 @@ public class ClientFeatureRepository {
               broadcastReadyness();
             }
             break;
-          case ERROR:
+          case FAILURE:
             readyness = Readyness.Failed;
             broadcastReadyness();
             break;
