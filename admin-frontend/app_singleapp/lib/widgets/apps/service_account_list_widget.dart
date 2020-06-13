@@ -89,6 +89,7 @@ class _ServiceAccountWidget extends StatelessWidget {
                     }),
               ],
             ),
+            SizedBox(height: 8.0),
             Container(
               child: _ServiceAccountEnvironments(
                   serviceAccount: serviceAccount, serviceAccountBloc: bloc),
