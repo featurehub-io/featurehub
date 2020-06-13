@@ -40,16 +40,40 @@ class _GroupPermissionState extends State<GroupPermissionsWidget> {
 
           return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
-                Container(
-                    padding: EdgeInsets.only(left: 10, top: 20),
-                    child: Text(
-                      'Group',
-                      style: Theme.of(context).textTheme.caption,
-                    )),
-                Container(
-                    padding: EdgeInsets.fromLTRB(10, 0, 0, 5),
-                    child: groupsDropdown(snapshot.data, bloc)),
+                SizedBox(
+                  height: 16.0,
+                ),
+                Row(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                            child: Text(
+                          'Group',
+                          style: Theme.of(context).textTheme.caption,
+                        )),
+                        Container(child: groupsDropdown(snapshot.data, bloc)),
+                      ],
+                    ),
+                    SizedBox(width: 16.0),
+                    FHFlatButtonTransparent(
+                      title: 'Manage group members',
+                      keepCase: true,
+                      onPressed: () {
+                        ManagementRepositoryClientBloc.router.navigateTo(
+                            context, '/manage-group',
+                            replace: true,
+                            transition: TransitionType.material,
+                            params: {
+                              'id': [selectedGroup]
+                            });
+                      },
+                    ),
+                  ],
+                ),
                 _GroupPermissionDetailWidget(bloc: bloc, mr: mrBloc)
               ]);
         });
@@ -57,12 +81,20 @@ class _GroupPermissionState extends State<GroupPermissionsWidget> {
 
   Widget groupsDropdown(List<Group> groups, ManageAppBloc bloc) {
     return Container(
+      constraints: BoxConstraints(maxWidth: 250),
       child: DropdownButton(
+        isDense: true,
+        isExpanded: true,
         items: groups.map((Group group) {
           return DropdownMenuItem<String>(
               value: group.id,
               child: Text(
                 group.name,
+                style: Theme
+                    .of(context)
+                    .textTheme
+                    .bodyText2,
+                overflow: TextOverflow.ellipsis,
               ));
         }).toList(),
         hint: Text('Select group'),
@@ -165,33 +197,22 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                         Text(
                             'This group can create, edit and delete features for this application',
                             style: Theme.of(context).textTheme.caption),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 32.0),
-                          child: FHFlatButtonTransparent(
-                            title: 'Manage group members',
-                            keepCase: true,
-                            onPressed: () {
-                              ManagementRepositoryClientBloc.router.navigateTo(
-                                  context, '/manage-group',
-                                  replace: true,
-                                  transition: TransitionType.material,
-                                  params: {
-                                    'id': [currentGroup.id]
-                                  });
-                            },
-                          ),
-                        ),
+
                       ],
                     ),
                     Container(
-                        padding: EdgeInsets.fromLTRB(5, 10, 0, 15),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: <Widget>[
-                            Text(
-                                'Set the group access to features for each environment',
-                                style: Theme.of(context).textTheme.caption),
-                          ],
+                        padding: EdgeInsets.fromLTRB(0, 16, 0, 16),
+                        child: Center(
+                          child:
+                          Text(
+                              'Set the group access to features for each environment',
+                              style: Theme
+                                  .of(context)
+                                  .textTheme
+                                  .subtitle1
+                                  .copyWith(color: Theme
+                                  .of(context)
+                                  .hintColor)),
                         )),
                     Table(children: rows),
                     FHButtonBar(children: [
@@ -199,9 +220,6 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                           onPressed: () {
                             currentGroup = null;
                             widget.bloc.resetGroup(groupSnapshot.data);
-
-                            widget.bloc.mrClient.addSnackbar(Text(
-                                "Group '${groupSnapshot.data.name}' reset!"));
                           },
                           title: 'Cancel'),
                       FHFlatButton(
@@ -242,8 +260,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
           Container(
             padding: EdgeInsets.fromLTRB(5, 0, 0, 15),
             child: Text(
-              'Environment',
-              style: Theme.of(context).textTheme.subtitle2,
+              '',
             ),
           ),
           Center(

@@ -76,32 +76,29 @@ class _ServiceAccountPermissionState
           return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
+                SizedBox(height: 16.0),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                            padding: EdgeInsets.only(left: 10, top: 20),
-                            child: Text(
-                              'Service account',
-                              style: Theme.of(context).textTheme.caption,
-                            )),
-                        Container(
-                            padding: EdgeInsets.fromLTRB(10, 0, 0, 5),
-                            child: serviceAccountDropdown(snapshot.data, bloc)),
+                        Text(
+                          'Service account',
+                          style: Theme.of(context).textTheme.caption,
+                        ),
+                        serviceAccountDropdown(snapshot.data, bloc),
                       ],
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(left: 16.0, top: 16.0),
+                      padding: const EdgeInsets.only(left: 16.0),
                       child: FHInfoCardWidget(
                           message:
-                              """The 'Lock/Unlock' and 'Change value' permissions \n
-are so you can change these states through the API's \n
-e.g., when running tests. \n \n
-We strongly recommend setting production environments \n
-with only 'Read' permission for service accounts."""),
+                          '''The 'Lock/Unlock' and 'Change value' permissions
+are so you can change these states through the API's
+e.g., when running tests. \n
+We strongly recommend setting production environments
+with only 'Read' permission for service accounts.'''),
                     ),
                   ],
                 ),
@@ -113,12 +110,20 @@ with only 'Read' permission for service accounts."""),
   Widget serviceAccountDropdown(
       List<ServiceAccount> serviceAccounts, ManageAppBloc bloc) {
     return Container(
+      constraints: BoxConstraints(maxWidth: 250),
       child: DropdownButton(
+        isExpanded: true,
+        isDense: true,
         items: serviceAccounts.map((ServiceAccount serviceAccount) {
           return DropdownMenuItem<String>(
               value: serviceAccount.id,
               child: Text(
                 serviceAccount.name,
+                style: Theme
+                    .of(context)
+                    .textTheme
+                    .bodyText2,
+                overflow: TextOverflow.ellipsis,
               ));
         }).toList(),
         hint: Text(
@@ -220,14 +225,18 @@ class _ServiceAccountPermissionDetailState
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     Container(
-                        padding: EdgeInsets.fromLTRB(5, 10, 0, 15),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: <Widget>[
-                            Text(
-                                'Set the service account access to features for each environment',
-                                style: Theme.of(context).textTheme.caption),
-                          ],
+                        padding: EdgeInsets.fromLTRB(0, 24, 0, 16),
+                        child: Center(
+                          child:
+                          Text(
+                              'Set the service account access to features for each environment',
+                              style: Theme
+                                  .of(context)
+                                  .textTheme
+                                  .subtitle1
+                                  .copyWith(color: Theme
+                                  .of(context)
+                                  .hintColor)),
                         )),
                     table,
                     FHButtonBar(children: [
@@ -236,8 +245,6 @@ class _ServiceAccountPermissionDetailState
                             currentServiceAccount = null;
                             widget.bloc
                                 .selectServiceAccount(saSnapshot.data.id);
-                            widget.bloc.mrClient.addSnackbar(Text(
-                                "Service account '${saSnapshot.data.name}' reset!"));
                           },
                           title: 'Cancel'),
                       FHFlatButton(
@@ -273,8 +280,7 @@ class _ServiceAccountPermissionDetailState
           Container(
             padding: EdgeInsets.fromLTRB(5, 0, 0, 15),
             child: Text(
-              'Environment',
-              style: Theme.of(context).textTheme.subtitle2,
+              '',
             ),
           ),
           Center(

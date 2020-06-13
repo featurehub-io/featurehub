@@ -135,7 +135,7 @@ class _SiteAdminOptionsWidget extends StatelessWidget {
           return Column(children: <Widget>[
             _MenuItem(
                 name: 'Portfolios',
-                iconData: Icons.business_center,
+                iconData: MaterialCommunityIcons.briefcase_plus_outline,
                 path: '/portfolios',
                 params: {}),
             _MenuItem(
