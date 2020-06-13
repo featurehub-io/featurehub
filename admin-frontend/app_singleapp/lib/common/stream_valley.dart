@@ -154,7 +154,7 @@ class StreamValley {
           .catchError(mrClient.dialogError);
       currentPortfolioApplications = appList;
 
-      if (appList.isNotEmpty && appList.length == 1) {
+      if (appList.isNotEmpty) {
         currentAppId = appList[0].id;
       }
     } else {
