@@ -81,7 +81,6 @@ public class FeatureSqlApi implements FeatureApi {
 
     if (eId != null) {
       final DbEnvironmentFeatureStrategy strategy = new QDbEnvironmentFeatureStrategy().environment.id.eq(eId).feature.key.eq(key).findOne();
-      log.info("strategy= {}",strategy);
       if (strategy != null) {
         // this is an update not a create, environment + app-feature key exists
         return onlyUpdateFeatureValueForEnvironment(featureValue, person, strategy);
