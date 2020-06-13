@@ -6,6 +6,10 @@ class Shared {
   RegistrationUrl registrationUrl;
 
   Portfolio get portfolio => _data['portfolio'] as Portfolio;
+
+  set serviceAccount(ServiceAccount serviceAccount) =>
+      _data['sa'] = serviceAccount;
+  ServiceAccount get serviceAccount => _data['sa'] as ServiceAccount;
   set portfolio(Portfolio p) => _data['portfolio'] = p;
 
   Person get person => _data['person'] as Person;

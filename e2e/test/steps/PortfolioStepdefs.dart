@@ -212,6 +212,32 @@ class PortfolioStepdefs {
   }
 
   @Then(
+      r'^We create a service account "(.*)" with the permission (READ|UNLOCK|LOCK|CHANGE_VALUE)$')
+  void createServiceAccountWithPermission(
+      String saName, String permission) async {
+    assert(shared.portfolio != null, 'no set portfolio');
+    assert(shared.application != null, 'no set application');
+    assert(shared.environment != null, 'no set environment');
+
+    RoleType permissionType =
+        RoleTypeTypeTransformer.fromJson(permission) ?? RoleType.READ;
+
+    final sa =
+        await userCommon.serviceAccountService.createServiceAccountInPortfolio(
+            shared.portfolio.id,
+            ServiceAccount()
+              ..name = saName
+              ..description = saName
+              ..permissions = [
+                ServiceAccountPermission()
+                  ..permissions = [permissionType]
+                  ..environmentId = shared.environment.id
+              ]);
+
+    shared.serviceAccount = sa;
+  }
+
+  @Then(
       r'portfolio {string} has service account {string} and the permission {string} for this {string} and {string}')
   void portfolioHasServiceAccountAndThePermissionForThisAnd(
       String portfolioName,

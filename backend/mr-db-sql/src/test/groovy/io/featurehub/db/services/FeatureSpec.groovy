@@ -361,12 +361,12 @@ class FeatureSpec extends Specification {
       afv.environments.find({it.environmentName == 'app2-test-f1'}).roles == [RoleType.READ]
       afv.environments.find({it.environmentName == 'app2-test-f1'}).features.size() == 0
       afv.environments.find({it.environmentName == 'app2-production-f1'}).features.size() == 1
-      afv.environments.find({it.environmentName == 'app2-production-f1'}).roles == [RoleType.READ] // because superuser, otherwise would have no access
+      afv.environments.find({it.environmentName == 'app2-production-f1'}).roles == Arrays.asList(RoleType.values()) // because superuser, otherwise would have no access
       afvAverageJoe.environments.size() == 4
       afvAverageJoe.environments.find({it.environmentName == 'app2-production-f1'}).roles.size() == 0
     // portfolio admin can read in every environment
       afvPortfolioAdminOfPortfolio1.environments.size() == 4
-      afvPortfolioAdminOfPortfolio1.environments.roles.each { it -> assert it == [RoleType.READ] }
+      afvPortfolioAdminOfPortfolio1.environments.roles.each { it -> assert it == Arrays.asList(RoleType.values()) }
       afvPortfolioAdminOfPortfolio1.environments.find({it.environmentName == 'app2-dev-f1'}).features[0].locked
   }
 }

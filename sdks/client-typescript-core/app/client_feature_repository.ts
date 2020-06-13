@@ -53,7 +53,7 @@ export class ClientFeatureRepository {
         case SSEResultState.DeleteFeature:
           this.deleteFeature(FeatureStateFromJSON(data));
           break;
-        case SSEResultState.Error:
+        case SSEResultState.Failure:
           this.readynessState = Readyness.Failed;
           if (!this._catchAndReleaseMode) {
             this.broadcastReadynessState();

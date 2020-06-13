@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -436,7 +437,13 @@ public class FeatureSqlApi implements FeatureApi {
   }
 
   private EnvironmentFeatureValues environmentToFeatureValues(DbAcl acl) {
-    List<RoleType> roles = convertUtils.splitEnvironmentRoles(acl.getRoles());
+    List<RoleType> roles;
+
+    if (acl.getApplication() != null && acl.getApplication().getGroupRolesAcl().stream().anyMatch(r -> r.getRoles() != null && convertUtils.splitApplicationRoles(r.getRoles()).contains(ApplicationRoleType.FEATURE_EDIT))) {
+      roles = Arrays.asList(RoleType.values());
+    } else {
+      roles = convertUtils.splitEnvironmentRoles(acl.getRoles());
+    }
 
     if (roles == null || roles.isEmpty()) {
       return null;
@@ -470,6 +477,7 @@ public class FeatureSqlApi implements FeatureApi {
             .environment.whenArchived.isNull()
             .environment.parentApplication.eq(app)
             .environment.parentApplication.whenArchived.isNull()
+            .environment.parentApplication.groupRolesAcl.fetch()
             .group.whenArchived.isNull()
             .group.peopleInGroup.eq(dbPerson).findList()
         .stream()
@@ -515,9 +523,9 @@ public class FeatureSqlApi implements FeatureApi {
                 .environmentName(e.getName())
                 .priorEnvironmentId(e.getPriorEnvironment() == null ? null : e.getPriorEnvironment().getId().toString())
                 .environmentId(e.getId().toString());
-            // they are in fact an admin so they have at least READ access
+            // they are in fact an admin so they have ALL access
             if (personAdmin) {
-              e1.addRolesItem(RoleType.READ);
+              e1.roles(Arrays.asList(RoleType.values()));
               e1.features( new QDbEnvironmentFeatureStrategy()
                 .feature.whenArchived.isNull()
                 .environment.eq(e)
