@@ -54,6 +54,7 @@ Feature: Environments exist under features and should be able to be managed only
     Given the first superuser is used for authentication
     And I ensure a portfolio named "<portfolio>" with description "<desc>" exists
     And I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
+    And I delete all existing environments
     And I ensure that an environments exist:
       | name | desc    |
       | dev  | devenv  |

@@ -113,4 +113,11 @@ class GroupStepdefs {
     await userCommon.groupService
         .updateGroup(group.id, group, updateMembers: true);
   }
+
+  @And(r'I add the shared user to the current portfolio admin group')
+  void iAddTheSharedUserToTheCurrentPortfolioAdminGroup() async {
+    final group = await findCurrentPortfolioGroup();
+    await userCommon.groupService
+        .addPersonToGroup(group.id, shared.person.id.id);
+  }
 }

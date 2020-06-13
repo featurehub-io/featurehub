@@ -17,6 +17,8 @@ Feature: Create some personas with different feature access data
     And I ensure all permissions added to the group "<adminGroup>" for the env "<envName>" for app "<appName>" for portfolio "<portfolio>"
     And I ensure all permissions added to the group "<adminGroup>" for the env "<envName2>" for app "<appName>" for portfolio "<portfolio>"
     And I ensure all permissions added to the group "<adminGroup>" for the env "<envName3>" for app "<appName>" for portfolio "<portfolio>"
+    And I unlock the feature value for environment "<envName>" for feature "<featureKey>"
+    And I unlock the feature value for environment "<envName2>" for feature "<featureKey>"
     And I set the boolean feature value as "true" for environment "<envName>" for feature "<featureKey>"
     And I set the boolean feature value as "false" for environment "<envName2>" for feature "<featureKey>"
     And I ensure the boolean feature value is "true" for environment "<envName>" for feature "<featureKey>"
@@ -77,11 +79,11 @@ Feature: Create some personas with different feature access data
     When I add the user "John@mailinator.com" to the group "<group>" in the portfolio "<portfolio>"
 
     Examples:
-      | appName           | appDesc           | portfolio    | adminGroup                  | group        | permission | featureKey     | alias    | featureName             | link                  | envName | envDesc    | envName2 | envDesc2 | envName3 | envDesc3 | envName4 | envDesc4 | valueType |
-      | Test app - READ   | FeatureTest1 Desc | Persona test | Persona test Administrators | READ-users   | READ       | FEATURE_SAMPLE | sssshhhh | Sample feature - read   | http://featurehub.dev | prod    | production | test     | test env | dev      | dev env  | uat      | uat  env | boolean   |
-      | Test app - LOCK   | FeatureTest1 Desc | Persona test | Persona test Administrators | LOCK-users   | LOCK       | FEATURE_SAMPLE | sssshhhh | Sample feature - lock   | http://featurehub.dev | prod    | production | test     | test env | dev      | dev env  | uat      | uat  env | boolean   |
-      | Test app - UNLOCK | FeatureTest1 Desc | Persona test | Persona test Administrators | UNLOCK-users | UNLOCK     | FEATURE_SAMPLE | sssshhhh | Sample feature - unlock | http://featurehub.dev | prod    | production | test     | test env | dev      | dev env  | uat      | uat  env | boolean   |
-      | Test app - EDIT   | FeatureTest1 Desc | Persona test | Persona test Administrators | UNLOCK-users | EDIT       | FEATURE_SAMPLE | sssshhhh | Sample feature - edit   | http://featurehub.dev | prod    | production | test     | test env | dev      | dev env  | uat      | uat  env | boolean   |
+      | appName                 | appDesc           | portfolio    | adminGroup                  | group        | permission   | featureKey     | alias    | featureName             | link                  | envName | envDesc    | envName2 | envDesc2 | envName3 | envDesc3 | envName4 | envDesc4 | valueType |
+      | Test app - READ         | FeatureTest1 Desc | Persona test | Persona test Administrators | READ-users   | READ         | FEATURE_SAMPLE | sssshhhh | Sample feature - read   | http://featurehub.dev | prod    | production | test     | test env | dev      | dev env  | uat      | uat  env | boolean   |
+      | Test app - LOCK         | FeatureTest1 Desc | Persona test | Persona test Administrators | LOCK-users   | LOCK         | FEATURE_SAMPLE | sssshhhh | Sample feature - lock   | http://featurehub.dev | prod    | production | test     | test env | dev      | dev env  | uat      | uat  env | boolean   |
+      | Test app - UNLOCK       | FeatureTest1 Desc | Persona test | Persona test Administrators | UNLOCK-users | UNLOCK       | FEATURE_SAMPLE | sssshhhh | Sample feature - unlock | http://featurehub.dev | prod    | production | test     | test env | dev      | dev env  | uat      | uat  env | boolean   |
+      | Test app - CHANGE_VALUE | FeatureTest1 Desc | Persona test | Persona test Administrators | UNLOCK-users | CHANGE_VALUE | FEATURE_SAMPLE | sssshhhh | Sample feature - edit   | http://featurehub.dev | prod    | production | test     | test env | dev      | dev env  | uat      | uat  env | boolean   |
 
 
   Scenario Outline: Create apps and add user to 2 groups with same permissions
@@ -125,6 +127,8 @@ Feature: Create some personas with different feature access data
     When I create the feature with a key "<featureKey>" and alias "<alias>" and name "<featureName>" and link "<link>" and type "boolean"
     And I can find the feature with a key "<featureKey>"
     When I add the user "superuser@mailinator.com" to the group "<group1>" in the portfolio "<portfolio>"
+    And I unlock the feature value for environment "<envName>" for feature "<featureKey>"
+    And I unlock the feature value for environment "<envName2>" for feature "<featureKey>"
     And I set the boolean feature value as "true" for environment "<envName>" for feature "<featureKey>"
     And I set the boolean feature value as "false" for environment "<envName2>" for feature "<featureKey>"
     And I ensure the boolean feature value is "true" for environment "<envName>" for feature "<featureKey>"

@@ -12,6 +12,7 @@ import io.featurehub.db.model.DbPerson;
 import io.featurehub.db.model.DbPortfolio;
 import io.featurehub.db.model.DbServiceAccount;
 import io.featurehub.db.model.DbServiceAccountEnvironment;
+import io.featurehub.mr.model.RoleType;
 import io.featurehub.db.model.query.QDbEnvironment;
 import io.featurehub.db.model.query.QDbServiceAccount;
 import io.featurehub.db.publish.CacheSource;
@@ -19,7 +20,6 @@ import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.PublishAction;
 import io.featurehub.mr.model.ServiceAccount;
 import io.featurehub.mr.model.ServiceAccountPermission;
-import io.featurehub.mr.model.ServiceAccountPermissionType;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -148,8 +148,8 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
     return null;
   }
 
-  private String convertPermissionsToString(List<ServiceAccountPermissionType> permissions) {
-    return permissions.stream().map(ServiceAccountPermissionType::toString).sorted().collect(Collectors.joining(","));
+  private String convertPermissionsToString(List<RoleType> permissions) {
+    return permissions.stream().map(RoleType::toString).sorted().collect(Collectors.joining(","));
   }
 
   @Override

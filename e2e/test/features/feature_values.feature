@@ -18,6 +18,9 @@ Feature: Create feature values
     When I add the user "superuser@mailinator.com" to the group "<adminGroup>" in the portfolio "<portfolio>"
     When I add the user "seb@mailinator.com" to the group "<adminGroup>" in the portfolio "<portfolio>"
     When I can login as user "seb@mailinator.com" with password "password123"
+    And I unlock the feature value for environment "<envName>" for feature "<featureKey>"
+    And I unlock the feature value for environment "<envName2>" for feature "<featureKey>"
+    And I unlock the feature value for environment "<envName3>" for feature "<featureKey>"
     And I set the boolean feature value as "true" for environment "<envName>" for feature "<featureKey>"
     And I set the boolean feature value as "false" for environment "<envName2>" for feature "<featureKey>"
     And I set the boolean feature value as "true" for environment "<envName3>" for feature "<featureKey>"
@@ -55,6 +58,25 @@ Feature: Create feature values
       | appName | envName | envName2 | envName3 | envName4 | feature1  | feature2  | feature3  | feature4  |
       | nusella | dev1    | dev2     | test1    | test3    | FEATURE_1 | FEATURE_2 | FEATURE_3 | FEATURE_4 |
 
+  Scenario: A portfolio admin with just FEATURE_EDIT permissions can set features
+    Given the first superuser is used for authentication
+    And I have a randomly generated person with the start of name "Admin Portfolio Bob"
+    And the first superuser is used for authentication
+    And I have a randomly named portfolio with the prefix "feature_edit_test_pf"
+    And I add the shared user to the current portfolio admin group
+    And The shared person is the authenticated person
+    And I create an application with the name "feature_edit_test_app"
+    And I create an environment "dev"
+    And I create a feature flag "FEATURE_CAN_CHANGE"
+    And all feature flags for environment "dev" should be "false"
+    And I set the boolean feature value as "true" for environment "dev" for feature "FEATURE_CAN_CHANGE"
+    And all feature flags for environment "dev" should be "false"
+    And I unlock the feature value for environment "dev" for feature "FEATURE_CAN_CHANGE"
+    And I set the boolean feature value as "true" for environment "dev" for feature "FEATURE_CAN_CHANGE"
+    And all feature flags for environment "dev" should be "true"
+    And I lock the feature value for environment "dev" for feature "FEATURE_CAN_CHANGE"
+    And I set the boolean feature value as "false" for environment "dev" for feature "FEATURE_CAN_CHANGE"
+    And all feature flags for environment "dev" should be "true"
 
 
   Scenario Outline: I can set feature values per environment where the user doesn't have access to some of them
@@ -71,6 +93,8 @@ Feature: Create feature values
     When I create the feature with a key "<featureKey>" and alias "<alias>" and name "<featureName>" and link "<link>" and type "boolean"
     And I can find the feature with a key "<featureKey>"
     When I add the user "superuser@mailinator.com" to the group "<adminGroup>" in the portfolio "<portfolio>"
+    And I unlock the feature value for environment "<envName>" for feature "<featureKey>"
+    And I unlock the feature value for environment "<envName2>" for feature "<featureKey>"
     And I set the boolean feature value as "true" for environment "<envName>" for feature "<featureKey>"
     And I set the boolean feature value as "false" for environment "<envName2>" for feature "<featureKey>"
     And I ensure the boolean feature value is "true" for environment "<envName>" for feature "<featureKey>"

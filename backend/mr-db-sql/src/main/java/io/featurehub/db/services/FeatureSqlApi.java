@@ -84,7 +84,7 @@ public class FeatureSqlApi implements FeatureApi {
       if (strategy != null) {
         // this is an update not a create, environment + app-feature key exists
         return onlyUpdateFeatureValueForEnvironment(featureValue, person, strategy);
-      } else if (person.hasEditRole()) {
+      } else if (person.hasChangeValueRole()) {
         return onlyCreateFeatureValueForEnvironment(eid, key, featureValue, person);
       } else {
         log.info("roles for person are {} and are not enough for environment {} and key {}", person.toString(), eid, key);
@@ -167,7 +167,7 @@ public class FeatureSqlApi implements FeatureApi {
   private void updateStrategy(FeatureValue featureValue, PersonFeaturePermission person, DbEnvironmentFeatureStrategy strategy) throws NoAppropriateRole {
     final DbApplicationFeature feature = strategy.getFeature();
 
-    if (person.hasEditRole()) {
+    if (person.hasChangeValueRole() && ( !strategy.isLocked() || (Boolean.FALSE.equals(featureValue.getLocked()) && person.hasUnlockRole()) )) {
       if (feature.getValueType() == FeatureValueType.NUMBER) {
         strategy.setDefaultValue(featureValue.getValueNumber() == null ? null : featureValue.getValueNumber().toString());
       } else if (feature.getValueType() == FeatureValueType.STRING) {
@@ -183,6 +183,7 @@ public class FeatureSqlApi implements FeatureApi {
       strategy.setRolloutStrategyInstances(featureValue.getRolloutStrategyInstances());
     }
 
+    // change locked before changing value, as may not be able to change value if locked
     boolean newValue = featureValue.getLocked() == null ? false : featureValue.getLocked();
     if (newValue != strategy.isLocked()) {
       if (!newValue && person.hasUnlockRole()) {
@@ -399,8 +400,6 @@ public class FeatureSqlApi implements FeatureApi {
       // environment -> feature value
       Map<UUID, DbEnvironmentFeatureStrategy> strategiesToDelete = result.strategies;
 
-
-
       for (FeatureValue fv : featureValue) {
         UUID envId = ConvertUtils.ifUuid(fv.getEnvironmentId());
         if (envId == null) {
@@ -422,6 +421,12 @@ public class FeatureSqlApi implements FeatureApi {
 
         strategiesToDelete.remove(envId); // we processed this environment ok, didn't throw a wobbly
       }
+
+      // now remove any ability to remove feature values that are flags
+      final List<UUID> invalidDeletions = strategiesToDelete.keySet().stream()
+        .filter(u -> (strategiesToDelete.get(u).getFeature().getValueType() != FeatureValueType.BOOLEAN))
+        .collect(Collectors.toList());
+      invalidDeletions.forEach(strategiesToDelete::remove);
 
       if (removeValuesNotPassed) {
         publishTheRemovalOfABunchOfStrategies(strategiesToDelete.values());

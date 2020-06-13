@@ -14,6 +14,7 @@ import io.featurehub.db.model.query.QDbOrganization
 import io.featurehub.db.publish.CacheSource
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.ApplicationFeatureValues
+import io.featurehub.mr.model.ApplicationRoleType
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.EnvironmentGroupRole
 import io.featurehub.mr.model.Feature
@@ -26,7 +27,6 @@ import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.RoleType
 import io.featurehub.mr.model.ServiceAccount
 import io.featurehub.mr.model.ServiceAccountPermission
-import io.featurehub.mr.model.ServiceAccountPermissionType
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -196,10 +196,14 @@ class FeatureSpec extends Specification {
     given: "i have a feature"
       String k = "FEATURE_FV1"
       def features = appApi.createApplicationFeature(appId, new Feature().key(k).valueType(FeatureValueType.BOOLEAN), superPerson)
-      def pers = new PersonFeaturePermission(superPerson, [RoleType.EDIT] as Set<RoleType>)
+      def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
     when: "i set the feature value"
       def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k);
-      featureSqlApi.createFeatureValueForEnvironment(envIdApp1, k, f.valueBoolean(true).locked(true), pers)
+      // it already exists, so we have  to unlock it
+      f = featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, f.locked(false), pers)
+      assert(!f.locked && !f.valueBoolean);
+      def f2 = featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, f.valueBoolean(true).locked(true), pers)
+      assert(f2.valueBoolean && f2.locked);
     and: "i get the FV"
       def fvEnv1 = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1).featureValues
     and: "i update the feature value"
@@ -222,10 +226,12 @@ class FeatureSpec extends Specification {
     given: "i have a feature"
       String k = "FEATURE_FV_UNLOCK1"
       def features = appApi.createApplicationFeature(appId, new Feature().key(k).valueType(FeatureValueType.BOOLEAN), superPerson)
-      def pers = new PersonFeaturePermission(superPerson, [RoleType.EDIT] as Set<RoleType>)
+      def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
     when: "i set the feature value"
       def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k);
-      featureSqlApi.createFeatureValueForEnvironment(envIdApp1, k, f.valueBoolean(true).locked(true), pers)
+    // unlock it so we can change it in  the next step
+      f = featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, f.locked(false), pers)
+      featureSqlApi.updateFeatureValueForEnvironment(envIdApp1, k, f.valueBoolean(true).locked(true), pers)
     and: "i update the feature value as unlock permission only"
       def fv = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k)
       fv.valueBoolean(false)
@@ -234,14 +240,14 @@ class FeatureSpec extends Specification {
       def fv2 = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k)
     then:
       !fv2.locked
-      fv2.valueBoolean
+      fv2.valueBoolean // my permission was unlock only, so i can't change its value
   }
 
   def "if i only have unlock permission i get an exception if i try and lock"() {
     given: "i have a feature"
       String k = "FEATURE_FV_UNLOCK2"
       def features = appApi.createApplicationFeature(appId, new Feature().key(k).valueType(FeatureValueType.BOOLEAN), superPerson)
-      def pers = new PersonFeaturePermission(superPerson, [RoleType.EDIT] as Set<RoleType>)
+      def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
     when: "i set the feature value"
       def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k);
       featureSqlApi.createFeatureValueForEnvironment(envIdApp1, k, f.valueBoolean(false).locked(false), pers)
@@ -259,7 +265,7 @@ class FeatureSpec extends Specification {
     given: "i have a list of features"
       String[] names = ['FEATURE_FVU_1', 'FEATURE_FVU_2', 'FEATURE_FVU_3', 'FEATURE_FVU_4', 'FEATURE_FVU_5']
       names.each { k -> appApi.createApplicationFeature(appId, new Feature().key(k).valueType(FeatureValueType.BOOLEAN), superPerson) }
-      def pers = new PersonFeaturePermission(superPerson, [RoleType.EDIT] as Set<RoleType>)
+      def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
     when: "i set two of those values"
       def updatesForCreate = [featureSqlApi.getFeatureValueForEnvironment(envIdApp1, 'FEATURE_FVU_1').valueBoolean(true).locked(true),
                               featureSqlApi.getFeatureValueForEnvironment(envIdApp1, 'FEATURE_FVU_2').valueBoolean(true).locked(true)]
@@ -293,13 +299,13 @@ class FeatureSpec extends Specification {
       def serviceA1 = serviceAccountSqlApi.create(portfolio1.id.toString(), superPerson,
         new ServiceAccount()
           .description("the dragon").name("wilbur")
-          .permissions([new ServiceAccountPermission().environmentId(env1.id).permissions([ServiceAccountPermissionType.READ])]),
+          .permissions([new ServiceAccountPermission().environmentId(env1.id).permissions([RoleType.READ])]),
         Opts.empty())
     and: "i allow superperson access to two of the three environments"
       Group g1 = groupSqlApi.createPortfolioGroup(portfolio1.id.toString(), new Group().name("app2-f1-test"), superPerson)
       g1.environmentRoles([
-        new EnvironmentGroupRole().roles([RoleType.EDIT]).environmentId(env1.id),
-        new EnvironmentGroupRole().roles([RoleType.EDIT]).environmentId(env3.id),
+        new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]).environmentId(env1.id),
+        new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK]).environmentId(env3.id),
         new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(env2.id)
       ])
       g1.members = [superPerson, memberOfPortfolio1]
@@ -307,11 +313,18 @@ class FeatureSpec extends Specification {
     and: "i create a feature value"
       String k = 'FEATURE_BUNCH'
       appApi.createApplicationFeature(app2Id, new Feature().key(k).valueType(FeatureValueType.BOOLEAN), superPerson)
+      def perm = new PersonFeaturePermission.Builder().roles([RoleType.UNLOCK] as Set<RoleType>).person(superPerson).appRoles([] as Set<ApplicationRoleType>).build()
+      [env1.id, env2.id, env3.id, env4.id].each { envId ->
+        featureSqlApi.updateFeatureValueForEnvironment(envId, k,
+          featureSqlApi.getFeatureValueForEnvironment(envId, k).locked(false),
+          perm)
+      }
     when: "i update the feature value"
       featureSqlApi.updateAllFeatureValuesByApplicationForKey(app2Id, k, [
         featureSqlApi.getFeatureValueForEnvironment(env1.id, k).valueBoolean(true).locked(true),
         featureSqlApi.getFeatureValueForEnvironment(env3.id, k).valueBoolean(null).locked(true),
       ], superPerson, true)
+
     and: "i ask for irina's api"
       ApplicationFeatureValues afv = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson)
       ApplicationFeatureValues afvAverageJoe = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, memberOfPortfolio1)
@@ -336,15 +349,15 @@ class FeatureSpec extends Specification {
       envs1.size() == 4
       envsAverageJoe.size() == 4
       envsAverageJoe.find({ FeatureEnvironment e -> e.environment.id == env4.id }).roles.size() == 0
-      envsAverageJoe.find({ FeatureEnvironment e -> e.environment.id == env1.id }).roles.size() == 1
+      envsAverageJoe.find({ FeatureEnvironment e -> e.environment.id == env1.id }).roles.size() == 3
       envs1.find({e -> e.environment.id == env3.id}).featureValue == null
       !envs1.find({ e -> e.environment.id == env1.id }).featureValue.locked
       afv.features.find({it.key == k}).valueType == FeatureValueType.BOOLEAN
       afv.environments.size() == 4
-      afv.environments.find({it.environmentName == 'app2-dev-f1'}).roles == [RoleType.EDIT]
+      afv.environments.find({it.environmentName == 'app2-dev-f1'}).roles == [RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]
       afv.environments.find({it.environmentName == 'app2-dev-f1'}).features[0].locked
       afv.environments.find({it.environmentName == 'app2-staging-f1'}).features[0].locked
-      afv.environments.find({it.environmentName == 'app2-staging-f1'}).roles == [RoleType.EDIT]
+      afv.environments.find({it.environmentName == 'app2-staging-f1'}).roles == [RoleType.CHANGE_VALUE, RoleType.LOCK]
       afv.environments.find({it.environmentName == 'app2-test-f1'}).roles == [RoleType.READ]
       afv.environments.find({it.environmentName == 'app2-test-f1'}).features.size() == 0
       afv.environments.find({it.environmentName == 'app2-production-f1'}).features.size() == 1

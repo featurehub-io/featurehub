@@ -41,7 +41,6 @@ import io.featurehub.mr.model.Portfolio;
 import io.featurehub.mr.model.RoleType;
 import io.featurehub.mr.model.ServiceAccount;
 import io.featurehub.mr.model.ServiceAccountPermission;
-import io.featurehub.mr.model.ServiceAccountPermissionType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -545,11 +544,9 @@ public class ConvertUtils {
     return account;
   }
 
-  private List<ServiceAccountPermissionType> splitServiceAccountPermissions(String permissions) {
-    return Arrays.stream(permissions.split(","))
-      .filter(s -> s != null && s.length() > 0)
-      .map(ServiceAccountPermissionType::fromValue)
-      .collect(Collectors.toList());
+  private List<RoleType> splitServiceAccountPermissions(String permissions) {
+    // same now, were different historically
+    return splitEnvironmentRoles(permissions);
   }
 
   public FeatureEnvironment toFeatureEnvironment(DbEnvironmentFeatureStrategy s, List<RoleType> roles, DbEnvironment dbEnvironment, Opts opts) {

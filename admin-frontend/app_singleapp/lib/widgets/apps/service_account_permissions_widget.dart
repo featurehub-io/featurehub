@@ -205,12 +205,10 @@ class _ServiceAccountPermissionDetailState
                         Container(
                             padding: EdgeInsets.fromLTRB(5, 15, 0, 0),
                             child: Text(env.name)),
-                        getPermissionCheckbox(
-                            env.id, ServiceAccountPermissionType.READ),
-                        getPermissionCheckbox(
-                            env.id, ServiceAccountPermissionType.TOGGLE_LOCK),
-                        getPermissionCheckbox(env.id,
-                            ServiceAccountPermissionType.TOGGLE_ENABLED),
+                        getPermissionCheckbox(env.id, RoleType.READ),
+                        getPermissionCheckbox(env.id, RoleType.LOCK),
+                        getPermissionCheckbox(env.id, RoleType.UNLOCK),
+                        getPermissionCheckbox(env.id, RoleType.CHANGE_VALUE),
                       ]));
                 }
 
@@ -284,7 +282,12 @@ class _ServiceAccountPermissionDetailState
           )),
           Center(
               child: Text(
-            'Lock/Unlock',
+            'Lock',
+            style: Theme.of(context).textTheme.subtitle2,
+          )),
+          Center(
+              child: Text(
+            'Unlock',
             style: Theme.of(context).textTheme.subtitle2,
           )),
           Center(
@@ -295,8 +298,7 @@ class _ServiceAccountPermissionDetailState
         ]);
   }
 
-  Checkbox getPermissionCheckbox(
-      String envId, ServiceAccountPermissionType permissionType) {
+  Checkbox getPermissionCheckbox(String envId, RoleType permissionType) {
     return Checkbox(
       value: newServiceAccountPermission[envId]
           .permissions
@@ -323,7 +325,7 @@ class _ServiceAccountPermissionDetailState
           .firstWhere((item) => item.environmentId == environment.id,
               orElse: () => ServiceAccountPermission()
                 ..environmentId = environment.id
-                ..permissions = <ServiceAccountPermissionType>[]);
+                ..permissions = <RoleType>[]);
 
       retMap[environment.id] = sap;
     });
