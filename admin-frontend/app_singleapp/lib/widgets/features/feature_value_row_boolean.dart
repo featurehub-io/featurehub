@@ -23,13 +23,6 @@ class FeatureValueBooleanEnvironmentCell extends StatelessWidget {
         stream: fvBloc
             .featureValueByEnvironment(environmentFeatureValue.environmentId),
         builder: (ctx, snap) {
-          final cannotLock =
-              (!environmentFeatureValue.roles.contains(RoleType.UNLOCK) ||
-                  !environmentFeatureValue.roles.contains(RoleType.LOCK));
-
-          final cannotWrite =
-              (!environmentFeatureValue.roles.contains(RoleType.EDIT));
-
           if (snap.hasData) {
             if (snap.data.locked == true && snap.data.valueBoolean != null) {
               return Row(children: <Widget>[

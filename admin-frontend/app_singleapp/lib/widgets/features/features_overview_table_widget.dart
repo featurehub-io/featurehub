@@ -9,6 +9,7 @@ import 'package:app_singleapp/widgets/features/sdk_details_dialog.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:logging/logging.dart';
 import 'package:mrapi/api.dart';
 
 import 'feature_status_bloc.dart';
@@ -17,6 +18,8 @@ import 'feature_value_row_number.dart';
 import 'feature_value_row_string.dart';
 import 'feature_value_status_tags.dart';
 import 'feature_values_bloc.dart';
+
+final _log = Logger('FeaturesOverviewTable');
 
 class FeaturesOverviewTableWidget extends StatelessWidget {
   @override
@@ -49,8 +52,7 @@ class FeaturesOverviewTableWidget extends StatelessWidget {
                 width: double.infinity);
           });
     } catch (e, s) {
-      print(e);
-      print(s);
+      _log.shout('Failed to render, $e\n$s\n');
       return SizedBox.shrink();
     }
   }
