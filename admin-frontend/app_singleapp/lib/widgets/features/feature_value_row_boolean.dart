@@ -1,4 +1,3 @@
-import 'package:app_singleapp/widgets/common/fh_underline_button.dart';
 import 'package:app_singleapp/widgets/features/feature_status_bloc.dart';
 import 'package:app_singleapp/widgets/features/feature_value_row_generic.dart';
 import 'package:bloc_provider/bloc_provider.dart';
@@ -24,13 +23,6 @@ class FeatureValueBooleanEnvironmentCell extends StatelessWidget {
         stream: fvBloc
             .featureValueByEnvironment(environmentFeatureValue.environmentId),
         builder: (ctx, snap) {
-          final cannotLock =
-              (!environmentFeatureValue.roles.contains(RoleType.UNLOCK) ||
-                  !environmentFeatureValue.roles.contains(RoleType.LOCK));
-
-          final cannotWrite =
-              (!environmentFeatureValue.roles.contains(RoleType.EDIT));
-
           if (snap.hasData) {
             if (snap.data.locked == true && snap.data.valueBoolean != null) {
               return Row(children: <Widget>[
@@ -44,39 +36,6 @@ class FeatureValueBooleanEnvironmentCell extends StatelessWidget {
                     onChanged: null),
                 Text('')
               ]);
-            }
-
-            if (snap.data.locked == false &&
-                snap.data.valueBoolean == null &&
-                !cannotLock) {
-              return Row(children: <Widget>[
-                Switch(
-                    //Color(0xff11C8B5) : Color(0xffF44C49)
-                    activeTrackColor: Color(0xff11C8B5),
-                    activeColor: Colors.white,
-                    value: false,
-                    inactiveTrackColor: Colors.black12,
-                    onChanged: null),
-                FHUnderlineButton(
-                    title: 'set',
-                    onPressed: () {
-                      snap.data.valueBoolean = false;
-                      _dirtyCheck();
-                    })
-              ]);
-            } else if ((snap.data.locked == true &&
-                    snap.data.valueBoolean == null) ||
-                cannotLock ||
-                cannotWrite) {
-              return Row(children: <Widget>[
-                Switch(
-                    //Color(0xff11C8B5) : Color(0xffF44C49)
-                    activeTrackColor: Color(0xff11C8B5),
-                    activeColor: Colors.white,
-                    value: false,
-                    inactiveTrackColor: Colors.black12,
-                    onChanged: null)
-              ]);
             } else {
               return Row(children: <Widget>[
                 Switch(
@@ -89,12 +48,6 @@ class FeatureValueBooleanEnvironmentCell extends StatelessWidget {
                       snap.data.valueBoolean = !snap.data.valueBoolean;
                       _dirtyCheck();
                     }),
-                FHUnderlineButton(
-                    title: 'reset',
-                    onPressed: () {
-                      snap.data.valueBoolean = null;
-                      _dirtyCheck();
-                    })
               ]);
             }
           }

@@ -1,5 +1,5 @@
-import 'package:app_singleapp/superuser_common.dart';
 import 'package:app_singleapp/shared.dart';
+import 'package:app_singleapp/superuser_common.dart';
 import 'package:app_singleapp/user_common.dart';
 import 'package:mrapi/api.dart';
 import 'package:ogurets/ogurets.dart';
@@ -13,18 +13,21 @@ class AdminPortfolioStepdefs {
   AdminPortfolioStepdefs(this.common, this.shared, this.userCommon);
 
   // only superusers can do this, but it can run in user space if the user is a superuser
-  @Given(r'I ensure a portfolio named {string} with description {string} exists')
-  void iCreateANewPortfolioCalledWithGroup(String portfolioName, String desc) async {
+  @Given(
+      r'I ensure a portfolio named {string} with description {string} exists')
+  void iCreateANewPortfolioCalledWithGroup(
+      String portfolioName, String desc) async {
     await common.initialize();
 
-    var portfolio = await userCommon.findExactPortfolio(portfolioName, portfolioServiceApi: common.portfolioService);
+    var portfolio = await userCommon.findExactPortfolio(portfolioName,
+        portfolioServiceApi: common.portfolioService);
 
     if (portfolio == null) {
       Portfolio p = await common.portfolioService.createPortfolio(
-        Portfolio()
-          ..name = portfolioName
-          ..description = desc,
-        includeGroups: true);
+          Portfolio()
+            ..name = portfolioName
+            ..description = desc,
+          includeGroups: true);
 
       assert(p.groups.length == 1);
 
@@ -40,36 +43,39 @@ class AdminPortfolioStepdefs {
   void iEnsureThatAPortfolioHasBeenDeleted(String portfolioName) async {
     await common.initialize();
 
-    var portfolio = await userCommon.findExactPortfolio(portfolioName, portfolioServiceApi: common.portfolioService);
+    var portfolio = await userCommon.findExactPortfolio(portfolioName,
+        portfolioServiceApi: common.portfolioService);
     if (portfolio != null) {
       await common.portfolioService.deletePortfolio(portfolio.id);
-      portfolio = await userCommon.findExactPortfolio(portfolioName, portfolioServiceApi: common.portfolioService);
+      portfolio = await userCommon.findExactPortfolio(portfolioName,
+          portfolioServiceApi: common.portfolioService);
       assert(portfolio == null, 'failed to delete portfolio');
     }
   }
 
-  @And(r'I update the portfolio group {string} to the name {string} with the description {string}')
-  void iUpdateThePortfolioGroupToTheNameWithTheDescription(String portfolioName,
-    String newName, String newDesc) async {
-
+  @And(
+      r'I update the portfolio group {string} to the name {string} with the description {string}')
+  void iUpdateThePortfolioGroupToTheNameWithTheDescription(
+      String portfolioName, String newName, String newDesc) async {
     await common.initialize();
 
-    var portfolio = await userCommon.findExactPortfolio(portfolioName, portfolioServiceApi: common.portfolioService);
+    var portfolio = await userCommon.findExactPortfolio(portfolioName,
+        portfolioServiceApi: common.portfolioService);
     assert(portfolio != null, 'Cannot find portfolio to update');
     if (portfolio != null) {
-      await common.portfolioService.updatePortfolio(portfolio.id,
-        Portfolio()
-        ..version = portfolio.version
-        ..name = newName
-        ..description = newDesc,
-        includeGroups: true
-      );
-
+      await common.portfolioService.updatePortfolio(
+          portfolio.id,
+          Portfolio()
+            ..version = portfolio.version
+            ..name = newName
+            ..description = newDesc,
+          includeGroups: true);
     }
   }
 
   @Then(r'I cannot create a portfolio named {string} with description {string}')
-  void iCannotCreateAPortfolioNamedWithDescription(String portfolioName, String description) async {
+  void iCannotCreateAPortfolioNamedWithDescription(
+      String portfolioName, String description) async {
     await common.initialize();
 
     var p = null;
@@ -78,7 +84,8 @@ class AdminPortfolioStepdefs {
         ..name = portfolioName
         ..description = description);
     } catch (e) {
-      assert(e is ApiException && e.code == 409, 'Expecting a conflict but did not receive one.');
+      assert(e is ApiException && e.code == 409,
+          'Expecting a conflict but did not receive one.');
     }
 
     assert(p == null, 'Should not have been able to create portfolio');
@@ -88,40 +95,49 @@ class AdminPortfolioStepdefs {
   void iCannotRenamePortfolioTo(String portfolioName, String newName) async {
     await common.initialize();
 
-    var existing = await userCommon.findExactPortfolio(portfolioName, portfolioServiceApi: common.portfolioService);
+    var existing = await userCommon.findExactPortfolio(portfolioName,
+        portfolioServiceApi: common.portfolioService);
 
     assert(existing != null, 'Cannot find portfolio to rename');
 
     var p = null;
     try {
-      p = await common.portfolioService.updatePortfolio(existing.id, new Portfolio()
-        ..version = existing.version
-        ..name = newName
-        ..description = "not important");
+      p = await common.portfolioService.updatePortfolio(
+          existing.id,
+          new Portfolio()
+            ..version = existing.version
+            ..name = newName
+            ..description = "not important");
     } catch (e) {
-      assert(e is ApiException && e.code == 409, 'Expecting a conflict but did not receive one.');
+      assert(e is ApiException && e.code == 409,
+          'Expecting a conflict but did not receive one.');
     }
 
     assert(p == null, 'Should not have been able to update portfolio');
   }
 
-  @When(r'I add the user {string} to the group {string} in the portfolio {string}')
-  void iAddTheUserToTheGroupInThePortfolio(String email, String groupName,
-        String portfolioName) async {
+  @When(
+      r'I add the user {string} to the group {string} in the portfolio {string}')
+  void iAddTheUserToTheGroupInThePortfolio(
+      String email, String groupName, String portfolioName) async {
     await common.initialize();
 
-    var portfolio = await userCommon.findExactPortfolio(portfolioName, portfolioServiceApi: common.portfolioService);
+    var portfolio = await userCommon.findExactPortfolio(portfolioName,
+        portfolioServiceApi: common.portfolioService);
     assert(portfolio != null, 'No such portfolio $portfolioName');
 
-    var matchedGroup = await userCommon.findExactGroup(groupName, portfolio.id, groupServiceApi: common.groupService);
+    var matchedGroup = await userCommon.findExactGroup(groupName, portfolio.id,
+        groupServiceApi: common.groupService);
 
     assert(matchedGroup != null, 'Cannot find group $groupName');
 
-    var person = await userCommon.findExactEmail(email, personServiceApi: common.personService);
+    var person = await userCommon.findExactEmail(email,
+        personServiceApi: common.personService);
 
     assert(person != null, 'could not find email/person $email');
 
-    await common.groupService.addPersonToGroup(matchedGroup.id, person.id.id, includeMembers: true);
+    await common.groupService
+        .addPersonToGroup(matchedGroup.id, person.id.id, includeMembers: true);
 
     shared.portfolio = portfolio;
     shared.group = matchedGroup;
@@ -131,16 +147,38 @@ class AdminPortfolioStepdefs {
   @Then(r'Searching for user should include the group')
   void searchingForUserShouldIncludeTheGroupInThePortfolio() async {
     await common.initialize();
-    var person = await common.personService.getPerson(shared.person.id.id, includeGroups: true);
+    var person = await common.personService
+        .getPerson(shared.person.id.id, includeGroups: true);
     assert(person.groups.isNotEmpty, 'Person has no groups');
-    assert(person.groups.firstWhere((g) => g.id == shared.group.id, orElse: () => null) != null, 'Could not find group ${shared.group} in person ${person}' );
+    assert(
+        person.groups.firstWhere((g) => g.id == shared.group.id,
+                orElse: () => null) !=
+            null,
+        'Could not find group ${shared.group} in person ${person}');
   }
 
   @And(r'Searching for the group should include the user')
   void searchingForTheGroupShouldIncludeTheUser() async {
     await common.initialize();
-    var group = await common.groupService.getGroup(shared.group.id, includeMembers: true);
+    var group = await common.groupService
+        .getGroup(shared.group.id, includeMembers: true);
     assert(group.members.isNotEmpty, 'Group has no members');
-    assert(group.members.firstWhere((p) => p.id.id == shared.person.id.id, orElse: () => null) != null, 'Could not find person ${shared.person} in group ${group}');
+    assert(
+        group.members.firstWhere((p) => p.id.id == shared.person.id.id,
+                orElse: () => null) !=
+            null,
+        'Could not find person ${shared.person} in group ${group}');
+  }
+
+  @Given(r'I have a randomly named portfolio with the prefix {string}')
+  void iHaveARandomlyNamedPortfolioWithThePrefix(String portfolioPrefix) async {
+    String portfolioName = portfolioPrefix +
+        '_' +
+        DateTime.now().millisecondsSinceEpoch.toString();
+
+    shared.portfolio =
+        await common.portfolioService.createPortfolio(new Portfolio()
+          ..name = portfolioName
+          ..description = 'A random portfolio');
   }
 }

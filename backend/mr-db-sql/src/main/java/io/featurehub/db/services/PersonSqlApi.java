@@ -5,12 +5,14 @@ import io.ebean.FutureList;
 import io.ebean.FutureRowCount;
 import io.ebean.annotation.Transactional;
 import io.featurehub.db.api.FillOpts;
+import io.featurehub.db.api.NotNull;
 import io.featurehub.db.api.OptimisticLockingException;
 import io.featurehub.db.api.Opts;
 import io.featurehub.db.api.PersonApi;
 import io.featurehub.db.model.DbGroup;
 import io.featurehub.db.model.DbPerson;
 import io.featurehub.db.model.query.QDbPerson;
+import io.featurehub.db.password.PasswordSalter;
 import io.featurehub.mr.model.Group;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.SortOrder;
@@ -33,6 +35,7 @@ public class PersonSqlApi implements PersonApi {
   private final ConvertUtils convertUtils;
   private final static int MAX_SEARCH = 100;
   private final ArchiveStrategy archiveStrategy;
+  private final PasswordSalter passwordSalter = new PasswordSalter();
 
   @Inject
   public PersonSqlApi(Database database, ConvertUtils convertUtils, ArchiveStrategy archiveStrategy) {
@@ -164,6 +167,17 @@ public class PersonSqlApi implements PersonApi {
 
   @Override
   public Person get(String id, Opts opts) {
+    if (id.contains("@")) {
+      QDbPerson search = new QDbPerson().email.eq(id.toLowerCase());
+      if (!opts.contains(FillOpts.Archived)) {
+        search = search.whenArchived.isNull();
+      }
+      return search.groupsPersonIn.fetch()
+        .findOneOrEmpty()
+        .map(p -> convertUtils.toPerson(p, opts))
+        .orElse(null);
+    }
+
     return ConvertUtils.uuid(id).map(pId -> {
       QDbPerson search = new QDbPerson().id.eq(pId);
       if (!opts.contains(FillOpts.Archived)) {
@@ -228,6 +242,43 @@ public class PersonSqlApi implements PersonApi {
 
     return personToken;
   }
+
+  /**
+   * This person will be fully formed, not token. Usually used only for testing.
+   */
+  Person createPerson(String email, String name, String password, String createdById, Opts opts) throws DuplicatePersonException {
+    if (email == null) {
+      return null;
+    }
+
+    DbPerson created = createdById == null ? null : ConvertUtils.uuid(createdById).map(cId ->
+      new QDbPerson().id.eq(cId).findOne()).orElse(null);
+
+    if (createdById != null && created == null) {
+      return null;
+    }
+
+    if (new QDbPerson().email.eq(email.toLowerCase()).findOne() == null) {
+
+      DbPerson.Builder builder = new DbPerson.Builder()
+        .email(email.toLowerCase())
+        .name(name);
+
+      if (created != null) {
+        builder.whoCreated(created);
+      }
+
+      DbPerson person = builder.build();
+      passwordSalter.saltPassword(password).ifPresent(person::setPassword);
+
+      updatePerson(person);
+
+      return convertUtils.toPerson(person, opts);
+    } else {
+      throw new DuplicatePersonException();
+    }
+  }
+
 
   @Transactional
   private void updatePerson(DbPerson p) {

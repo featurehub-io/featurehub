@@ -6,6 +6,7 @@ import io.featurehub.db.api.FeatureApi;
 import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.OptimisticLockingException;
 import io.featurehub.db.api.Opts;
+import io.featurehub.db.api.PersonFeaturePermission;
 import io.featurehub.db.model.DbAcl;
 import io.featurehub.db.model.DbApplication;
 import io.featurehub.db.model.DbApplicationFeature;
@@ -22,6 +23,7 @@ import io.featurehub.db.model.query.QDbGroup;
 import io.featurehub.db.publish.CacheSource;
 import io.featurehub.db.utils.EnvironmentUtils;
 import io.featurehub.mr.model.ApplicationFeatureValues;
+import io.featurehub.mr.model.ApplicationRoleType;
 import io.featurehub.mr.model.EnvironmentFeatureValues;
 import io.featurehub.mr.model.EnvironmentFeaturesResult;
 import io.featurehub.mr.model.FeatureEnvironment;
@@ -64,7 +66,7 @@ public class FeatureSqlApi implements FeatureApi {
   public FeatureValue createFeatureValueForEnvironment(String eid, String key, FeatureValue featureValue, PersonFeaturePermission person) throws OptimisticLockingException, NoAppropriateRole {
     UUID eId = ConvertUtils.ifUuid(eid);
 
-    if (person.roles.size() == 0) {
+    if (!person.hasWriteRole()) {
       DbEnvironment env = new QDbEnvironment().id.eq(eId).whenArchived.isNull().findOne();
       log.warn("User has no roles for environment {} key {}", eid, key);
       if (env == null) {
@@ -82,10 +84,10 @@ public class FeatureSqlApi implements FeatureApi {
       if (strategy != null) {
         // this is an update not a create, environment + app-feature key exists
         return onlyUpdateFeatureValueForEnvironment(featureValue, person, strategy);
-      } else if (person.roles.contains(RoleType.EDIT)) {
+      } else if (person.hasEditRole()) {
         return onlyCreateFeatureValueForEnvironment(eid, key, featureValue, person);
       } else {
-        log.info("roles for person are {} and are not enough for environment {} and key {}", person.roles, eid, key);
+        log.info("roles for person are {} and are not enough for environment {} and key {}", person.toString(), eid, key);
         throw new NoAppropriateRole();
       }
     }
@@ -165,7 +167,7 @@ public class FeatureSqlApi implements FeatureApi {
   private void updateStrategy(FeatureValue featureValue, PersonFeaturePermission person, DbEnvironmentFeatureStrategy strategy) throws NoAppropriateRole {
     final DbApplicationFeature feature = strategy.getFeature();
 
-    if (person.roles.contains(RoleType.EDIT)) {
+    if (person.hasEditRole()) {
       if (feature.getValueType() == FeatureValueType.NUMBER) {
         strategy.setDefaultValue(featureValue.getValueNumber() == null ? null : featureValue.getValueNumber().toString());
       } else if (feature.getValueType() == FeatureValueType.STRING) {
@@ -173,7 +175,7 @@ public class FeatureSqlApi implements FeatureApi {
       } else if (feature.getValueType() == FeatureValueType.JSON) {
         strategy.setDefaultValue(featureValue.getValueJson());
       } else if (feature.getValueType() == FeatureValueType.BOOLEAN) {
-        strategy.setDefaultValue(featureValue.getValueBoolean() == null ? null : featureValue.getValueBoolean().toString());
+        strategy.setDefaultValue(featureValue.getValueBoolean() == null ? Boolean.FALSE.toString() : featureValue.getValueBoolean().toString());
       }
 
       strategy.setEnabledStrategy(featureValue.getRolloutStrategy());
@@ -183,9 +185,9 @@ public class FeatureSqlApi implements FeatureApi {
 
     boolean newValue = featureValue.getLocked() == null ? false : featureValue.getLocked();
     if (newValue != strategy.isLocked()) {
-      if (!newValue && (person.roles.contains(RoleType.EDIT) || person.roles.contains(RoleType.UNLOCK))) {
+      if (!newValue && person.hasUnlockRole()) {
         strategy.setLocked(false);
-      } else if (newValue && (person.roles.contains(RoleType.EDIT) || person.roles.contains(RoleType.LOCK))) {
+      } else if (newValue && person.hasLockRole()) {
         strategy.setLocked(true);
       } else {
         throw new NoAppropriateRole();
@@ -292,11 +294,13 @@ public class FeatureSqlApi implements FeatureApi {
     public Map<UUID, DbEnvironmentFeatureStrategy> strategies;
     public Map<UUID, List<RoleType>> roles;
     public Map<UUID, DbEnvironment> environments;
+    public Set<ApplicationRoleType> appRolesForThisPerson;
 
-    public EnvironmentsAndStrategies(Map<UUID, DbEnvironmentFeatureStrategy> strategies, Map<UUID, List<RoleType>> roles, Map<UUID, DbEnvironment> environments) {
+    public EnvironmentsAndStrategies(Map<UUID, DbEnvironmentFeatureStrategy> strategies, Map<UUID, List<RoleType>> roles, Map<UUID, DbEnvironment> environments, Set<ApplicationRoleType> appRoles) {
       this.strategies = strategies;
       this.roles = roles;
       this.environments = environments;
+      this.appRolesForThisPerson = appRoles;
     }
   }
 
@@ -355,7 +359,14 @@ public class FeatureSqlApi implements FeatureApi {
       });
     }
 
-    return new EnvironmentsAndStrategies(strategiesResult, roles, environments);
+    Set<ApplicationRoleType> appRoles =
+      new QDbAcl().application.isNotNull()
+        .select(QDbAcl.Alias.roles).roles.isNotNull()
+        .group.whenArchived.isNotNull()
+        .group.owningPortfolio.eq(app.getPortfolio())
+        .group.peopleInGroup.eq(dbPerson).findList().stream().map(appAcl -> convertUtils.splitApplicationRoles(appAcl.getRoles())).flatMap(List::stream).collect(Collectors.toSet());
+
+    return new EnvironmentsAndStrategies(strategiesResult, roles, environments, appRoles);
   }
 
   private boolean isPersonAdmin(DbPerson dbPerson, DbApplication app) {
@@ -388,6 +399,8 @@ public class FeatureSqlApi implements FeatureApi {
       // environment -> feature value
       Map<UUID, DbEnvironmentFeatureStrategy> strategiesToDelete = result.strategies;
 
+
+
       for (FeatureValue fv : featureValue) {
         UUID envId = ConvertUtils.ifUuid(fv.getEnvironmentId());
         if (envId == null) {
@@ -401,7 +414,11 @@ public class FeatureSqlApi implements FeatureApi {
           throw new NoAppropriateRole();
         }
 
-        createFeatureValueForEnvironment(fv.getEnvironmentId(), key, fv, new PersonFeaturePermission(person, new HashSet<>(roles)));
+        createFeatureValueForEnvironment(fv.getEnvironmentId(), key, fv,
+          new PersonFeaturePermission.Builder()
+            .person(person)
+            .appRoles(result.appRolesForThisPerson)
+            .roles(new HashSet<>(roles)).build());
 
         strategiesToDelete.remove(envId); // we processed this environment ok, didn't throw a wobbly
       }

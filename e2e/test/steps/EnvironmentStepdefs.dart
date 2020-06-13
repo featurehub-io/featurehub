@@ -263,7 +263,8 @@ class EnvironmentStepdefs {
     final appId = shared.application.id;
     Environment env = await common.findExactEnvironment(priorEnvName, appId);
 
-    assert(env.priorEnvironmentId == null, 'Prior environment id is empty!');
+    assert(env.priorEnvironmentId == null,
+        'Prior environment id is not empty! ${env.priorEnvironmentId}');
   }
 
   @And(r'I delete all existing environments')
@@ -280,7 +281,8 @@ class EnvironmentStepdefs {
     shared.application = await common.applicationService
         .getApplication(shared.application.id, includeEnvironments: true);
 
-    assert(shared.application.environments.length == 0, 'did not delete all environments! ${shared.application.environments}');
+    assert(shared.application.environments.length == 0,
+        'did not delete all environments! ${shared.application.environments}');
   }
 
   @And(r'I check that environment ordering:')
@@ -310,5 +312,27 @@ class EnvironmentStepdefs {
             'Environment child ${child.name} has parent ${shared.application.environments.firstWhere((en) => en.id == child.priorEnvironmentId, orElse: () => null)?.name} which is wrong - should be ${parent.name}');
       }
     }
+  }
+
+  @And(r'I create an environment {string}')
+  void iCreateAnEnvironment(String envName) async {
+    assert(shared.application != null, 'must have selected an application!');
+
+    shared.environment = await common.environmentService.createEnvironment(
+        shared.application.id,
+        Environment()
+          ..name = envName
+          ..description = envName);
+  }
+
+  @Then(r'there should be {int} environments')
+  void thereShouldBeEnvironments(int count) async {
+    assert(shared.application != null, 'must have selected an application!');
+
+    final app = await common.applicationService
+        .getApplication(shared.application.id, includeEnvironments: true);
+
+    assert(app.environments.length == count,
+        'Not the right number of environments - ${app.environments.length} and should be ${count}');
   }
 }

@@ -3,7 +3,7 @@ Feature: Create feature values
   Scenario Outline: I can set feature values per environment if I am given permissions
     Given I ensure a portfolio named "<portfolio>" with description "business application" exists
     And I have a fully registered person "Sebastian" with email "seb@mailinator.com" and password "password123"
-    And The superuser is the user
+    And the first superuser is used for authentication
     Given I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
     And I ensure that an environment "<envName>" with description "<envDesc>" exists in the app "<appName>" in the portfolio "<portfolio>"
     And I ensure that an environment "<envName2>" with description "<envDesc2>" exists in the app "<appName>" in the portfolio "<portfolio>"
@@ -25,17 +25,41 @@ Feature: Create feature values
     And I ensure the boolean feature value is "false" for environment "<envName2>" for feature "<featureKey>"
     And I ensure the boolean feature value is "true" for environment "<envName3>" for feature "<featureKey>"
 
-
     Examples:
       | appName      | appDesc           | portfolio      | adminGroup                    | featureKey     | alias         | featureName    | link                           | envName | envDesc    | envName2 | envDesc2 | envName3 | envDesc3 | valueType |
       | FeatureTest1 | FeatureTest1 Desc | Feature Values | Feature Values Administrators | FEATURE_SAMPLE | sssshhhh      | Sample feature | http://featurehub.dev          | prod    | production | test     | test env | dev      | dev env  | boolean   |
       | FeatureTest1 | FeatureTest1 Desc | Feature Values | Feature Values Administrators | NEW_BUTTON     | little_secret | New button     | http://featurehub.dev/new      | prod    | production | test     | test env | dev      | dev env  | boolean   |
       | FeatureTest1 | FeatureTest1 Desc | Feature Values | Feature Values Administrators | NEW_BOAT       | not_secret    | New boat       | http://featurehub.dev/new/boat | prod    | production | test     | test env | dev      | dev env  | boolean   |
 
+  Scenario Outline: I create a random portfolio, with a well known application then two environments, a feature and two environments and all feature flags should exist and be set to false
+    Given the first superuser is used for authentication
+    And I have a randomly named portfolio with the prefix "feature_env_test"
+    And I create an application with the name "<appName>"
+    And I create an environment "<envName>"
+    And I create an environment "<envName2>"
+    And I create a feature flag "<feature1>"
+    And I create a feature flag "<feature2>"
+    And I create an environment "<envName3>"
+    And I create an environment "<envName4>"
+    And I create a feature flag "<feature3>"
+    And I create a feature flag "<feature4>"
+    Then there should be 5 environments
+    And all environments should have 4 feature flags
+    And all feature flags for environment "<envName>" should be "false"
+    And all feature flags for environment "<envName4>" should be "false"
+    And all feature flags for environment "<envName2>" should be "false"
+    And all feature flags for environment "<envName3>" should be "false"
+    And all feature flags for environment "production" should be "false"
+
+    Examples:
+      | appName | envName | envName2 | envName3 | envName4 | feature1  | feature2  | feature3  | feature4  |
+      | nusella | dev1    | dev2     | test1    | test3    | FEATURE_1 | FEATURE_2 | FEATURE_3 | FEATURE_4 |
+
+
 
   Scenario Outline: I can set feature values per environment where the user doesn't have access to some of them
     Given I ensure a portfolio named "<portfolio>" with description "business application" exists
-    And The superuser is the user
+    And the first superuser is used for authentication
     Given I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
     And I ensure that an environment "<envName>" with description "<envDesc>" exists in the app "<appName>" in the portfolio "<portfolio>"
     And I ensure that an environment "<envName2>" with description "<envDesc2>" exists in the app "<appName>" in the portfolio "<portfolio>"
@@ -68,14 +92,14 @@ Feature: Create feature values
 
     # this scenario breaks the rules and depends on the data from above
     Scenario: I get the feature values from an application and set them and check they are correct
-      Given The superuser is the user
+      Given the first superuser is used for authentication
       And I choose the application "FeatureTest1" in portfolio "Feature restricted"
       When I get the details for feature "NEW_HOUSE" and set them as follows:
         | envName | value |
         | test    | false |
       And I get the details for feature "NEW_BUTTON" and set them as follows:
         | envName | value |
-        | prod    | null |
+        | prod    | false |
       And I get the details for feature "NEW_HOUSE" and set them as follows:
         | envName | value |
         | prod    | true |

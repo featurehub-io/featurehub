@@ -5,10 +5,8 @@ import io.featurehub.mr.model.EnvironmentFeaturesResult;
 import io.featurehub.mr.model.FeatureEnvironment;
 import io.featurehub.mr.model.FeatureValue;
 import io.featurehub.mr.model.Person;
-import io.featurehub.mr.model.RoleType;
 
 import java.util.List;
-import java.util.Set;
 
 public interface FeatureApi {
 
@@ -17,16 +15,6 @@ public interface FeatureApi {
   ApplicationFeatureValues findAllFeatureAndFeatureValuesForEnvironmentsByApplication(String appId, Person current);
 
   EnvironmentFeaturesResult lastFeatureValueChanges(Person from);
-
-  class PersonFeaturePermission {
-    public Person person;
-    public Set<RoleType> roles;
-
-    public PersonFeaturePermission(Person person, Set<RoleType> roles) {
-      this.person = person;
-      this.roles = roles;
-    }
-  }
 
   class NoAppropriateRole extends Exception {
   }

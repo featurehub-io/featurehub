@@ -15,6 +15,6 @@ Feature: load the sample data via the api
 
   Scenario: The system should be initialized and I should be able to logout
     Given the system has been initialized
-    And The superuser is the user
+    And the first superuser is used for authentication
     Then I should be able to logout
 

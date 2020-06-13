@@ -160,6 +160,14 @@ public class DbGroup {
     this.whenArchived = whenArchived;
   }
 
+  public DbOrganization findOwningOrganisation() {
+    if (getOwningOrganization() != null) {
+      return getOwningOrganization();
+    } else {
+      return getOwningPortfolio().getOrganization();
+    }
+  }
+
   public static final class Builder {
     private DbPerson whoCreated;
     private DbPortfolio owningPortfolio;

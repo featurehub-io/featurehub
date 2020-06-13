@@ -11,6 +11,7 @@ import io.featurehub.mr.model.Feature;
 import io.featurehub.mr.model.FeatureEnvironment;
 import io.featurehub.mr.model.FeatureValue;
 import io.featurehub.mr.model.Person;
+import io.featurehub.mr.utils.ApplicationPermissionCheck;
 import io.featurehub.mr.utils.ApplicationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,10 +42,10 @@ public class FeatureResource implements FeatureServiceDelegate {
   @Override
   public List<Feature> createFeaturesForApplication(String id, Feature feature, SecurityContext securityContext) {
     // here we are only calling it to ensure the security check happens
-    applicationUtils.featureCheck(securityContext, id);
+    final ApplicationPermissionCheck appFeaturePermCheck = applicationUtils.featureCheck(securityContext, id);
 
     try {
-      return applicationApi.createApplicationFeature(id, feature);
+      return applicationApi.createApplicationFeature(id, feature, appFeaturePermCheck.getCurrent());
     } catch (ApplicationApi.DuplicateFeatureException e) {
       throw new WebApplicationException(409);
     }

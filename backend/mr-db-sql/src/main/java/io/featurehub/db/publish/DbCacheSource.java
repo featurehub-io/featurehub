@@ -248,11 +248,11 @@ public class DbCacheSource implements CacheSource {
   }
 
   @Override
-  public void updateEnvironment(DbEnvironment environment) {
-    executor.submit(() ->  internalUpdateEnvironment(environment));
+  public void updateEnvironment(DbEnvironment environment, PublishAction publishAction) {
+    executor.submit(() ->  internalUpdateEnvironment(environment, publishAction));
   }
 
-  private void internalUpdateEnvironment(DbEnvironment environment) {
+  private void internalUpdateEnvironment(DbEnvironment environment, PublishAction publishAction) {
     if (environment != null) {
       String cacheName = new QDbNamedCache().organizations.portfolios.applications.environments.eq(environment).findOneOrEmpty().map(DbNamedCache::getCacheName).orElse(null);
 
@@ -260,7 +260,7 @@ public class DbCacheSource implements CacheSource {
         CacheBroadcast cacheBroadcast = cacheBroadcasters.get(cacheName);
 
         if (cacheBroadcast != null) {
-          final EnvironmentCacheItem environmentCacheItem = fillEnvironmentCacheItem(environmentsByCacheName(cacheName).findCount(), environment, PublishAction.UPDATE);
+          final EnvironmentCacheItem environmentCacheItem = fillEnvironmentCacheItem(environmentsByCacheName(cacheName).findCount(), environment, publishAction);
           cacheBroadcast.publishEnvironment(environmentCacheItem);
         }
       }

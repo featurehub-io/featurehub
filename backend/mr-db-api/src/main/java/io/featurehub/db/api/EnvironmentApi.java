@@ -1,6 +1,7 @@
 package io.featurehub.db.api;
 
 import io.featurehub.mr.model.Application;
+import io.featurehub.mr.model.ApplicationRoleType;
 import io.featurehub.mr.model.Environment;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.Portfolio;
@@ -11,7 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 public interface EnvironmentApi {
-  Set<RoleType> personRoles(Person current, String eid);
+  EnvironmentRoles personRoles(Person current, String eid);
 
   List<Environment> setOrdering(Application app, List<Environment> environments);
 

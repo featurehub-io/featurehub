@@ -1,14 +1,18 @@
 package io.featurehub.mr.resources;
 
 import io.featurehub.db.api.EnvironmentApi;
+import io.featurehub.db.api.EnvironmentRoles;
 import io.featurehub.db.api.FeatureApi;
 import io.featurehub.db.api.OptimisticLockingException;
+import io.featurehub.db.api.PersonFeaturePermission;
 import io.featurehub.mr.api.EnvironmentFeatureServiceDelegate;
 import io.featurehub.mr.auth.AuthManagerService;
 import io.featurehub.mr.model.EnvironmentFeaturesResult;
 import io.featurehub.mr.model.FeatureValue;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.RoleType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
@@ -17,9 +21,9 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.SecurityContext;
 import java.util.List;
-import java.util.Set;
 
 public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDelegate {
+  private static final Logger log = LoggerFactory.getLogger(EnvironmentFeatureResource.class);
   private final EnvironmentApi environmentApi;
   private final AuthManagerService authManagerService;
   private final FeatureApi featureApi;
@@ -31,12 +35,12 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
     this.featureApi = featureApi;
   }
 
-  private FeatureApi.PersonFeaturePermission requireRoleCheck(String eid, SecurityContext ctx) {
+  private PersonFeaturePermission requireRoleCheck(String eid, SecurityContext ctx) {
     Person current = authManagerService.from(ctx);
 
-    final Set<RoleType> roles = environmentApi.personRoles(current, eid);
+    final EnvironmentRoles roles = environmentApi.personRoles(current, eid);
 
-    return new FeatureApi.PersonFeaturePermission(current, roles);
+    return new PersonFeaturePermission.Builder().person(current).appRoles(roles.applicationRoles).roles(roles.environmentRoles).build();
   }
 
   @Override
@@ -60,7 +64,7 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
 
   @Override
   public void deleteFeatureForEnvironment(String eid, String key, SecurityContext securityContext) {
-    if (!requireRoleCheck(eid, securityContext).roles.contains(RoleType.EDIT)) {
+    if (!requireRoleCheck(eid, securityContext).hasEditRole()) {
       throw new ForbiddenException();
     }
 
@@ -71,7 +75,7 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
 
   @Override
   public FeatureValue getFeatureForEnvironment(String eid, String key, SecurityContext securityContext) {
-    if (requireRoleCheck(eid, securityContext).roles.size() == 0) {
+    if (!requireRoleCheck(eid, securityContext).hasReadRole()) {
       throw new ForbiddenException();
     }
 
@@ -90,7 +94,7 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
       return featureApi.lastFeatureValueChanges(authManagerService.from(securityContext));
     }
 
-    if (requireRoleCheck(eid, securityContext).roles.size() == 0) {
+    if (!requireRoleCheck(eid, securityContext).hasReadRole()) {
       throw new ForbiddenException();
     }
 
@@ -119,6 +123,7 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
     try {
       return featureApi.updateFeatureValueForEnvironment(eid, key, featureValue, requireRoleCheck(eid, securityContext));
     } catch (OptimisticLockingException e) {
+      log.error("optimistic locking", e);
       throw new WebApplicationException(422);
     } catch (FeatureApi.NoAppropriateRole noAppropriateRole) {
       throw new ForbiddenException(noAppropriateRole);

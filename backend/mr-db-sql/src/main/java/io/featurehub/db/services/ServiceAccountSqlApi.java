@@ -274,7 +274,7 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
     cacheSource.updateServiceAccount(sa, PublishAction.UPDATE );
 
     if (changedEnvironments != null && !changedEnvironments.isEmpty()) {
-      changedEnvironments.forEach(e -> cacheSource.updateEnvironment(e.environment));
+      changedEnvironments.forEach(e -> cacheSource.updateEnvironment(e.environment, PublishAction.UPDATE));
     }
   }
 

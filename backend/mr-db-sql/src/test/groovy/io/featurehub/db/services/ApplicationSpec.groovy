@@ -9,6 +9,7 @@ import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
 import io.featurehub.db.model.query.QDbOrganization
 import io.featurehub.db.model.query.QDbPerson
+import io.featurehub.db.model.query.QDbPortfolio
 import io.featurehub.db.publish.CacheSource
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.Environment
@@ -16,6 +17,7 @@ import io.featurehub.mr.model.EnvironmentGroupRole
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Organization
 import io.featurehub.mr.model.Person
+import io.featurehub.mr.model.Portfolio
 import io.featurehub.mr.model.RoleType
 import spock.lang.Shared
 import spock.lang.Specification
@@ -32,6 +34,7 @@ class ApplicationSpec extends Specification {
   @Shared ApplicationSqlApi appApi
   @Shared GroupSqlApi groupSqlApi
   @Shared EnvironmentSqlApi environmentSqlApi
+  @Shared Person portfolioPerson
 
   def setupSpec() {
     System.setProperty("ebean.ddl.generate", "true")
@@ -67,11 +70,15 @@ class ApplicationSpec extends Specification {
     }
     groupSqlApi.addPersonToGroup(adminGroup.id, superuser.toString(), Opts.empty())
 
-    // now set up the environments we need
-    portfolio1 = new DbPortfolio.Builder().name("p1-app-1").whoCreated(dbSuperPerson).organization(new QDbOrganization().findOne()).build()
-    database.save(portfolio1)
-    portfolio2 = new DbPortfolio.Builder().name("p1-app-2").whoCreated(dbSuperPerson).organization(new QDbOrganization().findOne()).build()
-    database.save(portfolio2)
+    // go create a new person and then portfolios and add this person as a portfolio admin
+    portfolioPerson = personSqlApi.createPerson("appspec@mailinator.com", "AppSpec", "appspec", superPerson.id.id, Opts.empty());
+
+    def portfolioSqlApi = new PortfolioSqlApi(database, convertUtils, Mock(ArchiveStrategy))
+    def p1 = portfolioSqlApi.createPortfolio(new Portfolio().name("p1-app-1"), Opts.empty(), superPerson);
+    def p2 = portfolioSqlApi.createPortfolio(new Portfolio().name("p1-app-2"), Opts.empty(), superPerson);
+
+    portfolio1 = Finder.findPortfolioById(p1.id);
+    portfolio2 = Finder.findPortfolioById(p2.id);
   }
 
   def "i should be able to create, update, and delete an application"() {

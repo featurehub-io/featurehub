@@ -6,9 +6,10 @@ import io.featurehub.db.api.OptimisticLockingException;
 import io.featurehub.db.api.Opts;
 import io.featurehub.db.api.OrganizationApi;
 import io.featurehub.db.api.PortfolioApi;
-import io.featurehub.db.api.ServiceAccountApi;
 import io.featurehub.mr.api.PortfolioServiceDelegate;
 import io.featurehub.mr.auth.AuthManagerService;
+import io.featurehub.mr.model.ApplicationGroupRole;
+import io.featurehub.mr.model.ApplicationRoleType;
 import io.featurehub.mr.model.Group;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.Portfolio;
@@ -22,6 +23,8 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class PortfolioResource implements PortfolioServiceDelegate {
@@ -61,7 +64,11 @@ public class PortfolioResource implements PortfolioServiceDelegate {
 
       Group group;
       try {
-        group = groupApi.createPortfolioGroup(created.getId(), new Group().name(portfolioUtils.formatPortfolioAdminGroupName(portfolio)).admin(true).portfolioId(created.getId()),
+        group = groupApi.createPortfolioGroup(created.getId(),
+          new Group()
+            .name(portfolioUtils.formatPortfolioAdminGroupName(portfolio))
+            .admin(true)
+            .portfolioId(created.getId()),
           authManager.from(securityContext));
       } catch (GroupApi.DuplicateGroupException e) {
         throw new WebApplicationException(Response.Status.CONFLICT);

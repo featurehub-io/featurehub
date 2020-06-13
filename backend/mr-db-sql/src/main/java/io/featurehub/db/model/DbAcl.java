@@ -52,6 +52,7 @@ public class DbAcl {
   @Column(name = "group_id")
   private DbGroup group;
 
+  // if it is an application Acl, the roles are ApplicationRoleTypes, otherwise they are RoleTypes
   private String roles;
 
   public DbAcl() {

@@ -41,7 +41,7 @@ class AdminPersonStepdefs {
         .createPerson(CreatePersonDetails()..email = email);
   }
 
-  @When(r'The superuser is the user')
+  @When(r'the first superuser is used for authentication')
   void superuserIsUser() async {
     await common.initialize();
 
@@ -49,9 +49,54 @@ class AdminPersonStepdefs {
         common.tokenizedPerson; // make the userCommon the super user
   }
 
+  @Given(
+      r'^I have a randomly generated (person|superuser) with the start of name "(.*)"$')
+  void randomlyGeneratedPerson(String type, String name) async {
+    String uname =
+        name + "_" + DateTime.now().millisecondsSinceEpoch.toString();
+
+    final email = uname + "@mailinator.com";
+    final password = name;
+
+    await common.initialize();
+
+    SearchPersonResult spr =
+        await common.personService.findPeople(filter: email);
+
+    if (spr.people.isEmpty) {
+      if (type == "person") {
+        await registerNewUser(email);
+      } else {
+        await registerNewSuperuser(email);
+      }
+
+      await userCommon.completeRegistration(
+          name, password, email, shared.registrationUrl.registrationUrl);
+    } else {
+      final person = spr.people[0];
+      await common.authService.resetPassword(
+          person.id.id,
+          PasswordReset()
+            ..password = 'password'
+            ..reactivate = true);
+      await common.authService.changePassword(
+          person.id.id,
+          PasswordUpdate()
+            ..oldPassword = 'password'
+            ..newPassword = password);
+      await common.authService.login(UserCredentials()
+        ..email = email
+        ..password = password);
+    }
+
+    shared.person =
+        await common.personService.getPerson(email, includeGroups: true);
+  }
+
   // this checks to see if we have  the user already, so it has to belong to the superuser, but
   // the completion of registration is run as a normal user.
-  @Given(r'^I have a fully registered (person|superuser) "(.*)" with email "(.*)" and password "(.*)"$')
+  @Given(
+      r'^I have a fully registered (person|superuser) "(.*)" with email "(.*)" and password "(.*)"$')
   void iHaveAFullyRegisteredPersonWithEmailAndPassword(
       String type, String name, String email, String password) async {
     await common.initialize();
@@ -75,7 +120,11 @@ class AdminPersonStepdefs {
           PasswordReset()
             ..password = 'password'
             ..reactivate = true);
-      await common.authService.changePassword(person.id.id, PasswordUpdate()..oldPassword = 'password'..newPassword= password);
+      await common.authService.changePassword(
+          person.id.id,
+          PasswordUpdate()
+            ..oldPassword = 'password'
+            ..newPassword = password);
       userCommon.tokenized = await common.authService.login(UserCredentials()
         ..email = email
         ..password = password);
@@ -83,6 +132,7 @@ class AdminPersonStepdefs {
 
     spr = await common.personService.findPeople(filter: email);
     userCommon.person = spr.people[0];
+    shared.person = spr.people[0];
   }
 
   @Given(r'The administrator ensures the registered person {string} is deleted')
@@ -105,17 +155,19 @@ class AdminPersonStepdefs {
         personServiceApi: common.personService);
     assert(user != null, 'Cannot find user to try and update');
 
-    final emailGoingTo = await userCommon.findExactEmail(newemail, personServiceApi: common.personService);
+    final emailGoingTo = await userCommon.findExactEmail(newemail,
+        personServiceApi: common.personService);
     if (emailGoingTo != null) {
-      await common.personService.updatePerson(emailGoingTo.id.id,
-          emailGoingTo.copyWith(email: 'nonsense-' +
-              DateTime.now().millisecondsSinceEpoch.toString()
-              + '@mailinator.com'));
+      await common.personService.updatePerson(
+          emailGoingTo.id.id,
+          emailGoingTo.copyWith(
+              email: 'nonsense-' +
+                  DateTime.now().millisecondsSinceEpoch.toString() +
+                  '@mailinator.com'));
     }
 
     await common.personService.updatePerson(
-        user.id.id,
-        user.copyWith(name: newname, email: newemail));
+        user.id.id, user.copyWith(name: newname, email: newemail));
 //        Person()
 //          ..version = user.version
 //          ..name = newname

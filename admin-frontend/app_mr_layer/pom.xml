@@ -116,7 +116,7 @@
           <dependency>
             <groupId>com.bluetrainsoftware.maven</groupId>
             <artifactId>openapi-dart-generator</artifactId>
-            <version>3.3</version>
+            <version>3.4</version>
           </dependency>
         </dependencies>
         <executions>

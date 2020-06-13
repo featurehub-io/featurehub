@@ -34,7 +34,7 @@ class GroupResourceSpec extends Specification {
 
   def "cannot add a person to a non-existent group"() {
     given: "the group does not exist"
-      groupApi.getGroup("1", (Opts)_) >> null
+      groupApi.getGroup("1", (Opts) _, _) >> null
     when: "i try and add a person to the group"
       gr.addPersonToGroup("1", null, new GroupServiceDelegate.AddPersonToGroupHolder(includeMembers: true), null)
     then:
@@ -87,7 +87,7 @@ class GroupResourceSpec extends Specification {
   }
 
   SecurityContext setupGroupAndPortfoioAdmin(String portfolioId, String idPersonInChargeOfPortfolioAdminGroup, String currentPersonId, boolean groupIsAdmin = false, String personIdInAdminGroup = "admin-user") {
-    groupApi.getGroup("1", (Opts)_) >> new Group().portfolioId(portfolioId).admin(groupIsAdmin)
+    groupApi.getGroup("1", (Opts) _, _) >> new Group().portfolioId(portfolioId).admin(groupIsAdmin)
     def sc = Mock(SecurityContext)
     groupApi.findPortfolioAdminGroup(portfolioId, (Opts)_) >> new Group().admin(true).members([new Person().id(new PersonId().id(idPersonInChargeOfPortfolioAdminGroup))])
     groupApi.findOrganizationAdminGroup(null, (Opts)_) >> new Group().admin(true).members([new Person().id(new PersonId().id(personIdInAdminGroup))])
@@ -257,7 +257,7 @@ class GroupResourceSpec extends Specification {
     when:
       gr.getGroup("1", new GroupServiceDelegate.GetGroupHolder(), null)
     then:
-      1 * groupApi.getGroup("1", (Opts)_) >> new Group()
+      1 * groupApi.getGroup("1", (Opts) _, _) >> new Group()
   }
 
   /// ------- rename group

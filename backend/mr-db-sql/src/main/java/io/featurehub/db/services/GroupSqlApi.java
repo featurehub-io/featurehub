@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -58,6 +59,24 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
     UUID persId = ConvertUtils.ifUuid(personId);
 
     return new QDbGroup().owningPortfolio.id.eq(portId).peopleInGroup.id.eq(persId).findCount() > 0;
+  }
+
+  @Override
+  public Group getSuperuserGroup(String id, Person personAsking) {
+    UUID orgId = ConvertUtils.ifUuid(id);
+    DbPerson person = convertUtils.uuidPerson(personAsking);
+    if (orgId == null || person == null) {
+      return null;
+    }
+    if (new QDbGroup().owningOrganization.id.eq(orgId).whenArchived.isNull().peopleInGroup.eq(person).findCount() > 0 ||
+      new QDbGroup().owningPortfolio.organization.id.eq(orgId).whenArchived.isNull().peopleInGroup.eq(person).findCount() > 0) {
+      final DbGroup g = new QDbGroup().owningOrganization.id.eq(orgId).peopleInGroup.fetch().findOne();
+      if (g != null) { // make sure you are a user in at least one group otherwise you can't see this group
+        return convertUtils.toGroup(g, Opts.opts(FillOpts.Members));
+      }
+    }
+
+    return null;
   }
 
   @Override
@@ -125,16 +144,50 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
             throw new DuplicateGroupException();
           }
 
+          if (dbGroup.isAdminGroup()) {
+            copySuperusersToPortfolioGroup(dbGroup);
+          }
+
           return convertUtils.toGroup(dbGroup, Opts.empty());
       }
 
+      log.error("Attempted to create a new admin group for portfolio {} and it already exists.", portfolio.getName());
+
       return null;
+    } else {
+      log.error("Attempted to create portfolio group for portfolio {} and portfolio doesn't exist.", portfolioId);
     }
 
     return null;
   }
 
-  private String appRolesToString(List<ApplicationRoleType> roles) {
+  private DbGroup superuserGroup(DbOrganization org) {
+    return new QDbGroup().whenArchived.isNull().owningOrganization.eq(org).adminGroup.isTrue().findOne();
+  }
+
+  private List<DbPerson> superuserGroupMembers(DbOrganization org) {
+    DbGroup superuserGroup = superuserGroup(org);
+    return new QDbPerson().whenArchived.isNull().groupsPersonIn.eq(superuserGroup).findList();
+  }
+
+  private boolean isSuperuser(DbOrganization org, DbPerson person) {
+    if (org == null || person == null) {
+      return false;
+    }
+
+    DbGroup superuserGroup = superuserGroup(org);
+    return new QDbPerson().groupsPersonIn.eq(superuserGroup).id.eq(person.getId()).exists();
+  }
+
+  private void copySuperusersToPortfolioGroup(DbGroup dbGroup) {
+    superuserGroupMembers(dbGroup.getOwningPortfolio().getOrganization()).forEach((p) -> {
+      dbGroup.getPeopleInGroup().add(p);
+    });
+
+    database.save(dbGroup);
+  }
+
+  public static String appRolesToString(List<ApplicationRoleType> roles) {
     return roles.stream().map(Enum::name).sorted().collect(Collectors.joining(","));
   }
 
@@ -160,6 +213,13 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
 
               saveGroup(dbGroup);
 
+              // they actually got added from the superusers group, so lets update the portfolios
+              if (dbGroup.isAdminGroup() && dbGroup.getOwningPortfolio() == null) {
+                SuperuserChanges sc = new SuperuserChanges(dbGroup.getOwningOrganization());
+                sc.addedSuperusers = Collections.singletonList(person);
+                updateSuperusersFromPortfolioGroups(dbGroup, sc);
+              }
+
               return convertUtils.toGroup(dbGroup, opts);
             } else { // they are already in the group
               return convertUtils.toGroup(one, opts);
@@ -174,14 +234,23 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
   }
 
   @Override
-  public Group getGroup(String gid, Opts opts) {
+  public Group getGroup(String gid, Opts opts, Person person) {
     return ConvertUtils.uuid(gid).map(groupId ->
     {
-      QDbGroup eq = new QDbGroup().id.eq(groupId);
+      QDbGroup eq = new QDbGroup().id.eq(groupId).peopleInGroup.fetch();
+
       if (!opts.contains(FillOpts.Archived)) {
         eq = eq.whenArchived.isNull();
       }
-      return convertUtils.toGroup(eq.findOne(), opts);
+
+      final DbGroup one = eq.findOne();
+
+      if (one != null && (one.getPeopleInGroup().stream().anyMatch(p -> p.getId().toString().equals(person.getId().getId())) ||
+          isSuperuser(one.findOwningOrganisation(), convertUtils.uuidPerson(person)))) {
+        return convertUtils.toGroup(one, opts);
+      }
+
+      return null;
     })
       .orElse(null);
   }
@@ -230,31 +299,51 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
   }
 
   @Override
-  public Group deletePersonFromGroup(String groupId, String personId, Opts opts) {
-    return ConvertUtils.uuid(groupId).map(gId -> {
-      return ConvertUtils.uuid(personId).map(pId -> {
-        // cannot change archived group
-        DbGroup group = new QDbGroup().id.eq(gId).whenArchived.isNull().peopleInGroup.id.eq(pId).findOne();
+  public Group
+  deletePersonFromGroup(String groupId, String personId, Opts opts) {
+    DbPerson person = convertUtils.uuidPerson(personId);
 
-        if (group != null) {
-          return group.getPeopleInGroup().stream().filter(p -> p.getId().equals(pId)).findFirst().map(person -> {
-            group.getPeopleInGroup().remove(person);
-
-            saveGroup(group);
-
-            return convertUtils.toGroup(group, opts);
-          })
-            .orElse(null);
+    if (person != null) {
+      UUID gId = ConvertUtils.ifUuid(groupId);
+      if (gId != null) {
+        DbGroup group = new QDbGroup().id.eq(gId).whenArchived.isNull().peopleInGroup.eq(person).findOne();
+        // if it is an admin portfolio group and they are a superuser, you can't remove them
+        if (group == null || (group.isAdminGroup() && group.getOwningPortfolio() != null && isSuperuser(group.getOwningPortfolio().getOrganization(), person))) {
+          return null;
         }
 
-        return null;
-      }).orElse(null);
-    }).orElse(null);
+        group.getPeopleInGroup().remove(person);
+
+        saveGroup(group);
+
+        // they actually got removed from the superusers group, so lets update the portfolios
+        if (group.isAdminGroup() && group.getOwningPortfolio() == null) {
+          SuperuserChanges sc = new SuperuserChanges(group.getOwningOrganization());
+          sc.removedSuperusers = Collections.singletonList(person);
+          updateSuperusersFromPortfolioGroups(group, sc);
+        }
+
+        return convertUtils.toGroup(group, opts);
+      }
+    }
+
+    return null;
   }
 
   @Transactional
   private void saveGroup(DbGroup group) {
     database.save(group);
+  }
+
+
+  static class SuperuserChanges {
+    DbOrganization organization;
+    List<DbPerson> removedSuperusers = new ArrayList<>();
+    List<DbPerson> addedSuperusers = new ArrayList<>();
+
+    public SuperuserChanges(DbOrganization organization) {
+      this.organization = organization;
+    }
   }
 
   @Override
@@ -270,8 +359,10 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
         group.setName(gp.getName());
       }
 
+
+      SuperuserChanges superuserChanges = null;
       if (gp.getMembers() != null && updateMembers) {
-        updateMembersOfGroup(gp, group);
+        superuserChanges = updateMembersOfGroup(gp, group);
       }
 
       if (gp.getEnvironmentRoles() != null && updateEnvironmentGroupRoles) {
@@ -288,10 +379,37 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
         throw new DuplicateGroupException();
       }
 
+      if (superuserChanges != null) {
+        updateSuperusersFromPortfolioGroups(group, superuserChanges);
+      }
+
       return convertUtils.toGroup(group, opts);
     }
 
     return null;
+  }
+
+  // now we have to walk all the way down and remove these people from all admin portfolio groups
+  @Transactional
+  private void updateSuperusersFromPortfolioGroups(DbGroup group, SuperuserChanges superuserChanges) {
+    for (DbGroup pGroups : new QDbGroup().adminGroup.isTrue().owningPortfolio.isNotNull().owningPortfolio.organization.eq(superuserChanges.organization).findList()) {
+
+      // remove any superusers
+      if (!superuserChanges.removedSuperusers.isEmpty()) {
+        pGroups.getPeopleInGroup().removeAll(superuserChanges.removedSuperusers);
+      }
+
+      // add superusers but only if they aren't there already
+      if (!superuserChanges.addedSuperusers.isEmpty()) {
+        for (DbPerson p : superuserChanges.addedSuperusers) {
+          if (!pGroups.getPeopleInGroup().contains(p)) {
+            pGroups.getPeopleInGroup().add(p);
+          }
+        }
+      }
+
+      database.save(pGroups);
+    }
   }
 
   @Transactional
@@ -412,32 +530,51 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
     }
   }
 
-  private void updateMembersOfGroup(Group gp, DbGroup group) {
+  private SuperuserChanges updateMembersOfGroup(Group gp, DbGroup group) {
     Map<String, Person> desiredPeople = gp.getMembers().stream()
       .filter(p -> p.getId() != null)
       .collect(Collectors.toMap(p -> p.getId().getId(), Function.identity()));
 
+    // if this is the superuser group, we will have to remove these people from all portfolio groups as well
     List<DbPerson> removedPerson = new ArrayList<>();
+
     // ensure no duplicates get through
     Set<String> addedPeople = gp.getMembers().stream()
       .filter(p -> p != null && p.getId() != null)
       .map(p -> p.getId().getId()).collect(Collectors.toSet());
 
+    boolean isSuperuserGroup = group.isAdminGroup() && group.getOwningOrganization() != null;
+    List<DbPerson> superusers = group.isAdminGroup() && !isSuperuserGroup ? superuserGroupMembers(group.getOwningPortfolio().getOrganization()) : new ArrayList<>();
+
     group.getPeopleInGroup().forEach(person -> {
       Person p = desiredPeople.get(person.getId().toString());
       if (p == null) { // delete them
-        removedPerson.add(person);
+        // can't delete superusers from portfolio group. if this is the superusergroup or isn't an admin group, superusers will be empty
+        if (!superusers.contains(person)) {
+          removedPerson.add(person);
+        }
       } else {
         addedPeople.remove(p.getId().getId()); // they are already there, remove them from list to add
       }
     });
     group.getPeopleInGroup().removeAll(removedPerson);
+    List<DbPerson> actuallyAddedPeople = new ArrayList<>();
     addedPeople.forEach(p -> {
       DbPerson person = convertUtils.uuidPerson(p);
       if (person != null) {
         group.getPeopleInGroup().add(person);
+        actuallyAddedPeople.add(person);
       }
     });
+
+    if (isSuperuserGroup) {
+      SuperuserChanges sc = new SuperuserChanges(group.getOwningOrganization());
+      sc.removedSuperusers = removedPerson;
+      sc.addedSuperusers = actuallyAddedPeople;
+      return sc;
+    }
+
+    return null;
   }
 
   @Override
