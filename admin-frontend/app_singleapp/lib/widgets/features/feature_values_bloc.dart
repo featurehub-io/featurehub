@@ -17,6 +17,7 @@ class FeatureValuesBloc implements Bloc {
   final _newFeatureValues = <String, FeatureValue>{};
   final _originalFeatureValues = <String, FeatureValue>{};
   final _fvUpdates = <String, BehaviorSubject<FeatureValue>>{};
+  final ApplicationFeatureValues applicationFeatureValues;
 
   // environmentId, true/false (if dirty)
   final _dirty = <String, bool>{};
@@ -57,9 +58,14 @@ class FeatureValuesBloc implements Bloc {
     _dirtyBS.add(_dirty.values.any((d) => d == true));
   }
 
-  FeatureValuesBloc(this.applicationId, this.feature, this.mrClient,
-      List<FeatureValue> featureValuesThisFeature)
-      : assert(mrClient != null) {
+  FeatureValuesBloc(
+      this.applicationId,
+      this.feature,
+      this.mrClient,
+      List<FeatureValue> featureValuesThisFeature,
+      this.applicationFeatureValues)
+      : assert(applicationFeatureValues != null),
+        assert(mrClient != null) {
     _featureServiceApi = FeatureServiceApi(mrClient.apiClient);
     _environmentServiceApi = EnvironmentServiceApi(mrClient.apiClient);
     // lets get this party started
@@ -112,21 +118,35 @@ class FeatureValuesBloc implements Bloc {
       ..addAll(_newFeatureValues);
 
     _originalFeatureValues.forEach((envId, value) {
-      final _newFeatureValue = featureValuesWeAreCheckingForUpdates[envId];
-      if (_newFeatureValue != null) {
-        featureValuesWeAreCheckingForUpdates.remove(
-            envId); // we are then left with ones that just have new data
+      final roles = applicationFeatureValues.environments
+          .firstWhere((e) => e.environmentId == envId)
+          .roles;
+      if (roles.contains(RoleType.CHANGE_VALUE) ||
+          roles.contains(RoleType.LOCK) ||
+          roles.contains(RoleType.UNLOCK)) {
+        final _newFeatureValue = featureValuesWeAreCheckingForUpdates[envId];
+        if (_newFeatureValue != null) {
+          featureValuesWeAreCheckingForUpdates.remove(
+              envId); // we are then left with ones that just have new data
 
-        if (_newFeatureValue != value) {
-          updates.add(_newFeatureValue);
+          if (_newFeatureValue != value) {
+            updates.add(_newFeatureValue);
+          }
         }
       }
     });
 
     featureValuesWeAreCheckingForUpdates.values.forEach((newFv) {
-      // only add the ones where we set locked away from its default (false) or set a value
-      if (newFv.locked || newFv.isSet(feature)) {
-        updates.add(newFv);
+      final roles = applicationFeatureValues.environments
+          .firstWhere((e) => e.environmentId == newFv.environmentId)
+          .roles;
+      if (roles.contains(RoleType.CHANGE_VALUE) ||
+          roles.contains(RoleType.LOCK) ||
+          roles.contains(RoleType.UNLOCK)) {
+        // only add the ones where we set locked away from its default (false) or set a value
+        if (newFv.locked || newFv.isSet(feature)) {
+          updates.add(newFv);
+        }
       }
     });
 

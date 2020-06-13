@@ -86,6 +86,7 @@ class ClientFeatureRepository {
       _newFeatureStateAvailableListeners = [];
 
   notify(SSEResultState state, dynamic data) {
+    _log.fine('Data is $state -> $data');
     if (state != null) {
       switch (state) {
         case SSEResultState.ack:

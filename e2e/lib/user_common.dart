@@ -1,3 +1,4 @@
+import 'package:app_singleapp/util.dart';
 import 'package:mrapi/api.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
@@ -17,7 +18,7 @@ class UserCommon {
   EnvironmentFeatureServiceApi _environmentFeatureServiceApi;
 
   UserCommon() {
-    _apiClient = ApiClient(basePath: "http://localhost:8903");
+    _apiClient = ApiClient(basePath: baseUrl());
 
     _personService = PersonServiceApi(_apiClient);
     _setupService = SetupServiceApi(_apiClient);

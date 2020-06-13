@@ -12,13 +12,13 @@ class EventSourceRepositoryListener {
   void _init(String url) async {
     final es = await EventSource.connect(url);
     _subscription = es.listen((event) {
-        _repository.notify(SSEResultStateTypeTransformer.fromJson(event.event),
-            jsonDecode(event.data));
-      }, onError: () {
-        _repository.notify(SSEResultState.failure, null);
-      }, onDone: () {
-        _repository.notify(SSEResultState.bye, null);
-      });
+      _repository.notify(SSEResultStateTypeTransformer.fromJson(event.event),
+          jsonDecode(event.data));
+    }, onError: (e) {
+      _repository.notify(SSEResultState.failure, null);
+    }, onDone: () {
+      _repository.notify(SSEResultState.bye, null);
+    });
   }
 
   void close() {

@@ -1,6 +1,5 @@
 Feature: This set of scenarios tests the connection when running the party server, or the whole triple
-  set of the MR, Dacha and SSE concert. It expects to create a portfolios, service accounts, application, environment
-  and features and change their values and see them come through.
+
 
 
 #  @EdgeListener @PartyServer
