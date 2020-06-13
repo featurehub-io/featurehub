@@ -1,9 +1,7 @@
 import 'package:app_singleapp/api/client_api.dart';
-import 'package:app_singleapp/api/router.dart';
 import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/fh_alert_dialog.dart';
 import 'package:app_singleapp/widgets/common/fh_delete_thing.dart';
-import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/common/fh_icon_button.dart';
 import 'package:app_singleapp/widgets/common/fh_outline_button.dart';
 import 'package:app_singleapp/widgets/portfolio/portfolio_bloc.dart';
@@ -76,46 +74,6 @@ class _PortfolioWidget extends StatelessWidget {
               ),
             ],
           )),
-          mr.isPortfolioOrSuperAdmin(portfolio.id)
-              ? Row(children: [
-                  FHFlatButtonTransparent(
-                    title: 'Groups',
-                    keepCase: true,
-                    onPressed: () {
-                      ManagementRepositoryClientBloc.router.navigateTo(
-                        context,
-                        '/manage-group',
-                        replace: true,
-                        transition: TransitionType.material,
-                      );
-                    },
-                  ),
-                  FHFlatButtonTransparent(
-                    title: 'Apps',
-                    keepCase: true,
-                    onPressed: () {
-                      ManagementRepositoryClientBloc.router.navigateTo(
-                        context,
-                        '/manage-app',
-                        replace: true,
-                        transition: TransitionType.material,
-                      );
-                    },
-                  ),
-                  FHFlatButtonTransparent(
-                    title: 'Service accounts',
-                    keepCase: true,
-                    onPressed: () {
-                      ManagementRepositoryClientBloc.router.navigateTo(
-                        context,
-                        '/manage-service-accounts',
-                        replace: true,
-                        transition: TransitionType.material,
-                      );
-                    },
-                  )
-                ])
-              : Container(),
           mr.userIsSuperAdmin
               ? Row(
                   children: <Widget>[
