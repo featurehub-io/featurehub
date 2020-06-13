@@ -45,15 +45,19 @@ class _GroupPermissionState extends State<GroupPermissionsWidget> {
                 SizedBox(
                   height: 16.0,
                 ),
-                Container(
-                    child: Text(
-                  'Group',
-                  style: Theme.of(context).textTheme.caption,
-                )),
-                Container(
-                    child: Row(
+                Row(
                   children: [
-                    groupsDropdown(snapshot.data, bloc),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                            child: Text(
+                          'Group',
+                          style: Theme.of(context).textTheme.caption,
+                        )),
+                        Container(child: groupsDropdown(snapshot.data, bloc)),
+                      ],
+                    ),
                     SizedBox(width: 16.0),
                     FHFlatButtonTransparent(
                       title: 'Manage group members',
@@ -69,7 +73,7 @@ class _GroupPermissionState extends State<GroupPermissionsWidget> {
                       },
                     ),
                   ],
-                )),
+                ),
                 _GroupPermissionDetailWidget(bloc: bloc, mr: mrBloc)
               ]);
         });
