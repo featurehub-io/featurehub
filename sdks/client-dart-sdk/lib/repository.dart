@@ -74,7 +74,7 @@ class _FeatureStateBaseHolder implements FeatureStateHolder {
 final _log = Logger("FeatureHub");
 
 class ClientFeatureRepository {
-  bool _hasReceivedInitialState;
+  bool _hasReceivedInitialState = false;
   Map<String, _FeatureStateBaseHolder> _features = {};
   List<AnalyticsCollector> _analyticsCollectors = [];
   Readyness _readynessState = Readyness.NotReady;
@@ -105,8 +105,7 @@ class ClientFeatureRepository {
           break;
         case SSEResultState.features:
           final features =
-              LocalApiClient.deserialize(data, 'List<FeatureState>')
-                  as List<FeatureState>;
+              LocalApiClient.deserialize(data, 'List<FeatureState>');
           if (_hasReceivedInitialState && _catchAndReleaseMode) {
             _catchUpdatedFeatures(features);
           } else {

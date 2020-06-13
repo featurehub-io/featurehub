@@ -436,10 +436,10 @@ public class FeatureSqlApi implements FeatureApi {
     }
   }
 
-  private EnvironmentFeatureValues environmentToFeatureValues(DbAcl acl) {
+  private EnvironmentFeatureValues environmentToFeatureValues(DbAcl acl, boolean personIsAdmin) {
     List<RoleType> roles;
 
-    if (acl.getApplication() != null && acl.getApplication().getGroupRolesAcl().stream().anyMatch(r -> r.getRoles() != null && convertUtils.splitApplicationRoles(r.getRoles()).contains(ApplicationRoleType.FEATURE_EDIT))) {
+    if (personIsAdmin) {
       roles = Arrays.asList(RoleType.values());
     } else {
       roles = convertUtils.splitEnvironmentRoles(acl.getRoles());
@@ -471,7 +471,8 @@ public class FeatureSqlApi implements FeatureApi {
 
       boolean personAdmin = isPersonAdmin(dbPerson, app);
 
-      // the requirement is that if they have any environments, we send them all back, but make them empty
+      Map<String, DbEnvironment> environmentOrderingMap = new HashMap<>();
+      // the requirement is that we only send back environments they have at least READ access to
       final List<EnvironmentFeatureValues> permEnvs =
           new QDbAcl()
             .environment.whenArchived.isNull()
@@ -481,17 +482,21 @@ public class FeatureSqlApi implements FeatureApi {
             .group.whenArchived.isNull()
             .group.peopleInGroup.eq(dbPerson).findList()
         .stream()
-        .map(this::environmentToFeatureValues)
-        .filter(Objects::nonNull).collect(Collectors.toList());
+        .peek(acl -> environmentOrderingMap.put(acl.getEnvironment().getId().toString(), acl.getEnvironment()))
+        .map(acl -> environmentToFeatureValues(acl, personAdmin))
+        .filter(Objects::nonNull)
+        .filter(efv -> !efv.getRoles().isEmpty())
+
+        .collect(Collectors.toList());
 
 //      Set<String> envs = permEnvs.stream().map(EnvironmentFeatureValues::getEnvironmentId).distinct().collect(Collectors.toSet());
 
-      Map<String, List<EnvironmentFeatureValues>> envs = new HashMap<>();
+      Map<String, EnvironmentFeatureValues> envs = new HashMap<>();
 
+      // merge any duplicates, this occurs because the database query can return duplicate lines
       permEnvs.forEach(e -> {
-        List<EnvironmentFeatureValues> vals = envs.computeIfAbsent(e.getEnvironmentId(), key -> new ArrayList<>());
-        if (vals.size() == 1) { // merge them
-          EnvironmentFeatureValues original = vals.get(0);
+        EnvironmentFeatureValues original = envs.get(e.getEnvironmentId());
+        if (original != null) { // merge them
           Set<String> originalFeatureValueIds = original.getFeatures().stream().map(FeatureValue::getId).collect(Collectors.toSet());
           e.getFeatures().forEach(fv -> {
             if (!originalFeatureValueIds.contains(fv.getId())) {
@@ -505,67 +510,63 @@ public class FeatureSqlApi implements FeatureApi {
             }
           });
         } else {
-          vals.add(e);
+          envs.put(e.getEnvironmentId(), e);
         }
       });
 
-      List<EnvironmentFeatureValues> finalValues;
-      if (permEnvs.size() != 0 || personAdmin) {
+      // now we have a flat-map of individual environments  the user has actual access to, but they may be an admin, so
+      // if so, we need to fill those in
+
+
+      if (personAdmin) {
         // now go through all the environments for this app
         List<DbEnvironment> environments = new QDbEnvironment().whenArchived.isNull().order().name.desc().parentApplication.eq(app).findList();
         // envId, DbEnvi
-        Map<String, DbEnvironment> environmentOrderingMap = new HashMap<>();
 
         environments.forEach(e -> {
           if (envs.get(e.getId().toString()) == null) {
+            environmentOrderingMap.put(e.getId().toString(), e);
+
             final EnvironmentFeatureValues e1 =
               new EnvironmentFeatureValues()
                 .environmentName(e.getName())
                 .priorEnvironmentId(e.getPriorEnvironment() == null ? null : e.getPriorEnvironment().getId().toString())
-                .environmentId(e.getId().toString());
-            // they are in fact an admin so they have ALL access
-            if (personAdmin) {
-              e1.roles(Arrays.asList(RoleType.values()));
-              e1.features( new QDbEnvironmentFeatureStrategy()
-                .feature.whenArchived.isNull()
-                .environment.eq(e)
-                .findList().stream().map(convertUtils::toFeatureValue).collect(Collectors.toList()));
-            }
+                .environmentId(e.getId().toString())
+                .roles(Arrays.asList(RoleType.values())) // all access (as admin)
+                .features(new QDbEnvironmentFeatureStrategy()
+                  .feature.whenArchived.isNull()
+                  .environment.eq(e)
+                  .findList().stream().map(convertUtils::toFeatureValue).collect(Collectors.toList()));
 
-            envs.put(e1.getEnvironmentId(), Collections.singletonList(e1));
+            envs.put(e1.getEnvironmentId(), e1);
           }
-
-          environmentOrderingMap.put(e.getId().toString(), e);
         });
+      }
 
-        finalValues = envs.values().stream()
-          .flatMap(List::stream).collect(Collectors.toList());
+      List<EnvironmentFeatureValues> finalValues = new ArrayList<>(envs.values());
 
-        finalValues.sort((o1, o2) -> {
+      finalValues.sort((o1, o2) -> {
           final DbEnvironment env1 = environmentOrderingMap.get(o1.getEnvironmentId());
           final DbEnvironment env2 = environmentOrderingMap.get(o2.getEnvironmentId());
 
-          Integer w = EnvironmentUtils.walkAndCompare(env1, env2);
+        Integer w = EnvironmentUtils.walkAndCompare(env1, env2);
+        if (w == null) {
+          w = EnvironmentUtils.walkAndCompare(env2, env1);
           if (w == null) {
-            w = EnvironmentUtils.walkAndCompare(env2, env1);
-            if (w == null) {
-              if (env1.getPriorEnvironment() == null && env2.getPriorEnvironment() == null) {
-                return 0;
-              }
-              if (env1.getPriorEnvironment() != null && env2.getPriorEnvironment() == null) {
-                return 1;
-              }
-              return -1;
-            } else {
-              return w * -1;
+            if (env1.getPriorEnvironment() == null && env2.getPriorEnvironment() == null) {
+              return 0;
             }
+            if (env1.getPriorEnvironment() != null && env2.getPriorEnvironment() == null) {
+              return 1;
+            }
+            return -1;
+          } else {
+            return w * -1;
           }
+        }
 
-          return w;
-        });
-      } else {
-        finalValues = new ArrayList<>();
-      }
+        return w;
+      });
 
       return
         new ApplicationFeatureValues()

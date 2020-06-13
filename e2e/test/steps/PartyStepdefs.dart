@@ -19,6 +19,11 @@ class PartyStepdefs {
       shared.serviceAccount.apiKey
     ].join('/'));
     print("waiting");
-    await Future.delayed(Duration(seconds: 30));
+    await Future.delayed(Duration(seconds: 6));
+  }
+
+  @And(r'I wait for {int} seconds')
+  void iWaitForSeconds(int sec) async {
+    await Future.delayed(Duration(seconds: sec));
   }
 }

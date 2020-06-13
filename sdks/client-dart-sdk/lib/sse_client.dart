@@ -11,9 +11,13 @@ class EventSourceRepositoryListener {
 
   void _init(String url) async {
     final es = await EventSource.connect(url);
+
     _subscription = es.listen((event) {
-      _repository.notify(SSEResultStateTypeTransformer.fromJson(event.event),
-          jsonDecode(event.data));
+      _log.fine('Event is ${event.event} value ${event.data}');
+      if (event.event != null) {
+        _repository.notify(SSEResultStateTypeTransformer.fromJson(event.event),
+            jsonDecode(event.data));
+      }
     }, onError: (e) {
       _repository.notify(SSEResultState.failure, null);
     }, onDone: () {
