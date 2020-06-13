@@ -378,11 +378,12 @@ Widget AddEnvWidget(BuildContext context, ManageAppBloc bloc) {
                     }),
                   )),
             FHInfoCardWidget(
-              message: ' Ordering your environments,\n'
-                  ' showing the path to production (top to bottom)\n'
-                  ' will be reflected on the "Features" dashboard.\n \n'
-                  ' It helps your teams see their changes\n'
-                  ' per environment in the correct order.',
+              message: '''
+Ordering your environments,
+showing the path to production (top to bottom)
+will be reflected on the "Features" dashboard.\n
+It helps your teams see their changes
+per environment in the correct order.''',
             ),
           ],
         ))

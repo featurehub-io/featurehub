@@ -63,7 +63,7 @@ class _ServiceAccountWidget extends StatelessWidget {
     return Flexible(
       fit: FlexFit.loose,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(30, 5, 30, 5),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
         decoration: BoxDecoration(
             color: Colors.white,
             border: Border(bottom: bs, left: bs, right: bs)),
@@ -71,9 +71,12 @@ class _ServiceAccountWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
+                SizedBox(width: 4.0),
                 _ServiceAccountDescription(serviceAccount: serviceAccount),
+                SizedBox(width: 24.0),
                 StreamBuilder<bool>(
                     stream: bloc
                         .mrClient.personState.isCurrentPortfolioOrSuperAdmin,
@@ -167,6 +170,9 @@ class _ServiceAccountEnvironment extends StatelessWidget {
     final found = appEnvs.any((appEnvId) => permEnvs.contains(appEnvId));
     return Card(
       child: Container(
+        color: Theme
+            .of(context)
+            .backgroundColor,
         width: 240,
         height: 130,
         child: Padding(
@@ -221,30 +227,27 @@ class _ServiceAccountDescription extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Row(
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(left: 8.0, top: 16.0, bottom: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(serviceAccount.name,
-                    style: Theme.of(context)
-                        .textTheme
-                        .subtitle1
-                        .copyWith(color: Theme.of(context).primaryColor)),
-                Text(
-                  serviceAccount.description != null
-                      ? '${serviceAccount.description}'
-                      : '',
-                  style: Theme.of(context).textTheme.caption,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(serviceAccount.name,
+            style: Theme
+                .of(context)
+                .textTheme
+                .subtitle1
+                .copyWith(color: Theme
+                .of(context)
+                .primaryColor)),
+        Text(
+          serviceAccount.description != null
+              ? '${serviceAccount.description}'
+              : '',
+          style: Theme
+              .of(context)
+              .textTheme
+              .caption,
+        ),
+      ],
     );
   }
 }
