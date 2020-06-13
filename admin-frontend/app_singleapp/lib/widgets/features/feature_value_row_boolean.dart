@@ -23,18 +23,37 @@ class FeatureValueBooleanEnvironmentCell extends StatelessWidget {
         stream: fvBloc
             .featureValueByEnvironment(environmentFeatureValue.environmentId),
         builder: (ctx, snap) {
+          final cannotLock =
+              (!environmentFeatureValue.roles.contains(RoleType.UNLOCK) ||
+                  !environmentFeatureValue.roles.contains(RoleType.LOCK));
+
+          final cannotWrite =
+              (!environmentFeatureValue.roles.contains(RoleType.CHANGE_VALUE));
           if (snap.hasData) {
-            if (snap.data.locked == true && snap.data.valueBoolean != null) {
+            if (snap.data.locked == false &&
+                snap.data.valueBoolean == null &&
+                !cannotLock) {
               return Row(children: <Widget>[
                 Switch(
+                    //Color(0xff11C8B5) : Color(0xffF44C49)
                     activeTrackColor: Color(0xff11C8B5),
                     activeColor: Colors.white,
-                    value: snap.data.valueBoolean,
-                    inactiveTrackColor: snap.data.valueBoolean
-                        ? Color(0xff11C8B5)
-                        : Color(0xffF44C49),
+                    value: false,
+                    inactiveTrackColor: Colors.black12,
                     onChanged: null),
-                Text('')
+              ]);
+            } else if ((snap.data.locked == true &&
+                    snap.data.valueBoolean == null) ||
+                cannotLock ||
+                cannotWrite) {
+              return Row(children: <Widget>[
+                Switch(
+                    //Color(0xff11C8B5) : Color(0xffF44C49)
+                    activeTrackColor: Color(0xff11C8B5),
+                    activeColor: Colors.white,
+                    value: false,
+                    inactiveTrackColor: Colors.black12,
+                    onChanged: null)
               ]);
             } else {
               return Row(children: <Widget>[
