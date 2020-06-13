@@ -13,7 +13,7 @@ class NavRail extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.only(left: 8.0, top: 16.0),
         child: CircleIconButton(
-            icon: Icon(Icons.chevron_right),
+            icon: Icon(Icons.menu, size: 20.0),
             onTap: () => mrBloc.menuOpened.add(true)),
       ),
     );
