@@ -4,7 +4,7 @@ import 'package:ogurets/ogurets.dart';
 void main(args) async {
   var def = new OguretsOpts()
     ..feature('test/features')
-    ..tags('~@PartyServer')
+    ..tags('~@Demo')
     ..steps('test/steps');
 
   await def.run();
