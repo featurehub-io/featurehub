@@ -25,7 +25,8 @@ class PortfolioStepdefs {
   }
 
   // operates in user space
-  @And(r'I ensure the {string} user is added to the portfolio admin group for {string}')
+  @And(
+      r'I ensure the {string} user is added to the portfolio admin group for {string}')
   void iAddUserToThePortfolioAdminGroupFor(
       String email, String portfolioName) async {
     Person person = await userCommon.findExactEmail(email);
@@ -91,7 +92,8 @@ class PortfolioStepdefs {
         'I was not able to find any portfolios');
   }
 
-  @When(r'I ensure a portfolio {string} has created a service account called {string}')
+  @When(
+      r'I ensure a portfolio {string} has created a service account called {string}')
   void iEnsureAPortfolioHasCreatedAServiceAccountCalled(
       String portfolioName, String serviceAccountName) async {
     Portfolio p = await userCommon.findExactPortfolio(portfolioName);
@@ -115,35 +117,41 @@ class PortfolioStepdefs {
         await userCommon.findExactServiceAccount(serviceAccountName, p.id);
     assert(sa != null,
         "I couldn't find the service account " + serviceAccountName);
-    assert(sa.apiKey != null, 'API key for Service account $serviceAccountName not set.');
+    assert(sa.apiKey != null,
+        'API key for Service account $serviceAccountName not set.');
   }
 
-  @When(r'I ensure a portfolio {string} has created application called {string} and environment {string} and service account called {string} and permission type {string}')
-  void iEnsureAPortfolioHasCreatedApplicationCalledAndEnvironmentAndServiceAccountCalledAndPermissionType(
-      String portfolioName,
-      String appName,
-      String envName,
-      String serviceAccountName,
-      String permissionType) async {
+  @When(
+      r'I ensure a portfolio {string} has created application called {string} and environment {string} and service account called {string} and permission type {string}')
+  void
+      iEnsureAPortfolioHasCreatedApplicationCalledAndEnvironmentAndServiceAccountCalledAndPermissionType(
+          String portfolioName,
+          String appName,
+          String envName,
+          String serviceAccountName,
+          String permissionType) async {
     Portfolio p = await userCommon.findExactPortfolio(portfolioName);
     assert(p != null, 'Could not find portfolio group called $portfolioName');
     var app = await userCommon.findExactApplication(appName, p.id);
     var environment;
     if (app == null) {
-      app = await userCommon.applicationService.createApplication(p.id,
-        Application()
-          ..name = appName
-          ..description = appName
-      );
+      app = await userCommon.applicationService.createApplication(
+          p.id,
+          Application()
+            ..name = appName
+            ..description = appName);
     }
     assert(app != null, 'Failed to create application');
     environment = await userCommon.findExactEnvironment(envName, app.id);
     if (environment == null) {
-      environment = await userCommon.environmentService.createEnvironment(app.id,
-        new Environment()
-          ..name = envName
-          ..description = envName).catchError((e,s){
-            print("error creating environment: "+e.toString());
+      environment = await userCommon.environmentService
+          .createEnvironment(
+              app.id,
+              new Environment()
+                ..name = envName
+                ..description = envName)
+          .catchError((e, s) {
+        print("error creating environment: " + e.toString());
       });
     }
     assert(environment != null, 'Failed to create environment');
@@ -154,56 +162,89 @@ class PortfolioStepdefs {
       serviceAccount.portfolioId = p.id;
       serviceAccount.name = serviceAccountName;
       sa = await userCommon.serviceAccountService
-          .createServiceAccountInPortfolio(p.id, serviceAccount,includePermissions: true);
-    }
-    ServiceAccountPermissionType permissionType = ServiceAccountPermissionType.READ;
-    if (permissionType == "LOCK") {
-      permissionType = ServiceAccountPermissionType.TOGGLE_LOCK;
-    } else if (permissionType == "EDIT") {
-      permissionType = ServiceAccountPermissionType.TOGGLE_ENABLED;
+          .createServiceAccountInPortfolio(p.id, serviceAccount,
+              includePermissions: true);
     }
 
-    ServiceAccountPermission saPermission = sa.permissions.firstWhere((item) =>
-    item.environmentId == environment.id, orElse: () =>  null);
-    if(saPermission == null){
-      saPermission= ServiceAccountPermission();
-      List<ServiceAccountPermissionType> permissions = List();
-      permissions.add(permissionType);
-      saPermission.environmentId= environment.id;
+    RoleType permission =
+        RoleTypeTypeTransformer.fromJson(permissionType) ?? RoleType.READ;
+
+    ServiceAccountPermission saPermission = sa.permissions.firstWhere(
+        (item) => item.environmentId == environment.id,
+        orElse: () => null);
+    if (saPermission == null) {
+      saPermission = ServiceAccountPermission();
+      List<RoleType> permissions = List();
+      permissions.add(permission);
+      saPermission.environmentId = environment.id;
       saPermission.permissions = permissions;
       sa.permissions.add(saPermission);
     } else if (!saPermission.permissions.contains(permissionType)) {
-      saPermission.permissions.add(permissionType);
+      saPermission.permissions.add(permission);
     }
-    await userCommon.serviceAccountService.update(sa.id, sa,includePermissions: true);
+    await userCommon.serviceAccountService
+        .update(sa.id, sa, includePermissions: true);
   }
 
-  @When(r'I ensure a portfolio {string} has created application called {string} and environment {string}')
-  void iEnsureAPortfolioHasCreatedApplicationCalledAndEnvironment(String portfolioName,
-    String appName, String envName) async {
+  @When(
+      r'I ensure a portfolio {string} has created application called {string} and environment {string}')
+  void iEnsureAPortfolioHasCreatedApplicationCalledAndEnvironment(
+      String portfolioName, String appName, String envName) async {
     Portfolio p = await userCommon.findExactPortfolio(portfolioName);
     assert(p != null, 'Could not find portfolio group called $portfolioName');
     var app = await userCommon.findExactApplication(appName, p.id);
     if (app == null) {
-      app = await userCommon.applicationService.createApplication(p.id,
-        Application()
-          ..name = appName
-          ..description = appName
-      );
+      app = await userCommon.applicationService.createApplication(
+          p.id,
+          Application()
+            ..name = appName
+            ..description = appName);
       assert(app != null, 'Failed to create application');
       var exists = await userCommon.findExactEnvironment(envName, app.id);
       if (exists == null) {
-        exists = await userCommon.environmentService.createEnvironment(app.id,
-          new Environment()
-            ..name = envName
-            ..description = envName);
+        exists = await userCommon.environmentService.createEnvironment(
+            app.id,
+            new Environment()
+              ..name = envName
+              ..description = envName);
       }
     }
   }
 
-  @Then(r'portfolio {string} has service account {string} and the permission {string} for this {string} and {string}')
-  void portfolioHasServiceAccountAndThePermissionForThisAnd(String portfolioName,
-    String serviceAccountName, String permission, String appName, String envName) async {
+  @Then(
+      r'^We create a service account "(.*)" with the permission (READ|UNLOCK|LOCK|CHANGE_VALUE)$')
+  void createServiceAccountWithPermission(
+      String saName, String permission) async {
+    assert(shared.portfolio != null, 'no set portfolio');
+    assert(shared.application != null, 'no set application');
+    assert(shared.environment != null, 'no set environment');
+
+    RoleType permissionType =
+        RoleTypeTypeTransformer.fromJson(permission) ?? RoleType.READ;
+
+    final sa =
+        await userCommon.serviceAccountService.createServiceAccountInPortfolio(
+            shared.portfolio.id,
+            ServiceAccount()
+              ..name = saName
+              ..description = saName
+              ..permissions = [
+                ServiceAccountPermission()
+                  ..permissions = [permissionType]
+                  ..environmentId = shared.environment.id
+              ]);
+
+    shared.serviceAccount = sa;
+  }
+
+  @Then(
+      r'portfolio {string} has service account {string} and the permission {string} for this {string} and {string}')
+  void portfolioHasServiceAccountAndThePermissionForThisAnd(
+      String portfolioName,
+      String serviceAccountName,
+      String permission,
+      String appName,
+      String envName) async {
     Portfolio p = await userCommon.findExactPortfolio(portfolioName);
     assert(p != null, 'Could not find portfolio group called $portfolioName');
     var app = await userCommon.findExactApplication(appName, p.id);
@@ -211,16 +252,13 @@ class PortfolioStepdefs {
     var environment = await userCommon.findExactEnvironment(envName, app.id);
     assert(environment != null, 'Failed to find environment');
     ServiceAccount sa =
-    await userCommon.findExactServiceAccount(serviceAccountName, p.id);
+        await userCommon.findExactServiceAccount(serviceAccountName, p.id);
     assert(sa != null, 'Failed to find service account');
-    ServiceAccountPermissionType permissionType = ServiceAccountPermissionType.READ;
-    if (permissionType == "LOCK") {
-      permissionType = ServiceAccountPermissionType.TOGGLE_LOCK;
-    } else if (permissionType == "EDIT") {
-      permissionType = ServiceAccountPermissionType.TOGGLE_ENABLED;
-    }
-    var sap = sa.permissions.firstWhere((item) => item.environmentId == environment.id,
-    orElse: () =>  null);
+    RoleType permissionType =
+        RoleTypeTypeTransformer.fromJson(permission) ?? RoleType.READ;
+    var sap = sa.permissions.firstWhere(
+        (item) => item.environmentId == environment.id,
+        orElse: () => null);
     assert(sap != null, 'Failed to find service account permissions');
     assert(sap.permissions.contains(permissionType));
   }

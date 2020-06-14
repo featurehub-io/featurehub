@@ -410,7 +410,7 @@ class GroupSpec extends Specification {
       DbEnvironment env2 = new DbEnvironment.Builder().name("gp-acl-2").parentApplication(app).whoCreated(user).build()
       database.save(env2)
     when: "I update the group to include acls"
-      g1.environmentRoles = [new EnvironmentGroupRole().environmentId(env.id.toString()).roles([RoleType.EDIT, RoleType.LOCK])]
+      g1.environmentRoles = [new EnvironmentGroupRole().environmentId(env.id.toString()).roles([RoleType.CHANGE_VALUE, RoleType.LOCK])]
       def updGroup = groupApi.updateGroup(g1.id, g1, true, true, true, new Opts().add(FillOpts.Acls))
     and: "i get the group with acls requested"
       def getUpd = groupApi.getGroup(g1.id, new Opts().add(FillOpts.Acls), superPerson)
@@ -422,9 +422,9 @@ class GroupSpec extends Specification {
       def updGroup2 = groupApi.updateGroup(g1.id, g1, true, true, true, new Opts().add(FillOpts.Acls))
     then:
       updGroup.environmentRoles.size() == 1
-      updGroup.environmentRoles[0].roles.sort() == [RoleType.EDIT, RoleType.LOCK].sort()
+      updGroup.environmentRoles[0].roles.sort() == [RoleType.CHANGE_VALUE, RoleType.LOCK].sort()
       getUpd.environmentRoles.size() == 1
-      getUpd.environmentRoles[0].roles.sort() == [RoleType.EDIT, RoleType.LOCK].sort()
+      getUpd.environmentRoles[0].roles.sort() == [RoleType.CHANGE_VALUE, RoleType.LOCK].sort()
       updGroup1.environmentRoles.size() == 1
       updGroup1.environmentRoles[0].roles.sort() == [RoleType.READ, RoleType.LOCK].sort()
       updGroup2.environmentRoles.size() == 1
@@ -445,7 +445,7 @@ class GroupSpec extends Specification {
     and: "i update the group to include environment acls"
       def updating = found.copy()
       updating.environmentRoles = [
-        new EnvironmentGroupRole().roles([RoleType.EDIT]).environmentId(env1App1.id).groupId(g1.id)
+        new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE]).environmentId(env1App1.id).groupId(g1.id)
       ]
       updating.applicationRoles.add(new ApplicationGroupRole().roles([ApplicationRoleType.FEATURE_EDIT]).applicationId(commonApplication2.id))
       def up1 = groupApi.updateGroup(g1.id, updating, true, true, true, Opts.opts(FillOpts.Acls))

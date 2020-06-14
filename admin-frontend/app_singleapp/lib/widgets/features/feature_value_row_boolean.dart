@@ -23,20 +23,10 @@ class FeatureValueBooleanEnvironmentCell extends StatelessWidget {
         stream: fvBloc
             .featureValueByEnvironment(environmentFeatureValue.environmentId),
         builder: (ctx, snap) {
+          final canWrite =
+              environmentFeatureValue.roles.contains(RoleType.CHANGE_VALUE);
           if (snap.hasData) {
-            if (snap.data.locked == true && snap.data.valueBoolean != null) {
-              return Row(children: <Widget>[
-                Switch(
-                    activeTrackColor: Color(0xff11C8B5),
-                    activeColor: Colors.white,
-                    value: snap.data.valueBoolean,
-                    inactiveTrackColor: snap.data.valueBoolean
-                        ? Color(0xff11C8B5)
-                        : Color(0xffF44C49),
-                    onChanged: null),
-                Text('')
-              ]);
-            } else {
+            if (snap.data.locked == false && canWrite) {
               return Row(children: <Widget>[
                 Switch(
                     //Color(0xff11C8B5) : Color(0xffF44C49)
@@ -50,6 +40,16 @@ class FeatureValueBooleanEnvironmentCell extends StatelessWidget {
                     }),
               ]);
             }
+
+            return Row(children: <Widget>[
+              Switch(
+                  //Color(0xff11C8B5) : Color(0xffF44C49)
+                  activeTrackColor: Color(0xff11C8B5),
+                  activeColor: Colors.white,
+                  value: snap.data.valueBoolean,
+                  inactiveTrackColor: Colors.black12,
+                  onChanged: null),
+            ]);
           }
 
           return Container();

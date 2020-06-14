@@ -46,16 +46,17 @@ String condenseJson(initialJson) {
       .replaceAll(': ', ':');
 }
 
-extension ServiceAccountPermissionTypeExtensions
-    on ServiceAccountPermissionType {
+extension RoleTypeExtensions on RoleType {
   String humanReadable() {
     switch (this) {
-      case ServiceAccountPermissionType.READ:
-        return 'Read';
-      case ServiceAccountPermissionType.TOGGLE_ENABLED:
+      case RoleType.CHANGE_VALUE:
         return 'Change value';
-      case ServiceAccountPermissionType.TOGGLE_LOCK:
-        return 'Lock/Unlock';
+      case RoleType.UNLOCK:
+        return 'Unlock';
+      case RoleType.LOCK:
+        return 'Lock';
+      case RoleType.READ:
+        return 'Read';
     }
 
     return '';

@@ -273,7 +273,7 @@ class ApplicationStepdefs {
 
     for (var roleType in [
       RoleType.READ,
-      RoleType.EDIT,
+      RoleType.CHANGE_VALUE,
       RoleType.LOCK,
       RoleType.UNLOCK
     ]) {

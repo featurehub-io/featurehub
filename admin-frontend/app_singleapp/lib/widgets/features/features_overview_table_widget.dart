@@ -152,6 +152,8 @@ class FeatureFlagAndEnvironmentsTable extends StatelessWidget {
 
                   return _FeatureRepresentation(
                     feature: e,
+                    applicationFeatureValues:
+                        featureStatus.applicationFeatureValues,
                     lineStatus: snapshot.data,
                   );
                 })),
@@ -216,9 +218,16 @@ class _FeatureHeader extends StatelessWidget {
 class _FeatureRepresentation extends StatefulWidget {
   final Feature feature;
   final LineStatusFeature lineStatus;
+  final ApplicationFeatureValues applicationFeatureValues;
 
-  const _FeatureRepresentation({Key key, this.feature, this.lineStatus})
-      : super(key: key);
+  const _FeatureRepresentation(
+      {Key key,
+      @required this.feature,
+      this.lineStatus,
+      @required this.applicationFeatureValues})
+      : assert(feature != null),
+        assert(applicationFeatureValues != null),
+        super(key: key);
 
   @override
   __FeatureRepresentationState createState() => __FeatureRepresentationState();
@@ -237,8 +246,12 @@ class __FeatureRepresentationState extends State<_FeatureRepresentation> {
 
     if (_open) {
       return BlocProvider(
-          creator: (_c, _b) => FeatureValuesBloc(bloc.applicationId,
-              widget.feature, bloc.mrClient, featureValuesThisFeature),
+          creator: (_c, _b) => FeatureValuesBloc(
+              bloc.applicationId,
+              widget.feature,
+              bloc.mrClient,
+              featureValuesThisFeature,
+              widget.applicationFeatureValues),
           child: Builder(
               // need to use this so we get access to the bloc provider we just created
               builder: (sbContext) => Table(

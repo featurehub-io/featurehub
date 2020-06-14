@@ -179,7 +179,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                         getPermissionCheckbox(env.id, RoleType.READ),
                         getPermissionCheckbox(env.id, RoleType.LOCK),
                         getPermissionCheckbox(env.id, RoleType.UNLOCK),
-                        getPermissionCheckbox(env.id, RoleType.EDIT),
+                        getPermissionCheckbox(env.id, RoleType.CHANGE_VALUE),
                       ]));
                 }
 

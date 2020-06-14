@@ -207,7 +207,7 @@ public class DbCacheSource implements CacheSource {
   }
 
   private void internalUpdateServiceAccount(DbServiceAccount serviceAccount, PublishAction publishAction) {
-    String cacheName = new QDbNamedCache().organizations.portfolios.serviceAccounts.eq(serviceAccount).findOneOrEmpty().map(DbNamedCache::getCacheName).orElse(null);
+    String cacheName = new QDbNamedCache().organizations.portfolios.serviceAccounts.id.eq(serviceAccount.getId()).findOneOrEmpty().map(DbNamedCache::getCacheName).orElse(null);
 
     if (cacheName != null) {
       CacheBroadcast cacheBroadcast = cacheBroadcasters.get(cacheName);
@@ -220,8 +220,14 @@ public class DbCacheSource implements CacheSource {
             .serviceAccount(fillServiceAccount(serviceAccount))
             .action(publishAction)
           );
+        } else {
+          log.info("ignored service account publish for delete");
         }
+      } else {
+        log.info("can't publish service account, no broadcaster for cache {}", cacheName);
       }
+    } else {
+      log.info("Can't published service account, no cache");
     }
   }
 
@@ -260,6 +266,7 @@ public class DbCacheSource implements CacheSource {
         CacheBroadcast cacheBroadcast = cacheBroadcasters.get(cacheName);
 
         if (cacheBroadcast != null) {
+          log.info("publishing environment {} ({})", environment.getName(), environment.getId());
           final EnvironmentCacheItem environmentCacheItem = fillEnvironmentCacheItem(environmentsByCacheName(cacheName).findCount(), environment, publishAction);
           cacheBroadcast.publishEnvironment(environmentCacheItem);
         }

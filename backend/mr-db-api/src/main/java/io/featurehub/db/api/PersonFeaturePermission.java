@@ -25,16 +25,16 @@ public class PersonFeaturePermission {
     appRoles = builder.appRoles;
   }
 
-  public boolean hasReadRole() {
-    return roles.size() > 0 || appRoles.size() > 0;
+  public boolean hasNoRoles() {
+    return roles.isEmpty() && appRoles.isEmpty();
   }
 
   public boolean hasWriteRole() {
-    return roles.contains(RoleType.EDIT) || roles.contains(RoleType.UNLOCK) || roles.contains(RoleType.LOCK) || hasCreateFeatureRole();
+    return roles.contains(RoleType.CHANGE_VALUE) || roles.contains(RoleType.UNLOCK) || roles.contains(RoleType.LOCK) || hasCreateFeatureRole();
   }
 
-  public boolean hasEditRole() {
-    return roles.contains(RoleType.EDIT) || hasCreateFeatureRole();
+  public boolean hasChangeValueRole() {
+    return roles.contains(RoleType.CHANGE_VALUE) || hasCreateFeatureRole();
   }
 
   public boolean hasCreateFeatureRole() {
@@ -42,11 +42,11 @@ public class PersonFeaturePermission {
   }
 
   public boolean hasLockRole() {
-    return roles.contains(RoleType.EDIT) || roles.contains(RoleType.LOCK) || hasCreateFeatureRole();
+    return roles.contains(RoleType.LOCK) || hasCreateFeatureRole();
   }
 
   public boolean hasUnlockRole() {
-    return roles.contains(RoleType.EDIT) || roles.contains(RoleType.UNLOCK) || hasCreateFeatureRole();
+    return roles.contains(RoleType.UNLOCK) || hasCreateFeatureRole();
   }
 
   @Override

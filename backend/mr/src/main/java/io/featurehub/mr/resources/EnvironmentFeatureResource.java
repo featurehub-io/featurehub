@@ -10,7 +10,6 @@ import io.featurehub.mr.auth.AuthManagerService;
 import io.featurehub.mr.model.EnvironmentFeaturesResult;
 import io.featurehub.mr.model.FeatureValue;
 import io.featurehub.mr.model.Person;
-import io.featurehub.mr.model.RoleType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +63,7 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
 
   @Override
   public void deleteFeatureForEnvironment(String eid, String key, SecurityContext securityContext) {
-    if (!requireRoleCheck(eid, securityContext).hasEditRole()) {
+    if (!requireRoleCheck(eid, securityContext).hasChangeValueRole()) {
       throw new ForbiddenException();
     }
 
@@ -75,7 +74,7 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
 
   @Override
   public FeatureValue getFeatureForEnvironment(String eid, String key, SecurityContext securityContext) {
-    if (!requireRoleCheck(eid, securityContext).hasReadRole()) {
+    if (requireRoleCheck(eid, securityContext).hasNoRoles()) {
       throw new ForbiddenException();
     }
 
@@ -94,7 +93,7 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
       return featureApi.lastFeatureValueChanges(authManagerService.from(securityContext));
     }
 
-    if (!requireRoleCheck(eid, securityContext).hasReadRole()) {
+    if (requireRoleCheck(eid, securityContext).hasNoRoles()) {
       throw new ForbiddenException();
     }
 

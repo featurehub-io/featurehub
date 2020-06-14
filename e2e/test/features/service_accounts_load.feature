@@ -48,7 +48,7 @@ Feature: This should test the loading of new service accounts
       | Engineering | The Eloi       | SA005           | Engineering Admin       | engineering-admin@mailinator.com       | READ            | Fun app      | sit         |
       | Engineering | The Eloi       | SA005           | Engineering Admin       | engineering-admin@mailinator.com       | READ            | Fun app      | staging     |
       | Engineering | The Eloi       | SA005           | Engineering Admin       | engineering-admin@mailinator.com       | READ            | Fun app      | uat         |
-      | Engineering | The Eloi       | SA005           | Engineering Admin       | engineering-admin@mailinator.com       | EDIT            | Fun app      | production  |
+      | Engineering | The Eloi       | SA005           | Engineering Admin       | engineering-admin@mailinator.com       | CHANGE_VALUE    | Fun app      | production  |
       | Platform    | The Morlocks   | SA006           | Platform Admin          | platform-admin@mailinator.com          | READ            | CD App 1     | sit         |
       | Platform    | The Morlocks   | SA007           | platform testers        | platform_testers-admin@mailinator.com  | READ            | CD App 2     | dev         |
       | Platform    | The Morlocks   | SA008           | platform_business_users | platform_product-owners@mailinator.com | READ            | SER fun      | prod        |

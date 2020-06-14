@@ -19,7 +19,6 @@ import io.featurehub.db.model.query.QDbAcl;
 import io.featurehub.db.model.query.QDbApplication;
 import io.featurehub.db.model.query.QDbApplicationFeature;
 import io.featurehub.db.model.query.QDbEnvironment;
-import io.featurehub.db.model.query.QDbEnvironmentFeatureStrategy;
 import io.featurehub.db.model.query.QDbGroup;
 import io.featurehub.db.model.query.QDbNamedCache;
 import io.featurehub.db.model.query.QDbPerson;
@@ -41,7 +40,6 @@ import io.featurehub.mr.model.Portfolio;
 import io.featurehub.mr.model.RoleType;
 import io.featurehub.mr.model.ServiceAccount;
 import io.featurehub.mr.model.ServiceAccountPermission;
-import io.featurehub.mr.model.ServiceAccountPermissionType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +50,6 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -183,15 +180,6 @@ public class ConvertUtils {
 
   public String getCacheNameByEnvironment(DbEnvironment env) {
     return new QDbNamedCache().organizations.portfolios.applications.environments.eq(env).findOneOrEmpty().map(DbNamedCache::getCacheName).orElse(null);
-  }
-
-  public String getCacheNameByEnvironmentId(String eid) {
-    UUID id = ConvertUtils.ifUuid(eid);
-    if (id == null) {
-      return null;
-    }
-
-    return new QDbNamedCache().organizations.portfolios.applications.environments.id.eq(id).findOneOrEmpty().map(DbNamedCache::getCacheName).orElse(null);
   }
 
   public ServiceAccountPermission toServiceAccountPermission(DbServiceAccountEnvironment sae, Opts opt) {
@@ -473,14 +461,15 @@ public class ConvertUtils {
     }
 
     if (opts.contains(FillOpts.Groups)) {
-      portfolio.setGroups(p.getGroups()
-        .stream()
+      portfolio.setGroups(
+        new QDbGroup().whenArchived.isNull().owningPortfolio.eq(p).order().name.asc().findList().stream()
         .map(g -> toGroup(g, opts))
         .collect(Collectors.toList()));
     }
 
     if (opts.contains(FillOpts.Applications)) {
-      portfolio.setApplications(p.getApplications()
+      portfolio.setApplications(
+          new QDbApplication().whenArchived.isNull().portfolio.eq(p).order().name.asc().findList()
         .stream()
         .map(a -> toApplication(a, opts))
         .collect(Collectors.toList()));
@@ -545,11 +534,9 @@ public class ConvertUtils {
     return account;
   }
 
-  private List<ServiceAccountPermissionType> splitServiceAccountPermissions(String permissions) {
-    return Arrays.stream(permissions.split(","))
-      .filter(s -> s != null && s.length() > 0)
-      .map(ServiceAccountPermissionType::fromValue)
-      .collect(Collectors.toList());
+  private List<RoleType> splitServiceAccountPermissions(String permissions) {
+    // same now, were different historically
+    return splitEnvironmentRoles(permissions);
   }
 
   public FeatureEnvironment toFeatureEnvironment(DbEnvironmentFeatureStrategy s, List<RoleType> roles, DbEnvironment dbEnvironment, Opts opts) {

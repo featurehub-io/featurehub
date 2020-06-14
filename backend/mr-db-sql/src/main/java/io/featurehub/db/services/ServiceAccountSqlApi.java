@@ -12,6 +12,7 @@ import io.featurehub.db.model.DbPerson;
 import io.featurehub.db.model.DbPortfolio;
 import io.featurehub.db.model.DbServiceAccount;
 import io.featurehub.db.model.DbServiceAccountEnvironment;
+import io.featurehub.mr.model.RoleType;
 import io.featurehub.db.model.query.QDbEnvironment;
 import io.featurehub.db.model.query.QDbServiceAccount;
 import io.featurehub.db.publish.CacheSource;
@@ -19,7 +20,6 @@ import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.PublishAction;
 import io.featurehub.mr.model.ServiceAccount;
 import io.featurehub.mr.model.ServiceAccountPermission;
-import io.featurehub.mr.model.ServiceAccountPermissionType;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -148,8 +148,8 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
     return null;
   }
 
-  private String convertPermissionsToString(List<ServiceAccountPermissionType> permissions) {
-    return permissions.stream().map(ServiceAccountPermissionType::toString).sorted().collect(Collectors.joining(","));
+  private String convertPermissionsToString(List<RoleType> permissions) {
+    return permissions.stream().map(RoleType::toString).sorted().collect(Collectors.joining(","));
   }
 
   @Override
@@ -198,6 +198,7 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
     DbPortfolio portfolio = convertUtils.uuidPortfolio(portfolioId);
 
     if (who != null && portfolio != null) {
+      List<EnvironmentChange> changedEnvironments = new ArrayList<>();
       Map<String, DbEnvironment> envs = environmentMap(serviceAccount);
 
       // now where we actually find the environment, add it into the list
@@ -206,6 +207,7 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
         if (sap.getEnvironmentId() != null) {
           DbEnvironment e = envs.get(sap.getEnvironmentId());
           if (e != null) {
+            changedEnvironments.add(new EnvironmentChange(e));
             return new DbServiceAccountEnvironment.Builder()
               .environment(e)
               .permissions(convertPermissionsToString(sap.getPermissions()))
@@ -228,7 +230,9 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
       perms.forEach(p -> p.setServiceAccount(sa));
 
       try {
-        save(sa);
+        save(sa, changedEnvironments);
+
+        asyncUpdateCache(sa, changedEnvironments);
       } catch (DuplicateKeyException dke) {
         log.warn("Duplicate service account {}", sa.getName(), dke);
         throw new DuplicateServiceAccountException();
@@ -256,10 +260,9 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
   }
 
   @Transactional
-  private void save(DbServiceAccount sa) {
+  private void save(DbServiceAccount sa, List<EnvironmentChange> changedEnvironments) {
     database.save(sa);
 
-    asyncUpdateCache(sa, null);
   }
 
   @Transactional

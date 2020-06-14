@@ -11,6 +11,7 @@ import io.featurehub.db.model.DbEnvironment
 import io.featurehub.db.model.DbOrganization
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
+import io.featurehub.mr.model.RoleType
 import io.featurehub.db.model.query.QDbOrganization
 import io.featurehub.db.publish.CacheSource
 import io.featurehub.mr.model.Group
@@ -18,7 +19,6 @@ import io.featurehub.mr.model.Organization
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.ServiceAccount
 import io.featurehub.mr.model.ServiceAccountPermission
-import io.featurehub.mr.model.ServiceAccountPermissionType
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import spock.lang.Shared
@@ -116,7 +116,7 @@ class ServiceAccountSpec extends Specification {
     given: "i have a service account"
       def sa = new ServiceAccount().name("sa-delete").description("sa-1 test").permissions(
         [new ServiceAccountPermission()
-           .permissions([ServiceAccountPermissionType.READ, ServiceAccountPermissionType.TOGGLE_ENABLED])
+           .permissions([RoleType.READ, RoleType.CHANGE_VALUE])
            .environmentId(environment1.id.toString()),
         ]
       )
@@ -147,10 +147,10 @@ class ServiceAccountSpec extends Specification {
     given: "i have a service account with two environments"
       def sa = new ServiceAccount().name("sa-1").description("sa-1 test").permissions(
         [new ServiceAccountPermission()
-           .permissions([ServiceAccountPermissionType.READ, ServiceAccountPermissionType.TOGGLE_ENABLED])
+           .permissions([RoleType.READ, RoleType.CHANGE_VALUE])
           .environmentId(environment1.id.toString()),
           new ServiceAccountPermission()
-          .permissions([ServiceAccountPermissionType.TOGGLE_LOCK])
+          .permissions([RoleType.LOCK, RoleType.UNLOCK])
           .environmentId(environment2.id.toString())
         ]
       )
@@ -169,10 +169,10 @@ class ServiceAccountSpec extends Specification {
       def updated = result.copy()
       updated.description("sa-2 test")
       updated.permissions.remove(updated.permissions.find({it.environmentId == environment2.id.toString()}))
-      updated.permissions[0].permissions = [ServiceAccountPermissionType.TOGGLE_ENABLED]
+      updated.permissions[0].permissions = [RoleType.CHANGE_VALUE]
       updated.permissions.add(new ServiceAccountPermission()
         .environmentId(environment3.id.toString())
-        .permissions([ServiceAccountPermissionType.TOGGLE_LOCK]))
+        .permissions([RoleType.LOCK, RoleType.UNLOCK]))
       sapi.update(updated.id, superPerson, updated, Opts.empty())
     and: "search for the result"
       def updatedResult = sapi.search(portfolio1Id, "sa-1", null, Opts.opts(FillOpts.Permissions)).find({it.name == 'sa-1'})
@@ -180,22 +180,22 @@ class ServiceAccountSpec extends Specification {
       def upd2 = updatedResult.permissions.find({it.environmentId == environment3.id.toString()})
     then:
       result.permissions.size() == 2
-      permE1.permissions.intersect([ServiceAccountPermissionType.READ, ServiceAccountPermissionType.TOGGLE_ENABLED]).size() == 2
+      permE1.permissions.intersect([RoleType.READ, RoleType.CHANGE_VALUE]).size() == 2
       permE1.environmentId == environment1.id.toString()
-      permE2.permissions == [ServiceAccountPermissionType.TOGGLE_LOCK]
+      permE2.permissions == [RoleType.LOCK, RoleType.UNLOCK]
       permE2.environmentId == environment2.id.toString()
       upd1 != null
       upd2 != null
-      upd1.permissions == [ServiceAccountPermissionType.TOGGLE_ENABLED]
-      upd2.permissions == [ServiceAccountPermissionType.TOGGLE_LOCK]
+      upd1.permissions == [RoleType.CHANGE_VALUE]
+      upd2.permissions == [RoleType.LOCK, RoleType.UNLOCK]
       updatedResult.equals(sapi.get(updatedResult.id, Opts.opts(FillOpts.Permissions)))
       updatedResult.description == 'sa-2 test'
       newEnv1.serviceAccountPermission.size() == 1
       newEnv2.serviceAccountPermission.size() == 1
       newEnv1.serviceAccountPermission.first().getServiceAccount().getName() == 'sa-1'
       newEnv2.serviceAccountPermission.first().getServiceAccount().getName() == 'sa-1'
-      newEnv1.serviceAccountPermission.first().permissions.containsAll([ServiceAccountPermissionType.READ, ServiceAccountPermissionType.TOGGLE_ENABLED])
-      newEnv2.serviceAccountPermission.first().permissions.containsAll([ServiceAccountPermissionType.TOGGLE_LOCK])
+      newEnv1.serviceAccountPermission.first().permissions.containsAll([RoleType.READ, RoleType.CHANGE_VALUE])
+      newEnv2.serviceAccountPermission.first().permissions.containsAll([RoleType.LOCK, RoleType.UNLOCK])
       newEnv1.serviceAccountPermission.first().sdkUrl.contains("/" + newEnv1.serviceAccountPermission.first().serviceAccount.apiKey)
   }
 

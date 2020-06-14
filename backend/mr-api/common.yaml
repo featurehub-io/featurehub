@@ -21,10 +21,7 @@ components:
         - READ
         - LOCK
         - UNLOCK
-        - EDIT
-        - ADMIN
-        - USER_MANAGER
-        - SECRET_KEEPER
+        - CHANGE_VALUE
     ApplicationFeatureValues:
       properties:
         applicationId:
@@ -378,7 +375,7 @@ components:
         permissions:
           type: array
           items:
-            $ref: "#/components/schemas/ServiceAccountPermissionType"
+            $ref: "#/components/schemas/RoleType"
         serviceAccount:
           description: "The service account associated with this permission. Only filled in when coming from Environment"
           $ref: "#/components/schemas/ServiceAccount"
@@ -387,12 +384,6 @@ components:
         sdkUrl:
           description: "Optional if they have chosen includeSdkUrl"
           type: string
-    ServiceAccountPermissionType:
-      type: string
-      enum:
-        - READ
-        - TOGGLE_LOCK
-        - TOGGLE_ENABLED
     Group:
       allOf:
         - $ref: "#/components/schemas/Audit"

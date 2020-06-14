@@ -73,17 +73,20 @@ class _MenuContainer extends StatelessWidget {
               ),
               SizedBox(height: 16),
               _MenuFeaturesOptionsWidget(),
-              Padding(
-                padding:
-                    const EdgeInsets.only(left: 16.0, top: 32.0, bottom: 8.0),
-                child: Text(
-                  'Application Settings',
-                  style: Theme.of(context).textTheme.caption,
-                ),
-              ),
-              _ApplicationSettings(),
-              mrBloc.userIsAnyPortfolioOrSuperAdmin
-                  ? Column(
+              if (mrBloc.userIsAnyPortfolioOrSuperAdmin)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(
+                          left: 16.0, top: 32.0, bottom: 8.0),
+                      child: Text(
+                        'Application Settings',
+                        style: Theme.of(context).textTheme.caption,
+                      ),
+                    ),
+                    _ApplicationSettings(),
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Padding(
@@ -97,8 +100,9 @@ class _MenuContainer extends StatelessWidget {
                         _MenuPortfolioAdminOptionsWidget(),
                         _MenuDivider(),
                       ],
-                    )
-                  : Container(),
+                    ),
+                  ],
+                ),
               mrBloc.userIsSuperAdmin
                   ? Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

@@ -60,37 +60,27 @@ class AdminPersonStepdefs {
 
     await common.initialize();
 
-    SearchPersonResult spr =
-        await common.personService.findPeople(filter: email);
-
-    if (spr.people.isEmpty) {
-      if (type == "person") {
-        await registerNewUser(email);
-      } else {
-        await registerNewSuperuser(email);
-      }
-
-      await userCommon.completeRegistration(
-          name, password, email, shared.registrationUrl.registrationUrl);
+    if (type == "person") {
+      await registerNewUser(email);
     } else {
-      final person = spr.people[0];
-      await common.authService.resetPassword(
-          person.id.id,
-          PasswordReset()
-            ..password = 'password'
-            ..reactivate = true);
-      await common.authService.changePassword(
-          person.id.id,
-          PasswordUpdate()
-            ..oldPassword = 'password'
-            ..newPassword = password);
-      await common.authService.login(UserCredentials()
-        ..email = email
-        ..password = password);
+      await registerNewSuperuser(email);
     }
+
+    await userCommon.completeRegistration(
+        name, password, email, shared.registrationUrl.registrationUrl);
+
+    shared.tokenizedPerson = await common.authService.login(UserCredentials()
+      ..email = email
+      ..password = password);
 
     shared.person =
         await common.personService.getPerson(email, includeGroups: true);
+  }
+
+  @And(r'The shared person is the authenticated person')
+  void sharedPersonIsAuthenticated() {
+    assert(shared.tokenizedPerson != null, 'no logged in shared person!');
+    userCommon.tokenized = shared.tokenizedPerson;
   }
 
   // this checks to see if we have  the user already, so it has to belong to the superuser, but
@@ -125,9 +115,11 @@ class AdminPersonStepdefs {
           PasswordUpdate()
             ..oldPassword = 'password'
             ..newPassword = password);
-      userCommon.tokenized = await common.authService.login(UserCredentials()
+
+      shared.tokenizedPerson = await common.authService.login(UserCredentials()
         ..email = email
         ..password = password);
+      userCommon.tokenized = shared.tokenizedPerson;
     }
 
     spr = await common.personService.findPeople(filter: email);

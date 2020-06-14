@@ -2,7 +2,6 @@ import 'package:app_singleapp/shared.dart';
 import 'package:app_singleapp/user_common.dart';
 import 'package:mrapi/api.dart';
 import 'package:ogurets/ogurets.dart' hide Feature;
-import 'package:openapi_dart_common/openapi.dart';
 
 class FeatureStepdefs {
   final UserCommon userCommon;
@@ -35,23 +34,8 @@ class FeatureStepdefs {
     boolAsString = value;
     bool b = boolAsString == 'true';
 
-    FeatureValue featureValue;
-
-    print(
-        "setting environment ${environment.id} to ${b} for feature ${featureKey}");
-
-    try {
-      featureValue = await userCommon.environmentFeatureServiceApi
-          .getFeatureForEnvironment(environment.id, featureKey);
-    } catch (e) {
-      if (e is ApiException && e.code == 404) {
-        featureValue = new FeatureValue()
-          ..environmentId = environment.id
-          ..locked = true
-          ..key = featureKey;
-      } else
-        throw e;
-    }
+    FeatureValue featureValue = await userCommon.environmentFeatureServiceApi
+        .getFeatureForEnvironment(environment.id, featureKey);
 
     await userCommon.environmentFeatureServiceApi.updateFeatureForEnvironment(
         environment.id, featureKey, featureValue..valueBoolean = b);
@@ -161,5 +145,23 @@ class FeatureStepdefs {
       assert(val.valueBoolean == flagValue,
           'Environment ${env.name} key ${val.key} is ${val.valueBoolean} and not ${flagValue}');
     }
+  }
+
+  _changeLock(bool lock, String env, String featureKey) async {
+    Environment environment =
+        await userCommon.findExactEnvironment(env, shared.application.id);
+
+    FeatureValue featureValue = await userCommon.environmentFeatureServiceApi
+        .getFeatureForEnvironment(environment.id, featureKey);
+
+    await userCommon.environmentFeatureServiceApi.updateFeatureForEnvironment(
+        environment.id, featureKey, featureValue..locked = lock);
+  }
+
+  @And(
+      r'^I (lock|unlock) the feature value for environment "(.*)" for feature "(.*)"$')
+  void iUnlockTheFeatureValueForEnvironmentForFeature(
+      String lockStatus, String env, String featureKey) async {
+    await _changeLock(lockStatus == 'lock', env, featureKey);
   }
 }

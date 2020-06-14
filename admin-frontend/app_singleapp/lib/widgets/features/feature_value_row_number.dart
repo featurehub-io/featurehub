@@ -31,8 +31,8 @@ class _FeatureValueNumberEnvironmentCellState
         stream: widget.fvBloc.featureValueByEnvironment(
             widget.environmentFeatureValue.environmentId),
         builder: (ctx, snap) {
-          final canEdit =
-              widget.environmentFeatureValue.roles.contains(RoleType.EDIT);
+          final canEdit = widget.environmentFeatureValue.roles
+              .contains(RoleType.CHANGE_VALUE);
           final isLocked = snap.hasData && snap.data.locked;
           final enabled = canEdit && !isLocked;
           final val = snap.hasData ? snap.data.valueNumber : null;

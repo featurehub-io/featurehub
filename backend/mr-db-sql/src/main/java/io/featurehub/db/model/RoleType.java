@@ -7,13 +7,7 @@ public enum RoleType {
 
   UNLOCK("UNLOCK"),
 
-  TOGGLE("TOGGLE"),
-
-  EDIT("EDIT"),
-
-  ADMIN("ADMIN"),
-
-  USER_MANAGER("USER_MANAGER");
+  CHANGE_VALUE("CHANGE_VALUE");
 
   private String value;
 

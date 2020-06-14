@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -80,11 +81,10 @@ public class FeatureSqlApi implements FeatureApi {
 
     if (eId != null) {
       final DbEnvironmentFeatureStrategy strategy = new QDbEnvironmentFeatureStrategy().environment.id.eq(eId).feature.key.eq(key).findOne();
-      log.info("strategy= {}",strategy);
       if (strategy != null) {
         // this is an update not a create, environment + app-feature key exists
         return onlyUpdateFeatureValueForEnvironment(featureValue, person, strategy);
-      } else if (person.hasEditRole()) {
+      } else if (person.hasChangeValueRole()) {
         return onlyCreateFeatureValueForEnvironment(eid, key, featureValue, person);
       } else {
         log.info("roles for person are {} and are not enough for environment {} and key {}", person.toString(), eid, key);
@@ -167,7 +167,7 @@ public class FeatureSqlApi implements FeatureApi {
   private void updateStrategy(FeatureValue featureValue, PersonFeaturePermission person, DbEnvironmentFeatureStrategy strategy) throws NoAppropriateRole {
     final DbApplicationFeature feature = strategy.getFeature();
 
-    if (person.hasEditRole()) {
+    if (person.hasChangeValueRole() && ( !strategy.isLocked() || (Boolean.FALSE.equals(featureValue.getLocked()) && person.hasUnlockRole()) )) {
       if (feature.getValueType() == FeatureValueType.NUMBER) {
         strategy.setDefaultValue(featureValue.getValueNumber() == null ? null : featureValue.getValueNumber().toString());
       } else if (feature.getValueType() == FeatureValueType.STRING) {
@@ -183,6 +183,7 @@ public class FeatureSqlApi implements FeatureApi {
       strategy.setRolloutStrategyInstances(featureValue.getRolloutStrategyInstances());
     }
 
+    // change locked before changing value, as may not be able to change value if locked
     boolean newValue = featureValue.getLocked() == null ? false : featureValue.getLocked();
     if (newValue != strategy.isLocked()) {
       if (!newValue && person.hasUnlockRole()) {
@@ -399,8 +400,6 @@ public class FeatureSqlApi implements FeatureApi {
       // environment -> feature value
       Map<UUID, DbEnvironmentFeatureStrategy> strategiesToDelete = result.strategies;
 
-
-
       for (FeatureValue fv : featureValue) {
         UUID envId = ConvertUtils.ifUuid(fv.getEnvironmentId());
         if (envId == null) {
@@ -423,6 +422,12 @@ public class FeatureSqlApi implements FeatureApi {
         strategiesToDelete.remove(envId); // we processed this environment ok, didn't throw a wobbly
       }
 
+      // now remove any ability to remove feature values that are flags
+      final List<UUID> invalidDeletions = strategiesToDelete.keySet().stream()
+        .filter(u -> (strategiesToDelete.get(u).getFeature().getValueType() != FeatureValueType.BOOLEAN))
+        .collect(Collectors.toList());
+      invalidDeletions.forEach(strategiesToDelete::remove);
+
       if (removeValuesNotPassed) {
         publishTheRemovalOfABunchOfStrategies(strategiesToDelete.values());
         database.deleteAll(strategiesToDelete.values());
@@ -430,8 +435,14 @@ public class FeatureSqlApi implements FeatureApi {
     }
   }
 
-  private EnvironmentFeatureValues environmentToFeatureValues(DbAcl acl) {
-    List<RoleType> roles = convertUtils.splitEnvironmentRoles(acl.getRoles());
+  private EnvironmentFeatureValues environmentToFeatureValues(DbAcl acl, boolean personIsAdmin) {
+    List<RoleType> roles;
+
+    if (personIsAdmin) {
+      roles = Arrays.asList(RoleType.values());
+    } else {
+      roles = convertUtils.splitEnvironmentRoles(acl.getRoles());
+    }
 
     if (roles == null || roles.isEmpty()) {
       return null;
@@ -459,26 +470,32 @@ public class FeatureSqlApi implements FeatureApi {
 
       boolean personAdmin = isPersonAdmin(dbPerson, app);
 
-      // the requirement is that if they have any environments, we send them all back, but make them empty
+      Map<String, DbEnvironment> environmentOrderingMap = new HashMap<>();
+      // the requirement is that we only send back environments they have at least READ access to
       final List<EnvironmentFeatureValues> permEnvs =
           new QDbAcl()
             .environment.whenArchived.isNull()
             .environment.parentApplication.eq(app)
             .environment.parentApplication.whenArchived.isNull()
+            .environment.parentApplication.groupRolesAcl.fetch()
             .group.whenArchived.isNull()
             .group.peopleInGroup.eq(dbPerson).findList()
         .stream()
-        .map(this::environmentToFeatureValues)
-        .filter(Objects::nonNull).collect(Collectors.toList());
+        .peek(acl -> environmentOrderingMap.put(acl.getEnvironment().getId().toString(), acl.getEnvironment()))
+        .map(acl -> environmentToFeatureValues(acl, personAdmin))
+        .filter(Objects::nonNull)
+        .filter(efv -> !efv.getRoles().isEmpty())
+
+        .collect(Collectors.toList());
 
 //      Set<String> envs = permEnvs.stream().map(EnvironmentFeatureValues::getEnvironmentId).distinct().collect(Collectors.toSet());
 
-      Map<String, List<EnvironmentFeatureValues>> envs = new HashMap<>();
+      Map<String, EnvironmentFeatureValues> envs = new HashMap<>();
 
+      // merge any duplicates, this occurs because the database query can return duplicate lines
       permEnvs.forEach(e -> {
-        List<EnvironmentFeatureValues> vals = envs.computeIfAbsent(e.getEnvironmentId(), key -> new ArrayList<>());
-        if (vals.size() == 1) { // merge them
-          EnvironmentFeatureValues original = vals.get(0);
+        EnvironmentFeatureValues original = envs.get(e.getEnvironmentId());
+        if (original != null) { // merge them
           Set<String> originalFeatureValueIds = original.getFeatures().stream().map(FeatureValue::getId).collect(Collectors.toSet());
           e.getFeatures().forEach(fv -> {
             if (!originalFeatureValueIds.contains(fv.getId())) {
@@ -492,67 +509,63 @@ public class FeatureSqlApi implements FeatureApi {
             }
           });
         } else {
-          vals.add(e);
+          envs.put(e.getEnvironmentId(), e);
         }
       });
 
-      List<EnvironmentFeatureValues> finalValues;
-      if (permEnvs.size() != 0 || personAdmin) {
+      // now we have a flat-map of individual environments  the user has actual access to, but they may be an admin, so
+      // if so, we need to fill those in
+
+
+      if (personAdmin) {
         // now go through all the environments for this app
         List<DbEnvironment> environments = new QDbEnvironment().whenArchived.isNull().order().name.desc().parentApplication.eq(app).findList();
         // envId, DbEnvi
-        Map<String, DbEnvironment> environmentOrderingMap = new HashMap<>();
 
         environments.forEach(e -> {
           if (envs.get(e.getId().toString()) == null) {
+            environmentOrderingMap.put(e.getId().toString(), e);
+
             final EnvironmentFeatureValues e1 =
               new EnvironmentFeatureValues()
                 .environmentName(e.getName())
                 .priorEnvironmentId(e.getPriorEnvironment() == null ? null : e.getPriorEnvironment().getId().toString())
-                .environmentId(e.getId().toString());
-            // they are in fact an admin so they have at least READ access
-            if (personAdmin) {
-              e1.addRolesItem(RoleType.READ);
-              e1.features( new QDbEnvironmentFeatureStrategy()
-                .feature.whenArchived.isNull()
-                .environment.eq(e)
-                .findList().stream().map(convertUtils::toFeatureValue).collect(Collectors.toList()));
-            }
+                .environmentId(e.getId().toString())
+                .roles(Arrays.asList(RoleType.values())) // all access (as admin)
+                .features(new QDbEnvironmentFeatureStrategy()
+                  .feature.whenArchived.isNull()
+                  .environment.eq(e)
+                  .findList().stream().map(convertUtils::toFeatureValue).collect(Collectors.toList()));
 
-            envs.put(e1.getEnvironmentId(), Collections.singletonList(e1));
+            envs.put(e1.getEnvironmentId(), e1);
           }
-
-          environmentOrderingMap.put(e.getId().toString(), e);
         });
+      }
 
-        finalValues = envs.values().stream()
-          .flatMap(List::stream).collect(Collectors.toList());
+      List<EnvironmentFeatureValues> finalValues = new ArrayList<>(envs.values());
 
-        finalValues.sort((o1, o2) -> {
+      finalValues.sort((o1, o2) -> {
           final DbEnvironment env1 = environmentOrderingMap.get(o1.getEnvironmentId());
           final DbEnvironment env2 = environmentOrderingMap.get(o2.getEnvironmentId());
 
-          Integer w = EnvironmentUtils.walkAndCompare(env1, env2);
+        Integer w = EnvironmentUtils.walkAndCompare(env1, env2);
+        if (w == null) {
+          w = EnvironmentUtils.walkAndCompare(env2, env1);
           if (w == null) {
-            w = EnvironmentUtils.walkAndCompare(env2, env1);
-            if (w == null) {
-              if (env1.getPriorEnvironment() == null && env2.getPriorEnvironment() == null) {
-                return 0;
-              }
-              if (env1.getPriorEnvironment() != null && env2.getPriorEnvironment() == null) {
-                return 1;
-              }
-              return -1;
-            } else {
-              return w * -1;
+            if (env1.getPriorEnvironment() == null && env2.getPriorEnvironment() == null) {
+              return 0;
             }
+            if (env1.getPriorEnvironment() != null && env2.getPriorEnvironment() == null) {
+              return 1;
+            }
+            return -1;
+          } else {
+            return w * -1;
           }
+        }
 
-          return w;
-        });
-      } else {
-        finalValues = new ArrayList<>();
-      }
+        return w;
+      });
 
       return
         new ApplicationFeatureValues()

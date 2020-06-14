@@ -23,7 +23,7 @@ Feature: This tests a persons interaction with groups
     And Searching for the group should include the user
     Given I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
     And I ensure that an environment "<envName>" with description "<envDesc>" exists in the app "<appName>" in the portfolio "<portfolio>"
-    And I ensure the permission "EDIT" is added to the group "<group>" for the env "<envName>" for app "<appName>" for portfolio "<portfolio>"
+    And I ensure the permission "CHANGE_VALUE" is added to the group "<group>" for the env "<envName>" for app "<appName>" for portfolio "<portfolio>"
     Then Searching for user should include the group
 
 

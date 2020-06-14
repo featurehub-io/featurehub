@@ -96,7 +96,7 @@ class EnvironmentStepdefs {
     egr.groupId = group.id;
     egr.environmentId = environment.id;
     perm == "READ" ? egr.roles.add(RoleType.READ) : {};
-    perm == "EDIT" ? egr.roles.add(RoleType.EDIT) : {};
+    perm == "EDIT" ? egr.roles.add(RoleType.CHANGE_VALUE) : {};
     perm == "LOCK" ? egr.roles.add(RoleType.LOCK) : {};
     perm == "UNLOCK" ? egr.roles.add(RoleType.UNLOCK) : {};
 
@@ -127,7 +127,7 @@ class EnvironmentStepdefs {
       return environmentRole.environmentId == environment.id;
     });
     RoleType compareTo = RoleType.READ;
-    perm == "EDIT" ? compareTo = RoleType.EDIT : {};
+    perm == "EDIT" ? compareTo = RoleType.CHANGE_VALUE : {};
     perm == "LOCK" ? compareTo = RoleType.LOCK : {};
     perm == "UNLOCK" ? compareTo = RoleType.UNLOCK : {};
 
@@ -150,7 +150,7 @@ class EnvironmentStepdefs {
     egr.groupId = group.id;
     egr.environmentId = environment.id;
     egr.roles.add(RoleType.READ);
-    egr.roles.add(RoleType.EDIT);
+    egr.roles.add(RoleType.CHANGE_VALUE);
     egr.roles.add(RoleType.LOCK);
     egr.roles.add(RoleType.UNLOCK);
 
