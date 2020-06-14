@@ -147,18 +147,12 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
                     )));
           }),
         ),
-        StreamBuilder<Person>(
-            stream: mrBloc.personStream,
-            builder: (BuildContext context, AsyncSnapshot<Person> snapshot) {
-              if (snapshot.hasData) {
-                return Container(
-                    child: StepperContainer(
-                  mrBloc: mrBloc,
-                  headerPadding: _HEADER_PADDING,
-                ));
-              }
-              return Container();
-            }),
+        if (mrBloc.userIsAnyPortfolioOrSuperAdmin == true)
+          Container(
+              child: StepperContainer(
+            mrBloc: mrBloc,
+            headerPadding: _HEADER_PADDING,
+          )),
       ],
     );
   }

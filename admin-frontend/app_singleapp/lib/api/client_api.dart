@@ -109,6 +109,7 @@ class ManagementRepositoryClientBloc implements Bloc {
   final _snackbarSource = PublishSubject<Widget>();
 
   final _personSource = BehaviorSubject<Person>();
+
   Stream<Person> get personStream => _personSource.stream;
 
   Organization organization;
@@ -116,14 +117,19 @@ class ManagementRepositoryClientBloc implements Bloc {
   List<Group> groupList;
 
   bool _userIsSuperAdmin;
+
   bool get userIsSuperAdmin => _userIsSuperAdmin;
 
-  bool _userIsAnyPortfolioOrSuperAdmin;
+  bool _userIsAnyPortfolioOrSuperAdmin = false;
+
   bool get userIsAnyPortfolioOrSuperAdmin => _userIsAnyPortfolioOrSuperAdmin;
 
   String get currentPid => getCurrentPid();
+
   String get currentAid => getCurrentAid();
+
   set currentAid(String aid) => setCurrentAid(aid);
+
   set currentPid(String pid) => setCurrentPid(pid);
 
   Portfolio get currentPortfolio {
