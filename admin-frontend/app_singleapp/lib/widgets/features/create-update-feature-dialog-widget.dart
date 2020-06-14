@@ -87,20 +87,21 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                     }
                     return null;
                   })),
-              TextFormField(
-                  controller: _featureAlias,
-                  // initialValue: _featureName.toString(),
-                  decoration: InputDecoration(
-                      labelText: 'Alias key (optional)',
-                      hintText:
-                          "Use alias key as a 'secret' alternative to the feature key",
-                      hintStyle: Theme.of(context).textTheme.caption),
-                  validator: ((v) {
-                    if (v.isNotEmpty && !validateFeatureKey(v)) {
-                      return ('Can only include letters, numbers and underscores');
-                    }
-                    return null;
-                  })),
+//Comment out Alias key until we implement proper analytics
+//              TextFormField(
+//                  controller: _featureAlias,
+//                  // initialValue: _featureName.toString(),
+//                  decoration: InputDecoration(
+//                      labelText: 'Alias key (optional)',
+//                      hintText:
+//                          "Use alias key as a 'secret' alternative to the feature key",
+//                      hintStyle: Theme.of(context).textTheme.caption),
+//                  validator: ((v) {
+//                    if (v.isNotEmpty && !validateFeatureKey(v)) {
+//                      return ('Can only include letters, numbers and underscores');
+//                    }
+//                    return null;
+//                  })),
               TextFormField(
                 controller: _featureLink,
                 decoration: InputDecoration(

@@ -15,20 +15,15 @@ class FHCopyToClipboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 16.0),
-      child: Tooltip(
-        message: tooltipMessage,
-        child: CustomCursor(
-          child: InkWell(
-            child: Icon(Icons.content_copy, size: 16.0),
-            onTap: () async {
-              await html.window.navigator.permissions
-                  .query({'name': 'clipboard-write'});
-              await html.window.navigator.clipboard.writeText(copyString);
-            },
-          ),
-        ),
+    return CustomCursor(
+      child: IconButton(
+        icon: Icon(Icons.content_copy, size: 16.0),
+        tooltip: tooltipMessage,
+        onPressed: () async {
+          await html.window.navigator.permissions
+              .query({'name': 'clipboard-write'});
+          await html.window.navigator.clipboard.writeText(copyString);
+        },
       ),
     );
   }
