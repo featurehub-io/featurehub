@@ -74,7 +74,7 @@ class EditUserBloc implements Bloc {
     if (person.groups != null) {
       final portfoliosList = await _findPortfolios();
 
-      final listOfExistingGroups = [];
+      final listOfExistingGroups = <PortfolioGroup>[];
       person.groups.forEach((group) => {
             listOfExistingGroups.add(PortfolioGroup(
                 portfoliosList.firstWhere((p) => p.id == group.portfolioId,

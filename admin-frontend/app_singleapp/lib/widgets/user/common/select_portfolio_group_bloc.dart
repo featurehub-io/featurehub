@@ -35,7 +35,7 @@ class SelectPortfolioGroupBloc implements Bloc {
   void _findPortfoliosAndAddToTheStream() async {
     try {
       var data = await mrClient.portfolioServiceApi
-          .findPortfolios(includeGroups: true);
+          .findPortfolios(includeGroups: true, order: SortOrder.ASC);
       _currentPortfoliosStream.add(data);
       portfoliosList = data;
     } catch (e, s) {
