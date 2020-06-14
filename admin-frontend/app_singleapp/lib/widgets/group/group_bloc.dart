@@ -10,6 +10,7 @@ class GroupBloc implements Bloc {
   Group group;
   String search;
   final ManagementRepositoryClientBloc mrClient;
+  StreamSubscription<List<Group>> _groupListener;
   GroupServiceApi _groupServiceApi;
 
   Stream<Group> get groupLoaded => _groupSource.stream;
@@ -17,16 +18,33 @@ class GroupBloc implements Bloc {
 
   GroupBloc(this.groupId, this.mrClient) : assert(mrClient != null) {
     _groupServiceApi = GroupServiceApi(mrClient.apiClient);
-    mrClient.streamValley.currentPortfolioIdStream.listen((event) {
-      if (!_groupSource.isClosed) {
-        _groupSource.add(null);
+
+    _groupListener =
+        mrClient.streamValley.currentPortfolioGroupsStream.listen((groups) {
+      Group ourGroup =
+          groups.firstWhere((g) => g.id == groupId, orElse: () => null);
+      if (ourGroup == null) {
+        if (groups.isNotEmpty) {
+          groupId = groups[0].id;
+          group = groups[0];
+          _groupSource.add(group);
+          getGroup(groupId);
+        } else {
+          groupId = null;
+          group = null;
+          _groupSource.add(null);
+        }
+      } else {
+        // in case something changed
+        group = ourGroup;
+        _groupSource.add(group);
+        getGroup(groupId);
       }
-      groupId = null;
-      group = null;
     });
   }
 
   Future<void> getGroups({Group focusGroup}) async {
+    // refresh the groups
     await mrClient.streamValley.getCurrentPortfolioGroups();
     if (!_groupSource.isClosed) {
       _groupSource.add(focusGroup);
@@ -64,14 +82,21 @@ class GroupBloc implements Bloc {
     }
   }
 
-  Future<void> updateGroup(Group groupToUpdate) async {
-    await _groupServiceApi
-        .updateGroup(groupToUpdate.id, groupToUpdate,
-            includeMembers: true, updateMembers: true)
-        .catchError(mrClient.dialogError);
-    await getGroups(focusGroup: groupToUpdate);
-    group = groupToUpdate;
-    groupId = groupToUpdate.id;
+  Future<bool> updateGroup(Group groupToUpdate) async {
+    try {
+      await _groupServiceApi.updateGroup(groupToUpdate.id, groupToUpdate,
+          includeMembers: true, updateMembers: true);
+      await getGroups(focusGroup: groupToUpdate);
+      group = groupToUpdate;
+      groupId = groupToUpdate.id;
+      return true;
+    } catch (e, s) {
+      mrClient.dialogError(e, s,
+          messageTitle: 'Failed to update group',
+          messageBody:
+              'Failed to update group because of a duplicate or other conflict.');
+      return false;
+    }
   }
 
   Future<void> createGroup(Group newGroup) async {
@@ -86,6 +111,7 @@ class GroupBloc implements Bloc {
 
   @override
   void dispose() {
+    _groupListener.cancel();
     _groupSource.close();
   }
 }

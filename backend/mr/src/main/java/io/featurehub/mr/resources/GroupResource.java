@@ -1,5 +1,6 @@
 package io.featurehub.mr.resources;
 
+import io.featurehub.db.api.DuplicateUsersException;
 import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.GroupApi;
 import io.featurehub.db.api.OptimisticLockingException;
@@ -213,7 +214,7 @@ public class GroupResource implements GroupServiceDelegate {
             new Opts().add(FillOpts.Members, holder.includeMembers).add(FillOpts.Acls, holder.includeGroupRoles));
         } catch (OptimisticLockingException e) {
           throw new WebApplicationException(422);
-        } catch (GroupApi.DuplicateGroupException e) {
+        } catch (GroupApi.DuplicateGroupException | DuplicateUsersException e) {
           throw new WebApplicationException(Response.Status.CONFLICT);
         }
       });

@@ -94,7 +94,7 @@ class _ServiceAccountPermissionState
                       padding: const EdgeInsets.only(left: 16.0),
                       child: FHInfoCardWidget(
                           message:
-                          '''The 'Lock/Unlock' and 'Change value' permissions
+                              '''The 'Lock/Unlock' and 'Change value' permissions
 are so you can change these states through the API's
 e.g., when running tests. \n
 We strongly recommend setting production environments
@@ -119,10 +119,7 @@ with only 'Read' permission for service accounts.'''),
               value: serviceAccount.id,
               child: Text(
                 serviceAccount.name,
-                style: Theme
-                    .of(context)
-                    .textTheme
-                    .bodyText2,
+                style: Theme.of(context).textTheme.bodyText2,
                 overflow: TextOverflow.ellipsis,
               ));
         }).toList(),
@@ -136,7 +133,11 @@ with only 'Read' permission for service accounts.'''),
             bloc.selectServiceAccount(value);
           });
         },
-        value: selectedServiceAccount,
+        value: serviceAccounts
+                .firstWhere((sa) => sa.id == selectedServiceAccount,
+                    orElse: () => null)
+                ?.id ??
+            serviceAccounts[0].id,
       ),
     );
   }
@@ -225,16 +226,13 @@ class _ServiceAccountPermissionDetailState
                     Container(
                         padding: EdgeInsets.fromLTRB(0, 24, 0, 16),
                         child: Center(
-                          child:
-                          Text(
+                          child: Text(
                               'Set the service account access to features for each environment',
-                              style: Theme
-                                  .of(context)
+                              style: Theme.of(context)
                                   .textTheme
                                   .subtitle1
-                                  .copyWith(color: Theme
-                                  .of(context)
-                                  .hintColor)),
+                                  .copyWith(
+                                      color: Theme.of(context).hintColor)),
                         )),
                     table,
                     FHButtonBar(children: [

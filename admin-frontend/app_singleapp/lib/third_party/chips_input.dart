@@ -60,18 +60,24 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
   bool get _hasInputConnection => _connection != null && _connection.attached;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    _chips.clear();
     _chips.addAll(widget.initialValue);
     _updateTextInputState();
-    _initFocusNode();
+
     _suggestionsBoxController = _SuggestionsBoxController(context);
-    _suggestionsStreamController = StreamController<List<T>>.broadcast();
+    if (_suggestionsStreamController == null) {
+      _suggestionsStreamController = StreamController<List<T>>.broadcast();
+    }
+
+    _initFocusNode();
   }
 
   void _initFocusNode() {
     setState(() {
-      if (widget.enabled) {
+      if (widget.enabled && mounted) {
         if (widget.maxChips == null || _chips.length < widget.maxChips) {
           _focusNode = FocusNode();
           (() async {
@@ -92,20 +98,26 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
   }
 
   void _onFocusChanged() {
-    if (_focusNode.hasFocus) {
-      _openInputConnection();
-      // if()
-      _suggestionsBoxController.open();
-    } else {
-      _closeInputConnectionIfNeeded();
-      _suggestionsBoxController.close();
+    if (_suggestionsBoxController != null && mounted) {
+      if (_focusNode.hasFocus) {
+        _openInputConnection();
+        // if()
+        _suggestionsBoxController.open();
+      } else {
+        _closeInputConnectionIfNeeded();
+        _suggestionsBoxController.close();
+      }
+      setState(() {
+        /*rebuild so that _TextCursor is hidden.*/
+      });
     }
-    setState(() {
-      /*rebuild so that _TextCursor is hidden.*/
-    });
   }
 
   Future<void> _initOverlayEntry() async {
+    if (_suggestionsStreamController == null || !mounted) {
+      return;
+    }
+
     RenderBox renderBox = context.findRenderObject();
     // TODO: See if after_layout mixin (https://pub.dartlang.org/packages/after_layout) works instead of keep checking if rendered
 
@@ -162,7 +174,8 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
     //TODO upgrade to latest when fixed
     //_focusNode?.dispose();  https://github.com/danvick/flutter_chips_input/issues/26
     _closeInputConnectionIfNeeded();
-    _suggestionsStreamController.close();
+    _suggestionsBoxController.dispose();
+    _suggestionsBoxController = null;
     super.dispose();
   }
 
@@ -402,6 +415,13 @@ class _SuggestionsBoxController {
     if (!_isOpened) return;
     assert(_overlayEntry != null);
     _overlayEntry.remove();
+    _isOpened = false;
+  }
+
+  void dispose() {
+    if (_overlayEntry != null) {
+      _overlayEntry.remove();
+    }
     _isOpened = false;
   }
 

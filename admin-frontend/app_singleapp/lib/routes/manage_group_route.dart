@@ -64,31 +64,30 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
             Flexible(
               flex: 4,
               child: bloc.mrClient
-                  .isPortfolioOrSuperAdmin(bloc.mrClient.currentPid)
+                      .isPortfolioOrSuperAdmin(bloc.mrClient.currentPid)
                   ? Padding(
-                padding: const EdgeInsets.only(top: 24.0, left: 16),
-                child: Row(
-                  children: [
-                    Flexible(flex: 1, child: _getAdminActions(bloc)),
-                    Flexible(
-                      flex: 4,
-                      child: Container(
-                          child: FHIconTextButton(
-                            iconData: Icons.add,
-                            keepCase: true,
-                            label: 'Create new group',
-                            onPressed: () =>
-                                bloc.mrClient
-                                    .addOverlay((BuildContext context) {
-                                  return GroupUpdateDialogWidget(
-                                    bloc: bloc,
-                                  );
-                                }),
-                          )),
-                    ),
-                  ],
-                ),
-              )
+                      padding: const EdgeInsets.only(top: 24.0, left: 16),
+                      child: Row(
+                        children: [
+                          Flexible(flex: 1, child: _getAdminActions(bloc)),
+                          Flexible(
+                            flex: 4,
+                            child: Container(
+                                child: FHIconTextButton(
+                              iconData: Icons.add,
+                              keepCase: true,
+                              label: 'Create new group',
+                              onPressed: () => bloc.mrClient
+                                  .addOverlay((BuildContext context) {
+                                return GroupUpdateDialogWidget(
+                                  bloc: bloc,
+                                );
+                              }),
+                            )),
+                          ),
+                        ],
+                      ),
+                    )
                   : Container(),
             )
           ],
@@ -129,37 +128,30 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
               return Row(children: <Widget>[
                 FHIconButton(
                     icon:
-                    Icon(Icons.edit, color: Theme
-                        .of(context)
-                        .buttonColor),
-                    onPressed: () =>
-                        bloc.mrClient.addOverlay(
-                                (BuildContext context) =>
-                                GroupUpdateDialogWidget(
-                                  bloc: bloc,
-                                  group: bloc.group,
-                                ))),
+                        Icon(Icons.edit, color: Theme.of(context).buttonColor),
+                    onPressed: () => bloc.mrClient.addOverlay(
+                        (BuildContext context) => GroupUpdateDialogWidget(
+                              bloc: bloc,
+                              group: bloc.group,
+                            ))),
                 //hide the delete button for Admin groups
                 snapshot.data.admin
                     ? Container()
                     : FHIconButton(
-                    icon: Icon(Icons.delete,
-                        color: Theme
-                            .of(context)
-                            .buttonColor),
-                    onPressed: () =>
-                        bloc.mrClient.addOverlay((BuildContext context) {
-                          return GroupDeleteDialogWidget(
-                            bloc: bloc,
-                            group: bloc.group,
-                          );
-                        }))
+                        icon: Icon(Icons.delete,
+                            color: Theme.of(context).buttonColor),
+                        onPressed: () =>
+                            bloc.mrClient.addOverlay((BuildContext context) {
+                              return GroupDeleteDialogWidget(
+                                bloc: bloc,
+                                group: bloc.group,
+                              );
+                            }))
               ]);
             } else {
               return Container();
             }
           }),
-
     ]);
   }
 
@@ -173,10 +165,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
               children: <Widget>[
                 Text(
                   'Portfolio groups',
-                  style: Theme
-                      .of(context)
-                      .textTheme
-                      .caption,
+                  style: Theme.of(context).textTheme.caption,
                 ),
                 Container(
                   constraints: BoxConstraints(maxWidth: 200),
@@ -186,15 +175,13 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                     items: groups.map((Group group) {
                       return DropdownMenuItem<String>(
                           value: group.id,
-                          child: Text(
-                              group.name, overflow: TextOverflow.ellipsis
-                          ));
+                          child: Text(group.name,
+                              overflow: TextOverflow.ellipsis));
                     }).toList(),
-                    hint: Text('Select group',
-                      style: Theme
-                          .of(context)
-                          .textTheme
-                          .subtitle2,),
+                    hint: Text(
+                      'Select group',
+                      style: Theme.of(context).textTheme.subtitle2,
+                    ),
                     onChanged: (value) {
                       setState(() {
                         bloc.getGroup(value);
@@ -214,17 +201,15 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
     return Container(
       padding: const EdgeInsets.fromLTRB(8, 10, 30, 10),
       decoration: BoxDecoration(
-          color: Theme
-              .of(context)
-              .cardColor,
+          color: Theme.of(context).cardColor,
           border: Border(bottom: bs, left: bs, right: bs, top: bs)),
       child: Row(
         children: <Widget>[
           Container(
             child: bloc.mrClient.isPortfolioOrSuperAdmin(group.portfolioId)
                 ? FHIconTextButton(
-              iconData: Icons.add,
-              label: 'Add members',
+                    iconData: Icons.add,
+                    label: 'Add members',
                     onPressed: () =>
                         bloc.mrClient.addOverlay((BuildContext context) {
                       return AddMembersDialogWidget(
@@ -335,13 +320,11 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
                 group.members = List.from(group.members)..addAll(membersToAdd);
                 // remove duplicates
                 group.members = group.members.toSet().toList();
-                try {
-                  await widget.bloc.updateGroup(group);
+                final success = await widget.bloc.updateGroup(group);
+                if (success) {
                   widget.bloc.mrClient.removeOverlay();
                   widget.bloc.mrClient
                       .addSnackbar(Text("Group '${group.name}' updated!"));
-                } catch (e, s) {
-                  widget.bloc.mrClient.dialogError(e, s);
                 }
               })
         ],
