@@ -10,7 +10,7 @@ class EventSourceRepositoryListener {
   }
 
   void _init(String url) async {
-    final es = await EventSource.connect(url);
+    final es = await EventSource.connect(url, closeOnLastListener: true);
 
     _subscription = es.listen((event) {
       _log.fine('Event is ${event.event} value ${event.data}');

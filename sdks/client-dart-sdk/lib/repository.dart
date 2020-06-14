@@ -3,10 +3,11 @@ part of featurehub.client;
 enum Readyness { NotReady, Ready, Failed }
 
 abstract class FeatureStateHolder {
-  bool isSet();
+  bool get exists;
   bool get booleanValue;
   String get stringValue;
   num get numberValue;
+  String get key;
   dynamic get jsonValue;
   FeatureValueType get type;
 }
@@ -24,7 +25,7 @@ class _FeatureStateBaseHolder implements FeatureStateHolder {
   FeatureState _featureState;
   List<FeatureListener> _listeners;
 
-  get key => _featureState?.key;
+  String get key => _featureState?.key;
 
   _FeatureStateBaseHolder(_FeatureStateBaseHolder fs) {
     _listeners = fs?._listeners ?? [];
@@ -39,9 +40,7 @@ class _FeatureStateBaseHolder implements FeatureStateHolder {
     }
   }
 
-  bool isSet() {
-    return _value != null;
-  }
+  bool get exists => _value != null;
 
   bool get booleanValue =>
       _featureState?.type == FeatureValueType.BOOLEAN ? _value as bool : null;
@@ -75,6 +74,7 @@ final _log = Logger("FeatureHub");
 
 class ClientFeatureRepository {
   bool _hasReceivedInitialState = false;
+  // indexed by key
   Map<String, _FeatureStateBaseHolder> _features = {};
   List<AnalyticsCollector> _analyticsCollectors = [];
   Readyness _readynessState = Readyness.NotReady;
@@ -202,18 +202,20 @@ class ClientFeatureRepository {
 
   void logAnalyticsEvent(String action, {Map<String, String> other}) {
     final featureStateAtCurrentTime =
-        _features.values.where((f) => f.isSet()).map((f) => f.copy()).toList();
+        _features.values.where((f) => f.exists).map((f) => f.copy()).toList();
 
     _analyticsCollectors
         .forEach((ac) => ac(action, featureStateAtCurrentTime, other: other));
   }
 
   FeatureStateHolder getFeatureState(String key) {
+    print("requested key ${key} which is ${_features[key]._featureState}");
     return _features.putIfAbsent(key, () => _FeatureStateBaseHolder(null));
   }
 
   bool get catchAndReleaseMode => _catchAndReleaseMode;
   set catchAndReleaseMode(bool val) => _catchAndReleaseMode = val;
+  Readyness get readyness => _readynessState;
 
   void release() {
     final states = _catchReleaseStates.values;
@@ -231,6 +233,8 @@ class ClientFeatureRepository {
     }
 
     holder.featureState = feature;
+    _features[feature.key] = holder;
+    print("stored ${feature} against key ${feature.key}");
   }
 
   void _deleteFeature(FeatureState feature) {

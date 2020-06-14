@@ -88,9 +88,11 @@ packages:
   eventsource:
     dependency: "direct main"
     description:
-      name: eventsource
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "."
+      ref: "feature/close-on-last-stream"
+      resolved-ref: "221a7f272064d397e27a024d04301a2be3889ae9"
+      url: "https://github.com/rvowles/dart-eventsource.git"
+    source: git
     version: "0.2.3"
   featurehub_client_api:
     dependency: "direct main"
