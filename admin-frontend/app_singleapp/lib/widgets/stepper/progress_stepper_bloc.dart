@@ -109,8 +109,11 @@ class StepperBloc implements Bloc {
     if (saList.isNotEmpty) {
       fhStepper.serviceAccountPermission =
           saList.any((sa) => sa.permissions.isNotEmpty);
-      _FHStepperBS.add(fhStepper);
+    } else {
+      fhStepper.serviceAccountPermission = false;
     }
+
+    _FHStepperBS.add(fhStepper);
   }
 
   @override
