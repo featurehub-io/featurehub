@@ -29,8 +29,14 @@ class StreamValley {
 
     currentPortfolioAdminOrSuperAdminSubscription =
         personState.currentPortfolioAdminOrSuperAdminStream.listen((val) {
+      final oldVal = _isCurrentPortfolioAdminOrSuperAdmin;
       _isCurrentPortfolioAdminOrSuperAdmin = val;
       _refreshApplicationIdChanged();
+      if (oldVal != _isCurrentPortfolioAdminOrSuperAdmin &&
+          _isCurrentPortfolioAdminOrSuperAdmin) {
+        getCurrentPortfolioGroups();
+        getCurrentPortfolioServiceAccounts();
+      }
     });
   }
 
@@ -45,12 +51,21 @@ class StreamValley {
 
   final _portfoliosSource = BehaviorSubject<List<Portfolio>>();
   final _currentPortfolioSource = BehaviorSubject<Portfolio>();
+  final _currentAppIdSource = BehaviorSubject<String>();
+  final _currentPortfolioApplicationsSource =
+      BehaviorSubject<List<Application>>();
+  final _currentPortfolioIdSource = BehaviorSubject<String>();
+  final _currentPortfolioGroupsStream = BehaviorSubject<List<Group>>();
+  final _currentApplicationEnvironmentsSource =
+      BehaviorSubject<List<Environment>>();
+  final _currentApplicationFeaturesSource = BehaviorSubject<List<Feature>>();
+  final _currentEnvironmentServiceAccountSource =
+      BehaviorSubject<List<ServiceAccount>>();
+
   Stream<List<Portfolio>> get portfolioListStream => _portfoliosSource.stream;
   Stream<Portfolio> get currentPortfolioStream =>
       _currentPortfolioSource.stream;
   Portfolio get currentPortfolio => _currentPortfolioSource.value;
-
-  final _currentPortfolioIdSource = BehaviorSubject<String>();
 
   String get currentPortfolioId => _currentPortfolioIdSource.value;
 
@@ -77,7 +92,6 @@ class StreamValley {
   Stream<String> get currentPortfolioIdStream =>
       _currentPortfolioIdSource.stream;
 
-  final _currentAppIdSource = BehaviorSubject<String>();
   Stream<String> get currentAppIdStream => _currentAppIdSource.stream;
 
   String get currentAppId => _currentAppIdSource.value;
@@ -87,17 +101,12 @@ class StreamValley {
     _refreshApplicationIdChanged();
   }
 
-  final _currentPortfolioApplicationsSource =
-      BehaviorSubject<List<Application>>();
-
   Stream<List<Application>> get currentPortfolioApplicationsStream =>
       _currentPortfolioApplicationsSource.stream;
 
   set currentPortfolioApplications(List<Application> value) {
     _currentPortfolioApplicationsSource.add(value);
   }
-
-  final _currentPortfolioGroupsStream = BehaviorSubject<List<Group>>();
 
   Stream<List<Group>> get currentPortfolioGroupsStream =>
       _currentPortfolioGroupsStream.stream;
@@ -116,9 +125,6 @@ class StreamValley {
     _currentPortfolioServiceAccountsSource.add(value);
   }
 
-  final _currentApplicationEnvironmentsSource =
-      BehaviorSubject<List<Environment>>();
-
   Stream<List<Environment>> get currentApplicationEnvironmentsStream =>
       _currentApplicationEnvironmentsSource;
 
@@ -126,17 +132,12 @@ class StreamValley {
     _currentApplicationEnvironmentsSource.add(value);
   }
 
-  final _currentApplicationFeaturesSource = BehaviorSubject<List<Feature>>();
-
   Stream<List<Feature>> get currentApplicationFeaturesStream =>
       _currentApplicationFeaturesSource;
 
   set currentApplicationFeatures(List<Feature> value) {
     _currentApplicationFeaturesSource.add(value);
   }
-
-  final _currentEnvironmentServiceAccountSource =
-      BehaviorSubject<List<ServiceAccount>>();
 
   Stream<List<ServiceAccount>> get currentEnvironmentServiceAccountStream =>
       _currentEnvironmentServiceAccountSource;
@@ -164,10 +165,10 @@ class StreamValley {
 
   Future<void> getCurrentPortfolioGroups() async {
     if (_currentPortfolioIdSource.value != null) {
-      final portfolio = await portfolioServiceApi
+      await portfolioServiceApi
           .getPortfolio(_currentPortfolioIdSource.value, includeGroups: true)
+          .then((portfolio) => currentPortfolioGroups = portfolio.groups)
           .catchError(mrClient.dialogError);
-      currentPortfolioGroups = portfolio.groups;
     } else {
       currentPortfolioGroups = [];
     }
@@ -175,10 +176,10 @@ class StreamValley {
 
   Future<void> getCurrentPortfolioServiceAccounts() async {
     if (_currentPortfolioIdSource.value != null) {
-      final accounts = await serviceAccountServiceApi
+      await serviceAccountServiceApi
           .searchServiceAccountsInPortfolio(_currentPortfolioIdSource.value)
+          .then((accounts) => currentPortfolioServiceAccounts = accounts)
           .catchError(mrClient.dialogError);
-      currentPortfolioServiceAccounts = accounts;
     } else {
       currentPortfolioServiceAccounts = [];
     }

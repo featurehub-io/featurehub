@@ -330,7 +330,9 @@ public class ConvertUtils {
     }
 
     if (opts.contains(FillOpts.Members)) {
-      group.setMembers(dbg.getPeopleInGroup().stream().map(p -> this.toPerson(p, opts.minus(FillOpts.Members, FillOpts.Acls))).collect(Collectors.toList()));
+      group.setMembers(
+        new QDbPerson().order().name.asc().whenArchived.isNull().groupsPersonIn.eq(dbg).findList().stream()
+        .map(p -> this.toPerson(p, opts.minus(FillOpts.Members, FillOpts.Acls))).collect(Collectors.toList()));
     }
 
     if (opts.contains(FillOpts.Acls)) {

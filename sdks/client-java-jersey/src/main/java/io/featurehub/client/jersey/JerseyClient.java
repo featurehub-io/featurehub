@@ -67,7 +67,7 @@ public class JerseyClient {
       }
     } catch (Exception e) {
       log.error("Failed to connect to {}", sdkUrl, e);
-      clientFeatureRepository.notify(SSEResultState.ERROR, "unable to connect");
+      clientFeatureRepository.notify(SSEResultState.FAILURE, "unable to connect");
     }
 
     log.warn("connection failed, reconnecting");

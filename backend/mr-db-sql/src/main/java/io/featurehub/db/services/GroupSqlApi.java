@@ -3,6 +3,7 @@ package io.featurehub.db.services;
 import io.ebean.Database;
 import io.ebean.DuplicateKeyException;
 import io.ebean.annotation.Transactional;
+import io.featurehub.db.api.DuplicateUsersException;
 import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.OptimisticLockingException;
 import io.featurehub.db.api.Opts;
@@ -245,7 +246,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
 
       final DbGroup one = eq.findOne();
 
-      if (one != null && (one.getPeopleInGroup().stream().anyMatch(p -> p.getId().toString().equals(person.getId().getId())) ||
+      if (one != null && (one.getPeopleInGroup().stream().anyMatch(p -> p.getWhenArchived() == null && p.getId().toString().equals(person.getId().getId())) ||
           isSuperuser(one.findOwningOrganisation(), convertUtils.uuidPerson(person)))) {
         return convertUtils.toGroup(one, opts);
       }
@@ -347,7 +348,8 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
   }
 
   @Override
-  public Group updateGroup(String gid, Group gp, boolean updateMembers, boolean updateApplicationGroupRoles, boolean updateEnvironmentGroupRoles, Opts opts) throws OptimisticLockingException, DuplicateGroupException {
+  public Group updateGroup(String gid, Group gp, boolean updateMembers, boolean updateApplicationGroupRoles, boolean updateEnvironmentGroupRoles, Opts opts)
+    throws OptimisticLockingException, DuplicateGroupException, DuplicateUsersException {
     DbGroup group = convertUtils.uuidGroup(gid, opts);
 
     if (group != null && group.getWhenArchived() == null) {
@@ -530,7 +532,13 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
     }
   }
 
-  private SuperuserChanges updateMembersOfGroup(Group gp, DbGroup group) {
+  private SuperuserChanges updateMembersOfGroup(Group gp, DbGroup group) throws DuplicateUsersException {
+    Set<String> uuids = gp.getMembers().stream().filter(p -> p.getId() != null).map(p -> p.getId().getId()).collect(Collectors.toSet());
+
+    if (uuids.size() != gp.getMembers().size()) {
+      throw new DuplicateUsersException();
+    }
+
     Map<String, Person> desiredPeople = gp.getMembers().stream()
       .filter(p -> p.getId() != null)
       .collect(Collectors.toMap(p -> p.getId().getId(), Function.identity()));

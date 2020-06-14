@@ -44,7 +44,8 @@ public interface GroupApi {
 
   Group deletePersonFromGroup(String gid, String id, Opts opts);
 
-  Group updateGroup(String gid, Group group, boolean updateMembers, boolean updateApplicationGroupRoles, boolean updateEnvironmentGroupRoles, Opts opts) throws OptimisticLockingException, DuplicateGroupException;
+  Group updateGroup(String gid, Group group, boolean updateMembers, boolean updateApplicationGroupRoles, boolean updateEnvironmentGroupRoles, Opts opts)
+    throws OptimisticLockingException, DuplicateGroupException, DuplicateUsersException;
 
   List<Group> findGroups(String portfolioId, String filter, SortOrder order, Opts opts);
 
