@@ -26,61 +26,72 @@ class FeatureValueNameCell extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Row(
+          Row(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text('Feature key',
                       style: Theme.of(context)
                           .textTheme
                           .caption
                           .copyWith(color: Theme.of(context).buttonColor)),
-                  FHCopyToClipboard(
-                    tooltipMessage: 'Copy key',
-                    copyString: feature.key,
-                  )
+                  SizedBox(height: 2.0),
+                  Text(feature.key,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontFamily: 'source', fontSize: 12))
                 ],
               ),
-              SizedBox(height: 2.0),
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    child: Text(feature.key,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontFamily: 'source', fontSize: 12)),
-                  ),
-                ],
+              FHCopyToClipboard(
+                tooltipMessage: 'Copy key',
+                copyString: feature.key,
               )
             ],
           ),
           SizedBox(
             height: 12.0,
           ),
-          feature.alias != null && feature.alias.isNotEmpty
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          feature.link != null && feature.link.isNotEmpty
+              ? Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
-                    Text('Feature alias key',
+                    Text('Reference link',
                         style: Theme.of(context)
                             .textTheme
                             .caption
                             .copyWith(color: Theme.of(context).buttonColor)),
-                    SizedBox(height: 2.0),
-                    Row(
-                      children: <Widget>[
-                        Text(feature.alias,
-                            style:
-                                TextStyle(fontFamily: 'source', fontSize: 12)),
-                        FHCopyToClipboard(
-                          tooltipMessage: 'Copy alias key',
-                          copyString: feature.alias,
-                        )
-                      ],
+                    FHCopyToClipboard(
+                      tooltipMessage: '${feature.link}',
+                      copyString: feature.link,
                     )
                   ],
                 )
               : Container(),
+//Comment out Alias key until we implement proper analytics
+//          feature.alias != null && feature.alias.isNotEmpty
+//              ? Column(
+//                  crossAxisAlignment: CrossAxisAlignment.start,
+//                  children: <Widget>[
+//                    Text('Feature alias key',
+//                        style: Theme.of(context)
+//                            .textTheme
+//                            .caption
+//                            .copyWith(color: Theme.of(context).buttonColor)),
+//                    SizedBox(height: 2.0),
+//                    Row(
+//                      children: <Widget>[
+//                        Text(feature.alias,
+//                            style:
+//                                TextStyle(fontFamily: 'source', fontSize: 12)),
+//                        FHCopyToClipboard(
+//                          tooltipMessage: 'Copy alias key',
+//                          copyString: feature.alias,
+//                        )
+//                      ],
+//                    )
+//                  ],
+//                )
+//              : Container(),
         ],
       ),
     );
