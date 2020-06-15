@@ -23,25 +23,12 @@ class StepperContainer extends StatelessWidget {
       stream: mrBloc.stepperOpened,
       builder: (context, snapshot) {
         if (snapshot.data) {
-          return Container(
-            width: 260,
-            height: MediaQuery
-                .of(context)
-                .size
-                .height - headerPadding,
-            child: SingleChildScrollView(
-              child: Column(
-                children: <Widget>[
-                  BlocProvider(
-                      creator: (_context, _bag) => StepperBloc(mrBloc),
-                      child: FHSetupProgressStepper()),
-                ],
-              ),
-            ),
-          );
-        }
-
-      else {
+            return SingleChildScrollView(
+              child: BlocProvider(
+                  creator: (_context, _bag) => StepperBloc(mrBloc),
+                  child: FHSetupProgressStepper()),
+            );
+          } else {
         return Padding(
           padding: const EdgeInsets.only(top: 16.0, right: 16.0, left: 0),
               child: Container(

@@ -43,48 +43,25 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
   Widget _headerRow(BuildContext context, FeatureStatusBloc bloc) {
     return Container(
         padding: const EdgeInsets.fromLTRB(0, 0, 30, 10),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            FHHeader(
-              title: 'Features and Configuration Statuses',
-            ),
-            StreamBuilder<String>(
-                stream: bloc.mrClient.streamValley.currentAppIdStream,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData && snapshot.data != null) {
-                    return FutureBuilder<bool>(
-                        future: bloc.mrClient.personState
-                            .personCanEditFeaturesForCurrentApplication(
-                                snapshot.data),
-                        builder: (BuildContext context,
-                            AsyncSnapshot<bool> snapshot) {
-                          if (snapshot.data == true ||
-                              bloc.mrClient.userIsSuperAdmin) {
-                            return Padding(
-                              padding: const EdgeInsets.only(left: 52.0),
-                              child: Container(
-                                  child: FHFlatButtonAccent(
-                                keepCase: true,
-                                title: 'Create new feature',
-                                onPressed: () => bloc.mrClient
-                                    .addOverlay((BuildContext context) {
-                                  //return null;
-                                  return CreateFeatureDialogWidget(
-                                    bloc: bloc,
-                                  );
-                                }),
-                              )),
-                            );
-                          }
-
-                          return SizedBox.shrink();
-                        });
-                  }
-                  return SizedBox.shrink();
-                }),
-          ],
-        ));
+        child: LayoutBuilder(builder: (context, constraints) {
+          if (constraints.maxWidth < 800) {
+            return Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  _FeaturesOverviewHeader(),
+                  _CreateFeatureButton(bloc: bloc),
+                ]);
+          } else {
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                _FeaturesOverviewHeader(),
+                _CreateFeatureButton(bloc: bloc),
+              ],
+            );
+          }
+        }));
   }
 
   Widget _filterRow(BuildContext context, FeatureStatusBloc bloc) {
@@ -141,3 +118,56 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
   }
 }
 
+class _FeaturesOverviewHeader extends StatelessWidget {
+  const _FeaturesOverviewHeader({
+    Key key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return FHHeader(
+      title: 'Features and Configuration Statuses',
+    );
+  }
+}
+
+class _CreateFeatureButton extends StatelessWidget {
+  final FeatureStatusBloc bloc;
+
+  const _CreateFeatureButton({
+    Key key,
+    @required this.bloc,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<String>(
+        stream: bloc.mrClient.streamValley.currentAppIdStream,
+        builder: (context, snapshot) {
+          if (snapshot.hasData && snapshot.data != null) {
+            return FutureBuilder<bool>(
+                future: bloc.mrClient.personState
+                    .personCanEditFeaturesForCurrentApplication(snapshot.data),
+                builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+                  if (snapshot.data == true || bloc.mrClient.userIsSuperAdmin) {
+                    return Container(
+                        child: FHFlatButtonAccent(
+                      keepCase: true,
+                      title: 'Create new feature',
+                      onPressed: () =>
+                          bloc.mrClient.addOverlay((BuildContext context) {
+                        //return null;
+                        return CreateFeatureDialogWidget(
+                          bloc: bloc,
+                        );
+                      }),
+                    ));
+                  }
+
+                  return SizedBox.shrink();
+                });
+          }
+          return SizedBox.shrink();
+        });
+  }
+}
