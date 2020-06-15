@@ -8,9 +8,12 @@ import 'package:app_singleapp/widgets/common/fh_info_card.dart';
 import 'package:app_singleapp/widgets/common/fh_link.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import 'package:mrapi/api.dart';
 
 import 'manage_app_bloc.dart';
+
+final _log = Logger('ServiceAccountPermissionsWidget');
 
 class ServiceAccountPermissionsWidget extends StatefulWidget {
   const ServiceAccountPermissionsWidget({Key key}) : super(key: key);
@@ -22,8 +25,6 @@ class ServiceAccountPermissionsWidget extends StatefulWidget {
 
 class _ServiceAccountPermissionState
     extends State<ServiceAccountPermissionsWidget> {
-  String selectedServiceAccount;
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -32,9 +33,10 @@ class _ServiceAccountPermissionState
         BlocProvider.of<ManagementRepositoryClientBloc>(context).currentRoute;
 
     if (route.params['service-account'] != null) {
-      selectedServiceAccount = route.params['service-account'][0];
+      _log.fine(
+          'Got route request for params ${route.params} so swapping service account');
       final bloc = BlocProvider.of<ManageAppBloc>(context);
-      bloc.selectServiceAccount(selectedServiceAccount);
+      bloc.selectServiceAccount(route.params['service-account'][0]);
     }
   }
 
@@ -66,11 +68,6 @@ class _ServiceAccountPermissionState
                     )),
               ],
             );
-          }
-
-          if (selectedServiceAccount == null) {
-            selectedServiceAccount = snapshot.data[0].id;
-            bloc.selectServiceAccount(selectedServiceAccount);
           }
 
           return Column(
@@ -111,34 +108,33 @@ with only 'Read' permission for service accounts.'''),
       List<ServiceAccount> serviceAccounts, ManageAppBloc bloc) {
     return Container(
       constraints: BoxConstraints(maxWidth: 250),
-      child: DropdownButton(
-        isExpanded: true,
-        isDense: true,
-        items: serviceAccounts.map((ServiceAccount serviceAccount) {
-          return DropdownMenuItem<String>(
-              value: serviceAccount.id,
-              child: Text(
-                serviceAccount.name,
-                style: Theme.of(context).textTheme.bodyText2,
-                overflow: TextOverflow.ellipsis,
-              ));
-        }).toList(),
-        hint: Text(
-          'Select service account',
-          textAlign: TextAlign.end,
-        ),
-        onChanged: (value) {
-          setState(() {
-            selectedServiceAccount = value;
-            bloc.selectServiceAccount(value);
-          });
-        },
-        value: serviceAccounts
-                .firstWhere((sa) => sa.id == selectedServiceAccount,
-                    orElse: () => null)
-                ?.id ??
-            serviceAccounts[0].id,
-      ),
+      child: StreamBuilder<String>(
+          stream: bloc.currentServiceAccountIdStream,
+          builder: (context, snapshot) {
+            return DropdownButton(
+              isExpanded: true,
+              isDense: true,
+              items: serviceAccounts.map((ServiceAccount serviceAccount) {
+                return DropdownMenuItem<String>(
+                    value: serviceAccount.id,
+                    child: Text(
+                      serviceAccount.name,
+                      style: Theme.of(context).textTheme.bodyText2,
+                      overflow: TextOverflow.ellipsis,
+                    ));
+              }).toList(),
+              hint: Text(
+                'Select service account',
+                textAlign: TextAlign.end,
+              ),
+              onChanged: (value) {
+                setState(() {
+                  bloc.selectServiceAccount(value);
+                });
+              },
+              value: snapshot.data,
+            );
+          }),
     );
   }
 }

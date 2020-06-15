@@ -21,7 +21,7 @@ class GroupBloc implements Bloc {
 
     _groupListener =
         mrClient.streamValley.currentPortfolioGroupsStream.listen((groups) {
-      Group ourGroup =
+      final ourGroup =
           groups.firstWhere((g) => g.id == groupId, orElse: () => null);
       if (ourGroup == null) {
         if (groups.isNotEmpty) {

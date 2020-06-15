@@ -1,7 +1,7 @@
 import 'package:app_singleapp/shared.dart';
 import 'package:app_singleapp/user_common.dart';
 import 'package:mrapi/api.dart';
-import 'package:ogurets/ogurets.dart' hide Feature;
+import 'package:ogurets/ogurets.dart';
 
 class FeatureStepdefs {
   final UserCommon userCommon;

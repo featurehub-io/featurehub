@@ -42,33 +42,8 @@
 
   <dependencies>
     <dependency>
-      <groupId>cd.connect.composites.java</groupId>
-      <artifactId>connect-composite-jersey-grizzly</artifactId>
-      <version>[1.1-SNAPSHOT,2)</version>
-    </dependency>
-    <dependency>
-      <groupId>cd.connect.jersey</groupId>
-      <artifactId>connect-jersey-grizzly</artifactId>
-      <version>[1.1,2)</version>
-    </dependency>
-    <dependency>
       <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-logging</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-common</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-prometheus</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-opentracing</artifactId>
+      <artifactId>composite-app</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
     <dependency>

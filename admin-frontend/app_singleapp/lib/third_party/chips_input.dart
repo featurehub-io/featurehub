@@ -68,9 +68,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
     _updateTextInputState();
 
     _suggestionsBoxController = _SuggestionsBoxController(context);
-    if (_suggestionsStreamController == null) {
-      _suggestionsStreamController = StreamController<List<T>>.broadcast();
-    }
+    _suggestionsStreamController ??= StreamController<List<T>>.broadcast();
 
     _initFocusNode();
   }
