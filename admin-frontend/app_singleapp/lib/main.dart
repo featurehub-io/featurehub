@@ -34,6 +34,7 @@ class FeatureHubApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'FeatureHub',
       theme: myTheme,
       home: LandingRoute(title: 'FeatureHub'),
