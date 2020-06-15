@@ -2,11 +2,14 @@ import 'dart:async';
 
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:logging/logging.dart';
 import 'package:mrapi/api.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:rxdart/rxdart.dart';
 
 enum ManageAppPageState { loadingState, initialState }
+
+final _log = Logger('ManageAppBloc');
 
 class ManageAppBloc implements Bloc {
   String applicationId;
@@ -47,6 +50,13 @@ class ManageAppBloc implements Bloc {
 
   Stream<List<Environment>> get environmentsStream => _environmentBS.stream;
 
+  final _currentServiceAccountIdSource = BehaviorSubject<String>();
+
+  Stream<String> get currentServiceAccountIdStream =>
+      _currentServiceAccountIdSource.stream;
+
+  String get currentServiceAccountId => _currentServiceAccountIdSource.value;
+
   final _groupsBS = BehaviorSubject<List<Group>>();
 
   Stream<List<Group>> get groupsStream => _groupsBS.stream;
@@ -56,7 +66,7 @@ class ManageAppBloc implements Bloc {
   Stream<List<ServiceAccount>> get serviceAccountsStream =>
       _serviceAccountsBS.stream;
 
-  final _serviceAccountPS = PublishSubject<ServiceAccount>();
+  final _serviceAccountPS = BehaviorSubject<ServiceAccount>();
 
   Stream<ServiceAccount> get serviceAccountStream => _serviceAccountPS.stream;
 
@@ -115,6 +125,10 @@ class ManageAppBloc implements Bloc {
             includePermissions: true)
         .catchError(mrClient.dialogError);
     if (!_serviceAccountsBS.isClosed) {
+      if (serviceAccounts.isNotEmpty) {
+        _currentServiceAccountIdSource.add(null);
+        selectServiceAccount(serviceAccounts[0].id);
+      }
       _serviceAccountsBS.add(serviceAccounts);
     }
   }
@@ -132,12 +146,14 @@ class ManageAppBloc implements Bloc {
   }
 
   Future<void> selectServiceAccount(String said) async {
-    final sa = await _serviceAccountServiceApi
+    await _serviceAccountServiceApi
         .callGet(said, includePermissions: true)
-        .catchError(mrClient.dialogError);
-    if (!_serviceAccountPS.isClosed) {
-      _serviceAccountPS.add(sa);
-    }
+        .then((sa) {
+      _currentServiceAccountIdSource.add(sa.id);
+      if (!_serviceAccountPS.isClosed) {
+        _serviceAccountPS.add(sa);
+      }
+    }).catchError(mrClient.dialogError);
   }
 
   Future<Group> updateGroupWithEnvironmentRoles(gid, Group group) async {

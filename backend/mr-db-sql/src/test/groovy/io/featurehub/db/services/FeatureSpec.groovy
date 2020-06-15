@@ -354,16 +354,17 @@ class FeatureSpec extends Specification {
       !envs1.find({ e -> e.environment.id == env1.id }).featureValue.locked
       afv.features.find({it.key == k}).valueType == FeatureValueType.BOOLEAN
       afv.environments.size() == 4
-      afv.environments.find({it.environmentName == 'app2-dev-f1'}).roles == [RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]
+      afv.environments.find({it.environmentName == 'app2-dev-f1'}).roles == Arrays.asList(RoleType.values())
       afv.environments.find({it.environmentName == 'app2-dev-f1'}).features[0].locked
       afv.environments.find({it.environmentName == 'app2-staging-f1'}).features[0].locked
-      afv.environments.find({it.environmentName == 'app2-staging-f1'}).roles == [RoleType.CHANGE_VALUE, RoleType.LOCK]
-      afv.environments.find({it.environmentName == 'app2-test-f1'}).roles == [RoleType.READ]
+      afv.environments.find({it.environmentName == 'app2-staging-f1'}).roles == Arrays.asList(RoleType.values())
+      afv.environments.find({it.environmentName == 'app2-test-f1'}).roles == Arrays.asList(RoleType.values())
       afv.environments.find({it.environmentName == 'app2-test-f1'}).features.size() == 0
       afv.environments.find({it.environmentName == 'app2-production-f1'}).features.size() == 1
       afv.environments.find({it.environmentName == 'app2-production-f1'}).roles == Arrays.asList(RoleType.values()) // because superuser, otherwise would have no access
-      afvAverageJoe.environments.size() == 4
-      afvAverageJoe.environments.find({it.environmentName == 'app2-production-f1'}).roles.size() == 0
+      afvAverageJoe.environments.size() == 3
+      afvAverageJoe.environments.find({it.environmentName == 'app2-dev-f1'}).roles == [RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]
+      afvAverageJoe.environments.find({it.environmentName == 'app2-production-f1'}) == null
     // portfolio admin can read in every environment
       afvPortfolioAdminOfPortfolio1.environments.size() == 4
       afvPortfolioAdminOfPortfolio1.environments.roles.each { it -> assert it == Arrays.asList(RoleType.values()) }

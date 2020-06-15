@@ -103,6 +103,10 @@
       <exclusions>
         <exclusion>
           <groupId>cd.connect.composites.java</groupId>
+          <artifactId>connect-composite-jackson</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>cd.connect.composites.java</groupId>
           <artifactId>connect-composite-log4j2</artifactId>
         </exclusion>
         <exclusion>
