@@ -3,6 +3,7 @@ import 'package:app_singleapp/widgets/features/feature_status_bloc.dart';
 import 'package:app_singleapp/widgets/features/feature_value_row_generic.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mrapi/api.dart';
 
 import 'feature_values_bloc.dart';
@@ -47,39 +48,74 @@ class _FeatureValueNumberEnvironmentCellState
               child: Padding(
                   padding: const EdgeInsets.only(right: 16.0),
                   child: TextField(
-                      style: Theme.of(context).textTheme.bodyText1,
-                      enabled: enabled,
-                      controller: tec,
-                      decoration: InputDecoration(
-                        contentPadding: EdgeInsets.only(left: 4.0, top: 4.0),
-                        enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                          color: Theme.of(context).buttonColor,
-                        )),
-                        disabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                          color: Colors.grey,
-                        )),
-                        hintText: canEdit
-                            ? 'Enter number value'
-                            : 'No editing permissions',
-                        hintStyle: Theme.of(context).textTheme.caption,
-                        errorText: validateNumber(tec.text) != null
-                            ? 'Not a valid number'
-                            : null,
-                      ),
-                      onChanged: (value) {
-                        if (validateNumber(tec.text) == null) {
-                          if (tec.text.isEmpty) {
-                            snap.data.valueNumber = null;
-                          } else {
-                            snap.data.valueNumber = double.parse(tec.text);
-                          }
-                          widget.fvBloc.updatedFeature(
-                              widget.environmentFeatureValue.environmentId);
+                    style: Theme.of(context).textTheme.bodyText1,
+                    enabled: enabled,
+                    controller: tec,
+                    decoration: InputDecoration(
+                      contentPadding: EdgeInsets.only(left: 4.0, top: 4.0),
+                      enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                        color: Theme.of(context).buttonColor,
+                      )),
+                      disabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                        color: Colors.grey,
+                      )),
+                      hintText: canEdit
+                          ? 'Enter number value'
+                          : 'No editing permissions',
+                      hintStyle: Theme.of(context).textTheme.caption,
+                      errorText: validateNumber(tec.text) != null
+                          ? 'Not a valid number'
+                          : null,
+                    ),
+                    onEditingComplete: () {
+                      if (validateNumber(tec.text) == null) {
+                        if (tec.text.isEmpty) {
+                          snap.data.valueNumber = null;
+                        } else {
+                          snap.data.valueNumber = double.parse(tec.text);
                         }
-                      })));
+                        widget.fvBloc.updatedFeature(
+                            widget.environmentFeatureValue.environmentId);
+                      }
+                    },
+                    inputFormatters: [
+                      DecimalTextInputFormatter(
+                          decimalRange: 5, activatedNegativeValues: true)
+                    ],
+                  )));
         });
+  }
+}
+
+class DecimalTextInputFormatter extends TextInputFormatter {
+  DecimalTextInputFormatter({int decimalRange, bool activatedNegativeValues})
+      : assert(decimalRange == null || decimalRange >= 0,
+            'DecimalTextInputFormatter declaretion error') {
+    String dp = (decimalRange != null && decimalRange > 0)
+        ? "([.][0-9]{0,$decimalRange}){0,1}"
+        : "";
+    String num = "[0-9]*$dp";
+
+    if (activatedNegativeValues) {
+      _exp = new RegExp("^((((-){0,1})|((-){0,1}[0-9]$num))){0,1}\$");
+    } else {
+      _exp = new RegExp("^($num){0,1}\$");
+    }
+  }
+
+  RegExp _exp;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (_exp.hasMatch(newValue.text)) {
+      return newValue;
+    }
+    return oldValue;
   }
 }
 
