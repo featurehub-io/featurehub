@@ -3,43 +3,10 @@ package io.featurehub.db.services;
 import io.ebean.Database;
 import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.Opts;
-import io.featurehub.db.model.DbAcl;
-import io.featurehub.db.model.DbApplication;
-import io.featurehub.db.model.DbApplicationFeature;
-import io.featurehub.db.model.DbEnvironment;
-import io.featurehub.db.model.DbEnvironmentFeatureStrategy;
-import io.featurehub.db.model.DbGroup;
-import io.featurehub.db.model.DbNamedCache;
-import io.featurehub.db.model.DbOrganization;
-import io.featurehub.db.model.DbPerson;
-import io.featurehub.db.model.DbPortfolio;
-import io.featurehub.db.model.DbServiceAccount;
-import io.featurehub.db.model.DbServiceAccountEnvironment;
-import io.featurehub.db.model.query.QDbAcl;
-import io.featurehub.db.model.query.QDbApplication;
-import io.featurehub.db.model.query.QDbApplicationFeature;
-import io.featurehub.db.model.query.QDbEnvironment;
-import io.featurehub.db.model.query.QDbGroup;
-import io.featurehub.db.model.query.QDbNamedCache;
-import io.featurehub.db.model.query.QDbPerson;
-import io.featurehub.db.model.query.QDbPortfolio;
-import io.featurehub.mr.model.Application;
-import io.featurehub.mr.model.ApplicationGroupRole;
-import io.featurehub.mr.model.ApplicationRoleType;
-import io.featurehub.mr.model.Environment;
-import io.featurehub.mr.model.EnvironmentGroupRole;
-import io.featurehub.mr.model.Feature;
-import io.featurehub.mr.model.FeatureEnvironment;
-import io.featurehub.mr.model.FeatureValue;
-import io.featurehub.mr.model.FeatureValueType;
-import io.featurehub.mr.model.Group;
-import io.featurehub.mr.model.Organization;
-import io.featurehub.mr.model.Person;
-import io.featurehub.mr.model.PersonId;
-import io.featurehub.mr.model.Portfolio;
+import io.featurehub.db.model.*;
+import io.featurehub.db.model.query.*;
 import io.featurehub.mr.model.RoleType;
-import io.featurehub.mr.model.ServiceAccount;
-import io.featurehub.mr.model.ServiceAccountPermission;
+import io.featurehub.mr.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,11 +16,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Singleton
@@ -215,11 +178,11 @@ public class ConvertUtils {
   }
 
   public List<RoleType> splitEnvironmentRoles(String roles) {
+    List<RoleType> roleTypes = new ArrayList<>();
     if (roles == null || roles.length() == 0) {
-      return null;
+      return roleTypes;
     }
 
-    List<RoleType> roleTypes = new ArrayList<>();
 
     if (roleTypes != null) {
       for(String n : roles.split(",")) {

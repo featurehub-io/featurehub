@@ -69,8 +69,10 @@ class LandingRouteState extends State<LandingRoute> {
                       )
                     : ResetPasswordWidget());
           } else if (snapshot.data == InitializedCheckState.zombie) {
-            ManagementRepositoryClientBloc.router
-                .navigateTo(context, '/feature-status');
+            var currentRoute = client.currentRoute;
+            ManagementRepositoryClientBloc.router.navigateTo(context,
+                currentRoute != null ? currentRoute.route : '/feature-status',
+                params: currentRoute != null ? currentRoute.params : []);
             widget = AndysScaffoldRoute();
           } else if (snapshot.data == InitializedCheckState.uninitialized) {
             widget = Center(

@@ -87,13 +87,17 @@ class ManagementRepositoryClientBloc implements Bloc {
 
     // this is for fine grained route changes, like tab changes
     _routerSource.add(route);
+    _sharedPreferences.saveString('current-route', route.toJson());
+  }
+
+  Future<void> _setCurrentRoute() async {
+    var currentRoute = await _sharedPreferences.getString('current-route');
+    if (currentRoute != null) {
+      _routerSource.add(RouteChange.fromJson(currentRoute));
+    }
   }
 
   bool get isLoggedIn => _personSource.hasValue;
-
-  // this gets set when a person comes into the system for the first time and the person isn't set
-  // we should redirect the navigator back there once a person has been set
-  String desiredRoute;
 
   Stream<InitializedCheckState> get initializedState =>
       _initializedSource.stream;
@@ -174,6 +178,7 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   void init() async {
     _sharedPreferences = await FHSharedPrefs.getSharedInstance();
+    await _setCurrentRoute();
     await isInitialized();
   }
 
@@ -410,6 +415,7 @@ class ManagementRepositoryClientBloc implements Bloc {
       dialogError(e, s);
     }
   }
+
 
   @override
   void dispose() {
