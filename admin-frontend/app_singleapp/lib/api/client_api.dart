@@ -91,10 +91,13 @@ class ManagementRepositoryClientBloc implements Bloc {
   }
 
   Future<void> _setCurrentRoute() async {
-    var currentRoute = await _sharedPreferences.getString('current-route');
-    if (currentRoute != null) {
-      _routerSource.add(RouteChange.fromJson(currentRoute));
-    }
+    try {
+      var currentRoute = await _sharedPreferences.getString('current-route');
+      if (currentRoute != null) {
+        _routerSource.add(RouteChange.fromJson(currentRoute));
+      }
+    } catch (e) {}
+    ;
   }
 
   bool get isLoggedIn => _personSource.hasValue;
