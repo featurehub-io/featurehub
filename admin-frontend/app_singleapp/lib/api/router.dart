@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:flutter/widgets.dart';
 
@@ -8,6 +10,18 @@ class RouteChange {
   Map<String, List<String>> params;
   TransitionType transition;
   String route;
+
+  static RouteChange fromJson(String json) {
+    final j = jsonDecode(json);
+    return RouteChange()
+      ..params = Map<String, List<String>>.from(j['params'].map((k, v) =>
+          MapEntry<String, List<String>>(k.toString(), List<String>.from(v))))
+      ..route = j['route'].toString();
+  }
+
+  String toJson() {
+    return jsonEncode({'route': route, 'params': params});
+  }
 
   @override
   String toString() {
@@ -42,8 +56,8 @@ class Router {
 
   void navigateTo(BuildContext context, String route,
       {bool replace,
-      TransitionType transition,
-      Map<String, List<String>> params}) {
+        TransitionType transition,
+        Map<String, List<String>> params}) {
     mrBloc.swapRoutes(RouteChange()
       ..route = route
       ..params = params ?? {}

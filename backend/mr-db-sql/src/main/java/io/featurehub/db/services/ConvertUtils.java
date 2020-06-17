@@ -215,18 +215,15 @@ public class ConvertUtils {
   }
 
   public List<RoleType> splitEnvironmentRoles(String roles) {
+    List<RoleType> roleTypes = new ArrayList<>();
     if (roles == null || roles.length() == 0) {
-      return null;
+      return roleTypes;
     }
 
-    List<RoleType> roleTypes = new ArrayList<>();
-
-    if (roleTypes != null) {
-      for(String n : roles.split(",")) {
-        try {
-          roleTypes.add(RoleType.valueOf(n));
-        } catch (Exception e) { return null; }
-      }
+    for(String n : roles.split(",")) {
+      try {
+        roleTypes.add(RoleType.valueOf(n));
+      } catch (Exception e) { return null; }
     }
 
     return roleTypes;
