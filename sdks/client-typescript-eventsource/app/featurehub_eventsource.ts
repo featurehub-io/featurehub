@@ -13,7 +13,7 @@ export class FeatureHubEventSourceClient {
     this.eventSource = new EventSource(this.sdkUrl);
 
     [SSEResultState.Features, SSEResultState.Feature, SSEResultState.DeleteFeature,
-        SSEResultState.Bye, SSEResultState.Error, SSEResultState.Ack].forEach((name) => {
+        SSEResultState.Bye, SSEResultState.Failure, SSEResultState.Ack].forEach((name) => {
           const fName = name.toString();
       this.eventSource.addEventListener(fName,
                                         e => {
@@ -26,7 +26,7 @@ export class FeatureHubEventSourceClient {
 
     this.eventSource.onerror = (e) => {
       // console.error("got error", e);
-      featureHubRepository.notify(SSEResultState.Error, null);
+      featureHubRepository.notify(SSEResultState.Failure, null);
     };
   }
 
