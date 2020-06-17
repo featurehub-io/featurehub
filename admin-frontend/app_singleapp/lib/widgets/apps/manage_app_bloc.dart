@@ -9,8 +9,6 @@ import 'package:rxdart/rxdart.dart';
 
 enum ManageAppPageState { loadingState, initialState }
 
-final _log = Logger('ManageAppBloc');
-
 class ManageAppBloc implements Bloc {
   String applicationId;
   Application application;
