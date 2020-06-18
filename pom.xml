@@ -60,9 +60,5 @@
     <module>backend/party-server</module>
     <module>backend/dacha</module>
     <module>backend/dacha-api</module>
-    <module>examples/todo-backend-java</module>
-    <module>examples/todo-typescript</module>
-    <module>examples/todo-frontend-react-typescript</module>
-    <module>examples/todo-api</module>
   </modules>
 </project>
