@@ -1,5 +1,6 @@
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/api/router.dart';
+import 'package:app_singleapp/routes/apps_route.dart';
 import 'package:app_singleapp/routes/create_user_route.dart';
 import 'package:app_singleapp/routes/edit_user_route.dart';
 import 'package:app_singleapp/routes/features_latest.dart';
@@ -113,6 +114,11 @@ Widget featureStatus(ManagementRepositoryClientBloc mrBloc, {params}) {
                 },
                 child: FeatureStatusRoute(),
               )));
+}
+
+Widget apps(mrBloc, {params}) {
+  return BlocProvider<ManageAppBloc>(
+      creator: (_context, _bag) => ManageAppBloc(mrBloc), child: AppsRoute());
 }
 
 Widget manageApp(mrBloc, {params}) {

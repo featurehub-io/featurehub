@@ -227,12 +227,23 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _MenuItem(
-      name: 'Features',
-      iconData: Ionicons.md_switch,
-      iconSize: 26,
-      path: '/feature-status',
-      params: {},
+    return Column(
+      children: [
+        _MenuItem(
+          name: 'Applications',
+          iconData: Icons.apps,
+          iconSize: 26,
+          path: '/applications',
+          params: {},
+        ),
+        _MenuItem(
+          name: 'Features',
+          iconData: Ionicons.md_switch,
+          iconSize: 26,
+          path: '/feature-status',
+          params: {},
+        ),
+      ],
     );
   }
 }

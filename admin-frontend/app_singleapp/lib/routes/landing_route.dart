@@ -72,7 +72,7 @@ class LandingRouteState extends State<LandingRoute> {
             var currentRoute = client.currentRoute;
             ManagementRepositoryClientBloc.router.navigateTo(context,
                 currentRoute != null ? currentRoute.route : '/feature-status',
-                params: currentRoute != null ? currentRoute.params : {});
+                params: currentRoute?.params ?? {});
             widget = AndysScaffoldRoute();
           } else if (snapshot.data == InitializedCheckState.uninitialized) {
             widget = Center(
