@@ -177,6 +177,11 @@ paths:
         description: "Include the environments in the result"
         schema:
           type: boolean
+      - name: includeFeatures
+        in: query
+        description: "Include the features in the result"
+        schema:
+          type: boolean
     get:
       security:
         - bearerAuth: []
