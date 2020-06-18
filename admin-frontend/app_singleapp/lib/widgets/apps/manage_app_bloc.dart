@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:bloc_provider/bloc_provider.dart';
-import 'package:logging/logging.dart';
 import 'package:mrapi/api.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:rxdart/rxdart.dart';
@@ -125,6 +124,7 @@ class ManageAppBloc implements Bloc {
     if (!_serviceAccountsBS.isClosed) {
       if (serviceAccounts.isNotEmpty) {
         _currentServiceAccountIdSource.add(null);
+        // ignore: unawaited_futures
         selectServiceAccount(serviceAccounts[0].id);
       }
       _serviceAccountsBS.add(serviceAccounts);

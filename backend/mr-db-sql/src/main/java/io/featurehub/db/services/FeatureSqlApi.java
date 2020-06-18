@@ -517,10 +517,12 @@ public class FeatureSqlApi implements FeatureApi {
       // if so, we need to fill those in
 
 
-      if (personAdmin) {
+      if (!permEnvs.isEmpty() || personAdmin) {
         // now go through all the environments for this app
         List<DbEnvironment> environments = new QDbEnvironment().whenArchived.isNull().order().name.desc().parentApplication.eq(app).findList();
         // envId, DbEnvi
+
+        List<RoleType> roles = personAdmin ? Arrays.asList(RoleType.values()) : new ArrayList<>();
 
         environments.forEach(e -> {
           if (envs.get(e.getId().toString()) == null) {
@@ -531,11 +533,12 @@ public class FeatureSqlApi implements FeatureApi {
                 .environmentName(e.getName())
                 .priorEnvironmentId(e.getPriorEnvironment() == null ? null : e.getPriorEnvironment().getId().toString())
                 .environmentId(e.getId().toString())
-                .roles(Arrays.asList(RoleType.values())) // all access (as admin)
-                .features(new QDbEnvironmentFeatureStrategy()
+                .roles(roles) // all access (as admin)
+                .features(!personAdmin ? new ArrayList<>() : new QDbEnvironmentFeatureStrategy()
                   .feature.whenArchived.isNull()
                   .environment.eq(e)
-                  .findList().stream().map(convertUtils::toFeatureValue).collect(Collectors.toList()));
+                  .findList().stream()
+                    .map(convertUtils::toFeatureValue).collect(Collectors.toList()));
 
             envs.put(e1.getEnvironmentId(), e1);
           }

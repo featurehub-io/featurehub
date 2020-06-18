@@ -47,7 +47,6 @@
 
   <build>
     <plugins>
-      <!--
       <plugin>
         <artifactId>exec-maven-plugin</artifactId>
         <groupId>org.codehaus.mojo</groupId>
@@ -64,7 +63,6 @@
           </execution>
         </executions>
       </plugin>
-      -->
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <version>2.6</version>
