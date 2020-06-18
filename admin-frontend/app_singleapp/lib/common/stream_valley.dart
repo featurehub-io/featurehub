@@ -65,6 +65,7 @@ class StreamValley {
   Stream<List<Portfolio>> get portfolioListStream => _portfoliosSource.stream;
   Stream<Portfolio> get currentPortfolioStream =>
       _currentPortfolioSource.stream;
+
   Portfolio get currentPortfolio => _currentPortfolioSource.value;
 
   String get currentPortfolioId => _currentPortfolioIdSource.value;
@@ -151,7 +152,7 @@ class StreamValley {
     if (_currentPortfolioIdSource.value != null) {
       appList = await applicationServiceApi
           .findApplications(_currentPortfolioIdSource.value,
-              order: SortOrder.DESC)
+              order: SortOrder.DESC, includeEnvironments: true)
           .catchError(mrClient.dialogError);
       currentPortfolioApplications = appList;
 
