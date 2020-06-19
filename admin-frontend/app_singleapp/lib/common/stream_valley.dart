@@ -5,6 +5,11 @@ import 'package:app_singleapp/common/person_state.dart';
 import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart';
 
+class ReleasedPortfolio {
+  Portfolio portfolio;
+  bool portfolioAdmin;
+}
+
 class StreamValley {
   final ManagementRepositoryClientBloc mrClient;
   final PersonState personState;
@@ -15,7 +20,9 @@ class StreamValley {
   FeatureServiceApi featureServiceApi;
   ApplicationServiceApi applicationServiceApi;
 
-  StreamSubscription<bool> currentPortfolioAdminOrSuperAdminSubscription;
+  StreamSubscription<ReleasedPortfolio>
+      currentPortfolioAdminOrSuperAdminSubscription;
+  StreamSubscription<Portfolio> currentPortfolioSubscription;
 
   bool _isCurrentPortfolioAdminOrSuperAdmin = false;
 
@@ -27,10 +34,13 @@ class StreamValley {
     featureServiceApi = FeatureServiceApi(mrClient.apiClient);
     applicationServiceApi = ApplicationServiceApi(mrClient.apiClient);
 
+    // release the route check portfolio into the main stream so downstream stuff can trigger as usual.
+    // we  have done our permission checks on it and swapped their route if they have no access
     currentPortfolioAdminOrSuperAdminSubscription =
-        personState.currentPortfolioAdminOrSuperAdminStream.listen((val) {
+        personState.isCurrentPortfolioOrSuperAdmin.listen((val) {
+      _currentPortfolioSource.add(val.portfolio);
       final oldVal = _isCurrentPortfolioAdminOrSuperAdmin;
-      _isCurrentPortfolioAdminOrSuperAdmin = val;
+      _isCurrentPortfolioAdminOrSuperAdmin = val.portfolioAdmin;
       _refreshApplicationIdChanged();
       if (oldVal != _isCurrentPortfolioAdminOrSuperAdmin &&
           _isCurrentPortfolioAdminOrSuperAdmin) {
@@ -38,6 +48,25 @@ class StreamValley {
         getCurrentPortfolioServiceAccounts();
       }
     });
+
+    currentPortfolioSubscription =
+        _currentPortfolioSource.listen((p) => portfolioChanged());
+  }
+
+  void dispose() {
+    currentPortfolioSubscription.cancel();
+    currentPortfolioAdminOrSuperAdminSubscription.cancel();
+  }
+
+  void portfolioChanged() {
+    // now load the applications for this portfolio, which may trigger selecting one
+    getCurrentPortfolioApplications();
+
+    // if we are an admin, load the groups and service accounts
+//    if (_isCurrentPortfolioAdminOrSuperAdmin) {
+//      getCurrentPortfolioGroups();
+//      getCurrentPortfolioServiceAccounts();
+//    }
   }
 
   void _refreshApplicationIdChanged() {
@@ -45,16 +74,16 @@ class StreamValley {
         _currentAppIdSource.value != null) {
       getCurrentApplicationFeatures();
       getCurrentApplicationEnvironments();
-      getEnvironmentServiceAccountPermissions();
     }
   }
 
   final _portfoliosSource = BehaviorSubject<List<Portfolio>>();
   final _currentPortfolioSource = BehaviorSubject<Portfolio>();
+  final _routeCheckPortfolioSource = BehaviorSubject<Portfolio>();
+
   final _currentAppIdSource = BehaviorSubject<String>();
   final _currentPortfolioApplicationsSource =
       BehaviorSubject<List<Application>>();
-  final _currentPortfolioIdSource = BehaviorSubject<String>();
   final _currentPortfolioGroupsStream = BehaviorSubject<List<Group>>();
   final _currentApplicationEnvironmentsSource =
       BehaviorSubject<List<Environment>>();
@@ -62,35 +91,26 @@ class StreamValley {
   final _currentEnvironmentServiceAccountSource =
       BehaviorSubject<List<ServiceAccount>>();
 
+  Stream<Portfolio> get routeCheckPortfolioStream => _routeCheckPortfolioSource;
   Stream<List<Portfolio>> get portfolioListStream => _portfoliosSource.stream;
   Stream<Portfolio> get currentPortfolioStream =>
       _currentPortfolioSource.stream;
   Portfolio get currentPortfolio => _currentPortfolioSource.value;
 
-  String get currentPortfolioId => _currentPortfolioIdSource.value;
+  String get currentPortfolioId => currentPortfolio?.id;
 
   set currentPortfolioId(String value) {
-    if (_currentPortfolioIdSource.value != value) {
+    if (_currentPortfolioSource.value?.id != value) {
       currentAppId = null;
 
       // figure out which one we are
-      _currentPortfolioSource.add(
+      _routeCheckPortfolioSource.add(
           _portfoliosSource.value.firstWhere((element) => element.id == value));
-      _currentPortfolioIdSource.add(value);
-
-      // now load the applications for this portfolio, which may trigger selecting one
-      getCurrentPortfolioApplications();
-
-      // if we are an admin, load the groups and service accounts
-      if (_isCurrentPortfolioAdminOrSuperAdmin) {
-        getCurrentPortfolioGroups();
-        getCurrentPortfolioServiceAccounts();
-      }
     }
   }
 
   Stream<String> get currentPortfolioIdStream =>
-      _currentPortfolioIdSource.stream;
+      _currentPortfolioSource.stream.map((p) => p?.id);
 
   Stream<String> get currentAppIdStream => _currentAppIdSource.stream;
 
@@ -148,10 +168,9 @@ class StreamValley {
 
   Future<void> getCurrentPortfolioApplications() async {
     List<Application> appList;
-    if (_currentPortfolioIdSource.value != null) {
+    if (currentPortfolioId != null) {
       appList = await applicationServiceApi
-          .findApplications(_currentPortfolioIdSource.value,
-              order: SortOrder.DESC)
+          .findApplications(currentPortfolioId, order: SortOrder.DESC)
           .catchError(mrClient.dialogError);
       currentPortfolioApplications = appList;
 
@@ -164,9 +183,9 @@ class StreamValley {
   }
 
   Future<void> getCurrentPortfolioGroups() async {
-    if (_currentPortfolioIdSource.value != null) {
+    if (currentPortfolioId != null) {
       await portfolioServiceApi
-          .getPortfolio(_currentPortfolioIdSource.value, includeGroups: true)
+          .getPortfolio(currentPortfolioId, includeGroups: true)
           .then((portfolio) => currentPortfolioGroups = portfolio.groups)
           .catchError(mrClient.dialogError);
     } else {
@@ -175,9 +194,9 @@ class StreamValley {
   }
 
   Future<void> getCurrentPortfolioServiceAccounts() async {
-    if (_currentPortfolioIdSource.value != null) {
+    if (currentPortfolioId != null) {
       await serviceAccountServiceApi
-          .searchServiceAccountsInPortfolio(_currentPortfolioIdSource.value)
+          .searchServiceAccountsInPortfolio(currentPortfolioId)
           .then((accounts) => currentPortfolioServiceAccounts = accounts)
           .catchError(mrClient.dialogError);
     } else {
@@ -210,7 +229,7 @@ class StreamValley {
   Future<void> getEnvironmentServiceAccountPermissions() async {
     if (_currentAppIdSource.value != null) {
       final saList = await serviceAccountServiceApi
-          .searchServiceAccountsInPortfolio(_currentPortfolioIdSource.value,
+          .searchServiceAccountsInPortfolio(currentPortfolioId,
               includePermissions: true,
               applicationId: _currentAppIdSource.value)
           .catchError(mrClient.dialogError);

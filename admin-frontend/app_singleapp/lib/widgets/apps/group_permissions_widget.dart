@@ -65,7 +65,6 @@ class _GroupPermissionState extends State<GroupPermissionsWidget> {
                       onPressed: () {
                         ManagementRepositoryClientBloc.router.navigateTo(
                             context, '/manage-group',
-                            replace: true,
                             transition: TransitionType.material,
                             params: {
                               'id': [selectedGroup]
@@ -90,10 +89,7 @@ class _GroupPermissionState extends State<GroupPermissionsWidget> {
               value: group.id,
               child: Text(
                 group.name,
-                style: Theme
-                    .of(context)
-                    .textTheme
-                    .bodyText2,
+                style: Theme.of(context).textTheme.bodyText2,
                 overflow: TextOverflow.ellipsis,
               ));
         }).toList(),
@@ -197,22 +193,18 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                         Text(
                             'This group can create, edit and delete features for this application',
                             style: Theme.of(context).textTheme.caption),
-
                       ],
                     ),
                     Container(
                         padding: EdgeInsets.fromLTRB(0, 16, 0, 16),
                         child: Center(
-                          child:
-                          Text(
+                          child: Text(
                               'Set the group access to features for each environment',
-                              style: Theme
-                                  .of(context)
+                              style: Theme.of(context)
                                   .textTheme
                                   .subtitle1
-                                  .copyWith(color: Theme
-                                  .of(context)
-                                  .hintColor)),
+                                  .copyWith(
+                                      color: Theme.of(context).hintColor)),
                         )),
                     Table(children: rows),
                     FHButtonBar(children: [

@@ -32,7 +32,7 @@ class FHLinkWidget extends StatelessWidget {
           ),
           onTap: () {
             ManagementRepositoryClientBloc.router.navigateTo(context, href,
-                replace: true, transition: TransitionType.material, params: {});
+                transition: TransitionType.material, params: {});
           }),
     );
   }
@@ -64,9 +64,7 @@ class FHLink extends StatelessWidget {
         ),
         onTap: () {
           ManagementRepositoryClientBloc.router.navigateTo(context, href,
-              replace: true,
-              transition: TransitionType.material,
-              params: params);
+              transition: TransitionType.material, params: params);
         });
   }
 }

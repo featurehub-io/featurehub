@@ -47,24 +47,30 @@ class Routes {
     //Admin routes
     router.define('/create-user',
         handler: handleRouteChangeRequest(createUser),
+        permissionType: PermissionType.portfolioadmin,
         transitionType: TransitionType.fadeIn);
     router.define('/portfolios',
         handler: handleRouteChangeRequest(portfolios),
         transitionType: TransitionType.material);
     router.define('/manage-app',
         handler: handleRouteChangeRequest(manageApp),
+        permissionType: PermissionType.portfolioadmin,
         transitionType: TransitionType.fadeIn);
     router.define('/manage-group',
         handler: handleRouteChangeRequest(group),
+        permissionType: PermissionType.portfolioadmin,
         transitionType: TransitionType.fadeIn);
     router.define('/manage-service-accounts',
         handler: handleRouteChangeRequest(serviceAccount),
+        permissionType: PermissionType.portfolioadmin,
         transitionType: TransitionType.fadeIn);
     router.define('/manage-user',
         handler: handleRouteChangeRequest(manageUser),
+        permissionType: PermissionType.portfolioadmin,
         transitionType: TransitionType.fadeIn);
     router.define('/manage-users',
         handler: handleRouteChangeRequest(users),
+        permissionType: PermissionType.portfolioadmin,
         transitionType: TransitionType.fadeIn);
   }
 }

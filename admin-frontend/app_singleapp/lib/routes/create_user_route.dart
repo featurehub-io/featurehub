@@ -190,7 +190,7 @@ class TopWidgetSuccess extends StatelessWidget {
                   bloc.backToDefault();
                   ManagementRepositoryClientBloc.router.navigateTo(
                       context, '/manage-users',
-                      replace: true, transition: TransitionType.material);
+                      transition: TransitionType.material);
                 },
                 title: 'Close'),
             FHFlatButton(
@@ -234,7 +234,7 @@ class CreateUserFormButtons extends StatelessWidget {
             }
             ManagementRepositoryClientBloc.router.navigateTo(
                 context, '/manage-users',
-                replace: true, transition: TransitionType.material);
+                transition: TransitionType.material);
           },
           title: 'Cancel'),
       Padding(

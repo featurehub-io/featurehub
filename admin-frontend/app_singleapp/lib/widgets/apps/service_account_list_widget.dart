@@ -1,5 +1,6 @@
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/api/router.dart';
+import 'package:app_singleapp/common/stream_valley.dart';
 import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/fh_alert_dialog.dart';
 import 'package:app_singleapp/widgets/common/fh_delete_thing.dart';
@@ -77,11 +78,11 @@ class _ServiceAccountWidget extends StatelessWidget {
                 SizedBox(width: 4.0),
                 _ServiceAccountDescription(serviceAccount: serviceAccount),
                 SizedBox(width: 24.0),
-                StreamBuilder<bool>(
+                StreamBuilder<ReleasedPortfolio>(
                     stream: bloc
                         .mrClient.personState.isCurrentPortfolioOrSuperAdmin,
                     builder: (context, snapshot) {
-                      if (snapshot.hasData && snapshot.data) {
+                      if (snapshot.hasData && snapshot.data.portfolioAdmin) {
                         return _adminFunctions(context);
                       } else {
                         return Container();
@@ -171,9 +172,7 @@ class _ServiceAccountEnvironment extends StatelessWidget {
     final found = appEnvs.any((appEnvId) => permEnvs.contains(appEnvId));
     return Card(
       child: Container(
-        color: Theme
-            .of(context)
-            .backgroundColor,
+        color: Theme.of(context).backgroundColor,
         width: 240,
         height: 130,
         child: Padding(
@@ -200,12 +199,11 @@ class _ServiceAccountEnvironment extends StatelessWidget {
 
                       ManagementRepositoryClientBloc.router
                           .navigateTo(context, '/manage-app',
-                          replace: true,
-                          params: {
-                            'service-account': [serviceAccount.id],
-                            'tab-name': ['service-accounts']
-                          },
-                          transition: TransitionType.material);
+                              params: {
+                                'service-account': [serviceAccount.id],
+                                'tab-name': ['service-accounts']
+                              },
+                              transition: TransitionType.material);
                     },
                   )
                 ],
@@ -232,21 +230,15 @@ class _ServiceAccountDescription extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(serviceAccount.name,
-            style: Theme
-                .of(context)
+            style: Theme.of(context)
                 .textTheme
                 .subtitle1
-                .copyWith(color: Theme
-                .of(context)
-                .primaryColor)),
+                .copyWith(color: Theme.of(context).primaryColor)),
         Text(
           serviceAccount.description != null
               ? '${serviceAccount.description}'
               : '',
-          style: Theme
-              .of(context)
-              .textTheme
-              .caption,
+          style: Theme.of(context).textTheme.caption,
         ),
       ],
     );

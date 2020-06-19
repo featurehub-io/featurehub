@@ -86,7 +86,6 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                                               params: {
                                                 'id': [p.id.id]
                                               },
-                                              replace: true,
                                               transition: TransitionType.fadeIn)
                                     }),
                             FHIconButton(
