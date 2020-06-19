@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:logging/logging.dart';
 import 'package:mrapi/api.dart';
+import 'package:rxdart/rxdart.dart';
 
 import 'feature_status_bloc.dart';
 import 'feature_value_row_locked.dart';
@@ -59,6 +60,24 @@ class FeaturesOverviewTableWidget extends StatelessWidget {
   }
 }
 
+enum _TabsState { FLAGS, VALUES, CONFIGURATIONS }
+
+class _TabsBloc implements Bloc {
+  final FeatureStatusFeatures featureStatus;
+  final _stateSource = BehaviorSubject<_TabsState>.seeded(_TabsState.FLAGS);
+
+  _TabsBloc(this.featureStatus) : assert(featureStatus != null);
+
+  Stream<_TabsState> get currentTab => _stateSource.stream;
+
+  void swapTab(_TabsState tab) {
+    _stateSource.add(tab);
+  }
+
+  @override
+  void dispose() {}
+}
+
 class TabsView extends StatelessWidget {
   final FeatureStatusFeatures featureStatus;
 
@@ -66,54 +85,151 @@ class TabsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      initialIndex: 0,
-      // The number of tabs / content sections to display.
-      length: 3,
+    return BlocProvider(
+      creator: (_c, _b) => _TabsBloc(featureStatus),
       child: Column(
-        children: <Widget>[
-          TabBar(
-            isScrollable: false,
-            labelStyle: Theme.of(context).textTheme.bodyText1,
-            labelColor: Theme.of(context).textTheme.subtitle2.color,
-            unselectedLabelColor: Theme.of(context).textTheme.bodyText2.color,
-            tabs: [
-              Tab(
-                  text: 'FEATURE FLAGS',
-                  icon:
-                      Icon(Icons.flag, color: Theme.of(context).primaryColor)),
-              Tab(
-                  text: 'FEATURE VALUES',
-                  icon:
-                      Icon(Icons.code, color: Theme.of(context).primaryColor)),
-              Tab(
-                  text: 'CONFIGURATIONS',
-                  icon: Icon(Icons.device_hub,
-                      color: Theme.of(context).primaryColor)), //find JSON icon
-            ],
-          ),
-          SizedBox(
-            height: MediaQuery.of(context).size.height - 265,
-            child: TabBarView(
-              children: [
-                //Environments
-                SingleChildScrollView(
-                    child: FeatureFlagAndEnvironmentsTable(
-                        featureStatus: featureStatus, isFeature: true)),
-                // Groups permissions
-                SingleChildScrollView(
-                    child: FeatureFlagAndEnvironmentsTable(
-                        featureStatus: featureStatus, isFeature: false)),
-                SingleChildScrollView(
-                    child: FeatureFlagAndEnvironmentsTable(
-                        featureStatus: featureStatus)),
-                // Service accounts
-              ],
-            ),
-          )
+        children: [
+          _FeatureTabsHeader(),
+          _FeatureTabsBody(),
         ],
       ),
     );
+//    return DefaultTabController(
+//      initialIndex: 0,
+//      // The number of tabs / content sections to display.
+//      length: 3,
+//      child: Column(
+//        children: <Widget>[
+//          TabBar(
+//            isScrollable: false,
+//            labelStyle: Theme.of(context).textTheme.bodyText1,
+//            labelColor: Theme.of(context).textTheme.subtitle2.color,
+//            unselectedLabelColor: Theme.of(context).textTheme.bodyText2.color,
+//            tabs: [
+//              Tab(
+//                  text: 'FEATURE FLAGS',
+//                  icon:
+//                      Icon(Icons.flag, color: Theme.of(context).primaryColor)),
+//              Tab(
+//                  text: 'FEATURE VALUES',
+//                  icon:
+//                      Icon(Icons.code, color: Theme.of(context).primaryColor)),
+//              Tab(
+//                  text: 'CONFIGURATIONS',
+//                  icon: Icon(Icons.device_hub,
+//                      color: Theme.of(context).primaryColor)), //find JSON icon
+//            ],
+//          ),
+//          SizedBox(
+//            height: MediaQuery.of(context).size.height - 265,
+//            child: TabBarView(
+//              children: [
+//                //Environments
+//                SingleChildScrollView(
+//                    child: FeatureFlagAndEnvironmentsTable(
+//                        featureStatus: featureStatus, isFeature: true)),
+//                // Groups permissions
+//                SingleChildScrollView(
+//                    child: FeatureFlagAndEnvironmentsTable(
+//                        featureStatus: featureStatus, isFeature: false)),
+//                SingleChildScrollView(
+//                    child: FeatureFlagAndEnvironmentsTable(
+//                        featureStatus: featureStatus)),
+//                // Service accounts
+//              ],
+//            ),
+//          )
+//        ],
+//      ),
+//    );
+  }
+}
+
+class _FeatureTabsBody extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final bloc = BlocProvider.of<_TabsBloc>(context);
+
+    return StreamBuilder<_TabsState>(
+        stream: bloc.currentTab,
+        builder: (context, snapshot) {
+          Widget widget;
+
+          if (snapshot.data == _TabsState.FLAGS) {
+            widget = FeatureFlagAndEnvironmentsTable(
+                featureStatus: bloc.featureStatus, isFeature: true);
+          }
+//          if (snapshot.data == _TabsState.VALUES) {
+//            widget = FeatureFlagAndEnvironmentsTable(
+//                featureStatus: bloc.featureStatus, isFeature: false);
+//          }
+//          if (snapshot.data == _TabsState.CONFIGURATIONS) {
+//            widget = FeatureFlagAndEnvironmentsTable(
+//                featureStatus: bloc.featureStatus);
+//          }
+
+          return widget == null ? SizedBox.shrink() : widget;
+//              : SingleChildScrollView(
+//                  scrollDirection: Axis.horizontal,
+//                  child: widget,
+//                );
+        });
+  }
+}
+
+class _FeatureTabsHeader extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        _FeatureTab(
+            text: 'FEATURE FLAGS', icon: Icons.flag, state: _TabsState.FLAGS),
+        _FeatureTab(
+            text: 'FEATURE VALUES', icon: Icons.code, state: _TabsState.VALUES),
+        _FeatureTab(
+            text: 'CONFIGURATIONS',
+            icon: Icons.device_hub,
+            state: _TabsState.CONFIGURATIONS),
+      ],
+    );
+  }
+}
+
+class _FeatureTab extends StatelessWidget {
+  final String text;
+  final IconData icon;
+  final _TabsState state;
+
+  const _FeatureTab(
+      {Key key, @required this.text, @required this.icon, @required this.state})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final bloc = BlocProvider.of<_TabsBloc>(context);
+
+    return StreamBuilder<_TabsState>(
+        stream: bloc.currentTab,
+        builder: (context, snapshot) {
+          return GestureDetector(
+            onTap: () {
+              bloc.swapTab(state);
+            },
+            child: Container(
+              color: Colors.red,
+              child: Column(
+                children: [
+                  Icon(this.icon, color: Theme.of(context).primaryColor),
+                  Text(text,
+                      style: Theme.of(context).textTheme.bodyText1.copyWith(
+                          color: state == snapshot.data
+                              ? Theme.of(context).textTheme.subtitle2.color
+                              : Theme.of(context).textTheme.bodyText2.color))
+                ],
+              ),
+            ),
+          );
+        });
   }
 }
 
@@ -131,35 +247,71 @@ class FeatureFlagAndEnvironmentsTable extends StatelessWidget {
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<FeatureStatusBloc>(context);
 
-    return Padding(
-      padding: const EdgeInsets.only(top: 8.0),
-      child: Column(children: [
-        _FeatureHeader(
-          featureStatuses: featureStatus,
-        ),
-        ...featureStatus.applicationFeatureValues.features
-            .where((e) => isFeature != null
-                ? (isFeature
-                    ? e.valueType == FeatureValueType.BOOLEAN
-                    : (e.valueType == FeatureValueType.NUMBER ||
-                        e.valueType == FeatureValueType.STRING))
-                : e.valueType == FeatureValueType.JSON)
-            .map((e) => StreamBuilder<LineStatusFeature>(
-                stream: bloc.getLineStatus(e.id),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData || snapshot.hasError) {
-                    return SizedBox.shrink();
-                  }
+    final maxEnvironments = 4;
 
-                  return _FeatureRepresentation(
-                    feature: e,
-                    applicationFeatureValues:
-                        featureStatus.applicationFeatureValues,
-                    lineStatus: snapshot.data,
-                  );
-                })),
-      ]),
+    return Column(
+      children: [
+        ...featureStatus.applicationFeatureValues.features.map((f) {
+          return Container(
+            height: 120.0,
+            child: Row(
+              children: [
+                Column(
+                  children: [
+                    Container(width: 200.0, child: Text('Feature ${f.name}')),
+                  ],
+                ),
+                Flexible(
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      ...featureStatus.sortedByNameEnvironmentIds.map((eId) {
+                        return Container(
+                          width: 100.0,
+                          padding: const EdgeInsets.all(8.0),
+                          color: Colors.black12,
+                          child: Text(
+                              'Environment ${featureStatus.applicationEnvironments[eId].environmentName}'),
+                        );
+                      })
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        })
+      ],
     );
+//    return Padding(
+//      padding: const EdgeInsets.only(top: 8.0),
+//      child: Column(children: [
+//        _FeatureHeader(
+//          featureStatuses: featureStatus,
+//        ),
+//        ...featureStatus.applicationFeatureValues.features
+//            .where((e) => isFeature != null
+//                ? (isFeature
+//                    ? e.valueType == FeatureValueType.BOOLEAN
+//                    : (e.valueType == FeatureValueType.NUMBER ||
+//                        e.valueType == FeatureValueType.STRING))
+//                : e.valueType == FeatureValueType.JSON)
+//            .map((e) => StreamBuilder<LineStatusFeature>(
+//                stream: bloc.getLineStatus(e.id),
+//                builder: (context, snapshot) {
+//                  if (!snapshot.hasData || snapshot.hasError) {
+//                    return SizedBox.shrink();
+//                  }
+//
+//                  return _FeatureRepresentation(
+//                    feature: e,
+//                    applicationFeatureValues:
+//                        featureStatus.applicationFeatureValues,
+//                    lineStatus: snapshot.data,
+//                  );
+//                })),
+//      ]),
+//    );
   }
 }
 

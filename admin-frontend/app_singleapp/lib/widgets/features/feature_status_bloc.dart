@@ -12,6 +12,7 @@ class FeatureStatusFeatures {
   List<String> sortedByNameEnvironmentIds;
   // envId, EnvironmentFeatureValues mapping - so it is done only once not once per line in table
   Map<String, EnvironmentFeatureValues> applicationEnvironments = {};
+  List<String> visibleEnvironments = [];
 
   FeatureStatusFeatures(this.applicationFeatureValues) {
     sortedByNameEnvironmentIds = applicationFeatureValues.environments
