@@ -152,7 +152,9 @@ class StreamValley {
     if (_currentPortfolioIdSource.value != null) {
       appList = await applicationServiceApi
           .findApplications(_currentPortfolioIdSource.value,
-              order: SortOrder.DESC, includeEnvironments: true)
+              order: SortOrder.DESC,
+              includeEnvironments: true,
+              includeFeatures: true)
           .catchError(mrClient.dialogError);
       currentPortfolioApplications = appList;
 
