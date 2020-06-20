@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mrapi/api.dart';
 
+import 'feature_value_row_locked.dart';
 import 'feature_values_bloc.dart';
 
 class FeatureValueNumberEnvironmentCell extends StatefulWidget {
@@ -140,5 +141,39 @@ class FeatureValueEditNumber {
               ))
           .toList()
     ]);
+  }
+}
+
+class FeatureValueNumberCellEditor extends StatelessWidget {
+  final EnvironmentFeatureValues environmentFeatureValue;
+  final Feature feature;
+  final FeatureValuesBloc fvBloc;
+
+  const FeatureValueNumberCellEditor(
+      {Key key, this.environmentFeatureValue, this.feature, this.fvBloc})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        FeatureValueEditLockedCell(
+          environmentFeatureValue: environmentFeatureValue,
+          feature: feature,
+          fvBloc: fvBloc,
+        ),
+        FeatureValueNumberEnvironmentCell(
+          environmentFeatureValue: environmentFeatureValue,
+          feature: feature,
+          fvBloc: fvBloc,
+        ),
+        FeatureValueUpdatedByCell(
+          environmentFeatureValue: environmentFeatureValue,
+          feature: feature,
+          fvBloc: fvBloc,
+        ),
+      ],
+    );
   }
 }

@@ -4,6 +4,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 
+import 'feature_value_row_locked.dart';
 import 'feature_values_bloc.dart';
 
 // represents the editing of the states of a single boolean flag on a single environment
@@ -58,6 +59,40 @@ class FeatureValueBooleanEnvironmentCell extends StatelessWidget {
 
   void _dirtyCheck() {
     fvBloc.updatedFeature(environmentFeatureValue.environmentId);
+  }
+}
+
+class FeatureValueBooleanCellEditor extends StatelessWidget {
+  final EnvironmentFeatureValues environmentFeatureValue;
+  final Feature feature;
+  final FeatureValuesBloc fvBloc;
+
+  const FeatureValueBooleanCellEditor(
+      {Key key, this.environmentFeatureValue, this.feature, this.fvBloc})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        FeatureValueEditLockedCell(
+          environmentFeatureValue: environmentFeatureValue,
+          feature: feature,
+          fvBloc: fvBloc,
+        ),
+        FeatureValueBooleanEnvironmentCell(
+          environmentFeatureValue: environmentFeatureValue,
+          feature: feature,
+          fvBloc: fvBloc,
+        ),
+        FeatureValueUpdatedByCell(
+          environmentFeatureValue: environmentFeatureValue,
+          feature: feature,
+          fvBloc: fvBloc,
+        ),
+      ],
+    );
   }
 }
 

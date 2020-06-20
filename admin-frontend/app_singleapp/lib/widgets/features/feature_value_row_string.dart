@@ -4,6 +4,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 
+import 'feature_value_row_locked.dart';
 import 'feature_values_bloc.dart';
 
 class FeatureValueStringEnvironmentCell extends StatefulWidget {
@@ -97,5 +98,39 @@ class FeatureValueEditString {
               ))
           .toList()
     ]);
+  }
+}
+
+class FeatureValueStringCellEditor extends StatelessWidget {
+  final EnvironmentFeatureValues environmentFeatureValue;
+  final Feature feature;
+  final FeatureValuesBloc fvBloc;
+
+  const FeatureValueStringCellEditor(
+      {Key key, this.environmentFeatureValue, this.feature, this.fvBloc})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        FeatureValueEditLockedCell(
+          environmentFeatureValue: environmentFeatureValue,
+          feature: feature,
+          fvBloc: fvBloc,
+        ),
+        FeatureValueStringEnvironmentCell(
+          environmentFeatureValue: environmentFeatureValue,
+          feature: feature,
+          fvBloc: fvBloc,
+        ),
+        FeatureValueUpdatedByCell(
+          environmentFeatureValue: environmentFeatureValue,
+          feature: feature,
+          fvBloc: fvBloc,
+        ),
+      ],
+    );
   }
 }

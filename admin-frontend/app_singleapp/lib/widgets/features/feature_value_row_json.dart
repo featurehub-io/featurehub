@@ -9,6 +9,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 
+import 'feature_value_row_locked.dart';
 import 'feature_values_bloc.dart';
 
 class FeatureValueEditJson {
@@ -196,5 +197,39 @@ class ConfigurationViewerField extends StatelessWidget {
     }
     return Text('No editing permissions',
         style: Theme.of(context).textTheme.caption);
+  }
+}
+
+class FeatureValueJsonCellEditor extends StatelessWidget {
+  final EnvironmentFeatureValues environmentFeatureValue;
+  final Feature feature;
+  final FeatureValuesBloc fvBloc;
+
+  const FeatureValueJsonCellEditor(
+      {Key key, this.environmentFeatureValue, this.feature, this.fvBloc})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        FeatureValueEditLockedCell(
+          environmentFeatureValue: environmentFeatureValue,
+          feature: feature,
+          fvBloc: fvBloc,
+        ),
+        FeatureValueJsonEnvironmentCell(
+          environmentFeatureValue: environmentFeatureValue,
+          feature: feature,
+          fvBloc: fvBloc,
+        ),
+        FeatureValueUpdatedByCell(
+          environmentFeatureValue: environmentFeatureValue,
+          feature: feature,
+          fvBloc: fvBloc,
+        ),
+      ],
+    );
   }
 }

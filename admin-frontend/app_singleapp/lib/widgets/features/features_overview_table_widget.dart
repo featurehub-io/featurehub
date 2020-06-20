@@ -6,7 +6,6 @@ import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/features/feature_value_row_boolean.dart';
 import 'package:app_singleapp/widgets/features/feature_value_row_generic.dart';
 import 'package:app_singleapp/widgets/features/feature_value_row_json.dart';
-import 'package:app_singleapp/widgets/features/sdk_details_dialog.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -15,7 +14,6 @@ import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'feature_status_bloc.dart';
-import 'feature_value_row_locked.dart';
 import 'feature_value_row_number.dart';
 import 'feature_value_row_string.dart';
 import 'feature_value_status_tags.dart';
@@ -76,6 +74,7 @@ class _TabsBloc implements Bloc {
   final _featureCurrentlyEditingSource =
       BehaviorSubject<Set<String>>.seeded(<String>{});
   final ManagementRepositoryClientBloc mrClient;
+  final _allFeaturesByKey = <String, Feature>{};
 
   // determine which tab they have selected
   Stream<_TabsState> get currentTab => _stateSource.stream;
@@ -91,6 +90,10 @@ class _TabsBloc implements Bloc {
       : assert(featureStatus != null),
         assert(applicationId != null) {
     _fixFeaturesForTabs(_stateSource.value);
+
+    featureStatus.applicationFeatureValues.features.forEach((f) {
+      _allFeaturesByKey[f.key] = f;
+    });
   }
 
   void _fixFeaturesForTabs(_TabsState tab) {
@@ -160,6 +163,10 @@ class _TabsBloc implements Bloc {
 
     featureValueBlocs[feature.key] = FeatureValuesBloc(applicationId, feature,
         mrClient, vals, featureStatus.applicationFeatureValues);
+  }
+
+  Feature findFeature(String key, String environmentId) {
+    return _allFeaturesByKey[key];
   }
 }
 
@@ -329,15 +336,14 @@ class _FeatureTabEnvironments extends StatelessWidget {
                                           ],
                                         ),
                                       ),
-                                      ...bloc.features
-                                          .map((f) => efv.features.firstWhere(
-                                              (fv) => fv.key == f.key,
-                                              orElse: () => FeatureValue()))
-                                          .map((fv) {
-                                        return (fv.key == null)
-                                            ? SizedBox.shrink()
-                                            : _FeatureTabFeatureValue(
-                                                tabsBloc: bloc, value: fv);
+                                      ...bloc.features.map((f) {
+                                        return _FeatureTabFeatureValue(
+                                            tabsBloc: bloc,
+                                            feature: f,
+                                            value: efv.features.firstWhere(
+                                                (fv) => fv.key == f.key,
+                                                orElse: () => null),
+                                            efv: efv);
                                       }).toList(),
                                     ],
                                   ),
@@ -355,8 +361,15 @@ class _FeatureTabEnvironments extends StatelessWidget {
 class _FeatureTabFeatureValue extends StatelessWidget {
   final _TabsBloc tabsBloc;
   final FeatureValue value;
+  final EnvironmentFeatureValues efv;
+  final Feature feature;
 
-  const _FeatureTabFeatureValue({Key key, this.tabsBloc, this.value})
+  const _FeatureTabFeatureValue(
+      {Key key,
+      @required this.tabsBloc,
+      @required this.value,
+      @required this.efv,
+      this.feature})
       : super(key: key);
 
   @override
@@ -364,12 +377,64 @@ class _FeatureTabFeatureValue extends StatelessWidget {
     return StreamBuilder<Set<String>>(
         stream: tabsBloc.featureCurrentlyEditingStream,
         builder: (context, snapshot) {
-          final amSelected =
+          final amSelected = value != null &&
               (snapshot.hasData && snapshot.data.contains(value.key));
+
+          Widget cellWidget;
+          if (!amSelected) {
+            if (feature.valueType == FeatureValueType.BOOLEAN) {
+              cellWidget = _BooleanStatusLabel(
+                fv: value,
+                efv: efv,
+                feature: feature,
+              );
+            } else {
+              cellWidget = _ConfigurationStatusLabel(
+                fv: value,
+                efv: efv,
+                feature: feature,
+              );
+            }
+
+            cellWidget = GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => tabsBloc.hideOrShowFeature(feature),
+                child: cellWidget);
+          } else if (feature == null) {
+            cellWidget = Text('confused');
+          } else {
+            final fvBloc = tabsBloc.featureValueBlocs[value.key];
+            switch (feature.valueType) {
+              case FeatureValueType.BOOLEAN:
+                cellWidget = FeatureValueBooleanCellEditor(
+                    environmentFeatureValue: efv,
+                    feature: feature,
+                    fvBloc: fvBloc);
+                break;
+              case FeatureValueType.STRING:
+                cellWidget = FeatureValueStringCellEditor(
+                    environmentFeatureValue: efv,
+                    feature: feature,
+                    fvBloc: fvBloc);
+                break;
+              case FeatureValueType.NUMBER:
+                cellWidget = FeatureValueNumberCellEditor(
+                    environmentFeatureValue: efv,
+                    feature: feature,
+                    fvBloc: fvBloc);
+                break;
+              case FeatureValueType.JSON:
+                cellWidget = FeatureValueJsonCellEditor(
+                    environmentFeatureValue: efv,
+                    feature: feature,
+                    fvBloc: fvBloc);
+                break;
+            }
+          }
+
           return Container(
               height: amSelected ? _selectedRowHeight : _unselectedRowHeight,
-              color: amSelected ? Colors.red : null,
-              child: Text(value.valueBoolean.toString()));
+              child: cellWidget);
         });
   }
 }
@@ -395,7 +460,7 @@ class _FeatureTabFeatureNameCollapsed extends StatelessWidget {
             child: Container(
                 padding: EdgeInsets.fromLTRB(0, 8, 0, 8),
                 height: amSelected ? _selectedRowHeight : _unselectedRowHeight,
-                width: amSelected ? 300.0 : 200.0,
+                width: amSelected ? 200.0 : 200.0,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -410,7 +475,6 @@ class _FeatureTabFeatureNameCollapsed extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.only(left: 8.0),
                         child: Container(
-                          color: Colors.blue,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
@@ -423,12 +487,9 @@ class _FeatureTabFeatureNameCollapsed extends StatelessWidget {
                                   style: TextStyle(
                                       fontFamily: 'Source', fontSize: 12)),
                               if (amSelected)
-                                BlocProvider<FeatureValuesBloc>(
-                                    creator: (_c, _b) =>
-                                        tabsBloc.featureValueBlocs[feature.key],
-                                    autoDispose: false,
-                                    child:
-                                        FeatureValueNameCell(feature: feature))
+                                FeatureValueNameCell(feature: feature),
+                              if (amSelected)
+                                FeatureEditDeleteCell(feature: feature)
                             ],
                           ),
                         ),
@@ -497,238 +558,6 @@ class _FeatureTab extends StatelessWidget {
   }
 }
 
-class _FeatureHeader extends StatelessWidget {
-  final FeatureStatusFeatures featureStatuses;
-
-  const _FeatureHeader({Key key, this.featureStatuses}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<FeatureStatusBloc>(context);
-
-    return Table(
-      defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-      border: TableBorder.symmetric(
-          outside:
-              BorderSide(width: 1.0, color: Theme.of(context).dividerColor)),
-      children: [_header(context, bloc)],
-    );
-  }
-
-  TableRow _header(BuildContext context, FeatureStatusBloc bloc) {
-    return TableRow(
-        decoration: BoxDecoration(
-          color: Theme.of(context).selectedRowColor,
-        ),
-        children:
-            headerRow(featureStatuses.applicationFeatureValues, context, bloc));
-  }
-
-  List<Widget> headerRow(ApplicationFeatureValues appFeatureValues,
-      BuildContext context, FeatureStatusBloc bloc) {
-    final hrow = <Widget>[];
-
-    hrow.add(SizedBox.shrink()); // placebolder for name + action
-
-    if (appFeatureValues.environments.isNotEmpty) {
-      appFeatureValues.environments.asMap().forEach((index, efv) {
-        hrow.add(Padding(
-          padding: const EdgeInsets.only(left: 14.0),
-          child: Container(
-              child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              Text(efv.environmentName,
-                  style: Theme.of(context).textTheme.bodyText1),
-              SDKDetailsWidget(bloc: bloc, envId: efv.environmentId)
-            ],
-          )),
-        ));
-      });
-    }
-    return hrow;
-  }
-}
-
-class _FeatureRepresentation extends StatefulWidget {
-  final Feature feature;
-  final LineStatusFeature lineStatus;
-  final ApplicationFeatureValues applicationFeatureValues;
-
-  const _FeatureRepresentation(
-      {Key key,
-      @required this.feature,
-      this.lineStatus,
-      @required this.applicationFeatureValues})
-      : assert(feature != null),
-        assert(applicationFeatureValues != null),
-        super(key: key);
-
-  @override
-  __FeatureRepresentationState createState() => __FeatureRepresentationState();
-}
-
-class __FeatureRepresentationState extends State<_FeatureRepresentation> {
-  bool _open = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<FeatureStatusBloc>(context);
-
-    final featureValuesThisFeature = widget.lineStatus.environmentFeatureValues
-        .expand((e) => e.features.where((fv) => fv.key == widget.feature.key))
-        .toList();
-
-    if (_open) {
-      return BlocProvider(
-          creator: (_c, _b) => FeatureValuesBloc(
-              bloc.applicationId,
-              widget.feature,
-              bloc.mrClient,
-              featureValuesThisFeature,
-              widget.applicationFeatureValues),
-          child: Builder(
-              // need to use this so we get access to the bloc provider we just created
-              builder: (sbContext) => Table(
-                    defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                    border: TableBorder.symmetric(
-                        outside: BorderSide(
-                            color: Theme.of(context).buttonColor,
-                            width: 2.0,
-                            style: BorderStyle.solid)),
-                    children: [
-                      generateCell(bloc),
-                      ...bearMeChildren(sbContext)
-                    ],
-                  )));
-    }
-
-    return Table(
-      defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-      border: TableBorder.symmetric(
-          outside:
-              BorderSide(width: 1.0, color: Theme.of(context).dividerColor)),
-      children: [
-        generateCell(bloc),
-      ],
-    );
-  }
-
-  List<TableRow> bearMeChildren(BuildContext context) {
-    final rows = [
-      FeatureValueEditLocked.build(context, widget.lineStatus, widget.feature)
-    ];
-
-    TableRow editor;
-
-    switch (widget.feature.valueType) {
-      case FeatureValueType.STRING:
-        editor = FeatureValueEditString.build(
-            context, widget.lineStatus, widget.feature);
-        break;
-      case FeatureValueType.NUMBER:
-        editor = FeatureValueEditNumber.build(
-            context, widget.lineStatus, widget.feature);
-        break;
-      case FeatureValueType.BOOLEAN:
-        editor = FeatureValueEditBoolean.build(
-            context, widget.lineStatus, widget.feature);
-        break;
-      case FeatureValueType.JSON:
-        editor = FeatureValueEditJson.build(
-            context, widget.lineStatus, widget.feature);
-        break;
-    }
-
-    if (editor != null) {
-      rows.add(editor);
-    }
-
-    rows.addAll([
-      FeatureValueUpdatedBy.build(context, widget.lineStatus, widget.feature),
-      FeatureValueActions.build(context, widget.lineStatus, widget.feature, () {
-        setState(() => _open = !_open);
-        RefreshFeatureNotification(featureId: widget.feature.id)
-          ..dispatch(context);
-      })
-    ]);
-
-    return rows;
-  }
-
-  TableRow generateCell(FeatureStatusBloc bloc) {
-    final feature = widget.feature;
-
-    final row = <Widget>[];
-    row.add(GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () => setState(() => _open = !_open),
-      child: Container(
-          padding: EdgeInsets.fromLTRB(15, 8, 0, 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: <Widget>[
-              Icon(
-                _open ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_right,
-                size: 24.0,
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text('${feature.name}',
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.bodyText1),
-                      Text('${feature.valueType.toString().split('.').last}',
-                          style: TextStyle(fontFamily: 'Source', fontSize: 12)),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          )),
-    ));
-
-    widget.lineStatus.sortedByNameEnvironmentIds.forEach((envId) {
-      final efv = widget.lineStatus.applicationEnvironments[envId];
-
-      FeatureValue fv;
-
-      // see if there is a value for this feature in this environment
-      if (efv != null && efv.features.isNotEmpty) {
-        fv = efv.features.firstWhere((featureValue) {
-          return featureValue.key == feature.key;
-        }, orElse: () => null);
-      }
-
-      Widget cellWidget;
-      if (feature.valueType == FeatureValueType.BOOLEAN) {
-        cellWidget = _BooleanStatusLabel(
-          fv: fv,
-          efv: efv,
-          feature: feature,
-        );
-      } else {
-        cellWidget = _ConfigurationStatusLabel(
-          fv: fv,
-          efv: efv,
-          feature: feature,
-        );
-      }
-
-      row.add(GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () => setState(() => _open = !_open),
-          child: cellWidget));
-    });
-
-    return TableRow(children: row);
-  }
-}
-
 class _ConfigurationStatusLabel extends StatelessWidget {
   final FeatureValue fv;
   final EnvironmentFeatureValues efv;
@@ -743,13 +572,13 @@ class _ConfigurationStatusLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (efv.roles.isNotEmpty) {
-      if (fv != null && fv.isSet(feature)) {
+      if (fv != null && fv.id != null && fv.isSet(feature)) {
         return _ConfigurationValueContainer(feature: feature, fv: fv);
       } else {
         return _NotSetContainer();
       }
     }
-    if (fv == null && efv.roles.isEmpty) {
+    if ((fv == null || fv.id == null) && efv.roles.isEmpty) {
       return noAccessTag(null);
     }
     return SizedBox.shrink();

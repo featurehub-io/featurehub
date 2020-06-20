@@ -26,27 +26,19 @@ class FeatureValueNameCell extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Row(
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text('Feature key',
-                      style: Theme.of(context)
-                          .textTheme
-                          .caption
-                          .copyWith(color: Theme.of(context).buttonColor)),
-                  SizedBox(height: 2.0),
-                  Text(feature.key,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontFamily: 'source', fontSize: 12))
-                ],
-              ),
-              FHCopyToClipboard(
-                tooltipMessage: 'Copy key',
-                copyString: feature.key,
-              )
-            ],
+          Text('Feature key',
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context)
+                  .textTheme
+                  .caption
+                  .copyWith(color: Theme.of(context).buttonColor)),
+          SizedBox(height: 2.0),
+          Text(feature.key,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontFamily: 'source', fontSize: 12)),
+          FHCopyToClipboard(
+            tooltipMessage: 'Copy key',
+            copyString: feature.key,
           ),
           SizedBox(
             height: 12.0,
