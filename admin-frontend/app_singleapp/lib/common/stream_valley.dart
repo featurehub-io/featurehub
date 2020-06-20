@@ -170,7 +170,7 @@ class StreamValley {
     List<Application> appList;
     if (currentPortfolioId != null) {
       appList = await applicationServiceApi
-          .findApplications(currentPortfolioIdSource.value,
+          .findApplications(currentPortfolioId,
               order: SortOrder.DESC,
               includeEnvironments: true,
               includeFeatures: true)
