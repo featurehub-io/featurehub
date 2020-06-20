@@ -65,17 +65,72 @@ enum _TabsState { FLAGS, VALUES, CONFIGURATIONS }
 class _TabsBloc implements Bloc {
   final FeatureStatusFeatures featureStatus;
   final _stateSource = BehaviorSubject<_TabsState>.seeded(_TabsState.FLAGS);
+  List<Feature> _featuresForTabs;
+  final _hiddenEnvironments = <String>{}; // set of strings
+  final _hiddenEnvironmentsSource =
+      BehaviorSubject<Set<String>>.seeded(<String>{});
+  final _featureCurrentlyEditingSource =
+      BehaviorSubject<Set<String>>.seeded(<String>{});
 
-  _TabsBloc(this.featureStatus) : assert(featureStatus != null);
-
+  // determine which tab they have selected
   Stream<_TabsState> get currentTab => _stateSource.stream;
+  // which environments are hidden
+  Stream<Set<String>> get hiddenEnvironments =>
+      _hiddenEnvironmentsSource.stream;
+  Stream<Set<String>> get featureCurrentlyEditingStream =>
+      _featureCurrentlyEditingSource.stream;
+  List<Feature> get features => _featuresForTabs;
+
+  _TabsBloc(this.featureStatus) : assert(featureStatus != null) {
+    _fixFeaturesForTabs(_stateSource.value);
+  }
+
+  void _fixFeaturesForTabs(_TabsState tab) {
+    _featuresForTabs =
+        featureStatus.applicationFeatureValues.features.where((f) {
+      return ((tab == _TabsState.FLAGS) &&
+              f.valueType == FeatureValueType.BOOLEAN) ||
+          ((tab == _TabsState.VALUES) &&
+              (f.valueType == FeatureValueType.NUMBER ||
+                  f.valueType == FeatureValueType.STRING)) ||
+          ((tab == _TabsState.CONFIGURATIONS) &&
+              (f.valueType == FeatureValueType.JSON));
+    }).toList();
+  }
 
   void swapTab(_TabsState tab) {
+    _fixFeaturesForTabs(tab);
     _stateSource.add(tab);
+  }
+
+  void hideEnvironment(String envId) {
+    if (!_hiddenEnvironments.contains(envId)) {
+      _hiddenEnvironments.add(envId);
+      _hiddenEnvironmentsSource.add(_hiddenEnvironments);
+    }
+  }
+
+  List<EnvironmentFeatureValues> get sortedEnvironmentsThatAreShowing {
+    return featureStatus.sortedByNameEnvironmentIds
+        .where((id) => !_hiddenEnvironments.contains(id))
+        .map((id) => featureStatus.applicationEnvironments[id])
+        .toList();
   }
 
   @override
   void dispose() {}
+
+  void hideOrShowFeature(Feature feature) {
+    final val = _featureCurrentlyEditingSource.value;
+
+    if (!val.contains(feature.key)) {
+      val.add(feature.key);
+    } else {
+      val.remove(feature.key);
+    }
+
+    _featureCurrentlyEditingSource.add(val);
+  }
 }
 
 class TabsView extends StatelessWidget {
@@ -86,93 +141,247 @@ class TabsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      creator: (_c, _b) => _TabsBloc(featureStatus),
-      child: Column(
-        children: [
-          _FeatureTabsHeader(),
-          _FeatureTabsBody(),
-        ],
-      ),
-    );
-//    return DefaultTabController(
-//      initialIndex: 0,
-//      // The number of tabs / content sections to display.
-//      length: 3,
-//      child: Column(
-//        children: <Widget>[
-//          TabBar(
-//            isScrollable: false,
-//            labelStyle: Theme.of(context).textTheme.bodyText1,
-//            labelColor: Theme.of(context).textTheme.subtitle2.color,
-//            unselectedLabelColor: Theme.of(context).textTheme.bodyText2.color,
-//            tabs: [
-//              Tab(
-//                  text: 'FEATURE FLAGS',
-//                  icon:
-//                      Icon(Icons.flag, color: Theme.of(context).primaryColor)),
-//              Tab(
-//                  text: 'FEATURE VALUES',
-//                  icon:
-//                      Icon(Icons.code, color: Theme.of(context).primaryColor)),
-//              Tab(
-//                  text: 'CONFIGURATIONS',
-//                  icon: Icon(Icons.device_hub,
-//                      color: Theme.of(context).primaryColor)), //find JSON icon
-//            ],
-//          ),
-//          SizedBox(
-//            height: MediaQuery.of(context).size.height - 265,
-//            child: TabBarView(
-//              children: [
-//                //Environments
-//                SingleChildScrollView(
-//                    child: FeatureFlagAndEnvironmentsTable(
-//                        featureStatus: featureStatus, isFeature: true)),
-//                // Groups permissions
-//                SingleChildScrollView(
-//                    child: FeatureFlagAndEnvironmentsTable(
-//                        featureStatus: featureStatus, isFeature: false)),
-//                SingleChildScrollView(
-//                    child: FeatureFlagAndEnvironmentsTable(
-//                        featureStatus: featureStatus)),
-//                // Service accounts
-//              ],
-//            ),
-//          )
-//        ],
-//      ),
-//    );
+        creator: (_c, _b) => _TabsBloc(featureStatus),
+        child: Column(
+          children: [
+            _FeatureTabsHeader(),
+            _FeatureTableWithHiddenList(),
+            _FeatureTabsBodyHolder(),
+          ],
+        ));
   }
 }
 
-class _FeatureTabsBody extends StatelessWidget {
+class _FeatureTableWithHiddenList extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final bloc = BlocProvider.of<_TabsBloc>(context);
+    return Container(
+      height: _headerHeight,
+      child: Row(
+        children: [
+          Text('Hidden environments'),
+          Flexible(
+            child: Container(
+              height: _headerHeight,
+              child: StreamBuilder<Set<String>>(
+                  stream: bloc.hiddenEnvironments,
+                  builder: (context, snapshot) {
+                    return ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: [
+                        if (snapshot.hasData)
+                          ...snapshot.data
+                              .map((e) => _FeatureTabEnvironmentWithCheck(
+                                  name: bloc
+                                      .featureStatus
+                                      .applicationEnvironments[e]
+                                      .environmentName))
+                              .toList(),
+                      ],
+                    );
+                  }),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FeatureTabEnvironmentWithCheck extends StatelessWidget {
+  final String name;
+  final String envId;
+
+  const _FeatureTabEnvironmentWithCheck({Key key, this.name, this.envId})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Checkbox(
+          value: true,
+        ),
+        Text(name),
+      ],
+    );
+  }
+}
+
+final _unselectedRowHeight = 60.0;
+final _selectedRowHeight = 200.0;
+final _headerHeight = 80.0;
+
+class _FeatureTabsBodyHolder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<_TabsBloc>(context);
 
-    return StreamBuilder<_TabsState>(
-        stream: bloc.currentTab,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        StreamBuilder<_TabsState>(
+            stream: bloc.currentTab,
+            builder: (context, snapshot) {
+              return Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Container(height: _headerHeight, child: Text('')),
+                    ...bloc.features.map(
+                      (f) {
+                        return _FeatureTabFeatureNameCollapsed(
+                            tabsBloc: bloc, feature: f);
+                      },
+                    ).toList(),
+                  ]);
+            }),
+        Flexible(
+          child: Container(
+            height: 600.0,
+            child: _FeatureTabEnvironments(bloc: bloc),
+          ),
+        )
+      ],
+    );
+  }
+}
+
+class _FeatureTabEnvironments extends StatelessWidget {
+  const _FeatureTabEnvironments({
+    Key key,
+    @required this.bloc,
+  }) : super(key: key);
+
+  final _TabsBloc bloc;
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<Set<String>>(
+        stream: bloc.hiddenEnvironments,
         builder: (context, snapshot) {
-          Widget widget;
+          return StreamBuilder<_TabsState>(
+              stream: bloc.currentTab,
+              builder: (context, snapshot) {
+                return ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: [
+                    if (bloc.features.isNotEmpty)
+                      ...bloc.sortedEnvironmentsThatAreShowing.map((efv) {
+                        return Container(
+                          width: 100.0,
+                          child: Column(
+                            children: [
+                              Container(
+                                height: _headerHeight,
+                                child: Column(
+                                  children: [
+                                    Checkbox(
+                                      value: true,
+                                    ),
+                                    Text(
+                                      efv.environmentName,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              ...bloc.features
+                                  .map((f) => efv.features.firstWhere(
+                                      (fv) => fv.key == f.key,
+                                      orElse: () => FeatureValue()))
+                                  .map((fv) {
+                                return (fv.key == null)
+                                    ? SizedBox.shrink()
+                                    : _FeatureTabFeatureValue(
+                                        tabsBloc: bloc, value: fv);
+                              }).toList(),
+                            ],
+                          ),
+                        );
+                      })
+                  ],
+                );
+              });
+        });
+  }
+}
 
-          if (snapshot.data == _TabsState.FLAGS) {
-            widget = FeatureFlagAndEnvironmentsTable(
-                featureStatus: bloc.featureStatus, isFeature: true);
-          }
-//          if (snapshot.data == _TabsState.VALUES) {
-//            widget = FeatureFlagAndEnvironmentsTable(
-//                featureStatus: bloc.featureStatus, isFeature: false);
-//          }
-//          if (snapshot.data == _TabsState.CONFIGURATIONS) {
-//            widget = FeatureFlagAndEnvironmentsTable(
-//                featureStatus: bloc.featureStatus);
-//          }
+class _FeatureTabFeatureValue extends StatelessWidget {
+  final _TabsBloc tabsBloc;
+  final FeatureValue value;
 
-          return widget == null ? SizedBox.shrink() : widget;
-//              : SingleChildScrollView(
-//                  scrollDirection: Axis.horizontal,
-//                  child: widget,
-//                );
+  const _FeatureTabFeatureValue({Key key, this.tabsBloc, this.value})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<Set<String>>(
+        stream: tabsBloc.featureCurrentlyEditingStream,
+        builder: (context, snapshot) {
+          final amSelected =
+              (snapshot.hasData && snapshot.data.contains(value.key));
+          return Container(
+              height: amSelected ? _selectedRowHeight : _unselectedRowHeight,
+              child: Text(value.valueBoolean.toString()));
+        });
+  }
+}
+
+class _FeatureTabFeatureNameCollapsed extends StatelessWidget {
+  final _TabsBloc tabsBloc;
+  final Feature feature;
+
+  const _FeatureTabFeatureNameCollapsed(
+      {Key key, @required this.tabsBloc, @required this.feature})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<Set<String>>(
+        stream: tabsBloc.featureCurrentlyEditingStream,
+        builder: (context, snapshot) {
+          final amSelected =
+              (snapshot.hasData && snapshot.data.contains(feature.key));
+          return GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => tabsBloc.hideOrShowFeature(feature),
+            child: Container(
+                padding: EdgeInsets.fromLTRB(0, 8, 0, 8),
+                height: amSelected ? _selectedRowHeight : _unselectedRowHeight,
+                width: 200.0,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Icon(
+                      amSelected
+                          ? Icons.keyboard_arrow_down
+                          : Icons.keyboard_arrow_right,
+                      size: 24.0,
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text('${feature.name}',
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.bodyText1),
+                            Text(
+                                '${feature.valueType.toString().split('.').last}',
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                    fontFamily: 'Source', fontSize: 12)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                )),
+          );
         });
   }
 }
@@ -213,10 +422,11 @@ class _FeatureTab extends StatelessWidget {
         builder: (context, snapshot) {
           return GestureDetector(
             onTap: () {
+              print("swapped to $state");
               bloc.swapTab(state);
             },
             child: Container(
-              color: Colors.red,
+              padding: const EdgeInsets.all(8.0),
               child: Column(
                 children: [
                   Icon(this.icon, color: Theme.of(context).primaryColor),
