@@ -1,4 +1,5 @@
 import 'package:app_singleapp/api/client_api.dart';
+import 'package:app_singleapp/common/stream_valley.dart';
 import 'package:app_singleapp/widgets/apps/app_delete_dialog_widget.dart';
 import 'package:app_singleapp/widgets/apps/app_update_dialog_widget.dart';
 import 'package:app_singleapp/widgets/apps/manage_app_bloc.dart';
@@ -36,19 +37,29 @@ class _AppsRouteState extends State<AppsRoute> {
                     children: <Widget>[],
                   ),
                 ),
-                if (bloc.mrClient.userIsAnyPortfolioOrSuperAdmin)
-                  Container(
-                      child: FHIconTextButton(
-                        iconData: Icons.add,
-                        keepCase: true,
-                        label: 'Create new application',
-                    onPressed: () =>
-                        bloc.mrClient.addOverlay((BuildContext context) {
-                      return AppUpdateDialogWidget(
-                        bloc: bloc,
-                      );
+                StreamBuilder<ReleasedPortfolio>(
+                    stream: bloc
+                        .mrClient.personState.isCurrentPortfolioOrSuperAdmin,
+                    builder: (context, snapshot) {
+                      if (snapshot.data != null &&
+                          (snapshot.data.currentPortfolioOrSuperAdmin ==
+                              true)) {
+                        return Container(
+                            child: FHIconTextButton(
+                          iconData: Icons.add,
+                          keepCase: true,
+                          label: 'Create new application',
+                          onPressed: () =>
+                              bloc.mrClient.addOverlay((BuildContext context) {
+                            return AppUpdateDialogWidget(
+                              bloc: bloc,
+                            );
+                          }),
+                        ));
+                      } else {
+                        return SizedBox.shrink();
+                      }
                     }),
-                  )),
               ],
             ),
             FHPageDivider(),
@@ -157,11 +168,24 @@ class _ApplicationCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                      if (bloc.mrClient.userIsAnyPortfolioOrSuperAdmin)
-                        _AdminActions(
-                          bloc: bloc,
-                          application: application,
-                        )
+
+                      StreamBuilder<ReleasedPortfolio>(
+                          stream: bloc.mrClient.personState
+                              .isCurrentPortfolioOrSuperAdmin,
+                          builder: (context, snapshot) {
+                            if (snapshot.data != null &&
+                                (snapshot.data.currentPortfolioOrSuperAdmin ==
+                                    true)) {
+                              return _AdminActions(
+                                bloc: bloc,
+                                application: application,
+                              );
+                            }
+                            else {
+                              return SizedBox();
+                            }
+                          }
+                      )
                     ],
                   ),
                   Column(

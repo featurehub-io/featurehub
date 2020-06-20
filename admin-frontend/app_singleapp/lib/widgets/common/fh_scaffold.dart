@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:app_singleapp/api/client_api.dart';
+import 'package:app_singleapp/common/stream_valley.dart';
 import 'package:app_singleapp/utils/utils.dart';
 import 'package:app_singleapp/widgets/common/fh_appbar.dart';
 import 'package:app_singleapp/widgets/stepper/stepper_container.dart';
@@ -147,12 +148,20 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
                     )));
           }),
         ),
-        if (mrBloc.userIsAnyPortfolioOrSuperAdmin == true)
-          Container(
-              child: StepperContainer(
-            mrBloc: mrBloc,
-            headerPadding: _HEADER_PADDING,
-          )),
+        StreamBuilder<ReleasedPortfolio>(
+            stream: mrBloc.personState.isCurrentPortfolioOrSuperAdmin,
+            builder: (context, snapshot) {
+              if (snapshot.data != null &&
+                  (snapshot.data.currentPortfolioOrSuperAdmin == true)) {
+                return Container(
+                    child: StepperContainer(
+                  mrBloc: mrBloc,
+                  headerPadding: _HEADER_PADDING,
+                ));
+              } else {
+                return SizedBox.shrink();
+              }
+            }),
       ],
     );
   }
