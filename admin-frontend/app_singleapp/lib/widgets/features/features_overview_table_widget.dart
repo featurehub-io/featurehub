@@ -117,8 +117,11 @@ class _TabsBloc implements Bloc {
   void hideEnvironment(String envId) {
     if (!_hiddenEnvironments.contains(envId)) {
       _hiddenEnvironments.add(envId);
-      _hiddenEnvironmentsSource.add(_hiddenEnvironments);
+    } else {
+      _hiddenEnvironments.remove(envId);
     }
+
+    _hiddenEnvironmentsSource.add(_hiddenEnvironments);
   }
 
   List<EnvironmentFeatureValues> get sortedEnvironmentsThatAreShowing {
@@ -212,13 +215,13 @@ class _FeatureTableWithHiddenList extends StatelessWidget {
                       scrollDirection: Axis.horizontal,
                       children: [
                         if (snapshot.hasData)
-                          ...snapshot.data
-                              .map((e) => _FeatureTabEnvironmentWithCheck(
-                                  name: bloc
-                                      .featureStatus
-                                      .applicationEnvironments[e]
-                                      .environmentName))
-                              .toList(),
+                          ...snapshot.data.map((e) {
+                            final env =
+                                bloc.featureStatus.applicationEnvironments[e];
+                            return _FeatureTabEnvironmentWithCheck(
+                                envId: env.environmentId,
+                                name: env.environmentName);
+                          }).toList(),
                       ],
                     );
                   }),
@@ -240,11 +243,18 @@ class _FeatureTabEnvironmentWithCheck extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Checkbox(
           value: true,
+          onChanged: (b) {
+            BlocProvider.of<_TabsBloc>(context).hideEnvironment(envId);
+          },
         ),
-        Text(name),
+        Text(
+          name,
+          overflow: TextOverflow.ellipsis,
+        ),
       ],
     );
   }
@@ -319,19 +329,18 @@ class _FeatureTabEnvironments extends StatelessWidget {
                               ...bloc.sortedEnvironmentsThatAreShowing
                                   .map((efv) {
                                 return Container(
-                                  width: 100.0,
+                                  width: snapshot.data == _TabsState.FLAGS
+                                      ? 100.0
+                                      : 170.0,
                                   child: Column(
                                     children: [
                                       Container(
                                         height: _headerHeight,
                                         child: Column(
                                           children: [
-                                            Checkbox(
-                                              value: true,
-                                            ),
-                                            Text(
-                                              efv.environmentName,
-                                              overflow: TextOverflow.ellipsis,
+                                            _FeatureTabEnvironmentWithCheck(
+                                              name: efv.environmentName,
+                                              envId: efv.environmentId,
                                             ),
                                           ],
                                         ),
@@ -377,8 +386,8 @@ class _FeatureTabFeatureValue extends StatelessWidget {
     return StreamBuilder<Set<String>>(
         stream: tabsBloc.featureCurrentlyEditingStream,
         builder: (context, snapshot) {
-          final amSelected = value != null &&
-              (snapshot.hasData && snapshot.data.contains(value.key));
+          final amSelected =
+              (snapshot.hasData && snapshot.data.contains(feature.key));
 
           Widget cellWidget;
           if (!amSelected) {
@@ -403,7 +412,7 @@ class _FeatureTabFeatureValue extends StatelessWidget {
           } else if (feature == null) {
             cellWidget = Text('confused');
           } else {
-            final fvBloc = tabsBloc.featureValueBlocs[value.key];
+            final fvBloc = tabsBloc.featureValueBlocs[feature.key];
             switch (feature.valueType) {
               case FeatureValueType.BOOLEAN:
                 cellWidget = FeatureValueBooleanCellEditor(
