@@ -1,3 +1,4 @@
+import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/widgets/apps/app_delete_dialog_widget.dart';
 import 'package:app_singleapp/widgets/apps/app_update_dialog_widget.dart';
 import 'package:app_singleapp/widgets/apps/manage_app_bloc.dart';
@@ -5,9 +6,11 @@ import 'package:app_singleapp/widgets/common/decorations/fh_page_divider.dart';
 import 'package:app_singleapp/widgets/common/fh_header.dart';
 import 'package:app_singleapp/widgets/common/fh_icon_button.dart';
 import 'package:app_singleapp/widgets/common/fh_icon_text_button.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mrapi/api.dart';
 
 class AppsRoute extends StatefulWidget {
@@ -36,9 +39,9 @@ class _AppsRouteState extends State<AppsRoute> {
                 if (bloc.mrClient.userIsAnyPortfolioOrSuperAdmin)
                   Container(
                       child: FHIconTextButton(
-                    iconData: Icons.add,
-                    keepCase: true,
-                    label: 'Create new application',
+                        iconData: Icons.add,
+                        keepCase: true,
+                        label: 'Create new application',
                     onPressed: () =>
                         bloc.mrClient.addOverlay((BuildContext context) {
                       return AppUpdateDialogWidget(
@@ -49,6 +52,7 @@ class _AppsRouteState extends State<AppsRoute> {
               ],
             ),
             FHPageDivider(),
+            SizedBox(height: 8.0),
             _ApplicationsCardsList(
               bloc: bloc,
             )
@@ -88,69 +92,110 @@ class _ApplicationCard extends StatelessWidget {
   final Application application;
   final ManageAppBloc bloc;
 
-  const _ApplicationCard(
-      {Key key, @required this.application, @required this.bloc})
+  const _ApplicationCard({Key key, @required this.application, @required this.bloc})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Container(
-        color: Theme
-            .of(context)
-            .backgroundColor,
-        width: 240,
-        height: 130,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(application.name,
-                  style: Theme
-                      .of(context)
-                      .textTheme
-                      .subtitle1
-                      .copyWith(color: Theme
-                      .of(context)
-                      .primaryColor)),
-              Column(
+    return InkWell(
+      borderRadius: BorderRadius.circular(8.0),
+      onTap: () {
+        bloc.setApplicationId(application.id); //is it the right function?
+        return {
+          ManagementRepositoryClientBloc.router.navigateTo(
+            context,
+            '/feature-status',
+          )
+        };
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          elevation: 5.0,
+          child: Container(
+            color: Theme
+                .of(context)
+                .backgroundColor,
+            width: 240,
+            height: 150,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  FHPageDivider(),
-                  SizedBox(height: 4.0),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Container(
+                        constraints: BoxConstraints(maxWidth: 150),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(application.name,
+                                maxLines: 2,
+                                style: Theme
+                                    .of(context)
+                                    .textTheme
+                                    .bodyText2
+                                    .copyWith(
+                                    color: Theme
+                                        .of(context)
+                                        .primaryColor)),
+                            SizedBox(height: 4.0),
+                            Text(application.description,
+                                maxLines: 2,
+//                              overflow: TextOverflow.ellipsis,
+                                style: Theme
+                                    .of(context)
+                                    .textTheme
+                                    .caption),
+                          ],
+                        ),
+                      ),
+                      if (bloc.mrClient.userIsAnyPortfolioOrSuperAdmin)
+                        _AdminActions(
+                          bloc: bloc,
+                          application: application,
+                        )
+                    ],
+                  ),
+                  Column(
+                    children: [
+//                      FHPageDivider(),
+                      SizedBox(height: 4.0),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           if (application.environments.length
                               .toString()
                               .isNotEmpty)
-                            Column(
-                              children: [
-                                Text(
-                                    application.environments.length.toString()),
-                                Icon(AntDesign.bars, size: 16.0),
-                              ],
+                            _NumberAndIcon(
+                              tooltipText: 'Environments',
+                              text: application.environments.length.toString(),
+                              icon: Icon(AntDesign.bars,
+                                  size: 16.0, color: Colors.deepPurpleAccent),
                             ),
                           if (application.features
                               .where((element) =>
                           element.valueType == FeatureValueType.BOOLEAN)
                               .toList()
                               .isNotEmpty)
-                            Column(
-                              children: [
-                                Text(application.features
-                                    .where((element) =>
-                                element.valueType ==
-                                    FeatureValueType.BOOLEAN)
-                                    .toList()
-                                    .length
-                                    .toString()),
-                                Icon(Icons.flag, size: 16.0),
-                              ],
+                            _NumberAndIcon(
+                              tooltipText: 'Feature flags',
+                              text: application.features
+                                  .where((element) =>
+                              element.valueType ==
+                                  FeatureValueType.BOOLEAN)
+                                  .toList()
+                                  .length
+                                  .toString(),
+                              icon: Icon(Icons.flag,
+                                  size: 16.0, color: Colors.green),
                             ),
                           if ((application.features
                               .where((element) =>
@@ -164,50 +209,48 @@ class _ApplicationCard extends StatelessWidget {
                                   FeatureValueType.NUMBER)
                                   .toList()
                                   .isNotEmpty))
-                            Column(
-                              children: [
-                                Text(((application.features
-                                    .where((element) =>
-                                element.valueType ==
-                                    FeatureValueType.STRING)
-                                    .toList()
-                                    .length) +
-                                    (application.features
-                                        .where((element) =>
-                                    element.valueType ==
-                                        FeatureValueType.NUMBER)
-                                        .toList()
-                                        .length))
-                                    .toString()),
-                                Icon(Icons.code, size: 16.0),
-                              ],
+                            _NumberAndIcon(
+                              tooltipText: 'Feature values',
+                              icon: Icon(Icons.code,
+                                  size: 16.0, color: Colors.blue),
+                              text: (((application.features
+                                  .where((element) =>
+                              element.valueType ==
+                                  FeatureValueType.STRING)
+                                  .toList()
+                                  .length) +
+                                  (application.features
+                                      .where((element) =>
+                                  element.valueType ==
+                                      FeatureValueType.NUMBER)
+                                      .toList()
+                                      .length))
+                                  .toString()),
                             ),
                           if (application.features
                               .where((element) =>
                           element.valueType == FeatureValueType.JSON)
                               .toList()
                               .isNotEmpty)
-                            Column(
-                              children: [
-                                Text(application.features
-                                    .where((element) =>
-                                element.valueType ==
-                                    FeatureValueType.JSON)
-                                    .toList()
-                                    .length
-                                    .toString()),
-                                Icon(Icons.device_hub, size: 16.0),
-                              ],
+                            _NumberAndIcon(
+                              text: application.features
+                                  .where((element) =>
+                              element.valueType ==
+                                  FeatureValueType.JSON)
+                                  .toList()
+                                  .length
+                                  .toString(),
+                              tooltipText: 'Configurations',
+                              icon: Icon(Icons.device_hub,
+                                  size: 16.0, color: Colors.orange),
                             ),
                         ],
                       ),
-                      if (bloc.mrClient.userIsAnyPortfolioOrSuperAdmin)
-                        _AdminActions(bloc: bloc)
                     ],
-                  ),
+                  )
                 ],
-              )
-            ],
+              ),
+            ),
           ),
         ),
       ),
@@ -215,49 +258,92 @@ class _ApplicationCard extends StatelessWidget {
   }
 }
 
+class _NumberAndIcon extends StatelessWidget {
+  final String tooltipText;
+  final String text;
+  final Icon icon;
+
+  const _NumberAndIcon({
+    Key key,
+    this.text,
+    this.tooltipText,
+    this.icon,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltipText,
+      child: Column(
+        children: [
+          _NumberContainer(
+            child: Text(text),
+          ),
+          SizedBox(height: 2.0),
+          icon,
+        ],
+      ),
+    );
+  }
+}
+
 class _AdminActions extends StatelessWidget {
   final ManageAppBloc bloc;
+  final Application application;
 
-  const _AdminActions({Key key, @required this.bloc}) : super(key: key);
+  const _AdminActions(
+      {Key key, @required this.bloc, @required this.application})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.only(left: 10),
       child: Row(children: <Widget>[
-        StreamBuilder<String>(
-            stream: bloc.mrClient.streamValley.currentAppIdStream,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return Row(children: <Widget>[
-                  FHIconButton(
-                      width: 30.0,
-                      icon: Icon(Icons.edit,
-                          color: Theme.of(context).buttonColor, size: 16.0),
-                      onPressed: () => bloc.mrClient.addOverlay(
-                          (BuildContext context) => AppUpdateDialogWidget(
-                                bloc: bloc,
-                                application: bloc.application,
-                              ))),
-                  FHIconButton(
-                      width: 30.0,
-                      icon: Icon(Icons.delete,
-                          color: Theme
-                              .of(context)
-                              .buttonColor, size: 16.0),
-                      onPressed: () =>
-                          bloc.mrClient.addOverlay((BuildContext context) {
-                            return AppDeleteDialogWidget(
-                              bloc: bloc,
-                              application: bloc.application,
-                            );
-                          }))
-                ]);
-              } else {
-                return Container();
-              }
-            }),
+        FHIconButton(
+            width: 30.0,
+            icon: Icon(Icons.edit,
+                color: Theme
+                    .of(context)
+                    .buttonColor, size: 16.0),
+            onPressed: () =>
+                bloc.mrClient
+                    .addOverlay((BuildContext context) =>
+                    AppUpdateDialogWidget(
+                      bloc: bloc,
+                      application: application,
+                    ))),
+        FHIconButton(
+            width: 30.0,
+            icon: Icon(Icons.delete,
+                color: Theme
+                    .of(context)
+                    .buttonColor, size: 16.0),
+            onPressed: () =>
+                bloc.mrClient.addOverlay((BuildContext context) {
+                  return AppDeleteDialogWidget(
+                    bloc: bloc,
+                    application: application,
+                  );
+                }))
       ]),
     );
+  }
+}
+
+class _NumberContainer extends StatelessWidget {
+  final Widget child;
+
+  const _NumberContainer({Key key, this.child}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        padding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(12.0)),
+          color: Colors.white,
+        ),
+        child: child);
   }
 }

@@ -12,7 +12,6 @@ import 'package:app_singleapp/widgets/common/decorations/fh_page_divider.dart';
 import 'package:app_singleapp/widgets/common/fh_card.dart';
 import 'package:app_singleapp/widgets/common/fh_header.dart';
 import 'package:app_singleapp/widgets/common/fh_icon_button.dart';
-import 'package:app_singleapp/widgets/common/fh_icon_text_button.dart';
 import 'package:app_singleapp/widgets/environments/env_list_widget.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
@@ -32,58 +31,22 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Row(
-              children: <Widget>[
-                Flexible(
-                  flex: 1,
-                  child: StreamBuilder<List<Application>>(
-                      stream: bloc.mrClient.streamValley
-                          .currentPortfolioApplicationsStream,
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData && snapshot.data.isNotEmpty) {
-                          return Container(
-                              padding: EdgeInsets.only(left: 8, bottom: 8),
-                              child: ApplicationDropDown(
-                                  applications: snapshot.data, bloc: bloc));
-                        } else {
-                          bloc.setApplicationId(bloc.mrClient.currentAid);
-                          return Container(
-                              padding: EdgeInsets.only(left: 8, top: 15),
-                              child: Text('No applications found!'));
-                        }
-                      }),
-                ),
-                Flexible(
-                  flex: 4,
-                  child: Row(
-                    children: [
-                      Flexible(
-                        flex: 1,
-                        child: bloc.mrClient.isPortfolioOrSuperAdmin(
-                                bloc.mrClient.currentPid)
-                            ? _getAdminActions(bloc)
-                            : Container(),
-                      ),
-                      Flexible(
-                        flex: 4,
-                        child: Container(
-                            child: FHIconTextButton(
-                          iconData: Icons.add,
-                          keepCase: true,
-                          label: 'Create new application',
-                          onPressed: () =>
-                              bloc.mrClient.addOverlay((BuildContext context) {
-                            return AppUpdateDialogWidget(
-                              bloc: bloc,
-                            );
-                          }),
-                        )),
-                      ),
-                    ],
-                  ),
-                )
-              ],
-            ),
+            StreamBuilder<List<Application>>(
+                stream: bloc
+                    .mrClient.streamValley.currentPortfolioApplicationsStream,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData && snapshot.data.isNotEmpty) {
+                    return Container(
+                        padding: EdgeInsets.only(left: 8, bottom: 8),
+                        child: ApplicationDropDown(
+                            applications: snapshot.data, bloc: bloc));
+                  } else {
+                    bloc.setApplicationId(bloc.mrClient.currentAid);
+                    return Container(
+                        padding: EdgeInsets.only(left: 8, top: 15),
+                        child: Text('No applications found!'));
+                  }
+                }),
             Container(
               padding: EdgeInsets.only(bottom: 10),
               child: FHHeader(

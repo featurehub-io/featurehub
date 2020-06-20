@@ -303,17 +303,20 @@ class _StepperState extends State<FHSetupProgressStepper> {
   Widget applicationsDropdown(
       List<Application> applications, StepperBloc bloc) {
     return DropdownButton(
+      icon: Padding(
+        padding: EdgeInsets.only(left: 16),
+        child: Icon(
+          Icons.keyboard_arrow_down,
+          size: 16,
+        ),
+      ),
       isExpanded: true,
-      style: Theme
-          .of(context)
-          .textTheme
-          .bodyText1,
+      style: Theme.of(context).textTheme.bodyText1,
       items: applications.map((Application application) {
         return DropdownMenuItem<String>(
             value: application.id,
             child: Text(application.name,
-                style: Theme
-                    .of(context)
+                style: Theme.of(context)
                     .textTheme
                     .bodyText2));
       }).toList(),

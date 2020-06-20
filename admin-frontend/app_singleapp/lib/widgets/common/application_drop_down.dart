@@ -21,8 +21,8 @@ class _ApplicationDropDownState extends State<ApplicationDropDown> {
       constraints: BoxConstraints(maxWidth: 200),
       decoration: BoxDecoration(
           color: Colors.white,
-          border: Border.all(color: Colors.black87, width: 0.5),
-          borderRadius: BorderRadius.all(Radius.circular(2.0))),
+          border: Border.all(color: Colors.black38, width: 1.0),
+          borderRadius: BorderRadius.all(Radius.circular(6.0))),
       child: StreamBuilder<String>(
           stream: (widget.bloc.mrClient as ManagementRepositoryClientBloc)
               .streamValley
@@ -30,6 +30,13 @@ class _ApplicationDropDownState extends State<ApplicationDropDown> {
           builder: (context, snapshot) {
             return DropdownButtonHideUnderline(
               child: DropdownButton(
+                icon: Padding(
+                  padding: EdgeInsets.only(left: 16),
+                  child: Icon(
+                    Icons.keyboard_arrow_down,
+                    size: 16,
+                  ),
+                ),
                 isExpanded: true,
                 isDense: true,
                 items: widget.applications != null &&
@@ -41,8 +48,8 @@ class _ApplicationDropDownState extends State<ApplicationDropDown> {
                               application.name,
                               style: Theme.of(context).textTheme.bodyText2,
                               overflow: TextOverflow.ellipsis,
-                            ));
-                      }).toList()
+                      ));
+                }).toList()
                     : null,
                 hint: Text('Select application',
                     style: Theme.of(context).textTheme.subtitle2),
@@ -53,7 +60,7 @@ class _ApplicationDropDownState extends State<ApplicationDropDown> {
                 },
                 value: widget.applications
                     .firstWhere((a) => a.id == snapshot.data,
-                        orElse: () => null)
+                    orElse: () => null)
                     ?.id,
               ),
             );

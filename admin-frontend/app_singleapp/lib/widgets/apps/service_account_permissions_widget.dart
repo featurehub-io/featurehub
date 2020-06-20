@@ -112,6 +112,13 @@ with only 'Read' permission for service accounts.'''),
           stream: bloc.currentServiceAccountIdStream,
           builder: (context, snapshot) {
             return DropdownButton(
+              icon: Padding(
+                padding: EdgeInsets.only(left: 16),
+                child: Icon(
+                  Icons.keyboard_arrow_down,
+                  size: 16,
+                ),
+              ),
               isExpanded: true,
               isDense: true,
               items: serviceAccounts.map((ServiceAccount serviceAccount) {

@@ -30,6 +30,13 @@ class _PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
                         style: Theme.of(context).textTheme.caption),
                     DropdownButtonHideUnderline(
                       child: DropdownButton(
+                        icon: Padding(
+                          padding: EdgeInsets.only(left: 16),
+                          child: Icon(
+                            Icons.keyboard_arrow_down,
+                            size: 16,
+                          ),
+                        ),
                         style: Theme.of(context).textTheme.bodyText1,
                         isDense: true,
                         isExpanded: true,

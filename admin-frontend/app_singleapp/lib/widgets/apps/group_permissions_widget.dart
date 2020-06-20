@@ -83,6 +83,13 @@ class _GroupPermissionState extends State<GroupPermissionsWidget> {
     return Container(
       constraints: BoxConstraints(maxWidth: 250),
       child: DropdownButton(
+        icon: Padding(
+          padding: EdgeInsets.only(left: 16),
+          child: Icon(
+            Icons.keyboard_arrow_down,
+            size: 16,
+          ),
+        ),
         isDense: true,
         isExpanded: true,
         items: groups.map((Group group) {
@@ -90,10 +97,7 @@ class _GroupPermissionState extends State<GroupPermissionsWidget> {
               value: group.id,
               child: Text(
                 group.name,
-                style: Theme
-                    .of(context)
-                    .textTheme
-                    .bodyText2,
+                style: Theme.of(context).textTheme.bodyText2,
                 overflow: TextOverflow.ellipsis,
               ));
         }).toList(),
