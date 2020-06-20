@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/api/router.dart';
 import 'package:app_singleapp/common/stream_valley.dart';
@@ -51,6 +53,7 @@ class FeaturesOverviewTableWidget extends StatelessWidget {
                 child: TabsView(
                   featureStatus: snapshot.data,
                   applicationId: bloc.applicationId,
+                  bloc: bloc,
                 ),
                 width: double.infinity);
           });
@@ -61,23 +64,23 @@ class FeaturesOverviewTableWidget extends StatelessWidget {
   }
 }
 
-enum _TabsState { FLAGS, VALUES, CONFIGURATIONS }
+enum TabsState { FLAGS, VALUES, CONFIGURATIONS }
 
 class _TabsBloc implements Bloc {
   final String applicationId;
-  final FeatureStatusFeatures featureStatus;
-  final _stateSource = BehaviorSubject<_TabsState>.seeded(_TabsState.FLAGS);
+  FeatureStatusFeatures featureStatus;
+  final _stateSource = BehaviorSubject<TabsState>.seeded(TabsState.FLAGS);
   List<Feature> _featuresForTabs;
   final _hiddenEnvironments = <String>{}; // set of strings
   final _hiddenEnvironmentsSource =
       BehaviorSubject<Set<String>>.seeded(<String>{});
-  final _featureCurrentlyEditingSource =
-      BehaviorSubject<Set<String>>.seeded(<String>{});
+  final _currentlyEditingFeatureKeys = <String>{};
+  final _featureCurrentlyEditingSource = BehaviorSubject<Set<String>>();
   final ManagementRepositoryClientBloc mrClient;
   final _allFeaturesByKey = <String, Feature>{};
 
   // determine which tab they have selected
-  Stream<_TabsState> get currentTab => _stateSource.stream;
+  Stream<TabsState> get currentTab => _stateSource.stream;
   // which environments are hidden
   Stream<Set<String>> get hiddenEnvironments =>
       _hiddenEnvironmentsSource.stream;
@@ -85,31 +88,72 @@ class _TabsBloc implements Bloc {
       _featureCurrentlyEditingSource.stream;
   List<Feature> get features => _featuresForTabs;
   final featureValueBlocs = <String, FeatureValuesBloc>{};
+  final FeatureStatusBloc featureStatusBloc;
+  StreamSubscription<FeatureStatusFeatures> _featureStream;
+  StreamSubscription<Feature> _newFeatureStream;
 
-  _TabsBloc(this.featureStatus, this.applicationId, this.mrClient)
+  _TabsBloc(this.featureStatus, this.applicationId, this.mrClient,
+      this.featureStatusBloc)
       : assert(featureStatus != null),
+        assert(featureStatusBloc != null),
         assert(applicationId != null) {
-    _fixFeaturesForTabs(_stateSource.value);
+    _featureCurrentlyEditingSource.add(_currentlyEditingFeatureKeys);
 
+    // if they have created a new feature we want to swap to the right tab
+    _fixFeaturesForTabs(_stateSource.value);
+    _refixFeaturesByKey();
+
+    _featureStream = featureStatusBloc.appFeatureValues.listen((appFeatures) {
+      featureStatus = appFeatures;
+
+      _fixFeaturesForTabs(_stateSource.value);
+      _refixFeaturesByKey();
+
+      _checkForFeaturesWeWereEditingThatHaveNowGone();
+    });
+
+    _newFeatureStream =
+        featureStatusBloc.publishNewFeatureStream.listen((feature) {
+      switch (feature.valueType) {
+        case FeatureValueType.BOOLEAN:
+          _stateSource.value = TabsState.FLAGS;
+          break;
+        case FeatureValueType.STRING:
+          _stateSource.value = TabsState.VALUES;
+          break;
+        case FeatureValueType.NUMBER:
+          _stateSource.value = TabsState.VALUES;
+          break;
+        case FeatureValueType.JSON:
+          _stateSource.value = TabsState.CONFIGURATIONS;
+          break;
+      }
+
+      _currentlyEditingFeatureKeys.add(feature.key);
+    });
+  }
+
+  // turns them into a map for easy access
+  void _refixFeaturesByKey() {
     featureStatus.applicationFeatureValues.features.forEach((f) {
       _allFeaturesByKey[f.key] = f;
     });
   }
 
-  void _fixFeaturesForTabs(_TabsState tab) {
+  void _fixFeaturesForTabs(TabsState tab) {
     _featuresForTabs =
         featureStatus.applicationFeatureValues.features.where((f) {
-      return ((tab == _TabsState.FLAGS) &&
+      return ((tab == TabsState.FLAGS) &&
               f.valueType == FeatureValueType.BOOLEAN) ||
-          ((tab == _TabsState.VALUES) &&
+          ((tab == TabsState.VALUES) &&
               (f.valueType == FeatureValueType.NUMBER ||
                   f.valueType == FeatureValueType.STRING)) ||
-          ((tab == _TabsState.CONFIGURATIONS) &&
+          ((tab == TabsState.CONFIGURATIONS) &&
               (f.valueType == FeatureValueType.JSON));
     }).toList();
   }
 
-  void swapTab(_TabsState tab) {
+  void swapTab(TabsState tab) {
     _fixFeaturesForTabs(tab);
     _stateSource.add(tab);
   }
@@ -135,10 +179,12 @@ class _TabsBloc implements Bloc {
   void dispose() {
     // clean up any outstanding value blocs
     featureValueBlocs.values.forEach((element) => element.dispose());
+    _featureStream.cancel();
+    _newFeatureStream.cancel();
   }
 
   void hideOrShowFeature(Feature feature) {
-    final val = _featureCurrentlyEditingSource.value;
+    final val = _currentlyEditingFeatureKeys;
 
     if (!val.contains(feature.key)) {
       _createFeatureValueBlocForFeature(feature);
@@ -171,21 +217,50 @@ class _TabsBloc implements Bloc {
   Feature findFeature(String key, String environmentId) {
     return _allFeaturesByKey[key];
   }
+
+  void _checkForFeaturesWeWereEditingThatHaveNowGone() {
+    final removeMissing = _currentlyEditingFeatureKeys;
+
+    removeMissing.where((key) {
+      final remove = _allFeaturesByKey[key] == null;
+      if (remove) {
+        // get rid of the block
+        featureValueBlocs[key].dispose();
+        featureValueBlocs.remove(key);
+      }
+      return remove;
+    });
+
+    // now make sure all features are there as
+    // when we create one we can add it to the list and it not have a bloc
+    removeMissing.forEach((key) {
+      if (featureValueBlocs[key] == null) {
+        _createFeatureValueBlocForFeature(_allFeaturesByKey[key]);
+      }
+    });
+
+    // trigger a rebuild
+    _featureCurrentlyEditingSource.add(removeMissing);
+  }
 }
 
 class TabsView extends StatelessWidget {
   final FeatureStatusFeatures featureStatus;
   final String applicationId;
+  final FeatureStatusBloc bloc;
 
   const TabsView(
-      {Key key, @required this.featureStatus, @required this.applicationId})
+      {Key key,
+      @required this.featureStatus,
+      @required this.applicationId,
+      @required this.bloc})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
         creator: (_c, _b) => _TabsBloc(featureStatus, applicationId,
-            BlocProvider.of<ManagementRepositoryClientBloc>(context)),
+            BlocProvider.of<ManagementRepositoryClientBloc>(context), bloc),
         child: Column(
           children: [
             _FeatureTabsHeader(),
@@ -273,7 +348,7 @@ class _FeatureTabsBodyHolder extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        StreamBuilder<_TabsState>(
+        StreamBuilder<TabsState>(
             stream: bloc.currentTab,
             builder: (context, snapshot) {
               return Column(
@@ -309,7 +384,7 @@ class _FeatureTabEnvironments extends StatelessWidget {
     return StreamBuilder<Set<String>>(
         stream: bloc.hiddenEnvironments,
         builder: (context, snapshot) {
-          return StreamBuilder<_TabsState>(
+          return StreamBuilder<TabsState>(
               stream: bloc.currentTab,
               builder: (context, snapshot) {
                 return StreamBuilder<Set<String>>(
@@ -329,7 +404,7 @@ class _FeatureTabEnvironments extends StatelessWidget {
                               ...bloc.sortedEnvironmentsThatAreShowing
                                   .map((efv) {
                                 return Container(
-                                  width: snapshot.data == _TabsState.FLAGS
+                                  width: snapshot.data == TabsState.FLAGS
                                       ? 100.0
                                       : 170.0,
                                   child: Column(
@@ -517,13 +592,13 @@ class _FeatureTabsHeader extends StatelessWidget {
     return Row(
       children: [
         _FeatureTab(
-            text: 'FEATURE FLAGS', icon: Icons.flag, state: _TabsState.FLAGS),
+            text: 'FEATURE FLAGS', icon: Icons.flag, state: TabsState.FLAGS),
         _FeatureTab(
-            text: 'FEATURE VALUES', icon: Icons.code, state: _TabsState.VALUES),
+            text: 'FEATURE VALUES', icon: Icons.code, state: TabsState.VALUES),
         _FeatureTab(
             text: 'CONFIGURATIONS',
             icon: Icons.device_hub,
-            state: _TabsState.CONFIGURATIONS),
+            state: TabsState.CONFIGURATIONS),
       ],
     );
   }
@@ -532,7 +607,7 @@ class _FeatureTabsHeader extends StatelessWidget {
 class _FeatureTab extends StatelessWidget {
   final String text;
   final IconData icon;
-  final _TabsState state;
+  final TabsState state;
 
   const _FeatureTab(
       {Key key, @required this.text, @required this.icon, @required this.state})
@@ -542,7 +617,7 @@ class _FeatureTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<_TabsBloc>(context);
 
-    return StreamBuilder<_TabsState>(
+    return StreamBuilder<TabsState>(
         stream: bloc.currentTab,
         builder: (context, snapshot) {
           return GestureDetector(

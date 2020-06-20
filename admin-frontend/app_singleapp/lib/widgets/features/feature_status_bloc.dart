@@ -69,6 +69,10 @@ class FeatureStatusBloc implements Bloc {
   StreamSubscription<String> _currentPid;
   StreamSubscription<String> _currentAppId;
 
+  final _publishNewFeatureSource = PublishSubject<Feature>();
+
+  Stream<Feature> get publishNewFeatureStream =>
+      _publishNewFeatureSource.stream;
   Stream<LineStatusFeature> getLineStatus(String featureId) => _seedLineStatus(
           featureId, _appFeatureValuesBS.value.applicationFeatureValues)
       .stream;
@@ -199,6 +203,7 @@ class FeatureStatusBloc implements Bloc {
         applicationId, feature);
     unawaited(mrClient.streamValley.getCurrentApplicationFeatures());
     addAppFeatureValuesToStream();
+    _publishNewFeatureSource.add(feature);
   }
 
   Future<void> updateFeature(Feature feature, String newName, String newKey,
