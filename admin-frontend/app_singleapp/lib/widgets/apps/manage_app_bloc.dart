@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:bloc_provider/bloc_provider.dart';
-import 'package:logging/logging.dart';
 import 'package:mrapi/api.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:rxdart/rxdart.dart';
@@ -118,16 +117,20 @@ class ManageAppBloc implements Bloc {
     application = await _appServiceApi
         .getApplication(applicationId)
         .catchError(mrClient.dialogError);
-    final serviceAccounts = await _serviceAccountServiceApi
-        .searchServiceAccountsInPortfolio(application.portfolioId,
-            includePermissions: true)
-        .catchError(mrClient.dialogError);
-    if (!_serviceAccountsBS.isClosed) {
-      if (serviceAccounts.isNotEmpty) {
-        _currentServiceAccountIdSource.add(null);
-        selectServiceAccount(serviceAccounts[0].id);
+
+    if (mrClient.userIsCurrentPortfolioAdmin) {
+      final serviceAccounts = await _serviceAccountServiceApi
+          .searchServiceAccountsInPortfolio(
+              application.portfolioId ?? mrClient.currentPortfolio.id,
+              includePermissions: true)
+          .catchError(mrClient.dialogError);
+      if (!_serviceAccountsBS.isClosed) {
+        if (serviceAccounts.isNotEmpty) {
+          _currentServiceAccountIdSource.add(null);
+          selectServiceAccount(serviceAccounts[0].id);
+        }
+        _serviceAccountsBS.add(serviceAccounts);
       }
-      _serviceAccountsBS.add(serviceAccounts);
     }
   }
 
@@ -144,14 +147,16 @@ class ManageAppBloc implements Bloc {
   }
 
   Future<void> selectServiceAccount(String said) async {
-    await _serviceAccountServiceApi
-        .callGet(said, includePermissions: true)
-        .then((sa) {
-      _currentServiceAccountIdSource.add(sa.id);
-      if (!_serviceAccountPS.isClosed) {
-        _serviceAccountPS.add(sa);
-      }
-    }).catchError(mrClient.dialogError);
+    if (mrClient.userIsCurrentPortfolioAdmin) {
+      await _serviceAccountServiceApi
+          .callGet(said, includePermissions: true)
+          .then((sa) {
+        _currentServiceAccountIdSource.add(sa.id);
+        if (!_serviceAccountPS.isClosed) {
+          _serviceAccountPS.add(sa);
+        }
+      }).catchError(mrClient.dialogError);
+    }
   }
 
   Future<Group> updateGroupWithEnvironmentRoles(gid, Group group) async {

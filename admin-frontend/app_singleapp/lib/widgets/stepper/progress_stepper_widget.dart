@@ -82,7 +82,6 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                   onPressed: () => {
                                     ManagementRepositoryClientBloc.router
                                         .navigateTo(context, '/manage-app',
-                                            replace: true,
                                             transition: TransitionType.material)
                                   },
                                 ),
@@ -107,7 +106,6 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                   onPressed: () => {
                                     ManagementRepositoryClientBloc.router
                                         .navigateTo(context, '/manage-group',
-                                            replace: true,
                                             transition: TransitionType.material)
                                   },
                                 ),
@@ -132,7 +130,6 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                     ManagementRepositoryClientBloc.router
                                         .navigateTo(
                                             context, '/manage-service-accounts',
-                                            replace: true,
                                             transition: TransitionType.material)
                                   },
                                 ),
@@ -158,7 +155,6 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                   onPressed: () => {
                                     ManagementRepositoryClientBloc.router
                                         .navigateTo(context, '/manage-app',
-                                            replace: true,
                                             params: {
                                               'id': [bloc.applicationId],
                                               'tab-name': ['environments']
@@ -192,7 +188,6 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                               'id': [bloc.applicationId],
                                               'tab-name': ['group-permissions']
                                             },
-                                            replace: true,
                                             transition: TransitionType.material)
                                   },
                                 ),
@@ -220,7 +215,6 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                   onPressed: () => {
                                     ManagementRepositoryClientBloc.router
                                         .navigateTo(context, '/manage-app',
-                                            replace: true,
                                             params: {
                                               'id': [bloc.applicationId],
                                               'tab-name': ['service-accounts']
@@ -249,7 +243,6 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                   onPressed: () => {
                                     ManagementRepositoryClientBloc.router
                                         .navigateTo(context, '/feature-status',
-                                            replace: true,
                                             transition: TransitionType.material)
                                   },
                                 ),
@@ -287,10 +280,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                 children: <Widget>[
                   Container(
                       child: Text('Select application or create a new one',
-                          style: Theme
-                              .of(context)
-                              .textTheme
-                              .caption)),
+                          style: Theme.of(context).textTheme.caption)),
                   Container(
                       constraints: BoxConstraints(maxWidth: 200),
                       child: applicationsDropdown(snapshot.data, bloc))
@@ -304,24 +294,15 @@ class _StepperState extends State<FHSetupProgressStepper> {
       List<Application> applications, StepperBloc bloc) {
     return DropdownButton(
       isExpanded: true,
-      style: Theme
-          .of(context)
-          .textTheme
-          .bodyText1,
+      style: Theme.of(context).textTheme.bodyText1,
       items: applications.map((Application application) {
         return DropdownMenuItem<String>(
             value: application.id,
             child: Text(application.name,
-                style: Theme
-                    .of(context)
-                    .textTheme
-                    .bodyText2));
+                style: Theme.of(context).textTheme.bodyText2));
       }).toList(),
       hint: Text('Select application',
-          style: Theme
-              .of(context)
-              .textTheme
-              .subtitle2),
+          style: Theme.of(context).textTheme.subtitle2),
       onChanged: (value) {
         setState(() {
           bloc.mrClient.setCurrentAid(value);

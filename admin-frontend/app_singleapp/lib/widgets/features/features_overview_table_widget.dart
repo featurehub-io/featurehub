@@ -1,5 +1,6 @@
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/api/router.dart';
+import 'package:app_singleapp/common/stream_valley.dart';
 import 'package:app_singleapp/widgets/common/fh_card.dart';
 import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/features/feature_value_row_boolean.dart';
@@ -599,16 +600,16 @@ class NoEnvironmentMessage extends StatelessWidget {
         Text(
             'Either there are no environments defined for this application or you don\'t have permissions to access any of them',
             style: Theme.of(context).textTheme.caption),
-        StreamBuilder<bool>(
+        StreamBuilder<ReleasedPortfolio>(
             stream: bloc.mrClient.personState.isCurrentPortfolioOrSuperAdmin,
             builder: (context, snapshot) {
-              if (snapshot.hasData && snapshot.data) {
+              if (snapshot.hasData &&
+                  snapshot.data.currentPortfolioOrSuperAdmin) {
                 return FHFlatButtonTransparent(
                     title: 'Manage application',
                     keepCase: true,
                     onPressed: () => ManagementRepositoryClientBloc.router
                             .navigateTo(context, '/manage-app',
-                                replace: true,
                                 transition: TransitionType.material,
                                 params: {
                               'id': [bloc.applicationId],

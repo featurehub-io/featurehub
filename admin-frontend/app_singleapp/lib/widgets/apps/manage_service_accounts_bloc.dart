@@ -28,7 +28,7 @@ class ManageServiceAccountsBloc implements Bloc {
 
   void addServiceAccountsToStream(String portfolio) async {
     portfolioId = portfolio;
-    if (portfolioId != null) {
+    if (portfolioId != null && mrClient.userIsCurrentPortfolioAdmin) {
       final serviceAccounts = await _serviceAccountServiceApi
           .searchServiceAccountsInPortfolio(portfolioId,
               includePermissions: true)

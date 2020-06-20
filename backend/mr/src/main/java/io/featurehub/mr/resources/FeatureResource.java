@@ -114,9 +114,10 @@ public class FeatureResource implements FeatureServiceDelegate {
     try {
       featureApi.updateAllFeatureValuesByApplicationForKey(id, key, featureValue, person, Boolean.TRUE.equals(holder.removeValuesNotPassed));
     } catch (OptimisticLockingException e) {
-      e.printStackTrace();
+      log.warn("Optimistic locking failure", e);
       throw new WebApplicationException(422);
     } catch (FeatureApi.NoAppropriateRole noAppropriateRole) {
+      log.warn("User attempted to update feature they had no access to", noAppropriateRole);
       throw new BadRequestException(noAppropriateRole);
     }
 
