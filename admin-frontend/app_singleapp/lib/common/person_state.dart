@@ -56,7 +56,8 @@ class PersonState {
   }
 
   bool get userIsCurrentPortfolioAdmin =>
-      _isCurrentPortfolioOrSuperAdmin?.value?.portfolioAdmin ?? false;
+      _isCurrentPortfolioOrSuperAdmin?.value?.currentPortfolioOrSuperAdmin ??
+      false;
 
   void currentPortfolioOrSuperAdminUpdateState(
       Portfolio p, List<Group> groups) {
@@ -64,6 +65,6 @@ class PersonState {
         isSuperAdminGroupFound(groups) || userIsPortfolioAdmin(p.id, groups);
     _isCurrentPortfolioOrSuperAdmin.add(ReleasedPortfolio()
       ..portfolio = p
-      ..portfolioAdmin = isAdmin);
+      ..currentPortfolioOrSuperAdmin = isAdmin);
   }
 }

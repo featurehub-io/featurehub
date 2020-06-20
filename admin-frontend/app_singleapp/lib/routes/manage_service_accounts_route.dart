@@ -57,7 +57,8 @@ class _ServiceAccountSearchState extends State<_ServiceAccountSearchWidget> {
           child: StreamBuilder<ReleasedPortfolio>(
               stream: bloc.mrClient.personState.isCurrentPortfolioOrSuperAdmin,
               builder: (context, snapshot) {
-                if (snapshot.hasData && snapshot.data.portfolioAdmin) {
+                if (snapshot.hasData &&
+                    snapshot.data.currentPortfolioOrSuperAdmin) {
                   return Row(
                     children: <Widget>[
                       FHIconTextButton(

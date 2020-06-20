@@ -603,7 +603,8 @@ class NoEnvironmentMessage extends StatelessWidget {
         StreamBuilder<ReleasedPortfolio>(
             stream: bloc.mrClient.personState.isCurrentPortfolioOrSuperAdmin,
             builder: (context, snapshot) {
-              if (snapshot.hasData && snapshot.data.portfolioAdmin) {
+              if (snapshot.hasData &&
+                  snapshot.data.currentPortfolioOrSuperAdmin) {
                 return FHFlatButtonTransparent(
                     title: 'Manage application',
                     keepCase: true,

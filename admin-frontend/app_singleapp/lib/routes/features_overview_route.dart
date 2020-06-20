@@ -85,7 +85,7 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
                               .isCurrentPortfolioOrSuperAdmin,
                           builder: (context, snapshot) {
                             if (snapshot.hasData &&
-                                snapshot.data.portfolioAdmin) {
+                                snapshot.data.currentPortfolioOrSuperAdmin) {
                               return Row(
                                 children: <Widget>[
                                   Text(

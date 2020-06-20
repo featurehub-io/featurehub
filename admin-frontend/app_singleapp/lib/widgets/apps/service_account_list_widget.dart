@@ -82,7 +82,8 @@ class _ServiceAccountWidget extends StatelessWidget {
                     stream: bloc
                         .mrClient.personState.isCurrentPortfolioOrSuperAdmin,
                     builder: (context, snapshot) {
-                      if (snapshot.hasData && snapshot.data.portfolioAdmin) {
+                      if (snapshot.hasData &&
+                          snapshot.data.currentPortfolioOrSuperAdmin) {
                         return _adminFunctions(context);
                       } else {
                         return Container();

@@ -1,5 +1,6 @@
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/api/router.dart';
+import 'package:app_singleapp/common/stream_valley.dart';
 import 'package:app_singleapp/utils/custom_cursor.dart';
 import 'package:app_singleapp/widgets/common/fh_circle_icon_button.dart';
 import 'package:app_singleapp/widgets/common/fh_portfolio_selector.dart';
@@ -73,36 +74,44 @@ class _MenuContainer extends StatelessWidget {
               ),
               SizedBox(height: 16),
               _MenuFeaturesOptionsWidget(),
-              if (mrBloc.userIsAnyPortfolioOrSuperAdmin)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          left: 16.0, top: 32.0, bottom: 8.0),
-                      child: Text(
-                        'Application Settings',
-                        style: Theme.of(context).textTheme.caption,
-                      ),
-                    ),
-                    _ApplicationSettings(),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.only(
-                              left: 16.0, top: 32.0, bottom: 8.0),
-                          child: Text(
-                            'Portfolio Settings',
-                            style: Theme.of(context).textTheme.caption,
+              StreamBuilder<ReleasedPortfolio>(
+                  stream: mrBloc.personState.isCurrentPortfolioOrSuperAdmin,
+                  builder: (context, snapshot) {
+                    if (snapshot.data != null &&
+                        (snapshot.data.currentPortfolioOrSuperAdmin == true)) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                left: 16.0, top: 32.0, bottom: 8.0),
+                            child: Text(
+                              'Application Settings',
+                              style: Theme.of(context).textTheme.caption,
+                            ),
                           ),
-                        ),
-                        _MenuPortfolioAdminOptionsWidget(),
-                        _MenuDivider(),
-                      ],
-                    ),
-                  ],
-                ),
+                          _ApplicationSettings(),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 16.0, top: 32.0, bottom: 8.0),
+                                child: Text(
+                                  'Portfolio Settings',
+                                  style: Theme.of(context).textTheme.caption,
+                                ),
+                              ),
+                              _MenuPortfolioAdminOptionsWidget(),
+                              _MenuDivider(),
+                            ],
+                          ),
+                        ],
+                      );
+                    } else {
+                      return Container();
+                    }
+                  }),
               mrBloc.userIsSuperAdmin
                   ? Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

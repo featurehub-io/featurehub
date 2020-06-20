@@ -7,7 +7,7 @@ import 'package:rxdart/rxdart.dart';
 
 class ReleasedPortfolio {
   Portfolio portfolio;
-  bool portfolioAdmin;
+  bool currentPortfolioOrSuperAdmin;
 }
 
 class StreamValley {
@@ -38,9 +38,9 @@ class StreamValley {
     // we  have done our permission checks on it and swapped their route if they have no access
     currentPortfolioAdminOrSuperAdminSubscription =
         personState.isCurrentPortfolioOrSuperAdmin.listen((val) {
-      _currentPortfolioSource.add(val.portfolio);
+          _currentPortfolioSource.add(val.portfolio);
       final oldVal = _isCurrentPortfolioAdminOrSuperAdmin;
-      _isCurrentPortfolioAdminOrSuperAdmin = val.portfolioAdmin;
+      _isCurrentPortfolioAdminOrSuperAdmin = val.currentPortfolioOrSuperAdmin;
       _refreshApplicationIdChanged();
       if (oldVal != _isCurrentPortfolioAdminOrSuperAdmin &&
           _isCurrentPortfolioAdminOrSuperAdmin) {
