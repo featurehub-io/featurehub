@@ -231,18 +231,16 @@ class _AdminActions extends StatelessWidget {
               if (snapshot.hasData) {
                 return Row(children: <Widget>[
                   FHIconButton(
+                      width: 30.0,
                       icon: Icon(Icons.edit,
-                          color: Theme
-                              .of(context)
-                              .buttonColor, size: 16.0),
-                      onPressed: () =>
-                          bloc.mrClient.addOverlay(
-                                  (BuildContext context) =>
-                                  AppUpdateDialogWidget(
-                                    bloc: bloc,
-                                    application: bloc.application,
-                                  ))),
+                          color: Theme.of(context).buttonColor, size: 16.0),
+                      onPressed: () => bloc.mrClient.addOverlay(
+                          (BuildContext context) => AppUpdateDialogWidget(
+                                bloc: bloc,
+                                application: bloc.application,
+                              ))),
                   FHIconButton(
+                      width: 30.0,
                       icon: Icon(Icons.delete,
                           color: Theme
                               .of(context)
