@@ -50,7 +50,10 @@ class FeaturesOverviewTableWidget extends StatelessWidget {
               return NoFeaturesMessage();
             }
             return FHCardWidget(
-                child: TabsView(featureStatus: snapshot.data),
+                child: TabsView(
+                  featureStatus: snapshot.data,
+                  applicationId: bloc.applicationId,
+                ),
                 width: double.infinity);
           });
     } catch (e, s) {
@@ -63,6 +66,7 @@ class FeaturesOverviewTableWidget extends StatelessWidget {
 enum _TabsState { FLAGS, VALUES, CONFIGURATIONS }
 
 class _TabsBloc implements Bloc {
+  final String applicationId;
   final FeatureStatusFeatures featureStatus;
   final _stateSource = BehaviorSubject<_TabsState>.seeded(_TabsState.FLAGS);
   List<Feature> _featuresForTabs;
@@ -71,6 +75,7 @@ class _TabsBloc implements Bloc {
       BehaviorSubject<Set<String>>.seeded(<String>{});
   final _featureCurrentlyEditingSource =
       BehaviorSubject<Set<String>>.seeded(<String>{});
+  final ManagementRepositoryClientBloc mrClient;
 
   // determine which tab they have selected
   Stream<_TabsState> get currentTab => _stateSource.stream;
@@ -80,8 +85,11 @@ class _TabsBloc implements Bloc {
   Stream<Set<String>> get featureCurrentlyEditingStream =>
       _featureCurrentlyEditingSource.stream;
   List<Feature> get features => _featuresForTabs;
+  final featureValueBlocs = <String, FeatureValuesBloc>{};
 
-  _TabsBloc(this.featureStatus) : assert(featureStatus != null) {
+  _TabsBloc(this.featureStatus, this.applicationId, this.mrClient)
+      : assert(featureStatus != null),
+        assert(applicationId != null) {
     _fixFeaturesForTabs(_stateSource.value);
   }
 
@@ -118,30 +126,56 @@ class _TabsBloc implements Bloc {
   }
 
   @override
-  void dispose() {}
+  void dispose() {
+    // clean up any outstanding value blocs
+    featureValueBlocs.values.forEach((element) => element.dispose());
+  }
 
   void hideOrShowFeature(Feature feature) {
     final val = _featureCurrentlyEditingSource.value;
 
     if (!val.contains(feature.key)) {
+      _createFeatureValueBlocForFeature(feature);
       val.add(feature.key);
     } else {
+      final featureValueBloc = featureValueBlocs[feature.key];
+      if (featureValueBloc != null) {
+        featureValueBloc.dispose();
+      }
+      featureValueBlocs.remove(featureValueBloc);
       val.remove(feature.key);
     }
 
     _featureCurrentlyEditingSource.add(val);
   }
+
+  void _createFeatureValueBlocForFeature(Feature feature) {
+    List<FeatureValue> vals = featureStatus
+        .applicationFeatureValues.environments
+        .where((env) => !_hiddenEnvironments.contains(env.environmentId))
+        .map((env) => env.features
+            .firstWhere((fv) => fv.key == feature.key, orElse: () => null))
+        .where((fv) => fv != null)
+        .toList();
+
+    featureValueBlocs[feature.key] = FeatureValuesBloc(applicationId, feature,
+        mrClient, vals, featureStatus.applicationFeatureValues);
+  }
 }
 
 class TabsView extends StatelessWidget {
   final FeatureStatusFeatures featureStatus;
+  final String applicationId;
 
-  const TabsView({Key key, this.featureStatus}) : super(key: key);
+  const TabsView(
+      {Key key, @required this.featureStatus, @required this.applicationId})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-        creator: (_c, _b) => _TabsBloc(featureStatus),
+        creator: (_c, _b) => _TabsBloc(featureStatus, applicationId,
+            BlocProvider.of<ManagementRepositoryClientBloc>(context)),
         child: Column(
           children: [
             _FeatureTabsHeader(),
@@ -210,7 +244,7 @@ class _FeatureTabEnvironmentWithCheck extends StatelessWidget {
 }
 
 final _unselectedRowHeight = 60.0;
-final _selectedRowHeight = 200.0;
+final _selectedRowHeight = 300.0;
 final _headerHeight = 80.0;
 
 class _FeatureTabsBodyHolder extends StatelessWidget {
@@ -238,10 +272,7 @@ class _FeatureTabsBodyHolder extends StatelessWidget {
                   ]);
             }),
         Flexible(
-          child: Container(
-            height: 600.0,
-            child: _FeatureTabEnvironments(bloc: bloc),
-          ),
+          child: _FeatureTabEnvironments(bloc: bloc),
         )
       ],
     );
@@ -264,45 +295,58 @@ class _FeatureTabEnvironments extends StatelessWidget {
           return StreamBuilder<_TabsState>(
               stream: bloc.currentTab,
               builder: (context, snapshot) {
-                return ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: [
-                    if (bloc.features.isNotEmpty)
-                      ...bloc.sortedEnvironmentsThatAreShowing.map((efv) {
-                        return Container(
-                          width: 100.0,
-                          child: Column(
-                            children: [
-                              Container(
-                                height: _headerHeight,
-                                child: Column(
-                                  children: [
-                                    Checkbox(
-                                      value: true,
-                                    ),
-                                    Text(
-                                      efv.environmentName,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              ...bloc.features
-                                  .map((f) => efv.features.firstWhere(
-                                      (fv) => fv.key == f.key,
-                                      orElse: () => FeatureValue()))
-                                  .map((fv) {
-                                return (fv.key == null)
-                                    ? SizedBox.shrink()
-                                    : _FeatureTabFeatureValue(
-                                        tabsBloc: bloc, value: fv);
-                              }).toList(),
-                            ],
-                          ),
-                        );
-                      })
-                  ],
-                );
+                return StreamBuilder<Set<String>>(
+                    stream: bloc.featureCurrentlyEditingStream,
+                    builder: (context, snapshot) {
+                      return Container(
+                        height: ((bloc.features.length -
+                                    (snapshot.data?.length ?? 0)) *
+                                _unselectedRowHeight) +
+                            ((snapshot.data?.length ?? 0) *
+                                _selectedRowHeight) +
+                            _headerHeight,
+                        child: ListView(
+                          scrollDirection: Axis.horizontal,
+                          children: [
+                            if (bloc.features.isNotEmpty)
+                              ...bloc.sortedEnvironmentsThatAreShowing
+                                  .map((efv) {
+                                return Container(
+                                  width: 100.0,
+                                  child: Column(
+                                    children: [
+                                      Container(
+                                        height: _headerHeight,
+                                        child: Column(
+                                          children: [
+                                            Checkbox(
+                                              value: true,
+                                            ),
+                                            Text(
+                                              efv.environmentName,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      ...bloc.features
+                                          .map((f) => efv.features.firstWhere(
+                                              (fv) => fv.key == f.key,
+                                              orElse: () => FeatureValue()))
+                                          .map((fv) {
+                                        return (fv.key == null)
+                                            ? SizedBox.shrink()
+                                            : _FeatureTabFeatureValue(
+                                                tabsBloc: bloc, value: fv);
+                                      }).toList(),
+                                    ],
+                                  ),
+                                );
+                              })
+                          ],
+                        ),
+                      );
+                    });
               });
         });
   }
@@ -324,6 +368,7 @@ class _FeatureTabFeatureValue extends StatelessWidget {
               (snapshot.hasData && snapshot.data.contains(value.key));
           return Container(
               height: amSelected ? _selectedRowHeight : _unselectedRowHeight,
+              color: amSelected ? Colors.red : null,
               child: Text(value.valueBoolean.toString()));
         });
   }
@@ -350,7 +395,7 @@ class _FeatureTabFeatureNameCollapsed extends StatelessWidget {
             child: Container(
                 padding: EdgeInsets.fromLTRB(0, 8, 0, 8),
                 height: amSelected ? _selectedRowHeight : _unselectedRowHeight,
-                width: 200.0,
+                width: amSelected ? 300.0 : 200.0,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -364,18 +409,28 @@ class _FeatureTabFeatureNameCollapsed extends StatelessWidget {
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.only(left: 8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text('${feature.name}',
-                                overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context).textTheme.bodyText1),
-                            Text(
-                                '${feature.valueType.toString().split('.').last}',
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                    fontFamily: 'Source', fontSize: 12)),
-                          ],
+                        child: Container(
+                          color: Colors.blue,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text('${feature.name}',
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context).textTheme.bodyText1),
+                              Text(
+                                  '${feature.valueType.toString().split('.').last}',
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                      fontFamily: 'Source', fontSize: 12)),
+                              if (amSelected)
+                                BlocProvider<FeatureValuesBloc>(
+                                    creator: (_c, _b) =>
+                                        tabsBloc.featureValueBlocs[feature.key],
+                                    autoDispose: false,
+                                    child:
+                                        FeatureValueNameCell(feature: feature))
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -422,7 +477,6 @@ class _FeatureTab extends StatelessWidget {
         builder: (context, snapshot) {
           return GestureDetector(
             onTap: () {
-              print("swapped to $state");
               bloc.swapTab(state);
             },
             child: Container(
@@ -440,88 +494,6 @@ class _FeatureTab extends StatelessWidget {
             ),
           );
         });
-  }
-}
-
-class FeatureFlagAndEnvironmentsTable extends StatelessWidget {
-  final FeatureStatusFeatures featureStatus;
-  final bool isFeature;
-
-  const FeatureFlagAndEnvironmentsTable({
-    Key key,
-    @required this.featureStatus,
-    this.isFeature,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<FeatureStatusBloc>(context);
-
-    final maxEnvironments = 4;
-
-    return Column(
-      children: [
-        ...featureStatus.applicationFeatureValues.features.map((f) {
-          return Container(
-            height: 120.0,
-            child: Row(
-              children: [
-                Column(
-                  children: [
-                    Container(width: 200.0, child: Text('Feature ${f.name}')),
-                  ],
-                ),
-                Flexible(
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: [
-                      ...featureStatus.sortedByNameEnvironmentIds.map((eId) {
-                        return Container(
-                          width: 100.0,
-                          padding: const EdgeInsets.all(8.0),
-                          color: Colors.black12,
-                          child: Text(
-                              'Environment ${featureStatus.applicationEnvironments[eId].environmentName}'),
-                        );
-                      })
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          );
-        })
-      ],
-    );
-//    return Padding(
-//      padding: const EdgeInsets.only(top: 8.0),
-//      child: Column(children: [
-//        _FeatureHeader(
-//          featureStatuses: featureStatus,
-//        ),
-//        ...featureStatus.applicationFeatureValues.features
-//            .where((e) => isFeature != null
-//                ? (isFeature
-//                    ? e.valueType == FeatureValueType.BOOLEAN
-//                    : (e.valueType == FeatureValueType.NUMBER ||
-//                        e.valueType == FeatureValueType.STRING))
-//                : e.valueType == FeatureValueType.JSON)
-//            .map((e) => StreamBuilder<LineStatusFeature>(
-//                stream: bloc.getLineStatus(e.id),
-//                builder: (context, snapshot) {
-//                  if (!snapshot.hasData || snapshot.hasError) {
-//                    return SizedBox.shrink();
-//                  }
-//
-//                  return _FeatureRepresentation(
-//                    feature: e,
-//                    applicationFeatureValues:
-//                        featureStatus.applicationFeatureValues,
-//                    lineStatus: snapshot.data,
-//                  );
-//                })),
-//      ]),
-//    );
   }
 }
 

@@ -22,7 +22,7 @@ class FeatureValueNameCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 16.0, top: 16.0),
+      padding: const EdgeInsets.only(left: 2.0, top: 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
@@ -51,22 +51,21 @@ class FeatureValueNameCell extends StatelessWidget {
           SizedBox(
             height: 12.0,
           ),
-          feature.link != null && feature.link.isNotEmpty
-              ? Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Text('Reference link',
-                        style: Theme.of(context)
-                            .textTheme
-                            .caption
-                            .copyWith(color: Theme.of(context).buttonColor)),
-                    FHCopyToClipboard(
-                      tooltipMessage: '${feature.link}',
-                      copyString: feature.link,
-                    )
-                  ],
+          if (feature.link != null && feature.link.isNotEmpty)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Text('Reference link',
+                    style: Theme.of(context)
+                        .textTheme
+                        .caption
+                        .copyWith(color: Theme.of(context).buttonColor)),
+                FHCopyToClipboard(
+                  tooltipMessage: '${feature.link}',
+                  copyString: feature.link,
                 )
-              : Container(),
+              ],
+            ),
 //Comment out Alias key until we implement proper analytics
 //          feature.alias != null && feature.alias.isNotEmpty
 //              ? Column(
