@@ -1,15 +1,14 @@
+import 'package:app_singleapp/common/stream_valley.dart';
 import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart';
 
 class PersonState {
   PersonServiceApi _personServiceApi;
   //stream if person user is current portfolio or super admin user
-  final BehaviorSubject<bool> _isCurrentPortfolioOrSuperAdmin =
-      BehaviorSubject<bool>();
+  final BehaviorSubject<ReleasedPortfolio> _isCurrentPortfolioOrSuperAdmin =
+      BehaviorSubject<ReleasedPortfolio>();
 
-  Stream<bool> get currentPortfolioAdminOrSuperAdminStream =>
-      _isCurrentPortfolioOrSuperAdmin.stream;
-  Stream<bool> get isCurrentPortfolioOrSuperAdmin =>
+  Stream<ReleasedPortfolio> get isCurrentPortfolioOrSuperAdmin =>
       _isCurrentPortfolioOrSuperAdmin.stream;
 
   PersonState(PersonServiceApi personServiceApi) {
@@ -56,9 +55,16 @@ class PersonState {
     return (isSuperAdminGroupFound(groups) || _isAnyPortfolioAdmin(groups));
   }
 
-  void currentPortfolioOrSuperAdminUpdateState(String pid, List<Group> groups) {
+  bool get userIsCurrentPortfolioAdmin =>
+      _isCurrentPortfolioOrSuperAdmin?.value?.currentPortfolioOrSuperAdmin ??
+      false;
+
+  void currentPortfolioOrSuperAdminUpdateState(
+      Portfolio p, List<Group> groups) {
     final isAdmin =
-        isSuperAdminGroupFound(groups) || userIsPortfolioAdmin(pid, groups);
-    _isCurrentPortfolioOrSuperAdmin.add(isAdmin);
+        isSuperAdminGroupFound(groups) || userIsPortfolioAdmin(p.id, groups);
+    _isCurrentPortfolioOrSuperAdmin.add(ReleasedPortfolio()
+      ..portfolio = p
+      ..currentPortfolioOrSuperAdmin = isAdmin);
   }
 }

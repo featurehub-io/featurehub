@@ -16,6 +16,7 @@ public interface AuthManagerService {
   boolean isPortfolioAdmin(String portfolioId, PersonId personId, Consumer<Group> action);
   boolean isPortfolioAdmin(String portfolioId, Person person, Consumer<Group> action);
   boolean isPortfolioAdmin(Portfolio portfolio, Person person);
+  boolean isPortfolioAdmin(String portfolio, Person person);
 //  boolean isApplicationMember(String id, Person person);
   boolean isAnyAdmin(String personId);
   boolean isAnyAdmin(Person personId);

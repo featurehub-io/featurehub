@@ -517,6 +517,7 @@ public class ConvertUtils {
       .id(sa.getId().toString())
       .version(sa.getVersion())
       .whenArchived(toOff(sa.getWhenArchived()))
+      .portfolioId(sa.getPortfolio().getId().toString())
       .name(sa.getName()).description(sa.getDescription());
 
     if (opts != null) {

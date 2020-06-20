@@ -56,6 +56,14 @@ public class AuthManager implements AuthManagerService {
     return isPortfolioAdmin(portfolio.getId(), person, null);
   }
 
+  public boolean isPortfolioAdmin(String portfolioId, Person person) {
+    if (portfolioId == null || person == null) {
+      return false;
+    }
+
+    return isPortfolioAdmin(portfolioId, person, null);
+  }
+
   @Override
   public boolean isAnyAdmin(String personId) {
     return isOrgAdmin(personId) ||
@@ -97,6 +105,9 @@ public class AuthManager implements AuthManagerService {
 
     // this is a portfolio groupToCheck, so find the groupToCheck belonging to this portfolio
     adminGroup = groupApi.findPortfolioAdminGroup(portfolioId, Opts.opts(FillOpts.Members));
+    if (adminGroup == null) { // no such portfolio
+      return false;
+    }
     member = isGroupMember(personId, adminGroup);
     if (!member) {
       Portfolio p = portfolioApi.getPortfolio(portfolioId, Opts.empty(), new Person().id(new PersonId().id(personId)));

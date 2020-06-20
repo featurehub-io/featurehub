@@ -36,31 +36,79 @@ class Handler {
 }
 
 enum TransitionType { fadeIn, material }
+enum PermissionType { superadmin, portfolioadmin, regular }
 
 Router router = Router();
+
+class RouterRoute {
+  Handler handler;
+  TransitionType transitionType;
+  PermissionType permissionType = PermissionType.regular;
+}
 
 class Router {
   Handler notFoundHandler;
   ManagementRepositoryClientBloc mrBloc;
-  Map<String, Handler> handlers = {};
+  Map<String, RouterRoute> handlers = {};
 
-  void define(String route, {Handler handler, transitionType}) {
-    handlers[route] = handler;
+  void define(String route,
+      {Handler handler,
+      TransitionType transitionType,
+      PermissionType permissionType = PermissionType.regular}) {
+    handlers[route] = RouterRoute()
+      ..handler = handler
+      ..permissionType = permissionType;
   }
 
   HandlerFunc getRoute(String route) {
+    if (route == '/') {
+      route = '/feature-status';
+    }
     final f = handlers[route];
 
-    return (f == null) ? notFoundHandler : f.handlerFunc;
+    return (f == null || f.handler == null)
+        ? notFoundHandler.handlerFunc
+        : f.handler.handlerFunc;
+  }
+
+  // we don't want to store this as it may change, so always ask the route
+  PermissionType permissionForRoute(String route) {
+    return handlers[route]?.permissionType ?? PermissionType.regular;
+  }
+
+  bool hasRoutePermissions(
+      RouteChange route, bool superuser, bool portfolioAdmin) {
+    if (superuser) {
+      return true;
+    }
+
+    final perm = permissionForRoute(route.route);
+
+    if (perm == PermissionType.portfolioadmin && portfolioAdmin) {
+      return true;
+    }
+
+    return perm == PermissionType.regular;
   }
 
   void navigateTo(BuildContext context, String route,
-      {bool replace,
-        TransitionType transition,
-        Map<String, List<String>> params}) {
-    mrBloc.swapRoutes(RouteChange()
+      {TransitionType transition, Map<String, List<String>> params}) {
+    final rc = RouteChange()
       ..route = route
       ..params = params ?? {}
-      ..transition = transition);
+      ..transition = transition;
+
+    if (hasRoutePermissions(
+        rc, mrBloc.userIsSuperAdmin, mrBloc.userIsCurrentPortfolioAdmin)) {
+      mrBloc.swapRoutes(rc);
+    } else {
+      mrBloc.swapRoutes(defaultRoute());
+    }
+  }
+
+  RouteChange defaultRoute() {
+    return RouteChange()
+      ..route = '/feature-status'
+      ..params = {};
   }
 }

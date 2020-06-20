@@ -363,7 +363,7 @@ public class FeatureSqlApi implements FeatureApi {
     Set<ApplicationRoleType> appRoles =
       new QDbAcl().application.isNotNull()
         .select(QDbAcl.Alias.roles).roles.isNotNull()
-        .group.whenArchived.isNotNull()
+        .group.whenArchived.isNull()
         .group.owningPortfolio.eq(app.getPortfolio())
         .group.peopleInGroup.eq(dbPerson).findList().stream().map(appAcl -> convertUtils.splitApplicationRoles(appAcl.getRoles())).flatMap(List::stream).collect(Collectors.toSet());
 

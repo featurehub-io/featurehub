@@ -1,3 +1,4 @@
+import 'package:app_singleapp/common/stream_valley.dart';
 import 'package:app_singleapp/widgets/apps/manage_service_accounts_bloc.dart';
 import 'package:app_singleapp/widgets/apps/service_account_list_widget.dart';
 import 'package:app_singleapp/widgets/common/fh_header.dart';
@@ -53,10 +54,11 @@ class _ServiceAccountSearchState extends State<_ServiceAccountSearchWidget> {
           decoration: BoxDecoration(
               color: Theme.of(context).cardColor,
               border: Border(bottom: bs, left: bs, right: bs, top: bs)),
-          child: StreamBuilder<bool>(
+          child: StreamBuilder<ReleasedPortfolio>(
               stream: bloc.mrClient.personState.isCurrentPortfolioOrSuperAdmin,
               builder: (context, snapshot) {
-                if (snapshot.hasData && snapshot.data) {
+                if (snapshot.hasData &&
+                    snapshot.data.currentPortfolioOrSuperAdmin) {
                   return Row(
                     children: <Widget>[
                       FHIconTextButton(

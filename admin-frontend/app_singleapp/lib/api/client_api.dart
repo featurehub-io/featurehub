@@ -58,6 +58,7 @@ class ManagementRepositoryClientBloc implements Bloc {
   final _menuOpened = BehaviorSubject<bool>.seeded(true);
   final _stepperOpened = BehaviorSubject<bool>.seeded(false);
   Uri _basePath;
+  StreamSubscription<Portfolio> _personPermissionInPortfolioChanged;
 
   BehaviorSubject<bool> get stepperOpened => _stepperOpened;
 
@@ -88,6 +89,19 @@ class ManagementRepositoryClientBloc implements Bloc {
     // this is for fine grained route changes, like tab changes
     _routerSource.add(route);
     _sharedPreferences.saveString('current-route', route.toJson());
+  }
+
+  /// we changed permission, or at least changed portfolio, so check if we
+  /// still have permission to this route and if not, go to the default route
+  void _checkRouteForPermission(Portfolio p) {
+    if (_routerSource.hasValue) {
+      if (!router.hasRoutePermissions(_routerSource.value, userIsSuperAdmin,
+          personState.userIsPortfolioAdmin(p.id, person.groups))) {
+        swapRoutes(router.defaultRoute());
+      }
+    }
+
+    personState.currentPortfolioOrSuperAdminUpdateState(p, groupList);
   }
 
   Future<void> _setCurrentRoute() async {
@@ -129,6 +143,9 @@ class ManagementRepositoryClientBloc implements Bloc {
   bool get userIsSuperAdmin => _userIsSuperAdmin;
 
   bool _userIsAnyPortfolioOrSuperAdmin = false;
+
+  bool get userIsCurrentPortfolioAdmin =>
+      personState.userIsCurrentPortfolioAdmin;
 
   bool get userIsAnyPortfolioOrSuperAdmin => _userIsAnyPortfolioOrSuperAdmin;
 
@@ -174,6 +191,9 @@ class ManagementRepositoryClientBloc implements Bloc {
     applicationServiceApi = ApplicationServiceApi(_client);
     _errorSource.add(null);
     streamValley = StreamValley(this, personState);
+
+    _personPermissionInPortfolioChanged = streamValley.routeCheckPortfolioStream
+        .listen((portfolio) => _checkRouteForPermission(portfolio));
     init();
 //    setHistory();
   }
@@ -299,7 +319,6 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   void setCurrentPid(String pid) {
     // do this first so that the permissions are set up
-    personState.currentPortfolioOrSuperAdminUpdateState(pid, groupList);
     streamValley.currentPortfolioId = pid;
     _setAidSharedPrefs(null);
     _setPidSharedPrefs(pid);
@@ -427,6 +446,7 @@ class ManagementRepositoryClientBloc implements Bloc {
     _overlaySource.close();
     _snackbarSource.close();
     _personSource.close();
+    _personPermissionInPortfolioChanged.cancel();
     streamValley.currentPortfolioAdminOrSuperAdminSubscription.cancel();
   }
 

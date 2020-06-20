@@ -1,5 +1,6 @@
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/api/router.dart';
+import 'package:app_singleapp/common/stream_valley.dart';
 import 'package:app_singleapp/utils/custom_cursor.dart';
 import 'package:app_singleapp/widgets/common/fh_circle_icon_button.dart';
 import 'package:app_singleapp/widgets/common/fh_portfolio_selector.dart';
@@ -73,36 +74,44 @@ class _MenuContainer extends StatelessWidget {
               ),
               SizedBox(height: 16),
               _MenuFeaturesOptionsWidget(),
-              if (mrBloc.userIsAnyPortfolioOrSuperAdmin)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          left: 16.0, top: 32.0, bottom: 8.0),
-                      child: Text(
-                        'Application Settings',
-                        style: Theme.of(context).textTheme.caption,
-                      ),
-                    ),
-                    _ApplicationSettings(),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.only(
-                              left: 16.0, top: 32.0, bottom: 8.0),
-                          child: Text(
-                            'Portfolio Settings',
-                            style: Theme.of(context).textTheme.caption,
+              StreamBuilder<ReleasedPortfolio>(
+                  stream: mrBloc.personState.isCurrentPortfolioOrSuperAdmin,
+                  builder: (context, snapshot) {
+                    if (snapshot.data != null &&
+                        (snapshot.data.currentPortfolioOrSuperAdmin == true)) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                left: 16.0, top: 32.0, bottom: 8.0),
+                            child: Text(
+                              'Application Settings',
+                              style: Theme.of(context).textTheme.caption,
+                            ),
                           ),
-                        ),
-                        _MenuPortfolioAdminOptionsWidget(),
-                        _MenuDivider(),
-                      ],
-                    ),
-                  ],
-                ),
+                          _ApplicationSettings(),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 16.0, top: 32.0, bottom: 8.0),
+                                child: Text(
+                                  'Portfolio Settings',
+                                  style: Theme.of(context).textTheme.caption,
+                                ),
+                              ),
+                              _MenuPortfolioAdminOptionsWidget(),
+                              _MenuDivider(),
+                            ],
+                          ),
+                        ],
+                      );
+                    } else {
+                      return Container();
+                    }
+                  }),
               mrBloc.userIsSuperAdmin
                   ? Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -141,9 +150,11 @@ class _SiteAdminOptionsWidget extends StatelessWidget {
                 name: 'Portfolios',
                 iconData: MaterialCommunityIcons.briefcase_plus_outline,
                 path: '/portfolios',
+                permissionType: PermissionType.portfolioadmin,
                 params: {}),
             _MenuItem(
                 name: 'Users',
+                permissionType: PermissionType.portfolioadmin,
                 iconData: AntDesign.addusergroup,
                 path: '/manage-users',
                 params: {}),
@@ -166,10 +177,12 @@ class _MenuPortfolioAdminOptionsWidget extends StatelessWidget {
                   name: 'Groups',
                   iconData: MaterialIcons.people_outline,
                   path: '/manage-group',
+                  permissionType: PermissionType.portfolioadmin,
                   params: {}),
               _MenuItem(
                   name: 'Service Accounts',
                   iconData: AntDesign.tool,
+                  permissionType: PermissionType.portfolioadmin,
                   path: '/manage-service-accounts',
                   params: {}),
             ]);
@@ -194,6 +207,7 @@ class _ApplicationSettings extends StatelessWidget {
                   name: 'Environments',
                   iconData: AntDesign.bars,
                   path: '/manage-app',
+                  permissionType: PermissionType.portfolioadmin,
                   params: {
                     'tab-name': ['environments']
                   }),
@@ -201,6 +215,7 @@ class _ApplicationSettings extends StatelessWidget {
                   name: 'Group permissions',
                   iconData: MaterialCommunityIcons.check_box_multiple_outline,
                   path: '/manage-app',
+                  permissionType: PermissionType.portfolioadmin,
                   params: {
                     'tab-name': ['group-permissions']
                   }),
@@ -208,6 +223,7 @@ class _ApplicationSettings extends StatelessWidget {
                   name: 'Service account permissions',
                   iconData: MaterialCommunityIcons.cogs,
                   path: '/manage-app',
+                  permissionType: PermissionType.portfolioadmin,
                   params: {
                     'tab-name': ['service-accounts']
                   }),
@@ -254,6 +270,7 @@ class _MenuItem extends StatelessWidget {
   final iconSize;
   final String path;
   final Map<String, List<String>> params;
+  final PermissionType permissionType;
 
   const _MenuItem(
       {Key key,
@@ -261,6 +278,7 @@ class _MenuItem extends StatelessWidget {
       this.iconData,
       this.path,
       this.params,
+      this.permissionType = PermissionType.regular,
       this.iconSize})
       : super(key: key);
 
@@ -276,12 +294,17 @@ class _MenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
+    final menuOkForThisUser = (bloc.userIsCurrentPortfolioAdmin ||
+        permissionType == PermissionType.regular);
     return CustomCursor(
         child: InkWell(
       hoverColor: Theme.of(context).selectedRowColor,
       onTap: () {
-        return ManagementRepositoryClientBloc.router.navigateTo(context, path,
-            replace: true, transition: TransitionType.material, params: params);
+        if (menuOkForThisUser) {
+          ManagementRepositoryClientBloc.router.navigateTo(context, path,
+              transition: TransitionType.material, params: params);
+        }
       },
       child: StreamBuilder<RouteChange>(
           stream: BlocProvider.of<ManagementRepositoryClientBloc>(context)
@@ -290,7 +313,6 @@ class _MenuItem extends StatelessWidget {
             if (snapshot.hasData) {
               final selected = snapshot.data.route == path &&
                   equalsParams(snapshot.data.params);
-
               return Container(
                 padding: EdgeInsets.fromLTRB(16, 12, 0, 12),
                 color: selected ? Color(0xffe5e7f1) : null,
@@ -311,11 +333,23 @@ class _MenuItem extends StatelessWidget {
                               style: GoogleFonts.roboto(
                                 textStyle:
                                     Theme.of(context).textTheme.bodyText2,
-                                fontWeight: FontWeight.w600,
-                                color: Theme.of(context).primaryColor,
+                                fontWeight: menuOkForThisUser
+                                    ? FontWeight.w600
+                                    : FontWeight.w100,
+                                color: menuOkForThisUser
+                                    ? Theme.of(context).primaryColor
+                                    : Colors.red,
                               ))
-                          : Text(' ${name}',
-                              style: Theme.of(context).textTheme.bodyText2),
+                          : Text(
+                              ' ${name}',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyText2
+                                  .copyWith(
+                                      color: menuOkForThisUser
+                                          ? null
+                                          : Colors.red),
+                            ),
                     )
                   ],
                 ),

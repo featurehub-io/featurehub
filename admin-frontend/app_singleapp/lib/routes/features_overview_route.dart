@@ -1,5 +1,6 @@
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/api/router.dart';
+import 'package:app_singleapp/common/stream_valley.dart';
 import 'package:app_singleapp/widgets/common/application_drop_down.dart';
 import 'package:app_singleapp/widgets/common/decorations/fh_page_divider.dart';
 import 'package:app_singleapp/widgets/common/fh_flat_button_accent.dart';
@@ -79,11 +80,12 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
                 if (snapshot.hasData && snapshot.data.isEmpty) {
                   return Container(
                       padding: EdgeInsets.only(left: 30.0),
-                      child: StreamBuilder<bool>(
+                      child: StreamBuilder<ReleasedPortfolio>(
                           stream: bloc.mrClient.personState
                               .isCurrentPortfolioOrSuperAdmin,
                           builder: (context, snapshot) {
-                            if (snapshot.hasData && snapshot.data) {
+                            if (snapshot.hasData &&
+                                snapshot.data.currentPortfolioOrSuperAdmin) {
                               return Row(
                                 children: <Widget>[
                                   Text(
@@ -97,7 +99,6 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
                                           ManagementRepositoryClientBloc.router
                                               .navigateTo(
                                                   context, '/manage-app',
-                                                  replace: true,
                                                   transition:
                                                       TransitionType.material)),
                                 ],

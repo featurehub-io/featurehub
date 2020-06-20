@@ -130,7 +130,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
                   }
                   ManagementRepositoryClientBloc.router.navigateTo(
                       context, '/manage-users',
-                      replace: true, transition: TransitionType.material);
+                      transition: TransitionType.material);
                 },
                 title: 'Cancel',
                 keepCase: true),
@@ -146,7 +146,6 @@ class _EditUserFormState extends State<EditUserFormWidget> {
                               'User ${bloc.person.name} has been updated'));
                           ManagementRepositoryClientBloc.router.navigateTo(
                               context, '/manage-users',
-                              replace: true,
                               transition: TransitionType.material);
                         } catch (e, s) {
                           bloc.mrClient.dialogError(e, s);
