@@ -279,7 +279,10 @@ class _FeatureTableWithHiddenList extends StatelessWidget {
       height: _headerHeight,
       child: Row(
         children: [
-          Text('Hidden environments'),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text('Hidden environments'),
+          ),
           Flexible(
             child: Container(
               height: _headerHeight,
@@ -290,10 +293,10 @@ class _FeatureTableWithHiddenList extends StatelessWidget {
                       scrollDirection: Axis.horizontal,
                       children: [
                         if (snapshot.hasData)
-                          ...snapshot.data.map((e) {
-                            final env =
-                                bloc.featureStatus.applicationEnvironments[e];
+                          ..._sortedEnvironments(bloc, snapshot.data)
+                              .map((env) {
                             return _FeatureTabEnvironmentWithCheck(
+                                rowLayout: true,
                                 envId: env.environmentId,
                                 name: env.environmentName);
                           }).toList(),
@@ -306,17 +309,42 @@ class _FeatureTableWithHiddenList extends StatelessWidget {
       ),
     );
   }
+
+  List<EnvironmentFeatureValues> _sortedEnvironments(
+      _TabsBloc bloc, Set<String> envIds) {
+    final envs = bloc.featureStatus.applicationFeatureValues.environments
+        .where((e) => envIds.contains(e.environmentId))
+        .toList();
+    envs.sort((e1, e2) => e1.environmentName.compareTo(e2.environmentName));
+    return envs;
+  }
 }
 
 class _FeatureTabEnvironmentWithCheck extends StatelessWidget {
   final String name;
   final String envId;
+  final bool rowLayout;
 
-  const _FeatureTabEnvironmentWithCheck({Key key, this.name, this.envId})
-      : super(key: key);
+  const _FeatureTabEnvironmentWithCheck(
+      {Key key, this.name, this.envId, bool rowLayout})
+      : this.rowLayout = rowLayout ?? false,
+        super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    if (rowLayout) {
+      return ActionChip(
+        avatar: CircleAvatar(
+          backgroundColor: Colors.white,
+          child: Icon(Icons.keyboard_arrow_down),
+        ),
+        label: Text(name),
+        onPressed: () {
+          BlocProvider.of<_TabsBloc>(context).hideEnvironment(envId);
+        },
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -336,7 +364,7 @@ class _FeatureTabEnvironmentWithCheck extends StatelessWidget {
 }
 
 final _unselectedRowHeight = 60.0;
-final _selectedRowHeight = 300.0;
+final _selectedRowHeight = 230.0;
 final _headerHeight = 80.0;
 
 class _FeatureTabsBodyHolder extends StatelessWidget {
