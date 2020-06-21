@@ -115,10 +115,10 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                       padding: const EdgeInsets.only(top: 14.0),
                       child: DropdownButton(
                         icon: Padding(
-                          padding: EdgeInsets.only(left: 16),
+                          padding: EdgeInsets.only(left: 8.0),
                           child: Icon(
                             Icons.keyboard_arrow_down,
-                            size: 16,
+                            size: 24,
                           ),
                         ),
                         isExpanded: false,

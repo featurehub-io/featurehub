@@ -113,10 +113,10 @@ with only 'Read' permission for service accounts.'''),
           builder: (context, snapshot) {
             return DropdownButton(
               icon: Padding(
-                padding: EdgeInsets.only(left: 16),
+                padding: EdgeInsets.only(left: 8.0),
                 child: Icon(
                   Icons.keyboard_arrow_down,
-                  size: 16,
+                  size: 24,
                 ),
               ),
               isExpanded: true,

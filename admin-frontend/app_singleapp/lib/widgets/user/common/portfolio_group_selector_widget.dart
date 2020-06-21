@@ -92,10 +92,10 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
                 decoration: FHFilledInputDecoration(labelText: 'Group'),
                 child: DropdownButton(
                   icon: Padding(
-                    padding: EdgeInsets.only(left: 16),
+                    padding: EdgeInsets.only(left: 8.0),
                     child: Icon(
                       Icons.keyboard_arrow_down,
-                      size: 16,
+                      size: 24,
                     ),
                   ),
                   isExpanded: true,
@@ -140,10 +140,10 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
                   decoration: FHFilledInputDecoration(labelText: 'Portfolio'),
                   child: DropdownButton(
                     icon: Padding(
-                      padding: EdgeInsets.only(left: 16),
+                      padding: EdgeInsets.only(left: 8.0),
                       child: Icon(
                         Icons.keyboard_arrow_down,
-                        size: 16,
+                        size: 24,
                       ),
                     ),
                     isExpanded: true,
