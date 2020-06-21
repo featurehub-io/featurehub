@@ -5,7 +5,6 @@ import 'package:app_singleapp/widgets/apps/app_update_dialog_widget.dart';
 import 'package:app_singleapp/widgets/apps/manage_app_bloc.dart';
 import 'package:app_singleapp/widgets/common/decorations/fh_page_divider.dart';
 import 'package:app_singleapp/widgets/common/fh_header.dart';
-import 'package:app_singleapp/widgets/common/fh_icon_button.dart';
 import 'package:app_singleapp/widgets/common/fh_icon_text_button.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
@@ -172,7 +171,7 @@ class _ApplicationCard extends StatelessWidget {
                             if (snapshot.data != null &&
                                 (snapshot.data.currentPortfolioOrSuperAdmin ==
                                     true)) {
-                              return _AdminActions(
+                              return _PopUpAdminMenu(
                                 bloc: bloc,
                                 application: application,
                               );
@@ -304,51 +303,6 @@ class _NumberAndIcon extends StatelessWidget {
     );
   }
 }
-
-class _AdminActions extends StatelessWidget {
-  final ManageAppBloc bloc;
-  final Application application;
-
-  const _AdminActions(
-      {Key key, @required this.bloc, @required this.application})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(left: 10),
-      child: Row(children: <Widget>[
-        FHIconButton(
-            width: 30.0,
-            icon: Icon(Icons.edit,
-                color: Theme
-                    .of(context)
-                    .buttonColor, size: 16.0),
-            onPressed: () =>
-                bloc.mrClient
-                    .addOverlay((BuildContext context) =>
-                    AppUpdateDialogWidget(
-                      bloc: bloc,
-                      application: application,
-                    ))),
-        FHIconButton(
-            width: 30.0,
-            icon: Icon(Icons.delete,
-                color: Theme
-                    .of(context)
-                    .buttonColor, size: 16.0),
-            onPressed: () =>
-                bloc.mrClient.addOverlay((BuildContext context) {
-                  return AppDeleteDialogWidget(
-                    bloc: bloc,
-                    application: application,
-                  );
-                }))
-      ]),
-    );
-  }
-}
-
 class _NumberContainer extends StatelessWidget {
   final Widget child;
 
@@ -363,5 +317,56 @@ class _NumberContainer extends StatelessWidget {
           color: Colors.white,
         ),
         child: child);
+  }
+}
+
+class _PopUpAdminMenu extends StatelessWidget {
+  final ManageAppBloc bloc;
+  final Application application;
+
+  const _PopUpAdminMenu({Key key, this.bloc, this.application})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 34,
+      child: PopupMenuButton(
+        icon: Icon(
+          Icons.more_vert,
+          size: 22.0,
+        ),
+        onSelected: (value) {
+          print(value);
+          if (value == 'edit') {
+            bloc.mrClient
+                .addOverlay((BuildContext context) => AppUpdateDialogWidget(
+                      bloc: bloc,
+                      application: application,
+                    ));
+          }
+          if (value == 'delete') {
+            bloc.mrClient.addOverlay((BuildContext context) {
+              return AppDeleteDialogWidget(
+                bloc: bloc,
+                application: application,
+              );
+            });
+          }
+        },
+        itemBuilder: (BuildContext context) {
+          return [
+            PopupMenuItem(
+                value: 'edit',
+                child:
+                    Text('Edit', style: Theme.of(context).textTheme.bodyText2)),
+            PopupMenuItem(
+                value: 'delete',
+                child: Text('Delete',
+                    style: Theme.of(context).textTheme.bodyText2))
+          ];
+        },
+      ),
+    );
   }
 }
