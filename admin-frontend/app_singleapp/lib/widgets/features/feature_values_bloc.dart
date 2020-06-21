@@ -5,19 +5,20 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart';
 
+import 'feature_status_bloc.dart';
 import 'feature_value_status_tags.dart';
 
 class FeatureValuesBloc implements Bloc {
   final Feature feature;
   final String applicationId;
   final ManagementRepositoryClientBloc mrClient;
-  FeatureServiceApi _featureServiceApi;
   EnvironmentServiceApi _environmentServiceApi;
   // environment id, FeatureValue - there may be values in here that are not used, we honour `_dirty` to determine if we use them
   final _newFeatureValues = <String, FeatureValue>{};
   final _originalFeatureValues = <String, FeatureValue>{};
   final _fvUpdates = <String, BehaviorSubject<FeatureValue>>{};
   final ApplicationFeatureValues applicationFeatureValues;
+  final FeatureStatusBloc _featureStatusBloc;
 
   // environmentId, true/false (if dirty)
   final _dirty = <String, bool>{};
@@ -63,10 +64,12 @@ class FeatureValuesBloc implements Bloc {
       this.feature,
       this.mrClient,
       List<FeatureValue> featureValuesThisFeature,
+      FeatureStatusBloc featureStatusBloc,
       this.applicationFeatureValues)
       : assert(applicationFeatureValues != null),
+        assert(featureStatusBloc != null),
+        _featureStatusBloc = featureStatusBloc,
         assert(mrClient != null) {
-    _featureServiceApi = FeatureServiceApi(mrClient.apiClient);
     _environmentServiceApi = EnvironmentServiceApi(mrClient.apiClient);
     // lets get this party started
 
@@ -151,8 +154,10 @@ class FeatureValuesBloc implements Bloc {
     });
 
     // TODO: catching of error, reporting of dialog
-    await _featureServiceApi.updateAllFeatureValuesByApplicationForKey(
-        applicationId, feature.key, updates);
+    await _featureStatusBloc.updateAllFeatureValuesByApplicationForKey(
+        feature, updates);
+
+    _dirtyBS.add(false);
 
     return true;
   }

@@ -103,16 +103,7 @@ Widget serviceAccount(mrBloc, {params}) {
 Widget featureStatus(ManagementRepositoryClientBloc mrBloc, {params}) {
   return BlocProvider<FeatureStatusBloc>(
       creator: (_c, _b) => FeatureStatusBloc(mrBloc),
-      child: Builder(
-          builder: (context) =>
-              NotificationListener<RefreshFeatureNotification>(
-                onNotification: (ref) {
-                  BlocProvider.of<FeatureStatusBloc>(context)
-                      .refreshFeature(ref.featureId);
-                  return true;
-                },
-                child: FeatureStatusRoute(),
-              )));
+      child: Builder(builder: (context) => FeatureStatusRoute()));
 }
 
 Widget apps(mrBloc, {params}) {

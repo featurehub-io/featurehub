@@ -210,8 +210,13 @@ class _TabsBloc implements Bloc {
         .where((fv) => fv != null)
         .toList();
 
-    featureValueBlocs[feature.key] = FeatureValuesBloc(applicationId, feature,
-        mrClient, vals, featureStatus.applicationFeatureValues);
+    featureValueBlocs[feature.key] = FeatureValuesBloc(
+        applicationId,
+        feature,
+        mrClient,
+        vals,
+        featureStatusBloc,
+        featureStatus.applicationFeatureValues);
   }
 
   Feature findFeature(String key, String environmentId) {
@@ -398,7 +403,7 @@ class _FeatureTabsBodyHolder extends StatelessWidget {
                         )),
                     ...bloc.features.map(
                       (f) {
-                        return _FeatureTabFeatureNameCollapsed(
+                        return _FeatureTabFeatureNameFixedColumn(
                             tabsBloc: bloc, feature: f);
                       },
                     ).toList(),
@@ -569,11 +574,11 @@ class _FeatureTabFeatureValue extends StatelessWidget {
   }
 }
 
-class _FeatureTabFeatureNameCollapsed extends StatelessWidget {
+class _FeatureTabFeatureNameFixedColumn extends StatelessWidget {
   final _TabsBloc tabsBloc;
   final Feature feature;
 
-  const _FeatureTabFeatureNameCollapsed(
+  const _FeatureTabFeatureNameFixedColumn(
       {Key key, @required this.tabsBloc, @required this.feature})
       : super(key: key);
 
@@ -590,7 +595,7 @@ class _FeatureTabFeatureNameCollapsed extends StatelessWidget {
             child: Container(
                 padding: EdgeInsets.fromLTRB(0, 8, 0, 8),
                 height: amSelected ? _selectedRowHeight : _unselectedRowHeight,
-                width: amSelected ? 200.0 : 200.0,
+                width: amSelected ? 220.0 : 200.0,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -617,6 +622,9 @@ class _FeatureTabFeatureNameCollapsed extends StatelessWidget {
                                   style: TextStyle(
                                       fontFamily: 'Source', fontSize: 12)),
                               if (amSelected)
+                                _FeatureListenForUpdatedFeatureValues(
+                                    feature: feature, bloc: tabsBloc),
+                              if (amSelected)
                                 FeatureValueNameCell(feature: feature),
                               if (amSelected)
                                 FeatureEditDeleteCell(feature: feature)
@@ -629,6 +637,45 @@ class _FeatureTabFeatureNameCollapsed extends StatelessWidget {
                 )),
           );
         });
+  }
+}
+
+class _FeatureListenForUpdatedFeatureValues extends StatelessWidget {
+  final Feature feature;
+  final _TabsBloc bloc;
+
+  const _FeatureListenForUpdatedFeatureValues(
+      {Key key, this.feature, this.bloc})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final featureBloc = bloc.featureValueBlocs[feature.key];
+
+    return StreamBuilder<bool>(
+      stream: featureBloc.anyDirty,
+      builder: (context, snapshot) {
+        if (snapshot.data == true) {
+          return Row(
+            children: [
+              FHFlatButtonTransparent(
+                title: 'Reset',
+                onPressed: () => featureBloc.reset(),
+              ),
+              FHFlatButtonTransparent(
+                title: 'Save',
+                onPressed: () => featureBloc.updateDirtyStates(),
+              )
+            ],
+          );
+        }
+
+        return SizedBox.shrink();
+      },
+    );
+
+    // TODO: implement build
+    throw UnimplementedError();
   }
 }
 
