@@ -3,46 +3,12 @@ import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/common/fh_footer_button_bar.dart';
 import 'package:app_singleapp/widgets/common/fh_json_editor.dart';
 import 'package:app_singleapp/widgets/common/fh_outline_button.dart';
-import 'package:app_singleapp/widgets/features/feature_status_bloc.dart';
 import 'package:app_singleapp/widgets/features/feature_value_row_generic.dart';
-import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 
 import 'feature_value_row_locked.dart';
 import 'feature_values_bloc.dart';
-
-class FeatureValueEditJson {
-  static TableRow build(BuildContext context, LineStatusFeature featureStatuses,
-      Feature feature) {
-    final fvBloc = BlocProvider.of<FeatureValuesBloc>(context);
-    final bs = BorderSide(
-        color: Theme.of(context).buttonColor,
-        width: 2.0,
-        style: BorderStyle.solid);
-
-    return TableRow(
-        decoration: BoxDecoration(
-          border: Border(left: bs, right: bs),
-        ),
-        children: [
-          FeatureEditDeleteCell(
-            feature: feature,
-          ),
-          ...featureStatuses.environmentFeatureValues
-              .map((e) => Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: <Widget>[
-                      FeatureValueJsonEnvironmentCell(
-                          environmentFeatureValue: e,
-                          feature: feature,
-                          fvBloc: fvBloc),
-                    ],
-                  ))
-              .toList()
-        ]);
-  }
-}
 
 class FeatureValueJsonEnvironmentCell extends StatefulWidget {
   final EnvironmentFeatureValues environmentFeatureValue;

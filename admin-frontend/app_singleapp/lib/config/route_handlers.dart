@@ -3,7 +3,6 @@ import 'package:app_singleapp/api/router.dart';
 import 'package:app_singleapp/routes/apps_route.dart';
 import 'package:app_singleapp/routes/create_user_route.dart';
 import 'package:app_singleapp/routes/edit_user_route.dart';
-import 'package:app_singleapp/routes/features_latest.dart';
 import 'package:app_singleapp/routes/features_overview_route.dart';
 import 'package:app_singleapp/routes/landing_route.dart';
 import 'package:app_singleapp/routes/manage_app_route.dart';
@@ -16,7 +15,6 @@ import 'package:app_singleapp/widgets/apps/apps_bloc.dart';
 import 'package:app_singleapp/widgets/apps/manage_app_bloc.dart';
 import 'package:app_singleapp/widgets/apps/manage_service_accounts_bloc.dart';
 import 'package:app_singleapp/widgets/features/feature_status_bloc.dart';
-import 'package:app_singleapp/widgets/features/features_latest_bloc.dart';
 import 'package:app_singleapp/widgets/group/group_bloc.dart';
 import 'package:app_singleapp/widgets/portfolio/portfolio_bloc.dart';
 import 'package:app_singleapp/widgets/simple_widget.dart';
@@ -130,10 +128,4 @@ Widget manageApp(mrBloc, {params}) {
 
 Widget featureValues(mrBloc, {params}) {
   return Container();
-}
-
-Widget featuresLatest(mrBloc, {params}) {
-  return BlocProvider<FeaturesLatestBloc>(
-      creator: (_context, _bag) => FeaturesLatestBloc(mrBloc),
-      child: FeaturesLatestRoute());
 }

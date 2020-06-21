@@ -1,6 +1,4 @@
-import 'package:app_singleapp/widgets/features/feature_status_bloc.dart';
 import 'package:app_singleapp/widgets/features/feature_value_row_generic.dart';
-import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 
@@ -74,30 +72,6 @@ class _FeatureValueStringEnvironmentCellState
                 }),
           ));
         });
-  }
-}
-
-class FeatureValueEditString {
-  static TableRow build(BuildContext context, LineStatusFeature featureStatuses,
-      Feature feature) {
-    final fvBloc = BlocProvider.of<FeatureValuesBloc>(context);
-
-    return TableRow(children: [
-      FeatureEditDeleteCell(
-        feature: feature,
-      ),
-      ...featureStatuses.environmentFeatureValues
-          .map((e) => Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: <Widget>[
-                  FeatureValueStringEnvironmentCell(
-                      environmentFeatureValue: e,
-                      feature: feature,
-                      fvBloc: fvBloc),
-                ],
-              ))
-          .toList()
-    ]);
   }
 }
 

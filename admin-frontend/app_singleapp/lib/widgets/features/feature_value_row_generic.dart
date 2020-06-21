@@ -231,30 +231,3 @@ class FeatureValueActionCell extends StatelessWidget {
     );
   }
 }
-
-class FeatureValueUpdatedBy {
-  static TableRow build(BuildContext context, LineStatusFeature featureStatuses,
-      Feature feature) {
-    final fvBloc = BlocProvider.of<FeatureValuesBloc>(context);
-
-    return TableRow(children: [
-      Text(''),
-      ...featureStatuses.environmentFeatureValues
-          .map((e) => FeatureValueUpdatedByCell(
-              environmentFeatureValue: e, feature: feature, fvBloc: fvBloc))
-          .toList()
-    ]);
-  }
-}
-
-class FeatureValueActions {
-  static TableRow build(BuildContext context, LineStatusFeature featureStatuses,
-      Feature feature, Function closeCallback) {
-    return TableRow(children: [
-      ...featureStatuses.environmentFeatureValues
-          .map((e) => SizedBox.shrink())
-          .toList(),
-      FeatureValueActionCell(closeCallback: closeCallback),
-    ]);
-  }
-}

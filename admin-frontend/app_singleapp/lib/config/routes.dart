@@ -43,9 +43,6 @@ class Routes {
     router.define('/feature-values',
         handler: handleRouteChangeRequest(featureValues),
         transitionType: TransitionType.fadeIn);
-    router.define('/features-latest',
-        handler: handleRouteChangeRequest(featuresLatest),
-        transitionType: TransitionType.fadeIn);
 
     //Admin routes
     router.define('/create-user',

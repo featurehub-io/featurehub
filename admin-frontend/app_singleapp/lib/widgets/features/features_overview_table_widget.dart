@@ -362,7 +362,7 @@ class _FeatureTabEnvironmentWithCheck extends StatelessWidget {
 }
 
 final _unselectedRowHeight = 60.0;
-final _selectedRowHeight = 230.0;
+final _selectedRowHeight = 300.0;
 final _headerHeight = 80.0;
 
 class _FeatureTabsBodyHolder extends StatelessWidget {
