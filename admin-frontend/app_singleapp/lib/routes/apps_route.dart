@@ -183,86 +183,8 @@ class _ApplicationCard extends StatelessWidget {
                   ),
                   Column(
                     children: [
-//                      FHPageDivider(),
                       SizedBox(height: 4.0),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          if (application.environments.length
-                              .toString()
-                              .isNotEmpty)
-                            _NumberAndIcon(
-                              tooltipText: 'Environments',
-                              text: application.environments.length.toString(),
-                              icon: Icon(AntDesign.bars,
-                                  size: 16.0, color: Colors.deepPurpleAccent),
-                            ),
-                          if (application.features
-                              .where((element) =>
-                          element.valueType == FeatureValueType.BOOLEAN)
-                              .toList()
-                              .isNotEmpty)
-                            _NumberAndIcon(
-                              tooltipText: 'Feature flags',
-                              text: application.features
-                                  .where((element) =>
-                              element.valueType ==
-                                  FeatureValueType.BOOLEAN)
-                                  .toList()
-                                  .length
-                                  .toString(),
-                              icon: Icon(Icons.flag,
-                                  size: 16.0, color: Colors.green),
-                            ),
-                          if ((application.features
-                              .where((element) =>
-                          element.valueType ==
-                              FeatureValueType.STRING)
-                              .toList()
-                              .isNotEmpty) ||
-                              (application.features
-                                  .where((element) =>
-                              element.valueType ==
-                                  FeatureValueType.NUMBER)
-                                  .toList()
-                                  .isNotEmpty))
-                            _NumberAndIcon(
-                              tooltipText: 'Feature values',
-                              icon: Icon(Icons.code,
-                                  size: 16.0, color: Colors.blue),
-                              text: (((application.features
-                                  .where((element) =>
-                              element.valueType ==
-                                  FeatureValueType.STRING)
-                                  .toList()
-                                  .length) +
-                                  (application.features
-                                      .where((element) =>
-                                  element.valueType ==
-                                      FeatureValueType.NUMBER)
-                                      .toList()
-                                      .length))
-                                  .toString()),
-                            ),
-                          if (application.features
-                              .where((element) =>
-                          element.valueType == FeatureValueType.JSON)
-                              .toList()
-                              .isNotEmpty)
-                            _NumberAndIcon(
-                              text: application.features
-                                  .where((element) =>
-                              element.valueType ==
-                                  FeatureValueType.JSON)
-                                  .toList()
-                                  .length
-                                  .toString(),
-                              tooltipText: 'Configurations',
-                              icon: Icon(Icons.device_hub,
-                                  size: 16.0, color: Colors.orange),
-                            ),
-                        ],
-                      ),
+                      _AppTotals(application: application),
                     ],
                   )
                 ],
@@ -271,6 +193,83 @@ class _ApplicationCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _AppTotals extends StatelessWidget {
+  const _AppTotals({
+    Key key,
+    @required this.application,
+  }) : super(key: key);
+
+  final Application application;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        if (application.environments.length.toString().isNotEmpty)
+          _NumberAndIcon(
+            tooltipText: 'Environments',
+            text: application.environments.length.toString(),
+            icon: Icon(AntDesign.bars,
+                size: 16.0, color: Colors.deepPurpleAccent),
+          ),
+        if (application.features
+            .where((element) => element.valueType == FeatureValueType.BOOLEAN)
+            .toList()
+            .isNotEmpty)
+          _NumberAndIcon(
+            tooltipText: 'Feature flags',
+            text: application.features
+                .where(
+                    (element) => element.valueType == FeatureValueType.BOOLEAN)
+                .toList()
+                .length
+                .toString(),
+            icon: Icon(Icons.flag, size: 16.0, color: Colors.green),
+          ),
+        if ((application.features
+                .where(
+                    (element) => element.valueType == FeatureValueType.STRING)
+                .toList()
+                .isNotEmpty) ||
+            (application.features
+                .where(
+                    (element) => element.valueType == FeatureValueType.NUMBER)
+                .toList()
+                .isNotEmpty))
+          _NumberAndIcon(
+            tooltipText: 'Feature values',
+            icon: Icon(Icons.code, size: 16.0, color: Colors.blue),
+            text: (((application.features
+                        .where((element) =>
+                            element.valueType == FeatureValueType.STRING)
+                        .toList()
+                        .length) +
+                    (application.features
+                        .where((element) =>
+                            element.valueType == FeatureValueType.NUMBER)
+                        .toList()
+                        .length))
+                .toString()),
+          ),
+        if (application.features
+            .where((element) => element.valueType == FeatureValueType.JSON)
+            .toList()
+            .isNotEmpty)
+          _NumberAndIcon(
+            text: application.features
+                .where((element) => element.valueType == FeatureValueType.JSON)
+                .toList()
+                .length
+                .toString(),
+            tooltipText: 'Configurations',
+            icon: Icon(Icons.device_hub, size: 16.0, color: Colors.orange),
+          ),
+      ],
     );
   }
 }
@@ -337,7 +336,6 @@ class _PopUpAdminMenu extends StatelessWidget {
           size: 22.0,
         ),
         onSelected: (value) {
-          print(value);
           if (value == 'edit') {
             bloc.mrClient
                 .addOverlay((BuildContext context) => AppUpdateDialogWidget(

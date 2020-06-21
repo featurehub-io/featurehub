@@ -2,8 +2,6 @@ import 'dart:async';
 
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/api/router.dart';
-import 'package:app_singleapp/widgets/apps/app_delete_dialog_widget.dart';
-import 'package:app_singleapp/widgets/apps/app_update_dialog_widget.dart';
 import 'package:app_singleapp/widgets/apps/group_permissions_widget.dart';
 import 'package:app_singleapp/widgets/apps/manage_app_bloc.dart';
 import 'package:app_singleapp/widgets/apps/service_account_permissions_widget.dart';
@@ -11,7 +9,6 @@ import 'package:app_singleapp/widgets/common/application_drop_down.dart';
 import 'package:app_singleapp/widgets/common/decorations/fh_page_divider.dart';
 import 'package:app_singleapp/widgets/common/fh_card.dart';
 import 'package:app_singleapp/widgets/common/fh_header.dart';
-import 'package:app_singleapp/widgets/common/fh_icon_button.dart';
 import 'package:app_singleapp/widgets/environments/env_list_widget.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
@@ -74,48 +71,6 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
                 }),
           ],
         ));
-  }
-
-  Widget _getAdminActions(ManageAppBloc bloc) {
-    return Container(
-      padding: EdgeInsets.only(left: 10),
-      child: Row(children: <Widget>[
-        StreamBuilder<String>(
-            stream: bloc.mrClient.streamValley.currentAppIdStream,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return Row(children: <Widget>[
-                  FHIconButton(
-                      icon: Icon(Icons.edit,
-                          color: Theme
-                              .of(context)
-                              .buttonColor),
-                      onPressed: () =>
-                          bloc.mrClient.addOverlay(
-                                  (BuildContext context) =>
-                                  AppUpdateDialogWidget(
-                                    bloc: bloc,
-                                    application: bloc.application,
-                                  ))),
-                  FHIconButton(
-                      icon: Icon(Icons.delete,
-                          color: Theme
-                              .of(context)
-                              .buttonColor),
-                      onPressed: () =>
-                          bloc.mrClient.addOverlay((BuildContext context) {
-                            return AppDeleteDialogWidget(
-                              bloc: bloc,
-                              application: bloc.application,
-                            );
-                          }))
-                ]);
-              } else {
-                return Container();
-              }
-            }),
-      ]),
-    );
   }
 }
 
