@@ -102,14 +102,14 @@ func (c *StreamingClient) handleEvents() {
 		event := <-c.apiClient.Events
 
 		// Handle the different types of events that can be received on this channel:
-		switch event.Event() {
+		switch models.Event(event.Event()) {
 
 		// Control messages:
-		case "ack", "bye":
+		case models.SSEAck, models.SSEBye:
 			c.logger.WithField("event", event.Event()).Trace("Received SSE control event")
 
 		// Errors (from the SSE client):
-		case "error":
+		case models.SSEError:
 
 			// If we're already running then just log an error, otherwise panic:
 			if c.hasData {
@@ -119,11 +119,11 @@ func (c *StreamingClient) handleEvents() {
 			}
 
 		// Failures (from the FeatureHub server):
-		case "failure":
+		case models.FHFailure:
 			c.logger.WithError(&errors.ErrFromAPI{}).WithField("event", event.Event()).WithField("message", event.Data()).Fatal("Failure from FeatureHub server")
 
 		// An entire feature set (replaces what we currently have):
-		case "features":
+		case models.FHFeatures:
 			// Unmarshal the event payload:
 			features := []*models.FeatureState{}
 			if err := json.Unmarshal([]byte(event.Data()), &features); err != nil {
@@ -145,7 +145,7 @@ func (c *StreamingClient) handleEvents() {
 			c.logger.Debugf("Received %d features from server", len(features))
 
 		// One specific feature (replaces the previous version):
-		case "feature":
+		case models.FHFeature:
 			// Unmarshal the event payload:
 			feature := &models.FeatureState{}
 			if err := json.Unmarshal([]byte(event.Data()), feature); err != nil {
