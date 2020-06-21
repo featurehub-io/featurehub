@@ -25,9 +25,8 @@ func TestStreamingClient(t *testing.T) {
 
 	// Make a test config (with an incorrect server address):
 	config := &Config{
-		APIKey:        "my-secret-api-key",
-		EnvironmentID: "environment-id",
 		LogLevel:      logrus.TraceLevel,
+		SDKKey:        "default/environment-id/my-secret-api-key",
 		ServerAddress: "http://streams.test:8086",
 		WaitForData:   true,
 	}
@@ -59,10 +58,6 @@ func TestStreamingClient(t *testing.T) {
 
 	// Start handling events:
 	client.Start()
-
-	// Check that we can build the correct Features URL:
-	featuresURL := client.buildFeaturesURL()
-	assert.Equal(t, "http://streams.test:8086/features/default/environment-id/my-secret-api-key", featuresURL)
 
 	// Look for a feature that doesn't exist:
 	_, err = client.GetFeature("something-that-does-not-exist")

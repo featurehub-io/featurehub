@@ -2,7 +2,6 @@ package client
 
 import (
 	"encoding/json"
-	"fmt"
 	"sync"
 	"time"
 
@@ -55,7 +54,7 @@ func NewStreamingClient(config *Config) (*StreamingClient, error) {
 	logger.WithField("server_address", client.config.ServerAddress).Info("Subscribing to FeatureHub server")
 
 	// Prepare an API client:
-	apiClient, err := eventsource.Subscribe(client.buildFeaturesURL(), "")
+	apiClient, err := eventsource.Subscribe(config.featuresURL(), "")
 	if err != nil {
 		client.logger.WithError(err).Error("Error subscribing to server")
 		return nil, err
@@ -77,11 +76,6 @@ func (c *StreamingClient) Start() {
 		time.Sleep(time.Second)
 	}
 
-}
-
-// buildFeaturesURL give us the full URL for receiving features:
-func (c *StreamingClient) buildFeaturesURL() string {
-	return fmt.Sprintf("%s/features/%s/%s/%s", c.config.ServerAddress, c.config.NamedCache, c.config.EnvironmentID, c.config.APIKey)
 }
 
 // handleErrors deals with incoming server-side errors:
