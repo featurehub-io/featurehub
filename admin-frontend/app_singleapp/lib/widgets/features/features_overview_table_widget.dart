@@ -345,20 +345,18 @@ class _FeatureTabEnvironmentWithCheck extends StatelessWidget {
       );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Checkbox(
-          value: true,
-          onChanged: (b) {
-            BlocProvider.of<_TabsBloc>(context).hideEnvironment(envId);
-          },
-        ),
-        Text(
-          name,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ],
+    return ActionChip(
+      avatar: CircleAvatar(
+        backgroundColor: Colors.white,
+        child: Icon(Icons.keyboard_arrow_up),
+      ),
+      label: Text(
+        name,
+        overflow: TextOverflow.ellipsis,
+      ),
+      onPressed: () {
+        BlocProvider.of<_TabsBloc>(context).hideEnvironment(envId);
+      },
     );
   }
 }
@@ -382,7 +380,22 @@ class _FeatureTabsBodyHolder extends StatelessWidget {
               return Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Container(height: _headerHeight, child: Text('')),
+                    Container(
+                        height: _headerHeight,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(6.0),
+                                child: Text('Environments'),
+                              ),
+                              Icon(Icons.keyboard_arrow_right)
+                            ],
+                          ),
+                        )),
                     ...bloc.features.map(
                       (f) {
                         return _FeatureTabFeatureNameCollapsed(
@@ -511,7 +524,12 @@ class _FeatureTabFeatureValue extends StatelessWidget {
             cellWidget = GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: () => tabsBloc.hideOrShowFeature(feature),
-                child: cellWidget);
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    cellWidget,
+                  ],
+                ));
           } else if (feature == null) {
             cellWidget = Text('confused');
           } else {
