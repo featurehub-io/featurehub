@@ -108,7 +108,7 @@ func (c *StreamingClient) handleEvents() {
 		case "ack", "bye":
 			c.logger.WithField("event", event.Event()).Trace("Received SSE control event")
 
-		// Errors:
+		// Errors (from the SSE client):
 		case "error":
 
 			// If we're already running then just log an error, otherwise panic:
@@ -117,6 +117,10 @@ func (c *StreamingClient) handleEvents() {
 			} else {
 				c.logger.WithError(&errors.ErrFromAPI{}).WithField("event", event.Event()).WithField("message", event.Data()).Fatal("Error from API client")
 			}
+
+		// Failures (from the FeatureHub server):
+		case "failure":
+			c.logger.WithError(&errors.ErrFromAPI{}).WithField("event", event.Event()).WithField("message", event.Data()).Fatal("Failure from FeatureHub server")
 
 		// An entire feature set (replaces what we currently have):
 		case "features":
