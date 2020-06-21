@@ -7,11 +7,9 @@ import 'package:app_singleapp/widgets/common/decorations/fh_page_divider.dart';
 import 'package:app_singleapp/widgets/common/fh_header.dart';
 import 'package:app_singleapp/widgets/common/fh_icon_button.dart';
 import 'package:app_singleapp/widgets/common/fh_icon_text_button.dart';
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mrapi/api.dart';
 
 class AppsRoute extends StatefulWidget {
@@ -103,33 +101,32 @@ class _ApplicationCard extends StatelessWidget {
   final Application application;
   final ManageAppBloc bloc;
 
-  const _ApplicationCard({Key key, @required this.application, @required this.bloc})
+  const _ApplicationCard(
+      {Key key, @required this.application, @required this.bloc})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(8.0),
-      onTap: () {
-        bloc.setApplicationId(application.id); //is it the right function?
-        return {
-          ManagementRepositoryClientBloc.router.navigateTo(
-            context,
-            '/feature-status',
-          )
-        };
-      },
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0),
-          ),
-          elevation: 5.0,
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        elevation: 5.0,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8.0),
+          onTap: () {
+            bloc.setApplicationId(application.id); //is it the right function?
+            return {
+              ManagementRepositoryClientBloc.router.navigateTo(
+                context,
+                '/feature-status',
+              )
+            };
+          },
           child: Container(
-            color: Theme
-                .of(context)
-                .backgroundColor,
+            color: Theme.of(context).backgroundColor,
             width: 240,
             height: 150,
             child: Padding(
@@ -168,7 +165,6 @@ class _ApplicationCard extends StatelessWidget {
                           ],
                         ),
                       ),
-
                       StreamBuilder<ReleasedPortfolio>(
                           stream: bloc.mrClient.personState
                               .isCurrentPortfolioOrSuperAdmin,
@@ -180,12 +176,10 @@ class _ApplicationCard extends StatelessWidget {
                                 bloc: bloc,
                                 application: application,
                               );
-                            }
-                            else {
+                            } else {
                               return SizedBox();
                             }
-                          }
-                      )
+                          })
                     ],
                   ),
                   Column(
