@@ -41,7 +41,7 @@ public class ServiceAccountResource implements ServiceAccountServiceDelegate {
   public ServiceAccount createServiceAccountInPortfolio(String id, ServiceAccount serviceAccount, CreateServiceAccountInPortfolioHolder holder, SecurityContext securityContext) {
     Person person = authManager.from(securityContext);
 
-    if (authManager.isPortfolioAdmin(id, person)) {
+    if (authManager.isPortfolioAdmin(id, person) || authManager.isOrgAdmin(person)) {
       try {
         return serviceAccountApi.create(id, person, serviceAccount, new Opts().add(FillOpts.Permissions, holder.includePermissions));
       } catch (ServiceAccountApi.DuplicateServiceAccountException e) {
@@ -57,7 +57,7 @@ public class ServiceAccountResource implements ServiceAccountServiceDelegate {
   public Boolean delete(String id, DeleteHolder holder, SecurityContext securityContext) {
     Person person = authManager.from(securityContext);
 
-    if (authManager.isPortfolioAdmin(id, person)) {
+    if (authManager.isPortfolioAdmin(id, person) || authManager.isOrgAdmin(person)) {
       if (serviceAccountApi.delete(person, id)) {
         return true;
       };
@@ -82,7 +82,7 @@ public class ServiceAccountResource implements ServiceAccountServiceDelegate {
     }
 
     Person person = authManager.from(securityContext);
-    if (!authManager.isPortfolioAdmin(info.getPortfolioId(), person)) {
+    if (!authManager.isPortfolioAdmin(info.getPortfolioId(), person) && !authManager.isOrgAdmin(person)) {
       throw new ForbiddenException();
     }
 
@@ -100,7 +100,7 @@ public class ServiceAccountResource implements ServiceAccountServiceDelegate {
       throw new ForbiddenException();
     }
 
-    if (authManager.isPortfolioAdmin(id, person)) {
+    if (authManager.isPortfolioAdmin(id, person) || authManager.isOrgAdmin(person)) {
       ServiceAccount sa = serviceAccountApi.resetApiKey(id);
 
       if (sa == null) {
@@ -117,7 +117,7 @@ public class ServiceAccountResource implements ServiceAccountServiceDelegate {
   public List<ServiceAccount> searchServiceAccountsInPortfolio(String id, SearchServiceAccountsInPortfolioHolder holder, SecurityContext securityContext) {
     Person person = authManager.from(securityContext);
 
-    if (authManager.isPortfolioAdmin(id, person)) {
+    if (authManager.isPortfolioAdmin(id, person) || authManager.isOrgAdmin(person)) {
       return serviceAccountApi.search(id, holder.filter, holder.applicationId, new Opts().add(FillOpts.Permissions, holder.includePermissions));
     }
 
@@ -135,7 +135,7 @@ public class ServiceAccountResource implements ServiceAccountServiceDelegate {
       throw new BadRequestException("Duplicate environment ids were passed.");
     }
 
-    if (authManager.isPortfolioAdmin(id, person)) {
+    if (authManager.isPortfolioAdmin(id, person) || authManager.isOrgAdmin(person) ) {
       ServiceAccount result = null;
 
       try {
