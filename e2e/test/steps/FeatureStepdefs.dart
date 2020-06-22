@@ -164,4 +164,39 @@ class FeatureStepdefs {
       String lockStatus, String env, String featureKey) async {
     await _changeLock(lockStatus == 'lock', env, featureKey);
   }
+
+  @And(r'^I (can|cannot) (lock|unlock|read|change) the feature flag "(.*)"$')
+  void iCannotUnlockTheFeatureFlag(
+      String allowed, String lock, String featureKey) async {
+    final environment = shared.environment;
+
+    try {
+      FeatureValue featureValue = await userCommon.environmentFeatureServiceApi
+          .getFeatureForEnvironment(environment.id, featureKey);
+
+      if (lock == "read") {
+        assert(allowed == "can",
+            "was able to read and should not have been able to");
+
+        return;
+      }
+
+      if (lock.contains("lock")) {
+        await userCommon.environmentFeatureServiceApi
+            .updateFeatureForEnvironment(environment.id, featureKey,
+                featureValue..locked = (lock == "lock"));
+        assert((allowed == "can"),
+            "was able to $lock feature flag but shouldn't have been able to");
+      } else if (lock.contains("change")) {
+        await userCommon.environmentFeatureServiceApi
+            .updateFeatureForEnvironment(environment.id, featureKey,
+                featureValue..valueBoolean = !featureValue.valueBoolean);
+        assert(allowed == "can",
+            "we were able to change the feature value but should not have been able to.");
+      }
+    } catch (e) {
+      assert((allowed == "cannot"),
+          "was not able to $lock feature flag and should have been able to");
+    }
+  }
 }

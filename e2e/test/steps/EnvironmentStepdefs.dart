@@ -143,9 +143,12 @@ class EnvironmentStepdefs {
       String appName,
       String portfolioName) async {
     Application application = await _findApplication(portfolioName, appName);
+    shared.application = application;
     Group group = await _findGroup(portfolioName, groupName, true);
+    shared.group = group;
     var environment =
         await common.findExactEnvironment(envName, application.id);
+    shared.environment = environment;
     EnvironmentGroupRole egr = EnvironmentGroupRole();
     egr.groupId = group.id;
     egr.environmentId = environment.id;
@@ -157,7 +160,38 @@ class EnvironmentStepdefs {
     group.environmentRoles.add(egr);
     await common.groupService.updateGroup(group.id, group,
         includeGroupRoles: true, updateEnvironmentGroupRoles: true);
+  }
+
+  @And(
+      r'I ensure only permissions {string} are set on the group {string} for the env {string} for app {string} for portfolio {string}')
+  void iEnsureOnlyPermissionsAddedToTheGroupForTheEnvForAppForPortfolio(
+      String perms,
+      String groupName,
+      String envName,
+      String appName,
+      String portfolioName) async {
+    Application application = await _findApplication(portfolioName, appName);
     shared.application = application;
+    Group group = await _findGroup(portfolioName, groupName, true);
+    shared.group = group;
+    var environment =
+        await common.findExactEnvironment(envName, application.id);
+    assert(environment != null, 'we cannot find environment $envName');
+    shared.environment = environment;
+    EnvironmentGroupRole egr = EnvironmentGroupRole();
+    egr.groupId = group.id;
+    egr.environmentId = environment.id;
+    perms
+        .split(",")
+        .map((e) => e.trim())
+        .where((element) => element.length > 0 && element != 'NONE')
+        .forEach((p) {
+      egr.roles.add(RoleTypeTypeTransformer.fromJson(p));
+    });
+
+    group.environmentRoles.add(egr);
+    await common.groupService.updateGroup(group.id, group,
+        includeGroupRoles: true, updateEnvironmentGroupRoles: true);
   }
 
   @And(
