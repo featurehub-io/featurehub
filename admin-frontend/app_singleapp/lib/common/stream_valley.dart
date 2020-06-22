@@ -10,6 +10,9 @@ class ReleasedPortfolio {
   bool currentPortfolioOrSuperAdmin;
 }
 
+typedef findApplicationsFunc = Future<List<Application>> Function(
+    String portfolioId);
+
 class StreamValley {
   final ManagementRepositoryClientBloc mrClient;
   final PersonState personState;
@@ -38,7 +41,7 @@ class StreamValley {
     // we  have done our permission checks on it and swapped their route if they have no access
     currentPortfolioAdminOrSuperAdminSubscription =
         personState.isCurrentPortfolioOrSuperAdmin.listen((val) {
-          _currentPortfolioSource.add(val.portfolio);
+      _currentPortfolioSource.add(val.portfolio);
       final oldVal = _isCurrentPortfolioAdminOrSuperAdmin;
       _isCurrentPortfolioAdminOrSuperAdmin = val.currentPortfolioOrSuperAdmin;
       _refreshApplicationIdChanged();
@@ -166,16 +169,30 @@ class StreamValley {
     _currentEnvironmentServiceAccountSource.add(value);
   }
 
-  Future<void> getCurrentPortfolioApplications() async {
+  Future<void> getCurrentPortfolioApplications(
+      {findApplicationsFunc findApp}) async {
     List<Application> appList;
     if (currentPortfolioId != null) {
-      appList = await applicationServiceApi
-          .findApplications(currentPortfolioId, order: SortOrder.DESC)
-          .catchError(mrClient.dialogError);
+      if (findApp != null) {
+        appList =
+            await findApp(currentPortfolioId).catchError(mrClient.dialogError);
+      } else {
+        appList = await applicationServiceApi
+            .findApplications(currentPortfolioId,
+                order: SortOrder.DESC, includeEnvironments: true)
+            .catchError(mrClient.dialogError);
+      }
+
       currentPortfolioApplications = appList;
 
-      if (appList.isNotEmpty) {
-        currentAppId = appList[0].id;
+      // we refreshed the apps, is the current app id in the list anymore? if not
+      // we may have changed portfolios or deleted the app
+      if (!appList.map((a) => a.id).contains(currentAppId)) {
+        if (appList.isNotEmpty) {
+          currentAppId = appList[0].id;
+        } else {
+          currentAppId = null;
+        }
       }
     } else {
       currentPortfolioApplications = [];

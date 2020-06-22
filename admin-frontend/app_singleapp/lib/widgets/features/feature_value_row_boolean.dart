@@ -32,7 +32,7 @@ class FeatureValueBooleanEnvironmentCell extends StatelessWidget {
                     //Color(0xff11C8B5) : Color(0xffF44C49)
                     activeTrackColor: Color(0xff11C8B5),
                     activeColor: Colors.white,
-                    value: snap.data.valueBoolean,
+                    value: snap.data.valueBoolean ?? false,
                     inactiveTrackColor: Color(0xffF44C49),
                     onChanged: (value) {
                       snap.data.valueBoolean = !snap.data.valueBoolean;
@@ -46,7 +46,7 @@ class FeatureValueBooleanEnvironmentCell extends StatelessWidget {
                   //Color(0xff11C8B5) : Color(0xffF44C49)
                   activeTrackColor: Color(0xff11C8B5),
                   activeColor: Colors.white,
-                  value: snap.data.valueBoolean,
+                  value: snap.data.valueBoolean ?? false,
                   inactiveTrackColor: Colors.black12,
                   onChanged: null),
             ]);

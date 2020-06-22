@@ -110,6 +110,7 @@ class ManagementRepositoryClientBloc implements Bloc {
       if (currentRoute != null) {
         _routerSource.add(RouteChange.fromJson(currentRoute));
       }
+      // ignore: empty_catches
     } catch (e) {}
     ;
   }

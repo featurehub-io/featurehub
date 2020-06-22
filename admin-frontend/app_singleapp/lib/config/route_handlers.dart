@@ -1,5 +1,6 @@
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/api/router.dart';
+import 'package:app_singleapp/routes/apps_route.dart';
 import 'package:app_singleapp/routes/create_user_route.dart';
 import 'package:app_singleapp/routes/edit_user_route.dart';
 import 'package:app_singleapp/routes/features_latest.dart';
@@ -11,6 +12,7 @@ import 'package:app_singleapp/routes/manage_portfolios_route.dart';
 import 'package:app_singleapp/routes/manage_service_accounts_route.dart';
 import 'package:app_singleapp/routes/manage_users_route.dart';
 import 'package:app_singleapp/routes/register_url_route.dart';
+import 'package:app_singleapp/widgets/apps/apps_bloc.dart';
 import 'package:app_singleapp/widgets/apps/manage_app_bloc.dart';
 import 'package:app_singleapp/widgets/apps/manage_service_accounts_bloc.dart';
 import 'package:app_singleapp/widgets/features/feature_status_bloc.dart';
@@ -113,6 +115,11 @@ Widget featureStatus(ManagementRepositoryClientBloc mrBloc, {params}) {
                 },
                 child: FeatureStatusRoute(),
               )));
+}
+
+Widget apps(mrBloc, {params}) {
+  return BlocProvider<AppsBloc>(
+      creator: (_context, _bag) => AppsBloc(mrBloc), child: AppsRoute());
 }
 
 Widget manageApp(mrBloc, {params}) {

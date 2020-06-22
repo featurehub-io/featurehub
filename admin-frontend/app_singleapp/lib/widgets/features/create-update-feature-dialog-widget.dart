@@ -114,6 +114,13 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                   ? Padding(
                       padding: const EdgeInsets.only(top: 14.0),
                       child: DropdownButton(
+                        icon: Padding(
+                          padding: EdgeInsets.only(left: 8.0),
+                          child: Icon(
+                            Icons.keyboard_arrow_down,
+                            size: 24,
+                          ),
+                        ),
                         isExpanded: false,
                         items: FeatureValueType.values
                             .map((FeatureValueType dropDownStringItem) {
@@ -191,7 +198,8 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                     if (e is ApiException && e.code == 409) {
                       widget.bloc.mrClient.customError(
                           messageTitle:
-                              "Feature '${_featureName.text}' already exists");
+                          "Feature with key '${_featureKey
+                              .text}' already exists");
                     } else {
                       widget.bloc.mrClient.dialogError(e, s);
                     }

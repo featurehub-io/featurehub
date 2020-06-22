@@ -243,12 +243,23 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _MenuItem(
-      name: 'Features',
-      iconData: Ionicons.md_switch,
-      iconSize: 26,
-      path: '/feature-status',
-      params: {},
+    return Column(
+      children: [
+        _MenuItem(
+          name: 'Applications',
+          iconData: Icons.apps,
+          iconSize: 26,
+          path: '/applications',
+          params: {},
+        ),
+        _MenuItem(
+          name: 'Features',
+          iconData: Ionicons.md_switch,
+          iconSize: 26,
+          path: '/feature-status',
+          params: {},
+        ),
+      ],
     );
   }
 }
@@ -321,23 +332,14 @@ class _MenuItem extends StatelessWidget {
                           ? Text(' ${name}',
                               style: GoogleFonts.roboto(
                                 textStyle:
-                                    Theme.of(context).textTheme.bodyText2,
-                                fontWeight: menuOkForThisUser
-                                    ? FontWeight.w600
-                                    : FontWeight.w100,
-                                color: menuOkForThisUser
-                                    ? Theme.of(context).primaryColor
-                                    : Colors.red,
-                              ))
+                                      Theme.of(context).textTheme.bodyText2,
+                                  fontWeight: FontWeight.w600,
+                                  color: Theme.of(context).primaryColor))
                           : Text(
                               ' ${name}',
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyText2
-                                  .copyWith(
-                                      color: menuOkForThisUser
-                                          ? null
-                                          : Colors.red),
                             ),
                     )
                   ],

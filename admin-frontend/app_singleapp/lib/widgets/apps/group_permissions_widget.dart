@@ -82,6 +82,13 @@ class _GroupPermissionState extends State<GroupPermissionsWidget> {
     return Container(
       constraints: BoxConstraints(maxWidth: 250),
       child: DropdownButton(
+        icon: Padding(
+          padding: EdgeInsets.only(left: 8.0),
+          child: Icon(
+            Icons.keyboard_arrow_down,
+            size: 24,
+          ),
+        ),
         isDense: true,
         isExpanded: true,
         items: groups.map((Group group) {

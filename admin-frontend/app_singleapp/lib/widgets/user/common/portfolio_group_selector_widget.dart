@@ -91,6 +91,13 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
               child: InputDecorator(
                 decoration: FHFilledInputDecoration(labelText: 'Group'),
                 child: DropdownButton(
+                  icon: Padding(
+                    padding: EdgeInsets.only(left: 8.0),
+                    child: Icon(
+                      Icons.keyboard_arrow_down,
+                      size: 24,
+                    ),
+                  ),
                   isExpanded: true,
                   isDense: true,
                   underline: Container(),
@@ -132,6 +139,13 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
                 child: InputDecorator(
                   decoration: FHFilledInputDecoration(labelText: 'Portfolio'),
                   child: DropdownButton(
+                    icon: Padding(
+                      padding: EdgeInsets.only(left: 8.0),
+                      child: Icon(
+                        Icons.keyboard_arrow_down,
+                        size: 24,
+                      ),
+                    ),
                     isExpanded: true,
                     isDense: true,
                     underline: Container(),
@@ -141,7 +155,10 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
                           child: Text(dropDownStringItem.name));
                     }).toList(),
                     hint: Text('Select portfolio',
-                        style: Theme.of(context).textTheme.bodyText1),
+                        style: Theme
+                            .of(context)
+                            .textTheme
+                            .bodyText1),
                     onChanged: (value) {
                       setState(() {
                         selectedPortfolio = value;

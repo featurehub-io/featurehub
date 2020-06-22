@@ -34,6 +34,9 @@ class Routes {
     router.define('',
         handler: handleRouteChangeRequest(root),
         transitionType: TransitionType.fadeIn);
+    router.define('/applications',
+        handler: handleRouteChangeRequest(apps),
+        transitionType: TransitionType.fadeIn);
     router.define('/feature-status',
         handler: handleRouteChangeRequest(featureStatus),
         transitionType: TransitionType.fadeIn);

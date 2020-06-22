@@ -82,7 +82,8 @@ public class ApplicationResource implements ApplicationServiceDelegate {
   public List<Application> findApplications(String id, FindApplicationsHolder holder, SecurityContext securityContext) {
     final Person from = authManager.from(securityContext);
 
-    final List<Application> applications = applicationApi.findApplications(id, holder.filter, holder.order, new Opts().add(FillOpts.Environments, holder.includeEnvironments), from,
+    final List<Application> applications = applicationApi.findApplications(id,
+      holder.filter, holder.order, new Opts().add(FillOpts.Environments, holder.includeEnvironments).add(FillOpts.Features, holder.includeFeatures), from,
       authManager.isOrgAdmin(from) || authManager.isPortfolioAdmin(id, from, null));
 
     if (applications == null) {

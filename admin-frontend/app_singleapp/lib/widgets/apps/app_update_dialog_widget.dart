@@ -5,11 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
-import 'manage_app_bloc.dart';
+import 'apps_bloc.dart';
 
 class AppUpdateDialogWidget extends StatefulWidget {
   final Application application;
-  final ManageAppBloc bloc;
+  final AppsBloc bloc;
 
   const AppUpdateDialogWidget({
     Key key,
