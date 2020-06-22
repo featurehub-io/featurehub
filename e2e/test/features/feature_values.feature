@@ -143,14 +143,14 @@ Feature: Create feature values
       When I can login as user "martin@mailinator.com" with password "password123"
       Then I cannot read the feature flag "<featureKey>"
       And I cannot unlock the feature flag "<featureKey>"
-      And I cannot set the feature flag "<featureKey>" to true
+      And I cannot change the feature flag "<featureKey>"
       And I cannot unlock the feature flag "<featureKey>"
       And the first superuser is used for authentication
       And I ensure only permissions "READ" are set on the group "<group>" for the env "<envName>" for app "<appName>" for portfolio "<portfolio>"
       When I can login as user "martin@mailinator.com" with password "password123"
       When I can read the feature flag "<featureKey>"
       Then I cannot unlock the feature flag "<featureKey>"
-      And I cannot set the feature flag "<featureKey>" to true
+      And I cannot change the feature flag "<featureKey>"
       And I cannot unlock the feature flag "<featureKey>"
       And the first superuser is used for authentication
       And I ensure only permissions "UNLOCK" are set on the group "<group>" for the env "<envName>" for app "<appName>" for portfolio "<portfolio>"
@@ -158,21 +158,21 @@ Feature: Create feature values
       When I can read the feature flag "<featureKey>"
       And I can unlock the feature flag "<featureKey>"
       Then I cannot lock the feature flag "<featureKey>"
-      And I cannot set the feature flag "<featureKey>" to true
+      And I cannot change the feature flag "<featureKey>"
       And the first superuser is used for authentication
       And I ensure only permissions "LOCK" are set on the group "<group>" for the env "<envName>" for app "<appName>" for portfolio "<portfolio>"
       When I can login as user "martin@mailinator.com" with password "password123"
       When I can read the feature flag "<featureKey>"
       And I cannot unlock the feature flag "<featureKey>"
       Then I can lock the feature flag "<featureKey>"
-      And I cannot set the feature flag "<featureKey>" to true
+      And I cannot change the feature flag "<featureKey>"
       And the first superuser is used for authentication
       And I ensure only permissions "UNLOCK,LOCK" are set on the group "<group>" for the env "<envName>" for app "<appName>" for portfolio "<portfolio>"
       When I can login as user "martin@mailinator.com" with password "password123"
       When I can read the feature flag "<featureKey>"
       Then I can lock the feature flag "<featureKey>"
       And I can unlock the feature flag "<featureKey>"
-      And I cannot set the feature flag "<featureKey>" to true
+      And I cannot change the feature flag "<featureKey>"
       And the first superuser is used for authentication
       And I ensure only permissions "CHANGE_VALUE" are set on the group "<group>" for the env "<envName>" for app "<appName>" for portfolio "<portfolio>"
       When I can login as user "martin@mailinator.com" with password "password123"
@@ -180,14 +180,14 @@ Feature: Create feature values
       And I cannot unlock the feature flag "<featureKey>"
       Then I cannot lock the feature flag "<featureKey>"
       # because it was unlocked in the last permission change
-      And I can set the feature flag "<featureKey>"
+      And I can change the feature flag "<featureKey>"
       And the first superuser is used for authentication
       And I ensure only permissions "UNLOCK,LOCK,CHANGE_VALUE" are set on the group "<group>" for the env "<envName>" for app "<appName>" for portfolio "<portfolio>"
       When I can login as user "martin@mailinator.com" with password "password123"
       When I can read the feature flag "<featureKey>"
       Then I can lock the feature flag "<featureKey>"
       And I can unlock the feature flag "<featureKey>"
-      And I can set the feature flag "<featureKey>"
+      And I can change the feature flag "<featureKey>"
 
 
       Examples:
