@@ -164,4 +164,109 @@ class FeatureStepdefs {
       String lockStatus, String env, String featureKey) async {
     await _changeLock(lockStatus == 'lock', env, featureKey);
   }
+
+  @And(r'I cannot set the feature flag {string} to true')
+  void iCannotSetTheFeatureFlagToTrue(String featureKey) async {
+    final environment = shared.environment;
+
+    try {
+      FeatureValue featureValue = await userCommon.environmentFeatureServiceApi
+          .getFeatureForEnvironment(environment.id, featureKey);
+
+      assert(featureValue.valueBoolean == false,
+          'cannot verify changing to true if already true');
+      final fv = await userCommon.environmentFeatureServiceApi
+          .updateFeatureForEnvironment(
+              environment.id, featureKey, featureValue..valueBoolean = true);
+      assert(false,
+          "was able to set feature flag but shouldn't have been able to");
+    } catch (e) {}
+  }
+
+  @Then(r'I cannot read the feature flag {string}')
+  void iCannotReadTheFeatureFlag(String featureKey) async {
+    final environment = shared.environment;
+
+    try {
+      await userCommon.environmentFeatureServiceApi
+          .getFeatureForEnvironment(environment.id, featureKey);
+      assert(false, 'should not have been able to read feature flag');
+    } catch (e) {}
+  }
+
+  @And(r'I cannot unlock the feature flag {string}')
+  void iCannotUnlockTheFeatureFlag(String featureKey) async {
+    final environment = shared.environment;
+
+    try {
+      FeatureValue featureValue = await userCommon.environmentFeatureServiceApi
+          .getFeatureForEnvironment(environment.id, featureKey);
+
+      final fv = await userCommon.environmentFeatureServiceApi
+          .updateFeatureForEnvironment(
+              environment.id, featureKey, featureValue..locked = false);
+      assert(false,
+          "was able to unlock feature flag but shouldn't have been able to");
+    } catch (e) {}
+  }
+
+  @When(r'I can read the feature flag {string}')
+  void iCanReadTheFeatureFlag(String featureKey) async {
+    final environment = shared.environment;
+
+    await userCommon.environmentFeatureServiceApi
+        .getFeatureForEnvironment(environment.id, featureKey);
+  }
+
+  @And(r'I can unlock the feature flag {string}')
+  void iCanUnlockTheFeatureFlag(String featureKey) async {
+    final environment = shared.environment;
+
+    FeatureValue featureValue = await userCommon.environmentFeatureServiceApi
+        .getFeatureForEnvironment(environment.id, featureKey);
+
+    final fv = await userCommon.environmentFeatureServiceApi
+        .updateFeatureForEnvironment(
+            environment.id, featureKey, featureValue..locked = false);
+  }
+
+  @Then(r'I cannot lock the feature flag {string}')
+  void iCannotLockTheFeatureFlag(String featureKey) async {
+    final environment = shared.environment;
+
+    try {
+      FeatureValue featureValue = await userCommon.environmentFeatureServiceApi
+          .getFeatureForEnvironment(environment.id, featureKey);
+
+      final fv = await userCommon.environmentFeatureServiceApi
+          .updateFeatureForEnvironment(
+              environment.id, featureKey, featureValue..locked = true);
+      assert(false,
+          "was able to lock feature flag but shouldn't have been able to");
+    } catch (e) {}
+  }
+
+  @Then(r'I can lock the feature flag {string}')
+  void iCanLockTheFeatureFlag(String featureKey) async {
+    final environment = shared.environment;
+
+    FeatureValue featureValue = await userCommon.environmentFeatureServiceApi
+        .getFeatureForEnvironment(environment.id, featureKey);
+
+    final fv = await userCommon.environmentFeatureServiceApi
+        .updateFeatureForEnvironment(
+            environment.id, featureKey, featureValue..locked = true);
+  }
+
+  @And(r'I can set the feature flag {string}')
+  void iCanSetTheFeatureFlagToTrue(String featureKey) async {
+    final environment = shared.environment;
+
+    FeatureValue featureValue = await userCommon.environmentFeatureServiceApi
+        .getFeatureForEnvironment(environment.id, featureKey);
+
+    final fv = await userCommon.environmentFeatureServiceApi
+        .updateFeatureForEnvironment(environment.id, featureKey,
+            featureValue..valueBoolean = !featureValue.valueBoolean);
+  }
 }

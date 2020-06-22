@@ -127,3 +127,69 @@ Feature: Create feature values
       And I get the details for feature "NEW_HOUSE" and set them as follows:
         | envName | value |
         | prod    | true |
+
+
+    Scenario Outline: A user with lock permission cannot unlock a feature
+      Given I ensure a portfolio named "<portfolio>" with description "business application" exists
+      And I have a fully registered person "Martin" with email "martin@mailinator.com" and password "password123"
+      And the first superuser is used for authentication
+      Given I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
+      And I ensure that an environment "<envName>" with description "<envDesc>" exists in the app "<appName>" in the portfolio "<portfolio>"
+      And I ensure that the feature with the key "<featureKey>" has been removed
+      When I create the feature with a key "<featureKey>" and alias "<alias>" and name "<featureName>" and link "<link>" and type "boolean"
+      When I ensure a portfolio "<portfolio>" has created a group called "<group>"
+      When I add the user "martin@mailinator.com" to the group "<group>" in the portfolio "<portfolio>"
+      And I ensure only permissions "NONE" are set on the group "<group>" for the env "<envName>" for app "<appName>" for portfolio "<portfolio>"
+      When I can login as user "martin@mailinator.com" with password "password123"
+      Then I cannot read the feature flag "<featureKey>"
+      And I cannot unlock the feature flag "<featureKey>"
+      And I cannot set the feature flag "<featureKey>" to true
+      And I cannot unlock the feature flag "<featureKey>"
+      And the first superuser is used for authentication
+      And I ensure only permissions "READ" are set on the group "<group>" for the env "<envName>" for app "<appName>" for portfolio "<portfolio>"
+      When I can login as user "martin@mailinator.com" with password "password123"
+      When I can read the feature flag "<featureKey>"
+      Then I cannot unlock the feature flag "<featureKey>"
+      And I cannot set the feature flag "<featureKey>" to true
+      And I cannot unlock the feature flag "<featureKey>"
+      And the first superuser is used for authentication
+      And I ensure only permissions "UNLOCK" are set on the group "<group>" for the env "<envName>" for app "<appName>" for portfolio "<portfolio>"
+      When I can login as user "martin@mailinator.com" with password "password123"
+      When I can read the feature flag "<featureKey>"
+      And I can unlock the feature flag "<featureKey>"
+      Then I cannot lock the feature flag "<featureKey>"
+      And I cannot set the feature flag "<featureKey>" to true
+      And the first superuser is used for authentication
+      And I ensure only permissions "LOCK" are set on the group "<group>" for the env "<envName>" for app "<appName>" for portfolio "<portfolio>"
+      When I can login as user "martin@mailinator.com" with password "password123"
+      When I can read the feature flag "<featureKey>"
+      And I cannot unlock the feature flag "<featureKey>"
+      Then I can lock the feature flag "<featureKey>"
+      And I cannot set the feature flag "<featureKey>" to true
+      And the first superuser is used for authentication
+      And I ensure only permissions "UNLOCK,LOCK" are set on the group "<group>" for the env "<envName>" for app "<appName>" for portfolio "<portfolio>"
+      When I can login as user "martin@mailinator.com" with password "password123"
+      When I can read the feature flag "<featureKey>"
+      Then I can lock the feature flag "<featureKey>"
+      And I can unlock the feature flag "<featureKey>"
+      And I cannot set the feature flag "<featureKey>" to true
+      And the first superuser is used for authentication
+      And I ensure only permissions "CHANGE_VALUE" are set on the group "<group>" for the env "<envName>" for app "<appName>" for portfolio "<portfolio>"
+      When I can login as user "martin@mailinator.com" with password "password123"
+      When I can read the feature flag "<featureKey>"
+      And I cannot unlock the feature flag "<featureKey>"
+      Then I cannot lock the feature flag "<featureKey>"
+      # because it was unlocked in the last permission change
+      And I can set the feature flag "<featureKey>"
+      And the first superuser is used for authentication
+      And I ensure only permissions "UNLOCK,LOCK,CHANGE_VALUE" are set on the group "<group>" for the env "<envName>" for app "<appName>" for portfolio "<portfolio>"
+      When I can login as user "martin@mailinator.com" with password "password123"
+      When I can read the feature flag "<featureKey>"
+      Then I can lock the feature flag "<featureKey>"
+      And I can unlock the feature flag "<featureKey>"
+      And I can set the feature flag "<featureKey>"
+
+
+      Examples:
+        | appName           | appDesc                | portfolio                | group   | featureKey     | alias    | featureName    | link                  | envName | envDesc    | envName2 | envDesc2 | envName3 | envDesc3 | valueType |
+        | ChangingPermsTest | ChangingPermsTest Desc | Features very restricted | testers | FEATURE_SAMPLE | sssshhhh | Sample feature | http://featurehub.dev | prod    | production | test     | test env | dev      | dev env  | boolean   |
