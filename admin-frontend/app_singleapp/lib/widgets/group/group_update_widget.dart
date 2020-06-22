@@ -45,8 +45,10 @@ class _GroupUpdateDialogWidgetState extends State<GroupUpdateDialogWidget> {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               TextFormField(
+                  autofocus: true,
                   controller: _groupName,
                   decoration: InputDecoration(labelText: 'Group name'),
+                  onFieldSubmitted: (_) => _handleSubmitted(),
                   validator: ((v) {
                     if (v.isEmpty) {
                       return 'Please enter a group name';
@@ -68,28 +70,29 @@ class _GroupUpdateDialogWidgetState extends State<GroupUpdateDialogWidget> {
           ),
           FHFlatButton(
               title: widget.group == null ? 'Create' : 'Update',
-              onPressed: (() {
-                if (_formKey.currentState.validate()) {
-                  _callUpdateGroup(_groupName.text).then((onValue) {
-                    // force list update
-                    widget.bloc.mrClient.removeOverlay();
-                    widget.bloc.mrClient.addSnackbar(Text(
-                        "Group '${_groupName.text}' ${widget.group == null ? " created" : " updated"}!"));
-                  }).catchError((e, s) async {
-                    if (e is ApiException && e.code == 409) {
-                      widget.bloc.mrClient.removeOverlay();
-                      widget.bloc.mrClient.customError(
-                          messageTitle:
-                              "Group '${_groupName.text}' already exists");
-                    } else {
-                      widget.bloc.mrClient.dialogError(e, s);
-                    }
-                  });
-                }
-              }))
+              onPressed: () => _handleSubmitted())
         ],
       ),
     );
+  }
+
+  void _handleSubmitted() {
+    if (_formKey.currentState.validate()) {
+      _callUpdateGroup(_groupName.text).then((onValue) {
+        // force list update
+        widget.bloc.mrClient.removeOverlay();
+        widget.bloc.mrClient.addSnackbar(Text(
+            "Group '${_groupName.text}' ${widget.group == null ? " created" : " updated"}!"));
+      }).catchError((e, s) async {
+        if (e is ApiException && e.code == 409) {
+          widget.bloc.mrClient.removeOverlay();
+          widget.bloc.mrClient.customError(
+              messageTitle: "Group '${_groupName.text}' already exists");
+        } else {
+          widget.bloc.mrClient.dialogError(e, s);
+        }
+      });
+    }
   }
 
   Future<void> _callUpdateGroup(String name) {

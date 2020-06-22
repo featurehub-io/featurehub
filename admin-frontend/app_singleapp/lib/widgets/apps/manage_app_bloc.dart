@@ -20,6 +20,7 @@ class ManageAppBloc implements Bloc {
   ServiceAccountServiceApi _serviceAccountServiceApi;
   List<Environment> environmentsList;
   StreamSubscription<String> _currentAppId;
+  String _selectedGroupId;
 
   ManageAppBloc(this.mrClient) : assert(mrClient != null) {
     _appServiceApi = ApplicationServiceApi(mrClient.apiClient);
@@ -67,7 +68,7 @@ class ManageAppBloc implements Bloc {
 
   Stream<ServiceAccount> get serviceAccountStream => _serviceAccountPS.stream;
 
-  final _groupWithRolesPS = PublishSubject<Group>();
+  final _groupWithRolesPS = BehaviorSubject<Group>();
 
   Stream<Group> get groupRoleStream => _groupWithRolesPS.stream;
 
@@ -101,15 +102,32 @@ class ManageAppBloc implements Bloc {
     }
   }
 
+  String get selectedGroup => _selectedGroupId;
+  set selectedGroup(String groupId) {
+    _selectedGroupId = groupId;
+    getGroupRoles(_selectedGroupId);
+  }
+
   Future<void> _fetchGroups() async {
     application = await _appServiceApi
         .getApplication(applicationId)
         .catchError(mrClient.dialogError);
+
     portfolio = await _portfolioServiceApi
         .getPortfolio(application.portfolioId, includeGroups: true)
         .catchError(mrClient.dialogError);
     if (!_groupsBS.isClosed) {
       _groupsBS.add(portfolio.groups);
+
+      if (!portfolio.groups.map((e) => e.id).contains(_selectedGroupId)) {
+        if (portfolio.groups.isEmpty) {
+          selectedGroup = null;
+        } else {
+          if (portfolio.groups[0].id != _selectedGroupId) {
+            selectedGroup = portfolio.groups[0].id;
+          }
+        }
+      }
     }
   }
 
@@ -136,9 +154,12 @@ class ManageAppBloc implements Bloc {
   }
 
   Future<void> getGroupRoles(String groupId) async {
-    var group =
-        await _groupServiceApi.getGroup(groupId, includeGroupRoles: true);
-    if (!_groupWithRolesPS.isClosed) {
+    if (groupId == null) {
+      _groupWithRolesPS.add(null);
+    } else {
+      final group =
+          await _groupServiceApi.getGroup(groupId, includeGroupRoles: true);
+
       _groupWithRolesPS.add(group);
     }
   }
