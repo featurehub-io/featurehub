@@ -127,6 +127,7 @@ class ManageAppBloc implements Bloc {
       if (!_serviceAccountsBS.isClosed) {
         if (serviceAccounts.isNotEmpty) {
           _currentServiceAccountIdSource.add(null);
+          // ignore: unawaited_futures
           selectServiceAccount(serviceAccounts[0].id);
         }
         _serviceAccountsBS.add(serviceAccounts);

@@ -17,6 +17,12 @@ class AppsBloc implements Bloc {
     _currentApplicationsListListener = mrClient
         .streamValley.currentPortfolioApplicationsStream
         .listen(_getCurrentPortfolioApplications);
+    init();
+  }
+
+  // make sure we load apps with the features
+  Future<void> init() async {
+    await _refreshApplications();
   }
 
   final _currentApplicationsStream = BehaviorSubject<List<Application>>();
@@ -36,8 +42,21 @@ class AppsBloc implements Bloc {
     application.description = appDescription;
     final newApp = await _applicationServiceApi.createApplication(
         mrClient.currentPid, application);
-    await mrClient.streamValley.getCurrentPortfolioApplications();
+    await _refreshApplications();
     mrClient.setCurrentAid(newApp.id);
+  }
+
+  void _refreshApplications() async {
+    await mrClient.streamValley.getCurrentPortfolioApplications(
+        findApp: _getApplicationsIncludingEnvironmentAndFeatures);
+  }
+
+  Future<List<Application>> _getApplicationsIncludingEnvironmentAndFeatures(
+      String portfolioId) async {
+    return await _applicationServiceApi.findApplications(portfolioId,
+        order: SortOrder.DESC,
+        includeEnvironments: true,
+        includeFeatures: true);
   }
 
   Future<void> updateApplication(Application application, String updatedAppName,
@@ -47,7 +66,7 @@ class AppsBloc implements Bloc {
     return _applicationServiceApi
         .updateApplication(application.id, application)
         .then((onSuccess) async {
-      await mrClient.streamValley.getCurrentPortfolioApplications();
+      await _refreshApplications();
     });
   }
 
@@ -55,11 +74,11 @@ class AppsBloc implements Bloc {
     var success = false;
     try {
       success = await _applicationServiceApi.deleteApplication(appId);
-      await mrClient.streamValley.getCurrentPortfolioApplications();
+      await _refreshApplications();
     } catch (e, s) {
       mrClient.dialogError(e, s);
     }
-    ;
+
     return success;
   }
 
