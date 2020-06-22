@@ -9,16 +9,7 @@ import 'package:mrapi/api.dart';
 
 import 'manage_app_bloc.dart';
 
-class GroupPermissionsWidget extends StatefulWidget {
-  const GroupPermissionsWidget({Key key}) : super(key: key);
-
-  @override
-  _GroupPermissionState createState() => _GroupPermissionState();
-}
-
-class _GroupPermissionState extends State<GroupPermissionsWidget> {
-  String selectedGroup;
-
+class GroupPermissionsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<ManageAppBloc>(context);
@@ -31,11 +22,6 @@ class _GroupPermissionState extends State<GroupPermissionsWidget> {
               padding: EdgeInsets.all(30),
               child: Text('Loading...'),
             );
-          }
-
-          if (selectedGroup == null && snapshot.data.isNotEmpty) {
-            selectedGroup = snapshot.data[0].id;
-            bloc.getGroupRoles(selectedGroup);
           }
 
           return Column(
@@ -55,7 +41,9 @@ class _GroupPermissionState extends State<GroupPermissionsWidget> {
                           'Group',
                           style: Theme.of(context).textTheme.caption,
                         )),
-                        Container(child: groupsDropdown(snapshot.data, bloc)),
+                        Container(
+                            child: _GroupsDropdown(
+                                groups: snapshot.data, bloc: bloc)),
                       ],
                     ),
                     SizedBox(width: 16.0),
@@ -67,7 +55,7 @@ class _GroupPermissionState extends State<GroupPermissionsWidget> {
                             context, '/manage-group',
                             transition: TransitionType.material,
                             params: {
-                              'id': [selectedGroup]
+                              'id': [bloc.selectedGroup]
                             });
                       },
                     ),
@@ -77,8 +65,21 @@ class _GroupPermissionState extends State<GroupPermissionsWidget> {
               ]);
         });
   }
+}
 
-  Widget groupsDropdown(List<Group> groups, ManageAppBloc bloc) {
+class _GroupsDropdown extends StatefulWidget {
+  final List<Group> groups;
+  final ManageAppBloc bloc;
+
+  const _GroupsDropdown({Key key, this.groups, this.bloc}) : super(key: key);
+
+  @override
+  __GroupsDropdownState createState() => __GroupsDropdownState();
+}
+
+class __GroupsDropdownState extends State<_GroupsDropdown> {
+  @override
+  Widget build(BuildContext context) {
     return Container(
       constraints: BoxConstraints(maxWidth: 250),
       child: DropdownButton(
@@ -91,7 +92,7 @@ class _GroupPermissionState extends State<GroupPermissionsWidget> {
         ),
         isDense: true,
         isExpanded: true,
-        items: groups.map((Group group) {
+        items: widget.groups.map((Group group) {
           return DropdownMenuItem<String>(
               value: group.id,
               child: Text(
@@ -103,11 +104,10 @@ class _GroupPermissionState extends State<GroupPermissionsWidget> {
         hint: Text('Select group'),
         onChanged: (value) {
           setState(() {
-            selectedGroup = value;
-            bloc.getGroupRoles(value);
+            widget.bloc.selectedGroup = value;
           });
         },
-        value: selectedGroup,
+        value: widget.bloc.selectedGroup,
       ),
     );
   }
@@ -140,7 +140,10 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
         stream: widget.bloc.groupRoleStream,
         builder: (context, groupSnapshot) {
           if (!groupSnapshot.hasData) {
-            return Container();
+            return Container(
+                padding: EdgeInsets.all(20),
+                child: Text(
+                    'You need to select a group to edit the permissions for.'));
           }
 
           return StreamBuilder<List<Environment>>(
