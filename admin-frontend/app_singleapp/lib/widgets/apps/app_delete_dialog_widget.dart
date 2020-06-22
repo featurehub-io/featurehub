@@ -2,11 +2,11 @@ import 'package:app_singleapp/widgets/common/fh_delete_thing.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 
-import 'manage_app_bloc.dart';
+import 'apps_bloc.dart';
 
 class AppDeleteDialogWidget extends StatelessWidget {
   final Application application;
-  final ManageAppBloc bloc;
+  final AppsBloc bloc;
 
   const AppDeleteDialogWidget(
       {Key key, @required this.bloc, @required this.application})

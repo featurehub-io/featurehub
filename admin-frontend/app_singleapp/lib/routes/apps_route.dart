@@ -2,7 +2,7 @@ import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/common/stream_valley.dart';
 import 'package:app_singleapp/widgets/apps/app_delete_dialog_widget.dart';
 import 'package:app_singleapp/widgets/apps/app_update_dialog_widget.dart';
-import 'package:app_singleapp/widgets/apps/manage_app_bloc.dart';
+import 'package:app_singleapp/widgets/apps/apps_bloc.dart';
 import 'package:app_singleapp/widgets/common/decorations/fh_page_divider.dart';
 import 'package:app_singleapp/widgets/common/fh_header.dart';
 import 'package:app_singleapp/widgets/common/fh_icon_text_button.dart';
@@ -19,7 +19,7 @@ class AppsRoute extends StatefulWidget {
 class _AppsRouteState extends State<AppsRoute> {
   @override
   Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<ManageAppBloc>(context);
+    final bloc = BlocProvider.of<AppsBloc>(context);
     return Container(
         padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
         child: Column(
@@ -70,7 +70,7 @@ class _AppsRouteState extends State<AppsRoute> {
 }
 
 class _ApplicationsCardsList extends StatelessWidget {
-  final ManageAppBloc bloc;
+  final AppsBloc bloc;
 
   const _ApplicationsCardsList({Key key, @required this.bloc})
       : assert(bloc != null),
@@ -79,7 +79,7 @@ class _ApplicationsCardsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<Application>>(
-        stream: bloc.mrClient.streamValley.currentPortfolioApplicationsStream,
+        stream: bloc.currentApplicationsStream,
         builder: (context, snapshot) {
           if (!snapshot.hasData || snapshot.hasError) {
             return SizedBox.shrink();
@@ -98,7 +98,7 @@ class _ApplicationsCardsList extends StatelessWidget {
 
 class _ApplicationCard extends StatelessWidget {
   final Application application;
-  final ManageAppBloc bloc;
+  final AppsBloc bloc;
 
   const _ApplicationCard(
       {Key key, @required this.application, @required this.bloc})
@@ -116,7 +116,8 @@ class _ApplicationCard extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(8.0),
           onTap: () {
-            bloc.setApplicationId(application.id); //is it the right function?
+            bloc.mrClient.setCurrentAid(
+                application.id); //is it the right function?
             return {
               ManagementRepositoryClientBloc.router.navigateTo(
                 context,
@@ -320,7 +321,7 @@ class _NumberContainer extends StatelessWidget {
 }
 
 class _PopUpAdminMenu extends StatelessWidget {
-  final ManageAppBloc bloc;
+  final AppsBloc bloc;
   final Application application;
 
   const _PopUpAdminMenu({Key key, this.bloc, this.application})

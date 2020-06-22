@@ -332,23 +332,14 @@ class _MenuItem extends StatelessWidget {
                           ? Text(' ${name}',
                               style: GoogleFonts.roboto(
                                 textStyle:
-                                    Theme.of(context).textTheme.bodyText2,
-                                fontWeight: menuOkForThisUser
-                                    ? FontWeight.w600
-                                    : FontWeight.w100,
-                                color: menuOkForThisUser
-                                    ? Theme.of(context).primaryColor
-                                    : Colors.red,
-                              ))
+                                      Theme.of(context).textTheme.bodyText2,
+                                  fontWeight: FontWeight.w600,
+                                  color: Theme.of(context).primaryColor))
                           : Text(
                               ' ${name}',
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyText2
-                                  .copyWith(
-                                      color: menuOkForThisUser
-                                          ? null
-                                          : Colors.red),
                             ),
                     )
                   ],

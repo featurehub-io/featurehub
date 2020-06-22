@@ -238,41 +238,4 @@ class ManageAppBloc implements Bloc {
     updateEnvs(applicationId, environmentsList);
     unawaited(mrClient.streamValley.getCurrentApplicationEnvironments());
   }
-
-  Future<bool> deleteApp(String appId) async {
-    var success = false;
-    try {
-      success = await _appServiceApi.deleteApplication(appId);
-      await mrClient.streamValley.getCurrentPortfolioApplications();
-      application = null;
-      mrClient.setCurrentAid(null);
-      setApplicationId(null);
-    } catch (e, s) {
-      mrClient.dialogError(e, s);
-    }
-    ;
-    return success;
-  }
-
-  Future<void> updateApplication(Application application, String updatedAppName,
-      String updateDescription) async {
-    application.name = updatedAppName;
-    application.description = updateDescription;
-    return _appServiceApi
-        .updateApplication(application.id, application)
-        .then((onSuccess) {
-      mrClient.streamValley.getCurrentPortfolioApplications();
-    });
-  }
-
-  Future<void> createApplication(
-      String applicationName, String appDescription) async {
-    final application = Application();
-    application.name = applicationName;
-    application.description = appDescription;
-    final newApp = await _appServiceApi.createApplication(
-        mrClient.currentPid, application);
-    await mrClient.streamValley.getCurrentPortfolioApplications();
-    mrClient.setCurrentAid(newApp.id);
-  }
 }
