@@ -1,4 +1,5 @@
 import 'package:app_singleapp/widgets/features/feature_value_cell.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'feature_dashboard_constants.dart';
@@ -30,55 +31,57 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                                 unselectedRowHeight) +
                             ((snapshot.data?.length ?? 0) * selectedRowHeight) +
                             headerHeight,
-                        child: ListView(
-                          scrollDirection: Axis.horizontal,
-                          children: [
-                            if (bloc.features.isNotEmpty)
-                              ...bloc.sortedEnvironmentsThatAreShowing
-                                  .map((efv) {
-                                return Container(
+                        child: Scrollbar(
+                          child: ListView(
+                            scrollDirection: Axis.horizontal,
+                            physics: ClampingScrollPhysics(),
+                            children: [
+                              if (bloc.features.isNotEmpty)
+                                ...bloc.sortedEnvironmentsThatAreShowing
+                                    .map((efv) {
+                                  return Container(
 //                                  padding:
 //                                      EdgeInsets.only(left: 1.0, right: 1.0),
-                                  width:
-                                      currentTabSnapshot.data == TabsState.FLAGS
-                                          ? 100.0
-                                          : 170.0,
-                                  child: Column(
-                                    children: [
-                                      Container(
+                                    width: 170.0,
+                                    child: Column(
+                                      children: [
+                                        Container(
 //                                        color: Theme.of(context).highlightColor,
-                                        height: headerHeight,
-                                        child: Column(
-                                          children: [
-                                            HideEnvironmentContainer(
-                                              name: efv.environmentName,
-                                              envId: efv.environmentId,
-                                            ),
-                                          ],
+                                          height: headerHeight - 2,
+                                          child: Column(
+                                            children: [
+                                              HideEnvironmentContainer(
+                                                name: efv.environmentName,
+                                                envId: efv.environmentId,
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                      ...bloc.features.map((f) {
-                                        return Container(
+                                        ...bloc.features.map((f) {
+                                          return Container(
 //                                          margin: EdgeInsets.symmetric(vertical: 1.0),
-                                          decoration: BoxDecoration(
-                                              border: Border(top: BorderSide())
+                                            decoration: BoxDecoration(
+                                                border: Border(
+                                                    top: BorderSide(
+                                                        color: Colors.black26))
 //                                            borderRadius: BorderRadius.all(Radius.circular(4.0)),
 //                                            color: Colors.black12,
-                                              ),
-                                          child: FeatureValueCell(
-                                              tabsBloc: bloc,
-                                              feature: f,
-                                              value: efv.features.firstWhere(
-                                                  (fv) => fv.key == f.key,
-                                                  orElse: () => null),
-                                              efv: efv),
-                                        );
-                                      }).toList(),
-                                    ],
-                                  ),
-                                );
-                              })
-                          ],
+                                                ),
+                                            child: FeatureValueCell(
+                                                tabsBloc: bloc,
+                                                feature: f,
+                                                value: efv.features.firstWhere(
+                                                    (fv) => fv.key == f.key,
+                                                    orElse: () => null),
+                                                efv: efv),
+                                          );
+                                        }).toList(),
+                                      ],
+                                    ),
+                                  );
+                                })
+                            ],
+                          ),
                         ),
                       );
                     });

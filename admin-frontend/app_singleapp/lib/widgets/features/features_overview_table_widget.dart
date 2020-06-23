@@ -112,12 +112,10 @@ class _FeatureTabsBodyHolder extends StatelessWidget {
                         Container(
                             height: headerHeight,
                             padding: EdgeInsets.only(left: 8.0),
-                            child: Text('Environments', style: Theme
-                                .of(context)
-                                .textTheme
-                                .caption)),
+                            child: Text('',
+                                style: Theme.of(context).textTheme.caption)),
                         ...bloc.features.map(
-                              (f) {
+                          (f) {
                             return FeatureNamesLeftPanel(
                                 tabsBloc: bloc, feature: f);
                           },
