@@ -22,51 +22,53 @@ class FeatureValueNameCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 16.0, top: 16.0),
+      padding: const EdgeInsets.only(left: 2.0, top: 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Row(
+          Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text('Feature key',
-                      style: Theme.of(context)
-                          .textTheme
-                          .caption
-                          .copyWith(color: Theme.of(context).buttonColor)),
-                  SizedBox(height: 2.0),
+              Text('Feature key',
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context)
+                      .textTheme
+                      .caption
+                      .copyWith(color: Theme.of(context).buttonColor)),
+              SizedBox(height: 2.0),
+              Row(
+                children: [
                   Text(feature.key,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontFamily: 'source', fontSize: 12))
+                      style: TextStyle(fontFamily: 'source', fontSize: 12)),
+                  FHCopyToClipboard(
+                    tooltipMessage: 'Copy key',
+                    copyString: feature.key,
+                  ),
                 ],
               ),
-              FHCopyToClipboard(
-                tooltipMessage: 'Copy key',
-                copyString: feature.key,
-              )
             ],
           ),
+
           SizedBox(
             height: 12.0,
           ),
-          feature.link != null && feature.link.isNotEmpty
-              ? Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Text('Reference link',
-                        style: Theme.of(context)
-                            .textTheme
-                            .caption
-                            .copyWith(color: Theme.of(context).buttonColor)),
-                    FHCopyToClipboard(
-                      tooltipMessage: '${feature.link}',
-                      copyString: feature.link,
-                    )
-                  ],
+          if (feature.link != null && feature.link.isNotEmpty)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Text('Reference link',
+                    style: Theme.of(context)
+                        .textTheme
+                        .caption
+                        .copyWith(color: Theme.of(context).buttonColor)),
+                FHCopyToClipboard(
+                  tooltipMessage: '${feature.link}',
+                  copyString: feature.link,
                 )
-              : Container(),
+              ],
+            ),
 //Comment out Alias key until we implement proper analytics
 //          feature.alias != null && feature.alias.isNotEmpty
 //              ? Column(
@@ -238,32 +240,5 @@ class FeatureValueActionCell extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-class FeatureValueUpdatedBy {
-  static TableRow build(BuildContext context, LineStatusFeature featureStatuses,
-      Feature feature) {
-    final fvBloc = BlocProvider.of<FeatureValuesBloc>(context);
-
-    return TableRow(children: [
-      Text(''),
-      ...featureStatuses.environmentFeatureValues
-          .map((e) => FeatureValueUpdatedByCell(
-              environmentFeatureValue: e, feature: feature, fvBloc: fvBloc))
-          .toList()
-    ]);
-  }
-}
-
-class FeatureValueActions {
-  static TableRow build(BuildContext context, LineStatusFeature featureStatuses,
-      Feature feature, Function closeCallback) {
-    return TableRow(children: [
-      ...featureStatuses.environmentFeatureValues
-          .map((e) => SizedBox.shrink())
-          .toList(),
-      FeatureValueActionCell(closeCallback: closeCallback),
-    ]);
   }
 }

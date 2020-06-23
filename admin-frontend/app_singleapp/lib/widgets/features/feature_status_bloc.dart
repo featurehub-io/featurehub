@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:rxdart/rxdart.dart' hide Notification;
@@ -12,6 +11,7 @@ class FeatureStatusFeatures {
   List<String> sortedByNameEnvironmentIds;
   // envId, EnvironmentFeatureValues mapping - so it is done only once not once per line in table
   Map<String, EnvironmentFeatureValues> applicationEnvironments = {};
+  List<String> visibleEnvironments = [];
 
   FeatureStatusFeatures(this.applicationFeatureValues) {
     sortedByNameEnvironmentIds = applicationFeatureValues.environments
@@ -22,29 +22,6 @@ class FeatureStatusFeatures {
       applicationEnvironments[e.environmentId] = e;
     });
   }
-}
-
-class LineStatusFeature {
-  Feature feature;
-  List<EnvironmentFeatureValues> environmentFeatureValues; // shrunk to
-  List<String> sortedByNameEnvironmentIds;
-  Map<String, EnvironmentFeatureValues> applicationEnvironments = {};
-
-  LineStatusFeature(ApplicationFeatureValues afv, String featureId) {
-    sortedByNameEnvironmentIds =
-        afv.environments.map((e) => e.environmentId).toList();
-    feature = afv.features.firstWhere((element) => element.id == featureId);
-    environmentFeatureValues = afv.environments;
-    environmentFeatureValues.forEach((e) {
-      applicationEnvironments[e.environmentId] = e;
-    });
-  }
-}
-
-class RefreshFeatureNotification extends Notification {
-  final String featureId;
-
-  const RefreshFeatureNotification({this.featureId});
 }
 
 class FeatureStatusBloc implements Bloc {
@@ -63,21 +40,14 @@ class FeatureStatusBloc implements Bloc {
   Stream<FeatureStatusFeatures> get appFeatureValues =>
       _appFeatureValuesBS.stream;
   // feature-id, environments for feature
-  final _lines = <String, BehaviorSubject<LineStatusFeature>>{};
 
   StreamSubscription<String> _currentPid;
   StreamSubscription<String> _currentAppId;
 
-  Stream<LineStatusFeature> getLineStatus(String featureId) => _seedLineStatus(
-          featureId, _appFeatureValuesBS.value.applicationFeatureValues)
-      .stream;
+  final _publishNewFeatureSource = PublishSubject<Feature>();
 
-  BehaviorSubject<LineStatusFeature> _seedLineStatus(
-          String featureId, ApplicationFeatureValues afv) =>
-      _lines.putIfAbsent(
-          featureId,
-          () => BehaviorSubject<LineStatusFeature>.seeded(
-              LineStatusFeature(afv, featureId)));
+  Stream<Feature> get publishNewFeatureStream =>
+      _publishNewFeatureSource.stream;
 
   final _getAllAppValuesDebounceStream = BehaviorSubject<bool>();
 
@@ -122,11 +92,6 @@ class FeatureStatusBloc implements Bloc {
               applicationId);
       if (!_appFeatureValuesBS.isClosed) {
         _sortApplicationFeatureValues(appFeatureValues);
-
-        // make sure the line streams are updated and there before the whole list of lines gets published
-        appFeatureValues.features.forEach((f) {
-          _seedLineStatus(f.id, appFeatureValues);
-        });
 
         _appFeatureValuesBS.add(FeatureStatusFeatures(appFeatureValues));
       }
@@ -198,6 +163,7 @@ class FeatureStatusBloc implements Bloc {
         applicationId, feature);
     unawaited(mrClient.streamValley.getCurrentApplicationFeatures());
     addAppFeatureValuesToStream();
+    _publishNewFeatureSource.add(feature);
   }
 
   Future<void> updateFeature(Feature feature, String newName, String newKey,
@@ -228,19 +194,12 @@ class FeatureStatusBloc implements Bloc {
     _currentAppId.cancel();
   }
 
-  // in this case it will need to go and get everything again and just filter
-  // down for what we actually have
-  void refreshFeature(String featureId) async {
-    try {
-      final appFeatureValues = await _featureServiceApi
-          .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
-              applicationId);
-      getLineStatus(featureId);
-      _sortApplicationFeatureValues(
-          appFeatureValues); // make sure it is consistently sorted
-      _lines[featureId].add(LineStatusFeature(appFeatureValues, featureId));
-    } catch (e, s) {
-      mrClient.dialogError(e, s);
-    }
+  void updateAllFeatureValuesByApplicationForKey(
+      Feature feature, List<FeatureValue> updates) async {
+    await _featureServiceApi.updateAllFeatureValuesByApplicationForKey(
+        applicationId, feature.key, updates);
+
+    // get the data again
+    _getAllAppValuesDebounceStream.add(true);
   }
 }

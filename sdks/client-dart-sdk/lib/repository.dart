@@ -10,6 +10,9 @@ abstract class FeatureStateHolder {
   String get key;
   dynamic get jsonValue;
   FeatureValueType get type;
+
+  /// returns a function to call to remove the listener
+  Function addListener(FeatureListener listener);
 }
 
 typedef ReadynessListener = Future<void> Function(Readyness state);

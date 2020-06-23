@@ -1,9 +1,6 @@
-import 'package:app_singleapp/widgets/features/feature_status_bloc.dart';
-import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 
-import 'feature_value_row_generic.dart';
 import 'feature_values_bloc.dart';
 
 class FeatureValueEditLockedCell extends StatelessWidget {
@@ -34,6 +31,7 @@ class FeatureValueEditLockedCell extends StatelessWidget {
           return Container(
             height: 60.0,
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 locked
                     ? Icon(
@@ -56,29 +54,5 @@ class FeatureValueEditLockedCell extends StatelessWidget {
             ),
           );
         });
-  }
-}
-
-class FeatureValueEditLocked {
-  static TableRow build(BuildContext context, LineStatusFeature featureStatuses,
-      Feature feature) {
-    final fvBloc = BlocProvider.of<FeatureValuesBloc>(context);
-    final bs = BorderSide(
-        color: Theme.of(context).dividerColor,
-        width: 1.0,
-        style: BorderStyle.solid);
-    return TableRow(
-        decoration: BoxDecoration(
-          border: Border(top: bs),
-        ),
-        children: [
-          FeatureValueNameCell(
-            feature: feature,
-          ),
-          ...featureStatuses.environmentFeatureValues
-              .map((e) => FeatureValueEditLockedCell(
-                  environmentFeatureValue: e, feature: feature, fvBloc: fvBloc))
-              .toList()
-        ]);
   }
 }

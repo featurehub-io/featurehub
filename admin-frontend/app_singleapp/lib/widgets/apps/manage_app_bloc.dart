@@ -257,7 +257,10 @@ class ManageAppBloc implements Bloc {
       toUpdate.priorEnvironmentId = env.id;
     }
     environmentsList.add(env);
-    updateEnvs(applicationId, environmentsList);
-    unawaited(mrClient.streamValley.getCurrentApplicationEnvironments());
+//    updateEnvs(applicationId, environmentsList);
+    // ignore: unawaited_futures
+    mrClient.streamValley
+        .getCurrentApplicationEnvironments()
+        .then((envs) => _environmentBS.add(envs));
   }
 }

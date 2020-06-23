@@ -1,9 +1,8 @@
-import 'package:app_singleapp/widgets/features/feature_status_bloc.dart';
 import 'package:app_singleapp/widgets/features/feature_value_row_generic.dart';
-import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 
+import 'feature_value_row_locked.dart';
 import 'feature_values_bloc.dart';
 
 class FeatureValueStringEnvironmentCell extends StatefulWidget {
@@ -42,60 +41,72 @@ class _FeatureValueStringEnvironmentCellState
             tec.text = val.toString();
           }
 
-          return Expanded(
-              child: Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: TextField(
-                style: Theme.of(context).textTheme.bodyText1,
-                enabled: enabled,
-                controller: tec,
-                decoration: InputDecoration(
-                    contentPadding: EdgeInsets.only(left: 4.0, top: 4.0),
-                    enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                      color: Theme.of(context).buttonColor,
-                    )),
-                    disabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                      color: Colors.grey,
-                    )),
-                    hintText: canEdit
-                        ? 'Enter string value'
-                        : 'No editing permissions',
-                    hintStyle: Theme.of(context).textTheme.caption),
-                onChanged: (value) {
-                  snap.data.valueString = tec.text?.trim();
-                  if (snap.data.valueString.isEmpty) {
-                    snap.data.valueString = null;
-                  }
-                  widget.fvBloc.updatedFeature(
-                      widget.environmentFeatureValue.environmentId);
-                }),
-          ));
+          return Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+                width: 160,
+                height: 40,
+                child: TextField(
+                    style: Theme.of(context).textTheme.bodyText1,
+                    enabled: enabled,
+                    controller: tec,
+                    decoration: InputDecoration(
+                        contentPadding: EdgeInsets.only(left: 4.0, top: 4.0),
+                        enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                          color: Theme.of(context).buttonColor,
+                        )),
+                        disabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                          color: Colors.grey,
+                        )),
+                        hintText: canEdit
+                            ? 'Enter string value'
+                            : 'No editing permissions',
+                        hintStyle: Theme.of(context).textTheme.caption),
+                    onChanged: (value) {
+                      snap.data.valueString = tec.text?.trim();
+                      if (snap.data.valueString.isEmpty) {
+                        snap.data.valueString = null;
+                      }
+                      widget.fvBloc.updatedFeature(
+                          widget.environmentFeatureValue.environmentId);
+                    })),
+          );
         });
   }
 }
 
-class FeatureValueEditString {
-  static TableRow build(BuildContext context, LineStatusFeature featureStatuses,
-      Feature feature) {
-    final fvBloc = BlocProvider.of<FeatureValuesBloc>(context);
+class FeatureValueStringCellEditor extends StatelessWidget {
+  final EnvironmentFeatureValues environmentFeatureValue;
+  final Feature feature;
+  final FeatureValuesBloc fvBloc;
 
-    return TableRow(children: [
-      FeatureEditDeleteCell(
-        feature: feature,
-      ),
-      ...featureStatuses.environmentFeatureValues
-          .map((e) => Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: <Widget>[
-                  FeatureValueStringEnvironmentCell(
-                      environmentFeatureValue: e,
-                      feature: feature,
-                      fvBloc: fvBloc),
-                ],
-              ))
-          .toList()
-    ]);
+  const FeatureValueStringCellEditor(
+      {Key key, this.environmentFeatureValue, this.feature, this.fvBloc})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        FeatureValueEditLockedCell(
+          environmentFeatureValue: environmentFeatureValue,
+          feature: feature,
+          fvBloc: fvBloc,
+        ),
+        FeatureValueStringEnvironmentCell(
+          environmentFeatureValue: environmentFeatureValue,
+          feature: feature,
+          fvBloc: fvBloc,
+        ),
+        FeatureValueUpdatedByCell(
+          environmentFeatureValue: environmentFeatureValue,
+          feature: feature,
+          fvBloc: fvBloc,
+        ),
+      ],
+    );
   }
 }

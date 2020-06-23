@@ -221,15 +221,17 @@ class StreamValley {
     }
   }
 
-  Future<void> getCurrentApplicationEnvironments() async {
+  Future<List<Environment>> getCurrentApplicationEnvironments() async {
+    var envList = <Environment>[];
+
     if (_currentAppIdSource.value != null) {
-      final envList = await environmentServiceApi
+      envList = await environmentServiceApi
           .findEnvironments(_currentAppIdSource.value, includeAcls: true)
           .catchError(mrClient.dialogError);
-      currentApplicationEnvironments = envList;
-    } else {
-      currentApplicationEnvironments = [];
     }
+
+    currentApplicationEnvironments = envList;
+    return envList;
   }
 
   Future<void> getCurrentApplicationFeatures() async {

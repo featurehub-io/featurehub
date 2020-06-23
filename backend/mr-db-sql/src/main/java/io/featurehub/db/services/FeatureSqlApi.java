@@ -350,7 +350,7 @@ public class FeatureSqlApi implements FeatureApi {
 
     // they have at least one environment or they are an admin
     if (environments.size() > 0 || personAdmin) {
-      final List<RoleType> adminRoles = Collections.singletonList(RoleType.READ);
+      final List<RoleType> adminRoles = Arrays.asList(RoleType.values());
       final List<RoleType> emptyRoles = Collections.emptyList();
       new QDbEnvironment().parentApplication.eq(app).findList().forEach(env -> {
         if (environments.get(env.getId()) == null) {
