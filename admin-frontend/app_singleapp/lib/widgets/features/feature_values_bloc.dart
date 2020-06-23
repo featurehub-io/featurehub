@@ -8,6 +8,8 @@ import 'package:rxdart/rxdart.dart';
 import 'feature_status_bloc.dart';
 import 'feature_value_status_tags.dart';
 
+typedef DirtyCallback = bool Function(FeatureValue original);
+
 class FeatureValuesBloc implements Bloc {
   final Feature feature;
   final String applicationId;
@@ -54,8 +56,8 @@ class FeatureValuesBloc implements Bloc {
     _fvUpdates[envId].add(_newFeatureValues[envId]);
   }
 
-  void dirty(String envId, bool value) {
-    _dirty[envId] = value;
+  void dirty(String envId, DirtyCallback originalCheck) {
+    _dirty[envId] = originalCheck(_originalFeatureValues[envId]);
     _dirtyBS.add(_dirty.values.any((d) => d == true));
   }
 
@@ -81,7 +83,11 @@ class FeatureValuesBloc implements Bloc {
   }
 
   @override
-  void dispose() {}
+  void dispose() {
+    _fvUpdates.values.forEach((element) {
+      element.close();
+    });
+  }
 
   bool hasValue(FeatureEnvironment fe) {
     return _newFeatureValues[fe.environment.id]?.valueBoolean != null ||
