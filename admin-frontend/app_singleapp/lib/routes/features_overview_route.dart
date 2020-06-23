@@ -36,6 +36,7 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
         _filterRow(context, bloc),
         _headerRow(context, bloc),
         FHPageDivider(),
+        SizedBox(height: 16.0),
         FeaturesOverviewTableWidget()
       ],
     );

@@ -47,16 +47,18 @@ class _FeatureValueJsonEnvironmentCellState
           }
           BoxDecoration myBoxDecoration() {
             return BoxDecoration(
-              border: Border.all(width: 0.5),
+              border: Border.all(width: 1.0),
               borderRadius: BorderRadius.all(
                   Radius.circular(6.0) //         <--- border radius here
                   ),
             );
           }
 
-          return Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 8.0, right: 36),
+          return Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+              width: 160,
+              height: 40,
               child: InkWell(
                 customBorder: RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(
@@ -65,11 +67,13 @@ class _FeatureValueJsonEnvironmentCellState
                 ),
                 hoverColor: Colors.black12,
                 child: Container(
-                    margin: const EdgeInsets.all(4.0),
                     padding: const EdgeInsets.all(10.0),
                     decoration: myBoxDecoration(),
-                    child: ConfigurationViewerField(
-                        fv: snap.data, canEdit: canEdit)),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: ConfigurationViewerField(
+                          fv: snap.data, canEdit: canEdit),
+                    )),
                 onTap: () => _viewJsonEditor(context, snap, enabled),
               ),
             ),

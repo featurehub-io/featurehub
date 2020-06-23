@@ -43,47 +43,50 @@ class _FeatureValueNumberEnvironmentCellState
             tec.text = val.toString();
           }
 
-          return Expanded(
-              child: Padding(
-                  padding: const EdgeInsets.only(right: 16.0),
-                  child: TextField(
-                    style: Theme.of(context).textTheme.bodyText1,
-                    enabled: enabled,
-                    controller: tec,
-                    decoration: InputDecoration(
-                      contentPadding: EdgeInsets.only(left: 4.0, top: 4.0),
-                      enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                        color: Theme.of(context).buttonColor,
-                      )),
-                      disabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                        color: Colors.grey,
-                      )),
-                      hintText: canEdit
-                          ? 'Enter number value'
-                          : 'No editing permissions',
-                      hintStyle: Theme.of(context).textTheme.caption,
-                      errorText: validateNumber(tec.text) != null
-                          ? 'Not a valid number'
-                          : null,
-                    ),
-                    onEditingComplete: () {
-                      if (validateNumber(tec.text) == null) {
-                        if (tec.text.isEmpty) {
-                          snap.data.valueNumber = null;
-                        } else {
-                          snap.data.valueNumber = double.parse(tec.text);
-                        }
-                        widget.fvBloc.updatedFeature(
-                            widget.environmentFeatureValue.environmentId);
+          return Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+                width: 160,
+                height: 40,
+                child: TextField(
+                  style: Theme.of(context).textTheme.bodyText1,
+                  enabled: enabled,
+                  controller: tec,
+                  decoration: InputDecoration(
+                    contentPadding: EdgeInsets.only(left: 4.0, top: 4.0),
+                    enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                      color: Theme.of(context).buttonColor,
+                    )),
+                    disabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                      color: Colors.grey,
+                    )),
+                    hintText: canEdit
+                        ? 'Enter number value'
+                        : 'No editing permissions',
+                    hintStyle: Theme.of(context).textTheme.caption,
+                    errorText: validateNumber(tec.text) != null
+                        ? 'Not a valid number'
+                        : null,
+                  ),
+                  onEditingComplete: () {
+                    if (validateNumber(tec.text) == null) {
+                      if (tec.text.isEmpty) {
+                        snap.data.valueNumber = null;
+                      } else {
+                        snap.data.valueNumber = double.parse(tec.text);
                       }
-                    },
-                    inputFormatters: [
-                      DecimalTextInputFormatter(
-                          decimalRange: 5, activatedNegativeValues: true)
-                    ],
-                  )));
+                      widget.fvBloc.updatedFeature(
+                          widget.environmentFeatureValue.environmentId);
+                    }
+                  },
+                  inputFormatters: [
+                    DecimalTextInputFormatter(
+                        decimalRange: 5, activatedNegativeValues: true)
+                  ],
+                )),
+          );
         });
   }
 }
@@ -91,7 +94,7 @@ class _FeatureValueNumberEnvironmentCellState
 class DecimalTextInputFormatter extends TextInputFormatter {
   DecimalTextInputFormatter({int decimalRange, bool activatedNegativeValues})
       : assert(decimalRange == null || decimalRange >= 0,
-            'DecimalTextInputFormatter declaretion error') {
+            'DecimalTextInputFormatter declaration error') {
     final dp = (decimalRange != null && decimalRange > 0)
         ? '([.][0-9]{0,$decimalRange}){0,1}'
         : '';
