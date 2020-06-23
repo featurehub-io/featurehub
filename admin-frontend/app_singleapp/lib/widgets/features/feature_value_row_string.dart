@@ -47,33 +47,45 @@ class _FeatureValueStringEnvironmentCellState
                 width: 160,
                 height: 40,
                 child: TextField(
-                    style: Theme.of(context).textTheme.bodyText1,
-                    enabled: enabled,
-                    controller: tec,
-                    decoration: InputDecoration(
-                        contentPadding: EdgeInsets.only(left: 4.0, top: 4.0),
-                        enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                          color: Theme.of(context).buttonColor,
-                        )),
-                        disabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                          color: Colors.grey,
-                        )),
-                        hintText: canEdit
-                            ? 'Enter string value'
-                            : 'No editing permissions',
-                        hintStyle: Theme.of(context).textTheme.caption),
-                    onChanged: (value) {
-                      snap.data.valueString = tec.text?.trim();
-                      if (snap.data.valueString.isEmpty) {
-                        snap.data.valueString = null;
-                      }
-                      widget.fvBloc.updatedFeature(
-                          widget.environmentFeatureValue.environmentId);
-                    })),
+                  style: Theme.of(context).textTheme.bodyText1,
+                  enabled: enabled,
+                  controller: tec,
+                  decoration: InputDecoration(
+                      contentPadding: EdgeInsets.only(left: 4.0, top: 4.0),
+                      enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                        color: Theme.of(context).buttonColor,
+                      )),
+                      disabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                        color: Colors.grey,
+                      )),
+                      hintText: canEdit
+                          ? 'Enter string value'
+                          : 'No editing permissions',
+                      hintStyle: Theme.of(context).textTheme.caption),
+                  onChanged: (value) {
+                    widget.fvBloc.dirty(
+                      widget.environmentFeatureValue.environmentId,
+                      (originalFv) =>
+                          (value?.isEmpty ? null : value) !=
+                          originalFv?.valueString,
+                    );
+                  },
+                  onEditingComplete: () {
+                    _handleChanged(tec.text, snap.data);
+                  },
+                )),
           );
         });
+  }
+
+  void _handleChanged(String val, FeatureValue fv) {
+    fv.valueString = val?.trim();
+    if (fv.valueString.isEmpty) {
+      fv.valueString = null;
+    }
+    widget.fvBloc.updatedFeature(widget.environmentFeatureValue.environmentId);
   }
 }
 

@@ -166,7 +166,11 @@ class _FeatureListenForUpdatedFeatureValues extends StatelessWidget {
               ),
               FHFlatButtonTransparent(
                 title: 'Save',
-                onPressed: () => featureBloc.updateDirtyStates(),
+                onPressed: () async {
+                  if ((await featureBloc.updateDirtyStates())) {
+                    bloc.hideOrShowFeature(feature);
+                  }
+                },
               )
             ],
           );
