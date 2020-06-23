@@ -42,17 +42,21 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
       _featureKey.text = widget.feature.key;
       _featureAlias.text = widget.feature.alias;
       _featureLink.text = widget.feature.link;
+      _dropDownFeatureTypeValue = widget.feature.valueType;
       isUpdate = true;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isReadOnly =
+        !widget.bloc.mrClient.userIsFeatureAdminOfCurrentApplication;
     return Form(
       key: _formKey,
       child: FHAlertDialog(
-        title: Text(
-            widget.feature == null ? 'Create new feature' : 'Edit feature'),
+        title: Text(widget.feature == null
+            ? 'Create new feature'
+            : (isReadOnly ? 'View feature' : 'Edit feature')),
         content: Container(
           width: 500,
           child: Column(
@@ -62,6 +66,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
               TextFormField(
                   controller: _featureName,
                   decoration: InputDecoration(labelText: 'Feature name'),
+                  readOnly: isReadOnly,
                   validator: ((v) {
                     if (v.isEmpty) {
                       return 'Please enter feature name';
@@ -73,6 +78,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                   })),
               TextFormField(
                   controller: _featureKey,
+                  readOnly: isReadOnly,
                   // initialValue: _featureName.toString(),
                   decoration: InputDecoration(
                       labelText: 'Feature key',
@@ -90,6 +96,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
 //Comment out Alias key until we implement proper analytics
 //              TextFormField(
 //                  controller: _featureAlias,
+//              readOnly: isReadOnly,
 //                  // initialValue: _featureName.toString(),
 //                  decoration: InputDecoration(
 //                      labelText: 'Alias key (optional)',
@@ -103,6 +110,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
 //                    return null;
 //                  })),
               TextFormField(
+                readOnly: isReadOnly,
                 controller: _featureLink,
                 decoration: InputDecoration(
                     labelText: 'Reference link (optional)',
@@ -110,48 +118,62 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                         'Optional link to external tracking system, e.g. Jira',
                     hintStyle: Theme.of(context).textTheme.caption),
               ),
-              !isUpdate
-                  ? Padding(
-                      padding: const EdgeInsets.only(top: 14.0),
-                      child: DropdownButton(
-                        icon: Padding(
-                          padding: EdgeInsets.only(left: 8.0),
-                          child: Icon(
-                            Icons.keyboard_arrow_down,
-                            size: 24,
-                          ),
-                        ),
-                        isExpanded: false,
-                        items: FeatureValueType.values
-                            .map((FeatureValueType dropDownStringItem) {
-                          return DropdownMenuItem<FeatureValueType>(
-                              value: dropDownStringItem,
-                              child: Text(
-                                  _transformValuesToString(dropDownStringItem),
-                                  style:
-                                      Theme.of(context).textTheme.bodyText2));
-                        }).toList(),
-                        hint: Text('Select feature type',
-                            style: Theme.of(context).textTheme.subtitle2),
-                        onChanged: (value) {
-                          setState(() {
-                            _dropDownFeatureTypeValue = value;
-                          });
-                        },
-                        value: _dropDownFeatureTypeValue,
-                      ),
-                    )
-                  : Container(),
-              Container(
-                  child: isError
-                      ? Text(
-                          'Select feature type',
+              if (isReadOnly)
+                Padding(
+                  padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
+                  child: Row(
+                    children: [
+                      Text('Feature is a ',
+                          style: Theme.of(context).textTheme.bodyText2),
+                      Text(_transformValuesToString(_dropDownFeatureTypeValue),
                           style: Theme.of(context)
                               .textTheme
                               .bodyText2
-                              .copyWith(color: Theme.of(context).errorColor),
-                        )
-                      : Container())
+                              .copyWith(fontWeight: FontWeight.bold))
+                    ],
+                  ),
+                ),
+              if (isUpdate && !isReadOnly)
+                Padding(
+                  padding: const EdgeInsets.only(top: 14.0),
+                  child: DropdownButton(
+                    icon: Padding(
+                      padding: EdgeInsets.only(left: 8.0),
+                      child: Icon(
+                        Icons.keyboard_arrow_down,
+                        size: 24,
+                      ),
+                    ),
+                    isExpanded: false,
+                    items: FeatureValueType.values
+                        .map((FeatureValueType dropDownStringItem) {
+                      return DropdownMenuItem<FeatureValueType>(
+                          value: dropDownStringItem,
+                          child: Text(
+                              _transformValuesToString(dropDownStringItem),
+                              style: Theme.of(context).textTheme.bodyText2));
+                    }).toList(),
+                    hint: Text('Select feature type',
+                        style: Theme.of(context).textTheme.subtitle2),
+                    onChanged: (value) {
+                      if (!isReadOnly) {
+                        setState(() {
+                          _dropDownFeatureTypeValue = value;
+                        });
+                      }
+                    },
+                    value: _dropDownFeatureTypeValue,
+                  ),
+                ),
+              if (isError)
+                Container(
+                    child: Text(
+                  'Select feature type',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyText2
+                      .copyWith(color: Theme.of(context).errorColor),
+                )),
             ],
           ),
         ),
@@ -162,50 +184,50 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
               widget.bloc.mrClient.removeOverlay();
             },
           ),
-          FHFlatButton(
-              title: isUpdate ? 'Update' : 'Create',
-              onPressed: (() async {
-                if (_formKey.currentState.validate()) {
-                  try {
-                    if (isUpdate) {
-                      await widget.bloc.updateFeature(
-                          widget.feature,
-                          _featureName.text,
-                          _featureKey.text,
-                          _featureAlias.text,
-                          _featureLink.text);
-                      widget.bloc.mrClient.removeOverlay();
-                      widget.bloc.mrClient.addSnackbar(
-                          Text('Feature ${_featureName.text} updated!'));
-                    } else {
-                      if (_dropDownFeatureTypeValue != null) {
-                        await widget.bloc.createFeature(
+          if (!isReadOnly)
+            FHFlatButton(
+                title: isUpdate ? 'Update' : 'Create',
+                onPressed: (() async {
+                  if (_formKey.currentState.validate()) {
+                    try {
+                      if (isUpdate) {
+                        await widget.bloc.updateFeature(
+                            widget.feature,
                             _featureName.text,
                             _featureKey.text,
-                            _dropDownFeatureTypeValue,
                             _featureAlias.text,
                             _featureLink.text);
                         widget.bloc.mrClient.removeOverlay();
                         widget.bloc.mrClient.addSnackbar(
-                            Text('Feature ${_featureName.text} created!'));
+                            Text('Feature ${_featureName.text} updated!'));
                       } else {
-                        setState(() {
-                          isError = true;
-                        });
+                        if (_dropDownFeatureTypeValue != null) {
+                          await widget.bloc.createFeature(
+                              _featureName.text,
+                              _featureKey.text,
+                              _dropDownFeatureTypeValue,
+                              _featureAlias.text,
+                              _featureLink.text);
+                          widget.bloc.mrClient.removeOverlay();
+                          widget.bloc.mrClient.addSnackbar(
+                              Text('Feature ${_featureName.text} created!'));
+                        } else {
+                          setState(() {
+                            isError = true;
+                          });
+                        }
+                      }
+                    } catch (e, s) {
+                      if (e is ApiException && e.code == 409) {
+                        widget.bloc.mrClient.customError(
+                            messageTitle:
+                                "Feature with key '${_featureKey.text}' already exists");
+                      } else {
+                        widget.bloc.mrClient.dialogError(e, s);
                       }
                     }
-                  } catch (e, s) {
-                    if (e is ApiException && e.code == 409) {
-                      widget.bloc.mrClient.customError(
-                          messageTitle:
-                          "Feature with key '${_featureKey
-                              .text}' already exists");
-                    } else {
-                      widget.bloc.mrClient.dialogError(e, s);
-                    }
                   }
-                }
-              }))
+                }))
         ],
       ),
     );
