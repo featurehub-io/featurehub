@@ -70,16 +70,18 @@ class _FeatureValueNumberEnvironmentCellState
                         ? 'Not a valid number'
                         : null,
                   ),
+                  onChanged: (value) {
+                    print("on changed");
+                    widget.fvBloc.dirty(
+                      widget.environmentFeatureValue.environmentId,
+                      (originalFv) {
+                        return (value?.isEmpty ? null : value) !=
+                            originalFv?.valueNumber?.toString();
+                      },
+                    );
+                  },
                   onEditingComplete: () {
-                    if (validateNumber(tec.text) == null) {
-                      if (tec.text.isEmpty) {
-                        snap.data.valueNumber = null;
-                      } else {
-                        snap.data.valueNumber = double.parse(tec.text);
-                      }
-                      widget.fvBloc.updatedFeature(
-                          widget.environmentFeatureValue.environmentId);
-                    }
+                    _handleChanged(tec.text, snap.data);
                   },
                   inputFormatters: [
                     DecimalTextInputFormatter(
@@ -88,6 +90,19 @@ class _FeatureValueNumberEnvironmentCellState
                 )),
           );
         });
+  }
+
+  void _handleChanged(String val, FeatureValue fv) {
+    if (validateNumber(val) == null) {
+      if (val.isEmpty) {
+        fv.valueNumber = null;
+      } else {
+        fv.valueNumber = double.parse(val);
+      }
+
+      widget.fvBloc
+          .updatedFeature(widget.environmentFeatureValue.environmentId);
+    }
   }
 }
 
