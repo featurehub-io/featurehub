@@ -1,4 +1,5 @@
-import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
+import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
+import 'package:app_singleapp/widgets/common/fh_outline_button.dart';
 import 'package:app_singleapp/widgets/features/create-update-feature-dialog-widget.dart';
 import 'package:app_singleapp/widgets/features/delete_feature_widget.dart';
 import 'package:app_singleapp/widgets/features/feature_dashboard_constants.dart';
@@ -28,9 +29,13 @@ class FeatureNamesLeftPanel extends StatelessWidget {
             behavior: HitTestBehavior.opaque,
             onTap: () => tabsBloc.hideOrShowFeature(feature),
             child: Container(
+                decoration: BoxDecoration(color: Colors.white, boxShadow: [
+                  BoxShadow(
+                      color: Color(0xffe5e7f1),
+                      offset: Offset(15.0, 15),
+                      blurRadius: 16),
+                ]),
                 padding: EdgeInsets.only(top: 8.0, left: 8.0),
-//              color: Theme.of(context).backgroundColor,
-//                padding: EdgeInsets.fromLTRB(0, 8, 0, 8),
                 height: amSelected ? selectedRowHeight : unselectedRowHeight,
                 width: 220.0,
                 child: Row(
@@ -59,11 +64,11 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
+                                        MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text('${feature.name}',
                                               overflow: TextOverflow.ellipsis,
@@ -77,19 +82,19 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                               onSelected: (value) {
                                                 if (value == 'edit') {
                                                   tabsBloc.mrClient.addOverlay(
-                                                      (BuildContext context) =>
+                                                          (BuildContext context) =>
                                                           CreateFeatureDialogWidget(
                                                               bloc: bloc,
                                                               feature:
-                                                                  feature));
+                                                              feature));
                                                 }
                                                 if (value == 'delete') {
                                                   tabsBloc.mrClient.addOverlay(
-                                                      (BuildContext context) =>
+                                                          (BuildContext context) =>
                                                           FeatureDeleteDialogWidget(
                                                               bloc: bloc,
                                                               feature:
-                                                                  feature));
+                                                              feature));
                                                 }
                                               },
                                               itemBuilder:
@@ -100,18 +105,18 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                                       child: Text(
                                                           'View details',
                                                           style:
-                                                              Theme.of(context)
-                                                                  .textTheme
-                                                                  .bodyText2)),
+                                                          Theme.of(context)
+                                                              .textTheme
+                                                              .bodyText2)),
                                                   if (bloc.mrClient
                                                       .userIsFeatureAdminOfCurrentApplication)
                                                     PopupMenuItem(
                                                       value: 'delete',
                                                       child: Text('Delete',
                                                           style:
-                                                              Theme.of(context)
-                                                                  .textTheme
-                                                                  .bodyText2),
+                                                          Theme.of(context)
+                                                              .textTheme
+                                                              .bodyText2),
                                                     ),
                                                 ];
                                               },
@@ -160,21 +165,25 @@ class _FeatureListenForUpdatedFeatureValues extends StatelessWidget {
       stream: featureBloc.anyDirty,
       builder: (context, snapshot) {
         if (snapshot.data == true) {
-          return Row(
-            children: [
-              FHFlatButtonTransparent(
-                title: 'Reset',
-                onPressed: () => featureBloc.reset(),
-              ),
-              FHFlatButtonTransparent(
-                title: 'Save',
-                onPressed: () async {
-                  if ((await featureBloc.updateDirtyStates())) {
-                    bloc.hideOrShowFeature(feature);
-                  }
-                },
-              )
-            ],
+          return Expanded(
+            child: ButtonBar(
+              alignment: MainAxisAlignment.start,
+              children: [
+                FHOutlineButton(
+                  title: 'Cancel',
+                  keepCase: true,
+                  onPressed: () => featureBloc.reset(),
+                ),
+                FHFlatButton(
+                  title: 'Save',
+                  onPressed: () async {
+                    if ((await featureBloc.updateDirtyStates())) {
+                      bloc.hideOrShowFeature(feature);
+                    }
+                  },
+                )
+              ],
+            ),
           );
         }
 

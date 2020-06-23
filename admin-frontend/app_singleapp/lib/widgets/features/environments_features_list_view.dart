@@ -1,5 +1,4 @@
 import 'package:app_singleapp/widgets/features/feature_value_cell.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'feature_dashboard_constants.dart';
@@ -59,14 +58,11 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                                         ),
                                         ...bloc.features.map((f) {
                                           return Container(
-//                                          margin: EdgeInsets.symmetric(vertical: 1.0),
                                             decoration: BoxDecoration(
                                                 border: Border(
                                                     top: BorderSide(
-                                                        color: Colors.black26))
-//                                            borderRadius: BorderRadius.all(Radius.circular(4.0)),
-//                                            color: Colors.black12,
-                                                ),
+                                                        color: Colors.black87,
+                                                        width: 0.5))),
                                             child: FeatureValueCell(
                                                 tabsBloc: bloc,
                                                 feature: f,
