@@ -59,62 +59,66 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text('${feature.name}',
                                               overflow: TextOverflow.ellipsis,
                                               style: Theme.of(context)
                                                   .textTheme
                                                   .bodyText1),
-                                          Container(
-                                            height: 24,
-                                            child: PopupMenuButton(
-                                              icon: Icon(Icons.more_vert),
-                                              onSelected: (value) {
-                                                if (value == 'edit') {
-                                                  tabsBloc.mrClient.addOverlay(
-                                                          (
-                                                          BuildContext context) =>
-                                                          CreateFeatureDialogWidget(
-                                                              bloc: bloc,
-                                                              feature: feature));
-                                                }
-                                                if (value == 'delete') {
-                                                  tabsBloc.mrClient.addOverlay(
-                                                          (
-                                                          BuildContext context) =>
-                                                          FeatureDeleteDialogWidget(
-                                                              bloc: bloc,
-                                                              feature: feature));
-                                                }
-                                              },
-                                              itemBuilder:
-                                                  (BuildContext context) {
-                                                return [
-                                                  PopupMenuItem(
-                                                      value: 'edit',
-                                                      child: Text(
-                                                          'View details',
+                                          if (bloc.mrClient
+                                              .userIsFeatureAdminOfCurrentApplication)
+                                            Container(
+                                              height: 24,
+                                              child: PopupMenuButton(
+                                                icon: Icon(Icons.more_vert),
+                                                onSelected: (value) {
+                                                  if (value == 'edit') {
+                                                    tabsBloc.mrClient.addOverlay(
+                                                        (BuildContext
+                                                                context) =>
+                                                            CreateFeatureDialogWidget(
+                                                                bloc: bloc,
+                                                                feature:
+                                                                    feature));
+                                                  }
+                                                  if (value == 'delete') {
+                                                    tabsBloc.mrClient.addOverlay(
+                                                        (BuildContext
+                                                                context) =>
+                                                            FeatureDeleteDialogWidget(
+                                                                bloc: bloc,
+                                                                feature:
+                                                                    feature));
+                                                  }
+                                                },
+                                                itemBuilder:
+                                                    (BuildContext context) {
+                                                  return [
+                                                    PopupMenuItem(
+                                                        value: 'edit',
+                                                        child: Text(
+                                                            'View details',
+                                                            style: Theme.of(
+                                                                    context)
+                                                                .textTheme
+                                                                .bodyText2)),
+                                                    PopupMenuItem(
+                                                      value: 'delete',
+                                                      child: Text('Delete',
                                                           style:
-                                                          Theme
-                                                              .of(context)
-                                                              .textTheme
-                                                              .bodyText2)),
-                                                  PopupMenuItem(
-                                                    value: 'delete',
-                                                    child: Text('Delete',
-                                                        style: Theme.of(context)
-                                                            .textTheme
-                                                            .bodyText2),
-                                                  ),
-                                                ];
-                                              },
-                                            ),
-                                          )
+                                                              Theme.of(context)
+                                                                  .textTheme
+                                                                  .bodyText2),
+                                                    ),
+                                                  ];
+                                                },
+                                              ),
+                                            )
                                         ],
                                       ),
                                       Text(
