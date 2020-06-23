@@ -183,8 +183,5 @@ class _FeatureListenForUpdatedFeatureValues extends StatelessWidget {
         return SizedBox.shrink();
       },
     );
-
-    // TODO: implement build
-    throw UnimplementedError();
   }
 }

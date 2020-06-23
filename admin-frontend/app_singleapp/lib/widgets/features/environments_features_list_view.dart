@@ -20,7 +20,7 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
         builder: (context, snapshot) {
           return StreamBuilder<TabsState>(
               stream: bloc.currentTab,
-              builder: (context, snapshot) {
+              builder: (context, currentTabSnapshot) {
                 return StreamBuilder<Set<String>>(
                     stream: bloc.featureCurrentlyEditingStream,
                     builder: (context, snapshot) {
@@ -39,9 +39,10 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                                 return Container(
 //                                  padding:
 //                                      EdgeInsets.only(left: 1.0, right: 1.0),
-                                  width: snapshot.data == TabsState.FLAGS
-                                      ? 100.0
-                                      : 170.0,
+                                  width:
+                                      currentTabSnapshot.data == TabsState.FLAGS
+                                          ? 100.0
+                                          : 170.0,
                                   child: Column(
                                     children: [
                                       Container(

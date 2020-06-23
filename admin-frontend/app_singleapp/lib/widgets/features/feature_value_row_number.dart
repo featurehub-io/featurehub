@@ -71,7 +71,6 @@ class _FeatureValueNumberEnvironmentCellState
                         : null,
                   ),
                   onChanged: (value) {
-                    print("on changed");
                     widget.fvBloc.dirty(
                       widget.environmentFeatureValue.environmentId,
                       (originalFv) {
