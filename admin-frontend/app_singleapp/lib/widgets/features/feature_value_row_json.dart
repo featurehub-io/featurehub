@@ -3,7 +3,7 @@ import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/common/fh_footer_button_bar.dart';
 import 'package:app_singleapp/widgets/common/fh_json_editor.dart';
 import 'package:app_singleapp/widgets/common/fh_outline_button.dart';
-import 'package:app_singleapp/widgets/features/feature_value_row_generic.dart';
+import 'package:app_singleapp/widgets/features/feature_value_updated_by.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 

@@ -37,15 +37,15 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                               ...bloc.sortedEnvironmentsThatAreShowing
                                   .map((efv) {
                                 return Container(
-                                  padding:
-                                      EdgeInsets.only(left: 1.0, right: 1.0),
+//                                  padding:
+//                                      EdgeInsets.only(left: 1.0, right: 1.0),
                                   width: snapshot.data == TabsState.FLAGS
                                       ? 100.0
                                       : 170.0,
                                   child: Column(
                                     children: [
                                       Container(
-                                        color: Theme.of(context).highlightColor,
+//                                        color: Theme.of(context).highlightColor,
                                         height: headerHeight,
                                         child: Column(
                                           children: [
@@ -57,13 +57,21 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                                         ),
                                       ),
                                       ...bloc.features.map((f) {
-                                        return FeatureValueCell(
-                                            tabsBloc: bloc,
-                                            feature: f,
-                                            value: efv.features.firstWhere(
-                                                (fv) => fv.key == f.key,
-                                                orElse: () => null),
-                                            efv: efv);
+                                        return Container(
+//                                          margin: EdgeInsets.symmetric(vertical: 1.0),
+                                          decoration: BoxDecoration(
+                                              border: Border(top: BorderSide())
+//                                            borderRadius: BorderRadius.all(Radius.circular(4.0)),
+//                                            color: Colors.black12,
+                                              ),
+                                          child: FeatureValueCell(
+                                              tabsBloc: bloc,
+                                              feature: f,
+                                              value: efv.features.firstWhere(
+                                                  (fv) => fv.key == f.key,
+                                                  orElse: () => null),
+                                              efv: efv),
+                                        );
                                       }).toList(),
                                     ],
                                   ),

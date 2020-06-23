@@ -1,7 +1,10 @@
 import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
+import 'package:app_singleapp/widgets/features/create-update-feature-dialog-widget.dart';
+import 'package:app_singleapp/widgets/features/delete_feature_widget.dart';
 import 'package:app_singleapp/widgets/features/feature_dashboard_constants.dart';
-import 'package:app_singleapp/widgets/features/feature_value_row_generic.dart';
+import 'package:app_singleapp/widgets/features/feature_status_bloc.dart';
 import 'package:app_singleapp/widgets/features/tabs_bloc.dart';
+import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 
@@ -15,6 +18,7 @@ class FeatureNamesLeftPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bloc = BlocProvider.of<FeatureStatusBloc>(context);
     return StreamBuilder<Set<String>>(
         stream: tabsBloc.featureCurrentlyEditingStream,
         builder: (context, snapshot) {
@@ -55,11 +59,11 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
+                                        MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text('${feature.name}',
                                               overflow: TextOverflow.ellipsis,
@@ -71,18 +75,35 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                             child: PopupMenuButton(
                                               icon: Icon(Icons.more_vert),
                                               onSelected: (value) {
-                                                if (value == 'edit') {}
+                                                if (value == 'edit') {
+                                                  tabsBloc.mrClient.addOverlay(
+                                                          (
+                                                          BuildContext context) =>
+                                                          CreateFeatureDialogWidget(
+                                                              bloc: bloc,
+                                                              feature: feature));
+                                                }
+                                                if (value == 'delete') {
+                                                  tabsBloc.mrClient.addOverlay(
+                                                          (
+                                                          BuildContext context) =>
+                                                          FeatureDeleteDialogWidget(
+                                                              bloc: bloc,
+                                                              feature: feature));
+                                                }
                                               },
                                               itemBuilder:
                                                   (BuildContext context) {
                                                 return [
                                                   PopupMenuItem(
                                                       value: 'edit',
-                                                      child: Text('Edit',
+                                                      child: Text(
+                                                          'View details',
                                                           style:
-                                                              Theme.of(context)
-                                                                  .textTheme
-                                                                  .bodyText2)),
+                                                          Theme
+                                                              .of(context)
+                                                              .textTheme
+                                                              .bodyText2)),
                                                   PopupMenuItem(
                                                     value: 'delete',
                                                     child: Text('Delete',
@@ -110,10 +131,6 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                             if (amSelected)
                               _FeatureListenForUpdatedFeatureValues(
                                   feature: feature, bloc: tabsBloc),
-                            if (amSelected)
-                              FeatureValueNameCell(feature: feature),
-                            if (amSelected)
-                              FeatureEditDeleteCell(feature: feature)
                           ],
                         ),
                       ),
