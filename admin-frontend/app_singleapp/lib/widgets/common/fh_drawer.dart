@@ -2,15 +2,12 @@ import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/api/router.dart';
 import 'package:app_singleapp/common/stream_valley.dart';
 import 'package:app_singleapp/utils/custom_cursor.dart';
-import 'package:app_singleapp/widgets/common/fh_circle_icon_button.dart';
 import 'package:app_singleapp/widgets/common/fh_portfolio_selector.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-import 'fh_nav_rail.dart';
 
 class DrawerViewWidget extends StatefulWidget {
   @override
@@ -34,9 +31,7 @@ class _DrawerViewWidgetState extends State<DrawerViewWidget> {
               headerPadding: _HEADER_PADDING,
             );
           } else {
-            return NavRail(
-              mrBloc: mrBloc,
-            );
+            return SizedBox.shrink();
           }
         });
   }
@@ -60,18 +55,7 @@ class _MenuContainer extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Row(
-                children: [
-                  PortfolioSelectorWidget(),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                        left: 16.0, top: 16.0, right: 8.0, bottom: 16.0),
-                    child: CircleIconButton(
-                        icon: Icon(Icons.chevron_left),
-                        onTap: () => mrBloc.menuOpened.add(false)),
-                  ),
-                ],
-              ),
+              PortfolioSelectorWidget(),
               SizedBox(height: 16),
               _MenuFeaturesOptionsWidget(),
               StreamBuilder<ReleasedPortfolio>(
@@ -254,8 +238,8 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
         ),
         _MenuItem(
           name: 'Features',
-          iconData: Ionicons.md_switch,
-          iconSize: 26,
+          iconData: Feather.sliders,
+          iconSize: 24,
           path: '/feature-status',
           params: {},
         ),
@@ -315,7 +299,7 @@ class _MenuItem extends StatelessWidget {
                   equalsParams(snapshot.data.params);
               return Container(
                 padding: EdgeInsets.fromLTRB(16, 12, 0, 12),
-                color: selected ? Color(0xffe5e7f1) : null,
+                color: selected ? Theme.of(context).primaryColorLight : null,
                 child: Row(
                   children: <Widget>[
                     Icon(

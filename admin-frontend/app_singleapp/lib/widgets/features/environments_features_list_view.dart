@@ -20,56 +20,63 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
         builder: (context, snapshot) {
           return StreamBuilder<TabsState>(
               stream: bloc.currentTab,
-              builder: (context, snapshot) {
+              builder: (context, currentTabSnapshot) {
                 return StreamBuilder<Set<String>>(
                     stream: bloc.featureCurrentlyEditingStream,
                     builder: (context, snapshot) {
                       return Container(
-                        height: ((bloc.features.length -
-                                    (snapshot.data?.length ?? 0)) *
+                        height: (bloc.unselectedFeatureCount *
                                 unselectedRowHeight) +
-                            ((snapshot.data?.length ?? 0) * selectedRowHeight) +
+                            (bloc.selectedFeatureCount * selectedRowHeight) +
                             headerHeight,
-                        child: ListView(
-                          scrollDirection: Axis.horizontal,
-                          children: [
-                            if (bloc.features.isNotEmpty)
-                              ...bloc.sortedEnvironmentsThatAreShowing
-                                  .map((efv) {
-                                return Container(
-                                  padding:
-                                      EdgeInsets.only(left: 1.0, right: 1.0),
-                                  width: snapshot.data == TabsState.FLAGS
-                                      ? 100.0
-                                      : 170.0,
-                                  child: Column(
-                                    children: [
-                                      Container(
-                                        color: Theme.of(context).highlightColor,
-                                        height: headerHeight,
-                                        child: Column(
-                                          children: [
-                                            HideEnvironmentContainer(
-                                              name: efv.environmentName,
-                                              envId: efv.environmentId,
-                                            ),
-                                          ],
+                        child: Scrollbar(
+                          child: ListView(
+                            scrollDirection: Axis.horizontal,
+                            physics: ClampingScrollPhysics(),
+                            children: [
+                              if (bloc.features.isNotEmpty)
+                                ...bloc.sortedEnvironmentsThatAreShowing
+                                    .map((efv) {
+                                  return Container(
+//                                  padding:
+//                                      EdgeInsets.only(left: 1.0, right: 1.0),
+                                    width: 170.0,
+                                    child: Column(
+                                      children: [
+                                        Container(
+//                                        color: Theme.of(context).highlightColor,
+                                          height: headerHeight - 2,
+                                          child: Column(
+                                            children: [
+                                              HideEnvironmentContainer(
+                                                name: efv.environmentName,
+                                                envId: efv.environmentId,
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                      ...bloc.features.map((f) {
-                                        return FeatureValueCell(
-                                            tabsBloc: bloc,
-                                            feature: f,
-                                            value: efv.features.firstWhere(
-                                                (fv) => fv.key == f.key,
-                                                orElse: () => null),
-                                            efv: efv);
-                                      }).toList(),
-                                    ],
-                                  ),
-                                );
-                              })
-                          ],
+                                        ...bloc.features.map((f) {
+                                          return Container(
+                                            decoration: BoxDecoration(
+                                                border: Border(
+                                                    top: BorderSide(
+                                                        color: Colors.black87,
+                                                        width: 0.5))),
+                                            child: FeatureValueCell(
+                                                tabsBloc: bloc,
+                                                feature: f,
+                                                value: efv.features.firstWhere(
+                                                    (fv) => fv.key == f.key,
+                                                    orElse: () => null),
+                                                efv: efv),
+                                          );
+                                        }).toList(),
+                                      ],
+                                    ),
+                                  );
+                                })
+                            ],
+                          ),
                         ),
                       );
                     });

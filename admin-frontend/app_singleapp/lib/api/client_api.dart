@@ -142,6 +142,14 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   bool get userIsSuperAdmin => _userIsSuperAdmin;
 
+  bool get userIsFeatureAdminOfCurrentApplication {
+    final currentAid = getCurrentAid();
+
+    return person.groups?.any((g) => g.applicationRoles.any((ar) =>
+        ar.applicationId == currentAid &&
+        ar.roles.contains(ApplicationRoleType.FEATURE_EDIT)));
+  }
+
   bool _userIsAnyPortfolioOrSuperAdmin = false;
 
   bool get userIsCurrentPortfolioAdmin =>

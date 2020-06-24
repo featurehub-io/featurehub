@@ -1,4 +1,4 @@
-import 'package:app_singleapp/widgets/features/feature_value_row_generic.dart';
+import 'package:app_singleapp/widgets/features/feature_value_updated_by.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 

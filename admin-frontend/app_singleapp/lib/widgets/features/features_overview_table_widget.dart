@@ -72,7 +72,7 @@ class TabsView extends StatelessWidget {
         creator: (_c, _b) => TabsBloc(featureStatus, applicationId,
             BlocProvider.of<ManagementRepositoryClientBloc>(context), bloc),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _FeatureTabsHeader(),
@@ -112,12 +112,10 @@ class _FeatureTabsBodyHolder extends StatelessWidget {
                         Container(
                             height: headerHeight,
                             padding: EdgeInsets.only(left: 8.0),
-                            child: Text('Environments', style: Theme
-                                .of(context)
-                                .textTheme
-                                .caption)),
+                            child: Text('',
+                                style: Theme.of(context).textTheme.caption)),
                         ...bloc.features.map(
-                              (f) {
+                          (f) {
                             return FeatureNamesLeftPanel(
                                 tabsBloc: bloc, feature: f);
                           },
@@ -143,13 +141,20 @@ class _FeatureTabsHeader extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         _FeatureTab(
-            text: 'Feature Flags', icon: Icons.flag, state: TabsState.FLAGS),
+            text: 'Feature Flags',
+            icon: Icons.flag,
+            state: TabsState.FLAGS,
+            color: Colors.green),
         _FeatureTab(
-            text: 'Feature Values', icon: Icons.code, state: TabsState.VALUES),
+            text: 'Feature Values',
+            icon: Icons.code,
+            state: TabsState.VALUES,
+            color: Colors.blue),
         _FeatureTab(
             text: 'Configurations',
             icon: Icons.device_hub,
-            state: TabsState.CONFIGURATIONS),
+            state: TabsState.CONFIGURATIONS,
+            color: Colors.orange),
       ],
     );
   }
@@ -160,8 +165,14 @@ class _FeatureTab extends StatelessWidget {
   final IconData icon;
   final TabsState state;
 
+  final color;
+
   const _FeatureTab(
-      {Key key, @required this.text, @required this.icon, @required this.state})
+      {Key key,
+      @required this.text,
+      @required this.icon,
+      @required this.state,
+      @required this.color})
       : super(key: key);
 
   @override
@@ -190,11 +201,12 @@ class _FeatureTab extends StatelessWidget {
                             : Colors.transparent,
                       ),
                       child: Row(children: <Widget>[
-                        Icon(icon, color: Theme
-                            .of(context)
-                            .primaryColor, size: 16.0),
+                        Icon(icon, color: color, size: 20.0),
                         SizedBox(width: 4.0),
-                        Text(text),
+                        Text(text, style: Theme
+                            .of(context)
+                            .textTheme
+                            .subtitle1),
                       ]))));
         });
   }
