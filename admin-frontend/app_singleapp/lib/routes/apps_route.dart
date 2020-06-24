@@ -332,6 +332,7 @@ class _PopUpAdminMenu extends StatelessWidget {
     return Container(
       width: 34,
       child: PopupMenuButton(
+        tooltip: 'Show more',
         icon: Icon(
           Icons.more_vert,
           size: 22.0,
@@ -358,11 +359,17 @@ class _PopUpAdminMenu extends StatelessWidget {
             PopupMenuItem(
                 value: 'edit',
                 child:
-                    Text('Edit', style: Theme.of(context).textTheme.bodyText2)),
+                Text('Edit', style: Theme
+                    .of(context)
+                    .textTheme
+                    .bodyText2)),
             PopupMenuItem(
                 value: 'delete',
                 child: Text('Delete',
-                    style: Theme.of(context).textTheme.bodyText2))
+                    style: Theme
+                        .of(context)
+                        .textTheme
+                        .bodyText2))
           ];
         },
       ),

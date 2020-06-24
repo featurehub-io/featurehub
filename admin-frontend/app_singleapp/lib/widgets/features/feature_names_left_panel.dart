@@ -78,15 +78,16 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                           Container(
                                             height: 24,
                                             child: PopupMenuButton(
+                                              tooltip: 'Show more',
                                               icon: Icon(Icons.more_vert),
                                               onSelected: (value) {
                                                 if (value == 'edit') {
                                                   tabsBloc.mrClient.addOverlay(
-                                                          (BuildContext context) =>
+                                                      (BuildContext context) =>
                                                           CreateFeatureDialogWidget(
                                                               bloc: bloc,
                                                               feature:
-                                                              feature));
+                                                                  feature));
                                                 }
                                                 if (value == 'delete') {
                                                   tabsBloc.mrClient.addOverlay(
@@ -125,11 +126,15 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                         ],
                                       ),
                                       Text(
-                                          '${feature.valueType.toString().split('.').last}',
+                                          '${feature.valueType
+                                              .toString()
+                                              .split('.')
+                                              .last}',
                                           overflow: TextOverflow.ellipsis,
                                           style: TextStyle(
                                               fontFamily: 'Source',
-                                              fontSize: 10)),
+                                              fontSize: 10,
+                                              letterSpacing: 1.0)),
                                     ],
                                   ),
                                 ),

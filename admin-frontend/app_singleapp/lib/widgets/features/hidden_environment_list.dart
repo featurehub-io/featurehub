@@ -74,9 +74,13 @@ class HideEnvironmentContainer extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 2.0, right: 2.0),
             child: InkWell(
-              child: Icon(Icons.visibility, size: 18.0, color: Theme
-                  .of(context)
-                  .primaryColorDark),
+              hoverColor: Theme.of(context).primaryColorLight,
+              borderRadius: BorderRadius.circular(24),
+              child: Container(
+                width: 34,
+                child: Icon(Icons.visibility,
+                    size: 18.0, color: Theme.of(context).primaryColorDark),
+              ),
               onTap: () {
                 BlocProvider.of<TabsBloc>(context).hideEnvironment(envId);
               },
@@ -94,9 +98,16 @@ class HideEnvironmentContainer extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 2.0, right: 2.0),
             child: InkWell(
-              child: Icon(Icons.visibility_off, size: 18.0, color: Theme
+              hoverColor: Theme
                   .of(context)
-                  .primaryColorDark),
+                  .primaryColorLight,
+              borderRadius: BorderRadius.circular(24),
+              child: Container(
+                width: 34.0,
+                child: Icon(Icons.visibility_off, size: 18.0, color: Theme
+                    .of(context)
+                    .primaryColorDark),
+              ),
               onTap: () {
                 BlocProvider.of<TabsBloc>(context).hideEnvironment(envId);
               },

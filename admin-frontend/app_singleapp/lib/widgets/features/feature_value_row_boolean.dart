@@ -77,6 +77,8 @@ class FeatureValueBooleanCellEditor extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
       children: [
         FeatureValueEditLockedCell(
           environmentFeatureValue: environmentFeatureValue,
