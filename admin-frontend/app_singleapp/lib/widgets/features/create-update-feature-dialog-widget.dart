@@ -118,22 +118,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                         'Optional link to external tracking system, e.g. Jira',
                     hintStyle: Theme.of(context).textTheme.caption),
               ),
-              if (isReadOnly)
-                Padding(
-                  padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
-                  child: Row(
-                    children: [
-                      Text('Feature is a ',
-                          style: Theme.of(context).textTheme.bodyText2),
-                      Text(_transformValuesToString(_dropDownFeatureTypeValue),
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyText2
-                              .copyWith(fontWeight: FontWeight.bold))
-                    ],
-                  ),
-                ),
-              if (isUpdate && !isReadOnly)
+              if (!isUpdate)
                 Padding(
                   padding: const EdgeInsets.only(top: 14.0),
                   child: DropdownButton(

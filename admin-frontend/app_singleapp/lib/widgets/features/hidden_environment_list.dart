@@ -8,7 +8,9 @@ class HiddenEnvironmentsList extends StatelessWidget {
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<TabsBloc>(context);
     return Container(
-      height: 40.0,
+      color: Theme.of(context).selectedRowColor,
+      margin: EdgeInsets.all(24.0),
+      height: 40,
       child: Row(
         children: [
           Padding(
@@ -16,9 +18,8 @@ class HiddenEnvironmentsList extends StatelessWidget {
             child: Text('Hidden environments',
                 style: Theme.of(context).textTheme.caption),
           ),
-          Flexible(
+          Expanded(
             child: Container(
-              height: 40.0,
               child: StreamBuilder<Set<String>>(
                   stream: bloc.hiddenEnvironments,
                   builder: (context, snapshot) {
@@ -73,7 +74,9 @@ class HideEnvironmentContainer extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 2.0, right: 2.0),
             child: InkWell(
-              child: Icon(Icons.visibility, size: 20.0),
+              child: Icon(Icons.visibility, size: 18.0, color: Theme
+                  .of(context)
+                  .primaryColorDark),
               onTap: () {
                 BlocProvider.of<TabsBloc>(context).hideEnvironment(envId);
               },
@@ -91,7 +94,9 @@ class HideEnvironmentContainer extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 2.0, right: 2.0),
             child: InkWell(
-              child: Icon(Icons.visibility_off, size: 20.0),
+              child: Icon(Icons.visibility_off, size: 18.0, color: Theme
+                  .of(context)
+                  .primaryColorDark),
               onTap: () {
                 BlocProvider.of<TabsBloc>(context).hideEnvironment(envId);
               },
