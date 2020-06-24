@@ -25,10 +25,9 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                     stream: bloc.featureCurrentlyEditingStream,
                     builder: (context, snapshot) {
                       return Container(
-                        height: ((bloc.features.length -
-                                    (snapshot.data?.length ?? 0)) *
+                        height: (bloc.unselectedFeatureCount *
                                 unselectedRowHeight) +
-                            ((snapshot.data?.length ?? 0) * selectedRowHeight) +
+                            (bloc.selectedFeatureCount * selectedRowHeight) +
                             headerHeight,
                         child: Scrollbar(
                           child: ListView(
