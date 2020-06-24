@@ -69,6 +69,9 @@ class FeatureStatusBloc implements Bloc {
     applicationId = appId;
     if (applicationId != null) {
       addAppFeatureValuesToStream();
+    } else {
+      _appFeatureValuesBS
+          .add(FeatureStatusFeatures(new ApplicationFeatureValues()));
     }
   }
 

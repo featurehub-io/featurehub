@@ -1,5 +1,3 @@
-import 'dart:js' as js;
-
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/widgets/stepper/stepper_container.dart';
 import 'package:bloc_provider/bloc_provider.dart';
@@ -65,7 +63,7 @@ class FHappBar extends StatelessWidget {
                       ),
                       StepperRocketButton(mrBloc: mrBloc),
                       IconButton(
-                          onPressed: () => _logout(context, mrBloc),
+                          onPressed: () => mrBloc.logout(),
                           icon: Icon(Icons.exit_to_app),
                           tooltip: 'Sign out'),
                     ],
@@ -78,11 +76,4 @@ class FHappBar extends StatelessWidget {
       ],
     );
   }
-}
-
-void _logout(BuildContext context, ManagementRepositoryClientBloc client) {
-  client.logout().then((result) {
-    // the better way to do this is probably to reload the main app.
-    js.context['location']['href'] = '/';
-  }).catchError((e, s) => client.dialogError(e, s));
 }

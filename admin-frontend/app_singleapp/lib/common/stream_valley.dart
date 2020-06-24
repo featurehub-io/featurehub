@@ -169,6 +169,16 @@ class StreamValley {
     _currentEnvironmentServiceAccountSource.add(value);
   }
 
+  bool _includeEnvironmentsInApplicationRequest = false;
+
+  set includeEnvironmentsInApplicationRequest(bool include) {
+    // swapping from false to true
+    if (_includeEnvironmentsInApplicationRequest != include && include) {
+      _includeEnvironmentsInApplicationRequest = include;
+      getCurrentPortfolioApplications();
+    }
+  }
+
   Future<void> getCurrentPortfolioApplications(
       {findApplicationsFunc findApp}) async {
     List<Application> appList;
@@ -179,7 +189,9 @@ class StreamValley {
       } else {
         appList = await applicationServiceApi
             .findApplications(currentPortfolioId,
-                order: SortOrder.DESC, includeEnvironments: true)
+                order: SortOrder.DESC,
+                includeEnvironments: true,
+                includeFeatures: _includeEnvironmentsInApplicationRequest)
             .catchError(mrClient.dialogError);
       }
 
