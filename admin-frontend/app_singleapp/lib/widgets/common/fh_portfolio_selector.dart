@@ -22,7 +22,7 @@ class _PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
               fit: FlexFit.loose,
               child: Padding(
                 padding:
-                    const EdgeInsets.only(left: 16.0, right: 32.0, top: 16.0),
+                    const EdgeInsets.only(left: 16.0, right: 32.0, top: 24.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

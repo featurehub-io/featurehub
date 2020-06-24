@@ -72,7 +72,7 @@ class TabsView extends StatelessWidget {
         creator: (_c, _b) => TabsBloc(featureStatus, applicationId,
             BlocProvider.of<ManagementRepositoryClientBloc>(context), bloc),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _FeatureTabsHeader(),

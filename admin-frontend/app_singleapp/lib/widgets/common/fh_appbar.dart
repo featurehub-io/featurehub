@@ -1,6 +1,7 @@
 import 'dart:js' as js;
 
 import 'package:app_singleapp/api/client_api.dart';
+import 'package:app_singleapp/widgets/stepper/stepper_container.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
@@ -52,13 +53,21 @@ class FHappBar extends StatelessWidget {
                           //here the name should be returned from a current user
                           'Hi, ${person.name}',
                           style: Theme.of(context).primaryTextTheme.bodyText2),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 16.0),
-                        child: IconButton(
-                            onPressed: () => _logout(context, mrBloc),
-                            icon: Icon(Icons.exit_to_app),
-                            tooltip: 'Logout'),
+                      SizedBox(
+                        width: 32.0,
                       ),
+                      VerticalDivider(
+                        width: 1.0,
+                        color: Colors.white,
+                      ),
+                      SizedBox(
+                        width: 16.0,
+                      ),
+                      StepperRocketButton(mrBloc: mrBloc),
+                      IconButton(
+                          onPressed: () => _logout(context, mrBloc),
+                          icon: Icon(Icons.exit_to_app),
+                          tooltip: 'Sign out'),
                     ],
                   ),
                 );

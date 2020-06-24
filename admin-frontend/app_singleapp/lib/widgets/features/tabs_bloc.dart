@@ -80,13 +80,14 @@ class TabsBloc implements Bloc {
     });
   }
 
-  get unselectedFeatureCount => _featuresForTabs
+  int get unselectedFeatureCount => _featuresForTabs
       .where((f) => !_currentlyEditingFeatureKeys.contains(f.key))
       .length;
 
-  get selectedFeatureCount => _featuresForTabs
-      .where((f) => _currentlyEditingFeatureKeys.contains(f.key))
-      .length;
+  int get selectedFeatureCount =>
+      _featuresForTabs
+          .where((f) => _currentlyEditingFeatureKeys.contains(f.key))
+          .length;
 
   // turns them into a map for easy access
   void _refixFeaturesByKey() {
