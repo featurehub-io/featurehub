@@ -53,7 +53,7 @@ class Router {
 
   void define(String route,
       {Handler handler,
-      TransitionType transitionType,
+      TransitionType transitionType = TransitionType.material,
       PermissionType permissionType = PermissionType.regular}) {
     handlers[route] = RouterRoute()
       ..handler = handler

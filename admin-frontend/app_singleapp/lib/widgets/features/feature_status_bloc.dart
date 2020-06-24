@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:app_singleapp/api/client_api.dart';
+import 'package:app_singleapp/api/mr_client_aware.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
 import 'package:pedantic/pedantic.dart';
@@ -24,10 +25,10 @@ class FeatureStatusFeatures {
   }
 }
 
-class FeatureStatusBloc implements Bloc {
+class FeatureStatusBloc implements Bloc, ManagementRepositoryAwareBloc {
   String portfolioId;
   String applicationId;
-  final ManagementRepositoryClientBloc mrClient;
+  final ManagementRepositoryClientBloc _mrClient;
   ApplicationServiceApi _appServiceApi;
   EnvironmentServiceApi _environmentServiceApi;
 
@@ -51,13 +52,13 @@ class FeatureStatusBloc implements Bloc {
 
   final _getAllAppValuesDebounceStream = BehaviorSubject<bool>();
 
-  FeatureStatusBloc(this.mrClient) : assert(mrClient != null) {
-    _appServiceApi = ApplicationServiceApi(mrClient.apiClient);
-    _featureServiceApi = FeatureServiceApi(mrClient.apiClient);
-    _environmentServiceApi = EnvironmentServiceApi(mrClient.apiClient);
-    _currentPid = mrClient.streamValley.currentPortfolioIdStream
+  FeatureStatusBloc(this._mrClient) : assert(_mrClient != null) {
+    _appServiceApi = ApplicationServiceApi(_mrClient.apiClient);
+    _featureServiceApi = FeatureServiceApi(_mrClient.apiClient);
+    _environmentServiceApi = EnvironmentServiceApi(_mrClient.apiClient);
+    _currentPid = _mrClient.streamValley.currentPortfolioIdStream
         .listen(addApplicationsToStream);
-    _currentAppId = mrClient.streamValley.currentAppIdStream.listen(setAppId);
+    _currentAppId = _mrClient.streamValley.currentAppIdStream.listen(setAppId);
     _getAllAppValuesDebounceStream
         .debounceTime(Duration(milliseconds: 300))
         .listen((event) {
@@ -65,13 +66,16 @@ class FeatureStatusBloc implements Bloc {
     });
   }
 
+  @override
+  ManagementRepositoryClientBloc get mrClient => _mrClient;
+
   void setAppId(String appId) {
     applicationId = appId;
     if (applicationId != null) {
       addAppFeatureValuesToStream();
     } else {
       _appFeatureValuesBS
-          .add(FeatureStatusFeatures(new ApplicationFeatureValues()));
+          .add(FeatureStatusFeatures(ApplicationFeatureValues()));
     }
   }
 
