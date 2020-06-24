@@ -41,11 +41,16 @@ class FeaturesOverviewTableWidget extends StatelessWidget {
                 snapshot.data.applicationFeatureValues.features.isEmpty) {
               return NoFeaturesMessage();
             }
-            return TabsView(
-              featureStatus: snapshot.data,
-              applicationId: bloc.applicationId,
-              bloc: bloc,
-            );
+
+            if (snapshot.hasData) {
+              return TabsView(
+                featureStatus: snapshot.data,
+                applicationId: bloc.applicationId,
+                bloc: bloc,
+              );
+            } else {
+              return NoFeaturesMessage();
+            }
           });
     } catch (e, s) {
       _log.shout('Failed to render, $e\n$s\n');
@@ -132,7 +137,6 @@ class _FeatureTabsBodyHolder extends StatelessWidget {
   }
 }
 
-
 class _FeatureTabsHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -191,22 +195,18 @@ class _FeatureTab extends StatelessWidget {
                   },
                   child: Container(
                       padding:
-                      EdgeInsets.symmetric(vertical: 6.0, horizontal: 12.0),
+                          EdgeInsets.symmetric(vertical: 6.0, horizontal: 12.0),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.all(Radius.circular(16.0)),
                         color: state == snapshot.data
-                            ? Theme
-                            .of(context)
-                            .primaryColorLight
+                            ? Theme.of(context).primaryColorLight
                             : Colors.transparent,
                       ),
                       child: Row(children: <Widget>[
                         Icon(icon, color: color, size: 20.0),
                         SizedBox(width: 4.0),
-                        Text(text, style: Theme
-                            .of(context)
-                            .textTheme
-                            .subtitle1),
+                        Text(text,
+                            style: Theme.of(context).textTheme.subtitle1),
                       ]))));
         });
   }

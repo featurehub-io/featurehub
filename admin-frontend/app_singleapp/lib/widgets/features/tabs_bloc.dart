@@ -51,12 +51,14 @@ class TabsBloc implements Bloc {
     _refixFeaturesByKey();
 
     _featureStream = featureStatusBloc.appFeatureValues.listen((appFeatures) {
-      featureStatus = appFeatures;
+      if (appFeatures != null) {
+        featureStatus = appFeatures;
 
-      _fixFeaturesForTabs(_stateSource.value);
-      _refixFeaturesByKey();
+        _fixFeaturesForTabs(_stateSource.value);
+        _refixFeaturesByKey();
 
-      _checkForFeaturesWeWereEditingThatHaveNowGone();
+        _checkForFeaturesWeWereEditingThatHaveNowGone();
+      }
     });
 
     _newFeatureStream =
@@ -84,10 +86,9 @@ class TabsBloc implements Bloc {
       .where((f) => !_currentlyEditingFeatureKeys.contains(f.key))
       .length;
 
-  int get selectedFeatureCount =>
-      _featuresForTabs
-          .where((f) => _currentlyEditingFeatureKeys.contains(f.key))
-          .length;
+  int get selectedFeatureCount => _featuresForTabs
+      .where((f) => _currentlyEditingFeatureKeys.contains(f.key))
+      .length;
 
   // turns them into a map for easy access
   void _refixFeaturesByKey() {

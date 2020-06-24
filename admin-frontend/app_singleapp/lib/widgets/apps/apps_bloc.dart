@@ -17,7 +17,7 @@ class AppsBloc implements Bloc {
     _currentApplicationsListListener = mrClient
         .streamValley.currentPortfolioApplicationsStream
         .listen(_getCurrentPortfolioApplications);
-    init();
+    mrClient.streamValley.includeEnvironmentsInApplicationRequest = true;
   }
 
   // make sure we load apps with the features
@@ -47,16 +47,7 @@ class AppsBloc implements Bloc {
   }
 
   void _refreshApplications() async {
-    await mrClient.streamValley.getCurrentPortfolioApplications(
-        findApp: _getApplicationsIncludingEnvironmentAndFeatures);
-  }
-
-  Future<List<Application>> _getApplicationsIncludingEnvironmentAndFeatures(
-      String portfolioId) async {
-    return await _applicationServiceApi.findApplications(portfolioId,
-        order: SortOrder.DESC,
-        includeEnvironments: true,
-        includeFeatures: true);
+    await mrClient.streamValley.getCurrentPortfolioApplications();
   }
 
   Future<void> updateApplication(Application application, String updatedAppName,
@@ -84,6 +75,7 @@ class AppsBloc implements Bloc {
 
   @override
   void dispose() {
+    mrClient.streamValley.includeEnvironmentsInApplicationRequest = false;
     _currentApplicationsStream.close();
     _currentApplicationsListListener.cancel();
   }
