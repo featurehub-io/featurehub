@@ -68,59 +68,71 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                     children: [
                                       Row(
                                         mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                            MainAxisAlignment.start,
                                         children: [
-                                          Text('${feature.name}',
-                                              overflow: TextOverflow.ellipsis,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyText1),
-                                          Container(
-                                            height: 24,
-                                            child: PopupMenuButton(
-                                              tooltip: 'Show more',
-                                              icon: Icon(Icons.more_vert),
-                                              onSelected: (value) {
-                                                if (value == 'edit') {
-                                                  tabsBloc.mrClient.addOverlay(
-                                                      (BuildContext context) =>
-                                                          CreateFeatureDialogWidget(
-                                                              bloc: bloc,
-                                                              feature:
-                                                                  feature));
-                                                }
-                                                if (value == 'delete') {
-                                                  tabsBloc.mrClient.addOverlay(
-                                                          (BuildContext context) =>
-                                                          FeatureDeleteDialogWidget(
-                                                              bloc: bloc,
-                                                              feature:
-                                                              feature));
-                                                }
-                                              },
-                                              itemBuilder:
-                                                  (BuildContext context) {
-                                                return [
-                                                  PopupMenuItem(
-                                                      value: 'edit',
-                                                      child: Text(
-                                                          'View details',
-                                                          style:
-                                                          Theme.of(context)
-                                                              .textTheme
-                                                              .bodyText2)),
-                                                  if (bloc.mrClient
-                                                      .userIsFeatureAdminOfCurrentApplication)
+                                          Expanded(
+                                            flex: 4,
+                                            child: Container(
+                                              child: Text('${feature.name}',
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyText1),
+                                            ),
+                                          ),
+                                          Expanded(
+                                            flex: 1,
+                                            child: Container(
+                                              height: 24,
+//                                              width: 5,
+                                              child: PopupMenuButton(
+                                                tooltip: 'Show more',
+                                                icon: Icon(Icons.more_vert),
+                                                onSelected: (value) {
+                                                  if (value == 'edit') {
+                                                    tabsBloc.mrClient.addOverlay(
+                                                        (BuildContext
+                                                                context) =>
+                                                            CreateFeatureDialogWidget(
+                                                                bloc: bloc,
+                                                                feature:
+                                                                    feature));
+                                                  }
+                                                  if (value == 'delete') {
+                                                    tabsBloc.mrClient.addOverlay(
+                                                        (BuildContext
+                                                                context) =>
+                                                            FeatureDeleteDialogWidget(
+                                                                bloc: bloc,
+                                                                feature:
+                                                                    feature));
+                                                  }
+                                                },
+                                                itemBuilder:
+                                                    (BuildContext context) {
+                                                  return [
                                                     PopupMenuItem(
-                                                      value: 'delete',
-                                                      child: Text('Delete',
-                                                          style:
-                                                          Theme.of(context)
-                                                              .textTheme
-                                                              .bodyText2),
-                                                    ),
-                                                ];
-                                              },
+                                                        value: 'edit',
+                                                        child: Text(
+                                                            'View details',
+                                                            style: Theme.of(
+                                                                    context)
+                                                                .textTheme
+                                                                .bodyText2)),
+                                                    if (bloc.mrClient
+                                                        .userIsFeatureAdminOfCurrentApplication)
+                                                      PopupMenuItem(
+                                                        value: 'delete',
+                                                        child: Text('Delete',
+                                                            style: Theme.of(
+                                                                    context)
+                                                                .textTheme
+                                                                .bodyText2),
+                                                      ),
+                                                  ];
+                                                },
+                                              ),
                                             ),
                                           )
                                         ],

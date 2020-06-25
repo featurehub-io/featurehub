@@ -1,57 +1,13 @@
-import 'package:app_singleapp/api/client_api.dart';
-import 'package:app_singleapp/api/mr_client_aware.dart';
+import 'dart:html' as html;
+
+import 'package:app_singleapp/utils/custom_cursor.dart';
 import 'package:app_singleapp/widgets/common/application_drop_down.dart';
 import 'package:app_singleapp/widgets/common/decorations/fh_page_divider.dart';
 import 'package:app_singleapp/widgets/common/fh_header.dart';
+import 'package:app_singleapp/widgets/service-accounts/service_accounts_env_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
-import 'package:rxdart/rxdart.dart';
-
-class _ServiceAccountEnvironments {
-  final List<Environment> environments;
-  final List<ServiceAccount> serviceAccounts;
-
-  _ServiceAccountEnvironments(this.environments, this.serviceAccounts);
-}
-
-class ServiceAccountEnvBloc implements Bloc, ManagementRepositoryAwareBloc {
-  final ManagementRepositoryClientBloc _mrClient;
-  final _serviceAccountSource = BehaviorSubject<_ServiceAccountEnvironments>();
-  ServiceAccountServiceApi _serviceAccountServiceApi;
-
-  ServiceAccountEnvBloc(this._mrClient) {
-    _serviceAccountServiceApi = ServiceAccountServiceApi(_mrClient.apiClient);
-    _mrClient.streamValley.currentApplicationEnvironmentsStream
-        .listen(_envUpdate);
-  }
-
-  void _envUpdate(List<Environment> envs) async {
-    if (envs == null || envs.isEmpty) {
-      _serviceAccountSource.add(
-          _ServiceAccountEnvironments(<Environment>[], <ServiceAccount>[]));
-    } else {
-      final serviceAccounts = await _serviceAccountServiceApi
-          .searchServiceAccountsInPortfolio(_mrClient.currentPortfolio.id,
-              includePermissions: true)
-          .catchError(_mrClient.dialogError);
-
-      _serviceAccountSource
-          .add(_ServiceAccountEnvironments(envs, serviceAccounts));
-    }
-  }
-
-  @override
-  ManagementRepositoryClientBloc get mrClient => _mrClient;
-
-  Stream<_ServiceAccountEnvironments> get serviceAccountStream =>
-      _serviceAccountSource.stream;
-
-  @override
-  void dispose() {}
-
-  void setApplicationId(String appId) {}
-}
 
 class ServiceAccountEnvRoute extends StatelessWidget {
   @override
@@ -81,12 +37,15 @@ class ServiceAccountEnvRoute extends StatelessWidget {
             Container(
               padding: EdgeInsets.only(bottom: 10),
               child: FHHeader(
-                title: 'Service Accounts by Environment',
+                title: 'Service Accounts',
                 children: <Widget>[],
               ),
             ),
             FHPageDivider(),
-            StreamBuilder<_ServiceAccountEnvironments>(
+            SizedBox(
+              height: 16.0,
+            ),
+            StreamBuilder<ServiceAccountEnvironments>(
                 stream: bloc.serviceAccountStream,
                 builder: (context, envSnapshot) {
                   if (!envSnapshot.hasData) {
@@ -106,38 +65,77 @@ class ServiceAccountEnvRoute extends StatelessWidget {
 }
 
 class _ServiceAccountDisplayWidget extends StatelessWidget {
-  final _ServiceAccountEnvironments serviceAccounts;
+  final ServiceAccountEnvironments serviceAccounts;
 
   const _ServiceAccountDisplayWidget({Key key, this.serviceAccounts})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    return ListView.separated(
+        separatorBuilder: (BuildContext context, int index) =>
+            Divider(height: 1.0),
         shrinkWrap: true,
         itemCount: serviceAccounts.environments.length,
         itemBuilder: (context, index) {
           final env = serviceAccounts.environments[index];
-          return Row(
-            children: [
-              Flexible(
-                flex: 1,
-                child: Text(env.name),
-              ),
-              Flexible(
-                  flex: 3,
-                  child: Column(
-                    children: [
-                      for (var sa in serviceAccounts.serviceAccounts)
-                        Row(
+          return Card(
+            color: Colors.white,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: Container(
+//                    color: Colors.blue,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(sa.name),
-                            _ServiceAccountPermissionWidget(env: env, sa: sa)
+                            Text(env.name,
+                                style: Theme
+                                    .of(context)
+                                    .textTheme
+                                    .subtitle1
+                                    .copyWith(color: Theme
+                                    .of(context)
+                                    .primaryColor)),
                           ],
-                        )
-                    ],
-                  ))
-            ],
+                        )),
+                  ),
+                  Expanded(
+                      flex: 5,
+                      child: Container(
+//                      color: Colors.red,
+                        child: Column(
+                          children: [
+                            for (var sa in serviceAccounts.serviceAccounts)
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 1,
+                                      child: Text(sa.name,
+                                          style: Theme
+                                              .of(context)
+                                              .textTheme
+                                              .bodyText2),
+                                    ),
+                                    Expanded(
+                                        flex: 4,
+                                        child: _ServiceAccountPermissionWidget(
+                                            env: env, sa: sa)),
+//
+                                  ],
+                                ),
+                              )
+                          ],
+                        ),
+                      ))
+                ],
+              ),
+            ),
           );
         });
   }
@@ -154,12 +152,77 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final perms = sa.permissions
         .firstWhere((p) => p.environmentId == env.id,
-            orElse: () =>
-                ServiceAccountPermission()..permissions = <RoleType>[])
+        orElse: () =>
+        ServiceAccountPermission()
+          ..permissions = <RoleType>[])
         .permissions;
 
-    return Text(perms
-        .map((p) => RoleTypeTypeTransformer.toJson(p).toString())
-        .join(', '));
+    return Container(
+        child: perms.isNotEmpty
+            ? Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Text(
+                perms
+                    .map((p) =>
+                    RoleTypeTypeTransformer.toJson(p).toString())
+                    .join(', '),
+                style: TextStyle(
+                    fontFamily: 'Source',
+                    fontSize: 12,
+                    letterSpacing: 1.0)),
+            SizedBox(width: 16.0,),
+            _CopyServiceAccountUrlToClipboard(
+                sa: sa.permissions.firstWhere(
+                      (p) => p.environmentId == env.id,
+                )),
+          ],
+        )
+            : Row(
+          children: [
+            Text('No permissions defined',
+                style: Theme
+                    .of(context)
+                    .textTheme
+                    .caption),
+          ],
+        ));
+  }
+}
+
+class _CopyServiceAccountUrlToClipboard extends StatelessWidget {
+  final ServiceAccountPermission sa;
+
+  const _CopyServiceAccountUrlToClipboard({Key key, @required this.sa})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return
+//      sa.sdkUrl  != null ?
+      Tooltip(
+        message: 'Copy SDK Url to clipboard',
+        child: CustomCursor(
+          child: InkWell(
+            borderRadius: BorderRadius.circular(10.0),
+            hoverColor: Theme
+                .of(context)
+                .primaryColorLight,
+            splashColor: Theme
+                .of(context)
+                .primaryColor,
+            child: Container(width: 20,
+                height: 20,
+                child: Icon(Icons.content_copy, size: 16.0)),
+            onTap: () async {
+              await html.window.navigator.permissions
+                  .query({'name': 'clipboard-write'});
+              await html.window.navigator.clipboard.writeText(sa.sdkUrl);
+            },
+          ),
+        ),
+      )
+//        : SizedBox.shrink()
+        ;
   }
 }

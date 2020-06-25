@@ -33,7 +33,7 @@ class FeatureValueUpdatedByCell extends StatelessWidget {
           }
 
           return Container(
-              padding: EdgeInsets.only(top: 5),
+              padding: EdgeInsets.only(top: 5, left: 8, right: 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
