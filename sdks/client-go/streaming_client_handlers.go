@@ -105,6 +105,7 @@ func (c *StreamingClient) handleFHFeature(event eventsource.Event) {
 	// Otherwise this is a new feature, so we just take it:
 	c.logger.WithField("key", feature.Key).Debugf("Received a new feature from server")
 	c.features[feature.Key] = feature
+	c.hasData = true
 }
 
 func (c *StreamingClient) handleFHFeatures(event eventsource.Event) {

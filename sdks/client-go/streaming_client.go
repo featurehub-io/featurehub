@@ -72,8 +72,9 @@ func (c *StreamingClient) Start() {
 	go c.handleErrors()
 
 	// Block until we have some data:
-	for !c.hasData {
-		time.Sleep(time.Second)
+	if c.config.WaitForData {
+		for !c.hasData {
+			time.Sleep(time.Second)
+		}
 	}
-
 }
