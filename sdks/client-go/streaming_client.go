@@ -112,12 +112,29 @@ func (c *StreamingClient) handleEvents() {
 				c.logger.WithError(&errors.ErrFromAPI{}).WithField("event", event.Event()).WithField("message", event.Data()).Fatal("Error from API client")
 			}
 
+		// Delete a feature from our list:
+		case models.FHDeleteFeature:
+
+			// Unmarshal the event payload:
+			feature := &models.FeatureState{}
+			if err := json.Unmarshal([]byte(event.Data()), feature); err != nil {
+				c.logger.WithError(err).WithField("event", "feature").Error("Error unmarshaling SSE payload")
+			}
+
+			// Delete the feature:
+			c.mutex.Lock()
+			delete(c.features, feature.Key)
+			c.mutex.Unlock()
+
+			c.logger.WithField("key", feature.Key).Debugf("Deleted a feature")
+
 		// Failures (from the FeatureHub server):
 		case models.FHFailure:
 			c.logger.WithError(&errors.ErrFromAPI{}).WithField("event", event.Event()).WithField("message", event.Data()).Fatal("Failure from FeatureHub server")
 
 		// An entire feature set (replaces what we currently have):
 		case models.FHFeatures:
+
 			// Unmarshal the event payload:
 			features := []*models.FeatureState{}
 			if err := json.Unmarshal([]byte(event.Data()), &features); err != nil {
@@ -140,13 +157,14 @@ func (c *StreamingClient) handleEvents() {
 
 		// One specific feature (replaces the previous version):
 		case models.FHFeature:
+
 			// Unmarshal the event payload:
 			feature := &models.FeatureState{}
 			if err := json.Unmarshal([]byte(event.Data()), feature); err != nil {
 				c.logger.WithError(err).WithField("event", "feature").Error("Error unmarshaling SSE payload")
 			}
 
-			// Take the new features:
+			// Take the new feature:
 			c.mutex.Lock()
 			c.features[feature.Key] = feature
 			c.mutex.Unlock()

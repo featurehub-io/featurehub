@@ -98,8 +98,9 @@ Todo
 - [X] Client interface
 - [X] StreamingClient
 - [X] Unit tests
-- [ ] Handle feature_delete events
+- [X] Handle feature_delete events
 - [ ] Iterate through features instead of brute replace when "features" event is received, comparing version
 - [ ] Allow notify / callback functions (add and remove)
+- [ ] Global "readyness" callback (either OK when data has arrived, or an error if there was a fail)
 - [ ] Re-introduce the "polling" client (if we decide to go down that route for other SDKs)
 - [ ] Run tests and code-generation inside Docker (instead of requiring Go to be installed locally)
