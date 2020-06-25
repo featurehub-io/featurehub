@@ -30,8 +30,7 @@ There are 3 steps to connecting:
 #### Prepare a configuration:
 ```go
     config := &client.Config{
-        APIKey:        "ajhsgdJHGAFKJAHSGDFKAJHHSDLFKAJLSKJDHFLAJKHlkjahlkjhfsld",
-        EnvironmentID: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+        SDKKey:        "default/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee/ajhsgdJHGAFKJAHSGDFKAJHHSDLFKAJLSKJDHFLAJKHlkjahlkjhfsld",
         ServerAddress: "http://1.2.3.4:8085",
         WaitForData:   true,
     }
@@ -99,7 +98,8 @@ Todo
 - [X] Client interface
 - [X] StreamingClient
 - [X] Unit tests
-- [ ] Allow notify / callback functions
 - [ ] Handle feature_delete events
+- [ ] Iterate through features instead of brute replace when "features" event is received, comparing version
+- [ ] Allow notify / callback functions (add and remove)
 - [ ] Re-introduce the "polling" client (if we decide to go down that route for other SDKs)
 - [ ] Run tests and code-generation inside Docker (instead of requiring Go to be installed locally)
