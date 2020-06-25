@@ -45,16 +45,40 @@ func TestStreamingClient(t *testing.T) {
 	client = &StreamingClient{
 		apiClient: &eventsource.Stream{
 			Errors: make(chan error, 1),
-			Events: make(chan eventsource.Event, 1),
+			Events: make(chan eventsource.Event, 10),
 		},
 		config: config,
 		logger: logger,
 	}
 
-	// Load the mock apiClient up with some data:
+	// Load the mock apiClient up with a "features" event:
 	client.apiClient.Events <- &testEvent{
 		data:  `[{"key":"booleanfeature","type":"BOOLEAN","value":true},{"key":"jsonfeature","type":"JSON","value":"{\"is_crufty\": true}"},{"key":"numberfeature","type":"NUMBER","value":123456789},{"key":"stringfeature","type":"STRING","value":"this is a string"}]`,
 		event: "features",
+	}
+
+	// Load the mock apiClient up with a "feature" event:
+	client.apiClient.Events <- &testEvent{
+		data:  `{"key":"anotherfeature","type":"BOOLEAN","value":false,"version":3}`,
+		event: "feature",
+	}
+
+	// Load the mock apiClient up with a "feature" event (but with an out-of-sync version):
+	client.apiClient.Events <- &testEvent{
+		data:  `{"key":"anotherfeature","type":"BOOLEAN","value":false,"version":2}`,
+		event: "feature",
+	}
+
+	// Load the mock apiClient up with a "feature" event (which we'll delete):
+	client.apiClient.Events <- &testEvent{
+		data:  `{"key":"featuretodelete","type":"BOOLEAN","value":true}`,
+		event: "feature",
+	}
+
+	// Load the mock apiClient up with a "delete_feature" event:
+	client.apiClient.Events <- &testEvent{
+		data:  `{"key":"featuretodelete","type":"BOOLEAN","value":false,"version":2}`,
+		event: "delete_feature",
 	}
 
 	// Start handling events:
@@ -109,4 +133,15 @@ func TestStreamingClient(t *testing.T) {
 	stringFeature, err = client.GetString("stringfeature")
 	assert.NoError(t, err)
 	assert.Equal(t, "this is a string", stringFeature)
+
+	// Make sure new features with old versions don't clobber values:
+	anotherFeature, err := client.GetFeature("anotherfeature")
+	assert.NoError(t, err)
+	assert.Equal(t, int64(3), anotherFeature.Version)
+
+	// Make sure features get deleted:
+	deletedFeature, err := client.GetFeature("featuretodelete")
+	assert.Error(t, err)
+	assert.IsType(t, &errors.ErrFeatureNotFound{}, err)
+	assert.Nil(t, deletedFeature)
 }

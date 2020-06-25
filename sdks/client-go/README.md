@@ -99,7 +99,7 @@ Todo
 - [X] StreamingClient
 - [X] Unit tests
 - [X] Handle feature_delete events
-- [ ] Iterate through features instead of brute replace when "features" event is received, comparing version
+- [X] Compare versions when "feature" event is received (don't just overwrite)
 - [ ] Allow notify / callback functions (add and remove)
 - [ ] Global "readyness" callback (either OK when data has arrived, or an error if there was a fail)
 - [ ] Re-introduce the "polling" client (if we decide to go down that route for other SDKs)
