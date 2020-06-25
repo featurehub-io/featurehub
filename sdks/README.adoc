@@ -1,0 +1,92 @@
+= Client SDKs for Feature Hub
+
+The client SDKs for FeatureHub are designed to allow various supported languages to connect to the
+Edge server and receive updates on the features. Each different SDK is designed to be idiomatic to that
+language, but also each different SDK is expected to be used for a different purpose, and so capability varies.
+
+This overview seeks to indicate the capabilities of the SDKs and explain what they are and do. If you are
+considering helping us by writing a new SDK for your favourite language, or expand on an existing library, this
+table of capability indicates what each different language can support and where extra work is helpful.
+
+== Capabilities overview
+
+[options="header]
+|===================================
+|Capability|Java|Javascript^1^|Go|Dart
+|Event Streaming|Y|Y|Y|Y
+|Background Start|Y|Y|Y|Y
+|Block until Start|N|N|Y|N
+|Readyness Listeners|Y|Y|N|Y
+|Feature Listeners|Y|Y|N|Y
+|Feature Listener Removal|N|N|N|Y
+|Catch & Release|N|Y|N|Y
+|Analytics Support|Y|Y|N|Y
+|Google Analytics|Y|Y|N|N
+|Test Client|N|N|N|N
+|===================================
+
+(1) Javascript and Typescript are supported via a Typescript library.
+
+== Capabilities in detail
+
+=== Event Streaming
+
+This relates to the primary purpose of the FeatureHub platform, which is a platform by which a client is
+able to connect and then receive a constant stream of real-time updates to the features as they change. This 
+mechanism is supported via Server Side Events.
+
+=== Background Start
+
+This relates to the ability for the application to connect to a FeatureHub Edge server in the background and 
+complete the initial transactions and continue listening for updates - all in the background.
+
+=== Block until Start
+
+This is usually a capability provided instead of readyness listeners, whereby the library can be told to wait
+until the connection has been successfully established and there is a list of features, or the connection fails for
+some reason. It is used to ensure a client has a consistent set of features before functioning and is generally best
+used for server side software.
+
+=== Readyness Listeners
+
+These perform a similar function to Block until Start, but instead a server can call back or query the readyness
+status directly and perform the blocking function themselves. The ToDo Java and Typescript examples use this mechanism.
+
+=== Feature Listeners
+
+This allows client code to listen for changes in the state of a feature, and to trigger some action based on the new
+state. Generally the whole feature is passed to the listener for it to interrogate.
+
+=== Feature Listener Removal
+
+Some clients like to, or need to (usually UI related) remove listeners they have created. This allows them to do that.
+
+=== Catch & Release
+
+Some clients don't want the features to be immediately triggered. These are usually those that use Feature Listeners
+and they want to hold onto the changes until they have informed the user there are changes - via some UI element (e.g.
+reload for new functionality). Catch and release mode normally includes a flag to set it, an extra callback to indicate
+new features have come in, and then a release method to indicate the new features should be released (their state changed
+and the listeners triggered). The Typescript, Javascript and Dart libraries all have examples of this.
+
+=== Analytics Support
+
+This is where the library has a mechanism to log an event, potentially attach metadata. The library captures the state of
+all of the features at the point in time of the request and will pass it on to any registered Analytics provider. A platform
+can have analytics support but no analytics providers. We intend over time to support only one, where the data is posted
+to a backend service which you can then decide where to send and how to send the data.
+
+=== Google Analytics
+
+This is a client side implementation of the Analytics support. It is designed so you need to specify the `User-ID` or `CID`,
+your `UA-` id and when logging an event, it will fire off into GA the event - one for each value of non-JSON features.
+
+=== Test Client
+
+This is designed to allow tests to change the values of features in their environments while they are running. For tests
+that run sequentially in an environment it is a useful feature, but for load balanced tests running a variety of feature
+profiles all against the same environment, it is better to use OpenTracing or OpenTelemetry. We will support this directly
+in the future. This Test Client capability however specifically requires that your SDK URL is allowed to change the values
+of features.
+
+

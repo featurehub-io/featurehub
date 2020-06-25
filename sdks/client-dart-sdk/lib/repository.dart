@@ -212,7 +212,6 @@ class ClientFeatureRepository {
   }
 
   FeatureStateHolder getFeatureState(String key) {
-    print("requested key ${key} which is ${_features[key]._featureState}");
     return _features.putIfAbsent(key, () => _FeatureStateBaseHolder(null));
   }
 
@@ -237,7 +236,6 @@ class ClientFeatureRepository {
 
     holder.featureState = feature;
     _features[feature.key] = holder;
-    print("stored ${feature} against key ${feature.key}");
   }
 
   void _deleteFeature(FeatureState feature) {
