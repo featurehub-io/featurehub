@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// testEvent implements the simple "Event" interface from donovanhide/eventsource:
 type testEvent struct {
 	data  string
 	event string
