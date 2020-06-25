@@ -19,6 +19,7 @@ type StreamingClient struct {
 	hasData     bool
 	logger      *logrus.Logger
 	mutex       sync.Mutex
+	notifiers   map[string]func()
 }
 
 // New wraps NewStreamingClient (as the default / only implementation):

@@ -9,6 +9,23 @@ import (
 )
 
 type FakeClient struct {
+	AddNotifierStub        func(string, func())
+	addNotifierMutex       sync.RWMutex
+	addNotifierArgsForCall []struct {
+		arg1 string
+		arg2 func()
+	}
+	DeleteNotifierStub        func(string) error
+	deleteNotifierMutex       sync.RWMutex
+	deleteNotifierArgsForCall []struct {
+		arg1 string
+	}
+	deleteNotifierReturns struct {
+		result1 error
+	}
+	deleteNotifierReturnsOnCall map[int]struct {
+		result1 error
+	}
 	GetBooleanStub        func(string) (bool, error)
 	getBooleanMutex       sync.RWMutex
 	getBooleanArgsForCall []struct {
@@ -76,6 +93,98 @@ type FakeClient struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeClient) AddNotifier(arg1 string, arg2 func()) {
+	fake.addNotifierMutex.Lock()
+	fake.addNotifierArgsForCall = append(fake.addNotifierArgsForCall, struct {
+		arg1 string
+		arg2 func()
+	}{arg1, arg2})
+	fake.recordInvocation("AddNotifier", []interface{}{arg1, arg2})
+	fake.addNotifierMutex.Unlock()
+	if fake.AddNotifierStub != nil {
+		fake.AddNotifierStub(arg1, arg2)
+	}
+}
+
+func (fake *FakeClient) AddNotifierCallCount() int {
+	fake.addNotifierMutex.RLock()
+	defer fake.addNotifierMutex.RUnlock()
+	return len(fake.addNotifierArgsForCall)
+}
+
+func (fake *FakeClient) AddNotifierCalls(stub func(string, func())) {
+	fake.addNotifierMutex.Lock()
+	defer fake.addNotifierMutex.Unlock()
+	fake.AddNotifierStub = stub
+}
+
+func (fake *FakeClient) AddNotifierArgsForCall(i int) (string, func()) {
+	fake.addNotifierMutex.RLock()
+	defer fake.addNotifierMutex.RUnlock()
+	argsForCall := fake.addNotifierArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeClient) DeleteNotifier(arg1 string) error {
+	fake.deleteNotifierMutex.Lock()
+	ret, specificReturn := fake.deleteNotifierReturnsOnCall[len(fake.deleteNotifierArgsForCall)]
+	fake.deleteNotifierArgsForCall = append(fake.deleteNotifierArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("DeleteNotifier", []interface{}{arg1})
+	fake.deleteNotifierMutex.Unlock()
+	if fake.DeleteNotifierStub != nil {
+		return fake.DeleteNotifierStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.deleteNotifierReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeClient) DeleteNotifierCallCount() int {
+	fake.deleteNotifierMutex.RLock()
+	defer fake.deleteNotifierMutex.RUnlock()
+	return len(fake.deleteNotifierArgsForCall)
+}
+
+func (fake *FakeClient) DeleteNotifierCalls(stub func(string) error) {
+	fake.deleteNotifierMutex.Lock()
+	defer fake.deleteNotifierMutex.Unlock()
+	fake.DeleteNotifierStub = stub
+}
+
+func (fake *FakeClient) DeleteNotifierArgsForCall(i int) string {
+	fake.deleteNotifierMutex.RLock()
+	defer fake.deleteNotifierMutex.RUnlock()
+	argsForCall := fake.deleteNotifierArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeClient) DeleteNotifierReturns(result1 error) {
+	fake.deleteNotifierMutex.Lock()
+	defer fake.deleteNotifierMutex.Unlock()
+	fake.DeleteNotifierStub = nil
+	fake.deleteNotifierReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeClient) DeleteNotifierReturnsOnCall(i int, result1 error) {
+	fake.deleteNotifierMutex.Lock()
+	defer fake.deleteNotifierMutex.Unlock()
+	fake.DeleteNotifierStub = nil
+	if fake.deleteNotifierReturnsOnCall == nil {
+		fake.deleteNotifierReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.deleteNotifierReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
 }
 
 func (fake *FakeClient) GetBoolean(arg1 string) (bool, error) {
@@ -396,6 +505,10 @@ func (fake *FakeClient) GetStringReturnsOnCall(i int, result1 string, result2 er
 func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.addNotifierMutex.RLock()
+	defer fake.addNotifierMutex.RUnlock()
+	fake.deleteNotifierMutex.RLock()
+	defer fake.deleteNotifierMutex.RUnlock()
 	fake.getBooleanMutex.RLock()
 	defer fake.getBooleanMutex.RUnlock()
 	fake.getFeatureMutex.RLock()
