@@ -117,5 +117,7 @@ Todo
 - [X] Compare versions when "feature" event is received (don't just overwrite)
 - [X] Allow notify / callback functions (add and remove)
 - [ ] Global "readyness" callback (either OK when data has arrived, or an error if there was a fail)
+- [ ] Analytics support
+- [ ] Google Analytics support
 - [ ] Re-introduce the "polling" client (if we decide to go down that route for other SDKs)
 - [ ] Run tests and code-generation inside Docker (instead of requiring Go to be installed locally)
