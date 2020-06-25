@@ -20,6 +20,7 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -117,11 +118,15 @@ public class ServiceAccountResource implements ServiceAccountServiceDelegate {
   public List<ServiceAccount> searchServiceAccountsInPortfolio(String id, SearchServiceAccountsInPortfolioHolder holder, SecurityContext securityContext) {
     Person person = authManager.from(securityContext);
 
-    if (authManager.isPortfolioAdmin(id, person) || authManager.isOrgAdmin(person)) {
-      return serviceAccountApi.search(id, holder.filter, holder.applicationId, new Opts().add(FillOpts.Permissions, holder.includePermissions));
+    List<ServiceAccount> serviceAccounts = serviceAccountApi.search(id, holder.filter, holder.applicationId,
+          person,
+          new Opts().add(FillOpts.Permissions, holder.includePermissions).add(FillOpts.SdkURL, holder.includeSdkUrls));
+
+    if (serviceAccounts == null) {
+      return new ArrayList<>();
     }
 
-    throw new ForbiddenException();
+    return serviceAccounts;
   }
 
   @Override

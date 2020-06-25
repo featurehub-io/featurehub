@@ -1289,6 +1289,11 @@ paths:
           in: query
           schema:
             type: string
+        - name: includeSdkUrls
+          description: "Include the SDKs for environments the user has access to"
+          in: query
+          schema:
+            type: boolean
       operationId: searchServiceAccountsInPortfolio
       responses:
         "200":

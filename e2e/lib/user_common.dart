@@ -145,11 +145,13 @@ class UserCommon {
 
   Future<ServiceAccount> findExactServiceAccount(
       String serviceAccount, String portfolioId,
-      {ServiceAccountServiceApi serviceAccountServiceApi}) async {
+      {ServiceAccountServiceApi serviceAccountServiceApi,
+      String applicationId}) async {
     ServiceAccountServiceApi _saService =
         serviceAccountService ?? _serviceAccountServiceApi;
     var serviceAccounts = await _saService.searchServiceAccountsInPortfolio(
         portfolioId,
+        applicationId: applicationId,
         includePermissions: true);
     return serviceAccounts.firstWhere((sa) => sa.name == serviceAccount,
         orElse: () => null);

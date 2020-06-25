@@ -29,7 +29,9 @@ class ServiceAccountEnvBloc implements Bloc, ManagementRepositoryAwareBloc {
     } else {
       final serviceAccounts = await _serviceAccountServiceApi
           .searchServiceAccountsInPortfolio(_mrClient.currentPortfolio.id,
-              includePermissions: true)
+              applicationId: envs[0].applicationId,
+              includePermissions: true,
+              includeSdkUrls: true)
           .catchError(_mrClient.dialogError);
 
       _serviceAccountSource

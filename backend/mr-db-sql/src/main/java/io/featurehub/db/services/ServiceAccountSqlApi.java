@@ -65,7 +65,7 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
   }
 
   private QDbServiceAccount opts(QDbServiceAccount finder, Opts opts) {
-    if (opts.contains(FillOpts.Permissions)) {
+    if (opts.contains(FillOpts.Permissions) || opts.contains(FillOpts.SdkURL) ) {
       finder = finder.serviceAccountEnvironments.fetch();
     }
     if (!opts.contains(FillOpts.Archived)) {
@@ -153,27 +153,61 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
   }
 
   @Override
-  public List<ServiceAccount> search(String portfolioId, String filter, String applicationId, Opts opts) {
+  public List<ServiceAccount> search(String portfolioId, String filter, String applicationId, Person currentPerson, Opts opts) {
     UUID pId = ConvertUtils.ifUuid(portfolioId);
+    DbPerson personId = convertUtils.uuidPerson(currentPerson);
 
-    if (pId != null) {
-      QDbServiceAccount qFinder = opts(new QDbServiceAccount().portfolio.id.eq(pId), opts);
-      if (filter != null) {
-        qFinder = qFinder.name.ilike(filter);
-      }
+    if (pId == null || personId == null) {
+      return null;
+    }
+
+    // do they want the permissions?
+    List<DbEnvironment> environmentsPersonHasAccessTo = null;
+    if (opts.contains(FillOpts.Permissions) || opts.contains(FillOpts.SdkURL)) {
       if (applicationId != null) {
         UUID appId = ConvertUtils.ifUuid(applicationId);
-        if (appId != null) {
-          qFinder = qFinder.serviceAccountEnvironments.environment.parentApplication.id.eq(appId);
-        }
+        environmentsPersonHasAccessTo =
+          new QDbEnvironment().select(QDbEnvironment.Alias.id)
+            .whenArchived.isNull()
+            .or()
+            .parentApplication.id.eq(appId).groupRolesAcl.group.peopleInGroup.eq(personId)
+            .groupRolesAcl.group.peopleInGroup.eq(personId)
+            .endOr()
+            .findList();
+      } else {
+        opts = opts.minus(FillOpts.SdkURL, FillOpts.Permissions);
+      }
+    }
+    if (environmentsPersonHasAccessTo == null) {
+      environmentsPersonHasAccessTo = new QDbEnvironment().select(QDbEnvironment.Alias.id)
+          .whenArchived.isNull()
+          .parentApplication.portfolio.id.eq(pId)  // environments in this portfolio
+          .or().groupRolesAcl.group.peopleInGroup.eq(personId)
+          .parentApplication.groupRolesAcl.group.peopleInGroup.eq(personId).endOr() // people who have roles in any application in this portfolio
+          .findList();
+    }
+
+    if (environmentsPersonHasAccessTo.isEmpty()) {
+      return null;
+    }
+
+    QDbServiceAccount qFinder = opts(new QDbServiceAccount().portfolio.id.eq(pId), opts);
+    if (filter != null) {
+      qFinder = qFinder.name.ilike(filter);
+    }
+
+    if (applicationId != null) {
+      UUID appId = ConvertUtils.ifUuid(applicationId);
+      if (appId != null) {
+        qFinder = qFinder
+          .portfolio.applications.id.eq(appId);
       }
 
       qFinder = opts(qFinder, opts);
-
-      return qFinder.findList().stream().map(sa -> convertUtils.toServiceAccount(sa, opts)).collect(Collectors.toList());
-    } else {
-      return null;
     }
+    final Opts updatedOpts = opts;
+    final List<DbEnvironment> envs = environmentsPersonHasAccessTo;
+    return qFinder.findList().stream().map(sa -> convertUtils.toServiceAccount(sa, updatedOpts, envs)).collect(Collectors.toList());
   }
 
   @Override

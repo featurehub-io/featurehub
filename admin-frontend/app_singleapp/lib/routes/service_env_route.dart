@@ -90,18 +90,16 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
                     child: Container(
 //                    color: Colors.blue,
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(env.name,
-                                style: Theme
-                                    .of(context)
-                                    .textTheme
-                                    .subtitle1
-                                    .copyWith(color: Theme
-                                    .of(context)
-                                    .primaryColor)),
-                          ],
-                        )),
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(env.name,
+                            style: Theme.of(context)
+                                .textTheme
+                                .subtitle1
+                                .copyWith(
+                                    color: Theme.of(context).primaryColor)),
+                      ],
+                    )),
                   ),
                   Expanded(
                       flex: 5,
@@ -117,8 +115,7 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
                                     Expanded(
                                       flex: 1,
                                       child: Text(sa.name,
-                                          style: Theme
-                                              .of(context)
+                                          style: Theme.of(context)
                                               .textTheme
                                               .bodyText2),
                                     ),
@@ -150,78 +147,68 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final perms = sa.permissions
-        .firstWhere((p) => p.environmentId == env.id,
-        orElse: () =>
-        ServiceAccountPermission()
-          ..permissions = <RoleType>[])
-        .permissions;
+    final account = sa.permissions.firstWhere((p) => p.environmentId == env.id,
+        orElse: () => ServiceAccountPermission()..permissions = <RoleType>[]);
+    final perms = account.permissions;
 
     return Container(
         child: perms.isNotEmpty
             ? Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Text(
-                perms
-                    .map((p) =>
-                    RoleTypeTypeTransformer.toJson(p).toString())
-                    .join(', '),
-                style: TextStyle(
-                    fontFamily: 'Source',
-                    fontSize: 12,
-                    letterSpacing: 1.0)),
-            SizedBox(width: 16.0,),
-            _CopyServiceAccountUrlToClipboard(
-                sa: sa.permissions.firstWhere(
-                      (p) => p.environmentId == env.id,
-                )),
-          ],
-        )
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text(
+                      perms
+                          .map((p) =>
+                              RoleTypeTypeTransformer.toJson(p).toString())
+                          .join(', '),
+                      style: TextStyle(
+                          fontFamily: 'Source',
+                          fontSize: 12,
+                          letterSpacing: 1.0)),
+                  SizedBox(
+                    width: 16.0,
+                  ),
+                  _CopyServiceAccountUrlToClipboard(account: account),
+                ],
+              )
             : Row(
-          children: [
-            Text('No permissions defined',
-                style: Theme
-                    .of(context)
-                    .textTheme
-                    .caption),
-          ],
-        ));
+                children: [
+                  Text('No permissions defined',
+                      style: Theme.of(context).textTheme.caption),
+                ],
+              ));
   }
 }
 
 class _CopyServiceAccountUrlToClipboard extends StatelessWidget {
-  final ServiceAccountPermission sa;
+  final ServiceAccountPermission account;
 
-  const _CopyServiceAccountUrlToClipboard({Key key, @required this.sa})
+  const _CopyServiceAccountUrlToClipboard({Key key, @required this.account})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return
 //      sa.sdkUrl  != null ?
-      Tooltip(
-        message: 'Copy SDK Url to clipboard',
-        child: CustomCursor(
-          child: InkWell(
-            borderRadius: BorderRadius.circular(10.0),
-            hoverColor: Theme
-                .of(context)
-                .primaryColorLight,
-            splashColor: Theme
-                .of(context)
-                .primaryColor,
-            child: Container(width: 20,
-                height: 20,
-                child: Icon(Icons.content_copy, size: 16.0)),
-            onTap: () async {
-              await html.window.navigator.permissions
-                  .query({'name': 'clipboard-write'});
-              await html.window.navigator.clipboard.writeText(sa.sdkUrl);
-            },
-          ),
+        Tooltip(
+      message: 'Copy SDK Url to clipboard',
+      child: CustomCursor(
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10.0),
+          hoverColor: Theme.of(context).primaryColorLight,
+          splashColor: Theme.of(context).primaryColor,
+          child: Container(
+              width: 20,
+              height: 20,
+              child: Icon(Icons.content_copy, size: 16.0)),
+          onTap: () async {
+            await html.window.navigator.permissions
+                .query({'name': 'clipboard-write'});
+            await html.window.navigator.clipboard.writeText(account.sdkUrl);
+          },
         ),
-      )
+      ),
+    )
 //        : SizedBox.shrink()
         ;
   }
