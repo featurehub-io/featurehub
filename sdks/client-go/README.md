@@ -14,6 +14,8 @@ Features
         - `GetBoolean` returns a boolean feature (by key), or an error if it is unable to assert the value to a boolean
         - `GetNumber` / `GetRawJSON` / `GetString` as above
     - Levelled Logging (you can choose how verbose to make this)
+	- Notifiers can be added for named feature keys, which will trigger a user-provided callback function whenever a feature with this key is updated
+	- Notifiers can be added ahead of time (before the client even knows about the feature-keys in question)
 * Custom errors (allows you to handle different errors in specific ways)
 
 
@@ -48,6 +50,7 @@ There are 3 steps to connecting:
 ```go
     fhClient.Start()
 ```
+
 
 ### Requesting Features
 The client SDK offers various `Get` methods to retrieve different types of features:
@@ -92,6 +95,18 @@ The client SDK offers various `Get` methods to retrieve different types of featu
     log.Printf("Retrieved a STRING feature: %s", someString)
 ```
 
+
+### Configuring Notifiers (callbacks)
+The client SDK allows the user to define callback notifications which will be triggered whenever a specific feature key is updated.
+Notifiers can be defined at any time, even before the client has received data.
+* `AddNotifierBoolean(key string, callback func(bool))`: Calls the provided function with a boolean value
+* `AddNotifierFeature(key string, callback func(*models.FeatureState))`: Calls the provided function with a raw feature state
+* `AddNotifierJSON(key string, callback func(string))`: Calls the provided function with a JSON string value
+* `AddNotifierNumber(key string, callback func(float64))`: Calls the provided function with a float64 value
+* `AddNotifierString(key string, callback func(string))`: Calls the provided function with a string value
+* `DeleteNotifier(key string) error`: Deletes any configured notifier for the given key (or returns an error if no notifier was found)
+
+
 Todo
 ----
 - [X] Config
@@ -100,7 +115,7 @@ Todo
 - [X] Unit tests
 - [X] Handle feature_delete events
 - [X] Compare versions when "feature" event is received (don't just overwrite)
-- [ ] Allow notify / callback functions (add and remove)
+- [X] Allow notify / callback functions (add and remove)
 - [ ] Global "readyness" callback (either OK when data has arrived, or an error if there was a fail)
 - [ ] Re-introduce the "polling" client (if we decide to go down that route for other SDKs)
 - [ ] Run tests and code-generation inside Docker (instead of requiring Go to be installed locally)

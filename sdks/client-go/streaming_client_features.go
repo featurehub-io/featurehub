@@ -7,8 +7,8 @@ import (
 
 // GetFeature searches for a feature by key:
 func (c *StreamingClient) GetFeature(key string) (*models.FeatureState, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
+	c.featuresMutex.Lock()
+	defer c.featuresMutex.Unlock()
 
 	// Look for the feature:
 	if feature, ok := c.features[key]; ok {

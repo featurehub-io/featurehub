@@ -6,7 +6,11 @@ import (
 
 // Client for FeatureHub:
 type Client interface {
-	AddNotifier(key string, callback func())
+	AddNotifierBoolean(key string, callbackFunc models.CallbackFuncBoolean)
+	AddNotifierFeature(key string, callbackFunc models.CallbackFuncFeature)
+	AddNotifierJSON(key string, callbackFunc models.CallbackFuncJSON)
+	AddNotifierNumber(key string, callbackFunc models.CallbackFuncNumber)
+	AddNotifierString(key string, callbackFunc models.CallbackFuncString)
 	DeleteNotifier(key string) error
 	GetBoolean(key string) (bool, error)
 	GetFeature(key string) (*models.FeatureState, error)

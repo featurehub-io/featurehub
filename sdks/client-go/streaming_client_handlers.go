@@ -77,11 +77,11 @@ func (c *StreamingClient) handleFHDeleteFeature(event eventsource.Event) {
 	}
 
 	// Delete the feature:
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
+	c.featuresMutex.Lock()
+	defer c.featuresMutex.Unlock()
 	delete(c.features, feature.Key)
 
-	c.logger.WithField("key", feature.Key).Debugf("Deleted a feature")
+	c.logger.WithField("key", feature.Key).Debug("Deleted a feature")
 }
 
 func (c *StreamingClient) handleFHFeature(event eventsource.Event) {
@@ -93,18 +93,19 @@ func (c *StreamingClient) handleFHFeature(event eventsource.Event) {
 	}
 
 	// Take the new feature (or ignore if the version is not newer):
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
+	c.featuresMutex.Lock()
+	defer c.featuresMutex.Unlock()
 	if currentFeature, ok := c.features[feature.Key]; ok {
 		if feature.Version <= currentFeature.Version {
-			c.logger.WithField("key", feature.Key).Debugf("Received an old feature from server")
+			c.logger.WithField("key", feature.Key).Debug("Received an old feature from server")
 			return
 		}
 	}
 
 	// Otherwise this is a new feature, so we just take it:
-	c.logger.WithField("key", feature.Key).Debugf("Received a new feature from server")
+	c.logger.WithField("key", feature.Key).Debug("Received a new feature from server")
 	c.features[feature.Key] = feature
+	c.notify(feature)
 	c.hasData = true
 }
 
@@ -118,15 +119,26 @@ func (c *StreamingClient) handleFHFeatures(event eventsource.Event) {
 
 	// Create a new map of features:
 	newFeatures := make(map[string]*models.FeatureState)
-	for _, feature := range features {
-		newFeatures[feature.Key] = feature
+	for _, newFeature := range features {
+		newFeatures[newFeature.Key] = newFeature
 	}
 
 	// Take the new features:
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
+	c.featuresMutex.Lock()
+	oldFeatures := c.features
 	c.features = newFeatures
 	c.hasData = true
+	c.featuresMutex.Unlock()
+
+	// Compare versions to see who should be notified:
+	for _, newFeature := range newFeatures {
+		if oldFeature, ok := oldFeatures[newFeature.Key]; ok {
+			if newFeature.Version <= oldFeature.Version {
+				continue
+			}
+		}
+		c.notify(newFeature)
+	}
 
 	c.logger.Debugf("Received %d features from server", len(features))
 }

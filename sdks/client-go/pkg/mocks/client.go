@@ -9,11 +9,35 @@ import (
 )
 
 type FakeClient struct {
-	AddNotifierStub        func(string, func())
-	addNotifierMutex       sync.RWMutex
-	addNotifierArgsForCall []struct {
+	AddNotifierBooleanStub        func(string, models.CallbackFuncBoolean)
+	addNotifierBooleanMutex       sync.RWMutex
+	addNotifierBooleanArgsForCall []struct {
 		arg1 string
-		arg2 func()
+		arg2 models.CallbackFuncBoolean
+	}
+	AddNotifierFeatureStub        func(string, models.CallbackFuncFeature)
+	addNotifierFeatureMutex       sync.RWMutex
+	addNotifierFeatureArgsForCall []struct {
+		arg1 string
+		arg2 models.CallbackFuncFeature
+	}
+	AddNotifierJSONStub        func(string, models.CallbackFuncJSON)
+	addNotifierJSONMutex       sync.RWMutex
+	addNotifierJSONArgsForCall []struct {
+		arg1 string
+		arg2 models.CallbackFuncJSON
+	}
+	AddNotifierNumberStub        func(string, models.CallbackFuncNumber)
+	addNotifierNumberMutex       sync.RWMutex
+	addNotifierNumberArgsForCall []struct {
+		arg1 string
+		arg2 models.CallbackFuncNumber
+	}
+	AddNotifierStringStub        func(string, models.CallbackFuncString)
+	addNotifierStringMutex       sync.RWMutex
+	addNotifierStringArgsForCall []struct {
+		arg1 string
+		arg2 models.CallbackFuncString
 	}
 	DeleteNotifierStub        func(string) error
 	deleteNotifierMutex       sync.RWMutex
@@ -95,35 +119,163 @@ type FakeClient struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeClient) AddNotifier(arg1 string, arg2 func()) {
-	fake.addNotifierMutex.Lock()
-	fake.addNotifierArgsForCall = append(fake.addNotifierArgsForCall, struct {
+func (fake *FakeClient) AddNotifierBoolean(arg1 string, arg2 models.CallbackFuncBoolean) {
+	fake.addNotifierBooleanMutex.Lock()
+	fake.addNotifierBooleanArgsForCall = append(fake.addNotifierBooleanArgsForCall, struct {
 		arg1 string
-		arg2 func()
+		arg2 models.CallbackFuncBoolean
 	}{arg1, arg2})
-	fake.recordInvocation("AddNotifier", []interface{}{arg1, arg2})
-	fake.addNotifierMutex.Unlock()
-	if fake.AddNotifierStub != nil {
-		fake.AddNotifierStub(arg1, arg2)
+	fake.recordInvocation("AddNotifierBoolean", []interface{}{arg1, arg2})
+	fake.addNotifierBooleanMutex.Unlock()
+	if fake.AddNotifierBooleanStub != nil {
+		fake.AddNotifierBooleanStub(arg1, arg2)
 	}
 }
 
-func (fake *FakeClient) AddNotifierCallCount() int {
-	fake.addNotifierMutex.RLock()
-	defer fake.addNotifierMutex.RUnlock()
-	return len(fake.addNotifierArgsForCall)
+func (fake *FakeClient) AddNotifierBooleanCallCount() int {
+	fake.addNotifierBooleanMutex.RLock()
+	defer fake.addNotifierBooleanMutex.RUnlock()
+	return len(fake.addNotifierBooleanArgsForCall)
 }
 
-func (fake *FakeClient) AddNotifierCalls(stub func(string, func())) {
-	fake.addNotifierMutex.Lock()
-	defer fake.addNotifierMutex.Unlock()
-	fake.AddNotifierStub = stub
+func (fake *FakeClient) AddNotifierBooleanCalls(stub func(string, models.CallbackFuncBoolean)) {
+	fake.addNotifierBooleanMutex.Lock()
+	defer fake.addNotifierBooleanMutex.Unlock()
+	fake.AddNotifierBooleanStub = stub
 }
 
-func (fake *FakeClient) AddNotifierArgsForCall(i int) (string, func()) {
-	fake.addNotifierMutex.RLock()
-	defer fake.addNotifierMutex.RUnlock()
-	argsForCall := fake.addNotifierArgsForCall[i]
+func (fake *FakeClient) AddNotifierBooleanArgsForCall(i int) (string, models.CallbackFuncBoolean) {
+	fake.addNotifierBooleanMutex.RLock()
+	defer fake.addNotifierBooleanMutex.RUnlock()
+	argsForCall := fake.addNotifierBooleanArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeClient) AddNotifierFeature(arg1 string, arg2 models.CallbackFuncFeature) {
+	fake.addNotifierFeatureMutex.Lock()
+	fake.addNotifierFeatureArgsForCall = append(fake.addNotifierFeatureArgsForCall, struct {
+		arg1 string
+		arg2 models.CallbackFuncFeature
+	}{arg1, arg2})
+	fake.recordInvocation("AddNotifierFeature", []interface{}{arg1, arg2})
+	fake.addNotifierFeatureMutex.Unlock()
+	if fake.AddNotifierFeatureStub != nil {
+		fake.AddNotifierFeatureStub(arg1, arg2)
+	}
+}
+
+func (fake *FakeClient) AddNotifierFeatureCallCount() int {
+	fake.addNotifierFeatureMutex.RLock()
+	defer fake.addNotifierFeatureMutex.RUnlock()
+	return len(fake.addNotifierFeatureArgsForCall)
+}
+
+func (fake *FakeClient) AddNotifierFeatureCalls(stub func(string, models.CallbackFuncFeature)) {
+	fake.addNotifierFeatureMutex.Lock()
+	defer fake.addNotifierFeatureMutex.Unlock()
+	fake.AddNotifierFeatureStub = stub
+}
+
+func (fake *FakeClient) AddNotifierFeatureArgsForCall(i int) (string, models.CallbackFuncFeature) {
+	fake.addNotifierFeatureMutex.RLock()
+	defer fake.addNotifierFeatureMutex.RUnlock()
+	argsForCall := fake.addNotifierFeatureArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeClient) AddNotifierJSON(arg1 string, arg2 models.CallbackFuncJSON) {
+	fake.addNotifierJSONMutex.Lock()
+	fake.addNotifierJSONArgsForCall = append(fake.addNotifierJSONArgsForCall, struct {
+		arg1 string
+		arg2 models.CallbackFuncJSON
+	}{arg1, arg2})
+	fake.recordInvocation("AddNotifierJSON", []interface{}{arg1, arg2})
+	fake.addNotifierJSONMutex.Unlock()
+	if fake.AddNotifierJSONStub != nil {
+		fake.AddNotifierJSONStub(arg1, arg2)
+	}
+}
+
+func (fake *FakeClient) AddNotifierJSONCallCount() int {
+	fake.addNotifierJSONMutex.RLock()
+	defer fake.addNotifierJSONMutex.RUnlock()
+	return len(fake.addNotifierJSONArgsForCall)
+}
+
+func (fake *FakeClient) AddNotifierJSONCalls(stub func(string, models.CallbackFuncJSON)) {
+	fake.addNotifierJSONMutex.Lock()
+	defer fake.addNotifierJSONMutex.Unlock()
+	fake.AddNotifierJSONStub = stub
+}
+
+func (fake *FakeClient) AddNotifierJSONArgsForCall(i int) (string, models.CallbackFuncJSON) {
+	fake.addNotifierJSONMutex.RLock()
+	defer fake.addNotifierJSONMutex.RUnlock()
+	argsForCall := fake.addNotifierJSONArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeClient) AddNotifierNumber(arg1 string, arg2 models.CallbackFuncNumber) {
+	fake.addNotifierNumberMutex.Lock()
+	fake.addNotifierNumberArgsForCall = append(fake.addNotifierNumberArgsForCall, struct {
+		arg1 string
+		arg2 models.CallbackFuncNumber
+	}{arg1, arg2})
+	fake.recordInvocation("AddNotifierNumber", []interface{}{arg1, arg2})
+	fake.addNotifierNumberMutex.Unlock()
+	if fake.AddNotifierNumberStub != nil {
+		fake.AddNotifierNumberStub(arg1, arg2)
+	}
+}
+
+func (fake *FakeClient) AddNotifierNumberCallCount() int {
+	fake.addNotifierNumberMutex.RLock()
+	defer fake.addNotifierNumberMutex.RUnlock()
+	return len(fake.addNotifierNumberArgsForCall)
+}
+
+func (fake *FakeClient) AddNotifierNumberCalls(stub func(string, models.CallbackFuncNumber)) {
+	fake.addNotifierNumberMutex.Lock()
+	defer fake.addNotifierNumberMutex.Unlock()
+	fake.AddNotifierNumberStub = stub
+}
+
+func (fake *FakeClient) AddNotifierNumberArgsForCall(i int) (string, models.CallbackFuncNumber) {
+	fake.addNotifierNumberMutex.RLock()
+	defer fake.addNotifierNumberMutex.RUnlock()
+	argsForCall := fake.addNotifierNumberArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeClient) AddNotifierString(arg1 string, arg2 models.CallbackFuncString) {
+	fake.addNotifierStringMutex.Lock()
+	fake.addNotifierStringArgsForCall = append(fake.addNotifierStringArgsForCall, struct {
+		arg1 string
+		arg2 models.CallbackFuncString
+	}{arg1, arg2})
+	fake.recordInvocation("AddNotifierString", []interface{}{arg1, arg2})
+	fake.addNotifierStringMutex.Unlock()
+	if fake.AddNotifierStringStub != nil {
+		fake.AddNotifierStringStub(arg1, arg2)
+	}
+}
+
+func (fake *FakeClient) AddNotifierStringCallCount() int {
+	fake.addNotifierStringMutex.RLock()
+	defer fake.addNotifierStringMutex.RUnlock()
+	return len(fake.addNotifierStringArgsForCall)
+}
+
+func (fake *FakeClient) AddNotifierStringCalls(stub func(string, models.CallbackFuncString)) {
+	fake.addNotifierStringMutex.Lock()
+	defer fake.addNotifierStringMutex.Unlock()
+	fake.AddNotifierStringStub = stub
+}
+
+func (fake *FakeClient) AddNotifierStringArgsForCall(i int) (string, models.CallbackFuncString) {
+	fake.addNotifierStringMutex.RLock()
+	defer fake.addNotifierStringMutex.RUnlock()
+	argsForCall := fake.addNotifierStringArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
@@ -505,8 +657,16 @@ func (fake *FakeClient) GetStringReturnsOnCall(i int, result1 string, result2 er
 func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.addNotifierMutex.RLock()
-	defer fake.addNotifierMutex.RUnlock()
+	fake.addNotifierBooleanMutex.RLock()
+	defer fake.addNotifierBooleanMutex.RUnlock()
+	fake.addNotifierFeatureMutex.RLock()
+	defer fake.addNotifierFeatureMutex.RUnlock()
+	fake.addNotifierJSONMutex.RLock()
+	defer fake.addNotifierJSONMutex.RUnlock()
+	fake.addNotifierNumberMutex.RLock()
+	defer fake.addNotifierNumberMutex.RUnlock()
+	fake.addNotifierStringMutex.RLock()
+	defer fake.addNotifierStringMutex.RUnlock()
 	fake.deleteNotifierMutex.RLock()
 	defer fake.deleteNotifierMutex.RUnlock()
 	fake.getBooleanMutex.RLock()

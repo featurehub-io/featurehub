@@ -12,14 +12,15 @@ import (
 
 // StreamingClient implements the client interface by by subscribing to server-side events:
 type StreamingClient struct {
-	apiClient   *eventsource.Stream
-	config      *Config
-	features    map[string]*models.FeatureState
-	featuresURL string
-	hasData     bool
-	logger      *logrus.Logger
-	mutex       sync.Mutex
-	notifiers   map[string]func()
+	apiClient      *eventsource.Stream
+	config         *Config
+	features       map[string]*models.FeatureState
+	featuresMutex  sync.Mutex
+	featuresURL    string
+	hasData        bool
+	logger         *logrus.Logger
+	notifiers      map[string]notifier
+	notifiersMutex sync.Mutex
 }
 
 // New wraps NewStreamingClient (as the default / only implementation):
