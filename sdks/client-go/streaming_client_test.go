@@ -1,6 +1,7 @@
 package client
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/donovanhide/eventsource"
@@ -26,7 +27,7 @@ func TestStreamingClient(t *testing.T) {
 
 	// Make a test config (with an incorrect server address):
 	config := &Config{
-		LogLevel:      logrus.TraceLevel,
+		LogLevel:      logrus.FatalLevel,
 		SDKKey:        "default/environment-id/my-secret-api-key",
 		ServerAddress: "http://streams.test:8086",
 		WaitForData:   true,
@@ -39,7 +40,9 @@ func TestStreamingClient(t *testing.T) {
 
 	// Make a logger:
 	logger := logrus.New()
-	logger.SetLevel(config.LogLevel)
+	logger.SetLevel(logrus.TraceLevel)
+	logBuffer := new(bytes.Buffer)
+	logger.SetOutput(logBuffer)
 
 	// Use the config to make a new StreamingClient with a mock apiClient::
 	client = &StreamingClient{
@@ -144,4 +147,5 @@ func TestStreamingClient(t *testing.T) {
 	assert.Error(t, err)
 	assert.IsType(t, &errors.ErrFeatureNotFound{}, err)
 	assert.Nil(t, deletedFeature)
+	assert.Contains(t, logBuffer.String(), "Deleted a feature")
 }
