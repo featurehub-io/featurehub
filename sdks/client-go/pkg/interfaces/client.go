@@ -17,4 +17,5 @@ type Client interface {
 	GetNumber(key string) (float64, error)
 	GetRawJSON(key string) (string, error)
 	GetString(key string) (string, error)
+	ReadinessListener(callbackFunc func())
 }

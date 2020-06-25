@@ -73,4 +73,7 @@ func TestStreamingClientHandlers(t *testing.T) {
 	assert.IsType(t, &errors.ErrFeatureNotFound{}, err)
 	assert.Nil(t, deletedFeature)
 	assert.Contains(t, logBuffer.String(), "Deleted a feature")
+
+	// Check that the client knew not to trigger the readiness listener (because there was none):
+	assert.Contains(t, logBuffer.String(), "No registered readinessListener() to call")
 }

@@ -107,6 +107,11 @@ Notifiers can be defined at any time, even before the client has received data.
 * `DeleteNotifier(key string) error`: Deletes any configured notifier for the given key (or returns an error if no notifier was found)
 
 
+### Configuring a Readiness Listener
+The client SDK allows the user to define a callback function which will be triggered once, when the client first receives some data from the server.
+* `ReadinessListener(callback func())`: Sets the readiness listener to a specific user-provided function
+
+
 Todo
 ----
 - [X] Config
@@ -116,7 +121,7 @@ Todo
 - [X] Handle feature_delete events
 - [X] Compare versions when "feature" event is received (don't just overwrite)
 - [X] Allow notify / callback functions (add and remove)
-- [ ] Global "readyness" callback (either OK when data has arrived, or an error if there was a fail)
+- [X] Global "readyness" callback (either OK when data has arrived, or an error if there was a fail)
 - [ ] Analytics support
 - [ ] Google Analytics support
 - [ ] Re-introduce the "polling" client (if we decide to go down that route for other SDKs)

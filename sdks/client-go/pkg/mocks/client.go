@@ -115,6 +115,11 @@ type FakeClient struct {
 		result1 string
 		result2 error
 	}
+	ReadinessListenerStub        func(func())
+	readinessListenerMutex       sync.RWMutex
+	readinessListenerArgsForCall []struct {
+		arg1 func()
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -654,6 +659,37 @@ func (fake *FakeClient) GetStringReturnsOnCall(i int, result1 string, result2 er
 	}{result1, result2}
 }
 
+func (fake *FakeClient) ReadinessListener(arg1 func()) {
+	fake.readinessListenerMutex.Lock()
+	fake.readinessListenerArgsForCall = append(fake.readinessListenerArgsForCall, struct {
+		arg1 func()
+	}{arg1})
+	fake.recordInvocation("ReadinessListener", []interface{}{arg1})
+	fake.readinessListenerMutex.Unlock()
+	if fake.ReadinessListenerStub != nil {
+		fake.ReadinessListenerStub(arg1)
+	}
+}
+
+func (fake *FakeClient) ReadinessListenerCallCount() int {
+	fake.readinessListenerMutex.RLock()
+	defer fake.readinessListenerMutex.RUnlock()
+	return len(fake.readinessListenerArgsForCall)
+}
+
+func (fake *FakeClient) ReadinessListenerCalls(stub func(func())) {
+	fake.readinessListenerMutex.Lock()
+	defer fake.readinessListenerMutex.Unlock()
+	fake.ReadinessListenerStub = stub
+}
+
+func (fake *FakeClient) ReadinessListenerArgsForCall(i int) func() {
+	fake.readinessListenerMutex.RLock()
+	defer fake.readinessListenerMutex.RUnlock()
+	argsForCall := fake.readinessListenerArgsForCall[i]
+	return argsForCall.arg1
+}
+
 func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -679,6 +715,8 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.getRawJSONMutex.RUnlock()
 	fake.getStringMutex.RLock()
 	defer fake.getStringMutex.RUnlock()
+	fake.readinessListenerMutex.RLock()
+	defer fake.readinessListenerMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

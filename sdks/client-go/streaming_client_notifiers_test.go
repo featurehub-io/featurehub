@@ -87,6 +87,13 @@ func TestStreamingClientNotifiers(t *testing.T) {
 	assert.Error(t, err)
 	assert.IsType(t, &errors.ErrNotifierNotFound{}, err)
 
+	// Add a readiness-listener:
+	var readinessListenerCalled = false
+	callbackReadiness := func() {
+		readinessListenerCalled = true
+	}
+	client.ReadinessListener(callbackReadiness)
+
 	// Start handling events:
 	client.Start()
 
@@ -155,4 +162,8 @@ func TestStreamingClientNotifiers(t *testing.T) {
 	assert.Equal(t, `{"is_crufty": true}`, callbackJSONValue)
 	assert.Equal(t, float64(123456789), callbackNumberValue)
 	assert.Equal(t, "this is a string", callbackStringValue)
+
+	// Check that the client triggered the readiness listener:
+	assert.True(t, readinessListenerCalled)
+	assert.Contains(t, logBuffer.String(), "Calling readinessListener()")
 }

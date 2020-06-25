@@ -106,7 +106,7 @@ func (c *StreamingClient) handleFHFeature(event eventsource.Event) {
 	c.logger.WithField("key", feature.Key).Debug("Received a new feature from server")
 	c.features[feature.Key] = feature
 	c.notify(feature)
-	c.hasData = true
+	c.isReady()
 }
 
 func (c *StreamingClient) handleFHFeatures(event eventsource.Event) {
@@ -127,7 +127,7 @@ func (c *StreamingClient) handleFHFeatures(event eventsource.Event) {
 	c.featuresMutex.Lock()
 	oldFeatures := c.features
 	c.features = newFeatures
-	c.hasData = true
+	c.isReady()
 	c.featuresMutex.Unlock()
 
 	// Compare versions to see who should be notified:

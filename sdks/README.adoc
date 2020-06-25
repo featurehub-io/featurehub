@@ -16,7 +16,7 @@ table of capability indicates what each different language can support and where
 |Event Streaming|Y|Y|Y|Y
 |Background Start|Y|Y|Y|Y
 |Block until Start|N|N|Y|N
-|Readyness Listeners|Y|Y|N|Y
+|Readyness Listeners|Y|Y|Y|Y
 |Feature Listeners|Y|Y|Y|Y
 |Feature Listener Removal|N|N|Y|Y
 |Catch & Release|N|Y|N|Y

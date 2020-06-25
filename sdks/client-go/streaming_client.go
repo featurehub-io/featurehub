@@ -12,15 +12,16 @@ import (
 
 // StreamingClient implements the client interface by by subscribing to server-side events:
 type StreamingClient struct {
-	apiClient      *eventsource.Stream
-	config         *Config
-	features       map[string]*models.FeatureState
-	featuresMutex  sync.Mutex
-	featuresURL    string
-	hasData        bool
-	logger         *logrus.Logger
-	notifiers      map[string]notifier
-	notifiersMutex sync.Mutex
+	apiClient         *eventsource.Stream
+	config            *Config
+	features          map[string]*models.FeatureState
+	featuresMutex     sync.Mutex
+	featuresURL       string
+	hasData           bool
+	logger            *logrus.Logger
+	notifiers         map[string]notifier
+	notifiersMutex    sync.Mutex
+	readinessListener func()
 }
 
 // New wraps NewStreamingClient (as the default / only implementation):
@@ -65,6 +66,11 @@ func NewStreamingClient(config *Config) (*StreamingClient, error) {
 	return client, nil
 }
 
+// ReadinessListener defines a callback function which will be triggered once the client has received data for the first time:
+func (c *StreamingClient) ReadinessListener(callbackFunc func()) {
+	c.readinessListener = callbackFunc
+}
+
 // Start begins handling events from the streamer:
 func (c *StreamingClient) Start() {
 
@@ -76,6 +82,25 @@ func (c *StreamingClient) Start() {
 	if c.config.WaitForData {
 		for !c.hasData {
 			time.Sleep(time.Second)
+		}
+	}
+}
+
+// isReady triggers various notifications that the client is ready to serve data:
+func (c *StreamingClient) isReady() {
+
+	// If we're not already flagged as ready:
+	if !c.hasData {
+
+		// Flag us as ready:
+		c.hasData = true
+
+		// Trigger the registered readinessListener:
+		if c.readinessListener != nil {
+			c.logger.Trace("Calling readinessListener()")
+			c.readinessListener()
+		} else {
+			c.logger.Trace("No registered readinessListener() to call")
 		}
 	}
 }
