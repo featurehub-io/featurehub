@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:app_singleapp/api/client_api.dart';
+import 'package:app_singleapp/api/mr_client_aware.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
 import 'package:pedantic/pedantic.dart';
@@ -8,11 +9,11 @@ import 'package:rxdart/rxdart.dart';
 
 enum ManageAppPageState { loadingState, initialState }
 
-class ManageAppBloc implements Bloc {
+class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
   String applicationId;
   Application application;
   Portfolio portfolio;
-  ManagementRepositoryClientBloc mrClient;
+  final ManagementRepositoryClientBloc _mrClient;
   ApplicationServiceApi _appServiceApi;
   EnvironmentServiceApi _environmentServiceApi;
   PortfolioServiceApi _portfolioServiceApi;
@@ -22,16 +23,19 @@ class ManageAppBloc implements Bloc {
   StreamSubscription<String> _currentAppId;
   String _selectedGroupId;
 
-  ManageAppBloc(this.mrClient) : assert(mrClient != null) {
-    _appServiceApi = ApplicationServiceApi(mrClient.apiClient);
-    _environmentServiceApi = EnvironmentServiceApi(mrClient.apiClient);
-    _portfolioServiceApi = PortfolioServiceApi(mrClient.apiClient);
-    _groupServiceApi = GroupServiceApi(mrClient.apiClient);
-    _serviceAccountServiceApi = ServiceAccountServiceApi(mrClient.apiClient);
+  ManageAppBloc(this._mrClient) : assert(_mrClient != null) {
+    _appServiceApi = ApplicationServiceApi(_mrClient.apiClient);
+    _environmentServiceApi = EnvironmentServiceApi(_mrClient.apiClient);
+    _portfolioServiceApi = PortfolioServiceApi(_mrClient.apiClient);
+    _groupServiceApi = GroupServiceApi(_mrClient.apiClient);
+    _serviceAccountServiceApi = ServiceAccountServiceApi(_mrClient.apiClient);
     _pageStateBS.add(ManageAppPageState.loadingState);
     _currentAppId =
-        mrClient.streamValley.currentAppIdStream.listen(setApplicationId);
+        _mrClient.streamValley.currentAppIdStream.listen(setApplicationId);
   }
+
+  @override
+  ManagementRepositoryClientBloc get mrClient => _mrClient;
 
   @override
   void dispose() {
@@ -89,14 +93,14 @@ class ManageAppBloc implements Bloc {
   void _fetchEnvironments() async {
     application = await _appServiceApi
         .getApplication(applicationId, includeEnvironments: true)
-        .catchError(mrClient.dialogError);
+        .catchError(_mrClient.dialogError);
     environmentsList = application.environments;
     if (!_environmentBS.isClosed) {
       _environmentBS.add(environmentsList);
     }
     portfolio = await _portfolioServiceApi
         .getPortfolio(application.portfolioId)
-        .catchError(mrClient.dialogError);
+        .catchError(_mrClient.dialogError);
     if (!_pageStateBS.isClosed) {
       _pageStateBS.add(ManageAppPageState.initialState);
     }
@@ -111,11 +115,11 @@ class ManageAppBloc implements Bloc {
   Future<void> _fetchGroups() async {
     application = await _appServiceApi
         .getApplication(applicationId)
-        .catchError(mrClient.dialogError);
+        .catchError(_mrClient.dialogError);
 
     portfolio = await _portfolioServiceApi
         .getPortfolio(application.portfolioId, includeGroups: true)
-        .catchError(mrClient.dialogError);
+        .catchError(_mrClient.dialogError);
     if (!_groupsBS.isClosed) {
       _groupsBS.add(portfolio.groups);
 
@@ -134,14 +138,14 @@ class ManageAppBloc implements Bloc {
   void _fetchServiceAccounts() async {
     application = await _appServiceApi
         .getApplication(applicationId)
-        .catchError(mrClient.dialogError);
+        .catchError(_mrClient.dialogError);
 
-    if (mrClient.userIsCurrentPortfolioAdmin) {
+    if (_mrClient.userIsCurrentPortfolioAdmin) {
       final serviceAccounts = await _serviceAccountServiceApi
           .searchServiceAccountsInPortfolio(
-              application.portfolioId ?? mrClient.currentPortfolio.id,
+              application.portfolioId ?? _mrClient.currentPortfolio.id,
               includePermissions: true)
-          .catchError(mrClient.dialogError);
+          .catchError(_mrClient.dialogError);
       if (!_serviceAccountsBS.isClosed) {
         if (serviceAccounts.isNotEmpty) {
           _currentServiceAccountIdSource.add(null);
@@ -169,7 +173,7 @@ class ManageAppBloc implements Bloc {
   }
 
   Future<void> selectServiceAccount(String said) async {
-    if (mrClient.userIsCurrentPortfolioAdmin) {
+    if (_mrClient.userIsCurrentPortfolioAdmin) {
       await _serviceAccountServiceApi
           .callGet(said, includePermissions: true)
           .then((sa) {
@@ -177,7 +181,7 @@ class ManageAppBloc implements Bloc {
         if (!_serviceAccountPS.isClosed) {
           _serviceAccountPS.add(sa);
         }
-      }).catchError(mrClient.dialogError);
+      }).catchError(_mrClient.dialogError);
     }
   }
 
@@ -191,8 +195,8 @@ class ManageAppBloc implements Bloc {
             updateMembers: false,
             updateApplicationGroupRoles: true,
             updateEnvironmentGroupRoles: true)
-        .catchError(mrClient.dialogError);
-    unawaited(mrClient.streamValley.getCurrentApplicationEnvironments());
+        .catchError(_mrClient.dialogError);
+    unawaited(_mrClient.streamValley.getCurrentApplicationEnvironments());
     return updatedGroup;
   }
 
@@ -204,8 +208,8 @@ class ManageAppBloc implements Bloc {
           serviceAccount,
           includePermissions: true,
         )
-        .catchError(mrClient.dialogError);
-    unawaited(mrClient.streamValley.getEnvironmentServiceAccountPermissions());
+        .catchError(_mrClient.dialogError);
+    unawaited(_mrClient.streamValley.getEnvironmentServiceAccountPermissions());
     return updatedServiceAccount;
   }
 
@@ -219,11 +223,11 @@ class ManageAppBloc implements Bloc {
     }
     final success = await _environmentServiceApi
         .deleteEnvironment(eid, includeAcls: true, includeFeatures: true)
-        .catchError(mrClient.dialogError);
+        .catchError(_mrClient.dialogError);
     if (success) {
       environmentsList.remove(toRemove);
       await updateEnvs(applicationId, environmentsList);
-      unawaited(mrClient.streamValley.getCurrentApplicationEnvironments());
+      unawaited(_mrClient.streamValley.getCurrentApplicationEnvironments());
       return true;
     }
     return false;
@@ -232,7 +236,7 @@ class ManageAppBloc implements Bloc {
   void updateEnvs(String appId, List<Environment> envs) async {
     environmentsList = await _environmentServiceApi
         .environmentOrdering(appId, envs)
-        .catchError(mrClient.dialogError);
+        .catchError(_mrClient.dialogError);
     _environmentBS.add(environmentsList);
   }
 
@@ -240,7 +244,7 @@ class ManageAppBloc implements Bloc {
     env.name = name;
     await _environmentServiceApi
         .updateEnvironment(env.id, env)
-        .catchError(mrClient.dialogError);
+        .catchError(_mrClient.dialogError);
     _fetchEnvironments();
   }
 
@@ -259,7 +263,7 @@ class ManageAppBloc implements Bloc {
     environmentsList.add(env);
 //    updateEnvs(applicationId, environmentsList);
     // ignore: unawaited_futures
-    mrClient.streamValley
+    _mrClient.streamValley
         .getCurrentApplicationEnvironments()
         .then((envs) => _environmentBS.add(envs));
   }

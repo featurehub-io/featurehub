@@ -115,41 +115,41 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
       if (!isAdmin || new QDbGroup().whenArchived.isNull().owningPortfolio.eq(portfolio).adminGroup.isTrue().findCount() == 0) {
 
         final DbPerson personCreatedId = convertUtils.uuidPerson(whoCreated);
-          Set<DbAcl> acls = new HashSet<>();
+        Set<DbAcl> acls = new HashSet<>();
 
-          if (group.getApplicationRoles() != null) {
-            group.getApplicationRoles().forEach(appRole -> {
-              if (appRole.getApplicationId() != null && appRole.getRoles() != null) {
-                DbApplication app = convertUtils.uuidApplication(appRole.getApplicationId());
-                if (app != null && app.getPortfolio().getId().equals(portfolio.getId())) {
-                  acls.add(new DbAcl.Builder().application(app).roles(appRolesToString(appRole.getRoles())).build());
-                }
+        if (group.getApplicationRoles() != null) {
+          group.getApplicationRoles().forEach(appRole -> {
+            if (appRole.getApplicationId() != null && appRole.getRoles() != null) {
+              DbApplication app = convertUtils.uuidApplication(appRole.getApplicationId());
+              if (app != null && app.getPortfolio().getId().equals(portfolio.getId())) {
+                acls.add(new DbAcl.Builder().application(app).roles(appRolesToString(appRole.getRoles())).build());
               }
-            });
-          }
+            }
+          });
+        }
 
-          // no environment roles as yet
+        // no environment roles as yet
 
-          DbGroup dbGroup = new DbGroup.Builder()
-            .owningPortfolio(portfolio)
-            .adminGroup(isAdmin)
-            .name(group.getName())
-            .whoCreated(personCreatedId)
-            .groupRolesAcl(acls)
-            .build();
+        DbGroup dbGroup = new DbGroup.Builder()
+          .owningPortfolio(portfolio)
+          .adminGroup(isAdmin)
+          .name(group.getName())
+          .whoCreated(personCreatedId)
+          .groupRolesAcl(acls)
+          .build();
 
 
-          try {
-            saveGroup(dbGroup);
-          } catch (DuplicateKeyException dke) {
-            throw new DuplicateGroupException();
-          }
+        try {
+          saveGroup(dbGroup);
+        } catch (DuplicateKeyException dke) {
+          throw new DuplicateGroupException();
+        }
 
-          if (dbGroup.isAdminGroup()) {
-            copySuperusersToPortfolioGroup(dbGroup);
-          }
+        if (dbGroup.isAdminGroup()) {
+          copySuperusersToPortfolioGroup(dbGroup);
+        }
 
-          return convertUtils.toGroup(dbGroup, Opts.empty());
+        return convertUtils.toGroup(dbGroup, Opts.empty());
       }
 
       log.error("Attempted to create a new admin group for portfolio {} and it already exists.", portfolio.getName());
@@ -226,7 +226,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
               return convertUtils.toGroup(one, opts);
             }
           })
-          .orElse(null))
+            .orElse(null))
           .orElse(null);
       }
 
@@ -247,7 +247,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
       final DbGroup one = eq.findOne();
 
       if (one != null && (one.getPeopleInGroup().stream().anyMatch(p -> p.getWhenArchived() == null && p.getId().toString().equals(person.getId().getId())) ||
-          isSuperuser(one.findOwningOrganisation(), convertUtils.uuidPerson(person)))) {
+        isSuperuser(one.findOwningOrganisation(), convertUtils.uuidPerson(person)))) {
         return convertUtils.toGroup(one, opts);
       }
 
@@ -430,7 +430,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
 
     List<DbAcl> removedAcls = new ArrayList<>();
 
-    group.getGroupRolesAcl().forEach( acl -> {
+    group.getGroupRolesAcl().forEach(acl -> {
       // leave the application acl's alone
       if (acl.getApplication() != null) {
         ApplicationGroupRole egr = desiredApplications.get(acl.getApplication().getId());
@@ -488,7 +488,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
 
     List<DbAcl> removedAcls = new ArrayList<>();
 
-    group.getGroupRolesAcl().forEach( acl -> {
+    group.getGroupRolesAcl().forEach(acl -> {
       // leave the application acl's alone
       if (acl.getEnvironment() != null) {
         EnvironmentGroupRole egr = desiredEnvironments.get(acl.getEnvironment().getId());
@@ -588,11 +588,11 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
   @Override
   public List<Group> findGroups(String portfolioId, String filter, SortOrder ordering, Opts opts) {
     return ConvertUtils.uuid(portfolioId).map(pId -> {
-        QDbGroup gFinder = new QDbGroup().owningPortfolio.id.eq(pId);
+      QDbGroup gFinder = new QDbGroup().owningPortfolio.id.eq(pId);
 
-        if (filter != null && filter.trim().length() > 0) {
-          gFinder = gFinder.name.ilike("%" + filter.trim() + "%");
-        }
+      if (filter != null && filter.trim().length() > 0) {
+        gFinder = gFinder.name.ilike("%" + filter.trim() + "%");
+      }
 
       if (ordering != null) {
         if (ordering == SortOrder.ASC) {

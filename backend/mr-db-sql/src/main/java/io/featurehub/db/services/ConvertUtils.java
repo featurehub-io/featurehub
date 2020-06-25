@@ -50,10 +50,13 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Singleton
@@ -189,7 +192,7 @@ public class ConvertUtils {
       .environmentId(sae.getEnvironment().getId().toString());
 
     if (opt.contains(FillOpts.ServiceAccounts) || opt.contains(FillOpts.SdkURL)) {
-      sap.serviceAccount(toServiceAccount(sae.getServiceAccount(), opt.minus(FillOpts.Permissions)));
+      sap.serviceAccount(toServiceAccount(sae.getServiceAccount(), opt.minus(FillOpts.Permissions, FillOpts.SdkURL)));
     }
 
     if (opt.contains(FillOpts.SdkURL)) {
@@ -509,6 +512,10 @@ public class ConvertUtils {
   }
 
   public ServiceAccount toServiceAccount(DbServiceAccount sa, Opts opts) {
+    return toServiceAccount(sa, opts, null);
+  }
+
+  public ServiceAccount toServiceAccount(DbServiceAccount sa, Opts opts,  List<DbEnvironment> environmentsUserHasAccessTo) {
     if (sa == null) {
       return null;
     }
@@ -523,10 +530,12 @@ public class ConvertUtils {
     if (opts != null) {
       account.apiKey(sa.getApiKey());
 
-      if (opts.contains(FillOpts.Permissions)) {
+      if (opts.contains(FillOpts.Permissions) || opts.contains(FillOpts.SdkURL)) {
+        Map<UUID, DbEnvironment> envs = environmentsUserHasAccessTo == null ? null : environmentsUserHasAccessTo.stream().collect(Collectors.toMap(DbEnvironment::getId, e -> e));
         account.setPermissions(
           sa.getServiceAccountEnvironments().stream()
-            .map(sae -> toServiceAccountPermission(sae, opts.minus(FillOpts.ServiceAccounts, FillOpts.SdkURL)))
+            .filter(sae -> envs == null || envs.get(sae.getEnvironment().getId()) != null)
+            .map(sae -> toServiceAccountPermission(sae, opts.minus(FillOpts.ServiceAccounts)))
             .collect(Collectors.toList()));
       }
     }
@@ -548,7 +557,9 @@ public class ConvertUtils {
     if (opts.contains(FillOpts.ServiceAccounts)) {
       featureEnvironment.serviceAccounts(dbEnvironment.getServiceAccountEnvironments().stream()
         .filter(sae -> opts.contains(FillOpts.Archived) || sae.getServiceAccount().getWhenArchived() == null)
-        .map((sae) -> toServiceAccount(sae.getServiceAccount(), null)).collect(Collectors.toList()));
+        .map((sae) -> toServiceAccount(sae.getServiceAccount(), null, null))
+        .sorted(Comparator.comparing(ServiceAccount::getId)) // this is really only because the test is finicky, it should be removed
+        .collect(Collectors.toList()));
     }
 
     return featureEnvironment;

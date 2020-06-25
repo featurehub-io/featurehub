@@ -11,6 +11,7 @@ import io.featurehub.db.model.DbEnvironment
 import io.featurehub.db.model.DbOrganization
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
+import io.featurehub.mr.model.EnvironmentGroupRole
 import io.featurehub.mr.model.RoleType
 import io.featurehub.db.model.query.QDbOrganization
 import io.featurehub.db.publish.CacheSource
@@ -79,6 +80,7 @@ class ServiceAccountSpec extends Specification {
     portfolio1 = new DbPortfolio.Builder().name("p1-env-1").whoCreated(dbSuperPerson).organization(organization).build()
     database.save(portfolio1)
     portfolio1Id = portfolio1.id.toString()
+    def portfolioGroup = groupSqlApi.createPortfolioGroup(portfolio1Id, new Group().admin(true), superPerson)
     application1 = new DbApplication.Builder().name("app-env-1").portfolio(portfolio1).whoCreated(dbSuperPerson).build()
     database.save(application1)
     environment1 = new DbEnvironment.Builder().whoCreated(dbSuperPerson).name("e1").parentApplication(application1).build();
@@ -89,27 +91,50 @@ class ServiceAccountSpec extends Specification {
     database.save(environment3)
 
     environmentApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
+
+    groupSqlApi.updateGroup(portfolioGroup.id, portfolioGroup.environmentRoles(
+      [
+        new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(environment1.id.toString()),
+        new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(environment2.id.toString()),
+        new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(environment3.id.toString()),
+      ]
+    ), false, false, true, Opts.empty())
   }
 
   def "i can create a service account with no environments"() {
     given: "i have a service account"
-      def sa = new ServiceAccount().name("sa-2").description("sa-1 test")
+      def sa = new ServiceAccount()
+        .name("sa-2").description("sa-1 test")
     when: "i save it"
       sapi.create(portfolio1Id, superPerson, sa, Opts.empty())
     then:
-      sapi.search(portfolio1Id, "sa-2", null, Opts.empty()).find({it.name == 'sa-2' && sa.description == 'sa-1 test'}).apiKey != null
+      sapi.search(portfolio1Id, "sa-2", null, superPerson, Opts.empty()).find({it.name == 'sa-2' && sa.description == 'sa-1 test'})?.apiKey != null
   }
 
   def "i can reset the key for a service account"() {
     given: "i have a service account"
       def sa = new ServiceAccount().name("sa-reset").description("sa-1 test")
+        .permissions([
+          new ServiceAccountPermission()
+            .permissions([RoleType.READ])
+            .environmentId(environment1.id.toString())
+        ])
     when: "i save it"
       def created = sapi.create(portfolio1Id, superPerson, sa, Opts.empty())
     and: "i reset the key"
       sapi.resetApiKey(created.id)
+    and: "i find the updated api"
+      def search = sapi.search(portfolio1Id, "sa-reset", application1.id.toString(), superPerson,
+        Opts.opts(FillOpts.Permissions, FillOpts.SdkURL))
+    print("search is $search")
+      def resetSa = search.find({it.name == 'sa-reset' && sa.description == 'sa-1 test'})
     then:
       created.apiKey != null
-      sapi.search(portfolio1Id, "sa-reset", null, Opts.empty()).find({it.name == 'sa-reset' && sa.description == 'sa-1 test'}).apiKey != created.apiKey
+      search != null
+      resetSa != null
+      resetSa?.apiKey != created.apiKey
+      !resetSa.permissions.isEmpty()
+      resetSa.permissions.count(p -> p.sdkUrl.contains(resetSa.apiKey)) == resetSa.permissions.size()
   }
 
   def "i can create then delete a service account"() {
@@ -125,7 +150,7 @@ class ServiceAccountSpec extends Specification {
     when: "i delete it"
       def result = sapi.delete(superPerson, created.id)
     and: "try and find it"
-      def search = sapi.search(portfolio1Id, 'sa-delete', null, Opts.empty())
+      def search = sapi.search(portfolio1Id, 'sa-delete', null, superPerson, Opts.empty())
     then:
       created != null
       result
@@ -157,7 +182,7 @@ class ServiceAccountSpec extends Specification {
     when: "i save it"
       sapi.create(portfolio1Id, superPerson, sa, Opts.empty())
     and: "i get the result"
-      def result = sapi.search(portfolio1Id, "sa-1", null, Opts.opts(FillOpts.Permissions)).find({it.name == 'sa-1' && sa.description == 'sa-1 test'})
+      def result = sapi.search(portfolio1Id, "sa-1", application1.id.toString(), superPerson, Opts.opts(FillOpts.Permissions)).find({it.name == 'sa-1' && sa.description == 'sa-1 test'})
     and: "i re-get the two environments with extra data"
       def newEnv1 = environmentApi.get(environment1.id.toString(), Opts.opts(FillOpts.ServiceAccounts, FillOpts.SdkURL), superPerson)
       def newEnv2 = environmentApi.get(environment2.id.toString(), Opts.opts(FillOpts.ServiceAccounts, FillOpts.SdkURL), superPerson)
@@ -175,9 +200,10 @@ class ServiceAccountSpec extends Specification {
         .permissions([RoleType.LOCK, RoleType.UNLOCK]))
       sapi.update(updated.id, superPerson, updated, Opts.empty())
     and: "search for the result"
-      def updatedResult = sapi.search(portfolio1Id, "sa-1", null, Opts.opts(FillOpts.Permissions)).find({it.name == 'sa-1'})
+      def updatedResult = sapi.search(portfolio1Id, "sa-1", application1.id.toString(), superPerson, Opts.opts(FillOpts.Permissions)).find({it.name == 'sa-1'})
       def upd1 = updatedResult.permissions.find({it.environmentId == environment1.id.toString()})
       def upd2 = updatedResult.permissions.find({it.environmentId == environment3.id.toString()})
+      def getted = sapi.get(updatedResult.id, Opts.opts(FillOpts.Permissions))
     then:
       result.permissions.size() == 2
       permE1.permissions.intersect([RoleType.READ, RoleType.CHANGE_VALUE]).size() == 2
@@ -188,15 +214,15 @@ class ServiceAccountSpec extends Specification {
       upd2 != null
       upd1.permissions == [RoleType.CHANGE_VALUE]
       upd2.permissions == [RoleType.LOCK, RoleType.UNLOCK]
-      updatedResult.equals(sapi.get(updatedResult.id, Opts.opts(FillOpts.Permissions)))
+      getted.permissions.each { p -> assert updatedResult.permissions.find(p1 -> p1.id == p.id) == p}
       updatedResult.description == 'sa-2 test'
-      newEnv1.serviceAccountPermission.size() == 1
+      newEnv1.serviceAccountPermission.size() == 2
       newEnv2.serviceAccountPermission.size() == 1
-      newEnv1.serviceAccountPermission.first().getServiceAccount().getName() == 'sa-1'
-      newEnv2.serviceAccountPermission.first().getServiceAccount().getName() == 'sa-1'
-      newEnv1.serviceAccountPermission.first().permissions.containsAll([RoleType.READ, RoleType.CHANGE_VALUE])
-      newEnv2.serviceAccountPermission.first().permissions.containsAll([RoleType.LOCK, RoleType.UNLOCK])
-      newEnv1.serviceAccountPermission.first().sdkUrl.contains("/" + newEnv1.serviceAccountPermission.first().serviceAccount.apiKey)
+      newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'})
+      newEnv2.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'})
+      newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).permissions.containsAll([RoleType.READ, RoleType.CHANGE_VALUE])
+      newEnv2.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).permissions.containsAll([RoleType.LOCK, RoleType.UNLOCK])
+      newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).sdkUrl.contains("/" + newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).serviceAccount.apiKey)
   }
 
   def "I cannot request or update an unknown service account"() {

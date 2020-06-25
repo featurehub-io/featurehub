@@ -243,6 +243,13 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
           path: '/feature-status',
           params: {},
         ),
+        _MenuItem(
+          name: 'Service Accounts',
+          iconData: Feather.slack,
+          iconSize: 24,
+          path: '/service-envs',
+          params: {},
+        )
       ],
     );
   }
@@ -315,16 +322,12 @@ class _MenuItem extends StatelessWidget {
                       child: selected
                           ? Text(' ${name}',
                               style: GoogleFonts.roboto(
-                                textStyle:
+                                  textStyle:
                                       Theme.of(context).textTheme.bodyText2,
                                   fontWeight: FontWeight.w600,
                                   color: Theme.of(context).primaryColor))
-                          : Text(
-                              ' ${name}',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyText2
-                            ),
+                          : Text(' ${name}',
+                              style: Theme.of(context).textTheme.bodyText2),
                     )
                   ],
                 ),

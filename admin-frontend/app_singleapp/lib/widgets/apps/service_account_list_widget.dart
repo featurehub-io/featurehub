@@ -93,7 +93,7 @@ class _ServiceAccountWidget extends StatelessWidget {
             ),
             SizedBox(height: 8.0),
             Container(
-              child: _ServiceAccountEnvironments(
+              child: ServiceAccountEnvironments(
                   serviceAccount: serviceAccount, serviceAccountBloc: bloc),
             )
           ],
@@ -121,11 +121,11 @@ class _ServiceAccountWidget extends StatelessWidget {
   }
 }
 
-class _ServiceAccountEnvironments extends StatelessWidget {
+class ServiceAccountEnvironments extends StatelessWidget {
   final ServiceAccount serviceAccount;
   final ManageServiceAccountsBloc serviceAccountBloc;
 
-  const _ServiceAccountEnvironments(
+  const ServiceAccountEnvironments(
       {Key key,
       @required this.serviceAccount,
       @required this.serviceAccountBloc})

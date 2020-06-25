@@ -251,8 +251,9 @@ class PortfolioStepdefs {
     assert(app != null, 'Failed to find application');
     var environment = await userCommon.findExactEnvironment(envName, app.id);
     assert(environment != null, 'Failed to find environment');
-    ServiceAccount sa =
-        await userCommon.findExactServiceAccount(serviceAccountName, p.id);
+    ServiceAccount sa = await userCommon.findExactServiceAccount(
+        serviceAccountName, p.id,
+        applicationId: environment.applicationId);
     assert(sa != null, 'Failed to find service account');
     RoleType permissionType =
         RoleTypeTypeTransformer.fromJson(permission) ?? RoleType.READ;

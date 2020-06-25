@@ -44,6 +44,9 @@ class Routes {
         handler: handleRouteChangeRequest(featureValues),
         transitionType: TransitionType.fadeIn);
 
+    router.define('/service-envs',
+        handler: handleRouteChangeRequest(serviceEnvsHandler));
+
     //Admin routes
     router.define('/create-user',
         handler: handleRouteChangeRequest(createUser),

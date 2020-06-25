@@ -11,12 +11,14 @@ import 'package:app_singleapp/routes/manage_portfolios_route.dart';
 import 'package:app_singleapp/routes/manage_service_accounts_route.dart';
 import 'package:app_singleapp/routes/manage_users_route.dart';
 import 'package:app_singleapp/routes/register_url_route.dart';
+import 'package:app_singleapp/routes/service_env_route.dart';
 import 'package:app_singleapp/widgets/apps/apps_bloc.dart';
 import 'package:app_singleapp/widgets/apps/manage_app_bloc.dart';
 import 'package:app_singleapp/widgets/apps/manage_service_accounts_bloc.dart';
 import 'package:app_singleapp/widgets/features/feature_status_bloc.dart';
 import 'package:app_singleapp/widgets/group/group_bloc.dart';
 import 'package:app_singleapp/widgets/portfolio/portfolio_bloc.dart';
+import 'package:app_singleapp/widgets/service-accounts/service_accounts_env_bloc.dart';
 import 'package:app_singleapp/widgets/simple_widget.dart';
 import 'package:app_singleapp/widgets/user/common/select_portfolio_group_bloc.dart';
 import 'package:app_singleapp/widgets/user/create/create_user_bloc.dart';
@@ -109,6 +111,14 @@ Widget featureStatus(ManagementRepositoryClientBloc mrBloc, {params}) {
 Widget apps(mrBloc, {params}) {
   return BlocProvider<AppsBloc>(
       creator: (_context, _bag) => AppsBloc(mrBloc), child: AppsRoute());
+}
+
+Widget serviceEnvsHandler(ManagementRepositoryClientBloc mrBloc,
+    {Map<String, List<String>> params}) {
+  return BlocProvider<ServiceAccountEnvBloc>(
+    creator: (_c, _b) => ServiceAccountEnvBloc(mrBloc),
+    child: ServiceAccountEnvRoute(),
+  );
 }
 
 Widget manageApp(mrBloc, {params}) {

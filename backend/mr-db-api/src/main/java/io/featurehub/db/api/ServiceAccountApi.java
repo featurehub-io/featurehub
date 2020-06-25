@@ -10,7 +10,12 @@ public interface ServiceAccountApi {
 
   ServiceAccount update(String id, Person updater, ServiceAccount serviceAccount, Opts opts) throws OptimisticLockingException;
 
-  List<ServiceAccount> search(String portfolioId, String filter, String applicationId, Opts opts);
+  /**
+   * This has to determine if this user has access based on what they are asking for. If they have any access to the
+   * portfolio, they should be able to see the service accounts. If they have access to specific environments they
+   * should see permissions for each of those service accounts for those environments and sdk-urls.
+   */
+  List<ServiceAccount> search(String portfolioId, String filter, String applicationId, Person currentPerson, Opts opts);
 
   ServiceAccount resetApiKey(String id);
 
