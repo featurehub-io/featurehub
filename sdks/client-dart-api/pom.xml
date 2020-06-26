@@ -31,8 +31,9 @@
 
   <licenses>
     <license>
-      <name>Apache 2 with Commons Clause</name>
-      <url>https://github.com/featurehub-io/featurehub/blob/master/LICENSE.txt</url>
+      <name>MIT</name>
+      <url>https://opensource.org/licenses/MIT</url>
+      <comments>This code resides in the customer's codebase and therefore has an MIT license.</comments>
     </license>
   </licenses>
 

@@ -8,4 +8,12 @@
   <artifactId>todo-api</artifactId>
 	<version>1.1-SNAPSHOT</version>
 
+  <licenses>
+    <license>
+      <name>MIT</name>
+      <url>https://opensource.org/licenses/MIT</url>
+      <comments>This code resides in the customer's codebase and therefore has an MIT license.</comments>
+    </license>
+  </licenses>
+
 </project>
