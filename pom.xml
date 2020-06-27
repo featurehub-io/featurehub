@@ -51,6 +51,7 @@
     <module>backend/mr-api</module>
     <module>backend/mr-db-api</module>
     <module>backend/mr-db-sql</module>
+    <module>backend/mr-streaming-api</module>
     <module>admin-frontend/app_mr_layer</module>
     <module>backend/mr-publish-api</module>
     <module>backend/party-server</module>
