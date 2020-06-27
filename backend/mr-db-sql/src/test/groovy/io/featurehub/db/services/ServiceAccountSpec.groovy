@@ -208,12 +208,12 @@ class ServiceAccountSpec extends Specification {
       result.permissions.size() == 2
       permE1.permissions.intersect([RoleType.READ, RoleType.CHANGE_VALUE]).size() == 2
       permE1.environmentId == environment1.id.toString()
-      permE2.permissions == [RoleType.LOCK, RoleType.UNLOCK]
+      permE2.permissions == [RoleType.LOCK, RoleType.UNLOCK, RoleType.READ]
       permE2.environmentId == environment2.id.toString()
       upd1 != null
       upd2 != null
-      upd1.permissions == [RoleType.CHANGE_VALUE]
-      upd2.permissions == [RoleType.LOCK, RoleType.UNLOCK]
+      upd1.permissions == [RoleType.CHANGE_VALUE, RoleType.READ]
+      upd2.permissions == [RoleType.LOCK, RoleType.UNLOCK, RoleType.READ]
       getted.permissions.each { p -> assert updatedResult.permissions.find(p1 -> p1.id == p.id) == p}
       updatedResult.description == 'sa-2 test'
       newEnv1.serviceAccountPermission.size() == 2
@@ -221,7 +221,7 @@ class ServiceAccountSpec extends Specification {
       newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'})
       newEnv2.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'})
       newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).permissions.containsAll([RoleType.READ, RoleType.CHANGE_VALUE])
-      newEnv2.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).permissions.containsAll([RoleType.LOCK, RoleType.UNLOCK])
+      newEnv2.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).permissions.containsAll([RoleType.LOCK, RoleType.UNLOCK, RoleType.READ])
       newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).sdkUrl.contains("/" + newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).serviceAccount.apiKey)
   }
 
