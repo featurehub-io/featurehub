@@ -6,6 +6,23 @@ designed to be used by testing accounts to toggle features on and off during tes
 
 Because it is server side events, there is always a "name" and "data".
 
+== Configuration
+
+As always on Java Servers for FeatureHub, this is done via system properties or via the -P{filename} command line
+parameter. In docker images this is a well defined location `-P/etc/common-config/common.properties` or 
+`-P/etc/app-config/application.properties`. However, if you are running it locally, run the test `SseAppRunner` and
+there you will find it will load properties from your home directory (`~/.featurehub/dacha.properties` - it is sharing
+them with Dacha).
+
+Current properties are:
+
+* `nats.url` - this indicates where to find NATS. Defaults to `nats://localhost:4222` if you haven't specified it.
+* `update.pool-size` - this indicates the pool size of the executor used to process feature change requests coming from the
+MR server. It defaults to 10. This means an update coming in from NATs will split into 10 concurrent threads spitting out to 10 listening clients
+at a time.
+* `listen.pool-size` - this indicates the pool size of the executor used to process incoming client requests from the
+web. It is not shared with PUT updates for features.
+
 == GET Features
 
 A client attempts to get the list of features by providing a named cache, an environment and an apiKey. This
@@ -59,3 +76,5 @@ detect and correct for.
 
 It will then listen to each named cache list of feature updates. In the future this will change to listen to only
 ones it cares about (based on connected clients). 
+
+=== Things to consider

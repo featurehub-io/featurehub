@@ -75,6 +75,12 @@
     </dependency>
 
     <dependency>
+      <groupId>io.featurehub.mr</groupId>
+      <artifactId>mr-streaming-api</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
       <groupId>io.featurehub.composites</groupId>
       <artifactId>composite-test</artifactId>
       <version>1.1-SNAPSHOT</version>

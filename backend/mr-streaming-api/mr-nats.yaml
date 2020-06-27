@@ -1,0 +1,53 @@
+openapi: 3.0.1
+info:
+  title: Management Messaging API
+  description: This describes the API clients use for accessing features
+  version: "1.1.1"
+#  CRUD for portfolios, environments, features, service account, people, and groups (edited)
+#  roles are fixed
+#  then people<->group association
+#  and group<->role association
+paths:
+  /nats/feature-update:
+    get:
+      tags:
+        - FeatureUpdateService
+      description: "This is generated without APIs and is used while there is no model generation for AsyncAPI"
+      operationId: updateFeature
+      responses:
+        "200":
+          description: "The superuser group presuming the organization exists"
+          content:
+            application/json:
+              schema:
+                type: string
+components:
+  schemas:
+    StreamedFeatureUpdate:
+      type: object
+      description: "This object is passed on the nats stream /named-cache/updates from the edge client. Note that
+            version is not passed as the Edge client is intended for testing only, and it is not expected to know
+            the version of the feature."
+      required:
+        - apiKey
+        - environmentId
+        - featureKey
+        - value
+        - updatingValue
+      properties:
+        apiKey:
+          type: string
+        environmentId:
+          type: string
+        featureKey:
+          type: string
+        valueBoolean:
+          type: boolean
+        valueString:
+          type: string
+        valueNumber:
+          type: number
+        updatingValue:
+          type: boolean
+        lock:
+          type: boolean

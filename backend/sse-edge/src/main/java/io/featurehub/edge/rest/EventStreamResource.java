@@ -3,17 +3,28 @@ package io.featurehub.edge.rest;
 import io.featurehub.edge.ServerConfig;
 import io.featurehub.edge.bucket.EventOutputBucketService;
 import io.featurehub.edge.client.TimedBucketClientConnection;
+import io.featurehub.mr.messaging.StreamedFeatureUpdate;
+import io.featurehub.mr.model.EdgeInitPermissionResponse;
+import io.featurehub.mr.model.Feature;
+import io.featurehub.mr.model.FeatureValue;
+import io.featurehub.mr.model.RoleType;
+import io.featurehub.sse.model.FeatureStateUpdate;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.SseFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Response;
+import java.math.BigDecimal;
 
 @Path("/features")
 public class EventStreamResource {
@@ -32,7 +43,9 @@ public class EventStreamResource {
   @GET
   @Path("{namedCache}/{environmentId}/{apiKey}")
   @Produces(SseFeature.SERVER_SENT_EVENTS)
-  public EventOutput features(@PathParam("namedCache") String namedCache, @PathParam("environmentId") String envId, @PathParam("apiKey") String apiKey) {
+  public EventOutput features(@PathParam("namedCache") String namedCache,
+                              @PathParam("environmentId") String envId,
+                              @PathParam("apiKey") String apiKey, FeatureStateUpdate update) {
     EventOutput o = new EventOutput();
 
     try {
@@ -51,30 +64,122 @@ public class EventStreamResource {
     return o;
   }
 
-//  @PUT
-//  @Path("/{feature}/{state}")
-//  public Response update(@PathParam("feature") String feature, @PathParam("state") String state) {
-//    features.stream().filter(f -> f.name.equals(feature)).findFirst().ifPresent(f -> {
-//      f.state = FeatureState.StateEnum.valueOf(state);
-//      List<EventOutput> bad = new ArrayList<>();
-//      outputs.parallelStream().forEach(o -> {
-//        if (o.isClosed()) {
-//          bad.add(o);
-//        } else {
-//          final OutboundEvent.Builder eventBuilder = new OutboundEvent.Builder();
-//          eventBuilder.name("one");
-//          eventBuilder.data(f.toString());
-//          final OutboundEvent event = eventBuilder.build();
-//          try {
-//            o.write(event);
-//          } catch (IOException e) {
-//            bad.add(o);
-//          }
-//        }
-//      });
-//      outputs.removeAll(bad);
-//    });
-//
-//    return Response.ok().build();
-//  }
+  /**
+   * We do a double check of all permissions and values at Edge to ensure that as much load as possible
+   * is kept off MR. MR will do these checks against this set of permissions again, but updates are done via
+   * NATs and not via REST.
+   */
+  @PUT
+  @Path("{namedCache}/{environmentId}/{apiKey}/{featureKey}")
+  public Response update(@PathParam("namedCache") String namedCache,
+                         @PathParam("environmentId") String envId,
+                         @PathParam("apiKey") String apiKey,
+                         @PathParam("featureKey") String featureKey,
+                         FeatureStateUpdate featureStateUpdate) {
+
+    final EdgeInitPermissionResponse perms = serverConfig.requestPermission(namedCache, apiKey, envId, featureKey);
+
+    if (perms == null) {
+      return Response.status(Response.Status.NOT_FOUND).build();
+    }
+
+    if (perms.getRoles().isEmpty() || (perms.getRoles().size() == 1 && perms.getRoles().get(0) == RoleType.READ)) {
+      return Response.status(Response.Status.FORBIDDEN).build();
+    }
+
+    if (Boolean.TRUE.equals(featureStateUpdate.getLock())) {
+      if (!perms.getRoles().contains(RoleType.LOCK)) {
+        return Response.status(Response.Status.FORBIDDEN).build();
+      }
+    } else if (Boolean.FALSE.equals(featureStateUpdate.getLock())) {
+      if (!perms.getRoles().contains(RoleType.UNLOCK)) {
+        return Response.status(Response.Status.FORBIDDEN).build();
+      }
+    }
+
+    if (featureStateUpdate.getValue() != null) {
+      featureStateUpdate.setUpdateValue(Boolean.TRUE);
+    }
+
+    // nothing to do?
+    if (featureStateUpdate.getLock() == null && (featureStateUpdate.getUpdateValue() == null || Boolean.FALSE.equals(featureStateUpdate.getUpdateValue()) )) {
+      return Response.status(Response.Status.BAD_REQUEST).build();
+    }
+
+    if (Boolean.TRUE.equals(featureStateUpdate.getUpdateValue())) {
+      if (!perms.getRoles().contains(RoleType.CHANGE_VALUE)) {
+        return Response.status(Response.Status.FORBIDDEN).build();
+      }
+    }
+
+    System.out.println("FEATURE VALUE: " + perms.getFeature().getValue());
+    System.out.println("UPDATE: " + featureStateUpdate.toString());
+
+    final StreamedFeatureUpdate upd = new StreamedFeatureUpdate()
+      .apiKey(apiKey)
+      .environmentId(envId)
+      .updatingValue(featureStateUpdate.getUpdateValue())
+      .lock(featureStateUpdate.getLock())
+      .featureKey(featureKey);
+
+    // now update our internal value we will be sending, and also check
+    // if aren't actually changing anything
+    final FeatureValue value = perms.getFeature().getValue();
+    boolean notActuallyChanging = upd.getLock() != null && upd.getLock().equals(value.getLocked()) ||
+      (upd.getLock() == null && value.getLocked() == null);
+    if (Boolean.TRUE.equals(featureStateUpdate.getUpdateValue())) {
+
+      if (featureStateUpdate.getValue() != null) {
+        final String val = featureStateUpdate.getValue().toString();
+
+        switch (perms.getFeature().getFeature().getValueType()) {
+          case BOOLEAN:
+            // if it is true, TRUE, t its true.
+            upd.valueBoolean(val.toLowerCase().startsWith("t"));
+            notActuallyChanging = upd.getValueBoolean().equals(value.getValueBoolean());
+            break;
+          case STRING:
+            upd.valueString(val);
+            notActuallyChanging = upd.getValueString().equals(value.getValueString());
+            break;
+          case JSON:
+            // TODO: implement JSON Schema for JSON data and validate it here
+            notActuallyChanging = upd.getValueString().equals(value.getValueJson());
+            break;
+          case NUMBER:
+            try {
+              upd.valueNumber(new BigDecimal(val));
+              notActuallyChanging = upd.getValueNumber().equals(value.getValueNumber());
+            } catch (Exception e) {
+              return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+            break;
+        }
+      } else {
+        switch (perms.getFeature().getFeature().getValueType()) {
+          case BOOLEAN:
+            // a null boolean is not valid
+            return Response.status(Response.Status.PRECONDITION_FAILED).build();
+          case STRING:
+            notActuallyChanging = (value.getValueString() == null);
+            break;
+          case NUMBER:
+            notActuallyChanging = (value.getValueNumber() == null);
+            break;
+          case JSON:
+            notActuallyChanging = (value.getValueJson() == null);
+            break;
+        }
+      }
+    }
+
+    if (notActuallyChanging) {
+      return Response.status(Response.Status.ACCEPTED).build();
+    }
+
+    log.debug("publishing update on {} for {}", namedCache, upd);
+    serverConfig.publishFeatureChangeRequest(upd, namedCache);
+
+    return Response.ok().build();
+  }
 }

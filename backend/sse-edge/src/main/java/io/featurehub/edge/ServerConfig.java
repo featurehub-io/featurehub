@@ -4,9 +4,13 @@ import cd.connect.app.config.ConfigKey;
 import cd.connect.app.config.DeclaredConfigResolver;
 import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.featurehub.dacha.api.CacheJsonMapper;
 import io.featurehub.edge.client.TimedBucketClientConnection;
+import io.featurehub.mr.messaging.StreamedFeatureUpdate;
+import io.featurehub.mr.model.EdgeInitPermissionResponse;
 import io.featurehub.mr.model.EdgeInitRequest;
+import io.featurehub.mr.model.EdgeInitRequestCommand;
 import io.featurehub.mr.model.EdgeInitResponse;
 import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.publish.ChannelConstants;
@@ -31,7 +35,7 @@ import java.util.concurrent.Executors;
 class NamedCacheListener {
   private static final Logger log = LoggerFactory.getLogger(NamedCacheListener.class);
   private int listenerCount;
-  private String subject;
+  private final String subject;
   Dispatcher dispatcher;
 
   synchronized void inc() {
@@ -67,9 +71,12 @@ public class ServerConfig {
   private static final Logger log = LoggerFactory.getLogger(ServerConfig.class);
   @ConfigKey("nats.urls")
   public String natsServer = "nats://localhost:4222";
-  private ExecutorService executor;
-  @ConfigKey("cache.pool-size")
-  Integer cachePoolSize = 10;
+  private ExecutorService updateExecutor;
+  private ExecutorService listenExecutor;
+  @ConfigKey("update.pool-size")
+  Integer updatePoolSize = 10;
+  @ConfigKey("listen.pool-size")
+  Integer listenPoolSize = 10;
   private Connection connection;
   // environmentId, list of connections for that environment
   private Map<String, List<TimedBucketClientConnection>> clientBuckets = new ConcurrentHashMap<>();
@@ -87,9 +94,10 @@ public class ServerConfig {
       throw new RuntimeException(e);
     }
 
-    executor = Executors.newFixedThreadPool(cachePoolSize);
+    updateExecutor = Executors.newFixedThreadPool(updatePoolSize);
+    listenExecutor = Executors.newFixedThreadPool(listenPoolSize);
 
-    log.info("connected to NATS on `{}` with cache pool size of `{}", natsServer, cachePoolSize);
+    log.info("connected to NATS on `{}` with cache pool size of `{}", natsServer, updatePoolSize);
 
     ApplicationLifecycleManager.registerListener(trans -> {
       if (trans.next == LifecycleStatus.TERMINATING) {
@@ -122,6 +130,16 @@ public class ServerConfig {
     }
   }
 
+  public void publishFeatureChangeRequest(StreamedFeatureUpdate featureUpdate, String namedCache) {
+    String subject = "/" + namedCache + "/" + "feature-update";
+
+    try {
+      connection.publish(subject, CacheJsonMapper.mapper.writeValueAsBytes(featureUpdate));
+    } catch (JsonProcessingException e) {
+      log.error("Unable to send feature-update message to server");
+    }
+  }
+
 
   private void updateFeature(Message msg) {
     try {
@@ -130,7 +148,7 @@ public class ServerConfig {
       final List<TimedBucketClientConnection> tbc = clientBuckets.get(fv.getEnvironmentId());
       if (tbc != null) {
         tbc.forEach(b -> {
-          executor.submit(() -> {
+          updateExecutor.submit(() -> {
             b.notifyFeature(fv);
           });
         });
@@ -145,8 +163,11 @@ public class ServerConfig {
 
     client.registerEjection(this::clientRemoved);
 
-    executor.submit(() -> {
-      EdgeInitRequest request = new EdgeInitRequest().apiKey(client.getApiKey()).environmentId(client.getEnvironmentId());
+    listenExecutor.submit(() -> {
+      EdgeInitRequest request = new EdgeInitRequest()
+            .command(EdgeInitRequestCommand.LISTEN)
+            .apiKey(client.getApiKey())
+            .environmentId(client.getEnvironmentId());
 
       try {
         String subject = client.getNamedCache() + "/" + ChannelConstants.EDGE_CACHE_CHANNEL;
@@ -171,6 +192,24 @@ public class ServerConfig {
         client.failed("unable to communicate with named cache.");
       }
     });
+  }
+
+  public EdgeInitPermissionResponse requestPermission(String namedCache, String apiKey, String environmentId, String featureKey) {
+    String subject = namedCache + "/" + ChannelConstants.EDGE_CACHE_CHANNEL;
+    try {
+      Message response = connection.request(subject,
+        CacheJsonMapper.mapper.writeValueAsBytes(new EdgeInitRequest().command(EdgeInitRequestCommand.PERMISSION).apiKey(apiKey).environmentId(environmentId).featureKey(featureKey)),
+        Duration.ofMillis(2000)
+      );
+
+      if (response != null) {
+        return CacheJsonMapper.mapper.readValue(response.getData(), EdgeInitPermissionResponse.class);
+      }
+    } catch (Exception e) {
+      log.error("Failed request for cache {}, apiKey {}, envId {}, key {}", namedCache, apiKey, environmentId, featureKey);
+    }
+
+    return null;
   }
 
   // responsible for removing a client connection once it has been closed

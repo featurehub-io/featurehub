@@ -7,3 +7,10 @@ components:
         - STRING
         - NUMBER
         - JSON
+    RoleType:
+      type: string
+      enum:
+        - READ
+        - LOCK
+        - UNLOCK
+        - CHANGE_VALUE

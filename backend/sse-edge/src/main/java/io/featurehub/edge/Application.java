@@ -9,17 +9,9 @@ import cd.connect.jersey.common.InfrastructureConfiguration;
 import cd.connect.jersey.common.LoggingConfiguration;
 import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
-import io.featurehub.edge.bucket.EventOutputBucketService;
-import io.featurehub.edge.rest.EventStreamResource;
-import io.featurehub.mr.model.EdgeInitRequest;
 import io.prometheus.client.hotspot.DefaultExports;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.server.spi.Container;
-import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
 
-import javax.inject.Singleton;
 import java.net.URI;
 
 public class Application {
@@ -48,7 +40,7 @@ public class Application {
       .register(CommonConfiguration.class)
       .register(CorsFilter.class)
       .register(LoggingConfiguration.class)
-      .register(EdgeInitRequest.class)
+      .register(EdgeFeature.class)
       ;
 
     // this has a default grace period of 10 seconds

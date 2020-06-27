@@ -97,7 +97,7 @@ public class DbCacheSource implements CacheSource {
   }
 
   private ServiceAccount fillServiceAccount(DbServiceAccount sa) {
-    return convertUtils.toServiceAccount(sa, Opts.opts(FillOpts.Permissions));
+    return convertUtils.toServiceAccount(sa, Opts.opts(FillOpts.Permissions, FillOpts.IgnoreEmptyPermissions));
   }
 
   private QDbServiceAccount serviceAccountsByCacheName(String cacheName) {
@@ -120,9 +120,11 @@ public class DbCacheSource implements CacheSource {
       log.info("publishing {} environments to cache {}", count, cacheName);
 
       envFinder.findEach(env -> {
-        EnvironmentCacheItem eci = fillEnvironmentCacheItem(count, env, PublishAction.CREATE);
+        executor.submit(() -> {
+          EnvironmentCacheItem eci = fillEnvironmentCacheItem(count, env, PublishAction.CREATE);
 
-        cacheBroadcast.publishEnvironment(eci);
+          cacheBroadcast.publishEnvironment(eci);
+        });
       });
     }
   }
@@ -139,12 +141,11 @@ public class DbCacheSource implements CacheSource {
       .action(publishAction)
       .environment(convertUtils.toEnvironment(env, environmentOpts, features))
       .featureValues(features.stream().map(f -> convertUtils.toFeatureValue(f, envFeatures.get(f.getId()))).collect(Collectors.toList()))
-      .serviceAccounts(env.getServiceAccountEnvironments().stream().map(s -> new ServiceAccount().id(s.getServiceAccount().getId().toString())).collect(Collectors.toList()))
+      .serviceAccounts(env.getServiceAccountEnvironments().stream().map(s ->
+            new ServiceAccount()
+              .id(s.getServiceAccount().getId().toString())
+              .apiKey(s.getServiceAccount().getApiKey())).collect(Collectors.toList()))
       .count(count);
-
-    if (eci.getEnvironment().getId().equals("0cff6cf3-e03b-41ba-a3fa-683df70bd6d5")) {
-      log.info("env {}", eci.toString());
-    }
 
     return eci;
   }

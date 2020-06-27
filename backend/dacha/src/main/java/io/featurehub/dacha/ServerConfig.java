@@ -126,7 +126,10 @@ public class ServerConfig {
   // listen to the /cache-name/edge queue and dispatch incoming requests via the message handler
   public void listenForEnvironmentRequests(IncomingEdgeRequest handler) {
     final Dispatcher dispatcher = getConnection().createDispatcher((msg) -> {
-      connection.publish(msg.getReplyTo(), handler.request(msg));
+      final byte[] response = handler.request(msg);
+      if (response != null) {
+        connection.publish(msg.getReplyTo(), response);
+      }
     });
     final String subject = ChannelNames.cache(name, ChannelConstants.EDGE_CACHE_CHANNEL);
     final Dispatcher subscribe = dispatcher.subscribe(subject);
