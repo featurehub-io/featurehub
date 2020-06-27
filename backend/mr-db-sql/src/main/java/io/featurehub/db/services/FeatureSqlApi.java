@@ -409,6 +409,13 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
         if (environments.get(env.getId()) == null) {
           environments.put(env.getId(), env);
           roles.put(env.getId(), personAdmin ? adminRoles : emptyRoles);
+          if (personAdmin) {
+            DbEnvironmentFeatureStrategy strategy = strategies.remove(env.getId());
+
+            if (strategy != null) {
+              strategiesResult.put(env.getId(), strategy);
+            }
+          }
         }
       });
     }

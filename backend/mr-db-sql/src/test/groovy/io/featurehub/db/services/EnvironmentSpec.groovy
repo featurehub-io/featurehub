@@ -202,4 +202,14 @@ class EnvironmentSpec extends Specification {
       result2.find({e -> e.priorEnvironmentId != null}) == null
   }
 
+  def "a persons permissions to an environment reflect the groups they are in"() {
+    given: "i have an average joe"
+      def averageJoe = new DbPerson.Builder().email("averagejoe-env-1@featurehub.io").name("Average Joe").build()
+      database.save(averageJoe)
+      def averageJoeMemberOfPortfolio1 = convertUtils.toPerson(averageJoe)
+    and: "i create a general portfolio group"
+      groupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id.toString(), new Group().name("fsspec-1-p1"), superPerson)
+      groupSqlApi.addPersonToGroup(groupInPortfolio1.id, averageJoeMemberOfPortfolio1.id.id, Opts.empty())
+
+  }
 }
