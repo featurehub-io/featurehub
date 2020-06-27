@@ -231,21 +231,21 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
       children: [
         _MenuItem(
           name: 'Applications',
-          iconData: Icons.apps,
-          iconSize: 26,
+          iconData: Feather.grid,
+          iconSize: 24,
           path: '/applications',
           params: {},
         ),
         _MenuItem(
           name: 'Features',
-          iconData: Feather.sliders,
+          iconData: Feather.flag,
           iconSize: 24,
           path: '/feature-status',
           params: {},
         ),
         _MenuItem(
           name: 'Service Accounts',
-          iconData: Feather.slack,
+          iconData: AntDesign.key,
           iconSize: 24,
           path: '/service-envs',
           params: {},

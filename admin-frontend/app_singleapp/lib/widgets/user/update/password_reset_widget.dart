@@ -37,7 +37,8 @@ class _ResetPasswordState extends State<ResetPasswordWidget> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    Image.asset('FeatureHub-icon.png', width: 40, height: 40),
+                    Image.asset('assets/logo/FeatureHub-icon.png',
+                        width: 40, height: 40),
                   ],
                 ),
               ),

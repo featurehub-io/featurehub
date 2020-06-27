@@ -77,8 +77,10 @@ class _SigninState extends State<SigninWidget> {
                         repeats: 0,
                         builder: (anim) => Transform.rotate(
                               angle: anim.value,
-                              child: Image.asset('FeatureHub-icon.png',
-                                  width: 40, height: 40),
+                              child: Image.asset(
+                                  'assets/logo/FeatureHub-icon.png',
+                                  width: 40,
+                                  height: 40),
                             ))
                   ],
                 ),
