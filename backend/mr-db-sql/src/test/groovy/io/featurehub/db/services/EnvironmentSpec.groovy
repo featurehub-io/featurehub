@@ -34,6 +34,8 @@ class EnvironmentSpec extends Specification {
   @Shared Application app1
   @Shared Application app2
   @Shared Application appTreeEnvs
+  @Shared Group groupInPortfolio1
+  @Shared GroupSqlApi groupSqlApi
 
 
   def setupSpec() {
@@ -43,7 +45,7 @@ class EnvironmentSpec extends Specification {
     convertUtils = new ConvertUtils(database)
     def archiveStrategy = new DbArchiveStrategy(database, convertUtils, Mock(CacheSource))
     personSqlApi = new PersonSqlApi(database, convertUtils, archiveStrategy)
-    def groupSqlApi = new GroupSqlApi(database, convertUtils, archiveStrategy)
+    roupSqlApi = new GroupSqlApi(database, convertUtils, archiveStrategy)
     def organizationSqlApi = new OrganizationSqlApi(database, convertUtils)
 
     dbSuperPerson = Finder.findByEmail("irina@featurehub.io")
@@ -75,6 +77,10 @@ class EnvironmentSpec extends Specification {
     database.save(portfolio1)
     portfolio2 = new DbPortfolio.Builder().name("p1-app-2-env1").whoCreated(dbSuperPerson).organization(organization).build()
     database.save(portfolio2)
+
+    // create the portfolio group
+    groupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id.toString(), new Group().name("p1-app-1-env1-portfolio-group").admin(true), superPerson)
+    groupSqlApi.addPersonToGroup(groupInPortfolio1.id, superPerson.id.id, Opts.empty())
 
     app1 = appApi.createApplication(portfolio1.id.toString(), new Application().name('app-1-env'), superPerson)
     assert app1 != null && app1.id != null
@@ -202,14 +208,37 @@ class EnvironmentSpec extends Specification {
       result2.find({e -> e.priorEnvironmentId != null}) == null
   }
 
-  def "a persons permissions to an environment reflect the groups they are in"() {
+  def "a new person in a new group that is not attached to environments has no roles"() {
     given: "i have an average joe"
       def averageJoe = new DbPerson.Builder().email("averagejoe-env-1@featurehub.io").name("Average Joe").build()
       database.save(averageJoe)
       def averageJoeMemberOfPortfolio1 = convertUtils.toPerson(averageJoe)
     and: "i create a general portfolio group"
-      groupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id.toString(), new Group().name("fsspec-1-p1"), superPerson)
+      groupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id.toString(), new Group().name("envspec-p1-plain-portfolio-group"), superPerson)
       groupSqlApi.addPersonToGroup(groupInPortfolio1.id, averageJoeMemberOfPortfolio1.id.id, Opts.empty())
+    and: "i have an environment"
+      def env = envApi.create(new Environment().name("env-1-perm-1").description("1"), appTreeEnvs, superPerson)
+    when: "i ask for the roles"
+      def perms = envApi.personRoles(averageJoeMemberOfPortfolio1, env.id.toString())
+    then: "the permissions to the portfolio are empty"
+      perms.environmentRoles.isEmpty()
+      perms.applicationRoles.isEmpty()
+  }
 
+  def "a new person in a group that has roles has the roles that group has to that environment"() {
+    given: "i have an average joe"
+      def averageJoe = new DbPerson.Builder().email("averagejoe-env-1@featurehub.io").name("Average Joe").build()
+      database.save(averageJoe)
+      def averageJoeMemberOfPortfolio1 = convertUtils.toPerson(averageJoe)
+    and: "i create a general portfolio group"
+      groupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id.toString(), new Group().name("envspec-p1-plain-portfolio-group"), superPerson)
+      groupSqlApi.addPersonToGroup(groupInPortfolio1.id, averageJoeMemberOfPortfolio1.id.id, Opts.empty())
+    and: "i have an environment"
+      def env = envApi.create(new Environment().name("env-1-perm-1").description("1"), appTreeEnvs, superPerson)
+    when: "i ask for the roles"
+      def perms = envApi.personRoles(averageJoeMemberOfPortfolio1, env.id.toString())
+    then: "the permissions to the portfolio are empty"
+      perms.environmentRoles.isEmpty()
+      perms.applicationRoles.isEmpty()
   }
 }
