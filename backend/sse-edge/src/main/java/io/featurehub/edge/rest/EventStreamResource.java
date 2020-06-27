@@ -109,11 +109,11 @@ public class EventStreamResource {
     if (Boolean.TRUE.equals(featureStateUpdate.getUpdateValue())) {
       if (!perms.getRoles().contains(RoleType.CHANGE_VALUE)) {
         return Response.status(Response.Status.FORBIDDEN).build();
+      } else if (Boolean.TRUE.equals(perms.getFeature().getValue().getLocked()) && !Boolean.FALSE.equals(featureStateUpdate.getLock())) {
+        // its locked and you are trying to change its value and not unlocking it at the same time, that makes no sense
+        return Response.status(Response.Status.PRECONDITION_FAILED).build();
       }
     }
-
-    System.out.println("FEATURE VALUE: " + perms.getFeature().getValue());
-    System.out.println("UPDATE: " + featureStateUpdate.toString());
 
     final StreamedFeatureUpdate upd = new StreamedFeatureUpdate()
       .apiKey(apiKey)
@@ -125,8 +125,8 @@ public class EventStreamResource {
     // now update our internal value we will be sending, and also check
     // if aren't actually changing anything
     final FeatureValue value = perms.getFeature().getValue();
-    boolean notActuallyChanging = upd.getLock() != null && upd.getLock().equals(value.getLocked()) ||
-      (upd.getLock() == null && value.getLocked() == null);
+    boolean lockChanging = upd.getLock() != null && !upd.getLock().equals(value.getLocked());
+    boolean valueNotActuallyChanging = false;
     if (Boolean.TRUE.equals(featureStateUpdate.getUpdateValue())) {
 
       if (featureStateUpdate.getValue() != null) {
@@ -136,20 +136,20 @@ public class EventStreamResource {
           case BOOLEAN:
             // if it is true, TRUE, t its true.
             upd.valueBoolean(val.toLowerCase().startsWith("t"));
-            notActuallyChanging = upd.getValueBoolean().equals(value.getValueBoolean());
+            valueNotActuallyChanging = upd.getValueBoolean().equals(value.getValueBoolean());
             break;
           case STRING:
             upd.valueString(val);
-            notActuallyChanging = upd.getValueString().equals(value.getValueString());
+            valueNotActuallyChanging = upd.getValueString().equals(value.getValueString());
             break;
           case JSON:
             // TODO: implement JSON Schema for JSON data and validate it here
-            notActuallyChanging = upd.getValueString().equals(value.getValueJson());
+            valueNotActuallyChanging = upd.getValueString().equals(value.getValueJson());
             break;
           case NUMBER:
             try {
               upd.valueNumber(new BigDecimal(val));
-              notActuallyChanging = upd.getValueNumber().equals(value.getValueNumber());
+              valueNotActuallyChanging = upd.getValueNumber().equals(value.getValueNumber());
             } catch (Exception e) {
               return Response.status(Response.Status.BAD_REQUEST).build();
             }
@@ -161,20 +161,27 @@ public class EventStreamResource {
             // a null boolean is not valid
             return Response.status(Response.Status.PRECONDITION_FAILED).build();
           case STRING:
-            notActuallyChanging = (value.getValueString() == null);
+            valueNotActuallyChanging = (value.getValueString() == null);
             break;
           case NUMBER:
-            notActuallyChanging = (value.getValueNumber() == null);
+            valueNotActuallyChanging = (value.getValueNumber() == null);
             break;
           case JSON:
-            notActuallyChanging = (value.getValueJson() == null);
+            valueNotActuallyChanging = (value.getValueJson() == null);
             break;
         }
       }
     }
 
-    if (notActuallyChanging) {
+    if (valueNotActuallyChanging && !lockChanging) {
       return Response.status(Response.Status.ACCEPTED).build();
+    }
+
+    if (valueNotActuallyChanging) {
+      upd.updatingValue(null);
+      upd.valueBoolean(null);
+      upd.valueNumber(null);
+      upd.valueString(null);
     }
 
     log.debug("publishing update on {} for {}", namedCache, upd);

@@ -7,6 +7,7 @@ import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.OptimisticLockingException;
 import io.featurehub.db.api.Opts;
 import io.featurehub.db.api.PersonFeaturePermission;
+import io.featurehub.db.listener.FeatureUpdateBySDKApi;
 import io.featurehub.db.model.DbAcl;
 import io.featurehub.db.model.DbApplication;
 import io.featurehub.db.model.DbApplicationFeature;
@@ -50,7 +51,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class FeatureSqlApi implements FeatureApi {
+public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
   private static final Logger log = LoggerFactory.getLogger(FeatureSqlApi.class);
   private final Database database;
   private final ConvertUtils convertUtils;
@@ -288,6 +289,55 @@ public class FeatureSqlApi implements FeatureApi {
       deleteStrategies.parallelStream().forEach(strategy -> {
         cacheSource.deleteFeatureChange(strategy.getFeature(), strategy.getEnvironment().getId().toString());
       });
+    }
+  }
+
+  @Override
+  public void updateFeature(String sdkUrl, String envId, String featureKey, boolean updatingValue, Function<FeatureValueType, FeatureValue> buildFeatureValue) {
+    // not checking permissions, edge checks those
+    UUID eid = ConvertUtils.ifUuid(envId);
+    if (eid != null) {
+      DbApplicationFeature feature = new QDbApplicationFeature().parentApplication.environments.id.eq(eid).key.eq(featureKey).findOne();
+
+      if (feature != null) {
+        DbEnvironmentFeatureStrategy fv = new QDbEnvironmentFeatureStrategy().environment.id.eq(eid).feature.eq(feature).findOne();
+
+        FeatureValue newValue = buildFeatureValue.apply(feature.getValueType());
+
+        boolean saveNew = (fv == null);
+
+        if (saveNew) { // creating
+          fv = new DbEnvironmentFeatureStrategy.Builder()
+            .environment(new QDbEnvironment().id.eq(eid).findOne())
+            .feature(feature)
+            .enabledStrategy(newValue.getRolloutStrategy())
+            .locked(true)
+            .build();
+        }
+
+        if (updatingValue) {
+          switch (fv.getFeature().getValueType()) {
+            case BOOLEAN:
+              fv.setDefaultValue(newValue.getValueBoolean() == null ? Boolean.FALSE.toString() : newValue.getValueBoolean().toString());
+              break;
+            case STRING:
+              fv.setDefaultValue(newValue.getValueString());
+              break;
+            case NUMBER:
+              fv.setDefaultValue(newValue.getValueNumber() == null ? null : newValue.getValueNumber().toString());
+              break;
+            case JSON:
+              fv.setDefaultValue(newValue.getValueJson());
+              break;
+          }
+        }
+
+        if (newValue.getLocked() != null) {
+          fv.setLocked(newValue.getLocked());
+        }
+
+        save(fv);
+      }
     }
   }
 

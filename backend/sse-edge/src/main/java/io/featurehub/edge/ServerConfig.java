@@ -131,7 +131,8 @@ public class ServerConfig {
   }
 
   public void publishFeatureChangeRequest(StreamedFeatureUpdate featureUpdate, String namedCache) {
-    String subject = "/" + namedCache + "/" + "feature-update";
+    // oh for asyncapi being actually useful
+    String subject = "/" + namedCache + "/feature-updates";
 
     try {
       connection.publish(subject, CacheJsonMapper.mapper.writeValueAsBytes(featureUpdate));
