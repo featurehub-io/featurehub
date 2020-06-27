@@ -65,7 +65,11 @@ class FHappBar extends StatelessWidget {
                       ),
                       StepperRocketButton(mrBloc: mrBloc),
                       IconButton(
-                          onPressed: () => mrBloc.logout(),
+                          onPressed: () async {
+                            await mrBloc.logout();
+                            ManagementRepositoryClientBloc.router
+                                .navigateTo(context, '/');
+                          },
                           icon: Icon(Icons.exit_to_app),
                           tooltip: 'Sign out'),
                     ],

@@ -15,6 +15,7 @@ import io.featurehub.db.model.FeatureState;
 import io.featurehub.db.model.query.QDbAcl;
 import io.featurehub.db.model.query.QDbApplicationFeature;
 import io.featurehub.db.model.query.QDbEnvironment;
+import io.featurehub.db.model.query.QDbGroup;
 import io.featurehub.db.model.query.QDbPortfolio;
 import io.featurehub.db.publish.CacheSource;
 import io.featurehub.db.utils.EnvironmentUtils;
@@ -33,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +68,14 @@ public class EnvironmentSqlApi implements EnvironmentApi {
     Set<ApplicationRoleType> appRoles = new HashSet<>();
 
     if (e != null && p != null) {
+      // is this person a portfolio admin? if so, they have all access to all environments in the portfolio
+      if (new QDbGroup().adminGroup.isTrue().whenArchived.isNull().peopleInGroup.eq(p).owningPortfolio.applications.environments.eq(e).exists()) {
+        return new EnvironmentRoles.Builder()
+          .applicationRoles(new HashSet<>(Arrays.asList(ApplicationRoleType.values())))
+          .environmentRoles(new HashSet<>(Arrays.asList(RoleType.values()))).build();
+      }
+
+
       new QDbAcl().environment.eq(e).group.peopleInGroup.eq(p).findList().forEach(fe -> {
         final List<RoleType> splitRoles = convertUtils.splitEnvironmentRoles(fe.getRoles());
         if (splitRoles != null) {

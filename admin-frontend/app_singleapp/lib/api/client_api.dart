@@ -69,7 +69,9 @@ class ManagementRepositoryClientBloc implements Bloc {
   BehaviorSubject<bool> get menuOpened => _menuOpened;
 
   set menuOpened(value) {
-    _menuOpened.add(value);
+    if (person != null && value || !value) {
+      _menuOpened.add(value);
+    }
   }
 
   Stream<RouteChange> get routeChangedStream => _routerSource.stream;
@@ -284,8 +286,11 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   Future logout() async {
     await authServiceApi.logout();
+    _initializedSource.add(InitializedCheckState.initialized);
     setBearerToken(null);
-    return;
+    person = null;
+    _personSource.add(null);
+    menuOpened.value = false;
   }
 
   void fakeInitialize() {

@@ -378,29 +378,32 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
         .stream()
         .collect(Collectors.toMap(e -> e.getEnvironment().getId(), Function.identity()));
 
-    new QDbAcl().environment.parentApplication.eq(app).group.peopleInGroup.eq(dbPerson).findList().forEach(fe -> {
-      log.debug("Found environment `{}`, app `{}`, group `{}`, roles `{}`",
-        fe.getEnvironment() == null ? "<none>" : fe.getEnvironment().getName(),
-        fe.getApplication() == null ? "<none>" : fe.getApplication().getName(),
-        fe.getGroup().getName(), fe.getRoles());
-      final List<RoleType> roleTypes = convertUtils.splitEnvironmentRoles(fe.getRoles());
+    final List<RoleType> adminRoles = Arrays.asList(RoleType.values());
 
-      if (roleTypes != null) {
-        UUID envId = fe.getEnvironment().getId();
-        roles.put(envId, roleTypes);
-        environments.put(envId, fe.getEnvironment());
+    if (!personAdmin) { // is they aren't a portfolio admin, figure out what their permissions are to each environment
+      new QDbAcl().environment.parentApplication.eq(app).group.peopleInGroup.eq(dbPerson).findList().forEach(fe -> {
+        log.debug("Found environment `{}`, app `{}`, group `{}`, roles `{}`",
+          fe.getEnvironment() == null ? "<none>" : fe.getEnvironment().getName(),
+          fe.getApplication() == null ? "<none>" : fe.getApplication().getName(),
+          fe.getGroup().getName(), fe.getRoles());
+        final List<RoleType> roleTypes = convertUtils.splitEnvironmentRoles(fe.getRoles());
 
-        DbEnvironmentFeatureStrategy strategy = strategies.remove(envId);
+        if (roleTypes != null && !roleTypes.isEmpty()) {
+          UUID envId = fe.getEnvironment().getId();
+          roles.put(envId, roleTypes);
+          environments.put(envId, fe.getEnvironment());
 
-        if (strategy != null) {
-          strategiesResult.put(envId, strategy);
+          DbEnvironmentFeatureStrategy strategy = strategies.remove(envId);
+
+          if (strategy != null) {
+            strategiesResult.put(envId, strategy);
+          }
         }
-      }
-    });
+      });
+    }
 
     // they have at least one environment or they are an admin
     if (environments.size() > 0 || personAdmin) {
-      final List<RoleType> adminRoles = Arrays.asList(RoleType.values());
       final List<RoleType> emptyRoles = Collections.emptyList();
       new QDbEnvironment().parentApplication.eq(app).findList().forEach(env -> {
         if (environments.get(env.getId()) == null) {
