@@ -42,6 +42,10 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  assets:
+    - assets/logo/FeatureHub-icon.png
+    - assets/logo/FeatureHubPrimaryWhite.png
+    - assets/logo/FlowerDarkBackground.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

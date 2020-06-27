@@ -245,7 +245,7 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
         ),
         _MenuItem(
           name: 'Service Accounts',
-          iconData: Feather.slack,
+          iconData: AntDesign.key,
           iconSize: 24,
           path: '/service-envs',
           params: {},

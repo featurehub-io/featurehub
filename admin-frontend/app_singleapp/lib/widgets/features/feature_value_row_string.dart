@@ -68,7 +68,7 @@ class _FeatureValueStringEnvironmentCellState
                     widget.fvBloc.dirty(
                       widget.environmentFeatureValue.environmentId,
                       (originalFv) =>
-                          (value?.isEmpty ? null : value) !=
+                          (value.isEmpty ? null : value) !=
                           originalFv?.valueString,
                     );
                   },

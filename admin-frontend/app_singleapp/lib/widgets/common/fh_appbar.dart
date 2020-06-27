@@ -2,6 +2,7 @@ import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/widgets/stepper/stepper_container.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
 
 class FHappBar extends StatelessWidget {
@@ -21,18 +22,19 @@ class FHappBar extends StatelessWidget {
                 if (snapshot.hasData && snapshot.data == true) {
                   return Container(
                     child: IconButton(
-                        icon: Icon(Icons.menu, size: 24.0),
+                        icon: Icon(SimpleLineIcons.menu, size: 20.0),
                         onPressed: () => mrBloc.menuOpened.add(false)),
                   );
                 } else {
                   return Container(
                     child: IconButton(
-                        icon: Icon(Icons.menu, size: 24.0),
+                        icon: Icon(SimpleLineIcons.menu, size: 20.0),
                         onPressed: () => mrBloc.menuOpened.add(true)),
                   );
                 }
               }),
-          Image.asset('FeatureHubPrimaryWhite.png', width: 150, height: 150),
+          Image.asset('assets/logo/FeatureHubPrimaryWhite.png',
+              width: 150, height: 150),
         ],
       ),
       actions: <Widget>[

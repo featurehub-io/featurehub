@@ -74,7 +74,7 @@ class _FeatureValueNumberEnvironmentCellState
                     widget.fvBloc.dirty(
                       widget.environmentFeatureValue.environmentId,
                       (originalFv) {
-                        return (value?.isEmpty ? null : value) !=
+                        return (value.isEmpty ? null : value) !=
                             originalFv?.valueNumber?.toString();
                       },
                     );
