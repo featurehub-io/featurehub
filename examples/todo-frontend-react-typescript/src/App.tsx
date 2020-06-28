@@ -1,16 +1,18 @@
 import * as React from 'react';
 import { Configuration, DefaultApi, Todo } from './api';
 import './App.css';
+import globalAxios from 'axios';
 import {
   FeatureContext,
   featureHubRepository,
-  FeatureStateHolder,
-  GoogleAnalyticsCollector,
+  // GoogleAnalyticsCollector,
   Readyness
 } from 'client-typescript-core/dist';
 import { FeatureHubEventSourceClient } from 'client-typescript-eventsource/dist';
 
-const todoApi = new DefaultApi(new Configuration({basePath: 'http://localhost:8099'}));
+let todoApi: DefaultApi;
+// const todoApi = new DefaultApi(new Configuration({basePath:
+//     baseUrl === 'UNKNOWN_BASE' ? 'http://localhost:8099' : baseUrl }));
 
 class TodoData {
   todos: Array<Todo>;
@@ -39,6 +41,11 @@ class TodoData {
   }
 }
 
+class ConfigData {
+  baseUrl: string;
+  sdkUrl: string;
+}
+
 class App extends React.Component<{}, { todos: TodoData }> {
   private titleInput: HTMLInputElement;
   private eventSource: FeatureHubEventSourceClient;
@@ -49,8 +56,6 @@ class App extends React.Component<{}, { todos: TodoData }> {
     this.state = {
       todos: new TodoData(),
     };
-
-    this.initializeFeatureHub();
   }
 
   async initializeFeatureHub() {
@@ -69,7 +74,14 @@ class App extends React.Component<{}, { todos: TodoData }> {
 
     featureHubRepository.catchAndReleaseMode = true; // don't allow feature updates to come through
 
-    this.eventSource = new FeatureHubEventSourceClient('http://localhost:8553/features/default/99d8bca3-4e10-4c58-a10c-509b31db3532/X8y3nRMTgtVS7Lsn8Oyk1ppT2Yeap7XGnKVZEjVDMd1XdeqtBAjE6BH4F6f91jXkdh2Sf2zk6PzHJSPa');
+    // load the config from the config json file
+    const config = (await globalAxios.request({url: 'featurehub-config.json'})).data as ConfigData;
+    // setup the api
+    todoApi = new DefaultApi(new Configuration({basePath: config.baseUrl }));
+    this._loadInitialData(); // let this happen in background
+
+    // listen for reatures from configured source
+    this.eventSource = new FeatureHubEventSourceClient(config.sdkUrl);
     this.eventSource.init();
 
     // alternative if you want to ready to incoming feature changes and not wait for a page refresh
@@ -77,10 +89,14 @@ class App extends React.Component<{}, { todos: TodoData }> {
     //   this.setState({todos: this.state.todos.changeColor(fs.getString())});
     // });
 
-    featureHubRepository.addAnalyticCollector(new GoogleAnalyticsCollector('UA-163385423-1', '1234-5678-abcd-1234'));
+    // featureHubRepository.addAnalyticCollector(new GoogleAnalyticsCollector('UA-1234', '1234-5678-abcd-1234'));
   }
 
   async componentDidMount() {
+    this.initializeFeatureHub();
+  }
+
+  async _loadInitialData() {
     const todoResult = (await todoApi.listTodos({})).data;
     this.setState({todos: this.state.todos.changeTodos(todoResult)});
   }

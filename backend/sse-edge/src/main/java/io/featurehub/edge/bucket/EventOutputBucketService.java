@@ -7,10 +7,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * this service manages the allocation of incoming connections to a timeslot and the regular
@@ -20,7 +20,7 @@ import java.util.TimerTask;
 @Singleton
 public class EventOutputBucketService {
   private static final Logger log = LoggerFactory.getLogger(EventOutputBucketService.class);
-  private Map<Integer, TimedBucket> discardTimerBuckets = new HashMap<>();
+  private Map<Integer, TimedBucket> discardTimerBuckets = new ConcurrentHashMap<>();
   private int timerSlice;
 
   @ConfigKey("maxSlots")
