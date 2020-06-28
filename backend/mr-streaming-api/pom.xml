@@ -3,12 +3,13 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.featurehub.mr</groupId>
-  <artifactId>mr-api</artifactId>
+  <artifactId>mr-streaming-api</artifactId>
   <version>1.1-SNAPSHOT</version>
-  <name>mr-api</name>
+  <name>mr-streaming-api</name>
 
   <description>
-    Management Registry API.
+    Management Registry Streaming API. This reflects requests into MR that are not part of the caching system.
+    For where MR implements the cache, see the dache-api.
   </description>
 
   <url>https://featurehub.io</url>
@@ -46,28 +47,6 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>cd.connect.maven</groupId>
-        <artifactId>merge-yaml-plugin</artifactId>
-        <version>1.1</version>
-        <executions>
-          <execution>
-            <id>combine</id>
-            <goals>
-              <goal>mergeYaml</goal>
-            </goals>
-            <phase>initialize</phase>
-            <configuration>
-              <files>
-                <file>${project.basedir}/mr-api.yaml</file>
-                <file>${project.basedir}/common.yaml</file>
-                <file>${project.basedir}/end2end-common.yaml</file>
-              </files>
-              <finalYaml>${project.basedir}/final.yaml</finalYaml>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <groupId>org.openapitools</groupId>
         <artifactId>openapi-generator-maven-plugin</artifactId>
         <version>4.0.0</version>
@@ -80,28 +59,18 @@
         </dependencies>
         <executions>
           <execution>
-            <id>featurehub-api</id>
+            <id>featurehub-messaging</id>
             <goals>
               <goal>generate</goal>
             </goals>
             <phase>generate-sources</phase>
             <configuration>
               <output>${project.basedir}/target/generated-sources/api</output>
-              <apiPackage>io.featurehub.mr.api</apiPackage>
-              <modelPackage>io.featurehub.mr.model</modelPackage>
-              <inputSpec>${project.basedir}/final.yaml</inputSpec>
+              <modelPackage>io.featurehub.mr.messaging</modelPackage>
+              <inputSpec>${project.basedir}/mr-nats.yaml</inputSpec>
+              <generateApis>false</generateApis>
               <generatorName>jersey2-api</generatorName>
               <enablePostProcessFile>true</enablePostProcessFile>
-              <additionalProperties>
-                <additionalProperty>server-delegate</additionalProperty>
-              </additionalProperties>
-
-              <configOptions>
-                <configOption>
-                  <name>useBeanValidation</name>
-                  <value>true</value>
-                </configOption>
-              </configOptions>
             </configuration>
           </execution>
         </executions>

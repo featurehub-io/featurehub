@@ -5,8 +5,10 @@ import io.featurehub.mr.model.Feature;
 import io.featurehub.mr.model.FeatureValue;
 import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.mr.model.PublishAction;
+import io.featurehub.mr.model.RoleType;
 import io.featurehub.mr.model.ServiceAccount;
 import io.featurehub.mr.model.ServiceAccountCacheItem;
+import io.featurehub.mr.model.ServiceAccountPermission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +29,8 @@ public class InMemoryCache implements InternalCache {
   // <environment id, <feature id, fv cache>>
   private Map<String, Map<String, FeatureValueCacheItem>> environmentFeatures = new ConcurrentHashMap<>();
   private Map<String, ServiceAccountCacheItem> serviceAccounts = new ConcurrentHashMap<>();
+  // <sdk id + / + environment id ==> ServiceAccount. if null, none maps, otherwise you can do something with it
+  private Map<String, ServiceAccountPermission> serviceAccountPlusEnvIdToEnvIdMap = new ConcurrentHashMap<>();
   // Map<apiKey, serviceAccountId>
   private Map<String, String> apiKeyToServiceAccountKeyMap = new ConcurrentHashMap<>();
   private Map<String, List<FeatureValueCacheItem>> valuesForUnpublishedEnvironments = new ConcurrentHashMap<>();
@@ -93,6 +97,7 @@ public class InMemoryCache implements InternalCache {
 
     if (sa.getAction() == PublishAction.CREATE || sa.getAction() == PublishAction.UPDATE) {
       if (existing == null || sa.getServiceAccount().getVersion() >= existing.getServiceAccount().getVersion()) {
+        updateServiceAccountEnvironmentCache(sa.getServiceAccount(), serviceAccounts.get(sa.getServiceAccount().getId()));
         serviceAccounts.put(sa.getServiceAccount().getId(), sa);
 
         apiKeyToServiceAccountKeyMap.put(sa.getServiceAccount().getApiKey(), sa.getServiceAccount().getId());
@@ -112,11 +117,62 @@ public class InMemoryCache implements InternalCache {
     if (sa.getAction() == PublishAction.DELETE && existing != null) {
       ServiceAccountCacheItem removeAccount = serviceAccounts.remove(sa.getServiceAccount().getId());
       if (removeAccount != null) { // make sure we remove it from the api key list as well
+        updateServiceAccountEnvironmentCache(null, removeAccount);
         apiKeyToServiceAccountKeyMap.remove(removeAccount.getServiceAccount().getApiKey());
       }
     }
 
 
+  }
+
+  /**
+   * This is crucial to keep up to date as it keeps a map of the sdkKey + env id against the permission in that
+   * environment. It is the only thing that we check when getting asked for data.
+   */
+  private void updateServiceAccountEnvironmentCache(ServiceAccount serviceAccount, ServiceAccountCacheItem oldServiceAccount) {
+    if (oldServiceAccount != null) {
+      oldServiceAccount.getServiceAccount().getPermissions().forEach(perm -> {
+          log.debug("update cache, removing {}:{}", serviceAccount.getApiKey(), perm);
+          serviceAccountPlusEnvIdToEnvIdMap.remove(sdkKeyEnvId(serviceAccount.getApiKey(), perm.getEnvironmentId()));
+        }
+      );
+    }
+
+    if (serviceAccount != null) {
+      serviceAccount.getPermissions().forEach(perm -> {
+        log.debug("update cache, adding {}:{}", serviceAccount.getApiKey(), perm);
+          serviceAccountPlusEnvIdToEnvIdMap.put(sdkKeyEnvId(serviceAccount.getApiKey(), perm.getEnvironmentId()), perm);
+        }
+      );
+    }
+  }
+
+  // we can only _delete_ items here, when service accounts are removed from environments, as permissions are not passed down
+  private void updateServiceAccountEnvironmentByEnvironment(EnvironmentCacheItem newItem, EnvironmentCacheItem oldCacheItem) {
+    if (oldCacheItem != null) {
+
+      final String envId = oldCacheItem.getEnvironment().getId();
+      if (newItem != null) {
+        Map<String, Boolean> existing = oldCacheItem.getServiceAccounts().stream()
+          .collect(Collectors.toMap(s -> sdkKeyEnvId(s.getApiKey(), envId), s -> Boolean.TRUE));
+
+        // take out from existing all the ones that exist in the new item
+        newItem.getServiceAccounts().forEach(sa ->
+          existing.remove(sdkKeyEnvId(sa.getApiKey(), newItem.getEnvironment().getId()))
+        );
+
+        // ones that are left we have to delete
+        existing.keySet().forEach(k -> {
+          log.debug("Environment update, SDK/Env keys removed from acceptable map {}", k);
+          serviceAccountPlusEnvIdToEnvIdMap.remove(k);
+        });
+      } else {
+        oldCacheItem.getServiceAccounts().forEach(s -> {
+          log.debug("Environment update, SDK/Env keys removed from acceptable map {}:{}", s.getApiKey(), envId);
+          serviceAccountPlusEnvIdToEnvIdMap.remove(sdkKeyEnvId(s.getApiKey(), envId));
+        });
+      }
+    }
   }
 
   private void logEmptyCacheOnStart() {
@@ -139,20 +195,22 @@ public class InMemoryCache implements InternalCache {
       return;
     }
 
-    EnvironmentCacheItem existing = environments.get(e.getEnvironment().getId());
+    final String envId = e.getEnvironment().getId();
+    EnvironmentCacheItem existing = environments.get(envId);
 
     if (e.getAction() == PublishAction.CREATE || e.getAction() == PublishAction.UPDATE) {
       if (existing == null || e.getEnvironment().getVersion() >= existing.getEnvironment().getVersion()) {
-        environments.put(e.getEnvironment().getId(), e);
+        updateServiceAccountEnvironmentByEnvironment(e, environments.get(envId));
+        environments.put(envId, e);
 
         replaceEnvironmentFeatures(e);
 
-        List<FeatureValueCacheItem> unpublishedEnvironmentItems = valuesForUnpublishedEnvironments.remove(e.getEnvironment().getId());
+        List<FeatureValueCacheItem> unpublishedEnvironmentItems = valuesForUnpublishedEnvironments.remove(envId);
         if (unpublishedEnvironmentItems != null) {
           unpublishedEnvironmentItems.forEach(this::updateFeatureValue);
         }
 
-        log.debug("have env {} of {} name {} : /default/{}/ {}", environments.size(), e.getCount(), e.getEnvironment().getName(), e.getEnvironment().getId(), sAccounts(e) );
+        log.debug("have env {} of {} name {} : /default/{}/ {}", environments.size(), e.getCount(), e.getEnvironment().getName(), envId, sAccounts(e));
 
         if (!wasEnvironmentComplete && e.getCount() == environments.size()) {
           wasEnvironmentComplete = true;
@@ -161,14 +219,13 @@ public class InMemoryCache implements InternalCache {
             logEmptyCacheOnStart();
             notify.run();
           }
-
         }
-
       }
     }
 
     if (e.getAction() == PublishAction.DELETE && existing != null) {
-      environments.remove(e.getEnvironment().getId());
+      updateServiceAccountEnvironmentByEnvironment(null, environments.get(envId));
+      environments.remove(envId);
     }
   }
 
@@ -182,6 +239,7 @@ public class InMemoryCache implements InternalCache {
 
   /**
    * we just received a whole updated environment with its associated features, so replace in-situ anything we had.
+   *
    * @param e - the environment
    */
   private void replaceEnvironmentFeatures(EnvironmentCacheItem e) {
@@ -195,33 +253,21 @@ public class InMemoryCache implements InternalCache {
         .collect(Collectors.toMap(Feature::getId, f -> new FeatureValueCacheItem().feature(f).value(values.get(f.getKey())))));
   }
 
+  private String sdkKeyEnvId(String apiKey, String environmentId) {
+    return apiKey + "/" + environmentId;
+  }
+
   @Override
-  public Collection<FeatureValueCacheItem> getFeaturesByEnvironmentAndServiceAccount(String environmentId, String apiKey) {
+  public FeatureCollection getFeaturesByEnvironmentAndServiceAccount(String environmentId, String apiKey) {
     log.debug("got request for environment `{}` and apiKey `{}`", environmentId, apiKey);
-    String serviceAccountId = apiKeyToServiceAccountKeyMap.get(apiKey);
 
-    if (serviceAccountId == null) {
-      log.warn("No apiKey for `{}`", apiKey);
-      return null; // no such service account
+    ServiceAccountPermission sa = serviceAccountPlusEnvIdToEnvIdMap.get(sdkKeyEnvId(apiKey, environmentId));
+    if (sa != null && !sa.getPermissions().isEmpty()) {  // any permission is good enough to read
+      return new FeatureCollection(environmentFeatures.get(environmentId).values(), sa);
     }
 
-    EnvironmentCacheItem env = environments.get(environmentId);
-
-    if (env == null) {
-      log.warn("No environment for `{}`", environmentId);
-      return null; // no such environment
-    }
-
-    // todo: optimization
-    if (env.getServiceAccounts().stream().anyMatch(sa -> serviceAccountId.equals(sa.getId()))) {
-      final Map<String, FeatureValueCacheItem> fciMap = environmentFeatures.get(environmentId);
-//      log.info("matched environment {}: {} vs {}", env.getEnvironment().getName(), env.getFeatureValues().size(), fciMap.size());
-      return fciMap.values();
-    }
-
-    log.warn("No service accounts in that environment matched `{}`", apiKey);
-
-    return null;
+    log.warn("No apiKey for `{}`", apiKey);
+    return null; // no such service account
   }
 
   @Override
@@ -259,7 +305,7 @@ public class InMemoryCache implements InternalCache {
           if (fv.getValue().getVersion() != null) {
             if (feature.getValue() == null) {
               feature.value(fv.getValue());
-            } else if ( feature.getValue().getVersion() == null || (fv.getValue().getVersion() != null && feature.getValue().getVersion() < fv.getValue().getVersion())) {
+            } else if (feature.getValue().getVersion() == null || (fv.getValue().getVersion() != null && feature.getValue().getVersion() < fv.getValue().getVersion())) {
               feature.value(fv.getValue());
 //              log.trace("replacing with {}", fv.getFeature());
             } else if (!featureChanged) {

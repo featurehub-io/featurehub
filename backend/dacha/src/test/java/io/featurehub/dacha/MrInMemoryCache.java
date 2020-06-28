@@ -68,7 +68,7 @@ public class MrInMemoryCache implements InternalCache {
   }
 
   @Override
-  public Collection<FeatureValueCacheItem> getFeaturesByEnvironmentAndServiceAccount(String environmentId, String apiKey) {
+  public FeatureCollection getFeaturesByEnvironmentAndServiceAccount(String environmentId, String apiKey) {
     return null;
   }
 

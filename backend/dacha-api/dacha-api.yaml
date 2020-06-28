@@ -109,6 +109,27 @@ components:
           type: string
         apiKey:
           type: string
+        featureKey:
+          description: "The key of the feature that a permission response will be looking for"
+          type: string
+        command:
+          $ref: "#/components/schemas/EdgeInitRequestCommand"
+    EdgeInitRequestCommand:
+      type: string
+      enum:
+        - listen
+        - permission
+    EdgeInitPermissionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        roles:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoleType"
+        feature:
+          $ref: "#/components/schemas/FeatureValueCacheItem"
     EdgeInitResponse:
       required:
         - environmentId

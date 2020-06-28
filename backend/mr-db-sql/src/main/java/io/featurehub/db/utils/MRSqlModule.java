@@ -14,6 +14,7 @@ import io.featurehub.db.api.PersonApi;
 import io.featurehub.db.api.PortfolioApi;
 import io.featurehub.db.api.ServiceAccountApi;
 import io.featurehub.db.api.SetupApi;
+import io.featurehub.db.listener.FeatureUpdateBySDKApi;
 import io.featurehub.db.services.ApplicationSqlApi;
 import io.featurehub.db.services.ArchiveStrategy;
 import io.featurehub.db.services.AuthenticationSqlApi;
@@ -74,7 +75,7 @@ public class MRSqlModule extends AbstractBinder {
     bind(ServiceAccountSqlApi.class).to(ServiceAccountApi.class).in(Singleton.class);
     bind(ApplicationSqlApi.class).to(ApplicationApi.class).in(Singleton.class);
     bind(EnvironmentSqlApi.class).to(EnvironmentApi.class).in(Singleton.class);
-    bind(FeatureSqlApi.class).to(FeatureApi.class).in(Singleton.class);
+    bind(FeatureSqlApi.class).to(FeatureApi.class).to(FeatureUpdateBySDKApi.class).in(Singleton.class);
     bind(DbArchiveStrategy.class).to(ArchiveStrategy.class).in(Singleton.class);
   }
 }

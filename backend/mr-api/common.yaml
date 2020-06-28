@@ -15,13 +15,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ServiceAccount"
-    RoleType:
-      type: string
-      enum:
-        - READ
-        - LOCK
-        - UNLOCK
-        - CHANGE_VALUE
     ApplicationFeatureValues:
       properties:
         applicationId:

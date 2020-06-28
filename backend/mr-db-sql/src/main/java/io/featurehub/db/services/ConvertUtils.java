@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -190,6 +191,15 @@ public class ConvertUtils {
       .id(sae.getId().toString())
       .permissions(splitServiceAccountPermissions(sae.getPermissions()))
       .environmentId(sae.getEnvironment().getId().toString());
+
+    if (sap.getPermissions().isEmpty() && opt.contains(FillOpts.IgnoreEmptyPermissions)) {
+      return null;
+    }
+
+    // if they don't have read, but they really do have read, add read
+    if (!sap.getPermissions().isEmpty() && !sap.getPermissions().contains(RoleType.READ)) {
+      sap.getPermissions().add(RoleType.READ);
+    }
 
     if (opt.contains(FillOpts.ServiceAccounts) || opt.contains(FillOpts.SdkURL)) {
       sap.serviceAccount(toServiceAccount(sae.getServiceAccount(), opt.minus(FillOpts.Permissions, FillOpts.SdkURL)));
@@ -536,6 +546,7 @@ public class ConvertUtils {
           sa.getServiceAccountEnvironments().stream()
             .filter(sae -> envs == null || envs.get(sae.getEnvironment().getId()) != null)
             .map(sae -> toServiceAccountPermission(sae, opts.minus(FillOpts.ServiceAccounts)))
+            .filter(Objects::nonNull)
             .collect(Collectors.toList()));
       }
     }
