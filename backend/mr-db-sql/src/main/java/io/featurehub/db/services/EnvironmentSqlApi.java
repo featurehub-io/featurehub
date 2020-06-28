@@ -61,29 +61,33 @@ public class EnvironmentSqlApi implements EnvironmentApi {
 
   @Override
   public EnvironmentRoles personRoles(Person current, String eid) {
-    DbEnvironment e = convertUtils.uuidEnvironment(eid);
+    DbEnvironment environment = convertUtils.uuidEnvironment(eid, Opts.opts(FillOpts.Applications));
     DbPerson p = convertUtils.uuidPerson(current);
 
     Set<RoleType> roles = new HashSet<>();
     Set<ApplicationRoleType> appRoles = new HashSet<>();
 
-    if (e != null && p != null) {
+    if (environment != null && p != null) {
       // is this person a portfolio admin? if so, they have all access to all environments in the portfolio
-      if (new QDbGroup().adminGroup.isTrue().whenArchived.isNull().peopleInGroup.eq(p).owningPortfolio.applications.environments.eq(e).exists()) {
+      if (new QDbGroup().adminGroup.isTrue().whenArchived.isNull().peopleInGroup.eq(p).owningPortfolio.applications.environments.eq(environment).exists()) {
         return new EnvironmentRoles.Builder()
           .applicationRoles(new HashSet<>(Arrays.asList(ApplicationRoleType.values())))
           .environmentRoles(new HashSet<>(Arrays.asList(RoleType.values()))).build();
       }
 
 
-      new QDbAcl().environment.eq(e).group.peopleInGroup.eq(p).findList().forEach(fe -> {
+      new QDbAcl().environment.eq(environment).group.peopleInGroup.eq(p).findList().forEach(fe -> {
         final List<RoleType> splitRoles = convertUtils.splitEnvironmentRoles(fe.getRoles());
         if (splitRoles != null) {
           roles.addAll(splitRoles);
+          // as roles can have roles that are no READ and it makes no sense not to contain READ.
+          if (!roles.isEmpty() && !roles.contains(RoleType.READ)) {
+            roles.add(RoleType.READ);
+          }
         }
       });
 
-      new QDbAcl().application.eq(e.getParentApplication()).group.peopleInGroup.eq(p).findList().forEach(fe -> {
+      new QDbAcl().application.eq(environment.getParentApplication()).group.peopleInGroup.eq(p).findList().forEach(fe -> {
         final List<ApplicationRoleType> splitRoles = convertUtils.splitApplicationRoles(fe.getRoles());
         if (splitRoles != null && splitRoles.contains(ApplicationRoleType.FEATURE_EDIT)) {
           appRoles.add(ApplicationRoleType.FEATURE_EDIT);
