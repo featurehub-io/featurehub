@@ -508,7 +508,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
 
     // add ones that we want
     for (String ae : addedEnvironments) {
-      DbEnvironment env = convertUtils.uuidEnvironment(ae);
+      DbEnvironment env = convertUtils.uuidEnvironment(ae, Opts.opts(FillOpts.ApplicationIds, FillOpts.PortfolioIds));
       if (env != null && env.getParentApplication().getPortfolio().getId().equals(group.getOwningPortfolio().getId())) {
         DbAcl acl = new DbAcl.Builder()
           .environment(env)
@@ -518,6 +518,8 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
         resetEnvironmentAcl(acl, desiredEnvironments.get(UUID.fromString(ae)));
 
         group.getGroupRolesAcl().add(acl);
+      } else {
+        log.error("Attempting to add an environment that doesn't exist or doesn't belong to the same portfolio {}", ae);
       }
     }
   }

@@ -57,7 +57,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Singleton
@@ -119,6 +118,30 @@ public class ConvertUtils {
 
     return uuid(id).map(eId -> new QDbEnvironment().id.eq(eId).findOne()).orElse(null);
   }
+
+  public DbEnvironment uuidEnvironment(String id, Opts opts) {
+    if (id == null) {
+      return null;
+    }
+
+    return uuid(id).map(eId -> {
+      final QDbEnvironment eq = new QDbEnvironment().id.eq(eId);
+      if (opts.contains(FillOpts.Applications)) {
+        eq.parentApplication.fetch();
+      }
+      if (opts.contains(FillOpts.Portfolios)) {
+        eq.parentApplication.portfolio.fetch();
+      }
+      if (opts.contains(FillOpts.ApplicationIds)) {
+        eq.parentApplication.fetch(QDbApplication.Alias.id);
+      }
+      if (opts.contains(FillOpts.PortfolioIds)) {
+        eq.parentApplication.portfolio.fetch(QDbPortfolio.Alias.id);
+      }
+      return eq.findOne();
+    }).orElse(null);
+  }
+
 
   public DbApplication uuidApplication(String id) {
     return uuid(id).map(aId -> new QDbApplication().id.eq(aId).findOne()).orElse(null);

@@ -123,28 +123,34 @@ class FeatureValuesBloc implements Bloc {
 
   Future<bool> updateDirtyStates() async {
     final updates = <FeatureValue>[];
+
+    // this represents all feature values that are currently being shown,
+    // we don't know if they have new values or not
     final featureValuesWeAreCheckingForUpdates = <String, FeatureValue>{}
       ..addAll(_newFeatureValues);
 
     _originalFeatureValues.forEach((envId, value) {
-      final roles = applicationFeatureValues.environments
-          .firstWhere((e) => e.environmentId == envId)
-          .roles;
-      if (roles.contains(RoleType.CHANGE_VALUE) ||
-          roles.contains(RoleType.LOCK) ||
-          roles.contains(RoleType.UNLOCK)) {
-        final _newFeatureValue = featureValuesWeAreCheckingForUpdates[envId];
-        if (_newFeatureValue != null) {
-          featureValuesWeAreCheckingForUpdates.remove(
-              envId); // we are then left with ones that just have new data
+      final newValue = featureValuesWeAreCheckingForUpdates
+          .remove(envId); // we have no access, ignore it
 
-          if (_newFeatureValue != value) {
-            updates.add(_newFeatureValue);
-          }
+      // this causes equals not to work
+      newValue.whoUpdated = null;
+      value.whoUpdated = null;
+
+      if (newValue != null && newValue != value) {
+        final roles = applicationFeatureValues.environments
+            .firstWhere((e) => e.environmentId == envId)
+            .roles;
+        // do we have access to change it, is it different?
+        if ((roles.contains(RoleType.CHANGE_VALUE) ||
+            roles.contains(RoleType.LOCK) ||
+            roles.contains(RoleType.UNLOCK))) {
+          updates.add(newValue);
         }
       }
     });
 
+    // anything else in the new values list is stuff we didn't have originally
     featureValuesWeAreCheckingForUpdates.values.forEach((newFv) {
       final roles = applicationFeatureValues.environments
           .firstWhere((e) => e.environmentId == newFv.environmentId)

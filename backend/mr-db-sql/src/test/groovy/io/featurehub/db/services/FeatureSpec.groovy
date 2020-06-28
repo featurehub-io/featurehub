@@ -48,7 +48,7 @@ class FeatureSpec extends Specification {
   @Shared String envIdApp1
   @Shared String appId
   @Shared String app2Id
-  @Shared Person memberOfPortfolio1
+  @Shared Person averageJoeMemberOfPortfolio1
   @Shared Person portfolioAdminOfPortfolio1
   @Shared Group groupInPortfolio1
   @Shared Group adminGroupInPortfolio1
@@ -103,9 +103,9 @@ class FeatureSpec extends Specification {
 
     def averageJoe = new DbPerson.Builder().email("averagejoe-fvs@featurehub.io").name("Average Joe").build()
     database.save(averageJoe)
-    memberOfPortfolio1 = convertUtils.toPerson(averageJoe)
+    averageJoeMemberOfPortfolio1 = convertUtils.toPerson(averageJoe)
     groupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id.toString(), new Group().name("fsspec-1-p1"), superPerson)
-    groupSqlApi.addPersonToGroup(groupInPortfolio1.id, memberOfPortfolio1.id.id, Opts.empty())
+    groupSqlApi.addPersonToGroup(groupInPortfolio1.id, averageJoeMemberOfPortfolio1.id.id, Opts.empty())
 
     def portfolioAdmin = new DbPerson.Builder().email("pee-admin-fvs@featurehub.io").name("Portfolio Admin p1 fvs").build()
     database.save(portfolioAdmin)
@@ -301,16 +301,16 @@ class FeatureSpec extends Specification {
           .description("the dragon").name("wilbur")
           .permissions([new ServiceAccountPermission().environmentId(env1.id).permissions([RoleType.READ])]),
         Opts.empty())
-    and: "i allow superperson access to two of the three environments"
+    and: "i allow average joe access to two of the three environments"
       Group g1 = groupSqlApi.createPortfolioGroup(portfolio1.id.toString(), new Group().name("app2-f1-test"), superPerson)
       g1.environmentRoles([
         new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]).environmentId(env1.id),
         new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK]).environmentId(env3.id),
         new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(env2.id)
       ])
-      g1.members = [superPerson, memberOfPortfolio1]
+      g1.members = [averageJoeMemberOfPortfolio1]
       groupSqlApi.updateGroup(g1.id, g1, true, true, true, Opts.empty());
-    and: "i create a feature value"
+    and: "i create a feature value called FEATURE_BUNCH and unlock the feature in all branches"
       String k = 'FEATURE_BUNCH'
       appApi.createApplicationFeature(app2Id, new Feature().key(k).valueType(FeatureValueType.BOOLEAN), superPerson)
       def perm = new PersonFeaturePermission.Builder().roles([RoleType.UNLOCK] as Set<RoleType>).person(superPerson).appRoles([] as Set<ApplicationRoleType>).build()
@@ -319,15 +319,15 @@ class FeatureSpec extends Specification {
           featureSqlApi.getFeatureValueForEnvironment(envId, k).locked(false),
           perm)
       }
-    when: "i update the feature value"
+    when: "i update the feature value in environments 1 and 3 using average joe and then relock them"
       featureSqlApi.updateAllFeatureValuesByApplicationForKey(app2Id, k, [
         featureSqlApi.getFeatureValueForEnvironment(env1.id, k).valueBoolean(true).locked(true),
         featureSqlApi.getFeatureValueForEnvironment(env3.id, k).valueBoolean(null).locked(true),
-      ], superPerson, true)
+      ], averageJoeMemberOfPortfolio1, true)
 
     and: "i ask for irina's api"
       ApplicationFeatureValues afv = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, superPerson)
-      ApplicationFeatureValues afvAverageJoe = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, memberOfPortfolio1)
+      ApplicationFeatureValues afvAverageJoe = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, averageJoeMemberOfPortfolio1)
       ApplicationFeatureValues afvPortfolioAdminOfPortfolio1 = featureSqlApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(app2Id, portfolioAdminOfPortfolio1)
     and:
       List<FeatureEnvironment> envs = featureSqlApi.getFeatureValuesForApplicationForKeyForPerson(app2Id, k, superPerson)
@@ -335,7 +335,7 @@ class FeatureSpec extends Specification {
       featureSqlApi.updateAllFeatureValuesByApplicationForKey(app2Id, k, [envs.find({ e -> e.featureValue?.environmentId == env1.id }).featureValue.copy().locked(false)], superPerson, true)
     and:
       List<FeatureEnvironment> envs1 = featureSqlApi.getFeatureValuesForApplicationForKeyForPerson(app2Id, k, superPerson)
-      List<FeatureEnvironment> envsAverageJoe = featureSqlApi.getFeatureValuesForApplicationForKeyForPerson(app2Id, k, memberOfPortfolio1)
+      List<FeatureEnvironment> envsAverageJoe = featureSqlApi.getFeatureValuesForApplicationForKeyForPerson(app2Id, k, averageJoeMemberOfPortfolio1)
 
         //
     then:
