@@ -1,3 +1,4 @@
+import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/fh_card.dart';
 import 'package:app_singleapp/widgets/user/register/register_url_bloc.dart';
@@ -188,6 +189,8 @@ class RegisterURLState extends State<RegisterURLRoute> {
                     if (_formKey.currentState.validate()) {
                       bloc.completeRegistration(widget.token, bloc.person.email,
                           _name.text, _pw1.text, _pw2.text);
+                      ManagementRepositoryClientBloc.router
+                          .navigateTo(context, '/');
                     }
                   },
                   title: 'Register')

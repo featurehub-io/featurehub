@@ -38,9 +38,9 @@ class RegisterBloc implements Bloc {
   }
 
   // complete the registration process
-  void completeRegistration(String token, String email, String name,
-      String password, String confirmPassword) {
-    mrClient.authServiceApi
+  Future<void> completeRegistration(String token, String email, String name,
+      String password, String confirmPassword) async {
+    await mrClient.authServiceApi
         .registerPerson(PersonRegistrationDetails()
           ..email = email
           ..password = password
@@ -49,6 +49,7 @@ class RegisterBloc implements Bloc {
           ..registrationToken = token)
         .then((data) {
       _formStateStream.add(RegisterUrlForm.successState);
+      mrClient.hasToken(data);
     }).catchError((e, s) {
       mrClient.dialogError(e, s);
     });

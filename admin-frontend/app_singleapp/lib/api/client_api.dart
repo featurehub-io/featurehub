@@ -410,15 +410,27 @@ class ManagementRepositoryClientBloc implements Bloc {
           ..email = email
           ..password = password)
         .then((tp) {
-      setBearerToken(tp.accessToken);
-      setPerson(tp.person);
-      setLastUsername(tp.person.email);
-      if (!tp.person.passwordRequiresReset) {
-        _initializedSource.add(InitializedCheckState.zombie);
-      } else {
-        _initializedSource.add(InitializedCheckState.requires_password_reset);
-      }
+      hasToken(tp);
     });
+  }
+
+  Future hasToken(TokenizedPerson tp) async {
+    setBearerToken(tp.accessToken);
+    setPerson(tp.person);
+
+    final previousPerson = await lastUsername();
+
+    // if we are swapping users, remove all shared preferences (including last portfolio, route, etc)
+    if (tp.person.email != previousPerson) {
+      await _sharedPreferences.clear();
+    }
+
+    setLastUsername(tp.person.email);
+    if (!tp.person.passwordRequiresReset) {
+      _initializedSource.add(InitializedCheckState.zombie);
+    } else {
+      _initializedSource.add(InitializedCheckState.requires_password_reset);
+    }
   }
 
   Future<void> replaceTempPassword(String password) {
