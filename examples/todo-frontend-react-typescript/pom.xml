@@ -10,11 +10,6 @@
 
   <dependencies>
     <dependency>
-      <groupId>io.featurehub.examples</groupId>
-      <artifactId>todo-api</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
       <groupId>io.featurehub.client</groupId>
       <artifactId>client-typescript-core</artifactId>
       <version>1.1-SNAPSHOT</version>

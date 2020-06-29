@@ -39,10 +39,11 @@
   </properties>
 
   <modules>
-    <module>backend/mr-api</module>
-    <module>admin-frontend/app_mr_layer</module>
-    <module>backend/dacha-api</module>
-    <module>backend/sse-edge-api</module>
+    <module>sdks/client-typescript-core</module>
+    <module>sdks/client-typescript-eventsource</module>
+    <module>examples/todo-frontend-react-typescript</module>
+    <module>examples/todo-backend-typescript</module>
+    <module>examples/todo-backend-java</module>
   </modules>
 
 </project>

@@ -7,7 +7,7 @@ paths:
   /features/{sdkUrl}/{featureKey}:
     put:
       tags:
-        - EdgeService
+        - FeatureService
       parameters:
         - name: sdkUrl
           in: path

@@ -69,7 +69,7 @@ After back-end server has started successfully:
 
 `cd ./todo-frontend-react-typescript`
 
-`npm run-script build`
+`npm run-script compile`
 
 `npm run-script start`
 
