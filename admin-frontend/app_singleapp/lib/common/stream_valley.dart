@@ -103,12 +103,14 @@ class StreamValley {
   String get currentPortfolioId => currentPortfolio?.id;
 
   set currentPortfolioId(String value) {
-    if (_currentPortfolioSource.value?.id != value) {
+    if (value != null && _currentPortfolioSource.value?.id != value) {
       currentAppId = null;
 
       // figure out which one we are
       _routeCheckPortfolioSource.add(
           _portfoliosSource.value.firstWhere((element) => element.id == value));
+    } else {
+      _routeCheckPortfolioSource.add(null); // no portfolio
     }
   }
 
@@ -275,6 +277,10 @@ class StreamValley {
         includeApplications: true, order: SortOrder.ASC);
 
     _portfoliosSource.add(portfolios);
+
+    if (portfolios.isEmpty) {
+      currentPortfolioId = null;
+    }
 
     return portfolios;
   }

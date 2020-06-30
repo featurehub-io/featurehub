@@ -45,6 +45,10 @@ class PersonState {
   }
 
   bool userIsPortfolioAdmin(String id, List<Group> groupList) {
+    if (id == null) {
+      return false;
+    }
+
     return groupList?.firstWhere(
             (group) => group.admin && group.portfolioId == id,
             orElse: () => null) !=
@@ -62,7 +66,7 @@ class PersonState {
   void currentPortfolioOrSuperAdminUpdateState(
       Portfolio p, List<Group> groups) {
     final isAdmin =
-        isSuperAdminGroupFound(groups) || userIsPortfolioAdmin(p.id, groups);
+        isSuperAdminGroupFound(groups) || userIsPortfolioAdmin(p?.id, groups);
     _isCurrentPortfolioOrSuperAdmin.add(ReleasedPortfolio()
       ..portfolio = p
       ..currentPortfolioOrSuperAdmin = isAdmin);

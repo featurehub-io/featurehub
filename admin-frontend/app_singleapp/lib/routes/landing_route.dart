@@ -16,7 +16,7 @@ import 'package:flutter/material.dart';
 class LandingRoute extends StatefulWidget {
   final String title;
 
-  const LandingRoute({Key key, this.title}) : super(key: key);
+  LandingRoute({Key key, this.title}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {

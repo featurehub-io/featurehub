@@ -78,13 +78,13 @@ class Router {
 
   bool hasRoutePermissions(
       RouteChange route, bool superuser, bool portfolioAdmin) {
-    if (superuser) {
+    if (superuser == true) {
       return true;
     }
 
     final perm = permissionForRoute(route.route);
 
-    if (perm == PermissionType.portfolioadmin && portfolioAdmin) {
+    if (perm == PermissionType.portfolioadmin && portfolioAdmin == true) {
       return true;
     }
 

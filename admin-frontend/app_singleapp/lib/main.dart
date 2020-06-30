@@ -40,7 +40,6 @@ class FeatureHubApp extends StatelessWidget {
       home: LandingRoute(title: 'FeatureHub'),
       onGenerateRoute: (RouteSettings settings) {
         final uri = Uri.parse(settings.name);
-
         final params = uri.queryParametersAll;
         ManagementRepositoryClientBloc.router
             .navigateTo(context, uri.path, params: params);

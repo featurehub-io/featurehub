@@ -97,8 +97,12 @@ class ManagementRepositoryClientBloc implements Bloc {
   /// still have permission to this route and if not, go to the default route
   void _checkRouteForPermission(Portfolio p) {
     if (_routerSource.hasValue) {
-      if (!router.hasRoutePermissions(_routerSource.value, userIsSuperAdmin,
-          personState.userIsPortfolioAdmin(p.id, person.groups))) {
+      if (!router.hasRoutePermissions(
+          _routerSource.value,
+          userIsSuperAdmin,
+          p == null
+              ? false
+              : personState.userIsPortfolioAdmin(p.id, person.groups))) {
         swapRoutes(router.defaultRoute());
       }
     }
@@ -416,7 +420,6 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   Future hasToken(TokenizedPerson tp) async {
     setBearerToken(tp.accessToken);
-    setPerson(tp.person);
 
     final previousPerson = await lastUsername();
 
@@ -426,6 +429,9 @@ class ManagementRepositoryClientBloc implements Bloc {
     }
 
     setLastUsername(tp.person.email);
+
+    setPerson(tp.person);
+
     if (!tp.person.passwordRequiresReset) {
       _initializedSource.add(InitializedCheckState.zombie);
     } else {

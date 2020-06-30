@@ -129,19 +129,22 @@ class FeatureStatusBloc implements Bloc, ManagementRepositoryAwareBloc {
 
   Future<void> addApplicationsToStream(String pid) async {
     portfolioId = pid;
-    List<Application> appList;
     clearAppFeatureValuesStream();
-    try {
-      appList = await _appServiceApi.findApplications(portfolioId,
-          order: SortOrder.ASC);
-      if (!_appSearchResultSource.isClosed) {
-        _appSearchResultSource.add(appList);
+
+    if (pid != null) {
+      List<Application> appList;
+      try {
+        appList = await _appServiceApi.findApplications(portfolioId,
+            order: SortOrder.ASC);
+        if (!_appSearchResultSource.isClosed) {
+          _appSearchResultSource.add(appList);
+        }
+      } catch (e, s) {
+        mrClient.dialogError(e, s);
       }
-    } catch (e, s) {
-      mrClient.dialogError(e, s);
-    }
-    if (appList != null && applicationId != null) {
-      checkApplicationIdIsLegit(appList);
+      if (appList != null && applicationId != null) {
+        checkApplicationIdIsLegit(appList);
+      }
     }
   }
 
