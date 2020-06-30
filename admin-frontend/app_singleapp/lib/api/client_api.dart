@@ -90,7 +90,9 @@ class ManagementRepositoryClientBloc implements Bloc {
 
     // this is for fine grained route changes, like tab changes
     _routerSource.add(route);
-    _sharedPreferences.saveString('current-route', route.toJson());
+    if (_sharedPreferences != null) {
+      _sharedPreferences.saveString('current-route', route.toJson());
+    }
   }
 
   /// we changed permission, or at least changed portfolio, so check if we

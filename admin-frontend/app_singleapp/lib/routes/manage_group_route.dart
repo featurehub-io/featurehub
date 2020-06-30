@@ -62,7 +62,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                   }),
             ),
             Flexible(
-              flex: 4,
+              flex: 2,
               child: bloc.mrClient
                       .isPortfolioOrSuperAdmin(bloc.mrClient.currentPid)
                   ? Padding(
@@ -168,7 +168,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                   style: Theme.of(context).textTheme.caption,
                 ),
                 Container(
-                  constraints: BoxConstraints(maxWidth: 200),
+                  constraints: BoxConstraints(maxWidth: 300),
                   child: DropdownButton(
                     icon: Padding(
                       padding: EdgeInsets.only(left: 8.0),
@@ -183,6 +183,10 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                       return DropdownMenuItem<String>(
                           value: group.id,
                           child: Text(group.name,
+                              style: Theme
+                                  .of(context)
+                                  .textTheme
+                                  .bodyText2,
                               overflow: TextOverflow.ellipsis));
                     }).toList(),
                     hint: Text(
