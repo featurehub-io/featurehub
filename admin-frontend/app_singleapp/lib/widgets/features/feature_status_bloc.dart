@@ -93,17 +93,19 @@ class FeatureStatusBloc implements Bloc, ManagementRepositoryAwareBloc {
   }
 
   void _actuallyCallAddAppFeatureValuesToStream() async {
-    try {
-      final appFeatureValues = await _featureServiceApi
-          .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
-              applicationId);
-      if (!_appFeatureValuesBS.isClosed) {
-        _sortApplicationFeatureValues(appFeatureValues);
+    if (applicationId != null) {
+      try {
+        final appFeatureValues = await _featureServiceApi
+            .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
+                applicationId);
+        if (!_appFeatureValuesBS.isClosed) {
+          _sortApplicationFeatureValues(appFeatureValues);
 
-        _appFeatureValuesBS.add(FeatureStatusFeatures(appFeatureValues));
+          _appFeatureValuesBS.add(FeatureStatusFeatures(appFeatureValues));
+        }
+      } catch (e, s) {
+        mrClient.dialogError(e, s);
       }
-    } catch (e, s) {
-      mrClient.dialogError(e, s);
     }
   }
 

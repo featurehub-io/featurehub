@@ -112,7 +112,7 @@ class RegisterURLState extends State<RegisterURLRoute> {
               onPressed: () {
                 Navigator.pop(context);
               },
-              title: "OK"),
+              title: 'OK'),
         ]);
   }
 

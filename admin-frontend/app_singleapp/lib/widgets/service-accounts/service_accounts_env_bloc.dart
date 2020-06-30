@@ -18,20 +18,24 @@ class ServiceAccountEnvBloc implements Bloc, ManagementRepositoryAwareBloc {
   final _serviceAccountSource = BehaviorSubject<ServiceAccountEnvironments>();
   ServiceAccountServiceApi _serviceAccountServiceApi;
   StreamSubscription<List<Environment>> envListener;
+  bool firstCall = true;
 
   ServiceAccountEnvBloc(this._mrClient) {
     _serviceAccountServiceApi = ServiceAccountServiceApi(_mrClient.apiClient);
     envListener = _mrClient.streamValley.currentApplicationEnvironmentsStream
         .listen(_envUpdate);
-
-    // if we aren't an admin, we won't have called this, so lets call it now
-    if (!_mrClient.userIsFeatureAdminOfCurrentApplication) {
-      _mrClient.streamValley.getCurrentApplicationEnvironments();
-    }
   }
 
   void _envUpdate(List<Environment> envs) async {
     if (envs == null || envs.isEmpty) {
+      if (firstCall) {
+        firstCall = false;
+        // if we aren't an admin, we won't have called this, so lets call it now
+        if (!_mrClient.userIsFeatureAdminOfCurrentApplication) {
+          // ignore: unawaited_futures
+          _mrClient.streamValley.getCurrentApplicationEnvironments();
+        }
+      }
       _serviceAccountSource
           .add(ServiceAccountEnvironments(<Environment>[], <ServiceAccount>[]));
     } else {

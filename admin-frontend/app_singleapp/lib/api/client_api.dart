@@ -297,6 +297,7 @@ class ManagementRepositoryClientBloc implements Bloc {
     person = null;
     _personSource.add(null);
     menuOpened.value = false;
+    streamValley.currentPortfolioId = null;
   }
 
   void fakeInitialize() {
@@ -458,14 +459,24 @@ class ManagementRepositoryClientBloc implements Bloc {
   void _addPortfoliosToStream() async {
     try {
       final _portfolios = await streamValley.loadPortfolios();
+
+      var foundValidStoredPortfolio = false;
+
       if (await _sharedPreferences.getString('currentPid') != null) {
         final aid = await _sharedPreferences.getString('currentAid');
-        setCurrentPid(await _sharedPreferences.getString('currentPid'));
-        if (aid != null) {
-          setCurrentAid(aid);
+        final pid = await _sharedPreferences.getString('currentPid');
+        if (streamValley.containsPid(pid)) {
+          setCurrentPid(pid);
+          foundValidStoredPortfolio = true;
+          if (aid != null) {
+            setCurrentAid(aid);
+          }
         }
-      } else if (_portfolios != null && _portfolios.isNotEmpty) {
+      }
+
+      if (!foundValidStoredPortfolio && _portfolios?.isNotEmpty == true) {
         setCurrentPid(_portfolios.first.id.toString());
+        setCurrentAid(null);
       }
     } catch (e, s) {
       dialogError(e, s);

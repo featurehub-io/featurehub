@@ -284,4 +284,8 @@ class StreamValley {
 
     return portfolios;
   }
+
+  bool containsPid(String pid) {
+    return _portfoliosSource.value?.any((p) => p.id == pid);
+  }
 }
