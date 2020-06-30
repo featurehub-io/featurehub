@@ -297,7 +297,8 @@ class ManagementRepositoryClientBloc implements Bloc {
     person = null;
     _personSource.add(null);
     menuOpened.value = false;
-    streamValley.currentPortfolioId = null;
+    currentPid = null;
+    currentAid = null;
   }
 
   void fakeInitialize() {
@@ -477,6 +478,7 @@ class ManagementRepositoryClientBloc implements Bloc {
       if (!foundValidStoredPortfolio && _portfolios?.isNotEmpty == true) {
         setCurrentPid(_portfolios.first.id.toString());
         setCurrentAid(null);
+        menuOpened.value = true;
       }
     } catch (e, s) {
       dialogError(e, s);
