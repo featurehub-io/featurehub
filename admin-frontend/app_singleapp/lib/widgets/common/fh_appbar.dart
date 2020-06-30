@@ -13,10 +13,9 @@ class FHappBar extends StatelessWidget {
     final mrBloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
 
     return AppBar(
-      title: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          StreamBuilder<bool>(
+      leading: Builder(
+        builder: (BuildContext context) {
+          return StreamBuilder<bool>(
               stream: mrBloc.menuOpened,
               builder: (context, snapshot) {
                 if (snapshot.hasData && snapshot.data == true) {
@@ -32,9 +31,17 @@ class FHappBar extends StatelessWidget {
                         onPressed: () => mrBloc.menuOpened.add(true)),
                   );
                 }
-              }),
-          Image.asset('assets/logo/FeatureHubPrimaryWhite.png',
-              width: 150, height: 150),
+              });
+        },
+      ),
+      title: Row(
+        children: [
+          SizedBox(
+            height: kToolbarHeight - 20,
+            child: Image.asset(
+              'assets/logo/FeatureHubPrimaryWhite.png',
+            ),
+          ),
         ],
       ),
       actions: <Widget>[
