@@ -170,8 +170,8 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
           new QDbEnvironment().select(QDbEnvironment.Alias.id)
             .whenArchived.isNull()
             .or()
-            .parentApplication.id.eq(appId).groupRolesAcl.group.peopleInGroup.eq(personId)
-            .groupRolesAcl.group.peopleInGroup.eq(personId)
+            .and().parentApplication.id.eq(appId).parentApplication.groupRolesAcl.group.peopleInGroup.eq(personId).endAnd()
+            .and().groupRolesAcl.group.peopleInGroup.eq(personId).groupRolesAcl.roles.notEqualTo("").endAnd()
             .endOr()
             .findList();
       } else {

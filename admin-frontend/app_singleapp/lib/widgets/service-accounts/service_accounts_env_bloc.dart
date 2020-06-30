@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/api/mr_client_aware.dart';
 import 'package:bloc_provider/bloc_provider.dart';
@@ -15,10 +17,11 @@ class ServiceAccountEnvBloc implements Bloc, ManagementRepositoryAwareBloc {
   final ManagementRepositoryClientBloc _mrClient;
   final _serviceAccountSource = BehaviorSubject<ServiceAccountEnvironments>();
   ServiceAccountServiceApi _serviceAccountServiceApi;
+  StreamSubscription<List<Environment>> envListener;
 
   ServiceAccountEnvBloc(this._mrClient) {
     _serviceAccountServiceApi = ServiceAccountServiceApi(_mrClient.apiClient);
-    _mrClient.streamValley.currentApplicationEnvironmentsStream
+    envListener = _mrClient.streamValley.currentApplicationEnvironmentsStream
         .listen(_envUpdate);
 
     // if we aren't an admin, we won't have called this, so lets call it now
@@ -51,7 +54,9 @@ class ServiceAccountEnvBloc implements Bloc, ManagementRepositoryAwareBloc {
       _serviceAccountSource.stream;
 
   @override
-  void dispose() {}
+  void dispose() {
+    envListener.cancel();
+  }
 
   void setApplicationId(String appId) {}
 }
