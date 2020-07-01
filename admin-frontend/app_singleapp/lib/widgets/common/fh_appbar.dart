@@ -34,6 +34,7 @@ class FHappBar extends StatelessWidget {
               });
         },
       ),
+      titleSpacing: 0.0,
       title: Row(
         children: [
           SizedBox(

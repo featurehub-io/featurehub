@@ -128,7 +128,7 @@ class _FeaturesOverviewHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FHHeader(
-      title: 'Features and Configurations',
+      title: 'Features console',
     );
   }
 }
