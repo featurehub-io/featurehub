@@ -14,7 +14,7 @@ class ReleasedPortfolio {
 typedef findApplicationsFunc = Future<List<Application>> Function(
     String portfolioId);
 
-final _log = Logger("stream-valley");
+final _log = Logger('stream-valley');
 
 class StreamValley {
   final ManagementRepositoryClientBloc mrClient;
