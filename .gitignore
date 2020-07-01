@@ -76,15 +76,4 @@ fabric.properties
 metric*.log
 
 released-pom.xml
-/examples/todo-backend-typescript/node_modules/
-/examples/todo-backend-typescript/app/app.js.map
-/examples/todo-backend-typescript/app/generated-interface.js
-/examples/todo-backend-typescript/app/generated-interface.js.map
-/examples/todo-backend-typescript/app/app.js
-/client-typescript-browser/node_modules/
-/client-typescript-browser/dist/featurehub_browser.d.ts
-/client-typescript-browser/dist/featurehub_browser.js
-/client-typescript-browser/dist/featurehub_browser.js.map
-/client-typescript-browser/dist/index.d.ts
-/client-typescript-browser/dist/index.js
-/client-typescript-browser/dist/index.js.map
+node-js

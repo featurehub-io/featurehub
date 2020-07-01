@@ -36,6 +36,9 @@
   <modules>
     <module>sdks/client-java-core</module>
     <module>sdks/client-java-jersey</module>
+    <module>sdks/client-typescript-core</module>
+    <module>sdks/client-typescript-eventsource</module>
+    <module>sdks/client-dart-api</module>
     <module>backend/composite-jackson</module>
     <module>backend/composite-app</module>
     <module>backend/composite-jersey</module>
@@ -57,8 +60,5 @@
     <module>backend/party-server</module>
     <module>backend/dacha</module>
     <module>backend/dacha-api</module>
-    <module>examples/todo-backend-java</module>
-    <module>examples/todo-frontend-react-typescript</module>
-    <module>examples/todo-api</module>
   </modules>
 </project>

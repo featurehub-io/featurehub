@@ -40,8 +40,8 @@
   <dependencies>
     <!-- ensure we get the right order and the final.yaml exists before building this one -->
     <dependency>
-      <groupId>io.featurehub.mr</groupId>
-      <artifactId>mr-api</artifactId>
+      <groupId>io.featurehub.edge</groupId>
+      <artifactId>sse-edge-api</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
   </dependencies>

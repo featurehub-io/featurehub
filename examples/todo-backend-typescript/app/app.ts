@@ -13,7 +13,7 @@ if (process.env.FEATUREHUB_APP_ENV_URL === undefined) {
 // FEATUREHUB_APP_ENV_URL=http://localhost:8553/features/default/99d8bca3-4e10-4c58-a10c-509b31db3532/X8y3nRMTgtVS7Lsn8Oyk1ppT2Yeap7XGnKVZEjVDMd1XdeqtBAjE6BH4F6f91jXkdh2Sf2zk6PzHJSPa
 const featureHubEventSourceClient  = new FeatureHubEventSourceClient(process.env.FEATUREHUB_APP_ENV_URL);
 featureHubEventSourceClient.init();
-featureHubRepository.addAnalyticCollector(new GoogleAnalyticsCollector('UA-XXXYYYYY', '1234-5678-abcd-1234'));
+// featureHubRepository.addAnalyticCollector(new GoogleAnalyticsCollector('UA-XXXYYYYY', '1234-5678-abcd-1234'));
 
 
 const api = restify.createServer();

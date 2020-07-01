@@ -10,8 +10,13 @@
 
   <dependencies>
     <dependency>
-      <groupId>io.featurehub.examples</groupId>
-      <artifactId>todo-api</artifactId>
+      <groupId>io.featurehub.client</groupId>
+      <artifactId>client-typescript-core</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>io.featurehub.client</groupId>
+      <artifactId>client-typescript-eventsource</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
   </dependencies>
@@ -23,6 +28,82 @@
       <comments>This code resides in the customer's codebase and therefore has an MIT license.</comments>
     </license>
   </licenses>
+
+  <profiles>
+    <profile>
+      <id>docker-cloud-build</id>
+      <!-- otherwise don't active in tiles -->
+      <activation>
+        <property>
+          <name>docker-cloud-build</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.github.eirslett</groupId>
+            <artifactId>frontend-maven-plugin</artifactId>
+            <version>1.9.1</version>
+            <executions>
+              <execution>
+                <id>setup</id>
+                <phase>compile</phase>
+                <goals>
+                  <goal>install-node-and-npm</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>install-deps</id>
+                <phase>compile</phase>
+                <goals>
+                  <goal>npm</goal>
+                </goals>
+                <configuration>
+                  <arguments>install</arguments>
+                </configuration>
+              </execution>
+              <execution>
+                <id>compile-and-link</id>
+                <phase>compile</phase>
+                <goals>
+                  <goal>npm</goal>
+                </goals>
+                <configuration>
+                  <arguments>run compile</arguments>
+                </configuration>
+              </execution>
+            </executions>
+            <configuration>
+              <nodeVersion>v14.0.0</nodeVersion>
+              <installDirectory>../../node-js</installDirectory>
+            </configuration>
+          </plugin>
+          <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <version>2.6</version>
+            <executions>
+              <execution>
+                <id>make-admin-ui</id>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+                <phase>package</phase>
+                <configuration>
+                  <appendAssemblyId>false</appendAssemblyId>
+                  <descriptors>
+                    <descriptor>${project.basedir}/assembly.xml</descriptor>
+                  </descriptors>
+                  <attach>true</attach>
+                  <classifier>admin-ui</classifier>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
   <build>
     <finalName>app</finalName>

@@ -22,8 +22,8 @@
     "test:watch": "npm run mocha --opts mocha.opts --watch",
     "mocha": "node ./node_modules/mocha/bin/mocha",
     "tsc": "node ./node_modules/typescript/bin/tsc",
-    "link": "npm link client-typescript-core && npm link",
-    "compile": "npm run link && npm run build",
+    "link": "npm link client-typescript-core",
+    "compile": "npm run link && npm run build && npm link",
     "lint": "node ./node_modules/tslint/bin/tslint -r ./node_modules/tslint-microsoft-contrib/ \"app/**/*.ts\" \"spec/**/*.ts\" -e \"app/generated-code/**/*\""
   },
   "devDependencies": {
@@ -39,7 +39,6 @@
   },
   "dependencies": {
     "@types/eventsource": "^1.1.2",
-    "client-typescript-core": "file:../client-typescript-core",
     "eventsource": "^1.0.7"
   },
   "engines": {
