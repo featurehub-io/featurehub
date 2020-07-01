@@ -24,6 +24,10 @@ class ServiceAccountEnvBloc implements Bloc, ManagementRepositoryAwareBloc {
     _serviceAccountServiceApi = ServiceAccountServiceApi(_mrClient.apiClient);
     envListener = _mrClient.streamValley.currentApplicationEnvironmentsStream
         .listen(_envUpdate);
+    if (!_mrClient.userIsFeatureAdminOfCurrentApplication) {
+      // ignore: unawaited_futures
+      _mrClient.streamValley.getCurrentApplicationEnvironments();
+    }
   }
 
   void _envUpdate(List<Environment> envs) async {
