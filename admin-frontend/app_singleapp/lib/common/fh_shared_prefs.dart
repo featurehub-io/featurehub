@@ -26,6 +26,10 @@ class FHSharedPrefs extends FHSharedPrefsContract {
 
   FHSharedPrefs._internal(this._prefs);
 
+  Future<void> clear() async {
+    await _prefs.clear();
+  }
+
   @override
   Future<bool> saveString(String key, String value) async {
     return await _prefs.setString(key, value);

@@ -82,7 +82,7 @@ public class AuthenticationSqlApi implements AuthenticationApi {
             person.setTokenExpiry(null);
             updateUser(person);
 
-            return convertUtils.toPerson(person, Opts.opts(FillOpts.Groups));
+            return convertUtils.toPerson(person, Opts.opts(FillOpts.Groups, FillOpts.Acls));
           }).orElse((Person) null);
         }
       ).orElse(null);

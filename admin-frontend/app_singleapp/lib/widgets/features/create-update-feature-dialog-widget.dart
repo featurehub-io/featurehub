@@ -1,7 +1,7 @@
 import 'package:app_singleapp/utils/utils.dart';
 import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/fh_alert_dialog.dart';
-import 'package:app_singleapp/widgets/common/fh_outline_button.dart';
+import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/features/feature_status_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
@@ -167,8 +167,9 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
           ),
         ),
         actions: <Widget>[
-          FHOutlineButton(
+          FHFlatButtonTransparent(
             title: 'Cancel',
+            keepCase: true,
             onPressed: () {
               widget.bloc.mrClient.removeOverlay();
             },

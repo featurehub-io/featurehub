@@ -93,17 +93,19 @@ class FeatureStatusBloc implements Bloc, ManagementRepositoryAwareBloc {
   }
 
   void _actuallyCallAddAppFeatureValuesToStream() async {
-    try {
-      final appFeatureValues = await _featureServiceApi
-          .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
-              applicationId);
-      if (!_appFeatureValuesBS.isClosed) {
-        _sortApplicationFeatureValues(appFeatureValues);
+    if (applicationId != null) {
+      try {
+        final appFeatureValues = await _featureServiceApi
+            .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
+                applicationId);
+        if (!_appFeatureValuesBS.isClosed) {
+          _sortApplicationFeatureValues(appFeatureValues);
 
-        _appFeatureValuesBS.add(FeatureStatusFeatures(appFeatureValues));
+          _appFeatureValuesBS.add(FeatureStatusFeatures(appFeatureValues));
+        }
+      } catch (e, s) {
+        mrClient.dialogError(e, s);
       }
-    } catch (e, s) {
-      mrClient.dialogError(e, s);
     }
   }
 
@@ -129,19 +131,22 @@ class FeatureStatusBloc implements Bloc, ManagementRepositoryAwareBloc {
 
   Future<void> addApplicationsToStream(String pid) async {
     portfolioId = pid;
-    List<Application> appList;
     clearAppFeatureValuesStream();
-    try {
-      appList = await _appServiceApi.findApplications(portfolioId,
-          order: SortOrder.ASC);
-      if (!_appSearchResultSource.isClosed) {
-        _appSearchResultSource.add(appList);
+
+    if (pid != null) {
+      List<Application> appList;
+      try {
+        appList = await _appServiceApi.findApplications(portfolioId,
+            order: SortOrder.ASC);
+        if (!_appSearchResultSource.isClosed) {
+          _appSearchResultSource.add(appList);
+        }
+      } catch (e, s) {
+        mrClient.dialogError(e, s);
       }
-    } catch (e, s) {
-      mrClient.dialogError(e, s);
-    }
-    if (appList != null && applicationId != null) {
-      checkApplicationIdIsLegit(appList);
+      if (appList != null && applicationId != null) {
+        checkApplicationIdIsLegit(appList);
+      }
     }
   }
 

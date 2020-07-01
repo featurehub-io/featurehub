@@ -113,7 +113,7 @@ public class AuthResource implements AuthServiceDelegate {
       throw new NotFoundException("Cannot find person to register");
     }
 
-    return new TokenizedPerson().accessToken(authRepository.put(person)).person(person);
+    return new TokenizedPerson().accessToken(authRepository.put(person.copy())).person(newPerson);
   }
 
   @Override

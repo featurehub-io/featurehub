@@ -153,10 +153,10 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
     if (featureValue.getVersion() == null || strategy.getVersion() != featureValue.getVersion()) {
       throw new OptimisticLockingException();
     }
-
-    // todo: set what changed
-    String oldValue = strategy.getDefaultValue();
-    boolean oldLocked = strategy.isLocked();
+//
+//     todo: set what changed
+//    String oldValue = strategy.getDefaultValue();
+//    boolean oldLocked = strategy.isLocked();
 
     updateStrategy(featureValue, person, strategy);
 
@@ -369,7 +369,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
     Map<UUID, List<RoleType>> roles = new HashMap<>();
     Map<UUID, DbEnvironment> environments = new HashMap<>();
 
-    boolean personAdmin = isPersonAdmin(dbPerson, app);
+    boolean personAdmin = convertUtils.isPersonApplicationAdmin(dbPerson, app);
 
     Map<UUID, DbEnvironmentFeatureStrategy> strategies =
       new QDbEnvironmentFeatureStrategy().feature.key.eq(key).feature.parentApplication
@@ -430,11 +430,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
     return new EnvironmentsAndStrategies(strategiesResult, roles, environments, appRoles);
   }
 
-  private boolean isPersonAdmin(DbPerson dbPerson, DbApplication app) {
-    DbOrganization org = app.getPortfolio().getOrganization();
-    // if a person is in a null portfolio group or portfolio group
-    return new QDbGroup().peopleInGroup.eq(dbPerson).or().owningOrganization.eq(org).and().adminGroup.isTrue().owningPortfolio.applications.eq(app).endAnd().endOr().findCount() > 0;
-  }
+
 
   @Override
   public List<FeatureEnvironment> getFeatureValuesForApplicationForKeyForPerson(String appId, String key, Person person) {
@@ -528,7 +524,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
     if (app != null && dbPerson != null && app.getWhenArchived() == null && dbPerson.getWhenArchived() == null) {
       final Opts empty = Opts.empty();
 
-      boolean personAdmin = isPersonAdmin(dbPerson, app);
+      boolean personAdmin = convertUtils.isPersonApplicationAdmin(dbPerson, app);
 
       Map<String, DbEnvironment> environmentOrderingMap = new HashMap<>();
       // the requirement is that we only send back environments they have at least READ access to

@@ -90,15 +90,21 @@ class ManagementRepositoryClientBloc implements Bloc {
 
     // this is for fine grained route changes, like tab changes
     _routerSource.add(route);
-    _sharedPreferences.saveString('current-route', route.toJson());
+    if (_sharedPreferences != null) {
+      _sharedPreferences.saveString('current-route', route.toJson());
+    }
   }
 
   /// we changed permission, or at least changed portfolio, so check if we
   /// still have permission to this route and if not, go to the default route
   void _checkRouteForPermission(Portfolio p) {
     if (_routerSource.hasValue) {
-      if (!router.hasRoutePermissions(_routerSource.value, userIsSuperAdmin,
-          personState.userIsPortfolioAdmin(p.id, person.groups))) {
+      if (!router.hasRoutePermissions(
+          _routerSource.value,
+          userIsSuperAdmin,
+          p == null
+              ? false
+              : personState.userIsPortfolioAdmin(p.id, person.groups))) {
         swapRoutes(router.defaultRoute());
       }
     }
@@ -291,6 +297,8 @@ class ManagementRepositoryClientBloc implements Bloc {
     person = null;
     _personSource.add(null);
     menuOpened.value = false;
+    currentPid = null;
+    currentAid = null;
   }
 
   void fakeInitialize() {
@@ -410,15 +418,29 @@ class ManagementRepositoryClientBloc implements Bloc {
           ..email = email
           ..password = password)
         .then((tp) {
-      setBearerToken(tp.accessToken);
-      setPerson(tp.person);
-      setLastUsername(tp.person.email);
-      if (!tp.person.passwordRequiresReset) {
-        _initializedSource.add(InitializedCheckState.zombie);
-      } else {
-        _initializedSource.add(InitializedCheckState.requires_password_reset);
-      }
+      hasToken(tp);
     });
+  }
+
+  Future hasToken(TokenizedPerson tp) async {
+    setBearerToken(tp.accessToken);
+
+    final previousPerson = await lastUsername();
+
+    // if we are swapping users, remove all shared preferences (including last portfolio, route, etc)
+    if (tp.person.email != previousPerson) {
+      await _sharedPreferences.clear();
+    }
+
+    setLastUsername(tp.person.email);
+
+    setPerson(tp.person);
+
+    if (!tp.person.passwordRequiresReset) {
+      _initializedSource.add(InitializedCheckState.zombie);
+    } else {
+      _initializedSource.add(InitializedCheckState.requires_password_reset);
+    }
   }
 
   Future<void> replaceTempPassword(String password) {
@@ -438,14 +460,25 @@ class ManagementRepositoryClientBloc implements Bloc {
   void _addPortfoliosToStream() async {
     try {
       final _portfolios = await streamValley.loadPortfolios();
+
+      var foundValidStoredPortfolio = false;
+
       if (await _sharedPreferences.getString('currentPid') != null) {
         final aid = await _sharedPreferences.getString('currentAid');
-        setCurrentPid(await _sharedPreferences.getString('currentPid'));
-        if (aid != null) {
-          setCurrentAid(aid);
+        final pid = await _sharedPreferences.getString('currentPid');
+        if (streamValley.containsPid(pid)) {
+          setCurrentPid(pid);
+          foundValidStoredPortfolio = true;
+          if (aid != null) {
+            setCurrentAid(aid);
+          }
         }
-      } else if (_portfolios != null && _portfolios.isNotEmpty) {
+      }
+
+      if (!foundValidStoredPortfolio && _portfolios?.isNotEmpty == true) {
         setCurrentPid(_portfolios.first.id.toString());
+        setCurrentAid(null);
+        menuOpened.value = true;
       }
     } catch (e, s) {
       dialogError(e, s);
