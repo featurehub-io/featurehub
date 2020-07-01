@@ -168,7 +168,14 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
                   SizedBox(
                     width: 16.0,
                   ),
-                  _CopyServiceAccountUrlToClipboard(account: account),
+                  if (account.sdkUrl != null)
+                    _CopyServiceAccountUrlToClipboard(account: account),
+                  if (account.sdkUrl == null)
+                    Icon(
+                      Icons.airline_seat_legroom_extra,
+                      size: 24.0,
+                      color: Colors.red,
+                    )
                 ],
               )
             : Row(

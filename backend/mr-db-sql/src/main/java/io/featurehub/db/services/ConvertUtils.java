@@ -51,6 +51,8 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -188,7 +190,7 @@ public class ConvertUtils {
       environment.setServiceAccountPermission(
         env.getServiceAccountEnvironments().stream()
           .filter(sae -> opts.contains(FillOpts.Archived) || sae.getServiceAccount().getWhenArchived() == null)
-          .map(sae -> toServiceAccountPermission(sae, opts)).collect(Collectors.toList()));
+          .map(sae -> toServiceAccountPermission(sae, null, false, opts)).collect(Collectors.toList()));
     }
 
     // collect all of the ACls for all of the groups for this environment?
@@ -209,7 +211,7 @@ public class ConvertUtils {
     return new QDbNamedCache().organizations.portfolios.applications.environments.eq(env).findOneOrEmpty().map(DbNamedCache::getCacheName).orElse(null);
   }
 
-  public ServiceAccountPermission toServiceAccountPermission(DbServiceAccountEnvironment sae, Opts opt) {
+  public ServiceAccountPermission toServiceAccountPermission(DbServiceAccountEnvironment sae, Set<RoleType> rolePerms, boolean mustHaveRolePerms, Opts opt) {
     final ServiceAccountPermission sap = new ServiceAccountPermission()
       .id(sae.getId().toString())
       .permissions(splitServiceAccountPermissions(sae.getPermissions()))
@@ -229,8 +231,11 @@ public class ConvertUtils {
     }
 
     if (opt.contains(FillOpts.SdkURL)) {
-      String cacheName = getCacheNameByEnvironment(sae.getEnvironment());
-      sap.sdkUrl(String.format("%s/%s/%s", cacheName, sap.getEnvironmentId(), sap.getServiceAccount().getApiKey()));
+      // if role perms is null (i.e we don't care) or the roles that a person has is a super-set of the roles of the service account
+      if (!mustHaveRolePerms || (rolePerms != null && rolePerms.containsAll(sap.getPermissions()))) {
+        String cacheName = getCacheNameByEnvironment(sae.getEnvironment());
+        sap.sdkUrl(String.format("%s/%s/%s", cacheName, sap.getEnvironmentId(), sap.getServiceAccount().getApiKey()));
+      }
     }
 
     return sap;
@@ -544,11 +549,22 @@ public class ConvertUtils {
     return uuidPerson(creator.getId().getId());
   }
 
+  public boolean isPersonApplicationAdmin(DbPerson dbPerson, DbApplication app) {
+    DbOrganization org = app.getPortfolio().getOrganization();
+    // if a person is in a null portfolio group or portfolio group
+    return new QDbGroup()
+      .peopleInGroup.eq(dbPerson)
+      .or()
+        .owningOrganization.eq(org) // you are in a group where the owning or is the org
+        .and().adminGroup.isTrue().owningPortfolio.applications.eq(app).endAnd()
+      .endOr().findCount() > 0;
+  }
+
   public ServiceAccount toServiceAccount(DbServiceAccount sa, Opts opts) {
     return toServiceAccount(sa, opts, null);
   }
 
-  public ServiceAccount toServiceAccount(DbServiceAccount sa, Opts opts,  List<DbEnvironment> environmentsUserHasAccessTo) {
+  public ServiceAccount toServiceAccount(DbServiceAccount sa, Opts opts,  List<DbAcl> environmentsUserHasAccessTo) {
     if (sa == null) {
       return null;
     }
@@ -564,11 +580,28 @@ public class ConvertUtils {
       account.apiKey(sa.getApiKey());
 
       if (opts.contains(FillOpts.Permissions) || opts.contains(FillOpts.SdkURL)) {
-        Map<UUID, DbEnvironment> envs = environmentsUserHasAccessTo == null ? null : environmentsUserHasAccessTo.stream().collect(Collectors.toMap(DbEnvironment::getId, e -> e));
+        // envId, acl
+        Map<UUID, Set<RoleType>> envs = new HashMap<>();
+
+        // we need to figure out what kinds of roles this person has in each environment
+        // so that they can't see an SDK URL that has more permissions than they do
+        if (environmentsUserHasAccessTo != null) {
+          environmentsUserHasAccessTo.forEach(acl -> {
+            Set<RoleType> e = envs.get(acl.getEnvironment().getId());
+            if (e != null) {
+              e.addAll(splitEnvironmentRoles(acl.getRoles()));
+            } else {
+              envs.put(acl.getEnvironment().getId(), new HashSet<>(splitEnvironmentRoles(acl.getRoles())));
+            }
+          });
+        }
+
         account.setPermissions(
           sa.getServiceAccountEnvironments().stream()
-            .filter(sae -> envs == null || envs.get(sae.getEnvironment().getId()) != null)
-            .map(sae -> toServiceAccountPermission(sae, opts.minus(FillOpts.ServiceAccounts)))
+            .map(sae -> toServiceAccountPermission(sae,
+              envs.get(sae.getEnvironment().getId()),
+              !envs.isEmpty(),
+              opts.minus(FillOpts.ServiceAccounts)))
             .filter(Objects::nonNull)
             .collect(Collectors.toList()));
       }

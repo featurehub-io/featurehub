@@ -7,11 +7,14 @@ import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.OptimisticLockingException;
 import io.featurehub.db.api.Opts;
 import io.featurehub.db.api.ServiceAccountApi;
+import io.featurehub.db.model.DbAcl;
+import io.featurehub.db.model.DbApplication;
 import io.featurehub.db.model.DbEnvironment;
 import io.featurehub.db.model.DbPerson;
 import io.featurehub.db.model.DbPortfolio;
 import io.featurehub.db.model.DbServiceAccount;
 import io.featurehub.db.model.DbServiceAccountEnvironment;
+import io.featurehub.db.model.query.QDbAcl;
 import io.featurehub.mr.model.RoleType;
 import io.featurehub.db.model.query.QDbEnvironment;
 import io.featurehub.db.model.query.QDbServiceAccount;
@@ -161,53 +164,43 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
       return null;
     }
 
-    // do they want the permissions?
-    List<DbEnvironment> environmentsPersonHasAccessTo = null;
-    if (opts.contains(FillOpts.Permissions) || opts.contains(FillOpts.SdkURL)) {
-      if (applicationId != null) {
-        UUID appId = ConvertUtils.ifUuid(applicationId);
-        environmentsPersonHasAccessTo =
-          new QDbEnvironment().select(QDbEnvironment.Alias.id)
-            .whenArchived.isNull()
-            .or()
-            .and().parentApplication.id.eq(appId).parentApplication.groupRolesAcl.group.peopleInGroup.eq(personId).endAnd()
-            .and().groupRolesAcl.group.peopleInGroup.eq(personId).groupRolesAcl.roles.notEqualTo("").endAnd()
-            .endOr()
-            .findList();
-      } else {
-        opts = opts.minus(FillOpts.SdkURL, FillOpts.Permissions);
+    DbApplication application = null;
+    boolean personAdmin = false;
+    if (applicationId != null) {
+      application = convertUtils.uuidApplication(applicationId);
+
+      if (application != null) {
+        personAdmin = convertUtils.isPersonApplicationAdmin(personId, application);
       }
     }
-    if (environmentsPersonHasAccessTo == null) {
-      environmentsPersonHasAccessTo = new QDbEnvironment().select(QDbEnvironment.Alias.id)
-          .whenArchived.isNull()
-          .parentApplication.portfolio.id.eq(pId)  // environments in this portfolio
-          .or().groupRolesAcl.group.peopleInGroup.eq(personId)
-          .parentApplication.groupRolesAcl.group.peopleInGroup.eq(personId).endOr() // people who have roles in any application in this portfolio
-          .findList();
-    }
 
-    if (environmentsPersonHasAccessTo.isEmpty()) {
-      return null;
-    }
 
     QDbServiceAccount qFinder = opts(new QDbServiceAccount().portfolio.id.eq(pId), opts);
     if (filter != null) {
       qFinder = qFinder.name.ilike(filter);
     }
 
-    if (applicationId != null) {
-      UUID appId = ConvertUtils.ifUuid(applicationId);
-      if (appId != null) {
-        qFinder = qFinder
-          .portfolio.applications.id.eq(appId);
-      }
+    if (application != null) {
+      qFinder = qFinder
+        .portfolio.applications.eq(application);
 
       qFinder = opts(qFinder, opts);
     }
+
     final Opts updatedOpts = opts;
-    final List<DbEnvironment> envs = environmentsPersonHasAccessTo;
-    return qFinder.findList().stream().map(sa -> convertUtils.toServiceAccount(sa, updatedOpts, envs)).collect(Collectors.toList());
+
+    // if they are an admin they have everything, otherwise spelunk through finding relevant ACLs
+    final List<DbAcl> environmentPermissions = new ArrayList<>();
+
+    if (!personAdmin && application != null && (opts.contains(FillOpts.Permissions) || opts.contains(FillOpts.SdkURL))) {
+      environmentPermissions.addAll(new QDbAcl()
+        .roles.notEqualTo("")
+        .environment.parentApplication.eq(application)
+        .group.peopleInGroup.eq(personId)
+        .environment.fetch(QDbEnvironment.Alias.id).findList());
+    }
+
+    return qFinder.findList().stream().map(sa -> convertUtils.toServiceAccount(sa, updatedOpts, environmentPermissions)).collect(Collectors.toList());
   }
 
   @Override

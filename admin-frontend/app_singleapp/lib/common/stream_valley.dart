@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/common/person_state.dart';
+import 'package:logging/logging.dart';
 import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -12,6 +13,8 @@ class ReleasedPortfolio {
 
 typedef findApplicationsFunc = Future<List<Application>> Function(
     String portfolioId);
+
+final _log = Logger("stream-valley");
 
 class StreamValley {
   final ManagementRepositoryClientBloc mrClient;
@@ -103,14 +106,19 @@ class StreamValley {
   String get currentPortfolioId => currentPortfolio?.id;
 
   set currentPortfolioId(String value) {
+    _log.fine('Attempting to set portfolio at $value');
     if (value != null && _currentPortfolioSource.value?.id != value) {
+      _log.fine('Accepted portfolio id change, triggering');
       currentAppId = null;
 
       // figure out which one we are
       _routeCheckPortfolioSource.add(
           _portfoliosSource.value.firstWhere((element) => element.id == value));
-    } else {
+    } else if (value == null) {
+      _log.fine('Portfolio request was null, storing null.');
       _routeCheckPortfolioSource.add(null); // no portfolio
+    } else {
+      _log.fine('Ignoring portfolio change request');
     }
   }
 
