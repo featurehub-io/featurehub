@@ -2,7 +2,7 @@ version: '3.1'
 
 services:
   party-server:
-    image: featurehub/party-server:0.0.1
+    image: featurehub/party-server:0.0.4
     restart: always
     volumes:
       - ./app-config:/etc/app-config
