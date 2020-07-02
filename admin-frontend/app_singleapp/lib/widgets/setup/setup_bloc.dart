@@ -75,7 +75,10 @@ class SetupBloc implements Bloc {
     if (current == SetupPage.page1) {
       current = SetupPage.page2;
     } else if (current == SetupPage.page2) {
-      if (portfolio != null && orgName != null) {
+      if (portfolio != null &&
+          orgName != null &&
+          portfolio.trim().length > 0 &&
+          orgName.trim().length > 0) {
         _setup(); // trigger setup and transition to next page
 
         current = SetupPage.page3;
