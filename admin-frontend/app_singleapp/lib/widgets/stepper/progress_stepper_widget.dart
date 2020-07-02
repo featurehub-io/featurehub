@@ -81,7 +81,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                   keepCase: true,
                                   onPressed: () => {
                                     ManagementRepositoryClientBloc.router
-                                        .navigateTo(context, '/manage-app',
+                                        .navigateTo(context, '/applications',
                                             transition: TransitionType.material)
                                   },
                                 ),
