@@ -77,7 +77,7 @@ class _SetupPage2State extends State<SetupPage2Widget> {
             ),
             TextFormField(
               controller: _portfolio,
-              onFieldSubmitted: (_) => _handleSubmitted(),
+//              onFieldSubmitted: (_) => _handleSubmitted(),
               decoration: InputDecoration(
                   hintText: 'The name of your first grouping of applications',
                   hintStyle: Theme.of(context).textTheme.caption,
