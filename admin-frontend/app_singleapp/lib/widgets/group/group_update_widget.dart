@@ -48,7 +48,6 @@ class _GroupUpdateDialogWidgetState extends State<GroupUpdateDialogWidget> {
                   autofocus: true,
                   controller: _groupName,
                   decoration: InputDecoration(labelText: 'Group name'),
-                  onFieldSubmitted: (_) => _handleSubmitted(),
                   validator: ((v) {
                     if (v.isEmpty) {
                       return 'Please enter a group name';
