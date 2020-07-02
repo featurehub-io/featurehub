@@ -30,9 +30,7 @@ class ServiceAccountEnvRoute extends StatelessWidget {
                             applications: snapshot.data, bloc: bloc));
                   } else {
                     bloc.setApplicationId(bloc.mrClient.currentAid);
-                    return Container(
-                        padding: EdgeInsets.only(left: 8, top: 15),
-                        child: Text('No applications found!'));
+                    return SizedBox.shrink();
                   }
                 }),
             Container(
@@ -54,7 +52,8 @@ class ServiceAccountEnvRoute extends StatelessWidget {
                   }
 
                   if (envSnapshot.data.serviceAccounts.isEmpty) {
-                    return Text('No service accounts');
+                    return Text('No service accounts available',
+                        style: Theme.of(context).textTheme.caption);
                   }
 
                   return _ServiceAccountDisplayWidget(

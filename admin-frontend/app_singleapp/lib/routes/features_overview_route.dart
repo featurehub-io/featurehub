@@ -99,7 +99,7 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
                                       onPressed: () =>
                                           ManagementRepositoryClientBloc.router
                                               .navigateTo(
-                                                  context, '/manage-app',
+                                                  context, '/applications',
                                                   transition:
                                                       TransitionType.material)),
                                 ],

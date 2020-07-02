@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
@@ -66,6 +67,14 @@ public class SetupResource implements SetupServiceDelegate {
 
     if (existingOrg != null) {
       throw new WebApplicationException("duplicate", Response.Status.CONFLICT);
+    }
+
+    if (setupSiteAdmin.getPortfolio().trim().length() == 0) {
+      throw new BadRequestException("Portfolio cannot be 0 length");
+    }
+
+    if (setupSiteAdmin.getOrganizationName().trim().length() == 0) {
+      throw new BadRequestException("Org name cannot be 0 length");
     }
 
     // create them

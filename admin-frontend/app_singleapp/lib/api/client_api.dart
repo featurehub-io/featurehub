@@ -8,6 +8,7 @@ import 'package:app_singleapp/common/stream_valley.dart';
 import 'package:app_singleapp/utils/utils.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import 'package:mrapi/api.dart';
 import 'package:openapi_dart_common/openapi.dart';
 import 'package:rxdart/rxdart.dart';
@@ -31,6 +32,8 @@ enum InitializedCheckState {
 
 // if true then if we find we are on localhost, we redirect to 8903 for api calls
 bool overrideOrigin = true;
+
+final _log = Logger("mr_bloc");
 
 ///
 /// This is the overall master BLoC that controls the state of the main application and holds
@@ -396,6 +399,7 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   void dialogError(e, StackTrace s,
       {String messageTitle, bool showDetails = true, String messageBody = ''}) {
+    _log.warning(messageBody ?? "failure", e, s);
     if (messageTitle != null) {
       addError(FHError(messageTitle,
           exception: e,

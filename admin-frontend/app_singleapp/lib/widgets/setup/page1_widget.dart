@@ -142,7 +142,6 @@ class _SetupPage1State extends State<SetupPage1Widget> {
                 controller: _pw2,
                 obscureText: true,
                 onFieldSubmitted: (_) => _handleSubmitted(),
-                textInputAction: TextInputAction.next,
                 decoration: InputDecoration(labelText: 'Confirm Password'),
                 validator: (v) {
                   if (v != _pw1.text) {
