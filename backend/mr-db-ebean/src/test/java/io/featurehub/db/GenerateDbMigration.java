@@ -1,13 +1,9 @@
-package main;
+package io.featurehub.db;
 
 import io.ebean.annotation.Platform;
 import io.ebean.dbmigration.DbMigration;
 
-/**
- * Generate the DB Migration.
- */
 public class GenerateDbMigration {
-
   public static void main(String[] args) throws Exception {
     DbMigration dbMigration = DbMigration.create();
     dbMigration.addPlatform(Platform.SQLSERVER17, "mssql");

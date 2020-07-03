@@ -51,44 +51,9 @@
       <version>1.1-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>io.ebean</groupId>
-      <artifactId>ebean-annotation</artifactId>
-      <version>6.11</version>
-    </dependency>
-    <dependency>
-      <groupId>io.ebean</groupId>
-      <artifactId>persistence-api</artifactId>
-      <version>2.2.2</version>
-    </dependency>
-    <dependency>
-      <groupId>org.flywaydb</groupId>
-      <artifactId>flyway-core</artifactId>
-      <version>5.0.7</version>
-    </dependency>
-    <dependency>
-      <groupId>io.ebean</groupId>
-      <artifactId>ebean</artifactId>
-      <version>${ebean.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.ebean</groupId>
-      <artifactId>ebean-querybean</artifactId>
-      <version>${ebean.version}</version>
-    </dependency>
-    <dependency> <!-- this is a case for it being in the tile -->
-      <groupId>io.ebean</groupId>
-      <artifactId>querybean-generator</artifactId>
-      <version>${ebean.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-p6spy</artifactId>
-      <version>0.2.2</version>
-    </dependency>
-    <dependency>
-      <groupId>p6spy</groupId>
-      <artifactId>p6spy</artifactId>
-      <version>3.8.0</version>
+      <groupId>io.featurehub.composites</groupId>
+      <artifactId>composite-ebean</artifactId>
+      <version>1.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>io.featurehub.composites</groupId>
@@ -106,6 +71,7 @@
       <groupId>io.ebean.test</groupId>
       <artifactId>ebean-test-config</artifactId>
       <version>11.41.2</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.nats</groupId>
