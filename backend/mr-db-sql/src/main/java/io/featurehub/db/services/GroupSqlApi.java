@@ -22,6 +22,7 @@ import io.featurehub.mr.model.ApplicationGroupRole;
 import io.featurehub.mr.model.ApplicationRoleType;
 import io.featurehub.mr.model.EnvironmentGroupRole;
 import io.featurehub.mr.model.Group;
+import io.featurehub.mr.model.Organization;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.SortOrder;
 import org.slf4j.Logger;
@@ -78,6 +79,48 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
     }
 
     return null;
+  }
+
+  @Override
+  public List<Group> groupsPersonOrgAdminOf(String personId) {
+    UUID pId = ConvertUtils.ifUuid(personId);
+
+    if (personId != null) {
+      return new QDbGroup()
+        .whenArchived.isNull()
+        .peopleInGroup.id.eq(pId)
+        .findList().stream()
+        .map(g -> convertUtils.toGroup(g, Opts.empty()))
+        .collect(Collectors.toList());
+    }
+
+    return new ArrayList<>();
+  }
+
+  @Override
+  public List<Organization> orgsUserIn(String personId) {
+    UUID pId = ConvertUtils.ifUuid(personId);
+
+    if (pId != null) {
+      return new QDbOrganization()
+        .or()
+        .and()
+        .group.whenArchived.isNull()
+        .group.peopleInGroup.id.eq(pId)
+        .endAnd()
+        .and()
+        .portfolios.groups.whenArchived.isNull()
+        .portfolios.groups.peopleInGroup.id.eq(pId)
+        .endAnd()
+        .endOr()
+        .findList().stream()
+        .map(o -> convertUtils.toOrganization(o, Opts.empty()))
+        .collect(Collectors.toList());
+
+    }
+
+
+    return new ArrayList<>();
   }
 
   @Override

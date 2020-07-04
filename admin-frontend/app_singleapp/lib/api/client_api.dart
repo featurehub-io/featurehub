@@ -187,8 +187,8 @@ class ManagementRepositoryClientBloc implements Bloc {
   static String homeUrl() {
     final origin = window.location.origin;
     originUri = Uri.parse(origin);
-    if (overrideOrigin && origin.startsWith('http://localhost')) {
-      return 'http://localhost:8903';
+    if (overrideOrigin) {
+      return '${originUri.scheme}://${originUri.host}:8903';
     } else if (overrideOrigin && origin.startsWith('http://[::1]')) {
       return 'http://[::1]:8903';
     } else {

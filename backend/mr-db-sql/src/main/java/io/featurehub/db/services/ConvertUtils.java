@@ -518,17 +518,25 @@ public class ConvertUtils {
     return portfolio;
   }
 
-  public Organization toOrganization(DbOrganization org) {
+  public Organization toOrganization(DbOrganization org, Opts opts) {
     if (org == null) {
       return null;
     }
 
-    return new Organization()
+    final Organization organisation = new Organization()
       .name(stripArchived(org.getName(), org.getWhenArchived()))
       .id(org.getId().toString())
       .whenArchived(toOff(org.getWhenArchived()))
-      .orgGroup(toGroup(new QDbGroup().adminGroup.isTrue().owningPortfolio.isNull().owningOrganization.eq(org).findOne(), Opts.empty()))
       .admin(true);
+
+    if (opts.contains(FillOpts.Groups)) {
+      organisation.orgGroup(
+        toGroup(
+          new QDbGroup().adminGroup.isTrue().owningPortfolio.isNull().owningOrganization.eq(org).findOne(), Opts.empty()));
+
+    }
+
+    return organisation;
   }
 
   public DbGroup uuidGroup(String gid, Opts opts) {

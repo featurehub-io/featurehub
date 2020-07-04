@@ -4,6 +4,7 @@ import cd.connect.jersey.common.CorsFilter;
 import io.featurehub.db.publish.CacheSource;
 import io.featurehub.db.publish.MRPublishModule;
 import io.featurehub.db.publish.PublishManager;
+import io.featurehub.db.utils.MROrgBindingModule;
 import io.featurehub.db.utils.MRSqlModule;
 import io.featurehub.mr.api.ApplicationServiceDelegate;
 import io.featurehub.mr.api.ApplicationServiceDelegator;
@@ -30,7 +31,6 @@ import io.featurehub.mr.auth.AuthManager;
 import io.featurehub.mr.auth.AuthManagerService;
 import io.featurehub.mr.auth.AuthenticationRepository;
 import io.featurehub.mr.auth.DatabaseAuthRepository;
-import io.featurehub.mr.filters.ConstraintExceptionHandler;
 import io.featurehub.mr.resources.ApplicationResource;
 import io.featurehub.mr.resources.AuthResource;
 import io.featurehub.mr.resources.EnvironmentFeatureResource;
@@ -48,7 +48,6 @@ import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.spi.Container;
 import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
-import org.glassfish.jersey.server.validation.ValidationFeature;
 
 import javax.inject.Singleton;
 import javax.ws.rs.core.Feature;
@@ -76,6 +75,7 @@ public class ManagementRepositoryFeature implements Feature {
       ).forEach(o -> context.register(o));
 
     context.register(new MRSqlModule());
+    context.register(new MROrgBindingModule());
     context.register(new MRPublishModule());
     context.property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
     context.register(new AbstractBinder() {

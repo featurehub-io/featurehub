@@ -2,6 +2,8 @@ package io.featurehub.db.services;
 
 import io.ebean.Database;
 import io.ebean.annotation.Transactional;
+import io.featurehub.db.api.FillOpts;
+import io.featurehub.db.api.Opts;
 import io.featurehub.db.api.OrganizationApi;
 import io.featurehub.db.model.DbNamedCache;
 import io.featurehub.db.model.DbOrganization;
@@ -27,7 +29,7 @@ public class OrganizationSqlApi implements OrganizationApi {
 
   public Organization get() {
     final List<DbOrganization> orgs = new QDbOrganization().setMaxRows(1).whenArchived.isNull().findList();
-    return orgs.size() == 0 ? null : convertUtils.toOrganization(orgs.get(0));
+    return orgs.size() == 0 ? null : convertUtils.toOrganization(orgs.get(0), Opts.opts(FillOpts.Groups));
   }
 
   @Transactional
@@ -44,6 +46,6 @@ public class OrganizationSqlApi implements OrganizationApi {
 
     database.save(newOrg);
 
-    return convertUtils.toOrganization(newOrg);
+    return convertUtils.toOrganization(newOrg, Opts.opts(FillOpts.Groups));
   }
 }

@@ -1,6 +1,7 @@
 package io.featurehub.db.api;
 
 import io.featurehub.mr.model.Group;
+import io.featurehub.mr.model.Organization;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.SortOrder;
 
@@ -11,6 +12,10 @@ public interface GroupApi {
   boolean isPersonMemberOfPortfolioGroup(String portfolioId, String personId);
 
   Group getSuperuserGroup(String id, Person personAsking);
+
+  List<Group> groupsPersonOrgAdminOf(String personId);
+
+  List<Organization> orgsUserIn(String personId);
 
   class DuplicateGroupException extends Exception {}
   /**
