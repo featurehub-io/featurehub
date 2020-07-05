@@ -28,30 +28,49 @@ as and when needed.
 image::images/fh_architecture.svg[Architecture,600]
 
 == Installation
-There are 3 main deployment options for running FeatureHub.
-//TODO details of how to configure each deployment option
+There are 3 main deployment options for running FeatureHub. As FeatureHub is packaged as a _Cloud Native_
+bundle, all parts are Docker images and are intended to be used with that technology (i.e. Docker or Kubernetes).
 
-=== Option 1 - Simple Deployment
-This is the most basic option recommended for getting started quickly.
-It uses one Docker container for the entire stack and has an embedded H2 database.
-You will need to mount and external volume to persist your database.
+All sample configurations are in the `run-configurations` folder. All of the run configurations mount the 
+database volume separately from the main set of containers, allowing you to upgrade your database and
+versions of FeatureHub without destroying your database.
+
+=== Option 1 - Evaluation Deployment
+This is the most basic option recommended for getting started quickly, and is the example we use in demos.
+
+It uses one Docker container for the entire stack and has support for all supported databases
+baked in. It comes in two flavours out of the box, but it should be fairly easy
+to make your own. The two web endpoints of interest -  the Management Server and the Edge layer that client
+SDKs talk to - are all served from the same web server, and fully exposed. 
+
+This deployment, with an attached Docker volume for the database, is not recommended for production usage,
+it is only really for demonstration and evaluation purposes.
+
+The configurations for these are `run-configurations/all-in-one-h2` and `run-configurations/all-in-one-postgres`.
 
 image::images/fh_deployment_option_1.svg[Option 1,500]
-NOTE: H2 is not generally considered scalable and doesn’t have online backup and restore tools.
+NOTE: this comes in two flavours, H2 and Postgres, these are the two databases we test actively with.
 
 === Option 2 - Low Volume Deployment
-This is the same as the Simple install except you use a separate Database of your choice.
-This option is good for moderate usage applications where you're not expecting a
-large volume of feature value requests, from the application.
+In this deployment, all pieces are split into separate Docker containers, but the Docker-Compose runs them
+all in the same server. This example is designed to show you how you can split and separate the configuration
+for each of these pieces. 
 
-image::images/fh_deployment_option_2.svg[Option 2,500]
-NOTE: FeatureHub runs on any standard SQL Database including PostgreSQL, MySQL, MS SQL Server, Oracle.
+Because they are deployed in separate containers, you have considerably greater control over what 
+network traffic gains access to each of these pieces, and they do not all sit under the same Web server. However
+because they run in a single Docker-Compose, they must run on different ports, which means you will need further
+configuration to expose them in a normal organisation.
+
+image::images/fh_deployment_option_3.svg[Option 3,500]
+NOTE: FeatureHub runs on the following SQL Databases: PostgreSQL, MySQL, MS SQL Server, Oracle and we provide
+initialization and migration DDL for each of these databases. Others can be supported, please contact us.
+NOTE: In this `docker-compose` image, there is a database along with an initialization script. If you are wishing
+to seriously use this, you will need to run an external database.
 
 === Option 3 - Scalable Deployment
 This option is best if you want to run FeatureHub at scale. Running separate instances of Edge, Cache, NATS and
 FeatureHub Server, means you can deploy these components independently for scalability and redundancy.
 
-image::images/fh_deployment_option_3.svg[Option 3,500]
 NOTE: Inorder to scale FeatureHub Server, you need to have first configured a separate database
 (see <<Option 2 - Low Volume Deployment>> above).
 
@@ -99,7 +118,8 @@ You can create features of the following types:
 * `NUMBER` numerical values
 * `STRING` string values
 * `JSON` valid JSON only (typically used for remote configuration)
-* `YAML` valid YAML only (typically used for remote configuration)
+
+NOTE: future support will exist for YAML and JSON-Schema to ensure valid configuration for JSON and YAML types.
 
 ==== Feature key
 
