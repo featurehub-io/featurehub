@@ -21,8 +21,8 @@ class AuthenticationSpec extends Specification {
     System.setProperty("ebean.ddl.generate", "true")
     System.setProperty("ebean.ddl.run", "true")
     database = DB.getDefault()
-    convertUtils = new ConvertUtils(database)
-    def archiveStrategy = new DbArchiveStrategy(database, convertUtils, Mock(CacheSource))
+    convertUtils = new ConvertUtils()
+    def archiveStrategy = new DbArchiveStrategy(database, Mock(CacheSource))
     auth = new AuthenticationSqlApi(database, convertUtils)
     personApi = new PersonSqlApi(database, convertUtils, archiveStrategy)
 

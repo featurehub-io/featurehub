@@ -14,7 +14,7 @@ import io.featurehub.db.model.query.QDbEnvironment;
 import io.featurehub.db.model.query.QDbEnvironmentFeatureStrategy;
 import io.featurehub.db.model.query.QDbNamedCache;
 import io.featurehub.db.model.query.QDbServiceAccount;
-import io.featurehub.db.services.ConvertUtils;
+import io.featurehub.db.services.Conversions;
 import io.featurehub.mr.model.Environment;
 import io.featurehub.mr.model.EnvironmentCacheItem;
 import io.featurehub.mr.model.Feature;
@@ -41,14 +41,14 @@ import java.util.stream.Collectors;
 public class DbCacheSource implements CacheSource {
   private static final Logger log = LoggerFactory.getLogger(DbCacheSource.class);
 
-  private final ConvertUtils convertUtils;
+  private final Conversions convertUtils;
   private ExecutorService executor;
   @ConfigKey("cache.pool-size")
   private Integer cachePoolSize = 10;
   private Map<String, CacheBroadcast> cacheBroadcasters = new HashMap<>();
 
   @Inject
-  public DbCacheSource(ConvertUtils convertUtils) {
+  public DbCacheSource(Conversions convertUtils) {
     this.convertUtils = convertUtils;
     DeclaredConfigResolver.resolve(this);
     executor = Executors.newFixedThreadPool(cachePoolSize);
