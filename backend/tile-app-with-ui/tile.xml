@@ -24,6 +24,28 @@
       <build>
         <plugins>
           <plugin>
+            <groupId>pl.project13.maven</groupId>
+            <artifactId>git-commit-id-plugin</artifactId>
+            <version>4.0.0</version>
+            <executions>
+              <execution>
+                <id>get-info</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>revision</goal>
+                </goals>
+            </execution>
+            </executions>
+            <configuration>
+              <generateGitPropertiesFile>false</generateGitPropertiesFile>
+              <verbose>true</verbose>
+              <dateFormat>yyyy-MM-dd'T'HH:mm:ss'Z'</dateFormat>
+              <includeOnlyProperties>
+                <includeOnlyProperty>git.commit.time</includeOnlyProperty>
+              </includeOnlyProperties>
+            </configuration>
+          </plugin>
+          <plugin>
             <groupId>cd.connect.pipeline</groupId>
             <artifactId>docker-manifest-collectosaur-plugin</artifactId>
             <version>1.2</version>
@@ -106,6 +128,7 @@
                   <jvmFlag>-XX:+UseContainerSupport</jvmFlag>
                   <jvmFlag>-XX:MaxRAMPercentage=80</jvmFlag>
                 </jvmFlags>
+                <filesModificationTime>${git.commit.time}</filesModificationTime>
                 <args>
                   <arg>-R${app.entrypoint}</arg>
                   <arg>-P/etc/common-config/common.properties</arg>
