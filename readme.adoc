@@ -23,12 +23,7 @@ image::docs/images/FH-flags.gif[FeatureHub console demo,800]
 
 === Supported SDKs
 
-image:docs/images/java-logo.png[Java Logo,100]  : : : :
-image:docs/images/node-js-logo.png[Node Logo,100]  : : : :
-image:docs/images/javascript-logo.png[Javscript Logo,50] : : : :
-image:docs/images/react-logo.png[React Logo,100]: : : :
-image:docs/images/go-logo.png[Go Logo,100]: : :  :
-image:docs/images/dart-logo.png[Go Logo,100]
+image:docs/images/languages.png[Java Logo,1000]
 
 === Easy to use
 
