@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'FHFlatButton.dart';
 import 'fh_alert_dialog.dart';
-import 'fh_outline_button.dart';
+import 'fh_flat_button_transparent.dart';
 
 typedef DeleteThingFunction = Future<bool> Function();
 
@@ -54,8 +54,9 @@ class FHDeleteThingWarningWidget extends StatelessWidget {
       ),
       actions: <Widget>[
         // usually buttons at the bottom of the dialog
-        FHOutlineButton(
+        FHFlatButtonTransparent(
           title: 'Cancel',
+          keepCase: true,
           onPressed: () {
             bloc.removeOverlay();
           },

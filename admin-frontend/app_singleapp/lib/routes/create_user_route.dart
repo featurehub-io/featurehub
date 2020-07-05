@@ -6,9 +6,9 @@ import 'package:app_singleapp/utils/utils.dart';
 import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/fh_card.dart';
 import 'package:app_singleapp/widgets/common/fh_filled_input_decoration.dart';
+import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/common/fh_footer_button_bar.dart';
 import 'package:app_singleapp/widgets/common/fh_header.dart';
-import 'package:app_singleapp/widgets/common/fh_outline_button.dart';
 import 'package:app_singleapp/widgets/user/common/admin_checkbox.dart';
 import 'package:app_singleapp/widgets/user/common/portfolio_group_selector_widget.dart';
 import 'package:app_singleapp/widgets/user/create/create_user_bloc.dart';
@@ -185,7 +185,7 @@ class TopWidgetSuccess extends StatelessWidget {
             style: Theme.of(context).textTheme.caption,
           ),
           FHButtonBar(children: [
-            FHOutlineButton(
+            FHFlatButtonTransparent(
                 onPressed: () {
                   bloc.backToDefault();
                   ManagementRepositoryClientBloc.router.navigateTo(
@@ -227,16 +227,18 @@ class CreateUserFormButtons extends StatelessWidget {
     final bloc = BlocProvider.of<CreateUserBloc>(context);
 
     return FHButtonBar(children: <Widget>[
-      FHOutlineButton(
-          onPressed: () {
-            if (bloc.formKey != null) {
-              bloc.formKey.currentState.reset;
-            }
-            ManagementRepositoryClientBloc.router.navigateTo(
-                context, '/manage-users',
-                transition: TransitionType.material);
-          },
-          title: 'Cancel'),
+      FHFlatButtonTransparent(
+        onPressed: () {
+          if (bloc.formKey != null) {
+            bloc.formKey.currentState.reset;
+          }
+          ManagementRepositoryClientBloc.router.navigateTo(
+              context, '/manage-users',
+              transition: TransitionType.material);
+        },
+        title: 'Cancel',
+        keepCase: true,
+      ),
       Padding(
           padding: const EdgeInsets.only(left: 8.0),
           child: FHFlatButton(

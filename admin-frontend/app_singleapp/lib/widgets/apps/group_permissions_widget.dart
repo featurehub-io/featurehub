@@ -219,11 +219,13 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                     Table(children: rows),
                     FHButtonBar(children: [
                       FHFlatButtonTransparent(
-                          onPressed: () {
-                            currentGroup = null;
-                            widget.bloc.resetGroup(groupSnapshot.data);
-                          },
-                          title: 'Cancel'),
+                        onPressed: () {
+                          currentGroup = null;
+                          widget.bloc.resetGroup(groupSnapshot.data);
+                        },
+                        title: 'Cancel',
+                        keepCase: true,
+                      ),
                       FHFlatButton(
                           onPressed: () {
                             final newList = <EnvironmentGroupRole>[];

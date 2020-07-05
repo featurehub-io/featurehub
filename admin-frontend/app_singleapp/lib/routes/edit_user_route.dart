@@ -7,7 +7,6 @@ import 'package:app_singleapp/widgets/common/fh_filled_input_decoration.dart';
 import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/common/fh_footer_button_bar.dart';
 import 'package:app_singleapp/widgets/common/fh_header.dart';
-import 'package:app_singleapp/widgets/common/fh_outline_button.dart';
 import 'package:app_singleapp/widgets/user/common/admin_checkbox.dart';
 import 'package:app_singleapp/widgets/user/common/portfolio_group_selector_widget.dart';
 import 'package:app_singleapp/widgets/user/edit/edit_user_bloc.dart';
@@ -123,7 +122,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
           PortfolioGroupSelector(),
           AdminCheckboxWidget(person: bloc.person),
           FHButtonBar(children: <Widget>[
-            FHOutlineButton(
+            FHFlatButtonTransparent(
                 onPressed: () {
                   if (_formKey != null) {
                     _formKey.currentState.reset;
@@ -221,7 +220,8 @@ class _UserPasswordUpdateDialogWidgetState
           ),
         ),
         actions: <Widget>[
-          FHOutlineButton(
+          FHFlatButtonTransparent(
+            keepCase: true,
             title: 'Cancel',
             onPressed: () {
               widget.bloc.mrClient.removeOverlay();

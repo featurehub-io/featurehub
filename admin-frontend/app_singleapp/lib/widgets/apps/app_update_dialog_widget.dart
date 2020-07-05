@@ -1,6 +1,6 @@
 import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/fh_alert_dialog.dart';
-import 'package:app_singleapp/widgets/common/fh_outline_button.dart';
+import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:openapi_dart_common/openapi.dart';
@@ -88,8 +88,9 @@ class _AppUpdateDialogWidgetState extends State<AppUpdateDialogWidget> {
             actions: [
               ButtonBar(
                 children: <Widget>[
-                  FHOutlineButton(
+                  FHFlatButtonTransparent(
                     title: 'Cancel',
+                    keepCase: true,
                     onPressed: () {
                       widget.bloc.mrClient.removeOverlay();
                     },
