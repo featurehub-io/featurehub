@@ -281,6 +281,20 @@ components:
             whenArchived:
               type: string
               format: date-time
+            additional:
+              type: array
+              items:
+                $ref: "#/components/schemas/PersonInfo"
+    PersonInfo:
+      type: object
+      required:
+        - key
+        - value
+      properties:
+        key:
+          type: string
+        value:
+          type: string
     PersonId:
       required:
         - id

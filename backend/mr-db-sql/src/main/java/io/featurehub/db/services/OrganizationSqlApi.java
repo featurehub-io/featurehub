@@ -19,10 +19,10 @@ import java.util.List;
 @Singleton
 public class OrganizationSqlApi implements OrganizationApi {
   private final Database database;
-  private final ConvertUtils convertUtils;
+  private final Conversions convertUtils;
 
   @Inject
-  public OrganizationSqlApi(Database database, ConvertUtils convertUtils) {
+  public OrganizationSqlApi(Database database, Conversions convertUtils) {
     this.database = database;
     this.convertUtils = convertUtils;
   }

@@ -45,11 +45,11 @@ import java.util.stream.Collectors;
 public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
   private static final Logger log = LoggerFactory.getLogger(GroupSqlApi.class);
   private final Database database;
-  private final ConvertUtils convertUtils;
+  private final Conversions convertUtils;
   private final ArchiveStrategy archiveStrategy;
 
   @Inject
-  public GroupSqlApi(Database database, ConvertUtils convertUtils, ArchiveStrategy archiveStrategy) {
+  public GroupSqlApi(Database database, Conversions convertUtils, ArchiveStrategy archiveStrategy) {
     this.database = database;
     this.convertUtils = convertUtils;
     this.archiveStrategy = archiveStrategy;
@@ -57,15 +57,15 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
 
   @Override
   public boolean isPersonMemberOfPortfolioGroup(String portfolioId, String personId) {
-    UUID portId = ConvertUtils.ifUuid(portfolioId);
-    UUID persId = ConvertUtils.ifUuid(personId);
+    UUID portId = Conversions.ifUuid(portfolioId);
+    UUID persId = Conversions.ifUuid(personId);
 
     return new QDbGroup().owningPortfolio.id.eq(portId).peopleInGroup.id.eq(persId).findCount() > 0;
   }
 
   @Override
   public Group getSuperuserGroup(String id, Person personAsking) {
-    UUID orgId = ConvertUtils.ifUuid(id);
+    UUID orgId = Conversions.ifUuid(id);
     DbPerson person = convertUtils.uuidPerson(personAsking);
     if (orgId == null || person == null) {
       return null;
@@ -83,7 +83,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
 
   @Override
   public List<Group> groupsPersonOrgAdminOf(String personId) {
-    UUID pId = ConvertUtils.ifUuid(personId);
+    UUID pId = Conversions.ifUuid(personId);
 
     if (personId != null) {
       return new QDbGroup()
@@ -99,7 +99,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
 
   @Override
   public List<Organization> orgsUserIn(String personId) {
-    UUID pId = ConvertUtils.ifUuid(personId);
+    UUID pId = Conversions.ifUuid(personId);
 
     if (pId != null) {
       return new QDbOrganization()
@@ -125,7 +125,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
 
   @Override
   public Group createOrgAdminGroup(String orgId, String groupName, Person whoCreated) {
-    final Group group = ConvertUtils.uuid(orgId).map(orgUuid -> {
+    final Group group = Conversions.uuid(orgId).map(orgUuid -> {
       DbOrganization org = new QDbOrganization().id.eq(orgUuid).findOne();
 
       if (org == null || new QDbGroup().whenArchived.isNull().owningOrganization.id.eq(orgUuid).findCount() > 0) {
@@ -137,7 +137,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
         .adminGroup(true)
         .owningOrganization(org);
 
-      ConvertUtils.uuid(whoCreated.getId().getId()).flatMap(pId -> new QDbPerson().id.eq(pId).findOneOrEmpty()).ifPresent(builder::whoCreated);
+      Conversions.uuid(whoCreated.getId().getId()).flatMap(pId -> new QDbPerson().id.eq(pId).findOneOrEmpty()).ifPresent(builder::whoCreated);
 
       DbGroup dbGroup = builder.build();
 
@@ -237,11 +237,11 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
 
   @Override
   public Group addPersonToGroup(String groupId, String personId, Opts opts) {
-    return ConvertUtils.uuid(groupId).map(gid -> {
+    return Conversions.uuid(groupId).map(gid -> {
       DbGroup dbGroup = new QDbGroup().id.eq(gid).whenArchived.isNull().findOne(); // no adding people to archived groups
 
       if (dbGroup != null) {
-        return ConvertUtils.uuid(personId).map(pId ->
+        return Conversions.uuid(personId).map(pId ->
           new QDbPerson().id.eq(pId).whenArchived.isNull().findOneOrEmpty().map(person -> {
             // make sure we can't find them
             QDbGroup groupFinder = new QDbGroup().id.eq(gid).peopleInGroup.id.eq(pId);
@@ -279,7 +279,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
 
   @Override
   public Group getGroup(String gid, Opts opts, Person person) {
-    return ConvertUtils.uuid(gid).map(groupId ->
+    return Conversions.uuid(gid).map(groupId ->
     {
       QDbGroup eq = new QDbGroup().id.eq(groupId).peopleInGroup.fetch();
 
@@ -301,7 +301,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
 
   @Override
   public Group findPortfolioAdminGroup(String portfolioId, Opts opts) {
-    return ConvertUtils.uuid(portfolioId).map(pId -> {
+    return Conversions.uuid(portfolioId).map(pId -> {
       DbPortfolio portfolio = new QDbPortfolio().id.eq(pId).findOne();
       if (portfolio == null) {
         return null;
@@ -319,7 +319,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
 
   @Override
   public Group findOrganizationAdminGroup(String orgId, Opts opts) {
-    UUID org = ConvertUtils.ifUuid(orgId);
+    UUID org = Conversions.ifUuid(orgId);
 
     if (org == null) {
       return null;
@@ -331,7 +331,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
 
   @Override
   public List<Group> groupsWherePersonIsAnAdminMember(String personId) {
-    return ConvertUtils.uuid(personId)
+    return Conversions.uuid(personId)
       .map(pId -> new QDbGroup().whenArchived.isNull().peopleInGroup.id.eq(pId).and().adminGroup.isTrue().endAnd().findList()
         .stream().map(g -> convertUtils.toGroup(g, Opts.empty())).collect(Collectors.toList())).orElse(null);
   }
@@ -339,7 +339,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
   @Override
   @Transactional
   public void deleteGroup(String gid) {
-    ConvertUtils.uuid(gid).flatMap(groupId -> new QDbGroup().id.eq(groupId).findOneOrEmpty()).ifPresent(archiveStrategy::archiveGroup);
+    Conversions.uuid(gid).flatMap(groupId -> new QDbGroup().id.eq(groupId).findOneOrEmpty()).ifPresent(archiveStrategy::archiveGroup);
   }
 
   @Override
@@ -348,7 +348,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
     DbPerson person = convertUtils.uuidPerson(personId);
 
     if (person != null) {
-      UUID gId = ConvertUtils.ifUuid(groupId);
+      UUID gId = Conversions.ifUuid(groupId);
       if (gId != null) {
         DbGroup group = new QDbGroup().id.eq(gId).whenArchived.isNull().peopleInGroup.eq(person).findOne();
         // if it is an admin portfolio group and they are a superuser, you can't remove them
@@ -467,7 +467,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
     Set<String> addedApplications = new HashSet<>();
 
     updatedApplicationRoles.forEach(role -> {
-      ConvertUtils.uuid(role.getApplicationId()).ifPresent(uuid -> desiredApplications.put(uuid, role));
+      Conversions.uuid(role.getApplicationId()).ifPresent(uuid -> desiredApplications.put(uuid, role));
       addedApplications.add(role.getApplicationId()); // ensure uniqueness
     });
 
@@ -525,7 +525,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
     Set<String> addedEnvironments = new HashSet<>();
 
     environmentRoles.forEach(role -> {
-      ConvertUtils.uuid(role.getEnvironmentId()).ifPresent(uuid -> desiredEnvironments.put(uuid, role));
+      Conversions.uuid(role.getEnvironmentId()).ifPresent(uuid -> desiredEnvironments.put(uuid, role));
       addedEnvironments.add(role.getEnvironmentId()); // ensure uniqueness
     });
 
@@ -632,7 +632,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
 
   @Override
   public List<Group> findGroups(String portfolioId, String filter, SortOrder ordering, Opts opts) {
-    return ConvertUtils.uuid(portfolioId).map(pId -> {
+    return Conversions.uuid(portfolioId).map(pId -> {
       QDbGroup gFinder = new QDbGroup().owningPortfolio.id.eq(pId);
 
       if (filter != null && filter.trim().length() > 0) {
@@ -657,7 +657,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
 
   @Override
   public void updateAdminGroupForPortfolio(String portfolioId, String name) {
-    ConvertUtils.uuid(portfolioId).flatMap(pId -> new QDbGroup().whenArchived.isNull().owningPortfolio.id.eq(pId).and().adminGroup.isTrue().endAnd().findOneOrEmpty()).ifPresent(group -> {
+    Conversions.uuid(portfolioId).flatMap(pId -> new QDbGroup().whenArchived.isNull().owningPortfolio.id.eq(pId).and().adminGroup.isTrue().endAnd().findOneOrEmpty()).ifPresent(group -> {
       group.setName(name);
       saveGroup(group);
     });

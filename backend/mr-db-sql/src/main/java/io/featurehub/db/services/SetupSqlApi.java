@@ -13,10 +13,10 @@ import javax.inject.Singleton;
 @Singleton
 public class SetupSqlApi implements SetupApi {
   private final Database database;
-  private final ConvertUtils convertUtils;
+  private final Conversions convertUtils;
 
   @Inject
-  public SetupSqlApi(Database database, ConvertUtils convertUtils) {
+  public SetupSqlApi(Database database, Conversions convertUtils) {
     this.database = database;
     this.convertUtils = convertUtils;
   }

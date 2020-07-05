@@ -54,11 +54,11 @@ import java.util.stream.Collectors;
 public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
   private static final Logger log = LoggerFactory.getLogger(FeatureSqlApi.class);
   private final Database database;
-  private final ConvertUtils convertUtils;
+  private final Conversions convertUtils;
   private final CacheSource cacheSource;
 
   @Inject
-  public FeatureSqlApi(Database database, ConvertUtils convertUtils, CacheSource cacheSource) {
+  public FeatureSqlApi(Database database, Conversions convertUtils, CacheSource cacheSource) {
     this.database = database;
     this.convertUtils = convertUtils;
     this.cacheSource = cacheSource;
@@ -66,7 +66,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
 
   @Override
   public FeatureValue createFeatureValueForEnvironment(String eid, String key, FeatureValue featureValue, PersonFeaturePermission person) throws OptimisticLockingException, NoAppropriateRole {
-    UUID eId = ConvertUtils.ifUuid(eid);
+    UUID eId = Conversions.ifUuid(eid);
 
     if (!person.hasWriteRole()) {
       DbEnvironment env = new QDbEnvironment().id.eq(eId).whenArchived.isNull().findOne();
@@ -134,7 +134,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
   @Override
   @Transactional
   public boolean deleteFeatureValueForEnvironment(String eid, String key) {
-    UUID eId = ConvertUtils.ifUuid(eid);
+    UUID eId = Conversions.ifUuid(eid);
 
     if (eId != null) {
       DbEnvironmentFeatureStrategy strategy = new QDbEnvironmentFeatureStrategy().environment.id.eq(eId).feature.key.eq(key).findOne();
@@ -209,7 +209,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
 
   @Override
   public FeatureValue getFeatureValueForEnvironment(String eid, String key) {
-    UUID eId = ConvertUtils.ifUuid(eid);
+    UUID eId = Conversions.ifUuid(eid);
 
     if (eId != null) {
 //      new QDbEnvironmentFeatureStrategy().feature.key.eq(key).findList().forEach(fv -> {
@@ -224,7 +224,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
 
   @Override
   public EnvironmentFeaturesResult getAllFeatureValuesForEnvironment(String eid) {
-    UUID eId = ConvertUtils.ifUuid(eid);
+    UUID eId = Conversions.ifUuid(eid);
 
     if (eId != null) {
       return new EnvironmentFeaturesResult()
@@ -240,7 +240,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
   @Override
   @Transactional
   public List<FeatureValue> updateAllFeatureValuesForEnvironment(String eid, List<FeatureValue> featureValues, PersonFeaturePermission person) throws OptimisticLockingException, NoAppropriateRole {
-    UUID eId = ConvertUtils.ifUuid(eid);
+    UUID eId = Conversions.ifUuid(eid);
 
     if (featureValues == null || featureValues.size() != featureValues.stream().map(FeatureValue::getKey).collect(Collectors.toSet()).size()) {
       throw new BadRequestException("Invalid update dataset");
@@ -295,7 +295,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
   @Override
   public void updateFeature(String sdkUrl, String envId, String featureKey, boolean updatingValue, Function<FeatureValueType, FeatureValue> buildFeatureValue) {
     // not checking permissions, edge checks those
-    UUID eid = ConvertUtils.ifUuid(envId);
+    UUID eid = Conversions.ifUuid(envId);
     if (eid != null) {
       DbApplicationFeature feature = new QDbApplicationFeature().parentApplication.environments.id.eq(eid).key.eq(featureKey).findOne();
 
@@ -457,7 +457,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
       Map<UUID, DbEnvironmentFeatureStrategy> strategiesToDelete = result.strategies;
 
       for (FeatureValue fv : featureValue) {
-        UUID envId = ConvertUtils.ifUuid(fv.getEnvironmentId());
+        UUID envId = Conversions.ifUuid(fv.getEnvironmentId());
         if (envId == null) {
           log.warn("Trying to update for environment `{}` and environment id is invalid.", envId);
           throw new NoAppropriateRole();
@@ -667,10 +667,10 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
       result.featureValues(new QDbEnvironmentFeatureStrategy().setMaxRows(20).order("whenUpdated desc").findList().stream().map(convertUtils::toFeatureValue).collect(Collectors.toList()));
     }
 
-    List<UUID> envIds = result.getFeatureValues().stream().map(fv -> ConvertUtils.ifUuid(fv.getEnvironmentId())).collect(Collectors.toList());
+    List<UUID> envIds = result.getFeatureValues().stream().map(fv -> Conversions.ifUuid(fv.getEnvironmentId())).collect(Collectors.toList());
     result.environments(new QDbEnvironment().id.in(envIds).whenArchived.isNull().findList().stream().map(dbEnv -> convertUtils.toEnvironment(dbEnv, Opts.empty())).collect(Collectors.toList()));
     result.applications(new QDbApplication().environments.id.in(envIds).whenArchived.isNull().findList().stream().map(app -> convertUtils.toApplication(app, Opts.empty())).collect(Collectors.toList()));
-    List<UUID> featureValueIds = result.getFeatureValues().stream().map(fv -> ConvertUtils.ifUuid(fv.getId())).collect(Collectors.toList());
+    List<UUID> featureValueIds = result.getFeatureValues().stream().map(fv -> Conversions.ifUuid(fv.getId())).collect(Collectors.toList());
     result.features(
       new QDbApplicationFeature().whenArchived.isNull().environmentFeatures.id.in(featureValueIds).findList().stream().map(appF -> convertUtils.toApplicationFeature(appF, Opts.empty())).collect(Collectors.toList()));
 

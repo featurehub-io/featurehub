@@ -32,13 +32,13 @@ import java.util.stream.Collectors;
 public class PersonSqlApi implements PersonApi {
   private static final Logger log = LoggerFactory.getLogger(PersonSqlApi.class);
   private final Database database;
-  private final ConvertUtils convertUtils;
+  private final Conversions convertUtils;
   private final static int MAX_SEARCH = 100;
   private final ArchiveStrategy archiveStrategy;
   private final PasswordSalter passwordSalter = new PasswordSalter();
 
   @Inject
-  public PersonSqlApi(Database database, ConvertUtils convertUtils, ArchiveStrategy archiveStrategy) {
+  public PersonSqlApi(Database database, Conversions convertUtils, ArchiveStrategy archiveStrategy) {
     this.database = database;
     this.convertUtils = convertUtils;
     this.archiveStrategy = archiveStrategy;
@@ -178,7 +178,7 @@ public class PersonSqlApi implements PersonApi {
         .orElse(null);
     }
 
-    return ConvertUtils.uuid(id).map(pId -> {
+    return Conversions.uuid(id).map(pId -> {
       QDbPerson search = new QDbPerson().id.eq(pId);
       if (!opts.contains(FillOpts.Archived)) {
         search = search.whenArchived.isNull();
@@ -212,7 +212,7 @@ public class PersonSqlApi implements PersonApi {
       return null;
     }
 
-    DbPerson created = createdBy == null ? null : ConvertUtils.uuid(createdBy).map(cId ->
+    DbPerson created = createdBy == null ? null : Conversions.uuid(createdBy).map(cId ->
       new QDbPerson().id.eq(cId).findOne()).orElse(null);
 
     if (createdBy != null && created == null) {
@@ -251,7 +251,7 @@ public class PersonSqlApi implements PersonApi {
       return null;
     }
 
-    DbPerson created = createdById == null ? null : ConvertUtils.uuid(createdById).map(cId ->
+    DbPerson created = createdById == null ? null : Conversions.uuid(createdById).map(cId ->
       new QDbPerson().id.eq(cId).findOne()).orElse(null);
 
     if (createdById != null && created == null) {

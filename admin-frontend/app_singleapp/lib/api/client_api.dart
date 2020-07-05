@@ -33,6 +33,10 @@ enum InitializedCheckState {
 // if true then if we find we are on localhost, we redirect to 8903 for api calls
 bool overrideOrigin = true;
 
+typedef TokenizedPersonHook = void Function(TokenizedPerson person);
+
+List<TokenizedPersonHook> tokenizedPersonHooks = <TokenizedPersonHook>[];
+
 final _log = Logger('mr_bloc');
 
 ///
@@ -112,7 +116,7 @@ class ManagementRepositoryClientBloc implements Bloc {
       }
     }
 
-    personState.currentPortfolioOrSuperAdminUpdateState(p, groupList);
+    personState.currentPortfolioOrSuperAdminUpdateState(p);
   }
 
   Future<void> _setCurrentRoute() async {
@@ -126,7 +130,7 @@ class ManagementRepositoryClientBloc implements Bloc {
     ;
   }
 
-  bool get isLoggedIn => _personSource.hasValue;
+  bool get isLoggedIn => personState.isLoggedIn;
 
   Stream<InitializedCheckState> get initializedState =>
       _initializedSource.stream;
@@ -141,17 +145,13 @@ class ManagementRepositoryClientBloc implements Bloc {
   Stream<Widget> get snackbarStream => _snackbarSource.stream;
   final _snackbarSource = PublishSubject<Widget>();
 
-  final _personSource = BehaviorSubject<Person>();
-
-  Stream<Person> get personStream => _personSource.stream;
+  Stream<Person> get personStream => personState.personStream;
 
   Organization organization;
-  Person person;
-  List<Group> groupList;
 
-  bool _userIsSuperAdmin;
+  Person get person => personState.person;
 
-  bool get userIsSuperAdmin => _userIsSuperAdmin;
+  bool get userIsSuperAdmin => personState.userIsSuperAdmin;
 
   bool get userIsFeatureAdminOfCurrentApplication {
     final currentAid = getCurrentAid();
@@ -161,12 +161,11 @@ class ManagementRepositoryClientBloc implements Bloc {
         ar.roles.contains(ApplicationRoleType.FEATURE_EDIT)));
   }
 
-  bool _userIsAnyPortfolioOrSuperAdmin = false;
-
   bool get userIsCurrentPortfolioAdmin =>
       personState.userIsCurrentPortfolioAdmin;
 
-  bool get userIsAnyPortfolioOrSuperAdmin => _userIsAnyPortfolioOrSuperAdmin;
+  bool get userIsAnyPortfolioOrSuperAdmin =>
+      personState.userIsAnyPortfolioOrSuperAdmin;
 
   String get currentPid => getCurrentPid();
 
@@ -297,8 +296,7 @@ class ManagementRepositoryClientBloc implements Bloc {
     await authServiceApi.logout();
     _initializedSource.add(InitializedCheckState.initialized);
     setBearerToken(null);
-    person = null;
-    _personSource.add(null);
+    personState.logout();
     menuOpened.value = false;
     currentPid = null;
     currentAid = null;
@@ -357,20 +355,13 @@ class ManagementRepositoryClientBloc implements Bloc {
   }
 
   void setPerson(Person p) {
-    person = p;
-    groupList = p.groups;
-
-    _userIsSuperAdmin = personState.isSuperAdminGroupFound(groupList);
-    _userIsAnyPortfolioOrSuperAdmin =
-        personState.isAnyPortfolioOrSuperAdmin(groupList);
-
-    _personSource.add(p);
+    personState.person = p;
     _addPortfoliosToStream();
   }
 
   bool isPortfolioOrSuperAdmin(String pid) {
-    return (personState.isSuperAdminGroupFound(groupList) ||
-        personState.userIsPortfolioAdmin(pid, groupList));
+    return personState.userIsSuperAdmin ||
+        personState.userIsPortfolioAdmin(pid);
   }
 
   void addOverlay(WidgetBuilder builder) {
@@ -495,8 +486,8 @@ class ManagementRepositoryClientBloc implements Bloc {
     _errorSource.close();
     _overlaySource.close();
     _snackbarSource.close();
-    _personSource.close();
     _personPermissionInPortfolioChanged.cancel();
+    personState.dispose();
     streamValley.currentPortfolioAdminOrSuperAdminSubscription.cancel();
   }
 

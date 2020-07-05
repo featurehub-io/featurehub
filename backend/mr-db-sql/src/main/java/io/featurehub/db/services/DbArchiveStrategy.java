@@ -24,15 +24,13 @@ import java.time.format.DateTimeFormatter;
 public class DbArchiveStrategy implements ArchiveStrategy {
   private static final Logger log = LoggerFactory.getLogger(DbArchiveStrategy.class);
   private final Database database;
-  private final ConvertUtils convertUtils;
   private final CacheSource cacheSource;
   public static final String archivePrefix = ":\\:\\:";
   private final DateTimeFormatter isoDate = DateTimeFormatter.ISO_DATE_TIME;
 
   @Inject
-  public DbArchiveStrategy(Database database, ConvertUtils convertUtils, CacheSource cacheSource) {
+  public DbArchiveStrategy(Database database, CacheSource cacheSource) {
     this.database = database;
-    this.convertUtils = convertUtils;
     this.cacheSource = cacheSource;
   }
 
