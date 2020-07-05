@@ -1,8 +1,8 @@
 import 'package:app_singleapp/utils/utils.dart';
+import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/common/fh_footer_button_bar.dart';
 import 'package:app_singleapp/widgets/common/fh_json_editor.dart';
-import 'package:app_singleapp/widgets/common/fh_outline_button.dart';
 import 'package:app_singleapp/widgets/features/feature_value_updated_by.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
@@ -104,13 +104,15 @@ class _FeatureValueJsonEnvironmentCellState
               FHButtonBar(
                 children: <Widget>[
                   FHFlatButtonTransparent(
-                      onPressed: () {
-                        tec.text = initialValue;
-                        widget.fvBloc.mrClient.removeOverlay();
-                      },
-                      title: 'Cancel'),
+                    onPressed: () {
+                      tec.text = initialValue;
+                      widget.fvBloc.mrClient.removeOverlay();
+                    },
+                    title: 'Cancel',
+                    keepCase: true,
+                  ),
                   enabled
-                      ? FHOutlineButton(
+                      ? FHFlatButton(
                           title: 'set value',
                           onPressed: (() {
                             if (validateJson(tec.text) != null) {

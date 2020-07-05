@@ -6,7 +6,6 @@ import 'package:app_singleapp/widgets/common/fh_alert_dialog.dart';
 import 'package:app_singleapp/widgets/common/fh_delete_thing.dart';
 import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/common/fh_icon_button.dart';
-import 'package:app_singleapp/widgets/common/fh_outline_button.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
@@ -363,8 +362,9 @@ class _ServiceAccountUpdateDialogWidgetState
           ),
         ),
         actions: <Widget>[
-          FHOutlineButton(
+          FHFlatButtonTransparent(
             title: 'Cancel',
+            keepCase: true,
             onPressed: () {
               widget.bloc.mrClient.removeOverlay();
             },

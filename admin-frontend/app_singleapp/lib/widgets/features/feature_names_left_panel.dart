@@ -1,5 +1,5 @@
 import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
-import 'package:app_singleapp/widgets/common/fh_outline_button.dart';
+import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/features/create-update-feature-dialog-widget.dart';
 import 'package:app_singleapp/widgets/features/delete_feature_widget.dart';
 import 'package:app_singleapp/widgets/features/feature_dashboard_constants.dart';
@@ -186,7 +186,7 @@ class _FeatureListenForUpdatedFeatureValues extends StatelessWidget {
             child: ButtonBar(
               alignment: MainAxisAlignment.start,
               children: [
-                FHOutlineButton(
+                FHFlatButtonTransparent(
                   title: 'Cancel',
                   keepCase: true,
                   onPressed: () => featureBloc.reset(),

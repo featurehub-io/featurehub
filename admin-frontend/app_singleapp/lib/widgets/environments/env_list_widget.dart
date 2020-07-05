@@ -3,10 +3,10 @@ import 'package:app_singleapp/widgets/apps/manage_app_bloc.dart';
 import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/fh_alert_dialog.dart';
 import 'package:app_singleapp/widgets/common/fh_delete_thing.dart';
+import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/common/fh_icon_button.dart';
 import 'package:app_singleapp/widgets/common/fh_icon_text_button.dart';
 import 'package:app_singleapp/widgets/common/fh_info_card.dart';
-import 'package:app_singleapp/widgets/common/fh_outline_button.dart';
 import 'package:app_singleapp/widgets/common/fh_reorderable_list_view.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/cupertino.dart';
@@ -313,8 +313,9 @@ class _EnvUpdateDialogWidgetState extends State<EnvUpdateDialogWidget> {
           ),
         ),
         actions: <Widget>[
-          FHOutlineButton(
+          FHFlatButtonTransparent(
             title: 'Cancel',
+            keepCase: true,
             onPressed: () {
               widget.bloc.mrClient.removeOverlay();
             },

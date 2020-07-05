@@ -240,12 +240,13 @@ class _ServiceAccountPermissionDetailState
                     table,
                     FHButtonBar(children: [
                       FHFlatButtonTransparent(
-                          onPressed: () {
-                            currentServiceAccount = null;
-                            widget.bloc
-                                .selectServiceAccount(saSnapshot.data.id);
-                          },
-                          title: 'Cancel'),
+                        onPressed: () {
+                          currentServiceAccount = null;
+                          widget.bloc.selectServiceAccount(saSnapshot.data.id);
+                        },
+                        title: 'Cancel',
+                        keepCase: true,
+                      ),
                       FHFlatButton(
                           onPressed: () {
                             final newList = <ServiceAccountPermission>[];

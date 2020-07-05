@@ -6,7 +6,6 @@ import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/common/fh_header.dart';
 import 'package:app_singleapp/widgets/common/fh_icon_button.dart';
 import 'package:app_singleapp/widgets/common/fh_icon_text_button.dart';
-import 'package:app_singleapp/widgets/common/fh_outline_button.dart';
 import 'package:app_singleapp/widgets/group/group_bloc.dart';
 import 'package:app_singleapp/widgets/group/group_update_widget.dart';
 import 'package:bloc_provider/bloc_provider.dart';
@@ -318,8 +317,9 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
           ),
         ),
         actions: <Widget>[
-          FHOutlineButton(
+          FHFlatButtonTransparent(
             title: 'Cancel',
+            keepCase: true,
             onPressed: () {
               widget.bloc.mrClient.removeOverlay();
             },

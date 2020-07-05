@@ -1,6 +1,6 @@
 import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/fh_card.dart';
-import 'package:app_singleapp/widgets/common/fh_outline_button.dart';
+import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/setup/setup_bloc.dart';
 import 'package:flutter/material.dart';
 
@@ -92,7 +92,7 @@ class _SetupPage2State extends State<SetupPage2Widget> {
               children: <Widget>[
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: FHOutlineButton(
+                  child: FHFlatButtonTransparent(
                     onPressed: () {
                       copyState();
                       widget.bloc.priorPage();
