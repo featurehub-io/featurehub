@@ -1,6 +1,6 @@
 image::docs/images/fh_primary_navy.png[Feature Hub,500]
 
-FeatureHub is a platform to help software teams to orchestrate releases of their features, from feature flags to A/B experiments and remote or centralised configuration management.
+FeatureHub is a feature management platform to help software teams to orchestrate releases, from feature flags to A/B experiments and remote configuration management.
 
 FeatureHub can be used with small startups through to large enterprises with many applications and teams.
 It has an enterprise grade permission model, that is intuitive and easy to use, so you can be up and running quickly.
@@ -25,6 +25,8 @@ image::docs/images/FH-flags.gif[FeatureHub console demo,800]
 
 image:docs/images/languages.png[Java Logo,1000]
 
+More detailed documentation on SDK's can be found link:sdks/README.adoc[here]
+
 === Easy to use
 
 * Control features from an easy to use console
@@ -41,8 +43,7 @@ image:docs/images/languages.png[Java Logo,1000]
 
 === Best development experience
 
-* Easy setup, Cloud Native - docker containers available
-* Variety of SDK's support for Web and API: Java, Node, Golang, Dart
+* Easy to set up, Cloud Native - docker containers available
 * Easy to integrate with test automation - API to control feature states from the tests is available
 * Support for feature flags, numbers, strings and Json structure (remote configuration)
 * Easy to log events with analytics with attached feature state
@@ -78,7 +79,7 @@ docker-compose up
 [NOTE]
 You'll need to https://docs.docker.com/get-docker/[install Docker] first.
 
-Once running, open up a browser and head to http://localhost:5000 there you can kick off the initial setup.
+Once running, open up a browser and head to http://localhost:8085 there you can kick off the initial setup.
 
 There are several deployment options depending on your use case, we strongly recommend reading about these options in the https://docs.featurehub.io[documentation].
 
