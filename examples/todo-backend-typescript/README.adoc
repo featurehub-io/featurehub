@@ -30,15 +30,19 @@ Note: The events will appear in your GA console with ~12 hours delay.
 More on GA integration can be found here https://docs.featurehub.io/#_google_analytics_integration
 
 == Prerequisites 
+
 Node @12 or higher
 
 Follow readme instructions to build  `client-typescript-core` module
 
 Follow readme instructions to build  `client-typescript-eventsource` module
 
-You need to setup a feature of type "Feature flag - boolean" in the FeatureHub application.
+You need to setup a feature of type "Feature flag - boolean" in the FeatureHub Web app.
 Use the feature key provided above.
-You are required to have a Service Account created in the FeatureHub application with the "write" permissions for your desired environment.
+
+image::../../docs/images/create-feature-title.png[Feature demo,800]
+
+You are required to have a Service Account created in the FeatureHub Web app with the "read" permissions for your desired environment.
 Once this is set, copy the SDK URL for your desired environment and set it as an environment variable:
 
 e.g. `'http://your-featurehub-url:8903/features/default/ff8635ef-ed28-4cc3-8067-b9ffd8882100/lOopBkGPALBcI0p6AGpf4jAdUi2HxR0RkhYvV00i1XsMQLWkltaoFvEfs7uFsZaQ45kF5FmhGE7rWTSg'`
@@ -46,6 +50,9 @@ e.g. `'http://your-featurehub-url:8903/features/default/ff8635ef-ed28-4cc3-8067-
 to be set in your run configuration as:
 
 `process.env.FEATUREHUB_APP_ENV_URL`
+
+Note, the "your-featurehub-url" and port will depend on which server you are running.
+If you are running SSE by itself, or the Docker with "all-separate-postgres" it will default to 8553. If you are running Party Server, it will be 8903, if you are running Docker with All-In-One-h2 it will be 8085
 
 == Installation Instructions
 
