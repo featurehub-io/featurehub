@@ -134,13 +134,14 @@ NOTE: Inorder to scale FeatureHub Server, you need to have first configured a se
 === Portfolios
 Portfolios are simply a collection of one or more applications.  Typically, portfolios are named to match areas of your
 business where groups of applications (or application suites) live.  Once created these portfolios
-can be managed autonomously (via <<_portfolio_administrators>>) from the rest of FeatureHub.
+can be managed autonomously (via <<_portfolio_administrators>>) from the rest of FeatureHub. There is no limit to
+the number of portfolios you can have.
 
 image::images/fh_overview.svg[Overview,500]
 
 ==== Portfolio groups
 You can create one or more groups of people, these groups can be used to set various permissions
-on the applications and their environments, within the portfolio.  Either use the same groups across application within the
+on the applications and their environments, within the portfolio.  Either use the same groups across applications within the
 portfolio, or create separate groups for each application.
 Some example groups might be:
 
@@ -148,7 +149,8 @@ Some example groups might be:
 * _Testers_ (Typically can change feature values in non-production environments)
 * _Operations_ (Typically can't create or delete features but can update values in production)
 
-NOTE: Every Portfolio automatically gets a group called "Administrators", Simply adding people to this group will make them administrators for this portfolio.
+NOTE: Every Portfolio automatically gets a group called "Administrators", Simply adding people to this group will 
+make them administrators for this portfolio, and they can do anything in any application within that Portfolio.
 
 === Applications
 
@@ -156,15 +158,20 @@ Applications are where you create features and environments, they belong inside 
 
 === Environments
 
-Applications have one or more environments.
-When an application is created there is always an initial environment called `Production` created.
-The values of your features are set, per environment.
+Applications have one or more environments, these typically refer to groups of co-operating deployments of your
+application in different environments. There are often multiple development environments, testing environments, 
+acceptance testing and customer demo environments depending on the application. 
 
-Every FeatureHub environment has a unique ID, this ID is what you reference in your application via the SDK when you query for the value of a feature you must use this environment ID.
+When an application is created there is always an initial environment 
+called `Production` created. The values of your features are set, per environment. 
+
+Every FeatureHub environment has a unique ID, this ID plus a Service Account is what you reference in your application via the 
+SDK when you query for the value of the features.
 
 === Features
 
-Features are the main part of FeatureHub, they can be simple feature flags or more advanced JSON formats.
+Features are the main part of FeatureHub, they can be simple feature flags, strings, numbers or more advanced JSON 
+formats intended for forms of configuration.
 
 ==== Feature types
 
@@ -173,7 +180,7 @@ You can create features of the following types:
 * `BOOLEAN` used for basic feature flags (toggles)
 * `NUMBER` numerical values
 * `STRING` string values
-* `JSON` valid JSON only (typically used for remote configuration)
+* `JSON` valid JSON only (typically used for remote configuration, or otherwise overriding internal values of an application)
 
 NOTE: future support will exist for YAML and JSON-Schema to ensure valid configuration for JSON and YAML types.
 
@@ -203,7 +210,8 @@ There are two types of administrators, *Site Administrators* and *Portfolio Admi
 ** Manage access to applications
 ** Create Service Accounts
 
-NOTE: Every Portfolio automatically gets a group called "Administrators", Simply adding people to this group will make them administrators for this portfolio.
+NOTE: Every Portfolio automatically gets a group called "Administrators", Simply adding people to this group 
+will make them administrators for this portfolio.
 
 ==== Service Accounts
 
@@ -217,8 +225,10 @@ For each application environment, there are permissions you can assign to portfo
 * `LOCK` Can lock a feature, so it's value can't be changed, this gives us a
 safety net when deploying incomplete code into production.
 (Typically developers and testers keep features locked until they are finished and ready to be set)
-* `LOCK` Can unlock a feature, so it's value can be changed
-* `EDIT` Can change the value of a feature
+* `UNLOCK` Can unlock a feature, so it's value can be changed
+* `CHANGE_VALUE` Can change the value of a feature
+
+All feature flags are automatically created in all environments, set to "off" and locked. 
 
 NOTE: Groups can also separately be assigned the permission to create, edit and delete entire features.
 
