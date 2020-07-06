@@ -1,3 +1,11 @@
+= Analytics
+ifdef::env-github,env-browser[:outfilesuffix: .adoc]
+:toc: left
+:toclevels: 4
+:toc-title: Contents
+
+link:index{outfilesuffix}[Back to index]
+
 == Google Analytics Integration
 
 === Setting up Experiments with Google Analytics

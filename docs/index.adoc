@@ -29,57 +29,8 @@ deciding to outsource your continually growing feature management as you get mor
 image::images/fh_learn_build_measure.svg[Learn,Build,Measure]
 
 == Architecture
-FeatureHub architecture is designed for various different implementation sizes and scales.
-Fundamentally there is a separation of concerns of all the main components, so they can be scaled independently
-as and when needed.
 
-image::images/fh_architecture.svg[Architecture,600]
-
-=== the Management Repository (MR, the FeatureHub Server)
-
-This is the main admin server and is the source of truth for the application. All users login here, all portfolios, 
-applications, environments, groups, features, etc are all controlled via this. This is always bundled with a UI
-and backend server and is configured to talk to some external database.
-
-This can go down without affecting the operation of end-user clients, all their data is in the cache. It is only if
-you are running tests and those tests are updating features that not having a running MR will cause issues.
-
-=== https://nats.io/[NATS] 
-
-NATS is the Cloud Native Open Source messaging platform that has been around for a very long time, is very fast
-and is very adept at scaling to huge volume in a hugely distributed fashion. Anyways Labs use it for FeatureHub
-to transfer environments, features and service accounts around the network to feed Dacha and Edge. 
-
-=== Dacha
-
-Dacha is where the data that is required by every SDK is cached, and you need at least one of these for an operational
-FeatureHub system. It can be run in-process (using the _Party Server_ design), or separately. In any case, it always
-communicates via NATS, and when it starts it broadcasts for another complete cache and will fill itself from that. If
-none is available, it negotiates a master, and will request the MR to provide details. Each Dacha is defined with a name,
-and the self hosted one is always called "default". All but the very largest of corporations should never need more
-than one cache name, as it is a form of sharding. Each cache is able to handle thousands of environments and their
-features.
-
-It is expected you will always run at least two of these in any production environment. They are always listening to
-the same topic from MR, so they do not suffer split brain. 
-
-=== Edge
-
-Edge is intended to be where the communication with the SDKs live. It is intended to be high volume endpoint but retain
-little data - only who is connected to it and which environment they are listening to for feature updates. Access to
-Edge is given by a combination of Service Account and Environment IDs. That combination is given a permission structure
-back in MR, and is usually simply READ. For test accounts, a service account can also have the ability to change 
-features as it may need to while doing end-to-end tests. It does not currently attempt to retain the active feature
-list for each Service Account + Environment. It is expected that you will normally run at least two of these in any kind
-of environment.
-
-=== SDKs
-
-The SDKs are provided to create an idiomatic method to connection to the server-side event source of feature data
-from the Edge server. You are welcome to write your own, they are not particularly complicated to write, and we welcome
-them as contributions!
-
-There are link:../sdks/README{outfilesuffix}[implementations] and examples on link:../examples/README{outfilesuffix}[how they are used]. 
+Please read link:architecture{outfilesuffix}[for information about the architecture of FeatureHub].
 
 == Installation
 There are 3 main deployment options for running FeatureHub. As FeatureHub is packaged as a _Cloud Native_
@@ -222,6 +173,10 @@ safety net when deploying incomplete code into production.
 
 NOTE: Groups can also separately be assigned the permission to create, edit and delete entire features.
 
-include::analytics.adoc[]
+== Analytics
 
-include::developers.adoc[]
+Please read the following link:analytics{outfilesuffix}[for information about Analytics]
+
+== Developer Setup
+
+Please read link:developers{outfilesuffix}[for information about Developer Setup]
