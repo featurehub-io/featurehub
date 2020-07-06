@@ -15,29 +15,18 @@ import io.featurehub.mr.model.ServiceAccount;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.SecurityContext;
+import java.util.List;
 import java.util.function.Consumer;
 
 @Singleton
 public class AuthManager implements AuthManagerService {
   private final GroupApi groupApi;
   private final PortfolioApi portfolioApi;
-  private final OrganizationApi organizationApi;
-  private String orgId;
 
   @Inject
-  public AuthManager(GroupApi groupApi, PortfolioApi portfolioApi, OrganizationApi organizationApi) {
+  public AuthManager(GroupApi groupApi, PortfolioApi portfolioApi) {
     this.groupApi = groupApi;
     this.portfolioApi = portfolioApi;
-    this.organizationApi = organizationApi;
-  }
-
-  private void checkOrgId() {
-    if (orgId == null) {
-      Organization o = organizationApi.get();
-      if (o != null) {
-        orgId = o.getId();
-      }
-    }
   }
 
   public boolean isPortfolioAdmin(String portfolioId, Person person, Consumer<Group> action) {
@@ -101,16 +90,19 @@ public class AuthManager implements AuthManagerService {
     Group adminGroup = null;
 
     boolean member = false;
-    checkOrgId();
 
     // this is a portfolio groupToCheck, so find the groupToCheck belonging to this portfolio
     adminGroup = groupApi.findPortfolioAdminGroup(portfolioId, Opts.opts(FillOpts.Members));
     if (adminGroup == null) { // no such portfolio
       return false;
     }
+    String orgId = null;
+
     member = isGroupMember(personId, adminGroup);
+
     if (!member) {
       Portfolio p = portfolioApi.getPortfolio(portfolioId, Opts.empty(), new Person().id(new PersonId().id(personId)));
+
       if (p != null) {
         orgId = p.getOrganizationId();
       }
@@ -133,9 +125,7 @@ public class AuthManager implements AuthManagerService {
   }
 
   private boolean isOrgAdmin(String personId) {
-    checkOrgId();
-    return isGroupMember(personId,
-      groupApi.findOrganizationAdminGroup(orgId, Opts.opts(FillOpts.Members)));
+    return !groupApi.groupsPersonOrgAdminOf(personId).isEmpty();
   }
 
   @Override
@@ -154,5 +144,24 @@ public class AuthManager implements AuthManagerService {
 
   public Person from(SecurityContext context) {
     return ((AuthHolder) context.getUserPrincipal()).getPerson();
+  }
+
+  @Override
+  public String orgPersonIn(Person person) {
+    return orgPersonIn(person.getId().getId());
+  }
+
+  @Override
+  public String orgPersonIn(String id) {
+    List<Organization> orgs = groupApi.orgsUserIn(id);
+    if (orgs.isEmpty()) {
+      return null;
+    }
+    return orgs.get(0).getId();
+  }
+
+  @Override
+  public String orgPersonIn(PersonId personId) {
+    return orgPersonIn(personId.getId());
   }
 }

@@ -47,12 +47,12 @@ import java.util.stream.Collectors;
 public class EnvironmentSqlApi implements EnvironmentApi {
   private static final Logger log = LoggerFactory.getLogger(EnvironmentSqlApi.class);
   private final Database database;
-  private final ConvertUtils convertUtils;
+  private final Conversions convertUtils;
   private final CacheSource cacheSource;
   private final ArchiveStrategy archiveStrategy;
 
   @Inject
-  public EnvironmentSqlApi(Database database, ConvertUtils convertUtils, CacheSource cacheSource, ArchiveStrategy archiveStrategy) {
+  public EnvironmentSqlApi(Database database, Conversions convertUtils, CacheSource cacheSource, ArchiveStrategy archiveStrategy) {
     this.database = database;
     this.convertUtils = convertUtils;
     this.cacheSource = cacheSource;
@@ -112,7 +112,7 @@ public class EnvironmentSqlApi implements EnvironmentApi {
 
   @Override
   public Environment get(String id, Opts opts, Person current) {
-    final UUID envId = ConvertUtils.ifUuid(id);
+    final UUID envId = Conversions.ifUuid(id);
 
     if (envId != null) {
       DbPerson currentPerson = convertUtils.uuidPerson(current);
@@ -351,7 +351,7 @@ public class EnvironmentSqlApi implements EnvironmentApi {
 
   @Override
   public Portfolio findPortfolio(String envId) {
-    UUID eId = ConvertUtils.ifUuid(envId);
+    UUID eId = Conversions.ifUuid(envId);
 
     if (eId != null) {
       return convertUtils.toPortfolio(new QDbPortfolio().applications.environments.id.eq(eId).findOne(), Opts.empty());

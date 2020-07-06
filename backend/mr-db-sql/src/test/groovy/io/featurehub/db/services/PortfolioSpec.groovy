@@ -32,8 +32,8 @@ class PortfolioSpec extends Specification {
     System.setProperty("ebean.ddl.generate", "true")
     System.setProperty("ebean.ddl.run", "true")
     database = DB.getDefault()
-    convertUtils = new ConvertUtils(database)
-    def archiveStrategy = new DbArchiveStrategy(database, convertUtils, Mock(CacheSource))
+    convertUtils = new ConvertUtils()
+    def archiveStrategy = new DbArchiveStrategy(database, Mock(CacheSource))
     portfolioApi = new PortfolioSqlApi(database, convertUtils, archiveStrategy)
     groupSqlApi = new GroupSqlApi(database, convertUtils, archiveStrategy)
     // create the organization

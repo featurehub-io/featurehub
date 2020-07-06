@@ -100,7 +100,9 @@ public class PortfolioResource implements PortfolioServiceDelegate {
   @Override
   public List<Portfolio> findPortfolios(FindPortfoliosHolder holder, SecurityContext securityContext) {
     return portfolioApi.findPortfolios(holder.filter,
-      organizationApi.get().getId(), holder.order,
+      authManager.orgPersonIn(
+        authManager.from(securityContext)
+      ), holder.order,
       new Opts().add(FillOpts.Groups, holder.includeGroups).add(FillOpts.Applications, holder.includeApplications),
       authManager.from(securityContext));
   }

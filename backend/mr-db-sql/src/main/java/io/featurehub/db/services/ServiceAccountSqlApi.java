@@ -43,12 +43,12 @@ import java.util.stream.Collectors;
 public class ServiceAccountSqlApi implements ServiceAccountApi {
   private static final Logger log = LoggerFactory.getLogger(ServiceAccountSqlApi.class);
   private final Database database;
-  private final ConvertUtils convertUtils;
+  private final Conversions convertUtils;
   private final CacheSource cacheSource;
   private final ArchiveStrategy archiveStrategy;
 
   @Inject
-  public ServiceAccountSqlApi(Database database, ConvertUtils convertUtils, CacheSource cacheSource, ArchiveStrategy archiveStrategy) {
+  public ServiceAccountSqlApi(Database database, Conversions convertUtils, CacheSource cacheSource, ArchiveStrategy archiveStrategy) {
     this.database = database;
     this.convertUtils = convertUtils;
     this.cacheSource = cacheSource;
@@ -57,7 +57,7 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
 
   @Override
   public ServiceAccount get(String saId, Opts opts) {
-    UUID id = ConvertUtils.ifUuid(saId);
+    UUID id = Conversions.ifUuid(saId);
 
     if (id != null) {
       QDbServiceAccount eq = opts(new QDbServiceAccount().id.eq(id), opts);
@@ -92,7 +92,7 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
 
   @Override
   public ServiceAccount update(String saId, Person updater, ServiceAccount serviceAccount, Opts opts) throws OptimisticLockingException {
-    UUID id = ConvertUtils.ifUuid(saId);
+    UUID id = Conversions.ifUuid(saId);
     if (id != null) {
       DbServiceAccount sa = new QDbServiceAccount().id.eq(id).whenArchived.isNull().findOne();
 
@@ -157,7 +157,7 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
 
   @Override
   public List<ServiceAccount> search(String portfolioId, String filter, String applicationId, Person currentPerson, Opts opts) {
-    UUID pId = ConvertUtils.ifUuid(portfolioId);
+    UUID pId = Conversions.ifUuid(portfolioId);
     DbPerson personId = convertUtils.uuidPerson(currentPerson);
 
     if (pId == null || personId == null) {
@@ -205,7 +205,7 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
 
   @Override
   public ServiceAccount resetApiKey(String saId) {
-    UUID id = ConvertUtils.ifUuid(saId);
+    UUID id = Conversions.ifUuid(saId);
     if (id != null) {
       DbServiceAccount sa = new QDbServiceAccount().id.eq(id).whenArchived.isNull().findOne();
       if (sa != null) {
@@ -276,7 +276,7 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
     // find all of the UUIDs in the environment list
     List<UUID> envIds = serviceAccount.getPermissions().stream().map(sap -> {
       if (sap.getEnvironmentId() != null) {
-        return ConvertUtils.ifUuid(sap.getEnvironmentId());
+        return Conversions.ifUuid(sap.getEnvironmentId());
       }
       return null;
     }).filter(Objects::nonNull).collect(Collectors.toList());
@@ -311,7 +311,7 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
   @Override
   @Transactional
   public Boolean delete(Person deleter, String serviceAccountId) {
-    UUID id = ConvertUtils.ifUuid(serviceAccountId);
+    UUID id = Conversions.ifUuid(serviceAccountId);
     if (id != null) {
       DbServiceAccount sa = new QDbServiceAccount().id.eq(id).whenArchived.isNull().findOne();
       if (sa != null) {

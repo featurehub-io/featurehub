@@ -45,12 +45,12 @@ import java.util.stream.Collectors;
 public class ApplicationSqlApi implements ApplicationApi {
   private static final Logger log = LoggerFactory.getLogger(ApplicationSqlApi.class);
   private final Database database;
-  private final ConvertUtils convertUtils;
+  private final Conversions convertUtils;
   private final CacheSource cacheSource;
   private final ArchiveStrategy archiveStrategy;
 
   @Inject
-  public ApplicationSqlApi(Database database, ConvertUtils convertUtils, CacheSource cacheSource, ArchiveStrategy archiveStrategy) {
+  public ApplicationSqlApi(Database database, Conversions convertUtils, CacheSource cacheSource, ArchiveStrategy archiveStrategy) {
     this.database = database;
     this.convertUtils = convertUtils;
     this.cacheSource = cacheSource;
@@ -105,7 +105,7 @@ public class ApplicationSqlApi implements ApplicationApi {
 
   @Override
   public List<Application> findApplications(String portfolioId, String filter, SortOrder order, Opts opts, Person current, boolean loadAll) {
-    UUID pId = ConvertUtils.ifUuid(portfolioId);
+    UUID pId = Conversions.ifUuid(portfolioId);
 
     if (pId != null) {
       QDbApplication queryApplicationList = new QDbApplication().portfolio.id.eq(pId);
@@ -128,7 +128,7 @@ public class ApplicationSqlApi implements ApplicationApi {
 
       if (!loadAll) {
         // we need to ascertain which apps they can actually see based on environments
-        queryApplicationList = queryApplicationList.environments.groupRolesAcl.group.peopleInGroup.id.eq(ConvertUtils.ifUuid(current.getId().getId()));
+        queryApplicationList = queryApplicationList.environments.groupRolesAcl.group.peopleInGroup.id.eq(Conversions.ifUuid(current.getId().getId()));
       }
 
       return queryApplicationList.findList().stream().map(app -> convertUtils.toApplication(app, opts)).collect(Collectors.toList());
@@ -172,13 +172,13 @@ public class ApplicationSqlApi implements ApplicationApi {
 
   @Override
   public Application getApplication(String appId, Opts opts) {
-    return ConvertUtils.uuid(appId)
+    return Conversions.uuid(appId)
       .map(aId -> convertUtils.toApplication(fetchApplicationOpts(opts, new QDbApplication().id.eq(aId)).findOne(), opts)).orElse(null);
   }
 
   @Override
   public Application updateApplication(String applicationId, Application application, Opts opts) throws DuplicateApplicationException, OptimisticLockingException {
-    UUID appId = ConvertUtils.ifUuid(applicationId);
+    UUID appId = Conversions.ifUuid(applicationId);
 
     if (appId != null) {
       DbApplication app = fetchApplicationOpts(opts, new QDbApplication().id.eq(appId)).findOne();
@@ -345,7 +345,7 @@ public class ApplicationSqlApi implements ApplicationApi {
       DbApplicationFeature appFeature = new QDbApplicationFeature().and().key.eq(key).parentApplication.eq(app).endAnd().findOne();
 
       if (appFeature == null) {
-        UUID id = ConvertUtils.ifUuid(key);
+        UUID id = Conversions.ifUuid(key);
         if (id != null) {
           return new AppFeature(app, new QDbApplicationFeature().id.eq(id).parentApplication.eq(app).findOne());
         }
@@ -389,7 +389,7 @@ public class ApplicationSqlApi implements ApplicationApi {
   @Override
   public Set<String> findFeatureEditors(String id) {
 
-    UUID appId = ConvertUtils.ifUuid(id);
+    UUID appId = Conversions.ifUuid(id);
 
     Set<String> featureEditors = new HashSet<>();
 

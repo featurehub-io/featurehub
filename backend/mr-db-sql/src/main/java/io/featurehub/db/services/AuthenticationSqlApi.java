@@ -30,11 +30,11 @@ import java.time.LocalDateTime;
 public class AuthenticationSqlApi implements AuthenticationApi {
   private static final Logger log = LoggerFactory.getLogger(AuthenticationSqlApi.class);
   private final Database database;
-  private final ConvertUtils convertUtils;
+  private final Conversions convertUtils;
   private final PasswordSalter passwordSalter = new PasswordSalter();
 
   @Inject
-  public AuthenticationSqlApi(Database database, ConvertUtils convertUtils) {
+  public AuthenticationSqlApi(Database database, Conversions convertUtils) {
     this.database = database;
     this.convertUtils = convertUtils;
   }
@@ -126,7 +126,7 @@ public class AuthenticationSqlApi implements AuthenticationApi {
   public Person replaceTemporaryPassword(String id, String password) {
     if (id == null || password == null) return null;
 
-    return ConvertUtils.uuid(id).map(
+    return Conversions.uuid(id).map(
       pId -> new QDbPerson().id.eq(pId)
       .findOneOrEmpty().map(p -> {
         if (p.isPasswordRequiresReset()) {
@@ -150,7 +150,7 @@ public class AuthenticationSqlApi implements AuthenticationApi {
   public Person changePassword(String id, String oldPassword, String newPassword) {
     if (id == null || oldPassword == null || newPassword == null) return null;
 
-    return ConvertUtils.uuid(id)
+    return Conversions.uuid(id)
       .map(pId -> new QDbPerson().id.eq(pId)
       .findOneOrEmpty().map(p -> {
         if (p.getPassword() != null && passwordSalter.validatePassword(oldPassword, p.getPassword())) {

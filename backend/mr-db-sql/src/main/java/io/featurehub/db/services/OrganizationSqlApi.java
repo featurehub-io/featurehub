@@ -2,6 +2,8 @@ package io.featurehub.db.services;
 
 import io.ebean.Database;
 import io.ebean.annotation.Transactional;
+import io.featurehub.db.api.FillOpts;
+import io.featurehub.db.api.Opts;
 import io.featurehub.db.api.OrganizationApi;
 import io.featurehub.db.model.DbNamedCache;
 import io.featurehub.db.model.DbOrganization;
@@ -17,17 +19,17 @@ import java.util.List;
 @Singleton
 public class OrganizationSqlApi implements OrganizationApi {
   private final Database database;
-  private final ConvertUtils convertUtils;
+  private final Conversions convertUtils;
 
   @Inject
-  public OrganizationSqlApi(Database database, ConvertUtils convertUtils) {
+  public OrganizationSqlApi(Database database, Conversions convertUtils) {
     this.database = database;
     this.convertUtils = convertUtils;
   }
 
   public Organization get() {
     final List<DbOrganization> orgs = new QDbOrganization().setMaxRows(1).whenArchived.isNull().findList();
-    return orgs.size() == 0 ? null : convertUtils.toOrganization(orgs.get(0));
+    return orgs.size() == 0 ? null : convertUtils.toOrganization(orgs.get(0), Opts.opts(FillOpts.Groups));
   }
 
   @Transactional
@@ -44,6 +46,6 @@ public class OrganizationSqlApi implements OrganizationApi {
 
     database.save(newOrg);
 
-    return convertUtils.toOrganization(newOrg);
+    return convertUtils.toOrganization(newOrg, Opts.opts(FillOpts.Groups));
   }
 }

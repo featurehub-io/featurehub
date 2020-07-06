@@ -11,6 +11,9 @@ import java.util.function.Consumer;
 
 public interface AuthManagerService {
   Person from(SecurityContext context);
+  String orgPersonIn(Person person);
+  String orgPersonIn(String id);
+  String orgPersonIn(PersonId personId);
   boolean isOrgAdmin(Person person);
   boolean isPortfolioAdmin(String portfolioId, String personId, Consumer<Group> action);
   boolean isPortfolioAdmin(String portfolioId, PersonId personId, Consumer<Group> action);

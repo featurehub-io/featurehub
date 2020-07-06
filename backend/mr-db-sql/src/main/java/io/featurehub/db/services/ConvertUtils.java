@@ -1,6 +1,5 @@
 package io.featurehub.db.services;
 
-import io.ebean.Database;
 import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.Opts;
 import io.featurehub.db.model.DbAcl;
@@ -40,10 +39,7 @@ import io.featurehub.mr.model.Portfolio;
 import io.featurehub.mr.model.RoleType;
 import io.featurehub.mr.model.ServiceAccount;
 import io.featurehub.mr.model.ServiceAccountPermission;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -56,50 +52,21 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Singleton
-public class ConvertUtils {
-  private static final Logger log = LoggerFactory.getLogger(ConvertUtils.class);
-  private final Database database;
+public class ConvertUtils implements Conversions {
 
-  @Inject
-  public ConvertUtils(Database database) {
-    this.database = database;
-  }
-
-  public static Optional<UUID> uuid(String id) {
-    if (id == null) {
-      return Optional.empty();
-    }
-
-    try {
-      return Optional.of(UUID.fromString(id));
-    } catch (Exception e) {
-      return Optional.empty();
-    }
-  }
-
-  public static UUID ifUuid(String id) {
-    if (id == null) {
-      return null;
-    }
-    try {
-      return UUID.fromString(id);
-    } catch(Exception e) {
-      return null;
-    }
-  }
-
+  @Override
   public DbPerson uuidPerson(String id) {
-    return uuid(id).map(personId -> new QDbPerson().id.eq(personId).findOne()).orElse(null);
+    return Conversions.uuid(id).map(personId -> new QDbPerson().id.eq(personId).findOne()).orElse(null);
   }
 
+  @Override
   public DbPerson uuidPerson(String id, Opts opts) {
-    return uuid(id).map(personId -> {
+    return Conversions.uuid(id).map(personId -> {
       QDbPerson finder = new QDbPerson().id.eq(personId);
       if (opts.contains(FillOpts.Groups)) {
         finder = finder.groupsPersonIn.fetch();
@@ -109,24 +76,27 @@ public class ConvertUtils {
   }
 
 
+  @Override
   public DbPortfolio uuidPortfolio(String id) {
-    return uuid(id).map(pId -> new QDbPortfolio().id.eq(pId).findOne()).orElse(null);
+    return Conversions.uuid(id).map(pId -> new QDbPortfolio().id.eq(pId).findOne()).orElse(null);
   }
 
+  @Override
   public DbEnvironment uuidEnvironment(String id) {
     if (id == null) {
       return null;
     }
 
-    return uuid(id).map(eId -> new QDbEnvironment().id.eq(eId).findOne()).orElse(null);
+    return Conversions.uuid(id).map(eId -> new QDbEnvironment().id.eq(eId).findOne()).orElse(null);
   }
 
+  @Override
   public DbEnvironment uuidEnvironment(String id, Opts opts) {
     if (id == null) {
       return null;
     }
 
-    return uuid(id).map(eId -> {
+    return Conversions.uuid(id).map(eId -> {
       final QDbEnvironment eq = new QDbEnvironment().id.eq(eId);
       if (opts.contains(FillOpts.Applications)) {
         eq.parentApplication.fetch();
@@ -145,18 +115,22 @@ public class ConvertUtils {
   }
 
 
+  @Override
   public DbApplication uuidApplication(String id) {
-    return uuid(id).map(aId -> new QDbApplication().id.eq(aId).findOne()).orElse(null);
+    return Conversions.uuid(id).map(aId -> new QDbApplication().id.eq(aId).findOne()).orElse(null);
   }
 
+  @Override
   public boolean personIsNotSuperAdmin(DbPerson person) {
     return new QDbGroup().and().owningPortfolio.isNull().peopleInGroup.id.eq(person.getId()).endAnd().findCount() <= 0;
   }
 
+  @Override
   public String limitLength(String s, int len) {
     return s == null ? null : (s.length() > len ? s.substring(0, len) : s);
   }
 
+  @Override
   public Environment toEnvironment(DbEnvironment env, Opts opts, Set<DbApplicationFeature> features) {
     if (env == null) {
       return null;
@@ -203,14 +177,17 @@ public class ConvertUtils {
     return environment;
   }
 
+  @Override
   public Environment toEnvironment(DbEnvironment env, Opts opts) {
     return toEnvironment(env, opts, null);
   }
 
+  @Override
   public String getCacheNameByEnvironment(DbEnvironment env) {
     return new QDbNamedCache().organizations.portfolios.applications.environments.eq(env).findOneOrEmpty().map(DbNamedCache::getCacheName).orElse(null);
   }
 
+  @Override
   public ServiceAccountPermission toServiceAccountPermission(DbServiceAccountEnvironment sae, Set<RoleType> rolePerms, boolean mustHaveRolePerms, Opts opt) {
     final ServiceAccountPermission sap = new ServiceAccountPermission()
       .id(sae.getId().toString())
@@ -241,6 +218,7 @@ public class ConvertUtils {
     return sap;
   }
 
+  @Override
   public ApplicationGroupRole applicationGroupRoleFromAcl(DbAcl acl) {
     return new ApplicationGroupRole()
       .groupId(acl.getGroup().getId().toString())
@@ -248,6 +226,7 @@ public class ConvertUtils {
       .applicationId(acl.getApplication().getId().toString());
   }
 
+  @Override
   public EnvironmentGroupRole environmentGroupRoleFromAcl(DbAcl acl) {
     return new EnvironmentGroupRole()
       .groupId(acl.getGroup().getId().toString())
@@ -255,6 +234,7 @@ public class ConvertUtils {
       .environmentId(acl.getEnvironment().getId().toString());
   }
 
+  @Override
   public List<RoleType> splitEnvironmentRoles(String roles) {
     List<RoleType> roleTypes = new ArrayList<>();
     if (roles == null || roles.length() == 0) {
@@ -270,6 +250,7 @@ public class ConvertUtils {
     return roleTypes;
   }
 
+  @Override
   public List<ApplicationRoleType> splitApplicationRoles(String roles) {
     List<ApplicationRoleType> roleTypes = new ArrayList<>();
 
@@ -284,15 +265,18 @@ public class ConvertUtils {
     return roleTypes;
   }
 
+  @Override
   public EnvironmentGroupRole convertEnvironmentAcl(DbAcl dbAcl) {
     return new EnvironmentGroupRole().environmentId(dbAcl.getEnvironment().getId().toString())
       .groupId(dbAcl.getGroup().getId().toString());
   }
 
+  @Override
   public OffsetDateTime toOff(LocalDateTime ldt) {
     return  ldt == null ? null : ldt.atOffset(ZoneOffset.UTC);
   }
 
+  @Override
   public Person toPerson(DbPerson person) {
     if (person == null) {
       return null;
@@ -305,6 +289,7 @@ public class ConvertUtils {
       .groups(null);
   }
 
+  @Override
   public Person toPerson(DbPerson dbp, Opts opts) {
     if (dbp == null) {
       return null;
@@ -335,19 +320,7 @@ public class ConvertUtils {
     return p;
   }
 
-  private String stripArchived(String name, LocalDateTime whenArchived) {
-    if (whenArchived == null) {
-      return name;
-    }
-
-    int prefix = name.indexOf(DbArchiveStrategy.archivePrefix);
-    if (prefix == -1) {
-      return name;
-    }
-
-    return name.substring(0, prefix);
-  }
-
+  @Override
   public Group toGroup(DbGroup dbg, Opts opts) {
     if (dbg == null) {
       return null;
@@ -387,6 +360,7 @@ public class ConvertUtils {
     return group;
   }
 
+  @Override
   public Application toApplication(DbApplication app, Opts opts) {
     if (app == null) {
       return null;
@@ -416,6 +390,7 @@ public class ConvertUtils {
     return application;
   }
 
+  @Override
   public Feature toApplicationFeature(DbApplicationFeature af, Opts opts) {
     return new Feature()
       .key(stripArchived(af.getKey(), af.getWhenArchived()))
@@ -429,6 +404,7 @@ public class ConvertUtils {
       .id(af.getId().toString());
   }
 
+  @Override
   public Feature toFeature(DbEnvironmentFeatureStrategy fs) {
     if (fs == null) {
       return null;
@@ -447,6 +423,7 @@ public class ConvertUtils {
       .version(f.getVersion());
   }
 
+  @Override
   public FeatureValue toFeatureValue(DbEnvironmentFeatureStrategy fs) {
     if (fs == null) {
       return null;
@@ -481,6 +458,7 @@ public class ConvertUtils {
     return featureValue;
   }
 
+  @Override
   public Portfolio toPortfolio(DbPortfolio p, Opts opts) {
     if (p == null) {
       return null;
@@ -518,21 +496,31 @@ public class ConvertUtils {
     return portfolio;
   }
 
-  public Organization toOrganization(DbOrganization org) {
+  @Override
+  public Organization toOrganization(DbOrganization org, Opts opts) {
     if (org == null) {
       return null;
     }
 
-    return new Organization()
+    final Organization organisation = new Organization()
       .name(stripArchived(org.getName(), org.getWhenArchived()))
       .id(org.getId().toString())
       .whenArchived(toOff(org.getWhenArchived()))
-      .orgGroup(toGroup(new QDbGroup().adminGroup.isTrue().owningPortfolio.isNull().owningOrganization.eq(org).findOne(), Opts.empty()))
       .admin(true);
+
+    if (opts.contains(FillOpts.Groups)) {
+      organisation.orgGroup(
+        toGroup(
+          new QDbGroup().adminGroup.isTrue().owningPortfolio.isNull().owningOrganization.eq(org).findOne(), Opts.empty()));
+
+    }
+
+    return organisation;
   }
 
+  @Override
   public DbGroup uuidGroup(String gid, Opts opts) {
-    return uuid(gid).map(g -> {
+    return Conversions.uuid(gid).map(g -> {
       QDbGroup eq = new QDbGroup().id.eq(g);
       if (opts.contains(FillOpts.Members)) {
         eq = eq.peopleInGroup.fetch();
@@ -541,6 +529,7 @@ public class ConvertUtils {
     }).orElse(null);
   }
 
+  @Override
   public DbPerson uuidPerson(Person creator) {
     if (creator == null || creator.getId() == null || creator.getId().getId() == null ) {
       return null;
@@ -549,6 +538,7 @@ public class ConvertUtils {
     return uuidPerson(creator.getId().getId());
   }
 
+  @Override
   public boolean isPersonApplicationAdmin(DbPerson dbPerson, DbApplication app) {
     DbOrganization org = app.getPortfolio().getOrganization();
     // if a person is in a null portfolio group or portfolio group
@@ -560,11 +550,13 @@ public class ConvertUtils {
       .endOr().findCount() > 0;
   }
 
+  @Override
   public ServiceAccount toServiceAccount(DbServiceAccount sa, Opts opts) {
     return toServiceAccount(sa, opts, null);
   }
 
-  public ServiceAccount toServiceAccount(DbServiceAccount sa, Opts opts,  List<DbAcl> environmentsUserHasAccessTo) {
+  @Override
+  public ServiceAccount toServiceAccount(DbServiceAccount sa, Opts opts, List<DbAcl> environmentsUserHasAccessTo) {
     if (sa == null) {
       return null;
     }
@@ -610,11 +602,7 @@ public class ConvertUtils {
     return account;
   }
 
-  private List<RoleType> splitServiceAccountPermissions(String permissions) {
-    // same now, were different historically
-    return splitEnvironmentRoles(permissions);
-  }
-
+  @Override
   public FeatureEnvironment toFeatureEnvironment(DbEnvironmentFeatureStrategy s, List<RoleType> roles, DbEnvironment dbEnvironment, Opts opts) {
     final FeatureEnvironment featureEnvironment = new FeatureEnvironment()
       .environment(toEnvironment(dbEnvironment, Opts.empty()))
@@ -632,6 +620,7 @@ public class ConvertUtils {
     return featureEnvironment;
   }
 
+  @Override
   public FeatureValue toFeatureValue(DbApplicationFeature feature, DbEnvironmentFeatureStrategy value) {
     if (value == null) {
       return new FeatureValue().id(feature.getId().toString()).key(stripArchived(feature.getKey(), feature.getWhenArchived())).locked(false);

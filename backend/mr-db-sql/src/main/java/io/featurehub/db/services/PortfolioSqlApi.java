@@ -30,11 +30,11 @@ import java.util.stream.Collectors;
 public class PortfolioSqlApi implements io.featurehub.db.api.PortfolioApi {
   private static final Logger log = LoggerFactory.getLogger(PortfolioSqlApi.class);
   private final Database database;
-  private final ConvertUtils convertUtils;
+  private final Conversions convertUtils;
   private final ArchiveStrategy archiveStrategy;
 
   @Inject
-  public PortfolioSqlApi(Database database, ConvertUtils convertUtils, ArchiveStrategy archiveStrategy) {
+  public PortfolioSqlApi(Database database, Conversions convertUtils, ArchiveStrategy archiveStrategy) {
     this.database = database;
     this.convertUtils = convertUtils;
     this.archiveStrategy = archiveStrategy;
@@ -48,7 +48,7 @@ public class PortfolioSqlApi implements io.featurehub.db.api.PortfolioApi {
       return new ArrayList<>();
     }
 
-    return ConvertUtils.uuid(organizationId).map(orgId -> {
+    return Conversions.uuid(organizationId).map(orgId -> {
       QDbPortfolio pFinder = new QDbPortfolio().organization.id.eq(orgId);
 
       if (filter != null && filter.trim().length() > 0) {
@@ -101,7 +101,7 @@ public class PortfolioSqlApi implements io.featurehub.db.api.PortfolioApi {
     }
 
     DbOrganization orgParent =
-      ConvertUtils.uuid(portfolio.getOrganizationId())
+      Conversions.uuid(portfolio.getOrganizationId())
         .map(orgid -> new QDbOrganization().id.eq(orgid).findOne())
         .orElse(null);
 
@@ -113,7 +113,7 @@ public class PortfolioSqlApi implements io.featurehub.db.api.PortfolioApi {
 
     duplicateCheck(portfolio, null, org);
 
-    return ConvertUtils.uuid(createdBy.getId().getId()).map(personId -> {
+    return Conversions.uuid(createdBy.getId().getId()).map(personId -> {
       return new QDbPerson().id.eq(personId).findOneOrEmpty().map(person -> {
         DbPortfolio dbPortfolio = new DbPortfolio.Builder()
           .name(convertUtils.limitLength(portfolio.getName(), 200))
@@ -153,7 +153,7 @@ public class PortfolioSqlApi implements io.featurehub.db.api.PortfolioApi {
       return null;
     }
 
-    return ConvertUtils.uuid(id)
+    return Conversions.uuid(id)
       .map(pId -> {
         QDbPortfolio finder = finder(new QDbPortfolio().id.eq(pId), opts);
         if (convertUtils.personIsNotSuperAdmin(personDoingFind)) {
@@ -215,6 +215,6 @@ public class PortfolioSqlApi implements io.featurehub.db.api.PortfolioApi {
   @Override
   @Transactional
   public void deletePortfolio(String id) {
-    ConvertUtils.uuid(id).flatMap(pId -> new QDbPortfolio().id.eq(pId).findOneOrEmpty()).ifPresent(archiveStrategy::archivePortfolio);
+    Conversions.uuid(id).flatMap(pId -> new QDbPortfolio().id.eq(pId).findOneOrEmpty()).ifPresent(archiveStrategy::archivePortfolio);
   }
 }

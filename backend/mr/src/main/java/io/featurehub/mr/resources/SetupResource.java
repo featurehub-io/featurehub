@@ -54,7 +54,7 @@ public class SetupResource implements SetupServiceDelegate {
   @Override
   public Organization isInstalled() {
     if (setupApi.initialized()) {
-      return organizationApi.get();
+      return organizationApi.get();  // do we have an organisation?
     }
 
     // deliberately throw a 404
