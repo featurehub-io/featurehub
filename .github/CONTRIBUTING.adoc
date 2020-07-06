@@ -1,0 +1,17 @@
+== How to contribute
+
+If you would like to contribute, you are welcome to do so by either creating a pull request and explaining your work or picking up an issue from the list of GitHub issues.
+
+You are also welcome to write your own SDKs, they are not particularly complicated to write.
+
+Any improvements for docs, demos, examples, backend code, front end code are also welcome.
+
+== How to report a bug
+
+If you found a bug please don't hesitate to open an issue on our GitHub and follow instructions given in the template.
+
+For any security-related issues please email directly to info@featurehub.io
+
+== How to suggest a feature or enhancement
+
+Open an issue on our issues list on GitHub which describes the feature you would like to see, why you need it, and how it should work.
