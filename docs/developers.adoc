@@ -22,15 +22,18 @@ This project requires you to have Java 11 as your primary Java and Maven 3.5 or 
 
 This downloads as a gziped tar file, extract the folder and move it to `/Library/Java/JavaVirtualMachines` but ensure
 you tack a `.jdk` on the end, so `jdk-11.0.2+9` becomes  `/Library/Java/JavaVirtualMachines/jdk-11.0.2+9.jdk`.
-Then set the environment variable JAVA_HOME to that folder + /Contents/Home, i.e.
+Then set the environment variable JAVA_HOME to that folder + `/Contents/Home'.
+
+We recommend using brew on Mac OS X to install Java. You can use any version 11+.
+
+If you have downloaded it from AdoptOpenJDK (or used brew), then use this:
+----
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-11.jdk/Contents/Home
+----
 
 If you have downloaded it from Oracle, use the following (or similar based on the version you have)
 ----
 export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-11.0.2+9.jdk/Contents/Home
-----
-If you have downloaded it from AdoptOpenJDK, then use this:
-----
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-11.jdk/Contents/Home
 ----
 
 This will cause the installed 'java' to swap to that version.
@@ -49,7 +52,7 @@ This application stack uses Java 11+.
 
 Ensure you do a:
 
-`mvn -f pom-first.xml clean install` before opening in IDE and before running main pom.
+`mvn -f pom-first.xml clean install` before opening in IDE and before opening the main pom.xml file.
 
 ==== Just the APIs
 
@@ -69,3 +72,6 @@ example):
 ----
 docker restart nats-main
 ----
+
+Alternatively, you can simply download it for your O/S and run it. It takes up
+less memory.
