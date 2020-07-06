@@ -50,19 +50,6 @@ More detailed documentation on SDK's can be found link:sdks/README.adoc[here]
 * Documentation and tutorials available
 
 
-
-
-
-
-
-
-//Building software with feature management encourages DevOps practices like
-//http://trunkbaseddevelopment.com[trunk based development], continuous delivery and importantly,
-//separating deployment from releasing. Enabling teams to deliver value to customers early and often,
-//whilst maintaining high quality and keeping risk low.
-//
-//image::docs/images/fh_learn_build_measure.svg[FeatureHub Feedback Loop,800]
-
 == Documentation
 
 Full documentation can be found at https://docs.featurehub.io[docs.featurehub.io]
@@ -116,14 +103,16 @@ We have several SDK examples for Java, Node JS, Typescript and React implementat
 FeatureHub is an open source project, and we love to receive contributions from our community!
 There are many ways to contribute, from writing tutorials or blog posts, improving the documentation, submitting bug reports and feature requests or writing code which can be incorporated into FeatureHub itself.
 
-Read link:.github/CONTRIBUTING.md[contributing guide here].
+Read link:.github/CONTRIBUTING.adoc[contributing guide here].
 
 We expect everyone contributing or participating in discussions in FeatureHub GitHub or any of it's sub-projects' codebases, issue trackers or chats to follow the FeatureHub
 link:.github/CODE_OF_CONDUCT.md[code of conduct].
 
 == Where to get help? 
 
-If you cannot find an answer in our documentation please email our community supporters at info@featurehub.io
+If you cannot find an answer in our documentation please join our Slack community link:https://join.slack.com/t/anyways-labs/shared_invite/zt-frxdx34x-ODs_XmLh6BCvqiNeBRx0hA[Anyways Labs]
+
+Or email our community supporters at info@featurehub.io
 
 == License
 
