@@ -1,5 +1,5 @@
 == Description
-Backend Todo server app based on Java Jersey to demonstrate the usage of FeatureHub Java Jersey SDK 
+Backend Todo server app based on Java Jersey to demonstrate the usage of FeatureHub Java Jersey SDK
 
 Demonstrates the Feature Flag ("BOOLEAN" type) usage
 
@@ -9,20 +9,64 @@ If "FEATURE_TITLE_TO_UPPERCASE" is enabled - it will convert todo 'title' proper
 
 If this feature is disabled it will have todo 'title' in whatever format it was sent when a todo was created.
 
-The app is based on the Open API description stored in todo-api folder. Uses codegen plugin to generate server code
+The app is based on the Open API description stored in todo-api folder.
+Uses codegen plugin to generate server code
 
-You need to setup a feature of type "Feature flag - boolean" in the FeatureHub application. Use the feature key provided above.
+You need to setup a feature of type "Feature flag - boolean" in the FeatureHub Admin Web app.
+Use the feature key provided above.
 You are required to have a Service Account created in the FeatureHub application with the "write" permissions for your desired environment.
-Once this is set, copy the SDK URL for your desired environment and set it in the properties file (which file is that?):
+Once this is set, copy the SDK URL for your desired environment and set it in the properties file located here:
 
-feature-service.url=http://localhost:8553/features/default/863c912e-0000-4e32-9cee-96047d06edcf/XGuIDtG72m7iYlOVLvEYLIDcDzH0Ucs8N3jFbmF3WWEgWpkRBPW9NXecXhlREogQkVI7SkrcK5krOcKy
+`~/.featurehub/example-java.properties`
 
+Include the following lines and substitute with your own keys:
+`feature-service.url=http://your-featurehub-url:8903/features/default/99d8bca3-4e10-4c58-a10c-509b31db3532/X8y3nRMTgtVS7Lsn8Oyk1ppT2Yeap7XGnKVZEjVDMd1XdeqtBAjE6BH4F6f91jXkdh2Sf2zk6PzHJSPa
 
+feature-service.google-analytics-key=UA-1XXXXXXX-1
+
+feature-service.cid=1234-5678-abcd-abcd`
+
+In addition, it demonstrates integration with Google Analytics.
+You will require to have valid GA Tracking ID, e.g. 'UA-XXXXXXXXX-X'.
+
+GA events:
+
+`name: "todo-add", value: "10"`
+
+`name: "todo-delete", value: "5"`
+
+Once you launch the server, any call to "add" or "delete" to-do will generate a GA event accordingly.
+
+Note: You can view the events appear in the real-time console in GA. The events will also appear in "Behaviour" section with ~12 hours delay.
+
+More on GA integration can be found here https://docs.featurehub.io/#_google_analytics_integration
 
 == Installation Instructions
-mvn clean install
 
-run the app (whats the command?):  feature-mesh/examples/todo-backend-java/src/test/java/todo/backend/AppRunner.java
+`mvn clean install`
 
+run the app using runner file: `todo-backend-java/src/test/java/todo/backend/AppRunner.java`
+
+once the app is running, you should be able to do:
+
+[source]
+----
+curl -X POST \
+  http://0.0.0.0:8099/todo/add \
+  -H 'Content-Type: application/json' \
+  -d '{"title": "Hello World", "id": "456"}'
+----
+
+and to get the list of to-dos:
+
+[source]
+----
+curl -X GET \
+http://0.0.0.0:8099/todo/list \
+-H 'Postman-Token: 6bfe318a-5481-4e8e-a3e4-ab881202ba31' \
+-H 'cache-control: no-cache'
+----
+
+Watch how "title" value in the response changes from lower case to upper case when you turn feature on/off from the admin console 
 
 
