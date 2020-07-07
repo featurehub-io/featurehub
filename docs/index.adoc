@@ -67,7 +67,7 @@ or similar, do not use localhost as that will not work.
 ----
 export SDK_URL=default/d8ba747d-7d3c-4454-9c58-130390848412/5EE3vua1NqY0ez6Zd4TXU7XnsZdAPHtR96XaDmhfegitKGiQ9aCdmtmeNUNPubkRZLJLUUpaC7b05ELk
 export MY_IP=192.168.XX.XX
-docker run -e FEATUREHUB_APP_ENV_URL=http://$MY_IP:8085/features/$SDK_URL -p 5000:5000  featurehub/example_node:1.1
+docker run -e FEATUREHUB_APP_ENV_URL=http://$MY_IP:8085/features/$SDK_URL -p 5000:5000  featurehub/example_node:0.0.1
 ----
 
 This will cause the example to start and you can access it on port 5000. Add a few todo's in mixed case. 
