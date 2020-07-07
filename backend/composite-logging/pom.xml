@@ -43,7 +43,7 @@
 
   <properties>
     <slfj4.version>1.7.25</slfj4.version>
-    <log4j.version>2.8.2</log4j.version>
+    <log4j.version>2.13.2</log4j.version>
     <lmax.disruptor>3.3.6</lmax.disruptor>
   </properties>
 
