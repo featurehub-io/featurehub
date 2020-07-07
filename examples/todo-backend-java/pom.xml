@@ -17,12 +17,6 @@
 
   <dependencies>
     <dependency>
-      <groupId>cd.connect</groupId>
-      <artifactId>todo-api</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
       <groupId>io.featurehub.composites</groupId>
       <artifactId>composite-app</artifactId>
       <version>1.1-SNAPSHOT</version>
