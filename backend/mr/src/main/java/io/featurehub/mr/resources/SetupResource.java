@@ -104,7 +104,7 @@ public class SetupResource implements SetupServiceDelegate {
     Group group = groupApi.createOrgAdminGroup(organization.getId(), "org_admin", person);
     groupApi.addPersonToGroup(group.getId(), person.getId().getId(), Opts.empty());
 
-    person = personApi.get(person.getId().getId(), Opts.opts(FillOpts.Groups));
+    person = personApi.get(person.getId().getId(), Opts.opts(FillOpts.Groups, FillOpts.Acls));
 
     return new TokenizedPerson().accessToken(authRepository.put(person)).person(person);
   }

@@ -17,5 +17,6 @@ MAIN="main.dart-$MAIN_DATE.js"
 sed -i s/main.dart.js/$MAIN/ index.html
 mv main.dart.js $MAIN
 mv main.dart.js.map $MAIN.map
-echo FLUTTER: finished building
+echo FLUTTER: finished building, cleaning
+flutter clean
 exit 0
