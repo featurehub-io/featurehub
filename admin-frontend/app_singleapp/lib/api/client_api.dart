@@ -288,12 +288,14 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   // ask for my own details and if there are some, set the person and transition
   // to logged in, otherwise ask them to log in.
-  void requestOwnDetails() {
+  Future requestOwnDetails() async {
     personServiceApi
         .getPerson('self', includeAcls: true, includeGroups: true)
         .then((p) {
       setPerson(p);
-      _initializedSource.add(InitializedCheckState.zombie);
+      if (_initializedSource.value != InitializedCheckState.zombie) {
+        _initializedSource.add(InitializedCheckState.zombie);
+      }
     }).catchError((_) {
       setBearerToken(null);
       _initializedSource.add(InitializedCheckState.initialized);
