@@ -5,6 +5,7 @@ import 'package:app_singleapp/api/router.dart';
 import 'package:app_singleapp/common/fh_shared_prefs.dart';
 import 'package:app_singleapp/common/person_state.dart';
 import 'package:app_singleapp/common/stream_valley.dart';
+import 'package:app_singleapp/config/routes.dart';
 import 'package:app_singleapp/utils/utils.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
@@ -136,6 +137,10 @@ class ManagementRepositoryClientBloc implements Bloc {
       _initializedSource.stream;
   final _initializedSource = BehaviorSubject<InitializedCheckState>();
 
+  void replaceSuperState(InitializedCheckState ics) {
+    _initializedSource.add(ics);
+  }
+
   Stream<FHError> get errorStream => _errorSource.stream;
   final _errorSource = PublishSubject<FHError>();
 
@@ -213,6 +218,10 @@ class ManagementRepositoryClientBloc implements Bloc {
     _personPermissionInPortfolioChanged = streamValley.routeCheckPortfolioStream
         .listen((portfolio) => _checkRouteForPermission(portfolio));
     init();
+
+    router = Router();
+    router.mrBloc = this;
+    Routes.configureRoutes(router);
 //    setHistory();
   }
 
@@ -235,11 +244,11 @@ class ManagementRepositoryClientBloc implements Bloc {
       // to see if we have a bearer token. This would mean the user
       // has simply refreshed their page
 
-      final bearerToken = _getBearerCookie();
+      final bearerToken = getBearerCookie();
       organization = org;
       if (bearerToken != null) {
         setBearerToken(bearerToken);
-        _requestOwnDetails();
+        requestOwnDetails();
       } else {
         _initializedSource.add(InitializedCheckState.initialized);
       }
@@ -247,7 +256,6 @@ class ManagementRepositoryClientBloc implements Bloc {
       if (e is ApiException) {
         if (e.code == 404) {
           _initializedSource.add(InitializedCheckState.uninitialized);
-          //fakeInitialize();
         } else {
           dialogError(e, s);
         }
@@ -257,7 +265,7 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   static const bearerToken = 'bearer-token';
 
-  String _getBearerCookie() {
+  String getBearerCookie() {
     final cookies = document.cookie.split(';')
       ..retainWhere((s) => s.trim().startsWith('$bearerToken='));
 
@@ -280,7 +288,7 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   // ask for my own details and if there are some, set the person and transition
   // to logged in, otherwise ask them to log in.
-  void _requestOwnDetails() {
+  void requestOwnDetails() {
     personServiceApi
         .getPerson('self', includeAcls: true, includeGroups: true)
         .then((p) {
@@ -300,23 +308,6 @@ class ManagementRepositoryClientBloc implements Bloc {
     menuOpened.value = false;
     currentPid = null;
     currentAid = null;
-  }
-
-  void fakeInitialize() {
-    var ssa = SetupSiteAdmin()
-      ..portfolio = 'Portfolio name'
-      ..name = 'Name'
-      ..organizationName = 'Org Name'
-      ..password = 'password123'
-      ..emailAddress = 'superuser@mailinator.com';
-    setupApi.setupSiteAdmin(ssa).then((tp) {
-      setPerson(tp.person);
-      setBearerToken(tp.accessToken);
-      _initializedSource.add(InitializedCheckState.zombie);
-    }).catchError((e, s) {
-      dialogError(e, s);
-      _initializedSource.add(InitializedCheckState.unknown);
-    });
   }
 
   void setOrg(Organization o) {

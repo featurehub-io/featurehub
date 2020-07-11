@@ -16,16 +16,22 @@ server {
 
         # management repository is here
         location /mr-api/ {
-            proxy_pass http://localhost:8903/mr-api/;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_pass http://localhost:8903/mr-api/;
         }
 
         # sse-cache is loaded here
         location /features/ {
-            proxy_pass http://localhost:8903/features/;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_pass http://localhost:8903/features/;
         }
 
         # prometheus
         location /metrics {
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
           proxy_pass http://localhost:8903/metrics;
         }
 
