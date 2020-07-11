@@ -10,7 +10,9 @@ import io.featurehub.db.api.OptimisticLockingException;
 import io.featurehub.db.api.Opts;
 import io.featurehub.db.api.PersonApi;
 import io.featurehub.db.model.DbGroup;
+import io.featurehub.db.model.DbOrganization;
 import io.featurehub.db.model.DbPerson;
+import io.featurehub.db.model.query.QDbOrganization;
 import io.featurehub.db.model.query.QDbPerson;
 import io.featurehub.db.password.PasswordSalter;
 import io.featurehub.mr.model.Group;
@@ -51,72 +53,76 @@ public class PersonSqlApi implements PersonApi {
     DbPerson p = convertUtils.uuidPerson(id, opts);
 
     if (adminPerson != null && p != null && p.getWhenArchived() == null) {
-      if (person.getVersion() == null || p.getVersion() != person.getVersion()) {
-        throw new OptimisticLockingException();
-      }
-
-      if (person.getName() != null) {
-        p.setName(person.getName());
-      }
-      if (person.getEmail() != null) {
-        p.setEmail(person.getEmail());
-      }
-
-      if (person.getGroups() != null) {
-        // we are going to need their groups to determine what they can do
-        Person admin = convertUtils.toPerson(adminPerson, Opts.opts(FillOpts.Groups));
-
-        boolean adminSuperuser = admin.getGroups().stream().anyMatch(g -> g.getPortfolioId() == null && g.getAdmin());
-        List<String> validPortfolios = admin.getGroups()
-          .stream()
-          .filter(g -> g.getPortfolioId() != null && g.getAdmin())
-          .map(Group::getPortfolioId)
-          .collect(Collectors.toList());
-
-        if (!adminSuperuser && validPortfolios.isEmpty()) {
-          return null; // why are they even here???
-        }
-
-        List<DbGroup> removeGroups = new ArrayList<>();
-        List<String> replacementGroupIds = person.getGroups().stream().map(Group::getId).collect(Collectors.toList());
-        List<String> foundReplacementGroupIds = new ArrayList<>(); // these are the ones we found
-
-        p.getGroupsPersonIn().forEach(g -> {
-          if (replacementGroupIds.contains(g.getId().toString())) { // this has been passed to us and it is staying
-            foundReplacementGroupIds.add(g.getId().toString());
-          } else if (adminSuperuser || (g.getOwningPortfolio() != null && validPortfolios.contains(g.getOwningPortfolio().getId().toString()))) {
-            // only if the admin is a superuser or this is a group in one of their portfolios will we honour it
-            removeGroups.add(g);
-          } else {
-            log.warn("No permission to remove group {} from user {}", g, p.getEmail());
-          }
-        });
-
-        log.debug("Removing groups {} from user {}", removeGroups, p.getEmail());
-        // now remove them from these groups, we know this is valid
-        p.getGroupsPersonIn().removeAll(removeGroups);
-
-        replacementGroupIds.removeAll(foundReplacementGroupIds); // now this should be id's that we should consider adding
-
-        log.debug("Attempting to add groups {} to user {} ", replacementGroupIds, p.getEmail());
-        // now we have to find the replacement groups and see if this user is allowed to add them
-        replacementGroupIds.forEach(gid -> {
-          DbGroup group = convertUtils.uuidGroup(gid, Opts.empty());
-          if (group != null && (adminSuperuser ||
-            (group.getOwningPortfolio() != null && validPortfolios.contains(group.getOwningPortfolio().getId().toString())) )) {
-            p.getGroupsPersonIn().add(group);
-          } else {
-            log.warn("No permission to add group {} to user {}", group, p.getEmail());
-          }
-        });
-      }
-
-      updatePerson(p);
-
-      return convertUtils.toPerson(p, opts);
+      return updatePerson(person, opts, adminPerson, p, new QDbOrganization().findOne());
     }
 
     return null;
+  }
+
+  public Person updatePerson(Person person, Opts opts, DbPerson adminPerson, DbPerson p, DbOrganization organization) throws OptimisticLockingException {
+    if (person.getVersion() == null || p.getVersion() != person.getVersion()) {
+      throw new OptimisticLockingException();
+    }
+
+    if (person.getName() != null) {
+      p.setName(person.getName());
+    }
+    if (person.getEmail() != null) {
+      p.setEmail(person.getEmail());
+    }
+
+    if (person.getGroups() != null) {
+      // we are going to need their groups to determine what they can do
+      Person admin = convertUtils.toPerson(adminPerson, organization, Opts.opts(FillOpts.Groups));
+
+      boolean adminSuperuser = admin.getGroups().stream().anyMatch(g -> g.getPortfolioId() == null && g.getAdmin());
+      List<String> validPortfolios = admin.getGroups()
+        .stream()
+        .filter(g -> g.getPortfolioId() != null && g.getAdmin())
+        .map(Group::getPortfolioId)
+        .collect(Collectors.toList());
+
+      if (!adminSuperuser && validPortfolios.isEmpty()) {
+        return null; // why are they even here???
+      }
+
+      List<DbGroup> removeGroups = new ArrayList<>();
+      List<String> replacementGroupIds = person.getGroups().stream().map(Group::getId).collect(Collectors.toList());
+      List<String> foundReplacementGroupIds = new ArrayList<>(); // these are the ones we found
+
+      p.getGroupsPersonIn().forEach(g -> {
+        if (replacementGroupIds.contains(g.getId().toString())) { // this has been passed to us and it is staying
+          foundReplacementGroupIds.add(g.getId().toString());
+        } else if (adminSuperuser || (g.getOwningPortfolio() != null && validPortfolios.contains(g.getOwningPortfolio().getId().toString()))) {
+          // only if the admin is a superuser or this is a group in one of their portfolios will we honour it
+          removeGroups.add(g);
+        } else {
+          log.warn("No permission to remove group {} from user {}", g, p.getEmail());
+        }
+      });
+
+      log.debug("Removing groups {} from user {}", removeGroups, p.getEmail());
+      // now remove them from these groups, we know this is valid
+      p.getGroupsPersonIn().removeAll(removeGroups);
+
+      replacementGroupIds.removeAll(foundReplacementGroupIds); // now this should be id's that we should consider adding
+
+      log.debug("Attempting to add groups {} to user {} ", replacementGroupIds, p.getEmail());
+      // now we have to find the replacement groups and see if this user is allowed to add them
+      replacementGroupIds.forEach(gid -> {
+        DbGroup group = convertUtils.uuidGroup(gid, Opts.empty());
+        if (group != null && (adminSuperuser ||
+          (group.getOwningPortfolio() != null && validPortfolios.contains(group.getOwningPortfolio().getId().toString())) )) {
+          p.getGroupsPersonIn().add(group);
+        } else {
+          log.warn("No permission to add group {} to user {}", group, p.getEmail());
+        }
+      });
+    }
+
+    updatePerson(p);
+
+    return convertUtils.toPerson(p, organization, opts);
   }
 
   @Override
@@ -155,8 +161,9 @@ public class PersonSqlApi implements PersonApi {
 
     try {
       pagination.max = futureCount.get();
+      DbOrganization org = new QDbOrganization().findOne();
       pagination.people = futureList.get().stream().map(dbp ->
-        convertUtils.toPerson(dbp, opts)).collect(Collectors.toList());
+        convertUtils.toPerson(dbp, org, opts)).collect(Collectors.toList());
 
       return pagination;
     } catch (InterruptedException | ExecutionException e) {
@@ -167,6 +174,7 @@ public class PersonSqlApi implements PersonApi {
 
   @Override
   public Person get(String id, Opts opts) {
+    DbOrganization org = new QDbOrganization().findOne();
     if (id.contains("@")) {
       QDbPerson search = new QDbPerson().email.eq(id.toLowerCase());
       if (!opts.contains(FillOpts.Archived)) {
@@ -174,7 +182,7 @@ public class PersonSqlApi implements PersonApi {
       }
       return search.groupsPersonIn.fetch()
         .findOneOrEmpty()
-        .map(p -> convertUtils.toPerson(p, opts))
+        .map(p -> convertUtils.toPerson(p, org, opts))
         .orElse(null);
     }
 
@@ -185,7 +193,7 @@ public class PersonSqlApi implements PersonApi {
       }
       return search.groupsPersonIn.fetch()
         .findOneOrEmpty()
-        .map(p -> convertUtils.toPerson(p, opts))
+        .map(p -> convertUtils.toPerson(p, org, opts))
         .orElse(null);
     }).orElse(null);
   }
@@ -197,7 +205,7 @@ public class PersonSqlApi implements PersonApi {
     DbPerson person  = new QDbPerson().whenArchived.isNull().token.eq(token).findOne();
 
     if (person != null && person.getTokenExpiry().isAfter(getNow())) {
-      return convertUtils.toPerson(person, opts);
+      return convertUtils.toPerson(person, new QDbOrganization().findOne(), opts);
     }
     return null;
   }
@@ -273,7 +281,7 @@ public class PersonSqlApi implements PersonApi {
 
       updatePerson(person);
 
-      return convertUtils.toPerson(person, opts);
+      return convertUtils.toPerson(person, new QDbOrganization().findOne(), opts);
     } else {
       throw new DuplicatePersonException();
     }

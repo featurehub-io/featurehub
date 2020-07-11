@@ -15,47 +15,15 @@ import io.featurehub.mr.model.SortOrder
 import spock.lang.Shared
 import spock.lang.Specification
 
-class PersonSpec extends Specification {
-  @Shared Database database
-  @Shared ConvertUtils convertUtils
+class PersonSpec extends BaseSpec {
   @Shared PersonSqlApi personSqlApi
-  @Shared GroupSqlApi groupSqlApi
-  @Shared OrganizationSqlApi organizationSqlApi
   @Shared PortfolioSqlApi portfolioSqlApi
-  @Shared UUID superuser
-  @Shared Person superPerson
-  @Shared Organization org
 
   def setupSpec() {
-    System.setProperty("ebean.ddl.generate", "true")
-    System.setProperty("ebean.ddl.run", "true")
-    database = DB.getDefault()
-    convertUtils = new ConvertUtils()
-    def archiveStrategy = new DbArchiveStrategy(database, Mock(CacheSource))
+    baseSetupSpec()
+
     personSqlApi = new PersonSqlApi(database, convertUtils, archiveStrategy)
-    groupSqlApi = new GroupSqlApi(database, convertUtils, archiveStrategy)
-    organizationSqlApi = new OrganizationSqlApi(database, convertUtils)
     portfolioSqlApi = new PortfolioSqlApi(database, convertUtils, archiveStrategy)
-
-    DbPerson user = Finder.findByEmail("irina@featurehub.io")
-    if (user == null) {
-      user = new DbPerson.Builder().email("irina@featurehub.io").name("Irina").build();
-      database.save(user);
-    }
-
-    superuser = user.getId()
-    superPerson = convertUtils.toPerson(user, Opts.empty())
-
-
-    org = organizationSqlApi.get()
-    Group adminGroup
-    if (org == null) {
-      org = organizationSqlApi.save(new Organization())
-      adminGroup = groupSqlApi.createOrgAdminGroup(org.id, 'admin group', superPerson)
-    } else {
-      adminGroup = groupSqlApi.findOrganizationAdminGroup(org.id, Opts.empty())
-    }
-    groupSqlApi.addPersonToGroup(adminGroup.id, superuser.toString(), Opts.empty())
   }
 
 //  def "No created-by is passed when creating a user causes a null return"() {

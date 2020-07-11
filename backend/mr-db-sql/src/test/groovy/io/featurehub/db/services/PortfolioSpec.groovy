@@ -18,49 +18,19 @@ import io.featurehub.mr.model.SortOrder
 import spock.lang.Shared
 import spock.lang.Specification
 
-class PortfolioSpec extends Specification {
-  @Shared Database database
-  @Shared ConvertUtils convertUtils
+class PortfolioSpec extends BaseSpec {
   @Shared PortfolioSqlApi portfolioApi
-  @Shared GroupSqlApi groupSqlApi
-  @Shared UUID superuser
-  @Shared Organization org
-  @Shared Person superPerson
   @Shared Person normalPerson
 
   def setupSpec() {
-    System.setProperty("ebean.ddl.generate", "true")
-    System.setProperty("ebean.ddl.run", "true")
-    database = DB.getDefault()
-    convertUtils = new ConvertUtils()
-    def archiveStrategy = new DbArchiveStrategy(database, Mock(CacheSource))
+    baseSetupSpec()
+
     portfolioApi = new PortfolioSqlApi(database, convertUtils, archiveStrategy)
-    groupSqlApi = new GroupSqlApi(database, convertUtils, archiveStrategy)
     // create the organization
-    def orgApi = new OrganizationSqlApi(database, convertUtils)
-    org = orgApi.get()
-    if (org == null) {
-      org = orgApi.save(new Organization().name("freddos"))
-    }
 
-    DbPerson user = Finder.findByEmail("irina@featurehub.io")
-    if (user == null) {
-      user = new DbPerson.Builder().email("irina@featurehub.io").name("Irina").build();
-      database.save(user);
-    }
-    superuser = user.getId()
-    superPerson = new Person().id(new PersonId().id(superuser.toString()))
-
-    user = new DbPerson.Builder().email("portolio-simple@featurehub.io").build()
+    def user = new DbPerson.Builder().email("portolio-simple@featurehub.io").build()
     database.save(user)
     normalPerson = new Person().id(new PersonId().id(user.id.toString()))
-
-    Group adminGroup = groupSqlApi.findOrganizationAdminGroup(org.id, Opts.empty())
-    if (adminGroup == null) {
-      adminGroup = groupSqlApi.createOrgAdminGroup(org.id, 'Superuser groupo', superPerson)
-    }
-
-    groupSqlApi.addPersonToGroup(adminGroup.id, superPerson.id.id, Opts.empty())
   }
 
   def "we can create a portfolio group"() {

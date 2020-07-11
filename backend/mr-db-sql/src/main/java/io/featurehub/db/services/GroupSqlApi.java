@@ -88,6 +88,8 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
     if (personId != null) {
       return new QDbGroup()
         .whenArchived.isNull()
+        .owningPortfolio.isNull()
+        .adminGroup.eq(true)
         .peopleInGroup.id.eq(pId)
         .findList().stream()
         .map(g -> convertUtils.toGroup(g, Opts.empty()))
@@ -175,6 +177,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
 
         DbGroup dbGroup = new DbGroup.Builder()
           .owningPortfolio(portfolio)
+          .owningOrganization(portfolio.getOrganization())
           .adminGroup(isAdmin)
           .name(group.getName())
           .whoCreated(personCreatedId)
@@ -206,7 +209,11 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
   }
 
   private DbGroup superuserGroup(DbOrganization org) {
-    return new QDbGroup().whenArchived.isNull().owningOrganization.eq(org).adminGroup.isTrue().findOne();
+    return new QDbGroup()
+      .whenArchived.isNull()
+      .owningOrganization.eq(org)
+      .owningPortfolio.isNull()
+      .adminGroup.isTrue().findOne();
   }
 
   private List<DbPerson> superuserGroupMembers(DbOrganization org) {
@@ -326,7 +333,12 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
     }
 
     // there is only 1
-    return convertUtils.toGroup(new QDbGroup().whenArchived.isNull().owningOrganization.id.eq(org).adminGroup.isTrue().findOne(), opts);
+    return convertUtils.toGroup(new QDbGroup()
+        .whenArchived.isNull()
+        .owningPortfolio.isNull()
+        .owningOrganization.id.eq(org)
+        .owningOrganization.fetch(QDbOrganization.Alias.id)
+        .adminGroup.isTrue().findOne(), opts);
   }
 
   @Override

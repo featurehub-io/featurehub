@@ -97,7 +97,7 @@ public interface Conversions {
 
   Person toPerson(DbPerson person);
 
-  Person toPerson(DbPerson dbp, Opts opts);
+  Person toPerson(DbPerson dbp, DbOrganization organization, Opts opts);
 
   default String stripArchived(String name, LocalDateTime whenArchived) {
     if (whenArchived == null) {
