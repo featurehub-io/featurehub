@@ -34,7 +34,7 @@ func TestStreamingClientNotifiers(t *testing.T) {
 		config:    config,
 		features:  make(map[string]*models.FeatureState),
 		logger:    logger,
-		notifiers: make(map[string]notifier),
+		notifiers: make(notifiers),
 	}
 
 	// Load the mock apiClient up with a "features" event:
@@ -61,29 +61,46 @@ func TestStreamingClientNotifiers(t *testing.T) {
 		event: "feature",
 	}
 
-	// Set up some test notifiers:
-	var callback1called, callback2called, callback3called int
+	// Feature1 gets one notifier:
+	var callback1called int
 	callbackFunc1 := func(*models.FeatureState) {
 		callback1called++
 	}
-	callbackFunc2 := func(*models.FeatureState) {
-		callback2called++
+	client.AddNotifierFeature("feature1", callbackFunc1)
+
+	// Feature 2 gets 2 notifiers (1/2):
+	var callback21called int
+	callbackFunc21 := func(*models.FeatureState) {
+		callback21called++
 	}
+	feature2UUID1 := client.AddNotifierFeature("feature2", callbackFunc21)
+
+	// Feature 2 gets 2 notifiers (2/2):
+	var callback22called int
+	callbackFunc22 := func(*models.FeatureState) {
+		callback22called++
+	}
+	feature2UUID2 := client.AddNotifierFeature("feature2", callbackFunc22)
+	assert.Len(t, client.notifiers["feature2"], 2)
+	assert.NotSame(t, feature2UUID1, feature2UUID2)
+
+	// Feature3 gets 1 notifer, but we'll delete it before it gets called:
+	var callback3called int
 	callbackFunc3 := func(*models.FeatureState) {
 		callback3called++
 	}
-
-	// Add some notifiers:
-	client.AddNotifierFeature("feature1", callbackFunc1)
-	client.AddNotifierFeature("feature2", callbackFunc2)
 	client.AddNotifierFeature("feature3", callbackFunc3)
-	client.AddNotifierFeature("feature4", nil)
+
+	// Feature4 gets a notifier with a nil callback:
+	feature4UUID := client.AddNotifierFeature("feature4", nil)
+
+	// Prove that we've added the notifiers:
 	assert.Len(t, client.notifiers, 4)
 	assert.Contains(t, logBuffer.String(), "Added a notifier")
 
 	// Delete some notifiers:
-	assert.NoError(t, client.DeleteNotifier("feature4"))
-	err := client.DeleteNotifier("feature5")
+	assert.NoError(t, client.DeleteNotifier("feature4", feature4UUID))
+	err := client.DeleteNotifier("feature5", "123")
 	assert.Error(t, err)
 	assert.IsType(t, &errors.ErrNotifierNotFound{}, err)
 
@@ -99,7 +116,8 @@ func TestStreamingClientNotifiers(t *testing.T) {
 
 	// Check that the the correct callbacks were made:
 	assert.Equal(t, 1, callback1called)
-	assert.Equal(t, 1, callback2called)
+	assert.Equal(t, 1, callback21called)
+	assert.Equal(t, 1, callback22called)
 	assert.Equal(t, 0, callback3called)
 
 	// Add a BOOLEAN callback:

@@ -19,7 +19,7 @@ type StreamingClient struct {
 	featuresURL       string
 	hasData           bool
 	logger            *logrus.Logger
-	notifiers         map[string]notifier
+	notifiers         notifiers
 	notifiersMutex    sync.Mutex
 	readinessListener func()
 }
@@ -48,8 +48,9 @@ func NewStreamingClient(config *Config) (*StreamingClient, error) {
 
 	// Put this into a new StreamingClient:
 	client := &StreamingClient{
-		config: config,
-		logger: logger,
+		config:    config,
+		logger:    logger,
+		notifiers: make(notifiers),
 	}
 
 	// Report that we're starting:
