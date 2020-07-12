@@ -42,6 +42,7 @@ class AppsBloc implements Bloc {
     application.description = appDescription;
     final newApp = await _applicationServiceApi.createApplication(
         mrClient.currentPid, application);
+    await mrClient.requestOwnDetails();
     await _refreshApplications();
     mrClient.setCurrentAid(newApp.id);
   }
