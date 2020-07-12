@@ -35,7 +35,7 @@ public class PersonSqlApi implements PersonApi {
   private static final Logger log = LoggerFactory.getLogger(PersonSqlApi.class);
   private final Database database;
   private final Conversions convertUtils;
-  private final static int MAX_SEARCH = 100;
+  public final static int MAX_SEARCH = 100;
   private final ArchiveStrategy archiveStrategy;
   private final PasswordSalter passwordSalter = new PasswordSalter();
 
@@ -53,13 +53,13 @@ public class PersonSqlApi implements PersonApi {
     DbPerson p = convertUtils.uuidPerson(id, opts);
 
     if (adminPerson != null && p != null && p.getWhenArchived() == null) {
-      return updatePerson(person, opts, adminPerson, p, new QDbOrganization().findOne());
+      return updatePerson(person, opts, adminPerson, p);
     }
 
     return null;
   }
 
-  public Person updatePerson(Person person, Opts opts, DbPerson adminPerson, DbPerson p, DbOrganization organization) throws OptimisticLockingException {
+  public Person updatePerson(Person person, Opts opts, DbPerson adminPerson, DbPerson p) throws OptimisticLockingException {
     if (person.getVersion() == null || p.getVersion() != person.getVersion()) {
       throw new OptimisticLockingException();
     }
@@ -73,7 +73,7 @@ public class PersonSqlApi implements PersonApi {
 
     if (person.getGroups() != null) {
       // we are going to need their groups to determine what they can do
-      Person admin = convertUtils.toPerson(adminPerson, organization, Opts.opts(FillOpts.Groups));
+      Person admin = convertUtils.toPerson(adminPerson, Opts.opts(FillOpts.Groups));
 
       boolean adminSuperuser = admin.getGroups().stream().anyMatch(g -> g.getPortfolioId() == null && g.getAdmin());
       List<String> validPortfolios = admin.getGroups()
@@ -122,7 +122,7 @@ public class PersonSqlApi implements PersonApi {
 
     updatePerson(p);
 
-    return convertUtils.toPerson(p, organization, opts);
+    return convertUtils.toPerson(p, opts);
   }
 
   @Override
@@ -161,7 +161,7 @@ public class PersonSqlApi implements PersonApi {
 
     try {
       pagination.max = futureCount.get();
-      DbOrganization org = new QDbOrganization().findOne();
+      DbOrganization org = convertUtils.getDbOrganization();
       pagination.people = futureList.get().stream().map(dbp ->
         convertUtils.toPerson(dbp, org, opts)).collect(Collectors.toList());
 
@@ -174,7 +174,6 @@ public class PersonSqlApi implements PersonApi {
 
   @Override
   public Person get(String id, Opts opts) {
-    DbOrganization org = new QDbOrganization().findOne();
     if (id.contains("@")) {
       QDbPerson search = new QDbPerson().email.eq(id.toLowerCase());
       if (!opts.contains(FillOpts.Archived)) {
@@ -182,7 +181,7 @@ public class PersonSqlApi implements PersonApi {
       }
       return search.groupsPersonIn.fetch()
         .findOneOrEmpty()
-        .map(p -> convertUtils.toPerson(p, org, opts))
+        .map(p -> convertUtils.toPerson(p, opts))
         .orElse(null);
     }
 
@@ -193,7 +192,7 @@ public class PersonSqlApi implements PersonApi {
       }
       return search.groupsPersonIn.fetch()
         .findOneOrEmpty()
-        .map(p -> convertUtils.toPerson(p, org, opts))
+        .map(p -> convertUtils.toPerson(p, opts))
         .orElse(null);
     }).orElse(null);
   }
@@ -205,7 +204,7 @@ public class PersonSqlApi implements PersonApi {
     DbPerson person  = new QDbPerson().whenArchived.isNull().token.eq(token).findOne();
 
     if (person != null && person.getTokenExpiry().isAfter(getNow())) {
-      return convertUtils.toPerson(person, new QDbOrganization().findOne(), opts);
+      return convertUtils.toPerson(person, opts);
     }
     return null;
   }
@@ -227,7 +226,7 @@ public class PersonSqlApi implements PersonApi {
       return null;
     }
 
-    PersonToken personToken = null;
+    PersonToken personToken;
     if (new QDbPerson().email.eq(email.toLowerCase()).findOne() == null) {
 
       String token = UUID.randomUUID().toString();
@@ -281,7 +280,7 @@ public class PersonSqlApi implements PersonApi {
 
       updatePerson(person);
 
-      return convertUtils.toPerson(person, new QDbOrganization().findOne(), opts);
+      return convertUtils.toPerson(person, opts);
     } else {
       throw new DuplicatePersonException();
     }

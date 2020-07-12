@@ -50,7 +50,7 @@ public class AuthenticationSqlApi implements AuthenticationApi {
         if (passwordSalter.validatePassword(password, p.getPassword())) {
           updateLastAuthenticated(p);
 
-          return convertUtils.toPerson(p, new QDbOrganization().findOne(), Opts.opts(FillOpts.Groups))
+          return convertUtils.toPerson(p, Opts.opts(FillOpts.Groups))
             .passwordRequiresReset(p.isPasswordRequiresReset());
         } else {
           return null;
@@ -76,14 +76,13 @@ public class AuthenticationSqlApi implements AuthenticationApi {
 
         return passwordSalter.saltPassword(password)
           .map(saltedPassword -> {
-            log.info("salted password {} password {}", saltedPassword, password);
             person.setName(name);
             person.setPassword(saltedPassword);
             person.setToken(null);
             person.setTokenExpiry(null);
             updateUser(person);
 
-            return convertUtils.toPerson(person, new QDbOrganization().findOne(), Opts.opts(FillOpts.Groups,
+            return convertUtils.toPerson(person, Opts.opts(FillOpts.Groups,
               FillOpts.Acls));
           }).orElse((Person) null);
         }
@@ -139,7 +138,7 @@ public class AuthenticationSqlApi implements AuthenticationApi {
 
             updateUser(p);
 
-            return convertUtils.toPerson(p, new QDbOrganization().findOne(), Opts.empty());
+            return convertUtils.toPerson(p, Opts.empty());
           }).orElse(null);
         }
 
@@ -161,7 +160,7 @@ public class AuthenticationSqlApi implements AuthenticationApi {
             p.setPasswordRequiresReset(false);
             p.setWhoChanged(null);
             updateUser(p);
-            return convertUtils.toPerson(p, new QDbOrganization().findOne(), Opts.empty());
+            return convertUtils.toPerson(p, Opts.empty());
           }).orElse(null);
         }
 
@@ -172,7 +171,7 @@ public class AuthenticationSqlApi implements AuthenticationApi {
 
   @Override
   public Person getPersonByToken(String token) {
-    return convertUtils.toPerson(new QDbPerson().token.eq(token).findOne(),new QDbOrganization().findOne(),
+    return convertUtils.toPerson(new QDbPerson().token.eq(token).findOne(),
       Opts.empty());
   }
 

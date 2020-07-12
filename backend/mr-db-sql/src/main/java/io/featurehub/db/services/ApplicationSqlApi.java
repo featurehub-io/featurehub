@@ -23,6 +23,7 @@ import io.featurehub.db.publish.CacheSource;
 import io.featurehub.mr.model.Application;
 import io.featurehub.mr.model.ApplicationGroupRole;
 import io.featurehub.mr.model.ApplicationRoleType;
+import io.featurehub.mr.model.EnvironmentGroupRole;
 import io.featurehub.mr.model.Feature;
 import io.featurehub.mr.model.FeatureValueType;
 import io.featurehub.mr.model.Person;
@@ -395,7 +396,6 @@ public class ApplicationSqlApi implements ApplicationApi {
 
     if (appId != null) {
       new QDbAcl().application.id.eq(appId).group.whenArchived.isNull().group.peopleInGroup.fetch().findList().forEach(acl -> {
-        log.info("found acl {}", acl);
         ApplicationGroupRole agr = convertUtils.applicationGroupRoleFromAcl(acl);
 
         if (agr.getRoles().contains(ApplicationRoleType.FEATURE_EDIT)) {
@@ -407,5 +407,46 @@ public class ApplicationSqlApi implements ApplicationApi {
     }
 
     return featureEditors;
+  }
+
+  public Set<String> findFeatureReaders(String id) {
+    UUID appId = Conversions.ifUuid(id);
+    Set<String> featureReaders = new HashSet<>();
+
+    if (appId != null) {
+      new QDbAcl()
+        .environment.parentApplication.id.eq(appId)
+        .group.whenArchived.isNull()
+        .group.peopleInGroup.fetch().findList().forEach(acl -> {
+        if (acl.getRoles().trim().length() > 0) {
+          acl.getGroup().getPeopleInGroup().forEach(p ->
+            featureReaders.add(p.getId().toString()));
+        }
+      });
+    }
+
+    return featureReaders;
+  }
+
+  public boolean personIsFeatureReader(String appId, String personId) {
+    UUID applicationId = Conversions.ifUuid(appId);
+    DbPerson person = convertUtils.uuidPerson(personId);
+
+    if (convertUtils.personIsSuperAdmin(person)) {
+      return true;
+    }
+
+    if (applicationId != null && person != null) {
+      for(DbAcl acl : new QDbAcl()
+        .environment.parentApplication.id.eq(applicationId)
+        .group.whenArchived.isNull()
+        .group.peopleInGroup.eq(person).findList()) {
+        if (acl.getRoles().trim().length() > 0) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 }

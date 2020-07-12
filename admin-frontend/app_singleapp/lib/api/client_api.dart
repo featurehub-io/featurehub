@@ -190,7 +190,7 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   static String homeUrl() {
     final origin = window.location.origin;
-    originUri = Uri.parse(origin);
+
     if (overrideOrigin) {
       return '${originUri.scheme}://${originUri.host}:8903';
     } else if (overrideOrigin && origin.startsWith('http://[::1]')) {
@@ -201,8 +201,10 @@ class ManagementRepositoryClientBloc implements Bloc {
     }
   }
 
-  ManagementRepositoryClientBloc() : _client = ApiClient(basePath: homeUrl()) {
+  ManagementRepositoryClientBloc({String basePathUrl})
+      : _client = ApiClient(basePath: basePathUrl ?? homeUrl()) {
     _basePath = Uri.parse(_client.basePath);
+    originUri = Uri.parse(window.location.origin);
     setupApi = SetupServiceApi(_client);
     personServiceApi = PersonServiceApi(_client);
     authServiceApi = AuthServiceApi(_client);

@@ -90,8 +90,7 @@ public class FeatureResource implements FeatureServiceDelegate {
 
   @Override
   public List<Feature> getAllFeaturesForApplication(String id, SecurityContext securityContext) {
-    // TODO: you should be in a group that can at least READ the features.
-    applicationUtils.featureCheck(securityContext, id);
+    applicationUtils.featureReadCheck(securityContext, id);
     return applicationApi.getApplicationFeatures(id);
   }
 

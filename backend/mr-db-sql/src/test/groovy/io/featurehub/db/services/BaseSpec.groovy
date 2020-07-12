@@ -47,7 +47,7 @@ class BaseSpec extends Specification {
       org = organizationSqlApi.save(new Organization())
     }
 
-    superPerson = convertUtils.toPerson(dbSuperPerson, Finder.findDbOrganization(), Opts.empty())
+    superPerson = convertUtils.toPerson(dbSuperPerson, Opts.empty())
 
     if (createAdminGroup) {
       adminGroup = groupSqlApi.createOrgAdminGroup(org.id, 'admin group', superPerson)

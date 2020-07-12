@@ -59,6 +59,9 @@ public interface Conversions {
     }
   }
 
+  // used so things that call toPerson multiple times can hold onto it
+  DbOrganization getDbOrganization();
+
   DbPerson uuidPerson(String id);
 
   DbPerson uuidPerson(String id, Opts opts);
@@ -72,6 +75,7 @@ public interface Conversions {
   DbApplication uuidApplication(String id);
 
   boolean personIsNotSuperAdmin(DbPerson person);
+  boolean personIsSuperAdmin(DbPerson person);
 
   String limitLength(String s, int len);
 
@@ -97,7 +101,8 @@ public interface Conversions {
 
   Person toPerson(DbPerson person);
 
-  Person toPerson(DbPerson dbp, DbOrganization organization, Opts opts);
+  Person toPerson(DbPerson dbp, Opts opts);
+  Person toPerson(DbPerson dbp, DbOrganization org, Opts opts);
 
   default String stripArchived(String name, LocalDateTime whenArchived) {
     if (whenArchived == null) {

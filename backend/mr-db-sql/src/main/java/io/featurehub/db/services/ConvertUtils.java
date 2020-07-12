@@ -20,6 +20,7 @@ import io.featurehub.db.model.query.QDbApplicationFeature;
 import io.featurehub.db.model.query.QDbEnvironment;
 import io.featurehub.db.model.query.QDbGroup;
 import io.featurehub.db.model.query.QDbNamedCache;
+import io.featurehub.db.model.query.QDbOrganization;
 import io.featurehub.db.model.query.QDbPerson;
 import io.featurehub.db.model.query.QDbPortfolio;
 import io.featurehub.mr.model.Application;
@@ -122,7 +123,16 @@ public class ConvertUtils implements Conversions {
 
   @Override
   public boolean personIsNotSuperAdmin(DbPerson person) {
-    return new QDbGroup().and().owningPortfolio.isNull().peopleInGroup.id.eq(person.getId()).endAnd().findCount() <= 0;
+    return new QDbGroup().owningPortfolio.isNull().adminGroup.isTrue().peopleInGroup.id.eq(person.getId()).findCount() <= 0;
+  }
+
+  @Override
+  public boolean personIsSuperAdmin(DbPerson person) {
+    return new QDbGroup()
+      .whenArchived.isNull()
+      .owningPortfolio.isNull()
+      .peopleInGroup.eq(person)
+      .adminGroup.isTrue().findCount() > 0;
   }
 
   @Override
@@ -291,8 +301,17 @@ public class ConvertUtils implements Conversions {
       .groups(null);
   }
 
+  public DbOrganization getDbOrganization() {
+    return new QDbOrganization().findOne();
+  }
+
   @Override
-  public Person toPerson(DbPerson dbp, DbOrganization organization, Opts opts) {
+  public Person toPerson(DbPerson dbp, Opts opts) {
+    return toPerson(dbp, null, opts);
+  }
+
+  @Override
+  public Person toPerson(DbPerson dbp, DbOrganization org, Opts opts) {
     if (dbp == null) {
       return null;
     }
@@ -317,7 +336,7 @@ public class ConvertUtils implements Conversions {
       new QDbGroup()
         .whenArchived.isNull()
         .peopleInGroup.eq(dbp)
-        .owningOrganization.eq(organization)
+        .owningOrganization.eq(org == null ? getDbOrganization() : org)
         .findList().forEach(dbg -> {
         p.addGroupsItem(toGroup(dbg, opts.minus(FillOpts.Groups)));
       });
@@ -349,7 +368,7 @@ public class ConvertUtils implements Conversions {
         dbg.getOwningOrganization();
       group.setMembers(
         new QDbPerson().order().name.asc().whenArchived.isNull().groupsPersonIn.eq(dbg).findList().stream()
-        .map(p -> this.toPerson(p, org, opts.minus(FillOpts.Members, FillOpts.Acls))).collect(Collectors.toList()));
+        .map(p -> this.toPerson(p, org, opts.minus(FillOpts.Members, FillOpts.Acls, FillOpts.Groups))).collect(Collectors.toList()));
     }
 
     if (opts.contains(FillOpts.Acls)) {

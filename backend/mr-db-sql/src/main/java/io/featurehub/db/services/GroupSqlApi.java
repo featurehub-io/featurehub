@@ -72,7 +72,12 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
     }
     if (new QDbGroup().owningOrganization.id.eq(orgId).whenArchived.isNull().peopleInGroup.eq(person).findCount() > 0 ||
       new QDbGroup().owningPortfolio.organization.id.eq(orgId).whenArchived.isNull().peopleInGroup.eq(person).findCount() > 0) {
-      final DbGroup g = new QDbGroup().owningOrganization.id.eq(orgId).peopleInGroup.fetch().findOne();
+      final DbGroup g =
+        new QDbGroup()
+          .owningOrganization.id.eq(orgId)
+          .adminGroup.isTrue()
+          .owningPortfolio.isNull()
+          .peopleInGroup.fetch().findOne();
       if (g != null) { // make sure you are a user in at least one group otherwise you can't see this group
         return convertUtils.toGroup(g, Opts.opts(FillOpts.Members));
       }
@@ -128,7 +133,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
   @Override
   public Group createOrgAdminGroup(String orgId, String groupName, Person whoCreated) {
     final Group group = Conversions.uuid(orgId).map(orgUuid -> {
-      DbOrganization org = new QDbOrganization().id.eq(orgUuid).findOne();
+      DbOrganization org = convertUtils.getDbOrganization();
 
       if (org == null || new QDbGroup().whenArchived.isNull().owningOrganization.id.eq(orgUuid).findCount() > 0) {
         return null; // already exists or org doesn't exist
@@ -608,7 +613,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
       .filter(p -> p != null && p.getId() != null)
       .map(p -> p.getId().getId()).collect(Collectors.toSet());
 
-    boolean isSuperuserGroup = group.isAdminGroup() && group.getOwningOrganization() != null;
+    boolean isSuperuserGroup = group.isAdminGroup() && group.getOwningPortfolio() == null;
     List<DbPerson> superusers = group.isAdminGroup() && !isSuperuserGroup ? superuserGroupMembers(group.getOwningPortfolio().getOrganization()) : new ArrayList<>();
 
     group.getPeopleInGroup().forEach(person -> {

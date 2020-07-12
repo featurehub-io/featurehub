@@ -53,11 +53,19 @@ public class ApplicationUtils {
     Person current = authManager.from(securityContext);
 
     if (!applicationApi.findFeatureEditors(id).contains(current.getId().getId())) {
-      log.warn("Attempt by {} to edt features in application {}", current.getEmail(), id);
+      log.warn("Attempt by person {} to edt features in application {}", current.getId().getId(), id);
 
       return check(current, id, Opts.empty());
     } else {
       return new ApplicationPermissionCheck.Builder().current(current).build();
+    }
+  }
+
+  public void featureReadCheck(SecurityContext securityContext, String id) {
+    Person current = authManager.from(securityContext);
+
+    if (!applicationApi.personIsFeatureReader(id, current.getId().getId())) {
+      throw new ForbiddenException();
     }
   }
 }

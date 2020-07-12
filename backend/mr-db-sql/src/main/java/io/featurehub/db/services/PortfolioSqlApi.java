@@ -41,6 +41,7 @@ public class PortfolioSqlApi implements io.featurehub.db.api.PortfolioApi {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<Portfolio> findPortfolios(String filter, String organizationId, SortOrder ordering, Opts opts, Person currentPerson) {
     DbPerson personDoingFind = convertUtils.uuidPerson(currentPerson);
 
@@ -48,29 +49,27 @@ public class PortfolioSqlApi implements io.featurehub.db.api.PortfolioApi {
       return new ArrayList<>();
     }
 
-    return Conversions.uuid(organizationId).map(orgId -> {
-      QDbPortfolio pFinder = new QDbPortfolio().organization.id.eq(orgId);
+    QDbPortfolio pFinder = new QDbPortfolio().organization.eq(convertUtils.getDbOrganization());
 
-      if (filter != null && filter.trim().length() > 0) {
-        pFinder = pFinder.name.ilike('%' + filter.trim() + '%');
+    if (filter != null && filter.trim().length() > 0) {
+      pFinder = pFinder.name.ilike('%' + filter.trim() + '%');
+    }
+
+    if (ordering != null) {
+      if (ordering == SortOrder.ASC) {
+        pFinder = pFinder.order().name.asc();
+      } else if (ordering == SortOrder.DESC) {
+        pFinder = pFinder.order().name.desc();
       }
+    }
 
-      if (ordering != null) {
-        if (ordering == SortOrder.ASC) {
-          pFinder = pFinder.order().name.asc();
-        } else if (ordering == SortOrder.DESC) {
-          pFinder = pFinder.order().name.desc();
-        }
-      }
+    if (convertUtils.personIsNotSuperAdmin(personDoingFind)) {
+      pFinder = pFinder.groups.peopleInGroup.id.eq(personDoingFind.getId());
+    }
 
-      if (convertUtils.personIsNotSuperAdmin(personDoingFind)) {
-        pFinder = pFinder.groups.peopleInGroup.id.eq(personDoingFind.getId());
-      }
+    pFinder = finder(pFinder, opts);
 
-      pFinder = finder(pFinder, opts);
-
-      return pFinder.findList().stream().map(p -> convertUtils.toPortfolio(p, opts)).collect(Collectors.toList());
-    }).orElse(new ArrayList<>());
+    return pFinder.findList().stream().map(p -> convertUtils.toPortfolio(p, opts)).collect(Collectors.toList());
   }
 
   private QDbPortfolio finder(QDbPortfolio pFinder, Opts opts) {
@@ -100,16 +99,7 @@ public class PortfolioSqlApi implements io.featurehub.db.api.PortfolioApi {
       return null;
     }
 
-    DbOrganization orgParent =
-      Conversions.uuid(portfolio.getOrganizationId())
-        .map(orgid -> new QDbOrganization().id.eq(orgid).findOne())
-        .orElse(null);
-
-    if (orgParent == null) {
-      orgParent = new QDbOrganization().findOne();
-    }
-
-    final DbOrganization org = orgParent;
+    final DbOrganization org = convertUtils.getDbOrganization();
 
     duplicateCheck(portfolio, null, org);
 
@@ -146,6 +136,7 @@ public class PortfolioSqlApi implements io.featurehub.db.api.PortfolioApi {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public Portfolio getPortfolio(String id, Opts opts, Person currentPerson) {
     DbPerson personDoingFind = convertUtils.uuidPerson(currentPerson);
 
