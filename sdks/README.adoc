@@ -20,9 +20,9 @@ All SDKs are MIT licensed, as they reside in the client codebase.
 |Event Streaming|Y|Y|Y|Y
 |Background Start|Y|Y|Y|Y
 |Block until Start|N|N|Y|N
-|Readyness Listeners|Y|Y|N|Y
-|Feature Listeners|Y|Y|N|Y
-|Feature Listener Removal|N|N|N|Y
+|Readyness Listeners|Y|Y|Y|Y
+|Feature Listeners|Y|Y|Y|Y
+|Feature Listener Removal|N|N|Y|Y
 |Catch & Release|N|Y|N|Y
 |Analytics Support|Y|Y|N|Y
 |Google Analytics|Y|Y|N|N
