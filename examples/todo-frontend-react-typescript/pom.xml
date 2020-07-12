@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>cd.connect</groupId>
+  <groupId>io.featurehub.examples.todo.frontend</groupId>
   <artifactId>todo-frontend</artifactId>
   <version>1.1-SNAPSHOT</version>
 
@@ -84,7 +84,7 @@
             <version>2.6</version>
             <executions>
               <execution>
-                <id>make-admin-ui</id>
+                <id>make-ui-code</id>
                 <goals>
                   <goal>single</goal>
                 </goals>
@@ -95,7 +95,7 @@
                     <descriptor>${project.basedir}/assembly.xml</descriptor>
                   </descriptors>
                   <attach>true</attach>
-                  <classifier>admin-ui</classifier>
+                  <classifier>ui-code</classifier>
                 </configuration>
               </execution>
             </executions>
