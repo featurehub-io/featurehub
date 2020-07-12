@@ -190,7 +190,7 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   static String homeUrl() {
     final origin = window.location.origin;
-
+    originUri = Uri.parse(window.location.origin);
     if (overrideOrigin) {
       return '${originUri.scheme}://${originUri.host}:8903';
     } else if (overrideOrigin && origin.startsWith('http://[::1]')) {
