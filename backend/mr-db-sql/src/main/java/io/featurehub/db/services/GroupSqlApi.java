@@ -135,7 +135,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
     final Group group = Conversions.uuid(orgId).map(orgUuid -> {
       DbOrganization org = new QDbOrganization().id.eq(orgUuid).findOne();
 
-      if (org == null || new QDbGroup().whenArchived.isNull().owningOrganization.id.eq(orgUuid).findCount() > 0) {
+      if (org == null || new QDbGroup().whenArchived.isNull().owningPortfolio.isNull().owningOrganization.id.eq(orgUuid).findCount() > 0) {
         return null; // already exists or org doesn't exist
       }
 
