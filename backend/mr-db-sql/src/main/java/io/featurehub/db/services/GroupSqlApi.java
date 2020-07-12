@@ -133,7 +133,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
   @Override
   public Group createOrgAdminGroup(String orgId, String groupName, Person whoCreated) {
     final Group group = Conversions.uuid(orgId).map(orgUuid -> {
-      DbOrganization org = convertUtils.getDbOrganization();
+      DbOrganization org = new QDbOrganization().id.eq(orgUuid).findOne();
 
       if (org == null || new QDbGroup().whenArchived.isNull().owningOrganization.id.eq(orgUuid).findCount() > 0) {
         return null; // already exists or org doesn't exist
