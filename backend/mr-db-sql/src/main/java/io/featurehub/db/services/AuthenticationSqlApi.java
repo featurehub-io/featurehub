@@ -171,8 +171,12 @@ public class AuthenticationSqlApi implements AuthenticationApi {
 
   @Override
   public Person getPersonByToken(String token) {
-    return convertUtils.toPerson(new QDbPerson().token.eq(token).findOne(),
+    final Person person = convertUtils.toPerson(new QDbPerson().token.eq(token).findOne(),
       Opts.empty());
+    if (person.getName() != null && person.getName().isEmpty()) {
+      person.setName(null);
+    }
+    return person;
   }
 
   @Override
