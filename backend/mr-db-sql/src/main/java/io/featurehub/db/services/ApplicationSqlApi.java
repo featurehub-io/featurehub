@@ -437,10 +437,17 @@ public class ApplicationSqlApi implements ApplicationApi {
     }
 
     if (applicationId != null && person != null) {
+
       for(DbAcl acl : new QDbAcl()
+        .or()
         .environment.parentApplication.id.eq(applicationId)
+        .application.id.eq(applicationId)
+        .endOr()
         .group.whenArchived.isNull()
         .group.peopleInGroup.eq(person).findList()) {
+        if (acl.getApplication() != null) {
+          return true;
+        }
         if (acl.getRoles().trim().length() > 0) {
           return true;
         }
