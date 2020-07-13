@@ -9,6 +9,7 @@ import io.featurehub.db.api.Opts;
 import io.featurehub.db.model.DbLogin;
 import io.featurehub.db.model.DbPerson;
 import io.featurehub.db.model.query.QDbLogin;
+import io.featurehub.db.model.query.QDbOrganization;
 import io.featurehub.db.model.query.QDbPerson;
 import io.featurehub.db.password.PasswordSalter;
 import io.featurehub.mr.model.Person;
@@ -75,14 +76,14 @@ public class AuthenticationSqlApi implements AuthenticationApi {
 
         return passwordSalter.saltPassword(password)
           .map(saltedPassword -> {
-            log.info("salted password {} password {}", saltedPassword, password);
             person.setName(name);
             person.setPassword(saltedPassword);
             person.setToken(null);
             person.setTokenExpiry(null);
             updateUser(person);
 
-            return convertUtils.toPerson(person, Opts.opts(FillOpts.Groups, FillOpts.Acls));
+            return convertUtils.toPerson(person, Opts.opts(FillOpts.Groups,
+              FillOpts.Acls));
           }).orElse((Person) null);
         }
       ).orElse(null);
@@ -170,7 +171,12 @@ public class AuthenticationSqlApi implements AuthenticationApi {
 
   @Override
   public Person getPersonByToken(String token) {
-    return convertUtils.toPerson(new QDbPerson().token.eq(token).findOne(), Opts.empty());
+    final Person person = convertUtils.toPerson(new QDbPerson().token.eq(token).findOne(),
+      Opts.empty());
+    if (person.getName() != null && person.getName().isEmpty()) {
+      person.setName(null);
+    }
+    return person;
   }
 
   @Override

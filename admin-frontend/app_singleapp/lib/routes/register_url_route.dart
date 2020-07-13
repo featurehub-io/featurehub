@@ -3,10 +3,8 @@ import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/fh_card.dart';
 import 'package:app_singleapp/widgets/user/register/register_url_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:openapi_dart_common/openapi.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:xcvbnm/xcvbnm.dart';
 
 class RegisterURLRoute extends StatefulWidget {
@@ -46,7 +44,17 @@ class RegisterURLState extends State<RegisterURLRoute> {
                     if (snapshot.data == RegisterUrlForm.initialState) {
                       return initialState(context, bloc);
                     } else if (snapshot.data == RegisterUrlForm.successState) {
-                      return successState(context);
+                      ManagementRepositoryClientBloc.router
+                          .navigateTo(context, '/');
+                      return SizedBox.shrink();
+                    } else if (snapshot.data ==
+                        RegisterUrlForm.alreadyLoggedIn) {
+                      // go back to login
+                      ManagementRepositoryClientBloc.router
+                          .navigateTo(context, '/');
+                      BlocProvider.of<ManagementRepositoryClientBloc>(context)
+                          .resetInitialized();
+                      return SizedBox.shrink();
                     }
                   }
                   if (snapshot.hasError) {
@@ -66,54 +74,6 @@ class RegisterURLState extends State<RegisterURLRoute> {
                 })),
       ],
     ));
-  }
-
-  Widget successState(BuildContext context) {
-    return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Text(
-            'Boom! Registration complete! ',
-            style: Theme.of(context).textTheme.headline6,
-          ),
-          Text(
-            'To get started using FeatureHub we recommend quickly reviewing our documentation on https://docs.featurehub.io/',
-            style: Theme.of(context).textTheme.bodyText2,
-          ),
-          RichText(
-              text: TextSpan(
-            children: [
-              TextSpan(
-                style: Theme.of(context).textTheme.bodyText2,
-                text:
-                    'To get started using FeatureHub we recommend quickly reviewing our documentation ',
-              ),
-              TextSpan(
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyText2
-                    .copyWith(color: Theme.of(context).primaryColorDark),
-                text: 'here',
-                recognizer: TapGestureRecognizer()
-                  ..onTap = () async {
-                    final url = 'https://docs.featurehub.io/';
-                    if (await canLaunch(url)) {
-                      await launch(
-                        url,
-                      );
-                    }
-                  },
-              ),
-            ],
-          )),
-          FHFlatButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              title: 'OK'),
-        ]);
   }
 
   Widget initialState(BuildContext context, RegisterBloc bloc) {

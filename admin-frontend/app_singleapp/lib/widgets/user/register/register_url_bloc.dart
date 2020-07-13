@@ -5,7 +5,13 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart' as rxdart;
 
-enum RegisterUrlForm { loadingState, initialState, errorState, successState }
+enum RegisterUrlForm {
+  loadingState,
+  initialState,
+  errorState,
+  successState,
+  alreadyLoggedIn
+}
 
 class RegisterBloc implements Bloc {
   final ManagementRepositoryClientBloc mrClient;
@@ -28,9 +34,15 @@ class RegisterBloc implements Bloc {
   void getDetails(String token) {
     if (token != this.token) {
       mrClient.authServiceApi.personByToken(token).then((data) {
-        person = data;
-        this.token = token;
-        _formStateStream.add(RegisterUrlForm.initialState);
+        if (data.name != null) {
+          // we can get into a situation where a person is already "good"
+          // but their registration link still works, so lets redirect to login
+          _formStateStream.add(RegisterUrlForm.alreadyLoggedIn);
+        } else {
+          person = data;
+          this.token = token;
+          _formStateStream.add(RegisterUrlForm.initialState);
+        }
       }).catchError((e) {
         _formStateStream.addError(e);
       });
@@ -47,9 +59,9 @@ class RegisterBloc implements Bloc {
           ..confirmPassword = confirmPassword
           ..name = name
           ..registrationToken = token)
-        .then((data) {
+        .then((data) async {
+      await mrClient.hasToken(data);
       _formStateStream.add(RegisterUrlForm.successState);
-      mrClient.hasToken(data);
     }).catchError((e, s) {
       mrClient.dialogError(e, s);
     });

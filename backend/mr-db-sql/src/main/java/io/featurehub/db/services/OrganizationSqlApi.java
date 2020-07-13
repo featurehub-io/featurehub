@@ -28,8 +28,7 @@ public class OrganizationSqlApi implements OrganizationApi {
   }
 
   public Organization get() {
-    final List<DbOrganization> orgs = new QDbOrganization().setMaxRows(1).whenArchived.isNull().findList();
-    return orgs.size() == 0 ? null : convertUtils.toOrganization(orgs.get(0), Opts.opts(FillOpts.Groups));
+    return convertUtils.toOrganization(convertUtils.getDbOrganization(), Opts.opts(FillOpts.Groups));
   }
 
   @Transactional

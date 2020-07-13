@@ -30,20 +30,14 @@ import io.featurehub.mr.model.ServiceAccountPermission
 import spock.lang.Shared
 import spock.lang.Specification
 
-class FeatureSpec extends Specification {
-  @Shared Database database
-  @Shared ConvertUtils convertUtils
+class FeatureSpec extends BaseSpec {
   @Shared PersonSqlApi personSqlApi
-  @Shared UUID superuser
-  @Shared Person superPerson
-  @Shared DbPerson dbSuperPerson
   @Shared DbPortfolio portfolio1
   @Shared DbApplication app1
   @Shared DbApplication app2
   @Shared ApplicationSqlApi appApi
   @Shared FeatureSqlApi featureSqlApi
   @Shared EnvironmentSqlApi environmentSqlApi
-  @Shared GroupSqlApi groupSqlApi
   @Shared ServiceAccountSqlApi serviceAccountSqlApi
   @Shared String envIdApp1
   @Shared String appId
@@ -54,37 +48,13 @@ class FeatureSpec extends Specification {
   @Shared Group adminGroupInPortfolio1
 
   def setupSpec() {
-    System.setProperty("ebean.ddl.generate", "true")
-    System.setProperty("ebean.ddl.run", "true")
-    database = DB.getDefault()
-    convertUtils = new ConvertUtils()
-    def archiveStrategy = new DbArchiveStrategy(database, Mock(CacheSource))
-    personSqlApi = new PersonSqlApi(database, convertUtils, archiveStrategy)
-    groupSqlApi = new GroupSqlApi(database, convertUtils, archiveStrategy)
-    serviceAccountSqlApi = new ServiceAccountSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
-    def organizationSqlApi = new OrganizationSqlApi(database, convertUtils)
+    baseSetupSpec()
 
-    dbSuperPerson = Finder.findByEmail("irina@featurehub.io")
-    if (dbSuperPerson == null) {
-      dbSuperPerson = new DbPerson.Builder().email("irina@featurehub.io").name("Irina").build();
-      database.save(dbSuperPerson);
-    }
-    database.save(dbSuperPerson);
-    superuser = dbSuperPerson.getId()
-    superPerson = convertUtils.toPerson(dbSuperPerson, Opts.empty())
+    personSqlApi = new PersonSqlApi(database, convertUtils, archiveStrategy)
+    serviceAccountSqlApi = new ServiceAccountSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
 
     appApi = new ApplicationSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
 
-    // ensure the org is created and we have an admin user in an admin group
-    Organization org = organizationSqlApi.get()
-    Group adminGroup
-    if (org == null) {
-      org = organizationSqlApi.save(new Organization())
-      adminGroup = groupSqlApi.createOrgAdminGroup(org.id, 'admin group', superPerson)
-    } else {
-      adminGroup = groupSqlApi.findOrganizationAdminGroup(org.id, Opts.empty())
-    }
-    groupSqlApi.addPersonToGroup(adminGroup.id, superuser.toString(), Opts.empty())
 
     // now set up the environments we need
     portfolio1 = new DbPortfolio.Builder().name("p1-app-feature").whoCreated(dbSuperPerson).organization(new QDbOrganization().findOne()).build()

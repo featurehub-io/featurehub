@@ -30,6 +30,6 @@ public interface ApplicationApi {
   Feature getApplicationFeatureByKey(@NotNull String appId, String key);
 
   Set<String> findFeatureEditors(String id);
-
-
+  Set<String> findFeatureReaders(String id);
+  boolean personIsFeatureReader(String appId, String personId);
 }

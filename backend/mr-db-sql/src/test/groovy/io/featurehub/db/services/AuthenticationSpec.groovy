@@ -9,29 +9,15 @@ import io.featurehub.mr.model.Person
 import spock.lang.Shared
 import spock.lang.Specification
 
-class AuthenticationSpec extends Specification {
-  Database database
-  ConvertUtils convertUtils
-  AuthenticationSqlApi auth
-  PersonSqlApi personApi
-  UUID superuser
+class AuthenticationSpec extends BaseSpec {
+  @Shared AuthenticationSqlApi auth
+  @Shared PersonSqlApi personApi
 
 
-  def setup() {
-    System.setProperty("ebean.ddl.generate", "true")
-    System.setProperty("ebean.ddl.run", "true")
-    database = DB.getDefault()
-    convertUtils = new ConvertUtils()
-    def archiveStrategy = new DbArchiveStrategy(database, Mock(CacheSource))
+  def setupSpec() {
+    baseSetupSpec()
     auth = new AuthenticationSqlApi(database, convertUtils)
     personApi = new PersonSqlApi(database, convertUtils, archiveStrategy)
-
-    DbPerson user = Finder.findByEmail("irina@featurehub.io")
-    if (user == null) {
-      user = new DbPerson.Builder().email("irina@featurehub.io").name("Irina").build();
-      database.save(user);
-    }
-    superuser = user.getId()
   }
 
   def "I should be able to register a new user"() {

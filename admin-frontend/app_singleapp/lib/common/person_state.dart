@@ -23,7 +23,7 @@ class PersonState {
 
   bool get userIsSuperAdmin => _isUserIsSuperAdmin;
   List<Group> get groupList =>
-      _personSource.hasValue ? _personSource.value.groups : <Group>[];
+      _personSource.hasValue ? _personSource.value?.groups : <Group>[];
 
   bool _userIsAnyPortfolioOrSuperAdmin = false;
   bool get userIsAnyPortfolioOrSuperAdmin => _userIsAnyPortfolioOrSuperAdmin;
@@ -95,11 +95,14 @@ class PersonState {
       false;
 
   void currentPortfolioOrSuperAdminUpdateState(Portfolio p) {
-    final isAdmin = isSuperAdminGroupFound(person.groups) ||
-        userIsPortfolioAdmin(p?.id, person.groups);
-    _isCurrentPortfolioOrSuperAdmin.add(ReleasedPortfolio()
-      ..portfolio = p
-      ..currentPortfolioOrSuperAdmin = isAdmin);
+    final isAdmin = person != null &&
+        (isSuperAdminGroupFound(person.groups) ||
+            userIsPortfolioAdmin(p?.id, person.groups));
+    if (p != null) {
+      _isCurrentPortfolioOrSuperAdmin.add(ReleasedPortfolio()
+        ..portfolio = p
+        ..currentPortfolioOrSuperAdmin = isAdmin);
+    }
   }
 
   void logout() {

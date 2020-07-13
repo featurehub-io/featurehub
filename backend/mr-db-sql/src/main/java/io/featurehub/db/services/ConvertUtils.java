@@ -20,6 +20,7 @@ import io.featurehub.db.model.query.QDbApplicationFeature;
 import io.featurehub.db.model.query.QDbEnvironment;
 import io.featurehub.db.model.query.QDbGroup;
 import io.featurehub.db.model.query.QDbNamedCache;
+import io.featurehub.db.model.query.QDbOrganization;
 import io.featurehub.db.model.query.QDbPerson;
 import io.featurehub.db.model.query.QDbPortfolio;
 import io.featurehub.mr.model.Application;
@@ -122,7 +123,16 @@ public class ConvertUtils implements Conversions {
 
   @Override
   public boolean personIsNotSuperAdmin(DbPerson person) {
-    return new QDbGroup().and().owningPortfolio.isNull().peopleInGroup.id.eq(person.getId()).endAnd().findCount() <= 0;
+    return new QDbGroup().owningPortfolio.isNull().adminGroup.isTrue().peopleInGroup.id.eq(person.getId()).findCount() <= 0;
+  }
+
+  @Override
+  public boolean personIsSuperAdmin(DbPerson person) {
+    return new QDbGroup()
+      .whenArchived.isNull()
+      .owningPortfolio.isNull()
+      .peopleInGroup.eq(person)
+      .adminGroup.isTrue().findCount() > 0;
   }
 
   @Override
@@ -145,7 +155,9 @@ public class ConvertUtils implements Conversions {
       .applicationId(env.getParentApplication().getId().toString());
 
     if (opts.contains(FillOpts.People)) {
-      environment.updatedBy(toPerson(env.getWhoCreated(), Opts.empty()));
+      environment.updatedBy(toPerson(env.getWhoCreated(),
+        env.getParentApplication().getPortfolio().getOrganization()
+        , Opts.empty()));
       environment.createdBy(toPerson(env.getWhoCreated()));
     }
 
@@ -289,15 +301,24 @@ public class ConvertUtils implements Conversions {
       .groups(null);
   }
 
+  public DbOrganization getDbOrganization() {
+    return new QDbOrganization().findOne();
+  }
+
   @Override
   public Person toPerson(DbPerson dbp, Opts opts) {
+    return toPerson(dbp, null, opts);
+  }
+
+  @Override
+  public Person toPerson(DbPerson dbp, DbOrganization org, Opts opts) {
     if (dbp == null) {
       return null;
     }
 
     Person p = new Person()
       .email(dbp.getEmail())
-      .name(stripArchived(dbp.getName(), dbp.getWhenArchived()))
+      .name(dbp.getName() == null ? "" : stripArchived(dbp.getName(), dbp.getWhenArchived()))
       .version(dbp.getVersion())
       .passwordRequiresReset(dbp.isPasswordRequiresReset())
       .whenArchived(toOff(dbp.getWhenArchived()))
@@ -312,7 +333,11 @@ public class ConvertUtils implements Conversions {
     }
 
     if (opts.contains(FillOpts.Groups)) {
-      new QDbGroup().whenArchived.isNull().peopleInGroup.eq(dbp).findList().forEach(dbg -> {
+      new QDbGroup()
+        .whenArchived.isNull()
+        .peopleInGroup.eq(dbp)
+        .owningOrganization.eq(org == null ? getDbOrganization() : org)
+        .findList().forEach(dbg -> {
         p.addGroupsItem(toGroup(dbg, opts.minus(FillOpts.Groups)));
       });
     }
@@ -335,15 +360,15 @@ public class ConvertUtils implements Conversions {
     group.setAdmin(dbg.isAdminGroup());
     if (dbg.getOwningPortfolio() != null) {
       group.setPortfolioId(dbg.getOwningPortfolio().getId().toString());
-      group.setOrganizationId(dbg.getOwningPortfolio().getOrganization().getId().toString());
-    } else {
-      group.setOrganizationId(dbg.getOwningOrganization() == null ? null : dbg.getOwningOrganization().getId().toString());
     }
+    group.setOrganizationId(dbg.getOwningOrganization() == null ? null : dbg.getOwningOrganization().getId().toString());
 
     if (opts.contains(FillOpts.Members)) {
+      DbOrganization org = dbg.getOwningOrganization() == null ? dbg.getOwningPortfolio().getOrganization() :
+        dbg.getOwningOrganization();
       group.setMembers(
         new QDbPerson().order().name.asc().whenArchived.isNull().groupsPersonIn.eq(dbg).findList().stream()
-        .map(p -> this.toPerson(p, opts.minus(FillOpts.Members, FillOpts.Acls))).collect(Collectors.toList()));
+        .map(p -> this.toPerson(p, org, opts.minus(FillOpts.Members, FillOpts.Acls, FillOpts.Groups))).collect(Collectors.toList()));
     }
 
     if (opts.contains(FillOpts.Acls)) {
@@ -475,7 +500,7 @@ public class ConvertUtils implements Conversions {
       portfolio
         .whenCreated(toOff(p.getWhenCreated()))
         .whenUpdated(toOff(p.getWhenUpdated()))
-        .createdBy(toPerson(p.getWhoCreated(), Opts.empty()));
+        .createdBy(toPerson(p.getWhoCreated(), p.getOrganization(), Opts.empty()));
     }
 
     if (opts.contains(FillOpts.Groups)) {
@@ -538,16 +563,22 @@ public class ConvertUtils implements Conversions {
     return uuidPerson(creator.getId().getId());
   }
 
+  /**
+   * is this person a superuser or portfolio admin for this application
+   */
   @Override
   public boolean isPersonApplicationAdmin(DbPerson dbPerson, DbApplication app) {
     DbOrganization org = app.getPortfolio().getOrganization();
     // if a person is in a null portfolio group or portfolio group
     return new QDbGroup()
       .peopleInGroup.eq(dbPerson)
+      .owningOrganization.eq(app.getPortfolio().getOrganization())
+      .adminGroup.isTrue()
       .or()
-        .owningOrganization.eq(org) // you are in a group where the owning or is the org
-        .and().adminGroup.isTrue().owningPortfolio.applications.eq(app).endAnd()
-      .endOr().findCount() > 0;
+        .owningPortfolio.isNull()
+        .owningPortfolio.eq(app.getPortfolio())
+      .endOr()
+      .findCount() > 0;
   }
 
   @Override

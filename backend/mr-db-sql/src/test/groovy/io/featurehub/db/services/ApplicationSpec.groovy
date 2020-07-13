@@ -22,53 +22,22 @@ import io.featurehub.mr.model.RoleType
 import spock.lang.Shared
 import spock.lang.Specification
 
-class ApplicationSpec extends Specification {
-  @Shared Database database
-  @Shared ConvertUtils convertUtils
+class ApplicationSpec extends BaseSpec {
   @Shared PersonSqlApi personSqlApi
-  @Shared UUID superuser
-  @Shared Person superPerson
-  @Shared DbPerson dbSuperPerson
   @Shared DbPortfolio portfolio1
   @Shared DbPortfolio portfolio2
   @Shared ApplicationSqlApi appApi
-  @Shared GroupSqlApi groupSqlApi
   @Shared EnvironmentSqlApi environmentSqlApi
   @Shared Person portfolioPerson
 
   def setupSpec() {
-    System.setProperty("ebean.ddl.generate", "true")
-    System.setProperty("ebean.ddl.run", "true")
-    database = DB.getDefault()
-    convertUtils = new ConvertUtils()
-    def archiveStrategy = new DbArchiveStrategy(database, Mock(CacheSource))
+    baseSetupSpec()
+
     personSqlApi = new PersonSqlApi(database, convertUtils, archiveStrategy)
-    groupSqlApi = new GroupSqlApi(database, convertUtils, archiveStrategy)
 
     environmentSqlApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
-    def organizationSqlApi = new OrganizationSqlApi(database, convertUtils)
-
-
-    dbSuperPerson = Finder.findByEmail("irina@featurehub.io")
-    if (dbSuperPerson == null) {
-      dbSuperPerson = new DbPerson.Builder().email("irina@featurehub.io").name("Irina").build();
-      database.save(dbSuperPerson);
-    }
-    superuser = dbSuperPerson.getId()
-    superPerson = convertUtils.toPerson(dbSuperPerson, Opts.empty())
 
     appApi = new ApplicationSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
-
-    // ensure the org is created and we have an admin user in an admin group
-    Organization org = organizationSqlApi.get()
-    Group adminGroup
-    if (org == null) {
-      org = organizationSqlApi.save(new Organization())
-      adminGroup = groupSqlApi.createOrgAdminGroup(org.id, 'admin group', superPerson)
-    } else {
-      adminGroup = groupSqlApi.findOrganizationAdminGroup(org.id, Opts.empty())
-    }
-    groupSqlApi.addPersonToGroup(adminGroup.id, superuser.toString(), Opts.empty())
 
     // go create a new person and then portfolios and add this person as a portfolio admin
     portfolioPerson = personSqlApi.createPerson("appspec@mailinator.com", "AppSpec", "appspec", superPerson.id.id, Opts.empty());

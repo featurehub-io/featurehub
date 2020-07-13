@@ -10,8 +10,13 @@ void main() async {
   Logger.root.level = Level.ALL; // defaults to Level.INFO
   Logger.root.onRecord.listen((record) {
     // ignore: avoid_print
-    print('${record.level.name}: ${record.time}: ${record.message}\n'
-        'exception:${record.object}\nstackTrace:${record.stackTrace}');
+    print('${record.level.name}: ${record.time}: ${record.message}');
+    if (record.object != null) {
+      print('exception:${record.object}');
+    }
+    if (record.stackTrace != null) {
+      print('stackTrace:${record.stackTrace}');
+    }
   });
   mainApp();
 }

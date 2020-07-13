@@ -25,15 +25,10 @@ import org.slf4j.LoggerFactory
 import spock.lang.Shared
 import spock.lang.Specification
 
-class ServiceAccountSpec extends Specification {
+class ServiceAccountSpec extends BaseSpec {
   private static final Logger log = LoggerFactory.getLogger(ServiceAccountSpec.class)
-  @Shared Database database
-  @Shared ConvertUtils convertUtils
   @Shared PersonSqlApi personSqlApi
-  @Shared UUID superuser
-  @Shared Person superPerson
   @Shared ServiceAccountSqlApi sapi
-  @Shared DbPerson dbSuperPerson
   @Shared DbPortfolio portfolio1
   @Shared DbApplication application1
   @Shared DbEnvironment environment1
@@ -43,40 +38,15 @@ class ServiceAccountSpec extends Specification {
   @Shared EnvironmentApi environmentApi
 
   def setupSpec() {
-    System.setProperty("ebean.ddl.generate", "true")
-    System.setProperty("ebean.ddl.run", "true")
-    database = DB.getDefault()
-    convertUtils = new ConvertUtils()
-    def archiveStrategy = new DbArchiveStrategy(database, Mock(CacheSource))
+    baseSetupSpec()
+
     personSqlApi = new PersonSqlApi(database, convertUtils, archiveStrategy)
-    def groupSqlApi = new GroupSqlApi(database, convertUtils, archiveStrategy)
-    def organizationSqlApi = new OrganizationSqlApi(database, convertUtils)
-
-    dbSuperPerson = Finder.findByEmail("irina@featurehub.io")
-    if (dbSuperPerson == null) {
-      dbSuperPerson = new DbPerson.Builder().email("irina@featurehub.io").name("Irina").build();
-      database.save(dbSuperPerson);
-    }
-
-    superuser = dbSuperPerson.getId()
-    superPerson = convertUtils.toPerson(dbSuperPerson, Opts.empty())
 
     sapi = new ServiceAccountSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
 
-    // ensure the org is created and we have an admin user in an admin group
-    Organization org = organizationSqlApi.get()
-    Group adminGroup
-    if (org == null) {
-      org = organizationSqlApi.save(new Organization())
-      adminGroup = groupSqlApi.createOrgAdminGroup(org.id, 'admin group', superPerson)
-    } else {
-      adminGroup = groupSqlApi.findOrganizationAdminGroup(org.id, Opts.empty())
-    }
-    groupSqlApi.addPersonToGroup(adminGroup.id, superuser.toString(), Opts.empty())
-
     // now set up the environments we need
     UUID orgUUID = ConvertUtils.ifUuid(org.id)
-    DbOrganization organization = new QDbOrganization().findList().stream().filter(o -> o.id == orgUUID).findFirst().get()
+    DbOrganization organization = Finder.findDbOrganization()
     portfolio1 = new DbPortfolio.Builder().name("p1-env-1").whoCreated(dbSuperPerson).organization(organization).build()
     database.save(portfolio1)
     portfolio1Id = portfolio1.id.toString()
