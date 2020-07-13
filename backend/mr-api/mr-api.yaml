@@ -1553,6 +1553,10 @@ components:
           minLength: 1
           maxLength: 100
           format: email
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
         groupIds:
           type: array
           items:
