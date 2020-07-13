@@ -291,7 +291,7 @@ class ManagementRepositoryClientBloc implements Bloc {
   // ask for my own details and if there are some, set the person and transition
   // to logged in, otherwise ask them to log in.
   Future requestOwnDetails() async {
-    personServiceApi
+    return personServiceApi
         .getPerson('self', includeAcls: true, includeGroups: true)
         .then((p) {
       setPerson(p);

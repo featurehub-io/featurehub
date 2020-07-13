@@ -12,9 +12,11 @@ void main() async {
     // ignore: avoid_print
     print('${record.level.name}: ${record.time}: ${record.message}');
     if (record.object != null) {
+      // ignore: avoid_print
       print('exception:${record.object}');
     }
     if (record.stackTrace != null) {
+      // ignore: avoid_print
       print('stackTrace:${record.stackTrace}');
     }
   });
