@@ -214,8 +214,8 @@ public class PersonSqlApi implements PersonApi {
   }
 
   @Override
-  public PersonToken create(String email, String createdBy) throws DuplicatePersonException {
-    if (email == null) {
+  public PersonToken create(String email, String name, String createdBy) throws DuplicatePersonException {
+    if (email == null || name == null) {
       return null;
     }
 
@@ -232,6 +232,7 @@ public class PersonSqlApi implements PersonApi {
       String token = UUID.randomUUID().toString();
       DbPerson.Builder builder = new DbPerson.Builder()
         .email(email.toLowerCase())
+        .name(name)
         .token(token)
         .tokenExpiry(getNow().plusDays(7));
 
