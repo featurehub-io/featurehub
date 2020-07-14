@@ -4,7 +4,6 @@ import cd.connect.openapi.support.ApiClient;
 import io.featurehub.client.ClientFeatureRepository;
 import io.featurehub.client.Feature;
 import io.featurehub.sse.api.FeaturesService;
-import io.featurehub.sse.api.impl.FeaturesServiceImpl;
 import io.featurehub.sse.model.FeatureStateUpdate;
 import io.featurehub.sse.model.SSEResultState;
 import org.glassfish.jersey.jackson.JacksonFeature;
@@ -47,14 +46,14 @@ public class JerseyClient {
       .register(SseFeature.class).build();
 
     target = makeEventSourceTarget(client, sdkUrl);
-    executor = Executors.newSingleThreadExecutor();
+    executor = makeExecutor();
 
     if (apiClient == null) {
       String basePath = sdkUrl.substring(0, sdkUrl.indexOf("/features"));
       apiClient = new ApiClient(client, basePath);
     }
 
-    this.sdkUrl = sdkUrl.substring(sdkUrl.indexOf("/features/") + 10);
+    this.sdkUrl = sdkUrl.substring(sdkUrl.indexOf("/features/") + 1);
 
     featuresService = makeFeatureServiceClient(apiClient);
 
@@ -63,12 +62,16 @@ public class JerseyClient {
     }
   }
 
+  protected Executor makeExecutor() {
+    return Executors.newSingleThreadExecutor();
+  }
+
   protected WebTarget makeEventSourceTarget(Client client, String sdkUrl) {
     return client.target(sdkUrl);
   }
 
   protected FeaturesService makeFeatureServiceClient(ApiClient apiClient) {
-    return new FeaturesServiceImpl(apiClient);
+    return new FeatureServiceImpl(apiClient);
   }
 
   public void setFeatureState(String key, FeatureStateUpdate update) {
@@ -94,7 +97,6 @@ public class JerseyClient {
       eventInput = target.request().get(EventInput.class);
 
       while (!eventInput.isClosed()) {
-        System.out.println("je");
         final InboundEvent inboundEvent = eventInput.read();
         initialized = true;
         if (inboundEvent == null) { // connection has been closed

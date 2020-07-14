@@ -2,19 +2,22 @@ package io.featurehub.client.jersey
 
 import cd.connect.openapi.support.ApiClient
 import io.featurehub.client.ClientFeatureRepository
-import io.featurehub.client.Feature
 import io.featurehub.sse.api.FeaturesService
 import io.featurehub.sse.model.FeatureStateUpdate
 import io.featurehub.sse.model.SSEResultState
 import org.glassfish.jersey.media.sse.EventInput
 import org.glassfish.jersey.media.sse.InboundEvent
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import spock.lang.Specification
 
 import javax.ws.rs.client.Client
 import javax.ws.rs.client.Invocation
 import javax.ws.rs.client.WebTarget
+import java.util.concurrent.Executor
 
 class JerseyClientSpec extends Specification {
+  private static final Logger log = LoggerFactory.getLogger(JerseyClientSpec.class)
   def targetUrl
   def basePath
   def sdkPartialUrl
@@ -85,9 +88,19 @@ class JerseyClientSpec extends Specification {
   }
 
   int counter
+  Executor executor
   def "ensure we can listen for events and they are passed off correctly to the client feature repository"() {
     given: "we have a mock repository"
       mockRepository = Mock(ClientFeatureRepository)
+    and: "we have an executor"
+      executor = new Executor() {
+        @Override
+        void execute(Runnable command) {
+          if (counter == 0) { // ignore subsequent attempts to restart
+            command.run();
+          }
+        }
+      }
     and: "a mock target"
       mockEventSource = Mock(WebTarget)
       Invocation.Builder builder = Mock(Invocation.Builder)
@@ -96,7 +109,7 @@ class JerseyClientSpec extends Specification {
       builder.get(EventInput) >> eventInput
       counter = 0
       eventInput.isClosed() >> {
-        counter ++; print("counter is $counter");
+        counter ++; log.info("counter is $counter");
         return counter != 1; }  // only run it once
     when: "i create the client"
       def client = new JerseyClient("http://localhost:80/features/sdk-url2", false, mockRepository) {
@@ -104,11 +117,16 @@ class JerseyClientSpec extends Specification {
         protected WebTarget makeEventSourceTarget(Client client, String sdkUrl) {
           return mockEventSource
         }
+
+        @Override
+        protected Executor makeExecutor() {
+          return executor
+        }
       }
-    and: "i shut it down"
-      client.shutdown()
     and: "set the data to be some value"
-      InboundEvent event = new InboundEvent.Builder(null, null, null, null).name(SSEResultState.FEATURE.name()).write("features".bytes).build()
+      InboundEvent event = Mock(InboundEvent)
+      event.name >> SSEResultState.FEATURE.getValue()
+      event.readData() >> "features"
       eventInput.read() >> event
     and: "now initialize it, so it starts and then runs once and shuts down"
       client.init()

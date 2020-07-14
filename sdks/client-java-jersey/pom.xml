@@ -101,7 +101,6 @@
 
               <additionalProperties>
                 <additionalProperty>server</additionalProperty>
-                <additionalProperty>client</additionalProperty>
               </additionalProperties>
             </configuration>
           </execution>

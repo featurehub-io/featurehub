@@ -3,6 +3,7 @@ package io.featurehub.client.jersey;
 import io.featurehub.client.ClientFeatureRepository;
 import io.featurehub.client.Feature;
 import io.featurehub.client.StaticFeatureContext;
+import io.featurehub.sse.model.FeatureStateUpdate;
 import org.junit.Test;
 
 enum Features implements Feature {
@@ -53,5 +54,15 @@ public class JerseyClientSample {
 
     Thread.currentThread().join();
 
+  }
+
+  @Test
+  public void changeToggleTest() {
+    ClientFeatureRepository cfr = new ClientFeatureRepository(5);
+    final JerseyClient client = new JerseyClient("http://localhost:8553/features/default/1719d798-fc8c-4253" +
+      "-924b-daa0966924a1" +
+      "/eTXNuVu5aDU8V6LBwiC4ew0mSeXY4NF66hjXfkZXOZT8iLcr2NzwaYSgxDVs69AWGOm7f3bxDNbGh3Zb", false, cfr);
+
+    client.setFeatureState("sample", new FeatureStateUpdate().lock(false).value(Boolean.FALSE));
   }
 }
