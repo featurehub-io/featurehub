@@ -108,6 +108,7 @@
 
               <additionalProperties>
                 <additionalProperty>server-security</additionalProperty>
+                <additionalProperty>client</additionalProperty>
               </additionalProperties>
 
               <configOptions>

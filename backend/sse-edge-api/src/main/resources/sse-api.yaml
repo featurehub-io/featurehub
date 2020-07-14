@@ -25,7 +25,7 @@ paths:
             schema:
               $ref: "#/components/schemas/FeatureStateUpdate"
       description: "Gets a list of features and their states. This is not accurate as it returns a text/event-stream."
-      operationId: allFeatures
+      operationId: setFeatureState
       responses:
         "200":
           description: gets all of the features

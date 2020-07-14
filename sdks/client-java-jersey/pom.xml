@@ -50,15 +50,81 @@
     </dependency>
 
     <dependency>
+      <groupId>io.featurehub.edge</groupId>
+      <artifactId>sse-edge-api</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
       <groupId>io.featurehub.composites</groupId>
       <artifactId>composite-test</artifactId>
       <version>1.1-SNAPSHOT</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.featurehub.mr</groupId>
+      <artifactId>mr-api</artifactId>
+      <version>1.1.1</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.openapitools</groupId>
+        <artifactId>openapi-generator-maven-plugin</artifactId>
+        <version>4.0.0</version>
+        <dependencies>
+          <dependency>
+            <groupId>cd.connect.openapi</groupId>
+            <artifactId>connect-openapi-jersey2</artifactId>
+            <version>4.11</version>
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
+            <id>featurehub-api</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <phase>generate-sources</phase>
+            <configuration>
+              <output>${project.basedir}/target/generated-sources/api</output>
+              <apiPackage>io.featurehub.sse.api</apiPackage>
+              <modelPackage>io.featurehub.sse.model</modelPackage>
+              <inputSpec>${project.basedir}/../../backend/sse-edge-api/final.yaml</inputSpec>
+              <generateApis>true</generateApis>
+              <generateModels>false</generateModels>
+              <language>jersey2-api</language>
+              <library>jersey2-api</library>
+
+              <additionalProperties>
+                <additionalProperty>server</additionalProperty>
+                <additionalProperty>client</additionalProperty>
+              </additionalProperties>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>add-generated-source</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${project.build.directory}/generated-sources/api/src/gen</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>io.repaint.maven</groupId>
         <artifactId>tiles-maven-plugin</artifactId>
