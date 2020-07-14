@@ -45,9 +45,11 @@ class GroupBloc implements Bloc {
 
   Future<void> getGroups({Group focusGroup}) async {
     // refresh the groups
-    await mrClient.streamValley.getCurrentPortfolioGroups();
+    final refreshedGroups =
+        await mrClient.streamValley.getCurrentPortfolioGroups();
     if (!_groupSource.isClosed) {
-      _groupSource.add(focusGroup);
+      _groupSource.add(refreshedGroups.firstWhere((g) => g.id == focusGroup.id,
+          orElse: () => null));
     }
   }
 

@@ -221,7 +221,7 @@ class StreamValley {
     }
   }
 
-  Future<void> getCurrentPortfolioGroups() async {
+  Future<List<Group>> getCurrentPortfolioGroups() async {
     if (currentPortfolioId != null) {
       await portfolioServiceApi
           .getPortfolio(currentPortfolioId, includeGroups: true)
@@ -230,6 +230,8 @@ class StreamValley {
     } else {
       currentPortfolioGroups = [];
     }
+
+    return _currentPortfolioGroupsStream.value;
   }
 
   Future<void> getCurrentPortfolioServiceAccounts() async {
