@@ -57,9 +57,9 @@ class PersonResourceSpec extends Specification {
 
   def "can create a person who has no groups to add"() {
     given: "i have a new person"
-      CreatePersonDetails cpd = new CreatePersonDetails().email("torvill@f.com")
+      CreatePersonDetails cpd = new CreatePersonDetails().email("torvill@f.com").name("name")
       PersonApi.PersonToken token = new PersonApi.PersonToken("fred", null)
-      personApi.create(cpd.getEmail(), _) >> token
+      personApi.create(cpd.getEmail(), "name", _) >> token
     and: "i am an admin"
       authManager.isAnyAdmin(_) >> true
     when: "i ask to create a new person"
@@ -70,14 +70,14 @@ class PersonResourceSpec extends Specification {
 
   def "a person who has groups to add will tell groupApi to add them"() {
     given: "i have a new person"
-      CreatePersonDetails cpd = new CreatePersonDetails().email("torvill@f.com")
+      CreatePersonDetails cpd = new CreatePersonDetails().email("torvill@f.com").name("name")
       cpd.addGroupIdsItem("1")
       cpd.addGroupIdsItem("2")
     and: "i am an admin"
       authManager.isAnyAdmin(_) >> true
     and: "i have setup a create response"
       PersonApi.PersonToken token = new PersonApi.PersonToken("fred", "x")
-      personApi.create(cpd.getEmail(), _) >> token
+      personApi.create(cpd.getEmail(), "name", _) >> token
     when: "i ask to create a new person"
       RegistrationUrl url = resource.createPerson(cpd, null, null)
     then:
