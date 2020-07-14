@@ -46,7 +46,7 @@ class JerseyClientSpec extends Specification {
     then: "the urls are correctly initialize"
       targetUrl == url
       basePath == 'http://localhost:80'
-      sdkPartialUrl == 'sdk-url'
+      sdkPartialUrl == 'features/sdk-url'
   }
 
   def "test the set feature sdk call"() {
@@ -65,7 +65,7 @@ class JerseyClientSpec extends Specification {
       client.setFeatureState("key", update)
     then:
       mockFeatureService != null
-      1 * mockFeatureService.setFeatureState("sdk-url", "key", update)
+      1 * mockFeatureService.setFeatureState("features/sdk-url", "key", update)
   }
 
   def "test the set feature sdk call using a Feature"() {
@@ -84,7 +84,7 @@ class JerseyClientSpec extends Specification {
       client.setFeatureState(InternalFeature.FEATURE, update)
     then:
       mockFeatureService != null
-      1 * mockFeatureService.setFeatureState("sdk-url2", "FEATURE", update)
+      1 * mockFeatureService.setFeatureState("features/sdk-url2", "FEATURE", update)
   }
 
   int counter
