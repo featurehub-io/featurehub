@@ -66,21 +66,21 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
   @Override
   public Group getSuperuserGroup(String id, Person personAsking) {
     UUID orgId = Conversions.ifUuid(id);
+
     DbPerson person = convertUtils.uuidPerson(personAsking);
+
     if (orgId == null || person == null) {
       return null;
     }
-    if (new QDbGroup().owningOrganization.id.eq(orgId).whenArchived.isNull().peopleInGroup.eq(person).findCount() > 0 ||
-      new QDbGroup().owningPortfolio.organization.id.eq(orgId).whenArchived.isNull().peopleInGroup.eq(person).findCount() > 0) {
-      final DbGroup g =
-        new QDbGroup()
-          .owningOrganization.id.eq(orgId)
-          .adminGroup.isTrue()
-          .owningPortfolio.isNull()
-          .peopleInGroup.fetch().findOne();
-      if (g != null) { // make sure you are a user in at least one group otherwise you can't see this group
-        return convertUtils.toGroup(g, Opts.opts(FillOpts.Members));
-      }
+
+    final DbGroup g = new QDbGroup()
+        .owningOrganization.id.eq(orgId)
+        .adminGroup.isTrue()
+        .owningPortfolio.isNull()
+        .peopleInGroup.fetch().findOne();
+
+    if (g != null) { // make sure you are a user in at least one group otherwise you can't see this group
+      return convertUtils.toGroup(g, Opts.opts(FillOpts.Members));
     }
 
     return null;

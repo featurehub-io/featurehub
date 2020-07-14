@@ -3,6 +3,7 @@ package io.featurehub.db.api;
 public enum FillOpts {
   Environments,
   People,
+  SimplePeople,
   Applications,
   ApplicationIds,
   Portfolios,

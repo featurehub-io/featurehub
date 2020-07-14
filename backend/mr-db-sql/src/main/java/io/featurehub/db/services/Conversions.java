@@ -76,6 +76,7 @@ public interface Conversions {
 
   boolean personIsNotSuperAdmin(DbPerson person);
   boolean personIsSuperAdmin(DbPerson person);
+  Group getSuperuserGroup(Opts opts);
 
   String limitLength(String s, int len);
 
