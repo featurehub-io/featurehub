@@ -316,6 +316,10 @@ public class ConvertUtils implements Conversions {
       return null;
     }
 
+    if (opts.contains(FillOpts.SimplePeople)) {
+      return toPerson(dbp);
+    }
+
     Person p = new Person()
       .email(dbp.getEmail())
       .name(dbp.getName() == null ? "" : stripArchived(dbp.getName(), dbp.getWhenArchived()))
@@ -658,5 +662,19 @@ public class ConvertUtils implements Conversions {
     }
 
     return toFeatureValue(value);
+  }
+
+  public Group getSuperuserGroup(Opts opts) {
+    final DbGroup g = new QDbGroup()
+      .owningOrganization.eq(getDbOrganization())
+      .adminGroup.isTrue()
+      .owningPortfolio.isNull()
+      .peopleInGroup.fetch().findOne();
+
+    if (g != null) { // make sure you are a user in at least one group otherwise you can't see this group
+      return toGroup(g, opts);
+    }
+
+    return null;
   }
 }
