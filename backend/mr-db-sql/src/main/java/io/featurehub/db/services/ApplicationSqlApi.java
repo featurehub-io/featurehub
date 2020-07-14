@@ -23,7 +23,6 @@ import io.featurehub.db.publish.CacheSource;
 import io.featurehub.mr.model.Application;
 import io.featurehub.mr.model.ApplicationGroupRole;
 import io.featurehub.mr.model.ApplicationRoleType;
-import io.featurehub.mr.model.EnvironmentGroupRole;
 import io.featurehub.mr.model.Feature;
 import io.featurehub.mr.model.FeatureValueType;
 import io.featurehub.mr.model.Person;
@@ -415,14 +414,19 @@ public class ApplicationSqlApi implements ApplicationApi {
 
     if (appId != null) {
       new QDbAcl()
+        .or()
         .environment.parentApplication.id.eq(appId)
+        .application.id.eq(appId)
+        .endOr()
         .group.whenArchived.isNull()
         .group.peopleInGroup.fetch().findList().forEach(acl -> {
-        if (acl.getRoles().trim().length() > 0) {
+        if (acl.getApplication() != null || acl.getRoles().trim().length() > 0) {
           acl.getGroup().getPeopleInGroup().forEach(p ->
             featureReaders.add(p.getId().toString()));
         }
       });
+
+      // we don't need to add superusers because they are automatically added to each portfolio group
     }
 
     return featureReaders;
