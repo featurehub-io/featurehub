@@ -92,7 +92,7 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
               Padding(
                 padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
                 child: Text(
-                  'To create a new user please first provide their email address',
+                  'To create a new user please first provide their name and email address',
                   style: Theme.of(context).textTheme.caption,
                 ),
               ),
