@@ -79,7 +79,7 @@ public class SetupResource implements SetupServiceDelegate {
 
     // create them
     try {
-      personApi.create(setupSiteAdmin.getEmailAddress(), null);
+      personApi.create(setupSiteAdmin.getEmailAddress(), "Admin",null);
     } catch (PersonApi.DuplicatePersonException e) {
       throw new WebApplicationException(Response.status(Response.Status.CONFLICT).build());
     }
