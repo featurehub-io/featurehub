@@ -98,6 +98,8 @@ We have several SDK examples for Java, Node JS, Typescript and React implementat
 * Yaml remote configuration support
 * Feature auditing
 
+For more details please refer to https://github.com/featurehub-io/featurehub/issues?q=is%3Aissue+is%3Aopen+label%3Aroadmap[Roadmap tickets]
+
 == Contributing
 
 FeatureHub is an open source project, and we love to receive contributions from our community!
@@ -107,6 +109,8 @@ Read link:.github/CONTRIBUTING.adoc[contributing guide here].
 
 We expect everyone contributing or participating in discussions in FeatureHub GitHub or any of it's sub-projects' codebases, issue trackers or chats to follow the FeatureHub
 link:.github/CODE_OF_CONDUCT.md[code of conduct].
+
+link:.github/CONTRIBUTORS.adoc[List of contributors].
 
 == Where to get help? 
 
