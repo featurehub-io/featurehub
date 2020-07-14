@@ -66,6 +66,7 @@ class TopWidgetDefault extends StatefulWidget {
 
 class _TopWidgetDefaultState extends State<TopWidgetDefault> {
   final _email = TextEditingController();
+  final _name = TextEditingController();
   var selectedPortfolio;
   var selectedGroupID;
   bool isAddButtonDisabled = true;
@@ -91,27 +92,45 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
               Padding(
                 padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
                 child: Text(
-                  'To create a new user please first provide their email address',
+                  'To create a new user please first provide their name and email address',
                   style: Theme.of(context).textTheme.caption,
                 ),
               ),
               Container(
                 constraints: BoxConstraints(maxWidth: 300),
-                child: TextFormField(
-                  controller: _email,
-                  decoration: FHFilledInputDecoration(
-                    labelText: 'Email',
-                  ),
-                  validator: (v) {
-                    if (v.isEmpty) {
-                      return 'Please enter email address';
-                    }
-                    if (!validateEmail(v)) {
-                      return 'Please enter a valid email address';
-                    }
-                    return null;
-                  },
-                  onSaved: (v) => bloc.email = v,
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _name,
+                      decoration: FHFilledInputDecoration(
+                        labelText: 'Name',
+                      ),
+                      validator: (v) {
+                        if (v.isEmpty) {
+                          return "Please enter user's name";
+                        }
+                        return null;
+                      },
+                      onSaved: (v) => bloc.name = v,
+                    ),
+                    SizedBox(height: 16.0),
+                    TextFormField(
+                      controller: _email,
+                      decoration: FHFilledInputDecoration(
+                        labelText: 'Email',
+                      ),
+                      validator: (v) {
+                        if (v.isEmpty) {
+                          return 'Please enter email address';
+                        }
+                        if (!validateEmail(v)) {
+                          return 'Please enter a valid email address';
+                        }
+                        return null;
+                      },
+                      onSaved: (v) => bloc.email = v,
+                    ),
+                  ],
                 ),
               ),
               Padding(

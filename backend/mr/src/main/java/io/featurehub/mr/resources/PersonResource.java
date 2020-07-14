@@ -50,7 +50,8 @@ public class PersonResource implements PersonServiceDelegate {
     if (authManager.isAnyAdmin(currentUser.getId().getId())) {
       //create new user in the db
       try {
-        PersonApi.PersonToken person = personApi.create(createPersonDetails.getEmail(), currentUser.getId().getId());
+        PersonApi.PersonToken person = personApi.create(createPersonDetails.getEmail(),
+          createPersonDetails.getName(), currentUser.getId().getId());
 
         //add user to the groups
         Optional.of(createPersonDetails.getGroupIds()).ifPresent(list -> list.forEach(id -> {

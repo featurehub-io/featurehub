@@ -1,19 +1,16 @@
 package io.featurehub.db.services
 
-import io.ebean.DB
-import io.ebean.Database
+
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonApi
 import io.featurehub.db.model.DbPerson
-import io.featurehub.db.publish.CacheSource
 import io.featurehub.mr.model.Group
-import io.featurehub.mr.model.Organization
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.Portfolio
 import io.featurehub.mr.model.SortOrder
+import org.apache.commons.lang3.RandomStringUtils
 import spock.lang.Shared
-import spock.lang.Specification
 
 class PersonSpec extends BaseSpec {
   @Shared PersonSqlApi personSqlApi
@@ -33,16 +30,36 @@ class PersonSpec extends BaseSpec {
 //      p == null
 //  }
 
+  def "I can create a person"() {
+    given: "i generate a random email"
+      def email = RandomStringUtils.randomAscii(30).toLowerCase() + "@mailinator.com"
+    when:
+      def p = personSqlApi.create(email, "Babushka", superPerson.id.id)
+    then:
+      p.id != null
+      personSqlApi.get(p.id, Opts.empty()).name == 'Babushka'
+      personSqlApi.get(p.id, Opts.empty()).email == email
+  }
+
+  def "I can't create a person with a null name"() {
+    given: "i generate a random email"
+      def email = RandomStringUtils.randomAscii(30).toLowerCase() + "@mailinator.com"
+    when:
+      def p = personSqlApi.create(email, null, superPerson.id.id)
+    then:
+      p == null
+  }
+
   def "No email is passed when creating a user causes a null return"() {
     when:
-      PersonApi.PersonToken p = personSqlApi.create(null, "x")
+      PersonApi.PersonToken p = personSqlApi.create(null, "x", "x")
     then:
       p == null
   }
 
   def "Non uuid for createdBy causes a null return"() {
     when:
-      PersonApi.PersonToken p = personSqlApi.create("toddy1@f.com", "x")
+      PersonApi.PersonToken p = personSqlApi.create("toddy1@f.com", "y", "x")
     then:
       p == null
   }
@@ -56,16 +73,16 @@ class PersonSpec extends BaseSpec {
 
   def "When I try and create a new person with a person who doesn't exist, I should get a null return"() {
     when:
-      PersonApi.PersonToken p = personSqlApi.create("toddy1@f.com", UUID.randomUUID().toString())
+      PersonApi.PersonToken p = personSqlApi.create("toddy1@f.com", "choppy", UUID.randomUUID().toString())
     then:
       p == null
   }
 
   def "I can't register the same person twice"() {
     when: "i register"
-      PersonApi.PersonToken p = personSqlApi.create("reg1@f.com", superPerson.id.id)
+      PersonApi.PersonToken p = personSqlApi.create("reg1@f.com", "z", superPerson.id.id)
     and: "i try and register the same email again"
-      PersonApi.PersonToken p2 = personSqlApi.create("reg1@f.com", superPerson.id.id)
+      PersonApi.PersonToken p2 = personSqlApi.create("reg1@f.com", "z", superPerson.id.id)
     then:
       thrown PersonApi.DuplicatePersonException
   }

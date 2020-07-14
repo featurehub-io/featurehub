@@ -10,12 +10,14 @@ enum CreateUserForm { defaultState, successState }
 class CreateUserBloc implements Bloc {
   RegistrationUrl registrationUrl;
   String email;
+  String name;
   GlobalKey<FormState> formKey;
 
   final ManagementRepositoryClientBloc client;
 
   // main widget should respond to changes in this.
   final _formStateStream = rxdart.BehaviorSubject<CreateUserForm>();
+
   Stream<CreateUserForm> get formState => _formStateStream.stream;
 
   SelectPortfolioGroupBloc selectGroupBloc;
@@ -34,6 +36,7 @@ class CreateUserBloc implements Bloc {
         selectGroupBloc.listOfAddedPortfolioGroups;
     final cpd = CreatePersonDetails()
       ..email = email
+      ..name = name
       ..groupIds = listOfAddedPortfolioGroups.map((pg) => pg.group.id).toList();
 
     return client.personServiceApi.createPerson(cpd).then((data) {

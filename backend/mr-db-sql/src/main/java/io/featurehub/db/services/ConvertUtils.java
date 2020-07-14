@@ -322,7 +322,7 @@ public class ConvertUtils implements Conversions {
 
     Person p = new Person()
       .email(dbp.getEmail())
-      .name(dbp.getName() == null ? "" : stripArchived(dbp.getName(), dbp.getWhenArchived()))
+      .name(stripArchived(dbp.getName(), dbp.getWhenArchived()))
       .version(dbp.getVersion())
       .passwordRequiresReset(dbp.isPasswordRequiresReset())
       .whenArchived(toOff(dbp.getWhenArchived()))
