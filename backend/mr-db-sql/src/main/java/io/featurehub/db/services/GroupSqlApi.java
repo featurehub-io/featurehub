@@ -60,7 +60,22 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
     UUID portId = Conversions.ifUuid(portfolioId);
     UUID persId = Conversions.ifUuid(personId);
 
+    return isPersonMemberOfPortfolioGroup(portId, persId);
+  }
+
+  private boolean isPersonMemberOfPortfolioGroup(UUID portId, UUID persId) {
+    if (portId == null) {
+      return false;
+    }
     return new QDbGroup().owningPortfolio.id.eq(portId).peopleInGroup.id.eq(persId).findCount() > 0;
+  }
+
+  private boolean isPersonMemberOfPortfolioAdminGroup(DbPortfolio portfolio, String personId) {
+    if (portfolio == null) {
+      return false;
+    }
+
+    return new QDbGroup().owningPortfolio.eq(portfolio).adminGroup.isTrue().peopleInGroup.id.eq(Conversions.ifUuid(personId)).findCount() > 0;
   }
 
   @Override
@@ -302,7 +317,8 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
       final DbGroup one = eq.findOne();
 
       if (one != null && (one.getPeopleInGroup().stream().anyMatch(p -> p.getWhenArchived() == null && p.getId().toString().equals(person.getId().getId())) ||
-        isSuperuser(one.findOwningOrganisation(), convertUtils.uuidPerson(person)))) {
+        isSuperuser(one.findOwningOrganisation(), convertUtils.uuidPerson(person)) ||
+        isPersonMemberOfPortfolioAdminGroup(one.getOwningPortfolio(), person.getId().getId()))) {
         return convertUtils.toGroup(one, opts);
       }
 
