@@ -53,6 +53,8 @@ class StreamValley {
       } else {
         currentPortfolioGroups = [];
         currentPortfolioServiceAccounts = [];
+        _lastPortfolioIdServiceAccountChecked = null;
+        _lastPortfolioIdGroupChecked = null;
       }
     });
 
