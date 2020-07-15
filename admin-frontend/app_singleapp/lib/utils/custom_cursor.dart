@@ -1,9 +1,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
+import 'package:logging/logging.dart';
 import 'package:universal_html/html.dart' as html;
+
+final _log = Logger("customCursor");
+
 class CustomCursor extends MouseRegion {
-  static final appContainer = html.window.document.getElementById('app-container');
+  static final appContainer =
+      html.window.document.getElementById('app-container');
   // cursor types from http://www.javascripter.net/faq/stylesc.htm
   static final String pointer = 'pointer';
   static final String auto = 'auto';
@@ -28,17 +33,21 @@ class CustomCursor extends MouseRegion {
   static final String wait = 'wait';
   static final String wResize = 'w-resize';
   static final String swResize = 'sw-resize';
-  CustomCursor({Widget child, String cursorStyle='pointer'}) : super(
-    onHover: (PointerHoverEvent evt) {
-      if(kIsWeb) {
-        appContainer.style.cursor=cursorStyle;
-      }
-    },
-    onExit: (PointerExitEvent evt) {
-      if(kIsWeb) {
-        appContainer.style.cursor='default';
-      }
-    },
-    child: child
-  );
+  CustomCursor({Widget child, String cursorStyle = 'pointer'})
+      : super(
+            onHover: (PointerHoverEvent evt) {
+              if (appContainer == null) {
+                _log.severe(
+                    'You need to make the body of the index.html say <body id="app-container"> so the hover works');
+              }
+              if (kIsWeb && appContainer != null) {
+                appContainer.style.cursor = cursorStyle;
+              }
+            },
+            onExit: (PointerExitEvent evt) {
+              if (kIsWeb && appContainer != null) {
+                appContainer.style.cursor = 'default';
+              }
+            },
+            child: child);
 }
