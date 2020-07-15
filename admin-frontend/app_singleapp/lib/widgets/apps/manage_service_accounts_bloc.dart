@@ -54,7 +54,7 @@ class ManageServiceAccountsBloc implements Bloc {
         .delete(sid)
         .catchError(mrClient.dialogError);
     await addServiceAccountsToStream(portfolioId);
-    await mrClient.streamValley.getCurrentPortfolioServiceAccounts();
+    await mrClient.streamValley.getCurrentPortfolioServiceAccounts(force: true);
     return result;
   }
 
@@ -79,7 +79,7 @@ class ManageServiceAccountsBloc implements Bloc {
         .then((onSuccess) {
       addServiceAccountsToStream(mrClient.getCurrentPid());
     }).catchError(mrClient.dialogError);
-    await mrClient.streamValley.getCurrentPortfolioServiceAccounts();
+    await mrClient.streamValley.getCurrentPortfolioServiceAccounts(force: true);
   }
 
   @override

@@ -46,7 +46,7 @@ class GroupBloc implements Bloc {
   Future<void> getGroups({Group focusGroup}) async {
     // refresh the groups
     final refreshedGroups =
-        await mrClient.streamValley.getCurrentPortfolioGroups();
+        await mrClient.streamValley.getCurrentPortfolioGroups(force: true);
     if (!_groupSource.isClosed) {
       _groupSource.add(refreshedGroups.firstWhere((g) => g.id == focusGroup.id,
           orElse: () => null));
@@ -73,7 +73,7 @@ class GroupBloc implements Bloc {
     group = null;
     this.groupId = null;
     _groupSource.add(null);
-    await mrClient.streamValley.getCurrentPortfolioGroups();
+    await mrClient.streamValley.getCurrentPortfolioGroups(force: true);
   }
 
   void removeFromGroup(Group group, Person person) async {

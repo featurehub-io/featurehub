@@ -225,9 +225,10 @@ class StreamValley {
   }
 
   String _lastPortfolioIdGroupChecked;
-  Future<List<Group>> getCurrentPortfolioGroups() async {
+  Future<List<Group>> getCurrentPortfolioGroups({bool force = false}) async {
     if (currentPortfolioId != _lastPortfolioIdGroupChecked ||
-        _lastPortfolioIdGroupChecked == null) {
+        _lastPortfolioIdGroupChecked == null ||
+        force) {
       _lastPortfolioIdGroupChecked = currentPortfolioId;
       if (currentPortfolioId != null) {
         await portfolioServiceApi
@@ -243,9 +244,10 @@ class StreamValley {
   }
 
   String _lastPortfolioIdServiceAccountChecked;
-  Future<void> getCurrentPortfolioServiceAccounts() async {
+  Future<void> getCurrentPortfolioServiceAccounts({bool force = false}) async {
     if (currentPortfolioId != _lastPortfolioIdServiceAccountChecked ||
-        _lastPortfolioIdServiceAccountChecked == null) {
+        _lastPortfolioIdServiceAccountChecked == null ||
+        force) {
       _lastPortfolioIdServiceAccountChecked = currentPortfolioId;
 
       if (currentPortfolioId != null) {
