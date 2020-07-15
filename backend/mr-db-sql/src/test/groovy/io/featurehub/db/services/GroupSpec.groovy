@@ -33,13 +33,15 @@ class GroupSpec extends BaseSpec {
   @Shared ApplicationSqlApi applicationSqlApi
   @Shared EnvironmentSqlApi environmentSqlApi
   @Shared Environment env1App1
+  @Shared Group portfolioAdminGroup
+  @Shared PersonSqlApi personApi
 
   def setupSpec() {
     baseSetupSpec()
 
     portfolioApi = new PortfolioSqlApi(database, convertUtils, archiveStrategy)
     environmentSqlApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
-
+    personApi = new PersonSqlApi(database, convertUtils, archiveStrategy)
 
     user = dbSuperPerson
 
@@ -48,6 +50,30 @@ class GroupSpec extends BaseSpec {
     commonApplication1 = applicationSqlApi.createApplication(commonPortfolio.id, new Application().name("acl common app").description("acl common app"), superPerson)
     env1App1 = environmentSqlApi.create(new Environment().name("acl common app env1"), commonApplication1, superPerson)
     commonApplication2 = applicationSqlApi.createApplication(commonPortfolio.id, new Application().name("acl common app2").description("acl common app2"), superPerson)
+
+    portfolioAdminGroup = groupSqlApi.createPortfolioGroup(commonPortfolio.id, new Group().name("admin group").admin(true), superPerson)
+  }
+
+  def "i create a group and the user in it, the portfolio admin, and the superuser can get its details"() {
+    given: "i create a normal user"
+      def bobToken = personApi.create('plain-bob@mailinator.com', "William", superuser.toString())
+      def bob = personApi.getByToken(bobToken.token, Opts.empty())
+    and: "i create a portfolio admin user"
+      def janeToken = personApi.create('plain-jane@mailinator.com', 'Jane', superuser.toString())
+      def jane = personApi.getByToken(janeToken.token, Opts.empty())
+    and: "i create a new group in the common portfolio"
+      Group g = groupSqlApi.createPortfolioGroup(commonPortfolio.id, new Group().name("plain-bob-group"), superPerson)
+    and: "i update it with the basic user"
+      groupSqlApi.updateGroup(g.id, g.members([bob]), true, false, false, Opts.empty())
+    when: "i add jane as a portfolio admin"
+      def latestGroup = groupSqlApi.getGroup(portfolioAdminGroup.id, Opts.opts(FillOpts.Members), superPerson)
+      groupSqlApi.updateGroup(portfolioAdminGroup.id, portfolioAdminGroup.addMembersItem(jane), true, false, false, Opts.empty())
+    then: "bob can get the group"
+      groupSqlApi.getGroup(g.id, Opts.opts(FillOpts.Members), bob)
+    and: "jane can get the group"
+      groupSqlApi.getGroup(g.id, Opts.opts(FillOpts.Members), jane)
+    and: "irina/superuser can get the group"
+      groupSqlApi.getGroup(g.id, Opts.opts(FillOpts.Members), superPerson)
   }
 
   def "i can create an admin group for a portfolio and can't create another"() {
@@ -70,7 +96,7 @@ class GroupSpec extends BaseSpec {
       pAdminGroup.name == 'admin-group'
   }
 
-  def "i can create more than more non-admin group for a portfolio"() {
+  def "i can create more than one non-admin group for a portfolio"() {
     given: "i have a portfolio"
       Portfolio p = portfolioApi.createPortfolio(new Portfolio().name("Main App1").organizationId(org.id), Opts.empty(), superPerson)
     when: "i create a group for it"
