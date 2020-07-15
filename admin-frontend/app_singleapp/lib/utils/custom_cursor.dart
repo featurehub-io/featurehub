@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 import 'package:universal_html/html.dart' as html;
 
-final _log = Logger("customCursor");
+final _log = Logger('customCursor');
 
 class CustomCursor extends MouseRegion {
   static final appContainer =
