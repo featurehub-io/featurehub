@@ -351,5 +351,5 @@ up to you, it could simple be available by the generated OpenAPI client like it 
 
 == Special thanks
 
-To one of our contributors https://github.com/chrusty[`@chrusty`] for prompting us for the need for this 
-documentation. @chrusty is the author of our Go SDK.
+To one of our contributors and the author of our Go SDK. https://github.com/chrusty[`@chrusty`] for prompting us for 
+the need for this documentation.
