@@ -285,7 +285,7 @@ You can see it is a series of pairs: event, data. These are standard names in SS
 The event is the command, there is a special one called "error" that is managed by the protocol itself. But in our
 case we are typically seeing:
 
-- ack: i have received your request, i'm checking to see if everything is ok
+- ack: i have received your request, I'm checking to see if everything is ok
 - features: ok, this is the list of features and their current state
 
 and then as things change
@@ -294,6 +294,13 @@ and then as things change
 - bye - when you are being kicked off
 
 You would expect delete_feature to be rare.
+
+=== Look at the other examples, talk to us
+
+There are four other examples of the SDK so far, so have a look at their implementation. Chances are you have a 
+passing familiarity with at least one of the languages. 
+
+Please also talk to us, we are available on the #fh-sdk channel on the Anyways Labs Slack.
 
 === A Feature Repository
 
