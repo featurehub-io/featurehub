@@ -45,13 +45,16 @@ class StreamValley {
     currentPortfolioAdminOrSuperAdminSubscription =
         personState.isCurrentPortfolioOrSuperAdmin.listen((val) {
       _currentPortfolioSource.add(val.portfolio);
-      final oldVal = _isCurrentPortfolioAdminOrSuperAdmin;
       _isCurrentPortfolioAdminOrSuperAdmin = val.currentPortfolioOrSuperAdmin;
       _refreshApplicationIdChanged();
-      if (oldVal != _isCurrentPortfolioAdminOrSuperAdmin &&
-          _isCurrentPortfolioAdminOrSuperAdmin) {
+      if (_isCurrentPortfolioAdminOrSuperAdmin) {
         getCurrentPortfolioGroups();
         getCurrentPortfolioServiceAccounts();
+      } else {
+        currentPortfolioGroups = [];
+        currentPortfolioServiceAccounts = [];
+        _lastPortfolioIdServiceAccountChecked = null;
+        _lastPortfolioIdGroupChecked = null;
       }
     });
 
@@ -221,27 +224,40 @@ class StreamValley {
     }
   }
 
-  Future<List<Group>> getCurrentPortfolioGroups() async {
-    if (currentPortfolioId != null) {
-      await portfolioServiceApi
-          .getPortfolio(currentPortfolioId, includeGroups: true)
-          .then((portfolio) => currentPortfolioGroups = portfolio.groups)
-          .catchError(mrClient.dialogError);
-    } else {
-      currentPortfolioGroups = [];
+  String _lastPortfolioIdGroupChecked;
+  Future<List<Group>> getCurrentPortfolioGroups({bool force = false}) async {
+    if (currentPortfolioId != _lastPortfolioIdGroupChecked ||
+        _lastPortfolioIdGroupChecked == null ||
+        force) {
+      _lastPortfolioIdGroupChecked = currentPortfolioId;
+      if (currentPortfolioId != null) {
+        await portfolioServiceApi
+            .getPortfolio(currentPortfolioId, includeGroups: true)
+            .then((portfolio) => currentPortfolioGroups = portfolio.groups)
+            .catchError(mrClient.dialogError);
+      } else {
+        currentPortfolioGroups = [];
+      }
     }
 
     return _currentPortfolioGroupsStream.value;
   }
 
-  Future<void> getCurrentPortfolioServiceAccounts() async {
-    if (currentPortfolioId != null) {
-      await serviceAccountServiceApi
-          .searchServiceAccountsInPortfolio(currentPortfolioId)
-          .then((accounts) => currentPortfolioServiceAccounts = accounts)
-          .catchError(mrClient.dialogError);
-    } else {
-      currentPortfolioServiceAccounts = [];
+  String _lastPortfolioIdServiceAccountChecked;
+  Future<void> getCurrentPortfolioServiceAccounts({bool force = false}) async {
+    if (currentPortfolioId != _lastPortfolioIdServiceAccountChecked ||
+        _lastPortfolioIdServiceAccountChecked == null ||
+        force) {
+      _lastPortfolioIdServiceAccountChecked = currentPortfolioId;
+
+      if (currentPortfolioId != null) {
+        await serviceAccountServiceApi
+            .searchServiceAccountsInPortfolio(currentPortfolioId)
+            .then((accounts) => currentPortfolioServiceAccounts = accounts)
+            .catchError(mrClient.dialogError);
+      } else {
+        currentPortfolioServiceAccounts = [];
+      }
     }
   }
 

@@ -24,7 +24,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
 
   @override
   void initState() {
-    bloc = BlocProvider.of(context);
+    bloc = BlocProvider.of<GroupBloc>(context);
     super.initState();
   }
 
@@ -182,10 +182,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                       return DropdownMenuItem<String>(
                           value: group.id,
                           child: Text(group.name,
-                              style: Theme
-                                  .of(context)
-                                  .textTheme
-                                  .bodyText2,
+                              style: Theme.of(context).textTheme.bodyText2,
                               overflow: TextOverflow.ellipsis));
                     }).toList(),
                     hint: Text(
