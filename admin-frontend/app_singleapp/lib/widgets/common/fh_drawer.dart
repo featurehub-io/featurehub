@@ -21,6 +21,9 @@ class _DrawerViewWidgetState extends State<DrawerViewWidget> {
   @override
   Widget build(BuildContext context) {
     final mrBloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
+    if (MediaQuery.of(context).size.width < 600) {
+      mrBloc.menuOpened.add(false);
+    }
 
     return StreamBuilder<bool>(
         stream: mrBloc.menuOpened,

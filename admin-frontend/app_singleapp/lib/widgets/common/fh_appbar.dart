@@ -39,9 +39,11 @@ class FHappBar extends StatelessWidget {
         children: [
           SizedBox(
             height: kToolbarHeight - 20,
-            child: Image.asset(
-              'assets/logo/FeatureHubPrimaryWhite.png',
-            ),
+            child: MediaQuery.of(context).size.width > 500
+                ? Image.asset('assets/logo/FeatureHubPrimaryWhite.png')
+                : Image.asset(
+                    'assets/logo/FeatureHub-icon.png',
+                  ),
           ),
         ],
       ),
