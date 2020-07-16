@@ -1,0 +1,9 @@
+= List of contributors 
+
+https://github.com/IrinaSouth[Irina Southwell]
+
+https://github.com/rvowles[Richard Vowles]
+
+https://github.com/robcleghorn[Rob Cleghorn]
+
+https://github.com/chrusty[Chris H] 
