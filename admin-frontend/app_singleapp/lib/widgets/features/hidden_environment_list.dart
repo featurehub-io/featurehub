@@ -1,6 +1,7 @@
 import 'package:app_singleapp/widgets/features/tabs_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
 
 class HiddenEnvironmentsList extends StatelessWidget {
@@ -74,6 +75,7 @@ class HideEnvironmentContainer extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 2.0, right: 2.0),
             child: InkWell(
+              mouseCursor: SystemMouseCursors.click,
               hoverColor: Theme.of(context).primaryColorLight,
               borderRadius: BorderRadius.circular(24),
               child: Container(
@@ -98,6 +100,7 @@ class HideEnvironmentContainer extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 2.0, right: 2.0),
             child: InkWell(
+              mouseCursor: SystemMouseCursors.click,
               hoverColor: Theme
                   .of(context)
                   .primaryColorLight,

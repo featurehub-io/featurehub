@@ -7,6 +7,7 @@ import 'package:app_singleapp/widgets/features/feature_status_bloc.dart';
 import 'package:app_singleapp/widgets/features/tabs_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
 
 class FeatureNamesLeftPanel extends StatelessWidget {
@@ -25,8 +26,9 @@ class FeatureNamesLeftPanel extends StatelessWidget {
         builder: (context, snapshot) {
           final amSelected =
               (snapshot.hasData && snapshot.data.contains(feature.key));
-          return GestureDetector(
-            behavior: HitTestBehavior.opaque,
+          return InkWell(
+//            behavior: HitTestBehavior.opaque,
+            mouseCursor: SystemMouseCursors.click,
             onTap: () => tabsBloc.hideOrShowFeature(feature),
             child: Container(
                 decoration: BoxDecoration(color: Colors.white, boxShadow: [
@@ -37,7 +39,7 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                 ]),
                 padding: EdgeInsets.only(top: 8.0, left: 8.0),
                 height: amSelected ? selectedRowHeight : unselectedRowHeight,
-                width: 220.0,
+                width: 260.0,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,

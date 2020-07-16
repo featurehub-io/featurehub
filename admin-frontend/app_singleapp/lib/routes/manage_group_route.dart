@@ -10,6 +10,7 @@ import 'package:app_singleapp/widgets/group/group_bloc.dart';
 import 'package:app_singleapp/widgets/group/group_update_widget.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
 
 /// Every user has access to portfolios, they can only see the ones they have access to
@@ -166,36 +167,39 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                   'Portfolio groups',
                   style: Theme.of(context).textTheme.caption,
                 ),
-                Container(
-                  constraints: BoxConstraints(maxWidth: 300),
-                  child: DropdownButton(
-                    icon: Padding(
-                      padding: EdgeInsets.only(left: 8.0),
-                      child: Icon(
-                        Icons.keyboard_arrow_down,
-                        size: 24,
+                InkWell(
+                  mouseCursor: SystemMouseCursors.click,
+                  child: Container(
+                    constraints: BoxConstraints(maxWidth: 300),
+                    child: DropdownButton(
+                      icon: Padding(
+                        padding: EdgeInsets.only(left: 8.0),
+                        child: Icon(
+                          Icons.keyboard_arrow_down,
+                          size: 24,
+                        ),
                       ),
+                      isDense: true,
+                      isExpanded: true,
+                      items: groups.map((Group group) {
+                        return DropdownMenuItem<String>(
+                            value: group.id,
+                            child: Text(group.name,
+                                style: Theme.of(context).textTheme.bodyText2,
+                                overflow: TextOverflow.ellipsis));
+                      }).toList(),
+                      hint: Text(
+                        'Select group',
+                        style: Theme.of(context).textTheme.subtitle2,
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          bloc.getGroup(value);
+                          bloc.groupId = value;
+                        });
+                      },
+                      value: bloc.groupId,
                     ),
-                    isDense: true,
-                    isExpanded: true,
-                    items: groups.map((Group group) {
-                      return DropdownMenuItem<String>(
-                          value: group.id,
-                          child: Text(group.name,
-                              style: Theme.of(context).textTheme.bodyText2,
-                              overflow: TextOverflow.ellipsis));
-                    }).toList(),
-                    hint: Text(
-                      'Select group',
-                      style: Theme.of(context).textTheme.subtitle2,
-                    ),
-                    onChanged: (value) {
-                      setState(() {
-                        bloc.getGroup(value);
-                        bloc.groupId = value;
-                      });
-                    },
-                    value: bloc.groupId,
                   ),
                 ),
               ],

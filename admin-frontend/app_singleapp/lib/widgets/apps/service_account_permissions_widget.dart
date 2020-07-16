@@ -8,6 +8,7 @@ import 'package:app_singleapp/widgets/common/fh_info_card.dart';
 import 'package:app_singleapp/widgets/common/fh_link.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:logging/logging.dart';
 import 'package:mrapi/api.dart';
 
@@ -111,35 +112,38 @@ with only 'Read' permission for service accounts.'''),
       child: StreamBuilder<String>(
           stream: bloc.currentServiceAccountIdStream,
           builder: (context, snapshot) {
-            return DropdownButton(
-              icon: Padding(
-                padding: EdgeInsets.only(left: 8.0),
-                child: Icon(
-                  Icons.keyboard_arrow_down,
-                  size: 24,
+            return InkWell(
+              mouseCursor: SystemMouseCursors.click,
+              child: DropdownButton(
+                icon: Padding(
+                  padding: EdgeInsets.only(left: 8.0),
+                  child: Icon(
+                    Icons.keyboard_arrow_down,
+                    size: 24,
+                  ),
                 ),
+                isExpanded: true,
+                isDense: true,
+                items: serviceAccounts.map((ServiceAccount serviceAccount) {
+                  return DropdownMenuItem<String>(
+                      value: serviceAccount.id,
+                      child: Text(
+                        serviceAccount.name,
+                        style: Theme.of(context).textTheme.bodyText2,
+                        overflow: TextOverflow.ellipsis,
+                      ));
+                }).toList(),
+                hint: Text(
+                  'Select service account',
+                  textAlign: TextAlign.end,
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    bloc.selectServiceAccount(value);
+                  });
+                },
+                value: snapshot.data,
               ),
-              isExpanded: true,
-              isDense: true,
-              items: serviceAccounts.map((ServiceAccount serviceAccount) {
-                return DropdownMenuItem<String>(
-                    value: serviceAccount.id,
-                    child: Text(
-                      serviceAccount.name,
-                      style: Theme.of(context).textTheme.bodyText2,
-                      overflow: TextOverflow.ellipsis,
-                    ));
-              }).toList(),
-              hint: Text(
-                'Select service account',
-                textAlign: TextAlign.end,
-              ),
-              onChanged: (value) {
-                setState(() {
-                  bloc.selectServiceAccount(value);
-                });
-              },
-              value: snapshot.data,
             );
           }),
     );

@@ -133,7 +133,7 @@ class _EnvWidget extends StatelessWidget {
       child: Container(
         height: 50,
         child: CustomCursor(
-          cursorStyle: 'move',
+//          cursorStyle: 'move',
           child: Row(
             children: <Widget>[
               Container(

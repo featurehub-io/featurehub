@@ -8,6 +8,7 @@ import 'package:app_singleapp/widgets/common/fh_header.dart';
 import 'package:app_singleapp/widgets/common/fh_icon_text_button.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
 
@@ -114,10 +115,11 @@ class _ApplicationCard extends StatelessWidget {
         ),
         elevation: 5.0,
         child: InkWell(
+          mouseCursor: SystemMouseCursors.click,
           borderRadius: BorderRadius.circular(8.0),
           onTap: () {
-            bloc.mrClient.setCurrentAid(
-                application.id); //is it the right function?
+            bloc.mrClient
+                .setCurrentAid(application.id); //is it the right function?
             return {
               ManagementRepositoryClientBloc.router.navigateTo(
                 context,
