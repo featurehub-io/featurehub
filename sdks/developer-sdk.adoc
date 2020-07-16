@@ -6,6 +6,11 @@ So you want to write an SDK? That's awesome, thanks for joining the crew!
 == What to know up front
 There are a few things you need to know up front.
 
+=== MIT License
+
+All SDKs are MIT licensed. This is because they are included in the client's code base. That is generally as far 
+as we can go, but try and choose dependencies that are MIT or similarly licensed. 
+
 === Server Sent Events
 
 The key to the Feature Hub SDK is that all clients should receive updates at the same time. In the perfect world, this means
@@ -19,19 +24,28 @@ At its core, HTTP is a connectionless protocol, even with Keep-Alive, it is clie
 our stated goal. It is great for being able 
 
 WebSockets is essentially bi-directional tcp overlaid on the HTTP layer and it suffers a few problems for our use case.
-It isn't cachable, requires considerably greater complexity in terms of client implementation, and it is bi-directional,
-which isn't really necessary in our case.
+It isn't cachable, it requires considerably greater complexity in terms of client implementation, and it is bi-directional,
+which isn't really necessary in our case. WebSockets  have to regularly kill your connection to ensure that they don't
+have stale phantom connections. 
 
-That leaves us with one thing left, and funnily enough, it was designed exactly for the kind of problem we are trying
-to solve. Server Sent Events came out in 2006 and is very widely supported in both the browser space (except for IE, 
-which requires a polyfill) and through many client libraries. Further it is focused on server-push, is cachable, 
+That leaves us with one thing left, and given our kind of use case is exactly what it was designed exactly, it makes
+sense that we use this technology. Server Sent Events came out in 2006 and is very widely supported in both the 
+browser space (except for IE, which requires a polyfill) and through many client libraries. It is well supported by
+web servers, and around the globe by all proxies and gateways. Further it is focused on server-push, is cachable, 
 allowing you to use clever CDN's like https://www.fastly.com/blog/server-sent-events-fastly[Fastly].
+
+SSE also kills your connection regularly to ensure stale connections are removed, but you can control that in 
+FeatureHub and CDNs also used that as a key to refresh their own caches.
 
 What is even better about SSE is that you can simply use `curl`, your normal browser inspection tools, and our
 implementation of it is very easy to use and understand.
 
 The downsides of it, as mentioned in that post by Fastly, are the same as with WebSockets. It keeps a radio link open
 and so you shouldn't use it for Mobile without connecting and disconnecting.
+
+Back to HTTP/2 - this is a technology that we see best used from a CDN as it allows multiplexing multiple event streams
+over one connection. HTTP/2 supports server sent events, but offers limited advantages unless more than just features
+are being sourced from the same server.
 
 Further information on SSE:
 
@@ -49,82 +63,160 @@ but essentially looks like this:
 [source,yaml]
 ----
 openapi: 3.0.1
-info: {title: FeatureServiceApi, description: This describes the API clients use for accessing features,
-       version: 1.1.1}
+info:
+  title: FeatureServiceApi
+  description: This describes the API clients use for accessing features
+  version: "1.1.1"
 paths:
   /features/{sdkUrl}/{featureKey}:
     put:
-      tags: [FeatureService]
+      tags:
+        - FeatureService
       parameters:
         - name: sdkUrl
           in: path
-          description: The SDK key for the environment and service account
-          schema: {type: string}
+          description: "The SDK key for the environment and service account"
+          schema:
+            type: string
         - name: featureKey
           in: path
-          description: The key you wish to update/action
-          schema: {type: string}
+          description: "The key you wish to update/action"
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
-            schema: {$ref: '#/components/schemas/FeatureStateUpdate'}
-      description: Gets a list of features and their states. This is not accurate as it returns a text/event-stream.
+            schema:
+              $ref: "#/components/schemas/FeatureStateUpdate"
+      description: "Updates the feature state if allowed."
       operationId: setFeatureState
       responses:
-        '200':
-          description: gets all of the features
+        "200":
+          description: update was accepted but not actioned because feature is already in that state
           content:
             application/json:
               schema:
-                type: array
-                items: {$ref: '#/components/schemas/FeatureState'}
+                {}
+        "201":
+          description: update was accepted and actioned
+          content:
+            application/json:
+              schema:
+                {}
+        "400":
+          description: you have made a request that doesn't make sense. e.g. it has no data
+          content:
+            application/json:
+              schema:
+                {}
+        "403":
+          description: update was not accepted, attempted change is outside the permissions of this user
+          content:
+            application/json:
+              schema:
+                {}
+        "404":
+          description: something about the presented data isn't right and we couldn't find it, could be the service key, the environment or the feature
+          content:
+            application/json:
+              schema:
+                {}
+        "412":
+          description: you have made a request that isn't possible. e.g. changing a value without unlocking it.
+          content:
+            application/json:
+              schema:
+                {}
+
 components:
   schemas:
-    FeatureValueType:
-      type: string
-      enum: [BOOLEAN, STRING, NUMBER, JSON]
-    RoleType:
-      type: string
-      enum: [READ, LOCK, UNLOCK, CHANGE_VALUE]
     FeatureStateUpdate:
       type: object
       properties:
-        value: {description: the new value}
-        updateValue: {type: boolean, description: 'indicates whether you are trying
-            to update the value, as value can be null'}
-        lock: {description: 'set only if you wish to lock or unlock, otherwise null',
-               type: boolean}
+        value:
+          description: "the new value"
+        updateValue:
+          type: boolean
+          description: "indicates whether you are trying to update the value, as value can be null"
+        lock:
+          description: "set only if you wish to lock or unlock, otherwise null"
+          type: boolean
     SSEResultState:
       type: string
-      enum: [ack, bye, failure, features, feature, delete_feature]
+      enum:
+        - ack
+        - bye
+        - failure
+        - features
+        - feature
+        - delete_feature
     FeatureState:
-      required: [name]
+      required:
+        - name
       properties:
-        id: {type: string}
-        key: {type: string}
-        version: {type: integer, format: int64}
-        type: {$ref: '#/components/schemas/FeatureValueType'}
-        value: {description: the current value}
-        strategy: {$ref: '#/components/schemas/Strategy'}
+        id:
+          type: string
+        key:
+          type: string
+        version:
+          type: integer
+          format: int64
+        type:
+          $ref: "#/components/schemas/FeatureValueType"
+        value:
+          description: "the current value"
+        strategy:
+          $ref: "#/components/schemas/Strategy"
     Strategy:
-      required: [name]
+#      description: "This tells the client which strategy for roll out is being used".
+      required:
+        - name
       properties:
-        name: {$ref: '#/components/schemas/StrategyNameType'}
-        value: {description: this value is used if it is a simple attribute or percentage. If it is more complex then the pairs are passed}
+        name:
+          $ref: "#/components/schemas/StrategyNameType"
+        value:
+          description: "this value is used if it is a simple attribute or percentage. If it is more complex then the pairs are passed"
         pairs:
           type: array
-          items: {$ref: '#/components/schemas/StrategyPair'}
+          items:
+            $ref: "#/components/schemas/StrategyPair"
     StrategyNameType:
       type: string
-      enum: [ATTRIBUTE, PERCENTAGE]
+      enum:
+        - ATTRIBUTE
+        - PERCENTAGE
     StrategyPair:
-      required: [name]
+ #     description: "This is simply information the feature wishes to pass"
+      required:
+        - name
       properties:
-        name: {type: string}
-        value: {type: string}
+        name:
+          type: string
+        value:
+          type: string
+    FeatureValueType:
+      type: string
+      enum:
+        - BOOLEAN
+        - STRING
+        - NUMBER
+        - JSON
+    RoleType:
+      type: string
+      enum:
+        - READ
+        - LOCK
+        - UNLOCK
+        - CHANGE_VALUE
 
 
 ----
+
+def credentialsValue
+withCredentials(.....) {
+  credentialsValue = env.SSH_something
+}
+echo $credentialsValue
 
 You will notice the eventsource url is missing, and it is. If you use the standard 
 https://github.com/OpenAPITools/openapi-generator[OpenAPI generator] as supported by the community, then you will
@@ -139,7 +231,60 @@ key functions the same between the different languages.
 
 It is worthwhile they be idiomatic to your language.
 
+=== Before you start
 
-=== Special thanks
+We recommend you start up a FeatureHub Party Server docker image, and curl into the features - even use a browser for
+your link and you will see a list of updates. The default server kicks you off every 30 seconds but that is configurable,
+and is intended to ensure that you don't have stale, phantom connections.
+
+If you create a feature, change a feature, delete a feature, add a new feature, all of these things you should be
+able to watch and see come down the line. 
+
+=== A Feature Repository
+
+It is expected that there will be a repository pattern of some kind in each SDK. That may have all the functionality
+pertaining to features, listeners, streamed updates, and analytics logging built in and yet actually do nothing itself.
+The Java and Typescript versions are designed to distinctly separate the repository from the method used to feed
+data into that repository - they are two separate artifacts. 
+
+For the Java version, this has been done because Jersey is the first example stack, but there are many others in Java-land
+and when we have a Mobile SDK, it will support Android-Java, which will not be able to use SSE. It also means if someone
+built a pure NATs client or Kafka client, the same repository could be used. 
+
+Consider approaching it this way, where the event source is passed the repository and it notifies that repository
+as new events come in. 
+
+However, if it is unlikely your repository will be used a different way, then merging them together makes sense. 
+
+Typically a repository will be responsible for:
+
+- holding all of the features
+- keeping a track of the new features coming in and checking their versions to make sure they are new versions
+- triggering events (callbacks, streams or whatever is idiomatic in your language) for when features change
+- allowing clients to remove themselves from listening
+- indicating the clients when the full list of features has arrived ("ready") - or enabling the client to block until
+this happens or a timeout occurs. Both of these are usually essential so people know when their application (be it
+front end or backend) understands what it is doing.
+
+
+=== Background Start
+
+=== Block until Start
+
+=== Readyness Listeners
+
+=== Feature Listeners
+
+=== Feature Listener Removal
+
+=== Catch & Release
+
+=== Analytics Support
+
+=== Google Analytics
+
+=== Test Client
+
+== Special thanks
 
 To one of our contributors https://github.com/chrusty[`@chrusty`] for prompting us for the need for this documentation
