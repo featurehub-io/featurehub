@@ -20,8 +20,12 @@ advantage of caching at CDN layers if we can.
 To achieve this, there are only three technologies available across the major platforms that they have in common, plain
 old HTTP, Server Sent Events, and Web Sockets. Lets brush HTTP/2 and HTTP/3 (QUIC) under the table for the time being. 
 
-At its core, HTTP is a connectionless protocol, even with Keep-Alive, it is client driven protocol. Not suitable for
-our stated goal. It is great for being able 
+At its core, HTTP is a connectionless protocol, even with Keep-Alive, it is client driven protocol. As such, it isn't 
+suitable for our stated goal of instantaneous updates. It is however important in our story, because it does allow
+the user full control over when they update their features, and in a costly (both in real money data wise and in
+battery life) environment, being able to have that control and yet still roll out features in a measured way is 
+invaluable. We will use plain HTTP for our Mobile SDK when it comes along, and we use it for our test API to update
+features.
 
 WebSockets is essentially bi-directional tcp overlaid on the HTTP layer and it suffers a few problems for our use case.
 It isn't cachable, it requires considerably greater complexity in terms of client implementation, and it is bi-directional,
@@ -347,4 +351,5 @@ up to you, it could simple be available by the generated OpenAPI client like it 
 
 == Special thanks
 
-To one of our contributors https://github.com/chrusty[`@chrusty`] for prompting us for the need for this documentation
+To one of our contributors https://github.com/chrusty[`@chrusty`] for prompting us for the need for this 
+documentation. @chrusty is the author of our Go SDK.
