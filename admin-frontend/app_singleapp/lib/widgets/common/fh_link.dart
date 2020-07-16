@@ -19,7 +19,8 @@ class FHLinkWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomCursor(
-      child: GestureDetector(
+      child: InkWell(
+          mouseCursor: SystemMouseCursors.click,
           child: Container(
             alignment: Alignment.centerLeft,
             child: TranslateOnHover(

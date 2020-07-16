@@ -5,6 +5,7 @@ import 'package:app_singleapp/widgets/common/fh_footer_button_bar.dart';
 import 'package:app_singleapp/widgets/common/fh_json_editor.dart';
 import 'package:app_singleapp/widgets/features/feature_value_updated_by.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
 
 import 'feature_value_row_locked.dart';
@@ -60,6 +61,7 @@ class _FeatureValueJsonEnvironmentCellState
               width: 160,
               height: 40,
               child: InkWell(
+                mouseCursor: SystemMouseCursors.click,
                 customBorder: RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(
                       Radius.circular(6.0) //         <--- border radius here

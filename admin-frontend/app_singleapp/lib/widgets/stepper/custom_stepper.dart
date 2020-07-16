@@ -8,6 +8,7 @@
 //   * stepper feedback in the case of high-latency interactions
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 /// The state of a [CustomStep] which is used to control the style of the circle and
 /// text.
@@ -591,6 +592,7 @@ class _CustomStepperState extends State<CustomStepper>
             key: _keys[i],
             children: <Widget>[
               InkWell(
+                mouseCursor: SystemMouseCursors.click,
                 onTap: widget.steps[i].state != CustomStepState.disabled
                     ? () {
                         // In the vertical case we need to scroll to the newly tapped

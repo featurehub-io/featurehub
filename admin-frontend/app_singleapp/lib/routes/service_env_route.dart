@@ -7,6 +7,7 @@ import 'package:app_singleapp/widgets/common/fh_header.dart';
 import 'package:app_singleapp/widgets/service-accounts/service_accounts_env_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
 
@@ -205,6 +206,7 @@ class _CopyServiceAccountUrlToClipboard extends StatelessWidget {
       message: 'Copy SDK Url to clipboard',
       child: CustomCursor(
         child: InkWell(
+          mouseCursor: SystemMouseCursors.click,
           borderRadius: BorderRadius.circular(10.0),
           hoverColor: Theme.of(context).primaryColorLight,
           splashColor: Theme.of(context).primaryColor,

@@ -1,4 +1,3 @@
-import 'package:app_singleapp/utils/custom_cursor.dart';
 import 'package:app_singleapp/widgets/apps/manage_app_bloc.dart';
 import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/fh_alert_dialog.dart';
@@ -11,6 +10,7 @@ import 'package:app_singleapp/widgets/common/fh_reorderable_list_view.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
@@ -132,8 +132,8 @@ class _EnvWidget extends StatelessWidget {
           border: Border.all(color: Theme.of(context).dividerColor)),
       child: Container(
         height: 50,
-        child: CustomCursor(
-          cursorStyle: 'move',
+        child: InkWell(
+          mouseCursor: SystemMouseCursors.grab,
           child: Row(
             children: <Widget>[
               Container(
@@ -142,7 +142,6 @@ class _EnvWidget extends StatelessWidget {
                     Icons.drag_handle,
                     size: 24.0,
                   )),
-//                  child: Icon(.)),
               Row(
                 children: <Widget>[
                   Text('${env.name}'),

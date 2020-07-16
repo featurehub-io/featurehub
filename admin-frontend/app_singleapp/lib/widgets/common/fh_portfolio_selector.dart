@@ -1,6 +1,7 @@
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mrapi/api.dart';
 
@@ -31,42 +32,46 @@ class _PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
                         children: [
                           Text('Your current portfolio',
                               style: Theme.of(context).textTheme.caption),
-                          DropdownButtonHideUnderline(
-                            child: DropdownButton(
-                              icon: Padding(
-                                padding: EdgeInsets.only(left: 8.0),
-                                child: Icon(
-                                  Icons.keyboard_arrow_down,
-                                  size: 24,
+                          InkWell(
+                            mouseCursor: SystemMouseCursors.click,
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton(
+                                icon: Padding(
+                                  padding: EdgeInsets.only(left: 8.0),
+                                  child: Icon(
+                                    Icons.keyboard_arrow_down,
+                                    size: 24,
+                                  ),
                                 ),
+                                style: Theme.of(context).textTheme.bodyText1,
+                                isDense: true,
+                                isExpanded: true,
+                                items: snapshot.data.map((Portfolio portfolio) {
+                                  return DropdownMenuItem<String>(
+                                      value: portfolio.id,
+                                      child: Text(
+                                        portfolio.name,
+                                        style: GoogleFonts.poppins(
+                                            textStyle: Theme.of(context)
+                                                .textTheme
+                                                .bodyText2,
+                                            fontWeight: FontWeight.w600),
+                                        overflow: TextOverflow.ellipsis,
+                                      ));
+                                }).toList(),
+                                hint: Text('Select portfolio',
+                                    style:
+                                        Theme.of(context).textTheme.bodyText2),
+                                onChanged: (value) {
+                                  setState(() {
+                                    bloc.setCurrentPid(value);
+                                    bloc.setCurrentAid(null);
+                                  });
+                                },
+                                value: currentPortfolioSnap.hasData
+                                    ? currentPortfolioSnap.data.id
+                                    : null,
                               ),
-                              style: Theme.of(context).textTheme.bodyText1,
-                              isDense: true,
-                              isExpanded: true,
-                              items: snapshot.data.map((Portfolio portfolio) {
-                                return DropdownMenuItem<String>(
-                                    value: portfolio.id,
-                                    child: Text(
-                                      portfolio.name,
-                                      style: GoogleFonts.poppins(
-                                          textStyle: Theme.of(context)
-                                              .textTheme
-                                              .bodyText2,
-                                          fontWeight: FontWeight.w600),
-                                      overflow: TextOverflow.ellipsis,
-                                    ));
-                              }).toList(),
-                              hint: Text('Select portfolio',
-                                  style: Theme.of(context).textTheme.bodyText2),
-                              onChanged: (value) {
-                                setState(() {
-                                  bloc.setCurrentPid(value);
-                                  bloc.setCurrentAid(null);
-                                });
-                              },
-                              value: currentPortfolioSnap.hasData
-                                  ? currentPortfolioSnap.data.id
-                                  : null,
                             ),
                           ),
                         ],

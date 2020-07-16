@@ -7,6 +7,7 @@ import 'package:app_singleapp/widgets/stepper/custom_stepper.dart';
 import 'package:app_singleapp/widgets/stepper/progress_stepper_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
 
 import '../common/fh_flat_button_transparent.dart';
@@ -292,33 +293,33 @@ class _StepperState extends State<FHSetupProgressStepper> {
 
   Widget applicationsDropdown(
       List<Application> applications, StepperBloc bloc) {
-    return DropdownButton(
-      icon: Padding(
-        padding: EdgeInsets.only(left: 8.0),
-        child: Icon(
-          Icons.keyboard_arrow_down,
-          size: 24,
+    return InkWell(
+      mouseCursor: SystemMouseCursors.click,
+      child: DropdownButton(
+        icon: Padding(
+          padding: EdgeInsets.only(left: 8.0),
+          child: Icon(
+            Icons.keyboard_arrow_down,
+            size: 24,
+          ),
         ),
+        isExpanded: true,
+        style: Theme.of(context).textTheme.bodyText1,
+        items: applications.map((Application application) {
+          return DropdownMenuItem<String>(
+              value: application.id,
+              child: Text(application.name,
+                  style: Theme.of(context).textTheme.bodyText2));
+        }).toList(),
+        hint: Text('Select application',
+            style: Theme.of(context).textTheme.subtitle2),
+        onChanged: (value) {
+          setState(() {
+            bloc.mrClient.setCurrentAid(value);
+          });
+        },
+        value: bloc.applicationId,
       ),
-      isExpanded: true,
-      style: Theme
-          .of(context)
-          .textTheme
-          .bodyText1,
-      items: applications.map((Application application) {
-        return DropdownMenuItem<String>(
-            value: application.id,
-            child: Text(application.name,
-                style: Theme.of(context).textTheme.bodyText2));
-      }).toList(),
-      hint: Text('Select application',
-          style: Theme.of(context).textTheme.subtitle2),
-      onChanged: (value) {
-        setState(() {
-          bloc.mrClient.setCurrentAid(value);
-        });
-      },
-      value: bloc.applicationId,
     );
   }
 }

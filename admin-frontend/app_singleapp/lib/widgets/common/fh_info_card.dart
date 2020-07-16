@@ -14,6 +14,7 @@ class FHInfoCardWidget extends StatelessWidget {
           .bodyText2
           .copyWith(color: Theme.of(context).primaryColor),
       child: InkWell(
+        mouseCursor: SystemMouseCursors.click,
         radius: 36.0,
         onHover: (_) {},
         onTap: () {},

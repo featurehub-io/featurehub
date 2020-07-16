@@ -7,6 +7,7 @@ import 'package:app_singleapp/widgets/features/feature_value_row_number.dart';
 import 'package:app_singleapp/widgets/features/feature_value_row_string.dart';
 import 'package:app_singleapp/widgets/features/tabs_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
 
 class FeatureValueCell extends StatelessWidget {
@@ -47,8 +48,12 @@ class FeatureValueCell extends StatelessWidget {
               );
             }
 
-            cellWidget = GestureDetector(
-                behavior: HitTestBehavior.opaque,
+            cellWidget = InkWell(
+                hoverColor: Colors.transparent,
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                mouseCursor: SystemMouseCursors.click,
+//                behavior: HitTestBehavior.opaque,
                 onTap: () => tabsBloc.hideOrShowFeature(feature),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,

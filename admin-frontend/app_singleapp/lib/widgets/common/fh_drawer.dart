@@ -6,6 +6,7 @@ import 'package:app_singleapp/widgets/common/fh_portfolio_selector.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -290,6 +291,7 @@ class _MenuItem extends StatelessWidget {
         permissionType == PermissionType.regular);
     return CustomCursor(
         child: InkWell(
+          mouseCursor: SystemMouseCursors.click,
       hoverColor: Theme.of(context).selectedRowColor,
       onTap: () {
         if (menuOkForThisUser) {
@@ -301,41 +303,53 @@ class _MenuItem extends StatelessWidget {
           stream: BlocProvider.of<ManagementRepositoryClientBloc>(context)
               .routeChangedStream,
           builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              final selected = snapshot.data.route == path &&
-                  equalsParams(snapshot.data.params);
-              return Container(
-                padding: EdgeInsets.fromLTRB(16, 12, 0, 12),
-                color: selected ? Theme.of(context).primaryColorLight : null,
-                child: Row(
-                  children: <Widget>[
-                    Icon(
-                      iconData,
-                      color: selected
-                          ? Theme.of(context).primaryColor
-                          : Color(0xff4a4a4a),
-                      size: iconSize ?? 20.0,
-                    ),
-                    Padding(
-                      padding:
+                if (snapshot.hasData) {
+                  final selected = snapshot.data.route == path &&
+                      equalsParams(snapshot.data.params);
+                  return Container(
+                    padding: EdgeInsets.fromLTRB(16, 12, 0, 12),
+                    color: selected ? Theme
+                        .of(context)
+                        .primaryColorLight : null,
+                    child: Row(
+                      children: <Widget>[
+                        Icon(
+                          iconData,
+                          color: selected
+                              ? Theme
+                              .of(context)
+                              .primaryColor
+                              : Color(0xff4a4a4a),
+                          size: iconSize ?? 20.0,
+                        ),
+                        Padding(
+                          padding:
                           EdgeInsets.only(left: iconSize != null ? 18.0 : 24.0),
-                      child: selected
-                          ? Text(' ${name}',
+                          child: selected
+                              ? Text(' ${name}',
                               style: GoogleFonts.roboto(
                                   textStyle:
-                                      Theme.of(context).textTheme.bodyText2,
+                                  Theme
+                                      .of(context)
+                                      .textTheme
+                                      .bodyText2,
                                   fontWeight: FontWeight.w600,
-                                  color: Theme.of(context).primaryColor))
-                          : Text(' ${name}',
-                              style: Theme.of(context).textTheme.bodyText2),
-                    )
-                  ],
-                ),
-              );
-            } else {
-              return SizedBox.shrink();
-            }
-          }),
+                                  color: Theme
+                                      .of(context)
+                                      .primaryColor))
+                              : Text(' ${name}',
+                              style: Theme
+                                  .of(context)
+                                  .textTheme
+                                  .bodyText2),
+                        )
+                      ],
+                    ),
+                  );
+                } else {
+                  return SizedBox.shrink();
+                }
+              }),
     ));
   }
 }

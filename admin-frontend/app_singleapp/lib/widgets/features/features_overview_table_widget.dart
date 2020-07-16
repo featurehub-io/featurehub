@@ -1,12 +1,14 @@
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/api/router.dart';
 import 'package:app_singleapp/common/stream_valley.dart';
+import 'package:app_singleapp/utils/custom_cursor.dart';
 import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/features/environments_features_list_view.dart';
 import 'package:app_singleapp/widgets/features/feature_names_left_panel.dart';
 import 'package:app_singleapp/widgets/features/tabs_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:logging/logging.dart';
 
 import 'feature_dashboard_constants.dart';
@@ -186,28 +188,31 @@ class _FeatureTab extends StatelessWidget {
     return StreamBuilder<TabsState>(
         stream: bloc.currentTab,
         builder: (context, snapshot) {
-          return Container(
-              padding: const EdgeInsets.all(8.0),
-              child: InkWell(
-                  borderRadius: BorderRadius.circular(16.0),
-                  onTap: () {
-                    bloc.swapTab(state);
-                  },
-                  child: Container(
-                      padding:
-                          EdgeInsets.symmetric(vertical: 6.0, horizontal: 12.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(16.0)),
-                        color: state == snapshot.data
-                            ? Theme.of(context).primaryColorLight
-                            : Colors.transparent,
-                      ),
-                      child: Row(children: <Widget>[
-                        Icon(icon, color: color, size: 20.0),
-                        SizedBox(width: 4.0),
-                        Text(text,
-                            style: Theme.of(context).textTheme.subtitle1),
-                      ]))));
+          return CustomCursor(
+            child: Container(
+                padding: const EdgeInsets.all(8.0),
+                child: InkWell(
+                    mouseCursor: SystemMouseCursors.click,
+                    borderRadius: BorderRadius.circular(16.0),
+                    onTap: () {
+                      bloc.swapTab(state);
+                    },
+                    child: Container(
+                        padding: EdgeInsets.symmetric(
+                            vertical: 6.0, horizontal: 12.0),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.all(Radius.circular(16.0)),
+                          color: state == snapshot.data
+                              ? Theme.of(context).primaryColorLight
+                              : Colors.transparent,
+                        ),
+                        child: Row(children: <Widget>[
+                          Icon(icon, color: color, size: 20.0),
+                          SizedBox(width: 4.0),
+                          Text(text,
+                              style: Theme.of(context).textTheme.subtitle1),
+                        ])))),
+          );
         });
   }
 }

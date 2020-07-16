@@ -5,6 +5,7 @@ import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/common/fh_footer_button_bar.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
 
 import 'manage_app_bloc.dart';
@@ -82,32 +83,35 @@ class __GroupsDropdownState extends State<_GroupsDropdown> {
   Widget build(BuildContext context) {
     return Container(
       constraints: BoxConstraints(maxWidth: 250),
-      child: DropdownButton(
-        icon: Padding(
-          padding: EdgeInsets.only(left: 8.0),
-          child: Icon(
-            Icons.keyboard_arrow_down,
-            size: 24,
+      child: InkWell(
+        mouseCursor: SystemMouseCursors.click,
+        child: DropdownButton(
+          icon: Padding(
+            padding: EdgeInsets.only(left: 8.0),
+            child: Icon(
+              Icons.keyboard_arrow_down,
+              size: 24,
+            ),
           ),
+          isDense: true,
+          isExpanded: true,
+          items: widget.groups.map((Group group) {
+            return DropdownMenuItem<String>(
+                value: group.id,
+                child: Text(
+                  group.name,
+                  style: Theme.of(context).textTheme.bodyText2,
+                  overflow: TextOverflow.ellipsis,
+                ));
+          }).toList(),
+          hint: Text('Select group'),
+          onChanged: (value) {
+            setState(() {
+              widget.bloc.selectedGroup = value;
+            });
+          },
+          value: widget.bloc.selectedGroup,
         ),
-        isDense: true,
-        isExpanded: true,
-        items: widget.groups.map((Group group) {
-          return DropdownMenuItem<String>(
-              value: group.id,
-              child: Text(
-                group.name,
-                style: Theme.of(context).textTheme.bodyText2,
-                overflow: TextOverflow.ellipsis,
-              ));
-        }).toList(),
-        hint: Text('Select group'),
-        onChanged: (value) {
-          setState(() {
-            widget.bloc.selectedGroup = value;
-          });
-        },
-        value: widget.bloc.selectedGroup,
       ),
     );
   }

@@ -4,6 +4,7 @@ import 'package:app_singleapp/widgets/common/fh_alert_dialog.dart';
 import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/features/feature_status_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
@@ -125,33 +126,36 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
               if (!isUpdate)
                 Padding(
                   padding: const EdgeInsets.only(top: 14.0),
-                  child: DropdownButton(
-                    icon: Padding(
-                      padding: EdgeInsets.only(left: 8.0),
-                      child: Icon(
-                        Icons.keyboard_arrow_down,
-                        size: 24,
+                  child: InkWell(
+                    mouseCursor: SystemMouseCursors.click,
+                    child: DropdownButton(
+                      icon: Padding(
+                        padding: EdgeInsets.only(left: 8.0),
+                        child: Icon(
+                          Icons.keyboard_arrow_down,
+                          size: 24,
+                        ),
                       ),
+                      isExpanded: false,
+                      items: FeatureValueType.values
+                          .map((FeatureValueType dropDownStringItem) {
+                        return DropdownMenuItem<FeatureValueType>(
+                            value: dropDownStringItem,
+                            child: Text(
+                                _transformValuesToString(dropDownStringItem),
+                                style: Theme.of(context).textTheme.bodyText2));
+                      }).toList(),
+                      hint: Text('Select feature type',
+                          style: Theme.of(context).textTheme.subtitle2),
+                      onChanged: (value) {
+                        if (!isReadOnly) {
+                          setState(() {
+                            _dropDownFeatureTypeValue = value;
+                          });
+                        }
+                      },
+                      value: _dropDownFeatureTypeValue,
                     ),
-                    isExpanded: false,
-                    items: FeatureValueType.values
-                        .map((FeatureValueType dropDownStringItem) {
-                      return DropdownMenuItem<FeatureValueType>(
-                          value: dropDownStringItem,
-                          child: Text(
-                              _transformValuesToString(dropDownStringItem),
-                              style: Theme.of(context).textTheme.bodyText2));
-                    }).toList(),
-                    hint: Text('Select feature type',
-                        style: Theme.of(context).textTheme.subtitle2),
-                    onChanged: (value) {
-                      if (!isReadOnly) {
-                        setState(() {
-                          _dropDownFeatureTypeValue = value;
-                        });
-                      }
-                    },
-                    value: _dropDownFeatureTypeValue,
                   ),
                 ),
               if (isError)
