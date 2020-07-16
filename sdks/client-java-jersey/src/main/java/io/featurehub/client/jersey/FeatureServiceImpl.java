@@ -21,7 +21,7 @@ public class FeatureServiceImpl implements FeaturesService {
   }
 
   @Override
-  public List<FeatureState> setFeatureState(String sdkUrl, String featureKey,
+  public Object setFeatureState(String sdkUrl, String featureKey,
                                             FeatureStateUpdate featureStateUpdate) {
     // verify the required parameter 'sdkUrl' is set
     if (sdkUrl == null) {
@@ -56,7 +56,7 @@ public class FeatureServiceImpl implements FeaturesService {
 
     String[] localVarAuthNames = new String[]{};
 
-    GenericType<List<FeatureState>> localVarReturnType = new GenericType<>() {};
+    GenericType<Object> localVarReturnType = new GenericType<>() {};
 
     return apiClient.invokeAPI(localVarPath, "PUT", localVarQueryParams, featureStateUpdate, localVarHeaderParams,
       localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localVarReturnType).getData();

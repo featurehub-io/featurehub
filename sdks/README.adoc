@@ -87,13 +87,16 @@ your `UA-` id and when logging an event, it will fire off into GA the event - on
 
 === Test Client / Feature Updater
 
-This is designed to allow tests to change the values of features in their environments while they are running. For tests
-that run sequentially in an environment it is a useful feature, but for load balanced tests running a variety of feature
+This is designed to allow tests to change the values of features in their environments while they are running. For 
+integration or e2e tests that run sequentially in an environment it is a useful feature, but for load 
+balanced tests running a variety of feature
 profiles all against the same environment, it is better to use OpenTracing or OpenTelemetry. We will support this directly
 in the future. 
 
 This will depend on the permissions granted to the service account in the environment that is configured. If the service account
-only has READ access, no changes will be allowed.
+only has READ access, no changes will be allowed. A typical service account would need UNLOCK and CHANGE_VALUE. Alternatively
+if features are always unlocked in test environments (which is usual), CHANGE_VALUE is all that is required, and READ is
+implicit.
 
 Changes are checked against the latest version of the feature in the cache. Changes that match the current state are
 simply ignored (and a 200 response given). Changes generally take a second or two to propagate.

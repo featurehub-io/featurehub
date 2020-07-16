@@ -56,13 +56,14 @@ public class JerseyClientSample {
 
   }
 
+  private final static String changeToggleEnv = "default/fc5b929b-8296-4920-91ef-6e5b58b499b9" +
+    "/VNftuX5LV6PoazPZsEEIBujM4OBqA1Iv9f9cBGho2LJylvxXMXKGxwD14xt2d7Ma3GHTsdsSO8DTvAYF";
+
   @Test
   public void changeToggleTest() {
     ClientFeatureRepository cfr = new ClientFeatureRepository(5);
-    final JerseyClient client = new JerseyClient("http://localhost:8553/features/default/1719d798-fc8c-4253" +
-      "-924b-daa0966924a1" +
-      "/eTXNuVu5aDU8V6LBwiC4ew0mSeXY4NF66hjXfkZXOZT8iLcr2NzwaYSgxDVs69AWGOm7f3bxDNbGh3Zb", false, cfr);
+    final JerseyClient client = new JerseyClient("http://localhost:8553/features/" + changeToggleEnv, false, cfr);
 
-    client.setFeatureState("sample", new FeatureStateUpdate().lock(false).value(Boolean.FALSE));
+    client.setFeatureState("NEW_BOAT", new FeatureStateUpdate().lock(false).value(Boolean.TRUE));
   }
 }
