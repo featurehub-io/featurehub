@@ -1,23 +1,26 @@
-= Javascript/Typescript Client SDK for FeatureHub
+= Dart Client SDK for FeatureHub
+ifdef::env-github,env-browser[:outfilesuffix: .adoc]
 
-Welcome to the Javascript implementation for FeatureHub. It is the supported version, but it does not mean
+Welcome to the Dart implementation for FeatureHub. It is the supported version, but it does not mean
 you cannot write your own, the functionality is quite straightforward.
 
 == Overview
 
-This is the core library for Typescript and Javascript. 
+This is the core library for Dart.
 
-It provides the core functionality of the 
-repository which holds features and creates events. It does not connect to the backend server. That
-functionality is provided using `eventsource` in another library, and means you can replace the `eventsource` mechanism
-with some other library if you use it. 
+It provides the core functionality of the
+repository which holds features and creates events. It depends on our own fork of the EventSourcing library
+for Dart (until the main library merges the changes in or we release our own). 
 
-`eventsource` is of course the only option when using the Web, so that is what we expect developers to use there,
-but it can be replaced for backend or Mobile.
+This library only provides one recommended type of operation, which is that the server will update all the features
+all of the time.
+
+NOTE: This readme does not deal with the SDK capability of updating features while running your tests. That
+capability is API client specific, and the sample we have is for Jersey. link:../client-java-jersey/README{outfilesuffix}[It is documented here.]
 
 == Mechanisms for use
 
-Unlike the Java SDK, there are four ways to use this library due to the more _user_ based interaction that your 
+Like the Typescript SDK, there are four ways to use this library due to the more _user_ based interaction that your
 application will operate under.
 
 === 1. All the Features, All the Time
@@ -28,32 +31,37 @@ some UI immediate, but every `if` statement will use the updated value, so liste
 
 A typical strategy will be:
 
-. set up your UI state so it is in "loading" mode (only if in the Web).
+. set up your UI state so it is in "loading" mode.
 . set up a readyness listener so you know when the features have loaded and you have an initial state for them. When
 using a UI, this would lead to a transition to the actual UI rendering, on the server it would make it start listening
 to the server port.
 . set up your per feature listeners so you can react to their changes in state
 . connect to the Feature Hub server. As soon as it has connected and received a list of features it will call your
-readyness listener. 
+readyness listener.
 . each time a feature changes, it will call your listener and allow your application to react.
 
-This kind of operation is perfect for servers. It can lead to instant change which could confuse users in a UI and
-isn't something our team recommends.
+Whether this instant reaction is ideal for your application depends. For mobile and servers, the answer is usually
+yes, for Web the answer is often no as people don't expect that.
 
-[source,javascript]
+[source,dart]
 ----
-featureHubRepository.addReadynessListener((readyness) => {
-  if (readyness === Readyness.Ready) {
-    // some state change and you have your features and config
+final _repository = ClientFeatureRepository();
+
+_repository.addReadynessListener((readyness) {
+  if (readyness == Readyness.Ready) {
+    print("repo is ready to use");
   }
 });
 
-this.eventSource = new FeatureHubEventSourceClient('<sdkUrl>');
-this.eventSource.init();
+// this will cause the event source listener to immediately start. It has a close()
+// method to allow for shutdown 
+final _eventSource = EventSourceRepositoryListener(sdkUrl, _repository);
 
-featureHubRepository.getFeatureState('FEATURE_X').addListener((fs: FeatureStateHolder) => {
+const featureXUnsubscribe = featureHubRepository.getFeatureState('FEATURE_X').addListener((fs) {
   // do something
 });
+
+
 ----
 
 NOTE: Recommended for: servers
@@ -64,17 +72,6 @@ In this mode, you receive the connection and then you disconnect, ignoring any f
 use this mode only if you want to force the client to have a consistent UI experience through the lifetime of their
 visit to your client application.
 
-[source,javascript]
-----
-featureHubRepository.addReadynessListener((readyness) => {
-  if (readyness === Readyness.Ready) {
-    this.eventSource.close();
-  }
-});
-
-this.eventSource = new FeatureHubEventSourceClient('<sdkUrl>');
-this.eventSource.init();
-----
 
 
 NOTE: Recommended for: Web only, and only when not intending to react to feature changes until you ask for the feature state again.
@@ -92,36 +89,14 @@ using a UI, this would lead to a transition to the actual UI rendering, on the s
 to the server port.
 . tell the feature hub repository to operate in catch and release mode. `featureHubRepository.catchAndRelease = true;`
 . add a _post feature changed` callback hook. This hook will be called when a feature has changed.
-. `[optional]` set up your per feature listeners so you can react to their changes in state. You could also not do this and 
+. `[optional]` set up your per feature listeners so you can react to their changes in state. You could also not do this and
 encourage you users to reload the whole application window (e.g. `window.location.reload()`).
 . connect to the Feature Hub server. As soon as it has connected and received a list of features it will call your
 readyness listener.
 .
 
-[source,javascript]
-----
-featureHubRepository.addReadynessListener((readyness) => {
-  if (readyness === Readyness.Ready) {
-    // some state change and you have your features and config
-  }
-});
 
-this.eventSource = new FeatureHubEventSourceClient('<sdkUrl>');
-this.eventSource.init();
-
-featureHubRepository.catchAndReleaseMode = true; // don't allow feature updates to come through
-
-featureHubRepository
-  .addPostLoadNewFeatureStateAvailableListener((_) => // do something );
-
-// this is optional
-featureHubRepository.getFeatureState('FEATURE_X').addListener((fs: FeatureStateHolder) => {
-  // do something. will trigger only once (first set of features). Won't trigger again until 
-  // featureHubRepository.release() is called.
-});
-----
-
-If you choose to not have listeners, when you call: 
+If you choose to not have listeners, when you call:
 
 ----
 featureHubRepository.release();
@@ -135,9 +110,9 @@ won't know which ones changed, but this can be a more efficient state update tha
 If for some reason the connection to the FeatureHub server fails - either initially or for some reason during
 the process, you will get a readyness state callback to indicate that it has now failed.
 
-[source,javascript]
+[source,dart]
 ----
-export enum Readyness {
+enum Readyness {
   NotReady = 'NotReady',
   Ready = 'Ready',
   Failed = 'Failed'
@@ -146,11 +121,6 @@ export enum Readyness {
 
 == Installation Instructions
 
-Run the following commands: 
 
-`mvn clean generate-sources`
 
-`npm install`
-
-`npm run-script compile`
 

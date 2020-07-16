@@ -1,4 +1,5 @@
 = Java Client SDK for FeatureHub
+ifdef::env-github,env-browser[:outfilesuffix: .adoc]
 
 Welcome to the Java implementation for FeatureHub. It is the supported version, but it does not mean
 you cannot write your own, the functionality is quite straightforward.
@@ -14,6 +15,9 @@ libraries for various other popular HTTP libraries.
 
 This library only provides one recommended type of operation, which is that the server will update all the features
 all of the time.
+
+NOTE: This readme does not deal with the SDK capability of updating features while running your tests. That
+capability is API client specific, and the sample we have is for Jersey. link:../client-java-jersey/README{outfilesuffix}[It is documented here.]
 
 == Using the Java Feature SDK
 

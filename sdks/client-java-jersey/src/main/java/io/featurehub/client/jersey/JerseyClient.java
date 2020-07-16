@@ -1,6 +1,10 @@
 package io.featurehub.client.jersey;
 
+import cd.connect.openapi.support.ApiClient;
 import io.featurehub.client.ClientFeatureRepository;
+import io.featurehub.client.Feature;
+import io.featurehub.sse.api.FeaturesService;
+import io.featurehub.sse.model.FeatureStateUpdate;
 import io.featurehub.sse.model.SSEResultState;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.sse.EventInput;
@@ -20,26 +24,62 @@ import java.util.concurrent.Executors;
 @Singleton
 public class JerseyClient {
   private static final Logger log = LoggerFactory.getLogger(JerseyClient.class);
-  private final String sdkUrl;
+  protected final String sdkUrl;
   private final WebTarget target;
   private boolean initialized;
   private final Executor executor;
   private final ClientFeatureRepository clientFeatureRepository;
+  private final FeaturesService featuresService;
+  private boolean shutdown = false;
+  private EventInput eventInput;
 
   public JerseyClient(String sdkUrl, boolean initializeOnConstruction, ClientFeatureRepository clientFeatureRepository) {
-    this.sdkUrl = sdkUrl;
+    this(sdkUrl, initializeOnConstruction, clientFeatureRepository, null);
+  }
+
+  public JerseyClient(String sdkUrl, boolean initializeOnConstruction,
+                      ClientFeatureRepository clientFeatureRepository, ApiClient apiClient) {
     this.clientFeatureRepository = clientFeatureRepository;
 
     Client client = ClientBuilder.newBuilder()
       .register(JacksonFeature.class)
       .register(SseFeature.class).build();
 
-    target = client.target(sdkUrl);
-    executor = Executors.newSingleThreadExecutor();
+    target = makeEventSourceTarget(client, sdkUrl);
+    executor = makeExecutor();
+
+    if (apiClient == null) {
+      String basePath = sdkUrl.substring(0, sdkUrl.indexOf("/features"));
+      apiClient = new ApiClient(client, basePath);
+    }
+
+    this.sdkUrl = sdkUrl.substring(sdkUrl.indexOf("/features/") + 1);
+
+    featuresService = makeFeatureServiceClient(apiClient);
 
     if (initializeOnConstruction) {
       init();
     }
+  }
+
+  protected Executor makeExecutor() {
+    return Executors.newSingleThreadExecutor();
+  }
+
+  protected WebTarget makeEventSourceTarget(Client client, String sdkUrl) {
+    return client.target(sdkUrl);
+  }
+
+  protected FeaturesService makeFeatureServiceClient(ApiClient apiClient) {
+    return new FeatureServiceImpl(apiClient);
+  }
+
+  public void setFeatureState(String key, FeatureStateUpdate update) {
+    featuresService.setFeatureState(sdkUrl, key, update);
+  }
+
+  public void setFeatureState(Feature feature, FeatureStateUpdate update) {
+    setFeatureState(feature.name(), update);
   }
 
   // backoff algorithm should be configurable
@@ -54,7 +94,7 @@ public class JerseyClient {
   private void listenUntilDead() {
     long start = System.currentTimeMillis();
     try {
-      EventInput eventInput = target.request().get(EventInput.class);
+      eventInput = target.request().get(EventInput.class);
 
       while (!eventInput.isClosed()) {
         final InboundEvent inboundEvent = eventInput.read();
@@ -70,17 +110,20 @@ public class JerseyClient {
       clientFeatureRepository.notify(SSEResultState.FAILURE, "unable to connect");
     }
 
+    eventInput = null; // so shutdown doesn't get confused
+
     log.warn("connection failed, reconnecting");
     initialized = false;
 
-    // timeout should be configurable
-    if (System.currentTimeMillis() - start < 2000) {
-      executor.execute(this::avoidServerDdos);
-    } else {
-      // if we have fallen out, try again
-      executor.execute(this::listenUntilDead);
+    if (!shutdown) {
+      // timeout should be configurable
+      if (System.currentTimeMillis() - start < 2000) {
+        executor.execute(this::avoidServerDdos);
+      } else {
+        // if we have fallen out, try again
+        executor.execute(this::listenUntilDead);
+      }
     }
-
   }
 
   public boolean isInitialized() {
@@ -91,6 +134,18 @@ public class JerseyClient {
   void init() {
     if (!initialized) {
       executor.execute(this::listenUntilDead);
+    }
+  }
+
+  /**
+   * Tell the client to shutdown when we next fall off.
+   */
+  public void shutdown() {
+    this.shutdown = true;
+    if (eventInput != null) {
+      try {
+        eventInput.close();
+      } catch (Exception e) {} // ignore
     }
   }
 }

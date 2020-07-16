@@ -3,6 +3,7 @@ package io.featurehub.client.jersey;
 import io.featurehub.client.ClientFeatureRepository;
 import io.featurehub.client.Feature;
 import io.featurehub.client.StaticFeatureContext;
+import io.featurehub.sse.model.FeatureStateUpdate;
 import org.junit.Test;
 
 enum Features implements Feature {
@@ -53,5 +54,16 @@ public class JerseyClientSample {
 
     Thread.currentThread().join();
 
+  }
+
+  private final static String changeToggleEnv = "default/fc5b929b-8296-4920-91ef-6e5b58b499b9" +
+    "/VNftuX5LV6PoazPZsEEIBujM4OBqA1Iv9f9cBGho2LJylvxXMXKGxwD14xt2d7Ma3GHTsdsSO8DTvAYF";
+
+  @Test
+  public void changeToggleTest() {
+    ClientFeatureRepository cfr = new ClientFeatureRepository(5);
+    final JerseyClient client = new JerseyClient("http://localhost:8553/features/" + changeToggleEnv, false, cfr);
+
+    client.setFeatureState("NEW_BOAT", new FeatureStateUpdate().lock(false).value(Boolean.TRUE));
   }
 }
