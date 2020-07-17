@@ -6,53 +6,6 @@ ifdef::env-github,env-browser[:outfilesuffix: .adoc]
 
 link:index{outfilesuffix}[Back to index]
 
-== Overview
-There are 3 main deployment options for running FeatureHub. As FeatureHub is packaged as a _Cloud Native_
-bundle, all parts are Docker images and are intended to be used with that technology (i.e. Docker or Kubernetes).
-
-All sample configurations are in the `run-configurations` folder. All of the run configurations mount the
-database volume separately from the main set of containers, allowing you to upgrade your database and
-versions of FeatureHub without destroying your database.
-
-NOTE: FeatureHub runs on the following SQL Databases: PostgreSQL, MySQL, MS SQL Server, Oracle and we provide
-initialization and migration DDL for each of these databases. Others can be supported, please contact us.
-
-== Starting small
-
-If you wish to get up and running without using `docker-compose` and downloading this repository, we would
-recommend running this simple line:
-
-----
-docker run -p 8085:8085 -v ~/tmp:/db featurehub/party-server:0.0.4
-----
-
-where `~/tmp` is where you wish to store the database. This will start FeatureHub on port 8085 and you can now
-create your first Superuser, Portfolio, Application, Feature etc.
-
-Once you have done this, you can then simply run the example project and tie the two together.
-
-== Running the example
-
-The example will need to know the SDK URL of your environment, and it will need an IP address that the second
-docker can get access to. If you know how to use docker networks, you should be able to find this easily, otherwise
-find your en0 ip address (you can type: `ifconfig en0` - choose the inet address, Windows will be slightly different)
-or similar, do not use localhost as that will not work.
-
-----
-export SDK_URL=default/d8ba747d-7d3c-4454-9c58-130390848412/5EE3vua1NqY0ez6Zd4TXU7XnsZdAPHtR96XaDmhfegitKGiQ9aCdmtmeNUNPubkRZLJLUUpaC7b05ELk
-export MY_IP=192.168.XX.XX
-docker run -e FEATUREHUB_APP_ENV_URL=http://$MY_IP:8085/features/$SDK_URL -p 5000:5000  featurehub/example_node:0.0.1
-----
-
-This will cause the example to start and you can access it on port 5000. Add a few todo's in mixed case.
-If you create a feature flag called `FEATURE_TITLE_TO_UPPERCASE`, unlock it and set it to true, you will see a "refresh"
-message appear. If you refresh, it will upper case everything, experiment. This flag is affecting the backend.
-
-If you create a feature value - a String value called `SUBMIT_COLOR_BUTTON` and set its value to (say) `cyan`, you will
-again see a refresh indicator and on refresh the Add button will swap to Cyan. Each time you change the colour, it will
-recommend you refresh. It is doing this because it is set in "catch and release" mode, and we recommend you read up on
-the SDKs for further information on this.
-
 == Deployment options
 
 === Option 1 - Evaluation Deployment
@@ -110,9 +63,17 @@ The following properties can be set:
 - `db.url` - the jdbc url of the database server. 
 - `db.username` -  the username used to log in.
 - `db.password` - the password for the user
-- `server.port` - the server port that the server runs on. it always listens to 0.0.0.0 (all network interfaces)
-- `nats.urls` - a comma separated list of NATs servers
-- `
+- `nats.urls` - a comma separated list of NATs servers. If null it simply won't publish.
+- `passwordsalt.iterations` (1000) - how many iterations it will use to salt passwords
+- `cache.pool-size` (10) - how many threads it will allocate to publishing changes to Dacha and SSE
+- `feature-update.listener.enable` (true) - whether this MR should listen to the same topic as the Dacha's and respond if they are empty
+-  `environment.production.name` (production) - the name given to the automatically created production environment. It will
+be tagged "production".
+- `environment.production.desc` (production) - the description field for same.
+- `register.url` - the url used for registration. The front-end should strip the prefix off this and add its own relative one.
+- `portfolio.admin.group.suffix` ("Administrators") - the suffix added to a portfolio group when a portfolio is created
+for the first time, it needs an Admin group. So a portfolio called "Marketing" would get an admin group called "Marketing Administrators"
+created. 
 
 ==== Dacha Config
 
@@ -122,18 +83,53 @@ The following properties can be set (that are meaningful):
 
 ==== SSE-Edge Config
 
+- `jersey.cors.headers` - a list of CORS headers that will be allowed, specifically for browser support
+- `nats.urls` - a comma separated list of NATs servers
+- `update.pool-size` (10) - how many threads to allocate to processing incoming updates from NATs. These are responses to feature
+requests and feature updates coming from the server. 
+- `listen.pool-size` (10) - how many threads to allocate to processing incoming requests to listen. This just takes the request, 
+decodes it and sends it down via NATs and releases. 
+- `maxSlots` (30) - how many seconds a client is allowed to listen for before being kicked off. Used to ensure connections
+don't go stale.
 
-
-db.url=jdbc:postgresql://db:5432/featurehub
-db.username=featurehub
-db.password=featurehub
-nats.urls=nats://nats:4222
 
 ==== Party Server
 
 The party server honours all values set by the Management Repository, Dacha and the the SSE-Edge.
 
-=== Build configurations
+==== Common to Party, SSE Edge and Management Repository
+
+- `server.port` (8903) - the server port that the server runs on. it always listens to 0.0.0.0 (all network interfaces)
+- `server.gracePeriodInSeconds` (10) - this is how long the server will wait for connections to finish after it has stopped
+listening to incoming traffic
+
+Jersey specific config around logging is from here: https://github.com/ClearPointNZ/connect-java/tree/master/libraries/jersey-common[Connect jersey Common]
+
+- `jersey.exclude`
+- `jersey.tracing`
+- `jersey.bufferSize` (8k) - how much data of a body to log before chopping off
+- `jersey.logging.exclude-body-uris` - urls in which the body should be excluded from the logs
+- `jersey.logging.exclude-entirely-uris` - urls in which the entire context should be excluded from the logs. Typically
+you will include the /health/liveness and /health/readyness API calls along with the /metrics from this. You may also
+wish to include login urls.
+- `jersey.logging.verbosity` - the default level of verbosity for logging `HEADERS_ONLY, - PAYLOAD_TEXT, - PAYLOAD_ANY`
+
+== Runtime Monitoring
+
+=== Prometheus 
+
+The Prometheus endpoint is on /metrics for each of the servers. It is exposed on the Party and MR Servers by default.
+
+=== Health and Liveness checks
+
+A server is deemed "Alive" once it is in STARTING or STARTED mode. It is deemed "Ready" when it is in STARTED mode. All
+servers put themselves into STARTING mode as soon as they are able, and then STARTED once the server is actually 
+listening. The urls are:
+
+- `/health/liveness`
+- `/health/readyness`
+
+== Build 
 
 Each of the different options, SSE-Edge, Dacha, the Management Repository and the Party Server build docker images
 when called from Maven with a cloud image profile.
@@ -158,8 +154,11 @@ This is a docker build using a Flutter image of the front-end.
 Then jump into your chosen folder and your command is:
 
 ----
-mvn -Ddocker-cloud-build=true -Dapp.baseimage=docker://featurehub/base_mr:1.2 -Dapp.port=8085 -Dbuild.version=0.0.0.1 clean package
+mvn -Ddocker-cloud-build=true -Dapp.baseimage=docker://featurehub/base_mr:1.2 -Dapp.port=8085 -Dbuild.version=0.0.1 clean package
 ----
 
 Where the `app.baseimage`, `app.port` and `build.version` are the versions you specify. The `docker://` prefix just means
 it will pull it from Docker. It is using `jib` from Google, so you may wish to further play around with those settings.
+
+
+
