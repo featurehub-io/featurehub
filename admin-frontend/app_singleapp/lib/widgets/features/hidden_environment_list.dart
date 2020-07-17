@@ -68,26 +68,29 @@ class HideEnvironmentContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (rowLayout) {
-      return Row(children: [
-        Text(name),
-        Padding(
-          padding: const EdgeInsets.only(left: 2.0, right: 2.0),
-          child: InkWell(
-            canRequestFocus: false,
-            mouseCursor: SystemMouseCursors.click,
-            hoverColor: Theme.of(context).primaryColorLight,
-            borderRadius: BorderRadius.circular(24),
-            child: Container(
-              width: 34,
-              child: Icon(Icons.visibility,
-                  size: 18.0, color: Theme.of(context).primaryColorDark),
+      return Padding(
+        padding: const EdgeInsets.only(right: 8.0),
+        child: Row(children: [
+          Text(name),
+          Padding(
+            padding: const EdgeInsets.only(left: 2.0, right: 2.0),
+            child: InkWell(
+              canRequestFocus: false,
+              mouseCursor: SystemMouseCursors.click,
+              hoverColor: Theme.of(context).primaryColorLight,
+              borderRadius: BorderRadius.circular(24),
+              child: Container(
+                width: 34,
+                child: Icon(Icons.visibility,
+                    size: 18.0, color: Theme.of(context).primaryColorDark),
+              ),
+              onTap: () {
+                BlocProvider.of<TabsBloc>(context).hideEnvironment(envId);
+              },
             ),
-            onTap: () {
-              BlocProvider.of<TabsBloc>(context).hideEnvironment(envId);
-            },
-          ),
-        )
-      ]);
+          )
+        ]),
+      );
     }
 
     return Row(
