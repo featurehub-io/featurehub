@@ -45,7 +45,7 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                                       children: [
                                         Container(
 //                                        color: Theme.of(context).highlightColor,
-                                          height: headerHeight - 2,
+                                          height: headerHeight,
                                           child: Column(
                                             children: [
                                               HideEnvironmentContainer(
@@ -59,9 +59,13 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                                           return Container(
                                             decoration: BoxDecoration(
                                                 border: Border(
-                                                    top: BorderSide(
-                                                        color: Colors.black87,
-                                                        width: 0.5))),
+                                              top: BorderSide(
+                                                  color: Colors.black87,
+                                                  width: 0.5),
+                                              left: BorderSide(
+                                                  color: Colors.black87,
+                                                  width: 0.5),
+                                            )),
                                             child: FeatureValueCell(
                                                 tabsBloc: bloc,
                                                 feature: f,
