@@ -33,7 +33,6 @@ class FeatureNamesLeftPanel extends StatelessWidget {
             onTap: () => tabsBloc.hideOrShowFeature(feature),
             child: Container(
                 decoration: BoxDecoration(
-                    color: Colors.white,
                     border: Border(
                         top: BorderSide(color: Colors.black45, width: 0.5),
                         right: BorderSide(color: Colors.black45, width: 0.5)),
@@ -44,7 +43,8 @@ class FeatureNamesLeftPanel extends StatelessWidget {
 //                      blurRadius: 16),
                     ]),
                 padding: EdgeInsets.only(top: 8.0, left: 8.0),
-                height: amSelected ? selectedRowHeight : unselectedRowHeight,
+                height: (amSelected ? selectedRowHeight : unselectedRowHeight) +
+                    0.5,
                 width: MediaQuery.of(context).size.width > 600 ? 260.0 : 180,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
