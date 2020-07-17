@@ -132,19 +132,20 @@ class _ApplicationCard extends StatelessWidget {
             width: 240,
             height: 150,
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.only(left: 16.0, bottom: 16, top: 8.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Container(
                         constraints: BoxConstraints(maxWidth: 150),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             Text(application.name,
                                 maxLines: 2,
@@ -204,69 +205,76 @@ class _AppTotals extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        if (application.environments.length.toString().isNotEmpty)
-          _NumberAndIcon(
-            tooltipText: 'Environments',
-            text: application.environments.length.toString(),
-            icon: Icon(AntDesign.bars,
-                size: 16.0, color: Colors.deepPurpleAccent),
-          ),
-        if (application.features
-            .where((element) => element.valueType == FeatureValueType.BOOLEAN)
-            .toList()
-            .isNotEmpty)
-          _NumberAndIcon(
-            tooltipText: 'Feature flags',
-            text: application.features
-                .where(
-                    (element) => element.valueType == FeatureValueType.BOOLEAN)
-                .toList()
-                .length
-                .toString(),
-            icon: Icon(Icons.flag, size: 16.0, color: Colors.green),
-          ),
-        if ((application.features
-                .where(
-                    (element) => element.valueType == FeatureValueType.STRING)
-                .toList()
-                .isNotEmpty) ||
-            (application.features
-                .where(
-                    (element) => element.valueType == FeatureValueType.NUMBER)
-                .toList()
-                .isNotEmpty))
-          _NumberAndIcon(
-            tooltipText: 'Feature values',
-            icon: Icon(Icons.code, size: 16.0, color: Colors.blue),
-            text: (((application.features
-                        .where((element) =>
-                            element.valueType == FeatureValueType.STRING)
-                        .toList()
-                        .length) +
-                    (application.features
-                        .where((element) =>
-                            element.valueType == FeatureValueType.NUMBER)
-                        .toList()
-                        .length))
-                .toString()),
-          ),
-        if (application.features
-            .where((element) => element.valueType == FeatureValueType.JSON)
-            .toList()
-            .isNotEmpty)
-          _NumberAndIcon(
-            text: application.features
-                .where((element) => element.valueType == FeatureValueType.JSON)
-                .toList()
-                .length
-                .toString(),
-            tooltipText: 'Configurations',
-            icon: Icon(Icons.device_hub, size: 16.0, color: Colors.orange),
-          ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.only(right: 16.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          if (application.environments.length
+              .toString()
+              .isNotEmpty)
+            _NumberAndIcon(
+              tooltipText: 'Environments',
+              text: application.environments.length.toString(),
+              icon: Icon(AntDesign.bars,
+                  size: 16.0, color: Colors.deepPurpleAccent),
+            ),
+          if (application.features
+              .where((element) => element.valueType == FeatureValueType.BOOLEAN)
+              .toList()
+              .isNotEmpty)
+            _NumberAndIcon(
+              tooltipText: 'Feature flags',
+              text: application.features
+                  .where(
+                      (element) =>
+                  element.valueType == FeatureValueType.BOOLEAN)
+                  .toList()
+                  .length
+                  .toString(),
+              icon: Icon(Icons.flag, size: 16.0, color: Colors.green),
+            ),
+          if ((application.features
+              .where(
+                  (element) => element.valueType == FeatureValueType.STRING)
+              .toList()
+              .isNotEmpty) ||
+              (application.features
+                  .where(
+                      (element) => element.valueType == FeatureValueType.NUMBER)
+                  .toList()
+                  .isNotEmpty))
+            _NumberAndIcon(
+              tooltipText: 'Feature values',
+              icon: Icon(Icons.code, size: 16.0, color: Colors.blue),
+              text: (((application.features
+                  .where((element) =>
+              element.valueType == FeatureValueType.STRING)
+                  .toList()
+                  .length) +
+                  (application.features
+                      .where((element) =>
+                  element.valueType == FeatureValueType.NUMBER)
+                      .toList()
+                      .length))
+                  .toString()),
+            ),
+          if (application.features
+              .where((element) => element.valueType == FeatureValueType.JSON)
+              .toList()
+              .isNotEmpty)
+            _NumberAndIcon(
+              text: application.features
+                  .where((element) =>
+              element.valueType == FeatureValueType.JSON)
+                  .toList()
+                  .length
+                  .toString(),
+              tooltipText: 'Configurations',
+              icon: Icon(Icons.device_hub, size: 16.0, color: Colors.orange),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -327,42 +335,54 @@ class _PopUpAdminMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 34,
-      child: PopupMenuButton(
-        tooltip: 'Show more',
-        icon: Icon(
-          Icons.more_vert,
-          size: 22.0,
+//      width: 34,
+//      height: 0,
+      child: Material(
+        shape: CircleBorder(),
+        color: Colors.transparent,
+        child: PopupMenuButton(
+          tooltip: 'Show more',
+          icon: Icon(
+            Icons.more_vert,
+            size: 22.0,
+          ),
+          onSelected: (value) {
+            if (value == 'edit') {
+              bloc.mrClient
+                  .addOverlay((BuildContext context) =>
+                  AppUpdateDialogWidget(
+                    bloc: bloc,
+                    application: application,
+                  ));
+            }
+            if (value == 'delete') {
+              bloc.mrClient.addOverlay((BuildContext context) {
+                return AppDeleteDialogWidget(
+                  bloc: bloc,
+                  application: application,
+                );
+              });
+            }
+          },
+          itemBuilder: (BuildContext context) {
+            return [
+              PopupMenuItem(
+                  value: 'edit',
+                  child:
+                  Text('Edit', style: Theme
+                      .of(context)
+                      .textTheme
+                      .bodyText2)),
+              PopupMenuItem(
+                  value: 'delete',
+                  child: Text('Delete',
+                      style: Theme
+                          .of(context)
+                          .textTheme
+                          .bodyText2))
+            ];
+          },
         ),
-        onSelected: (value) {
-          if (value == 'edit') {
-            bloc.mrClient
-                .addOverlay((BuildContext context) => AppUpdateDialogWidget(
-                      bloc: bloc,
-                      application: application,
-                    ));
-          }
-          if (value == 'delete') {
-            bloc.mrClient.addOverlay((BuildContext context) {
-              return AppDeleteDialogWidget(
-                bloc: bloc,
-                application: application,
-              );
-            });
-          }
-        },
-        itemBuilder: (BuildContext context) {
-          return [
-            PopupMenuItem(
-                value: 'edit',
-                child:
-                    Text('Edit', style: Theme.of(context).textTheme.bodyText2)),
-            PopupMenuItem(
-                value: 'delete',
-                child: Text('Delete',
-                    style: Theme.of(context).textTheme.bodyText2))
-          ];
-        },
       ),
     );
   }

@@ -33,6 +33,7 @@ class FeatureNamesLeftPanel extends StatelessWidget {
             onTap: () => tabsBloc.hideOrShowFeature(feature),
             child: Container(
                 decoration: BoxDecoration(
+                    color: Colors.white,
                     border: Border(
                         top: BorderSide(color: Colors.black45, width: 0.5),
                         right: BorderSide(color: Colors.black45, width: 0.5)),
