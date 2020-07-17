@@ -62,7 +62,7 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                                               top: BorderSide(
                                                   color: Colors.black45,
                                                   width: 0.5),
-                                              left: BorderSide(
+                                              right: BorderSide(
                                                   color: Colors.black45,
                                                   width: 0.5),
                                             )),
