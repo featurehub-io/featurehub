@@ -192,6 +192,7 @@ class _FeatureTab extends StatelessWidget {
             child: Container(
                 padding: const EdgeInsets.all(8.0),
                 child: InkWell(
+                    canRequestFocus: false,
                     mouseCursor: SystemMouseCursors.click,
                     borderRadius: BorderRadius.circular(16.0),
                     onTap: () {
