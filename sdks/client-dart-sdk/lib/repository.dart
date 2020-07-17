@@ -11,27 +11,23 @@ abstract class FeatureStateHolder {
   dynamic get jsonValue;
   FeatureValueType get type;
 
-  /// returns a function to call to remove the listener
-  Function addListener(FeatureListener listener);
+  Stream<FeatureStateHolder> get featureUpdateStream;
 }
 
-typedef ReadynessListener = Future<void> Function(Readyness state);
-typedef PostLoadNewFeatureStateAvailableListener = Future<void> Function(
-    ClientFeatureRepository repo);
 typedef AnalyticsCollector = Future<void> Function(
     String action, List<FeatureStateHolder> featureStateAtCurrentTime,
     {Map<String, String> other});
-typedef FeatureListener = Future<void> Function(FeatureStateHolder feature);
 
 class _FeatureStateBaseHolder implements FeatureStateHolder {
   dynamic _value;
   FeatureState _featureState;
-  List<FeatureListener> _listeners;
+  BehaviorSubject<FeatureStateHolder> _listeners;
 
   String get key => _featureState?.key;
+  Stream<FeatureStateHolder> get featureUpdateStream => _listeners.stream;
 
   _FeatureStateBaseHolder(_FeatureStateBaseHolder fs) {
-    _listeners = fs?._listeners ?? [];
+    _listeners = fs?._listeners ?? BehaviorSubject<FeatureStateHolder>();
   }
 
   set featureState(FeatureState fs) {
@@ -39,7 +35,7 @@ class _FeatureStateBaseHolder implements FeatureStateHolder {
     final oldValue = _value;
     _value = fs.value;
     if (oldValue != _value) {
-      _notifyListeners();
+      _listeners.add(this);
     }
   }
 
@@ -58,16 +54,6 @@ class _FeatureStateBaseHolder implements FeatureStateHolder {
 
   FeatureValueType get type => _featureState.type;
 
-  void _notifyListeners() {
-    _listeners.forEach((l) => l(this));
-  }
-
-  Function addListener(FeatureListener listener) {
-    _listeners.add(listener);
-
-    return () => _listeners.remove(listener);
-  }
-
   FeatureStateHolder copy() {
     return _FeatureStateBaseHolder(null)..featureState = _featureState;
   }
@@ -81,12 +67,16 @@ class ClientFeatureRepository {
   Map<String, _FeatureStateBaseHolder> _features = {};
   List<AnalyticsCollector> _analyticsCollectors = [];
   Readyness _readynessState = Readyness.NotReady;
-  List<ReadynessListener> _readynessListeners = [];
+  final _readynessListeners = BehaviorSubject<Readyness>();
+  final _newFeatureStateAvailableListeners =
+      BehaviorSubject<ClientFeatureRepository>();
   bool _catchAndReleaseMode = false;
   // indexed by id (not key)
   Map<String, FeatureState> _catchReleaseStates = {};
-  List<PostLoadNewFeatureStateAvailableListener>
-      _newFeatureStateAvailableListeners = [];
+
+  Stream<Readyness> get readynessStream => _readynessListeners.stream;
+  Stream<ClientFeatureRepository> get newFeatureStateAvailable =>
+      _newFeatureStateAvailableListeners.stream;
 
   notify(SSEResultState state, dynamic data) {
     _log.fine('Data is $state -> $data');
@@ -142,7 +132,7 @@ class ClientFeatureRepository {
   }
 
   void _broadcastReadynessState() {
-    _readynessListeners.forEach((l) => l(_readynessState));
+    _readynessListeners.add(_readynessState);
   }
 
   void _catchUpdatedFeatures(List<FeatureState> features) {
@@ -176,25 +166,11 @@ class ClientFeatureRepository {
   }
 
   void _triggerNewStateAvailable() {
-    if (_hasReceivedInitialState &&
-        _newFeatureStateAvailableListeners.isNotEmpty) {
+    if (_hasReceivedInitialState) {
       if (!_catchAndReleaseMode || _catchReleaseStates.isNotEmpty) {
-        _newFeatureStateAvailableListeners.forEach((l) => l(this));
+        _newFeatureStateAvailableListeners.add(this);
       }
     }
-  }
-
-  Function addPostLoadNewFeatureStateAvailableListener(
-      PostLoadNewFeatureStateAvailableListener listener) {
-    _newFeatureStateAvailableListeners.add(listener);
-
-    return () => _newFeatureStateAvailableListeners.remove(listener);
-  }
-
-  Function addReadynessListener(ReadynessListener listener) {
-    _readynessListeners.add(listener);
-
-    return () => _readynessListeners.remove(listener);
   }
 
   Function addAnalyticsCollector(AnalyticsCollector collector) {
