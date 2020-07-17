@@ -27,6 +27,7 @@ class FeatureNamesLeftPanel extends StatelessWidget {
           final amSelected =
               (snapshot.hasData && snapshot.data.contains(feature.key));
           return InkWell(
+            canRequestFocus: false,
 //            behavior: HitTestBehavior.opaque,
             mouseCursor: SystemMouseCursors.click,
             onTap: () => tabsBloc.hideOrShowFeature(feature),
@@ -66,7 +67,7 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         mainAxisAlignment:
@@ -140,10 +141,7 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                         ],
                                       ),
                                       Text(
-                                          '${feature.valueType
-                                              .toString()
-                                              .split('.')
-                                              .last}',
+                                          '${feature.valueType.toString().split('.').last}',
                                           overflow: TextOverflow.ellipsis,
                                           style: TextStyle(
                                               fontFamily: 'Source',

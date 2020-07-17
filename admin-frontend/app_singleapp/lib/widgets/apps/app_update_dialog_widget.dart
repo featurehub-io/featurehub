@@ -28,6 +28,7 @@ class _AppUpdateDialogWidgetState extends State<AppUpdateDialogWidget> {
   final TextEditingController _appName = TextEditingController();
   final TextEditingController _appDescription = TextEditingController();
   bool isUpdate = false;
+  bool _busy = false;
 
   @override
   void initState() {
@@ -41,75 +42,73 @@ class _AppUpdateDialogWidgetState extends State<AppUpdateDialogWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Stack(
-        children: [
-          FHAlertDialog(
-            title: Text(widget.application == null
-                ? 'Create new application'
-                : 'Edit application'),
-            content: Container(
-              width: 500,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  TextFormField(
-                      controller: _appName,
-                      textInputAction: TextInputAction.next,
-                      decoration:
-                          InputDecoration(labelText: 'Application name'),
-                      validator: ((v) {
-                        if (v.isEmpty) {
-                          return 'Please enter an application name';
-                        }
-                        if (v.length < 4) {
-                          return 'Application name needs to be at least 4 characters long';
-                        }
-                        return null;
-                      })),
-                  TextFormField(
-                      controller: _appDescription,
-                      textInputAction: TextInputAction.done,
-                      decoration:
-                          InputDecoration(labelText: 'Application description'),
-                      validator: ((v) {
-                        if (v.isEmpty) {
-                          return 'Please enter app description';
-                        }
-                        if (v.length < 4) {
-                          return 'Application description needs to be at least 4 characters long';
-                        }
-                        return null;
-                      })),
-                ],
-              ),
+    return FHAlertDialog(
+      title: Text(widget.application == null
+          ? 'Create new application'
+          : 'Edit application'),
+      content: Form(
+          key: _formKey,
+          child: Container(
+            width: 500,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                TextFormField(
+                    controller: _appName,
+                    autofocus: true,
+                    textInputAction: TextInputAction.next,
+                    decoration: InputDecoration(labelText: 'Application name'),
+                    validator: ((v) {
+                      if (v.isEmpty) {
+                        return 'Please enter an application name';
+                      }
+                      if (v.length < 4) {
+                        return 'Application name needs to be at least 4 characters long';
+                      }
+                      return null;
+                    })),
+                TextFormField(
+                    controller: _appDescription,
+                    textInputAction: TextInputAction.done,
+                    decoration:
+                        InputDecoration(labelText: 'Application description'),
+                    validator: ((v) {
+                      if (v.isEmpty) {
+                        return 'Please enter app description';
+                      }
+                      if (v.length < 4) {
+                        return 'Application description needs to be at least 4 characters long';
+                      }
+                      return null;
+                    })),
+              ],
             ),
-            actions: [
-              ButtonBar(
-                children: <Widget>[
-                  FHFlatButtonTransparent(
-                    title: 'Cancel',
-                    keepCase: true,
-                    onPressed: () {
-                      widget.bloc.mrClient.removeOverlay();
-                    },
-                  ),
-                  FHFlatButton(
-                      title: isUpdate ? 'Update' : 'Create',
-                      onPressed: () => _handleValidation())
-                ],
-              ),
-            ],
-          )
-        ],
-      ),
+          )),
+      actions: [
+        ButtonBar(
+          children: <Widget>[
+            FHFlatButtonTransparent(
+              title: 'Cancel',
+              keepCase: true,
+              onPressed: () {
+                widget.bloc.mrClient.removeOverlay();
+              },
+            ),
+            FHFlatButton(
+                title: isUpdate ? 'Update' : 'Create',
+                onPressed: () => _busy ? null : _handleValidation())
+          ],
+        ),
+      ],
     );
   }
 
   void _handleValidation() async {
     if (_formKey.currentState.validate()) {
       try {
+        setState(() {
+          _busy = true;
+        });
         if (isUpdate) {
           await widget.bloc.updateApplication(
               widget.application, _appName.text, _appDescription.text);
@@ -130,6 +129,10 @@ class _AppUpdateDialogWidgetState extends State<AppUpdateDialogWidget> {
         } else {
           widget.bloc.mrClient.dialogError(e, s);
         }
+      } finally {
+        setState(() {
+          _busy = false;
+        });
       }
     }
   }

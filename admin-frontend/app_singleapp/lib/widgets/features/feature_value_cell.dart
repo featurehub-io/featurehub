@@ -49,6 +49,7 @@ class FeatureValueCell extends StatelessWidget {
             }
 
             cellWidget = InkWell(
+                canRequestFocus: false,
                 hoverColor: Colors.transparent,
                 splashColor: Colors.transparent,
                 highlightColor: Colors.transparent,

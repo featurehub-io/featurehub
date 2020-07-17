@@ -148,22 +148,16 @@ class _ApplicationCard extends StatelessWidget {
                           children: [
                             Text(application.name,
                                 maxLines: 2,
-                                style: Theme
-                                    .of(context)
+                                style: Theme.of(context)
                                     .textTheme
                                     .bodyText2
                                     .copyWith(
-                                    color: Theme
-                                        .of(context)
-                                        .primaryColor)),
+                                        color: Theme.of(context).primaryColor)),
                             SizedBox(height: 4.0),
                             Text(application.description,
                                 maxLines: 2,
 //                              overflow: TextOverflow.ellipsis,
-                                style: Theme
-                                    .of(context)
-                                    .textTheme
-                                    .caption),
+                                style: Theme.of(context).textTheme.caption),
                           ],
                         ),
                       ),
@@ -305,6 +299,7 @@ class _NumberAndIcon extends StatelessWidget {
     );
   }
 }
+
 class _NumberContainer extends StatelessWidget {
   final Widget child;
 
@@ -361,17 +356,11 @@ class _PopUpAdminMenu extends StatelessWidget {
             PopupMenuItem(
                 value: 'edit',
                 child:
-                Text('Edit', style: Theme
-                    .of(context)
-                    .textTheme
-                    .bodyText2)),
+                    Text('Edit', style: Theme.of(context).textTheme.bodyText2)),
             PopupMenuItem(
                 value: 'delete',
                 child: Text('Delete',
-                    style: Theme
-                        .of(context)
-                        .textTheme
-                        .bodyText2))
+                    style: Theme.of(context).textTheme.bodyText2))
           ];
         },
       ),

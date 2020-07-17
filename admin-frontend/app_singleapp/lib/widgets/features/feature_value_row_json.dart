@@ -61,6 +61,7 @@ class _FeatureValueJsonEnvironmentCellState
               width: 160,
               height: 40,
               child: InkWell(
+                canRequestFocus: false,
                 mouseCursor: SystemMouseCursors.click,
                 customBorder: RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(
