@@ -60,10 +60,10 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                                             decoration: BoxDecoration(
                                                 border: Border(
                                               top: BorderSide(
-                                                  color: Colors.black87,
+                                                  color: Colors.black45,
                                                   width: 0.5),
                                               left: BorderSide(
-                                                  color: Colors.black87,
+                                                  color: Colors.black45,
                                                   width: 0.5),
                                             )),
                                             child: FeatureValueCell(
