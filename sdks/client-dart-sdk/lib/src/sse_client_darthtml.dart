@@ -42,15 +42,16 @@ class EventSourceRepositoryListener {
     _log.fine('Connecting to $url');
 
     final es = connect(url)
-      ..onError.listen(_error, cancelOnError: true, onDone: _done)
-      ..onOpen.listen((event) {
-        print("open: " + event.type);
-      });
+      ..onError.listen(_error, cancelOnError: true, onDone: _done);
 
     EventStreamProvider<MessageEvent>('features').forTarget(es).listen(_msg);
     EventStreamProvider<MessageEvent>('feature').forTarget(es).listen(_msg);
     EventStreamProvider<MessageEvent>('bye').forTarget(es).listen(_msg);
-    EventStreamProvider<MessageEvent>('failed').forTarget(es).listen(_msg);
+    EventStreamProvider<MessageEvent>('failed').forTarget(es).listen((e) {
+      _msg(e);
+      _log.fine('Failed connection to server, disconnecting');
+      es.close();
+    });
     EventStreamProvider<MessageEvent>('ack').forTarget(es).listen(_msg);
     EventStreamProvider<MessageEvent>('delete_feature')
         .forTarget(es)

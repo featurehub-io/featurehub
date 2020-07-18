@@ -54,7 +54,7 @@ public class TimedBucketClientConnection {
 
   public void writeMessage(SSEResultState name, String data) throws IOException {
     final OutboundEvent.Builder eventBuilder = new OutboundEvent.Builder();
-    log.info("data is : {}", data);
+    log.trace("data is : {}", data);
     eventBuilder.name(name.toString());
     eventBuilder.mediaType(MediaType.TEXT_PLAIN_TYPE);
     eventBuilder.data(data);
@@ -66,18 +66,24 @@ public class TimedBucketClientConnection {
     this.handlers.add(handler);
   }
 
-  public void close() {
+  public void close(boolean sayBye) {
     // could have been closed by a failure earlier, it isn't ejected from the list
     if (!output.isClosed()) {
       // tell them we are shutting down
       handlers.parallelStream().forEach(e -> e.eject(this));
-      try {
-        writeMessage(SSEResultState.BYE, SSEStatusMessage.status("closed"));
-        output.close();
-      } catch (Exception e) {
-        log.warn("Failed to close", e);
+      if (sayBye) {
+        try {
+          writeMessage(SSEResultState.BYE, SSEStatusMessage.status("closed"));
+          output.close();
+        } catch (Exception e) {
+          log.warn("Failed to close", e);
+        }
       }
     }
+  }
+
+  public void close() {
+    close(true);
   }
 
   public String getNamedCache() {
@@ -87,10 +93,10 @@ public class TimedBucketClientConnection {
   public void failed(String reason) {
     try {
       writeMessage(SSEResultState.FAILURE, SSEStatusMessage.status(reason));
-      close();
+      close(false);
     } catch (IOException e) {
       log.warn("Failed to fail client connection", e);
-      close();
+      close(false);
     }
   }
 
@@ -142,7 +148,6 @@ public class TimedBucketClientConnection {
       .key(rf.getFeature().getKey())
       .type(io.featurehub.sse.model.FeatureValueType.fromValue(rf.getFeature().getValueType().toString())) // they are the same
       .id(rf.getFeature().getId())
-//      .version(rf.getValue() != null ? rf.getValue().getVersion() : null)
       .value(valueAsObject(rf));
 
     if (rf.getValue() == null || rf.getValue().getVersion() == null) {
@@ -151,7 +156,7 @@ public class TimedBucketClientConnection {
       fs.setVersion(rf.getValue().getVersion());
     }
 
-    log.debug("transforming: {} into {}", rf, fs);
+    log.trace("transforming: {} into {}", rf, fs);
 
     return fs;
   }

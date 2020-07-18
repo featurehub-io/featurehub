@@ -9,6 +9,7 @@ import 'repository.dart';
 
 final _log = Logger('featurehub_io_eventsource');
 
+/// This listener will stop if we receive a failed message.
 class EventSourceRepositoryListener {
   final ClientFeatureRepository _repository;
   StreamSubscription<Event> _subscription;
@@ -37,18 +38,21 @@ class EventSourceRepositoryListener {
 
     _subscription = es.listen((event) {
       _log.fine('Event is ${event.event} value ${event.data}');
+      final readyness = _repository.readyness;
       if (event.event != null) {
         _repository.notify(SSEResultStateTypeTransformer.fromJson(event.event),
             event.data == null ? null : jsonDecode(event.data));
       }
-      if (event.event == 'bye') {
+      if (event.event == 'bye' && readyness != Readyness.Failed) {
         retry();
       }
     }, onError: (e) {
-      _repository.notify(SSEResultState.failure, null);
-    }, onDone: () {
       _repository.notify(SSEResultState.bye, null);
-      retry();
+    }, onDone: () {
+      if (_repository.readyness != Readyness.Failed) {
+        _repository.notify(SSEResultState.bye, null);
+        retry();
+      }
     });
   }
 
