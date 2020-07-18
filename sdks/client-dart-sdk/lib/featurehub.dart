@@ -2,6 +2,7 @@ library featurehub.client;
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:isolate';
 
 import 'package:eventsource/eventsource.dart';
 import 'package:featurehub_client_api/api.dart';

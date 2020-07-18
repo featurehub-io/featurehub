@@ -1,10 +1,9 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:featurehub_client_sdk/featurehub.dart';
 import 'package:logging/logging.dart';
 
-void main() {
+void main() async {
   Logger.root.level = Level.ALL; // defaults to Level.INFO
   Logger.root.onRecord.listen((record) {
     // ignore: avoid_print
@@ -44,7 +43,7 @@ void main() {
   final es = EventSourceRepositoryListener(sdkHost + '/' + sdkUrl, repo);
 
   print('hit <enter> to cancel');
-  stdin.readLineSync(encoding: Encoding.getByName('utf-8'));
+  await stdin.first;
 
   es.close();
 }
