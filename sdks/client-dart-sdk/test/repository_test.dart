@@ -218,7 +218,9 @@ void main() {
 
   test('if we delete a feature it is no longer there', () {
     repo.notify(SSEResultState.features, _initialFeatures());
+    expect(repo.availableFeatures, contains('1'));
     expect(repo.getFeatureState('1').booleanValue, equals(false));
+    expect(repo.getFeatureState('1').value, equals(false));
     final data = FeatureState()
       ..version = 2
       ..id = '1'
