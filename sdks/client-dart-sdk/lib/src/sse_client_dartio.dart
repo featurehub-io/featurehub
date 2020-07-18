@@ -1,18 +1,37 @@
-part of featurehub.client;
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:eventsource/eventsource.dart';
+import 'package:featurehub_client_api/api.dart';
+import 'package:logging/logging.dart';
+
+import 'repository.dart';
+
+final _log = Logger('featurehub_io_eventsource');
 
 class EventSourceRepositoryListener {
   final ClientFeatureRepository _repository;
   StreamSubscription<Event> _subscription;
+  final String url;
 
-  EventSourceRepositoryListener(String url, ClientFeatureRepository repository,
+  EventSourceRepositoryListener(this.url, ClientFeatureRepository repository,
       {bool doInit = true})
       : _repository = repository {
     if (doInit ?? true) {
-      init(url);
+      init();
     }
   }
 
-  Future<void> init(String url) async {
+  void _retry() {
+    if (_subscription != null) {
+      _subscription.cancel();
+      _subscription = null;
+    }
+
+    init();
+  }
+
+  Future<void> init() async {
     _log.fine('Connecting to $url');
     final es = await connect(url);
 
@@ -22,10 +41,14 @@ class EventSourceRepositoryListener {
         _repository.notify(SSEResultStateTypeTransformer.fromJson(event.event),
             event.data == null ? null : jsonDecode(event.data));
       }
+      if (event.event == 'bye') {
+        _retry();
+      }
     }, onError: (e) {
       _repository.notify(SSEResultState.failure, null);
     }, onDone: () {
       _repository.notify(SSEResultState.bye, null);
+      _retry();
     });
   }
 

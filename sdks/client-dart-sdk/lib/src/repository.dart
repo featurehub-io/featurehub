@@ -1,4 +1,9 @@
-part of featurehub.client;
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:featurehub_client_api/api.dart';
+import 'package:logging/logging.dart';
+import 'package:rxdart/rxdart.dart';
 
 enum Readyness { NotReady, Ready, Failed }
 

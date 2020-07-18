@@ -1,13 +1,4 @@
-library featurehub.client;
-
-import 'dart:async';
-import 'dart:convert';
-import 'dart:isolate';
-
-import 'package:eventsource/eventsource.dart';
-import 'package:featurehub_client_api/api.dart';
-import 'package:logging/logging.dart';
-import 'package:rxdart/rxdart.dart';
-
-part 'repository.dart';
-part 'sse_client.dart';
+export 'src/repository.dart';
+export 'src/sse_client.dart'
+    if (dart.library.io) 'src/sse_client_dartio.dart'
+    if (dart.library.html) 'src/sse_client_darthtml.dart';

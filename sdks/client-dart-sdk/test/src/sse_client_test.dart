@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:eventsource/eventsource.dart';
 import 'package:featurehub_client_api/api.dart';
-import 'package:featurehub_client_sdk/featurehub.dart';
+import 'package:featurehub_client_sdk/featurehub_io.dart';
 import 'package:mockito/mockito.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:test/test.dart';
@@ -73,7 +73,7 @@ void main() {
         .thenAnswer((_) => sub);
 
     final sse = SseClientTest('', rep, stream, doInit: false);
-    await sse.init('');
+    await sse.init();
 
     sse.close();
 

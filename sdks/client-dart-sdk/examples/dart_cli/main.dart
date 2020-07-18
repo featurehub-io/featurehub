@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:featurehub_client_sdk/featurehub.dart';
+import 'package:featurehub_client_sdk/featurehub_io.dart';
 import 'package:logging/logging.dart';
 
 void main() async {
