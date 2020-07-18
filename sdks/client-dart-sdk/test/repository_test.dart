@@ -45,7 +45,7 @@ void main() {
       () async {
     repo.notify(SSEResultState.features, _initialFeatures());
     // ignore: unawaited_futures
-    expectLater(repo.newFeatureStateAvailable, emits(repo));
+    expectLater(repo.newFeatureStateAvailableStream, emits(repo));
     repo.notify(SSEResultState.features, _initialFeatures(version: 2));
   });
 
@@ -54,7 +54,8 @@ void main() {
       () {
     repo.notify(SSEResultState.features, _initialFeatures());
     // can't actually test this, it times out, which is actually correct
-    expectLater(repo.newFeatureStateAvailable, neverEmits(repo), skip: true);
+    expectLater(repo.newFeatureStateAvailableStream, neverEmits(repo),
+        skip: true);
     repo.notify(SSEResultState.features, _initialFeatures());
   });
 
@@ -118,14 +119,13 @@ void main() {
     expectLater(
         sub, emitsInOrder([emits(anything), emits(anything), emitsDone]));
     repo.notify(SSEResultState.features, _initialFeatures());
-    repo.notify(
-        SSEResultState.feature,
-        LocalApiClient.serialize(FeatureState()
-          ..version = 2
-          ..id = '1'
-          ..key = '1'
-          ..value = true
-          ..type = FeatureValueType.BOOLEAN));
+    final data = FeatureState()
+      ..version = 2
+      ..id = '1'
+      ..key = '1'
+      ..value = true
+      ..type = FeatureValueType.BOOLEAN;
+    repo.notify(SSEResultState.feature, data.toJson());
     expect(repo.getFeatureState('1').exists, equals(true));
     repo.shutdown();
   });
@@ -135,14 +135,13 @@ void main() {
     // should emit twice and shut down, even if we filled with features three times
     expectLater(sub, emitsInOrder([emits(anything), emitsDone]));
     repo.notify(SSEResultState.features, _initialFeatures());
-    repo.notify(
-        SSEResultState.feature,
-        LocalApiClient.serialize(FeatureState()
-          ..version = 2
-          ..id = '1'
-          ..key = '1'
-          ..value = false
-          ..type = FeatureValueType.BOOLEAN));
+    final data = FeatureState()
+      ..version = 2
+      ..id = '1'
+      ..key = '1'
+      ..value = false
+      ..type = FeatureValueType.BOOLEAN;
+    repo.notify(SSEResultState.feature, data.toJson());
     repo.shutdown();
   });
 
@@ -155,14 +154,13 @@ void main() {
       () {
     repo.notify(SSEResultState.features, _initialFeatures());
     final copy = repo.getFeatureState('1').copy();
-    repo.notify(
-        SSEResultState.feature,
-        LocalApiClient.serialize(FeatureState()
-          ..version = 2
-          ..id = '1'
-          ..key = '1'
-          ..value = true
-          ..type = FeatureValueType.BOOLEAN));
+    var data = FeatureState()
+      ..version = 2
+      ..id = '1'
+      ..key = '1'
+      ..value = true
+      ..type = FeatureValueType.BOOLEAN;
+    repo.notify(SSEResultState.feature, data.toJson());
     expect(copy.booleanValue, equals(false));
     expect(repo.getFeatureState('1').booleanValue, equals(true));
   });
@@ -184,5 +182,63 @@ void main() {
     repo.shutdown();
     scheduleMicrotask(() {}); // one for each state
     scheduleMicrotask(() {});
+  });
+
+  test(
+      'We get initial events for features but once catch and release is enabled, it stops until we release.',
+      () {
+    final sub = repo.newFeatureStateAvailableStream;
+    expect(repo.readyness, equals(Readyness.NotReady));
+    repo.notify(SSEResultState.features, _initialFeatures());
+    expect(repo.readyness, equals(Readyness.Ready));
+    repo.catchAndReleaseMode = true;
+    expectLater(repo.catchAndReleaseMode, true);
+    expect(repo.getFeatureState('1').booleanValue, equals(false));
+    expectLater(sub, emits(repo));
+    repo.notify(
+        SSEResultState.features, _initialFeatures(version: 2, value: true));
+    // now update just the feature
+    final data = FeatureState()
+      ..version = 3
+      ..id = '1'
+      ..key = '1'
+      ..value = true
+      ..type = FeatureValueType.BOOLEAN;
+
+    repo.notify(SSEResultState.feature, data.toJson());
+
+    expect(repo.getFeatureState('1').booleanValue, equals(false));
+    expect(repo.getFeatureState('1').type, equals(FeatureValueType.BOOLEAN));
+    expect(repo.getFeatureState('1').version, equals(1));
+    repo.release();
+    expect(repo.getFeatureState('1').booleanValue, equals(true));
+    expect(repo.getFeatureState('1').version, equals(3));
+    repo.shutdown();
+  });
+
+  test('if we delete a feature it is no longer there', () {
+    repo.notify(SSEResultState.features, _initialFeatures());
+    expect(repo.getFeatureState('1').booleanValue, equals(false));
+    final data = FeatureState()
+      ..version = 2
+      ..id = '1'
+      ..key = '1'
+      ..value = true
+      ..type = FeatureValueType.BOOLEAN;
+    repo.notify(SSEResultState.delete_feature, data.toJson());
+    expect(repo.getFeatureState('1').exists, isFalse);
+  });
+
+  test(
+      'if we subscribe to the analytics events we get a copy of the list of current features',
+      () {
+    repo.notify(SSEResultState.features, _initialFeatures());
+    repo.analyticsEvent.listen(expectAsync1((e) {
+      expect(e.action, equals('fred'));
+      expect(e.other['half'], equals(1.0));
+      expect(e.features.length, equals(1));
+      expect(e.features[0].key, equals('1'));
+    }));
+    repo.logAnalyticsEvent('fred', other: {'half': 1.0});
   });
 }

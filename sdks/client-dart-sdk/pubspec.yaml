@@ -1,6 +1,7 @@
 name: featurehub_client_sdk
 version: 1.0.0
 description: Client SDK for FeatureHub
+homepage: https://featurehub.io
 environment:
   sdk: '>=2.7.0 <3.0.0'
 dependencies:
@@ -17,3 +18,4 @@ dependencies:
 dev_dependencies:
   test: ^1.3.0
   test_coverage: ^0.4.2
+  mockito: ^4.1.1

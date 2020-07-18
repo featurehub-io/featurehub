@@ -11,8 +11,18 @@ abstract class FeatureStateHolder {
   dynamic get jsonValue;
   FeatureValueType get type;
 
+  int get version;
+
   Stream<FeatureStateHolder> get featureUpdateStream;
   FeatureStateHolder copy();
+}
+
+class AnalyticsEvent {
+  final String action;
+  final Map<String, Object> other;
+  final List<FeatureStateHolder> features;
+
+  AnalyticsEvent(this.action, this.features, this.other);
 }
 
 typedef AnalyticsCollector = Future<void> Function(
@@ -41,6 +51,9 @@ class _FeatureStateBaseHolder implements FeatureStateHolder {
       _listeners.add(this);
     }
   }
+
+  @override
+  int get version => _featureState?.version;
 
   @override
   bool get exists => _value != null;
@@ -82,7 +95,7 @@ class ClientFeatureRepository {
   bool _hasReceivedInitialState = false;
   // indexed by key
   final Map<String, _FeatureStateBaseHolder> _features = {};
-  final List<AnalyticsCollector> _analyticsCollectors = [];
+  final _analyticsCollectors = PublishSubject<AnalyticsEvent>();
   Readyness _readynessState = Readyness.NotReady;
   final _readynessListeners =
       BehaviorSubject<Readyness>.seeded(Readyness.NotReady);
@@ -93,8 +106,9 @@ class ClientFeatureRepository {
   final Map<String, FeatureState> _catchReleaseStates = {};
 
   Stream<Readyness> get readynessStream => _readynessListeners.stream;
-  Stream<ClientFeatureRepository> get newFeatureStateAvailable =>
+  Stream<ClientFeatureRepository> get newFeatureStateAvailableStream =>
       _newFeatureStateAvailableListeners.stream;
+  Stream<AnalyticsEvent> get analyticsEvent => _analyticsCollectors.stream;
 
   void notify(SSEResultState state, dynamic data) {
     _log.fine('Data is $state -> $data');
@@ -115,8 +129,7 @@ class ClientFeatureRepository {
           }
           break;
         case SSEResultState.features:
-          final features =
-              LocalApiClient.deserialize(data, 'List<FeatureState>');
+          final features = FeatureState.listFromJson(data);
           if (_hasReceivedInitialState && _catchAndReleaseMode) {
             _catchUpdatedFeatures(features);
           } else {
@@ -133,8 +146,7 @@ class ClientFeatureRepository {
           }
           break;
         case SSEResultState.feature:
-          final feature =
-              LocalApiClient.deserialize(data, 'FeatureState') as FeatureState;
+          final feature = FeatureState.fromJson(data);
           if (_catchAndReleaseMode) {
             _catchUpdatedFeatures([feature]);
           } else {
@@ -144,8 +156,7 @@ class ClientFeatureRepository {
           }
           break;
         case SSEResultState.delete_feature:
-          _deleteFeature(
-              LocalApiClient.deserialize(data, 'FeatureState') as FeatureState);
+          _deleteFeature(FeatureState.fromJson(data));
           break;
       }
     }
@@ -193,18 +204,12 @@ class ClientFeatureRepository {
     }
   }
 
-  Function addAnalyticsCollector(AnalyticsCollector collector) {
-    _analyticsCollectors.add(collector);
-
-    return () => _analyticsCollectors.remove(collector);
-  }
-
-  void logAnalyticsEvent(String action, {Map<String, String> other}) {
+  void logAnalyticsEvent(String action, {Map<String, Object> other}) {
     final featureStateAtCurrentTime =
         _features.values.where((f) => f.exists).map((f) => f.copy()).toList();
 
     _analyticsCollectors
-        .forEach((ac) => ac(action, featureStateAtCurrentTime, other: other));
+        .add(AnalyticsEvent(action, featureStateAtCurrentTime, other));
   }
 
   FeatureStateHolder getFeatureState(String key) {
@@ -216,7 +221,7 @@ class ClientFeatureRepository {
   Readyness get readyness => _readynessState;
 
   void release() {
-    final states = _catchReleaseStates.values;
+    final states = <FeatureState>[..._catchReleaseStates.values];
     _catchReleaseStates.clear();
     states.forEach((f) => _featureUpdate(f));
   }
@@ -250,5 +255,6 @@ class ClientFeatureRepository {
     _features.clear();
     _readynessListeners.close();
     _newFeatureStateAvailableListeners.close();
+    _analyticsCollectors.close();
   }
 }

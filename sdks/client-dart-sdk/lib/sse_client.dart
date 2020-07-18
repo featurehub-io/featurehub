@@ -4,25 +4,32 @@ class EventSourceRepositoryListener {
   final ClientFeatureRepository _repository;
   StreamSubscription<Event> _subscription;
 
-  EventSourceRepositoryListener(String url, ClientFeatureRepository repository)
+  EventSourceRepositoryListener(String url, ClientFeatureRepository repository,
+      {bool doInit = true})
       : _repository = repository {
-    _init(url);
+    if (doInit ?? true) {
+      init(url);
+    }
   }
 
-  void _init(String url) async {
-    final es = await EventSource.connect(url, closeOnLastListener: true);
+  Future<void> init(String url) async {
+    final es = await connect(url);
 
     _subscription = es.listen((event) {
       _log.fine('Event is ${event.event} value ${event.data}');
       if (event.event != null) {
         _repository.notify(SSEResultStateTypeTransformer.fromJson(event.event),
-            jsonDecode(event.data));
+            event.data == null ? null : jsonDecode(event.data));
       }
     }, onError: (e) {
       _repository.notify(SSEResultState.failure, null);
     }, onDone: () {
       _repository.notify(SSEResultState.bye, null);
     });
+  }
+
+  Future<Stream<Event>> connect(String url) {
+    return EventSource.connect(url, closeOnLastListener: true);
   }
 
   void close() {
