@@ -88,19 +88,12 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
                 children: [
                   Expanded(
                     flex: 1,
-                    child: Container(
-//                    color: Colors.blue,
-                        child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(env.name,
-                            style: Theme.of(context)
-                                .textTheme
-                                .subtitle1
-                                .copyWith(
-                                    color: Theme.of(context).primaryColor)),
-                      ],
-                    )),
+                    child: Text(env.name,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context)
+                            .textTheme
+                            .subtitle1
+                            .copyWith(color: Theme.of(context).primaryColor)),
                   ),
                   Expanded(
                       flex: 5,
