@@ -142,8 +142,14 @@ public class TimedBucketClientConnection {
       .key(rf.getFeature().getKey())
       .type(io.featurehub.sse.model.FeatureValueType.fromValue(rf.getFeature().getValueType().toString())) // they are the same
       .id(rf.getFeature().getId())
-      .version(rf.getValue() != null ? rf.getValue().getVersion() : null)
+//      .version(rf.getValue() != null ? rf.getValue().getVersion() : null)
       .value(valueAsObject(rf));
+
+    if (rf.getValue() == null || rf.getValue().getVersion() == null) {
+      fs.setVersion(0L);
+    } else {
+      fs.setVersion(rf.getValue().getVersion());
+    }
 
     log.debug("transforming: {} into {}", rf, fs);
 
