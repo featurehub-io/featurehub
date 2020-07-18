@@ -16,3 +16,4 @@ dependencies:
     path: ../client-dart-api
 dev_dependencies:
   test: ^1.3.0
+  test_coverage: ^0.4.2

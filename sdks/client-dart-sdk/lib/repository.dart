@@ -12,6 +12,7 @@ abstract class FeatureStateHolder {
   FeatureValueType get type;
 
   Stream<FeatureStateHolder> get featureUpdateStream;
+  FeatureStateHolder copy();
 }
 
 typedef AnalyticsCollector = Future<void> Function(
@@ -23,7 +24,9 @@ class _FeatureStateBaseHolder implements FeatureStateHolder {
   FeatureState _featureState;
   BehaviorSubject<FeatureStateHolder> _listeners;
 
+  @override
   String get key => _featureState?.key;
+  @override
   Stream<FeatureStateHolder> get featureUpdateStream => _listeners.stream;
 
   _FeatureStateBaseHolder(_FeatureStateBaseHolder fs) {
@@ -39,46 +42,61 @@ class _FeatureStateBaseHolder implements FeatureStateHolder {
     }
   }
 
+  @override
   bool get exists => _value != null;
 
+  @override
   bool get booleanValue =>
       _featureState?.type == FeatureValueType.BOOLEAN ? _value as bool : null;
+
+  @override
   String get stringValue => (_featureState?.type == FeatureValueType.STRING ||
           _featureState?.type == FeatureValueType.JSON)
       ? _value as String
       : null;
+
+  @override
   num get numberValue =>
       _featureState?.type == FeatureValueType.NUMBER ? _value as num : null;
+
+  @override
   dynamic get jsonValue =>
       _featureState?.type == FeatureValueType.JSON ? jsonDecode(_value) : null;
 
+  @override
   FeatureValueType get type => _featureState.type;
 
+  @override
   FeatureStateHolder copy() {
     return _FeatureStateBaseHolder(null)..featureState = _featureState;
   }
+
+  void shutdown() {
+    _listeners.close();
+  }
 }
 
-final _log = Logger("FeatureHub");
+final _log = Logger('FeatureHub');
 
 class ClientFeatureRepository {
   bool _hasReceivedInitialState = false;
   // indexed by key
-  Map<String, _FeatureStateBaseHolder> _features = {};
-  List<AnalyticsCollector> _analyticsCollectors = [];
+  final Map<String, _FeatureStateBaseHolder> _features = {};
+  final List<AnalyticsCollector> _analyticsCollectors = [];
   Readyness _readynessState = Readyness.NotReady;
-  final _readynessListeners = BehaviorSubject<Readyness>();
+  final _readynessListeners =
+      BehaviorSubject<Readyness>.seeded(Readyness.NotReady);
   final _newFeatureStateAvailableListeners =
-      BehaviorSubject<ClientFeatureRepository>();
+      PublishSubject<ClientFeatureRepository>();
   bool _catchAndReleaseMode = false;
   // indexed by id (not key)
-  Map<String, FeatureState> _catchReleaseStates = {};
+  final Map<String, FeatureState> _catchReleaseStates = {};
 
   Stream<Readyness> get readynessStream => _readynessListeners.stream;
   Stream<ClientFeatureRepository> get newFeatureStateAvailable =>
       _newFeatureStateAvailableListeners.stream;
 
-  notify(SSEResultState state, dynamic data) {
+  void notify(SSEResultState state, dynamic data) {
     _log.fine('Data is $state -> $data');
     if (state != null) {
       switch (state) {
@@ -102,11 +120,12 @@ class ClientFeatureRepository {
           if (_hasReceivedInitialState && _catchAndReleaseMode) {
             _catchUpdatedFeatures(features);
           } else {
-            features.forEach((f) => _featureUpdate(f));
+            var _updated = false;
+            features.forEach((f) => _updated = _updated || _featureUpdate(f));
             if (!_hasReceivedInitialState) {
               _checkForInvalidFeatures();
               _hasReceivedInitialState = true;
-            } else {
+            } else if (_updated) {
               _triggerNewStateAvailable();
             }
             _readynessState = Readyness.Ready;
@@ -119,8 +138,9 @@ class ClientFeatureRepository {
           if (_catchAndReleaseMode) {
             _catchUpdatedFeatures([feature]);
           } else {
-            _featureUpdate(feature);
-            _triggerNewStateAvailable();
+            if (_featureUpdate(feature)) {
+              _triggerNewStateAvailable();
+            }
           }
           break;
         case SSEResultState.delete_feature:
@@ -159,9 +179,9 @@ class ClientFeatureRepository {
     final missingKeys = _features.keys
         .where((k) => _features[k].key == null)
         .toList()
-        .join(",");
+        .join(',');
     if (missingKeys.isNotEmpty) {
-      _log.info("We have requests for keys that are missing: ${missingKeys}");
+      _log.info('We have requests for keys that are missing: ${missingKeys}');
     }
   }
 
@@ -201,20 +221,34 @@ class ClientFeatureRepository {
     states.forEach((f) => _featureUpdate(f));
   }
 
-  _featureUpdate(FeatureState feature) {
-    if (feature == null) return;
+  bool _featureUpdate(FeatureState feature) {
+    if (feature == null) return false;
 
     var holder = _features[feature.key];
 
     if (holder == null || holder.key == null) {
       holder = _FeatureStateBaseHolder(holder);
+    } else {
+      if (holder._featureState.version >= feature.version) {
+        return false;
+      }
     }
 
     holder.featureState = feature;
     _features[feature.key] = holder;
+
+    return true;
   }
 
   void _deleteFeature(FeatureState feature) {
     _features.remove(feature.key);
+  }
+
+  /// after this this repository is not usable, create a new one.
+  void shutdown() {
+    _features.values.forEach((f) => f.shutdown());
+    _features.clear();
+    _readynessListeners.close();
+    _newFeatureStateAvailableListeners.close();
   }
 }

@@ -1,8 +1,6 @@
 # See https://www.dartlang.org/tools/private-files.html
 
 target
-docs
-test
 .openapi-generator
 .dart_tool
 .dart_tool/*
@@ -33,3 +31,6 @@ doc/api/
 # (Library packages only! Remove pattern if developing an application package)
 pubspec.lock
 final.yaml
+test/.test_coverage.dart
+coverage
+
