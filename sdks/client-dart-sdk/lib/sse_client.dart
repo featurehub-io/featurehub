@@ -13,6 +13,7 @@ class EventSourceRepositoryListener {
   }
 
   Future<void> init(String url) async {
+    _log.fine('Connecting to $url');
     final es = await connect(url);
 
     _subscription = es.listen((event) {
@@ -29,7 +30,9 @@ class EventSourceRepositoryListener {
   }
 
   Future<Stream<Event>> connect(String url) {
-    return EventSource.connect(url, closeOnLastListener: true);
+    return EventSource.connect(url,
+        closeOnLastListener: true,
+        headers: {'content-type': 'application/json'});
   }
 
   void close() {

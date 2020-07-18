@@ -11,6 +11,8 @@ abstract class FeatureStateHolder {
   dynamic get jsonValue;
   FeatureValueType get type;
 
+  dynamic get value;
+
   int get version;
 
   Stream<FeatureStateHolder> get featureUpdateStream;
@@ -42,6 +44,9 @@ class _FeatureStateBaseHolder implements FeatureStateHolder {
   _FeatureStateBaseHolder(_FeatureStateBaseHolder fs) {
     _listeners = fs?._listeners ?? BehaviorSubject<FeatureStateHolder>();
   }
+
+  @override
+  dynamic get value => _value;
 
   set featureState(FeatureState fs) {
     _featureState = fs;
@@ -109,6 +114,8 @@ class ClientFeatureRepository {
   Stream<ClientFeatureRepository> get newFeatureStateAvailableStream =>
       _newFeatureStateAvailableListeners.stream;
   Stream<AnalyticsEvent> get analyticsEvent => _analyticsCollectors.stream;
+
+  Iterable<String> get availableFeatures => _features.keys;
 
   void notify(SSEResultState state, dynamic data) {
     _log.fine('Data is $state -> $data');

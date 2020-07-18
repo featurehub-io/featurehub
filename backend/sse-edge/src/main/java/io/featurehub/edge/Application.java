@@ -9,9 +9,11 @@ import cd.connect.jersey.common.InfrastructureConfiguration;
 import cd.connect.jersey.common.LoggingConfiguration;
 import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
+import io.featurehub.edge.rest.SSEHeaderFilter;
 import io.prometheus.client.hotspot.DefaultExports;
 import org.glassfish.jersey.server.ResourceConfig;
 
+import javax.ws.rs.container.ContainerResponseFilter;
 import java.net.URI;
 
 public class Application {
