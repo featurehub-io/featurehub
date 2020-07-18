@@ -22,7 +22,7 @@ class EventSourceRepositoryListener {
     }
   }
 
-  void _retry() {
+  void retry() {
     if (_subscription != null) {
       _subscription.cancel();
       _subscription = null;
@@ -42,13 +42,13 @@ class EventSourceRepositoryListener {
             event.data == null ? null : jsonDecode(event.data));
       }
       if (event.event == 'bye') {
-        _retry();
+        retry();
       }
     }, onError: (e) {
       _repository.notify(SSEResultState.failure, null);
     }, onDone: () {
       _repository.notify(SSEResultState.bye, null);
-      _retry();
+      retry();
     });
   }
 
