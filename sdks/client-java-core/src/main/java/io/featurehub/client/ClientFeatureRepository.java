@@ -46,6 +46,7 @@ public class ClientFeatureRepository {
   }
 
   public void notify(SSEResultState state, String data) {
+    log.trace("received state {} data {}", state, data);
     if (state == null) {
       log.warn("Unexpected state {}", state);
     } else {
