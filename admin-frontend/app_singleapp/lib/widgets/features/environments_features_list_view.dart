@@ -28,7 +28,7 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                         height: (bloc.unselectedFeatureCount *
                                 unselectedRowHeight) +
                             (bloc.selectedFeatureCount * selectedRowHeight +
-                                0.5) +
+                                1.0) +
                             headerHeight +
                             2,
                         child: Scrollbar(

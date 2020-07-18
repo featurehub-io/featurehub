@@ -137,10 +137,11 @@ public class DbCacheSource implements CacheSource {
         .stream()
         .filter(f -> f.getFeature().getWhenArchived() == null)
         .collect(Collectors.toMap(f -> f.getFeature().getId(), Function.identity()));
+    final Opts empty = Opts.empty();
     final EnvironmentCacheItem eci = new EnvironmentCacheItem()
       .action(publishAction)
       .environment(convertUtils.toEnvironment(env, environmentOpts, features))
-      .featureValues(features.stream().map(f -> convertUtils.toFeatureValue(f, envFeatures.get(f.getId()))).collect(Collectors.toList()))
+      .featureValues(features.stream().map(f -> convertUtils.toFeatureValue(f, envFeatures.get(f.getId()), empty)).collect(Collectors.toList()))
       .serviceAccounts(env.getServiceAccountEnvironments().stream().map(s ->
             new ServiceAccount()
               .id(s.getServiceAccount().getId().toString())
@@ -169,7 +170,7 @@ public class DbCacheSource implements CacheSource {
       CacheBroadcast cacheBroadcast = cacheBroadcasters.get(cacheName);
 
       if (cacheBroadcast != null) {
-        final FeatureValue value = convertUtils.toFeatureValue(strategy);
+        final FeatureValue value = convertUtils.toFeatureValue(strategy, Opts.empty());
         cacheBroadcast.publishFeature(
           new FeatureValueCacheItem()
             .feature(convertUtils.toFeature(strategy))
@@ -321,7 +322,7 @@ public class DbCacheSource implements CacheSource {
         }
 
         new QDbEnvironment().parentApplication.eq(appFeature.getParentApplication()).whenArchived.isNull().findList().forEach(env -> {
-          final FeatureValue featureValue = convertUtils.toFeatureValue(appFeature, featureValues.get(env.getId()));
+          final FeatureValue featureValue = convertUtils.toFeatureValue(appFeature, featureValues.get(env.getId()), Opts.empty());
           cacheBroadcast.publishFeature(
             new FeatureValueCacheItem().feature(feature)
               .value(featureValue).environmentId(env.getId().toString()).action(action));

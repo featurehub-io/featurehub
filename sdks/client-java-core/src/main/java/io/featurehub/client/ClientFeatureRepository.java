@@ -153,6 +153,8 @@ public class ClientFeatureRepository {
       }
 
       features.put(featureState.getKey(), holder);
+    } else if (holder.featureState != null && holder.featureState.getVersion() >= featureState.getVersion()) {
+      return;
     }
 
     holder.setFeatureState(featureState);
