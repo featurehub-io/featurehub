@@ -110,6 +110,42 @@ namespace FeatureHubTestProject
       Assert.AreEqual(78.3, holder.NumberValue );
     }
 
+    [Test]
+    public void ListeningForAJsonValueWorksAsExpected()
+    {
+      IFeatureStateHolder holder = null;
+      _repository.FeatureState("1").FeatureUpdateHandler += (sender, fs) => {
+        holder = fs;
+      };
+      _repository.Notify(SSEResultState.Features, EncodeFeatures("fred", version: 2, type: FeatureValueType.JSON));
+      Assert.AreEqual(FeatureValueType.JSON, holder.Type);
+      Assert.AreEqual("fred", holder.JsonValue );
+      Assert.IsNull(holder.StringValue);
+      Assert.IsNull(holder.BooleanValue);
+      Assert.IsNull(holder.NumberValue);
+    }
+
+    [Test]
+    public void ChangingFeatureValueFromOriginalTriggersEventHandler()
+    {
+      IFeatureStateHolder holder = null;
+      var hCount = 0;
+      _repository.FeatureState("1").FeatureUpdateHandler += (sender, fs) => {
+        holder = fs;
+        Console.WriteLine($"{fs}");
+        hCount++;
+      };
+      _repository.Notify(SSEResultState.Features, EncodeFeatures());
+      _repository.Notify(SSEResultState.Features, EncodeFeatures()); // same again
+      _repository.Notify(SSEResultState.Features, EncodeFeatures(version: 2)); // same again, new version but same value
+      _repository.Notify(SSEResultState.Features, EncodeFeatures(true, version: 3));
+      Assert.AreEqual(2, hCount);
+      Assert.IsNotNull(holder);
+      Assert.AreEqual(true, holder.BooleanValue);
+      _repository.Notify(SSEResultState.Features, EncodeFeatures(false, version: 4));
+      Assert.AreEqual(3, hCount);
+      Assert.AreEqual(false, holder.BooleanValue);
+    }
 
   }
 }
