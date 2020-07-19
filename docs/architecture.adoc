@@ -31,21 +31,21 @@ to transfer environments, features and service accounts around the network to fe
 === Dacha
 
 Dacha is where the data that is required by every SDK is cached, and you need at least one of these for an operational
-FeatureHub system.It can be run in-process (using the _Party Server_ design), or separately.In any case, it always
-communicates via NATS, and when it starts it broadcasts for another complete cache and will fill itself from that.If
-none is available, it negotiates a master, and will request the MR to provide details.Each Dacha is defined with a name,
-and the self hosted one is always called "default".All but the very largest of corporations should never need more
-than one cache name, as it is a form of sharding.Each cache is able to handle thousands of environments and their
+FeatureHub system. It can be run in-process (using the _Party Server_ design), or separately. In any case, it always
+communicates via NATS, and when it starts it broadcasts for another complete cache and will fill itself from that. If
+none is available, it negotiates a master, and will request the MR to provide details. Each Dacha is defined with a name,
+and the self hosted one is always called "default". All but the very largest of corporations should never need more
+than one cache name, as it is a form of sharding. Each cache is able to handle thousands of environments and their
 features.
 
-It is expected you will always run at least two of these in any production environment.They are always listening to
+It is expected you will always run at least two of these in any production environment. They are always listening to
 the same topic from MR, so they do not suffer split brain.
 
 === Edge
 
-Edge is intended to be where the communication with the SDKs live.It is intended to be high volume endpoint but retain
-little data - only who is connected to it and which environment they are listening to for feature updates.Access to
-Edge is given by a combination of Service Account and Environment IDs.That combination is given a permission structure
+Edge is intended to be where the communication with the SDKs live. It is intended to be high volume endpoint but retain
+little data - only who is connected to it and which environment they are listening to for feature updates.  Access to
+Edge is given by a combination of Service Account and Environment IDs. That combination is given a permission structure
 back in MR, and is usually simply READ. For test accounts, a service account can also have the ability to change
 features as it may need to while doing end-to-end tests.
 It does not currently attempt to retain the active feature list for each Service Account + Environment.
@@ -56,5 +56,5 @@ It is expected that you will normally run at least two of these in any kind of e
 The SDKs are provided to create an idiomatic method to connection to the server-side event source of feature data from the Edge server.
 You are welcome to write your own, they are not particularly complicated to write, and we welcome them as contributions!
 
-View documentation and read more about <<index.adoc#sdks,SDK's here>>
+View documentation and read more about SDK's <<index.adoc#sdks,here>>
 
