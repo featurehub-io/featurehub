@@ -123,11 +123,14 @@
               <generateModelDocumentation>false</generateModelDocumentation>
               <generateApiTests>false</generateApiTests>
               <generateModelTests>false</generateModelTests>
+              <generateSupportingFiles>true</generateSupportingFiles>
               <enablePostProcessFile>true</enablePostProcessFile>
               <additionalProperties>
                 <additionalProperty>
                   packageName=IO.FeatureHub.SSE
                 </additionalProperty>
+                <additionalProperty>optionalProjectFile=false</additionalProperty>
+                <additionalProperty>optionalAssemblyInfo=false</additionalProperty>
               </additionalProperties>
               <typeMappings>
                 <typeMapping>AnyType=object</typeMapping>
