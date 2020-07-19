@@ -39,7 +39,7 @@ database volume separately from the main set of containers, allowing you to upgr
 versions of FeatureHub without destroying your database.
 
 NOTE: FeatureHub runs on the following SQL Databases: PostgreSQL, MySQL, MS SQL Server, Oracle and we provide
-initialization and migration DDL for each of these databases.Others can be supported, please contact us.
+initialization and migration DDL for each of these databases. Others can be supported, please contact us.
 
 === Starting small
 
@@ -58,7 +58,7 @@ Once you have done this, you can then simply run the example project and tie the
 === Running the example
 
 The example will need to know the SDK URL of your environment, and it will need an IP address that the second
-docker can get access to.If you know how to use docker networks, you should be able to find this easily, otherwise
+docker can get access to. If you know how to use docker networks, you should be able to find this easily, otherwise
 find your en0 ip address (you can type: `ifconfig en0` - choose the inet address, Windows will be slightly different)
 or similar, do not use localhost as that will not work.
 
