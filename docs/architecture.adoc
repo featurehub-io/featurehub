@@ -47,14 +47,14 @@ Edge is intended to be where the communication with the SDKs live. It is intende
 little data - only who is connected to it and which environment they are listening to for feature updates. Access to
 Edge is given by a combination of Service Account and Environment IDs. That combination is given a permission structure
 back in MR, and is usually simply READ. For test accounts, a service account can also have the ability to change
-features as it may need to while doing end-to-end tests. It does not currently attempt to retain the active feature
-list for each Service Account + Environment. It is expected that you will normally run at least two of these in any kind
-of environment.
+features as it may need to while doing end-to-end tests.
+It does not currently attempt to retain the active feature list for each Service Account + Environment.
+It is expected that you will normally run at least two of these in any kind of environment.
 
 === SDKs
 
-The SDKs are provided to create an idiomatic method to connection to the server-side event source of feature data
-from the Edge server. You are welcome to write your own, they are not particularly complicated to write, and we welcome
-them as contributions!
+The SDKs are provided to create an idiomatic method to connection to the server-side event source of feature data from the Edge server.
+You are welcome to write your own, they are not particularly complicated to write, and we welcome them as contributions!
 
-There are link:../sdks/README{outfilesuffix}[implementations] and examples on link:../examples/README{outfilesuffix}[how they are used]. 
+View documentation and read more about SDK's <<index.adoc#sdks,here>>
+
