@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FeatureHubSDK", "FeatureHubSDK\FeatureHubSDK.csproj", "{0775375C-09ED-4086-8F39-69FC5039F0DD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IO.FeatureHub.SSE", "..\FeatureHubAPI\src\IO.FeatureHub.SSE\IO.FeatureHub.SSE.csproj", "{DDBF8898-6D08-45BF-9061-1352B848070D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0775375C-09ED-4086-8F39-69FC5039F0DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0775375C-09ED-4086-8F39-69FC5039F0DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0775375C-09ED-4086-8F39-69FC5039F0DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0775375C-09ED-4086-8F39-69FC5039F0DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DDBF8898-6D08-45BF-9061-1352B848070D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDBF8898-6D08-45BF-9061-1352B848070D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDBF8898-6D08-45BF-9061-1352B848070D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDBF8898-6D08-45BF-9061-1352B848070D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

@@ -12,11 +12,13 @@ paths:
         - name: sdkUrl
           in: path
           description: "The SDK key for the environment and service account"
+          required: true
           schema:
             type: string
         - name: featureKey
           in: path
           description: "The key you wish to update/action"
+          required: true
           schema:
             type: string
       requestBody:
