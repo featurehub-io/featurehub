@@ -299,6 +299,16 @@ and then as things change
 
 You would expect delete_feature to be rare.
 
+=== A note on the EventSource spec
+
+The EventSource spec indicates that if the server wants the client to stop listening, it should send an HTTP 204. However
+in our case because we have to validate the Service Account and Environment, and this causes a slight delay, we send back
+and `ack`, and then a `failed` message. If you receive a failed message, this is when you could stop listening. However
+it may due transient issues on the network preventing your client from talking to the server. that would be rare but it does
+happen. It could also happen because the cache does not _yet_ know about your 
+environment or service account, such as Dacha starting after the Edge server, or the first Dacha taking a short while 
+to negotiate its cache.
+
 === Look at the other examples, talk to us
 
 There are four other examples of the SDK so far, so have a look at their implementation. Chances are you have a 

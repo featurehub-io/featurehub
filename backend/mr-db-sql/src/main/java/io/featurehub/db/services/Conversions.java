@@ -127,6 +127,7 @@ public interface Conversions {
   Feature toFeature(DbEnvironmentFeatureStrategy fs);
 
   FeatureValue toFeatureValue(DbEnvironmentFeatureStrategy fs);
+  FeatureValue toFeatureValue(DbEnvironmentFeatureStrategy fs, Opts opts);
 
   Portfolio toPortfolio(DbPortfolio p, Opts opts);
 
@@ -150,4 +151,5 @@ public interface Conversions {
   FeatureEnvironment toFeatureEnvironment(DbEnvironmentFeatureStrategy s, List<RoleType> roles, DbEnvironment dbEnvironment, Opts opts);
 
   FeatureValue toFeatureValue(DbApplicationFeature feature, DbEnvironmentFeatureStrategy value);
+  FeatureValue toFeatureValue(DbApplicationFeature feature, DbEnvironmentFeatureStrategy value, Opts opts);
 }

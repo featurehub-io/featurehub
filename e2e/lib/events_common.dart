@@ -1,5 +1,5 @@
 import 'package:app_singleapp/util.dart';
-import 'package:featurehub_client_sdk/featurehub.dart';
+import 'package:featurehub_client_sdk/featurehub_io.dart';
 
 class EventsCommon {
   ClientFeatureRepository _repository;

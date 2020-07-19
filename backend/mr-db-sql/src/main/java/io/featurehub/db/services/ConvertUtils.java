@@ -452,22 +452,24 @@ public class ConvertUtils implements Conversions {
       .version(f.getVersion());
   }
 
-  @Override
-  public FeatureValue toFeatureValue(DbEnvironmentFeatureStrategy fs) {
+  protected FeatureValue featureValue(DbApplicationFeature actualFeature, DbEnvironmentFeatureStrategy fs, Opts opts) {
     if (fs == null) {
       return null;
     }
 
+    if (actualFeature == null) {
+      actualFeature = fs.getFeature();
+    }
+
     final FeatureValue featureValue = new FeatureValue()
-      .key(stripArchived(fs.getFeature().getKey(), fs.getFeature().getWhenArchived()))
+      .key(stripArchived(actualFeature.getKey(), actualFeature.getWhenArchived()))
       .rolloutStrategy(fs.getEnabledStrategy())
       .locked(fs.isLocked())
       .id(fs.getId().toString())
       .version(fs.getVersion())
-      .whenUpdated(toOff(fs.getWhenUpdated()))
       .rolloutStrategyInstances(fs.getRolloutStrategyInstances());
 
-    final DbApplicationFeature feature = fs.getFeature();
+    final DbApplicationFeature feature = actualFeature;
     if (feature.getValueType() == FeatureValueType.BOOLEAN) {
       featureValue.valueBoolean(fs.getDefaultValue() == null ? Boolean.FALSE : Boolean.parseBoolean(fs.getDefaultValue()));
     }
@@ -482,10 +484,43 @@ public class ConvertUtils implements Conversions {
     }
 
     featureValue.setEnvironmentId(fs.getEnvironment().getId().toString());
-    featureValue.setWhoUpdated(fs.getWhoUpdated() == null ? null : toPerson(fs.getWhoUpdated()));
+
+    // this is an indicator it is for the UI not for the cache.
+    if (opts.contains(FillOpts.People)) {
+      featureValue.setWhenUpdated(toOff(fs.getWhenUpdated()));
+      featureValue.setWhoUpdated(fs.getWhoUpdated() == null ? null : toPerson(fs.getWhoUpdated()));
+    }
 
     return featureValue;
   }
+
+
+
+  @Override
+  public FeatureValue toFeatureValue(DbEnvironmentFeatureStrategy fs, Opts opts) {
+    return featureValue(null, fs, opts);
+  }
+
+  @Override
+  public FeatureValue toFeatureValue(DbEnvironmentFeatureStrategy fs) {
+    return featureValue(null, fs, Opts.opts(FillOpts.People));
+  }
+
+  @Override
+  public FeatureValue toFeatureValue(DbApplicationFeature feature, DbEnvironmentFeatureStrategy value) {
+    return featureValue(feature, value, Opts.opts(FillOpts.People));
+  }
+
+  @Override
+  public FeatureValue toFeatureValue(DbApplicationFeature feature, DbEnvironmentFeatureStrategy value, Opts opts) {
+    if (value == null) {
+      return new FeatureValue().id(feature.getId().toString()).key(stripArchived(feature.getKey(),
+        feature.getWhenArchived())).version(0L).locked(false);
+    }
+
+    return featureValue(feature, value, opts);
+  }
+
 
   @Override
   public Portfolio toPortfolio(DbPortfolio p, Opts opts) {
@@ -655,14 +690,6 @@ public class ConvertUtils implements Conversions {
     return featureEnvironment;
   }
 
-  @Override
-  public FeatureValue toFeatureValue(DbApplicationFeature feature, DbEnvironmentFeatureStrategy value) {
-    if (value == null) {
-      return new FeatureValue().id(feature.getId().toString()).key(stripArchived(feature.getKey(), feature.getWhenArchived())).locked(false);
-    }
-
-    return toFeatureValue(value);
-  }
 
   public Group getSuperuserGroup(Opts opts) {
     final DbGroup g = new QDbGroup()

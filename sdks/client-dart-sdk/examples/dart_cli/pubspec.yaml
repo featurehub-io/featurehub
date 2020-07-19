@@ -1,0 +1,12 @@
+name: featurehub_cli_example
+version: 1.0.0
+description: Example client for SDK
+homepage: https://featurehub.io
+environment:
+  sdk: '>=2.7.0 <3.0.0'
+dependencies:
+  dio: '>=3.0.3 <4.0.0'
+  logging: ^0.11.4
+  featurehub_client_sdk:
+    path: ../..
+#dev_dependencies:

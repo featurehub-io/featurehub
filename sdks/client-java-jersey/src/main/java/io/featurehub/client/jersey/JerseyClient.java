@@ -31,6 +31,8 @@ public class JerseyClient {
   private final ClientFeatureRepository clientFeatureRepository;
   private final FeaturesService featuresService;
   private boolean shutdown = false;
+  private boolean shutdownOnServerFailure = true;
+  private boolean shutdownOnEdgeFailureConnection = false;
   private EventInput eventInput;
 
   public JerseyClient(String sdkUrl, boolean initializeOnConstruction, ClientFeatureRepository clientFeatureRepository) {
@@ -103,16 +105,26 @@ public class JerseyClient {
           break;
         }
 
-        clientFeatureRepository.notify(SSEResultState.fromValue(inboundEvent.getName()), inboundEvent.readData());
+        final SSEResultState state = SSEResultState.fromValue(inboundEvent.getName());
+        clientFeatureRepository.notify(state, inboundEvent.readData());
+
+        if (state == SSEResultState.FAILURE && shutdownOnServerFailure) {
+          log.warn("Failed to connect to FeatureHub Edge, shutting down.");
+          shutdown();
+        }
       }
     } catch (Exception e) {
-      log.error("Failed to connect to {}", sdkUrl, e);
-      clientFeatureRepository.notify(SSEResultState.FAILURE, "unable to connect");
+      log.warn("Failed to connect to {}", sdkUrl, e);
+      if (shutdownOnEdgeFailureConnection) {
+        log.warn("Edge connection failed, shutting down");
+        clientFeatureRepository.notify(SSEResultState.FAILURE, null);
+        shutdown();
+      }
     }
 
     eventInput = null; // so shutdown doesn't get confused
 
-    log.warn("connection failed, reconnecting");
+    log.debug("connection closed, reconnecting");
     initialized = false;
 
     if (!shutdown) {
@@ -147,5 +159,21 @@ public class JerseyClient {
         eventInput.close();
       } catch (Exception e) {} // ignore
     }
+  }
+
+  public boolean isShutdownOnServerFailure() {
+    return shutdownOnServerFailure;
+  }
+
+  public void setShutdownOnServerFailure(boolean shutdownOnServerFailure) {
+    this.shutdownOnServerFailure = shutdownOnServerFailure;
+  }
+
+  public boolean isShutdownOnEdgeFailureConnection() {
+    return shutdownOnEdgeFailureConnection;
+  }
+
+  public void setShutdownOnEdgeFailureConnection(boolean shutdownOnEdgeFailureConnection) {
+    this.shutdownOnEdgeFailureConnection = shutdownOnEdgeFailureConnection;
   }
 }

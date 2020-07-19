@@ -39,6 +39,13 @@ runs in the background and doesn't block.
 to override the ApiClient library for some reason, you can replace it here. It expects you to have configured it with
 the base url of your host, e.g. `http://localhost:8553`.
 
+There are a couple of extra settings which may be useful:
+
+- `shutdownOnServerFailure` (true) - if this is true, then when it receives a FAILURE status (and passes this to the repository),
+it will then stop listening to the stream and shut the connection down.
+- `shutdownOnEdgeFailureConnection` (false) - if true, an an Edge failure occurs for some reason, it will shut down the server. This
+is an unusual thing to set to true but it is there for completeness.
+
 If you are simply using it in feature listening mode, you can create this instance and not hold a reference. 
 
 If your server has a lifecycle manager, and you wish to do an orderly shutdown. You can

@@ -46,6 +46,7 @@ public class ClientFeatureRepository {
   }
 
   public void notify(SSEResultState state, String data) {
+    log.trace("received state {} data {}", state, data);
     if (state == null) {
       log.warn("Unexpected state {}", state);
     } else {
@@ -152,6 +153,8 @@ public class ClientFeatureRepository {
       }
 
       features.put(featureState.getKey(), holder);
+    } else if (holder.featureState != null && holder.featureState.getVersion() >= featureState.getVersion()) {
+      return;
     }
 
     holder.setFeatureState(featureState);

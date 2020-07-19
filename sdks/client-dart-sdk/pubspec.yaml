@@ -1,18 +1,21 @@
 name: featurehub_client_sdk
 version: 1.0.0
 description: Client SDK for FeatureHub
+homepage: https://featurehub.io
 environment:
   sdk: '>=2.7.0 <3.0.0'
 dependencies:
   dio: '>=3.0.3 <4.0.0'
-  #eventsource: ^0.2.3
   eventsource:
     git:
       url: https://github.com/rvowles/dart-eventsource.git
       ref: feature/close-on-last-stream
   collection: ^1.14.11
   logging: ^0.11.4
+  rxdart: 0.24.1
   featurehub_client_api:
     path: ../client-dart-api
 dev_dependencies:
   test: ^1.3.0
+  test_coverage: ^0.4.2
+  mockito: ^4.1.1

@@ -2,6 +2,7 @@ package io.featurehub.edge;
 
 import io.featurehub.edge.bucket.EventOutputBucketService;
 import io.featurehub.edge.rest.EventStreamResource;
+import io.featurehub.edge.rest.SSEHeaderFilter;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.spi.Container;
@@ -14,7 +15,9 @@ import javax.ws.rs.core.FeatureContext;
 public class EdgeFeature implements Feature {
   @Override
   public boolean configure(FeatureContext context) {
-    context.register(EventStreamResource.class)
+    context
+      .register(EventStreamResource.class)
+      .register(SSEHeaderFilter.class)
       .register(new AbstractBinder() {
 
         @Override

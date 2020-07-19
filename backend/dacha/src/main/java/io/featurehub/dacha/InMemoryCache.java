@@ -302,17 +302,18 @@ public class InMemoryCache implements InternalCache {
             feature.feature(fv.getFeature()); // replace the feature it has changed
           }
           // now we know the feature + feature-value
+          //log.info("feature new  {} vs old {}", fv, feature);
           if (fv.getValue().getVersion() != null) {
             if (feature.getValue() == null) {
               feature.value(fv.getValue());
             } else if (feature.getValue().getVersion() == null || (fv.getValue().getVersion() != null && feature.getValue().getVersion() < fv.getValue().getVersion())) {
               feature.value(fv.getValue());
-//              log.trace("replacing with {}", fv.getFeature());
+              log.trace("replacing with {}", fv.getFeature());
             } else if (!featureChanged) {
               log.warn("attempted to remove/update envId:key {}:{} that is older than existing version, ignoring", fv.getEnvironmentId(), fv.getFeature().getKey());
             }
           } else {
-//            log.debug("received feature update with no version {}", fv);
+            log.trace("received feature update with no version {}", fv);
           }
         } else if (fv.getAction() == PublishAction.DELETE) {
           log.debug("removing feature value from feature key `{}` in environment `{}`", fv.getFeature().getKey(), fv.getEnvironmentId());
