@@ -7,24 +7,64 @@ namespace FeatureHubSDK
 {
   public enum Readyness
   {
+    /// <summary>
+    /// NotReady - there have been no features delivered as yet.
+    /// </summary>
     NotReady,
+    /// <summary>
+    /// Ready - the initial set of features has been delivered and we are now ready.
+    /// </summary>
     Ready,
+    /// <summary>
+    /// The connection failed because the URL was wrong or some other failure even happened.
+    /// </summary>
     Failed
   }
 
   public interface IFeatureStateHolder
   {
+    /// <summary>
+    /// if the value is not null, exists returns true
+    /// </summary>
     bool Exists { get; }
+    /// <summary>
+    /// Type is a bool. It will only be null if the type of Feature is not a bool.
+    /// </summary>
     bool? BooleanValue { get; }
+    /// <summary>
+    /// the type is a string and returned as such
+    /// </summary>
     string StringValue { get; }
+    /// <summary>
+    /// A numeric value. This could be an integer or a double.
+    /// </summary>
     double? NumberValue { get; }
-    object JsonValue { get; }
+    /// <summary>
+    /// this is just the same as StringValue, no attempt to decode into JSON is done as it is easier for the end user to decode it into
+    /// the format they require.
+    /// </summary>
+    string JsonValue { get; }
+    /// <summary>
+    /// The KEY of this feature
+    /// </summary>
     string Key { get; }
+    /// <summary>
+    /// The type of this feature. Null if we start listening for a feature before it is Ready or it never exists.
+    /// </summary>
     FeatureValueType? Type { get; }
+    /// <summary>
+    /// The raw value as it came down the wire.
+    /// </summary>
     object Value { get; }
+    /// <summary>
+    /// The version of the current feature
+    /// </summary>
     long? Version { get; }
+    /// <summary>
+    /// Triggered when the value changes
+    /// </summary>
     event EventHandler<IFeatureStateHolder> FeatureUpdateHandler;
-    IFeatureStateHolder Copy();
+    //IFeatureStateHolder Copy();
   }
 
   internal class FeatureStateBaseHolder : IFeatureStateHolder
@@ -49,7 +89,7 @@ namespace FeatureHubSDK
 
     public double? NumberValue => _feature?.Type == FeatureValueType.NUMBER ? (double?) Convert.ToDouble(_value) : null;
 
-    public object JsonValue => _feature?.Type == FeatureValueType.JSON ? _value : null;
+    public string JsonValue => _feature?.Type == FeatureValueType.JSON ? Convert.ToString(_value) : null;
     public string Key => _feature == null ? null : _feature.Key;
     public FeatureValueType? Type => _feature == null ? null : _feature.Type;
     public object Value => _value;
@@ -57,10 +97,10 @@ namespace FeatureHubSDK
     public long? Version => _feature == null ? (long?) null : _feature.Version;
 
     // public EventHandler<IFeatureStateHolder> FeatureUpdateHandler => _featureUpdateHandler;
-    public IFeatureStateHolder Copy()
-    {
-      throw new NotImplementedException();
-    }
+    // public IFeatureStateHolder Copy()
+    // {
+    //   throw new NotImplementedException();
+    // }
 
     public FeatureState FeatureState
     {

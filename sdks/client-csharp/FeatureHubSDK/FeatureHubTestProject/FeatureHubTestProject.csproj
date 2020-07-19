@@ -12,4 +12,9 @@
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.4.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\..\FeatureHubAPI\src\IO.FeatureHub.SSE\IO.FeatureHub.SSE.csproj" />
+      <ProjectReference Include="..\FeatureHubSDK\FeatureHubSDK.csproj" />
+    </ItemGroup>
+
 </Project>
