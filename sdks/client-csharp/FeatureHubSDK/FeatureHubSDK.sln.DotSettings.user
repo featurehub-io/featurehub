@@ -8,4 +8,5 @@
   &lt;TestAncestor&gt;
     &lt;TestId&gt;NUnit3x::284F78BD-1C24-4ED0-8789-585095F1F40D::.NETCoreApp,Version=v3.1::FeatureHubTestProject.Tests&lt;/TestId&gt;
   &lt;/TestAncestor&gt;
-&lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>
+&lt;/SessionState&gt;</s:String>
+	<s:Boolean x:Key="/Default/UserDictionary/Words/=Readyness/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>

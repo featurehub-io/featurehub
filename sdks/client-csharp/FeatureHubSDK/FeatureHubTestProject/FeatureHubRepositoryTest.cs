@@ -38,6 +38,15 @@ namespace FeatureHubTestProject
     }
 
     [Test]
+    public void ByeTurnsOffReadyness()
+    {
+      _repository.Notify(SSEResultState.Features, EncodeFeatures());
+      Assert.AreEqual(Readyness.Ready, _repository.Readyness);
+      _repository.Notify(SSEResultState.Bye, null);
+      Assert.AreEqual(Readyness.NotReady, _repository.Readyness);
+    }
+
+    [Test]
     public void WhenTheStreamHasFailedReadynessShouldFail()
     {
       var state = Readyness.Ready;
@@ -96,6 +105,7 @@ namespace FeatureHubTestProject
       _repository.Notify(SSEResultState.Features, EncodeFeatures("fred", version: 2, type: FeatureValueType.STRING));
       Assert.AreEqual(FeatureValueType.STRING, holder.Type);
       Assert.AreEqual("fred", holder.StringValue );
+      Assert.AreEqual("fred", _repository.FeatureState("1").Value);
     }
 
     [Test]
@@ -142,10 +152,27 @@ namespace FeatureHubTestProject
       Assert.AreEqual(2, hCount);
       Assert.IsNotNull(holder);
       Assert.AreEqual(true, holder.BooleanValue);
-      _repository.Notify(SSEResultState.Features, EncodeFeatures(false, version: 4));
+      var feature = new FeatureState(id: "1", key: "1", version: 4, value: false, type:FeatureValueType.BOOLEAN);
+      _repository.Notify(SSEResultState.Feature, JsonConvert.SerializeObject(feature));
       Assert.AreEqual(3, hCount);
       Assert.AreEqual(false, holder.BooleanValue);
     }
 
+    [Test]
+    public void ANumberCanBeAnInteger()
+    {
+      _repository.Notify(SSEResultState.Features, EncodeFeatures(1L, version: 1, type: FeatureValueType.NUMBER));
+      Assert.AreEqual(1, _repository.FeatureState("1").NumberValue);
+    }
+
+    [Test]
+    public void DeleteRemovesFeature()
+    {
+      _repository.Notify(SSEResultState.Features, EncodeFeatures());
+      var feature = new FeatureState(id: "1", key: "1", version: 2, value: true, type:FeatureValueType.BOOLEAN);
+      Assert.AreEqual(1, _repository.FeatureState("1").Version);
+      _repository.Notify(SSEResultState.Deletefeature, JsonConvert.SerializeObject(feature));
+      Assert.IsNull(_repository.FeatureState("1").Version);
+    }
   }
 }

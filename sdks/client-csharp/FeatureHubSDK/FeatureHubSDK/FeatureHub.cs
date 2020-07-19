@@ -90,11 +90,11 @@ namespace FeatureHubSDK
     public double? NumberValue => _feature?.Type == FeatureValueType.NUMBER ? (double?) Convert.ToDouble(_value) : null;
 
     public string JsonValue => _feature?.Type == FeatureValueType.JSON ? Convert.ToString(_value) : null;
-    public string Key => _feature == null ? null : _feature.Key;
-    public FeatureValueType? Type => _feature == null ? null : _feature.Type;
+    public string Key => _feature?.Key;
+    public FeatureValueType? Type => _feature?.Type;
     public object Value => _value;
 
-    public long? Version => _feature == null ? (long?) null : _feature.Version;
+    public long? Version => _feature?.Version;
 
     // public EventHandler<IFeatureStateHolder> FeatureUpdateHandler => _featureUpdateHandler;
     // public IFeatureStateHolder Copy()
@@ -111,17 +111,12 @@ namespace FeatureHubSDK
         _value = value.Value;
 
         // did the value change? if so, tell everyone listening via event handler
-        if (_value != oldVal)
+        if ((_value != null && !_value.Equals(oldVal)) || (oldVal != null && !oldVal.Equals(_value)))
         {
           EventHandler<IFeatureStateHolder> handler = FeatureUpdateHandler;
-          if (handler != null) // any listeners?
-          {
-            FeatureUpdateHandler(this, this);
-          }
+          handler?.Invoke(this, this);
         }
       }
-
-      get { return _feature; }
     }
   }
 
@@ -134,22 +129,18 @@ namespace FeatureHubSDK
     public event EventHandler<Readyness> ReadynessHandler;
     public event EventHandler<FeatureHubRepository> NewFeatureHandler;
 
+    public Readyness Readyness => _readyness;
+
     private void TriggerReadyness()
     {
       EventHandler<Readyness> handler = ReadynessHandler;
-      if (handler != null)
-      {
-        handler(this, _readyness);
-      }
+      handler?.Invoke(this, _readyness);
     }
 
     private void TriggerNewUpdate()
     {
       EventHandler<FeatureHubRepository> handler = NewFeatureHandler;
-      if (handler != null)
-      {
-        handler(this, this);
-      }
+      handler?.Invoke(this, this);
     }
 
     // Notify
@@ -228,14 +219,9 @@ namespace FeatureHubSDK
     // update the feature if its version is greater than the version we currently store
     private bool FeatureUpdate(FeatureState fs)
     {
-      if (fs == null)
-      {
-        return false;
-      }
-
       var keyExists = _features.ContainsKey(fs.Key);
       FeatureStateBaseHolder holder = keyExists ? _features[fs.Key] : null;
-      if (holder == null || holder.Key == null)
+      if (holder?.Key == null)
       {
         holder = new FeatureStateBaseHolder(holder);
       }
