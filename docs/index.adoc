@@ -31,10 +31,10 @@ Please read link:architecture{outfilesuffix}[for information about the architect
 
 == Installation
 
-There are 3 main deployment options for running FeatureHub.As FeatureHub is packaged as a _Cloud Native_
+There are 3 main deployment options for running FeatureHub. As FeatureHub is packaged as a _Cloud Native_
 bundle, all parts are Docker images and are intended to be used with that technology (i.e. Docker or Kubernetes).
 
-All sample configurations are in the `run-configurations` folder.All of the run configurations mount the
+All sample configurations are in the `run-configurations` folder. All of the run configurations mount the
 database volume separately from the main set of containers, allowing you to upgrade your database and
 versions of FeatureHub without destroying your database.
 
@@ -70,7 +70,7 @@ docker run -e FEATUREHUB_APP_ENV_URL=http://$MY_IP:8085/features/$SDK_URL -p 500
 
 This will cause the example to start and you can access it on port 5000. Add a few todo's in mixed case.
 If you create a feature flag called `FEATURE_TITLE_TO_UPPERCASE`, unlock it and set it to true, you will see a "refresh"
-message appear.If you refresh, it will upper case everything, experiment.This flag is affecting the backend.
+message appear. If you refresh, it will upper case everything, experiment. This flag is affecting the backend.
 
 If you create a feature value - a String value called `SUBMIT_COLOR_BUTTON` and set its value to (say) `cyan`, you will again see a refresh indicator and on refresh the Add button will swap to Cyan.
 Each time you change the colour, it will recommend you refresh.
@@ -209,7 +209,7 @@ image::images/fh_overview.svg[Overview,500]
 
 ==== Portfolio groups
 You can create one or more groups of people, these groups can be used to set various permissions
-on the applications and their environments, within the portfolio.Either use the same groups across applications within the
+on the applications and their environments, within the portfolio. Either use the same groups across applications within the
 portfolio, or create separate groups for each application.
 Some example groups might be:
 
