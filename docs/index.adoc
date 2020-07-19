@@ -202,7 +202,7 @@ All SDKs are MIT licensed, as they reside in the client codebase.
 
 Portfolios are simply a collection of one or more applications.
 Typically, portfolios are named to match areas of your business where groups of applications (or application suites) live.
-Once created these portfolios can be managed autonomously (via <<_portfolio_administrators>>) from the rest of FeatureHub.
+Once created these portfolios can be managed by "Portfolio admins".
 There is no limit to the number of portfolios you can have.
 
 image::images/fh_overview.svg[Overview,500]
