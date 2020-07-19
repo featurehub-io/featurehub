@@ -1,9 +1,11 @@
-= FeatureHub Documentation
-FeatureHub Team <info@featurehub.io>
+= FeatureHub Documentation 
 ifdef::env-github,env-browser[:outfilesuffix: .adoc]
+:sectlinks:
 :toc: left
 :toclevels: 2
 :toc-title: Contents
+
+FeatureHub Team <info@featurehub.io>
 
 Visit us on https://github.com/featurehub-io/featurehub[Github]
 
@@ -78,6 +80,7 @@ It is doing this because it is set in "catch and release" mode, and we recommend
 
 Further information on link:installation{outfilesuffix}[installation, deployment options, configuration, etc].
 
+[#sdks]
 == Client SDKs for Feature Hub
 
 The client SDKs for FeatureHub are designed to allow various supported languages to connect to the Edge server and receive updates on the features.
