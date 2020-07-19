@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using IO.FeatureHub.SSE.Model;
+using LaunchDarkly.EventSource;
 using Newtonsoft.Json;
-
 
 namespace FeatureHubSDK
 {
-  // wait on API compilation
-
   public enum Readyness
   {
-    NotReady, Ready, Failed
+    NotReady,
+    Ready,
+    Failed
   }
 
   public interface IFeatureStateHolder
@@ -24,7 +25,7 @@ namespace FeatureHubSDK
     FeatureValueType? Type { get; }
     object Value { get; }
     long? Version { get; }
-    EventHandler<IFeatureStateHolder> FeatureUpdateHandler { get; }
+    event EventHandler<IFeatureStateHolder> FeatureUpdateHandler;
     IFeatureStateHolder Copy();
   }
 
@@ -32,13 +33,13 @@ namespace FeatureHubSDK
   {
     private object _value;
     private FeatureState _feature;
-    private EventHandler<IFeatureStateHolder> _featureUpdateHandler;
+    public event EventHandler<IFeatureStateHolder> FeatureUpdateHandler;
 
     public FeatureStateBaseHolder(FeatureStateBaseHolder fs)
     {
       if (fs != null)
       {
-        _featureUpdateHandler = fs._featureUpdateHandler;
+        FeatureUpdateHandler = fs.FeatureUpdateHandler;
       }
     }
 
@@ -54,8 +55,10 @@ namespace FeatureHubSDK
     public string Key => _feature == null ? null : _feature.Key;
     public FeatureValueType? Type => _feature == null ? null : _feature.Type;
     public object Value => _value;
+
     public long? Version => _feature == null ? (long?) null : _feature.Version;
-    public EventHandler<IFeatureStateHolder> FeatureUpdateHandler => _featureUpdateHandler;
+
+    // public EventHandler<IFeatureStateHolder> FeatureUpdateHandler => _featureUpdateHandler;
     public IFeatureStateHolder Copy()
     {
       throw new NotImplementedException();
@@ -72,39 +75,49 @@ namespace FeatureHubSDK
         // did the value change? if so, tell everyone listening via event handler
         if (_value != oldVal)
         {
-          _featureUpdateHandler(this, this);
+          EventHandler<IFeatureStateHolder> handler = FeatureUpdateHandler;
+          if (handler != null) // any listeners?
+          {
+            FeatureUpdateHandler(this, this);
+          }
         }
       }
 
-      get
-      {
-        return _feature;
-      }
+      get { return _feature; }
     }
   }
 
-  public class ClientRepository
+  public class FeatureHubRepository
   {
-    private bool _hasReceivedInitialState = false;
-    private readonly Dictionary<string,FeatureStateBaseHolder> _features =
-      new Dictionary<string,FeatureStateBaseHolder>();
+    private readonly Dictionary<string, FeatureStateBaseHolder> _features =
+      new Dictionary<string, FeatureStateBaseHolder>();
 
     private Readyness _readyness = Readyness.NotReady;
-    private EventHandler<Readyness> _readynessHandler;
-    private EventHandler<ClientRepository> _newFeatureHandler;
+    public event EventHandler<Readyness> ReadynessHandler;
+    public event EventHandler<FeatureHubRepository> NewFeatureHandler;
 
-    public EventHandler<Readyness> ReadynessHandler => _readynessHandler;
-    public EventHandler<ClientRepository> NewFeatureHandler => _newFeatureHandler;
+    private void TriggerReadyness()
+    {
+      EventHandler<Readyness> handler = ReadynessHandler;
+      if (handler != null)
+      {
+        handler(this, _readyness);
+      }
+    }
+
+    private void TriggerNewUpdate()
+    {
+      EventHandler<FeatureHubRepository> handler = NewFeatureHandler;
+      if (handler != null)
+      {
+        handler(this, this);
+      }
+    }
 
     // Notify
     public void Notify(SSEResultState state, string data)
     {
-      if (state == null)
-      {
-        return;
-      }
-
-      Console.WriteLine($"received {state} with object {data}");
+      // Console.WriteLine($"received {state} with object {data}");
 
       switch (state)
       {
@@ -113,11 +126,11 @@ namespace FeatureHubSDK
         case SSEResultState.Bye:
           // swap to not ready and let everyone know
           _readyness = Readyness.NotReady;
-          ReadynessHandler(this, _readyness);
+          TriggerReadyness();
           break;
         case SSEResultState.Failure:
           _readyness = Readyness.Failed;
-          ReadynessHandler(this, _readyness);
+          TriggerReadyness();
           break;
         case SSEResultState.Features:
           if (data != null)
@@ -126,37 +139,40 @@ namespace FeatureHubSDK
             var updated = false;
             foreach (var featureState in features)
             {
-              updated = updated || FeatureUpdate(featureState);
+              updated = FeatureUpdate(featureState) || updated;
             }
 
-            _hasReceivedInitialState = true;
             if (_readyness != Readyness.Ready)
-            { // are we newly ready?
+            {
+              // are we newly ready?
               _readyness = Readyness.Ready;
-              ReadynessHandler(this, _readyness);
+              TriggerReadyness();
             }
 
             // we updated something, so let the folks know
             if (updated)
             {
-              NewFeatureHandler(this, this);
+              TriggerNewUpdate();
             }
           }
+
           break;
         case SSEResultState.Feature:
           if (data != null)
           {
             if (FeatureUpdate(JsonConvert.DeserializeObject<FeatureState>(data)))
             {
-              NewFeatureHandler(this, this);
+              TriggerNewUpdate();
             }
           }
+
           break;
         case SSEResultState.Deletefeature:
           if (data != null)
           {
             DeleteFeature(JsonConvert.DeserializeObject<FeatureState>(data));
           }
+
           break;
         default:
           throw new ArgumentOutOfRangeException(nameof(state), state, null);
@@ -167,7 +183,7 @@ namespace FeatureHubSDK
     {
       if (_features.Remove(fs.Key))
       {
-        NewFeatureHandler(this, this);
+        TriggerNewUpdate();
       }
     }
 
@@ -179,21 +195,82 @@ namespace FeatureHubSDK
         return false;
       }
 
-      FeatureStateBaseHolder holder = _features[fs.Key];
+      var keyExists = _features.ContainsKey(fs.Key);
+      FeatureStateBaseHolder holder = keyExists ? _features[fs.Key] : null;
       if (holder == null || holder.Key == null)
       {
         holder = new FeatureStateBaseHolder(holder);
-      } else if (holder.Version != null && holder.Version >= fs.Version)
+      }
+      else if (holder.Version != null && holder.Version >= fs.Version)
       {
+        // Console.WriteLine($"discarding {fs}");
         return false;
       }
 
+      // Console.WriteLine($"storing {fs}");
+
       holder.FeatureState = fs;
-      _features[fs.Key] = holder;
+      if (keyExists)
+      {
+        _features[fs.Key] = holder;
+      }
+      else
+      {
+        _features.Add(fs.Key, holder);
+      }
 
       return true;
     }
+
+    public IFeatureStateHolder FeatureState(string key)
+    {
+      if (!_features.ContainsKey(key))
+      {
+        _features.Add(key, new FeatureStateBaseHolder(null));
+      }
+
+      return _features[key];
+    }
   }
 
+  public class EventServiceListener
+  {
+    private EventSource _eventSource;
+    private Task _started;
 
+    public void Init(string url, FeatureHubRepository repository)
+    {
+      var config = new Configuration(uri: new UriBuilder(url).Uri);
+      _eventSource = new EventSource(config);
+      _eventSource.MessageReceived += (sender, args) =>
+      {
+        // Console.WriteLine($"{args.EventName}:\n\t {args.Message.Data}");
+
+        SSEResultState? state = args.EventName switch
+        {
+          "features" => SSEResultState.Features,
+          "feature" => SSEResultState.Feature,
+          "failure" => SSEResultState.Failure,
+          "delete_feature" => SSEResultState.Deletefeature,
+          _ => null
+        };
+
+        if (state == null) return;
+
+        repository.Notify(state.Value, args.Message.Data);
+
+        if (state == SSEResultState.Failure)
+        {
+          _eventSource.Close();
+        }
+      };
+
+      _started = _eventSource.StartAsync();
+    }
+
+    public void Close()
+    {
+      _eventSource.Close();
+    }
+  }
 }

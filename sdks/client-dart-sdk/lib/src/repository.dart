@@ -142,7 +142,7 @@ class ClientFeatureRepository {
             _catchUpdatedFeatures(features);
           } else {
             var _updated = false;
-            features.forEach((f) => _updated = _updated || _featureUpdate(f));
+            features.forEach((f) => _updated = _featureUpdate(f) || _updated);
             if (!_hasReceivedInitialState) {
               _checkForInvalidFeatures();
               _hasReceivedInitialState = true;
