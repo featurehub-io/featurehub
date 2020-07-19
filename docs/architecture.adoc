@@ -44,7 +44,7 @@ the same topic from MR, so they do not suffer split brain.
 === Edge
 
 Edge is intended to be where the communication with the SDKs live. It is intended to be high volume endpoint but retain
-little data - only who is connected to it and which environment they are listening to for feature updates.  Access to
+little data - only who is connected to it and which environment they are listening to for feature updates. Access to
 Edge is given by a combination of Service Account and Environment IDs. That combination is given a permission structure
 back in MR, and is usually simply READ. For test accounts, a service account can also have the ability to change
 features as it may need to while doing end-to-end tests.
