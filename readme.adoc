@@ -25,7 +25,7 @@ image::docs/images/FH-flags.gif[FeatureHub console demo,800]
 
 image:docs/images/languages.png[Java Logo,1000]
 
-More detailed documentation on SDK's can be found link:sdks/README.adoc[here]
+More detailed documentation on SDK's can be found https://docs.featurehub.io[here]
 
 === Easy to use
 

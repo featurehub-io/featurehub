@@ -2,29 +2,24 @@
 FeatureHub Team <info@featurehub.io>
 ifdef::env-github,env-browser[:outfilesuffix: .adoc]
 :toc: left
-:toclevels: 4
+:toclevels: 2
 :toc-title: Contents
 
 Visit us on https://github.com/featurehub-io/featurehub[Github]
 
 == Overview
 
-FeatureHub is a Cloud Native platform to help software teams manage and their features, from feature flags 
-(also known as feature toggles) to A/B experiments and remote or centralised configuration management.
-It's an essential ingredient for enabling the feedback loop see diagram below).
+FeatureHub is a Cloud Native platform to help software teams manage their features, from feature flags (also known as feature toggles) to A/B experiments and remote or centralised configuration.
+It's an essential ingredient for enabling the feedback loop see diagram below.
 
 Building software with feature management encourages DevOps practices like
-https://trunkbaseddevelopment.com[trunk based development], continuous delivery and importantly, 
-separating deployment from releasing. Enabling teams to deliver value to customers early and often, 
-whilst maintaining high quality and keeping risk low.
+https://trunkbaseddevelopment.com[trunk based development], continuous delivery and importantly, separating deployment from release management.
+Enabling teams to deliver value to customers early and often, whilst maintaining high quality and keeping risk low.
 
 FeatureHub can be used with small startups through to large enterprises with many applications and teams.
-It's has an enterprise grade security and permission model, that's intuitive and easy to use, 
-so you can be up and running quickly.
+It has an enterprise grade security and permission model, that's intuitive and easy to use, so you can be up and running quickly.
 
-FeatureHub aims to have the greatest range of options available for the software community, from the ability to run
-it self hosted, through to a SaaS platform, allowing you to start small and hosted, grow and self host, and then
-deciding to outsource your continually growing feature management as you get more successful. 
+FeatureHub is a self-hosted platform so you can run it on your own infrastructure.
 
 image::images/fh_learn_build_measure.svg[Learn,Build,Measure]
 
@@ -110,7 +105,7 @@ If you are considering helping us by writing a new SDK for your favourite langua
 
 (1) Javascript and Typescript are supported via a Typescript library.
 
-=== Capabilities in detail
+=== Capabilities explained
 
 ==== Event Streaming
 
@@ -185,13 +180,16 @@ If it is null, and you want to ensure this is set to null (which is ignored for 
 - `updateValue` - this is specifically for the situation where you are setting a non feature flag to have a null value.
 Otherwise passing a value will assume this is true.
 
-=== SDK Usage Details
+=== SDK Usage 
+
+Choose from your development language / framework and follow the links for the implementation details and examples:
 
 |===================================
-| http://readmelink[Java]|http://readmelink[Javascript]|Node|React|Go|Dart
+|Language / framework| link:../sdks/client-java-jersey/README.adoc[Java-Jersey]|link:../sdks/client-typescript-core/README.adoc[Javascript, Typescript, Node, React, Angular]|Go - Coming soon!|link:../sdks/client-dart-sdk/README.adoc[Dart]
+|Examples|link:../examples/todo-backend-java[Java-Jersey example] |link:../examples/todo-backend-typescript[Node server example] , link:../examples/todo-frontend-react-typescript/[React app example] |Coming soon!|Coming soon!
 |===================================
 
-=== Licenses
+==== Licenses
 
 All SDKs are MIT licensed, as they reside in the client codebase.
 
