@@ -1,4 +1,5 @@
 = Contributors Documentation
+:favicon: favicon.ico
 ifdef::env-github,env-browser[:outfilesuffix: .adoc]
 :toc: left
 :toclevels: 4

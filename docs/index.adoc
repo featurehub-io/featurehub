@@ -4,6 +4,7 @@ ifdef::env-github,env-browser[:outfilesuffix: .adoc]
 :toc: left
 :toclevels: 2
 :toc-title: Contents
+:favicon: favicon.ico
 
 FeatureHub Team <info@featurehub.io>
 
