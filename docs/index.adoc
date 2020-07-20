@@ -54,7 +54,7 @@ docker run -p 8085:8085 -v ~/tmp:/db featurehub/party-server:0.0.4
 where `~/tmp` is where you wish to store the database (h2). This will start FeatureHub Admin Console on port 8085 and you can now
 register as Super Admin, create Portfolio, Application, Feature etc.
 
-Once you have done this, you can then simply run the example project, so you don't have to create sample app and add SDK code yourself. Example project consist of a back-end service and a front-end sample app with some sample features already in place.
+Once you have done this, you can then simply run the example project, so you don't have to create sample app and add SDK code yourself. Example project consists of a back-end service and a front-end sample app with some sample features already in place.
 
 ==== Running the example
 
