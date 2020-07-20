@@ -31,7 +31,7 @@ Please read link:architecture{outfilesuffix}[for information about the architect
 
 == Installation
 
-There are 3 main deployment options for running FeatureHub. As FeatureHub is packaged as a _Cloud Native_
+There are link:installation{outfilesuffix}[3 main deployment options] for running FeatureHub. As FeatureHub is packaged as a _Cloud Native_
 bundle, all parts are Docker images and are intended to be used with that technology (i.e. Docker or Kubernetes).
 
 All sample configurations are in the `run-configurations` folder. All of the run configurations mount the
@@ -43,21 +43,22 @@ initialization and migration DDL for each of these databases. Others can be supp
 
 === Starting small
 
-If you wish to get up and running without using `docker-compose` and downloading this repository, we would
-recommend running this simple line:
+If you are just curious to see how FeatureHub works and would like to play with it before deciding which of the 3 installation options are right for you, you can also try it just by running several commands and without cloning this repository. You can watch the video with some instructions http://[here] or follow the instructions below. 
+
+Start with running this simple line:
 
 ----
 docker run -p 8085:8085 -v ~/tmp:/db featurehub/party-server:0.0.4
 ----
 
-where `~/tmp` is where you wish to store the database. This will start FeatureHub on port 8085 and you can now
+where `~/tmp` is where you wish to store the database (h2). This will start FeatureHub Admin Console on port 8085 and you can now
 create your first Superuser, Portfolio, Application, Feature etc.
 
-Once you have done this, you can then simply run the example project and tie the two together.
+Once you have done this, you can then simply run the example project, so you don't have to create sample app and add SDK code yourself. Example project consist of a back-end service and a front-end sample app with some sample features.
 
-=== Running the example
+==== Running the example
 
-The example will need to know the SDK URL of your environment, and it will need an IP address that the second
+The example will need to know the SDK URL of your environment (which you can find in a FeatureHub Admin Console), and it will need an IP address that the second
 docker can get access to. If you know how to use docker networks, you should be able to find this easily, otherwise
 find your en0 ip address (you can type: `ifconfig en0` - choose the inet address, Windows will be slightly different)
 or similar, do not use localhost as that will not work.
@@ -69,16 +70,13 @@ docker run -e FEATUREHUB_APP_ENV_URL=http://$MY_IP:8085/features/$SDK_URL -p 500
 ----
 
 This will cause the example to start and you can access it on port 5000. Add a few todo's in mixed case.
-If you create a feature flag called `FEATURE_TITLE_TO_UPPERCASE`, unlock it and set it to true, you will see a "refresh"
-message appear. If you refresh, it will upper case everything, experiment. This flag is affecting the backend.
+If you create a feature flag in the FeatureHub Admin Console called `FEATURE_TITLE_TO_UPPERCASE`, unlock it and set it to true. Now check you sample front-end app, you will see a "refresh"
+message appear. If you refresh, it will upper case everything, experiment. This flag is affecting the backend service as this is where we implemented the feature using one of the SDKs.
 
-If you create a feature value - a String value called `SUBMIT_COLOR_BUTTON` and set its value to (say) `cyan`, you will again see a refresh indicator and on refresh the Add button will swap to Cyan.
-Each time you change the colour, it will recommend you refresh.
+Now in the Feature Admin Console, if you create a feature value - a String value called `SUBMIT_COLOR_BUTTON` and set its value to (say) `cyan`, you will again see a refresh indicator in the sample front-end app and on refresh the Add button will swap to Cyan.
+Each time you change the colour, it will recommend you to refresh.
 It is doing this because it is set in "catch and release" mode, and we recommend you read up on the SDKs for further information on this.
 
-=== Further installation details
-
-Further information on link:installation{outfilesuffix}[installation, deployment options, configuration, etc].
 
 [#sdks]
 == Client SDKs for Feature Hub
