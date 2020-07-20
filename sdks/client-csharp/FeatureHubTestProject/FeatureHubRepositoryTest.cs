@@ -38,6 +38,36 @@ namespace FeatureHubTestProject
     }
 
     [Test]
+    public void ExplodeWhenReadynessDoesntFailTest()
+    {
+      var found = false;
+      _repository.ReadynessHandler += (sender, readyness) => throw new Exception();
+      _repository.ReadynessHandler += (sender, readyness) => { found = true; };
+      _repository.Notify(SSEResultState.Features, EncodeFeatures());
+      Assert.AreEqual(false, found);
+    }
+
+    [Test]
+    public void ExplodeWhenNewFeatureDoesntFailTest()
+    {
+      var found = false;
+      _repository.NewFeatureHandler += (sender, readyness) => throw new Exception();
+      _repository.NewFeatureHandler += (sender, readyness) => { found = true; };
+      _repository.Notify(SSEResultState.Features, EncodeFeatures());
+      Assert.AreEqual(false, found);
+    }
+
+    [Test]
+    public void ExplodeWhenFeatureUpdatesDoesNotFailTest()
+    {
+      var found = false;
+      _repository.FeatureState("1").FeatureUpdateHandler += (sender, state) => throw new Exception();
+      _repository.FeatureState("1").FeatureUpdateHandler += (sender, state) => { found = true; };
+      Assert.AreEqual(false, found);
+      _repository.Notify(SSEResultState.Features, EncodeFeatures());
+    }
+
+    [Test]
     public void ByeTurnsOffReadyness()
     {
       _repository.Notify(SSEResultState.Features, EncodeFeatures());

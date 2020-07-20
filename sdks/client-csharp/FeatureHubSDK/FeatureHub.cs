@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using IO.FeatureHub.SSE.Model;
 using Newtonsoft.Json;
+using Common.Logging; // because dependent library does
 
 namespace FeatureHubSDK
 {
@@ -69,6 +70,7 @@ namespace FeatureHubSDK
 
   internal class FeatureStateBaseHolder : IFeatureStateHolder
   {
+    private static readonly ILog log = LogManager.GetLogger<FeatureStateBaseHolder>();
     private object _value;
     private FeatureState _feature;
     public event EventHandler<IFeatureStateHolder> FeatureUpdateHandler;
@@ -113,8 +115,15 @@ namespace FeatureHubSDK
         // did the value change? if so, tell everyone listening via event handler
         if ((_value != null && !_value.Equals(oldVal)) || (oldVal != null && !oldVal.Equals(_value)))
         {
-          EventHandler<IFeatureStateHolder> handler = FeatureUpdateHandler;
-          handler?.Invoke(this, this);
+          var handler = FeatureUpdateHandler;
+          try
+          {
+            handler?.Invoke(this, this);
+          }
+          catch (Exception e)
+          {
+            log.Error($"Failed to process update for feature {Key}", e);
+          }
         }
       }
     }
@@ -122,6 +131,7 @@ namespace FeatureHubSDK
 
   public class FeatureHubRepository
   {
+    private static readonly ILog log = LogManager.GetLogger<FeatureHubRepository>();
     private readonly Dictionary<string, FeatureStateBaseHolder> _features =
       new Dictionary<string, FeatureStateBaseHolder>();
 
@@ -133,14 +143,28 @@ namespace FeatureHubSDK
 
     private void TriggerReadyness()
     {
-      EventHandler<Readyness> handler = ReadynessHandler;
-      handler?.Invoke(this, _readyness);
+      var handler = ReadynessHandler;
+      try
+      {
+        handler?.Invoke(this, _readyness);
+      }
+      catch (Exception e)
+      {
+        log.Error($"Failed to indicate readyness change to {_readyness}", e);
+      }
     }
 
     private void TriggerNewUpdate()
     {
-      EventHandler<FeatureHubRepository> handler = NewFeatureHandler;
-      handler?.Invoke(this, this);
+      var handler = NewFeatureHandler;
+      try
+      {
+        handler?.Invoke(this, this);
+      }
+      catch (Exception e)
+      {
+        log.Error("Failed to indicate trigger new feature change.", e);
+      }
     }
 
     // Notify
