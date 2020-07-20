@@ -99,10 +99,9 @@ class HideEnvironmentContainer extends StatelessWidget {
     }
 
     return Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
+          Flexible(
             child: Text(
               name,
               overflow: TextOverflow.ellipsis,
