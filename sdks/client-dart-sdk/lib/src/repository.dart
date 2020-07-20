@@ -32,10 +32,6 @@ class AnalyticsEvent {
   AnalyticsEvent(this.action, this.features, this.other);
 }
 
-typedef AnalyticsCollector = Future<void> Function(
-    String action, List<FeatureStateHolder> featureStateAtCurrentTime,
-    {Map<String, String> other});
-
 class _FeatureStateBaseHolder implements FeatureStateHolder {
   dynamic _value;
   FeatureState _featureState;
@@ -146,7 +142,7 @@ class ClientFeatureRepository {
             _catchUpdatedFeatures(features);
           } else {
             var _updated = false;
-            features.forEach((f) => _updated = _updated || _featureUpdate(f));
+            features.forEach((f) => _updated = _featureUpdate(f) || _updated);
             if (!_hasReceivedInitialState) {
               _checkForInvalidFeatures();
               _hasReceivedInitialState = true;
@@ -246,7 +242,7 @@ class ClientFeatureRepository {
     if (holder == null || holder.key == null) {
       holder = _FeatureStateBaseHolder(holder);
     } else {
-      if (holder._featureState.version >= feature.version) {
+      if (holder.version != null && holder.version >= feature.version) {
         return false;
       }
     }
