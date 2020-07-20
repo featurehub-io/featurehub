@@ -1,2 +1,2 @@
 #!/bin/sh
-docker build -t featurehub/base_mr:1.2 .
+docker build -t featurehub/base_mr:1.3 .
