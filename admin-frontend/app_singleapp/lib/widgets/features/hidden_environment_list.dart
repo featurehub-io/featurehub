@@ -71,11 +71,9 @@ class HideEnvironmentContainer extends StatelessWidget {
       return Padding(
         padding: const EdgeInsets.only(right: 8.0),
         child: Row(children: [
-          Expanded(
-            child: Text(
-              name,
-              overflow: TextOverflow.ellipsis,
-            ),
+          Text(
+            name,
+            overflow: TextOverflow.ellipsis,
           ),
           Padding(
             padding: const EdgeInsets.only(left: 2.0, right: 2.0),
@@ -99,10 +97,9 @@ class HideEnvironmentContainer extends StatelessWidget {
     }
 
     return Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
+          Flexible(
             child: Text(
               name,
               overflow: TextOverflow.ellipsis,
