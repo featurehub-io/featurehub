@@ -20,7 +20,6 @@ using System.Collections.ObjectModel;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using System.ComponentModel.DataAnnotations;
 using OpenAPIDateConverter = IO.FeatureHub.SSE.Client.OpenAPIDateConverter;
 
 namespace IO.FeatureHub.SSE.Model
@@ -29,7 +28,7 @@ namespace IO.FeatureHub.SSE.Model
     /// Strategy
     /// </summary>
     [DataContract]
-    public partial class Strategy :  IEquatable<Strategy>, IValidatableObject
+    public partial class Strategy :  IEquatable<Strategy>
     {
         /// <summary>
         /// Gets or Sets Name
@@ -147,15 +146,6 @@ namespace IO.FeatureHub.SSE.Model
             }
         }
 
-        /// <summary>
-        /// To validate all properties of the instance
-        /// </summary>
-        /// <param name="validationContext">Validation context</param>
-        /// <returns>Validation Result</returns>
-        IEnumerable<System.ComponentModel.DataAnnotations.ValidationResult> IValidatableObject.Validate(ValidationContext validationContext)
-        {
-            yield break;
-        }
     }
 
 }

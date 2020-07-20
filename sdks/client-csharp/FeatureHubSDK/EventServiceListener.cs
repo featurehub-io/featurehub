@@ -8,7 +8,6 @@ namespace FeatureHubSDK
   public class EventServiceListener
   {
     private EventSource _eventSource;
-    private Task _started;
 
     public void Init(string url, FeatureHubRepository repository)
     {
@@ -18,14 +17,25 @@ namespace FeatureHubSDK
       {
         // Console.WriteLine($"{args.EventName}:\n\t {args.Message.Data}");
 
-        SSEResultState? state = args.EventName switch
+        SSEResultState? state;
+        switch (args.EventName)
         {
-          "features" => SSEResultState.Features,
-          "feature" => SSEResultState.Feature,
-          "failure" => SSEResultState.Failure,
-          "delete_feature" => SSEResultState.Deletefeature,
-          _ => null
-        };
+          case "features":
+            state = SSEResultState.Features;
+            break;
+          case "feature":
+            state = SSEResultState.Feature;
+            break;
+          case "failure":
+            state = SSEResultState.Failure;
+            break;
+          case "delete_feature":
+            state = SSEResultState.Deletefeature;
+            break;
+          default:
+            state = null;
+            break;
+        }
 
         if (state == null) return;
 
@@ -37,7 +47,7 @@ namespace FeatureHubSDK
         }
       };
 
-      _started = _eventSource.StartAsync();
+      _eventSource.StartAsync();
     }
 
     public void Close()

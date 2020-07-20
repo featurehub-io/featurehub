@@ -131,6 +131,7 @@
                 </additionalProperty>
                 <additionalProperty>optionalProjectFile=false</additionalProperty>
                 <additionalProperty>optionalAssemblyInfo=false</additionalProperty>
+                <additionalProperty>validatable=false</additionalProperty>
               </additionalProperties>
               <typeMappings>
                 <typeMapping>AnyType=object</typeMapping>

@@ -20,7 +20,6 @@ using System.Collections.ObjectModel;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using System.ComponentModel.DataAnnotations;
 using OpenAPIDateConverter = IO.FeatureHub.SSE.Client.OpenAPIDateConverter;
 
 namespace IO.FeatureHub.SSE.Model
