@@ -10,9 +10,9 @@ FeatureHub Team <info@featurehub.io>
 
 Visit us on https://github.com/featurehub-io/featurehub[Github]
 
-== Overview
-
 image::images/fh_primary_navy.png[Feature Hub,500]
+
+== Overview
 
 FeatureHub is a Cloud Native platform to help software teams manage their features, from feature flags (also known as feature toggles) to A/B experiments and remote or centralised configuration.
 It's an essential ingredient for enabling the feedback loop and feature testing and experimentation in production with real users (see diagram below).
