@@ -94,17 +94,17 @@ If you are considering helping us by writing a new SDK for your favourite langua
 
 [options="header"]
 |===================================
-|Capability|Java|Javascript^1^|Go|Dart
-|Event Streaming|Y|Y|Y|Y
-|Background Start|Y|Y|Y|Y
-|Block until Start|N|N|Y|N
-|Readyness Listeners|Y|Y|Y|Y
-|Feature Listeners|Y|Y|Y|Y
-|Feature Listener Removal|N|N|Y|Y
-|Catch & Release|N|Y|N|Y
-|Analytics Support|Y|Y|N|Y
-|Google Analytics|Y|Y|N|N
-|Test Client|Y|N|N|Y
+|Capability|Java|Javascript^1^|Go|Dart|C#
+|Event Streaming|Y|Y|Y|Y|Y
+|Background Start|Y|Y|Y|Y|Y
+|Block until Start|N|N|Y|N|N
+|Readyness Listeners|Y|Y|Y|Y|Y
+|Feature Listeners|Y|Y|Y|Y|Y
+|Feature Listener Removal|N|N|Y|Y|Y
+|Catch & Release|N|Y|N|Y|N
+|Analytics Support|Y|Y|N|Y|N
+|Google Analytics|Y|Y|N|N|N
+|Test Client|Y|N|N|Y|N
 |===================================
 
 (1) Javascript and Typescript are supported via a Typescript library.
