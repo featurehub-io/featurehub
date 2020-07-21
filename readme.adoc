@@ -1,7 +1,7 @@
 image::docs/images/fh_primary_navy.png[Feature Hub,500]
 
 FeatureHub is a Cloud Native platform to help software teams manage their features, from feature flags (also known as feature toggles) to A/B experiments and remote or centralised configuration.
-It's an essential ingredient for enabling the feedback loop and feature testing and experimentation in production with real users
+It's an essential ingredient for enabling the feedback loop and feature testing and experimentation in production with real users.
 
 FeatureHub can be used with small startups through to large enterprises with many applications and teams.
 It has an enterprise grade permission model, that is intuitive and easy to use, so you can be up and running quickly.
