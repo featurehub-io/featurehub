@@ -51,7 +51,7 @@ If you are just curious to see how FeatureHub works and would like to play with 
 Start with running this simple line:
 
 ----
-docker run -p 8085:8085 -v ~/tmp:/db featurehub/party-server:0.0.4
+docker run -p 8085:80 -v ~/tmp/party:/db featurehub/party-server:0.0.6
 ----
 
 where `~/tmp` is where you wish to store the database (h2). This will start FeatureHub Admin Console on port 8085 and you can now

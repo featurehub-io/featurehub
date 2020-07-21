@@ -7,17 +7,17 @@ services:
     ports:
     - 4222:4222
   mr-server:
-    image: featurehub/mr:0.0.4
+    image: featurehub/mr:0.0.6
     restart: always
     volumes:
       - ./app-config:/etc/app-config
     ports:
-      - 8085:8085
+      - 8085:80
     depends_on:
       - "db"
       - "nats"
   dacha:
-    image: featurehub/dacha:0.0.4
+    image: featurehub/dacha:0.0.6
     restart: always
     volumes:
       - ./dacha-config:/etc/app-config
@@ -26,7 +26,7 @@ services:
       - "mr-server"
       - "nats"
   edge:
-    image: featurehub/edge:0.0.4
+    image: featurehub/edge:0.0.6
     restart: always
     volumes:
       - ./edge-config:/etc/app-config
