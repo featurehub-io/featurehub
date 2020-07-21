@@ -188,9 +188,11 @@ Otherwise passing a value will assume this is true.
 
 Choose from your development language / framework and follow the links for the implementation details and examples:
 
+[options="header"]
 |===================================
-|Language / framework| link:../sdks/client-java-jersey/README.adoc[Java-Jersey]|link:../sdks/client-typescript-core/README.adoc[Javascript, Typescript, Node, React, Angular]|Go - Coming soon!|link:../sdks/client-dart-sdk/README.adoc[Dart]
-|Examples|link:../examples/todo-backend-java[Java-Jersey example] |link:../examples/todo-backend-typescript[Node server example] , link:../examples/todo-frontend-react-typescript/[React app example] |Coming soon!|Coming soon!
+||Java|JavaScript|C#|Dart|Go
+|Documentation| link:https://github.com/featurehub-io/featurehub/tree/master/sdks/client-java-jersey/README.adoc[Java-Jersey]|link:https://github.com/featurehub-io/featurehub/tree/master/sdks/client-typescript-core/README.adoc[Javascript, Typescript, Node, React, Angular]|https://github.com/featurehub-io/featurehub/tree/master/sdks/client-csharp/FeatureHubSDK[C#]|link:../sdks/client-dart-sdk/README.adoc[Dart]|https://github.com/featurehub-io/featurehub/tree/master/sdks/client-go[Go]
+|Examples|link:https://github.com/featurehub-io/featurehub/tree/master/examples/todo-backend-java[Java-Jersey example] | link:https://github.com/featurehub-io/featurehub/tree/master/examples/todo-backend-typescript[Node server example] , link:../examples/todo-frontend-react-typescript/[React app example] |Coming soon!|Coming soon!|Coming soon!
 |===================================
 
 ==== Licenses
