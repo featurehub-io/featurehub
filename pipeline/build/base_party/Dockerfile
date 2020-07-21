@@ -14,6 +14,7 @@ COPY log4j2.xml /etc/common-config/log4j2.xml
 COPY default_site /etc/nginx/sites-enabled/default
 
 
+EXPOSE 80
 
 
 
