@@ -1,9 +1,12 @@
 image::docs/images/fh_primary_navy.png[Feature Hub,500]
 
-FeatureHub is a feature management platform to help software teams to orchestrate releases, from feature flags to A/B experiments and remote configuration management.
+FeatureHub is a Cloud Native platform to help software teams manage their features, from feature flags (also known as feature toggles) to A/B experiments and remote or centralised configuration.
+It's an essential ingredient for enabling the feedback loop and feature testing and experimentation in production with real users.
 
 FeatureHub can be used with small startups through to large enterprises with many applications and teams.
 It has an enterprise grade permission model, that is intuitive and easy to use, so you can be up and running quickly.
+
+FeatureHub is a self-hosted platform so you can run it on your own infrastructure.
 
 https://demo.featurehub.io[Try FeatureHub demo now]
 
@@ -56,29 +59,14 @@ Full documentation can be found at https://docs.featurehub.io[docs.featurehub.io
 
 === Getting started
 
-Out of the box FeatureHub uses Docker, to start simply run the following docker command
+If you are just curious to see how FeatureHub works and would like to play with it there is a simple way of doing it, please follow instructions https://docs.featurehub.io/#_starting_small[here]
 
-[source]
-----
-docker-compose up
-----
+Once you decided to start using FeatureHub in your team, there are also several installation options depending on your use case, please read about these options https://docs.featurehub.io/#_installation[here].
 
-[NOTE]
-You'll need to https://docs.docker.com/get-docker/[install Docker] first.
+=== How to use SDKs and examples 
 
-Once running, open up a browser and head to http://localhost:8085 there you can kick off the initial setup.
+Please follow documentation http://docs.featurehub.io/index.html#_sdk_usage[here]
 
-There are several deployment options depending on your use case, we strongly recommend reading about these options in the https://docs.featurehub.io[documentation].
-
-For advanced users who want to run the stack from scratch, please see the <<docs/developers.adoc, developer docs>> for more details.
-
-=== Examples 
-
-We have several SDK examples for Java, Node JS, Typescript and React implementations.
-
-- link:examples/README.adoc[Examples documentation]
-
-- link:examples/[Examples]
 
 //== Built with
 //* https://flutter.dev/web[Flutter Web]
@@ -93,7 +81,7 @@ We have several SDK examples for Java, Node JS, Typescript and React implementat
 == Coming soon
 
 * Gradual rollout and A/B testing
-* SDK's : C#/.NET, Mobile (Swift, Java), Python
+* SDK's : Mobile (Swift, Java), Python
 * Per request feature testing with CNCF Open Tracing and Open Telemetry
 * Yaml remote configuration support
 * Feature auditing
