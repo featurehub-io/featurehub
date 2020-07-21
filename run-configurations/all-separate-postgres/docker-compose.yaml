@@ -12,7 +12,7 @@ services:
     volumes:
       - ./app-config:/etc/app-config
     ports:
-      - 8085:8085
+      - 8085:80
     depends_on:
       - "db"
       - "nats"
