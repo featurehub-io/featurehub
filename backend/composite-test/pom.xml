@@ -5,12 +5,12 @@
   <parent>
     <groupId>io.featurehub.composites</groupId>
     <artifactId>composite-parent</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.1</version>
     <relativePath>../composite-parent</relativePath>
   </parent>
 
   <artifactId>composite-test</artifactId>
-  <version>1.1-SNAPSHOT</version>
+  <version>1.2-SNAPSHOT</version>
   <name>composite-test</name>
 
   <description>
@@ -40,6 +40,14 @@
       <url>https://github.com/featurehub-io/featurehub/blob/master/LICENSE.txt</url>
     </license>
   </licenses>
+
+  <scm>
+    <connection>scm:git:git@github.com:featurehub-io/featurehub.git</connection>
+    <developerConnection>scm:git:git@github.com:featurehub-io/featurehub.git</developerConnection>
+    <url>git@github.com:featurehub-io/featurehub.git</url>
+    <tag>HEAD</tag>
+  </scm>
+
 
   <properties>
     <prometheus.version>0.6.0</prometheus.version>
@@ -85,6 +93,7 @@
           <filtering>false</filtering>
           <tiles>
             <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
+            <tile>io.featurehub.tiles:tile-release:[1.1,2)</tile>
           </tiles>
         </configuration>
       </plugin>

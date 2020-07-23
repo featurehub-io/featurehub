@@ -2,9 +2,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>io.featurehub.mr</groupId>
+  <groupId>io.featurehub.sdk</groupId>
   <artifactId>java-client-jersey</artifactId>
-  <version>1.1-SNAPSHOT</version>
+  <version>1.2-SNAPSHOT</version>
   <name>java-client-jersey</name>
 
   <description>
@@ -36,93 +36,44 @@
     </license>
   </licenses>
 
+  <scm>
+    <connection>scm:git:git@github.com:featurehub-io/featurehub.git</connection>
+    <developerConnection>scm:git:git@github.com:featurehub-io/featurehub.git</developerConnection>
+    <url>git@github.com:featurehub-io/featurehub.git</url>
+    <tag>HEAD</tag>
+  </scm>
+
+
   <dependencies>
     <dependency>
       <groupId>io.featurehub.composites</groupId>
       <artifactId>composite-jersey</artifactId>
-      <version>1.1-SNAPSHOT</version>
+      <version>[1.1, 2)</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>io.featurehub.mr</groupId>
       <artifactId>java-client-core</artifactId>
-      <version>1.1-SNAPSHOT</version>
+      <version>[1.1, 2)</version>
     </dependency>
 
     <dependency>
       <groupId>io.featurehub.edge</groupId>
       <artifactId>sse-edge-api</artifactId>
-      <version>1.1-SNAPSHOT</version>
+      <version>[1.2, 2)</version>
     </dependency>
 
     <dependency>
       <groupId>io.featurehub.composites</groupId>
       <artifactId>composite-test</artifactId>
-      <version>1.1-SNAPSHOT</version>
+      <version>[1.1, 2)</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.featurehub.mr</groupId>
-      <artifactId>mr-api</artifactId>
-      <version>1.1-SNAPSHOT</version>
     </dependency>
   </dependencies>
 
   <build>
     <plugins>
-      <plugin>
-        <groupId>org.openapitools</groupId>
-        <artifactId>openapi-generator-maven-plugin</artifactId>
-        <version>4.0.0</version>
-        <dependencies>
-          <dependency>
-            <groupId>cd.connect.openapi</groupId>
-            <artifactId>connect-openapi-jersey2</artifactId>
-            <version>4.11</version>
-          </dependency>
-        </dependencies>
-        <executions>
-          <execution>
-            <id>featurehub-api</id>
-            <goals>
-              <goal>generate</goal>
-            </goals>
-            <phase>generate-sources</phase>
-            <configuration>
-              <output>${project.basedir}/target/generated-sources/api</output>
-              <apiPackage>io.featurehub.sse.api</apiPackage>
-              <modelPackage>io.featurehub.sse.model</modelPackage>
-              <inputSpec>${project.basedir}/../../backend/sse-edge-api/final.yaml</inputSpec>
-              <generateApis>true</generateApis>
-              <generateModels>false</generateModels>
-              <language>jersey2-api</language>
-              <library>jersey2-api</library>
-
-              <additionalProperties>
-                <additionalProperty>server</additionalProperty>
-              </additionalProperties>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>add-generated-source</id>
-            <phase>initialize</phase>
-            <goals>
-              <goal>add-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-                <source>${project.build.directory}/generated-sources/api/src/gen</source>
-              </sources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <groupId>io.repaint.maven</groupId>
         <artifactId>tiles-maven-plugin</artifactId>
@@ -132,6 +83,7 @@
           <filtering>false</filtering>
           <tiles>
             <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
+            <tile>io.featurehub.tiles:tile-release:[1.1,2)</tile>
           </tiles>
         </configuration>
       </plugin>

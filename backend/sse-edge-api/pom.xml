@@ -4,7 +4,7 @@
 
   <groupId>io.featurehub.edge</groupId>
   <artifactId>sse-edge-api</artifactId>
-  <version>1.1-SNAPSHOT</version>
+  <version>1.3-SNAPSHOT</version>
   <name>sse-edge-api</name>
 
   <description>
@@ -35,11 +35,18 @@
     </license>
   </licenses>
 
+  <scm>
+    <connection>scm:git:git@github.com:featurehub-io/featurehub.git</connection>
+    <developerConnection>scm:git:git@github.com:featurehub-io/featurehub.git</developerConnection>
+    <url>git@github.com:featurehub-io/featurehub.git</url>
+    <tag>sse-edge-api-1.1</tag>
+  </scm>
+
   <dependencies>
     <dependency>
       <groupId>io.featurehub.composites</groupId>
       <artifactId>composite-jersey</artifactId>
-      <version>1.1-SNAPSHOT</version>
+      <version>[1.1, 2)</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
@@ -55,6 +62,7 @@
           <filtering>false</filtering>
           <tiles>
             <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
+            <tile>io.featurehub.tiles:tile-release:[1.1,2)</tile>
           </tiles>
         </configuration>
       </plugin>
@@ -87,7 +95,7 @@
           <dependency>
             <groupId>cd.connect.openapi</groupId>
             <artifactId>connect-openapi-jersey2</artifactId>
-            <version>4.11</version>
+            <version>5.3</version>
           </dependency>
         </dependencies>
         <executions>
@@ -102,12 +110,11 @@
               <apiPackage>io.featurehub.sse.api</apiPackage>
               <modelPackage>io.featurehub.sse.model</modelPackage>
               <inputSpec>${project.basedir}/final.yaml</inputSpec>
-              <generateApis>false</generateApis>
               <language>jersey2-api</language>
               <library>jersey2-api</library>
 
               <additionalProperties>
-                <additionalProperty>server-security</additionalProperty>
+                <additionalProperty>server</additionalProperty>
               </additionalProperties>
 
               <configOptions>

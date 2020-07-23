@@ -5,12 +5,12 @@
   <parent>
     <groupId>io.featurehub.composites</groupId>
     <artifactId>composite-parent</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.1</version>
     <relativePath>../composite-parent</relativePath>
   </parent>
 
   <artifactId>composite-jersey</artifactId>
-  <version>1.1-SNAPSHOT</version>
+  <version>1.2-SNAPSHOT</version>
   <name>composite-jersey</name>
 
   <description>
@@ -41,11 +41,19 @@
     </license>
   </licenses>
 
+  <scm>
+    <connection>scm:git:git@github.com:featurehub-io/featurehub.git</connection>
+    <developerConnection>scm:git:git@github.com:featurehub-io/featurehub.git</developerConnection>
+    <url>git@github.com:featurehub-io/featurehub.git</url>
+    <tag>HEAD</tag>
+  </scm>
+
+
   <dependencies>
     <dependency>
       <groupId>io.featurehub.composites</groupId>
       <artifactId>composite-jackson</artifactId>
-      <version>1.1-SNAPSHOT</version>
+      <version>[1.1, 2)</version>
     </dependency>
     <dependency>
       <groupId>cd.connect.openapi.gensupport</groupId>
@@ -63,17 +71,6 @@
           <artifactId>javafx.base</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>io.swagger.core.v3</groupId>
-      <artifactId>swagger-annotations</artifactId>
-      <version>2.0.7</version>
-    </dependency>
-    <dependency>
-      <groupId>io.swagger</groupId>
-      <artifactId>swagger-annotations</artifactId>
-      <version>1.5.22</version>
     </dependency>
 
     <dependency>
@@ -151,6 +148,7 @@
           <filtering>false</filtering>
           <tiles>
             <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
+            <tile>io.featurehub.tiles:tile-release:[1.1,2)</tile>
           </tiles>
         </configuration>
       </plugin>
