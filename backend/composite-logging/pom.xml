@@ -41,6 +41,13 @@
     </license>
   </licenses>
 
+  <scm>
+    <connection>scm:git:git@github.com:featurehub-io/featurehub.git</connection>
+    <developerConnection>scm:git:git@github.com:featurehub-io/featurehub.git</developerConnection>
+    <url>git@github.com:featurehub-io/featurehub.git</url>
+    <tag>HEAD</tag>
+  </scm>
+
   <properties>
     <slfj4.version>1.7.25</slfj4.version>
     <log4j.version>2.13.2</log4j.version>
