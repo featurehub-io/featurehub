@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <!--
+  - this contains what is actually being used downstream, but consistency is maintained with the main
+  - pom.xml
+  -->
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <url>https://featurehub.io</url>
+  <developers>
+    <developer>
+      <email>irina@featurehub.io</email>
+      <id>isouthwell</id>
+      <name>Irina Southwell</name>
+      <organization>Anyways Labs Ltd</organization>
+    </developer>
+
+    <developer>
+      <email>richard@featurehub.io</email>
+      <id>rvowles</id>
+      <name>Richard Vowles</name>
+      <organization>Anyways Labs Ltd</organization>
+    </developer>
+  </developers>
+
+  <licenses>
+    <license>
+      <name>Apache 2 with Commons Clause</name>
+      <url>https://github.com/featurehub-io/featurehub/blob/master/LICENSE.txt</url>
+    </license>
+  </licenses>
+
+  <scm>
+    <connection>scm:git:git@github.com:featurehub-io/featurehub.git</connection>
+    <developerConnection>scm:git:git@github.com:featurehub-io/featurehub.git</developerConnection>
+    <url>git@github.com:featurehub-io/featurehub.git</url>
+    <tag>HEAD</tag>
+  </scm>
+
+  <distributionManagement>
+    <repository>
+      <id>sonatype-staging</id>
+      <name>oss.sonatype.org Staging Repository</name>
+      <url>http://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+    <snapshotRepository>
+      <id>sonatype-snapshots</id>
+      <name>oss.sonatype.org Snapshot Repository</name>
+      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+  <profiles>
+    <profile>
+      <!-- adtivate the sonatype profile when a release is being done -->
+      <id>sonatype</id>
+      <activation>
+        <property>
+          <name>performRelease</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.6</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-deploy-plugin</artifactId>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.sonatype.plugins</groupId>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+            <version>1.6.7</version>
+            <executions>
+              <execution>
+                <id>deploy</id>
+                <goals>
+                  <goal>deploy</goal>
+                </goals>
+                <phase>deploy</phase>
+              </execution>
+            </executions>
+            <configuration>
+              <serverId>sonatype-staging</serverId>
+              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+              <autoReleaseAfterClose>true</autoReleaseAfterClose>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>net.stickycode.plugins</groupId>
+        <artifactId>bounds-maven-plugin</artifactId>
+        <version>2.7</version>
+      </plugin>
+      <plugin>
+        <groupId>com.bluetrainsoftware.maven</groupId>
+        <artifactId>release-pom</artifactId>
+        <version>1.6</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>1.0</version>
+        <!-- Invocation is defined by the release plugin goal set hence no executions -->
+        <configuration>
+          <rules>
+            <requireMavenVersion>
+              <version>[3.3.9,)</version>
+            </requireMavenVersion>
+            <requireReleaseDeps>
+              <!--  Don't allow releases with snapshop deps or parents -->
+              <message>No Snapshots Allowed!</message>
+              <failWhenParentIsSnapshot>true</failWhenParentIsSnapshot>
+              <searchTransitive>true</searchTransitive>
+            </requireReleaseDeps>
+          </rules>
+          <fail>true</fail>
+
+        </configuration>
+      </plugin>
+      <plugin> <!-- unlike with subversion, this doesn't require overriding because releases are always done from local -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+        <version>2.5.3</version>
+        <configuration>
+          <mavenExecutorId>forked-path</mavenExecutorId>
+          <arguments>-Dconnect.release</arguments>
+          <preparationGoals>clean enforcer:enforce verify</preparationGoals>
+          <goals>bounds:update release-pom:release-pom enforcer:enforce deploy</goals>
+          <tagBase>${project.groupId}/</tagBase>
+          <pushChanges>false</pushChanges>
+          <localCheckout>true</localCheckout>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.0.0</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <version>2.8.2</version>
+      </plugin>
+    </plugins>
+  </build>
+</project>
