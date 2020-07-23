@@ -110,12 +110,11 @@
               <apiPackage>io.featurehub.sse.api</apiPackage>
               <modelPackage>io.featurehub.sse.model</modelPackage>
               <inputSpec>${project.basedir}/final.yaml</inputSpec>
-              <generateApis>false</generateApis>
               <language>jersey2-api</language>
               <library>jersey2-api</library>
 
               <additionalProperties>
-                <additionalProperty>server-security</additionalProperty>
+                <additionalProperty>server</additionalProperty>
               </additionalProperties>
 
               <configOptions>
