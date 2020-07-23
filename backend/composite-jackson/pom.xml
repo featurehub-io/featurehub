@@ -81,6 +81,7 @@
           <filtering>false</filtering>
           <tiles>
             <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
+            <tile>io.featurehub.tiles:tile-release:[1.1,2)</tile>
           </tiles>
         </configuration>
       </plugin>
