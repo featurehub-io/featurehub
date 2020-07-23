@@ -48,26 +48,26 @@
     <dependency>
       <groupId>io.featurehub.composites</groupId>
       <artifactId>composite-jersey</artifactId>
-      <version>1.1-SNAPSHOT</version>
+      <version>[1.1, 2)</version>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>io.featurehub.mr</groupId>
       <artifactId>java-client-core</artifactId>
-      <version>1.1-SNAPSHOT</version>
+      <version>[1.1, 2)</version>
     </dependency>
 
     <dependency>
       <groupId>io.featurehub.edge</groupId>
       <artifactId>sse-edge-api</artifactId>
-      <version>1.1-SNAPSHOT</version>
+      <version>[1.1, 2)</version>
     </dependency>
 
     <dependency>
       <groupId>io.featurehub.composites</groupId>
       <artifactId>composite-test</artifactId>
-      <version>1.1-SNAPSHOT</version>
+      <version>[1.1, 2)</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -82,7 +82,7 @@
           <dependency>
             <groupId>cd.connect.openapi</groupId>
             <artifactId>connect-openapi-jersey2</artifactId>
-            <version>4.11</version>
+            <version>5.3</version>
           </dependency>
         </dependencies>
         <executions>

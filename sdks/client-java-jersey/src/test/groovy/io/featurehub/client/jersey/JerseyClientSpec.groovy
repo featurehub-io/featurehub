@@ -2,7 +2,7 @@ package io.featurehub.client.jersey
 
 import cd.connect.openapi.support.ApiClient
 import io.featurehub.client.ClientFeatureRepository
-import io.featurehub.sse.api.FeaturesService
+import io.featurehub.sse.api.FeatureService
 import io.featurehub.sse.model.FeatureStateUpdate
 import io.featurehub.sse.model.SSEResultState
 import org.glassfish.jersey.media.sse.EventInput
@@ -21,7 +21,7 @@ class JerseyClientSpec extends Specification {
   def targetUrl
   def basePath
   def sdkPartialUrl
-  FeaturesService mockFeatureService
+  FeatureService mockFeatureService
   ClientFeatureRepository mockRepository
   WebTarget mockEventSource
 
@@ -37,7 +37,7 @@ class JerseyClientSpec extends Specification {
         }
 
         @Override
-        protected FeaturesService makeFeatureServiceClient(ApiClient apiClient) {
+        protected FeatureService makeFeatureServiceClient(ApiClient apiClient) {
           basePath = apiClient.basePath
           sdkPartialUrl = sdkUrl
           return super.makeFeatureServiceClient(apiClient)
@@ -51,11 +51,11 @@ class JerseyClientSpec extends Specification {
 
   def "test the set feature sdk call"() {
     given: "I have a mock feature service"
-      mockFeatureService = Mock(FeaturesService)
+      mockFeatureService = Mock(FeatureService)
     and: "I have a client and mock the feature service url"
       def client = new JerseyClient("http://localhost:80/features/sdk-url", false, new ClientFeatureRepository(1)) {
         @Override
-        protected FeaturesService makeFeatureServiceClient(ApiClient apiClient) {
+        protected FeatureService makeFeatureServiceClient(ApiClient apiClient) {
           return mockFeatureService
         }
       }
@@ -70,11 +70,11 @@ class JerseyClientSpec extends Specification {
 
   def "test the set feature sdk call using a Feature"() {
     given: "I have a mock feature service"
-      mockFeatureService = Mock(FeaturesService)
+      mockFeatureService = Mock(FeatureService)
     and: "I have a client and mock the feature service url"
       def client = new JerseyClient("http://localhost:80/features/sdk-url2", false, new ClientFeatureRepository(1)) {
         @Override
-        protected FeaturesService makeFeatureServiceClient(ApiClient apiClient) {
+        protected FeatureService makeFeatureServiceClient(ApiClient apiClient) {
           return mockFeatureService
         }
       }

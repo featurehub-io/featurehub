@@ -3,7 +3,7 @@ package io.featurehub.client.jersey;
 import cd.connect.openapi.support.ApiClient;
 import io.featurehub.client.ClientFeatureRepository;
 import io.featurehub.client.Feature;
-import io.featurehub.sse.api.FeaturesService;
+import io.featurehub.sse.api.FeatureService;
 import io.featurehub.sse.model.FeatureStateUpdate;
 import io.featurehub.sse.model.SSEResultState;
 import org.glassfish.jersey.jackson.JacksonFeature;
@@ -29,7 +29,7 @@ public class JerseyClient {
   private boolean initialized;
   private final Executor executor;
   private final ClientFeatureRepository clientFeatureRepository;
-  private final FeaturesService featuresService;
+  private final FeatureService featuresService;
   private boolean shutdown = false;
   private boolean shutdownOnServerFailure = true;
   private boolean shutdownOnEdgeFailureConnection = false;
@@ -72,7 +72,7 @@ public class JerseyClient {
     return client.target(sdkUrl);
   }
 
-  protected FeaturesService makeFeatureServiceClient(ApiClient apiClient) {
+  protected FeatureService makeFeatureServiceClient(ApiClient apiClient) {
     return new FeatureServiceImpl(apiClient);
   }
 

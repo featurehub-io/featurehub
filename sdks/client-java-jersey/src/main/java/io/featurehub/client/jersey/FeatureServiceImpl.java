@@ -2,8 +2,7 @@ package io.featurehub.client.jersey;
 
 import cd.connect.openapi.support.ApiClient;
 import cd.connect.openapi.support.Pair;
-import io.featurehub.sse.api.FeaturesService;
-import io.featurehub.sse.model.FeatureState;
+import io.featurehub.sse.api.FeatureService;
 import io.featurehub.sse.model.FeatureStateUpdate;
 
 import javax.ws.rs.BadRequestException;
@@ -13,7 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class FeatureServiceImpl implements FeaturesService {
+public class FeatureServiceImpl implements FeatureService {
   private final ApiClient apiClient;
 
   public FeatureServiceImpl(ApiClient apiClient) {
