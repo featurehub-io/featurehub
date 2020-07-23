@@ -144,4 +144,16 @@ When you wish to lodge an event, simply call `logAnalyticsEvent` on the featureh
 simply pass the event, or you can pass the event plus some extra data, including the overridden CID and a `gaValue`
 for the value field in Google Analytics.
 
+== Using the library
 
+This is just a repository, it needs something to fill it and currently we support Jersey. If you wish to write your
+own or fill it with properties or such, you can use the artifact as is. In Maven-speak this is:
+
+[source,xml]
+----
+    <dependency>
+      <groupId>io.featurehub.sdk</groupId>
+      <artifactId>java-client-core</artifactId>
+      <version>1.2</version>
+    </dependency>
+----

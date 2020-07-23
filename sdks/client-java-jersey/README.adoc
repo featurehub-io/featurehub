@@ -61,3 +61,17 @@ SDK document for details on this.
 
 This includes the Jersey implementation of the Google Analytics. It requires no configuration, it can just be
 added as a new instance of an `GoogleAnalyticsApiClient` to your `GoogleAnalyticsCollector`.
+
+== Using the library
+
+If you are using Jersey, this will work for you directly. It makes no attempt to dictate your Jersey dependencies however. 
+In Maven-speak this is:
+
+[source,xml]
+----
+<dependency>
+  <groupId>io.featurehub.sdk</groupId>
+  <artifactId>java-client-jersey</artifactId>
+  <version>1.1</version>
+</dependency>
+----
