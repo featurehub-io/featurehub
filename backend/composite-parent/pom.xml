@@ -4,7 +4,7 @@
 
   <groupId>io.featurehub.composites</groupId>
   <artifactId>composite-parent</artifactId>
-  <version>1.1-SNAPSHOT</version>
+  <version>1.1</version>
   <packaging>pom</packaging>
   <name>composite-parent</name>
 
@@ -44,7 +44,7 @@
     <connection>scm:git:git@github.com:featurehub-io/featurehub.git</connection>
     <developerConnection>scm:git:git@github.com:featurehub-io/featurehub.git</developerConnection>
     <url>git@github.com:featurehub-io/featurehub.git</url>
-    <tag>HEAD</tag>
+    <tag>composite-parent-1.1</tag>
   </scm>
 
   <properties>
