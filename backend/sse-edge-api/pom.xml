@@ -4,7 +4,7 @@
 
   <groupId>io.featurehub.edge</groupId>
   <artifactId>sse-edge-api</artifactId>
-  <version>1.1-SNAPSHOT</version>
+  <version>1.1</version>
   <name>sse-edge-api</name>
 
   <description>
