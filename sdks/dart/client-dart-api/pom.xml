@@ -61,8 +61,8 @@
             <phase>initialize</phase>
             <configuration>
               <files>
-                <file>${project.basedir}/../../backend/sse-edge-api/src/main/resources/sse-api.yaml</file>
-                <file>${project.basedir}/../../backend/mr-api/end2end-common.yaml</file>
+                <file>${project.basedir}/../../../backend/sse-edge-api/src/main/resources/sse-api.yaml</file>
+                <file>${project.basedir}/../../../backend/mr-api/end2end-common.yaml</file>
               </files>
               <finalYaml>${project.basedir}/final.yaml</finalYaml>
             </configuration>
@@ -116,7 +116,7 @@
           <dependency>
             <groupId>com.bluetrainsoftware.maven</groupId>
             <artifactId>openapi-dart-generator</artifactId>
-            <version>3.4</version>
+            <version>3.6-SNAPSHOT</version>
           </dependency>
         </dependencies>
         <executions>
@@ -132,9 +132,11 @@
               <generatorName>dart2-api</generatorName>
               <enablePostProcessFile>true</enablePostProcessFile>
               <additionalProperties>
-                <additionalProperty>
-                  pubName=featurehub_client_api
-                </additionalProperty>
+                <additionalProperty>pubName=featurehub_client_api</additionalProperty>
+                <additionalProperty>pubVersion=1.0.1</additionalProperty>
+                <additionalProperty>pubDescription=This is the OpenAPI client for the FeatureHub SDK. It is not likely to be used on its own.</additionalProperty>
+                <additionalProperty>pubRepository=https://github.com/featurehub-io/featurehub/tree/master/sdks/dart/client-dart-api</additionalProperty>
+                <additionalProperty>pubHomepage=https://www.featurehub.io</additionalProperty>
               </additionalProperties>
             </configuration>
           </execution>

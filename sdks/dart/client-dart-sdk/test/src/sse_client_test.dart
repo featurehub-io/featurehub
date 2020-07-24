@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:eventsource/eventsource.dart';
 import 'package:featurehub_client_api/api.dart';
 import 'package:featurehub_client_sdk/featurehub_io.dart';
+import 'package:featurehub_sse_client/featurehub_sse_client.dart';
 import 'package:mockito/mockito.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:test/test.dart';
@@ -53,7 +53,7 @@ void main() {
 
   test('A failure is reported to the repository', () {
     es.listen((value) {}, onError: expectAsync1((_) {
-      verify(rep.notify(SSEResultState.failure, any));
+      verify(rep.notify(SSEResultState.bye, any));
     }));
     es.addError('blah');
   });
