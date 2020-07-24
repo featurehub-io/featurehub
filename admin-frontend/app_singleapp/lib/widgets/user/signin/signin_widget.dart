@@ -23,6 +23,7 @@ class _SigninState extends State<SigninWidget> {
   final _formKey = GlobalKey<FormState>(debugLabel: 'signin_widget');
   ManagementRepositoryClientBloc bloc;
   bool displayError = false;
+  bool loggingIn = false;
 
   @override
   void didChangeDependencies() {
@@ -40,18 +41,31 @@ class _SigninState extends State<SigninWidget> {
   }
 
   void _handleSubmitted() {
-    if (_formKey.currentState.validate()) {
-      bloc.login(_email.text, _password.text).catchError((e, s) => {
-            if (e is ApiException && e.code == 404)
-              {
-                setState(() {
-                  displayError = true;
-                })
-              }
-            else
-              bloc.dialogError(e, s)
-          });
+    if (!loggingIn) {
+      if (_formKey.currentState.validate()) {
+        _login();
+      }
     }
+  }
+
+  void _login() {
+    setState(() {
+      loggingIn = true;
+    });
+    bloc.login(_email.text, _password.text).then((_) {
+      setState(() {
+        loggingIn = false;
+      });
+    }).catchError((e, s) => {
+          if (e is ApiException && e.code == 404)
+            {
+              setState(() {
+                displayError = true;
+              })
+            }
+          else
+            bloc.dialogError(e, s)
+        });
   }
 
   @override

@@ -2,22 +2,32 @@ package io.featurehub.db.services
 
 import io.ebean.DB
 import io.ebean.Database
+import io.featurehub.db.api.Opts
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.query.QDbPerson
 import io.featurehub.db.publish.CacheSource
+import io.featurehub.mr.model.Application
+import io.featurehub.mr.model.ApplicationGroupRole
+import io.featurehub.mr.model.ApplicationRoleType
+import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Person
+import io.featurehub.mr.model.Portfolio
 import spock.lang.Shared
 import spock.lang.Specification
 
 class AuthenticationSpec extends BaseSpec {
   @Shared AuthenticationSqlApi auth
   @Shared PersonSqlApi personApi
+  @Shared ApplicationSqlApi appApi
+  @Shared PortfolioSqlApi portfolioApi
 
 
   def setupSpec() {
     baseSetupSpec()
     auth = new AuthenticationSqlApi(database, convertUtils)
     personApi = new PersonSqlApi(database, convertUtils, archiveStrategy)
+    portfolioApi = new PortfolioSqlApi(database, convertUtils, archiveStrategy)
+    appApi = new ApplicationSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
   }
 
   def "I should be able to register a new user"() {
@@ -173,5 +183,26 @@ class AuthenticationSpec extends BaseSpec {
       Person resetUser2 = auth.resetPassword(p2.id.id, "bath2", superuser.toString(), false)
     then:
       resetUser
+  }
+
+  def "A user who is a portfolio manager gets their application roles when they login"() {
+    given: "i register"
+      personApi.create('portman26@mailinator.com', "Portman26",superuser.toString())
+      Person p2 = auth.register("william", "portman26@mailinator.com", "hooray")
+    and: "i create a new portfolio"
+      Portfolio portfolio1 = portfolioApi.createPortfolio(new Portfolio().name("persontestportfolio").organizationId(org.getId()), Opts.empty(), superPerson)
+    and: "i create an application in that portfolio"
+      def app1 = appApi.createApplication(portfolio1.id, new Application().name("persontest-app1").description("some desc"), superPerson)
+    and: "i make the user a portfolio manager"
+      def portfolioGroup = groupSqlApi.createPortfolioGroup(portfolio1.id,
+        new Group().name("admin-group").admin(true)
+          .applicationRoles([new ApplicationGroupRole().applicationId(app1.id)
+                               .roles([ApplicationRoleType.FEATURE_EDIT])]), superPerson)
+      portfolioGroup = groupSqlApi.updateGroup(portfolioGroup.id, portfolioGroup.members([p2]),
+        true, false, false, Opts.empty())
+    when: "i login"
+      def user = auth.login(p2.email, "hooray")
+    then: "i have the application role permission to the portfolio"
+      user.groups.find({it.applicationRoles.find({ar -> ar.roles.contains(ApplicationRoleType.FEATURE_EDIT) && ar.applicationId == app1.id})})
   }
 }
