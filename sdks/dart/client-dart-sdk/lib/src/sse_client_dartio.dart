@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:eventsource/eventsource.dart';
 import 'package:featurehub_client_api/api.dart';
 import 'package:logging/logging.dart';
+import 'package:sse_client/sse_client.dart';
 
 import 'repository.dart';
 
