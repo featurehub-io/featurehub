@@ -145,8 +145,8 @@
             <phase>initialize</phase>
             <configuration>
               <files>
-                <file>${project.basedir}/../../backend/mr-api/end2end-common.yaml</file>
-                <file>${project.basedir}/../../backend/sse-edge-api/src/main/resources/sse-api.yaml</file>
+                <file>${project.basedir}/../../../backend/mr-api/end2end-common.yaml</file>
+                <file>${project.basedir}/../../../backend/sse-edge-api/src/main/resources/sse-api.yaml</file>
               </files>
               <finalYaml>${project.basedir}/final.yaml</finalYaml>
             </configuration>
@@ -156,7 +156,14 @@
       <plugin>
         <groupId>org.openapitools</groupId>
         <artifactId>openapi-generator-maven-plugin</artifactId>
-        <version>4.3.0</version>
+        <version>5.0.0-SNAPSHOT</version>
+        <dependencies>
+          <dependency>
+            <groupId>com.bluetrainsoftware.maven</groupId>
+            <artifactId>openapi-tsaxios-generator</artifactId>
+            <version>1.1-SNAPSHOT</version>
+          </dependency>
+        </dependencies>
         <executions>
           <execution>
             <id>featurehub-api</id>
@@ -165,45 +172,49 @@
             </goals>
             <phase>generate-sources</phase>
             <configuration>
-              <language>typescript-fetch</language>
-              <skipValidateSpec>true</skipValidateSpec>
-
-              <generateApis>true</generateApis>
+              <generatorName>typescript-axios-enhanced</generatorName>
+              <generateApis>false</generateApis>
               <generateModelTests>false</generateModelTests>
               <generateApiDocumentation>false</generateApiDocumentation>
               <generateApiTests>false</generateApiTests>
               <generateModelDocumentation>false</generateModelDocumentation>
               <generateSupportingFiles>true</generateSupportingFiles>
               <inputSpec>${project.basedir}/final.yaml</inputSpec>
+              <modelPackage>models</modelPackage>
               <output>app/models</output>
+              <additionalProperties>
+                <additionalProperty>useEnhancedSerializer</additionalProperty>
+                <additionalProperty>exposeTransformers</additionalProperty>
+                <additionalProperty>withSeparateModelsAndApi=true</additionalProperty>
+              </additionalProperties>
             </configuration>
           </execution>
         </executions>
       </plugin>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-resources-plugin</artifactId>
-        <version>3.1.0</version>
-        <executions>
-          <execution>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.basedir}/app/models</outputDirectory>
-              <overwrite>true</overwrite>
-              <resources>
-                <resource>
-                  <directory>${project.basedir}/hack</directory>
-                  <filtering>false</filtering>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+<!--      <plugin>-->
+<!--        <groupId>org.apache.maven.plugins</groupId>-->
+<!--        <artifactId>maven-resources-plugin</artifactId>-->
+<!--        <version>3.1.0</version>-->
+<!--        <executions>-->
+<!--          <execution>-->
+<!--            <phase>generate-sources</phase>-->
+<!--            <goals>-->
+<!--              <goal>copy-resources</goal>-->
+<!--            </goals>-->
+<!--            <configuration>-->
+<!--              <outputDirectory>${project.basedir}/app/models</outputDirectory>-->
+<!--              <overwrite>true</overwrite>-->
+<!--              <resources>-->
+<!--                <resource>-->
+<!--                  <directory>${project.basedir}/hack</directory>-->
+<!--                  <filtering>false</filtering>-->
+<!--                </resource>-->
+<!--              </resources>-->
+<!--            </configuration>-->
+<!--          </execution>-->
+<!--        </executions>-->
+<!--      </plugin>-->
     </plugins>
   </build>
 

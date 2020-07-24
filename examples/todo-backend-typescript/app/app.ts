@@ -1,8 +1,8 @@
 import * as restify from 'restify';
 import * as corsMiddleware from 'restify-cors-middleware';
 import { ITodoApiController, Todo, TodoApiRouter } from "./generated-interface";
-import { FeatureHubEventSourceClient } from 'client-typescript-eventsource/dist';
-import {FeatureContext, featureHubRepository, GoogleAnalyticsCollector, Readyness} from 'client-typescript-core/dist';
+import { FeatureHubEventSourceClient } from 'featurehub-eventsource/dist';
+import {FeatureContext, featureHubRepository, GoogleAnalyticsCollector, Readyness} from 'featurehub-repository/dist';
 
 if (process.env.FEATUREHUB_APP_ENV_URL === undefined) {
   console.error('You must define the location of your feature hub SDK URL in the environment variable FEATUREHUB_APP_ENV_URL');
