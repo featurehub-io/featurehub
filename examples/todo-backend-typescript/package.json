@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "link": "npm link client-typescript-core && npm link client-typescript-eventsource",
+    "link": "npm link featurehub-repository && npm link featurehub-eventsource",
     "build": "node_modules/.bin/tsc",
     "compile": "npm run link && npm run build && cp package.json dist && cd dist",
     "start": "npm run link && npm run build && node dist/app.js"
@@ -18,6 +18,6 @@
     "@types/restify": "^8.4.2",
     "@types/restify-cors-middleware": "^1.0.1",
     "@types/node": "^12.12.0",
-    "typescript": "^3.8.3"
+    "typescript": "^3.9.7"
   }
 }

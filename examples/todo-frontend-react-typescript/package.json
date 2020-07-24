@@ -3,24 +3,23 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "axios": "^0.18.1",
-    "immutability-helper": "^2.9.1",
-    "react": "^16.8.6",
-    "react-dom": "^16.8.6",
-    "react-scripts-ts": "^3.1.0"
+    "axios": "^0.19.2",
+    "immutability-helper": "^3.1.1",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1"
   },
   "scripts": {
     "start": "npm run link && react-scripts-ts start",
     "compile": "npm run link && react-scripts-ts build",
     "test": "react-scripts-ts test --env=jsdom",
     "eject": "react-scripts-ts eject",
-    "link": "npm link client-typescript-core && npm link client-typescript-eventsource"
+    "link": "npm link featurehub-repository && npm link featurehub-eventsource"
   },
   "devDependencies": {
-    "@types/jest": "^25.2.1",
     "@types/node": "^12.12.0",
-    "@types/react": "^16.8.17",
-    "@types/react-dom": "^16.8.4",
-    "typescript": "^3.8.3"
+    "react-scripts-ts": "^3.1.0",
+    "@types/react": "^16.9.42",
+    "@types/react-dom": "^16.9.8",
+    "typescript": "^3.9.7"
   }
 }

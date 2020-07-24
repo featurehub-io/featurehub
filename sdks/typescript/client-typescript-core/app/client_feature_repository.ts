@@ -10,7 +10,12 @@ import { FeatureStateHolder } from './feature_state';
 
 import { AnalyticsCollector } from './analytics';
 
-import { FeatureState, FeatureStateFromJSON, FeatureValueType, SSEResultState } from './models/models';
+import {
+  FeatureState,
+  FeatureValueType,
+  SSEResultState,
+  FeatureStateTypeTransformer
+} from './models';
 
 export enum Readyness {
   NotReady = 'NotReady',
@@ -51,7 +56,7 @@ export class ClientFeatureRepository {
           }
           break;
         case SSEResultState.DeleteFeature:
-          this.deleteFeature(FeatureStateFromJSON(data));
+          this.deleteFeature(FeatureStateTypeTransformer.fromJson(data));
           break;
         case SSEResultState.Failure:
           this.readynessState = Readyness.Failed;
@@ -60,7 +65,7 @@ export class ClientFeatureRepository {
           }
           break;
         case SSEResultState.Feature:
-          const fs = FeatureStateFromJSON(data);
+          const fs = FeatureStateTypeTransformer.fromJson(data);
 
           if (this._catchAndReleaseMode) {
             this._catchUpdatedFeatures([fs]);
@@ -71,7 +76,7 @@ export class ClientFeatureRepository {
 
           break;
         case SSEResultState.Features:
-          const features = (data as []).map(FeatureStateFromJSON);
+          const features = (data as []).map((f) => FeatureStateTypeTransformer.fromJson(f));
           if (this.hasReceivedInitialState && this._catchAndReleaseMode) {
 
             this._catchUpdatedFeatures(features);

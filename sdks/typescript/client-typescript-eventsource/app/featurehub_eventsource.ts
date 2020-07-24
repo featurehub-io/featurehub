@@ -1,4 +1,4 @@
-import { featureHubRepository, SSEResultState } from 'client-typescript-core/dist';
+import { featureHubRepository, SSEResultState } from 'featurehub-repository/dist';
 import * as EventSource from 'eventsource';
 
 export class FeatureHubEventSourceClient {

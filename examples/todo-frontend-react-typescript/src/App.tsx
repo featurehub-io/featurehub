@@ -7,8 +7,8 @@ import {
   featureHubRepository,
   // GoogleAnalyticsCollector,
   Readyness
-} from 'client-typescript-core/dist';
-import { FeatureHubEventSourceClient } from 'client-typescript-eventsource/dist';
+} from 'featurehub-repository/dist';
+import { FeatureHubEventSourceClient } from 'featurehub-eventsource/dist';
 
 let todoApi: DefaultApi;
 // const todoApi = new DefaultApi(new Configuration({basePath:

@@ -1,9 +1,9 @@
 {
-  "name": "client-typescript-core",
+  "name": "featurehub-eventsource",
   "version": "1.1.1",
   "description": "Core package of API that exposes FeatureHub feature flags, values and configuration to client applications written in Typescript or Javascript.",
-  "author": "Richard Vowles <richard@featurehub.io>",
-  "main": "",
+  "author": "info@featurehub.io",
+  "main": "dist/index.js",
   "repository": {
     "type": "git",
     "url": ""
@@ -14,7 +14,7 @@
     "distributed configuration",
     "realtime"
   ],
-  "license": "BSL",
+  "license": "MIT",
   "scripts": {
     "build": "npm run tsc",
     "build:watch": "npm run build -- -- -w",
@@ -22,22 +22,25 @@
     "test:watch": "npm run mocha --opts mocha.opts --watch",
     "mocha": "node ./node_modules/mocha/bin/mocha",
     "tsc": "node ./node_modules/typescript/bin/tsc",
-    "link": "npm link",
-    "compile": "npm run build && npm link",
+    "link": "npm link featurehub-repository",
+    "compile": "npm run link && npm run build && npm link",
     "lint": "node ./node_modules/tslint/bin/tslint -r ./node_modules/tslint-microsoft-contrib/ \"app/**/*.ts\" \"spec/**/*.ts\" -e \"app/generated-code/**/*\""
   },
   "devDependencies": {
     "@types/chai": "4.2.1",
-    "@types/mocha": "7.0.2",
+    "@types/mocha": "8.0.0",
     "@types/node": "^12.12.0",
     "chai": "4.2.0",
-    "mocha": "7.1.1",
-    "ts-node": "8.8.2",
+    "mocha": "8.0.1",
+    "ts-node": "8.10.2",
     "tslint": "6.1.1",
     "tslint-microsoft-contrib": "6.2.0",
-    "typescript": "3.8.3"
+    "typescript": "3.9.7"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@types/eventsource": "^1.1.2",
+    "eventsource": "^1.0.7"
+  },
   "engines": {
     "node": ">=12.12.0"
   }
