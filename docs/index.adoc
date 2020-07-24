@@ -94,7 +94,7 @@ If you are considering helping us by writing a new SDK for your favourite langua
 
 [options="header"]
 |===================================
-|Capability|Java|Javascript^1^|Go|Dart|C#
+|Capability|Java|Javascript^1^|Go|Dart^2^|C#
 |Event Streaming|Y|Y|Y|Y|Y
 |Background Start|Y|Y|Y|Y|Y
 |Block until Start|N|N|Y|N|N
@@ -107,7 +107,12 @@ If you are considering helping us by writing a new SDK for your favourite langua
 |Test Client|Y|N|N|Y|N
 |===================================
 
-(1) Javascript and Typescript are supported via a Typescript library.
+- *(1)* Javascript and Typescript are supported via a Typescript libraries. This is available https://www.npmjs.com/org/featurehub[ at the npm repository].
+- *(2)* Dart and Flutter are supported by Dart libraries available at https://pub.dev/publishers/featurehub.io/packages[pub.dev].
+- *(3)* Java is supported by libraries from Apache Maven Central. [needs ref]
+- *(4)* C# and .NET is supported by libraries from nuget. [needs ref]
+
+
 
 === Capabilities explained
 
@@ -191,7 +196,7 @@ Choose from your development language / framework and follow the links for the i
 [options="header"]
 |===================================
 ||Java|JavaScript|C#|Dart|Go
-|Documentation| link:https://github.com/featurehub-io/featurehub/tree/master/sdks/client-java-jersey/README.adoc[Java-Jersey]|link:https://github.com/featurehub-io/featurehub/tree/master/sdks/client-typescript-core/README.adoc[Javascript, Typescript, Node, React, Angular]|https://github.com/featurehub-io/featurehub/tree/master/sdks/client-csharp/FeatureHubSDK[C#]|link:../sdks/client-dart-sdk/README.adoc[Dart]|https://github.com/featurehub-io/featurehub/tree/master/sdks/client-go[Go]
+|Documentation| link:https://github.com/featurehub-io/featurehub/tree/master/sdks/java/client-java-jersey[Java-Jersey]|link:https://github.com/featurehub-io/featurehub/tree/master/sdks/typescript/client-typescript-core[Javascript, Typescript, Node, React, Angular]|https://github.com/featurehub-io/featurehub/tree/master/sdks/client-csharp/FeatureHubSDK[C#]|link:https://github.com/featurehub-io/featurehub/tree/master/sdks/sdks/dart/client-dart-sdk[Dart]|https://github.com/featurehub-io/featurehub/tree/master/sdks/client-go[Go]
 |Examples|link:https://github.com/featurehub-io/featurehub/tree/master/examples/todo-backend-java[Java-Jersey example] | link:https://github.com/featurehub-io/featurehub/tree/master/examples/todo-backend-typescript[Node server example] , link:../examples/todo-frontend-react-typescript/[React app example] |Coming soon!|Coming soon!|Coming soon!
 |===================================
 

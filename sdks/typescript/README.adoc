@@ -1,0 +1,8 @@
+= Typescript/Javascript APIs
+
+The APIs are available on https://www.npmjs.com/org/featurehub[the npm repository]. 
+
+- https://www.npmjs.com/package/featurehub-repository[featurehub_repository] - the core repository and model code
+- https://www.npmjs.com/package/featurehub-eventsource-sdk[featurehub_eventsource-sdk] - the eventsource client
+
+
