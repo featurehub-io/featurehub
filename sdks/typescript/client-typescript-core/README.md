@@ -1,9 +1,9 @@
-= Javascript/Typescript Client SDK for FeatureHub
+# Javascript/Typescript Client SDK for FeatureHub
 
 Welcome to the Javascript implementation for FeatureHub. It is the supported version, but it does not mean
 you cannot write your own, the functionality is quite straightforward.
 
-== Overview
+## Overview
 
 This is the core library for Typescript and Javascript. 
 
@@ -15,12 +15,14 @@ with some other library if you use it.
 `eventsource` is of course the only option when using the Web, so that is what we expect developers to use there,
 but it can be replaced for backend or Mobile.
 
-== Mechanisms for use
+See [FeatureHub](https://featurehub.io) for more details.
+
+## Mechanisms for use
 
 Unlike the Java SDK, there are four ways to use this library due to the more _user_ based interaction that your 
 application will operate under.
 
-=== 1. All the Features, All the Time
+### 1. All the Features, All the Time
 
 In this mode, you will make a connection to the FeatureHub Edge server, and any updates to any events will come
 through to you, updating the feature values in the repository. You can choose to listen for these updates and update
@@ -40,8 +42,8 @@ readyness listener.
 This kind of operation is perfect for servers. It can lead to instant change which could confuse users in a UI and
 isn't something our team recommends.
 
-[source,javascript]
-----
+```javascript
+
 featureHubRepository.addReadynessListener((readyness) => {
   if (readyness === Readyness.Ready) {
     // some state change and you have your features and config
@@ -54,18 +56,18 @@ this.eventSource.init();
 featureHubRepository.getFeatureState('FEATURE_X').addListener((fs: FeatureStateHolder) => {
   // do something
 });
-----
+```
+
 
 NOTE: Recommended for: servers
 
-=== 2. All the Features, Only Once
+### 2. All the Features, Only Once
 
 In this mode, you receive the connection and then you disconnect, ignoring any further connections. You would
 use this mode only if you want to force the client to have a consistent UI experience through the lifetime of their
 visit to your client application.
 
-[source,javascript]
-----
+```javascript
 featureHubRepository.addReadynessListener((readyness) => {
   if (readyness === Readyness.Ready) {
     this.eventSource.close();
@@ -74,12 +76,11 @@ featureHubRepository.addReadynessListener((readyness) => {
 
 this.eventSource = new FeatureHubEventSourceClient('<sdkUrl>');
 this.eventSource.init();
-----
-
+```
 
 NOTE: Recommended for: Web only, and only when not intending to react to feature changes until you ask for the feature state again.
 
-==== 3. All the Features, Controlled Release
+### 3. All the Features, Controlled Release
 
 This mode is termed "catch-and-release" (yes, inspired by the Matt Simons song). It is intended to allow you get
 an initial set of features but decide when the feature updates are released into your application.
@@ -98,8 +99,8 @@ encourage you users to reload the whole application window (e.g. `window.locatio
 readyness listener.
 .
 
-[source,javascript]
-----
+
+```javascript
 featureHubRepository.addReadynessListener((readyness) => {
   if (readyness === Readyness.Ready) {
     // some state change and you have your features and config
@@ -119,38 +120,34 @@ featureHubRepository.getFeatureState('FEATURE_X').addListener((fs: FeatureStateH
   // do something. will trigger only once (first set of features). Won't trigger again until 
   // featureHubRepository.release() is called.
 });
-----
+```
 
 If you choose to not have listeners, when you call: 
 
-----
+```javascript
 featureHubRepository.release();
-----
+```
 
 then you should follow it with code to update your state with the appropriate changes in features. You
 won't know which ones changed, but this can be a more efficient state update than using the listeners above.
 
-=== Failure
+### Failure
 
 If for some reason the connection to the FeatureHub server fails - either initially or for some reason during
 the process, you will get a readyness state callback to indicate that it has now failed.
 
-[source,javascript]
-----
+```javascript
 export enum Readyness {
   NotReady = 'NotReady',
   Ready = 'Ready',
   Failed = 'Failed'
 }
-----
+```
 
-== Installation Instructions
+## Installation Instructions
 
 Run the following commands: 
 
-`mvn clean generate-sources`
+`npm install featurehub-repository`
 
-`npm install`
-
-`npm run-script compile`
-
+We recommend however using the event-source artifact which will install this one. That is `featurehub-eventsource`.
