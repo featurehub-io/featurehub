@@ -48,9 +48,9 @@ class GroupStepdefs {
 
   @And(r'I remove the user from the superuser group')
   void iRemoveTheUserFromTheSuperuserGroup() async {
-    final org = await userCommon.setupService.isInstalled();
+    final sr = await userCommon.setupService.isInstalled();
     final superuserGroup =
-        await userCommon.groupService.getSuperuserGroup(org.id);
+        await userCommon.groupService.getSuperuserGroup(sr.organization.id);
     await userCommon.groupService
         .deletePersonFromGroup(superuserGroup.id, shared.person.id.id);
   }
@@ -81,8 +81,8 @@ class GroupStepdefs {
   }
 
   Future<Group> _findSuperuserGroup() async {
-    final org = await userCommon.setupService.isInstalled();
-    return await userCommon.groupService.getSuperuserGroup(org.id);
+    final sr = await userCommon.setupService.isInstalled();
+    return await userCommon.groupService.getSuperuserGroup(sr.organization.id);
   }
 
   @When(

@@ -66,7 +66,7 @@ public class AuthenticationSqlApi implements AuthenticationApi {
 
   @Override
   public Person register(String name, String email, String password) {
-    if (name == null || email == null || password == null) return null;
+    if (name == null || email == null) return null;
 
     return new QDbPerson().email.eq(email.toLowerCase()).findOneOrEmpty()
       .map(person -> {
@@ -74,17 +74,20 @@ public class AuthenticationSqlApi implements AuthenticationApi {
           return null;
         }
 
-        return passwordSalter.saltPassword(password)
-          .map(saltedPassword -> {
-            person.setName(name);
-            person.setPassword(saltedPassword);
-            person.setToken(null);
-            person.setTokenExpiry(null);
-            updateUser(person);
+        String saltedPassword = passwordSalter.saltAnyPassword(password);
 
-            return convertUtils.toPerson(person, Opts.opts(FillOpts.Groups,
-              FillOpts.Acls));
-          }).orElse((Person) null);
+        if (saltedPassword == null && password != null) {
+          return null;
+        }
+
+        person.setName(name);
+        person.setPassword(saltedPassword);
+        person.setToken(null);
+        person.setTokenExpiry(null);
+        updateUser(person);
+
+        return convertUtils.toPerson(person, Opts.opts(FillOpts.Groups,
+          FillOpts.Acls));
         }
       ).orElse(null);
   }

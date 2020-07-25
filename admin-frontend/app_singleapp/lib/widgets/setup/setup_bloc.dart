@@ -1,3 +1,5 @@
+import 'dart:html';
+
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +31,7 @@ class SetupBloc implements Bloc {
   String pw2;
   String orgName;
   String portfolio;
+  String provider;
 
   final ManagementRepositoryClientBloc mrClient;
 
@@ -41,8 +44,29 @@ class SetupBloc implements Bloc {
 
   SetupPage current;
 
+  bool _canGoToPage1;
+
+  // tell UI whether or not the "prev" button is available on page 2
+  bool get canGoToPage1 => _canGoToPage1;
+  bool get hasLocal => mrClient.identityProviders.hasLocal;
+  bool get has3rdParty => mrClient.identityProviders.has3rdParty;
+  List<String> get externalProviders =>
+      mrClient.identityProviders.externalProviders;
+  Map<String, String> get externalProviderAssets =>
+      mrClient.identityProviders.externalProviderAssets;
+
   SetupBloc(this.mrClient) : assert(mrClient != null) {
-    current = SetupPage.page1;
+    // go to page 1 if local or # of providers is > 2
+    _canGoToPage1 =
+        (hasLocal || mrClient.identityProviders.hasMultiple3rdPartyProviders);
+
+    if (_canGoToPage1) {
+      current = SetupPage.page1;
+    } else {
+      // we skip to here
+      current = SetupPage.page2;
+    }
+
     _pageSource.add(current);
   }
 
@@ -56,11 +80,17 @@ class SetupBloc implements Bloc {
     s.password = pw1;
     s.organizationName = orgName;
     s.portfolio = portfolio;
+    s.authProvider = provider;
 
     mrClient.setupApi.setupSiteAdmin(s).then((data) {
       _setupSource.add(true);
-      mrClient.setBearerToken(data.accessToken);
-      mrClient.setPerson(data.person);
+
+      if (data.redirectUrl != null) {
+        window.location.href = data.redirectUrl;
+      } else {
+        mrClient.setBearerToken(data.accessToken);
+        mrClient.setPerson(data.person);
+      }
       //    client.setGroup(data.person.groups);
     }).catchError((e, s) => _setupSource.addError(e.toString()));
   }

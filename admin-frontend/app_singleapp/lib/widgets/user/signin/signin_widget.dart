@@ -6,6 +6,7 @@ import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/fh_card.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
 class SigninWidget extends StatefulWidget {
@@ -31,6 +32,8 @@ class _SigninState extends State<SigninWidget> {
 
     bloc = BlocProvider.of(context);
 
+    // when we are here we know that there are either (a) multiple sign-in providers or (b) at least a local option
+
     bloc.lastUsername().then((lu) {
       if (lu != null && _email.text.isEmpty) {
         setState(() {
@@ -46,6 +49,10 @@ class _SigninState extends State<SigninWidget> {
         _login();
       }
     }
+  }
+
+  void _loginViaProvider(String provider) {
+    bloc.identityProviders.authenticateViaProvider(provider);
   }
 
   void _login() {
@@ -103,26 +110,33 @@ class _SigninState extends State<SigninWidget> {
                 'Sign in to FeatureHub\n\n',
                 style: Theme.of(context).textTheme.headline5,
               ),
-              Column(
-                children: <Widget>[
-                  TextFormField(
-                      controller: _email,
-                      autofocus: true,
-                      textInputAction: TextInputAction.next,
-                      onFieldSubmitted: (_) => _handleSubmitted,
-                      validator: (v) =>
-                          v.isEmpty ? 'Please enter your email' : null,
-                      decoration: InputDecoration(labelText: 'Email address')),
-                  TextFormField(
-                      controller: _password,
-                      obscureText: true,
-                      textInputAction: TextInputAction.next,
-                      onFieldSubmitted: (_) => _handleSubmitted(),
-                      validator: (v) =>
-                          v.isEmpty ? 'Please enter your password' : null,
-                      decoration: InputDecoration(labelText: 'Password')),
-                ],
-              ),
+              if (bloc.identityProviders.has3rdParty)
+                _SetupPage1ThirdPartyProviders(
+                  bloc: bloc,
+                  selectedExternalProviderFunc: _loginViaProvider,
+                ),
+              if (bloc.identityProviders.hasLocal)
+                Column(
+                  children: <Widget>[
+                    TextFormField(
+                        controller: _email,
+                        autofocus: true,
+                        textInputAction: TextInputAction.next,
+                        onFieldSubmitted: (_) => _handleSubmitted,
+                        validator: (v) =>
+                            v.isEmpty ? 'Please enter your email' : null,
+                        decoration:
+                            InputDecoration(labelText: 'Email address')),
+                    TextFormField(
+                        controller: _password,
+                        obscureText: true,
+                        textInputAction: TextInputAction.next,
+                        onFieldSubmitted: (_) => _handleSubmitted(),
+                        validator: (v) =>
+                            v.isEmpty ? 'Please enter your password' : null,
+                        decoration: InputDecoration(labelText: 'Password')),
+                  ],
+                ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[],
@@ -160,6 +174,59 @@ class _SigninState extends State<SigninWidget> {
           ),
         ),
       ),
+    );
+  }
+}
+
+typedef _SelectedExternalFunction = void Function(String provider);
+
+class _SetupPage1ThirdPartyProviders extends StatelessWidget {
+  final ManagementRepositoryClientBloc bloc;
+  final _SelectedExternalFunction selectedExternalProviderFunc;
+
+  const _SetupPage1ThirdPartyProviders(
+      {Key key,
+      @required this.bloc,
+      @required this.selectedExternalProviderFunc})
+      : assert(bloc != null),
+        assert(selectedExternalProviderFunc != null),
+        super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final external = bloc.identityProviders.has3rdParty;
+    final local = bloc.identityProviders.hasLocal;
+
+    final children = <Widget>[];
+    if (external) {
+      children.add(Padding(
+        padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+        child: Text('You can login using an external third party',
+            style: Theme.of(context).textTheme.bodyText1),
+      ));
+    }
+
+    if (external) {
+      bloc.identityProviders.externalProviders.forEach((provider) {
+        children.add(InkWell(
+          mouseCursor: SystemMouseCursors.click,
+          child: Image.asset(
+              bloc.identityProviders.externalProviderAssets[provider]),
+          onTap: () {
+            selectedExternalProviderFunc(provider);
+          },
+        ));
+      });
+      if (local) {
+        children.add(Padding(
+          padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+          child: Text('or login with a username and password',
+              style: Theme.of(context).textTheme.bodyText1),
+        ));
+      }
+    }
+    return Column(
+      children: children,
     );
   }
 }

@@ -95,35 +95,26 @@ public class PortfolioSqlApi implements io.featurehub.db.api.PortfolioApi {
 
   @Override
   public Portfolio createPortfolio(Portfolio portfolio, Opts opts, Person createdBy) throws DuplicatePortfolioException {
-    if (portfolio.getName() == null || createdBy == null || createdBy.getId() == null) {
+    if (portfolio.getName() == null) {
       return null;
     }
 
     final DbOrganization org = convertUtils.getDbOrganization();
+    final DbPerson person = convertUtils.uuidPerson(createdBy);
 
     duplicateCheck(portfolio, null, org);
 
-    return Conversions.uuid(createdBy.getId().getId()).map(personId -> {
-      return new QDbPerson().id.eq(personId).findOneOrEmpty().map(person -> {
-        DbPortfolio dbPortfolio = new DbPortfolio.Builder()
-          .name(convertUtils.limitLength(portfolio.getName(), 200))
-          .description(convertUtils.limitLength(portfolio.getDescription(), 400))
-          .organization(org)
-          .whoCreated(person)
-          .build();
+    DbPortfolio dbPortfolio = new DbPortfolio.Builder()
+      .name(convertUtils.limitLength(portfolio.getName(), 200))
+      .description(convertUtils.limitLength(portfolio.getDescription(), 400))
+      .organization(org)
+      .whoCreated(person)
+      .build();
 
-        updatePortfolio(dbPortfolio);
+    updatePortfolio(dbPortfolio);
 
-        return convertUtils.toPortfolio(dbPortfolio, opts);
+    return convertUtils.toPortfolio(dbPortfolio, opts);
 
-      }).orElseGet(() -> {
-        log.info("unable to find person {}", personId);
-        return null;
-      });
-    }).orElseGet(() -> {
-      log.info("created by is not valid {}", createdBy);
-      return null;
-    });
   }
 
   @Transactional

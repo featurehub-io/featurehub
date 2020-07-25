@@ -47,7 +47,7 @@ public class DbPortfolio {
   @Column(name = "when_archived")
   private LocalDateTime whenArchived;
 
-  @ManyToOne(optional = false)
+  @ManyToOne(optional = true)
   @JoinColumn(name = "fk_person_who_created")
   @Column(name = "fk_person_who_created")
   private DbPerson whoCreated;

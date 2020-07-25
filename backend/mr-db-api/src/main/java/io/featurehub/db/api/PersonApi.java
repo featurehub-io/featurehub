@@ -9,6 +9,9 @@ public interface PersonApi {
 
   Person update(String id, Person person, Opts opts, String updatedBy) throws OptimisticLockingException;
 
+  // used to determine if the database has no user, which is possible if using external auth
+  boolean noUsersExist();
+
   class PersonPagination {
     public int max;
     public List<Person> people;

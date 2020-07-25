@@ -34,11 +34,11 @@
   </licenses>
 
   <modules>
-    <module>sdks/client-java-core</module>
-    <module>sdks/client-java-jersey</module>
-    <module>sdks/client-typescript-core</module>
-    <module>sdks/client-typescript-eventsource</module>
-    <module>sdks/client-dart-api</module>
+    <module>sdks/java/client-java-core</module>
+    <module>sdks/java/client-java-jersey</module>
+    <module>sdks/typescript/client-typescript-core</module>
+    <module>sdks/typescript/client-typescript-eventsource</module>
+    <module>sdks/dart/client-dart-api</module>
     <module>backend/composite-jackson</module>
     <module>backend/composite-ebean</module>
     <module>backend/composite-app</module>

@@ -22,8 +22,12 @@ public class PasswordSalter {
   }
 
   public Optional<String> saltPassword(String password) {
+    return Optional.ofNullable(saltAnyPassword(password));
+  }
+
+  public String saltAnyPassword(String password) {
     if (password == null || password.trim().length() == 0) {
-      return Optional.empty();
+      return null;
     }
 
     int iterations = 1000;
@@ -35,10 +39,10 @@ public class PasswordSalter {
       PBEKeySpec spec = new PBEKeySpec(chars, salt, iterations, 64 * 8);
       SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
       byte[] hash = skf.generateSecret(spec).getEncoded();
-      return Optional.of(iterations + ":" + toHex(salt) + ":" + toHex(hash));
+      return iterations + ":" + toHex(salt) + ":" + toHex(hash);
     } catch (Exception e) {
       log.error("Failed to hash password", e);
-      return Optional.empty();
+      return null;
     }
   }
 

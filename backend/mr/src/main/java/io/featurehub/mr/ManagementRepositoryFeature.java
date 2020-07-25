@@ -41,6 +41,8 @@ import io.featurehub.mr.resources.PersonResource;
 import io.featurehub.mr.resources.PortfolioResource;
 import io.featurehub.mr.resources.ServiceAccountResource;
 import io.featurehub.mr.resources.SetupResource;
+import io.featurehub.mr.resources.auth.AuthProvider;
+import io.featurehub.mr.resources.auth.BlankProvider;
 import io.featurehub.mr.utils.ApplicationUtils;
 import io.featurehub.mr.utils.PortfolioUtils;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -95,6 +97,7 @@ public class ManagementRepositoryFeature implements Feature {
           bind(ServiceAccountResource.class).to(ServiceAccountServiceDelegate.class).in(Singleton.class);
           bind(SetupResource.class).to(SetupServiceDelegate.class).in(Singleton.class);
           bind(ApplicationUtils.class).to(ApplicationUtils.class).in(Singleton.class);
+          bind(BlankProvider.class).to(AuthProvider.class).in(Singleton.class);
         }
       }).register(new ContainerLifecycleListener() {
         public void onStartup(Container container) {
