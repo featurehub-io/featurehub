@@ -36,7 +36,6 @@
   <modules>
     <module>examples/todo-frontend-react-typescript</module>
     <module>examples/todo-backend-typescript</module>
-    <module>examples/todo-api</module>
     <module>examples/todo-backend-java</module>
   </modules>
 </project>
