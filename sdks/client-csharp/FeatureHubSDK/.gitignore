@@ -188,4 +188,5 @@ $RECYCLE.BIN/
 final.yaml
 .openapi-generator-ignore
 .openapi-generator
+package
 
