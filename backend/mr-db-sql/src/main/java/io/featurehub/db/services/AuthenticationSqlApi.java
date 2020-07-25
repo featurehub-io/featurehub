@@ -50,7 +50,7 @@ public class AuthenticationSqlApi implements AuthenticationApi {
         if (passwordSalter.validatePassword(password, p.getPassword())) {
           updateLastAuthenticated(p);
 
-          return convertUtils.toPerson(p, Opts.opts(FillOpts.Groups))
+          return convertUtils.toPerson(p, Opts.opts(FillOpts.Groups, FillOpts.Acls))
             .passwordRequiresReset(p.isPasswordRequiresReset());
         } else {
           return null;

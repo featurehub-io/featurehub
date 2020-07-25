@@ -402,7 +402,7 @@ class ManagementRepositoryClientBloc implements Bloc {
     window.console.error(s?.toString());
   }
 
-  Future login(String email, String password) async {
+  Future<void> login(String email, String password) async {
     await authServiceApi
         .login(UserCredentials()
           ..email = email
