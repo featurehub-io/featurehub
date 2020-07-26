@@ -102,6 +102,10 @@ public class PortfolioSqlApi implements io.featurehub.db.api.PortfolioApi {
     final DbOrganization org = convertUtils.getDbOrganization();
     final DbPerson person = convertUtils.uuidPerson(createdBy);
 
+    if (createdBy != null && person == null) {
+      return null; // only null is valid
+    }
+
     duplicateCheck(portfolio, null, org);
 
     DbPortfolio dbPortfolio = new DbPortfolio.Builder()

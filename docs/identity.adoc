@@ -1,0 +1,67 @@
+= FeatureHub Identity
+:favicon: favicon.ico
+ifdef::env-github,env-browser[:outfilesuffix: .adoc]
+:toc: left
+:toclevels: 4
+:toc-title: Contents
+
+== Overview
+FeatureHub comes with a built in identity system, which stores passwords in a securely salted fashion. It is fine
+to use if you don't wish to federate your identity, and works well in small organisations. You do not need to configure
+anything to use the built in identity system, it is there by default.
+
+However you may wish to federate your identity. FeatureHub lets you support both the internal system, or an
+external identity system (or several) as well as providing you the ability to turn off your internal system completely.
+You can migrate from one to the other as it will simply match email addresses. e.g. If you configure a user in the system
+using the identity foo@bar.com and then federate bar.com to an OAuth provider, the user will remain the same in the 
+system, you do not need to recreate or delete the user.
+
+Further, you can configure the system to disallow attempts at logging in to your FeatureHub instances if their user
+hasn't already been created. This allows you to expose FeatureHub to your organisation's IDP, but not let everyone
+from that IDP in.
+
+=== Generalised Config
+
+----
+auth.disable-login=false
+auth.userMustBeCreatedFirst=false
+----
+
+- `auth.disable-login` - by default, disable-login for local is turned off (false). If you only want people to sign in via your IDP, turn this true
+- `auth.userMustBeCreatedFirst` - the user must exist in the database before they are allowed to login using an external
+auth provider. The default is false.
+
+== OAuth2
+
+FeatureHub currently supports OAuth2 as a protocol, and currently only one provider (Google). It is built in such
+a way that you can easily support others.
+
+=== Generalised OAuth Config
+
+----
+oauth2.providers=[comma seperated list of providers]
+oauth2.redirectUrl=http://localhost:8903/oauth/auth
+oauth2.adminUiUrlSuccess=http://localhost:53000/#
+oauth2.adminUiUrlFailure=http://localhost:53000/#oauth2-failure
+----
+
+- `oauth2.redirectUrl` - In this case, this needs to be registered with Google. The actual url will depend on where you
+have installed it, and it only has to be visible to browsers in your organisation.
+- `adminUiUrlSuccess` and `adminUiUrlFailure` - are links back to your running FeatureHub system and indicate where
+to go. FeatureHub will set a cookie with the necessary information to authenticate the user on success. 
+
+
+=== Google Config
+
+Basic details on https://developers.google.com/identity/protocols/oauth2/web-server[setting up your credentials] is 
+located in Google's help documentation. It needs to be allowed access to the `profile` (name) and `email` scopes.
+
+For FeatureHub, your properties file needs to add a few configuration items:
+
+----
+oauth2.providers=oauth2-google
+oauth2.providers.google.id=[CLIENT-ID]
+oauth2.providers.google.secret=[CLIENT-SECRET]
+----
+
+FeatureHub knows all of the URLs necessary to ask Google for the negotiation phase.

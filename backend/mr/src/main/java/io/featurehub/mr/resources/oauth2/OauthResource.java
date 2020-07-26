@@ -51,7 +51,7 @@ public class OauthResource {
   protected String successUrl;
   @ConfigKey("oauth2.adminUiUrlFailure")
   protected String failureUrl;
-  @ConfigKey("oauth.userMustBeCreatedFirst")
+  @ConfigKey("auth.userMustBeCreatedFirst")
   protected Boolean userMustBeCreatedFirst = Boolean.FALSE;
 
   protected final OAuth2Client oAuth2Client;

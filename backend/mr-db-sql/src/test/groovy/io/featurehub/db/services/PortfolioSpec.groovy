@@ -107,7 +107,7 @@ class PortfolioSpec extends BaseSpec {
   }
 
   def "a created portfolio must have a person who creates it"() {
-    when: "i create a portfolio without a person"
+    when: "i create a portfolio without a person, which is ok because of delayed oauth"
       Portfolio created = portfolioApi.createPortfolio(new Portfolio().name("norton2").organizationId(org.getId()), Opts.empty(), null)
     and:
       Portfolio badUserNoId = portfolioApi.createPortfolio(new Portfolio().name("norton3").organizationId(org.getId()), Opts.empty(), new Person())
@@ -116,7 +116,7 @@ class PortfolioSpec extends BaseSpec {
     and:
       Portfolio badUserBadId2 = portfolioApi.createPortfolio(new Portfolio().name("norton5").organizationId(org.getId()), Opts.empty(), new Person(id: new PersonId(id: null)))
     then:
-      created == null
+      created != null
       badUserBadId == null
       badUserBadId2 == null
       badUserNoId == null
