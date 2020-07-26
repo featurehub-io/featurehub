@@ -16,7 +16,7 @@ Details about what general features are available in SDKs from FeatureHub are [a
 ## Using the EventSource SDK
 
 There is a sample application included in the [solution as a console application](https://github.com/featurehub-io/featurehub/tree/master/sdks/client-csharp/ConsoleApp1).
-It works something like this:
+You could implement it in the following way:
 
 ```c#
 var fh = new FeatureHubRepository(); // create a new repository
