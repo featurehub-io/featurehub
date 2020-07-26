@@ -198,13 +198,6 @@ class _SetupPage1ThirdPartyProviders extends StatelessWidget {
     final local = bloc.identityProviders.hasLocal;
 
     final children = <Widget>[];
-    if (external) {
-      children.add(Padding(
-        padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
-        child: Text('You can login using an external third party',
-            style: Theme.of(context).textTheme.bodyText1),
-      ));
-    }
 
     if (external) {
       bloc.identityProviders.externalProviders.forEach((provider) {
