@@ -14,7 +14,10 @@ namespace ConsoleApp1
       Console.WriteLine("Hello World!");
 
       var fh = new FeatureHubRepository();
-      fh.FeatureState("FLUTTER_COLOUR").FeatureUpdateHandler += FeatureChanged;
+      fh.FeatureState("FLUTTER_COLOUR").FeatureUpdateHandler += (object sender, IFeatureStateHolder holder) =>
+      {
+        Console.WriteLine($"Received type {holder.Key}: {holder.StringValue}");
+      };
       fh.ReadynessHandler += (sender, readyness) =>
       {
         Console.WriteLine($"Readyness is {readyness}");
