@@ -1,12 +1,12 @@
 import 'dart:html' as html;
 
-import 'package:app_singleapp/utils/custom_cursor.dart';
 import 'package:app_singleapp/utils/utils.dart';
 import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/fh_alert_dialog.dart';
 import 'package:app_singleapp/widgets/common/fh_icon_button.dart';
 import 'package:app_singleapp/widgets/features/feature_status_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
 
 class SDKDetailsWidget extends StatelessWidget {
@@ -122,16 +122,15 @@ class SDKDetailsContentWidget extends StatelessWidget {
                     padding: const EdgeInsets.only(left: 16.0),
                     child: Tooltip(
                       message: 'Copy SDK Url to clipboard',
-                      child: CustomCursor(
-                        child: IconButton(
-                          icon: Icon(Icons.content_copy, size: 16.0),
-                          onPressed: () async {
-                            await html.window.navigator.permissions
-                                .query({'name': 'clipboard-write'});
-                            await html.window.navigator.clipboard
-                                .writeText(data.sdkUrl);
-                          },
-                        ),
+                      child: IconButton(
+                        mouseCursor: SystemMouseCursors.click,
+                        icon: Icon(Icons.content_copy, size: 16.0),
+                        onPressed: () async {
+                          await html.window.navigator.permissions
+                              .query({'name': 'clipboard-write'});
+                          await html.window.navigator.clipboard
+                              .writeText(data.sdkUrl);
+                        },
                       ),
                     ))
                 : Text('No SDK URL available')

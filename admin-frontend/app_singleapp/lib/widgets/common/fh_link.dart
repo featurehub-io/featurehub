@@ -1,6 +1,5 @@
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/api/router.dart';
-import 'package:app_singleapp/utils/custom_cursor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
@@ -18,24 +17,22 @@ class FHLinkWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomCursor(
-      child: InkWell(
-          mouseCursor: SystemMouseCursors.click,
-          child: Container(
-            alignment: Alignment.centerLeft,
-            child: TranslateOnHover(
-              child: Text(text,
-                  style: Theme.of(context)
-                      .textTheme
-                      .button
-                      .merge(TextStyle(color: Theme.of(context).buttonColor))),
-            ),
+    return InkWell(
+        mouseCursor: SystemMouseCursors.click,
+        child: Container(
+          alignment: Alignment.centerLeft,
+          child: TranslateOnHover(
+            child: Text(text,
+                style: Theme.of(context)
+                    .textTheme
+                    .button
+                    .merge(TextStyle(color: Theme.of(context).buttonColor))),
           ),
-          onTap: () {
-            ManagementRepositoryClientBloc.router.navigateTo(context, href,
-                transition: TransitionType.material, params: {});
-          }),
-    );
+        ),
+        onTap: () {
+          ManagementRepositoryClientBloc.router.navigateTo(context, href,
+              transition: TransitionType.material, params: {});
+        });
   }
 }
 

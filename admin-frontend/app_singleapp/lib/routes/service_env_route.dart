@@ -1,6 +1,5 @@
 import 'dart:html' as html;
 
-import 'package:app_singleapp/utils/custom_cursor.dart';
 import 'package:app_singleapp/widgets/common/application_drop_down.dart';
 import 'package:app_singleapp/widgets/common/decorations/fh_page_divider.dart';
 import 'package:app_singleapp/widgets/common/fh_header.dart';
@@ -197,22 +196,18 @@ class _CopyServiceAccountUrlToClipboard extends StatelessWidget {
 //      sa.sdkUrl  != null ?
         Tooltip(
       message: 'Copy SDK Url to clipboard',
-      child: CustomCursor(
-        child: InkWell(
-          mouseCursor: SystemMouseCursors.click,
-          borderRadius: BorderRadius.circular(10.0),
-          hoverColor: Theme.of(context).primaryColorLight,
-          splashColor: Theme.of(context).primaryColor,
-          child: Container(
-              width: 20,
-              height: 20,
-              child: Icon(Icons.content_copy, size: 16.0)),
-          onTap: () async {
-            await html.window.navigator.permissions
-                .query({'name': 'clipboard-write'});
-            await html.window.navigator.clipboard.writeText(account.sdkUrl);
-          },
-        ),
+      child: InkWell(
+        mouseCursor: SystemMouseCursors.click,
+        borderRadius: BorderRadius.circular(10.0),
+        hoverColor: Theme.of(context).primaryColorLight,
+        splashColor: Theme.of(context).primaryColor,
+        child: Container(
+            width: 20, height: 20, child: Icon(Icons.content_copy, size: 16.0)),
+        onTap: () async {
+          await html.window.navigator.permissions
+              .query({'name': 'clipboard-write'});
+          await html.window.navigator.clipboard.writeText(account.sdkUrl);
+        },
       ),
     )
 //        : SizedBox.shrink()
