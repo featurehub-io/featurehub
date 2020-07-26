@@ -6,9 +6,16 @@ import {
   FeatureContext,
   featureHubRepository,
   // GoogleAnalyticsCollector,
-  Readyness
+  Readyness,
+  FeatureUpdater
 } from 'featurehub-repository/dist';
-import { FeatureHubEventSourceClient } from 'featurehub-eventsource/dist';
+import { FeatureHubEventSourceClient } from 'featurehub-eventsource-sdk/dist';
+
+declare global {
+  interface Window { FeatureUpdater: any; }
+}
+
+window.FeatureUpdater = FeatureUpdater;
 
 let todoApi: DefaultApi;
 // const todoApi = new DefaultApi(new Configuration({basePath:

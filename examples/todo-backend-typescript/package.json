@@ -12,7 +12,9 @@
   "dependencies": {
     "eventsource": "^1.0.7",
     "restify": "^8.5.1",
-    "restify-cors-middleware": "^1.1.1"
+    "restify-cors-middleware": "^1.1.1",
+    "featurehub-repository": "^1.1.4",
+    "featurehub-eventsource-sdk": "^1.1.1"
   },
   "devDependencies": {
     "@types/restify": "^8.4.2",

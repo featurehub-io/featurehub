@@ -13,13 +13,15 @@
     "compile": "npm run link && react-scripts-ts build",
     "test": "react-scripts-ts test --env=jsdom",
     "eject": "react-scripts-ts eject",
-    "link": "npm link featurehub-repository && npm link featurehub-eventsource"
+    "link": "npm link featurehub-repository"
   },
   "devDependencies": {
     "@types/node": "^12.12.0",
     "react-scripts-ts": "^3.1.0",
     "@types/react": "^16.9.42",
     "@types/react-dom": "^16.9.8",
+    "featurehub-repository": "^1.1.4",
+    "featurehub-eventsource-sdk": "^1.1.1",
     "typescript": "^3.9.7"
   }
 }
