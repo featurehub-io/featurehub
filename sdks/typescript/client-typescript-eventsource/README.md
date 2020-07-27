@@ -43,8 +43,7 @@ as you may not want your users to see updates in the browser immediately but rat
 
 A typical strategy will be:
 
-- set up a readyness listener so you know when the features have loaded and you have an initial state for them. At this stage a server would start listening
-to the FeatureHub server port.
+- set up a readyness listener so you know when the features have loaded and you have an initial state for them.
 - set up your per feature listeners so you can react to their changes in state
 - connect to the FeatureHub server. As soon as it has connected and received a list of features it will call your
 readyness listener. 
@@ -56,8 +55,11 @@ readyness listener.
 
 featureHubRepository.addReadynessListener((readyness) => {
   if (readyness === Readyness.Ready) {
-    // some state change and you have your features and config
-  }
+       console.log("Features are available, starting server...");
+   
+       api.listen(port, function () {
+         console.log('server is listening on port', port);
+  })
 });
 
 this.eventSource = new FeatureHubEventSourceClient('<sdkUrl>'); //paste your Service Account SDK URL here
