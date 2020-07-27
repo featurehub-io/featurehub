@@ -39,11 +39,11 @@ There are link:installation{outfilesuffix}[3 main deployment options] for runnin
 All sample configurations are in the `run-configurations` folder.
 All of the run configurations mount the database volume separately from the main set of containers, allowing you to upgrade your database and versions of FeatureHub without destroying your database.
 
-NOTE: FeatureHub runs on the following SQL Databases: PostgreSQL, MySQL, MS SQL Server, Oracle and we provide initialization and migration DDL for each of these databases.Others can be supported, please contact us.
+NOTE: FeatureHub runs on the following SQL Databases: PostgreSQL, MySQL, MS SQL Server, Oracle and we provide initialization and migration DDL for each of these databases. Others can be supported, please contact us.
 
 === Starting small
 
-If you are just curious to see how FeatureHub works and would like to play with it before deciding which of the 3 installation options are right for you, you can also try it just by running several commands and without cloning this repository.You can watch the video with some instructions https://youtu.be/DRVqXJmbvTk[here] or follow the instructions below.
+If you are just curious to see how FeatureHub works and would like to play with it before deciding which of the 3 installation options are right for you, you can also try it just by running several commands and without cloning this repository. You can watch the video with some instructions https://youtu.be/DRVqXJmbvTk[here] or follow the instructions below.
 
 Start with running this simple line:
 
