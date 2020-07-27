@@ -34,19 +34,15 @@ Please read link:architecture{outfilesuffix}[for information about the architect
 
 == Installation
 
-There are link:installation{outfilesuffix}[3 main deployment options] for running FeatureHub. As FeatureHub is packaged as a _Cloud Native_
-bundle, all parts are Docker images and are intended to be used with that technology (i.e. Docker or Kubernetes).
+There are link:installation{outfilesuffix}[3 main deployment options] for running FeatureHub.As FeatureHub is packaged as a _Cloud Native_ bundle, all parts are Docker images and are intended to be used with that technology (i.e. Docker or Kubernetes).
 
-All sample configurations are in the `run-configurations` folder. All of the run configurations mount the
-database volume separately from the main set of containers, allowing you to upgrade your database and
-versions of FeatureHub without destroying your database.
+All sample configurations are in the `run-configurations` folder.All of the run configurations mount the database volume separately from the main set of containers, allowing you to upgrade your database and versions of FeatureHub without destroying your database.
 
-NOTE: FeatureHub runs on the following SQL Databases: PostgreSQL, MySQL, MS SQL Server, Oracle and we provide
-initialization and migration DDL for each of these databases. Others can be supported, please contact us.
+NOTE: FeatureHub runs on the following SQL Databases: PostgreSQL, MySQL, MS SQL Server, Oracle and we provide initialization and migration DDL for each of these databases.Others can be supported, please contact us.
 
 === Starting small
 
-If you are just curious to see how FeatureHub works and would like to play with it before deciding which of the 3 installation options are right for you, you can also try it just by running several commands and without cloning this repository. You can watch the video with some instructions https://youtu.be/DRVqXJmbvTk[here] or follow the instructions below. 
+If you are just curious to see how FeatureHub works and would like to play with it before deciding which of the 3 installation options are right for you, you can also try it just by running several commands and without cloning this repository.You can watch the video with some instructions https://youtu.be/DRVqXJmbvTk[here] or follow the instructions below.
 
 Start with running this simple line:
 
@@ -54,17 +50,13 @@ Start with running this simple line:
 docker run -p 8085:80 -v ~/tmp/party:/db featurehub/party-server:0.0.6
 ----
 
-where `~/tmp` is where you wish to store the database (h2). This will start FeatureHub Admin Console on port 8085 and you can now
-register as Super Admin, create Portfolio, Application, Feature etc.
+where `~/tmp` is where you wish to store the database (h2).This will start FeatureHub Admin Console on port 8085 and you can now register as Super Admin, create Portfolio, Application, Feature etc.
 
-Once you have done this, you can then simply run the example project, so you don't have to create sample app and add SDK code yourself. Example project consists of a back-end service and a front-end sample app with some sample features already in place.
+Once you have done this, you can then simply run the example project, so you don't have to create sample app and add SDK code yourself.Example project consists of a back-end service and a front-end sample app with some sample features already in place.
 
 ==== Running the example
 
-The example will need to know the SDK URL of your environment (which you can find in the FeatureHub Admin Console), and it will need an IP address that the second
-docker can get access to. If you know how to use docker networks, you should be able to find this easily, otherwise
-find your en0 ip address (you can type: `ifconfig en0` - choose the inet address, Windows will be slightly different)
-or similar, do not use localhost as that will not work.
+The example will need to know the SDK URL of your environment (which you can find in the FeatureHub Admin Console), and it will need an IP address that the second docker can get access to.If you know how to use docker networks, you should be able to find this easily, otherwise find your en0 ip address (you can type: `ifconfig en0` - choose the inet address, Windows will be slightly different) or similar, do not use localhost as that will not work.
 
 ----
 export SDK_URL=default/d8ba747d-7d3c-4454-9c58-130390848412/5EE3vua1NqY0ez6Zd4TXU7XnsZdAPHtR96XaDmhfegitKGiQ9aCdmtmeNUNPubkRZLJLUUpaC7b05ELk
@@ -73,13 +65,11 @@ docker run -e FEATUREHUB_APP_ENV_URL=http://$MY_IP:8085/features/$SDK_URL -p 500
 ----
 
 This will cause the example to start and you can access it on port 5000. Add a few todo's in mixed case.
-If you create a feature flag in the FeatureHub Admin Console called `FEATURE_TITLE_TO_UPPERCASE`, unlock it and set it to true. Now check your sample front-end app, you will see a "refresh"
-message appear. If you refresh, it will upper case everything. Experiment! This flag is affecting the backend service as this is where we implemented the feature using one of the SDKs.
+If you create a feature flag in the FeatureHub Admin Console called `FEATURE_TITLE_TO_UPPERCASE`, unlock it and set it to true.Now check your sample front-end app, you will see a "refresh" message appear.If you refresh, it will upper case everything.Experiment!This flag is affecting the backend service as this is where we implemented the feature using one of the SDKs.
 
 Now in the FeatureHub Admin Console, if you create a feature value - a String value called `SUBMIT_COLOR_BUTTON` and set its value to (say) `cyan`, you will again see a refresh indicator in the sample front-end app and on refresh the "Add" button will swap to cyan colour.
 Each time you change the colour, it will recommend you to refresh.
 It is doing this because it is set in "catch and release" mode, and we recommend you read up on the SDKs for further information on this.
-
 
 [#sdks]
 == Client SDKs for Feature Hub
@@ -87,10 +77,21 @@ It is doing this because it is set in "catch and release" mode, and we recommend
 The client SDKs for FeatureHub are designed to allow various supported languages to connect to the Edge server and receive updates on the features.
 Each different SDK is designed to be idiomatic to that language, but also each different SDK is expected to be used for a different purpose, and so capability varies.
 
-This overview seeks to indicate the capabilities of the SDKs and explain what they are and do.
-If you are considering helping us by writing a new SDK for your favourite language, or expand on an existing library, this table of capability indicates what each different language can support and where extra work is helpful.
+=== SDK Usage 
+
+Choose from your development language / framework and follow the links for the implementation details and examples:
+
+[options="header"]
+|===================================
+||Java|JavaScript|C#|Dart|Go
+|Documentation| link:https://github.com/featurehub-io/featurehub/tree/master/sdks/java/client-java-jersey[Java-Jersey]|link:https://github.com/featurehub-io/featurehub/tree/master/sdks/typescript/client-typescript-core[Javascript, Typescript, Node, React, Angular]|https://github.com/featurehub-io/featurehub/tree/master/sdks/client-csharp/FeatureHubSDK[C#]|link:https://github.com/featurehub-io/featurehub/tree/master/sdks/sdks/dart/client-dart-sdk[Dart]|https://github.com/featurehub-io/featurehub/tree/master/sdks/client-go[Go]
+|Examples|link:https://github.com/featurehub-io/featurehub/tree/master/examples/todo-backend-java[Java-Jersey example] | link:https://github.com/featurehub-io/featurehub/tree/master/examples/todo-backend-typescript[Node server example] , link:../examples/todo-frontend-react-typescript/[React app example] |Coming soon!|Coming soon!|Coming soon!
+|===================================
 
 === Capabilities overview
+
+This overview seeks to indicate the capabilities of the SDKs and explain what they are and what the do.
+If you are considering helping us by writing a new SDK for your favourite language, or expand on an existing library, this table of capability indicates what each different language can support and where extra work is helpful.
 
 [options="header"]
 |===================================
@@ -107,12 +108,10 @@ If you are considering helping us by writing a new SDK for your favourite langua
 |Test Client|Y|N|N|Y|N
 |===================================
 
-- *(1)* Javascript and Typescript are supported via a Typescript libraries. This is available https://www.npmjs.com/org/featurehub[ at the npm repository].
+- *(1)* Javascript and Typescript are supported via a Typescript libraries.This is available https://www.npmjs.com/org/featurehub[ at the npm repository].
 - *(2)* Dart and Flutter are supported by Dart libraries available at https://pub.dev/publishers/featurehub.io/packages[pub.dev].
 - *(3)* Java is supported by libraries from Apache Maven Central. [needs ref]
 - *(4)* C# and .NET is supported by libraries from nuget. [needs ref]
-
-
 
 === Capabilities explained
 
@@ -189,16 +188,6 @@ If it is null, and you want to ensure this is set to null (which is ignored for 
 - `updateValue` - this is specifically for the situation where you are setting a non feature flag to have a null value.
 Otherwise passing a value will assume this is true.
 
-=== SDK Usage 
-
-Choose from your development language / framework and follow the links for the implementation details and examples:
-
-[options="header"]
-|===================================
-||Java|JavaScript|C#|Dart|Go
-|Documentation| link:https://github.com/featurehub-io/featurehub/tree/master/sdks/java/client-java-jersey[Java-Jersey]|link:https://github.com/featurehub-io/featurehub/tree/master/sdks/typescript/client-typescript-core[Javascript, Typescript, Node, React, Angular]|https://github.com/featurehub-io/featurehub/tree/master/sdks/client-csharp/FeatureHubSDK[C#]|link:https://github.com/featurehub-io/featurehub/tree/master/sdks/sdks/dart/client-dart-sdk[Dart]|https://github.com/featurehub-io/featurehub/tree/master/sdks/client-go[Go]
-|Examples|link:https://github.com/featurehub-io/featurehub/tree/master/examples/todo-backend-java[Java-Jersey example] | link:https://github.com/featurehub-io/featurehub/tree/master/examples/todo-backend-typescript[Node server example] , link:../examples/todo-frontend-react-typescript/[React app example] |Coming soon!|Coming soon!|Coming soon!
-|===================================
 
 ==== Licenses
 
