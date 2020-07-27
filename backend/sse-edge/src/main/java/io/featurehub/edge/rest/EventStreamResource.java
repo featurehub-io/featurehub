@@ -5,7 +5,6 @@ import io.featurehub.edge.bucket.EventOutputBucketService;
 import io.featurehub.edge.client.TimedBucketClientConnection;
 import io.featurehub.mr.messaging.StreamedFeatureUpdate;
 import io.featurehub.mr.model.EdgeInitPermissionResponse;
-import io.featurehub.mr.model.Feature;
 import io.featurehub.mr.model.FeatureValue;
 import io.featurehub.mr.model.RoleType;
 import io.featurehub.sse.model.FeatureStateUpdate;
@@ -15,8 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.PUT;
@@ -79,7 +76,7 @@ public class EventStreamResource {
 
     final EdgeInitPermissionResponse perms = serverConfig.requestPermission(namedCache, apiKey, envId, featureKey);
 
-    if (perms == null) {
+    if (perms == null || Boolean.FALSE.equals(perms.getSuccess())) {
       return Response.status(Response.Status.NOT_FOUND).build();
     }
 

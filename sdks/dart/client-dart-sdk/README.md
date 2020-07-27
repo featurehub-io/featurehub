@@ -18,7 +18,7 @@ This library only provides one recommended type of operation, which is that the 
 all of the time. _This is not appropriate for Mobile operation at this time as it will drain battery_. 
 
 > This readme does not deal with the SDK capability of updating features while running your tests. That
-capability is API client specific, and the sample we have is for Jersey. 
+capability is API client specific, and the sample we have is for Jersey and Typescript. 
 
 ## Mechanisms for use
 

@@ -1,7 +1,7 @@
 import * as restify from 'restify';
 import * as corsMiddleware from 'restify-cors-middleware';
 import { ITodoApiController, Todo, TodoApiRouter } from "./generated-interface";
-import { FeatureHubEventSourceClient } from 'featurehub-eventsource/dist';
+import { FeatureHubEventSourceClient } from 'featurehub-eventsource-sdk/dist';
 import {FeatureContext, featureHubRepository, GoogleAnalyticsCollector, Readyness} from 'featurehub-repository/dist';
 
 if (process.env.FEATUREHUB_APP_ENV_URL === undefined) {
