@@ -22,6 +22,13 @@ Run the following command:
 
 `npm install featurehub-eventsource-sdk`
 
+## Service account SDK Url
+
+Find and copy your SDK Url from the FeatureHub Web Console (you can find it also in the Demo version) - 
+you will use this in your code to configure feature updates for your environments. 
+It should look similar to this: ```https://vrtfs.demo.featurehub.io/features/default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE```
+
+![Service account](../../../docs/images/service-account-copy.png) 
 
 ## Mechanisms for use
 
@@ -53,7 +60,7 @@ featureHubRepository.addReadynessListener((readyness) => {
   }
 });
 
-this.eventSource = new FeatureHubEventSourceClient('<sdkUrl>');
+this.eventSource = new FeatureHubEventSourceClient('<sdkUrl>'); //paste your Service Account SDK URL here
 this.eventSource.init();
 
 featureHubRepository.getFeatureState('FEATURE_X').addListener((fs: FeatureStateHolder) => {
@@ -75,7 +82,7 @@ featureHubRepository.addReadynessListener((readyness) => {
   }
 });
 
-this.eventSource = new FeatureHubEventSourceClient('<sdkUrl>');
+this.eventSource = new FeatureHubEventSourceClient('<sdkUrl>'); //paste your Service Account SDK URL here
 this.eventSource.init();
 ```
 
@@ -105,7 +112,7 @@ featureHubRepository.addReadynessListener((readyness) => {
   }
 });
 
-this.eventSource = new FeatureHubEventSourceClient('<sdkUrl>');
+this.eventSource = new FeatureHubEventSourceClient('<sdkUrl>'); //paste your Service Account SDK URL here
 this.eventSource.init();
 
 featureHubRepository.catchAndReleaseMode = true; // don't allow feature updates to come through
