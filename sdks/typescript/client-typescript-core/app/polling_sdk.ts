@@ -40,13 +40,11 @@ class BrowserPollingService extends PollingBase implements PollingService {
   }
 
   private poll(): void {
-    console.log('requesting: ', this.url);
     const req = new XMLHttpRequest();
     req.open('GET', this.url);
     req.setRequestHeader('Content-type', 'application/json');
     req.send();
     req.onreadystatechange = () => {
-      console.log('ready change : ', req.readyState);
       if (req.readyState === 4) {
         if (req.status === 200) {
           this.callback(ObjectSerializer.deserialize(JSON.parse(req.responseText), 'Array<Environment>'));
