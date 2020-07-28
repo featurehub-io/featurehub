@@ -57,7 +57,7 @@ class BrowserPollingService extends PollingBase implements PollingService {
   }
 
   private delayTimer(): void {
-    if (!this.stopped) {
+    if (!this.stopped && this.frequency > 0) {
       window.setTimeout(() => this.poll(), this.frequency);
     }
   }
@@ -104,9 +104,9 @@ export class FeatureHubPollingClient {
       } else {
         this._pollingService = new NodejsPollingService();
       }
-
-      this._pollingService.start();
     }
+
+    this._pollingService.start();
   }
 
   public stop() {
