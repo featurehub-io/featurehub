@@ -7,7 +7,7 @@ you cannot write your own, please follow Contribution guidelines.
 
 Below explains how to implement FeatureHub SDK using Javascript/Typescript for applications, like node.js backend servers or Web front-ends (e.g. React). 
 
-The SDK consist of "core" module "featurehub-repository" and [eventsource](https://www.npmjs.com/package/featurehub-eventsource-sdk) which provides real-time connection to the FeatureHub Edge server. 
+The SDK consists of "core" module "featurehub-repository" and [eventsource](https://www.npmjs.com/package/featurehub-eventsource-sdk) which provides real-time connection to the FeatureHub Edge server. 
 
 When you install the SDK it will also install interdependency [featurehub-repository](https://www.npmjs.com/package/featurehub-repository) which is a core library that holds features and creates events. 
 
