@@ -7,15 +7,22 @@ import {
   featureHubRepository,
   // GoogleAnalyticsCollector,
   Readyness,
-  FeatureUpdater
+  FeatureUpdater,
+  FeatureHubPollingClient
 } from 'featurehub-repository/dist';
 import { FeatureHubEventSourceClient } from 'featurehub-eventsource-sdk/dist';
 
 declare global {
-  interface Window { FeatureUpdater: any; }
+  interface Window {
+    FeatureUpdater: any;
+    PollingService: any;
+    Repository: any;
+  }
 }
 
 window.FeatureUpdater = FeatureUpdater;
+window.PollingService = FeatureHubPollingClient;
+window.Repository = featureHubRepository;
 
 let todoApi: DefaultApi;
 // const todoApi = new DefaultApi(new Configuration({basePath:

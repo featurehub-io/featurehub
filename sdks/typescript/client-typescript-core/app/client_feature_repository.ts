@@ -70,26 +70,30 @@ export class ClientFeatureRepository {
           if (this._catchAndReleaseMode) {
             this._catchUpdatedFeatures([fs]);
           } else {
-            this.featureUpdate(fs);
-            this.triggerNewStateAvailable();
+            if (this.featureUpdate(fs)) {
+              this.triggerNewStateAvailable();
+            }
           }
 
           break;
         case SSEResultState.Features:
-          const features = (data as []).map((f) => FeatureStateTypeTransformer.fromJson(f));
+          const features = (data instanceof Array) ? (data as Array<FeatureState>) :
+            (data as []).map((f) => FeatureStateTypeTransformer.fromJson(f));
           if (this.hasReceivedInitialState && this._catchAndReleaseMode) {
 
             this._catchUpdatedFeatures(features);
           } else {
-            features.forEach((f) => this.featureUpdate(f));
+            let updated = false;
+            features.forEach((f) => updated = this.featureUpdate(f) || updated);
+            this.readynessState = Readyness.Ready;
+            console.log('updated is', updated, features);
             if (!this.hasReceivedInitialState) {
               this.checkForInvalidFeatures();
               this.hasReceivedInitialState = true;
-            } else {
+              this.broadcastReadynessState();
+            } else if (updated) {
               this.triggerNewStateAvailable();
             }
-            this.readynessState = Readyness.Ready;
-            this.broadcastReadynessState();
           }
           break;
         default:
@@ -98,27 +102,6 @@ export class ClientFeatureRepository {
     }
   }
 
-  private _catchUpdatedFeatures(features: FeatureState[]) {
-    let updatedValues = false;
-    if (features && features.length > 0) {
-      features.forEach((f) => {
-        const fs = this._catchReleaseStates.get(f.id);
-        if (fs == null) {
-          this._catchReleaseStates.set(f.id, f);
-          updatedValues = true;
-        } else {
-          // check it is newer
-          if (fs.version === undefined || (f.version !== undefined && f.version > fs.version)) {
-            this._catchReleaseStates.set(f.id, f);
-            updatedValues = true;
-          }
-        }
-      });
-    }
-    if (updatedValues) {
-      this.triggerNewStateAvailable();
-    }
-  }
 
   public addPostLoadNewFeatureStateAvailableListener(listener: PostLoadNewFeatureStateAvailableListener) {
     this._newFeatureStateAvailableListeners.push(listener);
@@ -179,6 +162,32 @@ export class ClientFeatureRepository {
     this._catchReleaseStates.clear(); // remove all existing items
   }
 
+  private _catchUpdatedFeatures(features: FeatureState[]) {
+    let updatedValues = false;
+    if (features && features.length > 0) {
+      features.forEach((f) => {
+        const existingFeature = this.features.get(f.key);
+        if (existingFeature === null || (existingFeature.getKey()
+          && f.version > existingFeature.getFeatureState().version)) {
+          const fs = this._catchReleaseStates.get(f.id);
+          if (fs == null) {
+            this._catchReleaseStates.set(f.id, f);
+            updatedValues = true;
+          } else {
+            // check it is newer
+            if (fs.version === undefined || (f.version !== undefined && f.version > fs.version)) {
+              this._catchReleaseStates.set(f.id, f);
+              updatedValues = true;
+            }
+          }
+        }
+      });
+    }
+    if (updatedValues) {
+      this.triggerNewStateAvailable();
+    }
+  }
+
   private triggerNewStateAvailable() {
     if (this.hasReceivedInitialState && this._newFeatureStateAvailableListeners.length > 0) {
       if (!this._catchAndReleaseMode || (this._catchReleaseStates.size > 0)) {
@@ -195,7 +204,7 @@ export class ClientFeatureRepository {
     }
   }
 
-  private featureUpdate(fs: FeatureState): void {
+  private featureUpdate(fs: FeatureState): boolean {
     if (fs === undefined || fs.key === undefined) {
       return;
     }
@@ -222,11 +231,15 @@ export class ClientFeatureRepository {
       if (holder !== undefined) {
         this.features.set(fs.key, holder);
       }
+    } else if (holder.getFeatureState().version <= fs.version) {
+      return false;
     }
 
     if (holder !== undefined) {
       holder.setFeatureState(fs);
     }
+
+    return true;
   }
 
   private checkForInvalidFeatures(): void {
