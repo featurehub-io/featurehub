@@ -1,20 +1,24 @@
 # Javascript/Typescript Client SDK for FeatureHub
 
 Welcome to the Javascript/Typescript SDK implementation for FeatureHub. It is the supported version, but it does not mean
-you cannot write your own, please follow Contribution guidelines.
+you cannot write your own, please follow [Contributing](https://github.com/featurehub-io/featurehub/blob/master/.github/CONTRIBUTING.adoc)
+guidelines.
 
 ## Overview
 
-Below explains how to implement FeatureHub SDK using Javascript/Typescript for applications, like node.js backend servers or Web front-ends (e.g. React). 
+Below explains how you can use the FeatureHub SDK in Javascript or Typescript for applications like Node.js
+backend server or Web front-end (e.g. React). 
 
-The SDK consists of "core" module "featurehub-repository" and [eventsource](https://www.npmjs.com/package/featurehub-eventsource-sdk) which provides real-time connection to the FeatureHub Edge server. 
+This SDK is based on EventSource (or Server Sent Events) interface and provides real-time connection to the FeatureHub Edge server. 
 
-When you install the SDK it will also install interdependency [featurehub-repository](https://www.npmjs.com/package/featurehub-repository) which is a core library that holds features and creates events. 
+When you install the SDK it will also install the dependency [featurehub-repository](https://www.npmjs.com/package/featurehub-repository)
+which is a core library that holds features and creates events. 
 
-It is designed this way, so we can separate core functionality and add different implementations in the future, similar to "eventsource".   
+It is designed this way, so we can separate core functionality and add different implementations in the future, similar to EventSource.   
 
-See [FeatureHub](https://featurehub.io) for more details. There is a link on this page to try our demo environment and if you like to try this SDK with your service
-you can use one of the service accounts (<sdk_url>) in the Demo version to connect to it and play with the feature flags.
+See [FeatureHub.io](https://featurehub.io) for more details. There you can find a link to try our demo version of FeatureHub Web Console. 
+If you like you can experiment with this SDK in your code and play with the feature flags and control them from the FeatureHub Web Console.
+You can use one of the service accounts SDK Url to substitute ```<sdk_url>``` in below examples.
 
 ## Installation Instructions
 
@@ -28,7 +32,7 @@ Find and copy your SDK Url from the FeatureHub Web Console (you can find it also
 you will use this in your code to configure feature updates for your environments. 
 It should look similar to this: ```https://vrtfs.demo.featurehub.io/features/default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE```
 
-![Service account](../../../docs/images/service-account-copy.png) 
+![Service account](images/service-account-copy.png) 
 
 ## Mechanisms for use
 
@@ -38,7 +42,8 @@ application will operate under.
 ### 1. Real-time updates, recommended for servers
 
 In this mode, you will make a connection to the FeatureHub Edge server, and any updates to any events will come
-through to you, updating the feature values in the repository. We recommend this technique for servers, but for Web it may not be the best choice
+through to you, updating the feature values in the repository. We recommend this technique for servers, 
+but for Web it may not be the best choice
 as you may not want your users to see updates in the browser immediately but rather serve it on-demand. 
 
 A typical strategy will be:
@@ -59,10 +64,12 @@ featureHubRepository.addReadynessListener((readyness) => {
    
        api.listen(port, function () {
          console.log('server is listening on port', port);
-  })
+       })
+  }
 });
 
-this.eventSource = new FeatureHubEventSourceClient('<sdkUrl>'); //paste your Service Account SDK URL here
+//paste your Service Account SDK URL here
+this.eventSource = new FeatureHubEventSourceClient('<sdkUrl>'); 
 this.eventSource.init();
 
 featureHubRepository.getFeatureState('FEATURE_X').addListener((fs: FeatureStateHolder) => {
@@ -75,7 +82,8 @@ featureHubRepository.getFeatureState('FEATURE_X').addListener((fs: FeatureStateH
 
 In this mode, you receive the connection and then you disconnect, ignoring any further connections. You would
 use this mode only if you want to force the client to have a consistent UI experience through the lifetime of their
-visit to your client application. Recommended for Web, when not intending to react to feature changes until you ask for the feature state again.
+visit to your client application. Recommended for Web, when not intending to react to feature changes until 
+you ask for the feature state again.
 
 ```javascript
 featureHubRepository.addReadynessListener((readyness) => {
@@ -84,7 +92,8 @@ featureHubRepository.addReadynessListener((readyness) => {
   }
 });
 
-this.eventSource = new FeatureHubEventSourceClient('<sdkUrl>'); //paste your Service Account SDK URL here
+//paste your Service Account SDK URL here
+this.eventSource = new FeatureHubEventSourceClient('<sdkUrl>'); 
 this.eventSource.init();
 ```
 
@@ -101,8 +110,8 @@ using a UI, this would lead to a transition to the actual UI rendering, on the s
 to the server port.
 - tell the feature hub repository to operate in catch and release mode. `featureHubRepository.catchAndRelease = true;`
 - add a _post feature changed` callback hook. This hook will be called when a feature has changed.
-- `[optional]` set up your per feature listeners so you can react to their changes in state. You could also not do this and 
-encourage you users to reload the whole application window (e.g. `window.location.reload()`).
+- `[optional]` set up your per feature listeners so you can react to their changes in state. You could also not 
+do this and encourage you users to reload the whole application window (e.g. `window.location.reload()`).
 - connect to the Feature Hub server. As soon as it has connected and received a list of features it will call your
 readyness listener.
 
@@ -114,17 +123,19 @@ featureHubRepository.addReadynessListener((readyness) => {
   }
 });
 
-this.eventSource = new FeatureHubEventSourceClient('<sdkUrl>'); //paste your Service Account SDK URL here
+//paste your Service Account SDK URL here
+this.eventSource = new FeatureHubEventSourceClient('<sdkUrl>'); 
 this.eventSource.init();
 
-featureHubRepository.catchAndReleaseMode = true; // don't allow feature updates to come through
+// don't allow feature updates to come through
+featureHubRepository.catchAndReleaseMode = true; 
 
 featureHubRepository
-  .addPostLoadNewFeatureStateAvailableListener((_) => // do something );
+  .addPostLoadNewFeatureStateAvailableListener((_) => {}); // do something 
 
 // this is optional
 featureHubRepository.getFeatureState('FEATURE_X').addListener((fs: FeatureStateHolder) => {
-  // do something. will trigger only once (first set of features). Won't trigger again until 
+  // Do something. will trigger only once (first set of features). Won't trigger again until 
   // featureHubRepository.release() is called.
 });
 ```
@@ -208,7 +219,8 @@ Read more on how to interpret events in Google Analytics [here](https://docs.fea
 
 ## FeatureHub Test SDK
 
-When writing automated integration tests, it is often desirable to update your feature values, particularly flags. We provide a method to do this
+When writing automated integration tests, it is often desirable to update your feature values, particularly flags. 
+We provide a method to do this
 using the `FeatureUpdater` class. Use of the API is based on the rights of your SDK-URL. Generally you should
 only give write access to service accounts in test environments.
 
@@ -221,8 +233,8 @@ must make sense:
 - `lock` - this is a boolean. If true it will attempt to lock, false - attempts to unlock. No value will not make any change.
 - `value` - this is any kind of value and is passed when you wish to _set_ a value. Do not pass it if you wish to unset the value.
 For a flag this means setting it to false (if null), but for the others it will make it null (not passing it). 
-- `updateValue` - set this to true if you wish to make the value field null. Otherwise, there is no way to distinguish between not setting a value,
-and setting it to null.
+- `updateValue` - set this to true if you wish to make the value field null. Otherwise, there is no way to distinguish
+between not setting a value, and setting it to null.
 
 Sample code might look like this:
 
