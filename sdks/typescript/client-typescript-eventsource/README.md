@@ -7,7 +7,7 @@ you cannot write your own, please follow [Contributing](https://github.com/featu
 
 Below explains how you can use the FeatureHub SDK in Javascript or Typescript for applications like Node.js backend server or Web front-end (e.g. React). 
 
-This SDK is based on EventSource interface and provides real-time connection to the FeatureHub Edge server. 
+This SDK is based on EventSource (or Server Sent Events) interface and provides real-time connection to the FeatureHub Edge server. 
 
 When you install the SDK it will also install interdependency [featurehub-repository](https://www.npmjs.com/package/featurehub-repository) which is a core library that holds features and creates events. 
 
