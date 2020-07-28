@@ -29,18 +29,12 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.Callable;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 class NamedCacheListener {
@@ -235,45 +229,44 @@ public class ServerConfig {
     }
   }
 
+  protected Environment getEnvironmentFeaturesBySdk(String url, String namedCache, String apiKey,
+                                                              String envId) {
+    EdgeInitRequest request = new EdgeInitRequest()
+      .command(EdgeInitRequestCommand.LISTEN)
+      .apiKey(apiKey)
+      .environmentId(envId);
+
+    try {
+      String subject = namedCache + "/" + ChannelConstants.EDGE_CACHE_CHANNEL;
+
+      Message response = connection.request(subject, CacheJsonMapper.mapper.writeValueAsBytes(request),
+        Duration.ofMillis(2000));
+
+      if (response != null) {
+        EdgeInitResponse edgeResponse = CacheJsonMapper.mapper.readValue(response.getData(),
+          EdgeInitResponse.class);
+
+
+        return new Environment().sdkUrl(url).features(featureTransformer
+          .transform(edgeResponse.getFeatures()));
+
+      }
+    } catch (Exception e) {
+      log.error("Failed to request ");
+    }
+
+    return null;
+  }
+
   public List<Environment> requestFeatures(List<String> sdkUrl) {
     List<CompletableFuture<Environment>> futures = new ArrayList<>();
 
     sdkUrl.forEach(url -> {
       String[] parts = url.split("/");
-      if (parts.length != 3) {
+      if (parts.length == 3) {
 
-        Supplier<Environment> supply = () -> {
-          {
-            // use executor, add to
-            EdgeInitRequest request = new EdgeInitRequest()
-              .command(EdgeInitRequestCommand.LISTEN)
-              .apiKey(parts[1])
-              .environmentId(parts[2]);
-
-            try {
-              String subject = parts[0] + "/" + ChannelConstants.EDGE_CACHE_CHANNEL;
-
-              Message response = connection.request(subject, CacheJsonMapper.mapper.writeValueAsBytes(request),
-                Duration.ofMillis(2000));
-
-              if (response != null) {
-                EdgeInitResponse edgeResponse = CacheJsonMapper.mapper.readValue(response.getData(),
-                  EdgeInitResponse.class);
-
-
-                return new Environment().id(url).features(featureTransformer
-                  .transform(edgeResponse.getFeatures()));
-
-              }
-            } catch (Exception e) {
-              log.error("Failed to request ");
-            }
-
-            return null;
-          }
-        };
-
-        futures.add(CompletableFuture.supplyAsync(supply, listenExecutor));
+        futures.add(CompletableFuture.supplyAsync(() -> getEnvironmentFeaturesBySdk(url, parts[0], parts[2], parts[1]),
+          listenExecutor));
       }
     });
 
@@ -281,7 +274,8 @@ public class ServerConfig {
       try {
         return
           CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenApply((f) -> futures.stream()
-          .map(CompletableFuture::join).collect(Collectors.toList())).get();
+          .map(CompletableFuture::join).collect(Collectors.toList())).get().stream()
+            .filter(Objects::nonNull).collect(Collectors.toList());
       } catch (InterruptedException|ExecutionException e) {
         log.error("GET failed for features.", e);
       }

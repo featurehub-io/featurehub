@@ -120,7 +120,7 @@ components:
         - delete_feature
     Environment:
       properties:
-        id:
+        sdkUrl:
           type: string
         features:
           type: array
