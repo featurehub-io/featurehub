@@ -13,8 +13,8 @@ When you install the SDK it will also install interdependency [featurehub-reposi
 
 It is designed this way, so we can separate core functionality and add different implementations in the future, similar to EventSource.   
 
-See [FeatureHub.io](https://featurehub.io) for more details. There you can find a link to try our demo version of FeatureHub Web Console. If you like to experiment with this SDK in your code and play with the feature flags
-you can use one of the service accounts SDK Url to substitute ```<sdk_url>``` in below examples.
+See [FeatureHub.io](https://featurehub.io) for more details. There you can find a link to try our demo version of FeatureHub Web Console. If you like you can experiment with this SDK in your code and play with the feature flags and control them from the FeatureHub Web Console.
+You can use one of the service accounts SDK Url to substitute ```<sdk_url>``` in below examples.
 
 ## Installation Instructions
 
@@ -125,7 +125,7 @@ this.eventSource.init();
 featureHubRepository.catchAndReleaseMode = true; 
 
 featureHubRepository
-  .addPostLoadNewFeatureStateAvailableListener((_) => {}) // do something 
+  .addPostLoadNewFeatureStateAvailableListener((_) => {}); // do something 
 
 // this is optional
 featureHubRepository.getFeatureState('FEATURE_X').addListener((fs: FeatureStateHolder) => {
