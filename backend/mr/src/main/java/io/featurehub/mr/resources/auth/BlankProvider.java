@@ -8,7 +8,7 @@ import java.util.Collections;
 public class BlankProvider implements AuthProvider {
   @Override
   public Collection<String> getProviders() {
-    return Collections.EMPTY_LIST;
+    return Collections.emptyList();
   }
 
   @Override
