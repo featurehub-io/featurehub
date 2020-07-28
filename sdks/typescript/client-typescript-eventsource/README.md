@@ -5,7 +5,7 @@ you cannot write your own, please follow [Contributing](https://github.com/featu
 
 ## Overview
 
-Below explains how to implement FeatureHub SDK using Javascript/Typescript for applications like Node.js backend server or Web front-end (e.g. React). 
+Below explains how you can use the FeatureHub SDK in Javascript or Typescript for applications like Node.js backend server or Web front-end (e.g. React). 
 
 This SDK is based on EventSource interface and provides real-time connection to the FeatureHub Edge server. 
 
