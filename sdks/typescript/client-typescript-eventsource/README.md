@@ -1,20 +1,20 @@
 # Javascript/Typescript Client SDK for FeatureHub
 
 Welcome to the Javascript/Typescript SDK implementation for FeatureHub. It is the supported version, but it does not mean
-you cannot write your own, please follow Contribution guidelines.
+you cannot write your own, please follow [Contributing](https://github.com/featurehub-io/featurehub/blob/master/.github/CONTRIBUTING.adoc) guidelines.
 
 ## Overview
 
-Below explains how to implement FeatureHub SDK using Javascript/Typescript for applications, like node.js backend servers or Web front-ends (e.g. React). 
+Below explains how to implement FeatureHub SDK using Javascript/Typescript for applications like Node.js backend server or Web front-end (e.g. React). 
 
-The SDK consists of "core" module "featurehub-repository" and [eventsource](https://www.npmjs.com/package/featurehub-eventsource-sdk) which provides real-time connection to the FeatureHub Edge server. 
+This SDK is based on EventSource interface and provides real-time connection to the FeatureHub Edge server. 
 
 When you install the SDK it will also install interdependency [featurehub-repository](https://www.npmjs.com/package/featurehub-repository) which is a core library that holds features and creates events. 
 
-It is designed this way, so we can separate core functionality and add different implementations in the future, similar to "eventsource".   
+It is designed this way, so we can separate core functionality and add different implementations in the future, similar to EventSource.   
 
-See [FeatureHub](https://featurehub.io) for more details. There is a link on this page to try our demo environment and if you like to try this SDK with your service
-you can use one of the service accounts (<sdk_url>) in the Demo version to connect to it and play with the feature flags.
+See [FeatureHub.io](https://featurehub.io) for more details. There you can find a link to try our demo version of FeatureHub Web Console. If you like to experiment with this SDK in your code and play with the feature flags
+you can use one of the service accounts SDK Url to substitute ```<sdk_url>``` in below examples.
 
 ## Installation Instructions
 
@@ -28,7 +28,7 @@ Find and copy your SDK Url from the FeatureHub Web Console (you can find it also
 you will use this in your code to configure feature updates for your environments. 
 It should look similar to this: ```https://vrtfs.demo.featurehub.io/features/default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE```
 
-![Service account](../../../docs/images/service-account-copy.png) 
+![Service account](images/service-account-copy.png) 
 
 ## Mechanisms for use
 
@@ -59,10 +59,12 @@ featureHubRepository.addReadynessListener((readyness) => {
    
        api.listen(port, function () {
          console.log('server is listening on port', port);
-  })
+       })
+  }
 });
 
-this.eventSource = new FeatureHubEventSourceClient('<sdkUrl>'); //paste your Service Account SDK URL here
+//paste your Service Account SDK URL here
+this.eventSource = new FeatureHubEventSourceClient('<sdkUrl>'); 
 this.eventSource.init();
 
 featureHubRepository.getFeatureState('FEATURE_X').addListener((fs: FeatureStateHolder) => {
@@ -84,7 +86,8 @@ featureHubRepository.addReadynessListener((readyness) => {
   }
 });
 
-this.eventSource = new FeatureHubEventSourceClient('<sdkUrl>'); //paste your Service Account SDK URL here
+//paste your Service Account SDK URL here
+this.eventSource = new FeatureHubEventSourceClient('<sdkUrl>'); 
 this.eventSource.init();
 ```
 
@@ -114,17 +117,19 @@ featureHubRepository.addReadynessListener((readyness) => {
   }
 });
 
-this.eventSource = new FeatureHubEventSourceClient('<sdkUrl>'); //paste your Service Account SDK URL here
+//paste your Service Account SDK URL here
+this.eventSource = new FeatureHubEventSourceClient('<sdkUrl>'); 
 this.eventSource.init();
 
-featureHubRepository.catchAndReleaseMode = true; // don't allow feature updates to come through
+// don't allow feature updates to come through
+featureHubRepository.catchAndReleaseMode = true; 
 
 featureHubRepository
-  .addPostLoadNewFeatureStateAvailableListener((_) => // do something );
+  .addPostLoadNewFeatureStateAvailableListener((_) => {}) // do something 
 
 // this is optional
 featureHubRepository.getFeatureState('FEATURE_X').addListener((fs: FeatureStateHolder) => {
-  // do something. will trigger only once (first set of features). Won't trigger again until 
+  // Do something. will trigger only once (first set of features). Won't trigger again until 
   // featureHubRepository.release() is called.
 });
 ```
