@@ -112,7 +112,7 @@ If you are considering helping us by writing a new SDK for your favourite langua
 |Catch & Release|N|Y|N|Y|N
 |Analytics Support|Y|Y|N|Y|N
 |Google Analytics|Y|Y|N|N|N
-|Test Client|Y|N|N|Y|N
+|Test Client|Y|Y|N|Y|Y
 |===================================
 
 - *(1)* Javascript and Typescript are supported via a Typescript libraries.
