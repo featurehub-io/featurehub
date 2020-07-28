@@ -1,5 +1,7 @@
 package io.featurehub.edge.rest;
 
+import io.featurehub.edge.FeatureTransformer;
+import io.featurehub.edge.FeatureTransformerUtils;
 import io.featurehub.edge.ServerConfig;
 import io.featurehub.edge.bucket.EventOutputBucketService;
 import io.featurehub.edge.client.TimedBucketClientConnection;
@@ -7,6 +9,7 @@ import io.featurehub.mr.messaging.StreamedFeatureUpdate;
 import io.featurehub.mr.model.EdgeInitPermissionResponse;
 import io.featurehub.mr.model.FeatureValue;
 import io.featurehub.mr.model.RoleType;
+import io.featurehub.sse.model.Environment;
 import io.featurehub.sse.model.FeatureStateUpdate;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.SseFeature;
@@ -14,14 +17,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import java.math.BigDecimal;
+import java.util.List;
 
 @Path("/features")
 public class EventStreamResource {
@@ -29,11 +37,23 @@ public class EventStreamResource {
 
   private final EventOutputBucketService bucketService;
   private final ServerConfig serverConfig;
+  private final FeatureTransformer featureTransformer;
 
   @Inject
   public EventStreamResource(EventOutputBucketService bucketService, ServerConfig serverConfig) {
     this.bucketService = bucketService;
     this.serverConfig = serverConfig;
+    featureTransformer = new FeatureTransformerUtils();
+  }
+
+  @GET
+  @Path("/")
+  @Produces({ "application/json" })
+  public List<Environment> getFeatureStates(@QueryParam("sdkUrl") List<String> sdkUrl) {
+    if (sdkUrl == null || sdkUrl.isEmpty()) {
+      throw new BadRequestException();
+    }
+    return serverConfig.requestFeatures(sdkUrl);
   }
 
 
@@ -46,7 +66,9 @@ public class EventStreamResource {
     EventOutput o = new EventOutput();
 
     try {
-      TimedBucketClientConnection b = new TimedBucketClientConnection.Builder().environmentId(envId).apiKey(apiKey).namedCache(namedCache).output(o).build();
+      TimedBucketClientConnection b = new TimedBucketClientConnection.Builder()
+        .featureTransformer(featureTransformer)
+        .environmentId(envId).apiKey(apiKey).namedCache(namedCache).output(o).build();
 
       if (b.discovery()) {
         serverConfig.requestFeatures(b);

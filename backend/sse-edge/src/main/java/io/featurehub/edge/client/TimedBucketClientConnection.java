@@ -1,6 +1,7 @@
 package io.featurehub.edge.client;
 
 import io.featurehub.dacha.api.CacheJsonMapper;
+import io.featurehub.edge.FeatureTransformer;
 import io.featurehub.mr.model.EdgeInitResponse;
 import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.mr.model.FeatureValueType;
@@ -26,12 +27,14 @@ public class TimedBucketClientConnection {
   private String namedCache;
   private List<EjectHandler> handlers = new ArrayList<>();
   private List<FeatureValueCacheItem> heldFeatureUpdates = new ArrayList<>();
+  private FeatureTransformer featureTransformer;
 
   private TimedBucketClientConnection(Builder builder) {
     output = builder.output;
     environmentId = builder.environmentId;
     apiKey = builder.apiKey;
     namedCache = builder.namedCache;
+    featureTransformer = builder.featureTransformer;
   }
 
   public boolean discovery() {
@@ -103,7 +106,8 @@ public class TimedBucketClientConnection {
   public void initResponse(EdgeInitResponse edgeResponse) {
     if (Boolean.TRUE.equals(edgeResponse.getSuccess())) {
       try {
-        writeMessage(SSEResultState.FEATURES, CacheJsonMapper.mapper.writeValueAsString(transform(edgeResponse.getFeatures())));
+        writeMessage(SSEResultState.FEATURES,
+          CacheJsonMapper.mapper.writeValueAsString(featureTransformer.transform(edgeResponse.getFeatures())));
         List<FeatureValueCacheItem> heldUpdates = heldFeatureUpdates;
         heldFeatureUpdates = null;
         if (heldUpdates != null) {
@@ -117,17 +121,13 @@ public class TimedBucketClientConnection {
     }
   }
 
-  private List<FeatureState> transform(List<FeatureValueCacheItem> features) {
-    return features.stream().map(this::transform).collect(Collectors.toList());
-  }
-
   // notify the client of a new feature (if they have received their features)
   public void notifyFeature(FeatureValueCacheItem rf) {
     if (heldFeatureUpdates != null) {
       heldFeatureUpdates.add(rf);
     } else {
       try {
-        String data = CacheJsonMapper.mapper.writeValueAsString(transform(rf));
+        String data = CacheJsonMapper.mapper.writeValueAsString(featureTransformer.transform(rf));
         if (rf.getAction() == PublishAction.DELETE) {
           writeMessage(SSEResultState.DELETE_FEATURE, data);
         } else {
@@ -140,58 +140,13 @@ public class TimedBucketClientConnection {
     }
   }
 
-  private FeatureState transform(FeatureValueCacheItem rf) {
-
-    // todo: should also do rollout strategy
-    FeatureState fs = new FeatureState()
-//      .key(rf.getFeature().getAlias() != null ? rf.getFeature().getAlias() : rf.getFeature().getKey())
-      .key(rf.getFeature().getKey())
-      .type(io.featurehub.sse.model.FeatureValueType.fromValue(rf.getFeature().getValueType().toString())) // they are the same
-      .id(rf.getFeature().getId())
-      .value(valueAsObject(rf));
-
-    if (rf.getValue() == null || rf.getValue().getVersion() == null) {
-      fs.setVersion(0L);
-    } else {
-      fs.setVersion(rf.getValue().getVersion());
-    }
-
-    log.trace("transforming: {} into {}", rf, fs);
-
-    return fs;
-  }
-
-  private Object valueAsObject(FeatureValueCacheItem rf) {
-    if (rf.getValue() == null)
-      return null;
-
-    final FeatureValueType valueType = rf.getFeature().getValueType();
-    if (FeatureValueType.BOOLEAN.equals(valueType)) {
-      return rf.getValue().getValueBoolean();
-    }
-
-    if (FeatureValueType.JSON.equals(valueType)) {
-      return rf.getValue().getValueJson();
-    }
-
-    if ( FeatureValueType.STRING.equals(valueType)) {
-      return rf.getValue().getValueString();
-    }
-
-    if (FeatureValueType.NUMBER.equals(valueType)) {
-      return rf.getValue().getValueNumber();
-    }
-
-    log.error("unknown feature value type, sending null: {}: {}", rf.getFeature().getId(), valueType);
-
-    return null;
-  }
 
   public static final class Builder {
     private EventOutput output;
     private String environmentId;
     private String apiKey;
     private String namedCache;
+    private FeatureTransformer featureTransformer;
 
     public Builder() {
     }
@@ -213,6 +168,11 @@ public class TimedBucketClientConnection {
 
     public Builder namedCache(String val) {
       namedCache = val;
+      return this;
+    }
+
+    public Builder featureTransformer(FeatureTransformer val) {
+      featureTransformer = val;
       return this;
     }
 

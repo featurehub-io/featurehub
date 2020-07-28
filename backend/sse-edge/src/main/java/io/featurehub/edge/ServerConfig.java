@@ -15,6 +15,7 @@ import io.featurehub.mr.model.EdgeInitResponse;
 import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.publish.ChannelConstants;
 import io.featurehub.publish.ChannelNames;
+import io.featurehub.sse.model.Environment;
 import io.nats.client.Connection;
 import io.nats.client.Dispatcher;
 import io.nats.client.Message;
@@ -28,9 +29,19 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 class NamedCacheListener {
   private static final Logger log = LoggerFactory.getLogger(NamedCacheListener.class);
@@ -82,6 +93,7 @@ public class ServerConfig {
   private Map<String, List<TimedBucketClientConnection>> clientBuckets = new ConcurrentHashMap<>();
   // dispatcher subject based on named-cache, NamedCacheListener
   private Map<String, NamedCacheListener> cacheListeners = new ConcurrentHashMap<>();
+  private FeatureTransformer featureTransformer = new FeatureTransformerUtils();
 
   public ServerConfig() {
     DeclaredConfigResolver.resolve(this);
@@ -221,5 +233,60 @@ public class ServerConfig {
     if (conns != null) {
       conns.remove(client);
     }
+  }
+
+  public List<Environment> requestFeatures(List<String> sdkUrl) {
+    List<CompletableFuture<Environment>> futures = new ArrayList<>();
+
+    sdkUrl.forEach(url -> {
+      String[] parts = url.split("/");
+      if (parts.length != 3) {
+
+        Supplier<Environment> supply = () -> {
+          {
+            // use executor, add to
+            EdgeInitRequest request = new EdgeInitRequest()
+              .command(EdgeInitRequestCommand.LISTEN)
+              .apiKey(parts[1])
+              .environmentId(parts[2]);
+
+            try {
+              String subject = parts[0] + "/" + ChannelConstants.EDGE_CACHE_CHANNEL;
+
+              Message response = connection.request(subject, CacheJsonMapper.mapper.writeValueAsBytes(request),
+                Duration.ofMillis(2000));
+
+              if (response != null) {
+                EdgeInitResponse edgeResponse = CacheJsonMapper.mapper.readValue(response.getData(),
+                  EdgeInitResponse.class);
+
+
+                return new Environment().id(url).features(featureTransformer
+                  .transform(edgeResponse.getFeatures()));
+
+              }
+            } catch (Exception e) {
+              log.error("Failed to request ");
+            }
+
+            return null;
+          }
+        };
+
+        futures.add(CompletableFuture.supplyAsync(supply, listenExecutor));
+      }
+    });
+
+    if (!futures.isEmpty()) {
+      try {
+        return
+          CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenApply((f) -> futures.stream()
+          .map(CompletableFuture::join).collect(Collectors.toList())).get();
+      } catch (InterruptedException|ExecutionException e) {
+        log.error("GET failed for features.", e);
+      }
+    }
+
+    return new ArrayList<>();
   }
 }
