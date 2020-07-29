@@ -247,7 +247,7 @@ public class ServerConfig {
           EdgeInitResponse.class);
 
 
-        return new Environment().sdkUrl(url).features(featureTransformer
+        return new Environment().id(envId).features(featureTransformer
           .transform(edgeResponse.getFeatures()));
 
       }

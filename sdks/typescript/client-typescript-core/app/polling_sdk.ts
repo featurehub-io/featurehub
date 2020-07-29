@@ -26,6 +26,7 @@ class PollingBase {
 }
 
 class BrowserPollingService extends PollingBase implements PollingService {
+  private polling: boolean;
 
   constructor(options: BrowserOptions, url: string, frequency: number, callback: FeaturesFunction) {
     super(options, url, frequency, callback);
@@ -40,12 +41,20 @@ class BrowserPollingService extends PollingBase implements PollingService {
   }
 
   private poll(): void {
+    if (this.polling) {
+      this.delayTimer();
+    }
+
+    this.polling = true;
+
     const req = new XMLHttpRequest();
     req.open('GET', this.url);
     req.setRequestHeader('Content-type', 'application/json');
     req.send();
     req.onreadystatechange = () => {
       if (req.readyState === 4) {
+        this.polling = false;
+
         if (req.status === 200) {
           this.callback(ObjectSerializer.deserialize(JSON.parse(req.responseText), 'Array<Environment>'));
         }
@@ -65,6 +74,7 @@ class BrowserPollingService extends PollingBase implements PollingService {
 
 class NodejsPollingService extends PollingBase implements PollingService {
   private uri: URL;
+  private polling = false;
 
   constructor(options: BrowserOptions, url: string, frequency: number, callback: FeaturesFunction) {
     super(options, url, frequency, callback);
@@ -81,13 +91,20 @@ class NodejsPollingService extends PollingBase implements PollingService {
   }
 
   private poll(): void {
+    if (this.polling) {
+      this.delayTimer();
+    }
+
+    this.polling = true;
+
     const http = this.uri.protocol === 'http:' ? require('http') : require('https');
     let data = '';
     const req = http.request(this.uri, (res) => {
       res.on('data', (chunk) => data += chunk);
       res.on('end', () => {
+        this.polling = false;
+
         if (res.statusCode === 200) {
-          console.log('passing', data);
           this.callback(ObjectSerializer.deserialize(JSON.parse(data), 'Array<Environment>'));
         }
 
@@ -161,6 +178,10 @@ export class FeatureHubPollingClient {
 
       environments.forEach(e => {
         if (e.features.length > 0) {
+          // set the environment id so each feature knows which environment it comes from
+          e.features.forEach(f => {
+            f.environmentId = e.id;
+          });
           features.push(... e.features);
         }
       });

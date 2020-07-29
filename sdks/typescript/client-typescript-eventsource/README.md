@@ -217,7 +217,7 @@ Google Analytics collector which will post it off.
 
 Read more on how to interpret events in Google Analytics [here](https://docs.featurehub.io/analytics.html) 
 
-## FeatureHub Test SDK
+## FeatureHub Test API
 
 When writing automated integration tests, it is often desirable to update your feature values, particularly flags. 
 We provide a method to do this
@@ -260,3 +260,47 @@ x.updateKey("FEATURE_TITLE_TO_UPPERCASE", {lock: false}).then((r) => console.log
 
 result was true
 ```
+
+## FeatureHub Polling (GET) API
+
+The Typescript API has a client that allows you to get the features from one or more environments using a GET
+request rather than via the event source mechanism. It is intended that this would be a better API for use in Mobile,
+as Server sent events keep the Mobile's radio on. 
+
+Each request will bring all of the features down, which may or may not trigger events in the repository (depending on
+changes). As each feature has a version number, this prevents accidental triggering of "update" events for features
+in this case.
+
+The API is a single class that works in both NodeJS and the Browser. It takes the repository, the host (such as
+http://localhost:8553), an array of SDK URLs (as taken from the UI), and a polling frequency (0 if it should be single-fire).
+
+```typescript
+const fp = new FeatureHubPollingClient(
+  featureHubRepository, // repository 
+  'http://localhost:8553',  // host
+  10000,    // every 10 seconds, 0 if only fire once
+  ['default/ce6b5f90-2a8a-4b29-b10f-7f1c98d878fe/VNftuX5LV6PoazPZsEEIBujM4OBqA1Iv9f9cBGho2LJylvxXMXKGxwD14xt2d7Ma3GHTsdsSO8DTvAYF'] 
+);
+
+fp.start(); 
+``` 
+
+The above will cause the API to fire when `start()` is called, and then once every 10 seconds. The API will prevent
+you from double polling on the same instance, so you can safely make it a global variable and trigger it in logical
+places around your application (such as navigation change in a mobile app).
+
+This API is currently simple - it will just get all of the features again. Future versions will allow passing of the
+versions of features and limit data being returned.
+
+You can stop polling using:
+
+```typescript 
+fp.stop();
+```
+
+and it will stop once completed.
+
+### Errors
+
+If a 400 error is returned, then it will stop. Otherwise it will keep polling even if there is no data on the assumption
+it simply hasn't been granted access. The API does not leak information on valid vs invalid environments.
