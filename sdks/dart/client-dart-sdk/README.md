@@ -115,3 +115,58 @@ enum Readyness {
 }
 
 ```
+
+## Mobile API
+
+FeatureHub also has a mobile friendly API, that is intended to be used like a GET request and disconnect. The
+point here is that the Mobile devices radio does not stay on like it would with an EventSource. For Dart server 
+instances, client side apps (such as Flutter for Web, Linux, Windows or Mac OS X) - you should use the Event Source
+above. For Flutter for Android or iOS, please use this API.
+
+It is simple to use, you need to specify the host base url and the environment(s) that you wish to pull into your 
+application. Do not have features with the same names otherwise you will encounter issues with versioning.
+
+Construction is fairly simple, you need a repository and there is an example in `example/dart_cli/get_main.dart`.
+
+```dart
+final es = FeatureHubSimpleApi(sdkHost, [sdkUrl], repo);
+es.request();
+```
+
+`request` is an async method and it will return the repository. A failed call is caught and a Failure status is sent
+to the repository. 
+
+If the request has no data or an SDK Url that doesn't exist, that is not considered an error because they may just
+not yet be available and you don't want your application to fail.
+    
+## FeatureHub Test API
+
+The Featurehub test api is available in this SDK, but it is not broken out into a separate class. The purpose of the
+test API is to allow your SDK-URL to update features primarily when writing automated integration tests. 
+
+We provide a method to do this
+using the `FeatureServiceApi.setFeatureState` method. Use of the API is based on the rights of your SDK Url. 
+Generally you shouldonly give write access to service accounts in test environments.
+
+When specifying the key, the Edge service will get the latest value of the feature and compare your changes against
+it, compare them to your permissions and act accordingly.  
+
+You need to pass in an instance of a FeatureStateUpdate, which takes three values, all of which are optional but
+must make sense:
+
+- `lock` - this is a boolean. If true it will attempt to lock, false - attempts to unlock. No value will not make any change.
+- `value` - this is `dynamic` kind of value and is passed when you wish to _set_ a value. Do not pass it if you wish to unset the value.
+For a flag this means setting it to false (if null), but for the others it will make it null (not passing it). 
+- `updateValue` - set this to true if you wish to make the value field null. Otherwise, there is no way to distinguish
+between not setting a value, and setting it to null.
+
+We don't provide a wrapper class for this because most of the code comes directly from the `featurehub_client_api` and
+you need to include that and its dependencies in your project to use this capability.
+
+Sample code might look like this:
+
+```dart
+final _api = FeatureServiceApi(new ApiClient(basePath: host));
+_api.setFeatureState(sdkUrl, key, FeatureStateUpdate()..lock = false ..value = 'TEST'); 
+```   
+

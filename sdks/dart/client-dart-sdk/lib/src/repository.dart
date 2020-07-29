@@ -137,7 +137,9 @@ class ClientFeatureRepository {
           }
           break;
         case SSEResultState.features:
-          final features = FeatureState.listFromJson(data);
+          final features = (data is List<FeatureState>)
+              ? data
+              : FeatureState.listFromJson(data);
           if (_hasReceivedInitialState && _catchAndReleaseMode) {
             _catchUpdatedFeatures(features);
           } else {

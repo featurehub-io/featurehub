@@ -12,6 +12,7 @@ part 'api_client.dart';
 
 part 'api/feature_service_api.dart';
 
+part 'model/environment.dart';
 part 'model/feature_state.dart';
 part 'model/feature_state_update.dart';
 part 'model/feature_value_type.dart';

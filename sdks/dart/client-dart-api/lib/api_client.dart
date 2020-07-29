@@ -22,6 +22,9 @@ class LocalApiClient {
       } else if (value is DateTime) {
         return value.toUtc().toIso8601String();
       }
+      if (value is Environment) {
+        return value.toJson();
+      }
       if (value is FeatureState) {
         return value.toJson();
       }
@@ -80,6 +83,8 @@ class LocalApiClient {
           return value is bool ? value : '$value'.toLowerCase() == 'true';
         case 'double':
           return value is double ? value : double.parse('$value');
+        case 'Environment':
+          return Environment.fromJson(value);
         case 'FeatureState':
           return FeatureState.fromJson(value);
         case 'FeatureStateUpdate':

@@ -12,13 +12,15 @@ class FeatureState {
   //enum typeEnum {  BOOLEAN,  STRING,  NUMBER,  JSON,  };{
   /* the current value */
   dynamic value;
+  /* This field is filled in from the client side in the GET api as the GET api is able to request multiple environments. It is never passed from the server, as an array of feature states is wrapped in an environment. */
+  String environmentId;
 
   Strategy strategy;
   FeatureState();
 
   @override
   String toString() {
-    return 'FeatureState[id=$id, key=$key, version=$version, type=$type, value=$value, strategy=$strategy, ]';
+    return 'FeatureState[id=$id, key=$key, version=$version, type=$type, value=$value, environmentId=$environmentId, strategy=$strategy, ]';
   }
 
   fromJson(Map<String, dynamic> json) {
@@ -47,6 +49,10 @@ class FeatureState {
       value = (_jsonData == null) ? null : _jsonData;
     } // _jsonFieldName
     {
+      final _jsonData = json[r'environmentId'];
+      environmentId = (_jsonData == null) ? null : _jsonData;
+    } // _jsonFieldName
+    {
       final _jsonData = json[r'strategy'];
       strategy = (_jsonData == null) ? null : Strategy.fromJson(_jsonData);
     } // _jsonFieldName
@@ -72,6 +78,9 @@ class FeatureState {
     }
     if (value != null) {
       json[r'value'] = LocalApiClient.serialize(value);
+    }
+    if (environmentId != null) {
+      json[r'environmentId'] = LocalApiClient.serialize(environmentId);
     }
     if (strategy != null) {
       json[r'strategy'] = LocalApiClient.serialize(strategy);
@@ -106,6 +115,7 @@ class FeatureState {
           version == other.version &&
           type == other.type &&
           value == other.value &&
+          environmentId == other.environmentId &&
           strategy == other.strategy;
     }
 
@@ -136,6 +146,10 @@ class FeatureState {
       hashCode = hashCode ^ value.hashCode;
     }
 
+    if (environmentId != null) {
+      hashCode = hashCode ^ environmentId.hashCode;
+    }
+
     if (strategy != null) {
       hashCode = hashCode ^ strategy.hashCode;
     }
@@ -149,6 +163,7 @@ class FeatureState {
     int version,
     FeatureValueType type,
     dynamic value,
+    String environmentId,
     Strategy strategy,
   }) {
     FeatureState copy = FeatureState();
@@ -157,6 +172,7 @@ class FeatureState {
     copy.version = version ?? this.version;
     copy.type = type ?? this.type;
     copy.value = value ?? this.value;
+    copy.environmentId = environmentId ?? this.environmentId;
     copy.strategy = strategy ?? this.strategy?.copyWith();
     return copy;
   }
