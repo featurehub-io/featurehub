@@ -118,10 +118,12 @@ enum Readyness {
 
 ## Mobile API
 
-FeatureHub also has a mobile friendly API, that is intended to be used like a GET request and disconnect. The
-point here is that the Mobile devices radio does not stay on like it would with an EventSource. For Dart server 
-instances, client side apps (such as Flutter for Web, Linux, Windows or Mac OS X) - you should use the Event Source
-above. For Flutter for Android or iOS, please use this API.
+If you intend to use FeatureHub with Flutter for Mobile, we have an SDK that is based on REST API. 
+The reason for this is that Mobile devices connection doesn't always stay on, so doing a GET request to get your 
+features would be the right choice here. 
+
+If you are running a Dart web server or Dart command line app or any other Flutter based application - you should 
+use the Event Source above. For Flutter for Mobile, please use this API.
 
 It is simple to use, you need to specify the host base url and the environment(s) that you wish to pull into your 
 application. Do not have features with the same names otherwise you will encounter issues with versioning.
@@ -132,6 +134,9 @@ Construction is fairly simple, you need a repository and there is an example in 
 final es = FeatureHubSimpleApi(sdkHost, [sdkUrl], repo);
 es.request();
 ```
+
+`sdkHost` - this is the base address of the Edge host
+`sdkUrl` - this is the part from the admin UI that identifies your particular environment, API key and Dacha cluster.
 
 `request` is an async method and it will return the repository. A failed call is caught and a Failure status is sent
 to the repository. 
@@ -166,7 +171,9 @@ you need to include that and its dependencies in your project to use this capabi
 Sample code might look like this:
 
 ```dart
-final _api = FeatureServiceApi(new ApiClient(basePath: host));
+final _api = FeatureServiceApi(new ApiClient(basePath: sdkHost));
 _api.setFeatureState(sdkUrl, key, FeatureStateUpdate()..lock = false ..value = 'TEST'); 
 ```   
 
+Here the sdkHost and sdkUrl have the same meaning as above.
+ 
