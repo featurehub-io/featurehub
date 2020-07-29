@@ -63,11 +63,47 @@ class BrowserPollingService extends PollingBase implements PollingService {
   }
 }
 
-class NodejsPollingService implements PollingService {
+class NodejsPollingService extends PollingBase implements PollingService {
+  private uri: URL;
+
+  constructor(options: BrowserOptions, url: string, frequency: number, callback: FeaturesFunction) {
+    super(options, url, frequency, callback);
+
+    this.uri = new URL(this.url);
+  }
+
   start(): void {
+    this.poll();
   }
 
   stop(): void {
+    this.stopped = true;
+  }
+
+  private poll(): void {
+    const http = this.uri.protocol === 'http:' ? require('http') : require('https');
+    let data = '';
+    const req = http.request(this.uri, (res) => {
+      res.on('data', (chunk) => data += chunk);
+      res.on('end', () => {
+        if (res.statusCode === 200) {
+          console.log('passing', data);
+          this.callback(ObjectSerializer.deserialize(JSON.parse(data), 'Array<Environment>'));
+        }
+
+        if (res.statusCode !== 400) {
+          this.delayTimer();
+        }
+      });
+    });
+
+    req.end();
+  }
+
+  private delayTimer() {
+    if (!this.stopped && this.frequency > 0) {
+      setTimeout( () => this.poll(), this.frequency);
+    }
   }
 }
 
@@ -100,9 +136,10 @@ export class FeatureHubPollingClient {
     if (this._pollingService === undefined) {
       if (typeof window === 'object') {
         this._pollingService = new BrowserPollingService(this._options, this._url, this._frequency,
-          (e) => this.response(e));
+                                                         (e) => this.response(e));
       } else {
-        this._pollingService = new NodejsPollingService();
+        this._pollingService = new NodejsPollingService(this._options, this._url, this._frequency,
+                                                        (e) => this.response(e));
       }
     }
 
@@ -113,7 +150,6 @@ export class FeatureHubPollingClient {
     this._pollingService.stop();
     this._pollingService = undefined;
   }
-
 
   private response(environments: Array<Environment>): void {
     if (environments.length === 0) {

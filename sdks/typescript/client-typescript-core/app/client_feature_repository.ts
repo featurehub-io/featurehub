@@ -86,7 +86,6 @@ export class ClientFeatureRepository {
             let updated = false;
             features.forEach((f) => updated = this.featureUpdate(f) || updated);
             this.readynessState = Readyness.Ready;
-            console.log('updated is', updated, features);
             if (!this.hasReceivedInitialState) {
               this.checkForInvalidFeatures();
               this.hasReceivedInitialState = true;
@@ -101,7 +100,6 @@ export class ClientFeatureRepository {
       }
     }
   }
-
 
   public addPostLoadNewFeatureStateAvailableListener(listener: PostLoadNewFeatureStateAvailableListener) {
     this._newFeatureStateAvailableListeners.push(listener);
