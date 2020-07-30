@@ -36,7 +36,7 @@
 
   <licenses>
     <license>
-      <name>Apache 2 with Commons Clause</name>
+      <name>MIT</name>
       <url>https://github.com/featurehub-io/featurehub/blob/master/LICENSE.txt</url>
     </license>
   </licenses>

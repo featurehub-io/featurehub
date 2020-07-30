@@ -46,32 +46,49 @@
 
   <dependencies>
     <dependency>
-      <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-common</artifactId>
-      <version>[1.1, 2)</version>
-    </dependency>
-    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <version>3.7</version>
     </dependency>
 
     <dependency>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
+      <version>2.3.1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-core</artifactId>
+      <version>2.3.0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-impl</artifactId>
+      <version>2.3.0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.activation</groupId>
+      <artifactId>activation</artifactId>
+      <version>1.1.1</version>
+    </dependency>
+
+    <dependency>
       <groupId>io.featurehub.edge</groupId>
       <artifactId>sse-edge-api</artifactId>
-      <version>[1.1, 2)</version>
+      <version>[1.2, 2)</version>
     </dependency>
 
     <dependency>
       <groupId>io.featurehub.composites</groupId>
       <artifactId>composite-jackson</artifactId>
       <version>[1.1, 2)</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-logging</artifactId>
-      <version>[1.1, 2)</version>
+      <artifactId>composite-logging-api</artifactId>
+      <version>[1, 2)</version>
     </dependency>
 
     <dependency>

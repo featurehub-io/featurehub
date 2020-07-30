@@ -35,10 +35,12 @@
 
   <modules>
     <module>sdks/java/client-java-core</module>
+    <module>sdks/java/client-java-android</module>
     <module>sdks/java/client-java-jersey</module>
     <module>sdks/typescript/client-typescript-core</module>
     <module>sdks/typescript/client-typescript-eventsource</module>
     <module>sdks/dart/client-dart-api</module>
+    <module>sdks/dart/client-dart-sdk</module>
     <module>backend/composite-jackson</module>
     <module>backend/composite-ebean</module>
     <module>backend/composite-app</module>
@@ -46,6 +48,7 @@
     <module>backend/composite-common</module>
     <module>backend/composite-parent</module>
     <module>backend/composite-logging</module>
+    <module>backend/composite-logging-api</module>
     <module>backend/composite-opentracing</module>
     <module>backend/composite-prometheus</module>
     <module>backend/composite-test</module>

@@ -157,3 +157,29 @@ own or fill it with properties or such, you can use the artifact as is. In Maven
       <version>1.2</version>
     </dependency>
 ----
+
+Alternatively we recommend version ranges:
+
+
+[source,xml]
+----
+    <dependency>
+      <groupId>io.featurehub.sdk</groupId>
+      <artifactId>java-client-core</artifactId>
+      <version>[1.1,2)</version>
+    </dependency>
+----
+
+
+Note that we indicate jackson as a provided dependency because most clients will have it already and we do not
+wish to dictate our own. However, if you do not have a jackson dependency, please also include:
+
+[source,xml]
+----
+    <dependency>
+      <groupId>io.featurehub.composites</groupId>
+      <artifactId>composite-jackson</artifactId>
+      <version>[1.1, 2)</version>
+    </dependency>
+----
+
