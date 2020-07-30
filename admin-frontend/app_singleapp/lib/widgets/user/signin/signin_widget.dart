@@ -212,13 +212,14 @@ class _SetupPage1ThirdPartyProviders extends StatelessWidget {
       });
       if (local) {
         children.add(Padding(
-          padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+          padding: const EdgeInsets.fromLTRB(0, 16, 0, 10),
           child: Text('or login with a username and password',
-              style: Theme.of(context).textTheme.bodyText1),
+              style: Theme.of(context).textTheme.caption),
         ));
       }
     }
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: children,
     );
   }
