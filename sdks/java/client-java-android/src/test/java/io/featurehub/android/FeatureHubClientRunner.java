@@ -1,6 +1,7 @@
 package io.featurehub.android;
 
 import io.featurehub.client.ClientFeatureRepository;
+import io.featurehub.client.FeatureRepository;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -10,7 +11,7 @@ import java.util.Collections;
 public class FeatureHubClientRunner {
   @Test
   public void test() throws IOException {
-    ClientFeatureRepository repo = new ClientFeatureRepository(5);
+    FeatureRepository repo = new ClientFeatureRepository(5);
     repo.addReadynessListener(rl -> System.out.println("readyness " + rl.toString()));
 
     final FeatureHubClient client = new FeatureHubClient("http://localhost:8553",

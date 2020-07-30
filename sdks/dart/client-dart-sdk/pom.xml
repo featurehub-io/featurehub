@@ -59,9 +59,9 @@
               </includes>
             </fileset>
             <fileset>
-              <directory>.packages</directory>
+              <directory>${project.basedir}</directory>
               <includes>
-                <include>**/**</include>
+                <include>.packages</include>
               </includes>
             </fileset>
           </filesets>

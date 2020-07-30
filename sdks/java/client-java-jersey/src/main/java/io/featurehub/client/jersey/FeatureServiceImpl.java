@@ -3,8 +3,10 @@ package io.featurehub.client.jersey;
 import cd.connect.openapi.support.ApiClient;
 import cd.connect.openapi.support.Pair;
 import io.featurehub.sse.api.FeatureService;
+import io.featurehub.sse.model.Environment;
 import io.featurehub.sse.model.FeatureStateUpdate;
 
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.GenericType;
 import java.util.ArrayList;
@@ -17,6 +19,11 @@ public class FeatureServiceImpl implements FeatureService {
 
   public FeatureServiceImpl(ApiClient apiClient) {
     this.apiClient = apiClient;
+  }
+
+  @Override
+  public List<Environment> getFeatureStates(@NotNull List<String> sdkUrl) {
+    return null;
   }
 
   @Override

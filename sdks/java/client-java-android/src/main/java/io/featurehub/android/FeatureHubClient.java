@@ -2,7 +2,7 @@ package io.featurehub.android;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.featurehub.client.ClientFeatureRepository;
+import io.featurehub.client.FeatureRepository;
 import io.featurehub.sse.model.Environment;
 import io.featurehub.sse.model.FeatureState;
 import io.featurehub.sse.model.SSEResultState;
@@ -23,13 +23,13 @@ import java.util.stream.Collectors;
 
 public class FeatureHubClient {
   private static final Logger log = LoggerFactory.getLogger(FeatureHubClient.class);
-  private final ClientFeatureRepository repository;
+  private final FeatureRepository repository;
   private final OkHttpClient client;
   private boolean makeRequests;
   private final String url;
   private final ObjectMapper mapper = new ObjectMapper();
 
-  public FeatureHubClient(String host, Collection<String> sdkUrls, ClientFeatureRepository repository,
+  public FeatureHubClient(String host, Collection<String> sdkUrls, FeatureRepository repository,
                           OkHttpClient client) {
     this.repository = repository;
     this.client = client;
@@ -43,7 +43,7 @@ public class FeatureHubClient {
     }
   }
 
-  public FeatureHubClient(String host, Collection<String> sdkUrls, ClientFeatureRepository repository) {
+  public FeatureHubClient(String host, Collection<String> sdkUrls, FeatureRepository repository) {
     this(host, sdkUrls, repository, new OkHttpClient());
   }
 

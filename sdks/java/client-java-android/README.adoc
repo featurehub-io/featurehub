@@ -58,12 +58,12 @@ might look something like this:
 [source,java]
 ----
 import io.featurehub.android.FeatureHubClient;
-import io.featurehub.client.ClientFeatureRepository;
+import io.featurehub.client.FeatureRepository;
 
 import java.util.Collections;
 
 public class SharedRepository {
-    public static ClientFeatureRepository repository;
+    public static FeatureRepository repository;
     public static boolean initialized = false;
     public static FeatureHubClient client;
 

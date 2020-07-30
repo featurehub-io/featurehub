@@ -18,7 +18,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-public class ClientFeatureRepository {
+public class ClientFeatureRepository implements FeatureRepository {
   private static final Logger log = LoggerFactory.getLogger(ClientFeatureRepository.class);
   // feature-key, feature-state
   private final Map<String, FeatureStateBaseHolder> features = new ConcurrentHashMap<>();
@@ -41,10 +41,12 @@ public class ClientFeatureRepository {
     executor = Executors.newFixedThreadPool(threadPoolSize);
   }
 
+  @Override
   public void addAnalyticCollector(AnalyticsCollector collector) {
     analyticsCollectors.add(collector);
   }
 
+  @Override
   public void notify(SSEResultState state, String data) {
     log.trace("received state {} data {}", state, data);
     if (state == null) {
@@ -77,6 +79,7 @@ public class ClientFeatureRepository {
     }
   }
 
+  @Override
   public void notify(List<FeatureState> states) {
     states.forEach(this::featureUpdate);
 
@@ -89,6 +92,7 @@ public class ClientFeatureRepository {
   }
 
 
+  @Override
   public void addReadynessListener(ReadynessListener rl) {
     this.readynessListeners.add(rl);
 
@@ -115,6 +119,7 @@ public class ClientFeatureRepository {
     }
   }
 
+  @Override
   public FeatureStateHolder getFeatureState(String key) {
     return features.computeIfAbsent(key, key1 -> {
       if (hasReceivedInitialState) {
@@ -125,6 +130,7 @@ public class ClientFeatureRepository {
     });
   }
 
+  @Override
   public void logAnalyticsEvent(String action, Map<String, String> other) {
     // take a snapshot of the current state of the features
     List<FeatureStateHolder> featureStateAtCurrentTime = features.values().stream()
