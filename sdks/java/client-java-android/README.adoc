@@ -24,7 +24,7 @@ The API is fairly straightforward to use. You:
 - when you want data, hit poll. It will asynchronously get the data and fill, it will not operate on the UI thread, and
 it will prevent you from asking again while a request is in flight.
 
-An example might be:
+An simplistic pure Java client example might be:
 
 [source,java]
 ----
@@ -39,5 +39,57 @@ An example might be:
 
     System.out.println("waiting");
     System.in.read();
+----
 
+== Using on Android
+
+As it requires internet access, you will need to add to your `AndroidManifest.xml` the usual:
+
+`<uses-permission android:name="android.permission.INTERNET"/>`
+
+If you are using it locally and not behind https, you will also need to specify an attribute on your `<application>` tag,
+which allows clear text traffic.
+
+`android:usesCleartextTraffic="true"`
+
+You will need to store your repository in a central location, using a static or via a DI tool like Dagger. Using a static
+might look something like this:
+
+[source,java]
+----
+import io.featurehub.android.FeatureHubClient;
+import io.featurehub.client.ClientFeatureRepository;
+
+import java.util.Collections;
+
+public class SharedRepository {
+    public static ClientFeatureRepository repository;
+    public static boolean initialized = false;
+    public static FeatureHubClient client;
+
+    public static void init() {
+        if (!initialized) {
+            repository = new ClientFeatureRepository(1);
+            initialized = true;
+            client = new FeatureHubClient("http://10.0.2.2:8553", // 10.0.2.2 is the host running in the emulator
+                    Collections.singletonList("default/ce6b5f90-2a8a-4b29-b10f-7f1c98d878fe/VNftuX5LV6PoazPZsEEIBujM4OBqA1Iv9f9cBGho2LJylvxXMXKGxwD14xt2d7Ma3GHTsdsSO8DTvAYF"),
+                    repository);
+            client.checkForUpdates();
+        }
+    }
+
+    public static void refresh() {
+        client.checkForUpdates();
+    }
+}
+----
+
+You can then proceed in your code either to react to events and put them in streams to get your application updating, or
+imperatively querying for data. You may wish to provide defaults for some features, we will be providing on-disk caching
+to enable sensible startups in the future.
+
+[source, kotlin]
+----
+view.findViewById<TextView>(R.id.textview_first).text =
+    SharedRepository.repository.getFeatureState("FIRST_FRAG").string ?: "First fragment";
 ----
