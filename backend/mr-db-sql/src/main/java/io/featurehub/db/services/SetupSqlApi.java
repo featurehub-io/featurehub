@@ -23,7 +23,7 @@ public class SetupSqlApi implements SetupApi {
 
   @Override
   public boolean initialized() {
-    return new QDbPerson().findCount() > 0;
+    return convertUtils.getDbOrganization() != null;
   }
 
   @Override
