@@ -24,7 +24,7 @@ public class ClientFeatureRepository {
   private final Map<String, FeatureStateBaseHolder> features = new ConcurrentHashMap<>();
   private final Executor executor;
   private final ObjectMapper mapper;
-  private final TypeReference<List<FeatureState>> FEATURE_LIST_TYPEDEF = new TypeReference<>() {
+  private final TypeReference<List<FeatureState>> FEATURE_LIST_TYPEDEF = new TypeReference<List<FeatureState>>() {
   };
   private boolean hasReceivedInitialState = false;
   private List<AnalyticsCollector> analyticsCollectors = new ArrayList<>();
