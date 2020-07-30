@@ -8,6 +8,8 @@ import io.featurehub.mr.model.PasswordReset
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.PersonId
 import io.featurehub.mr.resources.AuthResource
+import io.featurehub.mr.resources.auth.AuthProvider
+import org.glassfish.hk2.api.IterableProvider
 import spock.lang.Specification
 
 import javax.ws.rs.ForbiddenException
@@ -30,7 +32,7 @@ class AuthenticationResourceSpec extends Specification {
     fromPerson = new Person().id(new PersonId().id("x"))
     authManager.from(_) >> fromPerson
 
-    resource = new AuthResource(authApi, authManager, personApi, authRepository)
+    resource = new AuthResource(authApi, authManager, personApi, authRepository, null)
   }
 
   def "A non-admin cannot reset a password"() {

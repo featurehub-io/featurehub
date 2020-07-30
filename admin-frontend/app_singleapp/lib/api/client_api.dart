@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:html';
 
+import 'package:app_singleapp/api/identity_providers.dart';
 import 'package:app_singleapp/api/router.dart';
 import 'package:app_singleapp/common/fh_shared_prefs.dart';
 import 'package:app_singleapp/common/person_state.dart';
@@ -67,6 +69,7 @@ class ManagementRepositoryClientBloc implements Bloc {
   final _stepperOpened = BehaviorSubject<bool>.seeded(false);
   Uri _basePath;
   StreamSubscription<Portfolio> _personPermissionInPortfolioChanged;
+  IdentityProviders identityProviders = IdentityProviders();
 
   BehaviorSubject<bool> get stepperOpened => _stepperOpened;
 
@@ -207,7 +210,11 @@ class ManagementRepositoryClientBloc implements Bloc {
     originUri = Uri.parse(window.location.origin);
     setupApi = SetupServiceApi(_client);
     personServiceApi = PersonServiceApi(_client);
+
     authServiceApi = AuthServiceApi(_client);
+    identityProviders.bloc = this;
+    identityProviders.authServiceApi = authServiceApi;
+
     portfolioServiceApi = PortfolioServiceApi(_client);
     serviceAccountServiceApi = ServiceAccountServiceApi(_client);
     environmentServiceApi = EnvironmentServiceApi(_client);
@@ -219,12 +226,12 @@ class ManagementRepositoryClientBloc implements Bloc {
 
     _personPermissionInPortfolioChanged = streamValley.routeCheckPortfolioStream
         .listen((portfolio) => _checkRouteForPermission(portfolio));
-    init();
 
     router = Router();
     router.mrBloc = this;
     Routes.configureRoutes(router);
-//    setHistory();
+
+    init();
   }
 
   ApiClient get apiClient => _client;
@@ -241,22 +248,30 @@ class ManagementRepositoryClientBloc implements Bloc {
       return;
     }
 
-    await setupApi.isInstalled().then((org) {
+    await setupApi.isInstalled().then((setupResponse) {
       // if we are initialized, check for an existing cookie
       // to see if we have a bearer token. This would mean the user
       // has simply refreshed their page
 
       final bearerToken = getBearerCookie();
-      organization = org;
+      organization = setupResponse.organization;
+      identityProviders.identityProviders = setupResponse.providers;
       if (bearerToken != null) {
         setBearerToken(bearerToken);
         requestOwnDetails();
+      } else if (setupResponse.redirectUrl != null) {
+        // they can only authenticate via one provider, so lets use them
+        window.location.href = setupResponse.redirectUrl;
       } else {
         _initializedSource.add(InitializedCheckState.initialized);
       }
     }).catchError((e, s) {
       if (e is ApiException) {
         if (e.code == 404) {
+          final smr = LocalApiClient.deserialize(
+                  jsonDecode(e.message), 'SetupMissingResponse')
+              as SetupMissingResponse;
+          identityProviders.identityProviders = smr.providers;
           _initializedSource.add(InitializedCheckState.uninitialized);
         } else {
           dialogError(e, s);

@@ -443,6 +443,27 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TokenizedPerson"
+  /mr-api/external-provider/{provider}:
+    parameters:
+      - name: provider
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - AuthService
+      description: "Gets a login URL for this specified provider if it is supported by the server"
+      operationId: getLoginUrlForProvider
+      responses:
+        "200":
+          description: "The information required to redirect"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProviderRedirect"
+        "404":
+          description: "not found"
   /mr-api/login:
     post:
       tags:
@@ -1417,13 +1438,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Organization"
+                $ref: "#/components/schemas/SetupResponse"
         "404":
           "description": "Feature Hub not found"
           content:
             application/json:
               schema:
-                type: string
+                $ref: "#/components/schemas/SetupMissingResponse"
     post:
       tags:
         - SetupService
@@ -1480,9 +1501,6 @@ components:
             $ref: "#/components/schemas/Person"
     SetupSiteAdmin:
       required:
-        - name
-        - emailAddress
-        - password
         - organizationName
         - portfolio
       properties:
@@ -1491,13 +1509,43 @@ components:
         organizationName:
           type: string
         emailAddress:
+          description: "User's email or blank if using oauth/saml"
           format: email
           type: string
         password:
+          description: "User's password or blank if using oauth/saml"
           type: string
         name:
+          description: "user's name. Will be take from external provider if using oauth/saml"
+          type: string
+        authProvider:
+          description: "If the site is using external providers, this is the key of the provider chosen. If there is only one, it can be blank."
           type: string
       type: object
+    SetupResponse:
+      type: object
+      properties:
+        organization:
+          $ref: "#/components/schemas/Organization"
+        providers:
+          type: array
+          items:
+            type: string
+        redirectUrl:
+          description: "Set if there is only one external provider and no local. Allows immediate redirect to provider. It assumes it will be used immediate (e.g. state in oauth2 url)"
+          type: string
+    SetupMissingResponse:
+      type: object
+      properties:
+        providers:
+          type: array
+          items:
+            type: string
+    ProviderRedirect:
+      type: object
+      properties:
+        redirectUrl:
+          type: string
     TokenizedPerson:
       required:
         - accessToken
@@ -1506,6 +1554,8 @@ components:
         accessToken:
           type: string
         refreshToken:
+          type: string
+        redirectUrl:
           type: string
         person:
           $ref: "#/components/schemas/Person"

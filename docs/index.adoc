@@ -305,6 +305,11 @@ All feature flags are automatically created in all environments, set to "off" an
 
 NOTE: Groups can also separately be assigned the permission to create, edit and delete entire features.
 
+== External Identity
+
+FeatureHub supports external link:identity{outfilesuffix}[identity providers]. 
+
+
 == Analytics
 
 Please read the following link:analytics{outfilesuffix}[for information about Analytics]

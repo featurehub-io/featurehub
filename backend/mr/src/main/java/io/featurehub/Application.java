@@ -8,6 +8,7 @@ import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
 import io.featurehub.mr.ManagementRepositoryFeature;
 import io.featurehub.mr.filters.CommonConfiguration;
+import io.featurehub.mr.resources.oauth2.OAuth2Feature;
 import io.featurehub.mr.utils.NginxUtils;
 import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
 import io.prometheus.client.hotspot.DefaultExports;
@@ -42,7 +43,9 @@ public class Application {
       CommonConfiguration.class,
       LoggingConfiguration.class,
       TracingConfiguration.class,
-      InfrastructureConfiguration.class).register(ManagementRepositoryFeature.class);
+      InfrastructureConfiguration.class)
+      .register(ManagementRepositoryFeature.class)
+      .register(OAuth2Feature.class);
 
     new JerseyHttp2Server().start(config);
 

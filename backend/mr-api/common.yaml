@@ -480,6 +480,9 @@ components:
               maxLength: 255
             admin:
               type: boolean
+            authorizationUrl:
+              description: "If provided, the browser should redirect to this URL to authenticate"
+              type: string
             orgGroup:
               $ref: "#/components/schemas/Group"
             portfolios:

@@ -59,6 +59,11 @@ public class PersonSqlApi implements PersonApi {
     return null;
   }
 
+  @Override
+  public boolean noUsersExist() {
+    return new QDbPerson().findCount() == 0;
+  }
+
   public Person updatePerson(Person person, Opts opts, DbPerson adminPerson, DbPerson p) throws OptimisticLockingException {
     if (person.getVersion() == null || p.getVersion() != person.getVersion()) {
       throw new OptimisticLockingException();

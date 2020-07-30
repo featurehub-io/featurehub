@@ -75,6 +75,7 @@ Widget registerUrl(mrBloc, {params}) {
 }
 
 Widget createUser(mrBloc, {params}) {
+  // TODO: fix this construction, bloc should not be created outside of provider
   final select = SelectPortfolioGroupBloc(mrBloc);
   return BlocProvider<SelectPortfolioGroupBloc>(
       creator: (_context, _bag) => select,

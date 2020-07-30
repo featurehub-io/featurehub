@@ -1,5 +1,6 @@
 package io.featurehub.mr.resources;
 
+import cd.connect.app.config.ConfigKey;
 import io.featurehub.db.api.AuthenticationApi;
 import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.Opts;
@@ -11,8 +12,11 @@ import io.featurehub.mr.model.PasswordReset;
 import io.featurehub.mr.model.PasswordUpdate;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.PersonRegistrationDetails;
+import io.featurehub.mr.model.ProviderRedirect;
 import io.featurehub.mr.model.TokenizedPerson;
 import io.featurehub.mr.model.UserCredentials;
+import io.featurehub.mr.resources.auth.AuthProvider;
+import org.glassfish.hk2.api.IterableProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +25,8 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.SecurityContext;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AuthResource implements AuthServiceDelegate {
   private static final Logger log = LoggerFactory.getLogger(AuthResource.class);
@@ -28,13 +34,20 @@ public class AuthResource implements AuthServiceDelegate {
   private final AuthManagerService authManager;
   private final PersonApi personApi;
   private final AuthenticationRepository authRepository;
+  private final List<AuthProvider> authProviders = new ArrayList<>();
+
+  @ConfigKey("auth.disable-login")
+  protected Boolean loginDisabled = Boolean.FALSE;
 
   @Inject
-  public AuthResource(AuthenticationApi authenticationApi, AuthManagerService authManager, PersonApi personApi, AuthenticationRepository authRepository) {
+  public AuthResource(AuthenticationApi authenticationApi, AuthManagerService authManager, PersonApi personApi, AuthenticationRepository authRepository, IterableProvider<AuthProvider> authProviders) {
     this.authenticationApi = authenticationApi;
     this.authManager = authManager;
     this.personApi = personApi;
     this.authRepository = authRepository;
+    if (authProviders != null) {
+      authProviders.forEach(this.authProviders::add);
+    }
   }
 
   @Override
@@ -56,8 +69,32 @@ public class AuthResource implements AuthServiceDelegate {
     throw new ForbiddenException();
   }
 
+  /**
+   * We have to do this at request time, because some urls are time sensitive (e.g. oauth ones with the state
+   * parameter).
+   *
+   * @param provider
+   * @return
+   */
+  @Override
+  public ProviderRedirect getLoginUrlForProvider(String provider) {
+    for(AuthProvider ap : authProviders) {
+      if (ap.getProviders().contains(provider)) {
+        return  new ProviderRedirect().redirectUrl(ap.requestRedirectUrl(provider));
+      }
+    }
+
+    throw new NotFoundException();
+  }
+
   @Override
   public TokenizedPerson login(UserCredentials userCredentials) {
+    // if access via this API is forbidden (for example only GUI based OAuth or SAML login is allowed)
+    // then fail requests automatically
+    if (loginDisabled) {
+      throw new ForbiddenException();
+    }
+
     Person login = authenticationApi.login(userCredentials.getEmail(), userCredentials.getPassword());
 
     if (login == null) {

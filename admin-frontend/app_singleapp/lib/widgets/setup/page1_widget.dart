@@ -3,6 +3,7 @@ import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/fh_card.dart';
 import 'package:app_singleapp/widgets/setup/setup_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:xcvbnm/xcvbnm.dart';
 
 class SetupPage1Widget extends StatefulWidget {
@@ -64,6 +65,9 @@ class _SetupPage1State extends State<SetupPage1Widget> {
   }
 
   Widget _dataEntry(BuildContext context) {
+    final external = widget.bloc.has3rdParty;
+    final local = widget.bloc.hasLocal;
+
     return Form(
       key: _formKey,
       child: FHCardWidget(
@@ -89,66 +93,83 @@ class _SetupPage1State extends State<SetupPage1Widget> {
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
               child: Text(
-                  "Well done, FeatureHub is up and running.  You\'ll be the first 'Site administrator' of your FeatureHub account, lets get a few details.",
+                  "Well done, FeatureHub is up and running.  You\'ll be the first 'Site administrator' of your FeatureHub account.",
                   style: Theme.of(context).textTheme.bodyText1),
             ),
-            TextFormField(
-              controller: _name,
-              autofocus: true,
-              decoration: InputDecoration(labelText: 'Name'),
-              textInputAction: TextInputAction.next,
-              onFieldSubmitted: (_) => _handleSubmitted(),
-              validator: (v) => v.isEmpty ? 'Please enter your name' : null,
-            ),
-            TextFormField(
-                controller: _email,
-                decoration: InputDecoration(labelText: 'Email address'),
-                textInputAction: TextInputAction.next,
-                onFieldSubmitted: (_) => _handleSubmitted(),
-                validator: (v) {
-                  if (v.isEmpty) {
-                    return 'Please enter your email address';
-                  }
-                  if (!validateEmail(v)) {
-                    return ('Please enter a valid email address');
-                  }
-                  return null;
-                }),
-            TextFormField(
-                controller: _pw1,
-                obscureText: true,
-                textInputAction: TextInputAction.next,
-                onFieldSubmitted: (_) => _handleSubmitted(),
-                decoration: InputDecoration(labelText: 'Password'),
-                validator: (v) {
-                  if (v.isEmpty) {
-                    return 'Please enter your password';
-                  }
-                  if (v.length < 7) {
-                    return 'Password must be at least 7 characters';
-                  }
-                  //this is quite sensitive and annoying at the moment, commenting out
+            if (external)
+              _SetupPage1ThirdPartyProviders(
+                bloc: widget.bloc,
+                selectedExternalProviderFunc: _handleSelectedExternal,
+              ),
+            if (local)
+              Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget>[
+                    TextFormField(
+                      controller: _name,
+                      autofocus: true,
+                      decoration: InputDecoration(labelText: 'Name'),
+                      textInputAction: TextInputAction.next,
+                      onFieldSubmitted: (_) => _handleSubmitted(),
+                      validator: (v) =>
+                      v.isEmpty
+                          ? 'Please enter your name'
+                          : null,
+                    ),
+                    TextFormField(
+                        controller: _email,
+                    decoration: InputDecoration(labelText: 'Email address'),
+                    textInputAction: TextInputAction.next,
+                    onFieldSubmitted: (_) => _handleSubmitted(),
+                    validator: (v) {
+                      if (v.isEmpty) {
+                        return 'Please enter your email address';
+                      }
+                      if (!validateEmail(v)) {
+                        return ('Please enter a valid email address');
+                      }
+                      return null;
+                    }),
+                TextFormField(
+                    controller: _pw1,
+                    obscureText: true,
+                    textInputAction: TextInputAction.next,
+                    onFieldSubmitted: (_) => _handleSubmitted(),
+                    decoration: InputDecoration(labelText: 'Password'),
+                    validator: (v) {
+                      if (v.isEmpty) {
+                        return 'Please enter your password';
+                      }
+                      if (v.length < 7) {
+                        return 'Password must be at least 7 characters';
+                      }
+                      //this is quite sensitive and annoying at the moment, commenting out
 //                    Result result = Xcvbnm().estimate(v);
 //                    if (result.score < _PASSWORD_SCORE_THRESHOLD) {
 //                      return 'Password not strong enough, try adding numbers and symbols';
 //                    }
-                  return null;
-                }),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
-              child: _passwordStrength,
-            ),
-            TextFormField(
-                controller: _pw2,
-                obscureText: true,
-                onFieldSubmitted: (_) => _handleSubmitted(),
-                decoration: InputDecoration(labelText: 'Confirm Password'),
-                validator: (v) {
-                  if (v != _pw1.text) {
-                    return "Passwords don't match";
-                  }
-                  return null;
-                }),
+                      return null;
+                    }),
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
+                        child: _passwordStrength,
+                      ),
+                    ),
+                    TextFormField(
+                        controller: _pw2,
+                        obscureText: true,
+                        onFieldSubmitted: (_) => _handleSubmitted(),
+                        decoration: InputDecoration(
+                            labelText: 'Confirm Password'),
+                        validator: (v) {
+                          if (v != _pw1.text) {
+                            return "Passwords don't match";
+                          }
+                      return null;
+                    }),
+              ]),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
@@ -162,6 +183,15 @@ class _SetupPage1State extends State<SetupPage1Widget> {
         ),
       ),
     );
+  }
+
+  void _handleSelectedExternal(String provider) {
+    widget.bloc.provider = provider;
+    widget.bloc.name = null;
+    widget.bloc.email = null;
+    widget.bloc.pw1 = null;
+    widget.bloc.pw2 = null;
+    widget.bloc.nextPage();
   }
 
   void _handleSubmitted() {
@@ -192,5 +222,50 @@ class _SetupPage1State extends State<SetupPage1Widget> {
     widget.bloc.email = _email.text;
     widget.bloc.pw1 = _pw1.text;
     widget.bloc.pw2 = _pw2.text;
+  }
+}
+
+typedef _SelectedExternalFunction = void Function(String provider);
+
+class _SetupPage1ThirdPartyProviders extends StatelessWidget {
+  final SetupBloc bloc;
+  final _SelectedExternalFunction selectedExternalProviderFunc;
+
+  const _SetupPage1ThirdPartyProviders(
+      {Key key,
+      @required this.bloc,
+      @required this.selectedExternalProviderFunc})
+      : assert(bloc != null),
+        assert(selectedExternalProviderFunc != null),
+        super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final external = bloc.has3rdParty;
+
+    final children = <Widget>[];
+
+    if (external) {
+      bloc.externalProviders.forEach((provider) {
+        children.add(InkWell(
+          mouseCursor: SystemMouseCursors.click,
+          child: Image.asset(bloc.externalProviderAssets[provider]),
+          onTap: () {
+            selectedExternalProviderFunc(provider);
+          },
+        ));
+        children.add(Padding(
+          padding: const EdgeInsets.fromLTRB(0, 16, 0, 10),
+          child: Text('or enter your details to register',
+              style: Theme
+                  .of(context)
+                  .textTheme
+                  .caption),
+        ));
+      });
+    }
+    return Column(
+      children: children,
+    );
   }
 }
