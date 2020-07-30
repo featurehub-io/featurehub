@@ -64,13 +64,7 @@ public class ClientFeatureRepository {
             break;
           case FEATURES:
             List<FeatureState> features = mapper.readValue(data, FEATURE_LIST_TYPEDEF);
-            features.forEach(this::featureUpdate);
-            if (!hasReceivedInitialState) {
-              checkForInvalidFeatures();
-              hasReceivedInitialState = true;
-              readyness = Readyness.Ready;
-              broadcastReadyness();
-            }
+            notify(features);
             break;
           case FAILURE:
             readyness = Readyness.Failed;
@@ -82,6 +76,18 @@ public class ClientFeatureRepository {
       }
     }
   }
+
+  public void notify(List<FeatureState> states) {
+    states.forEach(this::featureUpdate);
+
+    if (!hasReceivedInitialState) {
+      checkForInvalidFeatures();
+      hasReceivedInitialState = true;
+      readyness = Readyness.Ready;
+      broadcastReadyness();
+    }
+  }
+
 
   public void addReadynessListener(ReadynessListener rl) {
     this.readynessListeners.add(rl);
@@ -131,7 +137,6 @@ public class ClientFeatureRepository {
         c.logEvent(action, other, featureStateAtCurrentTime);
       });
     });
-
   }
 
   private void featureUpdate(FeatureState featureState) {
@@ -159,4 +164,5 @@ public class ClientFeatureRepository {
 
     holder.setFeatureState(featureState);
   }
+
 }

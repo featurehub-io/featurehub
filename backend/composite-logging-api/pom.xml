@@ -2,13 +2,20 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>io.featurehub.sdk</groupId>
-  <artifactId>java-client-jersey</artifactId>
-  <version>1.2-SNAPSHOT</version>
-  <name>java-client-jersey</name>
+  <parent>
+    <groupId>io.featurehub.composites</groupId>
+    <artifactId>composite-parent</artifactId>
+    <version>1.1</version>
+    <relativePath>../composite-parent</relativePath>
+  </parent>
+
+  <artifactId>composite-logging-api</artifactId>
+  <version>1.1-SNAPSHOT</version>
+  <name>composite-logging-api</name>
 
   <description>
-    Jersey client for featurehub
+    composite logging api - gathering all the logging api dependencies. We separate api
+    from impl so sdks don't require our own impls.
   </description>
 
   <url>https://featurehub.io</url>
@@ -31,8 +38,7 @@
   <licenses>
     <license>
       <name>MIT</name>
-      <url>https://opensource.org/licenses/MIT</url>
-      <comments>This code resides in the customer's codebase and therefore has an MIT license.</comments>
+      <url>https://github.com/featurehub-io/featurehub/blob/master/LICENSE.txt</url>
     </license>
   </licenses>
 
@@ -43,26 +49,25 @@
     <tag>HEAD</tag>
   </scm>
 
+  <properties>
+    <slfj4.version>1.7.25</slfj4.version>
+  </properties>
 
   <dependencies>
     <dependency>
-      <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-jersey</artifactId>
-      <version>[1.1, 2)</version>
-      <scope>provided</scope>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jul-to-slf4j</artifactId>
+      <version>[${slfj4.version}]</version>
     </dependency>
-
     <dependency>
-      <groupId>io.featurehub.sdk</groupId>
-      <artifactId>java-client-core</artifactId>
-      <version>[1.1, 2)</version>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>[${slfj4.version}]</version>
     </dependency>
-
     <dependency>
-      <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-test</artifactId>
-      <version>[1.1, 2)</version>
-      <scope>test</scope>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
+      <version>[${slfj4.version}]</version>
     </dependency>
   </dependencies>
 
@@ -83,4 +88,5 @@
       </plugin>
     </plugins>
   </build>
+
 </project>
