@@ -195,7 +195,6 @@ class _SetupPage1ThirdPartyProviders extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final external = bloc.identityProviders.has3rdParty;
-    final local = bloc.identityProviders.hasLocal;
 
     final children = <Widget>[];
 
@@ -209,14 +208,12 @@ class _SetupPage1ThirdPartyProviders extends StatelessWidget {
             selectedExternalProviderFunc(provider);
           },
         ));
-      });
-      if (local) {
         children.add(Padding(
           padding: const EdgeInsets.fromLTRB(0, 16, 0, 10),
           child: Text('or login with a username and password',
               style: Theme.of(context).textTheme.caption),
         ));
-      }
+      });
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

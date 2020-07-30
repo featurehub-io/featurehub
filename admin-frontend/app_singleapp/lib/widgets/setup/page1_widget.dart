@@ -93,7 +93,7 @@ class _SetupPage1State extends State<SetupPage1Widget> {
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
               child: Text(
-                  "Well done, FeatureHub is up and running.  You\'ll be the first 'Site administrator' of your FeatureHub account, lets get a few details.",
+                  "Well done, FeatureHub is up and running.  You\'ll be the first 'Site administrator' of your FeatureHub account.",
                   style: Theme.of(context).textTheme.bodyText1),
             ),
             if (external)
@@ -102,17 +102,22 @@ class _SetupPage1State extends State<SetupPage1Widget> {
                 selectedExternalProviderFunc: _handleSelectedExternal,
               ),
             if (local)
-              Column(children: <Widget>[
-                TextFormField(
-                  controller: _name,
-                  autofocus: true,
-                  decoration: InputDecoration(labelText: 'Name'),
-                  textInputAction: TextInputAction.next,
-                  onFieldSubmitted: (_) => _handleSubmitted(),
-                  validator: (v) => v.isEmpty ? 'Please enter your name' : null,
-                ),
-                TextFormField(
-                    controller: _email,
+              Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget>[
+                    TextFormField(
+                      controller: _name,
+                      autofocus: true,
+                      decoration: InputDecoration(labelText: 'Name'),
+                      textInputAction: TextInputAction.next,
+                      onFieldSubmitted: (_) => _handleSubmitted(),
+                      validator: (v) =>
+                      v.isEmpty
+                          ? 'Please enter your name'
+                          : null,
+                    ),
+                    TextFormField(
+                        controller: _email,
                     decoration: InputDecoration(labelText: 'Email address'),
                     textInputAction: TextInputAction.next,
                     onFieldSubmitted: (_) => _handleSubmitted(),
@@ -145,19 +150,23 @@ class _SetupPage1State extends State<SetupPage1Widget> {
 //                    }
                       return null;
                     }),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
-                  child: _passwordStrength,
-                ),
-                TextFormField(
-                    controller: _pw2,
-                    obscureText: true,
-                    onFieldSubmitted: (_) => _handleSubmitted(),
-                    decoration: InputDecoration(labelText: 'Confirm Password'),
-                    validator: (v) {
-                      if (v != _pw1.text) {
-                        return "Passwords don't match";
-                      }
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
+                        child: _passwordStrength,
+                      ),
+                    ),
+                    TextFormField(
+                        controller: _pw2,
+                        obscureText: true,
+                        onFieldSubmitted: (_) => _handleSubmitted(),
+                        decoration: InputDecoration(
+                            labelText: 'Confirm Password'),
+                        validator: (v) {
+                          if (v != _pw1.text) {
+                            return "Passwords don't match";
+                          }
                       return null;
                     }),
               ]),
@@ -233,24 +242,8 @@ class _SetupPage1ThirdPartyProviders extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final external = bloc.has3rdParty;
-    final local = bloc.hasLocal;
 
     final children = <Widget>[];
-    if (external && local) {
-      children.add(Padding(
-        padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
-        child: Text(
-            'You can create your first administration account using an external third party',
-            style: Theme.of(context).textTheme.bodyText1),
-      ));
-    } else if (external) {
-      children.add(Padding(
-        padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
-        child: Text(
-            'You can create your first administration account using one of the following external third party identity providers.',
-            style: Theme.of(context).textTheme.bodyText1),
-      ));
-    }
 
     if (external) {
       bloc.externalProviders.forEach((provider) {
@@ -261,14 +254,15 @@ class _SetupPage1ThirdPartyProviders extends StatelessWidget {
             selectedExternalProviderFunc(provider);
           },
         ));
-      });
-      if (local) {
         children.add(Padding(
-          padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
-          child: Text('or setup a local administrator with a password',
-              style: Theme.of(context).textTheme.bodyText1),
+          padding: const EdgeInsets.fromLTRB(0, 16, 0, 10),
+          child: Text('or enter your details to register',
+              style: Theme
+                  .of(context)
+                  .textTheme
+                  .caption),
         ));
-      }
+      });
     }
     return Column(
       children: children,
