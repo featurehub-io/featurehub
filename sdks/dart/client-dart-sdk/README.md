@@ -126,7 +126,7 @@ If you are running a Dart web server or Dart command line app or any other Flutt
 use the Event Source above. For Flutter for Mobile, please use this API.
 
 It is simple to use, you need to specify the host base url and the environment(s) that you wish to pull into your 
-application. Do not have features with the same names otherwise you will encounter issues with versioning.
+application. Do not have features with the same keys otherwise you will encounter issues with versioning.
 
 Construction is fairly simple, you need a repository and there is an example in `example/dart_cli/get_main.dart`.
 
