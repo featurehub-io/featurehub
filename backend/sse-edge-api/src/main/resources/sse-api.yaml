@@ -4,6 +4,36 @@ info:
   description: This describes the API clients use for accessing features
   version: "1.1.1"
 paths:
+  /features/:
+    get:
+      tags:
+        - FeatureService
+      parameters:
+        - name: sdkUrl
+          in: query
+          description: "The SDK urls"
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+      description: Requests all features for this sdkurl and disconnects
+      operationId: getFeatureStates
+      responses:
+        "200":
+          description: feature request successful, all environments you have permission to or that were found are returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Environment"
+        "400":
+          description: you didn't ask for any environments
+          content:
+            application/json:
+              schema:
+                {}
   /features/{sdkUrl}/{featureKey}:
     put:
       tags:
@@ -22,6 +52,7 @@ paths:
           schema:
             type: string
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -88,6 +119,14 @@ components:
         - features
         - feature
         - delete_feature
+    Environment:
+      properties:
+        id:
+          type: string
+        features:
+          type: array
+          items:
+            $ref: "#/components/schemas/FeatureState"
     FeatureState:
       required:
         - name
@@ -103,6 +142,10 @@ components:
           $ref: "#/components/schemas/FeatureValueType"
         value:
           description: "the current value"
+        environmentId:
+          description: "This field is filled in from the client side in the GET api as the GET api is able to request multiple environments.
+                        It is never passed from the server, as an array of feature states is wrapped in an environment."
+          type: string
         strategy:
           $ref: "#/components/schemas/Strategy"
     Strategy:

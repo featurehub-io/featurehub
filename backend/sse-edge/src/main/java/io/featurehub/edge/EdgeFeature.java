@@ -24,6 +24,7 @@ public class EdgeFeature implements Feature {
         protected void configure() {
           bind(ServerConfig.class).to(ServerConfig.class).in(Singleton.class);
           bind(EventOutputBucketService.class).to(EventOutputBucketService.class).in(Singleton.class);
+          bind(FeatureTransformerUtils.class).to(FeatureTransformer.class).in(Singleton.class);
         }
       }).register(new ContainerLifecycleListener() {
       public void onStartup(Container container) {

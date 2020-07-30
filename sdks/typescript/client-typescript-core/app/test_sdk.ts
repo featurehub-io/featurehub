@@ -29,11 +29,11 @@ class NodejsFeaturePostUpdater implements FeatureUpdatePostManager {
         'content-type': 'application/json'
       }
     };
-    const http = cra.protocol == 'http:' ? require('http') : require('https');
+    const http = cra.protocol === 'http:' ? require('http') : require('https');
     return new Promise<boolean>((resolve, reject) => {
       try {
         const req = http.request(cra, (res) => {
-          if (res.statusCode == 200 || res.statusCode == 201) {
+          if (res.statusCode === 200 || res.statusCode === 201) {
             resolve(true);
           } else {
             resolve(false);
@@ -73,8 +73,3 @@ export class FeatureUpdater {
     return this.manager.post(this.sdkUrl + '/' + key, update);
   }
 }
-//
-// const fu = new FeatureUpdater('https://demo.featurehub.io/features/default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE');
-//
-// fu.updateKey('FEATURE_TITLE_TO_UPPERCASE', new FeatureStateUpdate({lock: false, value: true})).then((r) => console.log('result is', r));
-// fu.updateKey('meep', new FeatureStateUpdate({lock: false, value: true})).then((r) => console.log('result is', r));

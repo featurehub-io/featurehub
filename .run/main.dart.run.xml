@@ -4,4 +4,24 @@
     <option name="filePath" value="$PROJECT_DIR$/admin-frontend/app_singleapp/lib/main.dart" />
     <method v="2" />
   </configuration>
+  <configuration default="false" name="main.dart" type="FlutterRunConfigurationType" factoryName="Flutter" nameIsGenerated="true">
+    <option name="additionalArgs" value="--web-port 53000" />
+    <option name="filePath" value="$PROJECT_DIR$/admin-frontend/app_singleapp/lib/main.dart" />
+    <method v="2" />
+  </configuration>
+  <configuration default="false" name="main.dart" type="FlutterRunConfigurationType" factoryName="Flutter" nameIsGenerated="true">
+    <option name="additionalArgs" value="--web-port 53000" />
+    <option name="filePath" value="$PROJECT_DIR$/admin-frontend/app_singleapp/lib/main.dart" />
+    <method v="2" />
+  </configuration>
+  <configuration default="false" name="main.dart" type="FlutterRunConfigurationType" factoryName="Flutter" nameIsGenerated="true">
+    <option name="additionalArgs" value="--web-port 53000" />
+    <option name="filePath" value="$PROJECT_DIR$/admin-frontend/app_singleapp/lib/main.dart" />
+    <method v="2" />
+  </configuration>
+  <configuration default="false" name="main.dart" type="FlutterRunConfigurationType" factoryName="Flutter" nameIsGenerated="true">
+    <option name="additionalArgs" value="--web-port 53000" />
+    <option name="filePath" value="$PROJECT_DIR$/admin-frontend/app_singleapp/lib/main.dart" />
+    <method v="2" />
+  </configuration>
 </component>
