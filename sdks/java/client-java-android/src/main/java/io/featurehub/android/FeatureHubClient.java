@@ -50,7 +50,7 @@ public class FeatureHubClient {
   private final static TypeReference<List<Environment>> ref = new TypeReference<List<Environment>>(){};
   private boolean busy = false;
 
-  public void poll() {
+  public void checkForUpdates() {
     if (makeRequests && !busy) {
       busy = true;
 

@@ -4,7 +4,6 @@ import io.featurehub.client.ClientFeatureRepository;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
 
 // isn't a test, won't run outside of IDE but will run with test dependencies
@@ -18,7 +17,7 @@ public class FeatureHubClientRunner {
       Collections.singleton("default/ce6b5f90-2a8a-4b29-b10f-7f1c98d878fe/VNftuX5LV6PoazPZsEEIBujM4OBqA1Iv9f9cBGho2LJylvxXMXKGxwD14xt2d7Ma3GHTsdsSO8DTvAYF")
       , repo);
 
-    client.poll();
+    client.checkForUpdates();
 
     System.out.println("waiting");
     System.in.read();

@@ -1,0 +1,43 @@
+= FeatureHub SDK for Android
+
+== Overview
+This SDK implementation updates the FeatureHub repository by making HTTP GET requests when the Android client wishes
+to make requests. This is done because Server Sent Events keep the radio on all the time, and are expensive for battery
+life and for data traffic (as they get kicked off the server and have to reestablish their connections). 
+
+This library uses:
+
+- OKHttp 4 (for http)
+- Jackson 2.11 (for json)
+- SLF4j (for logging)
+
+If you need your Android client to use another technology, please let us know or contribute another version. 
+
+== Use of the API
+
+The API is fairly straightforward to use. You:
+
+- Create a repository as a singleton, listen for events as per normal. Please see link:../client-java-core/README.adoc[Java client] for more details.
+- Create a `FeatureHubClient`, 
+- pass in the base host address of SSE Edge - e.g. `http://localhost:8553`
+- pass in one of more SDK URLs - those copied from the Admin UI
+- when you want data, hit poll. It will asynchronously get the data and fill, it will not operate on the UI thread, and
+it will prevent you from asking again while a request is in flight.
+
+An example might be:
+
+[source,java]
+----
+    ClientFeatureRepository repo = new ClientFeatureRepository(1);
+    repo.addReadynessListener(rl -> System.out.println("readyness " + rl.toString()));
+
+    final FeatureHubClient client = new FeatureHubClient("http://localhost:8553",
+      Collections.singleton("default/ce6b5f90-2a8a-4b29-b10f-7f1c98d878fe/VNftuX5LV6PoazPZsEEIBujM4OBqA1Iv9f9cBGho2LJylvxXMXKGxwD14xt2d7Ma3GHTsdsSO8DTvAYF")
+      , repo);
+
+    client.checkForUpdates();
+
+    System.out.println("waiting");
+    System.in.read();
+
+----
