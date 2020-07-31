@@ -80,8 +80,8 @@ public class ClientFeatureRepository implements FeatureRepository {
   }
 
   @Override
-  public void notify(List<FeatureState> states) {
-    states.forEach(this::featureUpdate);
+  public void notify(List<FeatureState> states, boolean force) {
+    states.forEach(s -> featureUpdate(s, force));
 
     if (!hasReceivedInitialState) {
       checkForInvalidFeatures();
@@ -89,6 +89,11 @@ public class ClientFeatureRepository implements FeatureRepository {
       readyness = Readyness.Ready;
       broadcastReadyness();
     }
+  }
+
+  @Override
+  public void notify(List<FeatureState> states) {
+    notify(states, false);
   }
 
 
@@ -146,6 +151,10 @@ public class ClientFeatureRepository implements FeatureRepository {
   }
 
   private void featureUpdate(FeatureState featureState) {
+    featureUpdate(featureState, false);
+  }
+
+  private void featureUpdate(FeatureState featureState, boolean force) {
     FeatureStateBaseHolder holder = features.get(featureState.getKey());
     if (holder == null || holder.getKey() == null) {
       switch (featureState.getType()) {
@@ -164,7 +173,8 @@ public class ClientFeatureRepository implements FeatureRepository {
       }
 
       features.put(featureState.getKey(), holder);
-    } else if (holder.featureState != null && holder.featureState.getVersion() >= featureState.getVersion()) {
+    } else if (!force && holder.featureState != null
+        && holder.featureState.getVersion() >= featureState.getVersion()) {
       return;
     }
 
