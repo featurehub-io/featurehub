@@ -13,6 +13,7 @@ import io.featurehub.mr.model.PasswordUpdate;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.PersonRegistrationDetails;
 import io.featurehub.mr.model.ProviderRedirect;
+import io.featurehub.mr.model.RegistrationUrl;
 import io.featurehub.mr.model.TokenizedPerson;
 import io.featurehub.mr.model.UserCredentials;
 import io.featurehub.mr.resources.auth.AuthProvider;
@@ -95,6 +96,11 @@ public class AuthResource implements AuthServiceDelegate {
       throw new ForbiddenException();
     }
 
+    // can't try and login with a null or empty password
+    if (userCredentials.getPassword() == null || userCredentials.getPassword().trim().length() == 0) {
+      throw new ForbiddenException();
+    }
+
     Person login = authenticationApi.login(userCredentials.getEmail(), userCredentials.getPassword());
 
     if (login == null) {
@@ -163,6 +169,19 @@ public class AuthResource implements AuthServiceDelegate {
         authRepository.invalidate(context);
         return new TokenizedPerson().accessToken(authRepository.put(newPerson)).person(newPerson);
       }
+    }
+
+    throw new ForbiddenException();
+  }
+
+  @Override
+  public RegistrationUrl resetExpiredToken(String email, SecurityContext context) {
+    Person person = authManager.from(context);
+
+    if (authManager.isAnyAdmin(person)) {
+      String token = authenticationApi.resetExpiredRegistrationToken(email);
+
+      return new RegistrationUrl().registrationUrl(token);
     }
 
     throw new ForbiddenException();

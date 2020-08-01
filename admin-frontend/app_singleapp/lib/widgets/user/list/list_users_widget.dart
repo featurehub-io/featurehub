@@ -1,5 +1,6 @@
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/api/router.dart';
+import 'package:app_singleapp/utils/utils.dart';
 import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/copy_to_clipboard_html.dart';
 import 'package:app_singleapp/widgets/common/fh_alert_dialog.dart';
@@ -291,8 +292,25 @@ class _ListUserInfo extends StatelessWidget {
               entry.registration.token != null &&
               entry.registration.expired)
             FHCopyToClipboardFlatButton(
-              text: 'Renew registration and copy to clipboard',
-              textProvider: () {},
+              caption: 'Renew registration and copy to clipboard',
+              textProvider: () async {
+                try {
+                  final token = await bloc.mrClient.authServiceApi
+                      .resetExpiredToken(entry.person.email);
+                  if (token.registrationUrl == null) {
+                    bloc.mrClient
+                        .addSnackbar(Text('Unable to renew registration'));
+                  } else {
+                    bloc.mrClient.addSnackbar(
+                        Text('Registration renewed and copyied to clipboard'));
+                    return bloc.mrClient.registrationUrl(token.registrationUrl);
+                  }
+                } catch (e, s) {
+                  bloc.mrClient.addError(FHError.createError(e, s));
+                }
+
+                return null;
+              },
             ),
           if (entry.person.groups.isNotEmpty)
             Padding(

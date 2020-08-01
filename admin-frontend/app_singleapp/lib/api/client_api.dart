@@ -530,7 +530,7 @@ class ManagementRepositoryClientBloc implements Bloc {
   }
 
   String registrationUrl(String token) {
-    return Uri.base.replace(fragment: '/register-url?$token').toString();
+    return Uri.base.replace(fragment: '/register-url?token=$token').toString();
   }
 
   void resetInitialized() {

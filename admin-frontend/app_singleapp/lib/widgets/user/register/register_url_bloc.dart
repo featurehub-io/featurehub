@@ -34,7 +34,9 @@ class RegisterBloc implements Bloc {
   void getDetails(String token) {
     if (token != this.token) {
       mrClient.authServiceApi.personByToken(token).then((data) {
-        if (data.version > 1) {
+        if (data.additional.firstWhere((pi) => pi.key == 'already-logged-in',
+                orElse: () => null) !=
+            null) {
           // we can get into a situation where a person is already "good"
           // but their registration link still works, so lets redirect to login
           _formStateStream.add(RegisterUrlForm.alreadyLoggedIn);

@@ -523,6 +523,28 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TokenizedPerson"
+  /mr-api/authentication/{email}/expiredTokenReset:
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - AuthService
+      parameters:
+        - name: email
+          in: path
+          description: "The email address of the person whose expired token to reset"
+          schema:
+            type: string
+          required: true
+      description: "Allows an administrator to reset a user's expired token so they can login"
+      operationId: resetExpiredToken
+      responses:
+        "200":
+          description: "The token of the expired person"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegistrationUrl"
   /mr-api/authentication/{id}/changePassword:
     parameters:
       - name: id

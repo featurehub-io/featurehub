@@ -27,16 +27,21 @@ class FHCopyToClipboardFlatButton extends StatelessWidget {
   Widget build(BuildContext context) {
     Widget fb = FlatButton(
       onPressed: () async {
-        await html.window.navigator.permissions
-            .query({'name': 'clipboard-write'});
-        await html.window.navigator.clipboard
-            .writeText(text ?? (await textProvider()));
+        final clipboardText = text ?? (await textProvider());
+        if (clipboardText != null) {
+          await html.window.navigator.permissions
+              .query({'name': 'clipboard-write'});
+          await html.window.navigator.clipboard.writeText(clipboardText);
+        }
       },
       child: Row(
         children: <Widget>[
-          Icon(
-            Icons.content_copy,
-            size: 15.0,
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: Icon(
+              Icons.content_copy,
+              size: 15.0,
+            ),
           ),
           captionText ??
               Text(caption,
