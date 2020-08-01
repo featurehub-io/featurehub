@@ -54,7 +54,7 @@ class FHCopyToClipboardFlatButton extends StatelessWidget {
     );
 
     if (tooltip != null) {
-      fb = new Tooltip(
+      fb = Tooltip(
         message: tooltip,
         child: fb,
       );

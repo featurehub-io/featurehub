@@ -23,6 +23,7 @@ void main() async {
   final sdkHost = Platform.environment['SDK_HOST'];
 
   if (sdkUrl == null || sdkHost == null) {
+    // ignore: avoid_print
     print('Please set the SDK_URL and SDK_HOST values.');
     exit(-1);
   }
@@ -30,12 +31,14 @@ void main() async {
   final repo = ClientFeatureRepository();
 
   repo.readynessStream.listen((ready) {
+    // ignore: avoid_print
     print('readyness $ready');
   });
 
   repo.newFeatureStateAvailableStream.listen((event) {
     repo.availableFeatures.forEach((key) {
       final feature = repo.getFeatureState(key);
+      // ignore: avoid_print
       print(
           'feature ${key} is of type ${feature.type} and has the value ${feature.value}');
     });
@@ -43,8 +46,10 @@ void main() async {
 
   final es = FeatureHubSimpleApi(sdkHost, [sdkUrl], repo);
 
+  // ignore: unawaited_futures
   es.request();
 
+  // ignore: avoid_print
   print('hit <enter> to cancel');
   await stdin.first;
 }

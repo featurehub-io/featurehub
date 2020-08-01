@@ -11,7 +11,7 @@ class FeatureHubSimpleApi {
       : assert(host != null),
         assert(_environmentIds != null && _environmentIds.isNotEmpty),
         assert(_repository != null),
-        _api = FeatureServiceApi(new ApiClient(basePath: host));
+        _api = FeatureServiceApi(ApiClient(basePath: host));
 
   Future<ClientFeatureRepository> request() async {
     return _api.getFeatureStates(_environmentIds).then((environments) {
