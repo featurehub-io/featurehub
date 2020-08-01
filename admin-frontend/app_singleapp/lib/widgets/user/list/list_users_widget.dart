@@ -1,6 +1,7 @@
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/api/router.dart';
 import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
+import 'package:app_singleapp/widgets/common/copy_to_clipboard_html.dart';
 import 'package:app_singleapp/widgets/common/fh_alert_dialog.dart';
 import 'package:app_singleapp/widgets/common/fh_delete_thing.dart';
 import 'package:app_singleapp/widgets/common/fh_icon_button.dart';
@@ -206,7 +207,10 @@ class ListUserInfoDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FHAlertDialog(
-      title: Text("Information about ${entry.person.email}"),
+      title: Text(
+        'User Information',
+        style: TextStyle(fontSize: 22.0),
+      ),
       content: _ListUserInfo(bloc: bloc, entry: entry),
       actions: <Widget>[
         // usually buttons at the bottom of the dialog
@@ -230,45 +234,68 @@ class _ListUserInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _ListUserRow(
-          title: 'Name',
-          child: Text(entry.person.name ?? 'Not yet registered'),
-        ),
-        _ListUserRow(
-          title: 'Email',
-          child: Text(entry.person.email),
-        ),
-        if (entry.registration.token != null && !entry.registration.expired)
+    entry.person.groups.sort((a, b) => a.name.compareTo(b.name));
+    return Container(
+//      height: 400.0,
+      width: 400.0,
+      child: ListView(
+        children: [
           _ListUserRow(
-            title: 'Registration URL',
-            child: Row(
-              children: [
-                Text(bloc.mrClient.registrationUrl(entry.registration.token))
-              ],
-            ),
+            title: 'Name',
+            child: Text(entry.person.name ?? 'Not yet registered'),
           ),
-        if (entry.registration.token != null && entry.registration.expired)
           _ListUserRow(
-            title: 'Registration Expired',
-            child: Row(
+            title: 'Email',
+            child: Text(entry.person.email),
+          ),
+          if (entry.registration.token != null && !entry.registration.expired)
+            Padding(
+              padding: const EdgeInsets.only(top: 12.0, bottom: 4.0),
+              child: Text(
+                'Registration URL',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          if (entry.registration.token != null && !entry.registration.expired)
+            Row(
               children: [
-                FHFlatButton(
-                  title: 'Renew registration',
-                  keepCase: true,
+                Expanded(
+                    child: Text(
+                        bloc.mrClient.registrationUrl(entry.registration.token),
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 11.0))),
+                FHCopyToClipboard(
+                  tooltipMessage: 'Copy URL to Clipboard',
+                  copyString:
+                      bloc.mrClient.registrationUrl(entry.registration.token),
                 )
               ],
             ),
-          ),
-        if (entry.person.groups.isNotEmpty)
-          _ListUserRow(
-            title: 'Groups',
-            child: Column(
-              children: [...entry.person.groups.map((e) => Text(e.name))],
+          if (entry.registration.token != null && entry.registration.expired)
+            Padding(
+              padding: const EdgeInsets.only(top: 12.0, bottom: 4.0),
+              child: Text(
+                'Registration Expired',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
-          )
-      ],
+          if (entry.registration.token != null && entry.registration.expired)
+            FHCopyToClipboardFlatButton(
+              text: 'Renew registration and copy to clipboard',
+              textProvider: () {},
+            ),
+          if (entry.person.groups.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 12.0, bottom: 4.0),
+              child: Text(
+                'Groups',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          if (entry.person.groups.isNotEmpty)
+            ...entry.person.groups.map((e) => Text(e.name)).toList(),
+        ],
+      ),
     );
   }
 }
@@ -281,14 +308,23 @@ class _ListUserRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Flexible(
-          flex: 1,
-          child: Text(title),
-        ),
-        Flexible(flex: 3, child: child)
-      ],
+    return Padding(
+      padding: const EdgeInsets.only(top: 8.0),
+      child: Row(
+        children: [
+          Flexible(
+            flex: 1,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 20.0),
+              child: Text(
+                title,
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+          Flexible(flex: 3, child: child)
+        ],
+      ),
     );
   }
 }

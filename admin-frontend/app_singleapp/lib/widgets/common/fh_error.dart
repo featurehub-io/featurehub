@@ -1,7 +1,6 @@
-import 'dart:html' as html;
-
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/utils/utils.dart';
+import 'package:app_singleapp/widgets/common/copy_to_clipboard_html.dart';
 import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
@@ -107,28 +106,10 @@ class _FHErrorState extends State<FHErrorWidget> {
             ),
           ),
         ),
-        FlatButton(
-          onPressed: () async {
-            await html.window.navigator.permissions
-                .query({'name': 'clipboard-write'});
-            await html.window.navigator.clipboard.writeText(
-                '${error.exception.toString()} Stack trace: ${error.stackTrace.toString()}');
-          },
-          child: Row(
-            children: <Widget>[
-              Icon(
-                Icons.content_copy,
-                size: 15.0,
-                color: Theme.of(context).buttonColor,
-              ),
-              Text(' Copy error details to clipboard',
-                  style: Theme.of(context)
-                      .textTheme
-                      .subtitle2
-                      .merge(TextStyle(color: Theme.of(context).buttonColor))),
-            ],
-          ),
-        ),
+        FHCopyToClipboardFlatButton(
+            caption: ' Copy error details to clipboard',
+            text:
+                '${error.exception.toString()} Stack trace: ${error.stackTrace.toString()}')
       ],
     );
   }

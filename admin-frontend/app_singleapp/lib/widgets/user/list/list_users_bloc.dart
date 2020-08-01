@@ -59,6 +59,7 @@ class ListUsersBloc implements Bloc {
       // this should paginate one presumes
       var data = await _personServiceApi.findPeople(
           order: SortOrder.ASC, includeGroups: true);
+      _transformPeople(data);
     }
   }
 
@@ -69,11 +70,11 @@ class ListUsersBloc implements Bloc {
     final emptyReg = OutstandingRegistration()..expired = false;
 
     data.people.forEach((person) {
-      SearchPersonEntry spr = SearchPersonEntry(
+      final spr = SearchPersonEntry(
           person,
           hasLocal
               ? data.outstandingRegistrations.firstWhere(
-                  (element) => element.id == person.id,
+                  (element) => element.id == person.id.id,
                   orElse: () => emptyReg)
               : emptyReg);
 

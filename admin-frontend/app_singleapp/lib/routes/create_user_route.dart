@@ -1,9 +1,8 @@
-import 'dart:html' as html;
-
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/api/router.dart';
 import 'package:app_singleapp/utils/utils.dart';
 import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
+import 'package:app_singleapp/widgets/common/copy_to_clipboard_html.dart';
 import 'package:app_singleapp/widgets/common/fh_card.dart';
 import 'package:app_singleapp/widgets/common/fh_filled_input_decoration.dart';
 import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
@@ -178,24 +177,9 @@ class TopWidgetSuccess extends StatelessWidget {
           ),
           Row(
             children: <Widget>[
-              FlatButton(
-                onPressed: () async {
-                  await html.window.navigator.permissions
-                      .query({'name': 'clipboard-write'});
-                  await html.window.navigator.clipboard
-                      .writeText(bloc.registrationUrl.registrationUrl);
-                },
-                child: Row(
-                  children: <Widget>[
-                    Icon(
-                      Icons.content_copy,
-                      size: 15.0,
-                    ),
-                    Text(' Copy URL to clipboard',
-                        style: Theme.of(context).textTheme.subtitle2.merge(
-                            TextStyle(color: Theme.of(context).buttonColor))),
-                  ],
-                ),
+              FHCopyToClipboardFlatButton(
+                text: bloc.registrationUrl.registrationUrl,
+                caption: ' Copy URL to clipboard',
               ),
             ],
           ),
