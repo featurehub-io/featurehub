@@ -529,6 +529,10 @@ class ManagementRepositoryClientBloc implements Bloc {
     return url;
   }
 
+  String registrationUrl(String token) {
+    return Uri.base.replace(fragment: '/register-url?$token').toString();
+  }
+
   void resetInitialized() {
     _initializedSource.add(InitializedCheckState.initialized);
   }

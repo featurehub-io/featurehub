@@ -15,6 +15,8 @@ public interface PersonApi {
   class PersonPagination {
     public int max;
     public List<Person> people;
+    public List<PersonToken> personsWithOutstandingTokens;
+    public List<String> personIdsWithExpiredTokens;
   }
 
   class PersonToken {

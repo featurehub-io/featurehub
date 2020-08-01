@@ -22,13 +22,14 @@ class _PersonListWidgetState extends State<PersonListWidget> {
   Widget build(BuildContext context) {
     final bs = BorderSide(color: Theme.of(context).dividerColor);
     final bloc = BlocProvider.of<ListUsersBloc>(context);
-    return StreamBuilder<List<Person>>(
+    return StreamBuilder<List<SearchPersonEntry>>(
         stream: bloc.personSearch,
         builder: (context, snapshot) {
           if (snapshot.hasError || snapshot.data == null) {
             return Container(
                 padding: EdgeInsets.all(30), child: Text('Loading...'));
           }
+
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
@@ -65,18 +66,25 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                     DataColumn(label: Text(''), onSort: (i, a) => {}),
                   ],
                   rows: [
-                    for (Person p in snapshot.data)
+                    for (SearchPersonEntry p in snapshot.data)
                       DataRow(
                         cells: [
-                          DataCell(p.name == null
+                          DataCell(p.person.name == null
                               ? Text('Not yet registered',
                                   style: Theme.of(context).textTheme.caption)
                               : Text(
-                                  '${p.name}',
+                                  '${p.person.name}',
                                 )),
-                          DataCell(Text('${p.email}')),
-                          DataCell(Text('${p.groups.length}')),
+                          DataCell(Text('${p.person.email}')),
+                          DataCell(Text('${p.person.groups.length}')),
                           DataCell(Row(children: <Widget>[
+                            FHIconButton(
+                              icon: Icon(Icons.info, color: _infoColour(p)),
+                              onPressed: () => bloc.mrClient
+                                  .addOverlay((BuildContext context) {
+                                return ListUserInfoDialog(bloc, p);
+                              }),
+                            ),
                             FHIconButton(
                                 icon: Icon(Icons.edit,
                                     color: Theme.of(context).buttonColor),
@@ -84,23 +92,27 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                                       ManagementRepositoryClientBloc.router
                                           .navigateTo(context, '/manage-user',
                                               params: {
-                                                'id': [p.id.id]
+                                                'id': [p.person.id.id]
                                               },
                                               transition: TransitionType.fadeIn)
                                     }),
+                            SizedBox(
+                              width: 20.0,
+                            ),
                             FHIconButton(
                               icon: Icon(Icons.delete,
                                   color: Theme.of(context).buttonColor),
                               onPressed: () => bloc.mrClient
                                   .addOverlay((BuildContext context) {
-                                return bloc.mrClient.person.id.id == p.id.id
-                                    ? CantDeleteDialog(context, bloc)
+                                return bloc.mrClient.person.id.id ==
+                                        p.person.id.id
+                                    ? CantDeleteDialog(bloc)
                                     : DeleteDialogWidget(
-                                        person: p,
+                                        person: p.person,
                                         bloc: bloc,
                                       );
                               }),
-                            )
+                            ),
                           ])),
                         ],
                       ),
@@ -112,20 +124,21 @@ class _PersonListWidgetState extends State<PersonListWidget> {
         });
   }
 
-  void onSortColumn(List<Person> people, int columnIndex, bool ascending) {
+  void onSortColumn(
+      List<SearchPersonEntry> people, int columnIndex, bool ascending) {
     setState(() {
       if (columnIndex == 0) {
         if (ascending) {
           people.sort((a, b) {
-            if (a.name != null && b.name != null) {
-              return a.name.compareTo(b.name);
+            if (a.person.name != null && b.person.name != null) {
+              return a.person.name.compareTo(b.person.name);
             }
             return ascending ? 1 : -1;
           });
         } else {
           people.sort((a, b) {
-            if (a.name != null && b.name != null) {
-              return b.name.compareTo(a.name);
+            if (a.person.name != null && b.person.name != null) {
+              return b.person.name.compareTo(a.person.name);
             }
             return ascending ? -1 : 1;
           });
@@ -133,16 +146,18 @@ class _PersonListWidgetState extends State<PersonListWidget> {
       }
       if (columnIndex == 1) {
         if (ascending) {
-          people.sort((a, b) => a.email.compareTo(b.email));
+          people.sort((a, b) => a.person.email.compareTo(b.person.email));
         } else {
-          people.sort((a, b) => b.email.compareTo(a.email));
+          people.sort((a, b) => b.person.email.compareTo(a.person.email));
         }
       }
       if (columnIndex == 2) {
         if (ascending) {
-          people.sort((a, b) => a.groups.length.compareTo(b.groups.length));
+          people.sort((a, b) =>
+              a.person.groups.length.compareTo(b.person.groups.length));
         } else {
-          people.sort((a, b) => b.groups.length.compareTo(a.groups.length));
+          people.sort((a, b) =>
+              b.person.groups.length.compareTo(a.person.groups.length));
         }
       }
       if (sortColumnIndex == columnIndex) {
@@ -152,7 +167,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
     });
   }
 
-  Widget CantDeleteDialog(BuildContext context, ListUsersBloc bloc) {
+  Widget CantDeleteDialog(ListUsersBloc bloc) {
     return FHAlertDialog(
       title: Text("You can't delete yourself!"),
       content: Text(
@@ -165,6 +180,114 @@ class _PersonListWidgetState extends State<PersonListWidget> {
             bloc.mrClient.removeOverlay();
           },
         )
+      ],
+    );
+  }
+
+  Color _infoColour(SearchPersonEntry entry) {
+    if (entry.registration.token == null) {
+      return Theme.of(context).buttonColor;
+    }
+
+    if (entry.registration.expired) {
+      return Colors.red;
+    }
+
+    return Colors.orange;
+  }
+}
+
+class ListUserInfoDialog extends StatelessWidget {
+  final ListUsersBloc bloc;
+  final SearchPersonEntry entry;
+
+  ListUserInfoDialog(this.bloc, this.entry);
+
+  @override
+  Widget build(BuildContext context) {
+    return FHAlertDialog(
+      title: Text("Information about ${entry.person.email}"),
+      content: _ListUserInfo(bloc: bloc, entry: entry),
+      actions: <Widget>[
+        // usually buttons at the bottom of the dialog
+        FHFlatButton(
+          title: 'Ok',
+          onPressed: () {
+            bloc.mrClient.removeOverlay();
+          },
+        )
+      ],
+    );
+  }
+}
+
+class _ListUserInfo extends StatelessWidget {
+  final ListUsersBloc bloc;
+  final SearchPersonEntry entry;
+
+  const _ListUserInfo({Key key, @required this.bloc, @required this.entry})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        _ListUserRow(
+          title: 'Name',
+          child: Text(entry.person.name ?? 'Not yet registered'),
+        ),
+        _ListUserRow(
+          title: 'Email',
+          child: Text(entry.person.email),
+        ),
+        if (entry.registration.token != null && !entry.registration.expired)
+          _ListUserRow(
+            title: 'Registration URL',
+            child: Row(
+              children: [
+                Text(bloc.mrClient.registrationUrl(entry.registration.token))
+              ],
+            ),
+          ),
+        if (entry.registration.token != null && entry.registration.expired)
+          _ListUserRow(
+            title: 'Registration Expired',
+            child: Row(
+              children: [
+                FHFlatButton(
+                  title: 'Renew registration',
+                  keepCase: true,
+                )
+              ],
+            ),
+          ),
+        if (entry.person.groups.isNotEmpty)
+          _ListUserRow(
+            title: 'Groups',
+            child: Column(
+              children: [...entry.person.groups.map((e) => Text(e.name))],
+            ),
+          )
+      ],
+    );
+  }
+}
+
+class _ListUserRow extends StatelessWidget {
+  final String title;
+  final Widget child;
+
+  const _ListUserRow({Key key, this.title, this.child}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Flexible(
+          flex: 1,
+          child: Text(title),
+        ),
+        Flexible(flex: 3, child: child)
       ],
     );
   }

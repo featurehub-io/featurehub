@@ -5,13 +5,21 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart';
 
+class SearchPersonEntry {
+  final Person person;
+  final OutstandingRegistration registration;
+
+  SearchPersonEntry(this.person, this.registration);
+}
+
 class ListUsersBloc implements Bloc {
   String search;
   final ManagementRepositoryClientBloc mrClient;
   PersonServiceApi _personServiceApi;
 
-  Stream<List<Person>> get personSearch => _personSearchResultSource.stream;
-  final _personSearchResultSource = BehaviorSubject<List<Person>>();
+  Stream<List<SearchPersonEntry>> get personSearch =>
+      _personSearchResultSource.stream;
+  final _personSearchResultSource = BehaviorSubject<List<SearchPersonEntry>>();
 
   ListUsersBloc(this.search, this.mrClient) : assert(mrClient != null) {
     _personServiceApi = PersonServiceApi(mrClient.apiClient);
@@ -46,15 +54,34 @@ class ListUsersBloc implements Bloc {
           order: SortOrder.ASC, filter: search, includeGroups: true);
 
       // publish it out...
-      _personSearchResultSource.add(data.people);
+      _transformPeople(data);
     } else if (search == null || search.isEmpty) {
       // this should paginate one presumes
       var data = await _personServiceApi.findPeople(
           order: SortOrder.ASC, includeGroups: true);
-
-      // publish it out...
-      _personSearchResultSource.add(data.people);
     }
+  }
+
+  void _transformPeople(SearchPersonResult data) {
+    final results = <SearchPersonEntry>[];
+
+    final hasLocal = mrClient.identityProviders.hasLocal;
+    final emptyReg = OutstandingRegistration()..expired = false;
+
+    data.people.forEach((person) {
+      SearchPersonEntry spr = SearchPersonEntry(
+          person,
+          hasLocal
+              ? data.outstandingRegistrations.firstWhere(
+                  (element) => element.id == person.id,
+                  orElse: () => emptyReg)
+              : emptyReg);
+
+      results.add(spr);
+    });
+
+    // publish it out...
+    _personSearchResultSource.add(results);
   }
 
   @override

@@ -10,6 +10,7 @@ import io.featurehub.db.api.PersonApi;
 import io.featurehub.mr.api.PersonServiceDelegate;
 import io.featurehub.mr.auth.AuthManagerService;
 import io.featurehub.mr.model.CreatePersonDetails;
+import io.featurehub.mr.model.OutstandingRegistration;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.RegistrationUrl;
 import io.featurehub.mr.model.SearchPersonResult;
@@ -24,6 +25,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class PersonResource implements PersonServiceDelegate {
   private static final Logger log = LoggerFactory.getLogger(PersonResource.class);
@@ -44,7 +46,8 @@ public class PersonResource implements PersonServiceDelegate {
   }
 
   @Override
-  public RegistrationUrl createPerson(CreatePersonDetails createPersonDetails, CreatePersonHolder holder, SecurityContext securityContext) {
+  public RegistrationUrl createPerson(CreatePersonDetails createPersonDetails, CreatePersonHolder holder,
+                                      SecurityContext securityContext) {
     Person currentUser = authManager.from(securityContext);
 
     if (authManager.isAnyAdmin(currentUser.getId().getId())) {
@@ -58,7 +61,7 @@ public class PersonResource implements PersonServiceDelegate {
           groupApi.addPersonToGroup(id, person.id, Opts.empty());
         }));
 
-        if(person == null) {
+        if (person == null) {
           throw new BadRequestException();
         }
 
@@ -129,9 +132,15 @@ public class PersonResource implements PersonServiceDelegate {
       int start = holder.startAt == null ? 0 : holder.startAt;
       int page = holder.pageSize == null ? 20 : holder.pageSize;
 
-      PersonApi.PersonPagination pp = personApi.search(holder.filter, holder.order, start, page, new Opts().add(FillOpts.Groups, holder.includeGroups));
+      PersonApi.PersonPagination pp = personApi.search(holder.filter, holder.order, start, page,
+        new Opts().add(FillOpts.Groups, holder.includeGroups));
 
-      return new SearchPersonResult().people(pp.people).max(pp.max);
+      return new SearchPersonResult()
+        .people(pp.people)
+        .outstandingRegistrations(pp.personsWithOutstandingTokens.stream().map(
+          pt -> new OutstandingRegistration().id(pt.id).token(pt.token).expired(pp.personIdsWithExpiredTokens.contains(pt.id))
+        ).collect(Collectors.toList()))
+        .max(pp.max);
     }
 
     throw new ForbiddenException("Not admin");

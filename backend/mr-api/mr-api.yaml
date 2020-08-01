@@ -1499,6 +1499,23 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Person"
+        outstandingRegistrations:
+          type: array
+          items:
+            $ref: "#/components/schemas/OutstandingRegistration"
+    OutstandingRegistration:
+      type: object
+      required:
+        - id
+        - token
+        - expired
+      properties:
+        id:
+          type: string
+        token:
+          type: string
+        expired:
+          type: boolean
     SetupSiteAdmin:
       required:
         - organizationName

@@ -167,8 +167,22 @@ public class PersonSqlApi implements PersonApi {
     try {
       pagination.max = futureCount.get();
       DbOrganization org = convertUtils.getDbOrganization();
-      pagination.people = futureList.get().stream().map(dbp ->
-        convertUtils.toPerson(dbp, org, opts)).collect(Collectors.toList());
+      final List<DbPerson> dbPeople = futureList.get();
+      pagination.people = dbPeople.stream().map(dbp ->
+        convertUtils.toPerson(dbp, org, opts)
+      ).collect(Collectors.toList());
+
+      LocalDateTime now = LocalDateTime.now();
+
+      pagination.personIdsWithExpiredTokens = dbPeople.stream()
+        .filter(p -> p.getToken() != null && p.getTokenExpiry() != null && p.getTokenExpiry().isBefore(now))
+        .map(p -> p.getId().toString())
+        .collect(Collectors.toList());
+
+      pagination.personsWithOutstandingTokens = dbPeople.stream()
+        .filter(p -> p.getToken() != null)
+        .map(p -> new PersonToken(p.getToken(), p.getId().toString()))
+        .collect(Collectors.toList());
 
       return pagination;
     } catch (InterruptedException | ExecutionException e) {
