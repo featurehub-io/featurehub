@@ -30,7 +30,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
             return Container(
                 padding: EdgeInsets.all(30), child: Text('Loading...'));
           }
-
+          final allowedLocalIdentity = bloc.mrClient.identityProviders.hasLocal;
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
@@ -80,7 +80,8 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                           DataCell(Text('${p.person.groups.length}')),
                           DataCell(Row(children: <Widget>[
                             FHIconButton(
-                              icon: Icon(Icons.info, color: _infoColour(p)),
+                              icon: Icon(Icons.info,
+                                  color: _infoColour(p, allowedLocalIdentity)),
                               onPressed: () => bloc.mrClient
                                   .addOverlay((BuildContext context) {
                                 return ListUserInfoDialog(bloc, p);
@@ -185,8 +186,8 @@ class _PersonListWidgetState extends State<PersonListWidget> {
     );
   }
 
-  Color _infoColour(SearchPersonEntry entry) {
-    if (entry.registration.token == null) {
+  Color _infoColour(SearchPersonEntry entry, bool allowedLocalLogin) {
+    if (entry.registration.token == null || !allowedLocalLogin) {
       return Theme.of(context).buttonColor;
     }
 
@@ -234,6 +235,7 @@ class _ListUserInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final allowedLocalIdentity = bloc.mrClient.identityProviders.hasLocal;
     entry.person.groups.sort((a, b) => a.name.compareTo(b.name));
     return Container(
 //      height: 400.0,
@@ -248,7 +250,9 @@ class _ListUserInfo extends StatelessWidget {
             title: 'Email',
             child: Text(entry.person.email),
           ),
-          if (entry.registration.token != null && !entry.registration.expired)
+          if (allowedLocalIdentity &&
+              entry.registration.token != null &&
+              !entry.registration.expired)
             Padding(
               padding: const EdgeInsets.only(top: 12.0, bottom: 4.0),
               child: Text(
@@ -256,7 +260,9 @@ class _ListUserInfo extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
-          if (entry.registration.token != null && !entry.registration.expired)
+          if (allowedLocalIdentity &&
+              entry.registration.token != null &&
+              !entry.registration.expired)
             Row(
               children: [
                 Expanded(
@@ -271,7 +277,9 @@ class _ListUserInfo extends StatelessWidget {
                 )
               ],
             ),
-          if (entry.registration.token != null && entry.registration.expired)
+          if (allowedLocalIdentity &&
+              entry.registration.token != null &&
+              entry.registration.expired)
             Padding(
               padding: const EdgeInsets.only(top: 12.0, bottom: 4.0),
               child: Text(
@@ -279,7 +287,9 @@ class _ListUserInfo extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
-          if (entry.registration.token != null && entry.registration.expired)
+          if (allowedLocalIdentity &&
+              entry.registration.token != null &&
+              entry.registration.expired)
             FHCopyToClipboardFlatButton(
               text: 'Renew registration and copy to clipboard',
               textProvider: () {},

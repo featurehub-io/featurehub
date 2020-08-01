@@ -149,6 +149,7 @@ class TopWidgetSuccess extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<CreateUserBloc>(context);
+    final hasLocal = bloc.client.identityProviders.hasLocal;
 
     return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -156,37 +157,45 @@ class TopWidgetSuccess extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text('Registration URL created! \n',
+              Text('User created! \n',
                   style: Theme.of(context).textTheme.headline6),
               Text(bloc.email, style: Theme.of(context).textTheme.bodyText1),
             ],
           ),
-          Padding(
-            padding: const EdgeInsets.only(top: 20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          if (hasLocal)
+            Padding(
+              padding: const EdgeInsets.only(top: 20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text('Registration Url',
+                      style: Theme.of(context).textTheme.subtitle2),
+                  Text(
+                    bloc.registrationUrl.registrationUrl,
+                    style: Theme.of(context).textTheme.caption,
+                  ),
+                ],
+              ),
+            ),
+          if (hasLocal)
+            Row(
               children: <Widget>[
-                Text('Registration Url',
-                    style: Theme.of(context).textTheme.subtitle2),
-                Text(
-                  bloc.registrationUrl.registrationUrl,
-                  style: Theme.of(context).textTheme.caption,
+                FHCopyToClipboardFlatButton(
+                  text: bloc.registrationUrl.registrationUrl,
+                  caption: ' Copy URL to clipboard',
                 ),
               ],
             ),
-          ),
-          Row(
-            children: <Widget>[
-              FHCopyToClipboardFlatButton(
-                text: bloc.registrationUrl.registrationUrl,
-                caption: ' Copy URL to clipboard',
-              ),
-            ],
-          ),
-          Text(
-            'You will need to email this URL to the new user, so they can complete their registration and set their password.',
-            style: Theme.of(context).textTheme.caption,
-          ),
+          if (hasLocal)
+            Text(
+              'You will need to email this URL to the new user, so they can complete their registration and set their password.',
+              style: Theme.of(context).textTheme.caption,
+            ),
+          if (!hasLocal)
+            Text(
+              'The user now needs to sign in with your external identity provider and they will be able to access the system.',
+              style: Theme.of(context).textTheme.caption,
+            ),
           FHButtonBar(children: [
             FHFlatButtonTransparent(
                 onPressed: () {
