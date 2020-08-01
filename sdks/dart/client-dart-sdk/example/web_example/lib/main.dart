@@ -1,8 +1,10 @@
 import 'package:featurehub_client_sdk/featurehub.dart';
+import 'package:featurehub_client_sdk/featurehub_get.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 
 ClientFeatureRepository featurehub;
+FeatureHubSimpleApi featurehubApi;
 
 void main() {
   Logger.root.level = Level.ALL; // defaults to Level.INFO
@@ -20,9 +22,14 @@ void main() {
   });
 
   featurehub = ClientFeatureRepository();
-  EventSourceRepositoryListener(
-      'http://192.168.86.49:8553/features/default/ce6b5f90-2a8a-4b29-b10f-7f1c98d878fe/VNftuX5LV6PoazPZsEEIBujM4OBqA1Iv9f9cBGho2LJylvxXMXKGxwD14xt2d7Ma3GHTsdsSO8DTvAYF',
+  // this next step can be delayed based on environment loading, etc
+  featurehubApi = new FeatureHubSimpleApi(
+      'http://127.0.0.1:8553',
+      [
+        'default/ce6b5f90-2a8a-4b29-b10f-7f1c98d878fe/VNftuX5LV6PoazPZsEEIBujM4OBqA1Iv9f9cBGho2LJylvxXMXKGxwD14xt2d7Ma3GHTsdsSO8DTvAYF'
+      ],
       featurehub);
+  featurehubApi.request();
   runApp(MyApp());
 }
 
@@ -103,37 +110,44 @@ class _MyHomePageState extends State<MyHomePage> {
           stream:
               featurehub.getFeatureState('FLUTTER_COLOUR').featureUpdateStream,
           builder: (context, snapshot) {
-            return Container(
-              color: determineColour(snapshot.data),
-              child: Center(
-                // Center is a layout widget. It takes a single child and positions it
-                // in the middle of the parent.
-                child: Column(
-                  // Column is also a layout widget. It takes a list of children and
-                  // arranges them vertically. By default, it sizes itself to fit its
-                  // children horizontally, and tries to be as tall as its parent.
-                  //
-                  // Invoke "debug painting" (press "p" in the console, choose the
-                  // "Toggle Debug Paint" action from the Flutter Inspector in Android
-                  // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-                  // to see the wireframe for each widget.
-                  //
-                  // Column has various properties to control how it sizes itself and
-                  // how it positions its children. Here we use mainAxisAlignment to
-                  // center the children vertically; the main axis here is the vertical
-                  // axis because Columns are vertical (the cross axis would be
-                  // horizontal).
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Text(
-                      'You have pushed the button this many times:',
+            return RefreshIndicator(
+              onRefresh: () => featurehubApi.request(),
+              child: ListView(
+                children: [
+                  Container(
+                    color: determineColour(snapshot.data),
+                    child: Center(
+                      // Center is a layout widget. It takes a single child and positions it
+                      // in the middle of the parent.
+                      child: Column(
+                        // Column is also a layout widget. It takes a list of children and
+                        // arranges them vertically. By default, it sizes itself to fit its
+                        // children horizontally, and tries to be as tall as its parent.
+                        //
+                        // Invoke "debug painting" (press "p" in the console, choose the
+                        // "Toggle Debug Paint" action from the Flutter Inspector in Android
+                        // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
+                        // to see the wireframe for each widget.
+                        //
+                        // Column has various properties to control how it sizes itself and
+                        // how it positions its children. Here we use mainAxisAlignment to
+                        // center the children vertically; the main axis here is the vertical
+                        // axis because Columns are vertical (the cross axis would be
+                        // horizontal).
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Text(
+                            'You have pushed the button this many times:',
+                          ),
+                          Text(
+                            '$_counter',
+                            style: Theme.of(context).textTheme.headline4,
+                          ),
+                        ],
+                      ),
                     ),
-                    Text(
-                      '$_counter',
-                      style: Theme.of(context).textTheme.headline4,
-                    ),
-                  ],
-                ),
+                  )
+                ],
               ),
             );
           }),

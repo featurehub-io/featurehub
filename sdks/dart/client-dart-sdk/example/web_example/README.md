@@ -1,16 +1,9 @@
-# web_example
+# A Flutter Example
 
-A new Flutter project.
+This is a simple Flutter example and it uses the GET api to ensure the radio is kept on.
+In this case, the Refresh Indicator is used to request updated features which
+trigger the stream to update and repaint the screen. 
 
-## Getting Started
+It expects a string feature called FLUTTER_COLOUR to exist and have values of 
+blue, purple or yellow.  
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
