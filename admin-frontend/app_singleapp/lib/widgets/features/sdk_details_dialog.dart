@@ -1,8 +1,6 @@
-import 'dart:html' as html;
-
-import 'package:app_singleapp/utils/custom_cursor.dart';
 import 'package:app_singleapp/utils/utils.dart';
 import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
+import 'package:app_singleapp/widgets/common/copy_to_clipboard_html.dart';
 import 'package:app_singleapp/widgets/common/fh_alert_dialog.dart';
 import 'package:app_singleapp/widgets/common/fh_icon_button.dart';
 import 'package:app_singleapp/widgets/features/feature_status_bloc.dart';
@@ -120,19 +118,9 @@ class SDKDetailsContentWidget extends StatelessWidget {
             data.sdkUrl != null
                 ? Padding(
                     padding: const EdgeInsets.only(left: 16.0),
-                    child: Tooltip(
-                      message: 'Copy SDK Url to clipboard',
-                      child: CustomCursor(
-                        child: IconButton(
-                          icon: Icon(Icons.content_copy, size: 16.0),
-                          onPressed: () async {
-                            await html.window.navigator.permissions
-                                .query({'name': 'clipboard-write'});
-                            await html.window.navigator.clipboard
-                                .writeText(data.sdkUrl);
-                          },
-                        ),
-                      ),
+                    child: FHCopyToClipboard(
+                      tooltipMessage: 'Copy SDK Url to clipboard',
+                      copyString: data.sdkUrl,
                     ))
                 : Text('No SDK URL available')
           ]),

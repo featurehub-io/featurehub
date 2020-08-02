@@ -146,11 +146,13 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Color determineColour(FeatureStateHolder data) {
-    print("colour changed? $data");
+    // ignore: avoid_print
+    print('colour changed? $data');
     if (data == null || !data.exists) {
       return Colors.white;
     }
-    print("colour is ${data.stringValue}");
+    // ignore: avoid_print
+    print('colour is ${data.stringValue}');
     switch (data.stringValue) {
       case 'blue':
         return Colors.blue;

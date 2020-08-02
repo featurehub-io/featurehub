@@ -83,12 +83,35 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
     with SingleTickerProviderStateMixin {
   StreamSubscription<RouteChange> _routeChange;
   TabController _controller;
+  ManagementRepositoryClientBloc bloc;
 
   @override
   void initState() {
     super.initState();
 
     _controller = TabController(vsync: this, length: 3);
+    _controller.addListener(tabChangeListener);
+  }
+
+  void tabChangeListener() {
+    // tab has changed, notify external route
+    final rc = RouteChange()..route = '/manage-app';
+    if (_controller.index == 0) {
+      rc.params = {
+        'tab-name': ['environments']
+      };
+    } else if (_controller.index == 1) {
+      rc.params = {
+        'tab-name': ['group-permissions']
+      };
+    } else if (_controller.index == 2) {
+      rc.params = {
+        'tab-name': ['service-accounts']
+      };
+    }
+    if (rc.params != null) {
+      bloc.notifyExternalRouteChange(rc);
+    }
   }
 
   @override
@@ -162,6 +185,8 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+
+    bloc = BlocProvider.of(context);
 
     if (_routeChange != null) {
       _routeChange.cancel();

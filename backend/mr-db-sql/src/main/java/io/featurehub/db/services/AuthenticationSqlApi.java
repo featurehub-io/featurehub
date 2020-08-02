@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  *
@@ -219,5 +220,19 @@ public class AuthenticationSqlApi implements AuthenticationApi {
     if (login != null) {
       database.delete(login);
     }
+  }
+
+  @Override
+  public String resetExpiredRegistrationToken(String email) {
+    DbPerson person = new QDbPerson().email.eq(email.toLowerCase()).findOne();
+
+    if (person != null && person.getToken() != null) {
+      person.setToken(UUID.randomUUID().toString());
+      person.setTokenExpiry(LocalDateTime.now().plusDays(7));
+      database.save(person);
+      return person.getToken();
+    }
+
+    return null;
   }
 }

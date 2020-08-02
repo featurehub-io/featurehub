@@ -63,7 +63,17 @@ class ManagementRepositoryClientBloc implements Bloc {
   FeatureServiceApi featureServiceApi;
   ApplicationServiceApi applicationServiceApi;
   static Router router;
+  // this reflects actual requests to change the route driven externally, so a user clicks on
+  // something that should cause the page to change to this route.
   final _routerSource = BehaviorSubject<RouteChange>();
+  // this is when route change events are being notified of downstream systems but don't cause
+  // an actual change in route (usually because this has already happened such as on tab changes
+  // the Applications page is like this. The tabs cause changes in routes that are not actual route
+  // changes otherwise they would endlessly cause the page to redraw.
+  final _routerExternalSource = PublishSubject<RouteChange>();
+  // this represents the current route state. When _routerSource changes it should push to here
+  // and when _routerExternalSource changes, it should push to here
+  final _routerCollectedSource = BehaviorSubject<RouteChange>();
   final _routerRedrawRouteSource = BehaviorSubject<RouteChange>();
   final _menuOpened = BehaviorSubject<bool>.seeded(true);
   final _stepperOpened = BehaviorSubject<bool>.seeded(false);
@@ -85,6 +95,7 @@ class ManagementRepositoryClientBloc implements Bloc {
     }
   }
 
+  Stream<RouteChange> get routeCurrentStream => _routerCollectedSource.stream;
   Stream<RouteChange> get routeChangedStream => _routerSource.stream;
   Stream<RouteChange> get redrawChangedStream =>
       _routerRedrawRouteSource.stream;
@@ -104,6 +115,25 @@ class ManagementRepositoryClientBloc implements Bloc {
     if (_sharedPreferences != null) {
       _sharedPreferences.saveString('current-route', route.toJson());
     }
+  }
+
+  void _initializeRouteStreams() {
+    _routerSource.listen((value) {
+      if (value != null) _routerCollectedSource.add(value);
+    });
+
+    _routerExternalSource.listen((value) {
+      if (value != null) {
+        _routerCollectedSource.add(value);
+      }
+    });
+  }
+
+  // called when something else has caused the widget redrawing (like tabs) and
+  // we need to notify things that are tracking the routes (e.g. the menu) that
+  // the route has actually changed.
+  void notifyExternalRouteChange(RouteChange rc) {
+    _routerExternalSource.add(rc);
   }
 
   /// we changed permission, or at least changed portfolio, so check if we
@@ -226,6 +256,8 @@ class ManagementRepositoryClientBloc implements Bloc {
 
     _personPermissionInPortfolioChanged = streamValley.routeCheckPortfolioStream
         .listen((portfolio) => _checkRouteForPermission(portfolio));
+
+    _initializeRouteStreams();
 
     router = Router();
     router.mrBloc = this;
@@ -527,6 +559,10 @@ class ManagementRepositoryClientBloc implements Bloc {
     }
 
     return url;
+  }
+
+  String registrationUrl(String token) {
+    return Uri.base.replace(fragment: '/register-url?token=$token').toString();
   }
 
   void resetInitialized() {
