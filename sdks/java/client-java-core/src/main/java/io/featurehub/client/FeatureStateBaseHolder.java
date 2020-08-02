@@ -5,6 +5,7 @@ import io.featurehub.sse.model.FeatureState;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executor;
 
 
@@ -14,22 +15,25 @@ import java.util.concurrent.Executor;
  * what type it is.
  */
 abstract class FeatureStateBaseHolder implements FeatureStateHolder {
-  public static final String ACCELERATE_FEATURE_OVERRIDE = "accelerate-feature-override";
-  public static final String FEATURE_TOGGLES_PREFIX = "feature-toggles.";
-  static final String FEATURE_TOGGLES_ALLOW_OVERRIDE = "feature-toggles.allow-override";
-  protected FeatureState featureState;
+  protected final List<FeatureValueInterceptor> valueInterceptors;
+  protected final String key;
   private final Executor executor;
+  protected FeatureState featureState;
   List<FeatureListener> listeners = new ArrayList<>();
 
-  public FeatureStateBaseHolder(Executor executor, FeatureStateBaseHolder oldHolder) {
-    this(executor);
+  public FeatureStateBaseHolder(Executor executor, FeatureStateBaseHolder oldHolder,
+                                List<FeatureValueInterceptor> valueInterceptors, String key) {
+    this(executor, valueInterceptors, key);
+
     if (oldHolder != null) {
       this.listeners = oldHolder.listeners;
     }
   }
 
-  public FeatureStateBaseHolder(Executor executor) {
+  public FeatureStateBaseHolder(Executor executor, List<FeatureValueInterceptor> valueInterceptors, String key) {
     this.executor = executor;
+    this.valueInterceptors = valueInterceptors;
+    this.key = key;
   }
 
   protected void notifyListeners() {
@@ -73,8 +77,18 @@ abstract class FeatureStateBaseHolder implements FeatureStateHolder {
     return false;
   }
 
-  protected String devOverride() {
-    // wait for integration with OpenTelemetry/OpenTracing
+  protected FeatureValueInterceptor.ValueMatch findIntercept() {
+    return valueInterceptors.stream().map(vi -> {
+      FeatureValueInterceptor.ValueMatch vm = vi.getValue(key);
+      if (vm.matched) {
+        return vm;
+      } else {
+        return null;
+      }
+    }).filter(Objects::nonNull).findFirst().orElse(null);
+  }
+
+  // wait for integration with OpenTelemetry/OpenTracing
 //    if (System.getProperty(FEATURE_TOGGLES_ALLOW_OVERRIDE) != null ) {
 //      String override = Optional.ofNullable(GlobalTracer.get())
 //        .map(Tracer::activeSpan)
@@ -90,13 +104,6 @@ abstract class FeatureStateBaseHolder implements FeatureStateHolder {
 //        }
 //      }
 //    }
-
-    if (featureState == null) {
-      return null;
-    }
-
-    return System.getProperty(FEATURE_TOGGLES_PREFIX + featureState.getKey());
-  }
 
   @Override
   public void addListener(FeatureListener listener) {

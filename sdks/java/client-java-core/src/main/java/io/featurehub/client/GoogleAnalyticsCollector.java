@@ -3,6 +3,7 @@ package io.featurehub.client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -11,8 +12,8 @@ import java.util.Map;
 public class GoogleAnalyticsCollector implements AnalyticsCollector {
   private static final Logger log = LoggerFactory.getLogger(GoogleAnalyticsCollector.class);
   private final String uaKey; // this must be provided
-  private String cid; // if this is null, we will look for it in "other" and log an error if it isn't there
   private final GoogleAnalyticsApiClient client;
+  private String cid; // if this is null, we will look for it in "other" and log an error if it isn't there
 
   public GoogleAnalyticsCollector(String uaKey, String cid, GoogleAnalyticsApiClient client) {
     this.uaKey = uaKey;
@@ -42,29 +43,38 @@ public class GoogleAnalyticsCollector implements AnalyticsCollector {
       return;
     }
 
-    String ev = (other != null && other.get(GoogleAnalyticsApiClient.GA_VALUE) != null)
-      ? ("&ev=" + URLEncoder.encode(other.get(GoogleAnalyticsApiClient.GA_VALUE), StandardCharsets.UTF_8)) : "";
+    String ev = null;
+    try {
+      ev = (other != null && other.get(GoogleAnalyticsApiClient.GA_VALUE) != null)
+        ? ("&ev=" + URLEncoder.encode(other.get(GoogleAnalyticsApiClient.GA_VALUE), StandardCharsets.UTF_8.name())) :
+        "";
 
-    String baseForEachLine = "v=1&tid=" + uaKey + "&cid="+cid+"&t=event&ec=FeatureHub%20Event&ea=" + URLEncoder.encode(action, StandardCharsets.UTF_8) + ev + "&el=";
+      String baseForEachLine =
+        "v=1&tid=" + uaKey + "&cid=" + cid + "&t=event&ec=FeatureHub%20Event&ea=" + URLEncoder.encode(action,
+          StandardCharsets.UTF_8.name()) + ev + "&el=";
 
-    featureStateAtCurrentTime.forEach((fsh) -> {
+      featureStateAtCurrentTime.forEach((fsh) -> {
+        String line = null;
+        if (fsh instanceof FeatureStateBooleanHolder) {
+          line = fsh.getBoolean().equals(Boolean.TRUE) ? "on" : "off";
+        } else if (fsh instanceof FeatureStateStringHolder) {
+          line = fsh.getString();
+        } else if (fsh instanceof FeatureStateNumberHolder) {
+          line = fsh.getNumber().toPlainString();
+        }
+        if (line != null) {
 
-      String line = null;
-      if (fsh instanceof FeatureStateBooleanHolder) {
-        line = fsh.getBoolean().equals(Boolean.TRUE) ? "on" : "off";
-      } else if (fsh instanceof FeatureStateStringHolder) {
-        line = fsh.getString();
-      } else if (fsh instanceof FeatureStateNumberHolder) {
-        line = fsh.getNumber().toPlainString();
-      }
-      if (line != null) {
-
-        line = URLEncoder.encode(fsh.getKey() + " : " + line, StandardCharsets.UTF_8);
-        batchData.append(baseForEachLine);
-        batchData.append(line);
-        batchData.append("\n");
-      }
-    });
+          try {
+            line = URLEncoder.encode(fsh.getKey() + " : " + line, StandardCharsets.UTF_8.name());
+            batchData.append(baseForEachLine);
+            batchData.append(line);
+            batchData.append("\n");
+          } catch (UnsupportedEncodingException e) { // can't happen
+          }
+        }
+      });
+    } catch (UnsupportedEncodingException e) { // can't happen
+    }
 
     if (batchData.length() > 0) {
       client.postBatchUpdate(batchData.toString());

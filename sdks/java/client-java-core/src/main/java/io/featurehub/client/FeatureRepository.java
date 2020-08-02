@@ -9,9 +9,9 @@ import java.util.Map;
 public interface FeatureRepository {
 
   /*
-  * Any incoming state changes from a multi-varied set of possible data. This comes
-  * from SSE.
-  */
+   * Any incoming state changes from a multi-varied set of possible data. This comes
+   * from SSE.
+   */
   void notify(SSEResultState state, String data);
 
   /**
@@ -28,7 +28,7 @@ public interface FeatureRepository {
    * This still may not cause events to be triggered as event triggers are done on actual value cchanges.
    *
    * @param states - the list of feature states
-   * @param force - whether we should force the states to change
+   * @param force  - whether we should force the states to change
    */
   void notify(List<FeatureState> states, boolean force);
 
@@ -38,7 +38,7 @@ public interface FeatureRepository {
    *
    * @param readynessListener - a callback lambda
    */
-  void addReadynessListener(ReadynessListener readynessListener);
+  FeatureRepository addReadynessListener(ReadynessListener readynessListener);
 
   /**
    * Get a feature state isolated from the API.
@@ -55,13 +55,20 @@ public interface FeatureRepository {
    * @param action
    * @param other
    */
-  void logAnalyticsEvent(String action, Map<String, String> other);
+  FeatureRepository logAnalyticsEvent(String action, Map<String, String> other);
 
   /**
    * Register an analytics collector
    *
    * @param collector - a class implementing the AnalyticsCollector interface
    */
-  void addAnalyticCollector(AnalyticsCollector collector);
+  FeatureRepository addAnalyticCollector(AnalyticsCollector collector);
 
+  /**
+   * Adds interceptor support for feature values.
+   *
+   * @param interceptor
+   * @return the instance of the repo for chaining
+   */
+  FeatureRepository registerValueInterceptor(FeatureValueInterceptor interceptor);
 }

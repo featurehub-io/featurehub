@@ -4,14 +4,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.featurehub.sse.model.FeatureState;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.Executor;
 
 class FeatureStateJsonHolder extends FeatureStateBaseHolder {
   private final ObjectMapper mapper;
   private String value;
 
-  public FeatureStateJsonHolder(FeatureStateBaseHolder holder, Executor executor, ObjectMapper mapper) {
-    super(executor, holder);
+  public FeatureStateJsonHolder(FeatureStateBaseHolder holder, Executor executor, ObjectMapper mapper,
+                                List<FeatureValueInterceptor> valueInterceptors, String key) {
+    super(executor, holder, valueInterceptors, key);
     this.mapper = mapper;
   }
 
@@ -27,15 +29,15 @@ class FeatureStateJsonHolder extends FeatureStateBaseHolder {
 
   @Override
   protected FeatureStateHolder copy() {
-    return new FeatureStateJsonHolder(null, null, mapper).setFeatureState(featureState);
+    return new FeatureStateJsonHolder(null, null, mapper, valueInterceptors, key).setFeatureState(featureState);
   }
 
   @Override
   public String getRawJson() {
-    String dev = devOverride();
+    FeatureValueInterceptor.ValueMatch vm = findIntercept();
 
-    if (dev != null) {
-      return dev;
+    if (vm != null) {
+      return vm.value;
     }
 
     return value;

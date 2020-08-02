@@ -24,12 +24,13 @@ public class ClientFeatureRepository implements FeatureRepository {
   private final Map<String, FeatureStateBaseHolder> features = new ConcurrentHashMap<>();
   private final Executor executor;
   private final ObjectMapper mapper;
-  private final TypeReference<List<FeatureState>> FEATURE_LIST_TYPEDEF = new TypeReference<List<FeatureState>>() {
-  };
+  private final TypeReference<List<FeatureState>> FEATURE_LIST_TYPEDEF
+    = new TypeReference<List<FeatureState>>() {};
   private boolean hasReceivedInitialState = false;
-  private List<AnalyticsCollector> analyticsCollectors = new ArrayList<>();
+  private final List<AnalyticsCollector> analyticsCollectors = new ArrayList<>();
   private Readyness readyness = Readyness.NotReady;
-  private List<ReadynessListener> readynessListeners = new ArrayList<>();
+  private final List<ReadynessListener> readynessListeners = new ArrayList<>();
+  private final List<FeatureValueInterceptor> featureValueInterceptors = new ArrayList<>();
 
   public ClientFeatureRepository(int threadPoolSize) {
     mapper = new ObjectMapper();
@@ -42,8 +43,16 @@ public class ClientFeatureRepository implements FeatureRepository {
   }
 
   @Override
-  public void addAnalyticCollector(AnalyticsCollector collector) {
+  public FeatureRepository addAnalyticCollector(AnalyticsCollector collector) {
     analyticsCollectors.add(collector);
+    return this;
+  }
+
+  @Override
+  public FeatureRepository registerValueInterceptor(FeatureValueInterceptor interceptor) {
+    featureValueInterceptors.add(interceptor);
+
+    return this;
   }
 
   @Override
@@ -98,11 +107,13 @@ public class ClientFeatureRepository implements FeatureRepository {
 
 
   @Override
-  public void addReadynessListener(ReadynessListener rl) {
+  public FeatureRepository addReadynessListener(ReadynessListener rl) {
     this.readynessListeners.add(rl);
 
     // let it know what the current state is
     executor.execute(() -> rl.notify(readyness));
+
+    return this;
   }
 
   private void broadcastReadyness() {
@@ -118,7 +129,9 @@ public class ClientFeatureRepository implements FeatureRepository {
   }
 
   private void checkForInvalidFeatures() {
-    String invalidKeys = features.values().stream().filter(v -> v.getKey() == null).map(FeatureStateHolder::getKey).collect(Collectors.joining(", "));
+    String invalidKeys =
+      features.values().stream().filter(v -> v.getKey() == null)
+        .map(FeatureStateHolder::getKey).collect(Collectors.joining(", "));
     if (invalidKeys.length() > 0) {
       log.error("FeatureHub error: application is requesting use of invalid keys: {}", invalidKeys);
     }
@@ -131,12 +144,12 @@ public class ClientFeatureRepository implements FeatureRepository {
         log.error("FeatureHub error: application requesting use of invalid key after initialization: `{}`", key1);
       }
 
-      return new FeatureStatePlaceHolder(executor);
+      return new FeatureStatePlaceHolder(executor, featureValueInterceptors, key, mapper);
     });
   }
 
   @Override
-  public void logAnalyticsEvent(String action, Map<String, String> other) {
+  public FeatureRepository logAnalyticsEvent(String action, Map<String, String> other) {
     // take a snapshot of the current state of the features
     List<FeatureStateHolder> featureStateAtCurrentTime = features.values().stream()
       .filter(FeatureStateBaseHolder::isSet)
@@ -148,6 +161,8 @@ public class ClientFeatureRepository implements FeatureRepository {
         c.logEvent(action, other, featureStateAtCurrentTime);
       });
     });
+
+    return this;
   }
 
   private void featureUpdate(FeatureState featureState) {
@@ -159,22 +174,23 @@ public class ClientFeatureRepository implements FeatureRepository {
     if (holder == null || holder.getKey() == null) {
       switch (featureState.getType()) {
         case BOOLEAN:
-          holder = new FeatureStateBooleanHolder(holder, executor);
+          holder = new FeatureStateBooleanHolder(holder, executor, featureValueInterceptors, featureState.getKey());
           break;
         case NUMBER:
-          holder = new FeatureStateNumberHolder(holder, executor);
+          holder = new FeatureStateNumberHolder(holder, executor, featureValueInterceptors, featureState.getKey());
           break;
         case STRING:
-          holder = new FeatureStateStringHolder(holder, executor);
+          holder = new FeatureStateStringHolder(holder, executor, featureValueInterceptors, featureState.getKey());
           break;
         case JSON:
-          holder = new FeatureStateJsonHolder(holder, executor, mapper);
+          holder = new FeatureStateJsonHolder(holder, executor, mapper, featureValueInterceptors,
+            featureState.getKey());
           break;
       }
 
       features.put(featureState.getKey(), holder);
     } else if (!force && holder.featureState != null
-        && holder.featureState.getVersion() >= featureState.getVersion()) {
+      && holder.featureState.getVersion() >= featureState.getVersion()) {
       return;
     }
 

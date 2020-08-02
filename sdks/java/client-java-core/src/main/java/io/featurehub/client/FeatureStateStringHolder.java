@@ -4,14 +4,16 @@ import io.featurehub.sse.model.FeatureState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.concurrent.Executor;
 
 class FeatureStateStringHolder extends FeatureStateBaseHolder {
   private static final Logger log = LoggerFactory.getLogger(FeatureStateStringHolder.class);
   private String value;
 
-  public FeatureStateStringHolder(FeatureStateBaseHolder holder, Executor executor) {
-    super(executor, holder);
+  public FeatureStateStringHolder(FeatureStateBaseHolder holder, Executor executor,
+                                  List<FeatureValueInterceptor> valueInterceptors, String key) {
+    super(executor, holder, valueInterceptors, key);
   }
 
   public FeatureStateHolder setFeatureState(FeatureState featureState) {
@@ -31,15 +33,15 @@ class FeatureStateStringHolder extends FeatureStateBaseHolder {
 
   @Override
   protected FeatureStateHolder copy() {
-    return new FeatureStateStringHolder(null, null).setFeatureState(featureState);
+    return new FeatureStateStringHolder(null, null, valueInterceptors, key).setFeatureState(featureState);
   }
 
   @Override
   public String getString() {
-    String dev = devOverride();
+    FeatureValueInterceptor.ValueMatch vm = findIntercept();
 
-    if (dev != null) {
-      return dev;
+    if (vm != null) {
+      return vm.value;
     }
 
     return value;

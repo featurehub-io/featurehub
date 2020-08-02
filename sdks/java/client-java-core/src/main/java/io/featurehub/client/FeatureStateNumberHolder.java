@@ -3,13 +3,15 @@ package io.featurehub.client;
 import io.featurehub.sse.model.FeatureState;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.concurrent.Executor;
 
 public class FeatureStateNumberHolder extends FeatureStateBaseHolder {
   private BigDecimal value;
 
-  public FeatureStateNumberHolder(FeatureStateBaseHolder holder, Executor executor) {
-    super(executor, holder);
+  public FeatureStateNumberHolder(FeatureStateBaseHolder holder, Executor executor,
+                                  List<FeatureValueInterceptor> valueInterceptors, String key) {
+    super(executor, holder, valueInterceptors, key);
   }
 
   public FeatureStateHolder setFeatureState(FeatureState featureState) {
@@ -24,15 +26,15 @@ public class FeatureStateNumberHolder extends FeatureStateBaseHolder {
 
   @Override
   protected FeatureStateHolder copy() {
-    return new FeatureStateNumberHolder(null, null).setFeatureState(featureState);
+    return new FeatureStateNumberHolder(null, null, valueInterceptors, key).setFeatureState(featureState);
   }
 
   @Override
   public BigDecimal getNumber() {
-    String dev = devOverride();
+    FeatureValueInterceptor.ValueMatch vm = findIntercept();
 
-    if (dev != null) {
-      return new BigDecimal(dev);
+    if (vm != null) {
+      return vm.value == null ? null : new BigDecimal(vm.value);
     }
 
     return value;
