@@ -1,5 +1,5 @@
 name: featurehub_client_api
-version: 1.0.2
+version: 1.0.1
 description: This is the OpenAPI client for the FeatureHub SDK. It is not likely to be used on its own.
 repository: https://github.com/featurehub-io/featurehub/tree/master/sdks/dart/client-dart-api
 homepage: https://www.featurehub.io

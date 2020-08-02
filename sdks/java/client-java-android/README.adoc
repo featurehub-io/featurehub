@@ -1,0 +1,95 @@
+= FeatureHub SDK for Android
+
+== Overview
+This SDK implementation updates the FeatureHub repository by making HTTP GET requests when the Android client wishes
+to make requests. This is done because Server Sent Events keep the radio on all the time, and are expensive for battery
+life and for data traffic (as they get kicked off the server and have to reestablish their connections). 
+
+This library uses:
+
+- OKHttp 4 (for http)
+- Jackson 2.11 (for json)
+- SLF4j (for logging)
+
+If you need your Android client to use another technology, please let us know or contribute another version. 
+
+== Use of the API
+
+The API is fairly straightforward to use. You:
+
+- Create a repository as a singleton, listen for events as per normal. Please see link:../client-java-core/README.adoc[Java client] for more details.
+- Create a `FeatureHubClient`, 
+- pass in the base host address of SSE Edge - e.g. `http://localhost:8553`
+- pass in one of more SDK URLs - those copied from the Admin UI
+- when you want data, hit poll. It will asynchronously get the data and fill, it will not operate on the UI thread, and
+it will prevent you from asking again while a request is in flight.
+
+An simplistic pure Java client example might be:
+
+[source,java]
+----
+    ClientFeatureRepository repo = new ClientFeatureRepository(1);
+    repo.addReadynessListener(rl -> System.out.println("readyness " + rl.toString()));
+
+    final FeatureHubClient client = new FeatureHubClient("http://localhost:8553",
+      Collections.singleton("default/ce6b5f90-2a8a-4b29-b10f-7f1c98d878fe/VNftuX5LV6PoazPZsEEIBujM4OBqA1Iv9f9cBGho2LJylvxXMXKGxwD14xt2d7Ma3GHTsdsSO8DTvAYF")
+      , repo);
+
+    client.checkForUpdates();
+
+    System.out.println("waiting");
+    System.in.read();
+----
+
+== Using on Android
+
+As it requires internet access, you will need to add to your `AndroidManifest.xml` the usual:
+
+`<uses-permission android:name="android.permission.INTERNET"/>`
+
+If you are using it locally and not behind https, you will also need to specify an attribute on your `<application>` tag,
+which allows clear text traffic.
+
+`android:usesCleartextTraffic="true"`
+
+You will need to store your repository in a central location, using a static or via a DI tool like Dagger. Using a static
+might look something like this:
+
+[source,java]
+----
+import io.featurehub.android.FeatureHubClient;
+import io.featurehub.client.FeatureRepository;
+
+import java.util.Collections;
+
+public class SharedRepository {
+    public static FeatureRepository repository;
+    public static boolean initialized = false;
+    public static FeatureHubClient client;
+
+    public static void init() {
+        if (!initialized) {
+            repository = new ClientFeatureRepository(1);
+            initialized = true;
+            client = new FeatureHubClient("http://10.0.2.2:8553", // 10.0.2.2 is the host running in the emulator
+                    Collections.singletonList("default/ce6b5f90-2a8a-4b29-b10f-7f1c98d878fe/VNftuX5LV6PoazPZsEEIBujM4OBqA1Iv9f9cBGho2LJylvxXMXKGxwD14xt2d7Ma3GHTsdsSO8DTvAYF"),
+                    repository);
+            client.checkForUpdates();
+        }
+    }
+
+    public static void refresh() {
+        client.checkForUpdates();
+    }
+}
+----
+
+You can then proceed in your code either to react to events and put them in streams to get your application updating, or
+imperatively querying for data. You may wish to provide defaults for some features, we will be providing on-disk caching
+to enable sensible startups in the future.
+
+[source, kotlin]
+----
+view.findViewById<TextView>(R.id.textview_first).text =
+    SharedRepository.repository.getFeatureState("FIRST_FRAG").string ?: "First fragment";
+----

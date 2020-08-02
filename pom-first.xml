@@ -34,8 +34,10 @@
   </licenses>
 
   <modules>
-    <module>examples/todo-frontend-react-typescript</module>
-    <module>examples/todo-backend-typescript</module>
-    <module>examples/todo-backend-java</module>
+    <module>backend/tile-java</module>
+    <module>backend/tile-java8</module>
+    <module>backend/tile-release</module>
+    <module>backend/tile-app</module>
+    <module>backend/tile-app-with-ui</module>
   </modules>
 </project>

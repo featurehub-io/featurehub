@@ -18,13 +18,13 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-public class ClientFeatureRepository {
+public class ClientFeatureRepository implements FeatureRepository {
   private static final Logger log = LoggerFactory.getLogger(ClientFeatureRepository.class);
   // feature-key, feature-state
   private final Map<String, FeatureStateBaseHolder> features = new ConcurrentHashMap<>();
   private final Executor executor;
   private final ObjectMapper mapper;
-  private final TypeReference<List<FeatureState>> FEATURE_LIST_TYPEDEF = new TypeReference<>() {
+  private final TypeReference<List<FeatureState>> FEATURE_LIST_TYPEDEF = new TypeReference<List<FeatureState>>() {
   };
   private boolean hasReceivedInitialState = false;
   private List<AnalyticsCollector> analyticsCollectors = new ArrayList<>();
@@ -41,10 +41,12 @@ public class ClientFeatureRepository {
     executor = Executors.newFixedThreadPool(threadPoolSize);
   }
 
+  @Override
   public void addAnalyticCollector(AnalyticsCollector collector) {
     analyticsCollectors.add(collector);
   }
 
+  @Override
   public void notify(SSEResultState state, String data) {
     log.trace("received state {} data {}", state, data);
     if (state == null) {
@@ -64,13 +66,7 @@ public class ClientFeatureRepository {
             break;
           case FEATURES:
             List<FeatureState> features = mapper.readValue(data, FEATURE_LIST_TYPEDEF);
-            features.forEach(this::featureUpdate);
-            if (!hasReceivedInitialState) {
-              checkForInvalidFeatures();
-              hasReceivedInitialState = true;
-              readyness = Readyness.Ready;
-              broadcastReadyness();
-            }
+            notify(features);
             break;
           case FAILURE:
             readyness = Readyness.Failed;
@@ -83,6 +79,25 @@ public class ClientFeatureRepository {
     }
   }
 
+  @Override
+  public void notify(List<FeatureState> states, boolean force) {
+    states.forEach(s -> featureUpdate(s, force));
+
+    if (!hasReceivedInitialState) {
+      checkForInvalidFeatures();
+      hasReceivedInitialState = true;
+      readyness = Readyness.Ready;
+      broadcastReadyness();
+    }
+  }
+
+  @Override
+  public void notify(List<FeatureState> states) {
+    notify(states, false);
+  }
+
+
+  @Override
   public void addReadynessListener(ReadynessListener rl) {
     this.readynessListeners.add(rl);
 
@@ -109,6 +124,7 @@ public class ClientFeatureRepository {
     }
   }
 
+  @Override
   public FeatureStateHolder getFeatureState(String key) {
     return features.computeIfAbsent(key, key1 -> {
       if (hasReceivedInitialState) {
@@ -119,6 +135,7 @@ public class ClientFeatureRepository {
     });
   }
 
+  @Override
   public void logAnalyticsEvent(String action, Map<String, String> other) {
     // take a snapshot of the current state of the features
     List<FeatureStateHolder> featureStateAtCurrentTime = features.values().stream()
@@ -131,10 +148,13 @@ public class ClientFeatureRepository {
         c.logEvent(action, other, featureStateAtCurrentTime);
       });
     });
-
   }
 
   private void featureUpdate(FeatureState featureState) {
+    featureUpdate(featureState, false);
+  }
+
+  private void featureUpdate(FeatureState featureState, boolean force) {
     FeatureStateBaseHolder holder = features.get(featureState.getKey());
     if (holder == null || holder.getKey() == null) {
       switch (featureState.getType()) {
@@ -153,10 +173,12 @@ public class ClientFeatureRepository {
       }
 
       features.put(featureState.getKey(), holder);
-    } else if (holder.featureState != null && holder.featureState.getVersion() >= featureState.getVersion()) {
+    } else if (!force && holder.featureState != null
+        && holder.featureState.getVersion() >= featureState.getVersion()) {
       return;
     }
 
     holder.setFeatureState(featureState);
   }
+
 }

@@ -46,11 +46,6 @@
 
   <dependencies>
     <dependency>
-      <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-common</artifactId>
-      <version>[1.1, 2)</version>
-    </dependency>
-    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <version>3.7</version>
@@ -59,19 +54,20 @@
     <dependency>
       <groupId>io.featurehub.edge</groupId>
       <artifactId>sse-edge-api</artifactId>
-      <version>[1.1, 2)</version>
+      <version>[1.2, 2)</version>
     </dependency>
 
     <dependency>
       <groupId>io.featurehub.composites</groupId>
       <artifactId>composite-jackson</artifactId>
       <version>[1.1, 2)</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-logging</artifactId>
-      <version>[1.1, 2)</version>
+      <artifactId>composite-logging-api</artifactId>
+      <version>[1, 2)</version>
     </dependency>
 
     <dependency>
@@ -98,7 +94,7 @@
         <configuration>
           <filtering>false</filtering>
           <tiles>
-            <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
+            <tile>io.featurehub.tiles:tile-java8:[1.1,2)</tile>
             <tile>io.featurehub.tiles:tile-release:[1.1,2)</tile>
           </tiles>
         </configuration>

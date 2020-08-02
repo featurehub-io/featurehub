@@ -7,7 +7,7 @@ import java.util.Map;
  * and injected.
  */
 public class StaticFeatureContext implements FeatureContext {
-  public static ClientFeatureRepository repository;
+  public static FeatureRepository repository;
 
   private static StaticFeatureContext self;
 

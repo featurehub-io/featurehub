@@ -1,7 +1,7 @@
 package io.featurehub.client.jersey;
 
 import cd.connect.openapi.support.ApiClient;
-import io.featurehub.client.ClientFeatureRepository;
+import io.featurehub.client.FeatureRepository;
 import io.featurehub.client.Feature;
 import io.featurehub.sse.api.FeatureService;
 import io.featurehub.sse.model.FeatureStateUpdate;
@@ -28,20 +28,20 @@ public class JerseyClient {
   private final WebTarget target;
   private boolean initialized;
   private final Executor executor;
-  private final ClientFeatureRepository clientFeatureRepository;
+  private final FeatureRepository featureRepository;
   private final FeatureService featuresService;
   private boolean shutdown = false;
   private boolean shutdownOnServerFailure = true;
   private boolean shutdownOnEdgeFailureConnection = false;
   private EventInput eventInput;
 
-  public JerseyClient(String sdkUrl, boolean initializeOnConstruction, ClientFeatureRepository clientFeatureRepository) {
-    this(sdkUrl, initializeOnConstruction, clientFeatureRepository, null);
+  public JerseyClient(String sdkUrl, boolean initializeOnConstruction, FeatureRepository featureRepository) {
+    this(sdkUrl, initializeOnConstruction, featureRepository, null);
   }
 
   public JerseyClient(String sdkUrl, boolean initializeOnConstruction,
-                      ClientFeatureRepository clientFeatureRepository, ApiClient apiClient) {
-    this.clientFeatureRepository = clientFeatureRepository;
+                      FeatureRepository featureRepository, ApiClient apiClient) {
+    this.featureRepository = featureRepository;
 
     Client client = ClientBuilder.newBuilder()
       .register(JacksonFeature.class)
@@ -106,7 +106,7 @@ public class JerseyClient {
         }
 
         final SSEResultState state = SSEResultState.fromValue(inboundEvent.getName());
-        clientFeatureRepository.notify(state, inboundEvent.readData());
+        featureRepository.notify(state, inboundEvent.readData());
 
         if (state == SSEResultState.FAILURE && shutdownOnServerFailure) {
           log.warn("Failed to connect to FeatureHub Edge, shutting down.");
@@ -117,7 +117,7 @@ public class JerseyClient {
       log.warn("Failed to connect to {}", sdkUrl, e);
       if (shutdownOnEdgeFailureConnection) {
         log.warn("Edge connection failed, shutting down");
-        clientFeatureRepository.notify(SSEResultState.FAILURE, null);
+        featureRepository.notify(SSEResultState.FAILURE, null);
         shutdown();
       }
     }

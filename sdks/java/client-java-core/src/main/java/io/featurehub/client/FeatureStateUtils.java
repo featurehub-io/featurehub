@@ -7,7 +7,7 @@ public class FeatureStateUtils {
       (oldValue != null && !oldValue.equals(newValue)) || (newValue != null && !newValue.equals(oldValue)));
   }
 
-  static boolean isActive(ClientFeatureRepository repository, Feature feature) {
+  static boolean isActive(FeatureRepository repository, Feature feature) {
     if (repository == null) {
       throw new RuntimeException("You must configure your feature repository before using it.");
     }
@@ -16,16 +16,16 @@ public class FeatureStateUtils {
     return Boolean.TRUE.equals(fs.getBoolean());
   }
 
-  static boolean exists(ClientFeatureRepository repository, Feature feature) {
+  static boolean exists(FeatureRepository repository, Feature feature) {
     FeatureStateHolder fs = repository.getFeatureState(feature.name());
     return !(fs instanceof FeatureStateBaseHolder);
   }
 
-  static boolean isSet(ClientFeatureRepository repository, Feature feature) {
+  static boolean isSet(FeatureRepository repository, Feature feature) {
     return repository.getFeatureState(feature.name()).isSet();
   }
 
-  static void addListener(ClientFeatureRepository repository, Feature feature, FeatureListener featureListener) {
+  static void addListener(FeatureRepository repository, Feature feature, FeatureListener featureListener) {
     repository.getFeatureState(feature.name()).addListener(featureListener);
   }
 }

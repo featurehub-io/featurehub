@@ -36,7 +36,7 @@
 
   <licenses>
     <license>
-      <name>Apache 2 with Commons Clause</name>
+      <name>MIT</name>
       <url>https://github.com/featurehub-io/featurehub/blob/master/LICENSE.txt</url>
     </license>
   </licenses>
@@ -90,8 +90,8 @@
 
     <dependency>
       <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-logging</artifactId>
-      <version>[1.1, 2]</version>
+      <artifactId>composite-logging-api</artifactId>
+      <version>[1, 2]</version>
     </dependency>
 
     <dependency>
