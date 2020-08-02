@@ -10,9 +10,19 @@
   },
   "homepage": "https://featurehub.io",
   "keywords": [
-    "features",
-    "distributed configuration",
-    "realtime"
+    "feature-flag-api",
+    "feature-flag-sdk",
+    "feature-experimentation",
+    "feature-flag",
+    "flag",
+    "toggle",
+    "feature-toggle",
+    "feature-toggle-api",
+    "remote-configuration",
+    "gradual-rollout",
+    "ab-testing",
+    "feature-flag-react",
+    "featurehub"
   ],
   "license": "MIT",
   "scripts": {
