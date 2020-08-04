@@ -9,7 +9,6 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
-import 'package:speech_bubble/speech_bubble.dart';
 
 class FeatureNamesLeftPanel extends StatelessWidget {
   final TabsBloc tabsBloc;
@@ -204,27 +203,3 @@ class _FeatureListenForUpdatedFeatureValues extends StatelessWidget {
   }
 }
 
-class Bubble extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.topRight,
-      child: SpeechBubble(
-        color: Theme.of(context).primaryColorLight,
-        nipLocation: NipLocation.RIGHT,
-        nipHeight: 12,
-        child: Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
-          Flexible(
-            child: Text(
-              '''By default toggle is locked, to enable toggle, please unlock first by clicking "lock" icon.''',
-              style: TextStyle(
-//                color: Colors.white,
-                fontSize: 12.0,
-              ),
-            ),
-          )
-        ]),
-      ),
-    );
-  }
-}

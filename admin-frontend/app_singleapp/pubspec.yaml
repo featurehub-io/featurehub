@@ -34,7 +34,6 @@ dependencies:
   flutter_icons: ^1.1.0
   auto_size_text: 2.1.0
   collection: ^1.14.11
-  speech_bubble: ^0.0.5
 
 dev_dependencies:
   flutter_test:
