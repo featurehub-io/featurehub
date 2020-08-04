@@ -80,7 +80,7 @@ abstract class FeatureStateBaseHolder implements FeatureStateHolder {
   protected FeatureValueInterceptor.ValueMatch findIntercept() {
     return valueInterceptors.stream().map(vi -> {
       FeatureValueInterceptor.ValueMatch vm = vi.getValue(key);
-      if (vm.matched) {
+      if (vm != null && vm.matched) {
         return vm;
       } else {
         return null;

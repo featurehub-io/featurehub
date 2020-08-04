@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>io.featurehub.sdk</groupId>
+  <artifactId>java-client-opentracing</artifactId>
+  <version>1.1-SNAPSHOT</version>
+  <name>java-client-opentracing</name>
+
+  <description>
+    OpenTracing Interceptor for Java Client. If a feature override capability is turned on and
+    baggage comes in via OpenTracing, we will override the feature. Note the OpenTracing project
+    has been replaced by OpenTelemetry, but many languages are not yet supported and OpenTracing has
+    the widest current support base.
+  </description>
+
+  <url>https://featurehub.io</url>
+  <developers>
+    <developer>
+      <email>irina@featurehub.io</email>
+      <id>isouthwell</id>
+      <name>Irina Southwell</name>
+      <organization>Anyways Labs Ltd</organization>
+    </developer>
+
+    <developer>
+      <email>richard@featurehub.io</email>
+      <id>rvowles</id>
+      <name>Richard Vowles</name>
+      <organization>Anyways Labs Ltd</organization>
+    </developer>
+  </developers>
+
+  <licenses>
+    <license>
+      <name>MIT</name>
+      <url>https://opensource.org/licenses/MIT</url>
+      <comments>This code resides in the customer's codebase and therefore has an MIT license.</comments>
+    </license>
+  </licenses>
+
+  <scm>
+    <connection>scm:git:git@github.com:featurehub-io/featurehub.git</connection>
+    <developerConnection>scm:git:git@github.com:featurehub-io/featurehub.git</developerConnection>
+    <url>git@github.com:featurehub-io/featurehub.git</url>
+    <tag>HEAD</tag>
+  </scm>
+
+
+  <dependencies>
+    <dependency>
+      <groupId>io.opentracing</groupId>
+      <artifactId>opentracing-api</artifactId>
+      <version>0.33.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.opentracing</groupId>
+      <artifactId>opentracing-util</artifactId>
+      <version>0.33.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.featurehub.sdk</groupId>
+      <artifactId>java-client-core</artifactId>
+      <version>[1.2, 2]</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.featurehub.composites</groupId>
+      <artifactId>composite-test</artifactId>
+      <version>[1.1, 2)</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.featurehub.composites</groupId>
+      <artifactId>composite-logging</artifactId>
+      <version>[1.1, 2]</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.opentracing</groupId>
+      <artifactId>opentracing-noop</artifactId>
+      <version>0.33.0</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>io.repaint.maven</groupId>
+        <artifactId>tiles-maven-plugin</artifactId>
+        <version>2.17</version>
+        <extensions>true</extensions>
+        <configuration>
+          <filtering>false</filtering>
+          <tiles>
+            <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
+            <tile>io.featurehub.tiles:tile-release:[1.1,2)</tile>
+          </tiles>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

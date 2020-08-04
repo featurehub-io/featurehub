@@ -6,9 +6,12 @@ import cd.connect.jersey.common.*;
 import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
 import io.featurehub.client.ClientFeatureRepository;
+import io.featurehub.client.FeatureRepository;
 import io.featurehub.client.GoogleAnalyticsCollector;
 import io.featurehub.client.Readyness;
 import io.featurehub.client.StaticFeatureContext;
+import io.featurehub.client.interceptor.OpenTracingValueInterceptor;
+import io.featurehub.client.interceptor.SystemPropertyValueInterceptor;
 import io.featurehub.client.jersey.GoogleAnalyticsJerseyApiClient;
 import io.featurehub.client.jersey.JerseyClient;
 import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
@@ -37,16 +40,21 @@ public class Application {
 
   public Application() {
     DeclaredConfigResolver.resolve(this);
+  }
 
-    ClientFeatureRepository cfr = new ClientFeatureRepository(5);
+  public void init() throws Exception {
+
+    FeatureRepository cfr = new ClientFeatureRepository(5);
+    cfr.registerValueInterceptor(new SystemPropertyValueInterceptor());
+    cfr.registerValueInterceptor(new OpenTracingValueInterceptor());
     cfr.addAnalyticCollector(new GoogleAnalyticsCollector(analyticsKey, analyticsCid, new GoogleAnalyticsJerseyApiClient()));
 
     StaticFeatureContext.repository = cfr;
-    new JerseyClient(featureHubUrl, true, cfr);
+//    new JerseyClient(featureHubUrl, true, cfr);
 
     URI BASE_URI = URI.create(String.format("http://0.0.0.0:%s/", serverPort));
 
-    log.info("starting on port {}", BASE_URI.toASCIIString());
+    log.info("attemping to start on port {} - will wait for features", BASE_URI.toASCIIString());
 
     // register our resources, try and tag them as singleton as they are instantiated faster
     ResourceConfig config = new ResourceConfig(
@@ -60,6 +68,8 @@ public class Application {
       InfrastructureConfiguration.class);
 
     final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, config, false);
+
+    server.start();
 
     cfr.addReadynessListener((ready) -> {
       if (ready == Readyness.Ready) {
@@ -84,21 +94,14 @@ public class Application {
       }
     });
 
-
-
     // tell the App we are ready
     ApplicationLifecycleManager.updateStatus(LifecycleStatus.STARTED);
 
-    try {
-      Thread.currentThread().join();
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
-
+    Thread.currentThread().join();
   }
 
-  public static void main(String[] args) throws InterruptedException {
-    new Application();
+  public static void main(String[] args) throws Exception {
+    new Application().init();
 	}
 
 

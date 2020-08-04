@@ -74,4 +74,11 @@ http://0.0.0.0:8099/todo/list \
 
 Watch how "title" value in the response changes from lower case to upper case when you turn feature on/off from the admin console 
 
+== OpenTracing style feature overrides
+
+----
+curl -v -H "jaeger-debug-id: 11" -H "uberctx-fhub.KEY: true" -H 'content-type: application/json' http://localhost:8099/todo/list
+----
+
+
 

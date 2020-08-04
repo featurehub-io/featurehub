@@ -6,8 +6,8 @@ import io.featurehub.client.FeatureValueInterceptor;
  * Checks system properties for updated features.
  */
 public class SystemPropertyValueInterceptor implements FeatureValueInterceptor {
-  public static final String FEATURE_TOGGLES_PREFIX = "feature-toggles.";
-  public static final String FEATURE_TOGGLES_ALLOW_OVERRIDE = "feature-toggles.allow-override";
+  public static final String FEATURE_TOGGLES_PREFIX = "featurehub.feature.";
+  public static final String FEATURE_TOGGLES_ALLOW_OVERRIDE = "featurehub.features.allow-override";
 
   @Override
   public ValueMatch getValue(String key) {
