@@ -54,18 +54,6 @@ class FeatureValueEditLockedCell extends StatelessWidget {
                                     environmentFeatureValue.environmentId);
                               },
                       ),
-
-//                Checkbox(
-//                  activeColor: Theme.of(context).primaryColor,
-//                  value: locked,
-//                  onChanged: disabled
-//                      ? null
-//                      : (value) {
-//                          snap.data.locked = value;
-//                          fvBloc.updatedFeature(
-//                              environmentFeatureValue.environmentId);
-//                        },
-//                )
               ],
             ),
           );
