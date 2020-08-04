@@ -34,10 +34,44 @@ It should look similar to this: ```https://vrtfs.demo.featurehub.io/features/def
 
 ![Service account](images/service-account-copy.png) 
 
-## Mechanisms for use
+## Creating the FeatureHub repository
 
-Unlike the Java SDK, there are four ways to use this library due to the more _user_ based interaction that your 
-application will operate under.
+Although one exists and is exported for your use, you can create others if you wish. The class is simply 
+`ClientFeatureRepository()`
+
+The repository sends meta-events 
+
+
+## Using the FeatureHub repository
+
+There are two ways to use this repository - an imperative way and an event driven way. You can use the two together,
+or just one. 
+
+### 1. Imperative Features
+
+This is when you ask the repository for a specific feature and for its state. Something like:
+
+```typescript
+if (featureHubRepository.getFeatureState('FEATURE_X').getBoolean()) {
+  // do something
+}
+``` 
+
+### 2. Event driven Features
+
+This is when, if the feature changes (either from nothing to something, which happens when we first get the features,
+or an update comes through), a callback is made into your provided function. You can have as many of these listeners 
+as you like.
+
+This would look something like:
+
+```typescript
+featureHubRepository.getFeatureState('FEATURE_X').addListener((fs: FeatureStateHolder) => {
+  console.log(fs.getKey(), 'is', fs.getBoolean());
+});
+```
+
+
 
 ### 1. Real-time updates, recommended for servers
 
