@@ -7,6 +7,9 @@ import io.opentracing.util.GlobalTracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * It is recommended this always be loaded not allowing lock overrides.
+ */
 public class OpenTracingValueInterceptor implements FeatureValueInterceptor {
   private static final Logger log = LoggerFactory.getLogger(OpenTracingValueInterceptor.class);
   public static final String FEATUREHUB_OPENTRACING_ENABLED = "featurehub.opentracing-enabled";

@@ -30,7 +30,7 @@ public class ClientFeatureRepository implements FeatureRepository {
   private final List<AnalyticsCollector> analyticsCollectors = new ArrayList<>();
   private Readyness readyness = Readyness.NotReady;
   private final List<ReadynessListener> readynessListeners = new ArrayList<>();
-  private final List<FeatureValueInterceptor> featureValueInterceptors = new ArrayList<>();
+  private final List<FeatureValueInterceptorHolder> featureValueInterceptors = new ArrayList<>();
 
   public ClientFeatureRepository(int threadPoolSize) {
     mapper = new ObjectMapper();
@@ -49,8 +49,8 @@ public class ClientFeatureRepository implements FeatureRepository {
   }
 
   @Override
-  public FeatureRepository registerValueInterceptor(FeatureValueInterceptor interceptor) {
-    featureValueInterceptors.add(interceptor);
+  public FeatureRepository registerValueInterceptor(boolean allowFeatureOverride, FeatureValueInterceptor interceptor) {
+    featureValueInterceptors.add(new FeatureValueInterceptorHolder(allowFeatureOverride, interceptor));
 
     return this;
   }

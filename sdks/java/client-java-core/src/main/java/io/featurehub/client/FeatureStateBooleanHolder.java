@@ -9,7 +9,7 @@ public class FeatureStateBooleanHolder extends FeatureStateBaseHolder {
   private Boolean value;
 
   public FeatureStateBooleanHolder(FeatureStateBaseHolder holder, Executor executor,
-                                   List<FeatureValueInterceptor> valueInterceptors, String key) {
+                                   List<FeatureValueInterceptorHolder> valueInterceptors, String key) {
     super(executor, holder, valueInterceptors, key);
   }
 

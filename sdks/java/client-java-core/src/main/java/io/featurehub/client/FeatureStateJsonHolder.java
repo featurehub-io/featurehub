@@ -12,7 +12,7 @@ class FeatureStateJsonHolder extends FeatureStateBaseHolder {
   private String value;
 
   public FeatureStateJsonHolder(FeatureStateBaseHolder holder, Executor executor, ObjectMapper mapper,
-                                List<FeatureValueInterceptor> valueInterceptors, String key) {
+                                List<FeatureValueInterceptorHolder> valueInterceptors, String key) {
     super(executor, holder, valueInterceptors, key);
     this.mapper = mapper;
   }

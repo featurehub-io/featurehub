@@ -135,7 +135,11 @@ components:
           type: string
         key:
           type: string
+        l:
+          description: "Is this feature locked. Usually this doesn't matter because the value is the value, but for FeatureInterceptors it can matter."
+          type: boolean
         version:
+          description: "The version of the feature, this allows features to change values and it means we don't trigger events"
           type: integer
           format: int64
         type:

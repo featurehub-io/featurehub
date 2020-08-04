@@ -45,12 +45,12 @@ public class Application {
   public void init() throws Exception {
 
     FeatureRepository cfr = new ClientFeatureRepository(5);
-    cfr.registerValueInterceptor(new SystemPropertyValueInterceptor());
-    cfr.registerValueInterceptor(new OpenTracingValueInterceptor());
+    cfr.registerValueInterceptor(true, new SystemPropertyValueInterceptor());
+    cfr.registerValueInterceptor(false, new OpenTracingValueInterceptor());
     cfr.addAnalyticCollector(new GoogleAnalyticsCollector(analyticsKey, analyticsCid, new GoogleAnalyticsJerseyApiClient()));
 
     StaticFeatureContext.repository = cfr;
-//    new JerseyClient(featureHubUrl, true, cfr);
+    new JerseyClient(featureHubUrl, true, cfr);
 
     URI BASE_URI = URI.create(String.format("http://0.0.0.0:%s/", serverPort));
 
@@ -69,8 +69,8 @@ public class Application {
 
     final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, config, false);
 
-    server.start();
-
+    // call "server.start()" here if you wish to start the application without waiting for features
+    log.info("Waiting on complete features before starting.");
     cfr.addReadynessListener((ready) -> {
       if (ready == Readyness.Ready) {
         try {

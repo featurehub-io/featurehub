@@ -10,7 +10,7 @@ public class FeatureStateNumberHolder extends FeatureStateBaseHolder {
   private BigDecimal value;
 
   public FeatureStateNumberHolder(FeatureStateBaseHolder holder, Executor executor,
-                                  List<FeatureValueInterceptor> valueInterceptors, String key) {
+                                  List<FeatureValueInterceptorHolder> valueInterceptors, String key) {
     super(executor, holder, valueInterceptors, key);
   }
 

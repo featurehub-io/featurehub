@@ -185,3 +185,25 @@ wish to dictate our own. However, if you do not have a jackson dependency, pleas
     </dependency>
 ----
 
+== Feature Interceptors
+
+Feature Interceptors are the ability to intercept the request for a feature. They only operate in imperative state. For
+an overview check out the https://docs.featurehub.io/#_feature_interceptors[Documentation on them].
+
+We currently support two feature interceptors:
+
+- `io.featurehub.client.interceptor.SystemPropertyValueInterceptor` - this will read properties from system properties
+and if they match the name of a key (case significant) then they will return that value. You need to have specified a 
+system property `featurehub.features.allow-override=true` 
+- `io.featurehub.client.interceptor.OpenTracingValueInterceptor` - this will look into the baggage of the current OpenTracing
+`Span` and determine if there is a feature key override there, and if so, use it. This is kept in a separate 
+package (`io.featurehub.sdk:java-client-opentracing:[1.1, 2)`) as it brings in extra dependencies. If you are using it, we
+recommend bringing it into the client as well as there is a `io.featurehub.client.OpenTracingFeatureStateInjector` class
+that can insert the baggage into the span on the client side. This interceptor will turn itself off unless `featurehub.opentracing-enabled=true` 
+is configured in the system properties. This allows you to code it in and control it taking effect at runtime. We recommend
+if you add this interceptor in, always disallow overrides for locked features. 
+
+If you wish to test out the OpenTracing feature overrides, you can do so from the example Java application. Instructions
+are there on how to do this.
+
+

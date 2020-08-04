@@ -67,8 +67,10 @@ public interface FeatureRepository {
   /**
    * Adds interceptor support for feature values.
    *
-   * @param interceptor
+   * @param allowLockOverride - is this interceptor allowed to override the lock? i.e. if the feature is locked, we
+   *                          ignore the interceptor
+   * @param interceptor - the interceptor
    * @return the instance of the repo for chaining
    */
-  FeatureRepository registerValueInterceptor(FeatureValueInterceptor interceptor);
+  FeatureRepository registerValueInterceptor(boolean allowLockOverride, FeatureValueInterceptor interceptor);
 }

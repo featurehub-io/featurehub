@@ -11,7 +11,7 @@ import java.util.concurrent.Executor;
 public class FeatureStatePlaceHolder extends FeatureStateBaseHolder {
   private final ObjectMapper mapper;
 
-  public FeatureStatePlaceHolder(Executor executor, List<FeatureValueInterceptor> valueInterceptors, String key,
+  public FeatureStatePlaceHolder(Executor executor, List<FeatureValueInterceptorHolder> valueInterceptors, String key,
                                  ObjectMapper mapper) {
     super(executor, valueInterceptors, key);
 

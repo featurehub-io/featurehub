@@ -15,14 +15,14 @@ import java.util.concurrent.Executor;
  * what type it is.
  */
 abstract class FeatureStateBaseHolder implements FeatureStateHolder {
-  protected final List<FeatureValueInterceptor> valueInterceptors;
+  protected final List<FeatureValueInterceptorHolder> valueInterceptors;
   protected final String key;
   private final Executor executor;
   protected FeatureState featureState;
   List<FeatureListener> listeners = new ArrayList<>();
 
   public FeatureStateBaseHolder(Executor executor, FeatureStateBaseHolder oldHolder,
-                                List<FeatureValueInterceptor> valueInterceptors, String key) {
+                                List<FeatureValueInterceptorHolder> valueInterceptors, String key) {
     this(executor, valueInterceptors, key);
 
     if (oldHolder != null) {
@@ -30,7 +30,7 @@ abstract class FeatureStateBaseHolder implements FeatureStateHolder {
     }
   }
 
-  public FeatureStateBaseHolder(Executor executor, List<FeatureValueInterceptor> valueInterceptors, String key) {
+  public FeatureStateBaseHolder(Executor executor, List<FeatureValueInterceptorHolder> valueInterceptors, String key) {
     this.executor = executor;
     this.valueInterceptors = valueInterceptors;
     this.key = key;
@@ -78,8 +78,11 @@ abstract class FeatureStateBaseHolder implements FeatureStateHolder {
   }
 
   protected FeatureValueInterceptor.ValueMatch findIntercept() {
-    return valueInterceptors.stream().map(vi -> {
-      FeatureValueInterceptor.ValueMatch vm = vi.getValue(key);
+    boolean locked = featureState != null && Boolean.TRUE.equals(featureState.getL());
+    return valueInterceptors.stream()
+      .filter(vi -> !locked || vi.allowLockOverride )
+      .map(vi -> {
+      FeatureValueInterceptor.ValueMatch vm = vi.interceptor.getValue(key);
       if (vm != null && vm.matched) {
         return vm;
       } else {
@@ -87,23 +90,6 @@ abstract class FeatureStateBaseHolder implements FeatureStateHolder {
       }
     }).filter(Objects::nonNull).findFirst().orElse(null);
   }
-
-  // wait for integration with OpenTelemetry/OpenTracing
-//    if (System.getProperty(FEATURE_TOGGLES_ALLOW_OVERRIDE) != null ) {
-//      String override = Optional.ofNullable(GlobalTracer.get())
-//        .map(Tracer::activeSpan)
-//        .filter(Objects::nonNull)
-//        .map(span -> span.getBaggageItem(ACCELERATE_FEATURE_OVERRIDE)).orElse(null);
-
-//      if (override != null) {
-//        if (override.contains(String.format("%s=true", feature.key()))) {
-//          return true;
-//        }
-//        if (override.contains(String.format("%s=false", feature.key()))) {
-//          return false;
-//        }
-//      }
-//    }
 
   @Override
   public void addListener(FeatureListener listener) {

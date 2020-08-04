@@ -12,7 +12,7 @@ class FeatureStateStringHolder extends FeatureStateBaseHolder {
   private String value;
 
   public FeatureStateStringHolder(FeatureStateBaseHolder holder, Executor executor,
-                                  List<FeatureValueInterceptor> valueInterceptors, String key) {
+                                  List<FeatureValueInterceptorHolder> valueInterceptors, String key) {
     super(executor, holder, valueInterceptors, key);
   }
 
