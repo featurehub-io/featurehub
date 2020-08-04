@@ -42,17 +42,22 @@ class FeatureValueBooleanEnvironmentCell extends StatelessWidget {
                   ]);
             }
 
-            return Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Switch(
-                      //Color(0xff11C8B5) : Color(0xffF44C49)
-                      activeTrackColor: Color(0xff11C8B5),
-                      activeColor: Colors.white,
-                      value: snap.data.valueBoolean ?? false,
-                      inactiveTrackColor: Colors.black12,
-                      onChanged: null),
-                ]);
+            return Tooltip(
+              message: snap.data.locked
+                  ? 'Unlock to change'
+                  : "You don't have permissions to update this setting",
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Switch(
+                        //Color(0xff11C8B5) : Color(0xffF44C49)
+                        activeTrackColor: Color(0xff11C8B5),
+                        activeColor: Colors.white,
+                        value: snap.data.valueBoolean ?? false,
+                        inactiveTrackColor: Colors.black12,
+                        onChanged: null),
+                  ]),
+            );
           }
 
           return Container();
