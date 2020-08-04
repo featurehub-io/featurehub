@@ -92,7 +92,7 @@ class _LockUnlockIconButton extends StatelessWidget {
         shape: CircleBorder(),
         child: IconButton(
             icon: Icon(lock ? Icons.lock_outline : Icons.lock_open,
-                size: 18, color: lock ? Colors.red : Colors.green),
+                size: 20, color: lock ? Colors.red : Colors.green),
             onPressed: onPressed),
       ),
     );
