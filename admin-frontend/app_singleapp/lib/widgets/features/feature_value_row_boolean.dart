@@ -80,15 +80,20 @@ class FeatureValueBooleanCellEditor extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
-        FeatureValueEditLockedCell(
-          environmentFeatureValue: environmentFeatureValue,
-          feature: feature,
-          fvBloc: fvBloc,
-        ),
-        FeatureValueBooleanEnvironmentCell(
-          environmentFeatureValue: environmentFeatureValue,
-          feature: feature,
-          fvBloc: fvBloc,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            FeatureValueEditLockedCell(
+              environmentFeatureValue: environmentFeatureValue,
+              feature: feature,
+              fvBloc: fvBloc,
+            ),
+            FeatureValueBooleanEnvironmentCell(
+              environmentFeatureValue: environmentFeatureValue,
+              feature: feature,
+              fvBloc: fvBloc,
+            ),
+          ],
         ),
         FeatureValueUpdatedByCell(
           environmentFeatureValue: environmentFeatureValue,

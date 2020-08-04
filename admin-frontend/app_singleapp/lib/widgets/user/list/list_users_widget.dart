@@ -3,6 +3,7 @@ import 'package:app_singleapp/api/router.dart';
 import 'package:app_singleapp/utils/utils.dart';
 import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/copy_to_clipboard_html.dart';
+import 'package:app_singleapp/widgets/common/decorations/fh_page_divider.dart';
 import 'package:app_singleapp/widgets/common/fh_alert_dialog.dart';
 import 'package:app_singleapp/widgets/common/fh_delete_thing.dart';
 import 'package:app_singleapp/widgets/common/fh_icon_button.dart';
@@ -245,21 +246,31 @@ class _ListUserInfo extends StatelessWidget {
         children: [
           _ListUserRow(
             title: 'Name',
-            child: Text(entry.person.name ?? 'Not yet registered'),
+            child: Text(entry.person.name,
+                style: Theme.of(context).textTheme.bodyText1),
           ),
+          SizedBox(height: 8),
           _ListUserRow(
             title: 'Email',
-            child: Text(entry.person.email),
+            child: Text(entry.person.email,
+                style: Theme.of(context).textTheme.bodyText1),
           ),
           if (allowedLocalIdentity &&
               entry.registration.token != null &&
               !entry.registration.expired)
-            Padding(
-              padding: const EdgeInsets.only(top: 12.0, bottom: 4.0),
-              child: Text(
-                'Registration URL',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
+            Column(
+              children: [
+                SizedBox(height: 16),
+                FHPageDivider(),
+                SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Registration Url',
+                    style: Theme.of(context).textTheme.caption,
+                  ),
+                ),
+              ],
             ),
           if (allowedLocalIdentity &&
               entry.registration.token != null &&
@@ -312,16 +323,43 @@ class _ListUserInfo extends StatelessWidget {
                 return null;
               },
             ),
+          SizedBox(height: 16.0),
+          FHPageDivider(),
+          SizedBox(height: 16.0),
           if (entry.person.groups.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 12.0, bottom: 4.0),
-              child: Text(
-                'Groups',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+//              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: Text(
+                    'Groups',
+                    style: Theme
+                        .of(context)
+                        .textTheme
+                        .caption,
+                  ),
+                ),
+                Expanded(
+                    flex: 5,
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (entry.person.groups.isNotEmpty)
+                            ...entry.person.groups
+                                .map((e) =>
+                                Text(
+                                  e.name,
+                                  style: Theme
+                                      .of(context)
+                                      .textTheme
+                                      .bodyText2,
+                                ))
+                                .toList(),
+                        ]))
+              ],
             ),
-          if (entry.person.groups.isNotEmpty)
-            ...entry.person.groups.map((e) => Text(e.name)).toList(),
         ],
       ),
     );
@@ -336,23 +374,20 @@ class _ListUserRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 8.0),
-      child: Row(
-        children: [
-          Flexible(
-            flex: 1,
-            child: Padding(
-              padding: const EdgeInsets.only(right: 20.0),
-              child: Text(
-                title,
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
+    return Row(
+      children: [
+        Expanded(
+          flex: 1,
+          child: Text(
+            title,
+            style: Theme
+                .of(context)
+                .textTheme
+                .caption,
           ),
-          Flexible(flex: 3, child: child)
-        ],
-      ),
+        ),
+        Expanded(flex: 5, child: child)
+      ],
     );
   }
 }
