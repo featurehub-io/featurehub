@@ -42,12 +42,14 @@ Although one exists and is exported for your use, you can create others if you w
 The repository sends meta-events 
 
 
-## Using the FeatureHub repository
+## The FeatureHub repository
+
+### Using the FeatureHub repository
 
 There are two ways to use this repository - an imperative way and an event driven way. You can use the two together,
 or just one. 
 
-### 1. Imperative Features
+#### Imperative requests
 
 This is when you ask the repository for a specific feature and for its state. Something like:
 
@@ -57,7 +59,7 @@ if (featureHubRepository.getFeatureState('FEATURE_X').getBoolean()) {
 }
 ``` 
 
-### 2. Event driven Features
+#### Event driven feature updates
 
 This is when, if the feature changes (either from nothing to something, which happens when we first get the features,
 or an update comes through), a callback is made into your provided function. You can have as many of these listeners 
@@ -70,6 +72,30 @@ featureHubRepository.getFeatureState('FEATURE_X').addListener((fs: FeatureStateH
   console.log(fs.getKey(), 'is', fs.getBoolean());
 });
 ```
+
+### Meta-Events from the repository
+
+There are two "meta events" from the FeatureHub repository, readyness and "new feature available". 
+
+#### Readyness 
+
+Readyness is triggered when your repository first receives a list of features or it fails on a subsequent update. In a
+UI application this would indicate that you had all the state necessary to show the application. In a nodejs server,
+this would indicate when you could start serving requests.
+
+````typescript
+featureHubRepository.addReadynessListener((readyness) => {
+  if (readyness === Readyness.Ready) {
+       console.log("Features are available, starting server...");
+   
+       api.listen(port, function () {
+         console.log('server is listening on port', port);
+       })
+  }
+});
+````
+
+#### New Feature Available 
 
 
 
