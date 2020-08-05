@@ -353,7 +353,7 @@ class _PopUpAdminMenu extends StatelessWidget {
                   AppUpdateDialogWidget(
                     bloc: bloc,
                     application: application,
-                  ));
+                      ));
             }
             if (value == 'delete') {
               bloc.mrClient.addOverlay((BuildContext context) {
@@ -363,9 +363,25 @@ class _PopUpAdminMenu extends StatelessWidget {
                 );
               });
             }
+            if (value == 'features') {
+              bloc.mrClient.setCurrentAid(application.id);
+              return {
+                ManagementRepositoryClientBloc.router.navigateTo(
+                  context,
+                  '/feature-status',
+                )
+              };
+            }
           },
           itemBuilder: (BuildContext context) {
             return [
+              PopupMenuItem(
+                  value: 'features',
+                  child:
+                  Text('Features', style: Theme
+                      .of(context)
+                      .textTheme
+                      .bodyText2)),
               PopupMenuItem(
                   value: 'edit',
                   child:

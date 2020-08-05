@@ -1,47 +1,49 @@
 = Java Client SDK for FeatureHub
 ifdef::env-github,env-browser[:outfilesuffix: .adoc]
 
-Welcome to the Java implementation for FeatureHub. It is the supported version, but it does not mean
-you cannot write your own, the functionality is quite straightforward.
+Welcome to the Java implementation for FeatureHub.
+It is the supported version, but it does not mean you cannot write your own, the functionality is quite straightforward.
+
+Visit our official web page for more information about the platform https://www.featurehub.io/[here]
 
 == Overview
 
 This is the core library for Java.
 
-It provides the core functionality of the
-repository which holds features and creates events. It does not connect to the backend server. As that will
-depend on whatever HTTP client java library you use, we have provided one for Jersey. We expect to provide future
-libraries for various other popular HTTP libraries.
+It provides the core functionality of the repository which holds features and creates events.
+It does not connect to the backend server.
+As that will depend on whatever HTTP client java library you use, we have provided one for Jersey.
+We expect to provide future libraries for various other popular HTTP libraries.
 
 This library only provides one recommended type of operation, which is that the server will update all the features
 all of the time.
 
-NOTE: This readme does not deal with the SDK capability of updating features while running your tests. That
+NOTE: This readme does not deal with the SDK capability of updating features while running your tests.That
 capability is API client specific, and the sample we have is for Jersey. link:../client-java-jersey/README{outfilesuffix}[It is documented here.]
 
 == Using the Java Feature SDK
 
 Because this is the Java SDK, and it can be used in a back-end service or Android, there are two ways of
-interacting with this service. Only one is currently supported and is not recommended for Android as
-it keeps the radio on. This will come in later in our roadmap.
+interacting with this service.Only one is currently supported and is not recommended for Android as
+it keeps the radio on.This will come in later in our roadmap.
 
 === 1. All the Features, All the Time
 
 In this mode, you will make a connection to the FeatureHub Edge server, and any updates to any events will come
-through to you, updating the feature values in the repository. You can choose to listen for these updates and update
+through to you, updating the feature values in the repository.You can choose to listen for these updates and update
 some UI immediate, but every `if` statement will indicate the updated value, so listening is usually a better choice.
 
 A typical strategy will be:
 
-. create a feature hub repository, wire it into your application stack as appropriate. 
+. create a feature hub repository, wire it into your application stack as appropriate.
 . set up and wire up your application. initialize your server, but don't start it.
-. set up a readyness listener so you know when the features have loaded and you have an initial state for them. When
-you get a `Ready` state, start the server listening. If you get a `Failed` then shut your server down or continue
+. set up a readyness listener so you know when the features have loaded and you have an initial state for them.When
+you get a `Ready` state, start the server listening.If you get a `Failed` then shut your server down or continue
 without a set of features.
-. [optional] set up your per feature listeners so you can react to their changes in state. You can operate 
+. [optional] set up your per feature listeners so you can react to their changes in state.You can operate
 in a imperative (is this feature on?) and/or reactive (callback) way with the repository.
 
-This kind of operation is perfect for servers. It can lead to instant change which could confuse users in a UI and
+This kind of operation is perfect for servers.It can lead to instant change which could confuse users in a UI and
 isn't something our team recommends.
 
 An example using our Jersey client.
@@ -79,16 +81,16 @@ cfr.addReadynessListener((ready) -> {
 ----
 
 
-NOTE: You will only get a Failed later if your connection drops out. You can choose to ignore the Failure 
-if you already have your features and deal with it by instantiating a new client. It won't generate a failure
-if the server has simply booted you off due to a timeout, only because of connection failure. 
+NOTE: You will only get a Failed later if your connection drops out.You can choose to ignore the Failure
+if you already have your features and deal with it by instantiating a new client.It won't generate a failure
+if the server has simply booted you off due to a timeout, only because of connection failure.
 
 ==== Static Feature Context
 
 The static feature context is a simple and easy way to allow you to use the repository.
 
-It allows you to determine if flags are on or off, if features exist or are set, and it allows you to do this from a 
-_enum_ basis. You need to have your enum implement `Feature` which just has a name function - which all enums do.
+It allows you to determine if flags are on or off, if features exist or are set, and it allows you to do this from a
+_enum_ basis.You need to have your enum implement `Feature` which just has a name function - which all enums do.
 
 You can if you wish add a convenience function to your enums to determine if they are active and people often do.
 
@@ -98,7 +100,7 @@ public enum Features implements Feature {
 
   FEATURE_TITLE_TO_UPPERCASE;
 
-  private Features() {
+  Features() {
   }
 
   public boolean isActive() {

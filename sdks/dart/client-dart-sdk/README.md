@@ -1,8 +1,8 @@
 # Dart Client SDK for FeatureHub
 
 
-Welcome to the Dart implementation for FeatureHub. It is the supported version, but it does not mean
-you cannot write your own, the functionality is quite straightforward.
+Welcome to the Dart SDK implementation for FeatureHub. It is the supported version, but it does not mean
+you cannot write your own, the functionality is quite straightforward. For more information about the platform please visit our official web page https://www.featurehub.io/
 
 ![Code Coverage](coverage_badge.svg)
 
@@ -177,3 +177,6 @@ _api.setFeatureState(sdkUrl, key, FeatureStateUpdate()..lock = false ..value = '
 
 Here the sdkHost and sdkUrl have the same meaning as above.
  
+
+
+[]: https://www.featurehub.io/[here

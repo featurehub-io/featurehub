@@ -14,8 +14,10 @@ image::images/fh_primary_navy.png[Feature Hub,500]
 
 == Overview
 
-FeatureHub is a Cloud Native platform to help software teams manage their features, from feature flags (also known as feature toggles) to A/B experiments and remote or centralised configuration.
+https://www.featurehub.io/[FeatureHub] is a Cloud Native platform to help software teams manage their features, from feature flags (also known as feature toggles) to A/B experiments and remote or centralised configuration.
 It's an essential ingredient for enabling the feedback loop and feature testing and experimentation in production with real users (see diagram below).
+
+Visit our official web page for more information about the platform https://www.featurehub.io/[here]
 
 Building software with feature management encourages DevOps practices like
 https://trunkbaseddevelopment.com[trunk based development], continuous delivery and importantly, separating deployment from release management.
@@ -307,7 +309,7 @@ NOTE: Groups can also separately be assigned the permission to create, edit and 
 
 == External Identity
 
-FeatureHub supports external link:identity{outfilesuffix}[identity providers]. 
+FeatureHub supports external link:identity{outfilesuffix}[identity providers].
 
 
 == Analytics
