@@ -1,9 +1,8 @@
 = FeatureHub SDK for Android
 
 == Overview
-This SDK implementation updates the FeatureHub repository by making HTTP GET requests when the Android client wishes
-to make requests. This is done because Server Sent Events keep the radio on all the time, and are expensive for battery
-life and for data traffic (as they get kicked off the server and have to reestablish their connections). 
+This SDK implementation updates the FeatureHub repository by making HTTP GET requests when the Android client wishes to make requests.
+This is done because Server Sent Events keep the radio on all the time, and are expensive for battery life and for data traffic (as they get kicked off the server and have to reestablish their connections).
 
 This library uses:
 
@@ -11,17 +10,22 @@ This library uses:
 - Jackson 2.11 (for json)
 - SLF4j (for logging)
 
-If you need your Android client to use another technology, please let us know or contribute another version. 
+If you need your Android client to use another technology, please let us know or contribute another version.
+
+Visit our official web page for more information about the platform https://www.featurehub.io/[here]
 
 == Use of the API
 
-The API is fairly straightforward to use. You:
+The API is fairly straightforward to use.
+You:
 
-- Create a repository as a singleton, listen for events as per normal. Please see link:../client-java-core/README.adoc[Java client] for more details.
-- Create a `FeatureHubClient`, 
+- Create a repository as a singleton, listen for events as per normal.
+Please see link:../client-java-core/README.adoc[Java client] for more details.
+- Create a `FeatureHubClient`,
 - pass in the base host address of SSE Edge - e.g. `http://localhost:8553`
 - pass in one of more SDK URLs - those copied from the Admin UI
-- when you want data, hit poll. It will asynchronously get the data and fill, it will not operate on the UI thread, and
+- when you want data, hit poll.
+It will asynchronously get the data and fill, it will not operate on the UI thread, and
 it will prevent you from asking again while a request is in flight.
 
 An simplistic pure Java client example might be:
@@ -52,7 +56,7 @@ which allows clear text traffic.
 
 `android:usesCleartextTraffic="true"`
 
-You will need to store your repository in a central location, using a static or via a DI tool like Dagger. Using a static
+You will need to store your repository in a central location, using a static or via a DI tool like Dagger.Using a static
 might look something like this:
 
 [source,java]
@@ -85,11 +89,11 @@ public class SharedRepository {
 ----
 
 You can then proceed in your code either to react to events and put them in streams to get your application updating, or
-imperatively querying for data. You may wish to provide defaults for some features, we will be providing on-disk caching
+imperatively querying for data.You may wish to provide defaults for some features, we will be providing on-disk caching
 to enable sensible startups in the future.
 
-[source, kotlin]
+[source,kotlin]
 ----
 view.findViewById<TextView>(R.id.textview_first).text =
-    SharedRepository.repository.getFeatureState("FIRST_FRAG").string ?: "First fragment";
+    SharedRepository.repository.getFeatureState("FIRST_FRAG").string ?: "First fragment"
 ----

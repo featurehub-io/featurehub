@@ -1,8 +1,9 @@
 = Jersey FeatureHub Client
 
-This is the Jersey client for talking to FeatureHub's API. It is separate from the core API because
-each different http library will implement the event sourcing and calling in a different fashion. The
-version of Jersey used must be at least 2.28.
+This is the Jersey client for talking to FeatureHub's API. It is separate from the core API because each different http library will implement the event sourcing and calling in a different fashion.
+The version of Jersey used must be at least 2.28.
+
+Visit our official web page for more information https://www.featurehub.io/[here]
 
 == Features
 
@@ -31,11 +32,11 @@ JerseyClient(String sdkUrl, boolean initializeOnConstruction,
 ----
 
 - `sdkUrl` - this is the full http or https url of your server, it might look like this for example: `http://localhost:8553/features/default/0cff6cf3-e03b-41ba-a3fa-683df70bd6d5/y6r4a8GZ1FGEZsCbr2PwVdPJq3bQhMEIrwfz13kKN0pILexHgXPrEZKVw2SwPHDPWMNfWjyzchd5NAiU`
-- `initializeOnConstruction` - this indicates it should immediately attempt to connect and start listening for 
+- `initializeOnConstruction` - this indicates it should immediately attempt to connect and start listening for
 features. Set this to `false` if you are using it in test-update mode, otherwise set it to true for normal usage. It
-runs in the background and doesn't block. 
+runs in the background and doesn't block.
 - `clientFeatureRepository` - this is your feature repository instance that you expect to be updated.
-- `apiClient` - this is an optional parameter. There is another constructor missing this parameter, but if you wish
+- `apiClient` - this is an optional parameter.There is another constructor missing this parameter, but if you wish
 to override the ApiClient library for some reason, you can replace it here. It expects you to have configured it with
 the base url of your host, e.g. `http://localhost:8553`.
 
@@ -46,16 +47,16 @@ it will then stop listening to the stream and shut the connection down.
 - `shutdownOnEdgeFailureConnection` (false) - if true, an an Edge failure occurs for some reason, it will shut down the server. This
 is an unusual thing to set to true but it is there for completeness.
 
-If you are simply using it in feature listening mode, you can create this instance and not hold a reference. 
+If you are simply using it in feature listening mode, you can create this instance and not hold a reference.
 
 If your server has a lifecycle manager, and you wish to do an orderly shutdown. You can
 do an orderly shutdown, you can call `shutdown()` and it will cancel the outstanding request and not schedule any
-further requests. If you need to start it again, just call `init()`.
+further requests.If you need to start it again, just call `init()`.
 
 === Feature Updater
 
 This feature is primarily intended to allow for tests to make requests to change the state of the feature. See the main
-SDK document for details on this. 
+SDK document for details on this.
 
 === Google Analytics
 
