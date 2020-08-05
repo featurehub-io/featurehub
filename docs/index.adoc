@@ -94,7 +94,7 @@ Choose from your development language / framework and follow the links for the i
 |===================================
 ||Java|JavaScript|C#|Dart|Go
 |Documentation| link:https://github.com/featurehub-io/featurehub/tree/master/sdks/java/client-java-jersey[Java-Jersey]|link:https://github.com/featurehub-io/featurehub/tree/master/sdks/typescript/client-typescript-core[Javascript, Typescript, Node, React, Angular]|https://github.com/featurehub-io/featurehub/tree/master/sdks/client-csharp/FeatureHubSDK[C#]|link:https://github.com/featurehub-io/featurehub/tree/master/sdks/sdks/dart/client-dart-sdk[Dart]|https://github.com/featurehub-io/featurehub/tree/master/sdks/client-go[Go]
-|Examples|link:https://github.com/featurehub-io/featurehub/tree/master/examples/todo-backend-java[Java-Jersey example] | link:https://github.com/featurehub-io/featurehub/tree/master/examples/todo-backend-typescript[Node server example] , link:../examples/todo-frontend-react-typescript/[React app example] |Coming soon!|Coming soon!|Coming soon!
+|Examples|link:https://github.com/featurehub-io/featurehub/tree/master/examples/todo-backend-java[Java-Jersey example] | link:https://github.com/featurehub-io/featurehub/tree/master/examples/todo-backend-typescript[Node server example] , link:../examples/todo-frontend-react-typescript/[React app example] |https://github.com/featurehub-io/featurehub/tree/master/sdks/client-csharp/ConsoleApp1[C# Console]|https://github.com/featurehub-io/featurehub/tree/master/sdks/dart/client-dart-sdk/example/dart_cli[Dart Server], https://github.com/featurehub-io/featurehub/tree/master/sdks/dart/client-dart-sdk/example/web_example[Flutter example]|Coming soon!
 |===================================
 
 === Capabilities overview
@@ -102,20 +102,38 @@ Choose from your development language / framework and follow the links for the i
 This overview seeks to indicate the capabilities of the SDKs and explain what they are and what the do.
 If you are considering helping us by writing a new SDK for your favourite language, or expand on an existing library, this table of capability indicates what each different language can support and where extra work is helpful.
 
+=== General Run Capabilities for SDKs
 [options="header"]
 |===================================
-|Capability|Java|Javascript^1^|Go|Dart^2^|C#
+|Runtime Capability|Java|Javascript^1^|Go|Dart^2^|C#
 |Event Streaming|Y|Y|Y|Y|Y
 |Background Start|Y|Y|Y|Y|Y
 |Block until Start|N|N|Y|N|N
 |Readyness Listeners|Y|Y|Y|Y|Y
 |Feature Listeners|Y|Y|Y|Y|Y
 |Feature Listener Removal|N|N|Y|Y|Y
-|Catch & Release|N|Y|N|Y|N
 |Analytics Support|Y|Y|N|Y|N
 |Google Analytics|Y|Y|N|N|N
-|Test Client|Y|Y|N|Y|Y
 |===================================
+
+==== Web + Mobile focused capabilities for SDKs
+
+[options="header"]
+|===================================
+|Web + Mobile Support|Java|Javascript^1^|Go|Dart^2^|C#
+|Catch & Release|N|Y|N|Y|N
+|===================================
+
+
+==== Development and Test capabilities for SDKs
+
+[options="header"]
+|===================================
+|Dev/Test Capability|Java|Javascript^1^|Go|Dart^2^|C#
+|Test Client|Y|Y|N|Y|Y
+|Feature Interceptors|Y|N|N|N|N
+|===================================
+
 
 - *(1)* Javascript and Typescript are supported via a Typescript libraries.
 This is available https://www.npmjs.com/org/featurehub[ at the npm repository].
@@ -123,7 +141,9 @@ This is available https://www.npmjs.com/org/featurehub[ at the npm repository].
 - *(3)* Java is supported by libraries from Apache Maven Central. [needs ref]
 - *(4)* C# and .NET is supported by libraries from nuget. [needs ref]
 
-=== Capabilities explained
+=== Run Capabilities
+
+The following capabilities are focused around general runtime of your application, be it a client or server based application.
 
 ==== Event Streaming
 
@@ -154,13 +174,6 @@ Generally the whole feature is passed to the listener for it to interrogate.
 Some clients like to, or need to (usually UI related) remove listeners they have created.
 This allows them to do that.
 
-==== Catch & Release
-
-Some clients don't want the features to be immediately triggered.
-These are usually those that use Feature Listeners and they want to hold onto the changes until they have informed the user there are changes - via some UI element (e.g. reload for new functionality).
-Catch and release mode normally includes a flag to set it, an extra callback to indicate new features have come in, and then a release method to indicate the new features should be released (their state changed and the listeners triggered).
-The Typescript, Javascript and Dart libraries all have examples of this.
-
 ==== Analytics Support
 
 This is where the library has a mechanism to log an event, potentially attach metadata.
@@ -172,6 +185,22 @@ We intend over time to support only one, where the data is posted to a backend s
 
 This is a client side implementation of the Analytics support.
 It is designed so you need to specify the `User-ID` or `CID`, your `UA-` id and when logging an event, it will fire off into GA the event - one for each value of non-JSON features.
+
+=== Web + Mobile Capabilities
+
+The following capabilities are focused on clients that provide a UI to the client and thus you may wish to control
+the updating of the features. 
+
+==== Catch & Release
+
+Some clients don't want the features to be immediately triggered.
+These are usually those that use Feature Listeners and they want to hold onto the changes until they have informed the user there are changes - via some UI element (e.g. reload for new functionality).
+Catch and release mode normally includes a flag to set it, an extra callback to indicate new features have come in, and then a release method to indicate the new features should be released (their state changed and the listeners triggered).
+The Typescript, Javascript and Dart libraries all have examples of this.
+
+If you use catch and release, it is worthwhile considering enabling OpenTracing feature overrides in production. 
+You can configure feature interceptors to not be allowed to override locked features.
+
 
 ==== Test Client / Feature Updater
 
@@ -198,10 +227,27 @@ If it is null, and you want to ensure this is set to null (which is ignored for 
 - `updateValue` - this is specifically for the situation where you are setting a non feature flag to have a null value.
 Otherwise passing a value will assume this is true.
 
+==== Feature Interceptors
 
-==== Licenses
+Feature Interceptors are the ability to intercept the request for a feature. They only operate in imperative state, so when
+code specifically requests the value of a feature, they don't cause events to trigger. They are designed to function
+to enable specific kinds of use cases, such as:
 
-All SDKs are MIT licensed, as they reside in the client codebase.
+- allowing external storage of features, such as in a text file. This allows developers to override the value of features
+in their local running infrastructure without having to have a dedicated Environment for themselves or be connected. 
+- allow per request overriding of features for example with OpenTracing or OpenTelemetry. Because of the nature of OpenTracing
+and OpenTelemetry, this allows you to listen to events from message queue systems like NATs, Kafka, ActiveMQ, etc. 
+
+It is unlikely you would be using these in production or staging environments as they are designed to make the
+development and testing of your feature based applications easier. They can however be used in production, and you can tell
+them that if the feature is locked, their statuses cannot be overridden. So in a test or development environment you should unlock
+your features and other environments you should lock them.
+
+This prevents bad actors from poking at your apis and turning features on before they are ready.
+
+=== Licensing
+
+All SDKs are MIT licensed, as they reside in the client codebase. Downstream dependencies are not assured to be so.
 
 == Key concepts
 

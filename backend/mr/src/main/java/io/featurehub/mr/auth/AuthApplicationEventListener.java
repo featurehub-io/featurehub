@@ -111,7 +111,7 @@ public class AuthApplicationEventListener implements ApplicationEventListener {
     }
 
     Method getMethod(RequestEvent event) {
-      log.info("request method: {}", event.getUriInfo().getPath());
+      log.debug("request method: {}", event.getUriInfo().getPath());
       return event.getUriInfo().getMatchedResourceMethod().getInvocable().getHandlingMethod();
     }
 

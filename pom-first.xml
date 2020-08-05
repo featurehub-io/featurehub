@@ -5,9 +5,14 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.featurehub</groupId>
-  <artifactId>featurehub-examples-reactor</artifactId>
+  <artifactId>featurehub-tiles-reactor</artifactId>
+  <name>FeatureHub Tiles</name>
   <version>1.1.1</version>
   <packaging>pom</packaging>
+
+  <description>
+    FeatureHub Tiles - always install this first because of IDE support.
+  </description>
 
   <url>https://featurehub.io</url>
   <developers>

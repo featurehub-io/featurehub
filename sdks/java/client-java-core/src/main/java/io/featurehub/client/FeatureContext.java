@@ -34,7 +34,7 @@ public interface FeatureContext {
   /**
    * Adds a listener that is triggered whenever the state of the specified feature or configuration changes.
    *
-   * @param feature - feature name
+   * @param feature         - feature name
    * @param featureListener - a notify listener that returns the FeatureStateHolder
    */
   void addListener(Feature feature, FeatureListener featureListener);
@@ -44,7 +44,7 @@ public interface FeatureContext {
    * instance this is running on. The state of all features are passed.
    *
    * @param action - passed directly as a name or key
-   * @param other - any other daya (or null)
+   * @param other  - any other data (or null)
    */
   void logAnalyticsEvent(String action, Map<String, String> other);
 

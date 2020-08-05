@@ -2,13 +2,15 @@ package io.featurehub.client;
 
 import io.featurehub.sse.model.FeatureState;
 
+import java.util.List;
 import java.util.concurrent.Executor;
 
 public class FeatureStateBooleanHolder extends FeatureStateBaseHolder {
   private Boolean value;
 
-  public FeatureStateBooleanHolder(FeatureStateBaseHolder holder, Executor executor) {
-    super(executor, holder);
+  public FeatureStateBooleanHolder(FeatureStateBaseHolder holder, Executor executor,
+                                   List<FeatureValueInterceptorHolder> valueInterceptors, String key) {
+    super(executor, holder, valueInterceptors, key);
   }
 
   public FeatureStateHolder setFeatureState(FeatureState featureState) {
@@ -23,15 +25,15 @@ public class FeatureStateBooleanHolder extends FeatureStateBaseHolder {
 
   @Override
   protected FeatureStateHolder copy() {
-    return new FeatureStateBooleanHolder(null, null).setFeatureState(featureState);
+    return new FeatureStateBooleanHolder(null, null, valueInterceptors, key).setFeatureState(featureState);
   }
 
   @Override
   public Boolean getBoolean() {
-    String dev = devOverride();
+    FeatureValueInterceptor.ValueMatch vm = findIntercept();
 
-    if (dev != null) {
-      return Boolean.parseBoolean(dev);
+    if (vm != null) {
+      return Boolean.parseBoolean(vm.value);
     }
 
     return value;

@@ -5,7 +5,9 @@ class FeatureState {
   String id;
 
   String key;
-
+  /* Is this feature locked. Usually this doesn't matter because the value is the value, but for FeatureInterceptors it can matter. */
+  bool l;
+  /* The version of the feature, this allows features to change values and it means we don't trigger events */
   int version;
 
   FeatureValueType type;
@@ -20,7 +22,7 @@ class FeatureState {
 
   @override
   String toString() {
-    return 'FeatureState[id=$id, key=$key, version=$version, type=$type, value=$value, environmentId=$environmentId, strategy=$strategy, ]';
+    return 'FeatureState[id=$id, key=$key, l=$l, version=$version, type=$type, value=$value, environmentId=$environmentId, strategy=$strategy, ]';
   }
 
   fromJson(Map<String, dynamic> json) {
@@ -33,6 +35,10 @@ class FeatureState {
     {
       final _jsonData = json[r'key'];
       key = (_jsonData == null) ? null : _jsonData;
+    } // _jsonFieldName
+    {
+      final _jsonData = json[r'l'];
+      l = (_jsonData == null) ? null : _jsonData;
     } // _jsonFieldName
     {
       final _jsonData = json[r'version'];
@@ -69,6 +75,9 @@ class FeatureState {
     }
     if (key != null) {
       json[r'key'] = LocalApiClient.serialize(key);
+    }
+    if (l != null) {
+      json[r'l'] = LocalApiClient.serialize(l);
     }
     if (version != null) {
       json[r'version'] = LocalApiClient.serialize(version);
@@ -112,6 +121,7 @@ class FeatureState {
     if (other is FeatureState && runtimeType == other.runtimeType) {
       return id == other.id &&
           key == other.key &&
+          l == other.l &&
           version == other.version &&
           type == other.type &&
           value == other.value &&
@@ -132,6 +142,10 @@ class FeatureState {
 
     if (key != null) {
       hashCode = hashCode ^ key.hashCode;
+    }
+
+    if (l != null) {
+      hashCode = hashCode ^ l.hashCode;
     }
 
     if (version != null) {
@@ -160,6 +174,7 @@ class FeatureState {
   FeatureState copyWith({
     String id,
     String key,
+    bool l,
     int version,
     FeatureValueType type,
     dynamic value,
@@ -169,6 +184,7 @@ class FeatureState {
     FeatureState copy = FeatureState();
     copy.id = id ?? this.id;
     copy.key = key ?? this.key;
+    copy.l = l ?? this.l;
     copy.version = version ?? this.version;
     copy.type = type ?? this.type;
     copy.value = value ?? this.value;
