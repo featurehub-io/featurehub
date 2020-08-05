@@ -46,8 +46,8 @@ class _FeatureValueNumberEnvironmentCellState
           return Align(
             alignment: Alignment.topCenter,
             child: Container(
-                width: 160,
-                height: 40,
+                width: 123,
+                height: 30,
                 child: TextField(
                   style: Theme.of(context).textTheme.bodyText1,
                   enabled: enabled,
@@ -148,21 +148,29 @@ class FeatureValueNumberCellEditor extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        FeatureValueEditLockedCell(
-          environmentFeatureValue: environmentFeatureValue,
-          feature: feature,
-          fvBloc: fvBloc,
+        Row(
+          children: [
+            FeatureValueEditLockedCell(
+              environmentFeatureValue: environmentFeatureValue,
+              feature: feature,
+              fvBloc: fvBloc,
+            ),
+            FeatureValueNumberEnvironmentCell(
+              environmentFeatureValue: environmentFeatureValue,
+              feature: feature,
+              fvBloc: fvBloc,
+            ),
+          ],
         ),
-        FeatureValueNumberEnvironmentCell(
-          environmentFeatureValue: environmentFeatureValue,
-          feature: feature,
-          fvBloc: fvBloc,
-        ),
-        FeatureValueUpdatedByCell(
-          environmentFeatureValue: environmentFeatureValue,
-          feature: feature,
-          fvBloc: fvBloc,
+        Padding(
+          padding: const EdgeInsets.only(left: 4.0),
+          child: FeatureValueUpdatedByCell(
+            environmentFeatureValue: environmentFeatureValue,
+            feature: feature,
+            fvBloc: fvBloc,
+          ),
         ),
       ],
     );

@@ -34,25 +34,55 @@ class FeatureValueEditLockedCell extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 locked
-                    ? Icon(
-                        Icons.lock_outline,
-                        color: Colors.black54,
+                    ? _LockUnlockIconButton(
+                        lock: true,
+                        onPressed: disabled
+                            ? null
+                            : () {
+                                snap.data.locked = false;
+                                fvBloc.updatedFeature(
+                                    environmentFeatureValue.environmentId);
+                              },
                       )
-                    : Icon(Icons.lock_open, color: Colors.black54),
-                Checkbox(
-                  activeColor: Theme.of(context).primaryColor,
-                  value: locked,
-                  onChanged: disabled
-                      ? null
-                      : (value) {
-                          snap.data.locked = value;
-                          fvBloc.updatedFeature(
-                              environmentFeatureValue.environmentId);
-                        },
-                )
+                    : _LockUnlockIconButton(
+                        lock: false,
+                        onPressed: disabled
+                            ? null
+                            : () {
+                                snap.data.locked = true;
+                                fvBloc.updatedFeature(
+                                    environmentFeatureValue.environmentId);
+                              },
+                      ),
               ],
             ),
           );
         });
+  }
+}
+
+class _LockUnlockIconButton extends StatelessWidget {
+  const _LockUnlockIconButton({
+    Key key,
+    this.lock,
+    this.onPressed,
+  }) : super(key: key);
+
+  final bool lock;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 36,
+      height: 36,
+      child: Material(
+        shape: CircleBorder(),
+        child: IconButton(
+            icon: Icon(lock ? Icons.lock_outline : Icons.lock_open,
+                size: 20, color: lock ? Colors.red : Colors.green),
+            onPressed: onPressed),
+      ),
+    );
   }
 }

@@ -58,8 +58,8 @@ class _FeatureValueJsonEnvironmentCellState
           return Align(
             alignment: Alignment.topCenter,
             child: Container(
-              width: 160,
-              height: 40,
+              width: 123,
+              height: 30,
               child: InkWell(
                 canRequestFocus: false,
                 mouseCursor: SystemMouseCursors.click,
@@ -70,7 +70,7 @@ class _FeatureValueJsonEnvironmentCellState
                 ),
                 hoverColor: Colors.black12,
                 child: Container(
-                    padding: const EdgeInsets.all(10.0),
+                    padding: const EdgeInsets.all(4.0),
                     decoration: myBoxDecoration(),
                     child: Align(
                       alignment: Alignment.centerLeft,
@@ -188,21 +188,29 @@ class FeatureValueJsonCellEditor extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        FeatureValueEditLockedCell(
-          environmentFeatureValue: environmentFeatureValue,
-          feature: feature,
-          fvBloc: fvBloc,
+        Row(
+          children: [
+            FeatureValueEditLockedCell(
+              environmentFeatureValue: environmentFeatureValue,
+              feature: feature,
+              fvBloc: fvBloc,
+            ),
+            FeatureValueJsonEnvironmentCell(
+              environmentFeatureValue: environmentFeatureValue,
+              feature: feature,
+              fvBloc: fvBloc,
+            ),
+          ],
         ),
-        FeatureValueJsonEnvironmentCell(
-          environmentFeatureValue: environmentFeatureValue,
-          feature: feature,
-          fvBloc: fvBloc,
-        ),
-        FeatureValueUpdatedByCell(
-          environmentFeatureValue: environmentFeatureValue,
-          feature: feature,
-          fvBloc: fvBloc,
+        Padding(
+          padding: const EdgeInsets.only(left: 4.0),
+          child: FeatureValueUpdatedByCell(
+            environmentFeatureValue: environmentFeatureValue,
+            feature: feature,
+            fvBloc: fvBloc,
+          ),
         ),
       ],
     );
