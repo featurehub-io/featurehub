@@ -23,7 +23,7 @@ This includes three features.
 
 === Feature listener
 
-The JerseyClient comes with the event source listener, the `JerseyClient` class.It expects the following
+The JerseyClient comes with the event source listener, the `JerseyClient` class. It expects the following
 parameters:
 
 ----
@@ -33,23 +33,23 @@ JerseyClient(String sdkUrl, boolean initializeOnConstruction,
 
 - `sdkUrl` - this is the full http or https url of your server, it might look like this for example: `http://localhost:8553/features/default/0cff6cf3-e03b-41ba-a3fa-683df70bd6d5/y6r4a8GZ1FGEZsCbr2PwVdPJq3bQhMEIrwfz13kKN0pILexHgXPrEZKVw2SwPHDPWMNfWjyzchd5NAiU`
 - `initializeOnConstruction` - this indicates it should immediately attempt to connect and start listening for
-features.Set this to `false` if you are using it in test-update mode, otherwise set it to true for normal usage.It
+features. Set this to `false` if you are using it in test-update mode, otherwise set it to true for normal usage. It
 runs in the background and doesn't block.
 - `clientFeatureRepository` - this is your feature repository instance that you expect to be updated.
 - `apiClient` - this is an optional parameter.There is another constructor missing this parameter, but if you wish
-to override the ApiClient library for some reason, you can replace it here.It expects you to have configured it with
+to override the ApiClient library for some reason, you can replace it here. It expects you to have configured it with
 the base url of your host, e.g. `http://localhost:8553`.
 
 There are a couple of extra settings which may be useful:
 
 - `shutdownOnServerFailure` (true) - if this is true, then when it receives a FAILURE status (and passes this to the repository),
 it will then stop listening to the stream and shut the connection down.
-- `shutdownOnEdgeFailureConnection` (false) - if true, an an Edge failure occurs for some reason, it will shut down the server.This
+- `shutdownOnEdgeFailureConnection` (false) - if true, an an Edge failure occurs for some reason, it will shut down the server. This
 is an unusual thing to set to true but it is there for completeness.
 
 If you are simply using it in feature listening mode, you can create this instance and not hold a reference.
 
-If your server has a lifecycle manager, and you wish to do an orderly shutdown.You can
+If your server has a lifecycle manager, and you wish to do an orderly shutdown. You can
 do an orderly shutdown, you can call `shutdown()` and it will cancel the outstanding request and not schedule any
 further requests.If you need to start it again, just call `init()`.
 
