@@ -9,7 +9,7 @@ guidelines.
 Below explains how you can use the FeatureHub SDK in Javascript or Typescript for applications like Node.js
 backend server or Web front-end (e.g. React). 
 
-This SDK is based on EventSource (or Server Sent Events) interface and provides real-time connection to the FeatureHub Edge server. 
+This repository includes the Server Sent Events realtime update SDK for Javascript and Typescript.
 
 When you install the SDK it will also install the dependency [featurehub-repository](https://www.npmjs.com/package/featurehub-repository)
 which is a core library that holds features and creates events. 
@@ -34,15 +34,18 @@ It should look similar to this: ```https://vrtfs.demo.featurehub.io/features/def
 
 ![Service account](images/service-account-copy.png) 
 
-## Creating the FeatureHub repository
-
-Although one exists and is exported for your use, you can create others if you wish. The class is simply 
-`ClientFeatureRepository()`
-
-The repository sends meta-events 
-
-
 ## The FeatureHub repository
+
+### Overview
+
+The FeatureHub repository is a single class that holds and tracks features in your system. It gets features delivered
+to it to process, tracks changes, and allows you to find and act on features in a useful way. 
+It also sends events out in certain circumstances.
+
+### Creating the FeatureHub repository
+
+Although one exists and is exported for your use (`featureHubRepository`), you can create others if you wish. The class is simply 
+`new ClientFeatureRepository()`. 
 
 ### Using the FeatureHub repository
 
@@ -97,107 +100,86 @@ featureHubRepository.addReadynessListener((readyness) => {
 
 #### New Feature Available 
 
+If you want to know when a new feature is available, any new feature, then this is the event for you. In particular,
+this only happens after the first events are loaded. It has a caveat that it is triggered when features 
+_actually change_ not when we receive new updates for them. That is particularly important because of the _catch and
+release_ functionality listed below.
 
-
-### 1. Real-time updates, recommended for servers
-
-In this mode, you will make a connection to the FeatureHub Edge server, and any updates to any events will come
-through to you, updating the feature values in the repository. We recommend this technique for servers, 
-but for Web it may not be the best choice
-as you may not want your users to see updates in the browser immediately but rather serve it on-demand. 
-
-A typical strategy will be:
-
-- set up a readyness listener so you know when the features have loaded and you have an initial state for them.
-- set up your per feature listeners so you can react to their changes in state
-- connect to the FeatureHub server. As soon as it has connected and received a list of features it will call your
-readyness listener. 
-- each time a feature changes, it will call your listener and allow your application to react in real-time.
-
-
-
-```javascript
-
-featureHubRepository.addReadynessListener((readyness) => {
-  if (readyness === Readyness.Ready) {
-       console.log("Features are available, starting server...");
-   
-       api.listen(port, function () {
-         console.log('server is listening on port', port);
-       })
-  }
-});
-
-//paste your Service Account SDK URL here
-this.eventSource = new FeatureHubEventSourceClient('<sdkUrl>'); 
-this.eventSource.init();
-
-featureHubRepository.getFeatureState('FEATURE_X').addListener((fs: FeatureStateHolder) => {
-  // do something
-});
+```typescript
+featureHubRepository
+  .addPostLoadNewFeatureStateAvailableListener((_) => {
+    // e.g. tell user to page is going to update and re-render page
+});  
 ```
 
+## Updating your repository
 
-### 2. On-demand updates, recommended for Web 
+### Real-time updates
 
-In this mode, you receive the connection and then you disconnect, ignoring any further connections. You would
-use this mode only if you want to force the client to have a consistent UI experience through the lifetime of their
-visit to your client application. Recommended for Web, when not intending to react to feature changes until 
-you ask for the feature state again.
+In this mode, you will make a connection to the FeatureHub Edge server using the EventSource library, and any updates 
+to any events will come through to you in near realtime, automatically updating the feature values in the repository. 
 
-```javascript
-featureHubRepository.addReadynessListener((readyness) => {
-  if (readyness === Readyness.Ready) {
-    this.eventSource.close();
-  }
-});
-
+```javascript 
 //paste your Service Account SDK URL here
-this.eventSource = new FeatureHubEventSourceClient('<sdkUrl>'); 
+
+this.eventSource = new FeatureHubEventSourceClient('[host]/features/<sdkUrl>'); 
 this.eventSource.init();
 ```
 
-### 3. Controlled updates, recommended for Web
+Your host will depend on where the SSE Edge is. For example, when running inside the basic Docker examples it is
+at http://localhost:8050/. 
 
-This mode is termed "catch-and-release" (inspired by the Matt Simons song). It is intended to allow you get
-an initial set of features but decide when the feature updates are released into your application.
+In any situation where a continual connection to the Internet is fine, or when you don't want fine controlled updates
+of features (i.e. you want updates immediately), this is your ideal choice. All server side applications and most
+Web applications will use this choice of connection. 
 
-A typical strategy would be:
+### GET-based updates
 
-- set up your UI state so it is in "loading" mode (only if in the Web).
-- set up a readyness listener so you know when the features have loaded and you have an initial state for them. When
-using a UI, this would lead to a transition to the actual UI rendering, on the server it would make it start listening
-to the server port.
-- tell the feature hub repository to operate in catch and release mode. `featureHubRepository.catchAndRelease = true;`
-- add a _post feature changed` callback hook. This hook will be called when a feature has changed.
-- `[optional]` set up your per feature listeners so you can react to their changes in state. You could also not 
-do this and encourage you users to reload the whole application window (e.g. `window.location.reload()`).
-- connect to the Feature Hub server. As soon as it has connected and received a list of features it will call your
-readyness listener.
+In this mode, you make a GET request, which you can choose to either do once, when specific things happen in your application,
+(such as navigation change) or on a regular basis (say every 5 minutes) and the changes will be passed into the 
+FeatureHub repository for processing. 
 
+```typescript
+const fp = new FeatureHubPollingClient(
+  featureHubRepository, // repository 
+  'http://localhost:8553',  // host
+  10000,    // every 10 seconds, 0 if only fire once
+  ['default/ce6b5f90-2a8a-4b29-b10f-7f1c98d878fe/VNftuX5LV6PoazPZsEEIBujM4OBqA1Iv9f9cBGho2LJylvxXMXKGxwD14xt2d7Ma3GHTsdsSO8DTvAYF'] 
+);
+
+fp.start(); 
+``` 
+
+There are a few things to note:
+
+- you only need to specify the host, not the full URL (including `/feature`)
+- you can request the features for multiple environments
+- you can specify a poll interval (in milliseconds). If 0 then it fires only once (immediately) and stops.
+
+It will automatically update the repository.
+
+## Reacting to feature changes
+
+Unlike the server focused APIs, Typescript/Javascript, like Dart (for Flutter) has two modes of operation.
+
+### Immediate reaction (recommended for servers)
+
+In this mode, as changes occur to features coming from the server, the states of the features will immediately change.
+Events are fired. This kind of operation is normally best for servers, as they want to react to what has been asked for.
+
+### Catch and Release (recommended for Web and Mobile)
+
+This is a deliberate holding onto the updates to features until such a time as they are "released". This is separate
+from them coming down from the source and being put in the repository. In _catch and release_ mode, the repository will
+hold onto the changes (only the latest ones) and apply them when you chose to "release them". This means there will be
+no delay while making a GET request for the latest features for example when you wish to "check" for new updates to 
+features when shifting pages or similar.
+
+This strategy is recommended for Web and Mobile applications as controlled visibility for the user is important.  
 
 ```javascript
-featureHubRepository.addReadynessListener((readyness) => {
-  if (readyness === Readyness.Ready) {
-    // some state change and you have your features and config
-  }
-});
-
-//paste your Service Account SDK URL here
-this.eventSource = new FeatureHubEventSourceClient('<sdkUrl>'); 
-this.eventSource.init();
-
 // don't allow feature updates to come through
 featureHubRepository.catchAndReleaseMode = true; 
-
-featureHubRepository
-  .addPostLoadNewFeatureStateAvailableListener((_) => {}); // do something 
-
-// this is optional
-featureHubRepository.getFeatureState('FEATURE_X').addListener((fs: FeatureStateHolder) => {
-  // Do something. will trigger only once (first set of features). Won't trigger again until 
-  // featureHubRepository.release() is called.
-});
 ```
 
 If you choose to not have listeners, when you call: 
@@ -206,10 +188,10 @@ If you choose to not have listeners, when you call:
 featureHubRepository.release();
 ```
 
-then you should follow it with code to update your state with the appropriate changes in features. You
+then you should follow it with code to update your UI with the appropriate changes in features. You
 won't know which ones changed, but this can be a more efficient state update than using the listeners above.
 
-### Failure
+## Failure
 
 If for some reason the connection to the FeatureHub server fails - either initially or for some reason during
 the process, you will get a readyness state callback to indicate that it has now failed.
@@ -320,45 +302,6 @@ x.updateKey("FEATURE_TITLE_TO_UPPERCASE", {lock: false}).then((r) => console.log
 
 result was true
 ```
-
-## FeatureHub Polling (GET) API
-
-The Typescript API has a client that allows you to get the features from one or more environments using a GET
-request rather than via the event source mechanism. It is intended that this would be a better API for use in Mobile,
-as Server sent events keep the Mobile's radio on. 
-
-Each request will bring all of the features down, which may or may not trigger events in the repository (depending on
-changes). As each feature has a version number, this prevents accidental triggering of "update" events for features
-in this case.
-
-The API is a single class that works in both NodeJS and the Browser. It takes the repository, the host (such as
-http://localhost:8553), an array of SDK URLs (as taken from the UI), and a polling frequency (0 if it should be single-fire).
-
-```typescript
-const fp = new FeatureHubPollingClient(
-  featureHubRepository, // repository 
-  'http://localhost:8553',  // host
-  10000,    // every 10 seconds, 0 if only fire once
-  ['default/ce6b5f90-2a8a-4b29-b10f-7f1c98d878fe/VNftuX5LV6PoazPZsEEIBujM4OBqA1Iv9f9cBGho2LJylvxXMXKGxwD14xt2d7Ma3GHTsdsSO8DTvAYF'] 
-);
-
-fp.start(); 
-``` 
-
-The above will cause the API to fire when `start()` is called, and then once every 10 seconds. The API will prevent
-you from double polling on the same instance, so you can safely make it a global variable and trigger it in logical
-places around your application (such as navigation change in a mobile app).
-
-This API is currently simple - it will just get all of the features again. Future versions will allow passing of the
-versions of features and limit data being returned.
-
-You can stop polling using:
-
-```typescript 
-fp.stop();
-```
-
-and it will stop once completed.
 
 ### Errors
 
