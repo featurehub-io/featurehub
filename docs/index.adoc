@@ -116,11 +116,11 @@ If you are considering helping us by writing a new SDK for your favourite langua
 |Google Analytics|Y|Y|N|N|N
 |===================================
 
-==== UI focused capabilities for SDKs
+==== Web + Mobile focused capabilities for SDKs
 
 [options="header"]
 |===================================
-|UI Support|Java|Javascript^1^|Go|Dart^2^|C#
+|Web + Mobile Support|Java|Javascript^1^|Go|Dart^2^|C#
 |Catch & Release|N|Y|N|Y|N
 |===================================
 
@@ -186,7 +186,7 @@ We intend over time to support only one, where the data is posted to a backend s
 This is a client side implementation of the Analytics support.
 It is designed so you need to specify the `User-ID` or `CID`, your `UA-` id and when logging an event, it will fire off into GA the event - one for each value of non-JSON features.
 
-=== UI Capabilities
+=== Web + Mobile Capabilities
 
 The following capabilities are focused on clients that provide a UI to the client and thus you may wish to control
 the updating of the features. 
