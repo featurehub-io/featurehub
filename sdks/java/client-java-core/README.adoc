@@ -30,7 +30,7 @@ it keeps the radio on. This will come in later in our roadmap.
 === 1. All the Features, All the Time
 
 In this mode, you will make a connection to the FeatureHub Edge server, and any updates to any events will come
-through to you, updating the feature values in the repository.You can choose to listen for these updates and update
+through to you, updating the feature values in the repository. You can choose to listen for these updates and update
 some UI immediate, but every `if` statement will indicate the updated value, so listening is usually a better choice.
 
 A typical strategy will be:
