@@ -70,7 +70,7 @@ public class Application {
     final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, config, false);
 
     // call "server.start()" here if you wish to start the application without waiting for features
-    log.info("Waiting on complete features before starting.");
+    log.info("Waiting on a complete list of features before starting.");
     cfr.addReadynessListener((ready) -> {
       if (ready == Readyness.Ready) {
         try {

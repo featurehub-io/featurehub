@@ -44,7 +44,7 @@ public interface FeatureContext {
    * instance this is running on. The state of all features are passed.
    *
    * @param action - passed directly as a name or key
-   * @param other  - any other daya (or null)
+   * @param other  - any other data (or null)
    */
   void logAnalyticsEvent(String action, Map<String, String> other);
 
