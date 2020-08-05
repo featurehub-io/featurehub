@@ -143,7 +143,7 @@ This is available https://www.npmjs.com/org/featurehub[ at the npm repository].
 
 === Run Capabilities
 
-The following capbilities are focused around general runtime of your application, be it a client or server based application.
+The following capabilities are focused around general runtime of your application, be it a client or server based application.
 
 ==== Event Streaming
 
