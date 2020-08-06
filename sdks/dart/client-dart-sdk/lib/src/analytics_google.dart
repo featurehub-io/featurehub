@@ -43,13 +43,15 @@ class GoogleAnalyticsListener {
 
   void _analyticsPublisher(AnalyticsEvent event) {
     final finalCid =
-        (event.other != null) ? (event.other['cid']?.toString() ?? _cid) : null;
+        (event.other != null) ? (event.other['cid']?.toString() ?? _cid) : _cid;
 
     if (finalCid == null) {
+      print("cid is null");
       _log.severe('Unable to log GA event as no CID provided.');
+      return;
     }
 
-    final ev = event.other?.containsKey(_GA_KEY)
+    final ev = (event.other?.containsKey(_GA_KEY) ?? false)
         ? '&ev=' + Uri.encodeQueryComponent(event.other[_GA_KEY] ?? '')
         : '';
 
@@ -82,12 +84,14 @@ class GoogleAnalyticsListener {
       }
 
       if (line != null) {
-        batchData +=
-            baseForEachLine + Uri.encodeQueryComponent('${f.key} : $line\n');
+        batchData += baseForEachLine +
+            Uri.encodeQueryComponent('${f.key} : $line') +
+            '\n';
       }
     });
 
     if (batchData.isNotEmpty) {
+      print(batchData);
       _apiClient.postAnalyticBatch(batchData);
     }
   }
