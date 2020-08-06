@@ -42,13 +42,14 @@ class GoogleAnalyticsListener {
   }
 
   void _analyticsPublisher(AnalyticsEvent event) {
-    final finalCid = event.other['cid']?.toString() ?? _cid;
+    final finalCid =
+        (event.other != null) ? (event.other['cid']?.toString() ?? _cid) : null;
 
     if (finalCid == null) {
       _log.severe('Unable to log GA event as no CID provided.');
     }
 
-    final ev = event.other.containsKey(_GA_KEY)
+    final ev = event.other?.containsKey(_GA_KEY)
         ? '&ev=' + Uri.encodeQueryComponent(event.other[_GA_KEY] ?? '')
         : '';
 
