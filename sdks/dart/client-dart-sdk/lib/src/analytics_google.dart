@@ -27,7 +27,7 @@ class GoogleAnalyticsListener {
         this._apiClient = apiClient ?? GoogleAnalyticsDioApiClient(),
         assert(ua != null),
         assert(repository != null) {
-    _analyticsListener = _repository.analyticsEvent.listen(analyticsPublisher);
+    _analyticsListener = _repository.analyticsEvent.listen(_analyticsPublisher);
   }
 
   String get cid => _cid;
@@ -41,7 +41,7 @@ class GoogleAnalyticsListener {
     _analyticsListener = null;
   }
 
-  void analyticsPublisher(AnalyticsEvent event) {
+  void _analyticsPublisher(AnalyticsEvent event) {
     final finalCid = event.other['cid']?.toString() ?? _cid;
 
     if (finalCid == null) {
