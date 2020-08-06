@@ -34,6 +34,124 @@ It should look similar to this: ```https://vrtfs.demo.featurehub.io/features/def
 
 ![Service account](images/service-account-copy.png) 
 
+## Recipes
+
+We include these up front because its likely you want to just get up and started. 
+
+### A simple nodejs server
+
+To startup with a simple nodejs server with FeatureHub you are likely to do this. This is taken
+from our sample `todo-backend-typescript` client.
+
+```typescript
+import { FeatureHubEventSourceClient } from 'featurehub-eventsource-sdk/dist';
+import {FeatureContext, featureHubRepository, GoogleAnalyticsCollector, Readyness} from 'featurehub-repository/dist';
+
+// find the full url for your FeatureHub environment and start listening to it in realtime mode                                   
+const featureHubEventSourceClient  = new FeatureHubEventSourceClient(process.env.FEATUREHUB_APP_ENV_URL);
+featureHubEventSourceClient.init();
+
+// .. do some initialization
+
+// .. now you are ready, tell the featurehub repository to let you know when the features
+// are ready so you can start listening for traffic
+
+featureHubRepository.addReadynessListener((ready) => {
+  if (ready == Readyness.Ready) {
+    console.log("Features are available, starting server...");
+
+    api.listen(port, function () {
+      console.log('server is listening on port', port);
+    });
+  }
+});
+```
+
+### A simple browser based client
+
+In this case, you are again using the event source method of connecting, but you will probably want to use _catch
+and release_ mode, which is described below. This is again taken from the `todo-frontend-react-typescript` example.
+
+
+```typescript 
+import {
+  FeatureContext,
+  featureHubRepository,
+  // GoogleAnalyticsCollector,
+  Readyness,
+  FeatureUpdater,
+  FeatureHubPollingClient
+} from 'featurehub-repository/dist';
+import { FeatureHubEventSourceClient } from 'featurehub-eventsource-sdk/dist';
+import globalAxios from 'axios';
+
+// some class that defines what your config json file will look like
+class ConfigData {
+  sdkUrl: string;
+  baseUrl: string;
+}
+
+async initializeFeatureHub() {
+    featureHubRepository.addReadynessListener((readyness) => {
+      if (readyness === Readyness.Ready) {
+         // maybe take loading screen off...
+      }
+    });
+
+    featureHubRepository
+      .addPostLoadNewFeatureStateAvailableListener((_) =>
+        { // update the UI, or tell user it needs to happen });
+                                                     
+    // prevent updates to features until we say so
+    featureHubRepository.catchAndReleaseMode = true; 
+
+    // load the config from the config json file
+    const config = (await globalAxios.request({url: 'featurehub-config.json'})).data as ConfigData;
+
+    // listen for features from the url from the json you just loaded above
+    this.eventSource = new FeatureHubEventSourceClient(config.sdkUrl);
+    this.eventSource.init();
+
+    // this lets you add callback listeners for features. If when you "release" below and this changes, you will
+    // get a callback event
+    // featureHubRepository.getFeatureState('SUBMIT_COLOR_BUTTON').addListener((fs: FeatureStateHolder) => {
+    //   // do something with changed colour
+    // });
+    
+    // add an analytics adapter with a random or known CID
+    // featureHubRepository.addAnalyticCollector(new GoogleAnalyticsCollector('UA-1234', '1234-5678-abcd-1234'));
+  }
+
+// somewhere else in the code, depending on say navigation or a pull to refresh event
+featureHubRepository.release();
+``` 
+
+### A Mobile device
+
+On a mobile device you will swap out the code above:
+
+```typescript
+    // listen for features from the url from the json you just loaded above
+    this.eventSource = new FeatureHubEventSourceClient(config.sdkUrl);
+    this.eventSource.init();
+```
+
+with the following:
+
+```typescript
+const fp = new FeatureHubPollingClient(
+  featureHubRepository, // repository 
+  config.baseUrl,  // host
+  300000,    // every 300 seconds, 0 if only fire once
+  [config.sdkUrl] 
+);
+
+fp.start();
+```
+
+This will change to a GET request that triggers every five minutes or so. 
+ 
+
 ## The FeatureHub repository
 
 ### Overview
@@ -98,12 +216,26 @@ featureHubRepository.addReadynessListener((readyness) => {
 });
 ````
 
-#### New Feature Available 
+#### New Feature State Available 
 
-If you want to know when a new feature is available, any new feature, then this is the event for you. In particular,
-this only happens after the first events are loaded. It has a caveat that it is triggered when features 
-_actually change_ not when we receive new updates for them. That is particularly important because of the _catch and
-release_ functionality listed below.
+The repository tracks features and their states by version number. When a new version of a feature state arrives,
+say a flag changes from off to on, then the repository will check this version is really newer, and if so, it will
+(in the default, immediate mode) apply that change to the current feature state it is holding. From this it will
+trigger any events on that particular feature, and it can also trigger a generic event - 
+`postLoadNewFeatureStateAvailable`. This event gets triggered once no matter if a bundle of changes comes in, or a 
+single change comes in. 
+
+You would typically use this to know if events have occurred that mean you need to go back and get event states or
+rerender a page or similar.
+
+This event gets a little more complicated when using the second (non default) mode - _catch and release_ - discussed
+in more detail with examples below. In this mode, the repository will receive the updates, and compare them, but it
+will *not* apply them to the features in the repository. As such, in this mode, a change on the server that 
+turns up in the repository (via GET or EventSource) will *not* be applied to the local feature state, it will be held.
+And the effect of this is that this event will _not_ fire. When you tell the repository to process these "held" 
+changes, then the event will fire. 
+
+Attaching a listener for this hook is done like this:
 
 ```typescript
 featureHubRepository
@@ -166,6 +298,8 @@ Unlike the server focused APIs, Typescript/Javascript, like Dart (for Flutter) h
 
 In this mode, as changes occur to features coming from the server, the states of the features will immediately change.
 Events are fired. This kind of operation is normally best for servers, as they want to react to what has been asked for.
+
+You do not have to write any code to get this mode. It is the default.
 
 ### Catch and Release (recommended for Web and Mobile)
 
