@@ -17,6 +17,6 @@ public class OpenTracingFeatureStateInjector {
    * @param span - the span into which to inject
    */
   public static void injectFeatureState(String key, String value, Span span) {
-    span.setBaggageItem(FEATUREHUB_OPENTRACING_BAGGAGE_PREFIX + key, value);
+    span.setBaggageItem(FEATUREHUB_OPENTRACING_BAGGAGE_PREFIX + key.replace(":", "_"), value);
   }
 }

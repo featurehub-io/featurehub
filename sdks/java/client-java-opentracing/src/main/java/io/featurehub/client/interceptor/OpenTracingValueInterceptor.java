@@ -35,7 +35,8 @@ public class OpenTracingValueInterceptor implements FeatureValueInterceptor {
         final Span span = tracer.activeSpan();
 
         if (span != null) {
-          String val = span.getBaggageItem(FEATUREHUB_OPENTRACING_BAGGAGE_PREFIX + key.toLowerCase());
+          String val = span.getBaggageItem(FEATUREHUB_OPENTRACING_BAGGAGE_PREFIX +
+            key.toLowerCase().replace(":", "_"));
 
           return new ValueMatch(val != null, val);
         }
