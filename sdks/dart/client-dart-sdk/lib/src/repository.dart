@@ -24,6 +24,23 @@ abstract class FeatureStateHolder {
   FeatureStateHolder copy();
 }
 
+class ValueMatch {
+  final bool matched;
+  final String value;
+
+  ValueMatch(this.matched, this.value) : assert(matched != null);
+}
+
+class _InterceptorHolder {
+  final bool allowLockOverride;
+  final FeatureValueInterceptor interceptor;
+
+  _InterceptorHolder(this.allowLockOverride, this.interceptor)
+      : assert(allowLockOverride != null);
+}
+
+typedef FeatureValueInterceptor = ValueMatch Function(String key);
+
 class AnalyticsEvent {
   final String action;
   final Map<String, Object> other;
@@ -36,13 +53,15 @@ class _FeatureStateBaseHolder implements FeatureStateHolder {
   dynamic _value;
   FeatureState _featureState;
   BehaviorSubject<FeatureStateHolder> _listeners;
+  final List<_InterceptorHolder> featureValueInterceptors;
 
   @override
   String get key => _featureState?.key;
   @override
   Stream<FeatureStateHolder> get featureUpdateStream => _listeners.stream;
 
-  _FeatureStateBaseHolder(_FeatureStateBaseHolder fs) {
+  _FeatureStateBaseHolder(
+      _FeatureStateBaseHolder fs, this.featureValueInterceptors) {
     _listeners = fs?._listeners ?? BehaviorSubject<FeatureStateHolder>();
   }
 
@@ -62,32 +81,53 @@ class _FeatureStateBaseHolder implements FeatureStateHolder {
   int get version => _featureState?.version;
 
   @override
-  bool get exists => _value != null;
+  bool get exists => _findIntercept(() => _value) != null;
 
   @override
-  bool get booleanValue =>
-      _featureState?.type == FeatureValueType.BOOLEAN ? _value as bool : null;
+  bool get booleanValue => _findIntercept(
+          () => _featureState?.type == FeatureValueType.BOOLEAN ? _value : null)
+      as bool;
 
   @override
-  String get stringValue => (_featureState?.type == FeatureValueType.STRING ||
-          _featureState?.type == FeatureValueType.JSON)
-      ? _value as String
-      : null;
+  String get stringValue =>
+      _findIntercept(() => (_featureState?.type == FeatureValueType.STRING ||
+              _featureState?.type == FeatureValueType.JSON)
+          ? _value
+          : null) as String;
 
   @override
-  num get numberValue =>
-      _featureState?.type == FeatureValueType.NUMBER ? _value as num : null;
+  num get numberValue => _findIntercept(
+          () => _featureState?.type == FeatureValueType.NUMBER ? _value : null)
+      as num;
 
   @override
-  dynamic get jsonValue =>
-      _featureState?.type == FeatureValueType.JSON ? jsonDecode(_value) : null;
+  dynamic get jsonValue {
+    String body = _findIntercept(
+        () => _featureState?.type == FeatureValueType.JSON ? _value : null);
+
+    return body == null ? null : jsonDecode(body);
+  }
 
   @override
   FeatureValueType get type => _featureState.type;
 
   @override
   FeatureStateHolder copy() {
-    return _FeatureStateBaseHolder(null)..featureState = _featureState;
+    return _FeatureStateBaseHolder(null, featureValueInterceptors)
+      ..featureState = _featureState;
+  }
+
+  dynamic _findIntercept(Function determineDefault) {
+    bool locked = _featureState != null && true == _featureState.l;
+
+    final found = featureValueInterceptors
+        .where((vi) => !locked || vi.allowLockOverride)
+        .map((vi) {
+      final vm = vi.interceptor(key);
+      return (vm != null && vm.matched) ? vm : null;
+    }).where((vm) => vm != null);
+
+    return found.isNotEmpty ? found.first : determineDefault();
   }
 
   void shutdown() {
@@ -110,6 +150,7 @@ class ClientFeatureRepository {
   bool _catchAndReleaseMode = false;
   // indexed by id (not key)
   final Map<String, FeatureState> _catchReleaseStates = {};
+  final List<_InterceptorHolder> _featureValueInterceptors = [];
 
   Stream<Readyness> get readynessStream => _readynessListeners.stream;
   Stream<ClientFeatureRepository> get newFeatureStateAvailableStream =>
@@ -223,7 +264,8 @@ class ClientFeatureRepository {
   }
 
   FeatureStateHolder getFeatureState(String key) {
-    return _features.putIfAbsent(key, () => _FeatureStateBaseHolder(null));
+    return _features.putIfAbsent(
+        key, () => _FeatureStateBaseHolder(null, _featureValueInterceptors));
   }
 
   bool get catchAndReleaseMode => _catchAndReleaseMode;
@@ -242,7 +284,7 @@ class ClientFeatureRepository {
     var holder = _features[feature.key];
 
     if (holder == null || holder.key == null) {
-      holder = _FeatureStateBaseHolder(holder);
+      holder = _FeatureStateBaseHolder(holder, _featureValueInterceptors);
     } else {
       if (holder.version != null && holder.version >= feature.version) {
         return false;
@@ -253,6 +295,13 @@ class ClientFeatureRepository {
     _features[feature.key] = holder;
 
     return true;
+  }
+
+  /// register an interceptor, indicating whether it is allowed to override
+  /// the locking coming from the server
+  void registerFeatureValueInterceptor(
+      bool allowLockOverride, FeatureValueInterceptor fvi) {
+    _featureValueInterceptors.add(_InterceptorHolder(allowLockOverride, fvi));
   }
 
   void _deleteFeature(FeatureState feature) {
