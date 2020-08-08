@@ -1,8 +1,12 @@
+:icons: font
 image::docs/images/fh_primary_navy.png[Feature Hub,500]
 
 FeatureHub is a Cloud Native platform to help software teams manage their features. This is the
 primary source code repository for FeatureHub - if you want to help us resolve any outstanding
 issues, contribute a new SDK or just get a deeper understanding of how it works, this is the right place to be.
+
+IMPORTANT: Using FeatureHub from official channels is always going to be Docker images. You will only build these
+if you are running locally or wish to build your own Docker images.
 
 We selectively take cuts of this repository and build them into docker image sets. We then
 update the main https://github.com/featurehub-io/featurehub-install[install repository] with the latest
@@ -17,16 +21,20 @@ Full documentation can be found at https://docs.featurehub.io[docs.featurehub.io
 If you have reviewed the https://docs.featurehub.io/architecture.html[Architecture section] of the FeatureHUb 
 documentation you will notice there are several parts. It is designed this way because FeatureHub is designed
 to scale from a small one person, one application option all the way to large organisations serving billions
-of requests for features per day. That has also affected our language and deployment choices. 
+of requests for features per day. That has also affected our language and deployment choices.
 
-=== The backend servers 
+=== The Backend Servers 
 
 The Management Repository, Dacha (the Cache layer) and Edge (where all clients connect
-via their service accounts) are all written in Java. That is where our experience in writing massively scalable
+via their service accounts) are all written in _Java_. That is where our experience in writing massively scalable
 software lies, so we stuck it what we know. In our simple examples, it all deploys together in one simple 
 bundle. In complex examples it can all be sliced apart, sharded and massively scaled. If you want to
 contribute to the backend, you will need to know Java. We use a few other technologies as well which will
 help OpenAPI, JAX-RS (specifically Jersey), Maven (specifically with Maven Tiles), and Ebean for our ORM.
+
+Java was also chosen amongst the JVM stack because of its ability to allow the greatest number of people to 
+contribute. The `pom.xml`  in the main repository is there simply to allow for easy loading and local installation
+of the project. It is called a _reactor_. 
 
 If you want to go deep, we also support Prometheus, Health Checks, OpenTracing and Jaeger. This is an 
 enterprise-ready stack where you can easily ignore all that stuff if you aren't interested. But if you have
@@ -37,9 +45,12 @@ operations people and they want it, it is there.
 The Admin front end is written in Flutter Web. Again, going with what we are best at, with highly honed Flutter skills,
 we chose to not spread our load too wide. We are happy with this choice currently as it gives us a wide range
 of platforms (Flutter Web, mobile, native platforms) we can target from the same codebase. If you want
-to contribute to the Admin UI - Flutter is where we are at.
+to contribute to the Admin UI - Flutter is where we are at, and we would love you to join us! 
 
-=== The SDKs
+At the moment it is one artifact, but it is like to shatter soon into separate pieces and hopefully get some
+serious unit and widget testing! 
+
+== The SDKs
 
 The SDKs have their own section, and each seeks to be an idiomatic representation of their own
 language. We recommend you head to the link:sdks/README.adoc[SDKs section] to learn more about it. If
