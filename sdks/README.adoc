@@ -1,5 +1,8 @@
 = Developer SDK Documentation
 
+NOTE: This repository is _only_ if you wish to continue to developing SDKs, all the information
+you need to know about _using_ the SDKs is in 
+
 So you want to write an SDK? That's awesome, thanks for joining the crew!
 
 

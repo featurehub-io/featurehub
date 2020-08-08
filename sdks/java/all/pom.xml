@@ -5,10 +5,9 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.featurehub</groupId>
-  <artifactId>featurehub-examples</artifactId>
+  <artifactId>featurehub-java-sdk-reactor</artifactId>
   <version>1.1.1</version>
   <packaging>pom</packaging>
-  <description>for building when the examples</description>
 
   <url>https://featurehub.io</url>
   <developers>
@@ -34,16 +33,15 @@
     </license>
   </licenses>
 
-  <properties>
-    <docker-cloud-build>true</docker-cloud-build>
-  </properties>
-
   <modules>
-    <module>sdks/typescript/client-typescript-core</module>
-    <module>sdks/typescript/client-typescript-eventsource</module>
-    <module>examples/todo-frontend-react-typescript</module>
-    <module>examples/todo-backend-typescript</module>
-    <module>examples/todo-backend-java</module>
+    <module>../client-java-core</module>
+    <module>../client-java-android</module>
+    <module>../client-java-jersey</module>
+    <module>../client-java-opentracing</module>
+    <module>../client-java-opentelemetry</module>
+    <module>../../typescript/client-typescript-core</module>
+    <module>../../typescript/client-typescript-eventsource</module>
+    <module>../../dart/client-dart-api</module>
+    <module>../../dart/client-dart-sdk</module>
   </modules>
-
 </project>

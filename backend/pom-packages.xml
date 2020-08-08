@@ -5,10 +5,9 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.featurehub</groupId>
-  <artifactId>featurehub-examples</artifactId>
+  <artifactId>featurehub-reactor</artifactId>
   <version>1.1.1</version>
   <packaging>pom</packaging>
-  <description>allowing you to open the examples in an IDE for editing</description>
 
   <url>https://featurehub.io</url>
   <developers>
@@ -39,9 +38,42 @@
   </properties>
 
   <modules>
-    <module>todo-frontend-react-typescript</module>
-    <module>todo-backend-typescript</module>
-    <module>todo-backend-java</module>
+    <module>sse-edge</module>
+    <module>mr</module>
+    <module>../admin-frontend</module>
+    <module>dacha</module>
+    <module>party-server</module>
   </modules>
 
+  <profiles>
+    <profile>
+      <id>docker-cloud-build</id>
+      <!-- otherwise don't active in tiles -->
+      <activation>
+        <property>
+          <name>docker-cloud-build</name>
+          <value>true</value>
+        </property>
+      </activation>
+
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>cd.connect.pipeline</groupId>
+            <artifactId>docker-manifest-collectosaur-plugin</artifactId>
+            <version>1.2</version>
+            <executions>
+              <execution>
+                <id>mamasaur</id>
+                <phase>compile</phase>
+                <goals>
+                  <goal>mamasaur</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

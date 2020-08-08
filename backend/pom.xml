@@ -5,10 +5,9 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.featurehub</groupId>
-  <artifactId>featurehub-just-apis</artifactId>
+  <artifactId>featurehub-reactor</artifactId>
   <version>1.1.1</version>
   <packaging>pom</packaging>
-  <description>for building when just the apis change</description>
 
   <url>https://featurehub.io</url>
   <developers>
@@ -34,15 +33,29 @@
     </license>
   </licenses>
 
-  <properties>
-    <docker-cloud-build>true</docker-cloud-build>
-  </properties>
-
   <modules>
-    <module>backend/mr-api</module>
-    <module>admin-frontend/app_mr_layer</module>
-    <module>backend/dacha-api</module>
-    <module>backend/sse-edge-api</module>
+    <module>composite-jackson</module>
+    <module>composite-ebean</module>
+    <module>composite-app</module>
+    <module>composite-jersey</module>
+    <module>composite-common</module>
+    <module>composite-parent</module>
+    <module>composite-logging</module>
+    <module>composite-logging-api</module>
+    <module>composite-opentracing</module>
+    <module>composite-prometheus</module>
+    <module>composite-test</module>
+    <module>sse-edge-api</module>
+    <module>sse-edge</module>
+    <module>mr</module>
+    <module>mr-api</module>
+    <module>mr-db-api</module>
+    <module>mr-db-sql</module>
+    <module>mr-db-ebean</module>
+    <module>mr-streaming-api</module>
+    <module>mr-publish-api</module>
+    <module>party-server</module>
+    <module>dacha</module>
+    <module>dacha-api</module>
   </modules>
-
 </project>

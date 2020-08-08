@@ -39,10 +39,10 @@
   </licenses>
 
   <modules>
-    <module>backend/tile-java</module>
-    <module>backend/tile-java8</module>
-    <module>backend/tile-release</module>
-    <module>backend/tile-app</module>
-    <module>backend/tile-app-with-ui</module>
+    <module>tile-java</module>
+    <module>tile-java8</module>
+    <module>tile-release</module>
+    <module>tile-app</module>
+    <module>tile-app-with-ui</module>
   </modules>
 </project>
