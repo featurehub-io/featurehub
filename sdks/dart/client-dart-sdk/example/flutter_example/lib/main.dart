@@ -23,7 +23,7 @@ void main() {
 
   featurehub = ClientFeatureRepository();
   // this next step can be delayed based on environment loading, etc
-  featurehubApi = new FeatureHubSimpleApi(
+  featurehubApi = FeatureHubSimpleApi(
       'http://127.0.0.1:8553',
       [
         'default/ce6b5f90-2a8a-4b29-b10f-7f1c98d878fe/VNftuX5LV6PoazPZsEEIBujM4OBqA1Iv9f9cBGho2LJylvxXMXKGxwD14xt2d7Ma3GHTsdsSO8DTvAYF'

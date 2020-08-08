@@ -34,16 +34,6 @@
   </licenses>
 
   <modules>
-    <module>sdks/java/client-java-core</module>
-    <module>sdks/java/client-java-android</module>
-    <module>sdks/java/client-java-jersey</module>
-    <module>sdks/java/client-java-opentracing</module>
-    <module>examples/todo-backend-java</module>
-    <!-- until we have a version of 5 -->
-<!--    <module>sdks/typescript/client-typescript-core</module>-->
-<!--    <module>sdks/typescript/client-typescript-eventsource</module>-->
-    <module>sdks/dart/client-dart-api</module>
-    <module>sdks/dart/client-dart-sdk</module>
     <module>backend/composite-jackson</module>
     <module>backend/composite-ebean</module>
     <module>backend/composite-app</module>
@@ -63,10 +53,17 @@
     <module>backend/mr-db-sql</module>
     <module>backend/mr-db-ebean</module>
     <module>backend/mr-streaming-api</module>
-    <module>admin-frontend/app_mr_layer</module>
     <module>backend/mr-publish-api</module>
     <module>backend/party-server</module>
     <module>backend/dacha</module>
     <module>backend/dacha-api</module>
+    <module>sdks/java/client-java-core</module>
+    <module>sdks/java/client-java-android</module>
+    <module>sdks/java/client-java-jersey</module>
+    <module>sdks/java/client-java-opentracing</module>
+    <module>sdks/java/client-java-opentelemetry</module>
+    <module>sdks/dart/client-dart-api</module>
+    <module>sdks/dart/client-dart-sdk</module>
+    <module>admin-frontend/app_mr_layer</module>
   </modules>
 </project>

@@ -1,6 +1,0 @@
-= Run Configurations
-
-As mentioned in the documentation, there are several run configurations using `docker-compose` that you are able to
-use. If you are using docker-compose, we would generally recommend the all-in-one-postgres, or all-separate-postgres.
-
-
