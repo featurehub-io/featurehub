@@ -38,6 +38,7 @@
     <module>sdks/java/client-java-android</module>
     <module>sdks/java/client-java-jersey</module>
     <module>sdks/java/client-java-opentracing</module>
+    <module>sdks/java/client-java-opentelemetry</module>
     <module>examples/todo-backend-java</module>
     <!-- until we have a version of 5 -->
 <!--    <module>sdks/typescript/client-typescript-core</module>-->
