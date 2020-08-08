@@ -50,7 +50,7 @@ public class GoogleAnalyticsCollector implements AnalyticsCollector {
         "";
 
       String baseForEachLine =
-        "v=1&tid=" + uaKey + "&cid=" + cid + "&t=event&ec=FeatureHub%20Event&ea=" + URLEncoder.encode(action,
+        "v=1&tid=" + uaKey + "&cid=" + finalCid + "&t=event&ec=FeatureHub%20Event&ea=" + URLEncoder.encode(action,
           StandardCharsets.UTF_8.name()) + ev + "&el=";
 
       featureStateAtCurrentTime.forEach((fsh) -> {

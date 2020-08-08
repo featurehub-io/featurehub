@@ -1,92 +1,53 @@
+:icons: font
 image::docs/images/fh_primary_navy.png[Feature Hub,500]
 
-FeatureHub is a Cloud Native platform to help software teams manage their features, from feature flags (also known as feature toggles) to A/B experiments and remote or centralised configuration.
-It's an essential ingredient for enabling the feedback loop and feature testing and experimentation in production with real users.
+FeatureHub is a Cloud Native platform to help software teams manage their features, from feature flags (also known as feature toggles) to A/B experiments and remote or centralised configuration. 
+This is the primary source code repository for FeatureHub - if you want to help us resolve any outstanding
+issues, contribute a new SDK or just get a deeper understanding of how it works, this is the right place to be.
 
-FeatureHub can be used with small startups through to large enterprises with many applications and teams.
-It has an enterprise grade permission model, that is intuitive and easy to use, so you can be up and running quickly.
+IMPORTANT: If you like to install FeatureHub, please refer to https://github.com/featurehub-io/featurehub-install[install repository] with configured docker images 
 
-FeatureHub is a self-hosted platform so you can run it on your own infrastructure.
-
-https://demo.featurehub.io[Try FeatureHub demo now]
-
-image::docs/images/FH-flags.gif[FeatureHub console demo,800]
-
-== Why FeatureHub?
-
-=== Free
-
-* Unlimited users
-* Unlimited features
-* Unlimited clients requesting features
-* Unlimited Applications and Environments
-* Unlimited scalability
-* Choice of how to run your experiment - feature flag, number, string or remote configuration
-* Integration with analytics so you can see how your experiments perform, with Google Analytics out of the box
-
-=== Supported SDKs
-
-image:docs/images/languages.png[Java Logo,1000]
-
-More detailed documentation on SDK's can be found https://docs.featurehub.io#sdks[here]
-
-=== Easy to use
-
-* Control features from an easy to use console
-* View how your features are setup across each environment from the main console
-* Environments promotion order - to help you see and order features by environment
-* With "smart lock" only enable feature state updates when they are ready
-* Use handy admin functions, like applications, environments and user management
-
-=== Enterprise ready
-
-* Run on your own infrastructure (self-hosted)
-* Access control levels to allow different teams/groups permissions.
-* Multiple portfolios (department) support
-
-=== Best development experience
-
-* Easy to set up, Cloud Native - docker containers available
-* Easy to integrate with test automation - API to control feature states from the tests is available
-* Support for feature flags, numbers, strings and Json structure (remote configuration)
-* Easy to log events with analytics with attached feature state
-* Documentation and tutorials available
-
+We selectively take cuts of this repository and build them into docker image sets. We then
+update the main https://github.com/featurehub-io/featurehub-install[install repository] with the latest
+images and issues tags on that repository. 
 
 == Documentation
 
 Full documentation can be found at https://docs.featurehub.io[docs.featurehub.io]
 
-=== Getting started
+== The Code
 
-If you are just curious to see how FeatureHub works and would like to play with it there is a simple way of doing it, please follow instructions https://docs.featurehub.io/#_starting_small[here]
+If you have reviewed the https://docs.featurehub.io/architecture.html[Architecture section] of the FeatureHub 
+documentation you will notice there are several components. FeatureHub is designed this way to allow
+to scale from a small one application option to large organisations serving billions
+of requests for features per day.
 
-Once you decided to start using FeatureHub in your team, there are also several installation options depending on your use case, please read about these options https://docs.featurehub.io/#_installation[here].
+=== The Backend Servers 
 
-=== How to use SDKs and examples 
+The Management Repository, Dacha (the Cache layer) and Edge (where all clients connect
+via their service accounts) are all written in _Java_. This allows us to build fully scalable
+software. In our simple examples, it all deploys together in one simple 
+bundle. In complex examples it can all be sliced apart, sharded and massively scaled. Apart from Java, we use a few other technologies as well which will
+help OpenAPI, JAX-RS (specifically Jersey), Maven (specifically with Maven Tiles), and Ebean for our ORM.
 
-Please follow documentation http://docs.featurehub.io/index.html#_sdk_usage[here]
+Java was also chosen amongst the JVM stack because of its ability to allow the greatest number of people to 
+contribute. The `pom.xml`  in the main repository to allow for easy loading and local installation
+of the project. It is called a _reactor_. 
 
+If you want to go more advanced, we also support Prometheus, Health Checks, OpenTracing and Jaeger.
 
-//== Built with
-//* https://flutter.dev/web[Flutter Web]
-//* https://openjdk.java.net/projects/jdk/11/[Java 11]
-//* https://dart.dev/[Dart]
-//* https://nats.io[NATS]
-//* https://search.maven.org/search?q=a:openapi-dart-generator[Open API Dart Generator]
+=== The FeatureHub Admin Console
 
+The Admin front end is written in Flutter Web. This choice gives us a wide range
+of platforms (Web, mobile, native platforms) we can target from the same codebase. Currently, Web platform is our priority. If you want
+to contribute to the Admin Console - we would love you to join us! 
 
+== The SDKs
 
-
-== Coming soon
-
-* Gradual rollout and A/B testing
-* SDK's : Mobile (Swift, Java), Python
-* Per request feature testing with CNCF Open Tracing and Open Telemetry
-* Yaml remote configuration support
-* Feature auditing
-
-For more details please refer to https://github.com/featurehub-io/featurehub/issues?q=is%3Aissue+is%3Aopen+label%3Aroadmap[Roadmap tickets]
+The SDKs have their own section, and each seeks to be an idiomatic representation of their own
+language. Visit our docs https://docs.featurehub.io/index.html#sdks[here] to learn more about it. If
+you are planning on helping us by building an SDK in a language we don't yet support, please refer to link:sdks/README.adoc[this] doc. We are happy to get contributions that slowly add full
+functionality for a new language. 
 
 == Contributing
 
