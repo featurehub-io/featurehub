@@ -223,11 +223,11 @@ Otherwise passing a value will assume this is true.
 
 === Feature Interceptors
 
-Feature Interceptors are the ability to intercept the request for a feature.They only operate in imperative state, so when
-code specifically requests the value of a feature, they don't cause events to trigger.They are designed to function
+Feature Interceptors are the ability to intercept the request for a feature. They only operate in imperative state, so when
+code specifically requests the value of a feature, they don't cause events to trigger. They are designed to function
 to enable specific kinds of use cases, such as:
 
-- allowing external storage of features, such as in a text file.This allows developers to override the value of features in their local running infrastructure without having to have a dedicated Environment for themselves or be connected.
+- allowing external storage of features, such as in a text file. This allows developers to override the value of features in their local running infrastructure without having to have a dedicated Environment for themselves or be connected.
 - allow per request overriding of features for example with OpenTracing or OpenTelemetry.
 Because of the nature of OpenTracing and OpenTelemetry, this allows you to listen to events from message queue systems like NATs, Kafka, ActiveMQ, etc.
 
