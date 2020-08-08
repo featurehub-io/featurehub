@@ -10,7 +10,7 @@ final _log = Logger('Routes');
 
 class Routes {
   static final List<String> PUBLIC_URLS = ['/forgot-password', '/register-url'];
-  static void configureRoutes(Router router) {
+  static void configureRoutes(FHRouter router) {
     router.notFoundHandler = Handler(
         handlerFunc: (BuildContext context, Map<String, List<String>> params) {
       _log.severe('request for route not found');

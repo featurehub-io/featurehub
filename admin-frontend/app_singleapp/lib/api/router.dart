@@ -38,7 +38,7 @@ class Handler {
 enum TransitionType { fadeIn, material }
 enum PermissionType { superadmin, portfolioadmin, regular }
 
-Router router = Router();
+FHRouter router = FHRouter();
 
 class RouterRoute {
   Handler handler;
@@ -46,7 +46,7 @@ class RouterRoute {
   PermissionType permissionType = PermissionType.regular;
 }
 
-class Router {
+class FHRouter {
   Handler notFoundHandler;
   ManagementRepositoryClientBloc mrBloc;
   Map<String, RouterRoute> handlers = {};

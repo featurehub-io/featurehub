@@ -62,15 +62,18 @@ class ManagementRepositoryClientBloc implements Bloc {
   EnvironmentServiceApi environmentServiceApi;
   FeatureServiceApi featureServiceApi;
   ApplicationServiceApi applicationServiceApi;
-  static Router router;
+  static FHRouter router;
+
   // this reflects actual requests to change the route driven externally, so a user clicks on
   // something that should cause the page to change to this route.
   final _routerSource = BehaviorSubject<RouteChange>();
+
   // this is when route change events are being notified of downstream systems but don't cause
   // an actual change in route (usually because this has already happened such as on tab changes
   // the Applications page is like this. The tabs cause changes in routes that are not actual route
   // changes otherwise they would endlessly cause the page to redraw.
   final _routerExternalSource = PublishSubject<RouteChange>();
+
   // this represents the current route state. When _routerSource changes it should push to here
   // and when _routerExternalSource changes, it should push to here
   final _routerCollectedSource = BehaviorSubject<RouteChange>();
@@ -259,7 +262,7 @@ class ManagementRepositoryClientBloc implements Bloc {
 
     _initializeRouteStreams();
 
-    router = Router();
+    router = FHRouter();
     router.mrBloc = this;
     Routes.configureRoutes(router);
 

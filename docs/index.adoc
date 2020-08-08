@@ -30,10 +30,6 @@ FeatureHub is a self-hosted platform so you can run it on your own infrastructur
 
 image::images/fh_learn_build_measure.svg[Learn,Build,Measure]
 
-== Architecture
-
-Please read link:architecture{outfilesuffix}[for information about the architecture of FeatureHub].
-
 == Installation
 
 There are link:installation{outfilesuffix}[3 main deployment options] for running FeatureHub.As FeatureHub is packaged as a _Cloud Native_ bundle, all parts are Docker images and are intended to be used with that technology (i.e. Docker or Kubernetes).
@@ -189,28 +185,26 @@ It is designed so you need to specify the `User-ID` or `CID`, your `UA-` id and 
 === Web + Mobile Capabilities
 
 The following capabilities are focused on clients that provide a UI to the client and thus you may wish to control
-the updating of the features. 
+the updating of the features.
 
 ==== Catch & Release
 
-Some clients don't want the features to be immediately triggered.
+Some clients don't want the feature updates to be immediately triggered in real-time.
 These are usually those that use Feature Listeners and they want to hold onto the changes until they have informed the user there are changes - via some UI element (e.g. reload for new functionality).
 Catch and release mode normally includes a flag to set it, an extra callback to indicate new features have come in, and then a release method to indicate the new features should be released (their state changed and the listeners triggered).
 The Typescript, Javascript and Dart libraries all have examples of this.
 
-If you use catch and release, it is worthwhile considering enabling OpenTracing feature overrides in production. 
+If you use catch and release, it is worthwhile considering enabling OpenTracing feature overrides in production.
 You can configure feature interceptors to not be allowed to override locked features.
 
+=== Test automation support 
 
-==== Test Client / Feature Updater
-
-This is designed to allow tests to change the values of features in their environments while they are running.
-For integration or e2e tests that run sequentially in an environment it is a useful feature, but for load balanced tests running a variety of feature profiles all against the same environment, it is better to use OpenTracing or OpenTelemetry.
-We will support this directly in the future.
+Test Client / Feature Updater is designed to allow tests to change the values of features in their environments while they are running.
 
 This will depend on the permissions granted to the service account in the environment that is configured.
-If the service account only has READ access, no changes will be allowed.
-A typical service account would need UNLOCK and CHANGE_VALUE. Alternatively if features are always unlocked in test environments (which is usual), CHANGE_VALUE is all that is required, and READ is implicit.
+
+Besides READ permission, a typical service account would need UNLOCK and CHANGE_VALUE to allow tests to modify values.
+Alternatively if features are always unlocked in test environments (which is often the case), CHANGE_VALUE is all that is required, and READ is implicit.
 
 Changes are checked against the latest version of the feature in the cache.
 Changes that match the current state are simply ignored (and a 200 response given).
@@ -227,27 +221,30 @@ If it is null, and you want to ensure this is set to null (which is ignored for 
 - `updateValue` - this is specifically for the situation where you are setting a non feature flag to have a null value.
 Otherwise passing a value will assume this is true.
 
-==== Feature Interceptors
+=== Feature Interceptors
 
-Feature Interceptors are the ability to intercept the request for a feature. They only operate in imperative state, so when
-code specifically requests the value of a feature, they don't cause events to trigger. They are designed to function
+Feature Interceptors are the ability to intercept the request for a feature.They only operate in imperative state, so when
+code specifically requests the value of a feature, they don't cause events to trigger.They are designed to function
 to enable specific kinds of use cases, such as:
 
-- allowing external storage of features, such as in a text file. This allows developers to override the value of features
-in their local running infrastructure without having to have a dedicated Environment for themselves or be connected. 
-- allow per request overriding of features for example with OpenTracing or OpenTelemetry. Because of the nature of OpenTracing
-and OpenTelemetry, this allows you to listen to events from message queue systems like NATs, Kafka, ActiveMQ, etc. 
+- allowing external storage of features, such as in a text file.This allows developers to override the value of features in their local running infrastructure without having to have a dedicated Environment for themselves or be connected.
+- allow per request overriding of features for example with OpenTracing or OpenTelemetry.
+Because of the nature of OpenTracing and OpenTelemetry, this allows you to listen to events from message queue systems like NATs, Kafka, ActiveMQ, etc.
 
-It is unlikely you would be using these in production or staging environments as they are designed to make the
-development and testing of your feature based applications easier. They can however be used in production, and you can tell
-them that if the feature is locked, their statuses cannot be overridden. So in a test or development environment you should unlock
-your features and other environments you should lock them.
+It is unlikely you would be using these in production or staging environments as they are designed to make the development and testing of your feature based applications easier.
+They can however be used in production, and you can tell them that if the feature is locked, their statuses cannot be overridden.
+So in a test or development environment you should unlock your features and other environments you should lock them.
 
 This prevents bad actors from poking at your apis and turning features on before they are ready.
 
+== Architecture
+
+Please read link:architecture{outfilesuffix}[for information about the architecture of FeatureHub].
+
 === Licensing
 
-All SDKs are MIT licensed, as they reside in the client codebase. Downstream dependencies are not assured to be so.
+All SDKs are MIT licensed, as they reside in the client codebase.
+Downstream dependencies are not assured to be so.
 
 == Key concepts
 
@@ -262,7 +259,7 @@ image::images/fh_overview.svg[Overview,500]
 
 ==== Portfolio groups
 You can create one or more groups of people, these groups can be used to set various permissions
-on the applications and their environments, within the portfolio. Either use the same groups across applications within the
+on the applications and their environments, within the portfolio.Either use the same groups across applications within the
 portfolio, or create separate groups for each application.
 Some example groups might be:
 

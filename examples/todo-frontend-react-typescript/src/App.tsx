@@ -1,16 +1,15 @@
 import * as React from 'react';
-import { Configuration, DefaultApi, Todo } from './api';
+import {Configuration, DefaultApi, Todo} from './api';
 import './App.css';
 import globalAxios from 'axios';
 import {
-  FeatureContext,
-  featureHubRepository,
-  // GoogleAnalyticsCollector,
-  Readyness,
-  FeatureUpdater,
-  FeatureHubPollingClient
+    FeatureContext,
+    FeatureHubPollingClient,
+    featureHubRepository,
+    FeatureUpdater,
+    Readyness
 } from 'featurehub-repository/dist';
-import { FeatureHubEventSourceClient } from 'featurehub-eventsource-sdk/dist';
+import {FeatureHubEventSourceClient} from 'featurehub-eventsource-sdk/dist';
 
 declare global {
   interface Window {
@@ -76,30 +75,30 @@ class App extends React.Component<{}, { todos: TodoData }> {
     featureHubRepository.addReadynessListener((readyness) => {
       console.log('readyness', readyness);
       if (readyness === Readyness.Ready) {
-        const color = featureHubRepository.getFeatureState('SUBMIT_COLOR_BUTTON').getString();
-        this.setState({todos: this.state.todos.changeColor(color)});
+          const color = featureHubRepository.getFeatureState('SUBMIT_COLOR_BUTTON').getString();
+          this.setState({todos: this.state.todos.changeColor(color)});
       }
     });
 
-    featureHubRepository
-      .addPostLoadNewFeatureStateAvailableListener((_) =>
-                                                   this.setState(
-                                                     {todos: this.state.todos.changeFeaturesUpdated(true)}) );
+      featureHubRepository
+          .addPostLoadNewFeatureStateAvailableListener((_) =>
+              this.setState(
+                  {todos: this.state.todos.changeFeaturesUpdated(true)}));
 
-    featureHubRepository.catchAndReleaseMode = true; // don't allow feature updates to come through
+      featureHubRepository.catchAndReleaseMode = true; // don't allow feature updates to come through until release() is called
 
-    // load the config from the config json file
-    const config = (await globalAxios.request({url: 'featurehub-config.json'})).data as ConfigData;
-    // setup the api
-    todoApi = new DefaultApi(new Configuration({basePath: config.baseUrl }));
-    this._loadInitialData(); // let this happen in background
+      // load the config from the config json file
+      const config = (await globalAxios.request({url: 'featurehub-config.json'})).data as ConfigData;
+      // setup the api
+      todoApi = new DefaultApi(new Configuration({basePath: config.baseUrl}));
+      this._loadInitialData(); // let this happen in background
 
-    // listen for reatures from configured source
-    this.eventSource = new FeatureHubEventSourceClient(config.sdkUrl);
-    this.eventSource.init();
+      // listen for features from configured source
+      this.eventSource = new FeatureHubEventSourceClient(config.sdkUrl);
+      this.eventSource.init();
 
-    // alternative if you want to ready to incoming feature changes and not wait for a page refresh
-    // featureHubRepository.getFeatureState('SUBMIT_COLOR_BUTTON').addListener((fs: FeatureStateHolder) => {
+      // alternatively, if you want to serve feature updates in real-time, with catchAndReleaseMode set to false
+      // featureHubRepository.getFeatureState('SUBMIT_COLOR_BUTTON').addListener((fs: FeatureStateHolder) => {
     //   this.setState({todos: this.state.todos.changeColor(fs.getString())});
     // });
 
