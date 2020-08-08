@@ -259,7 +259,7 @@ image::images/fh_overview.svg[Overview,500]
 
 ==== Portfolio groups
 You can create one or more groups of people, these groups can be used to set various permissions
-on the applications and their environments, within the portfolio.Either use the same groups across applications within the
+on the applications and their environments, within the portfolio. Either use the same groups across applications within the
 portfolio, or create separate groups for each application.
 Some example groups might be:
 
