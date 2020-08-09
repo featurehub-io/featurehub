@@ -9,10 +9,13 @@ class FeatureValueStringEnvironmentCell extends StatefulWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
   final Feature feature;
   final FeatureValuesBloc fvBloc;
+  final FeatureValue featureValue;
 
-  const FeatureValueStringEnvironmentCell(
+  FeatureValueStringEnvironmentCell(
       {Key key, this.environmentFeatureValue, this.feature, this.fvBloc})
-      : super(key: key);
+      : featureValue = fvBloc
+            .featureValueByEnvironment(environmentFeatureValue.environmentId),
+        super(key: key);
 
   @override
   _FeatureValueStringEnvironmentCellState createState() =>
@@ -24,22 +27,22 @@ class _FeatureValueStringEnvironmentCellState
   TextEditingController tec = TextEditingController();
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    tec.text = widget.featureValue.valueString ?? '';
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return StreamBuilder<FeatureValue>(
-        stream: widget.fvBloc.featureValueByEnvironment(
-            widget.environmentFeatureValue.environmentId),
+    return StreamBuilder<bool>(
+        stream: widget.fvBloc
+            .environmentIsLocked(widget.environmentFeatureValue.environmentId),
         builder: (ctx, snap) {
           final canEdit = widget.environmentFeatureValue.roles
               .contains(RoleType.CHANGE_VALUE);
-          final isLocked = snap.hasData && snap.data.locked;
+          final isLocked = snap.hasData && snap.data;
           final enabled = canEdit && !isLocked;
-          final val = snap.hasData ? snap.data.valueString : null;
-
-          if (val == null) {
-            tec.text = '';
-          } else if (tec.text != val.toString()) {
-            tec.text = val.toString();
-          }
 
           return Align(
             alignment: Alignment.topCenter,
@@ -66,26 +69,15 @@ class _FeatureValueStringEnvironmentCellState
                       hintStyle: Theme.of(context).textTheme.caption),
                   onChanged: (value) {
                     widget.fvBloc.dirty(
-                      widget.environmentFeatureValue.environmentId,
-                      (originalFv) =>
-                          (value.isEmpty ? null : value) !=
-                          originalFv?.valueString,
-                    );
-                  },
-                  onEditingComplete: () {
-                    _handleChanged(tec.text, snap.data);
+                        widget.environmentFeatureValue.environmentId,
+                        (originalFv) =>
+                            (value.isEmpty ? null : value) !=
+                            originalFv?.valueString,
+                        value.isEmpty ? null : tec.text?.trim());
                   },
                 )),
           );
         });
-  }
-
-  void _handleChanged(String val, FeatureValue fv) {
-    fv.valueString = val?.trim();
-    if (fv.valueString.isEmpty) {
-      fv.valueString = null;
-    }
-    widget.fvBloc.updatedFeature(widget.environmentFeatureValue.environmentId);
   }
 }
 

@@ -8,46 +8,40 @@ class FeatureValueUpdatedByCell extends StatelessWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
   final Feature feature;
   final FeatureValuesBloc fvBloc;
+  final FeatureValue featureValue;
 
-  const FeatureValueUpdatedByCell(
+  FeatureValueUpdatedByCell(
       {Key key, this.environmentFeatureValue, this.feature, this.fvBloc})
-      : super(key: key);
+      : featureValue = fvBloc
+            .featureValueByEnvironment(environmentFeatureValue.environmentId),
+        super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<FeatureValue>(
-        stream: fvBloc
-            .featureValueByEnvironment(environmentFeatureValue.environmentId),
-        builder: (context, snapshot) {
-          var updatedBy = '';
-          var whenUpdated = '';
-          var whoUpdated = '';
+    var updatedBy = '';
+    var whenUpdated = '';
+    var whoUpdated = '';
 
-          if (snapshot.hasData) {
-            final fv = snapshot.data;
-            if (fv.whenUpdated != null && fv.whoUpdated != null) {
-              updatedBy = 'Updated by: ';
-              whenUpdated = timeago.format(fv.whenUpdated.toLocal());
-              whoUpdated = fv.whoUpdated.name;
-            }
-          }
+    if (featureValue.whenUpdated != null && featureValue.whoUpdated != null) {
+      updatedBy = 'Updated by: ';
+      whenUpdated = timeago.format(featureValue.whenUpdated.toLocal());
+      whoUpdated = featureValue.whoUpdated.name;
+    }
 
-          return Container(
-              padding: EdgeInsets.only(top: 5, left: 8, right: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(updatedBy,
-                      style: Theme.of(context)
-                          .textTheme
-                          .caption
-                          .copyWith(color: Theme.of(context).buttonColor)),
-                  SizedBox(height: 4.0),
-                  Text(whoUpdated,
-                      style: Theme.of(context).textTheme.bodyText1),
-                  Text(whenUpdated, style: Theme.of(context).textTheme.caption)
-                ],
-              ));
-        });
+    return Container(
+        padding: EdgeInsets.only(top: 5, left: 8, right: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(updatedBy,
+                style: Theme.of(context)
+                    .textTheme
+                    .caption
+                    .copyWith(color: Theme.of(context).buttonColor)),
+            SizedBox(height: 4.0),
+            Text(whoUpdated, style: Theme.of(context).textTheme.bodyText1),
+            Text(whenUpdated, style: Theme.of(context).textTheme.caption)
+          ],
+        ));
   }
 }

@@ -15,10 +15,13 @@ class FeatureValueJsonEnvironmentCell extends StatefulWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
   final Feature feature;
   final FeatureValuesBloc fvBloc;
+  final FeatureValue featureValue;
 
-  const FeatureValueJsonEnvironmentCell(
+  FeatureValueJsonEnvironmentCell(
       {Key key, this.environmentFeatureValue, this.feature, this.fvBloc})
-      : super(key: key);
+      : featureValue = fvBloc
+            .featureValueByEnvironment(environmentFeatureValue.environmentId),
+        super(key: key);
 
   @override
   _FeatureValueJsonEnvironmentCellState createState() =>
@@ -30,22 +33,23 @@ class _FeatureValueJsonEnvironmentCellState
   TextEditingController tec = TextEditingController();
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    tec.text = widget.featureValue.valueJson ?? '';
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return StreamBuilder<FeatureValue>(
-        stream: widget.fvBloc.featureValueByEnvironment(
-            widget.environmentFeatureValue.environmentId),
+    return StreamBuilder<bool>(
+        stream: widget.fvBloc
+            .environmentIsLocked(widget.environmentFeatureValue.environmentId),
         builder: (ctx, snap) {
           final canEdit = widget.environmentFeatureValue.roles
               .contains(RoleType.CHANGE_VALUE);
-          final isLocked = snap.hasData && snap.data.locked;
+          final isLocked = snap.hasData && snap.data;
           final enabled = canEdit && !isLocked;
-          final val = snap.hasData ? snap.data.valueJson : null;
 
-          if (val == null) {
-            tec.text = '';
-          } else if (tec.text != val.toString()) {
-            tec.text = val.toString();
-          }
           BoxDecoration myBoxDecoration() {
             return BoxDecoration(
               border: Border.all(width: 1.0),
@@ -64,9 +68,7 @@ class _FeatureValueJsonEnvironmentCellState
                 canRequestFocus: false,
                 mouseCursor: SystemMouseCursors.click,
                 customBorder: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(
-                      Radius.circular(6.0) //         <--- border radius here
-                      ),
+                  borderRadius: BorderRadius.all(Radius.circular(6.0)),
                 ),
                 hoverColor: Colors.black12,
                 child: Container(
@@ -75,26 +77,32 @@ class _FeatureValueJsonEnvironmentCellState
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: ConfigurationViewerField(
-                          fv: snap.data, canEdit: canEdit),
+                          text: tec.text, canEdit: canEdit),
                     )),
-                onTap: () => _viewJsonEditor(context, snap, enabled),
+                onTap: () => _viewJsonEditor(context, enabled),
               ),
             ),
           );
         });
   }
 
-  void _valueChanged(AsyncSnapshot<FeatureValue> snap) {
-    snap.data.valueJson = tec.text?.trim();
-    if (snap.data.valueJson.isEmpty) {
-      snap.data.valueJson = null;
-    }
+  void _valueChanged() {
+    final value = tec.text?.trim();
 
-    widget.fvBloc.updatedFeature(widget.environmentFeatureValue.environmentId);
+    final dirty = widget.fvBloc
+        .dirty(widget.environmentFeatureValue.environmentId, (originalFv) {
+      return (value.isEmpty ? null : value) !=
+          originalFv?.valueJson?.toString();
+    }, value.isEmpty ? null : value);
+
+    if (dirty) {
+      setState(() {
+        print("setting state");
+      });
+    }
   }
 
-  void _viewJsonEditor(
-      BuildContext context, AsyncSnapshot<FeatureValue> snap, bool enabled) {
+  void _viewJsonEditor(BuildContext context, bool enabled) {
     var initialValue = tec.text;
     widget.fvBloc.mrClient.addOverlay((BuildContext context) => AlertDialog(
             content: Container(
@@ -124,7 +132,7 @@ class _FeatureValueJsonEnvironmentCellState
                                   messageBody:
                                       'Make sure your keys and values are in double quotes.');
                             } else {
-                              _valueChanged(snap);
+                              _valueChanged();
                               widget.fvBloc.mrClient.removeOverlay();
                             }
                           }))
@@ -138,25 +146,25 @@ class _FeatureValueJsonEnvironmentCellState
 }
 
 class ConfigurationViewerField extends StatelessWidget {
-  final FeatureValue fv;
+  final String text;
   final bool canEdit;
 
   const ConfigurationViewerField({
     Key key,
-    @required this.fv,
+    @required this.text,
     this.canEdit,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    if (fv != null && fv.valueJson != null) {
+    if (text != null && text.isNotEmpty) {
       return Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
           Flexible(
             flex: 4,
             child: Text(
-              fv.valueJson.replaceAll('\n', ''),
+              text.replaceAll('\n', ''),
               style: TextStyle(fontFamily: 'source', fontSize: 12),
               overflow: TextOverflow.ellipsis,
             ),
@@ -164,7 +172,7 @@ class ConfigurationViewerField extends StatelessWidget {
           Flexible(flex: 1, child: Icon(Icons.more_horiz))
         ],
       );
-    } else if ((fv == null || fv.valueJson == null) && canEdit) {
+    } else if (canEdit) {
       return Text(
         'Edit value',
         style: Theme.of(context).textTheme.caption,

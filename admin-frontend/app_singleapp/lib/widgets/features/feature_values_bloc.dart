@@ -6,7 +6,6 @@ import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'feature_status_bloc.dart';
-import 'feature_value_status_tags.dart';
 
 typedef DirtyCallback = bool Function(FeatureValue original);
 
@@ -18,19 +17,22 @@ class FeatureValuesBloc implements Bloc {
   // environment id, FeatureValue - there may be values in here that are not used, we honour `_dirty` to determine if we use them
   final _newFeatureValues = <String, FeatureValue>{};
   final _originalFeatureValues = <String, FeatureValue>{};
-  final _fvUpdates = <String, BehaviorSubject<FeatureValue>>{};
+  final _fvUpdates = <String, FeatureValue>{};
+  final _fvLockedUpdates = <String, BehaviorSubject<bool>>{};
   final ApplicationFeatureValues applicationFeatureValues;
   final FeatureStatusBloc _featureStatusBloc;
 
   // environmentId, true/false (if dirty)
   final _dirty = <String, bool>{};
+  final _dirtyLock = <String, bool>{};
+  final _dirtyValues = <String, dynamic>{};
 
   // if any of the values are updated, this stream shows true, it can flick on and off during its lifetime
   final _dirtyBS = BehaviorSubject<bool>();
   Stream<bool> get anyDirty => _dirtyBS.stream;
 
   // provides back a stream of updates to any listener for this cell
-  Stream<FeatureValue> featureValueByEnvironment(String envId) {
+  FeatureValue featureValueByEnvironment(String envId) {
     return _fvUpdates.putIfAbsent(envId, () {
       final fv = _newFeatureValues.putIfAbsent(
           envId,
@@ -39,26 +41,50 @@ class FeatureValuesBloc implements Bloc {
             ..locked = false
             ..key = feature.key);
 
-      return BehaviorSubject<FeatureValue>.seeded(fv);
+      return fv;
     });
   }
 
-  // we have handed the client a mutable object, so this is just them telling us that it has been changed
-  // within their purview. This lets any other listening view object update itself
-  void updatedFeature(String envId) {
-    // check to see if it actually changed
-    final original = _originalFeatureValues[envId];
-    final fv = _newFeatureValues[envId];
-
-    _dirty[envId] = (original != fv); // equals is implemented
-    _dirtyBS.add(_dirty.values.any((d) => d == true));
-
-    _fvUpdates[envId].add(_newFeatureValues[envId]);
+  BehaviorSubject<bool> _environmentIsLocked(String envId) {
+    return _fvLockedUpdates.putIfAbsent(envId, () {
+      final fv = featureValueByEnvironment(envId);
+      return BehaviorSubject<bool>.seeded(fv.locked);
+    });
   }
 
-  void dirty(String envId, DirtyCallback originalCheck) {
+  // the cells control their own state, but they are affected by whether they become locked or unlocked while they
+  // exist
+  Stream<bool> environmentIsLocked(String envId) {
+    return _environmentIsLocked(envId);
+  }
+
+  void dirtyLock(String envId, bool newLock) {
+    final original = _originalFeatureValues[envId];
+    final newValue = featureValueByEnvironment(envId);
+    newValue.locked = newLock;
+
+    // is the old and new value different?
+    final newDirty = newValue.locked != (original?.locked ?? false);
+
+    // is the new changed value different from the old changed value?
+    if (newDirty != _dirtyLock[envId]) {
+      _dirtyLock[envId] = newDirty;
+      _environmentIsLocked(envId).add(newLock);
+      _dirtyCheck();
+    }
+  }
+
+  void _dirtyCheck() {
+    _dirtyBS.add(_dirty.values.any((d) => d == true) ||
+        _dirtyLock.values.any((d) => d == true));
+  }
+
+  bool dirty(String envId, DirtyCallback originalCheck, dynamic dirtyValue) {
     _dirty[envId] = originalCheck(_originalFeatureValues[envId]);
-    _dirtyBS.add(_dirty.values.any((d) => d == true));
+    _dirtyValues[envId] = dirtyValue;
+    _dirtyCheck();
+
+    return _dirty[envId];
   }
 
   FeatureValuesBloc(
@@ -84,7 +110,7 @@ class FeatureValuesBloc implements Bloc {
 
   @override
   void dispose() {
-    _fvUpdates.values.forEach((element) {
+    _fvLockedUpdates.values.forEach((element) {
       element.close();
     });
   }
@@ -114,11 +140,37 @@ class FeatureValuesBloc implements Bloc {
     _originalFeatureValues.forEach((key, value) {
       final original = value.copyWith();
       _newFeatureValues[key] = original;
-      _fvUpdates[key].add(original);
+      _fvLockedUpdates[key].add(original.locked);
     });
 
     _dirty.clear();
+    _dirtyValues.clear();
+    _dirtyLock.clear();
     _dirtyBS.add(false);
+  }
+
+  void _updateNewFeature(
+      FeatureValue newValue, FeatureValue value, String envId) {
+    if (_dirtyLock[envId] == true) {
+      newValue.locked = !(value?.locked ?? false);
+    }
+
+    if (_dirty[envId] == true) {
+      switch (feature.valueType) {
+        case FeatureValueType.BOOLEAN:
+          newValue.valueBoolean = _dirtyValues[envId];
+          break;
+        case FeatureValueType.STRING:
+          newValue.valueString = _dirtyValues[envId];
+          break;
+        case FeatureValueType.NUMBER:
+          newValue.valueNumber = _dirtyValues[envId];
+          break;
+        case FeatureValueType.JSON:
+          newValue.valueJson = _dirtyValues[envId];
+          break;
+      }
+    }
   }
 
   Future<bool> updateDirtyStates() async {
@@ -137,7 +189,7 @@ class FeatureValuesBloc implements Bloc {
       newValue.whoUpdated = null;
       value.whoUpdated = null;
 
-      if (newValue != null && newValue != value) {
+      if (_dirty[envId] == true || _dirtyLock[envId] == true) {
         final roles = applicationFeatureValues.environments
             .firstWhere((e) => e.environmentId == envId)
             .roles;
@@ -145,6 +197,8 @@ class FeatureValuesBloc implements Bloc {
         if ((roles.contains(RoleType.CHANGE_VALUE) ||
             roles.contains(RoleType.LOCK) ||
             roles.contains(RoleType.UNLOCK))) {
+          _updateNewFeature(newValue, value, envId);
+
           updates.add(newValue);
         }
       }
@@ -159,15 +213,19 @@ class FeatureValuesBloc implements Bloc {
           roles.contains(RoleType.LOCK) ||
           roles.contains(RoleType.UNLOCK)) {
         // only add the ones where we set locked away from its default (false) or set a value
-        if (newFv.locked || newFv.isSet(feature)) {
+        if (_dirty[newFv.environmentId] == true ||
+            _dirtyLock[newFv.environmentId] == true) {
+          _updateNewFeature(newFv, null, newFv.environmentId);
           updates.add(newFv);
         }
       }
     });
 
     // TODO: catching of error, reporting of dialog
-    await _featureStatusBloc.updateAllFeatureValuesByApplicationForKey(
-        feature, updates);
+    if (updates.isNotEmpty) {
+      await _featureStatusBloc.updateAllFeatureValuesByApplicationForKey(
+          feature, updates);
+    }
 
     _dirtyBS.add(false);
 

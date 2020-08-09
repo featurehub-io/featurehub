@@ -3,57 +3,53 @@ import 'package:mrapi/api.dart';
 
 import 'feature_values_bloc.dart';
 
-class FeatureValueEditLockedCell extends StatelessWidget {
+class FeatureValueEditLockedCell extends StatefulWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
   final Feature feature;
   final FeatureValuesBloc fvBloc;
 
-  FeatureValueEditLockedCell(
+  const FeatureValueEditLockedCell(
       {Key key, this.environmentFeatureValue, this.feature, this.fvBloc})
       : super(key: key);
 
   @override
+  _FeatureValueEditLockedCellState createState() =>
+      _FeatureValueEditLockedCellState();
+}
+
+class _FeatureValueEditLockedCellState
+    extends State<FeatureValueEditLockedCell> {
+  @override
   Widget build(BuildContext context) {
-    return StreamBuilder<FeatureValue>(
-        stream: fvBloc
-            .featureValueByEnvironment(environmentFeatureValue.environmentId),
+    return StreamBuilder<bool>(
+        stream: widget.fvBloc
+            .environmentIsLocked(widget.environmentFeatureValue.environmentId),
         builder: (ctx, snap) {
           // must always return the same "shaped" data in a table cell
-          final disabled =
-              (!environmentFeatureValue.roles.contains(RoleType.UNLOCK) &&
-                      snap.data?.locked == true) ||
-                  (snap.data?.locked == false &&
-                      !environmentFeatureValue.roles.contains(RoleType.LOCK));
+          final disabled = (!widget.environmentFeatureValue.roles
+                      .contains(RoleType.UNLOCK) &&
+                  snap.data == true) ||
+              (snap.data == false &&
+                  !widget.environmentFeatureValue.roles
+                      .contains(RoleType.LOCK));
 
-          final locked =
-              snap.data == null ? false : (snap.data.locked ?? false);
+          final locked = snap.hasData ? snap.data : true;
+
+          Function pressed;
+          if (!disabled) {
+            pressed = () => widget.fvBloc.dirtyLock(
+                widget.environmentFeatureValue.environmentId, !locked);
+          }
 
           return Container(
             height: 60.0,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                locked
-                    ? _LockUnlockIconButton(
-                        lock: true,
-                        onPressed: disabled
-                            ? null
-                            : () {
-                                snap.data.locked = false;
-                                fvBloc.updatedFeature(
-                                    environmentFeatureValue.environmentId);
-                              },
-                      )
-                    : _LockUnlockIconButton(
-                        lock: false,
-                        onPressed: disabled
-                            ? null
-                            : () {
-                                snap.data.locked = true;
-                                fvBloc.updatedFeature(
-                                    environmentFeatureValue.environmentId);
-                              },
-                      ),
+                _LockUnlockIconButton(
+                  lock: locked,
+                  onPressed: pressed,
+                )
               ],
             ),
           );
