@@ -24,6 +24,7 @@ public class FeatureTransformerUtils implements FeatureTransformer {
       .key(rf.getFeature().getKey())
       .type(io.featurehub.sse.model.FeatureValueType.fromValue(rf.getFeature().getValueType().toString())) // they are the same
       .id(rf.getFeature().getId())
+      .l(rf.getValue().getLocked())
       .value(valueAsObject(rf));
 
     if (rf.getValue() == null || rf.getValue().getVersion() == null) {
