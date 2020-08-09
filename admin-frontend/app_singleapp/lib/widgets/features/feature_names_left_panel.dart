@@ -182,7 +182,7 @@ class _FeatureListenForUpdatedFeatureValues extends StatelessWidget {
                 FHFlatButtonTransparent(
                   title: 'Cancel',
                   keepCase: true,
-                  onPressed: () => featureBloc.reset(),
+                  onPressed: () => bloc.hideOrShowFeature(feature),
                 ),
                 FHFlatButton(
                   title: 'Save',
@@ -202,4 +202,3 @@ class _FeatureListenForUpdatedFeatureValues extends StatelessWidget {
     );
   }
 }
-

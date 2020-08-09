@@ -11,10 +11,13 @@ class FeatureValueNumberEnvironmentCell extends StatefulWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
   final Feature feature;
   final FeatureValuesBloc fvBloc;
+  final FeatureValue featureValue;
 
-  const FeatureValueNumberEnvironmentCell(
+  FeatureValueNumberEnvironmentCell(
       {Key key, this.environmentFeatureValue, this.feature, this.fvBloc})
-      : super(key: key);
+      : featureValue = fvBloc
+            .featureValueByEnvironment(environmentFeatureValue.environmentId),
+        super(key: key);
 
   @override
   _FeatureValueNumberEnvironmentCellState createState() =>
@@ -26,22 +29,22 @@ class _FeatureValueNumberEnvironmentCellState
   TextEditingController tec = TextEditingController();
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    tec.text = widget.featureValue.valueNumber?.toString() ?? '';
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return StreamBuilder<FeatureValue>(
-        stream: widget.fvBloc.featureValueByEnvironment(
-            widget.environmentFeatureValue.environmentId),
+    return StreamBuilder<bool>(
+        stream: widget.fvBloc
+            .environmentIsLocked(widget.environmentFeatureValue.environmentId),
         builder: (ctx, snap) {
           final canEdit = widget.environmentFeatureValue.roles
               .contains(RoleType.CHANGE_VALUE);
-          final isLocked = snap.hasData && snap.data.locked;
+          final isLocked = snap.hasData && snap.data;
           final enabled = canEdit && !isLocked;
-          final val = snap.hasData ? snap.data.valueNumber : null;
-
-          if (val == null) {
-            tec.text = '';
-          } else if (tec.text != val.toString()) {
-            tec.text = val.toString();
-          }
 
           return Align(
             alignment: Alignment.topCenter,
@@ -71,16 +74,12 @@ class _FeatureValueNumberEnvironmentCellState
                         : null,
                   ),
                   onChanged: (value) {
-                    widget.fvBloc.dirty(
-                      widget.environmentFeatureValue.environmentId,
-                      (originalFv) {
-                        return (value.isEmpty ? null : value) !=
-                            originalFv?.valueNumber?.toString();
-                      },
-                    );
-                  },
-                  onEditingComplete: () {
-                    _handleChanged(tec.text, snap.data);
+                    widget.fvBloc
+                        .dirty(widget.environmentFeatureValue.environmentId,
+                            (originalFv) {
+                      return (value.isEmpty ? null : value) !=
+                          originalFv?.valueNumber?.toString();
+                    }, value.isEmpty ? null : double.parse(value));
                   },
                   inputFormatters: [
                     DecimalTextInputFormatter(
@@ -89,19 +88,6 @@ class _FeatureValueNumberEnvironmentCellState
                 )),
           );
         });
-  }
-
-  void _handleChanged(String val, FeatureValue fv) {
-    if (validateNumber(val) == null) {
-      if (val.isEmpty) {
-        fv.valueNumber = null;
-      } else {
-        fv.valueNumber = double.parse(val);
-      }
-
-      widget.fvBloc
-          .updatedFeature(widget.environmentFeatureValue.environmentId);
-    }
   }
 }
 
