@@ -32,7 +32,7 @@ image::images/fh_learn_build_measure.svg[Learn,Build,Measure]
 
 == Installation
 
-There are link:installation{outfilesuffix}[3 main deployment options] for running FeatureHub.As FeatureHub is packaged as a _Cloud Native_ bundle, all parts are Docker images and are intended to be used with that technology (i.e. Docker or Kubernetes).
+There are link:installation{outfilesuffix}[3 main deployment options] for running FeatureHub. As FeatureHub is packaged as a _Cloud Native_ bundle, all parts are Docker images and are intended to be used with that technology (i.e. Docker or Kubernetes).
 
 All sample configurations are in the `run-configurations` folder.
 All of the run configurations mount the database volume separately from the main set of containers, allowing you to upgrade your database and versions of FeatureHub without destroying your database.
@@ -237,14 +237,14 @@ So in a test or development environment you should unlock your features and othe
 
 This prevents bad actors from poking at your apis and turning features on before they are ready.
 
-== Architecture
-
-Please read link:architecture{outfilesuffix}[for information about the architecture of FeatureHub].
-
 === Licensing
 
 All SDKs are MIT licensed, as they reside in the client codebase.
 Downstream dependencies are not assured to be so.
+
+== Architecture
+
+Please read link:architecture{outfilesuffix}[for information about the architecture of FeatureHub].
 
 == Key concepts
 
