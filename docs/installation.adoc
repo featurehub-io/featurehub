@@ -9,18 +9,41 @@ link:index{outfilesuffix}[Back to index]
 
 == Deployment options
 
+There is a GitHub https://github.com/featurehub-io/featurehub-install[repository] where you can find source for all the deployment options.
+
 === Option 1 - Evaluation Deployment
 This is the most basic option recommended for getting started quickly, and is the example we use in demos.
 
 It uses one Docker container for the entire stack and works with all supported databases
 baked in. The two web endpoints of interest -  the Management Server and the Edge layer that client
-SDKs talk to - are all served from the same web server .
+SDKs talk to - are all served from the same web server.
 
 This deployment, with an attached Docker volume for the database, is not recommended for production usage,
 it is only really for demonstration and evaluation purposes.
 
-We provide two evaluation examples - one for H2 and one for Postgres, the configurations for these are
-`run-configurations/all-in-one-h2` and `run-configurations/all-in-one-postgres` respectively.
+We provide two evaluation examples - one for H2 and one for Postgres
+
+To install, grab the latest version of FeatureHub tagged release, e.g.
+
+`curl https://github.com/featurehub-io/featurehub-install/archive/release-0.0.7.tar.gz -o featurehub.tar.gz`
+
+You can check for the latest versions https://github.com/featurehub-io/featurehub-install/releases[here] 
+
+Make sure you have your docker running, and run the following commands from the folder where you saved the FeatureHub executable:
+
+For H2 option:
+
+`cd featurehub-install-release-0.0.7/docker-compose-options/all-in-one-h2`
+
+`docker-compose up`
+
+For Postgres option:
+
+`cd featurehub-install-release-0.0.7/docker-compose-options/all-in-one-postgres`
+
+`docker-compose up`
+
+This will install all the necessary components including FeatureHub Admin Console. You can now load it on localhost:8085/#/
 
 image::images/fh_deployment_option_1.svg[Option 1,500]
 
@@ -37,8 +60,21 @@ because they run in a single Docker-Compose, they must run on different ports, w
 configuration to expose them in a normal organisation.
 
 image::images/fh_deployment_option_3.svg[Option 2,500]
-NOTE: In this `docker-compose` image, there is a database along with an initialization script. If you are wishing
-to seriously use this, you will need to run an external database.
+NOTE: In this `docker-compose` image, there is a sample database along with an initialization script. If you are considering to run this option for your team, you will need to run an external database.
+
+To install, grab the latest version of FeatureHub tagged release, e.g.
+
+`curl https://github.com/featurehub-io/featurehub-install/archive/release-0.0.7.tar.gz -o featurehub.tar.gz`
+
+You can check for the latest versions https://github.com/featurehub-io/featurehub-install/releases[here]
+
+Make sure you have your docker running, and run the following commands from the folder where you saved the FeatureHub executable:
+
+`cd featurehub-install-release-0.0.7/docker-compose-options/all-separate-postgres`
+
+`docker-compose up`
+
+This will install all the necessary components including FeatureHub Admin Console. You can now load it on localhost:8085/#/
 
 === Option 3 - Scalable Deployment
 This option is best if you want to run FeatureHub at scale. Running separate instances of Edge, Cache, NATS and
@@ -49,7 +85,7 @@ NOTE: Inorder to scale FeatureHub Server, you need to have first configured a se
 
 == Configuration
 
-In the `run-configurations` folder, along with the `docker-compose` configurations you will see that each server has
+In the https://github.com/featurehub-io/featurehub-install/tree/master/docker-compose-options[deployment options]  configurations you will see that each server has
 a set of possible external configurations. If you wish to build and rebundle the images yourself you can easily do this,
 the base images, exposed ports and so forth are all configurable as part of the build.
 
