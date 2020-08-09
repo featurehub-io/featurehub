@@ -96,9 +96,7 @@ class _FeatureValueJsonEnvironmentCellState
     }, value.isEmpty ? null : value);
 
     if (dirty) {
-      setState(() {
-        print("setting state");
-      });
+      setState(() {});
     }
   }
 

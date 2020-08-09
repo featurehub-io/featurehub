@@ -1,5 +1,11 @@
 #!/bin/sh
 cd /opt/app/app
+echo flutter home is $FLUTTER
+#echo "1.21.0-8.0.pre.110" > $FLUTTER_ROOT/version
+#ls -la $FLUTTER
+VERSION=`cat $FLUTTER/version`
+DVERSION=`cat $FLUTTER/bin/cache/dart-sdk/version`
+echo Flutter version is $VERSION dart version is $DVERSION
 echo FLUTTER: Cleaning up after last build
 rm -rf build
 flutter clean
