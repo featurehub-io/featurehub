@@ -1,2 +1,3 @@
 #!/bin/sh
-docker build -t featurehub/flutter_web:1.1 .
+#docker build --no-cache -t featurehub/flutter_web:1.2 .
+docker build -t featurehub/flutter_web:1.2 .

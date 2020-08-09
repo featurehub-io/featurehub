@@ -24,11 +24,11 @@ RUN apt install -y \
 # Install Flutter.
 ENV FLUTTER_ROOT="/opt/flutter"
 ENV FLUTTER="/opt/flutter"
-RUN git clone --depth=100 https://github.com/flutter/flutter "${FLUTTER_ROOT}"
+RUN git clone https://github.com/flutter/flutter "${FLUTTER_ROOT}"
 ENV PATH="${FLUTTER_ROOT}/bin:${PATH}"
 
 # reset to known point as docker image is always 0.0, this is a stable version for us. Disable analytics and crash reporting on the builder.
-RUN cd $FLUTTER && git reset --hard 54524a7f9559d56783a70cc8b87be95d42121460 && echo "1.19.0-2.0.pre.209" >> $FLUTTER/version
+RUN cd $FLUTTER && git reset --hard 4aed97681233a181ef8a135ed2809338473cbe11
 RUN flutter config  --no-analytics --enable-web
 
 # Perform an artifact precache so that no extra assets need to be downloaded on demand.
@@ -40,6 +40,7 @@ RUN yes "y" | flutter doctor --android-licenses
 # Perform a doctor run.
 RUN flutter doctor -v
 ENV PATH $PATH:/flutter/bin/cache/dart-sdk/bin:/flutter/bin
+
 COPY build.sh /opt/app/build.sh
 RUN chmod ugo+x /opt/app/build.sh
 
