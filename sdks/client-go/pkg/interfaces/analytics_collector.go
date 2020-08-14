@@ -6,5 +6,5 @@ import (
 
 // AnalyticsCollector allows the user to generate analytics events:
 type AnalyticsCollector interface {
-	LogEvent(action string, other map[string]string, featureStateAtCurrentTime []*models.FeatureState)
+	LogEvent(action string, other map[string]string, featureStateAtCurrentTime []*models.FeatureState) error
 }
