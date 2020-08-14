@@ -27,12 +27,12 @@ func TestLoggingAnalyticsCollector(t *testing.T) {
 	}
 
 	// Some test features to submit:
-	testFeatures := []*models.FeatureState{
-		{
+	testFeatures := map[string]*models.FeatureState{
+		"one": {
 			Key:   "feature1",
 			Value: "value1",
 		},
-		{
+		"two": {
 			Key:   "feature2",
 			Value: 2,
 		},

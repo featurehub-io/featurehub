@@ -18,7 +18,7 @@ func NewLoggingAnalyticsCollector(logger *logrus.Logger) *LoggingAnalyticsCollec
 }
 
 // LogEvent generates analytics events for the given action and metadata:
-func (ac *LoggingAnalyticsCollector) LogEvent(action string, other map[string]string, featureStateAtCurrentTime []*models.FeatureState) error {
+func (ac *LoggingAnalyticsCollector) LogEvent(action string, other map[string]string, featureStateAtCurrentTime map[string]*models.FeatureState) error {
 
 	// Emit an event for each feature we have:
 	for _, featureState := range featureStateAtCurrentTime {

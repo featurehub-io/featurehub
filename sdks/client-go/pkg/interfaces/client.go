@@ -17,5 +17,6 @@ type Client interface {
 	GetNumber(featureKey string) (float64, error)
 	GetRawJSON(featureKey string) (string, error)
 	GetString(featureKey string) (string, error)
+	LogAnalyticsEvent(action string, other map[string]string) error
 	ReadinessListener(callbackFunc func())
 }

@@ -9,12 +9,12 @@ import (
 )
 
 type FakeAnalyticsCollector struct {
-	LogEventStub        func(string, map[string]string, []*models.FeatureState) error
+	LogEventStub        func(string, map[string]string, map[string]*models.FeatureState) error
 	logEventMutex       sync.RWMutex
 	logEventArgsForCall []struct {
 		arg1 string
 		arg2 map[string]string
-		arg3 []*models.FeatureState
+		arg3 map[string]*models.FeatureState
 	}
 	logEventReturns struct {
 		result1 error
@@ -26,20 +26,15 @@ type FakeAnalyticsCollector struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeAnalyticsCollector) LogEvent(arg1 string, arg2 map[string]string, arg3 []*models.FeatureState) error {
-	var arg3Copy []*models.FeatureState
-	if arg3 != nil {
-		arg3Copy = make([]*models.FeatureState, len(arg3))
-		copy(arg3Copy, arg3)
-	}
+func (fake *FakeAnalyticsCollector) LogEvent(arg1 string, arg2 map[string]string, arg3 map[string]*models.FeatureState) error {
 	fake.logEventMutex.Lock()
 	ret, specificReturn := fake.logEventReturnsOnCall[len(fake.logEventArgsForCall)]
 	fake.logEventArgsForCall = append(fake.logEventArgsForCall, struct {
 		arg1 string
 		arg2 map[string]string
-		arg3 []*models.FeatureState
-	}{arg1, arg2, arg3Copy})
-	fake.recordInvocation("LogEvent", []interface{}{arg1, arg2, arg3Copy})
+		arg3 map[string]*models.FeatureState
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("LogEvent", []interface{}{arg1, arg2, arg3})
 	fake.logEventMutex.Unlock()
 	if fake.LogEventStub != nil {
 		return fake.LogEventStub(arg1, arg2, arg3)
@@ -57,13 +52,13 @@ func (fake *FakeAnalyticsCollector) LogEventCallCount() int {
 	return len(fake.logEventArgsForCall)
 }
 
-func (fake *FakeAnalyticsCollector) LogEventCalls(stub func(string, map[string]string, []*models.FeatureState) error) {
+func (fake *FakeAnalyticsCollector) LogEventCalls(stub func(string, map[string]string, map[string]*models.FeatureState) error) {
 	fake.logEventMutex.Lock()
 	defer fake.logEventMutex.Unlock()
 	fake.LogEventStub = stub
 }
 
-func (fake *FakeAnalyticsCollector) LogEventArgsForCall(i int) (string, map[string]string, []*models.FeatureState) {
+func (fake *FakeAnalyticsCollector) LogEventArgsForCall(i int) (string, map[string]string, map[string]*models.FeatureState) {
 	fake.logEventMutex.RLock()
 	defer fake.logEventMutex.RUnlock()
 	argsForCall := fake.logEventArgsForCall[i]
