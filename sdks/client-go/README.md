@@ -111,6 +111,16 @@ The client SDK allows the user to define a callback function which will be trigg
 * `ReadinessListener(callback func())`: Sets the readiness listener to a specific user-provided function
 
 
+### Analytics Collector
+The client SDK provides the ability to generate analytics events with the `LogAnalyticsEvent` method. An event will be generated for each feature that we have.
+```go
+	action := "payment"
+	tags := map[string]string{"user": "bob"}
+	client.LogAnalyticsEvent(action, tags)
+```
+Currently the SDK only supports a logging analytics collector, which is configured by default whenever you use the SDK. It logs events to the console at DEBUG level.
+
+
 Todo
 ----
 - [X] Config
@@ -121,7 +131,7 @@ Todo
 - [X] Compare versions when "feature" event is received (don't just overwrite)
 - [X] Allow notify / callback functions (add and remove)
 - [X] Global "readyness" callback (either OK when data has arrived, or an error if there was a fail)
-- [ ] Analytics support
+- [X] Analytics support
 - [ ] Google Analytics support
 - [ ] Re-introduce the "polling" client (if we decide to go down that route for other SDKs)
 - [ ] Run tests and code-generation inside Docker (instead of requiring Go to be installed locally)
