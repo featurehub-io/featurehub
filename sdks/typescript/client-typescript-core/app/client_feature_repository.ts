@@ -229,7 +229,7 @@ export class ClientFeatureRepository {
       if (holder !== undefined) {
         this.features.set(fs.key, holder);
       }
-    } else if (holder.getFeatureState().version <= fs.version) {
+    } else if (fs.version <= holder.getFeatureState().version) {
       return false;
     }
 
