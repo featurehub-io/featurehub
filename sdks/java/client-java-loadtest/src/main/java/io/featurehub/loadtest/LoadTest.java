@@ -142,7 +142,7 @@ class ClientHolder {
 public class LoadTest {
   private static final Logger log = LoggerFactory.getLogger(LoadTest.class);
   @ConfigKey("max-connections")
-  Integer maxConnections = 500;
+  Integer maxConnections = 10;
   @ConfigKey("ramp-up-seconds")
   Integer rampUpSeconds = 5;
   @ConfigKey("start-connections")
@@ -157,13 +157,15 @@ public class LoadTest {
   }
 
   public void run() throws InterruptedException {
+    log.info("Connecting to {}", url);
+
     for(int count = 0; count < maxConnections; count ++) {
       log.info("kicking off connection {}", count);
       holders.add(new ClientHolder(url, repo));
-      try {
-        Thread.sleep(100);
-      } catch (InterruptedException e) {
-      }
+//      try {
+//        Thread.sleep(100);
+//      } catch (InterruptedException e) {
+//      }
     }
 
     // now waiting

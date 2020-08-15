@@ -1,10 +1,9 @@
 package io.featurehub.edge.bucket;
 
-import io.featurehub.edge.client.TimedBucketClientConnection;
+import io.featurehub.edge.client.ClientConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,10 +13,15 @@ import java.util.List;
  */
 public class TimedBucket {
   private static final Logger log = LoggerFactory.getLogger(TimedBucket.class);
-  private List<TimedBucketClientConnection> timedConnections = new ArrayList<>();
+  private List<ClientConnection> timedConnections = new ArrayList<>();
   private boolean expiring = false;
+  private final int timerSlice;
 
-  public void addConnection(TimedBucketClientConnection conn) {
+  public TimedBucket(int timerSlice) {
+    this.timerSlice = timerSlice;
+  }
+
+  public void addConnection(ClientConnection conn) {
     timedConnections.add(conn);
     // make sure we don't try and reclose a closed connection, helps release memory
     conn.registerEjection(client -> {
@@ -32,14 +36,18 @@ public class TimedBucket {
    * but poshing the expiry list off elsewhere and replacing the current list.
    */
   public void expireConnections() {
-    final List<TimedBucketClientConnection> conns = this.timedConnections;
+    if (!timedConnections.isEmpty()) {
+      log.debug("kickout: {}: {}", timerSlice, timedConnections.size());
 
-    this.timedConnections = new ArrayList<>();
+      final List<ClientConnection> conns = this.timedConnections;
 
-    expiring = true;
+      this.timedConnections = new ArrayList<>();
 
-    conns.parallelStream().forEach(TimedBucketClientConnection::close);
+      expiring = true;
 
-    expiring = false;
+      conns.parallelStream().forEach(ClientConnection::close);
+
+      expiring = false;
+    }
   }
 }

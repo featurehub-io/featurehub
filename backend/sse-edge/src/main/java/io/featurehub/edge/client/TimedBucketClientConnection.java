@@ -4,9 +4,7 @@ import io.featurehub.dacha.api.CacheJsonMapper;
 import io.featurehub.edge.FeatureTransformer;
 import io.featurehub.mr.model.EdgeInitResponse;
 import io.featurehub.mr.model.FeatureValueCacheItem;
-import io.featurehub.mr.model.FeatureValueType;
 import io.featurehub.mr.model.PublishAction;
-import io.featurehub.sse.model.FeatureState;
 import io.featurehub.sse.model.SSEResultState;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.OutboundEvent;
@@ -17,9 +15,8 @@ import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-public class TimedBucketClientConnection {
+public class TimedBucketClientConnection implements ClientConnection {
   private static final Logger log = LoggerFactory.getLogger(TimedBucketClientConnection.class);
   private EventOutput output;
   private String environmentId;
@@ -37,6 +34,7 @@ public class TimedBucketClientConnection {
     featureTransformer = builder.featureTransformer;
   }
 
+  @Override
   public boolean discovery() {
     try {
       writeMessage(SSEResultState.ACK, SSEStatusMessage.status("discover"));
@@ -47,14 +45,17 @@ public class TimedBucketClientConnection {
     return true;
   }
 
+  @Override
   public String getEnvironmentId() {
     return environmentId;
   }
 
+  @Override
   public String getApiKey() {
     return apiKey;
   }
 
+  @Override
   public void writeMessage(SSEResultState name, String data) throws IOException {
     final OutboundEvent.Builder eventBuilder = new OutboundEvent.Builder();
     log.trace("data is : {}", data);
@@ -65,10 +66,12 @@ public class TimedBucketClientConnection {
     output.write(event);
   }
 
+  @Override
   public void registerEjection(EjectHandler handler) {
     this.handlers.add(handler);
   }
 
+  @Override
   public void close(boolean sayBye) {
     // could have been closed by a failure earlier, it isn't ejected from the list
     if (!output.isClosed()) {
@@ -77,22 +80,28 @@ public class TimedBucketClientConnection {
       if (sayBye) {
         try {
           writeMessage(SSEResultState.BYE, SSEStatusMessage.status("closed"));
-          output.close();
         } catch (Exception e) {
           log.warn("Failed to close", e);
         }
       }
+      try {
+        output.close();
+      } catch (Exception e) {
+      }
     }
   }
 
+  @Override
   public void close() {
     close(true);
   }
 
+  @Override
   public String getNamedCache() {
     return namedCache;
   }
 
+  @Override
   public void failed(String reason) {
     try {
       writeMessage(SSEResultState.FAILURE, SSEStatusMessage.status(reason));
@@ -103,6 +112,7 @@ public class TimedBucketClientConnection {
     }
   }
 
+  @Override
   public void initResponse(EdgeInitResponse edgeResponse) {
     if (Boolean.TRUE.equals(edgeResponse.getSuccess())) {
       try {
@@ -122,6 +132,7 @@ public class TimedBucketClientConnection {
   }
 
   // notify the client of a new feature (if they have received their features)
+  @Override
   public void notifyFeature(FeatureValueCacheItem rf) {
     if (heldFeatureUpdates != null) {
       heldFeatureUpdates.add(rf);
@@ -135,7 +146,7 @@ public class TimedBucketClientConnection {
         }
       } catch (IOException e) {
         log.error("Failed to write feature", e);
-        close();
+        close(false);
       }
     }
   }
@@ -176,7 +187,7 @@ public class TimedBucketClientConnection {
       return this;
     }
 
-    public TimedBucketClientConnection build() {
+    public ClientConnection build() {
       return new TimedBucketClientConnection(this);
     }
   }

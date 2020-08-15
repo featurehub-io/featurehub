@@ -2,7 +2,7 @@ package io.featurehub.edge.bucket;
 
 import cd.connect.app.config.ConfigKey;
 import cd.connect.app.config.DeclaredConfigResolver;
-import io.featurehub.edge.client.TimedBucketClientConnection;
+import io.featurehub.edge.client.ClientConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,11 +20,11 @@ import java.util.concurrent.ConcurrentHashMap;
 @Singleton
 public class EventOutputBucketService {
   private static final Logger log = LoggerFactory.getLogger(EventOutputBucketService.class);
-  private Map<Integer, TimedBucket> discardTimerBuckets = new ConcurrentHashMap<>();
+  private final Map<Integer, TimedBucket> discardTimerBuckets = new ConcurrentHashMap<>();
   private int timerSlice;
 
   @ConfigKey("maxSlots")
-  private Integer maxSlots = 30;
+  protected Integer maxSlots = 30;
 
   public EventOutputBucketService() {
     DeclaredConfigResolver.resolve(this);
@@ -51,13 +51,12 @@ public class EventOutputBucketService {
     TimedBucket timedBucketClientConnections = discardTimerBuckets.remove(timerSlice);
 
     if (timedBucketClientConnections != null) {
-      log.debug("kickout: {}", timerSlice);
       timedBucketClientConnections.expireConnections();
     }
   }
 
   // adds the new connection to the bucket
-  public void putInBucket(TimedBucketClientConnection b) {
-    discardTimerBuckets.computeIfAbsent(timerSlice, k -> new TimedBucket()).addConnection(b);
+  public void putInBucket(ClientConnection b) {
+    discardTimerBuckets.computeIfAbsent(timerSlice, k -> new TimedBucket(timerSlice)).addConnection(b);
   }
 }
