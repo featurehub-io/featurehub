@@ -26,6 +26,8 @@ import io.featurehub.mr.api.ServiceAccountServiceDelegate;
 import io.featurehub.mr.api.ServiceAccountServiceDelegator;
 import io.featurehub.mr.api.SetupServiceDelegate;
 import io.featurehub.mr.api.SetupServiceDelegator;
+import io.featurehub.mr.api.UserStateServiceDelegate;
+import io.featurehub.mr.api.UserStateServiceDelegator;
 import io.featurehub.mr.auth.AuthApplicationEventListener;
 import io.featurehub.mr.auth.AuthManager;
 import io.featurehub.mr.auth.AuthManagerService;
@@ -41,6 +43,7 @@ import io.featurehub.mr.resources.PersonResource;
 import io.featurehub.mr.resources.PortfolioResource;
 import io.featurehub.mr.resources.ServiceAccountResource;
 import io.featurehub.mr.resources.SetupResource;
+import io.featurehub.mr.resources.UserStateResource;
 import io.featurehub.mr.resources.auth.AuthProvider;
 import io.featurehub.mr.resources.auth.BlankProvider;
 import io.featurehub.mr.utils.ApplicationUtils;
@@ -71,6 +74,7 @@ public class ManagementRepositoryFeature implements Feature {
       PortfolioServiceDelegator.class,
       ServiceAccountServiceDelegator.class,
       SetupServiceDelegator.class,
+      UserStateServiceDelegator.class,
       CorsFilter.class,
 //      ConstraintExceptionHandler.class,
       AuthApplicationEventListener.class
@@ -89,6 +93,7 @@ public class ManagementRepositoryFeature implements Feature {
           bind(ApplicationResource.class).to(ApplicationServiceDelegate.class).in(Singleton.class);
           bind(AuthResource.class).to(AuthServiceDelegate.class).in(Singleton.class);
           bind(EnvironmentFeatureResource.class).to(EnvironmentFeatureServiceDelegate.class).in(Singleton.class);
+          bind(UserStateResource.class).to(UserStateServiceDelegate.class).in(Singleton.class);
           bind(EnvironmentResource.class).to(EnvironmentServiceDelegate.class).in(Singleton.class);
           bind(FeatureResource.class).to(FeatureServiceDelegate.class).in(Singleton.class);
           bind(GroupResource.class).to(GroupServiceDelegate.class).in(Singleton.class);

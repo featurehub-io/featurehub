@@ -1,5 +1,8 @@
 package io.featurehub.db.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import io.featurehub.dacha.api.CacheJsonMapper;
 import io.featurehub.db.api.Opts;
 import io.featurehub.db.model.DbAcl;
 import io.featurehub.db.model.DbApplication;
@@ -21,6 +24,7 @@ import io.featurehub.mr.model.Feature;
 import io.featurehub.mr.model.FeatureEnvironment;
 import io.featurehub.mr.model.FeatureValue;
 import io.featurehub.mr.model.Group;
+import io.featurehub.mr.model.HiddenEnvironments;
 import io.featurehub.mr.model.Organization;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.Portfolio;
@@ -55,6 +59,22 @@ public interface Conversions {
     try {
       return UUID.fromString(id);
     } catch(Exception e) {
+      return null;
+    }
+  }
+
+  static <T> T readJsonValue(String content, Class<T> valueType)  {
+    try {
+      return CacheJsonMapper.mapper.readValue(content, valueType);
+    } catch (JsonProcessingException e) {
+      return null;
+    }
+  }
+
+  static String valueToJsonString(HiddenEnvironments environments) {
+    try {
+      return CacheJsonMapper.mapper.writeValueAsString(environments);
+    } catch (JsonProcessingException e) {
       return null;
     }
   }
