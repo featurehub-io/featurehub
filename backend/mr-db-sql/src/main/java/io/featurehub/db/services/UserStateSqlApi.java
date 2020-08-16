@@ -59,6 +59,7 @@ public class UserStateSqlApi implements UserStateApi {
 
     if (environments == null || environments.getEnvironmentIds() == null || environments.getEnvironmentIds().isEmpty()) {
       userStateFinder(currentPerson, application.getId(), UserState.HIDDEN_FEATURES).delete();
+      return;
     }
 
     DbUserState features =
@@ -68,6 +69,7 @@ public class UserStateSqlApi implements UserStateApi {
       features = new DbUserState.Builder()
           .application(application)
           .person(person)
+          .userState(UserState.HIDDEN_FEATURES)
           .build();
 
       if (features.getApplication() == null || features.getPerson() == null ) {
