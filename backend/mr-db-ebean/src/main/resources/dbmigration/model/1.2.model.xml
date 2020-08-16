@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <createTable name="fh_userstate" identityType="external" pkName="pk_fh_userstate">
+            <column name="id" type="uuid" primaryKey="true" identity="true"/>
+            <column name="fk_person" type="uuid" notnull="true" references="fh_person.id" foreignKeyName="fk_fh_userstate_fk_person" foreignKeyIndex="ix_fh_userstate_fk_person"/>
+            <column name="fk_portfolio_id" type="uuid" references="fh_portfolio.id" foreignKeyName="fk_fh_userstate_fk_portfolio_id" foreignKeyIndex="ix_fh_userstate_fk_portfolio_id"/>
+            <column name="fk_app_id" type="uuid" references="fh_application.id" foreignKeyName="fk_fh_userstate_fk_app_id" foreignKeyIndex="ix_fh_userstate_fk_app_id"/>
+            <column name="fk_env_id" type="uuid" references="fh_environment.id" foreignKeyName="fk_fh_userstate_fk_env_id" foreignKeyIndex="ix_fh_userstate_fk_env_id"/>
+            <column name="user_state" type="varchar(15)" checkConstraint="check ( user_state in ('HIDDEN_FEATURES'))" checkConstraintName="ck_fh_userstate_user_state"/>
+            <column name="data" type="clob"/>
+            <column name="version" type="bigint" notnull="true"/>
+            <column name="when_updated" type="timestamp" notnull="true"/>
+            <column name="when_created" type="timestamp" notnull="true"/>
+            <uniqueConstraint name="idx_user_state" columnNames="fk_person,fk_portfolio_id,fk_app_id,fk_env_id" oneToOne="false" nullableColumns="fk_portfolio_id,fk_app_id,fk_env_id"/>
+        </createTable>
+    </changeSet>
+</migration>

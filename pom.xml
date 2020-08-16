@@ -62,6 +62,7 @@
     <module>sdks/java/client-java-jersey</module>
     <module>sdks/java/client-java-opentracing</module>
     <module>sdks/java/client-java-opentelemetry</module>
+    <module>sdks/java/client-java-loadtest</module>
     <module>sdks/dart/client-dart-api</module>
     <module>sdks/dart/client-dart-sdk</module>
     <module>admin-frontend/app_mr_layer</module>

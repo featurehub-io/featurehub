@@ -1,0 +1,25 @@
+package io.featurehub.db.api;
+
+import io.featurehub.mr.model.HiddenEnvironments;
+import io.featurehub.mr.model.Person;
+
+public interface UserStateApi {
+  /**
+   * Get the list of environments stashed for this user.
+   *
+   * @param person
+   * @param appId
+   * @return
+   */
+  HiddenEnvironments getHiddenEnvironments(Person person, String appId);
+
+  /**
+   * It is the responsibility of the caller to assert the person has the rights to the application to save
+   * anything. They do not need to worry about the environments themselves as they are not important.
+   *
+   * @param person
+   * @param environments
+   * @param appId
+   */
+  void saveHiddenEnvironments(Person person, HiddenEnvironments environments, String appId);
+}

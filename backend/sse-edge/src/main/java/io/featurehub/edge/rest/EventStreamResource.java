@@ -4,6 +4,7 @@ import io.featurehub.edge.FeatureTransformer;
 import io.featurehub.edge.FeatureTransformerUtils;
 import io.featurehub.edge.ServerConfig;
 import io.featurehub.edge.bucket.EventOutputBucketService;
+import io.featurehub.edge.client.ClientConnection;
 import io.featurehub.edge.client.TimedBucketClientConnection;
 import io.featurehub.mr.messaging.StreamedFeatureUpdate;
 import io.featurehub.mr.model.EdgeInitPermissionResponse;
@@ -17,11 +18,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import javax.validation.constraints.NotNull;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -66,7 +65,7 @@ public class EventStreamResource {
     EventOutput o = new EventOutput();
 
     try {
-      TimedBucketClientConnection b = new TimedBucketClientConnection.Builder()
+      ClientConnection b = new TimedBucketClientConnection.Builder()
         .featureTransformer(featureTransformer)
         .environmentId(envId).apiKey(apiKey).namedCache(namedCache).output(o).build();
 

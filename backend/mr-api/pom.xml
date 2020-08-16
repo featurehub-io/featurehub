@@ -61,6 +61,7 @@
                 <file>${project.basedir}/mr-api.yaml</file>
                 <file>${project.basedir}/common.yaml</file>
                 <file>${project.basedir}/end2end-common.yaml</file>
+                <file>${project.basedir}/user.yaml</file>
               </files>
               <finalYaml>${project.basedir}/final.yaml</finalYaml>
             </configuration>

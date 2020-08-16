@@ -6,7 +6,7 @@ import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.featurehub.dacha.api.CacheJsonMapper;
-import io.featurehub.edge.client.TimedBucketClientConnection;
+import io.featurehub.edge.client.ClientConnection;
 import io.featurehub.mr.messaging.StreamedFeatureUpdate;
 import io.featurehub.mr.model.EdgeInitPermissionResponse;
 import io.featurehub.mr.model.EdgeInitRequest;
@@ -27,11 +27,15 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -72,7 +76,7 @@ class NamedCacheListener {
   }
 }
 
-public class ServerConfig {
+public class ServerConfig implements ServerController {
   private static final Logger log = LoggerFactory.getLogger(ServerConfig.class);
   @ConfigKey("nats.urls")
   public String natsServer = "nats://localhost:4222";
@@ -84,7 +88,7 @@ public class ServerConfig {
   Integer listenPoolSize = 10;
   private Connection connection;
   // environmentId, list of connections for that environment
-  private Map<String, List<TimedBucketClientConnection>> clientBuckets = new ConcurrentHashMap<>();
+  private Map<String, Collection<ClientConnection>> clientBuckets = new ConcurrentHashMap<>();
   // dispatcher subject based on named-cache, NamedCacheListener
   private Map<String, NamedCacheListener> cacheListeners = new ConcurrentHashMap<>();
   private FeatureTransformer featureTransformer = new FeatureTransformerUtils();
@@ -110,6 +114,8 @@ public class ServerConfig {
         shutdown();
       }
     });
+
+    startEmptySSEListenerRequestEjectionTimer();
   }
 
   // unsubscribe all and any listeners
@@ -117,7 +123,8 @@ public class ServerConfig {
     cacheListeners.values().parallelStream().forEach(NamedCacheListener::shutdown);
   }
 
-  void listenForFeatureUpdates(String namedCache) {
+  @Override
+  public void listenForFeatureUpdates(String namedCache) {
     String subject = ChannelNames.featureValueChannel(namedCache);
 
     cacheListeners.computeIfAbsent(subject, nc -> {
@@ -127,6 +134,7 @@ public class ServerConfig {
     });
   }
 
+  @Override
   public void unlistenForFeatureUpdates(String namedCache) {
     String subject = ChannelNames.featureValueChannel(namedCache);
     final NamedCacheListener ncl = cacheListeners.get(subject);
@@ -152,7 +160,7 @@ public class ServerConfig {
     try {
       FeatureValueCacheItem fv = CacheJsonMapper.mapper.readValue(msg.getData(), FeatureValueCacheItem.class);
 
-      final List<TimedBucketClientConnection> tbc = clientBuckets.get(fv.getEnvironmentId());
+      final Collection<ClientConnection> tbc = clientBuckets.get(fv.getEnvironmentId());
       if (tbc != null) {
         tbc.forEach(b -> {
           updateExecutor.submit(() -> {
@@ -165,40 +173,63 @@ public class ServerConfig {
     }
   }
 
-  public void requestFeatures(final TimedBucketClientConnection client) {
-    clientBuckets.computeIfAbsent(client.getEnvironmentId(), (k) -> new ArrayList<>()).add(client);
+  private final Map<String, InflightSSEListenerRequest> inflightSSEListenerRequests = new ConcurrentHashMap<>();
 
-    client.registerEjection(this::clientRemoved);
-
-    listenExecutor.submit(() -> {
-      EdgeInitRequest request = new EdgeInitRequest()
-            .command(EdgeInitRequestCommand.LISTEN)
-            .apiKey(client.getApiKey())
-            .environmentId(client.getEnvironmentId());
-
-      try {
-        String subject = client.getNamedCache() + "/" + ChannelConstants.EDGE_CACHE_CHANNEL;
-
-        listenForFeatureUpdates(client.getNamedCache());
-
-        Message response = connection.request(subject, CacheJsonMapper.mapper.writeValueAsBytes(request), Duration.ofMillis(2000));
-
-        if (response != null) {
-          EdgeInitResponse edgeResponse = CacheJsonMapper.mapper.readValue(response.getData(), EdgeInitResponse.class);
-
-          client.initResponse(edgeResponse);
-
-          // if they had no access or it doesn't exist
-          if (!edgeResponse.getSuccess()) {
-            unlistenForFeatureUpdates(client.getNamedCache());
-          }
-        } else {
-          client.failed("unable to communicate with named cache.");
-        }
-      } catch (Exception e) {
-        client.failed("unable to communicate with named cache.");
+  // this ensures we don't get an ever growing memory leak of sdk requests that no-one is using
+  // if we don't do this, it can lead to an attack that would rob an Edge listener of remaining memory
+  // while consuming no services on the client. People can just randomly fire junk at SSE edge and it would
+  // leak memory
+  protected void startEmptySSEListenerRequestEjectionTimer() {
+    TimerTask task = new TimerTask() {
+      @Override
+      public void run() {
+        inflightSSEListenerRequests.values().iterator().forEachRemaining(InflightSSEListenerRequest::removeCheck);
       }
-    });
+    };
+
+    new Timer().scheduleAtFixedRate(task, 5000, 5000);
+  }
+
+  // keep track of expired one so we can walk through periodically and delete them
+//  private Map<String, InflightSdkUrlRequest> expired
+
+  public void requestFeatures(final ClientConnection client) {
+    clientBuckets.computeIfAbsent(client.getEnvironmentId(), (k) -> new ConcurrentLinkedQueue<>()).add(client);
+
+    final String key = client.getApiKey() + "," + client.getEnvironmentId();
+    final InflightSSEListenerRequest inflightSSEListenerRequest = inflightSSEListenerRequests.computeIfAbsent(key,
+        (k) -> new InflightSSEListenerRequest(key, this));
+
+    // if we are the first one, make the request. If any follow before this one finishes it gets this result
+    if (inflightSSEListenerRequest.add(client) == 0) {
+      listenExecutor.submit(() -> {
+        EdgeInitRequest request = new EdgeInitRequest()
+          .command(EdgeInitRequestCommand.LISTEN)
+          .apiKey(client.getApiKey())
+          .environmentId(client.getEnvironmentId());
+
+        try {
+          String subject = client.getNamedCache() + "/" + ChannelConstants.EDGE_CACHE_CHANNEL;
+
+          listenForFeatureUpdates(client.getNamedCache());
+
+          Message response = connection.request(subject, CacheJsonMapper.mapper.writeValueAsBytes(request), Duration.ofMillis(2000));
+
+          if (response != null) {
+            EdgeInitResponse edgeResponse = CacheJsonMapper.mapper.readValue(response.getData(), EdgeInitResponse.class);
+
+            if (Boolean.TRUE.equals(edgeResponse.getSuccess())) {
+              inflightSSEListenerRequest.success(edgeResponse);
+              return;
+            }
+          }
+        } catch (Exception e) {
+          log.error("Failed to communicate with cache", e);
+        }
+
+        inflightSSEListenerRequest.reject();
+      });
+    }
   }
 
   public EdgeInitPermissionResponse requestPermission(String namedCache, String apiKey, String environmentId, String featureKey) {
@@ -221,12 +252,22 @@ public class ServerConfig {
 
   // responsible for removing a client connection once it has been closed
   // from the list of clients we are notifying about feature changes
-  private void clientRemoved(TimedBucketClientConnection client) {
-    final List<TimedBucketClientConnection> conns = clientBuckets.get(client.getEnvironmentId());
+  public void clientRemoved(ClientConnection client) {
+    final Collection<ClientConnection> conns = clientBuckets.get(client.getEnvironmentId());
 
     if (conns != null) {
       conns.remove(client);
     }
+  }
+
+  @Override
+  public void listenExecutor(Runnable runnable) {
+    listenExecutor.execute(runnable);
+  }
+
+  @Override
+  public void removeInflightSSEListenerRequest(String key) {
+    inflightSSEListenerRequests.remove(key);
   }
 
   protected Environment getEnvironmentFeaturesBySdk(String url, String namedCache, String apiKey,
