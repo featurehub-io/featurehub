@@ -146,16 +146,22 @@ type FakeClient struct {
 		result1 string
 		result2 error
 	}
-	LogAnalyticsEventStub        func(string, map[string]string) error
+	LogAnalyticsEventStub        func(string, map[string]string)
 	logAnalyticsEventMutex       sync.RWMutex
 	logAnalyticsEventArgsForCall []struct {
 		arg1 string
 		arg2 map[string]string
 	}
-	logAnalyticsEventReturns struct {
+	LogAnalyticsEventSyncStub        func(string, map[string]string) error
+	logAnalyticsEventSyncMutex       sync.RWMutex
+	logAnalyticsEventSyncArgsForCall []struct {
+		arg1 string
+		arg2 map[string]string
+	}
+	logAnalyticsEventSyncReturns struct {
 		result1 error
 	}
-	logAnalyticsEventReturnsOnCall map[int]struct {
+	logAnalyticsEventSyncReturnsOnCall map[int]struct {
 		result1 error
 	}
 	ReadinessListenerStub        func(func())
@@ -848,9 +854,8 @@ func (fake *FakeClient) GetStringReturnsOnCall(i int, result1 string, result2 er
 	}{result1, result2}
 }
 
-func (fake *FakeClient) LogAnalyticsEvent(arg1 string, arg2 map[string]string) error {
+func (fake *FakeClient) LogAnalyticsEvent(arg1 string, arg2 map[string]string) {
 	fake.logAnalyticsEventMutex.Lock()
-	ret, specificReturn := fake.logAnalyticsEventReturnsOnCall[len(fake.logAnalyticsEventArgsForCall)]
 	fake.logAnalyticsEventArgsForCall = append(fake.logAnalyticsEventArgsForCall, struct {
 		arg1 string
 		arg2 map[string]string
@@ -858,13 +863,8 @@ func (fake *FakeClient) LogAnalyticsEvent(arg1 string, arg2 map[string]string) e
 	fake.recordInvocation("LogAnalyticsEvent", []interface{}{arg1, arg2})
 	fake.logAnalyticsEventMutex.Unlock()
 	if fake.LogAnalyticsEventStub != nil {
-		return fake.LogAnalyticsEventStub(arg1, arg2)
+		fake.LogAnalyticsEventStub(arg1, arg2)
 	}
-	if specificReturn {
-		return ret.result1
-	}
-	fakeReturns := fake.logAnalyticsEventReturns
-	return fakeReturns.result1
 }
 
 func (fake *FakeClient) LogAnalyticsEventCallCount() int {
@@ -873,7 +873,7 @@ func (fake *FakeClient) LogAnalyticsEventCallCount() int {
 	return len(fake.logAnalyticsEventArgsForCall)
 }
 
-func (fake *FakeClient) LogAnalyticsEventCalls(stub func(string, map[string]string) error) {
+func (fake *FakeClient) LogAnalyticsEventCalls(stub func(string, map[string]string)) {
 	fake.logAnalyticsEventMutex.Lock()
 	defer fake.logAnalyticsEventMutex.Unlock()
 	fake.LogAnalyticsEventStub = stub
@@ -886,25 +886,63 @@ func (fake *FakeClient) LogAnalyticsEventArgsForCall(i int) (string, map[string]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeClient) LogAnalyticsEventReturns(result1 error) {
-	fake.logAnalyticsEventMutex.Lock()
-	defer fake.logAnalyticsEventMutex.Unlock()
-	fake.LogAnalyticsEventStub = nil
-	fake.logAnalyticsEventReturns = struct {
+func (fake *FakeClient) LogAnalyticsEventSync(arg1 string, arg2 map[string]string) error {
+	fake.logAnalyticsEventSyncMutex.Lock()
+	ret, specificReturn := fake.logAnalyticsEventSyncReturnsOnCall[len(fake.logAnalyticsEventSyncArgsForCall)]
+	fake.logAnalyticsEventSyncArgsForCall = append(fake.logAnalyticsEventSyncArgsForCall, struct {
+		arg1 string
+		arg2 map[string]string
+	}{arg1, arg2})
+	fake.recordInvocation("LogAnalyticsEventSync", []interface{}{arg1, arg2})
+	fake.logAnalyticsEventSyncMutex.Unlock()
+	if fake.LogAnalyticsEventSyncStub != nil {
+		return fake.LogAnalyticsEventSyncStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.logAnalyticsEventSyncReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeClient) LogAnalyticsEventSyncCallCount() int {
+	fake.logAnalyticsEventSyncMutex.RLock()
+	defer fake.logAnalyticsEventSyncMutex.RUnlock()
+	return len(fake.logAnalyticsEventSyncArgsForCall)
+}
+
+func (fake *FakeClient) LogAnalyticsEventSyncCalls(stub func(string, map[string]string) error) {
+	fake.logAnalyticsEventSyncMutex.Lock()
+	defer fake.logAnalyticsEventSyncMutex.Unlock()
+	fake.LogAnalyticsEventSyncStub = stub
+}
+
+func (fake *FakeClient) LogAnalyticsEventSyncArgsForCall(i int) (string, map[string]string) {
+	fake.logAnalyticsEventSyncMutex.RLock()
+	defer fake.logAnalyticsEventSyncMutex.RUnlock()
+	argsForCall := fake.logAnalyticsEventSyncArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeClient) LogAnalyticsEventSyncReturns(result1 error) {
+	fake.logAnalyticsEventSyncMutex.Lock()
+	defer fake.logAnalyticsEventSyncMutex.Unlock()
+	fake.LogAnalyticsEventSyncStub = nil
+	fake.logAnalyticsEventSyncReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *FakeClient) LogAnalyticsEventReturnsOnCall(i int, result1 error) {
-	fake.logAnalyticsEventMutex.Lock()
-	defer fake.logAnalyticsEventMutex.Unlock()
-	fake.LogAnalyticsEventStub = nil
-	if fake.logAnalyticsEventReturnsOnCall == nil {
-		fake.logAnalyticsEventReturnsOnCall = make(map[int]struct {
+func (fake *FakeClient) LogAnalyticsEventSyncReturnsOnCall(i int, result1 error) {
+	fake.logAnalyticsEventSyncMutex.Lock()
+	defer fake.logAnalyticsEventSyncMutex.Unlock()
+	fake.LogAnalyticsEventSyncStub = nil
+	if fake.logAnalyticsEventSyncReturnsOnCall == nil {
+		fake.logAnalyticsEventSyncReturnsOnCall = make(map[int]struct {
 			result1 error
 		})
 	}
-	fake.logAnalyticsEventReturnsOnCall[i] = struct {
+	fake.logAnalyticsEventSyncReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -967,6 +1005,8 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.getStringMutex.RUnlock()
 	fake.logAnalyticsEventMutex.RLock()
 	defer fake.logAnalyticsEventMutex.RUnlock()
+	fake.logAnalyticsEventSyncMutex.RLock()
+	defer fake.logAnalyticsEventSyncMutex.RUnlock()
 	fake.readinessListenerMutex.RLock()
 	defer fake.readinessListenerMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

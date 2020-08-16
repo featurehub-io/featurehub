@@ -3,9 +3,11 @@ package client
 import (
 	"bytes"
 	"testing"
+	"time"
 
 	"github.com/donovanhide/eventsource"
 	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/analytics"
+	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/mocks"
 	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/models"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -58,7 +60,8 @@ func TestStreamingClientAnalytics(t *testing.T) {
 	}
 
 	// Log an event:
-	client.LogAnalyticsEvent("testing", testAttributes)
+	err := client.LogAnalyticsEventSync("testing", testAttributes)
+	assert.NoError(t, err)
 
 	// Check that the right things were logged:
 	assert.Contains(t, logBuffer.String(), "Analytics event")
@@ -70,4 +73,26 @@ func TestStreamingClientAnalytics(t *testing.T) {
 
 	// Check that the client knew not to trigger the readiness listener (because there was none):
 	assert.Contains(t, logBuffer.String(), "No registered readinessListener() to call")
+
+	// Now try a fake analytics collector with the asynchronous method:
+	fakeAnalyticsCollector := &mocks.FakeAnalyticsCollector{}
+	client.analyticsCollector = fakeAnalyticsCollector
+
+	// Log another event (using the asynchronous method):
+	client.LogAnalyticsEvent("more-testing1", testAttributes)
+	time.Sleep(500 * time.Millisecond)
+
+	// Make sure our AnalyticsCollector was called once:
+	assert.Equal(t, 1, fakeAnalyticsCollector.LogEventCallCount())
+
+	// Log another asynchronous event, and prove that we're not blocking:
+	fakeAnalyticsCollector.LogEventCalls(logEventWithDelay)
+	timeBefore := time.Now()
+	client.LogAnalyticsEvent("more-testing2", testAttributes)
+	assert.WithinDuration(t, timeBefore, time.Now(), 500*time.Millisecond)
+}
+
+func logEventWithDelay(string, map[string]string, map[string]*models.FeatureState) error {
+	time.Sleep(time.Second)
+	return nil
 }
