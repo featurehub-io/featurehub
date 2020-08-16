@@ -58,6 +58,7 @@ class PortfolioStepdefs {
   @When(r'I ensure a portfolio {string} has created a group called {string}')
   void iAddAPortfolioHasGroup(String portfolioName, String groupName) async {
     Portfolio p = await userCommon.findExactPortfolio(portfolioName);
+    assert(p != null);
     if (!p.groups.map((g) => g.name).toList().contains(groupName)) {
       await userCommon.groupService
           .createGroup(p.id, Group()..name = groupName);
