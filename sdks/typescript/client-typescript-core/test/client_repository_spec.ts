@@ -8,6 +8,30 @@ describe('Feature repository reacts to incoming event lists as expected', () => 
     repo = new ClientFeatureRepository();
   });
 
+  it ('Can handle null or undefined feature states', () => {
+    repo.notify(SSEResultState.Features, [undefined]);
+  });
+
+  it('Can handle post new state available handlers failing and letting subsequent ones continue', () => {
+    let postTrigger = 0;
+    let failTrigger = 0;
+    repo.addPostLoadNewFeatureStateAvailableListener(() => {
+      failTrigger ++;
+      throw new Error('blah');
+    });
+    repo.addPostLoadNewFeatureStateAvailableListener(() => postTrigger ++);
+    const features = [
+      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.BOOLEAN, value: true}),
+    ];
+
+    repo.notify(SSEResultState.Features, features);
+    repo.notify(SSEResultState.Feature, new FeatureState({id: '1', key: 'banana', version: 2,
+      type: FeatureValueType.BOOLEAN, value: false}));
+
+    expect(postTrigger).to.eq(1);
+    expect(failTrigger).to.eq(1);
+  });
+
   it('should accept a list of boolean features sets and triggers updates and stores values as expect', () => {
     let triggerBanana = 0;
     let triggerPear = 0;
@@ -115,7 +139,6 @@ describe('Feature repository reacts to incoming event lists as expected', () => 
     repo.getFeatureState('banana').addListener(() => triggerBanana ++);
     repo.getFeatureState('pear').addListener(() => triggerPear ++);
     repo.getFeatureState('peach').addListener(() => triggerPeach ++);
-
 
     const features = [
       new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.STRING, value: '7.2'}),
@@ -287,3 +310,53 @@ describe('When any feature changes, post new feature update should trigger', () 
     expect(postNewTrigger).to.eq(1);
   });
 });
+
+describe('Catch and release should hold and then release feature changes', () => {
+  it('should enable me to turn on catch and no changes should flow and then i can release', () => {
+    const repo = new ClientFeatureRepository();
+    let postNewTrigger = 0;
+    repo.addPostLoadNewFeatureStateAvailableListener(() => postNewTrigger ++);
+    let bananaTrigger = 0;
+    repo.getFeatureState('banana').addListener(() => bananaTrigger++ );
+    expect(postNewTrigger).to.eq(0);
+    expect(bananaTrigger).to.eq(0);
+
+    repo.catchAndReleaseMode = true;
+
+    expect(repo.catchAndReleaseMode).to.eq(true);
+
+    const features = [
+      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.BOOLEAN, value: true}),
+    ];
+
+    repo.notify(SSEResultState.Features, features);
+    // change banana, change change banana
+    repo.notify(SSEResultState.Feature, new FeatureState({id: '1', key: 'banana', version: 2,
+      type: FeatureValueType.BOOLEAN, value: false}));
+    expect(postNewTrigger).to.eq(1);
+    expect(bananaTrigger).to.eq(1); // new list of features always trigger
+    repo.notify(SSEResultState.Feature, new FeatureState({id: '1', key: 'banana', version: 3,
+      type: FeatureValueType.BOOLEAN, value: false}));
+
+    expect(postNewTrigger).to.eq(2);
+    expect(bananaTrigger).to.eq(1);
+    expect(repo.getFeatureState('banana').getBoolean()).to.eq(true);
+    repo.release();
+    expect(postNewTrigger).to.eq(2);
+    expect(bananaTrigger).to.eq(2);
+    expect(repo.getFeatureState('banana').getBoolean()).to.eq(false);
+
+    // notify with new state, should still hold
+    const features2 = [
+      new FeatureState({id: '1', key: 'banana', version: 4, type: FeatureValueType.BOOLEAN, value: true}),
+    ];
+
+    repo.notify(SSEResultState.Features, features);
+    expect(postNewTrigger).to.eq(2);
+    expect(bananaTrigger).to.eq(2);
+  });
+});
+
+describe('We should be able to delete a feature and have it become undefined', () => {});
+
+describe( 'We should be able to log an analytics event', () => {});
