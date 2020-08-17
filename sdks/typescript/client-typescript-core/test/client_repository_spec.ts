@@ -1,4 +1,4 @@
-import { ClientFeatureRepository, FeatureState, FeatureValueType, SSEResultState } from '../app';
+import { ClientFeatureRepository, FeatureState, FeatureValueType, Readyness, SSEResultState } from '../app';
 import { expect } from 'chai';
 
 describe('Feature repository reacts to incoming event lists as expected', () => {
@@ -232,3 +232,58 @@ describe('repository reacts to single feature changes as expected', () => {
   });
 });
 
+describe('Readyness listeners should fire on appropriate events', () => {
+  it('should start not ready, receive a list of features and become ready and on failure be failed', () => {
+    const repo = new ClientFeatureRepository();
+
+    let readynessTrigger = 0;
+    let lastReadyness: Readyness = undefined;
+    repo.addReadynessListener((state) => {
+      lastReadyness = state;
+      return readynessTrigger++;
+    });
+
+    expect(repo.readyness).to.eq(Readyness.NotReady);
+    expect(readynessTrigger).to.eq(1);
+
+    const features = [
+      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.BOOLEAN, value: true}),
+    ];
+
+    repo.notify(SSEResultState.Features, features);
+
+    expect(repo.readyness).to.eq(Readyness.Ready);
+    expect(lastReadyness).to.eq(Readyness.Ready);
+    expect(readynessTrigger).to.eq(2);
+
+    repo.notify(SSEResultState.Failure, null);
+    expect(repo.readyness).to.eq(Readyness.Failed);
+    expect(lastReadyness).to.eq(Readyness.Failed);
+    expect(readynessTrigger).to.eq(3);
+  });
+});
+
+describe('When any feature changes, post new feature update should trigger', () => {
+  it('should not fire until first new feature and then should fire each new feature after that but only when new',
+     () => {
+    const repo = new ClientFeatureRepository();
+    let postNewTrigger = 0;
+    repo.addPostLoadNewFeatureStateAvailableListener(() => postNewTrigger ++);
+    expect(postNewTrigger).to.eq(0);
+    const features = [
+     new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.BOOLEAN, value: true}),
+    ];
+
+    repo.notify(SSEResultState.Features, features);
+    expect(postNewTrigger).to.eq(0);
+
+    repo.notify(SSEResultState.Feature, new FeatureState({id: '1', key: 'banana', version: 2,
+        type: FeatureValueType.BOOLEAN, value: true}));
+
+    expect(postNewTrigger).to.eq(0);
+    repo.notify(SSEResultState.Feature, new FeatureState({id: '1', key: 'banana', version: 3,
+     type: FeatureValueType.BOOLEAN, value: false}));
+
+    expect(postNewTrigger).to.eq(1);
+  });
+});

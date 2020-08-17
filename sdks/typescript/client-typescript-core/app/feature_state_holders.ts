@@ -43,16 +43,17 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
     return this.featureState;
   }
 
-  setFeatureState(fs: FeatureState): FeatureStateHolder {
+  /// returns true if the value changed
+  setFeatureState(fs: FeatureState): boolean {
     // always overridden
-    return null;
+    return false;
   }
 
   copy(): FeatureStateHolder {
     return null;
   }
 
-  protected notifyListeners() {
+  protected async notifyListeners() {
     this.listeners.forEach((l) => {
       try {
         l(this);
@@ -66,19 +67,24 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
 export class FeatureStateBooleanHolder extends FeatureStateBaseHolder {
   private value: boolean | undefined;
 
-  constructor(existingHolder: FeatureStateBaseHolder) {
+  constructor(existingHolder: FeatureStateBaseHolder, featureState?: FeatureState) {
     super(existingHolder);
+
+    if (featureState) {
+      this.setFeatureState(featureState);
+    }
   }
 
-  setFeatureState(fs: FeatureState): FeatureStateBooleanHolder {
+  setFeatureState(fs: FeatureState): boolean {
     this.featureState = fs;
     const oldValue = this.value;
     this.value = fs.value !== undefined ? fs.value as unknown as boolean : undefined;
     if (oldValue !== this.value) {
       this.notifyListeners();
+      return true;
     }
 
-    return this;
+    return false;
   }
 
   getBoolean(): boolean | undefined {
@@ -90,25 +96,30 @@ export class FeatureStateBooleanHolder extends FeatureStateBaseHolder {
   }
 
   copy(): FeatureStateHolder {
-    return new FeatureStateBooleanHolder(null).setFeatureState(this.featureState);
+    return new FeatureStateBooleanHolder(null, this.featureState);
   }
 }
 
 export class FeatureStateStringHolder extends FeatureStateBaseHolder {
   private value: string | undefined;
 
-  constructor(existingHolder: FeatureStateBaseHolder) {
+  constructor(existingHolder: FeatureStateBaseHolder, featureState?: FeatureState) {
     super(existingHolder);
+
+    if (featureState) {
+      this.setFeatureState(featureState);
+    }
   }
 
-  setFeatureState(fs: FeatureState): FeatureStateStringHolder {
+  setFeatureState(fs: FeatureState): boolean {
     this.featureState = fs;
     const oldValue = this.value;
     this.value = fs.value !== undefined ? fs.value.toString() : undefined;
     if (oldValue !== this.value) {
       this.notifyListeners();
+      return true;
     }
-    return this;
+    return false;
   }
 
   getString(): string | undefined {
@@ -120,25 +131,31 @@ export class FeatureStateStringHolder extends FeatureStateBaseHolder {
   }
 
   copy(): FeatureStateHolder {
-    return new FeatureStateStringHolder(null).setFeatureState(this.featureState);
+    return new FeatureStateStringHolder(null, this.featureState);
   }
 }
 
 export class FeatureStateNumberHolder extends FeatureStateBaseHolder {
   private value: number | undefined;
 
-  constructor(existingHolder: FeatureStateBaseHolder) {
+  constructor(existingHolder: FeatureStateBaseHolder, featureState?: FeatureState) {
     super(existingHolder);
+
+    if (featureState) {
+      this.setFeatureState(featureState);
+    }
   }
 
-  setFeatureState(fs: FeatureState): FeatureStateNumberHolder {
+  setFeatureState(fs: FeatureState): boolean {
     this.featureState = fs;
     const oldValue = this.value;
     this.value = fs.value !== undefined ? fs.value as unknown as number : undefined;
     if (oldValue !== this.value) {
       this.notifyListeners();
+      return true;
     }
-    return this;
+
+    return false;
   }
 
   getNumber(): number | undefined {
@@ -150,26 +167,31 @@ export class FeatureStateNumberHolder extends FeatureStateBaseHolder {
   }
 
   copy(): FeatureStateHolder {
-    return new FeatureStateNumberHolder(null).setFeatureState(this.featureState);
+    return new FeatureStateNumberHolder(null, this.featureState);
   }
 }
 
 export class FeatureStateJsonHolder extends FeatureStateBaseHolder {
   private value: string | undefined;
 
-  constructor(existingHolder: FeatureStateBaseHolder) {
+  constructor(existingHolder: FeatureStateBaseHolder, featureState?: FeatureState) {
     super(existingHolder);
+
+    if (featureState) {
+      this.setFeatureState(featureState);
+    }
   }
 
-  setFeatureState(fs: FeatureState): FeatureStateJsonHolder {
+  setFeatureState(fs: FeatureState): boolean {
     this.featureState = fs;
     const oldValue = this.value;
     this.value = fs.value !== undefined ? fs.value.toString() : undefined;
     if (oldValue !== this.value) {
       this.notifyListeners();
+      return true;
     }
 
-    return this;
+    return false;
   }
 
   getRawJson(): string | undefined {
@@ -181,6 +203,6 @@ export class FeatureStateJsonHolder extends FeatureStateBaseHolder {
   }
 
   copy(): FeatureStateHolder {
-    return new FeatureStateJsonHolder(null).setFeatureState(this.featureState);
+    return new FeatureStateJsonHolder(null, this.featureState);
   }
 }

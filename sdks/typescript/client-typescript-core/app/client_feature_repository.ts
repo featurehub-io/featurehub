@@ -44,6 +44,10 @@ export class ClientFeatureRepository {
   private _catchReleaseStates = new Map<string, FeatureState>();
   private _newFeatureStateAvailableListeners: Array<PostLoadNewFeatureStateAvailableListener> = [];
 
+  public get readyness(): Readyness {
+    return this.readynessState;
+  }
+
   public notify(state: SSEResultState, data: any): void {
     if (state !== null && state !== undefined) {
       switch (state) {
@@ -87,7 +91,6 @@ export class ClientFeatureRepository {
             features.forEach((f) => updated = this.featureUpdate(f) || updated);
             this.readynessState = Readyness.Ready;
             if (!this.hasReceivedInitialState) {
-              this.checkForInvalidFeatures();
               this.hasReceivedInitialState = true;
               this.broadcastReadynessState();
             } else if (updated) {
@@ -116,7 +119,7 @@ export class ClientFeatureRepository {
     listener(this.readynessState);
   }
 
-  public broadcastReadynessState() {
+  public async broadcastReadynessState() {
     this.readynessListeners.forEach((l) => l(this.readynessState));
   }
 
@@ -124,7 +127,7 @@ export class ClientFeatureRepository {
     this.analyticsCollectors.push(collector);
   }
 
-  public logAnalyticsEvent(action: string, other?: Map<string, string>): void {
+  public async logAnalyticsEvent(action: string, other?: Map<string, string>) {
     const featureStateAtCurrentTime = [];
 
     for (let fs of this.features.values()) {
@@ -155,7 +158,7 @@ export class ClientFeatureRepository {
     this._catchAndReleaseMode = value;
   }
 
-  public release(): void {
+  public async release() {
     this._catchReleaseStates.forEach((fs) => this.featureUpdate(fs));
     this._catchReleaseStates.clear(); // remove all existing items
   }
@@ -186,7 +189,7 @@ export class ClientFeatureRepository {
     }
   }
 
-  private triggerNewStateAvailable() {
+  private async triggerNewStateAvailable() {
     if (this.hasReceivedInitialState && this._newFeatureStateAvailableListeners.length > 0) {
       if (!this._catchAndReleaseMode || (this._catchReleaseStates.size > 0)) {
         this._newFeatureStateAvailableListeners.forEach((l) => {
@@ -234,21 +237,10 @@ export class ClientFeatureRepository {
     }
 
     if (holder !== undefined) {
-      holder.setFeatureState(fs);
+      return holder.setFeatureState(fs);
     }
 
     return true;
-  }
-
-  private checkForInvalidFeatures(): void {
-
-    /*
-        String invalidKeys = features.values().stream().filter(v ->
-        v.getKey() == null).map(FeatureStateHolder::getKey).collect(Collectors.joining(", "));
-        if (invalidKeys.length() > 0) {
-          log.error("FeatureHub error: application is requesting use of invalid keys: {}", invalidKeys);
-        }
-     */
   }
 
   private deleteFeature(featureState: FeatureState) {
