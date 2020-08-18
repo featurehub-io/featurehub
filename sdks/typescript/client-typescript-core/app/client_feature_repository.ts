@@ -241,6 +241,11 @@ export class ClientFeatureRepository {
 
   private deleteFeature(featureState: FeatureState) {
     featureState.value = undefined;
-    this.featureUpdate(featureState);
+
+    let holder = this.features.get(featureState.key);
+
+    if (holder) {
+      holder.setFeatureState(featureState);
+    }
   }
 }
