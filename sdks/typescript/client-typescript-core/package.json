@@ -32,7 +32,8 @@
   "scripts": {
     "build": "npm run tsc",
     "build:watch": "npm run build -- -- -w",
-    "test": "yarn run build && TS_NODE_COMPILER_OPTIONS='-T' && mocha --config mocharc.yml",
+    "test": "npm run build && TS_NODE_COMPILER_OPTIONS='-T' && mocha --config mocharc.yml",
+    "coverage": "nyc npm run test",
     "test:watch": "npm run mocha --opts mocha.opts --watch",
     "mocha": "node ./node_modules/mocha/bin/mocha",
     "tsc": "node ./node_modules/typescript/bin/tsc",

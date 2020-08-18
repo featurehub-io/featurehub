@@ -17,5 +17,6 @@ final.yaml
 node
 target
 lib
+.nyc_output
 
 
