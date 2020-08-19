@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
@@ -39,7 +40,15 @@ public class ClientFeatureRepository implements FeatureRepository {
     mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 
-    executor = Executors.newFixedThreadPool(threadPoolSize);
+    executor = getExecutor(threadPoolSize);
+  }
+
+  protected Executor getExecutor(int threadPoolSize) {
+    return Executors.newFixedThreadPool(threadPoolSize);
+  }
+
+  public Readyness getReadyness() {
+    return readyness;
   }
 
   @Override
