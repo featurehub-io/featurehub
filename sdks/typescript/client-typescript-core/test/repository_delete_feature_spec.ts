@@ -6,7 +6,7 @@ import {
 } from '../app';
 import { expect } from 'chai';
 
-describe('We should be able to delete a feature and have it become undefined', () => {
+describe('if a feature is deleted it becomes undefined', () => {
   let repo: ClientFeatureRepository;
 
   beforeEach(() => {
