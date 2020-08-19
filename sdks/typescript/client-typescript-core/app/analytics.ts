@@ -5,7 +5,7 @@ export interface AnalyticsCollector {
   logEvent(action: string, other: Map<string, string>, featureStateAtCurrentTime: Array<FeatureStateHolder>);
 }
 
-interface GoogleAnalyticsApiClient {
+export interface GoogleAnalyticsApiClient {
   cid(other: Map<string, string>): string;
 
   postBatchUpdate(batchData: string): void;
@@ -43,7 +43,7 @@ export class GoogleAnalyticsCollector implements AnalyticsCollector {
   private _cid: string;
   private apiClient: GoogleAnalyticsApiClient;
 
-  constructor(uaKey: string, cid?: string) {
+  constructor(uaKey: string, cid?: string, apiClient?: GoogleAnalyticsApiClient) {
     if (uaKey == null) {
       throw new Error('UA must be set');
     }
@@ -51,10 +51,14 @@ export class GoogleAnalyticsCollector implements AnalyticsCollector {
     this.uaKey = uaKey;
     this._cid = cid;
 
-    if (typeof window === 'object') {
-      this.apiClient = new BrowserGoogleAnalyticsApiClient();
+    if (apiClient) {
+      this.apiClient = apiClient;
     } else {
-      this.apiClient = new NodejsGoogleAnalyticsApiClient();
+      if (typeof window === 'object') {
+        this.apiClient = new BrowserGoogleAnalyticsApiClient();
+      } else {
+        this.apiClient = new NodejsGoogleAnalyticsApiClient();
+      }
     }
   }
 

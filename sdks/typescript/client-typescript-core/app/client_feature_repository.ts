@@ -207,7 +207,7 @@ export class ClientFeatureRepository {
 
   private featureUpdate(fs: FeatureState): boolean {
     if (fs === undefined || fs.key === undefined) {
-      return;
+      return false;
     }
 
     let holder = this.features.get(fs.key);
@@ -226,7 +226,7 @@ export class ClientFeatureRepository {
           holder = new FeatureStateStringHolder(holder);
           break;
         default:
-          break;
+          return false;
       }
 
       if (holder !== undefined) {
@@ -236,15 +236,16 @@ export class ClientFeatureRepository {
       return false;
     }
 
-    if (holder !== undefined) {
-      return holder.setFeatureState(fs);
-    }
-
-    return true;
+    return holder.setFeatureState(fs);
   }
 
   private deleteFeature(featureState: FeatureState) {
     featureState.value = undefined;
-    this.featureUpdate(featureState);
+
+    let holder = this.features.get(featureState.key);
+
+    if (holder) {
+      holder.setFeatureState(featureState);
+    }
   }
 }
