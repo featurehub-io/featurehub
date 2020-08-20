@@ -126,11 +126,11 @@ class RepositorySpec extends Specification {
     when: "i check the feature state"
       def f = repo.getFeatureState('banana').copy()
     and: "i delete the feature"
-      repo.notify(SSEResultState.DELETE_FEATURE, new ObjectMapper().writeValueAsString(feature))
+      def featureDel = new FeatureState().id('1').key('banana').version(2L).value(true).type(FeatureValueType.BOOLEAN)
+      repo.notify(SSEResultState.DELETE_FEATURE, new ObjectMapper().writeValueAsString(featureDel))
     then:
-      f.b
+      f.boolean
       !repo.getFeatureState('banana').set
-
   }
 
   def "i add an analytics collector and log and event"() {
@@ -142,6 +142,54 @@ class RepositorySpec extends Specification {
   }
 
   def "ack and bye are ignored"() {
+
+  }
+
+  def "i can attach to a feature before it is added and receive notifications when it is"() {
+    given: "i have one of each feature type"
+      def features = [
+        new FeatureState().id('1').key('banana').version(1L).value(false).type(FeatureValueType.BOOLEAN),
+        new FeatureState().id('2').key('peach').version(1L).value("orange").type(FeatureValueType.STRING),
+        new FeatureState().id('3').key('peach-quantity').version(1L).value(17).type(FeatureValueType.NUMBER),
+        new FeatureState().id('4').key('peach-config').version(1L).value("{}").type(FeatureValueType.JSON),
+      ]
+    and: "I listen for updates for those features"
+      def updateListener = []
+      List<FeatureStateHolder> emptyFeatures = []
+      features.each {f ->
+        def feature = repo.getFeatureState(f.key)
+        def listener = Mock(FeatureListener)
+        updateListener.add(listener)
+        feature.addListener(listener)
+        emptyFeatures.add(feature.copy())
+      }
+    when: "i fill in the repo"
+      repo.notify(features)
+    then:
+      updateListener.each {
+        1 * it.notify(_)
+      }
+      emptyFeatures.each {f ->
+        f.key != null
+        !f.set
+        f.string == null
+        f.boolean == null
+        f.rawJson == null
+        f.number == null
+      }
+    features.each { it ->
+      repo.getFeatureState(it.key).key == it.key
+      repo.getFeatureState(it.key).set
+      if (it.type == FeatureValueType.BOOLEAN)
+        repo.getFeatureState(it.key).boolean == it.value
+      if (it.type == FeatureValueType.NUMBER)
+        repo.getFeatureState(it.key).number == it.value
+      if (it.type == FeatureValueType.STRING)
+        repo.getFeatureState(it.key).string.equals(it.value)
+      if (it.type == FeatureValueType.JSON)
+        repo.getFeatureState(it.key).rawJson.equals(it.value)
+
+    }
 
   }
 }
