@@ -3,12 +3,15 @@ package io.featurehub.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.featurehub.sse.model.FeatureState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.concurrent.Executor;
 
 public class FeatureStatePlaceHolder extends FeatureStateBaseHolder {
+  private static final Logger log = LoggerFactory.getLogger(FeatureStatePlaceHolder.class);
   private final ObjectMapper mapper;
 
   public FeatureStatePlaceHolder(Executor executor, List<FeatureValueInterceptorHolder> valueInterceptors, String key,
@@ -46,7 +49,12 @@ public class FeatureStatePlaceHolder extends FeatureStateBaseHolder {
   public BigDecimal getNumber() {
     FeatureValueInterceptor.ValueMatch value = findIntercept();
 
-    return (value == null) ? null : new BigDecimal(value.value);
+    try {
+      return (value == null || value.value == null) ? null : new BigDecimal(value.value);
+    } catch (Exception e) {
+      log.warn("Attempting to convert {} to BigDecimal fails as is not a number", value.value);
+      return null; // ignore conversion failures
+    }
   }
 
   @Override

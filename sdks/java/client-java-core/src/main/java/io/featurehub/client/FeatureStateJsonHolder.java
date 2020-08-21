@@ -1,5 +1,6 @@
 package io.featurehub.client;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.featurehub.sse.model.FeatureState;
 
@@ -45,6 +46,16 @@ class FeatureStateJsonHolder extends FeatureStateBaseHolder {
 
   @Override
   public <T> T getJson(Class<T> type) {
+    FeatureValueInterceptor.ValueMatch vm = findIntercept();
+
+    if (vm != null) {
+      try {
+        return (vm.value == null) ? null : mapper.readValue(vm.value, type);
+      } catch (JsonProcessingException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
     try {
       return value == null ? null : mapper.readValue(value, type);
     } catch (IOException e) {

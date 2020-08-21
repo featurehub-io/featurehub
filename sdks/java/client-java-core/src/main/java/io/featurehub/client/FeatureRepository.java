@@ -1,5 +1,6 @@
 package io.featurehub.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.featurehub.sse.model.FeatureState;
 import io.featurehub.sse.model.SSEResultState;
 
@@ -80,4 +81,12 @@ public interface FeatureRepository {
    * @return Readyness status
    */
   Readyness getReadyness();
+
+  /**
+   * Lets the SDK override the configuration of the JSON mapper in case they have special techniques they use.
+   *
+   * @param jsonConfigObjectMapper - an ObjectMapper configured for client use. This defaults to the same one
+   *                               used to deserialize
+   */
+  void setJsonConfigObjectMapper(ObjectMapper jsonConfigObjectMapper);
 }

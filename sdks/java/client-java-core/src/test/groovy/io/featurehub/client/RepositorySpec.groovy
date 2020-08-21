@@ -133,16 +133,89 @@ class RepositorySpec extends Specification {
       !repo.getFeatureState('banana').set
   }
 
-  def "i add an analytics collector and log and event"() {
 
+  def "i add an analytics collector and log and event"() {
+    given: "i have features"
+      def features = [
+        new FeatureState().id('1').key('banana').version(1L).value(false).type(FeatureValueType.BOOLEAN),
+        new FeatureState().id('2').key('peach').version(1L).value("orange").type(FeatureValueType.STRING),
+        new FeatureState().id('3').key('peach-quantity').version(1L).value(17).type(FeatureValueType.NUMBER),
+        new FeatureState().id('4').key('peach-config').version(1L).value("{}").type(FeatureValueType.JSON),
+      ]
+    and: "i redefine the executor in the repository so i can prevent the event logging and update first"
+      List<Runnable> commands = []
+      Executor mockExecutor = {
+        commands.add(it)
+      } as Executor
+      def newRepo = new ClientFeatureRepository(mockExecutor)
+      newRepo.notify(features)
+      commands.each {it.run() } // process
+    and: "i register a mock analyics collector"
+      def mockAnalytics = Mock(AnalyticsCollector)
+      newRepo.addAnalyticCollector(mockAnalytics)
+    when: "i log an event"
+      newRepo.logAnalyticsEvent("action", ['a': 'b'])
+      def heldNotificationCalls = new ArrayList<Runnable>(commands)
+      commands.clear()
+    and: "i change the status of the feature"
+      newRepo.notify(SSEResultState.FEATURE, new ObjectMapper().writeValueAsString(
+        new FeatureState().id('1').key('banana').version(2L).value(true)
+          .type(FeatureValueType.BOOLEAN),))
+      commands.each {it.run() } // process
+      heldNotificationCalls.each {it.run() } // process
+    then:
+      newRepo.getFeatureState('banana').boolean
+      1 * mockAnalytics.logEvent('action', ['a': 'b'], { List<FeatureStateHolder> f ->
+        f.size() == 4
+        f.find({return it.key == 'banana'}) != null
+        !f.find({return it.key == 'banana'}).boolean
+      })
+  }
+
+  def "a json config will properly deserialize into an object"() {
+    given: "i have features"
+      def features = [
+        new FeatureState().id('1').key('banana').version(1L).value('{"sample":12}').type(FeatureValueType.JSON),
+      ]
+    and: "i register an alternate object mapper"
+      repo.setJsonConfigObjectMapper(new ObjectMapper())
+    when: "i notify of features"
+      repo.notify(features)
+    then: 'the json object is there and deserialises'
+      repo.getFeatureState('banana').getJson(BananaSample) instanceof BananaSample
+      repo.getFeatureState('banana').getJson(BananaSample).sample == 12
   }
 
   def "failure changes readyness to failure"() {
-
+    given: "i have features"
+      def features = [
+        new FeatureState().id('1').key('banana').version(1L).value(false).type(FeatureValueType.BOOLEAN),
+      ]
+    and: "i notify the repo"
+      def mockReadyness = Mock(ReadynessListener)
+      repo.addReadynessListener(mockReadyness)
+      repo.notify(features)
+      def readyness = repo.readyness
+    when: "i indicate failure"
+      repo.notify(SSEResultState.FAILURE, null)
+    then: "we swap to not ready"
+      repo.readyness == Readyness.Failed
+      readyness == Readyness.Ready
+      1 * mockReadyness.notify(Readyness.Failed)
   }
 
   def "ack and bye are ignored"() {
-
+    given: "i have features"
+      def features = [
+        new FeatureState().id('1').key('banana').version(1L).value(false).type(FeatureValueType.BOOLEAN),
+      ]
+    and: "i notify the repo"
+      repo.notify(features)
+    when: "i ack and then bye, nothing happens"
+      repo.notify(SSEResultState.ACK, null)
+      repo.notify(SSEResultState.BYE, null)
+    then:
+      repo.readyness == Readyness.Ready
   }
 
   def "i can attach to a feature before it is added and receive notifications when it is"() {
@@ -180,15 +253,26 @@ class RepositorySpec extends Specification {
     features.each { it ->
       repo.getFeatureState(it.key).key == it.key
       repo.getFeatureState(it.key).set
+
       if (it.type == FeatureValueType.BOOLEAN)
         repo.getFeatureState(it.key).boolean == it.value
+      else
+        repo.getFeatureState(it.key).boolean == null
+
       if (it.type == FeatureValueType.NUMBER)
         repo.getFeatureState(it.key).number == it.value
+      else
+        repo.getFeatureState(it.key).number == null
+
       if (it.type == FeatureValueType.STRING)
         repo.getFeatureState(it.key).string.equals(it.value)
+      else
+        repo.getFeatureState(it.key).string == null
+
       if (it.type == FeatureValueType.JSON)
         repo.getFeatureState(it.key).rawJson.equals(it.value)
-
+      else
+        repo.getFeatureState(it.key).rawJson == null
     }
 
   }
