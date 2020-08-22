@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
@@ -31,15 +32,44 @@ public class ClientFeatureRepository implements FeatureRepository {
   private Readyness readyness = Readyness.NotReady;
   private final List<ReadynessListener> readynessListeners = new ArrayList<>();
   private final List<FeatureValueInterceptorHolder> featureValueInterceptors = new ArrayList<>();
+  private ObjectMapper jsonConfigObjectMapper;
 
   public ClientFeatureRepository(int threadPoolSize) {
-    mapper = new ObjectMapper();
+    mapper = initializeMapper();
+    jsonConfigObjectMapper = mapper;
+    executor = getExecutor(threadPoolSize);
+  }
+
+  public ClientFeatureRepository() {
+    this(1);
+  }
+
+  public ClientFeatureRepository(Executor executor) {
+    mapper = initializeMapper();
+    jsonConfigObjectMapper = mapper;
+    this.executor = executor;
+  }
+
+  protected ObjectMapper initializeMapper() {
+    ObjectMapper mapper = new ObjectMapper();
     mapper.registerModule(new JavaTimeModule());
     mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 
-    executor = Executors.newFixedThreadPool(threadPoolSize);
+    return mapper;
+  }
+
+  protected Executor getExecutor(int threadPoolSize) {
+    return Executors.newFixedThreadPool(threadPoolSize);
+  }
+
+  public void setJsonConfigObjectMapper(ObjectMapper jsonConfigObjectMapper) {
+    this.jsonConfigObjectMapper = jsonConfigObjectMapper;
+  }
+
+  public Readyness getReadyness() {
+    return readyness;
   }
 
   @Override
@@ -183,7 +213,7 @@ public class ClientFeatureRepository implements FeatureRepository {
           holder = new FeatureStateStringHolder(holder, executor, featureValueInterceptors, featureState.getKey());
           break;
         case JSON:
-          holder = new FeatureStateJsonHolder(holder, executor, mapper, featureValueInterceptors,
+          holder = new FeatureStateJsonHolder(holder, executor, jsonConfigObjectMapper, featureValueInterceptors,
             featureState.getKey());
           break;
       }

@@ -1,5 +1,6 @@
 package io.featurehub.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.featurehub.sse.model.FeatureState;
 import io.featurehub.sse.model.SSEResultState;
 
@@ -25,7 +26,7 @@ public interface FeatureRepository {
 
   /**
    * Update the feature states and force them to be updated, ignoring their versin numbers.
-   * This still may not cause events to be triggered as event triggers are done on actual value cchanges.
+   * This still may not cause events to be triggered as event triggers are done on actual value changes.
    *
    * @param states - the list of feature states
    * @param force  - whether we should force the states to change
@@ -73,4 +74,19 @@ public interface FeatureRepository {
    * @return the instance of the repo for chaining
    */
   FeatureRepository registerValueInterceptor(boolean allowLockOverride, FeatureValueInterceptor interceptor);
+
+  /**
+   * Is this repository ready to connect to.
+   *
+   * @return Readyness status
+   */
+  Readyness getReadyness();
+
+  /**
+   * Lets the SDK override the configuration of the JSON mapper in case they have special techniques they use.
+   *
+   * @param jsonConfigObjectMapper - an ObjectMapper configured for client use. This defaults to the same one
+   *                               used to deserialize
+   */
+  void setJsonConfigObjectMapper(ObjectMapper jsonConfigObjectMapper);
 }
