@@ -293,8 +293,9 @@ class FeatureStepdefs {
     shared.featureValue = fv;
   }
 
-  @And(r'I set the rollout strategy to percentage')
-  void iSetTheRolloutStrategyToPercentage(GherkinTable table) async {
+  @And(r'I set the rollout strategy {string} to percentage')
+  void iSetTheRolloutStrategyToPercentage(
+      String name, GherkinTable table) async {
     assert(shared.application != null, 'please set application first');
     assert(shared.environment != null, 'please set an environment!');
     assert(shared.environment.applicationId == shared.application.id,
@@ -311,10 +312,10 @@ class FeatureStepdefs {
 
     shared.featureValue = fv;
 
-    fv.rolloutStrategy = null;
     fv.rolloutStrategyInstances = [];
     for (var g in table)
       fv.rolloutStrategyInstances.add(RolloutStrategyInstance()
+        ..name = name
         ..percentage = int.parse(g["percentage"])
         ..valueString = g["value"]);
 

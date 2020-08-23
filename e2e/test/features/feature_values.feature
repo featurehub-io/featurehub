@@ -196,17 +196,44 @@ Feature: Create feature values
 
   Scenario Outline: A feature is able to store rollout strategy percentages
     Given I ensure a portfolio named "<portfolio>" with description "business application" exists
-    And I have a fully registered person "Martin" with email "martin@mailinator.com" and password "password123"
     And the first superuser is used for authentication
     Given I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
     And I ensure that an environment "<envName>" with description "<envDesc>" exists in the app "<appName>" in the portfolio "<portfolio>"
     And I ensure that the string feature with the key <featureKey> exists and has the default value <defaultValue>
-    And I set the rollout strategy to percentage
+    And I set the rollout strategy "submit-colors" to percentage
         | percentage | value |
         | 3200       | blue  |
         | 4500       | yellow |
     And I confirm on getting the feature it has the same data as set
 
     Examples:
-      | appName      | appDesc           | portfolio               | featureKey    | envName | envDesc    | defaultValue |
-      | StrategyTest | StrategyTest Desc | Strategy Test Portfolio | FEATURE_TANYA | prod    | production | orange       |
+      | appName      | appDesc           | portfolio               | featureKey          | envName | envDesc    | defaultValue |
+      | StrategyTest | StrategyTest Desc | Strategy Test Portfolio | SUBMIT_COLOR_BUTTON | prod    | production | orange       |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

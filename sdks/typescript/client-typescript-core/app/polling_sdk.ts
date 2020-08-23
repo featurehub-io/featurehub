@@ -6,30 +6,48 @@ interface PollingService {
   start(): void;
 
   stop(): void;
+
+  forcePoll(): void; // occurs if config changed
+
+  attributeHeader(header: string): void;
 }
 
 type FeaturesFunction = (environments: Array<Environment>) => void;
 
-class PollingBase {
+abstract class PollingBase implements PollingService {
+  _header: string;
   options: BrowserOptions;
   url: string;
   frequency: number;
   callback: FeaturesFunction;
   stopped: boolean = false;
 
-  constructor(options: BrowserOptions, url: string, frequency: number, callback: FeaturesFunction) {
+  constructor(options: BrowserOptions, url: string, frequency: number, fhheader: string, callback: FeaturesFunction) {
     this.options = options;
     this.url = url;
     this.frequency = frequency;
     this.callback = callback;
+    this._header = fhheader;
   }
+
+  attributeHeader(header: string) {
+    if (header !== this._header) {
+      this.forcePoll();
+    }
+  }
+
+  abstract start(): void;
+
+  abstract stop(): void;
+
+  abstract forcePoll(): void;
 }
 
 class BrowserPollingService extends PollingBase implements PollingService {
   private polling: boolean;
 
-  constructor(options: BrowserOptions, url: string, frequency: number, callback: FeaturesFunction) {
-    super(options, url, frequency, callback);
+  constructor(options: BrowserOptions, url: string, frequency: number, fhheader: string, callback: FeaturesFunction) {
+    super(options, url, frequency, fhheader, callback);
   }
 
   start(): void {
@@ -38,6 +56,12 @@ class BrowserPollingService extends PollingBase implements PollingService {
 
   public stop(): void {
     this.stopped = true;
+  }
+
+  public forcePoll(): void {
+    if (!this.polling) {
+      this.poll();
+    }
   }
 
   private poll(): void {
@@ -50,6 +74,9 @@ class BrowserPollingService extends PollingBase implements PollingService {
     const req = new XMLHttpRequest();
     req.open('GET', this.url);
     req.setRequestHeader('Content-type', 'application/json');
+    if (this._header) {
+      req.setRequestHeader('x-featurehub', this._header);
+    }
     req.send();
     req.onreadystatechange = () => {
       if (req.readyState === 4) {
@@ -70,14 +97,15 @@ class BrowserPollingService extends PollingBase implements PollingService {
       window.setTimeout(() => this.poll(), this.frequency);
     }
   }
+
 }
 
 class NodejsPollingService extends PollingBase implements PollingService {
   private uri: URL;
   private polling = false;
 
-  constructor(options: BrowserOptions, url: string, frequency: number, callback: FeaturesFunction) {
-    super(options, url, frequency, callback);
+  constructor(options: BrowserOptions, url: string, frequency: number, fhheader: string, callback: FeaturesFunction) {
+    super(options, url, frequency, fhheader, callback);
 
     this.uri = new URL(this.url);
   }
@@ -90,6 +118,12 @@ class NodejsPollingService extends PollingBase implements PollingService {
     this.stopped = true;
   }
 
+  public forcePoll(): void {
+    if (!this.polling) {
+      this.poll();
+    }
+  }
+
   private poll(): void {
     if (this.polling) {
       this.delayTimer();
@@ -99,7 +133,20 @@ class NodejsPollingService extends PollingBase implements PollingService {
 
     const http = this.uri.protocol === 'http:' ? require('http') : require('https');
     let data = '';
-    const req = http.request(this.uri, (res) => {
+    let headers = this._header === undefined ? {} : {
+      'x-featurehub': this._header
+    };
+    const reqOptions = {
+      protocol: this.uri.protocol,
+      host: this.uri.host,
+      hostname: this.uri.hostname,
+      port: this.uri.port,
+      method: 'GET',
+      path: this.uri.pathname,
+      headers: headers,
+      timeout: this.options.timeout || 8000
+    };
+    const req = http.request(reqOptions, (res) => {
       res.on('data', (chunk) => data += chunk);
       res.on('end', () => {
         this.polling = false;
@@ -125,11 +172,11 @@ class NodejsPollingService extends PollingBase implements PollingService {
 }
 
 export interface BrowserOptions {
-
+  timeout?: number;
 }
 
 export interface NodejsOptions {
-
+  timeout?: number;
 }
 
 export class FeatureHubPollingClient {
@@ -147,15 +194,26 @@ export class FeatureHubPollingClient {
     this._options = options;
     this._startable = envIds.length !== 0;
     this._url = host + '/features?' + envIds.map(e => 'sdkUrl=' + encodeURIComponent(e)).join('&');
+
+    // backwards compatible
+    if (repository.config) {
+      repository.config.registerChangeListener(() => {
+        if (this._pollingService && this._frequency) {
+          this._pollingService.attributeHeader(this._repository.config.generateHeader());
+        }
+      });
+    }
   }
 
   public start() {
     if (this._pollingService === undefined) {
       if (typeof window === 'object') {
         this._pollingService = new BrowserPollingService(this._options, this._url, this._frequency,
+                                                         this._repository.config.generateHeader(),
                                                          (e) => this.response(e));
       } else {
         this._pollingService = new NodejsPollingService(this._options, this._url, this._frequency,
+                                                        this._repository.config.generateHeader(),
                                                         (e) => this.response(e));
       }
     }

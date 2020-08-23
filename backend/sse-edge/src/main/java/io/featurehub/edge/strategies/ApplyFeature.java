@@ -20,19 +20,23 @@ public class ApplyFeature {
   public Object applyFeature(FeatureValueCacheItem item, ClientAttributeCollection cac) {
     if (cac != null & item.getValue().getRolloutStrategyInstances() != null && !item.getValue().getRolloutStrategyInstances().isEmpty()) {
       Integer percentage = null;
-
+      int basePercentage = 0;
       String userKey = cac.userKey();
       for(RolloutStrategyInstance rsi : item.getValue().getRolloutStrategyInstances() ) {
         if (rsi.getPercentage() != null && userKey != null) {
           if (percentage == null) {
             percentage = percentageCalculator.determineClientPercentage(cac.userKey(), item.getValue().getId());
+            log.info("percentage for {} on {} calculated at {}", cac.userKey(), item.getFeature().getKey(), percentage);
           }
 
+          log.info("comparing actual {} vs required: {}", percentage, rsi.getPercentage());
             // if the percentage is lower than the user's key +
             // id of feature value then apply it
-          if (percentage <= rsi.getPercentage()) {
+          if (percentage <= (basePercentage + rsi.getPercentage())) {
             return applyRolloutStrategy(rsi, item.getFeature().getValueType());
           }
+
+          basePercentage += rsi.getPercentage();
         }
       }
     }

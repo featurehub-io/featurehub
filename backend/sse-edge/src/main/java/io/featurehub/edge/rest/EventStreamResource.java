@@ -72,7 +72,7 @@ public class EventStreamResource {
     try {
       ClientConnection b = new TimedBucketClientConnection.Builder()
         .featureTransformer(featureTransformer)
-
+        .featureHubAttributes(featureHubAttrs)
         .environmentId(envId).apiKey(apiKey).namedCache(namedCache).output(o).build();
 
       if (b.discovery()) {
