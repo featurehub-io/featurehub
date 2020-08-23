@@ -91,6 +91,25 @@ class ApplyFeatureSpec extends Specification {
       15      || "yellow"
       20      || "yellow"
   }
+
+  def "a null ClientAttributeConnection generates the default value"() {
+    given: "we have rollout strategies set"
+      def rollout = [
+        new RolloutStrategyInstance()
+          .percentage(20)
+          .valueString("blue")
+      ]
+    and:
+      pc = null
+    and: "a feature cache item"
+      def fci = new FeatureValueCacheItem()
+        .value(new FeatureValue().valueString("yellow").id('1').rolloutStrategyInstances(rollout))
+        .feature(new Feature().valueType(FeatureValueType.STRING))
+    when: "i ask for the percentage"
+      def val = applyFeature.applyFeature(fci, null)
+    then:
+      val == "yellow"
+  }
 }
 
 

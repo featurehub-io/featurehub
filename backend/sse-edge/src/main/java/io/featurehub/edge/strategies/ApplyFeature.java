@@ -18,7 +18,7 @@ public class ApplyFeature {
   }
 
   public Object applyFeature(FeatureValueCacheItem item, ClientAttributeCollection cac) {
-    if (item.getValue().getRolloutStrategyInstances() != null && !item.getValue().getRolloutStrategyInstances().isEmpty()) {
+    if (cac != null & item.getValue().getRolloutStrategyInstances() != null && !item.getValue().getRolloutStrategyInstances().isEmpty()) {
       Integer percentage = null;
 
       String userKey = cac.userKey();
