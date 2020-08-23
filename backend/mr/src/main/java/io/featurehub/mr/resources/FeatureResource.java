@@ -118,6 +118,8 @@ public class FeatureResource implements FeatureServiceDelegate {
     } catch (FeatureApi.NoAppropriateRole noAppropriateRole) {
       log.warn("User attempted to update feature they had no access to", noAppropriateRole);
       throw new BadRequestException(noAppropriateRole);
+    } catch (FeatureApi.PercentageStrategyGreaterThan100Percent| FeatureApi.InvalidStrategyCombination bad) {
+      throw new WebApplicationException(400); // can't do anything with it
     }
 
     return featureApi.getFeatureValuesForApplicationForKeyForPerson(id, key, person);

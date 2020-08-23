@@ -463,7 +463,6 @@ public class ConvertUtils implements Conversions {
 
     final FeatureValue featureValue = new FeatureValue()
       .key(stripArchived(actualFeature.getKey(), actualFeature.getWhenArchived()))
-      .rolloutStrategy(fs.getEnabledStrategy())
       .locked(fs.isLocked())
       .id(fs.getId().toString())
       .version(fs.getVersion())

@@ -150,27 +150,22 @@ components:
           description: "This field is filled in from the client side in the GET api as the GET api is able to request multiple environments.
                         It is never passed from the server, as an array of feature states is wrapped in an environment."
           type: string
-        strategy:
-          $ref: "#/components/schemas/Strategy"
-    Strategy:
-#      description: "This tells the client which strategy for roll out is being used".
-      required:
-        - name
-      properties:
-        name:
-          $ref: "#/components/schemas/StrategyNameType"
-        value:
-          description: "this value is used if it is a simple attribute or percentage. If it is more complex then the pairs are passed"
-        pairs:
+        strategies:
           type: array
           items:
-            $ref: "#/components/schemas/StrategyPair"
-    StrategyNameType:
-      type: string
-      enum:
-        - ATTRIBUTE
-        - PERCENTAGE
-    StrategyPair:
+            $ref: "#/components/schemas/Strategy"
+    Strategy:
+      properties:
+        value:
+          description: "this value is used if it is a simple attribute or percentage. If it is more complex then the pairs are passed"
+        percentage:
+          description: "a percentage of people this should apply to"
+          type: number
+        attributes:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttributePair"
+    AttributePair:
  #     description: "This is simply information the feature wishes to pass"
       required:
         - name
@@ -179,4 +174,5 @@ components:
           type: string
         value:
           type: string
+
 

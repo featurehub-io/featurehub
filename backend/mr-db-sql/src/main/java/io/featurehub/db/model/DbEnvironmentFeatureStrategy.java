@@ -5,7 +5,6 @@ import io.ebean.annotation.DbForeignKey;
 import io.ebean.annotation.DbJson;
 import io.ebean.annotation.WhenCreated;
 import io.ebean.annotation.WhenModified;
-import io.featurehub.mr.model.FeatureEnabledStrategy;
 import io.featurehub.mr.model.RolloutStrategyInstance;
 
 import javax.persistence.Column;
@@ -35,7 +34,6 @@ public class DbEnvironmentFeatureStrategy {
     setFeature(builder.feature);
     setFeatureState(builder.featureState);
     setDefaultValue(builder.defaultValue);
-    setEnabledStrategy(builder.enabledStrategy);
     setLocked(builder.locked);
     setRolloutStrategyInstances(builder.rolloutStrategyInstances);
   }
@@ -94,9 +92,6 @@ public class DbEnvironmentFeatureStrategy {
 
   @Lob
   private String defaultValue;
-
-  @Enumerated(value = EnumType.STRING)
-  private FeatureEnabledStrategy enabledStrategy;
 
   @Column(nullable = false)
   private boolean locked;
@@ -164,14 +159,6 @@ public class DbEnvironmentFeatureStrategy {
     this.rolloutStrategyInstances = rolloutStrategyInstances;
   }
 
-  public FeatureEnabledStrategy getEnabledStrategy() {
-    return enabledStrategy;
-  }
-
-  public void setEnabledStrategy(FeatureEnabledStrategy enabledStrategy) {
-    this.enabledStrategy = enabledStrategy;
-  }
-
   public long getVersion() {
     return version;
   }
@@ -184,7 +171,6 @@ public class DbEnvironmentFeatureStrategy {
     private DbApplicationFeature feature;
     private FeatureState featureState;
     private String defaultValue;
-    private FeatureEnabledStrategy enabledStrategy;
     private boolean locked;
     private List<RolloutStrategyInstance> rolloutStrategyInstances;
 
@@ -218,11 +204,6 @@ public class DbEnvironmentFeatureStrategy {
 
     public Builder defaultValue(String val) {
       defaultValue = val;
-      return this;
-    }
-
-    public Builder enabledStrategy(FeatureEnabledStrategy val) {
-      enabledStrategy = val;
       return this;
     }
 

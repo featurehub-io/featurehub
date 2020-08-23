@@ -95,8 +95,6 @@ components:
           type: boolean
         valueJson:
           type: string
-        rolloutStrategy:
-          $ref: "#/components/schemas/FeatureEnabledStrategy"
         rolloutStrategyInstances:
           type: array
           items:
@@ -116,7 +114,12 @@ components:
           type: string
     RolloutStrategyInstance:
       description: "if the feature in an environment is different from its default, this will be the reason for it"
+      required:
+        - name
       properties:
+        name:
+          type: string
+          maxLength: 100
         valueString:
           description: "default value if no strategy matches. interpreted by type in parent"
           type: string
@@ -126,9 +129,12 @@ components:
           type: boolean
         valueJson:
           type: string
+        enabled:
+          type: boolean
         percentage:
-          type: number
-        attribute:
+          description: "value between 0 and 10000"
+          type: integer
+        attributes:
           type: array
           items:
             $ref: "#/components/schemas/RolloutStrategyAttribute"
@@ -156,11 +162,6 @@ components:
         - OR
         - ENDOR
         - ENDAND
-    FeatureEnabledStrategy:
-      type: string
-      enum:
-        - ATTRIBUTE
-        - PERCENTAGE
     Audit:
       properties:
         createdBy:

@@ -6,6 +6,7 @@ import io.featurehub.edge.ServerConfig;
 import io.featurehub.edge.bucket.EventOutputBucketService;
 import io.featurehub.edge.client.ClientConnection;
 import io.featurehub.edge.client.TimedBucketClientConnection;
+import io.featurehub.edge.strategies.ClientAttributeCollection;
 import io.featurehub.mr.messaging.StreamedFeatureUpdate;
 import io.featurehub.mr.model.EdgeInitPermissionResponse;
 import io.featurehub.mr.model.FeatureValue;
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -48,11 +50,12 @@ public class EventStreamResource {
   @GET
   @Path("/")
   @Produces({ "application/json" })
-  public List<Environment> getFeatureStates(@QueryParam("sdkUrl") List<String> sdkUrl) {
+  public List<Environment> getFeatureStates(@QueryParam("sdkUrl") List<String> sdkUrl, @HeaderParam("x-featurehub") List<String> featureHubAttrs) {
     if (sdkUrl == null || sdkUrl.isEmpty()) {
       throw new BadRequestException();
     }
-    return serverConfig.requestFeatures(sdkUrl);
+
+    return serverConfig.requestFeatures(sdkUrl, ClientAttributeCollection.decode(featureHubAttrs));
   }
 
 
@@ -61,12 +64,15 @@ public class EventStreamResource {
   @Produces(SseFeature.SERVER_SENT_EVENTS)
   public EventOutput features(@PathParam("namedCache") String namedCache,
                               @PathParam("environmentId") String envId,
-                              @PathParam("apiKey") String apiKey, FeatureStateUpdate update) {
+                              @PathParam("apiKey") String apiKey,
+                              @HeaderParam("x-featurehub") List<String> featureHubAttrs,
+                              FeatureStateUpdate update) {
     EventOutput o = new EventOutput();
 
     try {
       ClientConnection b = new TimedBucketClientConnection.Builder()
         .featureTransformer(featureTransformer)
+
         .environmentId(envId).apiKey(apiKey).namedCache(namedCache).output(o).build();
 
       if (b.discovery()) {

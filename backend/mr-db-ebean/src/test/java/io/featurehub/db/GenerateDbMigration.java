@@ -13,7 +13,6 @@ public class GenerateDbMigration {
 
     dbMigration.setMigrationPath("/dbmigration");
     dbMigration.setStrictMode(false);
-
     // generate the migration ddl and xml
     dbMigration.generateMigration();
   }

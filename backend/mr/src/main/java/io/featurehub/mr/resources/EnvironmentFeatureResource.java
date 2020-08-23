@@ -52,6 +52,8 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
       throw new WebApplicationException(422);
     } catch (FeatureApi.NoAppropriateRole noAppropriateRole) {
       throw new ForbiddenException(noAppropriateRole);
+    } catch (FeatureApi.PercentageStrategyGreaterThan100Percent| FeatureApi.InvalidStrategyCombination bad) {
+      throw new WebApplicationException(400); // can't do anything with it
     }
 
     if (featureForEnvironment == null) {
@@ -114,6 +116,8 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
       throw new WebApplicationException(422);
     } catch (FeatureApi.NoAppropriateRole noAppropriateRole) {
       throw new ForbiddenException(noAppropriateRole);
+    } catch (FeatureApi.PercentageStrategyGreaterThan100Percent| FeatureApi.InvalidStrategyCombination bad) {
+      throw new WebApplicationException(400); // can't do anything with it
     }
   }
 
@@ -126,6 +130,8 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
       throw new WebApplicationException(422);
     } catch (FeatureApi.NoAppropriateRole noAppropriateRole) {
       throw new ForbiddenException(noAppropriateRole);
+    } catch (FeatureApi.PercentageStrategyGreaterThan100Percent| FeatureApi.InvalidStrategyCombination bad) {
+      throw new WebApplicationException(400); // can't do anything with it
     }
   }
 }

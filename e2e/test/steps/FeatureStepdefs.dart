@@ -1,5 +1,6 @@
 import 'package:app_singleapp/shared.dart';
 import 'package:app_singleapp/user_common.dart';
+import 'package:collection/collection.dart';
 import 'package:mrapi/api.dart';
 import 'package:ogurets/ogurets.dart';
 
@@ -198,5 +199,153 @@ class FeatureStepdefs {
       assert((allowed == "cannot"),
           "was not able to $lock feature flag and should have been able to");
     }
+  }
+
+  FeatureValueType textToType(String txt) {
+    if (['string', 'text'].contains(txt.toLowerCase())) {
+      return FeatureValueType.STRING;
+    }
+
+    if (['number'].contains(txt.toLowerCase())) {
+      return FeatureValueType.NUMBER;
+    }
+
+    if (['json'].contains(txt.toLowerCase())) {
+      return FeatureValueType.JSON;
+    }
+
+    if (['flag', 'boolean'].contains(txt.toLowerCase())) {
+      return FeatureValueType.BOOLEAN;
+    }
+
+    return null;
+  }
+
+  @And(
+      r'^I ensure that the (string|number) feature with the key (.*) exists and has the default value (.*)$')
+  void iEnsureThatTheStringFeatureWithTheKeyExistsAndHasTheDefaultValue(
+      String type, String featureKey, String defaultValue) async {
+    assert(shared.application != null, 'please set application first');
+    assert(shared.environment != null, 'please set an environment!');
+    assert(shared.environment.applicationId == shared.application.id,
+        'environment is not in application');
+
+    final actualType = textToType(type);
+
+    assert(actualType != null, "${type} is not a valid feature type");
+
+    var feature;
+
+    try {
+      feature = await userCommon.featureService
+          .getFeatureByKey(shared.application.id, featureKey);
+      assert(feature.valueType == actualType,
+          'feature is not null and of the wrong type, please use another name');
+    } catch (e) {
+      final features =
+          await userCommon.featureService.createFeaturesForApplication(
+              shared.application.id,
+              new Feature()
+                ..valueType = actualType
+                ..name = featureKey
+                ..key = featureKey);
+
+      feature = features.firstWhere((element) => element.key == featureKey);
+    }
+
+    shared.feature = feature;
+
+    final allFeatures = await userCommon.featureService
+        .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
+            shared.application.id);
+
+    final efv = allFeatures.environments
+        .firstWhere((efv) => efv.environmentId == shared.environment.id);
+    var fv = efv.features
+        .firstWhere((fv) => fv.key == featureKey, orElse: () => null);
+
+    if (fv == null) {
+      fv = FeatureValue()
+        ..key = featureKey
+        ..environmentId = shared.environment.id;
+    }
+
+    switch (actualType) {
+      case FeatureValueType.BOOLEAN:
+        fv.valueBoolean = "true" == defaultValue;
+        break;
+      case FeatureValueType.STRING:
+        fv.valueString = defaultValue;
+        break;
+      case FeatureValueType.NUMBER:
+        fv.valueNumber = double.parse(defaultValue);
+        break;
+      case FeatureValueType.JSON:
+        fv.valueJson = defaultValue;
+        break;
+    }
+
+    fv.locked = false;
+
+    await userCommon.featureService.updateAllFeatureValuesByApplicationForKey(
+        shared.application.id, featureKey, [fv]);
+
+    shared.featureValue = fv;
+  }
+
+  @And(r'I set the rollout strategy to percentage')
+  void iSetTheRolloutStrategyToPercentage(GherkinTable table) async {
+    assert(shared.application != null, 'please set application first');
+    assert(shared.environment != null, 'please set an environment!');
+    assert(shared.environment.applicationId == shared.application.id,
+        'environment is not in application');
+    assert(shared.feature != null, 'must know what the feature is');
+
+    final allFeatures = await userCommon.featureService
+        .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
+            shared.application.id);
+
+    final efv = allFeatures.environments
+        .firstWhere((efv) => efv.environmentId == shared.environment.id);
+    final fv = efv.features.firstWhere((fv) => fv.key == shared.feature.key);
+
+    shared.featureValue = fv;
+
+    fv.rolloutStrategy = null;
+    fv.rolloutStrategyInstances = [];
+    for (var g in table)
+      fv.rolloutStrategyInstances.add(RolloutStrategyInstance()
+        ..percentage = int.parse(g["percentage"])
+        ..valueString = g["value"]);
+
+    await userCommon.featureService.updateAllFeatureValuesByApplicationForKey(
+        shared.application.id, fv.key, [fv]);
+  }
+
+  @And(r'I confirm on getting the feature it has the same data as set')
+  void iConfirmOnGettingTheFeatureItHasTheSameDataAsSet() async {
+    assert(shared.application != null, 'please set application first');
+    assert(shared.environment != null, 'please set an environment!');
+    assert(shared.environment.applicationId == shared.application.id,
+        'environment is not in application');
+    assert(shared.feature != null, 'must know what the feature is');
+    assert(shared.featureValue != null,
+        'must have a stored feature value to compare against');
+
+    final allFeatures = await userCommon.featureService
+        .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
+            shared.application.id);
+
+    final efv = allFeatures.environments
+        .firstWhere((efv) => efv.environmentId == shared.environment.id);
+    final fv = efv.features.firstWhere((fv) => fv.key == shared.feature.key);
+
+    print(
+        "fv is ${fv.rolloutStrategyInstances}\n stored is ${shared.featureValue.rolloutStrategyInstances}");
+
+    assert(
+        new ListEquality().equals(fv.rolloutStrategyInstances,
+            shared.featureValue.rolloutStrategyInstances),
+        'not equal');
   }
 }
