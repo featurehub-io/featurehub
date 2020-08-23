@@ -30,13 +30,17 @@ public class ApplyFeature {
           }
 
           log.info("comparing actual {} vs required: {}", percentage, rsi.getPercentage());
+          int useBasePercentage = rsi.getAttributes() == null || rsi.getAttributes().isEmpty() ? basePercentage : 0;
             // if the percentage is lower than the user's key +
             // id of feature value then apply it
-          if (percentage <= (basePercentage + rsi.getPercentage())) {
+          if (percentage <= (useBasePercentage + rsi.getPercentage())) {
             return applyRolloutStrategy(rsi, item.getFeature().getValueType());
           }
 
-          basePercentage += rsi.getPercentage();
+          // this was only a percentage and had no other attributes
+          if (rsi.getAttributes() == null || rsi.getAttributes().isEmpty()) {
+            basePercentage += rsi.getPercentage();
+          }
         }
       }
     }
