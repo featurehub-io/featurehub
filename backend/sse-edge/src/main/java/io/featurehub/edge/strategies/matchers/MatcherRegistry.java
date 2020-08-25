@@ -18,12 +18,8 @@ public class MatcherRegistry implements MatcherRepository {
         break;
       case DATETIME:
         break;
-      case JSON:
-        break;
       case BOOLEAN: // can't have arrays, that would be silly
         return new BooleanMatcher();
-      case EMAIL:
-        return isArray ? new EmailArrayMatcher() : new EmailMatcher();
       case IP_ADDRESS:
         break;
     }
