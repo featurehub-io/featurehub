@@ -166,30 +166,30 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
   }
 
   private void validateStrategies(FeatureValue featureValue) throws PercentageStrategyGreaterThan100Percent, InvalidStrategyCombination {
-    if (featureValue.getRolloutStrategyInstances() != null && !featureValue.getRolloutStrategyInstances().isEmpty()) {
-      // if any of them have no attributes and no percentage (or invalid percentage) then this is invalid
-      if (featureValue.getRolloutStrategyInstances().stream().anyMatch(rsi -> rsi.getName() == null || rsi.getName().isEmpty() || rsi.getName().trim().length() > 200)) {
-        log.warn("feature rollout strategy contained at least one invalid name {}", featureValue);
-        throw new InvalidStrategyCombination();
-      }
-      if (
-        featureValue.getRolloutStrategyInstances().stream().anyMatch(rsi -> ((rsi.getAttributes() == null ||
-          rsi.getAttributes().isEmpty()) && (rsi.getPercentage() == null || rsi.getPercentage() < 0)))) {
-        log.warn("Attempting to update strategies for feature {} where attributes passed or percentage missing (or " +
-          "negative)" +
-          " and " +
-          "using percentage strategy.", featureValue);
-        throw new InvalidStrategyCombination();
-      }
-
-      if (featureValue.getRolloutStrategyInstances().stream()
-          .filter(rsi -> rsi.getAttributes() == null || rsi.getAttributes().isEmpty())
-          .map(RolloutStrategyInstance::getPercentage).reduce(0,
-          Integer::sum) > 10000) {
-        log.warn("Percentage adds up to > 10000 which is the baseline for percentage rollout {}.", featureValue);
-        throw new PercentageStrategyGreaterThan100Percent();
-      }
-    }
+//    if (featureValue.getRolloutStrategyInstances() != null && !featureValue.getRolloutStrategyInstances().isEmpty()) {
+//      // if any of them have no attributes and no percentage (or invalid percentage) then this is invalid
+//      if (featureValue.getRolloutStrategyInstances().stream().anyMatch(rsi -> rsi.getName() == null || rsi.getName().isEmpty() || rsi.getName().trim().length() > 200)) {
+//        log.warn("feature rollout strategy contained at least one invalid name {}", featureValue);
+//        throw new InvalidStrategyCombination();
+//      }
+//      if (
+//        featureValue.getRolloutStrategyInstances().stream().anyMatch(rsi -> ((rsi.getAttributes() == null ||
+//          rsi.getAttributes().isEmpty()) && (rsi.getPercentage() == null || rsi.getPercentage() < 0)))) {
+//        log.warn("Attempting to update strategies for feature {} where attributes passed or percentage missing (or " +
+//          "negative)" +
+//          " and " +
+//          "using percentage strategy.", featureValue);
+//        throw new InvalidStrategyCombination();
+//      }
+//
+//      if (featureValue.getRolloutStrategyInstances().stream()
+//          .filter(rsi -> rsi.getAttributes() == null || rsi.getAttributes().isEmpty())
+//          .map(RolloutStrategyInstance::getPercentage).reduce(0,
+//          Integer::sum) > 10000) {
+//        log.warn("Percentage adds up to > 10000 which is the baseline for percentage rollout {}.", featureValue);
+//        throw new PercentageStrategyGreaterThan100Percent();
+//      }
+//    }
   }
 
   private void updateStrategy(FeatureValue featureValue, PersonFeaturePermission person, DbEnvironmentFeatureStrategy strategy) throws NoAppropriateRole {

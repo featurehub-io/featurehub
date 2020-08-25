@@ -67,7 +67,6 @@ components:
         - DATETIME
         - JSON
         - BOOLEAN
-        - EMAIL
         - IP_ADDRESS
     RolloutStrategyAttributeConditional:
       type: string

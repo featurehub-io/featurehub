@@ -1,5 +1,6 @@
 package io.featurehub.edge.strategies
 
+import io.featurehub.edge.strategies.matchers.MatcherRegistry
 import io.featurehub.mr.model.Feature
 import io.featurehub.mr.model.FeatureValue
 import io.featurehub.mr.model.FeatureValueCacheItem
@@ -16,7 +17,7 @@ class ApplyFeatureSpec extends Specification {
   def setup() {
     // mocking doesn't work for "where" clauses
     percentageCalculator =  {String u, String id -> pc } as PercentageCalculator
-    applyFeature = new ApplyFeature(percentageCalculator)
+    applyFeature = new ApplyFeature(percentageCalculator, new MatcherRegistry())
   }
 
   @Unroll

@@ -4,6 +4,7 @@ import io.featurehub.edge.strategies.Applied;
 import io.featurehub.edge.strategies.ApplyFeature;
 import io.featurehub.edge.strategies.ClientAttributeCollection;
 import io.featurehub.edge.strategies.PercentageMumurCalculator;
+import io.featurehub.edge.strategies.matchers.MatcherRegistry;
 import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.mr.model.FeatureValueType;
 import io.featurehub.sse.model.FeatureState;
@@ -15,7 +16,7 @@ import java.util.stream.Collectors;
 
 public class FeatureTransformerUtils implements FeatureTransformer {
   private static final Logger log = LoggerFactory.getLogger(FeatureTransformerUtils.class);
-  private final ApplyFeature applyFeature = new ApplyFeature(new PercentageMumurCalculator());
+  private final ApplyFeature applyFeature = new ApplyFeature(new PercentageMumurCalculator(), new MatcherRegistry());
 
   public List<FeatureState> transform(List<FeatureValueCacheItem> features, ClientAttributeCollection clientAttributes) {
     return features.stream().map(f -> transform(f, clientAttributes)).collect(Collectors.toList());
