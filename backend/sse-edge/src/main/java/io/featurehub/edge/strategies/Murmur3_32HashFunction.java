@@ -24,7 +24,7 @@ package io.featurehub.edge.strategies;
  * http://code.google.com/p/smhasher/source/browse/trunk/MurmurHash3.cpp
  * (Modified to adapt to Guava coding conventions and to use the HashFunction interface)
  *
- * Java source:
+ * Java source: (from Guava)
  * https://github.com/google/guava/blob/04bfbe284cd386cbd42c1ae1bca50033ce297c69/android/guava/src/com/google/common/hash/Murmur3_32HashFunction.java
  *
  */

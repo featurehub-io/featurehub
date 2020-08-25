@@ -153,26 +153,6 @@ components:
         strategies:
           type: array
           items:
-            $ref: "#/components/schemas/Strategy"
-    Strategy:
-      properties:
-        value:
-          description: "this value is used if it is a simple attribute or percentage. If it is more complex then the pairs are passed"
-        percentage:
-          description: "a percentage of people this should apply to"
-          type: number
-        attributes:
-          type: array
-          items:
-            $ref: "#/components/schemas/AttributePair"
-    AttributePair:
- #     description: "This is simply information the feature wishes to pass"
-      required:
-        - name
-      properties:
-        name:
-          type: string
-        value:
-          type: string
+            $ref: "#/components/schemas/RolloutStrategy"
 
 

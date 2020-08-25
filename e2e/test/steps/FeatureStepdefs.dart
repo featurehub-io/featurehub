@@ -293,7 +293,7 @@ class FeatureStepdefs {
     shared.featureValue = fv;
   }
 
-  @And(r'I set the rollout strategy {string} to percentage')
+  @And(r'I create rollout strategies')
   void iSetTheRolloutStrategyToPercentage(
       String name, GherkinTable table) async {
     assert(shared.application != null, 'please set application first');
@@ -301,6 +301,36 @@ class FeatureStepdefs {
     assert(shared.environment.applicationId == shared.application.id,
         'environment is not in application');
     assert(shared.feature != null, 'must know what the feature is');
+
+    const strategies = <RolloutStrategyInstance>[];
+    final existing = await userCommon.rolloutStrategyService
+        .listApplicationRolloutStrategies(shared.application.id);
+
+    for (var g in table) {
+      var strategy = existing.firstWhere(
+          (s) => s.name.toLowerCase() == g['name'],
+          orElse: () => null);
+      if (strategy == null) {
+        strategy = new RolloutStrategy()..name = g['name'];
+      }
+      strategy.percentage = g['percentage'] != null
+          ? (double.parse(g['percentage']) * 10000).round()
+          : null;
+
+      if (strategy.id != null) {
+        strategy = await userCommon.rolloutStrategyService
+            .updateRolloutStrategy(
+                shared.application.id, strategy.id, strategy);
+      } else {
+        strategy = await userCommon.rolloutStrategyService
+            .createRolloutStrategy(shared.application.id, strategy);
+      }
+
+      strategies.add(RolloutStrategyInstance()
+        ..value = g['value']
+        ..enabled = true
+        ..strategyId = strategy.id);
+    }
 
     final allFeatures = await userCommon.featureService
         .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
@@ -312,12 +342,7 @@ class FeatureStepdefs {
 
     shared.featureValue = fv;
 
-    fv.rolloutStrategyInstances = [];
-    for (var g in table)
-      fv.rolloutStrategyInstances.add(RolloutStrategyInstance()
-        ..name = name
-        ..percentage = int.parse(g["percentage"])
-        ..valueString = g["value"]);
+    fv.rolloutStrategyInstances = strategies;
 
     await userCommon.featureService.updateAllFeatureValuesByApplicationForKey(
         shared.application.id, fv.key, [fv]);

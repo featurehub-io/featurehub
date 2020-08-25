@@ -51,4 +51,18 @@ public class ClientAttributeCollection {
 
     return strategy.attributes.isEmpty() ? null : strategy;
   }
+
+  public String get(String key, String defaultValue) {
+    List<String> val = attributes.get(key);
+
+    if (val == null || val.isEmpty()) {
+      return defaultValue;
+    }
+
+    return val.get(0);
+  }
+
+  public boolean hasAttributes() {
+    return !attributes.isEmpty();
+  }
 }

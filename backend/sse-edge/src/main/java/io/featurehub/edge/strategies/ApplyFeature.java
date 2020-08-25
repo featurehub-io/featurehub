@@ -1,12 +1,12 @@
 package io.featurehub.edge.strategies;
 
-import io.featurehub.mr.model.FeatureValueCacheItem;
-import io.featurehub.mr.model.FeatureValueType;
-import io.featurehub.mr.model.RolloutStrategyInstance;
+import io.featurehub.mr.model.RolloutStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ApplyFeature {
   private static final Logger log = LoggerFactory.getLogger(ApplyFeature.class);
@@ -17,16 +17,19 @@ public class ApplyFeature {
     this.percentageCalculator = percentageCalculator;
   }
 
-  public Object applyFeature(FeatureValueCacheItem item, ClientAttributeCollection cac) {
-    if (cac != null & item.getValue().getRolloutStrategyInstances() != null && !item.getValue().getRolloutStrategyInstances().isEmpty()) {
+  public Applied applyFeature(List<RolloutStrategy> strategies, String key, String featureValueId,
+                             ClientAttributeCollection cac) {
+    if (cac != null & strategies != null && !strategies.isEmpty()) {
       Integer percentage = null;
       int basePercentage = 0;
       String userKey = cac.userKey();
-      for(RolloutStrategyInstance rsi : item.getValue().getRolloutStrategyInstances() ) {
-        if (rsi.getPercentage() != null && userKey != null) {
+      for(RolloutStrategy rsi : strategies ) {
+        if (rsi.getPercentage() != null && (userKey != null || !rsi.getPercentageAttributes().isEmpty())) {
           if (percentage == null) {
-            percentage = percentageCalculator.determineClientPercentage(cac.userKey(), item.getValue().getId());
-            log.info("percentage for {} on {} calculated at {}", cac.userKey(), item.getFeature().getKey(), percentage);
+            percentage = percentageCalculator.determineClientPercentage(determinePercentageKey(cac,
+              rsi.getPercentageAttributes()),
+              featureValueId);
+            log.info("percentage for {} on {} calculated at {}", cac.userKey(), key, percentage);
           }
 
           log.info("comparing actual {} vs required: {}", percentage, rsi.getPercentage());
@@ -34,7 +37,7 @@ public class ApplyFeature {
             // if the percentage is lower than the user's key +
             // id of feature value then apply it
           if (percentage <= (useBasePercentage + rsi.getPercentage())) {
-            return applyRolloutStrategy(rsi, item.getFeature().getValueType());
+            return new Applied(true, rsi.getValue());
           }
 
           // this was only a percentage and had no other attributes
@@ -45,54 +48,16 @@ public class ApplyFeature {
       }
     }
 
-    return valueAsObject(item);
+    return new Applied(false, null);
+  }
+
+  private String determinePercentageKey(ClientAttributeCollection cac, List<String> percentageAttributes) {
+    if (percentageAttributes.isEmpty()) {
+      return cac.userKey();
+    }
+
+    return percentageAttributes.stream().map(pa -> cac.get(pa, "<none>")).collect(Collectors.joining("$"));
   }
 
 
-
-  private Object applyRolloutStrategy(RolloutStrategyInstance rsi, FeatureValueType valueType) {
-    if (valueType == FeatureValueType.BOOLEAN) {
-      return rsi.getValueBoolean();
-    }
-
-    if (valueType == FeatureValueType.JSON) {
-      return rsi.getValueJson();
-    }
-
-    if (valueType == FeatureValueType.NUMBER) {
-      return rsi.getValueNumber();
-    }
-
-    if (valueType == FeatureValueType.STRING) {
-      return rsi.getValueString();
-    }
-
-    return null;
-  }
-
-  private Object valueAsObject(FeatureValueCacheItem rf) {
-    if (rf.getValue() == null)
-      return null;
-
-    final FeatureValueType valueType = rf.getFeature().getValueType();
-    if (FeatureValueType.BOOLEAN.equals(valueType)) {
-      return rf.getValue().getValueBoolean();
-    }
-
-    if (FeatureValueType.JSON.equals(valueType)) {
-      return rf.getValue().getValueJson();
-    }
-
-    if ( FeatureValueType.STRING.equals(valueType)) {
-      return rf.getValue().getValueString();
-    }
-
-    if (FeatureValueType.NUMBER.equals(valueType)) {
-      return rf.getValue().getValueNumber();
-    }
-
-    log.error("unknown feature value type, sending null: {}: {}", rf.getFeature().getId(), valueType);
-
-    return null;
-  }
 }

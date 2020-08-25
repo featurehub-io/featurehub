@@ -16,7 +16,7 @@ class PercentageFeatureSpec extends Specification {
     when: "we loop through 1000 random strings"
       def counter = 0
       for(int count = 0; count < 1000; count++) {
-        if (calc.determineClientPercentage(RandomStringUtils.randomAlphanumeric(6), featureId) <= 2000) {
+        if (calc.determineClientPercentage(RandomStringUtils.randomAlphanumeric(6), featureId) <= 200000) {
           counter ++
         }
       }

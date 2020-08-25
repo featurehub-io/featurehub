@@ -200,10 +200,10 @@ Feature: Create feature values
     Given I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
     And I ensure that an environment "<envName>" with description "<envDesc>" exists in the app "<appName>" in the portfolio "<portfolio>"
     And I ensure that the string feature with the key <featureKey> exists and has the default value <defaultValue>
-    And I set the rollout strategy "submit-colors" to percentage
-        | percentage | value |
-        | 3200       | blue  |
-        | 4500       | yellow |
+    And I create rollout strategies
+      | percentage | value  | name          |
+      | 32      | blue   | blue-kachoo   |
+      | 45     | yellow | yellow-smello |
     And I confirm on getting the feature it has the same data as set
 
     Examples:

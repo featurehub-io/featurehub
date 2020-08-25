@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: ManagementResourceApi
   description: This describes the API clients use for accessing features
-  version: "1.1.1"
+  version: "1.1.2"
 #  CRUD for portfolios, environments, features, service account, people, and groups (edited)
 #  roles are fixed
 #  then people<->group association
@@ -677,6 +677,94 @@ paths:
       responses:
         "200":
           description: "Did we delete the application"
+          content:
+            application/json:
+              schema:
+                type: boolean
+  /mr-api/application/{appId}/rollout-strategy:
+    parameters:
+      - name: appId
+        description: "The id of the application to find"
+        in: path
+        schema:
+          type: string
+        required: true
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - RolloutStrategyService
+      operationId: listApplicationRolloutStrategies
+      responses:
+        "200":
+          description: "Get all strategies for this application, regardless if they are in use"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RolloutStrategy"
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - RolloutStrategyService
+      operationId: createRolloutStrategy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RolloutStrategy"
+      responses:
+        "201":
+          description: "The created rollout strategy for this application"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RolloutStrategy"
+  /mr-api/application/{appId}/rollout-strategy/{strategyId}:
+    parameters:
+      - name: appId
+        description: "The id of the application to find"
+        in: path
+        schema:
+          type: string
+        required: true
+      - name: strategyId
+        description: "The id of the strategy or the unique name of it"
+        in: path
+        schema:
+          type: string
+        required: true
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - RolloutStrategyService
+      operationId: updateRolloutStrategy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RolloutStrategy"
+      responses:
+        "200":
+          description: "The created rollout strategy for this application"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RolloutStrategy"
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - RolloutStrategyService
+      operationId: deleteRolloutStrategy
+      responses:
+        "200":
+          description: "The created rollout strategy for this application"
           content:
             application/json:
               schema:

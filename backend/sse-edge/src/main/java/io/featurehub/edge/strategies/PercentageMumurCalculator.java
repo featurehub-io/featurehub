@@ -4,7 +4,7 @@ import java.nio.charset.StandardCharsets;
 
 public class PercentageMumurCalculator implements PercentageCalculator {
   private final Murmur3_32HashFunction hashFunction;
-  public static final int MAX_PERCENTAGE = 10000;
+  public static final int MAX_PERCENTAGE = 1000000;
 
   public PercentageMumurCalculator(int seed) {
     this.hashFunction = new Murmur3_32HashFunction(seed);

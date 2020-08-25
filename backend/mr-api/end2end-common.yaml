@@ -14,3 +14,72 @@ components:
         - LOCK
         - UNLOCK
         - CHANGE_VALUE
+    RolloutStrategy:
+      description: "if the feature in an environment is different from its default, this will be the reason for it.
+                    a rollout strategy is defined at the Application level and then applied to a specific feature value.
+                    When they are copied to the cache layer they are cloned and the feature value for that strategy
+                    is inserted into the clone and those are published."
+      required:
+        - name
+      properties:
+        id:
+          type: string
+        name:
+          description: "names are unique in a case insensitive fashion"
+          type: string
+          maxLength: 100
+        value:
+          description: "when we attach the RolloutStrategy for Dacha or SSE this lets us push the value out."
+        percentage:
+          description: "value between 0 and 1000000 - for four decimal places"
+          type: integer
+        percentageAttributes:
+          type: array
+          description: "if you don't wish to apply percentage based on user id, you can use one or more attributes defined here"
+          items:
+            type: string
+        attributes:
+          type: array
+          items:
+            $ref: "#/components/schemas/RolloutStrategyAttribute"
+    # e.g. (OR).(AND).(name='os', valueString='Android').(name='version', valueString='7+').(ENDAND).(AND).(name='os', valueString='ios').(name='version', valueString='9+').(ENDAND).(ENDOR)
+    # ==> (os = Android && valueString = "7+") or (os = ios && valueString = "9+")
+    # conditional and value in each case is optional but 1 must be specified
+    RolloutStrategyAttribute:
+      properties:
+        conditional:
+          $ref: "#/components/schemas/RolloutStrategyAttributeConditional"
+        fieldName:
+          type: string
+        value:
+          description: "its value"
+        type:
+          $ref: "#/components/schemas/RolloutStrategyFieldType"
+        array:
+          type: boolean
+    RolloutStrategyFieldType:
+      type: string
+      enum:
+        - STRING
+        - SEMANTIC_VERSION
+        - NUMBER
+        - DATE
+        - DATETIME
+        - JSON
+        - BOOLEAN
+        - EMAIL
+        - IP_ADDRESS
+    RolloutStrategyAttributeConditional:
+      type: string
+      enum:
+        - EQUALS
+        - ENDS_WITH
+        - STARTS_WITH
+        - GREATER
+        - GREATER_EQUALS
+        - LESS
+        - LESS_EQUALS
+        - NOT_EQUALS
+        - INCLUDES
+        - EXCLUDES
+        - REGEX

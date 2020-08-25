@@ -113,55 +113,13 @@ components:
         whatUpdated:
           type: string
     RolloutStrategyInstance:
-      description: "if the feature in an environment is different from its default, this will be the reason for it"
-      required:
-        - name
       properties:
-        name:
+        strategyId:
           type: string
-          maxLength: 100
-        valueString:
-          description: "default value if no strategy matches. interpreted by type in parent"
-          type: string
-        valueNumber:
-          type: number
-        valueBoolean:
-          type: boolean
-        valueJson:
-          type: string
+        value:
+          description: "the value for this rollout strategy for this feature value"
         enabled:
           type: boolean
-        percentage:
-          description: "value between 0 and 10000"
-          type: integer
-        attributes:
-          type: array
-          items:
-            $ref: "#/components/schemas/RolloutStrategyAttribute"
-    # e.g. (OR).(AND).(name='os', valueString='Android').(name='version', valueString='7+').(ENDAND).(AND).(name='os', valueString='ios').(name='version', valueString='9+').(ENDAND).(ENDOR)
-    # ==> (os = Android && valueString = "7+") or (os = ios && valueString = "9+")
-    # conditional and value in each case is optional but 1 must be specified
-    RolloutStrategyAttribute:
-      properties:
-        conditional:
-          $ref: "#/components/schemas/RolloutStrategyAttributeConditional"
-        name:
-          type: string
-        valueString:
-          type: string
-        valueNumber:
-          type: number
-        valueJson:
-          type: string
-        valueBoolean:
-          type: boolean
-    RolloutStrategyAttributeConditional:
-      type: string
-      enum:
-        - AND
-        - OR
-        - ENDOR
-        - ENDAND
     Audit:
       properties:
         createdBy:
