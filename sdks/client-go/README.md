@@ -121,6 +121,18 @@ The client SDK provides the ability to generate analytics events with the `LogAn
 Currently the SDK only supports a logging analytics collector, which is configured by default whenever you use the SDK. It logs events to the console at DEBUG level.
 
 
+#### Google Analytics
+The GoLang SDK comes with a pre-made Google Analytics collector. Here is how to use it:
+```go
+	googleAnalyticsCollector, err := analytics.NewGoogleAnalyticsCollector(clientID, trackingID, userAgentKey)
+	if err != nil {
+		panic(err)
+	}
+	client.AddAnalyticsCollector(googleAnalyticsCollector)
+```
+Any subsequent calls to `client.LogAnalyticsEvent()` will result in events being sent via the Google Analytics collector (as well as any other which you have added).
+
+
 Todo
 ----
 - [X] Config
@@ -132,6 +144,6 @@ Todo
 - [X] Allow notify / callback functions (add and remove)
 - [X] Global "readyness" callback (either OK when data has arrived, or an error if there was a fail)
 - [X] Analytics support
-- [ ] Google Analytics support
+- [X] Google Analytics support
 - [ ] Re-introduce the "polling" client (if we decide to go down that route for other SDKs)
 - [ ] Run tests and code-generation inside Docker (instead of requiring Go to be installed locally)
