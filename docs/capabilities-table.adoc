@@ -1,0 +1,38 @@
+=== General Run Capabilities for SDKs
+[options="header"]
+|===================================
+|Runtime Capability|Java|Javascript^1^|Go|Dart^2^|C#
+|Event Streaming|Y|Y|Y|Y|Y
+|Background Start|Y|Y|Y|Y|Y
+|Block until Start|N|N|Y|N|N
+|Readyness Listeners|Y|Y|Y|Y|Y
+|Feature Listeners|Y|Y|Y|Y|Y
+|Feature Listener Removal|N|N|Y|Y|Y
+|Analytics Support|Y|Y|N|Y|N
+|Google Analytics|Y|Y|N|N|N
+|===================================
+
+==== Web + Mobile focused capabilities for SDKs
+
+[options="header"]
+|===================================
+|Web + Mobile Support|Java|Javascript^1^|Go|Dart^2^|C#
+|Catch & Release|N|Y|N|Y|N
+|===================================
+
+
+==== Development and Test capabilities for SDKs
+
+[options="header"]
+|===================================
+|Dev/Test Capability|Java|Javascript^1^|Go|Dart^2^|C#
+|Test Client|Y|Y|N|Y|Y
+|Feature Interceptors|Y|N|N|N|N
+|===================================
+
+- *(1)* Javascript and Typescript are supported via a Typescript libraries.
+This is available https://www.npmjs.com/org/featurehub[ at the npm repository].
+- *(2)* Dart and Flutter are supported by Dart libraries available at https://pub.dev/publishers/featurehub.io/packages[pub.dev].
+- *(3)* Java is supported by libraries from Apache Maven Central. [needs ref]
+- *(4)* C# and .NET is supported by libraries from nuget. [needs ref]
+

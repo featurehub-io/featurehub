@@ -21,12 +21,6 @@ image::https://docs.featurehub.io//images/FH-flags.gif[FeatureHub console demo,8
 * Choice of how to run your experiment - feature flag, number, string or remote configuration
 * Integration with analytics so you can see how your experiments perform, with Google Analytics out of the box
 
-=== Supported SDKs
-
-image:https://docs.featurehub.io//images/languages.png[Java Logo,1000]
-
-More detailed documentation on SDK's can be found https://docs.featurehub.io#sdks[here]
-
 === Easy to use
 
 * Control features from an easy to use console
@@ -48,6 +42,18 @@ More detailed documentation on SDK's can be found https://docs.featurehub.io#sdk
 * Support for feature flags, numbers, strings and Json structure (remote configuration)
 * Easy to log events with analytics with attached feature state
 * Documentation and tutorials available
+
+=== Supported SDKs
+
+image:https://docs.featurehub.io//images/languages.png[Java Logo,1000]
+
+This overview seeks to indicate the capabilities of the SDKs and explain what they are and what the do.
+If you are considering helping us by writing a new SDK for your favourite language, or expand on an existing library, this table of capability indicates what each different language can support and where extra work is helpful.
+
+include::docs/capabilities-table.adoc[]
+
+More detailed documentation on SDK's can be found https://docs.featurehub.io#sdks[here]
+
 
 == Documentation
 
