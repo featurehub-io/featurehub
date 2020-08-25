@@ -9,6 +9,11 @@ import (
 )
 
 type FakeClient struct {
+	AddAnalyticsCollectorStub        func(interfaces.AnalyticsCollector)
+	addAnalyticsCollectorMutex       sync.RWMutex
+	addAnalyticsCollectorArgsForCall []struct {
+		arg1 interfaces.AnalyticsCollector
+	}
 	AddNotifierBooleanStub        func(string, models.CallbackFuncBoolean) string
 	addNotifierBooleanMutex       sync.RWMutex
 	addNotifierBooleanArgsForCall []struct {
@@ -171,6 +176,37 @@ type FakeClient struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeClient) AddAnalyticsCollector(arg1 interfaces.AnalyticsCollector) {
+	fake.addAnalyticsCollectorMutex.Lock()
+	fake.addAnalyticsCollectorArgsForCall = append(fake.addAnalyticsCollectorArgsForCall, struct {
+		arg1 interfaces.AnalyticsCollector
+	}{arg1})
+	fake.recordInvocation("AddAnalyticsCollector", []interface{}{arg1})
+	fake.addAnalyticsCollectorMutex.Unlock()
+	if fake.AddAnalyticsCollectorStub != nil {
+		fake.AddAnalyticsCollectorStub(arg1)
+	}
+}
+
+func (fake *FakeClient) AddAnalyticsCollectorCallCount() int {
+	fake.addAnalyticsCollectorMutex.RLock()
+	defer fake.addAnalyticsCollectorMutex.RUnlock()
+	return len(fake.addAnalyticsCollectorArgsForCall)
+}
+
+func (fake *FakeClient) AddAnalyticsCollectorCalls(stub func(interfaces.AnalyticsCollector)) {
+	fake.addAnalyticsCollectorMutex.Lock()
+	defer fake.addAnalyticsCollectorMutex.Unlock()
+	fake.AddAnalyticsCollectorStub = stub
+}
+
+func (fake *FakeClient) AddAnalyticsCollectorArgsForCall(i int) interfaces.AnalyticsCollector {
+	fake.addAnalyticsCollectorMutex.RLock()
+	defer fake.addAnalyticsCollectorMutex.RUnlock()
+	argsForCall := fake.addAnalyticsCollectorArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *FakeClient) AddNotifierBoolean(arg1 string, arg2 models.CallbackFuncBoolean) string {
@@ -981,6 +1017,8 @@ func (fake *FakeClient) ReadinessListenerArgsForCall(i int) func() {
 func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.addAnalyticsCollectorMutex.RLock()
+	defer fake.addAnalyticsCollectorMutex.RUnlock()
 	fake.addNotifierBooleanMutex.RLock()
 	defer fake.addNotifierBooleanMutex.RUnlock()
 	fake.addNotifierFeatureMutex.RLock()

@@ -6,6 +6,7 @@ import (
 
 // Client for FeatureHub:
 type Client interface {
+	AddAnalyticsCollector(newAnalyticsCollector AnalyticsCollector)                                      // Configure a new analytics collector, add it to the list:
 	AddNotifierBoolean(featureKey string, callbackFunc models.CallbackFuncBoolean) (notifierUUID string) // Configure a notifier for a BOOLEAN value:
 	AddNotifierFeature(featureKey string, callbackFunc models.CallbackFuncFeature) (notifierUUID string) // Configure a notifier for a generic feature:
 	AddNotifierJSON(featureKey string, callbackFunc models.CallbackFuncJSON) (notifierUUID string)       // Configure a notifier for a JSON value:
