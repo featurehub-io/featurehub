@@ -1,11 +1,11 @@
 package io.featurehub.edge.strategies
 
-import io.featurehub.strategies.matchers.MatcherRegistry
 import io.featurehub.mr.model.Feature
 import io.featurehub.mr.model.FeatureValue
 import io.featurehub.mr.model.FeatureValueCacheItem
 import io.featurehub.mr.model.FeatureValueType
-import io.featurehub.mr.model.RolloutStrategyInstance
+import io.featurehub.sse.model.RolloutStrategy
+import io.featurehub.strategies.matchers.MatcherRegistry
 import io.featurehub.strategies.percentage.PercentageCalculator
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -17,7 +17,9 @@ class ApplyFeatureSpec extends Specification {
 
   def setup() {
     // mocking doesn't work for "where" clauses
+    pc = 21
     percentageCalculator =  {String u, String id -> pc } as PercentageCalculator
+//    percentageCalculator = new PC()
     applyFeature = new ApplyFeature(percentageCalculator, new MatcherRegistry())
   }
 
@@ -25,92 +27,95 @@ class ApplyFeatureSpec extends Specification {
   def "if the user's percent is calculated x% and we have a rollout strategy at 20%"() {
     given: "we have rollout strategies set"
       def rollout = [
-        new RolloutStrategyInstance()
+        new RolloutStrategy()
           .percentage(20)
-          .valueString("blue")
+          .value("blue")
       ]
     and:
       def cac = new ClientAttributeCollection()
       cac.attributes.put(ClientAttributeCollection.USERKEY, ['mary@mary.com'])
     and: "a feature cache item"
       def fci = new FeatureValueCacheItem()
-        .value(new FeatureValue().valueString("yellow").id('1').rolloutStrategyInstances(rollout))
+        .value(new FeatureValue().valueString("yellow").id('1'))
         .feature(new Feature().valueType(FeatureValueType.STRING))
     when: "i ask for the percentage"
-      def val = applyFeature.applyFeature(fci, cac)
+      def val = applyFeature.applyFeature(rollout, fci.feature.key, fci.value.id, cac)
     then:
-      val == expected
+      val.matched == matched
+      val.value == expected
     where:
-      percent || expected
-      22      || "yellow"
-      15      || "blue"
-      20      || "blue"
+      percent || expected | matched
+      22      || null     | false
+//      15      || "blue"   | true
+//      20      || "blue"   | true
   }
 
   @Unroll
   def "if the user's percent is calculated x% and we have no rollout strategies"() {
     given: "we have rollout strategies set"
-      def rollout = []
+      def rollout = new ArrayList<RolloutStrategy>()
     and:
       def cac = new ClientAttributeCollection()
       cac.attributes.put(ClientAttributeCollection.USERKEY, ['mary@mary.com'])
     and: "a feature cache item"
       def fci = new FeatureValueCacheItem()
-        .value(new FeatureValue().valueString("yellow").id('1').rolloutStrategyInstances(rollout))
+        .value(new FeatureValue().valueString("yellow").id('1'))
         .feature(new Feature().valueType(FeatureValueType.STRING))
     when: "i ask for the percentage"
-      def val = applyFeature.applyFeature(fci, cac)
+      def val = applyFeature.applyFeature(rollout, fci.feature.key, fci.value.id, cac)
     then:
-      val == expected
+      val.matched == matched
+      val.value == expected
     where:
-      percent || expected
-      22      || "yellow"
-      15      || "yellow"
-      20      || "yellow"
+      percent || expected | matched
+      22      || null     | false
+      15      || null     | false
+      20      || null     | false
   }
 
   @Unroll
   def "We have rollout strategies but no user key"() {
     given: "we have rollout strategies set"
       def rollout = [
-        new RolloutStrategyInstance()
+        new RolloutStrategy()
           .percentage(20)
-          .valueString("blue")
+          .value("blue")
       ]
     and:
       def cac = new ClientAttributeCollection()
     and: "a feature cache item"
       def fci = new FeatureValueCacheItem()
-        .value(new FeatureValue().valueString("yellow").id('1').rolloutStrategyInstances(rollout))
+        .value(new FeatureValue().valueString("yellow").id('1'))
         .feature(new Feature().valueType(FeatureValueType.STRING))
     when: "i ask for the percentage"
-      def val = applyFeature.applyFeature(fci, cac)
+      def val = applyFeature.applyFeature(rollout, fci.feature.key, fci.value.id, cac)
     then:
-      val == expected
+      val.matched == matched
+      val.value == expected
     where:
-      percent || expected
-      22      || "yellow"
-      15      || "yellow"
-      20      || "yellow"
+      percent || expected | matched
+      22      || null     | false
+      15      || null     | false
+      20      || null     | false
   }
 
   def "a null ClientAttributeConnection generates the default value"() {
     given: "we have rollout strategies set"
       def rollout = [
-        new RolloutStrategyInstance()
+        new RolloutStrategy()
           .percentage(20)
-          .valueString("blue")
+          .value("blue")
       ]
     and:
       pc = null
     and: "a feature cache item"
       def fci = new FeatureValueCacheItem()
-        .value(new FeatureValue().valueString("yellow").id('1').rolloutStrategyInstances(rollout))
+        .value(new FeatureValue().valueString("yellow").id('1'))
         .feature(new Feature().valueType(FeatureValueType.STRING))
     when: "i ask for the percentage"
-      def val = applyFeature.applyFeature(fci, null)
+      def val = applyFeature.applyFeature(rollout, fci.feature.key, fci.value.id, null)
     then:
-      val == "yellow"
+      !val.matched
   }
 }
 

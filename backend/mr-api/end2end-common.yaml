@@ -28,8 +28,15 @@ components:
           description: "names are unique in a case insensitive fashion"
           type: string
           maxLength: 100
+        colouring:
+          description: "the colour used to display the strategy in the UI. indexed table of background/foreground combos."
+          type: integer
+        avatar:
+          type: string
+          description: "url to avatar (if any). Not sent to SDK. Preferably a unicorn."
+          maxlength: 200
         value:
-          description: "when we attach the RolloutStrategy for Dacha or SSE this lets us push the value out."
+          description: "when we attach the RolloutStrategy for Dacha or SSE this lets us push the value out. Only visible in SDK and SSE Edge."
         percentage:
           description: "value between 0 and 1000000 - for four decimal places"
           type: integer
@@ -42,9 +49,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/RolloutStrategyAttribute"
-    # e.g. (OR).(AND).(name='os', valueString='Android').(name='version', valueString='7+').(ENDAND).(AND).(name='os', valueString='ios').(name='version', valueString='9+').(ENDAND).(ENDOR)
-    # ==> (os = Android && valueString = "7+") or (os = ios && valueString = "9+")
-    # conditional and value in each case is optional but 1 must be specified
     RolloutStrategyAttribute:
       properties:
         conditional:
