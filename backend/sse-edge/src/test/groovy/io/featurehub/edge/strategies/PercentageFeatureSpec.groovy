@@ -1,5 +1,7 @@
 package io.featurehub.edge.strategies
 
+import io.featurehub.strategies.percentage.PercentageCalculator
+import io.featurehub.strategies.percentage.PercentageMumurCalculator
 import org.apache.commons.lang3.RandomStringUtils
 import spock.lang.Specification
 

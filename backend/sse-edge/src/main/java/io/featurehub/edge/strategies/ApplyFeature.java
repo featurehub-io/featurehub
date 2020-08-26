@@ -1,20 +1,17 @@
 package io.featurehub.edge.strategies;
 
-import io.featurehub.edge.strategies.matchers.MatcherRepository;
-import io.featurehub.edge.strategies.matchers.StrategyMatcher;
-import io.featurehub.mr.model.RolloutStrategy;
-import io.featurehub.mr.model.RolloutStrategyAttribute;
-import io.featurehub.mr.model.RolloutStrategyAttributeConditional;
-import io.featurehub.mr.model.RolloutStrategyFieldType;
+import io.featurehub.strategies.matchers.MatcherRepository;
+import io.featurehub.sse.model.RolloutStrategy;
+import io.featurehub.sse.model.RolloutStrategyAttribute;
+import io.featurehub.sse.model.RolloutStrategyAttributeConditional;
+import io.featurehub.sse.model.RolloutStrategyFieldType;
+import io.featurehub.strategies.percentage.PercentageCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

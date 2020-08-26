@@ -1,4 +1,4 @@
-package io.featurehub.edge.strategies.matchers;
+package io.featurehub.strategies.matchers;
 
 /*
  * Copyright 2002-2019 the original author or authors.

@@ -2,13 +2,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>io.featurehub.edge</groupId>
-  <artifactId>edge</artifactId>
+  <groupId>io.featurehub.strategies</groupId>
+  <artifactId>strategy-matcher</artifactId>
   <version>1.1-SNAPSHOT</version>
   <name>edge</name>
 
   <description>
-    This artifact is the Edge and is responsible for talking to all clients in a scalable fashion.
+    This artifact contains matchers for Java for Strategies. It is able to be included into the SDKs
+    as well as be used on the server.
   </description>
 
   <url>https://featurehub.io</url>
@@ -30,41 +31,19 @@
 
   <licenses>
     <license>
-      <name>Apache 2 with Commons Clause</name>
-      <url>https://github.com/featurehub-io/featurehub/blob/master/LICENSE.txt</url>
+      <name>MIT</name>
+    </license>
+    <license>
+      <name>Apache</name>
+      <comments>Some classes are Apache licensed</comments>
     </license>
   </licenses>
 
-  <properties>
-    <app.port>8553</app.port>
-    <app.entrypoint>io.featurehub.edge.Application</app.entrypoint>
-  </properties>
-
   <dependencies>
-    <dependency>
-      <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-app</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
     <dependency>
       <groupId>io.featurehub.edge</groupId>
       <artifactId>sse-edge-api</artifactId>
       <version>[1.1, 2)</version>
-    </dependency>
-    <dependency>
-      <groupId>io.featurehub.strategies</groupId>
-      <artifactId>strategy-matcher</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>io.featurehub.mr</groupId>
-      <artifactId>mr-publish-api</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>io.featurehub.mr</groupId>
-      <artifactId>mr-streaming-api</artifactId>
-      <version>1.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>io.featurehub.composites</groupId>
@@ -85,7 +64,6 @@
         <configuration>
           <filtering>false</filtering>
           <tiles>
-            <tile>io.featurehub.tiles:tile-app:[1.1,2)</tile>
             <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
           </tiles>
         </configuration>

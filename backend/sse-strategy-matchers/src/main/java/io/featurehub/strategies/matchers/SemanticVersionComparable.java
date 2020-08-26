@@ -1,4 +1,4 @@
-package io.featurehub.edge.strategies.matchers;
+package io.featurehub.strategies.matchers;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one

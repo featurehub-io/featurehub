@@ -1,16 +1,21 @@
 package io.featurehub.edge;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import io.featurehub.dacha.api.CacheJsonMapper;
 import io.featurehub.edge.strategies.Applied;
 import io.featurehub.edge.strategies.ApplyFeature;
 import io.featurehub.edge.strategies.ClientAttributeCollection;
-import io.featurehub.edge.strategies.PercentageMumurCalculator;
-import io.featurehub.edge.strategies.matchers.MatcherRegistry;
+import io.featurehub.strategies.percentage.PercentageMumurCalculator;
+import io.featurehub.strategies.matchers.MatcherRegistry;
 import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.mr.model.FeatureValueType;
 import io.featurehub.sse.model.FeatureState;
+import io.featurehub.sse.model.RolloutStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,13 +37,14 @@ public class FeatureTransformerUtils implements FeatureTransformer {
       .id(rf.getFeature().getId())
       .l(rf.getValue().getLocked());
 
+    List<RolloutStrategy> clientStrategies = transformStrategies(rf.getStrategies());
     if (clientAttributes != null && clientAttributes.hasAttributes()) {
-      Applied applied = applyFeature.applyFeature(rf.getStrategies(), rf.getFeature().getKey(), rf.getValue().getId()
+      Applied applied = applyFeature.applyFeature(clientStrategies, rf.getFeature().getKey(), rf.getValue().getId()
         , clientAttributes);
       fs.value(applied.isMatched() ? applied.getValue() : valueAsObject(rf));
     } else {
+      fs.strategies(clientStrategies);
       fs.value(valueAsObject(rf));
-//      fs.strategies(rf.getStrategies());
     }
 
 
@@ -49,6 +55,17 @@ public class FeatureTransformerUtils implements FeatureTransformer {
     }
 
     return fs;
+  }
+
+  private static final TypeReference<List<RolloutStrategy>> ROLLOUT_TYPE = new TypeReference<List<RolloutStrategy>>(){};
+
+  // these are exactly the same class and from a maintenance perspective this is more sensible.
+  private List<RolloutStrategy> transformStrategies(List<io.featurehub.mr.model.RolloutStrategy> strategies) {
+    try {
+      return CacheJsonMapper.mapper.readValue(CacheJsonMapper.mapper.writeValueAsString(strategies), ROLLOUT_TYPE);
+    } catch (JsonProcessingException e) {
+      return new ArrayList<>();
+    }
   }
 
   private Object valueAsObject(FeatureValueCacheItem rf) {

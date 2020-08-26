@@ -1,11 +1,8 @@
-package io.featurehub.edge.strategies.matchers;
+package io.featurehub.strategies.matchers;
 
-import io.featurehub.mr.model.RolloutStrategyAttribute;
-import io.featurehub.mr.model.RolloutStrategyAttributeConditional;
+import io.featurehub.sse.model.RolloutStrategyAttribute;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class StringArrayMatcher implements StrategyMatcher {

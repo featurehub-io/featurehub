@@ -1,7 +1,7 @@
-package io.featurehub.edge.strategies.matchers;
+package io.featurehub.strategies.matchers;
 
-import io.featurehub.mr.model.RolloutStrategyAttribute;
-import io.featurehub.mr.model.RolloutStrategyAttributeConditional;
+import io.featurehub.sse.model.RolloutStrategyAttribute;
+import io.featurehub.sse.model.RolloutStrategyAttributeConditional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

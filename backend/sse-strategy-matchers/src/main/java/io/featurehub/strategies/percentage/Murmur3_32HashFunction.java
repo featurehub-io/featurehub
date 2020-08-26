@@ -1,4 +1,4 @@
-package io.featurehub.edge.strategies;
+package io.featurehub.strategies.percentage;
 
 /*
  * Copyright (C) 2011 The Guava Authors

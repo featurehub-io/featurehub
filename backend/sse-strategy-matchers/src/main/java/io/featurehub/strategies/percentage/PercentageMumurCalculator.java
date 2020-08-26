@@ -1,4 +1,4 @@
-package io.featurehub.edge.strategies;
+package io.featurehub.strategies.percentage;
 
 import java.nio.charset.StandardCharsets;
 

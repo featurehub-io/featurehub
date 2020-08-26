@@ -1,6 +1,6 @@
-package io.featurehub.edge.strategies.matchers;
+package io.featurehub.strategies.matchers;
 
-import io.featurehub.mr.model.RolloutStrategyAttribute;
+import io.featurehub.sse.model.RolloutStrategyAttribute;
 
 public class IpAddressArrayMatcher implements StrategyMatcher {
   @Override

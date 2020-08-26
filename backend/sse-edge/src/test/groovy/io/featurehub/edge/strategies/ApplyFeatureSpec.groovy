@@ -1,11 +1,12 @@
 package io.featurehub.edge.strategies
 
-import io.featurehub.edge.strategies.matchers.MatcherRegistry
+import io.featurehub.strategies.matchers.MatcherRegistry
 import io.featurehub.mr.model.Feature
 import io.featurehub.mr.model.FeatureValue
 import io.featurehub.mr.model.FeatureValueCacheItem
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.RolloutStrategyInstance
+import io.featurehub.strategies.percentage.PercentageCalculator
 import spock.lang.Specification
 import spock.lang.Unroll
 
