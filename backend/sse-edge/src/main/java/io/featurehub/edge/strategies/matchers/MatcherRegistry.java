@@ -2,6 +2,8 @@ package io.featurehub.edge.strategies.matchers;
 
 import io.featurehub.mr.model.RolloutStrategyAttribute;
 
+import java.time.format.DateTimeFormatter;
+
 public class MatcherRegistry implements MatcherRepository {
   @Override
   public StrategyMatcher findMatcher(String suppliedValue, RolloutStrategyAttribute attr) {
@@ -15,13 +17,13 @@ public class MatcherRegistry implements MatcherRepository {
       case NUMBER:
         return isArray ? new NumberArrayMatcher() : new NumberMatcher();
       case DATE:
-        return isArray ? new DateArrayMatcher() : new DateMatcher();
+        return isArray ? new DateArrayMatcher(DateTimeFormatter.ISO_DATE) : new DateMatcher(DateTimeFormatter.ISO_DATE);
       case DATETIME:
-        break;
+        return isArray ? new DateArrayMatcher(DateTimeFormatter.ISO_DATE_TIME) : new DateMatcher(DateTimeFormatter.ISO_DATE_TIME);
       case BOOLEAN: // can't have arrays, that would be silly
         return new BooleanMatcher();
       case IP_ADDRESS:
-        break;
+        return isArray ? new IpAddressArrayMatcher() : new IpAddressMatcher();
     }
 
     return new FallthroughMatcher();

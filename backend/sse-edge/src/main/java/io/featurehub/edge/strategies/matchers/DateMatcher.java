@@ -7,6 +7,12 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class DateMatcher implements StrategyMatcher {
+  private final DateTimeFormatter formatter;
+
+  public DateMatcher(DateTimeFormatter formatter) {
+    this.formatter = formatter;
+  }
+
   @Override
   public boolean match(String suppliedValue, RolloutStrategyAttribute attr) {
     try {
@@ -14,9 +20,9 @@ public class DateMatcher implements StrategyMatcher {
         return suppliedValue.matches(attr.getValue().toString());
       }
 
-      LocalDateTime suppliedDate = LocalDateTime.from(DateTimeFormatter.ISO_DATE.parse(suppliedValue));
+      LocalDateTime suppliedDate = LocalDateTime.from(formatter.parse(suppliedValue));
 
-      LocalDateTime val = LocalDateTime.from(DateTimeFormatter.ISO_DATE.parse(attr.getValue().toString()));
+      LocalDateTime val = LocalDateTime.from(formatter.parse(attr.getValue().toString()));
 
       switch (attr.getConditional()) {
         case EQUALS:
