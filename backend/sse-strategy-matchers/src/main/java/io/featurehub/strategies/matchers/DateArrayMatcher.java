@@ -5,6 +5,7 @@ import io.featurehub.sse.model.RolloutStrategyAttribute;
 import java.time.LocalDate;
 //import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.function.Supplier;
 
 public class DateArrayMatcher implements StrategyMatcher {
   @Override
@@ -12,37 +13,33 @@ public class DateArrayMatcher implements StrategyMatcher {
     try {
       DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE;
 
-      LocalDate suppliedDate = LocalDate.from(formatter.parse(suppliedValue));
+      Supplier<LocalDate> suppliedDate = () -> LocalDate.from(formatter.parse(suppliedValue));
 
       switch (attr.getConditional()) {
         case EQUALS: // all match makes no sense
+        case INCLUDES: // same as equals
           return attr.getValues().stream()
-            .anyMatch(v -> suppliedDate.equals(LocalDate.from(formatter.parse(v.toString()))));
+            .anyMatch(v -> suppliedDate.get().equals(LocalDate.from(formatter.parse(v.toString()))));
         case ENDS_WITH:
           return attr.getValues().stream().anyMatch(v -> suppliedValue.endsWith(v.toString()));
         case STARTS_WITH:
           return attr.getValues().stream().anyMatch(v -> suppliedValue.startsWith(v.toString()));
         case GREATER:
           return attr.getValues().stream()
-            .anyMatch(v -> suppliedDate.compareTo(LocalDate.from(formatter.parse(v.toString()))) > 0);
+            .anyMatch(v -> suppliedDate.get().compareTo(LocalDate.from(formatter.parse(v.toString()))) > 0);
         case GREATER_EQUALS:
           return attr.getValues().stream()
-            .anyMatch(v -> suppliedDate.compareTo(LocalDate.from(formatter.parse(v.toString()))) >= 0);
+            .anyMatch(v -> suppliedDate.get().compareTo(LocalDate.from(formatter.parse(v.toString()))) >= 0);
         case LESS:
           return attr.getValues().stream()
-            .anyMatch(v -> suppliedDate.compareTo(LocalDate.from(formatter.parse(v.toString()))) < 0);
+            .anyMatch(v -> suppliedDate.get().compareTo(LocalDate.from(formatter.parse(v.toString()))) < 0);
         case LESS_EQUALS:
           return attr.getValues().stream()
-            .anyMatch(v -> suppliedDate.compareTo(LocalDate.from(formatter.parse(v.toString()))) <= 0);
+            .anyMatch(v -> suppliedDate.get().compareTo(LocalDate.from(formatter.parse(v.toString()))) <= 0);
         case NOT_EQUALS:
-          return attr.getValues().stream()
-            .noneMatch(v -> suppliedDate.equals(LocalDate.from(formatter.parse(v.toString()))));
-        case INCLUDES: // same as equals
-          return attr.getValues().stream()
-            .anyMatch(v -> suppliedDate.equals(LocalDate.from(formatter.parse(v.toString()))));
         case EXCLUDES: // same as not_equals
           return attr.getValues().stream()
-            .noneMatch(v -> suppliedDate.equals(LocalDate.from(formatter.parse(v.toString()))));
+            .noneMatch(v -> suppliedDate.get().equals(LocalDate.from(formatter.parse(v.toString()))));
         case REGEX:
           return attr.getValues().stream().anyMatch(v -> suppliedValue.matches(v.toString()));
       }

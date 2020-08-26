@@ -5,6 +5,7 @@ import io.featurehub.sse.model.RolloutStrategyAttributeConditional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.function.Supplier;
 
 public class DateMatcher implements StrategyMatcher {
   @Override
@@ -16,35 +17,35 @@ public class DateMatcher implements StrategyMatcher {
 
       DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE;
 
-      LocalDate suppliedDate = LocalDate.from(formatter.parse(suppliedValue));
+      Supplier<LocalDate> suppliedDate = () -> LocalDate.from(formatter.parse(suppliedValue));
 
-      LocalDate val = LocalDate.from(formatter.parse(attr.getValue().toString()));
+      Supplier<LocalDate> val = () -> LocalDate.from(formatter.parse(attr.getValue().toString()));
 
       switch (attr.getConditional()) {
         case EQUALS:
-          return suppliedDate.equals(val);
-        case ENDS_WITH:
-          break;
-        case STARTS_WITH:
-          break;
-        case GREATER:
-          return suppliedDate.compareTo(val) > 0;
-        case GREATER_EQUALS:
-          return suppliedDate.compareTo(val) >= 0;
-        case LESS:
-          return suppliedDate.compareTo(val) < 0;
-        case LESS_EQUALS:
-          return suppliedDate.compareTo(val) <= 0;
-        case NOT_EQUALS:
-          return !suppliedDate.equals(val);
         case INCLUDES:
-          break;
+          return suppliedDate.get().equals(val.get());
+        case ENDS_WITH:
+          return suppliedValue.endsWith(attr.getValue().toString());
+        case STARTS_WITH:
+          return suppliedValue.startsWith(attr.getValue().toString());
+        case GREATER:
+          return suppliedDate.get().compareTo(val.get()) > 0;
+        case GREATER_EQUALS:
+          return suppliedDate.get().compareTo(val.get()) >= 0;
+        case LESS:
+          return suppliedDate.get().compareTo(val.get()) < 0;
+        case LESS_EQUALS:
+          return suppliedDate.get().compareTo(val.get()) <= 0;
+        case NOT_EQUALS:
         case EXCLUDES:
-          break;
+          return !suppliedDate.get().equals(val.get());
         case REGEX:
-          break;
+          return suppliedValue.matches(attr.getValue().toString());
       }
-    } catch (Exception ignored) {}
+    } catch (Exception ignored) {
+      ignored.printStackTrace();
+    }
 
     return false;
   }
