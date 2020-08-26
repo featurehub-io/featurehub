@@ -5,11 +5,14 @@ import io.featurehub.mr.model.RolloutStrategyAttributeConditional;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class StringArrayMatcher implements StrategyMatcher {
   @Override
   public boolean match(String suppliedValue, RolloutStrategyAttribute attr) {
-    List<String> vals = Arrays.asList(attr.getValue().toString().split(","));
+    List<String> vals = attr.getValues().stream()
+      .map(Object::toString).collect(Collectors.toList());
 
     switch(attr.getConditional()) {
       case EQUALS:

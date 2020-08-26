@@ -53,10 +53,17 @@ components:
           type: string
         value:
           description: "its value"
+        values:
+          description: "the values if it is an array"
+          type: array
+          items:
+            $ref: "#/components/schemas/RolloutStrategyArrayType"
         type:
           $ref: "#/components/schemas/RolloutStrategyFieldType"
         array:
           type: boolean
+    RolloutStrategyArrayType:
+      description: "values depend on the field type"
     RolloutStrategyFieldType:
       type: string
       enum:

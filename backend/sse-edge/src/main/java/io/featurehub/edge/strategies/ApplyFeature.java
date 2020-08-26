@@ -5,10 +5,16 @@ import io.featurehub.edge.strategies.matchers.StrategyMatcher;
 import io.featurehub.mr.model.RolloutStrategy;
 import io.featurehub.mr.model.RolloutStrategyAttribute;
 import io.featurehub.mr.model.RolloutStrategyAttributeConditional;
+import io.featurehub.mr.model.RolloutStrategyFieldType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -81,22 +87,32 @@ public class ApplyFeature {
   private boolean matchAttributes(ClientAttributeCollection cac, RolloutStrategy rsi) {
     for(RolloutStrategyAttribute attr : rsi.getAttributes()) {
       String suppliedValue = cac.get(attr.getFieldName(), null);
-      Object val = attr.getValue();
 
+      // "now" for dates and date-times are not passed by the client, so we create them in-situ
+      if (suppliedValue == null && "now".equalsIgnoreCase(attr.getFieldName())) {
+        if (attr.getType() == RolloutStrategyFieldType.DATE) {
+          suppliedValue = DateTimeFormatter.ISO_DATE.format(LocalDateTime.now());
+        } else if (attr.getType() == RolloutStrategyFieldType.DATETIME) {
+          suppliedValue = DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now());
+        }
+      }
+
+      Object val = attr.getArray() ? attr.getValues() : attr.getValue();
+
+      // both are null, just check against equals
       if (val == null && suppliedValue == null) {
         return (attr.getConditional() == RolloutStrategyAttributeConditional.EQUALS);
       }
 
+      // either of them are null, check against not equals as we can't do anything else
       if (val == null || suppliedValue == null) {
         return (attr.getConditional() == RolloutStrategyAttributeConditional.NOT_EQUALS);
       }
 
-      StrategyMatcher matcher = matcherRepository.findMatcher(suppliedValue, attr);
-
-      if (matcher != null) {
-        return matcher.match(suppliedValue, attr);
-      }
+      // find the appropriate matcher based on type and match against the supplied value
+      return matcherRepository.findMatcher(suppliedValue, attr).match(suppliedValue, attr);
     }
+
     return false;
   }
 

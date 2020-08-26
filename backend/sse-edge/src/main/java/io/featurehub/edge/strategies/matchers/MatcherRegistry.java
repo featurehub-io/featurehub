@@ -15,7 +15,7 @@ public class MatcherRegistry implements MatcherRepository {
       case NUMBER:
         return isArray ? new NumberArrayMatcher() : new NumberMatcher();
       case DATE:
-        break;
+        return isArray ? new DateArrayMatcher() : new DateMatcher();
       case DATETIME:
         break;
       case BOOLEAN: // can't have arrays, that would be silly
@@ -24,6 +24,13 @@ public class MatcherRegistry implements MatcherRepository {
         break;
     }
 
-    return null;
+    return new FallthroughMatcher();
+  }
+
+  static class FallthroughMatcher implements StrategyMatcher {
+    @Override
+    public boolean match(String suppliedValue, RolloutStrategyAttribute attr) {
+      return false;
+    }
   }
 }
