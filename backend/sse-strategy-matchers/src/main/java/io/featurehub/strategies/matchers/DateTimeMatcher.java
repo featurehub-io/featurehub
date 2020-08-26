@@ -3,10 +3,11 @@ package io.featurehub.strategies.matchers;
 import io.featurehub.sse.model.RolloutStrategyAttribute;
 import io.featurehub.sse.model.RolloutStrategyAttributeConditional;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-public class DateMatcher implements StrategyMatcher {
+public class DateTimeMatcher implements StrategyMatcher {
+
   @Override
   public boolean match(String suppliedValue, RolloutStrategyAttribute attr) {
     try {
@@ -14,11 +15,11 @@ public class DateMatcher implements StrategyMatcher {
         return suppliedValue.matches(attr.getValue().toString());
       }
 
-      DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE;
+      DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
 
-      LocalDate suppliedDate = LocalDate.from(formatter.parse(suppliedValue));
+      LocalDateTime suppliedDate = LocalDateTime.from(formatter.parse(suppliedValue));
 
-      LocalDate val = LocalDate.from(formatter.parse(attr.getValue().toString()));
+      LocalDateTime val = LocalDateTime.from(formatter.parse(attr.getValue().toString()));
 
       switch (attr.getConditional()) {
         case EQUALS:

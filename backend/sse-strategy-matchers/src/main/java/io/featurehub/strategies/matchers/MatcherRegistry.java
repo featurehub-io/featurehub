@@ -2,8 +2,6 @@ package io.featurehub.strategies.matchers;
 
 import io.featurehub.sse.model.RolloutStrategyAttribute;
 
-import java.time.format.DateTimeFormatter;
-
 public class MatcherRegistry implements MatcherRepository {
   @Override
   public StrategyMatcher findMatcher(String suppliedValue, RolloutStrategyAttribute attr) {
@@ -17,9 +15,9 @@ public class MatcherRegistry implements MatcherRepository {
       case NUMBER:
         return isArray ? new NumberArrayMatcher() : new NumberMatcher();
       case DATE:
-        return isArray ? new DateArrayMatcher(DateTimeFormatter.ISO_DATE) : new DateMatcher(DateTimeFormatter.ISO_DATE);
+        return isArray ? new DateArrayMatcher() : new DateMatcher();
       case DATETIME:
-        return isArray ? new DateArrayMatcher(DateTimeFormatter.ISO_DATE_TIME) : new DateMatcher(DateTimeFormatter.ISO_DATE_TIME);
+        return isArray ? new DateTimeArrayMatcher() : new DateTimeMatcher();
       case BOOLEAN: // can't have arrays, that would be silly
         return new BooleanMatcher();
       case IP_ADDRESS:

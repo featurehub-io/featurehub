@@ -3,15 +3,14 @@ package io.featurehub.strategies.matchers;
 import io.featurehub.sse.model.RolloutStrategyAttribute;
 
 import java.time.LocalDate;
-//import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-public class DateArrayMatcher implements StrategyMatcher {
+public class DateTimeArrayMatcher implements StrategyMatcher {
   @Override
   public boolean match(String suppliedValue, RolloutStrategyAttribute attr) {
-    try {
-      DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE;
+    DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
 
+    try {
       LocalDate suppliedDate = LocalDate.from(formatter.parse(suppliedValue));
 
       switch (attr.getConditional()) {
@@ -48,6 +47,7 @@ public class DateArrayMatcher implements StrategyMatcher {
       }
     } catch (Exception ignored) {
     }
+
     return false;
   }
 }
