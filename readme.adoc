@@ -45,7 +45,7 @@ image::https://docs.featurehub.io//images/FH-flags.gif[FeatureHub console demo,8
 
 === Supported SDKs
 
-image:https://docs.featurehub.io//images/languages.png[Java Logo,1000]
+image:https://docs.featurehub.io//images/languages.png[Featurehub SDK Languages,1000]
 
 include::docs/capabilities-table.adoc[]
 
