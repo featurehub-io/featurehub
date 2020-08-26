@@ -84,6 +84,7 @@ public class ApplyFeature {
     return new Applied(false, null);
   }
 
+  // This applies the rules as an AND. If at any point it fails it jumps out.
   private boolean matchAttributes(ClientAttributeCollection cac, RolloutStrategy rsi) {
     for(RolloutStrategyAttribute attr : rsi.getAttributes()) {
       String suppliedValue = cac.get(attr.getFieldName(), null);
@@ -101,19 +102,29 @@ public class ApplyFeature {
 
       // both are null, just check against equals
       if (val == null && suppliedValue == null) {
-        return (attr.getConditional() == RolloutStrategyAttributeConditional.EQUALS);
+        if (attr.getConditional() != RolloutStrategyAttributeConditional.EQUALS) {
+          return false;
+        }
+
+        continue; // skip this one
       }
 
       // either of them are null, check against not equals as we can't do anything else
       if (val == null || suppliedValue == null) {
-        return (attr.getConditional() == RolloutStrategyAttributeConditional.NOT_EQUALS);
+        if (attr.getConditional() != RolloutStrategyAttributeConditional.NOT_EQUALS) {
+          return false;
+        }
+
+        continue; // can't compare with null and the only thing we can check is not equals
       }
 
       // find the appropriate matcher based on type and match against the supplied value
-      return matcherRepository.findMatcher(suppliedValue, attr).match(suppliedValue, attr);
+      if (!matcherRepository.findMatcher(suppliedValue, attr).match(suppliedValue, attr)) {
+        return false;
+      }
     }
 
-    return false;
+    return true;
   }
 
   private String determinePercentageKey(ClientAttributeCollection cac, List<String> percentageAttributes) {
