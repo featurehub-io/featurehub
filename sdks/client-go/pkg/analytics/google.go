@@ -1,10 +1,13 @@
 package analytics
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/AlekSi/pointer"
+	gamp "github.com/blablapolicja/go-gamp"
+	"github.com/blablapolicja/go-gamp/client/gampops"
 	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/models"
-	ga "github.com/jpillora/go-ogle-analytics"
 )
 
 const (
@@ -13,7 +16,7 @@ const (
 
 // GoogleAnalyticsCollector implements the AnalyticsCollector interface:
 type GoogleAnalyticsCollector struct {
-	client       *ga.Client
+	client       *gampops.Client
 	clientID     string
 	trackingID   string
 	userAgentKey string
@@ -21,13 +24,8 @@ type GoogleAnalyticsCollector struct {
 
 // NewGoogleAnalyticsCollector returns a GoogleAnalyticsCollector configured with the provided metadata:
 func NewGoogleAnalyticsCollector(clientID, trackingID, userAgentKey string) (*GoogleAnalyticsCollector, error) {
-	client, err := ga.NewClient(trackingID)
-	if err != nil {
-		return nil, err
-	}
-
 	return &GoogleAnalyticsCollector{
-		client:       client.ClientID(clientID),
+		client:       gamp.New(context.Background(), trackingID),
 		clientID:     clientID,
 		trackingID:   trackingID,
 		userAgentKey: userAgentKey,
@@ -39,8 +37,35 @@ func (ac *GoogleAnalyticsCollector) LogEvent(action string, other map[string]str
 
 	// Emit an event for each feature we have:
 	for _, featureState := range featureStateAtCurrentTime {
-		event := ga.NewEvent(defaultCategory, action).Label(featureState.Key).Label(fmt.Sprintf("%s", featureState.Value)).Value(1)
-		ac.client.Send(event)
+		// event := ga.NewEvent(defaultCategory, action).Label(fmt.Sprintf("%s: %s", featureState.Key, featureState.Value)).Value(1)
+		clientID := ac.clientID
+		if clientIDOverride, ok := other["cid"]; ok {
+			clientID = clientIDOverride
+		}
+
+		err := ac.client.Collect(
+			gampops.NewCollectParams().
+				WithCid(pointer.ToString(clientID)).
+				WithT("event").
+				WithEc(pointer.ToString(defaultCategory)).
+				WithEa(pointer.ToString(action)).
+				WithEl(pointer.ToString(fmt.Sprintf("%s: %v", featureState.Key, featureState.Value))).
+				WithEv(pointer.ToInt64(1)),
+		)
+		// ok, err := ac.client.DebugCollect(
+		// 	gampops.NewDebugCollectParams().
+		// 		WithCid(pointer.ToString(clientID)).
+		// 		WithT("event").
+		// 		WithEc(pointer.ToString(defaultCategory)).
+		// 		WithEa(pointer.ToString(action)).
+		// 		WithEl(pointer.ToString(fmt.Sprintf("%s: %v", featureState.Key, featureState.Value))).
+		// 		WithEv(pointer.ToInt64(1)),
+		// )
+		// fmt.Printf("DebugOK: %v\n", ok)
+		if err != nil {
+			return err
+		}
+
 	}
 	return nil
 }
