@@ -31,7 +31,7 @@ public class StringArrayMatcher implements StrategyMatcher {
       case INCLUDES:
         return vals.stream().anyMatch(suppliedValue::contains);
       case EXCLUDES:
-        return vals.stream().anyMatch(v -> !suppliedValue.contains(v));
+        return vals.stream().noneMatch(suppliedValue::contains);
       case REGEX:
         return vals.stream().anyMatch(suppliedValue::matches);
     }
