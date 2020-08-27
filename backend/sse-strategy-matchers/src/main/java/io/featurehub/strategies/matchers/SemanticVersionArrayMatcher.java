@@ -9,6 +9,7 @@ public class SemanticVersionArrayMatcher implements StrategyMatcher {
 
     switch (attr.getConditional()) {
       case EQUALS:
+      case INCLUDES:
         return attr.getValues().stream().anyMatch(v -> suppliedVersion.equals(new SemanticVersionComparable(v.toString())));
       case ENDS_WITH:
         break;
@@ -21,11 +22,8 @@ public class SemanticVersionArrayMatcher implements StrategyMatcher {
       case LESS:
         return attr.getValues().stream().anyMatch(v -> suppliedVersion.compareTo(new SemanticVersionComparable(v.toString())) < 0);
       case LESS_EQUALS:
-        return attr.getValues().stream().anyMatch(v -> suppliedVersion.compareTo(new SemanticVersionComparable(v.toString())) >= 0);
+        return attr.getValues().stream().anyMatch(v -> suppliedVersion.compareTo(new SemanticVersionComparable(v.toString())) <= 0);
       case NOT_EQUALS:
-        return attr.getValues().stream().noneMatch(v -> suppliedVersion.equals(new SemanticVersionComparable(v.toString())));
-      case INCLUDES:
-        return attr.getValues().stream().anyMatch(v -> suppliedVersion.equals(new SemanticVersionComparable(v.toString())));
       case EXCLUDES:
         return attr.getValues().stream().noneMatch(v -> suppliedVersion.equals(new SemanticVersionComparable(v.toString())));
       case REGEX:
