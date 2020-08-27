@@ -7,6 +7,7 @@ public class IpAddressArrayMatcher implements StrategyMatcher {
   public boolean match(String suppliedValue, RolloutStrategyAttribute attr) {
     switch(attr.getConditional()) {
       case EQUALS:
+      case INCLUDES:
         return attr.getValues().stream().anyMatch(val -> CIDRMatch.cidrMatch(val.toString(), suppliedValue));
       case ENDS_WITH:
         break;
@@ -21,9 +22,6 @@ public class IpAddressArrayMatcher implements StrategyMatcher {
       case LESS_EQUALS:
         break;
       case NOT_EQUALS:
-        return attr.getValues().stream().noneMatch(val -> CIDRMatch.cidrMatch(val.toString(), suppliedValue));
-      case INCLUDES:
-        return attr.getValues().stream().anyMatch(val -> CIDRMatch.cidrMatch(val.toString(), suppliedValue));
       case EXCLUDES:
         return attr.getValues().stream().noneMatch(val -> CIDRMatch.cidrMatch(val.toString(), suppliedValue));
       case REGEX:
