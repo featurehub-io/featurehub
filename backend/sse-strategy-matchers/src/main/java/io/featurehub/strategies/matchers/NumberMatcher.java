@@ -15,6 +15,7 @@ public class NumberMatcher implements StrategyMatcher {
 
       switch (attr.getConditional()) {
         case EQUALS:
+        case INCLUDES:
           return bd.equals(val);
         case ENDS_WITH:
           return false;
@@ -29,11 +30,8 @@ public class NumberMatcher implements StrategyMatcher {
         case LESS_EQUALS:
           return bd.compareTo(val) <= 0;
         case NOT_EQUALS:
-          return bd.compareTo(val) != 0;
-        case INCLUDES:
-          return false;
         case EXCLUDES:
-          return false;
+          return bd.compareTo(val) != 0;
         case REGEX:
           return suppliedValue.matches(attr.getValue().toString());
       }

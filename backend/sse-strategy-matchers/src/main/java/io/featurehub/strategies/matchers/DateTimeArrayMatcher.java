@@ -7,12 +7,19 @@ import java.time.format.DateTimeFormatter;
 import java.util.function.Supplier;
 
 public class DateTimeArrayMatcher implements StrategyMatcher {
+  private OffsetDateTime supplied = null;
+
   @Override
   public boolean match(String suppliedValue, RolloutStrategyAttribute attr) {
     DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
 
     try {
-      Supplier<OffsetDateTime> suppliedDate = () -> OffsetDateTime.from(formatter.parse(suppliedValue));
+      Supplier<OffsetDateTime> suppliedDate = () -> {
+        if (supplied == null) {
+          supplied = OffsetDateTime.from(formatter.parse(suppliedValue));
+        }
+        return supplied;
+      };
 
       switch (attr.getConditional()) {
         case EQUALS: // all match makes no sense
@@ -43,7 +50,6 @@ public class DateTimeArrayMatcher implements StrategyMatcher {
           return attr.getValues().stream().anyMatch(v -> suppliedValue.matches(v.toString()));
       }
     } catch (Exception ignored) {
-      ignored.printStackTrace();
     }
 
     return false;

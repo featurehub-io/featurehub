@@ -37,6 +37,10 @@ import java.net.UnknownHostException;
  */
 public class CIDRMatch {
 
+  public static InetAddress suppliedAddress(String address) throws UnknownHostException {
+     return InetAddress.getByName(address);
+  }
+
   /**
    * Takes a specific IP address or a range specified using the IP/Netmask (e.g.
    * 192.168.1.0/24 or 202.24.0.0/14).
@@ -44,19 +48,9 @@ public class CIDRMatch {
    * @param ipAddress the address or range of addresses from which the request must
    * come.
    */
-  public static boolean cidrMatch(String ipAddress, String address) {
+  public static boolean cidrMatch(String ipAddress, InetAddress remoteAddress) {
     int nMaskBits;
     InetAddress requiredAddress;
-
-    // can't compare either if they are null
-    if (ipAddress == null || address == null) {
-      return false;
-    }
-
-    // if they are exactly the same good!
-    if (ipAddress.equalsIgnoreCase(address)) {
-      return true;
-    }
 
     if (ipAddress.indexOf('/') > 0) {
       String[] addressAndMask = ipAddress.split("/");
@@ -71,7 +65,7 @@ public class CIDRMatch {
       requiredAddress = InetAddress.getByName(ipAddress);
 
       if (requiredAddress.getAddress().length * 8 >= nMaskBits) {
-        InetAddress remoteAddress = InetAddress.getByName(address);
+
 
         if (!requiredAddress.getClass().equals(remoteAddress.getClass())) {
           return false;

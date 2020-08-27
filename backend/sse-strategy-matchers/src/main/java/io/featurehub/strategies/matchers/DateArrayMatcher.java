@@ -3,17 +3,24 @@ package io.featurehub.strategies.matchers;
 import io.featurehub.sse.model.RolloutStrategyAttribute;
 
 import java.time.LocalDate;
-//import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.function.Supplier;
 
 public class DateArrayMatcher implements StrategyMatcher {
+  private LocalDate supplied;
+
   @Override
   public boolean match(String suppliedValue, RolloutStrategyAttribute attr) {
     try {
       DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE;
 
-      Supplier<LocalDate> suppliedDate = () -> LocalDate.from(formatter.parse(suppliedValue));
+      Supplier<LocalDate> suppliedDate = () -> {
+        if (supplied == null) {
+          supplied = LocalDate.from(formatter.parse(suppliedValue));
+        }
+
+        return supplied;
+      };
 
       switch (attr.getConditional()) {
         case EQUALS: // all match makes no sense
