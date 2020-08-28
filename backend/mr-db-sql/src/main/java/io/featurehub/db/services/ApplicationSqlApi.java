@@ -9,7 +9,7 @@ import io.featurehub.db.api.Opts;
 import io.featurehub.db.model.DbAcl;
 import io.featurehub.db.model.DbApplication;
 import io.featurehub.db.model.DbApplicationFeature;
-import io.featurehub.db.model.DbEnvironmentFeatureStrategy;
+import io.featurehub.db.model.DbFeatureValue;
 import io.featurehub.db.model.DbGroup;
 import io.featurehub.db.model.DbPerson;
 import io.featurehub.db.model.DbPortfolio;
@@ -240,7 +240,7 @@ public class ApplicationSqlApi implements ApplicationApi {
   }
 
   private void createDefaultBooleanFeatureValuesForAllEnvironments(DbApplicationFeature appFeature, DbApplication app, Person person) {
-    final List<DbEnvironmentFeatureStrategy> newFeatures = new QDbEnvironment().whenArchived.isNull().parentApplication.eq(app).findList().stream().map(env -> new DbEnvironmentFeatureStrategy.Builder()
+    final List<DbFeatureValue> newFeatures = new QDbEnvironment().whenArchived.isNull().parentApplication.eq(app).findList().stream().map(env -> new DbFeatureValue.Builder()
       .defaultValue(Boolean.FALSE.toString())
       .environment(env)
       .feature(appFeature)
@@ -251,13 +251,13 @@ public class ApplicationSqlApi implements ApplicationApi {
 
     saveAllFeatures(newFeatures);
 
-    for (DbEnvironmentFeatureStrategy nf : newFeatures) {
+    for (DbFeatureValue nf : newFeatures) {
       cacheSource.publishFeatureChange(nf);
     }
   }
 
   @Transactional
-  private void saveAllFeatures(List<DbEnvironmentFeatureStrategy> newFeatures) {
+  private void saveAllFeatures(List<DbFeatureValue> newFeatures) {
     newFeatures.forEach(database::save);
   }
 

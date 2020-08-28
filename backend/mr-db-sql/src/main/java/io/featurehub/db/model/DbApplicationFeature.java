@@ -71,7 +71,7 @@ public class DbApplicationFeature {
 
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "fk_feature_id")
-  private Set<DbEnvironmentFeatureStrategy> environmentFeatures;
+  private Set<DbFeatureValue> environmentFeatures;
 
   public long getVersion() {
     return version;
@@ -117,11 +117,11 @@ public class DbApplicationFeature {
     this.name = name;
   }
 
-  public Set<DbEnvironmentFeatureStrategy> getEnvironmentFeatures() {
+  public Set<DbFeatureValue> getEnvironmentFeatures() {
     return environmentFeatures;
   }
 
-  public void setEnvironmentFeatures(Set<DbEnvironmentFeatureStrategy> environmentFeatures) {
+  public void setEnvironmentFeatures(Set<DbFeatureValue> environmentFeatures) {
     this.environmentFeatures = environmentFeatures;
   }
 

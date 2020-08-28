@@ -9,7 +9,7 @@ import io.featurehub.db.api.OptimisticLockingException;
 import io.featurehub.db.api.Opts;
 import io.featurehub.db.model.DbApplication;
 import io.featurehub.db.model.DbEnvironment;
-import io.featurehub.db.model.DbEnvironmentFeatureStrategy;
+import io.featurehub.db.model.DbFeatureValue;
 import io.featurehub.db.model.DbPerson;
 import io.featurehub.db.model.FeatureState;
 import io.featurehub.db.model.query.QDbAcl;
@@ -252,10 +252,10 @@ public class EnvironmentSqlApi implements EnvironmentApi {
   }
 
   private void discoverMissingBooleanApplicationFeaturesForThisEnvironment(DbEnvironment createdEnvironment, Person whoCreated) {
-    final List<DbEnvironmentFeatureStrategy> newFeatures
+    final List<DbFeatureValue> newFeatures
       = new QDbApplicationFeature().whenArchived.isNull().parentApplication.eq(createdEnvironment.getParentApplication()).valueType.eq(FeatureValueType.BOOLEAN).findList().stream()
       .map(af -> {
-        return new DbEnvironmentFeatureStrategy.Builder()
+        return new DbFeatureValue.Builder()
           .defaultValue(Boolean.FALSE.toString())
           .environment(createdEnvironment)
           .feature(af)
@@ -267,13 +267,13 @@ public class EnvironmentSqlApi implements EnvironmentApi {
 
     saveAllFeatures(newFeatures);
 
-    for (DbEnvironmentFeatureStrategy nf : newFeatures) {
+    for (DbFeatureValue nf : newFeatures) {
       cacheSource.publishFeatureChange(nf);
     }
   }
 
   @Transactional
-  private void saveAllFeatures(List<DbEnvironmentFeatureStrategy> newFeatures) {
+  private void saveAllFeatures(List<DbFeatureValue> newFeatures) {
     newFeatures.forEach(database::save);
 
   }

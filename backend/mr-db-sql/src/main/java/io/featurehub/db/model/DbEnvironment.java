@@ -84,7 +84,7 @@ public class DbEnvironment {
 
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "fk_environment_id")
-  private Set<DbEnvironmentFeatureStrategy> environmentFeatures;
+  private Set<DbFeatureValue> environmentFeatures;
 
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "fk_environment_id")
@@ -150,11 +150,11 @@ public class DbEnvironment {
     this.groupRolesAcl = groupRolesAcl;
   }
 
-  public Set<DbEnvironmentFeatureStrategy> getEnvironmentFeatures() {
+  public Set<DbFeatureValue> getEnvironmentFeatures() {
     return environmentFeatures;
   }
 
-  public void setEnvironmentFeatures(Set<DbEnvironmentFeatureStrategy> environmentFeatures) {
+  public void setEnvironmentFeatures(Set<DbFeatureValue> environmentFeatures) {
     this.environmentFeatures = environmentFeatures;
   }
 
@@ -208,7 +208,7 @@ public class DbEnvironment {
     private String name;
     private String description;
     private Set<DbAcl> groupRolesAcl;
-    private Set<DbEnvironmentFeatureStrategy> environmentFeatures;
+    private Set<DbFeatureValue> environmentFeatures;
     private Set<DbServiceAccountEnvironment> serviceAccountEnvironments;
 
     public Builder() {
@@ -254,7 +254,7 @@ public class DbEnvironment {
       return this;
     }
 
-    public Builder environmentFeatures(Set<DbEnvironmentFeatureStrategy> val) {
+    public Builder environmentFeatures(Set<DbFeatureValue> val) {
       environmentFeatures = val;
       return this;
     }

@@ -6,12 +6,12 @@ import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.Opts;
 import io.featurehub.db.model.DbApplicationFeature;
 import io.featurehub.db.model.DbEnvironment;
-import io.featurehub.db.model.DbEnvironmentFeatureStrategy;
+import io.featurehub.db.model.DbFeatureValue;
 import io.featurehub.db.model.DbNamedCache;
 import io.featurehub.db.model.DbServiceAccount;
 import io.featurehub.db.model.query.QDbApplicationFeature;
 import io.featurehub.db.model.query.QDbEnvironment;
-import io.featurehub.db.model.query.QDbEnvironmentFeatureStrategy;
+import io.featurehub.db.model.query.QDbFeatureValue;
 import io.featurehub.db.model.query.QDbNamedCache;
 import io.featurehub.db.model.query.QDbServiceAccount;
 import io.featurehub.db.services.Conversions;
@@ -132,7 +132,7 @@ public class DbCacheSource implements CacheSource {
   private EnvironmentCacheItem fillEnvironmentCacheItem(int count, DbEnvironment env, PublishAction publishAction) {
     final Set<DbApplicationFeature> features =
        new QDbApplicationFeature().parentApplication.eq(env.getParentApplication()).whenArchived.isNull().findSet();
-    Map<UUID, DbEnvironmentFeatureStrategy> envFeatures =
+    Map<UUID, DbFeatureValue> envFeatures =
       env.getEnvironmentFeatures()
         .stream()
         .filter(f -> f.getFeature().getWhenArchived() == null)
@@ -164,7 +164,7 @@ public class DbCacheSource implements CacheSource {
 
 
   @Override
-  public void publishFeatureChange(DbEnvironmentFeatureStrategy strategy) {
+  public void publishFeatureChange(DbFeatureValue strategy) {
     executor.submit(() -> {
       String cacheName = getFeatureValueCacheName(strategy);
       CacheBroadcast cacheBroadcast = cacheBroadcasters.get(cacheName);
@@ -198,7 +198,7 @@ public class DbCacheSource implements CacheSource {
   }
 
   // todo: consider caching
-  private String getFeatureValueCacheName(DbEnvironmentFeatureStrategy strategy) {
+  private String getFeatureValueCacheName(DbFeatureValue strategy) {
     return new QDbNamedCache().organizations.portfolios.applications.environments.environmentFeatures.eq(strategy).findOne().getCacheName();
   }
 
@@ -309,11 +309,11 @@ public class DbCacheSource implements CacheSource {
       if (cacheBroadcast != null) {
         Feature feature = convertUtils.toApplicationFeature(appFeature, Opts.empty());
 
-        Map<UUID, DbEnvironmentFeatureStrategy> featureValues = new HashMap<>();
+        Map<UUID, DbFeatureValue> featureValues = new HashMap<>();
 
         if (action != PublishAction.DELETE) {
           // dont' care about values if deleting
-          new QDbEnvironmentFeatureStrategy()
+          new QDbFeatureValue()
             .environment.whenArchived.isNull()
             .environment.parentApplication.eq(appFeature.getParentApplication())
             .feature.eq(appFeature).findEach(fe -> {

@@ -34,7 +34,7 @@ components:
         avatar:
           type: string
           description: "url to avatar (if any). Not sent to SDK. Preferably a unicorn."
-          maxlength: 200
+          maxLength: 200
         value:
           description: "when we attach the RolloutStrategy for Dacha or SSE this lets us push the value out. Only visible in SDK and SSE Edge."
         percentage:

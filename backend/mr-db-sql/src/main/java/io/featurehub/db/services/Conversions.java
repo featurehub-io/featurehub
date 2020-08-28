@@ -1,14 +1,13 @@
 package io.featurehub.db.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import io.featurehub.dacha.api.CacheJsonMapper;
 import io.featurehub.db.api.Opts;
 import io.featurehub.db.model.DbAcl;
 import io.featurehub.db.model.DbApplication;
 import io.featurehub.db.model.DbApplicationFeature;
 import io.featurehub.db.model.DbEnvironment;
-import io.featurehub.db.model.DbEnvironmentFeatureStrategy;
+import io.featurehub.db.model.DbFeatureValue;
 import io.featurehub.db.model.DbGroup;
 import io.featurehub.db.model.DbOrganization;
 import io.featurehub.db.model.DbPerson;
@@ -144,10 +143,10 @@ public interface Conversions {
 
   Feature toApplicationFeature(DbApplicationFeature af, Opts opts);
 
-  Feature toFeature(DbEnvironmentFeatureStrategy fs);
+  Feature toFeature(DbFeatureValue fs);
 
-  FeatureValue toFeatureValue(DbEnvironmentFeatureStrategy fs);
-  FeatureValue toFeatureValue(DbEnvironmentFeatureStrategy fs, Opts opts);
+  FeatureValue toFeatureValue(DbFeatureValue fs);
+  FeatureValue toFeatureValue(DbFeatureValue fs, Opts opts);
 
   Portfolio toPortfolio(DbPortfolio p, Opts opts);
 
@@ -168,8 +167,8 @@ public interface Conversions {
     return splitEnvironmentRoles(permissions);
   }
 
-  FeatureEnvironment toFeatureEnvironment(DbEnvironmentFeatureStrategy s, List<RoleType> roles, DbEnvironment dbEnvironment, Opts opts);
+  FeatureEnvironment toFeatureEnvironment(DbFeatureValue s, List<RoleType> roles, DbEnvironment dbEnvironment, Opts opts);
 
-  FeatureValue toFeatureValue(DbApplicationFeature feature, DbEnvironmentFeatureStrategy value);
-  FeatureValue toFeatureValue(DbApplicationFeature feature, DbEnvironmentFeatureStrategy value, Opts opts);
+  FeatureValue toFeatureValue(DbApplicationFeature feature, DbFeatureValue value);
+  FeatureValue toFeatureValue(DbApplicationFeature feature, DbFeatureValue value, Opts opts);
 }

@@ -6,7 +6,7 @@ import io.featurehub.db.model.DbAcl;
 import io.featurehub.db.model.DbApplication;
 import io.featurehub.db.model.DbApplicationFeature;
 import io.featurehub.db.model.DbEnvironment;
-import io.featurehub.db.model.DbEnvironmentFeatureStrategy;
+import io.featurehub.db.model.DbFeatureValue;
 import io.featurehub.db.model.DbGroup;
 import io.featurehub.db.model.DbNamedCache;
 import io.featurehub.db.model.DbOrganization;
@@ -434,7 +434,7 @@ public class ConvertUtils implements Conversions {
   }
 
   @Override
-  public Feature toFeature(DbEnvironmentFeatureStrategy fs) {
+  public Feature toFeature(DbFeatureValue fs) {
     if (fs == null) {
       return null;
     }
@@ -452,7 +452,7 @@ public class ConvertUtils implements Conversions {
       .version(f.getVersion());
   }
 
-  protected FeatureValue featureValue(DbApplicationFeature actualFeature, DbEnvironmentFeatureStrategy fs, Opts opts) {
+  protected FeatureValue featureValue(DbApplicationFeature actualFeature, DbFeatureValue fs, Opts opts) {
     if (fs == null) {
       return null;
     }
@@ -465,8 +465,7 @@ public class ConvertUtils implements Conversions {
       .key(stripArchived(actualFeature.getKey(), actualFeature.getWhenArchived()))
       .locked(fs.isLocked())
       .id(fs.getId().toString())
-      .version(fs.getVersion())
-      .rolloutStrategyInstances(fs.getRolloutStrategyInstances());
+      .version(fs.getVersion());
 
     final DbApplicationFeature feature = actualFeature;
     if (feature.getValueType() == FeatureValueType.BOOLEAN) {
@@ -496,22 +495,22 @@ public class ConvertUtils implements Conversions {
 
 
   @Override
-  public FeatureValue toFeatureValue(DbEnvironmentFeatureStrategy fs, Opts opts) {
+  public FeatureValue toFeatureValue(DbFeatureValue fs, Opts opts) {
     return featureValue(null, fs, opts);
   }
 
   @Override
-  public FeatureValue toFeatureValue(DbEnvironmentFeatureStrategy fs) {
+  public FeatureValue toFeatureValue(DbFeatureValue fs) {
     return featureValue(null, fs, Opts.opts(FillOpts.People));
   }
 
   @Override
-  public FeatureValue toFeatureValue(DbApplicationFeature feature, DbEnvironmentFeatureStrategy value) {
+  public FeatureValue toFeatureValue(DbApplicationFeature feature, DbFeatureValue value) {
     return featureValue(feature, value, Opts.opts(FillOpts.People));
   }
 
   @Override
-  public FeatureValue toFeatureValue(DbApplicationFeature feature, DbEnvironmentFeatureStrategy value, Opts opts) {
+  public FeatureValue toFeatureValue(DbApplicationFeature feature, DbFeatureValue value, Opts opts) {
     if (value == null) {
       return new FeatureValue().id(feature.getId().toString()).key(stripArchived(feature.getKey(),
         feature.getWhenArchived())).version(0L).locked(false);
@@ -672,7 +671,7 @@ public class ConvertUtils implements Conversions {
   }
 
   @Override
-  public FeatureEnvironment toFeatureEnvironment(DbEnvironmentFeatureStrategy s, List<RoleType> roles, DbEnvironment dbEnvironment, Opts opts) {
+  public FeatureEnvironment toFeatureEnvironment(DbFeatureValue s, List<RoleType> roles, DbEnvironment dbEnvironment, Opts opts) {
     final FeatureEnvironment featureEnvironment = new FeatureEnvironment()
       .environment(toEnvironment(dbEnvironment, Opts.empty()))
       .roles(roles)

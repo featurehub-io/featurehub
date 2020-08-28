@@ -99,6 +99,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/RolloutStrategyInstance"
+        rolloutStrategies:
+          type: array
+          items:
+            $ref: "#/components/schemas/RolloutStrategy"
         environmentId:
           type: string
         version:

@@ -23,7 +23,7 @@ import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.RoleType
-import io.featurehub.mr.model.RolloutStrategyInstance
+import io.featurehub.mr.model.RolloutStrategy
 import io.featurehub.mr.model.ServiceAccount
 import io.featurehub.mr.model.ServiceAccountPermission
 import spock.lang.Shared
@@ -67,7 +67,7 @@ class FeatureSpec extends BaseSpec {
     environmentSqlApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
     envIdApp1 = environmentSqlApi.create(new Environment().name("feature-app-1-env-1"), new Application().id(appId), superPerson).id
 
-    featureSqlApi = new FeatureSqlApi(database, convertUtils, Mock(CacheSource))
+    featureSqlApi = new FeatureSqlApi(database, convertUtils, Mock(CacheSource), rolloutStrategyValidator)
 
     def averageJoe = new DbPerson.Builder().email("averagejoe-fvs@featurehub.io").name("Average Joe").build()
     database.save(averageJoe)
@@ -257,51 +257,7 @@ class FeatureSpec extends BaseSpec {
       foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_3'}).locked
   }
 
-  def "updating all environment features in an application by a specific feature will fail if the percentage strategy is > 10000"() {
-    given: "i have a feature value with strategies greater than 10000"
-      def fv = new FeatureValue().rolloutStrategyInstances(
-        [new RolloutStrategyInstance().name('too high').percentage(7654),
-         new RolloutStrategyInstance().name('2high2').percentage(6534)]
-      )
-    when: "i attempt to update"
-      featureSqlApi.updateAllFeatureValuesByApplicationForKey(null, null, [fv], null, false)
-    then:
-      thrown FeatureApi.PercentageStrategyGreaterThan100Percent
-  }
 
-
-  def "updating all environment features in an application by a specific feature will fail if we have negative percentages"() {
-    given: "i have a feature value with a negative percentage"
-      def fv = new FeatureValue().rolloutStrategyInstances(
-        [new RolloutStrategyInstance().name('neg %').percentage(-7654)]
-      )
-    when: "i attempt to update"
-      featureSqlApi.updateAllFeatureValuesByApplicationForKey(null, null, [fv], null, false)
-    then:
-      thrown FeatureApi.InvalidStrategyCombination
-  }
-
-  def "updating all environment features in an application by a specific feature will fail if we have attributes update with no attributes"() {
-    given: "i have a feature value with no valid configs"
-      def fv = new FeatureValue().rolloutStrategyInstances(
-        [new RolloutStrategyInstance().name('empty')]
-      )
-    when: "i attempt to update"
-      featureSqlApi.updateAllFeatureValuesByApplicationForKey(null, null, [fv], null, false)
-    then:
-      thrown FeatureApi.InvalidStrategyCombination
-  }
-
-  def 'updating features and having a strategy with no name causes a failure'() {
-    given: "i have a feature value with no valid configs"
-      def fv = new FeatureValue().rolloutStrategyInstances(
-        [new RolloutStrategyInstance().percentage(3456).valueBoolean(true)]
-      )
-    when: "i attempt to update"
-      featureSqlApi.updateAllFeatureValuesByApplicationForKey(null, null, [fv], null, false)
-    then:
-      thrown FeatureApi.InvalidStrategyCombination
-  }
 
   def "i can block update a bunch of feature values for an application"() {
     given: "i create 3 environments"

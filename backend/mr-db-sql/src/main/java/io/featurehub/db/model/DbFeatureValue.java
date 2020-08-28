@@ -5,6 +5,7 @@ import io.ebean.annotation.DbForeignKey;
 import io.ebean.annotation.DbJson;
 import io.ebean.annotation.WhenCreated;
 import io.ebean.annotation.WhenModified;
+import io.featurehub.mr.model.RolloutStrategy;
 import io.featurehub.mr.model.RolloutStrategyInstance;
 
 import javax.persistence.Column;
@@ -23,11 +24,11 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "fh_env_feature_strategy")
-public class DbEnvironmentFeatureStrategy {
+public class DbFeatureValue {
   @Id
   private UUID id;
 
-  private DbEnvironmentFeatureStrategy(Builder builder) {
+  private DbFeatureValue(Builder builder) {
     setWhoUpdated(builder.whoUpdated);
     whatUpdated = builder.whatUpdated;
     setEnvironment(builder.environment);
@@ -35,7 +36,7 @@ public class DbEnvironmentFeatureStrategy {
     setFeatureState(builder.featureState);
     setDefaultValue(builder.defaultValue);
     setLocked(builder.locked);
-    setRolloutStrategyInstances(builder.rolloutStrategyInstances);
+    setRolloutStrategies(builder.rolloutStrategies);
   }
 
   public UUID getId() { return id; }
@@ -96,11 +97,13 @@ public class DbEnvironmentFeatureStrategy {
   @Column(nullable = false)
   private boolean locked;
 
+  // a user can have multiple strategies here that are specific to this feature value
+  // these are usually percentage only ones, but that may change in the future
   @DbJson
   @Column(name="rollout_strat")
-  private List<RolloutStrategyInstance> rolloutStrategyInstances;
+  private List<RolloutStrategy> rolloutStrategies;
 
-  public DbEnvironmentFeatureStrategy() {
+  public DbFeatureValue() {
   }
 
   public DbPerson getWhoUpdated() {
@@ -151,12 +154,12 @@ public class DbEnvironmentFeatureStrategy {
     this.defaultValue = defaultValue;
   }
 
-  public List<RolloutStrategyInstance> getRolloutStrategyInstances() {
-    return rolloutStrategyInstances;
+  public List<RolloutStrategy> getRolloutStrategies() {
+    return rolloutStrategies;
   }
 
-  public void setRolloutStrategyInstances(List<RolloutStrategyInstance> rolloutStrategyInstances) {
-    this.rolloutStrategyInstances = rolloutStrategyInstances;
+  public void setRolloutStrategies(List<RolloutStrategy> rolloutStrategies) {
+    this.rolloutStrategies = rolloutStrategies;
   }
 
   public long getVersion() {
@@ -172,7 +175,7 @@ public class DbEnvironmentFeatureStrategy {
     private FeatureState featureState;
     private String defaultValue;
     private boolean locked;
-    private List<RolloutStrategyInstance> rolloutStrategyInstances;
+    private List<RolloutStrategy> rolloutStrategies;
 
     public Builder() {
     }
@@ -212,13 +215,13 @@ public class DbEnvironmentFeatureStrategy {
       return this;
     }
 
-    public Builder rolloutStrategyInstances(List<RolloutStrategyInstance> val) {
-      rolloutStrategyInstances = val;
+    public Builder rolloutStrategies(List<RolloutStrategy> val) {
+      rolloutStrategies = val;
       return this;
     }
 
-    public DbEnvironmentFeatureStrategy build() {
-      return new DbEnvironmentFeatureStrategy(this);
+    public DbFeatureValue build() {
+      return new DbFeatureValue(this);
     }
   }
 }

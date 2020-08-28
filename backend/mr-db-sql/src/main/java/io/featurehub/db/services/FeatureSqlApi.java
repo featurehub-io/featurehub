@@ -7,17 +7,18 @@ import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.OptimisticLockingException;
 import io.featurehub.db.api.Opts;
 import io.featurehub.db.api.PersonFeaturePermission;
+import io.featurehub.db.api.RolloutStrategyValidator;
 import io.featurehub.db.listener.FeatureUpdateBySDKApi;
 import io.featurehub.db.model.DbAcl;
 import io.featurehub.db.model.DbApplication;
 import io.featurehub.db.model.DbApplicationFeature;
 import io.featurehub.db.model.DbEnvironment;
-import io.featurehub.db.model.DbEnvironmentFeatureStrategy;
+import io.featurehub.db.model.DbFeatureValue;
 import io.featurehub.db.model.DbPerson;
 import io.featurehub.db.model.query.QDbAcl;
 import io.featurehub.db.model.query.QDbApplicationFeature;
 import io.featurehub.db.model.query.QDbEnvironment;
-import io.featurehub.db.model.query.QDbEnvironmentFeatureStrategy;
+import io.featurehub.db.model.query.QDbFeatureValue;
 import io.featurehub.db.publish.CacheSource;
 import io.featurehub.db.utils.EnvironmentUtils;
 import io.featurehub.mr.model.ApplicationFeatureValues;
@@ -29,7 +30,6 @@ import io.featurehub.mr.model.FeatureValue;
 import io.featurehub.mr.model.FeatureValueType;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.RoleType;
-import io.featurehub.mr.model.RolloutStrategyInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,17 +54,20 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
   private final Database database;
   private final Conversions convertUtils;
   private final CacheSource cacheSource;
+  private final RolloutStrategyValidator rolloutStrategyValidator;
 
   @Inject
-  public FeatureSqlApi(Database database, Conversions convertUtils, CacheSource cacheSource) {
+  public FeatureSqlApi(Database database, Conversions convertUtils, CacheSource cacheSource,
+                       RolloutStrategyValidator rolloutStrategyValidator) {
     this.database = database;
     this.convertUtils = convertUtils;
     this.cacheSource = cacheSource;
+    this.rolloutStrategyValidator = rolloutStrategyValidator;
   }
 
   @Override
   public FeatureValue createFeatureValueForEnvironment(String eid, String key, FeatureValue featureValue, PersonFeaturePermission person)
-    throws OptimisticLockingException, NoAppropriateRole, PercentageStrategyGreaterThan100Percent, InvalidStrategyCombination {
+    throws OptimisticLockingException, NoAppropriateRole, RolloutStrategyValidator.PercentageStrategyGreaterThan100Percent, RolloutStrategyValidator.InvalidStrategyCombination {
     UUID eId = Conversions.ifUuid(eid);
 
     if (!person.hasWriteRole()) {
@@ -79,10 +82,10 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
       throw new NoAppropriateRole();
     }
 
-    validateStrategies(featureValue);
+    rolloutStrategyValidator.validateStrategies(featureValue.getRolloutStrategies());
 
     if (eId != null) {
-      final DbEnvironmentFeatureStrategy strategy = new QDbEnvironmentFeatureStrategy().environment.id.eq(eId).feature.key.eq(key).findOne();
+      final DbFeatureValue strategy = new QDbFeatureValue().environment.id.eq(eId).feature.key.eq(key).findOne();
       if (strategy != null) {
         // this is an update not a create, environment + app-feature key exists
         return onlyUpdateFeatureValueForEnvironment(featureValue, person, strategy);
@@ -106,7 +109,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
       final DbApplicationFeature appFeature = new QDbApplicationFeature().key.eq(key).parentApplication.environments.eq(val).findOne();
 
       if (appFeature != null) {
-        DbEnvironmentFeatureStrategy strategy = new DbEnvironmentFeatureStrategy.Builder()
+        DbFeatureValue strategy = new DbFeatureValue.Builder()
           .environment(val)
           .feature(appFeature)
           .build();
@@ -125,7 +128,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
   }
 
   @Transactional
-  private void save(DbEnvironmentFeatureStrategy strategy) {
+  private void save(DbFeatureValue strategy) {
     database.save(strategy);
 
     cacheSource.publishFeatureChange(strategy);
@@ -137,7 +140,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
     UUID eId = Conversions.ifUuid(eid);
 
     if (eId != null) {
-      DbEnvironmentFeatureStrategy strategy = new QDbEnvironmentFeatureStrategy().environment.id.eq(eId).feature.key.eq(key).findOne();
+      DbFeatureValue strategy = new QDbFeatureValue().environment.id.eq(eId).feature.key.eq(key).findOne();
 
       if (strategy != null) {
         cacheSource.deleteFeatureChange(strategy.getFeature(), strategy.getEnvironment().getId().toString());
@@ -149,7 +152,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
     return false;
   }
 
-  private FeatureValue onlyUpdateFeatureValueForEnvironment(FeatureValue featureValue, PersonFeaturePermission person, DbEnvironmentFeatureStrategy strategy) throws OptimisticLockingException, NoAppropriateRole {
+  private FeatureValue onlyUpdateFeatureValueForEnvironment(FeatureValue featureValue, PersonFeaturePermission person, DbFeatureValue strategy) throws OptimisticLockingException, NoAppropriateRole {
     if (featureValue.getVersion() == null || strategy.getVersion() != featureValue.getVersion()) {
       throw new OptimisticLockingException();
     }
@@ -165,34 +168,9 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
     return convertUtils.toFeatureValue(strategy);
   }
 
-  private void validateStrategies(FeatureValue featureValue) throws PercentageStrategyGreaterThan100Percent, InvalidStrategyCombination {
-//    if (featureValue.getRolloutStrategyInstances() != null && !featureValue.getRolloutStrategyInstances().isEmpty()) {
-//      // if any of them have no attributes and no percentage (or invalid percentage) then this is invalid
-//      if (featureValue.getRolloutStrategyInstances().stream().anyMatch(rsi -> rsi.getName() == null || rsi.getName().isEmpty() || rsi.getName().trim().length() > 200)) {
-//        log.warn("feature rollout strategy contained at least one invalid name {}", featureValue);
-//        throw new InvalidStrategyCombination();
-//      }
-//      if (
-//        featureValue.getRolloutStrategyInstances().stream().anyMatch(rsi -> ((rsi.getAttributes() == null ||
-//          rsi.getAttributes().isEmpty()) && (rsi.getPercentage() == null || rsi.getPercentage() < 0)))) {
-//        log.warn("Attempting to update strategies for feature {} where attributes passed or percentage missing (or " +
-//          "negative)" +
-//          " and " +
-//          "using percentage strategy.", featureValue);
-//        throw new InvalidStrategyCombination();
-//      }
-//
-//      if (featureValue.getRolloutStrategyInstances().stream()
-//          .filter(rsi -> rsi.getAttributes() == null || rsi.getAttributes().isEmpty())
-//          .map(RolloutStrategyInstance::getPercentage).reduce(0,
-//          Integer::sum) > 10000) {
-//        log.warn("Percentage adds up to > 10000 which is the baseline for percentage rollout {}.", featureValue);
-//        throw new PercentageStrategyGreaterThan100Percent();
-//      }
-//    }
-  }
 
-  private void updateStrategy(FeatureValue featureValue, PersonFeaturePermission person, DbEnvironmentFeatureStrategy strategy) throws NoAppropriateRole {
+
+  private void updateStrategy(FeatureValue featureValue, PersonFeaturePermission person, DbFeatureValue strategy) throws NoAppropriateRole {
     final DbApplicationFeature feature = strategy.getFeature();
 
     if (person.hasChangeValueRole() && ( !strategy.isLocked() || (Boolean.FALSE.equals(featureValue.getLocked()) && person.hasUnlockRole()) )) {
@@ -206,7 +184,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
         strategy.setDefaultValue(featureValue.getValueBoolean() == null ? Boolean.FALSE.toString() : featureValue.getValueBoolean().toString());
       }
 
-      strategy.setRolloutStrategyInstances(featureValue.getRolloutStrategyInstances());
+//      strategy.setRolloutStrategyIn/stances(featureValue.getRolloutStrategyInstances());
     }
 
     // change locked before changing value, as may not be able to change value if locked
@@ -228,7 +206,9 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
   }
 
   @Override
-  public FeatureValue updateFeatureValueForEnvironment(String eid, String key, FeatureValue featureValue, PersonFeaturePermission person) throws OptimisticLockingException, NoAppropriateRole, PercentageStrategyGreaterThan100Percent, InvalidStrategyCombination {
+  public FeatureValue updateFeatureValueForEnvironment(String eid, String key, FeatureValue featureValue,
+                                                       PersonFeaturePermission person) throws OptimisticLockingException, NoAppropriateRole,
+    RolloutStrategyValidator.PercentageStrategyGreaterThan100Percent, RolloutStrategyValidator.InvalidStrategyCombination {
     return createFeatureValueForEnvironment(eid, key, featureValue, person);
   }
 
@@ -237,7 +217,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
     UUID eId = Conversions.ifUuid(eid);
 
     if (eId != null) {
-      final DbEnvironmentFeatureStrategy strategy = new QDbEnvironmentFeatureStrategy().environment.id.eq(eId).feature.key.eq(key).findOne();
+      final DbFeatureValue strategy = new QDbFeatureValue().environment.id.eq(eId).feature.key.eq(key).findOne();
       return strategy == null ? null : convertUtils.toFeatureValue(strategy);
     }
 
@@ -250,7 +230,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
 
     if (eId != null) {
       return new EnvironmentFeaturesResult()
-        .featureValues(new QDbEnvironmentFeatureStrategy().environment.id.eq(eId)
+        .featureValues(new QDbFeatureValue().environment.id.eq(eId)
           .feature.whenArchived.isNull().findList().stream().map(convertUtils::toFeatureValue).collect(Collectors.toList()))
           .environments(Collections.singletonList(convertUtils.toEnvironment(new QDbEnvironment().id.eq(eId).findOne(), Opts.empty())));
     }
@@ -261,7 +241,9 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
   // we are going to have to put a transaction at this level as we want the whole thing to roll back if there is an issue
   @Override
   @Transactional
-  public List<FeatureValue> updateAllFeatureValuesForEnvironment(String eid, List<FeatureValue> featureValues, PersonFeaturePermission person) throws OptimisticLockingException, NoAppropriateRole, PercentageStrategyGreaterThan100Percent, InvalidStrategyCombination {
+  public List<FeatureValue> updateAllFeatureValuesForEnvironment(String eid, List<FeatureValue> featureValues,
+                                                                 PersonFeaturePermission person)
+    throws OptimisticLockingException, NoAppropriateRole, RolloutStrategyValidator.PercentageStrategyGreaterThan100Percent, RolloutStrategyValidator.InvalidStrategyCombination {
     UUID eId = Conversions.ifUuid(eid);
 
     if (featureValues == null || featureValues.size() != featureValues.stream().map(FeatureValue::getKey).collect(Collectors.toSet()).size()) {
@@ -270,11 +252,11 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
 
     // ensure the strategies are valid from a conceptual perspective
     for(FeatureValue fv : featureValues) {
-      validateStrategies(fv);
+      rolloutStrategyValidator.validateStrategies(fv.getRolloutStrategies());
     }
 
     if (eId != null) {
-      final List<DbEnvironmentFeatureStrategy> existing = new QDbEnvironmentFeatureStrategy().environment.id.eq(eId).feature.whenArchived.isNull().findList();
+      final List<DbFeatureValue> existing = new QDbFeatureValue().environment.id.eq(eId).feature.whenArchived.isNull().findList();
       final Map<String, FeatureValue> newValues = featureValues.stream().collect(Collectors.toMap(FeatureValue::getKey, Function.identity()));
       // take them all and remove all fv's we were passed, leaving only EFS's we want to remove
       final Set<String> deleteKeys = existing.stream().map(e -> e.getFeature().getKey()).collect(Collectors.toSet());
@@ -284,8 +266,8 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
 
       // we should be left with only keys in deleteKeys that do not exist in the passed in list of feature values
       // and in addingKeys we should be given a list of keys which exist in the passed in FV's but didn't exist in the db
-      List<DbEnvironmentFeatureStrategy> deleteStrategies = new ArrayList<>();
-      for (DbEnvironmentFeatureStrategy strategy : existing) {
+      List<DbFeatureValue> deleteStrategies = new ArrayList<>();
+      for (DbFeatureValue strategy : existing) {
         if (deleteKeys.contains(strategy.getFeature().getKey())) {
           deleteStrategies.add(strategy);
         } else {
@@ -311,7 +293,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
   }
 
   // can't background this because they will deleted shortly
-  private void publishTheRemovalOfABunchOfStrategies(Collection<DbEnvironmentFeatureStrategy> deleteStrategies) {
+  private void publishTheRemovalOfABunchOfStrategies(Collection<DbFeatureValue> deleteStrategies) {
     if (!deleteStrategies.isEmpty()) {
       deleteStrategies.parallelStream().forEach(strategy -> {
         cacheSource.deleteFeatureChange(strategy.getFeature(), strategy.getEnvironment().getId().toString());
@@ -321,26 +303,25 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
 
   @Override
   public void updateFeature(String sdkUrl, String envId, String featureKey, boolean updatingValue, Function<FeatureValueType, FeatureValue> buildFeatureValue)
-      throws PercentageStrategyGreaterThan100Percent, InvalidStrategyCombination {
+      throws RolloutStrategyValidator.PercentageStrategyGreaterThan100Percent, RolloutStrategyValidator.InvalidStrategyCombination {
     // not checking permissions, edge checks those
     UUID eid = Conversions.ifUuid(envId);
     if (eid != null) {
       DbApplicationFeature feature = new QDbApplicationFeature().parentApplication.environments.id.eq(eid).key.eq(featureKey).findOne();
 
       if (feature != null) {
-        DbEnvironmentFeatureStrategy fv = new QDbEnvironmentFeatureStrategy().environment.id.eq(eid).feature.eq(feature).findOne();
+        DbFeatureValue fv = new QDbFeatureValue().environment.id.eq(eid).feature.eq(feature).findOne();
 
         FeatureValue newValue = buildFeatureValue.apply(feature.getValueType());
 
-        validateStrategies(newValue);
+        rolloutStrategyValidator.validateStrategies(newValue.getRolloutStrategies());
 
         boolean saveNew = (fv == null);
 
         if (saveNew) { // creating
-          fv = new DbEnvironmentFeatureStrategy.Builder()
+          fv = new DbFeatureValue.Builder()
             .environment(new QDbEnvironment().id.eq(eid).findOne())
             .feature(feature)
-            .rolloutStrategyInstances(newValue.getRolloutStrategyInstances())
             .locked(true)
             .build();
         }
@@ -372,12 +353,12 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
   }
 
   static class EnvironmentsAndStrategies {
-    public Map<UUID, DbEnvironmentFeatureStrategy> strategies;
+    public Map<UUID, DbFeatureValue> strategies;
     public Map<UUID, List<RoleType>> roles;
     public Map<UUID, DbEnvironment> environments;
     public Set<ApplicationRoleType> appRolesForThisPerson;
 
-    public EnvironmentsAndStrategies(Map<UUID, DbEnvironmentFeatureStrategy> strategies, Map<UUID, List<RoleType>> roles, Map<UUID, DbEnvironment> environments, Set<ApplicationRoleType> appRoles) {
+    public EnvironmentsAndStrategies(Map<UUID, DbFeatureValue> strategies, Map<UUID, List<RoleType>> roles, Map<UUID, DbEnvironment> environments, Set<ApplicationRoleType> appRoles) {
       this.strategies = strategies;
       this.roles = roles;
       this.environments = environments;
@@ -395,14 +376,14 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
       return null;
     }
 
-    Map<UUID, DbEnvironmentFeatureStrategy> strategiesResult = new HashMap<>();
+    Map<UUID, DbFeatureValue> strategiesResult = new HashMap<>();
     Map<UUID, List<RoleType>> roles = new HashMap<>();
     Map<UUID, DbEnvironment> environments = new HashMap<>();
 
     boolean personAdmin = convertUtils.isPersonApplicationAdmin(dbPerson, app);
 
-    Map<UUID, DbEnvironmentFeatureStrategy> strategies =
-      new QDbEnvironmentFeatureStrategy().feature.key.eq(key).feature.parentApplication
+    Map<UUID, DbFeatureValue> strategies =
+      new QDbFeatureValue().feature.key.eq(key).feature.parentApplication
         .eq(app)
         .findList()
         .stream()
@@ -423,7 +404,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
           roles.put(envId, roleTypes);
           environments.put(envId, fe.getEnvironment());
 
-          DbEnvironmentFeatureStrategy strategy = strategies.remove(envId);
+          DbFeatureValue strategy = strategies.remove(envId);
 
           if (strategy != null) {
             strategiesResult.put(envId, strategy);
@@ -440,7 +421,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
           environments.put(env.getId(), env);
           roles.put(env.getId(), personAdmin ? adminRoles : emptyRoles);
           if (personAdmin) {
-            DbEnvironmentFeatureStrategy strategy = strategies.remove(env.getId());
+            DbFeatureValue strategy = strategies.remove(env.getId());
 
             if (strategy != null) {
               strategiesResult.put(env.getId(), strategy);
@@ -480,10 +461,10 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
   @Transactional
   public void updateAllFeatureValuesByApplicationForKey(String id, String key, List<FeatureValue> featureValue,
               Person person, boolean removeValuesNotPassed) throws OptimisticLockingException, NoAppropriateRole,
-                PercentageStrategyGreaterThan100Percent, InvalidStrategyCombination {
+    RolloutStrategyValidator.PercentageStrategyGreaterThan100Percent, RolloutStrategyValidator.InvalidStrategyCombination {
     // prevalidate, this will happen again but we should do it before anything else
     for (FeatureValue fv : featureValue) {
-      validateStrategies(fv);
+      rolloutStrategyValidator.validateStrategies(fv.getRolloutStrategies());
     }
 
     EnvironmentsAndStrategies result = strategiesUserCanAccess(id, key, person);
@@ -492,7 +473,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
       // environment id -> role in that environment
       Map<UUID, List<RoleType>> environmentToRoleMap = result.roles;
       // environment -> feature value
-      Map<UUID, DbEnvironmentFeatureStrategy> strategiesToDelete = result.strategies;
+      Map<UUID, DbFeatureValue> strategiesToDelete = result.strategies;
 
       for (FeatureValue fv : featureValue) {
         UUID envId = Conversions.ifUuid(fv.getEnvironmentId());
@@ -547,7 +528,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
       .environmentName(acl.getEnvironment().getName())
       .priorEnvironmentId(acl.getEnvironment().getPriorEnvironment() == null ? null : acl.getEnvironment().getPriorEnvironment().getId().toString())
       .roles(roles)
-      .features(new QDbEnvironmentFeatureStrategy()
+      .features(new QDbFeatureValue()
         .environment.eq(acl.getEnvironment())
         .environment.whenArchived.isNull()
         .feature.whenArchived.isNull()
@@ -628,7 +609,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
                 .priorEnvironmentId(e.getPriorEnvironment() == null ? null : e.getPriorEnvironment().getId().toString())
                 .environmentId(e.getId().toString())
                 .roles(roles) // all access (as admin)
-                .features(!personAdmin ? new ArrayList<>() : new QDbEnvironmentFeatureStrategy()
+                .features(!personAdmin ? new ArrayList<>() : new QDbFeatureValue()
                   .feature.whenArchived.isNull()
                   .environment.eq(e)
                   .findList().stream()
