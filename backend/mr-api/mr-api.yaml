@@ -737,6 +737,21 @@ paths:
         schema:
           type: string
         required: true
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - RolloutStrategyService
+      operationId: getRolloutStrategy
+      responses:
+        "200":
+          description: "The rollout strategy for this application"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RolloutStrategy"
+        "404":
+          description: "If there is no rollout strategy by that id or name"
     put:
       security:
         - bearerAuth: []

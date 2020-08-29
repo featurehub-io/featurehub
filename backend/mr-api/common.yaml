@@ -122,7 +122,7 @@ components:
           type: string
         value:
           description: "the value for this rollout strategy for this feature value"
-        enabled:
+        disabled:
           type: boolean
     Audit:
       properties:
@@ -411,6 +411,7 @@ components:
       type: string
       enum:
         - FEATURE_EDIT
+        - SHARED_STRATEGY_EDIT
     EnvironmentGroupRole:
       required:
         - environmentId

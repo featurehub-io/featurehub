@@ -194,22 +194,6 @@ Feature: Create feature values
         | appName           | appDesc                | portfolio                | group   | featureKey     | alias    | featureName    | link                  | envName | envDesc    | envName2 | envDesc2 | envName3 | envDesc3 | valueType |
         | ChangingPermsTest | ChangingPermsTest Desc | Features very restricted | testers | FEATURE_SAMPLE | sssshhhh | Sample feature | http://featurehub.dev | prod    | production | test     | test env | dev      | dev env  | boolean   |
 
-  Scenario Outline: A feature is able to store rollout strategy percentages
-    Given I ensure a portfolio named "<portfolio>" with description "business application" exists
-    And the first superuser is used for authentication
-    Given I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
-    And I ensure that an environment "<envName>" with description "<envDesc>" exists in the app "<appName>" in the portfolio "<portfolio>"
-    And I ensure that the string feature with the key <featureKey> exists and has the default value <defaultValue>
-    And I create rollout strategies
-      | percentage | value  | name          |
-      | 32      | blue   | blue-kachoo   |
-      | 45     | yellow | yellow-smello |
-    And I confirm on getting the feature it has the same data as set
-
-    Examples:
-      | appName      | appDesc           | portfolio               | featureKey          | envName | envDesc    | defaultValue |
-      | StrategyTest | StrategyTest Desc | Strategy Test Portfolio | SUBMIT_COLOR_BUTTON | prod    | production | orange       |
-
 
 
 

@@ -6,6 +6,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.util.UUID;
@@ -30,10 +31,14 @@ public class DbStrategyForFeatureValue {
   @Column(nullable = false)
   private boolean enabled;
 
+  @Lob
+  private String value;
+
   private DbStrategyForFeatureValue(Builder builder) {
     setFeatureValue(builder.featureValue);
     setRolloutStrategy(builder.rolloutStrategy);
     setEnabled(builder.enabled);
+    setValue(builder.value);
   }
 
   public UUID getId() {
@@ -64,11 +69,19 @@ public class DbStrategyForFeatureValue {
     this.enabled = enabled;
   }
 
+  public String getValue() {
+    return value;
+  }
+
+  public void setValue(String value) {
+    this.value = value;
+  }
 
   public static final class Builder {
     private DbFeatureValue featureValue;
     private DbRolloutStrategy rolloutStrategy;
     private boolean enabled;
+    private String value;
 
     public Builder() {
     }
@@ -85,6 +98,11 @@ public class DbStrategyForFeatureValue {
 
     public Builder enabled(boolean val) {
       enabled = val;
+      return this;
+    }
+
+    public Builder value(String val) {
+      value = val;
       return this;
     }
 

@@ -6,8 +6,8 @@ import io.ebean.annotation.DbJson;
 import io.ebean.annotation.WhenCreated;
 import io.ebean.annotation.WhenModified;
 import io.featurehub.mr.model.RolloutStrategy;
-import io.featurehub.mr.model.RolloutStrategyInstance;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -16,6 +16,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Version;
 import java.time.LocalDateTime;
@@ -30,13 +31,14 @@ public class DbFeatureValue {
 
   private DbFeatureValue(Builder builder) {
     setWhoUpdated(builder.whoUpdated);
-    whatUpdated = builder.whatUpdated;
+    setWhatUpdated(builder.whatUpdated);
     setEnvironment(builder.environment);
     setFeature(builder.feature);
     setFeatureState(builder.featureState);
     setDefaultValue(builder.defaultValue);
     setLocked(builder.locked);
     setRolloutStrategies(builder.rolloutStrategies);
+    sharedRolloutStrategies = builder.sharedRolloutStrategies;
   }
 
   public UUID getId() { return id; }
@@ -102,6 +104,10 @@ public class DbFeatureValue {
   @DbJson
   @Column(name="rollout_strat")
   private List<RolloutStrategy> rolloutStrategies;
+
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "fk_fv_id")
+  private List<DbStrategyForFeatureValue> sharedRolloutStrategies;
 
   public DbFeatureValue() {
   }
@@ -176,6 +182,7 @@ public class DbFeatureValue {
     private String defaultValue;
     private boolean locked;
     private List<RolloutStrategy> rolloutStrategies;
+    private List<DbStrategyForFeatureValue> sharedRolloutStrategies;
 
     public Builder() {
     }
@@ -217,6 +224,11 @@ public class DbFeatureValue {
 
     public Builder rolloutStrategies(List<RolloutStrategy> val) {
       rolloutStrategies = val;
+      return this;
+    }
+
+    public Builder sharedRolloutStrategies(List<DbStrategyForFeatureValue> val) {
+      sharedRolloutStrategies = val;
       return this;
     }
 

@@ -6,14 +6,17 @@ import io.ebean.annotation.WhenCreated;
 import io.ebean.annotation.WhenModified;
 import io.featurehub.mr.model.RolloutStrategy;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Version;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Index(unique = true, name = "idx_app_strategies", columnNames = {"fk_app_id", "strategy_name"})
@@ -47,6 +50,10 @@ public class DbRolloutStrategy {
 
   @Column(name = "strategy_name", nullable = false)
   private String name;
+
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "fk_rs_id")
+  private List<DbStrategyForFeatureValue> sharedRolloutStrategies;
 
   // we have chosen to do this because we always grab the
   // whole tree, we aren't interested in its constituent parts
@@ -83,5 +90,13 @@ public class DbRolloutStrategy {
 
   public LocalDateTime getWhenCreated() {
     return whenCreated;
+  }
+
+  public List<DbStrategyForFeatureValue> getSharedRolloutStrategies() {
+    return sharedRolloutStrategies;
+  }
+
+  public void setSharedRolloutStrategies(List<DbStrategyForFeatureValue> sharedRolloutStrategies) {
+    this.sharedRolloutStrategies = sharedRolloutStrategies;
   }
 }

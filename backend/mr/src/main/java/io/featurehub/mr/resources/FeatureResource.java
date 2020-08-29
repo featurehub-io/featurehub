@@ -4,6 +4,7 @@ import io.featurehub.db.api.ApplicationApi;
 import io.featurehub.db.api.EnvironmentApi;
 import io.featurehub.db.api.FeatureApi;
 import io.featurehub.db.api.OptimisticLockingException;
+import io.featurehub.db.api.RolloutStrategyValidator;
 import io.featurehub.mr.api.FeatureServiceDelegate;
 import io.featurehub.mr.auth.AuthManagerService;
 import io.featurehub.mr.model.ApplicationFeatureValues;
@@ -118,7 +119,7 @@ public class FeatureResource implements FeatureServiceDelegate {
     } catch (FeatureApi.NoAppropriateRole noAppropriateRole) {
       log.warn("User attempted to update feature they had no access to", noAppropriateRole);
       throw new BadRequestException(noAppropriateRole);
-    } catch (FeatureApi.PercentageStrategyGreaterThan100Percent| FeatureApi.InvalidStrategyCombination bad) {
+    } catch (RolloutStrategyValidator.PercentageStrategyGreaterThan100Percent| RolloutStrategyValidator.InvalidStrategyCombination bad) {
       throw new WebApplicationException(400); // can't do anything with it
     }
 

@@ -1,0 +1,178 @@
+import 'package:app_singleapp/shared.dart';
+import 'package:app_singleapp/user_common.dart';
+import 'package:collection/collection.dart';
+import 'package:mrapi/api.dart';
+import 'package:ogurets/ogurets.dart';
+
+class StrategiesStepdefs {
+  final UserCommon userCommon;
+  final Shared shared;
+
+  StrategiesStepdefs(this.userCommon, this.shared);
+
+  @And(r'I create shared rollout strategies')
+  void iSetTheRolloutStrategyToPercentage(
+      String name, GherkinTable table) async {
+    assert(shared.application != null, 'please set application first');
+    assert(shared.environment != null, 'please set an environment!');
+    assert(shared.environment.applicationId == shared.application.id,
+        'environment is not in application');
+    assert(shared.feature != null, 'must know what the feature is');
+
+    final existing = await userCommon.rolloutStrategyService
+        .listApplicationRolloutStrategies(shared.application.id);
+
+    for (var g in table) {
+      var strategy = existing.firstWhere(
+          (s) => s.name.toLowerCase() == g['name'],
+          orElse: () => null);
+      if (strategy == null) {
+        strategy = RolloutStrategy()..name = g['name'];
+      }
+      strategy.percentage = g['percentage'] != null
+          ? (double.parse(g['percentage']) * 10000).round()
+          : null;
+
+      if (strategy.id != null) {
+        strategy = await userCommon.rolloutStrategyService
+            .updateRolloutStrategy(
+                shared.application.id, strategy.id, strategy);
+      } else {
+        strategy = await userCommon.rolloutStrategyService
+            .createRolloutStrategy(shared.application.id, strategy);
+      }
+    }
+  }
+
+  @And(r'I apply the rollout strategies to the current feature value')
+  void iApplyRolloutStrategiesToFeatureValue(GherkinTable table) async {
+    assert(shared.application != null, 'please set application first');
+    assert(shared.environment != null, 'please set an environment!');
+    assert(shared.environment.applicationId == shared.application.id,
+        'environment is not in application');
+    assert(shared.feature != null, 'must know what the feature is');
+
+    FeatureValue fv;
+
+    try {
+      fv = await userCommon.environmentFeatureServiceApi
+          .getFeatureForEnvironment(shared.environment.id, shared.feature.key);
+    } catch (e) {
+      fv = FeatureValue()..key = shared.feature.key;
+    }
+
+    // now find the shared strategies
+    for (var g in table) {
+      String name = g["name"];
+
+      final strategy = await userCommon.rolloutStrategyService
+          .getRolloutStrategy(shared.application.id, name);
+
+      var rsi = fv.rolloutStrategyInstances.firstWhere(
+          (element) => element.strategyId == strategy.id, orElse: () {
+        final r = RolloutStrategyInstance()..strategyId = strategy.id;
+        fv.rolloutStrategyInstances.add(r);
+        return r;
+      });
+
+      rsi.value = g["value"];
+    }
+
+    if (fv.id != null) {
+      shared.featureValue = (await userCommon.environmentFeatureServiceApi
+          .updateAllFeaturesForEnvironment(shared.environment.id, [fv]))[0];
+    } else {
+      shared.featureValue = await userCommon.environmentFeatureServiceApi
+          .createFeatureForEnvironment(
+              shared.environment.id, shared.feature.key, fv);
+    }
+  }
+
+  @And(r'I confirm on getting the feature it has the same data as set')
+  void iConfirmOnGettingTheFeatureItHasTheSameDataAsSet() async {
+    assert(shared.environment != null, 'please set an environment!');
+    assert(shared.feature != null, 'must know what the feature is');
+    assert(shared.featureValue != null,
+        'must have a stored feature value to compare against');
+
+    final fv =
+        await userCommon.environmentFeatureServiceApi.getFeatureForEnvironment(
+      shared.environment.id,
+      shared.feature.key,
+    );
+
+    print(
+        "fv is ${fv.rolloutStrategyInstances}\n stored is ${shared.featureValue.rolloutStrategyInstances}");
+
+    assert(
+        ListEquality().equals(fv.rolloutStrategyInstances,
+            shared.featureValue.rolloutStrategyInstances),
+        'not equal');
+  }
+
+  @And(r'I create custom rollout strategies')
+  void iCreateCustomRolloutStrategies(GherkinTable table) async {
+    assert(shared.environment != null, 'please set an environment!');
+    assert(shared.feature != null, 'must know what the feature is');
+    assert(shared.featureValue != null,
+        'must have a stored feature value to compare against');
+
+    final fv =
+        await userCommon.environmentFeatureServiceApi.getFeatureForEnvironment(
+      shared.environment.id,
+      shared.feature.key,
+    );
+
+    _updateStrategiesFromTable(table, fv.rolloutStrategies);
+
+    shared.featureValue = (await userCommon.environmentFeatureServiceApi
+        .updateAllFeaturesForEnvironment(shared.environment.id, [fv]))[0];
+  }
+
+  void _updateStrategiesFromTable(
+      GherkinTable table, List<RolloutStrategy> rolloutStrategies) {
+    for (var g in table) {
+      final rs = rolloutStrategies.firstWhere((rs) => rs.name == g['name'],
+          orElse: () {
+        final r = RolloutStrategy()..name = g['name'];
+        rolloutStrategies.add(r);
+        return r;
+      });
+
+      rs.value = g['value'];
+      rs.percentage = g['percentage'];
+      if (g['percentageAttributes']) {
+        rs.percentageAttributes = g['percentageAttributes']
+            .toString()
+            .split(',')
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .toList();
+      }
+    }
+  }
+
+  @And(
+      r'I confirm on getting the feature value has the custom rollout strategies set')
+  void
+      iConfirmOnGettingTheFeatureValueHasTheCustomRolloutStrategiesSet() async {
+    assert(shared.environment != null, 'please set an environment!');
+    assert(shared.feature != null, 'must know what the feature is');
+    assert(shared.featureValue != null,
+        'must have a stored feature value to compare against');
+
+    final fv =
+        await userCommon.environmentFeatureServiceApi.getFeatureForEnvironment(
+      shared.environment.id,
+      shared.feature.key,
+    );
+
+    print(
+        "fv is ${fv.rolloutStrategies}\n stored is ${shared.featureValue.rolloutStrategies}");
+
+    assert(
+        ListEquality().equals(
+            fv.rolloutStrategies, shared.featureValue.rolloutStrategies),
+        'not equal');
+  }
+}

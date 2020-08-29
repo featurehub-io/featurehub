@@ -5,6 +5,7 @@ import io.featurehub.db.api.EnvironmentRoles;
 import io.featurehub.db.api.FeatureApi;
 import io.featurehub.db.api.OptimisticLockingException;
 import io.featurehub.db.api.PersonFeaturePermission;
+import io.featurehub.db.api.RolloutStrategyValidator;
 import io.featurehub.mr.api.EnvironmentFeatureServiceDelegate;
 import io.featurehub.mr.auth.AuthManagerService;
 import io.featurehub.mr.model.EnvironmentFeaturesResult;
@@ -52,7 +53,7 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
       throw new WebApplicationException(422);
     } catch (FeatureApi.NoAppropriateRole noAppropriateRole) {
       throw new ForbiddenException(noAppropriateRole);
-    } catch (FeatureApi.PercentageStrategyGreaterThan100Percent| FeatureApi.InvalidStrategyCombination bad) {
+    } catch (RolloutStrategyValidator.PercentageStrategyGreaterThan100Percent| RolloutStrategyValidator.InvalidStrategyCombination bad) {
       throw new WebApplicationException(400); // can't do anything with it
     }
 
@@ -116,7 +117,7 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
       throw new WebApplicationException(422);
     } catch (FeatureApi.NoAppropriateRole noAppropriateRole) {
       throw new ForbiddenException(noAppropriateRole);
-    } catch (FeatureApi.PercentageStrategyGreaterThan100Percent| FeatureApi.InvalidStrategyCombination bad) {
+    } catch (RolloutStrategyValidator.PercentageStrategyGreaterThan100Percent| RolloutStrategyValidator.InvalidStrategyCombination bad) {
       throw new WebApplicationException(400); // can't do anything with it
     }
   }
@@ -130,7 +131,7 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
       throw new WebApplicationException(422);
     } catch (FeatureApi.NoAppropriateRole noAppropriateRole) {
       throw new ForbiddenException(noAppropriateRole);
-    } catch (FeatureApi.PercentageStrategyGreaterThan100Percent| FeatureApi.InvalidStrategyCombination bad) {
+    } catch (RolloutStrategyValidator.PercentageStrategyGreaterThan100Percent| RolloutStrategyValidator.InvalidStrategyCombination bad) {
       throw new WebApplicationException(400); // can't do anything with it
     }
   }
