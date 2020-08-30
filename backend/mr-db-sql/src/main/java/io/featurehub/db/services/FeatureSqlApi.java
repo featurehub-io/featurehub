@@ -127,9 +127,9 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
           .feature(appFeature)
           .build();
 
-        StrategyDiffer.ChangedSharedStrategies changed = updateFeatureValue(featureValue, person, dbFeatureValue);
+        updateFeatureValue(featureValue, person, dbFeatureValue);
 
-        save(dbFeatureValue, changed);
+        save(dbFeatureValue);
 
         return convertUtils.toFeatureValue(dbFeatureValue);
       } else {
@@ -142,14 +142,8 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
 
 
   @Transactional
-  private void save(DbFeatureValue featureValue,
-                    StrategyDiffer.ChangedSharedStrategies changedSharedStrategies) {
+  private void save(DbFeatureValue featureValue) {
     database.save(featureValue);
-
-    if (changedSharedStrategies != null) {
-      changedSharedStrategies.deletedStrategies.forEach(database::delete);
-      changedSharedStrategies.updatedStrategies.forEach(database::save);
-    }
 
     cacheSource.publishFeatureChange(featureValue);
   }
@@ -182,18 +176,16 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
       return null;
     }
 
-    StrategyDiffer.ChangedSharedStrategies changed = updateFeatureValue(featureValue, person, strategy);
+    updateFeatureValue(featureValue, person, strategy);
 
-    save(strategy, changed);
+    save(strategy);
 
     return convertUtils.toFeatureValue(strategy);
   }
 
 
 
-  private StrategyDiffer.ChangedSharedStrategies updateFeatureValue(FeatureValue featureValue, PersonFeaturePermission person, DbFeatureValue strategy) throws NoAppropriateRole {
-    StrategyDiffer.ChangedSharedStrategies css = null;
-
+  private void updateFeatureValue(FeatureValue featureValue, PersonFeaturePermission person, DbFeatureValue strategy) throws NoAppropriateRole {
     final DbApplicationFeature feature = strategy.getFeature();
 
     if (person.hasChangeValueRole() && ( !strategy.isLocked() || (Boolean.FALSE.equals(featureValue.getLocked()) && person.hasUnlockRole()) )) {
@@ -209,7 +201,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
 
       strategy.setRolloutStrategies(featureValue.getRolloutStrategies());
 
-      css = strategyDiffer.createDiff(featureValue, strategy);
+      strategyDiffer.createDiff(featureValue, strategy);
     }
 
     // change locked before changing value, as may not be able to change value if locked
@@ -228,8 +220,6 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
     if (strategy.getWhoUpdated() == null) {
       log.error("Unable to set who updated on strategy {}", person.person);
     }
-
-    return css;
   }
 
   @Override
@@ -375,7 +365,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
         }
 
         // API can never change strategies
-        save(fv, null);
+        save(fv);
       }
     }
   }

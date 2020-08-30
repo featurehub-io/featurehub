@@ -28,6 +28,14 @@ components:
           description: "names are unique in a case insensitive fashion"
           type: string
           maxLength: 100
+        percentage:
+          description: "value between 0 and 1000000 - for four decimal places"
+          type: integer
+        percentageAttributes:
+          type: array
+          description: "if you don't wish to apply percentage based on user id, you can use one or more attributes defined here"
+          items:
+            type: string
         colouring:
           description: "the colour used to display the strategy in the UI. indexed table of background/foreground combos."
           type: integer
@@ -37,14 +45,6 @@ components:
           maxLength: 200
         value:
           description: "when we attach the RolloutStrategy for Dacha or SSE this lets us push the value out. Only visible in SDK and SSE Edge."
-        percentage:
-          description: "value between 0 and 1000000 - for four decimal places"
-          type: integer
-        percentageAttributes:
-          type: array
-          description: "if you don't wish to apply percentage based on user id, you can use one or more attributes defined here"
-          items:
-            type: string
         attributes:
           type: array
           items:

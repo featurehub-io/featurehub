@@ -16,6 +16,7 @@ public enum FillOpts {
   ServiceAccounts,
   SdkURL,
   IgnoreEmptyPermissions,
+  RolloutStrategies,
   Archived, // include archived records
   Details // full details of the current object type (e.g. if people, all details about people)
 }

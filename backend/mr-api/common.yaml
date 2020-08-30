@@ -100,6 +100,7 @@ components:
           items:
             $ref: "#/components/schemas/RolloutStrategyInstance"
         rolloutStrategies:
+          description: "These are custom rollout strategies that only apply to this feature value."
           type: array
           items:
             $ref: "#/components/schemas/RolloutStrategy"

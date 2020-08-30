@@ -6,11 +6,13 @@ import io.featurehub.db.api.FeatureApi
 import io.featurehub.db.api.OptimisticLockingException
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonFeaturePermission
+import io.featurehub.db.api.RolloutStrategyValidator
 import io.featurehub.db.model.DbApplication
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
 import io.featurehub.db.model.query.QDbOrganization
 import io.featurehub.db.publish.CacheSource
+import io.featurehub.db.services.strategies.StrategyDiffer
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.ApplicationFeatureValues
 import io.featurehub.mr.model.ApplicationRoleType
@@ -66,7 +68,7 @@ class FeatureSpec extends BaseSpec {
     environmentSqlApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
     envIdApp1 = environmentSqlApi.create(new Environment().name("feature-app-1-env-1"), new Application().id(appId), superPerson).id
 
-    featureSqlApi = new FeatureSqlApi(database, convertUtils, Mock(CacheSource), rolloutStrategyValidator, strategyDiffer)
+    featureSqlApi = new FeatureSqlApi(database, convertUtils, Mock(CacheSource), Mock(RolloutStrategyValidator), Mock(StrategyDiffer))
 
     def averageJoe = new DbPerson.Builder().email("averagejoe-fvs@featurehub.io").name("Average Joe").build()
     database.save(averageJoe)

@@ -42,6 +42,7 @@ import io.featurehub.mr.model.Portfolio;
 import io.featurehub.mr.model.RoleType;
 import io.featurehub.mr.model.RolloutStrategy;
 import io.featurehub.mr.model.RolloutStrategyInfo;
+import io.featurehub.mr.model.RolloutStrategyInstance;
 import io.featurehub.mr.model.ServiceAccount;
 import io.featurehub.mr.model.ServiceAccountPermission;
 
@@ -456,22 +457,20 @@ public class ConvertUtils implements Conversions {
       .version(f.getVersion());
   }
 
-  protected FeatureValue featureValue(DbApplicationFeature actualFeature, DbFeatureValue fs, Opts opts) {
+  protected FeatureValue featureValue(DbApplicationFeature actFeature, DbFeatureValue fs, Opts opts) {
     if (fs == null) {
       return null;
     }
 
-    if (actualFeature == null) {
-      actualFeature = fs.getFeature();
-    }
+    final DbApplicationFeature appFeature = actFeature == null ? fs.getFeature() : actFeature;
 
     final FeatureValue featureValue = new FeatureValue()
-      .key(stripArchived(actualFeature.getKey(), actualFeature.getWhenArchived()))
+      .key(stripArchived(appFeature.getKey(), appFeature.getWhenArchived()))
       .locked(fs.isLocked())
       .id(fs.getId().toString())
       .version(fs.getVersion());
 
-    final DbApplicationFeature feature = actualFeature;
+    final DbApplicationFeature feature = appFeature;
     if (feature.getValueType() == FeatureValueType.BOOLEAN) {
       featureValue.valueBoolean(fs.getDefaultValue() == null ? Boolean.FALSE : Boolean.parseBoolean(fs.getDefaultValue()));
     }
@@ -487,6 +486,16 @@ public class ConvertUtils implements Conversions {
 
     featureValue.setEnvironmentId(fs.getEnvironment().getId().toString());
 
+    if (opts.contains(FillOpts.RolloutStrategies)) {
+      featureValue.setRolloutStrategies(fs.getRolloutStrategies());
+      featureValue.setRolloutStrategyInstances(fs.getSharedRolloutStrategies().stream()
+        .map(srs -> new RolloutStrategyInstance()
+          .value(sharedRolloutStrategyToObject(srs.getValue(), appFeature.getValueType()))
+          .disabled(srs.isEnabled() ? null : true)
+          .strategyId(srs.getRolloutStrategy().getId().toString())
+        ).collect(Collectors.toList()));
+    }
+
     // this is an indicator it is for the UI not for the cache.
     if (opts.contains(FillOpts.People)) {
       featureValue.setWhenUpdated(toOff(fs.getWhenUpdated()));
@@ -496,6 +505,19 @@ public class ConvertUtils implements Conversions {
     return featureValue;
   }
 
+  private Object sharedRolloutStrategyToObject(String value, FeatureValueType valueType) {
+    switch (valueType) {
+      case BOOLEAN:
+        return Boolean.parseBoolean(value);
+      case STRING:
+      case JSON:
+        return value;
+      case NUMBER:
+        return new BigDecimal(value);
+    }
+
+    return value;
+  }
 
 
   @Override
@@ -505,7 +527,7 @@ public class ConvertUtils implements Conversions {
 
   @Override
   public FeatureValue toFeatureValue(DbFeatureValue fs) {
-    return featureValue(null, fs, Opts.opts(FillOpts.People));
+    return featureValue(null, fs, Opts.opts(FillOpts.People, FillOpts.RolloutStrategies));
   }
 
   @Override
@@ -529,7 +551,7 @@ public class ConvertUtils implements Conversions {
       return null;
     }
 
-    RolloutStrategyInfo info = new RolloutStrategyInfo().rolloutStrategy(rs.getStrategy());
+    RolloutStrategyInfo info = new RolloutStrategyInfo().rolloutStrategy(rs.getStrategy().id(rs.getId().toString()));
 
     if (opts.contains(FillOpts.SimplePeople)) {
       info.changedBy(toPerson(rs.getWhoChanged()));
