@@ -29,8 +29,8 @@ Feature: Strategies work as expected
     And I ensure that the string feature with the key <featureKey> exists and has the default value <defaultValue>
     And I create custom rollout strategies
       | percentage | name          | value  |
+      | 15         | orange-roughy | orange |
       | 12         | green-diamon  | green  |
-      | 66         | orange-roughy | orange |
     And I confirm on getting the feature value has the custom rollout strategies set
 
     Examples:

@@ -123,7 +123,7 @@ class StrategiesStepdefs {
       shared.feature.key,
     );
 
-    // fv.rolloutStrategies = [];
+    fv.rolloutStrategies = [];
     _updateStrategiesFromTable(table, fv.rolloutStrategies);
 
     shared.featureValue = (await userCommon.environmentFeatureServiceApi
