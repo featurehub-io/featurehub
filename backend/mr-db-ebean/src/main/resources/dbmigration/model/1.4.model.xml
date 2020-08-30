@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <createTable name="fh_app_strategy" identityType="external" pkName="pk_fh_app_strategy">
+            <column name="id" type="uuid" primaryKey="true" identity="true"/>
+            <column name="fk_app_id" type="uuid" notnull="true" references="fh_application.id" foreignKeyName="fk_fh_app_strategy_fk_app_id" foreignKeyIndex="ix_fh_app_strategy_fk_app_id"/>
+            <column name="when_archived" type="timestamp"/>
+            <column name="strategy_name" type="varchar" notnull="true"/>
+            <column name="strategy" type="json" notnull="true"/>
+            <column name="fk_person_who_changed" type="uuid" notnull="true" references="fh_person.id" foreignKeyName="fk_fh_app_strategy_fk_person_who_changed" foreignKeyIndex="ix_fh_app_strategy_fk_person_who_changed"/>
+            <column name="version" type="bigint" notnull="true"/>
+            <column name="when_updated" type="timestamp" notnull="true"/>
+            <column name="when_created" type="timestamp" notnull="true"/>
+            <uniqueConstraint name="idx_app_strategies" columnNames="fk_app_id,strategy_name" oneToOne="false" nullableColumns=""/>
+        </createTable>
+        <createTable name="fh_strat_for_feature" identityType="external" pkName="pk_fh_strat_for_feature">
+            <column name="id" type="uuid" primaryKey="true" identity="true"/>
+            <column name="fk_fv_id" type="uuid" notnull="true" references="fh_env_feature_strategy.id" foreignKeyName="fk_fh_strat_for_feature_fk_fv_id" foreignKeyIndex="ix_fh_strat_for_feature_fk_fv_id"/>
+            <column name="fk_rs_id" type="uuid" notnull="true" references="fh_app_strategy.id" foreignKeyName="fk_fh_strat_for_feature_fk_rs_id" foreignKeyIndex="ix_fh_strat_for_feature_fk_rs_id"/>
+            <column name="enabled" type="boolean" defaultValue="false" notnull="true"/>
+            <column name="value" type="clob"/>
+            <uniqueConstraint name="idx_feature_strat" columnNames="fk_fv_id,fk_rs_id" oneToOne="false" nullableColumns=""/>
+        </createTable>
+    </changeSet>
+</migration>
