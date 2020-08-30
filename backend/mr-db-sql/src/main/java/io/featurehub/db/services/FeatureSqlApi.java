@@ -234,7 +234,8 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
     UUID eId = Conversions.ifUuid(eid);
 
     if (eId != null) {
-      final DbFeatureValue strategy = new QDbFeatureValue().environment.id.eq(eId).feature.key.eq(key).findOne();
+      final DbFeatureValue strategy =
+        new QDbFeatureValue().environment.id.eq(eId).feature.key.eq(key).sharedRolloutStrategies.fetch().findOne();
       return strategy == null ? null : convertUtils.toFeatureValue(strategy);
     }
 

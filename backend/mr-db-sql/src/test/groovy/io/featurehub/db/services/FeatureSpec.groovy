@@ -25,6 +25,10 @@ import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.RoleType
+import io.featurehub.mr.model.RolloutStrategy
+import io.featurehub.mr.model.RolloutStrategyAttribute
+import io.featurehub.mr.model.RolloutStrategyAttributeConditional
+import io.featurehub.mr.model.RolloutStrategyFieldType
 import io.featurehub.mr.model.ServiceAccount
 import io.featurehub.mr.model.ServiceAccountPermission
 import spock.lang.Shared
@@ -341,4 +345,60 @@ class FeatureSpec extends BaseSpec {
       afvPortfolioAdminOfPortfolio1.environments.roles.each { it -> assert it == Arrays.asList(RoleType.values()) }
       afvPortfolioAdminOfPortfolio1.environments.find({it.environmentName == 'app2-dev-f1'}).features[0].locked
   }
+
+
+  def "updates to custom rollout strategies are persisted as expected"() {
+    given: "i create an environment (in app2)"
+      def env1 = environmentSqlApi.create(new Environment().name("rstrat-test-env1"), new Application().id(app2Id), superPerson)
+    and: "i have a boolean feature (which will automatically create a feature value in each environment)"
+      def key = 'FEATURE_MISINTERPRET'
+      appApi.createApplicationFeature(app2Id, new Feature().key(key).valueType(FeatureValueType.BOOLEAN), superPerson)
+    when: "i update the fv with the custom strategy"
+      def fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
+      def strat = new RolloutStrategy().name('freddy').percentage(20).percentageAttributes(['company'])
+        .value(Boolean.FALSE).attributes([
+          new RolloutStrategyAttribute()
+              .value('ios')
+              .fieldName('platform')
+              .conditional(RolloutStrategyAttributeConditional.EQUALS)
+              .type(RolloutStrategyFieldType.STRING)
+        ])
+      fv.locked(false)
+      fv.rolloutStrategies([strat])
+      def perms = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
+      def updated = featureSqlApi.updateFeatureValueForEnvironment(env1.id, key, fv, perms)
+    and:
+      def stored = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
+    then:
+      stored.rolloutStrategies.size() == 1
+      updated.rolloutStrategies.size() == 1
+      stored.rolloutStrategies[0] == strat
+  }
+
+  def "if a feature is locked the custom strategies will not update"() {
+    given: "i create an environment (in app2)"
+      def env1 = environmentSqlApi.create(new Environment().name("rstrat-test-env1"), new Application().id(app2Id), superPerson)
+    and: "i have a boolean feature (which will automatically create a feature value in each environment)"
+      def key = 'FEATURE_NOT_WHEN_LOCKED'
+      appApi.createApplicationFeature(app2Id, new Feature().key(key).valueType(FeatureValueType.BOOLEAN), superPerson)
+    when: "i update the fv with the custom strategy"
+      def fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
+      def strat = new RolloutStrategy().name('freddy').percentage(20).percentageAttributes(['company'])
+        .value(Boolean.FALSE).attributes([
+        new RolloutStrategyAttribute()
+          .value('ios')
+          .fieldName('platform')
+          .conditional(RolloutStrategyAttributeConditional.EQUALS)
+          .type(RolloutStrategyFieldType.STRING)
+      ])
+      fv.locked(true)
+      fv.rolloutStrategies([strat])
+      def perms = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
+      def updated = featureSqlApi.updateFeatureValueForEnvironment(env1.id, key, fv, perms)
+    and:
+      def stored = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
+    then:
+      stored.rolloutStrategies == null
+  }
+
 }

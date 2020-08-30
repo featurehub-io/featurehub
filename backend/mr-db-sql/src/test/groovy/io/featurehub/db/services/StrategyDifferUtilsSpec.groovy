@@ -131,13 +131,14 @@ class StrategyDifferUtilsSpec extends BaseSpec {
       fv1.rolloutStrategyInstances[0].strategyId == rs1.rolloutStrategy.id
       fv2.rolloutStrategyInstances.size() == 2
       fv2.rolloutStrategyInstances.find({it.strategyId == rs1.rolloutStrategy.id}).value == "shimmy"
+      fv2.rolloutStrategyInstances.find({it.strategyId == rs1.rolloutStrategy.id}).name == "aunt"
       fv2.rolloutStrategyInstances.find({it.strategyId == rs1.rolloutStrategy.id}).disabled == null
       fv2.rolloutStrategyInstances.find({it.strategyId == rs2.rolloutStrategy.id}).value == "ook"
+      fv2.rolloutStrategyInstances.find({it.strategyId == rs2.rolloutStrategy.id}).name == "mary"
       fv2.rolloutStrategyInstances.find({it.strategyId == rs2.rolloutStrategy.id}).disabled == null
       fv3.rolloutStrategyInstances.size() == 1
       fv3.rolloutStrategyInstances.find({it.strategyId == rs2.rolloutStrategy.id}).value == "library"
       fv3.rolloutStrategyInstances.find({it.strategyId == rs2.rolloutStrategy.id}).disabled == Boolean.TRUE
       fv4.rolloutStrategyInstances.isEmpty()
-
   }
 }

@@ -489,10 +489,14 @@ public class ConvertUtils implements Conversions {
     if (opts.contains(FillOpts.RolloutStrategies)) {
       featureValue.setRolloutStrategies(fs.getRolloutStrategies());
       featureValue.setRolloutStrategyInstances(fs.getSharedRolloutStrategies().stream()
-        .map(srs -> new RolloutStrategyInstance()
-          .value(sharedRolloutStrategyToObject(srs.getValue(), appFeature.getValueType()))
-          .disabled(srs.isEnabled() ? null : true)
-          .strategyId(srs.getRolloutStrategy().getId().toString())
+        .map(srs -> {
+            final DbRolloutStrategy rolloutStrategy = srs.getRolloutStrategy();
+            return new RolloutStrategyInstance()
+              .value(sharedRolloutStrategyToObject(srs.getValue(), appFeature.getValueType()))
+              .name(rolloutStrategy.getName())
+              .disabled(srs.isEnabled() ? null : true)
+              .strategyId(rolloutStrategy.getId().toString());
+          }
         ).collect(Collectors.toList()));
     }
 

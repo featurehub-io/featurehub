@@ -126,6 +126,9 @@ components:
           type: string
     RolloutStrategyInstance:
       properties:
+        name:
+          description: "This is copied from the shared rollout strategy on return, it is read only from the client perspective"
+          type: string
         strategyId:
           type: string
         value:
