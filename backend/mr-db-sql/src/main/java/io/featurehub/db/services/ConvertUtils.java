@@ -12,6 +12,7 @@ import io.featurehub.db.model.DbNamedCache;
 import io.featurehub.db.model.DbOrganization;
 import io.featurehub.db.model.DbPerson;
 import io.featurehub.db.model.DbPortfolio;
+import io.featurehub.db.model.DbRolloutStrategy;
 import io.featurehub.db.model.DbServiceAccount;
 import io.featurehub.db.model.DbServiceAccountEnvironment;
 import io.featurehub.db.model.query.QDbAcl;
@@ -23,6 +24,7 @@ import io.featurehub.db.model.query.QDbNamedCache;
 import io.featurehub.db.model.query.QDbOrganization;
 import io.featurehub.db.model.query.QDbPerson;
 import io.featurehub.db.model.query.QDbPortfolio;
+import io.featurehub.db.model.query.QDbRolloutStrategy;
 import io.featurehub.mr.model.Application;
 import io.featurehub.mr.model.ApplicationGroupRole;
 import io.featurehub.mr.model.ApplicationRoleType;
@@ -38,6 +40,8 @@ import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.PersonId;
 import io.featurehub.mr.model.Portfolio;
 import io.featurehub.mr.model.RoleType;
+import io.featurehub.mr.model.RolloutStrategy;
+import io.featurehub.mr.model.RolloutStrategyInfo;
 import io.featurehub.mr.model.ServiceAccount;
 import io.featurehub.mr.model.ServiceAccountPermission;
 
@@ -517,6 +521,32 @@ public class ConvertUtils implements Conversions {
     }
 
     return featureValue(feature, value, opts);
+  }
+
+  @Override
+  public RolloutStrategyInfo toRolloutStrategy(DbRolloutStrategy rs, Opts opts) {
+    if (rs == null) {
+      return null;
+    }
+
+    RolloutStrategyInfo info = new RolloutStrategyInfo().rolloutStrategy(rs.getStrategy());
+
+    if (opts.contains(FillOpts.SimplePeople)) {
+      info.changedBy(toPerson(rs.getWhoChanged()));
+    }
+
+    return info;
+  }
+
+  @Override
+  public DbRolloutStrategy uuidStrategy(String id) {
+    UUID sId = Conversions.ifUuid(id);
+
+    if (sId != null) {
+      return new QDbRolloutStrategy().id.eq(sId).findOne();
+    }
+
+    return null;
   }
 
 

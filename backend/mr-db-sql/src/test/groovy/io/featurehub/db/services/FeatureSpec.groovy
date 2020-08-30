@@ -23,7 +23,6 @@ import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.RoleType
-import io.featurehub.mr.model.RolloutStrategy
 import io.featurehub.mr.model.ServiceAccount
 import io.featurehub.mr.model.ServiceAccountPermission
 import spock.lang.Shared
@@ -67,7 +66,7 @@ class FeatureSpec extends BaseSpec {
     environmentSqlApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
     envIdApp1 = environmentSqlApi.create(new Environment().name("feature-app-1-env-1"), new Application().id(appId), superPerson).id
 
-    featureSqlApi = new FeatureSqlApi(database, convertUtils, Mock(CacheSource), rolloutStrategyValidator)
+    featureSqlApi = new FeatureSqlApi(database, convertUtils, Mock(CacheSource), rolloutStrategyValidator, strategyDiffer)
 
     def averageJoe = new DbPerson.Builder().email("averagejoe-fvs@featurehub.io").name("Average Joe").build()
     database.save(averageJoe)

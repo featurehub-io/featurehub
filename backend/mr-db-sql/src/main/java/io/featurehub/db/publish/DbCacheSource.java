@@ -8,12 +8,16 @@ import io.featurehub.db.model.DbApplicationFeature;
 import io.featurehub.db.model.DbEnvironment;
 import io.featurehub.db.model.DbFeatureValue;
 import io.featurehub.db.model.DbNamedCache;
+import io.featurehub.db.model.DbRolloutStrategy;
 import io.featurehub.db.model.DbServiceAccount;
+import io.featurehub.db.model.DbStrategyForFeatureValue;
 import io.featurehub.db.model.query.QDbApplicationFeature;
 import io.featurehub.db.model.query.QDbEnvironment;
 import io.featurehub.db.model.query.QDbFeatureValue;
 import io.featurehub.db.model.query.QDbNamedCache;
+import io.featurehub.db.model.query.QDbRolloutStrategy;
 import io.featurehub.db.model.query.QDbServiceAccount;
+import io.featurehub.db.model.query.QDbStrategyForFeatureValue;
 import io.featurehub.db.services.Conversions;
 import io.featurehub.mr.model.Environment;
 import io.featurehub.mr.model.EnvironmentCacheItem;
@@ -21,13 +25,17 @@ import io.featurehub.mr.model.Feature;
 import io.featurehub.mr.model.FeatureValue;
 import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.mr.model.PublishAction;
+import io.featurehub.mr.model.RolloutStrategy;
 import io.featurehub.mr.model.ServiceAccount;
 import io.featurehub.mr.model.ServiceAccountCacheItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -162,23 +170,70 @@ public class DbCacheSource implements CacheSource {
     );
   }
 
-
   @Override
-  public void publishFeatureChange(DbFeatureValue strategy) {
+  public void publishFeatureChange(DbFeatureValue featureValue) {
     executor.submit(() -> {
-      String cacheName = getFeatureValueCacheName(strategy);
+      String cacheName = getFeatureValueCacheName(featureValue);
       CacheBroadcast cacheBroadcast = cacheBroadcasters.get(cacheName);
 
       if (cacheBroadcast != null) {
-        final FeatureValue value = convertUtils.toFeatureValue(strategy, Opts.empty());
-        cacheBroadcast.publishFeature(
-          new FeatureValueCacheItem()
-            .feature(convertUtils.toFeature(strategy))
-            .value(value)
-            .environmentId(strategy.getEnvironment().getId().toString())
-            .action(PublishAction.UPDATE));
+        innerPublishFeatureValueChange(featureValue, cacheBroadcast);
       }
     });
+  }
+
+  public void innerPublishFeatureValueChange(DbFeatureValue featureValue, CacheBroadcast cacheBroadcast) {
+    final FeatureValue value = convertUtils.toFeatureValue(featureValue, Opts.empty());
+    final Feature feature = convertUtils.toFeature(featureValue);
+    cacheBroadcast.publishFeature(
+      new FeatureValueCacheItem()
+        .feature(feature)
+        .value(value)
+        .strategies(collectCombinedRolloutStrategies(featureValue, feature))
+        .environmentId(featureValue.getEnvironment().getId().toString())
+        .action(PublishAction.UPDATE));
+  }
+
+  // combines the custom and shared rollout strategies
+  private List<RolloutStrategy> collectCombinedRolloutStrategies(DbFeatureValue featureValue, Feature feature) {
+
+    final List<DbStrategyForFeatureValue> activeSharedStrategies =
+      new QDbStrategyForFeatureValue()
+        .enabled.isTrue()
+        .featureValue.eq(featureValue)
+        .rolloutStrategy.whenArchived.isNull()
+        .rolloutStrategy.fetch().findList();
+
+    List<RolloutStrategy> allStrategies = activeSharedStrategies.stream().map(s -> {
+      RolloutStrategy rs = s.getRolloutStrategy().getStrategy();
+
+      rs.setName(null);
+      rs.setColouring(null);
+      rs.setAvatar(null);
+
+      if (s.getValue() != null) {
+        switch (feature.getValueType()) {
+          case BOOLEAN:
+            rs.setValue(Boolean.parseBoolean(s.getValue()));
+            break;
+          case STRING:
+          case JSON:
+            rs.setValue(s.getValue());
+            break;
+          case NUMBER:
+            rs.setValue(new BigDecimal(s.getValue()));
+            break;
+        }
+      }
+
+      return rs;
+    }).collect(Collectors.toList());
+
+    if (featureValue.getRolloutStrategies() != null) {
+      allStrategies.addAll(featureValue.getRolloutStrategies());
+    }
+
+    return allStrategies;
   }
 
   @Override
@@ -197,7 +252,7 @@ public class DbCacheSource implements CacheSource {
     });
   }
 
-  // todo: consider caching
+  // todo: consider caching using an LRU map
   private String getFeatureValueCacheName(DbFeatureValue strategy) {
     return new QDbNamedCache().organizations.portfolios.applications.environments.environmentFeatures.eq(strategy).findOne().getCacheName();
   }
@@ -334,5 +389,34 @@ public class DbCacheSource implements CacheSource {
   @Override
   public void publishFeatureChange(DbApplicationFeature appFeature, PublishAction action) {
     executor.submit(() -> publishAppLevelFeatureChange(appFeature, action)); // background as not going away
+  }
+
+  /**
+   * This is triggered when a rollout strategy updates or is deleted. We need to find all attached feature values
+   * and republish them.
+   *
+   * @param rs - the rollout strategy that changed
+   */
+  @Override
+  public void publishRolloutStrategyChange(DbRolloutStrategy rs) {
+    executor.submit(() -> {
+      final List<DbFeatureValue> updatedValues =
+        new QDbFeatureValue().sharedRolloutStrategies.rolloutStrategy.eq(rs).sharedRolloutStrategies.enabled.isTrue().findList();
+
+      if (!updatedValues.isEmpty()) {
+        String cacheName = getFeatureValueCacheName(updatedValues.get(0));
+        // they are all the same application and
+        // hence the same cache
+        CacheBroadcast cacheBroadcast = cacheBroadcasters.get(cacheName);
+
+        if (cacheBroadcast != null) {
+          updatedValues.forEach(fv -> {
+            executor.submit(() -> {
+              innerPublishFeatureValueChange(fv, cacheBroadcast);
+            });
+          });
+        }
+      }
+    });
   }
 }

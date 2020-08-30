@@ -12,6 +12,7 @@ import io.featurehub.db.model.DbGroup;
 import io.featurehub.db.model.DbOrganization;
 import io.featurehub.db.model.DbPerson;
 import io.featurehub.db.model.DbPortfolio;
+import io.featurehub.db.model.DbRolloutStrategy;
 import io.featurehub.db.model.DbServiceAccount;
 import io.featurehub.db.model.DbServiceAccountEnvironment;
 import io.featurehub.mr.model.Application;
@@ -28,6 +29,8 @@ import io.featurehub.mr.model.Organization;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.Portfolio;
 import io.featurehub.mr.model.RoleType;
+import io.featurehub.mr.model.RolloutStrategy;
+import io.featurehub.mr.model.RolloutStrategyInfo;
 import io.featurehub.mr.model.ServiceAccount;
 import io.featurehub.mr.model.ServiceAccountPermission;
 
@@ -171,4 +174,9 @@ public interface Conversions {
 
   FeatureValue toFeatureValue(DbApplicationFeature feature, DbFeatureValue value);
   FeatureValue toFeatureValue(DbApplicationFeature feature, DbFeatureValue value, Opts opts);
+
+  RolloutStrategyInfo toRolloutStrategy(DbRolloutStrategy rs, Opts opts);
+
+  DbRolloutStrategy uuidStrategy(String id);
+
 }

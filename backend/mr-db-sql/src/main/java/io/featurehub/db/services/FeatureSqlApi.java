@@ -15,11 +15,16 @@ import io.featurehub.db.model.DbApplicationFeature;
 import io.featurehub.db.model.DbEnvironment;
 import io.featurehub.db.model.DbFeatureValue;
 import io.featurehub.db.model.DbPerson;
+import io.featurehub.db.model.DbRolloutStrategy;
+import io.featurehub.db.model.DbStrategyForFeatureValue;
 import io.featurehub.db.model.query.QDbAcl;
+import io.featurehub.db.model.query.QDbApplication;
 import io.featurehub.db.model.query.QDbApplicationFeature;
 import io.featurehub.db.model.query.QDbEnvironment;
 import io.featurehub.db.model.query.QDbFeatureValue;
+import io.featurehub.db.model.query.QDbRolloutStrategy;
 import io.featurehub.db.publish.CacheSource;
+import io.featurehub.db.services.strategies.StrategyDiffer;
 import io.featurehub.db.utils.EnvironmentUtils;
 import io.featurehub.mr.model.ApplicationFeatureValues;
 import io.featurehub.mr.model.ApplicationRoleType;
@@ -30,6 +35,7 @@ import io.featurehub.mr.model.FeatureValue;
 import io.featurehub.mr.model.FeatureValueType;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.RoleType;
+import io.featurehub.mr.model.RolloutStrategyInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,14 +61,16 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
   private final Conversions convertUtils;
   private final CacheSource cacheSource;
   private final RolloutStrategyValidator rolloutStrategyValidator;
+  private final StrategyDiffer strategyDiffer;
 
   @Inject
   public FeatureSqlApi(Database database, Conversions convertUtils, CacheSource cacheSource,
-                       RolloutStrategyValidator rolloutStrategyValidator) {
+                       RolloutStrategyValidator rolloutStrategyValidator, StrategyDiffer strategyDiffer) {
     this.database = database;
     this.convertUtils = convertUtils;
     this.cacheSource = cacheSource;
     this.rolloutStrategyValidator = rolloutStrategyValidator;
+    this.strategyDiffer = strategyDiffer;
   }
 
   @Override
@@ -85,10 +93,10 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
     rolloutStrategyValidator.validateStrategies(featureValue.getRolloutStrategies());
 
     if (eId != null) {
-      final DbFeatureValue strategy = new QDbFeatureValue().environment.id.eq(eId).feature.key.eq(key).findOne();
-      if (strategy != null) {
+      final DbFeatureValue dbFeatureValue = new QDbFeatureValue().environment.id.eq(eId).feature.key.eq(key).findOne();
+      if (dbFeatureValue != null) {
         // this is an update not a create, environment + app-feature key exists
-        return onlyUpdateFeatureValueForEnvironment(featureValue, person, strategy);
+        return onlyUpdateFeatureValueForEnvironment(featureValue, person, dbFeatureValue);
       } else if (person.hasChangeValueRole()) {
         return onlyCreateFeatureValueForEnvironment(eid, key, featureValue, person);
       } else {
@@ -109,16 +117,21 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
       final DbApplicationFeature appFeature = new QDbApplicationFeature().key.eq(key).parentApplication.environments.eq(val).findOne();
 
       if (appFeature != null) {
-        DbFeatureValue strategy = new DbFeatureValue.Builder()
+        if (strategyDiffer.invalidStrategyInstances(featureValue.getRolloutStrategyInstances(), appFeature)) {
+          log.error("Invalid rollout strategy instances");
+          return null;
+        }
+
+        DbFeatureValue dbFeatureValue = new DbFeatureValue.Builder()
           .environment(val)
           .feature(appFeature)
           .build();
 
-        updateStrategy(featureValue, person, strategy);
+        StrategyDiffer.ChangedSharedStrategies changed = updateFeatureValue(featureValue, person, dbFeatureValue);
 
-        save(strategy);
+        save(dbFeatureValue, changed);
 
-        return convertUtils.toFeatureValue(strategy);
+        return convertUtils.toFeatureValue(dbFeatureValue);
       } else {
         log.error("Attempted to create feature value in environment `{}` where feature key did not exist: `{}`", eid, key);
       }
@@ -127,11 +140,18 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
     return null;
   }
 
-  @Transactional
-  private void save(DbFeatureValue strategy) {
-    database.save(strategy);
 
-    cacheSource.publishFeatureChange(strategy);
+  @Transactional
+  private void save(DbFeatureValue featureValue,
+                    StrategyDiffer.ChangedSharedStrategies changedSharedStrategies) {
+    database.save(featureValue);
+
+    if (changedSharedStrategies != null) {
+      changedSharedStrategies.deletedStrategies.forEach(database::delete);
+      changedSharedStrategies.updatedStrategies.forEach(database::save);
+    }
+
+    cacheSource.publishFeatureChange(featureValue);
   }
 
   @Override
@@ -157,20 +177,23 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
       throw new OptimisticLockingException();
     }
 
-//     todo: set what changed
-//    String oldValue = strategy.getDefaultValue();
-//    boolean oldLocked = strategy.isLocked();
+    if (strategyDiffer.invalidStrategyInstances(featureValue.getRolloutStrategyInstances(), strategy.getFeature())) {
+      log.error("Invalid rollout strategy instances");
+      return null;
+    }
 
-    updateStrategy(featureValue, person, strategy);
+    StrategyDiffer.ChangedSharedStrategies changed = updateFeatureValue(featureValue, person, strategy);
 
-    save(strategy);
+    save(strategy, changed);
 
     return convertUtils.toFeatureValue(strategy);
   }
 
 
 
-  private void updateStrategy(FeatureValue featureValue, PersonFeaturePermission person, DbFeatureValue strategy) throws NoAppropriateRole {
+  private StrategyDiffer.ChangedSharedStrategies updateFeatureValue(FeatureValue featureValue, PersonFeaturePermission person, DbFeatureValue strategy) throws NoAppropriateRole {
+    StrategyDiffer.ChangedSharedStrategies css = null;
+
     final DbApplicationFeature feature = strategy.getFeature();
 
     if (person.hasChangeValueRole() && ( !strategy.isLocked() || (Boolean.FALSE.equals(featureValue.getLocked()) && person.hasUnlockRole()) )) {
@@ -184,7 +207,9 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
         strategy.setDefaultValue(featureValue.getValueBoolean() == null ? Boolean.FALSE.toString() : featureValue.getValueBoolean().toString());
       }
 
-//      strategy.setRolloutStrategyIn/stances(featureValue.getRolloutStrategyInstances());
+      strategy.setRolloutStrategies(featureValue.getRolloutStrategies());
+
+      css = strategyDiffer.createDiff(featureValue, strategy);
     }
 
     // change locked before changing value, as may not be able to change value if locked
@@ -203,6 +228,8 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
     if (strategy.getWhoUpdated() == null) {
       log.error("Unable to set who updated on strategy {}", person.person);
     }
+
+    return css;
   }
 
   @Override
@@ -347,7 +374,8 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
           fv.setLocked(newValue.getLocked());
         }
 
-        save(fv);
+        // API can never change strategies
+        save(fv, null);
       }
     }
   }

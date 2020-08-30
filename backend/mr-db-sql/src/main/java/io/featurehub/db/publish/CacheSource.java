@@ -3,6 +3,7 @@ package io.featurehub.db.publish;
 import io.featurehub.db.model.DbApplicationFeature;
 import io.featurehub.db.model.DbEnvironment;
 import io.featurehub.db.model.DbFeatureValue;
+import io.featurehub.db.model.DbRolloutStrategy;
 import io.featurehub.db.model.DbServiceAccount;
 import io.featurehub.mr.model.PublishAction;
 
@@ -37,4 +38,6 @@ public interface CacheSource {
   void deleteEnvironment(UUID id);
 
   void publishFeatureChange(DbApplicationFeature appFeature, PublishAction update);
+
+  void publishRolloutStrategyChange(DbRolloutStrategy rs);
 }

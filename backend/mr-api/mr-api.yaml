@@ -689,12 +689,25 @@ paths:
         schema:
           type: string
         required: true
+      - name: includeWhoChanged
+        description: "include who changed"
+        in: query
+        schema:
+          type: boolean
+        required: false
     get:
       security:
         - bearerAuth: []
       tags:
         - RolloutStrategyService
       operationId: listApplicationRolloutStrategies
+      parameters:
+        - name: includeArchived
+          in: query
+          description: "Include archived strategies"
+          schema:
+            type: boolean
+          required: false
       responses:
         "200":
           description: "Get all strategies for this application, regardless if they are in use"
@@ -703,7 +716,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/RolloutStrategy"
+                  $ref: "#/components/schemas/RolloutStrategyInfo"
     post:
       security:
         - bearerAuth: []
@@ -722,7 +735,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RolloutStrategy"
+                $ref: "#/components/schemas/RolloutStrategyInfo"
   /mr-api/application/{appId}/rollout-strategy/{strategyId}:
     parameters:
       - name: appId
@@ -737,6 +750,12 @@ paths:
         schema:
           type: string
         required: true
+      - name: includeWhoChanged
+        description: "include who changed"
+        in: query
+        schema:
+          type: boolean
+        required: false
     get:
       security:
         - bearerAuth: []
@@ -749,7 +768,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RolloutStrategy"
+                $ref: "#/components/schemas/RolloutStrategyInfo"
         "404":
           description: "If there is no rollout strategy by that id or name"
     put:
@@ -770,7 +789,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RolloutStrategy"
+                $ref: "#/components/schemas/RolloutStrategyInfo"
     delete:
       security:
         - bearerAuth: []
@@ -779,11 +798,11 @@ paths:
       operationId: deleteRolloutStrategy
       responses:
         "200":
-          description: "The created rollout strategy for this application"
+          description: "The deleted rollout strategy for this application including its archive date"
           content:
             application/json:
               schema:
-                type: boolean
+                $ref: "#/components/schemas/RolloutStrategyInfo"
   /mr-api/application/{id}/features:
     parameters:
       - name: id
@@ -1787,4 +1806,15 @@ components:
           maxLength: 100
           format: password
           type: string
+    RolloutStrategyInfo:
+      required:
+        - rolloutStrategy
+      properties:
+        rolloutStrategy:
+          $ref: "#/components/schemas/RolloutStrategy"
+        whenArchived:
+          type: string
+          format: date-time
+        changedBy:
+          $ref: "#/components/schemas/Person"
 

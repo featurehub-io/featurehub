@@ -29,6 +29,13 @@ public class DbRolloutStrategy {
   @Version
   private long version;
 
+  private DbRolloutStrategy(Builder builder) {
+    setApplication(builder.application);
+    setName(builder.name);
+    setStrategy(builder.strategy);
+    setWhoChanged(builder.whoChanged);
+  }
+
   public UUID getId() {
     return id;
   }
@@ -64,6 +71,19 @@ public class DbRolloutStrategy {
   @Column(nullable = false)
   private RolloutStrategy strategy;
 
+  @ManyToOne(optional = false)
+  @JoinColumn(name = "fk_person_who_changed")
+  @Column(name = "fk_person_who_changed")
+  private DbPerson whoChanged;
+
+  public DbPerson getWhoChanged() {
+    return whoChanged;
+  }
+
+  public void setWhoChanged(DbPerson whoChanged) {
+    this.whoChanged = whoChanged;
+  }
+
   public DbApplication getApplication() {
     return application;
   }
@@ -92,11 +112,62 @@ public class DbRolloutStrategy {
     return whenCreated;
   }
 
+  public RolloutStrategy getStrategy() {
+    return strategy;
+  }
+
+  public void setStrategy(RolloutStrategy strategy) {
+    this.strategy = strategy;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
   public List<DbStrategyForFeatureValue> getSharedRolloutStrategies() {
     return sharedRolloutStrategies;
   }
 
   public void setSharedRolloutStrategies(List<DbStrategyForFeatureValue> sharedRolloutStrategies) {
     this.sharedRolloutStrategies = sharedRolloutStrategies;
+  }
+
+
+  public static final class Builder {
+    private DbApplication application;
+    private String name;
+    private RolloutStrategy strategy;
+    private DbPerson whoChanged;
+
+    public Builder() {
+    }
+
+    public Builder application(DbApplication val) {
+      application = val;
+      return this;
+    }
+
+    public Builder name(String val) {
+      name = val;
+      return this;
+    }
+
+    public Builder strategy(RolloutStrategy val) {
+      strategy = val;
+      return this;
+    }
+
+    public Builder whoChanged(DbPerson val) {
+      whoChanged = val;
+      return this;
+    }
+
+    public DbRolloutStrategy build() {
+      return new DbRolloutStrategy(this);
+    }
   }
 }

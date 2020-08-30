@@ -49,7 +49,7 @@ public class ApplicationUtils {
     }
   }
 
-  public ApplicationPermissionCheck featureCheck(SecurityContext securityContext, String id) {
+  public ApplicationPermissionCheck featureAdminCheck(SecurityContext securityContext, String id) {
     Person current = authManager.from(securityContext);
 
     if (!applicationApi.findFeatureEditors(id).contains(current.getId().getId())) {

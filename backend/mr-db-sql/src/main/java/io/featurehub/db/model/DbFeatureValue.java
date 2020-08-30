@@ -112,6 +112,14 @@ public class DbFeatureValue {
   public DbFeatureValue() {
   }
 
+  public List<DbStrategyForFeatureValue> getSharedRolloutStrategies() {
+    return sharedRolloutStrategies;
+  }
+
+  public void setSharedRolloutStrategies(List<DbStrategyForFeatureValue> sharedRolloutStrategies) {
+    this.sharedRolloutStrategies = sharedRolloutStrategies;
+  }
+
   public DbPerson getWhoUpdated() {
     return whoUpdated;
   }

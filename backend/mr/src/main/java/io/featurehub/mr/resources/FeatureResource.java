@@ -43,7 +43,7 @@ public class FeatureResource implements FeatureServiceDelegate {
   @Override
   public List<Feature> createFeaturesForApplication(String id, Feature feature, SecurityContext securityContext) {
     // here we are only calling it to ensure the security check happens
-    final ApplicationPermissionCheck appFeaturePermCheck = applicationUtils.featureCheck(securityContext, id);
+    final ApplicationPermissionCheck appFeaturePermCheck = applicationUtils.featureAdminCheck(securityContext, id);
 
     try {
       return applicationApi.createApplicationFeature(id, feature, appFeaturePermCheck.getCurrent());
@@ -55,7 +55,7 @@ public class FeatureResource implements FeatureServiceDelegate {
   @Override
   public List<Feature> deleteFeatureForApplication(String id, String key, SecurityContext securityContext) {
     // here we are only calling it to ensure the security check happens
-    applicationUtils.featureCheck(securityContext, id);
+    applicationUtils.featureAdminCheck(securityContext, id);
 
     List<Feature> features = applicationApi.deleteApplicationFeature(id, key);
     if (features == null) {

@@ -103,6 +103,13 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/RolloutStrategy"
+        sharedRolloutStrategies:
+          description: "This is list is either provided empty (when publishing) or anemic so the MR will client will understand which shared strategies are attached without having to back-call. If provided
+                        then it will mirror rolloutStrategyInstances and only enabled ones will be passed back. The value from the rolloutStrategyInstance will be embedded. This field will
+                        _always_ be ignored when being sent back to the server, only rolloutStrategyInstances is used."
+          type: array
+          items:
+            $ref: "#/components/schemas/RolloutStrategy"
         environmentId:
           type: string
         version:
@@ -411,7 +418,6 @@ components:
       type: string
       enum:
         - FEATURE_EDIT
-        - SHARED_STRATEGY_EDIT
     EnvironmentGroupRole:
       required:
         - environmentId

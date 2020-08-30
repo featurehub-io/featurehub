@@ -1,4 +1,4 @@
-package io.featurehub.db.services;
+package io.featurehub.db.services.strategies;
 
 import io.featurehub.db.api.RolloutStrategyValidator;
 import io.featurehub.mr.model.RolloutStrategy;
@@ -257,7 +257,5 @@ public class RolloutStrategyValidationUtils implements RolloutStrategyValidator 
       n instanceof Float || n instanceof Double || n instanceof BigInteger);
   }
 
-  public static void main(String[] args) {
-    System.out.println(v6);
-  }
+
 }
