@@ -123,6 +123,7 @@ class StrategiesStepdefs {
       shared.feature.key,
     );
 
+    // fv.rolloutStrategies = [];
     _updateStrategiesFromTable(table, fv.rolloutStrategies);
 
     shared.featureValue = (await userCommon.environmentFeatureServiceApi
@@ -140,8 +141,8 @@ class StrategiesStepdefs {
       });
 
       rs.value = g['value'];
-      rs.percentage = g['percentage'];
-      if (g['percentageAttributes']) {
+      rs.percentage = (double.parse(g['percentage']) * 10000.0).toInt();
+      if (g['percentageAttributes'] != null) {
         rs.percentageAttributes = g['percentageAttributes']
             .toString()
             .split(',')
@@ -170,9 +171,17 @@ class StrategiesStepdefs {
     print(
         "fv is ${fv.rolloutStrategies}\n stored is ${shared.featureValue.rolloutStrategies}");
 
-    assert(
-        ListEquality().equals(
-            fv.rolloutStrategies, shared.featureValue.rolloutStrategies),
-        'not equal');
+    final rs1 = fv.rolloutStrategies;
+    final rs2 = shared.featureValue.rolloutStrategies;
+    assert(rs1.length == rs2.length);
+    for (var count = 0; count < rs2.length; count++) {
+      final r1 = rs1[count];
+      final r2 = rs2[count];
+
+      assert(ListEquality()
+          .equals(r1.percentageAttributes, r2.percentageAttributes));
+      assert(r1.percentage == r2.percentage);
+      assert(r1.name == r2.name);
+    }
   }
 }

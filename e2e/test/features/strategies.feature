@@ -29,12 +29,12 @@ Feature: Strategies work as expected
     And I ensure that the string feature with the key <featureKey> exists and has the default value <defaultValue>
     And I create custom rollout strategies
       | percentage | name          | value  |
-      | 32         | orange-roughy | orange |
-      | 45         | green-diamon  | green  |
+      | 12         | green-diamon  | green  |
+      | 66         | orange-roughy | orange |
     And I confirm on getting the feature value has the custom rollout strategies set
 
     Examples:
       | appName      | appDesc           | portfolio               | featureKey          | envName | envDesc    | defaultValue |
-      | StrategyTest | StrategyTest Desc | Strategy Test Portfolio | SUBMIT_COLOR_BUTTON | prod    | production | orange       |
+      | StrategyTest | StrategyTest Desc | Strategy Test Portfolio | SUBMIT_COLOR_BUTTON | prod    | production | purple       |
 
 

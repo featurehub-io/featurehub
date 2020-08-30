@@ -265,7 +265,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
     UUID eId = Conversions.ifUuid(eid);
 
     if (featureValues == null || featureValues.size() != featureValues.stream().map(FeatureValue::getKey).collect(Collectors.toSet()).size()) {
-      throw new BadRequestException("Invalid update dataset");
+      throw new BadRequestException("Invalid update dataset");  // todo: wtf?
     }
 
     // ensure the strategies are valid from a conceptual perspective
@@ -287,7 +287,9 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
       List<DbFeatureValue> deleteStrategies = new ArrayList<>();
       for (DbFeatureValue strategy : existing) {
         if (deleteKeys.contains(strategy.getFeature().getKey())) {
-          deleteStrategies.add(strategy);
+          if (strategy.getFeature().getValueType() != FeatureValueType.BOOLEAN) {
+            deleteStrategies.add(strategy); // can't delete booleans
+          }
         } else {
           FeatureValue fv = newValues.remove(strategy.getFeature().getKey());
           onlyUpdateFeatureValueForEnvironment(fv, person, strategy);
@@ -305,6 +307,8 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
 
         database.deleteAll(deleteStrategies);
       }
+
+      return new QDbFeatureValue().environment.id.eq(eId).feature.whenArchived.isNull().findList().stream().map(convertUtils::toFeatureValue).collect(Collectors.toList());
     }
 
     return null;

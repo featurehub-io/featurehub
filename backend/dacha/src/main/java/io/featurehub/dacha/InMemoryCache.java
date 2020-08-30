@@ -250,7 +250,12 @@ public class InMemoryCache implements InternalCache {
     // now create a map of featureId -> feature + feature-value that clients can consume easily.
     environmentFeatures.put(e.getEnvironment().getId(),
       e.getEnvironment().getFeatures().stream()
-        .collect(Collectors.toMap(Feature::getId, f -> new FeatureValueCacheItem().feature(f).value(values.get(f.getKey())))));
+        .collect(Collectors.toMap(Feature::getId, f -> {
+          final FeatureValue value = values.get(f.getKey());
+          final FeatureValueCacheItem fvci = new FeatureValueCacheItem().feature(f).value(value).strategies(value.getRolloutStrategies());
+          value.setRolloutStrategies(null);
+          return fvci;
+        })));
   }
 
   private String sdkKeyEnvId(String apiKey, String environmentId) {

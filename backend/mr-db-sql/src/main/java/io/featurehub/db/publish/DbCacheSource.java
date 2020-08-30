@@ -24,6 +24,7 @@ import io.featurehub.mr.model.EnvironmentCacheItem;
 import io.featurehub.mr.model.Feature;
 import io.featurehub.mr.model.FeatureValue;
 import io.featurehub.mr.model.FeatureValueCacheItem;
+import io.featurehub.mr.model.FeatureValueType;
 import io.featurehub.mr.model.PublishAction;
 import io.featurehub.mr.model.RolloutStrategy;
 import io.featurehub.mr.model.ServiceAccount;
@@ -149,7 +150,14 @@ public class DbCacheSource implements CacheSource {
     final EnvironmentCacheItem eci = new EnvironmentCacheItem()
       .action(publishAction)
       .environment(convertUtils.toEnvironment(env, environmentOpts, features))
-      .featureValues(features.stream().map(f -> convertUtils.toFeatureValue(f, envFeatures.get(f.getId()), empty)).collect(Collectors.toList()))
+      .featureValues(features.stream().map(f -> {
+        final DbFeatureValue featureV = envFeatures.get(f.getId());
+        final FeatureValue featureValue = convertUtils.toFeatureValue(f, featureV, empty);
+        if (featureV != null) {
+          featureValue.setRolloutStrategies(collectCombinedRolloutStrategies(featureV, f.getValueType()));
+        }
+        return featureValue;
+      }).collect(Collectors.toList()))
       .serviceAccounts(env.getServiceAccountEnvironments().stream().map(s ->
             new ServiceAccount()
               .id(s.getServiceAccount().getId().toString())
@@ -189,51 +197,56 @@ public class DbCacheSource implements CacheSource {
       new FeatureValueCacheItem()
         .feature(feature)
         .value(value)
-        .strategies(collectCombinedRolloutStrategies(featureValue, feature))
+        .strategies(collectCombinedRolloutStrategies(featureValue, feature.getValueType()))
         .environmentId(featureValue.getEnvironment().getId().toString())
         .action(PublishAction.UPDATE));
   }
 
   // combines the custom and shared rollout strategies
-  private List<RolloutStrategy> collectCombinedRolloutStrategies(DbFeatureValue featureValue, Feature feature) {
+  private List<RolloutStrategy> collectCombinedRolloutStrategies(DbFeatureValue featureValue, FeatureValueType type) {
 
-    final List<DbStrategyForFeatureValue> activeSharedStrategies =
-      new QDbStrategyForFeatureValue()
-        .enabled.isTrue()
-        .featureValue.eq(featureValue)
-        .rolloutStrategy.whenArchived.isNull()
-        .rolloutStrategy.fetch().findList();
+    try {
+      final List<DbStrategyForFeatureValue> activeSharedStrategies =
+        new QDbStrategyForFeatureValue()
+          .enabled.isTrue()
+          .featureValue.eq(featureValue)
+          .rolloutStrategy.whenArchived.isNull()
+          .rolloutStrategy.fetch().findList();
 
-    List<RolloutStrategy> allStrategies = activeSharedStrategies.stream().map(s -> {
-      RolloutStrategy rs = s.getRolloutStrategy().getStrategy();
+      List<RolloutStrategy> allStrategies = activeSharedStrategies.stream().map(s -> {
+        RolloutStrategy rs = s.getRolloutStrategy().getStrategy();
 
-      rs.setName(null);
-      rs.setColouring(null);
-      rs.setAvatar(null);
+        rs.setName(null);
+        rs.setColouring(null);
+        rs.setAvatar(null);
 
-      if (s.getValue() != null) {
-        switch (feature.getValueType()) {
-          case BOOLEAN:
-            rs.setValue(Boolean.parseBoolean(s.getValue()));
-            break;
-          case STRING:
-          case JSON:
-            rs.setValue(s.getValue());
-            break;
-          case NUMBER:
-            rs.setValue(new BigDecimal(s.getValue()));
-            break;
+        if (s.getValue() != null) {
+          switch (type) {
+            case BOOLEAN:
+              rs.setValue(Boolean.parseBoolean(s.getValue()));
+              break;
+            case STRING:
+            case JSON:
+              rs.setValue(s.getValue());
+              break;
+            case NUMBER:
+              rs.setValue(new BigDecimal(s.getValue()));
+              break;
+          }
         }
+
+        return rs;
+      }).collect(Collectors.toList());
+
+      if (featureValue.getRolloutStrategies() != null) {
+        allStrategies.addAll(featureValue.getRolloutStrategies());
       }
 
-      return rs;
-    }).collect(Collectors.toList());
-
-    if (featureValue.getRolloutStrategies() != null) {
-      allStrategies.addAll(featureValue.getRolloutStrategies());
+      return allStrategies;
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
     }
-
-    return allStrategies;
   }
 
   @Override

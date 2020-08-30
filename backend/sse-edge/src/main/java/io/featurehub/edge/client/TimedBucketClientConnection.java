@@ -62,7 +62,7 @@ public class TimedBucketClientConnection implements ClientConnection {
   @Override
   public void writeMessage(SSEResultState name, String data) throws IOException {
     final OutboundEvent.Builder eventBuilder = new OutboundEvent.Builder();
-    log.trace("data is : {}", data);
+    log.info("data is : {}", data);
     eventBuilder.name(name.toString());
     eventBuilder.mediaType(MediaType.TEXT_PLAIN_TYPE);
     eventBuilder.data(data);
@@ -120,6 +120,9 @@ public class TimedBucketClientConnection implements ClientConnection {
   public void initResponse(EdgeInitResponse edgeResponse) {
     if (Boolean.TRUE.equals(edgeResponse.getSuccess())) {
       try {
+        log.info("INITIAL RESPONSE --> {} -> {}", attributesForStrategy != null,
+          attributesForStrategy != null ?
+          attributesForStrategy.hasAttributes() : false );
         writeMessage(SSEResultState.FEATURES,
           CacheJsonMapper.mapper.writeValueAsString(featureTransformer.transform(edgeResponse.getFeatures(), attributesForStrategy)));
         List<FeatureValueCacheItem> heldUpdates = heldFeatureUpdates;
