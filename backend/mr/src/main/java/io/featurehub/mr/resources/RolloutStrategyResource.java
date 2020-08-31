@@ -12,6 +12,7 @@ import io.featurehub.mr.utils.ApplicationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
@@ -24,6 +25,7 @@ public class RolloutStrategyResource implements RolloutStrategyServiceDelegate {
   private final ApplicationUtils applicationUtils;
   private final RolloutStrategyApi rolloutStrategyApi;
 
+  @Inject
   public RolloutStrategyResource(AuthManagerService authManager, ApplicationUtils applicationUtils,
                                  RolloutStrategyApi rolloutStrategyApi) {
     this.authManager = authManager;

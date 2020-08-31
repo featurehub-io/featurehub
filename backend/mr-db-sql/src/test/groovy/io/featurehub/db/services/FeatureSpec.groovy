@@ -233,34 +233,49 @@ class FeatureSpec extends BaseSpec {
       thrown(FeatureApi.NoAppropriateRole)
   }
 
+  def 'boolean features cannot be removed when a update all feature values for environment happens'() {
+    given: "i have a list of features"
+      String[] names = ['FEATURE_FBU_1', 'FEATURE_FBU_2', 'FEATURE_FBU_3', 'FEATURE_FBU_4', 'FEATURE_FBU_5']
+      names.each { k -> appApi.createApplicationFeature(appId, new Feature().key(k).valueType(FeatureValueType.BOOLEAN), superPerson) }
+      def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
+    when: "i get all the features"
+      List<FeatureValue> found = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FBU')})
+    and: "remove update none"
+      List<FeatureValue> remaining = featureSqlApi.updateAllFeatureValuesForEnvironment(envIdApp1, [], pers)
+    then:
+      found.findAll({ fv -> fv.key.startsWith('FEATURE_FBU')}).size() == 5
+      remaining.findAll({ fv -> fv.key.startsWith('FEATURE_FBU')}).size() == 5
+  }
 
-//  def "i can block update a bunch of features for an environment"() {
-//    given: "i have a list of features"
-//      String[] names = ['FEATURE_FVU_1', 'FEATURE_FVU_2', 'FEATURE_FVU_3', 'FEATURE_FVU_4', 'FEATURE_FVU_5']
-//      names.each { k -> appApi.createApplicationFeature(appId, new Feature().key(k).valueType(FeatureValueType.BOOLEAN), superPerson) }
-//      def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
-//    when: "i set two of those values"
-//      def updatesForCreate = [featureSqlApi.getFeatureValueForEnvironment(envIdApp1, 'FEATURE_FVU_1').valueBoolean(true).locked(true),
-//                              featureSqlApi.getFeatureValueForEnvironment(envIdApp1, 'FEATURE_FVU_2').valueBoolean(true).locked(true)]
-//      featureSqlApi.updateAllFeatureValuesForEnvironment(envIdApp1, updatesForCreate, pers)
-//    and:
-//      List<FeatureValue> found = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FVU')})
-//    and:
-//      def updating = new ArrayList<>(found.findAll({k -> k.key == 'FEATURE_FVU_1'}).collect({it.copy().locked(false).valueBoolean(false)}))
-//      updating.addAll([new FeatureValue().key('FEATURE_FVU_3').valueBoolean(true).locked(true),
-//                       new FeatureValue().key('FEATURE_FVU_4').valueBoolean(true).locked(true)])
-//      featureSqlApi.updateAllFeatureValuesForEnvironment(envIdApp1, updating, pers)
-//      def foundUpdating = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FVU')})
-//    then:
-//      found.size() == 2
-//      foundUpdating.size() == 3
-//      !foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_1'}).locked
-//      !foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_1'}).valueBoolean
-//      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_3'}).valueBoolean
-//      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_4'}).valueBoolean
-//      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_4'}).locked
-//      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_3'}).locked
-//  }
+  def "i can block update a bunch of features for an environment"() {
+    given: "i have a list of features"
+      String[] names = ['FEATURE_FVU_1', 'FEATURE_FVU_2', 'FEATURE_FVU_3', 'FEATURE_FVU_4', 'FEATURE_FVU_5']
+      names.each { k -> appApi.createApplicationFeature(appId, new Feature().key(k).valueType(FeatureValueType.STRING), superPerson) }
+      def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
+    when: "i set two of those values"
+      def updatesForCreate = [new FeatureValue().key('FEATURE_FVU_1').valueString('h').locked(true),
+                              new FeatureValue().key( 'FEATURE_FVU_2').valueString('h').locked(true)]
+      featureSqlApi.updateAllFeatureValuesForEnvironment(envIdApp1, updatesForCreate, pers)
+    and:
+      List<FeatureValue> found = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FVU')})
+    and:
+      def updating = new ArrayList<>(found.findAll({k -> k.key == 'FEATURE_FVU_1'}).collect({it.copy().locked(false).valueString('z')}))
+//      updating.add(found.find({it.key == 'FEATURE_FVU_3'}).valueBoolean(true).locked(true))
+//      updating.add(found.find({it.key == 'FEATURE_FVU_4'}).valueBoolean(true).locked(true))
+      updating.addAll([new FeatureValue().key('FEATURE_FVU_3').valueString('h').locked(true),
+                       new FeatureValue().key('FEATURE_FVU_4').valueString('h').locked(true)])
+      featureSqlApi.updateAllFeatureValuesForEnvironment(envIdApp1, updating, pers)
+      def foundUpdating = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FVU')})
+    then:
+      found.size() == 2
+      foundUpdating.size() == 3
+      !foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_1'}).locked
+      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_1'}).valueString == 'z'
+      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_3'}).valueString == 'h'
+      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_4'}).valueString == 'h'
+      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_4'}).locked
+      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_3'}).locked
+  }
 
 
 

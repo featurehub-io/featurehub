@@ -11,8 +11,7 @@ class StrategiesStepdefs {
   StrategiesStepdefs(this.userCommon, this.shared);
 
   @And(r'I create shared rollout strategies')
-  void iSetTheRolloutStrategyToPercentage(
-      String name, GherkinTable table) async {
+  void iSetTheRolloutStrategyToPercentage(GherkinTable table) async {
     assert(shared.application != null, 'please set application first');
     assert(shared.environment != null, 'please set an environment!');
     assert(shared.environment.applicationId == shared.application.id,
@@ -23,9 +22,10 @@ class StrategiesStepdefs {
         .listApplicationRolloutStrategies(shared.application.id);
 
     for (var g in table) {
-      var strategy = existing.firstWhere(
-          (s) => s.name.toLowerCase() == g['name'],
-          orElse: () => null);
+      var strategy = existing
+          .firstWhere((s) => s.rolloutStrategy.name.toLowerCase() == g['name'],
+              orElse: () => null)
+          ?.rolloutStrategy;
       if (strategy == null) {
         strategy = RolloutStrategy()..name = g['name'];
       }
@@ -34,12 +34,14 @@ class StrategiesStepdefs {
           : null;
 
       if (strategy.id != null) {
-        strategy = await userCommon.rolloutStrategyService
-            .updateRolloutStrategy(
-                shared.application.id, strategy.id, strategy);
+        strategy = (await userCommon.rolloutStrategyService
+                .updateRolloutStrategy(
+                    shared.application.id, strategy.id, strategy))
+            ?.rolloutStrategy;
       } else {
-        strategy = await userCommon.rolloutStrategyService
-            .createRolloutStrategy(shared.application.id, strategy);
+        strategy = (await userCommon.rolloutStrategyService
+                .createRolloutStrategy(shared.application.id, strategy))
+            .rolloutStrategy;
       }
     }
   }
@@ -69,8 +71,10 @@ class StrategiesStepdefs {
           .getRolloutStrategy(shared.application.id, name);
 
       var rsi = fv.rolloutStrategyInstances.firstWhere(
-          (element) => element.strategyId == strategy.id, orElse: () {
-        final r = RolloutStrategyInstance()..strategyId = strategy.id;
+          (element) => element.strategyId == strategy.rolloutStrategy.id,
+          orElse: () {
+        final r = RolloutStrategyInstance()
+          ..strategyId = strategy.rolloutStrategy.id;
         fv.rolloutStrategyInstances.add(r);
         return r;
       });
