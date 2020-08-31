@@ -144,7 +144,21 @@ class StrategiesStepdefs {
         return r;
       });
 
-      rs.value = g['value'];
+      switch (shared.feature.valueType) {
+        case FeatureValueType.BOOLEAN:
+          rs.value = 'true' == g['value'];
+          break;
+        case FeatureValueType.STRING:
+          rs.value = g['value'];
+          break;
+        case FeatureValueType.NUMBER:
+          rs.value = double.parse(g['value']);
+          break;
+        case FeatureValueType.JSON:
+          rs.value = g['value'];
+          break;
+      }
+
       rs.percentage = (double.parse(g['percentage']) * 10000.0).toInt();
       if (g['percentageAttributes'] != null) {
         rs.percentageAttributes = g['percentageAttributes']

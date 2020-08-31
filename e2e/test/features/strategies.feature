@@ -21,7 +21,7 @@ Feature: Strategies work as expected
       | appName      | appDesc           | portfolio               | featureKey          | envName | envDesc    | defaultValue |
       | StrategyTest | StrategyTest Desc | Strategy Test Portfolio | SUBMIT_COLOR_BUTTON | prod    | production | orange       |
 
-  Scenario Outline: A feature is able to store custom rollout strategy percentages
+  Scenario Outline: A string feature is able to store custom rollout strategy percentages
     Given I ensure a portfolio named "<portfolio>" with description "business application" exists
     And the first superuser is used for authentication
     Given I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
@@ -35,6 +35,21 @@ Feature: Strategies work as expected
 
     Examples:
       | appName      | appDesc           | portfolio               | featureKey          | envName | envDesc    | defaultValue |
-      | StrategyTest | StrategyTest Desc | Strategy Test Portfolio | SUBMIT_COLOR_BUTTON | prod    | production | purple       |
+      | StrategyTest | StrategyTest Desc | Strategy Test Portfolio | FEATURE_ON | prod    | production | false       |
 
+  Scenario Outline: A feature is able to store custom rollout strategy percentages
+    Given I ensure a portfolio named "<portfolio>" with description "business application" exists
+    And the first superuser is used for authentication
+    Given I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
+    And I ensure that an environment "<envName>" with description "<envDesc>" exists in the app "<appName>" in the portfolio "<portfolio>"
+    And I ensure that the boolean feature with the key <featureKey> exists and has the default value <defaultValue>
+    And I create custom rollout strategies
+      | percentage | name          | value  |
+      | 15         | orange-roughy | true |
+      | 12         | green-diamon  | false  |
+    And I confirm on getting the feature value has the custom rollout strategies set
+
+    Examples:
+      | appName      | appDesc           | portfolio               | featureKey          | envName | envDesc    | defaultValue |
+      | StrategyTest | StrategyTest Desc | Strategy Test Portfolio | FEATURE_ON | prod    | production | false       |
 

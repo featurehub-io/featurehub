@@ -221,7 +221,7 @@ class FeatureStepdefs {
   }
 
   @And(
-      r'^I ensure that the (string|number) feature with the key (.*) exists and has the default value (.*)$')
+      r'^I ensure that the (string|number|boolean) feature with the key (.*) exists and has the default value (.*)$')
   void iEnsureThatTheStringFeatureWithTheKeyExistsAndHasTheDefaultValue(
       String type, String featureKey, String defaultValue) async {
     assert(shared.application != null, 'please set application first');
