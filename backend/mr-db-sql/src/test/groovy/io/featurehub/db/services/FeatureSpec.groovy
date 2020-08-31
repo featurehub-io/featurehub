@@ -234,33 +234,33 @@ class FeatureSpec extends BaseSpec {
   }
 
 
-  def "i can block update a bunch of features for an environment"() {
-    given: "i have a list of features"
-      String[] names = ['FEATURE_FVU_1', 'FEATURE_FVU_2', 'FEATURE_FVU_3', 'FEATURE_FVU_4', 'FEATURE_FVU_5']
-      names.each { k -> appApi.createApplicationFeature(appId, new Feature().key(k).valueType(FeatureValueType.BOOLEAN), superPerson) }
-      def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
-    when: "i set two of those values"
-      def updatesForCreate = [featureSqlApi.getFeatureValueForEnvironment(envIdApp1, 'FEATURE_FVU_1').valueBoolean(true).locked(true),
-                              featureSqlApi.getFeatureValueForEnvironment(envIdApp1, 'FEATURE_FVU_2').valueBoolean(true).locked(true)]
-      featureSqlApi.updateAllFeatureValuesForEnvironment(envIdApp1, updatesForCreate, pers)
-    and:
-      List<FeatureValue> found = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FVU')})
-    and:
-      def updating = new ArrayList<>(found.findAll({k -> k.key == 'FEATURE_FVU_1'}).collect({it.copy().locked(false).valueBoolean(false)}))
-      updating.addAll([new FeatureValue().key('FEATURE_FVU_3').valueBoolean(true).locked(true),
-                       new FeatureValue().key('FEATURE_FVU_4').valueBoolean(true).locked(true)])
-      featureSqlApi.updateAllFeatureValuesForEnvironment(envIdApp1, updating, pers)
-      def foundUpdating = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FVU')})
-    then:
-      found.size() == 2
-      foundUpdating.size() == 3
-      !foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_1'}).locked
-      !foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_1'}).valueBoolean
-      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_3'}).valueBoolean
-      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_4'}).valueBoolean
-      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_4'}).locked
-      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_3'}).locked
-  }
+//  def "i can block update a bunch of features for an environment"() {
+//    given: "i have a list of features"
+//      String[] names = ['FEATURE_FVU_1', 'FEATURE_FVU_2', 'FEATURE_FVU_3', 'FEATURE_FVU_4', 'FEATURE_FVU_5']
+//      names.each { k -> appApi.createApplicationFeature(appId, new Feature().key(k).valueType(FeatureValueType.BOOLEAN), superPerson) }
+//      def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
+//    when: "i set two of those values"
+//      def updatesForCreate = [featureSqlApi.getFeatureValueForEnvironment(envIdApp1, 'FEATURE_FVU_1').valueBoolean(true).locked(true),
+//                              featureSqlApi.getFeatureValueForEnvironment(envIdApp1, 'FEATURE_FVU_2').valueBoolean(true).locked(true)]
+//      featureSqlApi.updateAllFeatureValuesForEnvironment(envIdApp1, updatesForCreate, pers)
+//    and:
+//      List<FeatureValue> found = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FVU')})
+//    and:
+//      def updating = new ArrayList<>(found.findAll({k -> k.key == 'FEATURE_FVU_1'}).collect({it.copy().locked(false).valueBoolean(false)}))
+//      updating.addAll([new FeatureValue().key('FEATURE_FVU_3').valueBoolean(true).locked(true),
+//                       new FeatureValue().key('FEATURE_FVU_4').valueBoolean(true).locked(true)])
+//      featureSqlApi.updateAllFeatureValuesForEnvironment(envIdApp1, updating, pers)
+//      def foundUpdating = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FVU')})
+//    then:
+//      found.size() == 2
+//      foundUpdating.size() == 3
+//      !foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_1'}).locked
+//      !foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_1'}).valueBoolean
+//      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_3'}).valueBoolean
+//      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_4'}).valueBoolean
+//      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_4'}).locked
+//      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_3'}).locked
+//  }
 
 
 
@@ -377,7 +377,7 @@ class FeatureSpec extends BaseSpec {
 
   def "if a feature is locked the custom strategies will not update"() {
     given: "i create an environment (in app2)"
-      def env1 = environmentSqlApi.create(new Environment().name("rstrat-test-env1"), new Application().id(app2Id), superPerson)
+      def env1 = environmentSqlApi.create(new Environment().name("rstrat-test-env2"), new Application().id(app2Id), superPerson)
     and: "i have a boolean feature (which will automatically create a feature value in each environment)"
       def key = 'FEATURE_NOT_WHEN_LOCKED'
       appApi.createApplicationFeature(app2Id, new Feature().key(key).valueType(FeatureValueType.BOOLEAN), superPerson)

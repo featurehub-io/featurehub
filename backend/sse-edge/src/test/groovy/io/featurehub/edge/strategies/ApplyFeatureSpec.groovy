@@ -28,7 +28,7 @@ class ApplyFeatureSpec extends Specification {
     given: "we have rollout strategies set"
       def rollout = [
         new RolloutStrategy()
-          .percentage(20)
+          .percentage(underPercent)
           .value("blue")
       ]
     and:
@@ -44,10 +44,11 @@ class ApplyFeatureSpec extends Specification {
       val.matched == matched
       val.value == expected
     where:
-      percent || expected | matched
-      22      || null     | false
-//      15      || "blue"   | true
-//      20      || "blue"   | true
+      underPercent || expected | matched
+      22      || "blue"     | true
+      75      || "blue"     | true
+      15      || null   | false
+      20      || null   | false
   }
 
   @Unroll

@@ -15,7 +15,7 @@ public class DateMatcher implements StrategyMatcher {
         return suppliedValue.matches(attr.getValue().toString());
       }
 
-      DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE;
+      DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE;
 
       Supplier<LocalDate> suppliedDate = () -> LocalDate.from(formatter.parse(suppliedValue));
 
@@ -44,7 +44,6 @@ public class DateMatcher implements StrategyMatcher {
           return suppliedValue.matches(attr.getValue().toString());
       }
     } catch (Exception ignored) {
-      ignored.printStackTrace();
     }
 
     return false;
