@@ -1,12 +1,9 @@
 package analytics
 
 import (
-	"context"
 	"fmt"
 
-	"github.com/AlekSi/pointer"
-	gamp "github.com/blablapolicja/go-gamp"
-	"github.com/blablapolicja/go-gamp/client/gampops"
+	ga "github.com/berdowsky/go-ogle-analytics"
 	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/models"
 )
 
@@ -16,7 +13,7 @@ const (
 
 // GoogleAnalyticsCollector implements the AnalyticsCollector interface:
 type GoogleAnalyticsCollector struct {
-	client       *gampops.Client
+	client       *ga.Client
 	clientID     string
 	trackingID   string
 	userAgentKey string
@@ -24,8 +21,13 @@ type GoogleAnalyticsCollector struct {
 
 // NewGoogleAnalyticsCollector returns a GoogleAnalyticsCollector configured with the provided metadata:
 func NewGoogleAnalyticsCollector(clientID, trackingID, userAgentKey string) (*GoogleAnalyticsCollector, error) {
+	client, err := ga.NewClient(trackingID)
+	if err != nil {
+		return nil, err
+	}
+
 	return &GoogleAnalyticsCollector{
-		client:       gamp.New(context.Background(), trackingID),
+		client:       client.ClientID(clientID),
 		clientID:     clientID,
 		trackingID:   trackingID,
 		userAgentKey: userAgentKey,
@@ -37,35 +39,26 @@ func (ac *GoogleAnalyticsCollector) LogEvent(action string, other map[string]str
 
 	// Emit an event for each feature we have:
 	for _, featureState := range featureStateAtCurrentTime {
-		// event := ga.NewEvent(defaultCategory, action).Label(fmt.Sprintf("%s: %s", featureState.Key, featureState.Value)).Value(1)
+
+		// Allow for a new clientID:
 		clientID := ac.clientID
 		if clientIDOverride, ok := other["cid"]; ok {
 			clientID = clientIDOverride
 		}
 
-		err := ac.client.Collect(
-			gampops.NewCollectParams().
-				WithCid(pointer.ToString(clientID)).
-				WithT("event").
-				WithEc(pointer.ToString(defaultCategory)).
-				WithEa(pointer.ToString(action)).
-				WithEl(pointer.ToString(fmt.Sprintf("%s: %v", featureState.Key, featureState.Value))).
-				WithEv(pointer.ToInt64(1)),
-		)
-		// ok, err := ac.client.DebugCollect(
-		// 	gampops.NewDebugCollectParams().
-		// 		WithCid(pointer.ToString(clientID)).
-		// 		WithT("event").
-		// 		WithEc(pointer.ToString(defaultCategory)).
-		// 		WithEa(pointer.ToString(action)).
-		// 		WithEl(pointer.ToString(fmt.Sprintf("%s: %v", featureState.Key, featureState.Value))).
-		// 		WithEv(pointer.ToInt64(1)),
-		// )
-		// fmt.Printf("DebugOK: %v\n", ok)
+		// Prepare a new event:
+		event := ga.NewEvent(defaultCategory, action).
+			Label(fmt.Sprintf("%s : %v", featureState.Key, featureState.Value))
+
+		ac.client.UseTLS = true
+
+		// Send the event:
+		err := ac.client.
+			ClientID(clientID).
+			Send(event)
 		if err != nil {
 			return err
 		}
-
 	}
 	return nil
 }
