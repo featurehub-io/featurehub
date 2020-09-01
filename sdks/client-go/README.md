@@ -58,7 +58,7 @@ The client SDK offers various `Get` methods to retrieve different types of featu
 * `GetNumber(key)`: returns a float64
 * `GetString(key)`: returns a string
 
-#### Retrive a BOOLEAN value:
+#### Retrieve a BOOLEAN value:
 ```go
 	someBoolean, err := fhClient.GetBoolean("booleanfeature")
 	if err != nil {
@@ -67,7 +67,7 @@ The client SDK offers various `Get` methods to retrieve different types of featu
 	log.Printf("Retrieved a BOOLEAN feature: %v", someBoolean)
 ```
 
-#### Retrive a JSON value:
+#### Retrieve a JSON value:
 ```go
 	someJSON, err := fhClient.GetRawJSON("jsonfeature")
 	if err != nil {
@@ -76,7 +76,7 @@ The client SDK offers various `Get` methods to retrieve different types of featu
 	log.Printf("Retrieved a JSON feature: %s", someJSON)
 ```
 
-#### Retrive a NUMBER value:
+#### Retrieve a NUMBER value:
 ```go
 	someNumber, err := fhClient.GetNumber("numberfeature")
 	if err != nil {
@@ -85,7 +85,7 @@ The client SDK offers various `Get` methods to retrieve different types of featu
 	log.Printf("Retrieved a NUMBER feature: %f", someNumber)
 ```
 
-#### Retrive a STRING value:
+#### Retrieve a STRING value:
 ```go
 	someString, err := fhClient.GetString("stringfeature")
 	if err != nil {
@@ -118,7 +118,19 @@ The client SDK provides the ability to generate analytics events with the `LogAn
 	tags := map[string]string{"user": "bob"}
 	client.LogAnalyticsEvent(action, tags)
 ```
-Currently the SDK only supports a logging analytics collector, which is configured by default whenever you use the SDK. It logs events to the console at DEBUG level.
+The SDK offers a logging analytics collector which will log events to the console at DEBUG level (useful in your unit tests probably).
+
+
+#### Google Analytics
+The GoLang SDK comes with a pre-made Google Analytics collector. Here is how to use it:
+```go
+	googleAnalyticsCollector, err := analytics.NewGoogleAnalyticsCollector(clientID, trackingID, userAgentKey)
+	if err != nil {
+		panic(err)
+	}
+	client.AddAnalyticsCollector(googleAnalyticsCollector)
+```
+Any subsequent calls to `client.LogAnalyticsEvent()` will result in events being sent via the Google Analytics collector (as well as any other which you have added).
 
 
 Todo
@@ -132,6 +144,6 @@ Todo
 - [X] Allow notify / callback functions (add and remove)
 - [X] Global "readyness" callback (either OK when data has arrived, or an error if there was a fail)
 - [X] Analytics support
-- [ ] Google Analytics support
+- [X] Google Analytics support
 - [ ] Re-introduce the "polling" client (if we decide to go down that route for other SDKs)
 - [ ] Run tests and code-generation inside Docker (instead of requiring Go to be installed locally)

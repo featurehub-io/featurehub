@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/donovanhide/eventsource"
-	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/analytics"
 	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/errors"
 	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/interfaces"
 	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/models"
@@ -14,17 +13,18 @@ import (
 
 // StreamingClient implements the client interface by by subscribing to server-side events:
 type StreamingClient struct {
-	analyticsCollector interfaces.AnalyticsCollector
-	apiClient          *eventsource.Stream
-	config             *Config
-	features           map[string]*models.FeatureState
-	featuresMutex      sync.Mutex
-	featuresURL        string
-	hasData            bool
-	logger             *logrus.Logger
-	notifiers          notifiers
-	notifiersMutex     sync.Mutex
-	readinessListener  func()
+	analyticsCollectors []interfaces.AnalyticsCollector
+	analyticsMutex      sync.Mutex
+	apiClient           *eventsource.Stream
+	config              *Config
+	features            map[string]*models.FeatureState
+	featuresMutex       sync.Mutex
+	featuresURL         string
+	hasData             bool
+	logger              *logrus.Logger
+	notifiers           notifiers
+	notifiersMutex      sync.Mutex
+	readinessListener   func()
 }
 
 // New wraps NewStreamingClient (as the default / only implementation):
@@ -51,10 +51,9 @@ func NewStreamingClient(config *Config) (*StreamingClient, error) {
 
 	// Put this into a new StreamingClient:
 	client := &StreamingClient{
-		analyticsCollector: analytics.NewLoggingAnalyticsCollector(logger),
-		config:             config,
-		logger:             logger,
-		notifiers:          make(notifiers),
+		config:    config,
+		logger:    logger,
+		notifiers: make(notifiers),
 	}
 
 	// Report that we're starting:

@@ -7,6 +7,7 @@ import (
 
 	"github.com/donovanhide/eventsource"
 	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/analytics"
+	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/interfaces"
 	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/mocks"
 	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/models"
 	"github.com/sirupsen/logrus"
@@ -28,7 +29,6 @@ func TestStreamingClientAnalytics(t *testing.T) {
 
 	// Use the config to make a new StreamingClient with a mock apiClient::
 	client := &StreamingClient{
-		analyticsCollector: analytics.NewLoggingAnalyticsCollector(logger),
 		apiClient: &eventsource.Stream{
 			Errors: make(chan error, 100),
 			Events: make(chan eventsource.Event, 100),
@@ -37,6 +37,12 @@ func TestStreamingClientAnalytics(t *testing.T) {
 		features: make(map[string]*models.FeatureState),
 		logger:   logger,
 	}
+
+	// Configure a new analytics collector:
+	client.AddAnalyticsCollector(analytics.NewLoggingAnalyticsCollector(logger))
+	assert.Len(t, client.analyticsCollectors, 1)
+	client.AddAnalyticsCollector(analytics.NewLoggingAnalyticsCollector(logger))
+	assert.Len(t, client.analyticsCollectors, 2)
 
 	// Load the mock apiClient up with a "feature" event:
 	client.apiClient.Events <- &testEvent{
@@ -76,20 +82,26 @@ func TestStreamingClientAnalytics(t *testing.T) {
 
 	// Now try a fake analytics collector with the asynchronous method:
 	fakeAnalyticsCollector := &mocks.FakeAnalyticsCollector{}
-	client.analyticsCollector = fakeAnalyticsCollector
+	client.analyticsCollectors = []interfaces.AnalyticsCollector{}
+	client.AddAnalyticsCollector(fakeAnalyticsCollector)
+	client.AddAnalyticsCollector(fakeAnalyticsCollector)
+	assert.Len(t, client.analyticsCollectors, 2)
 
 	// Log another event (using the asynchronous method):
 	client.LogAnalyticsEvent("more-testing1", testAttributes)
 	time.Sleep(500 * time.Millisecond)
 
-	// Make sure our AnalyticsCollector was called once:
-	assert.Equal(t, 1, fakeAnalyticsCollector.LogEventCallCount())
+	// Make sure our AnalyticsCollector was called twice (because we registered it twice):
+	assert.Equal(t, 2, fakeAnalyticsCollector.LogEventCallCount())
 
 	// Log another asynchronous event, and prove that we're not blocking:
 	fakeAnalyticsCollector.LogEventCalls(logEventWithDelay)
 	timeBefore := time.Now()
 	client.LogAnalyticsEvent("more-testing2", testAttributes)
 	assert.WithinDuration(t, timeBefore, time.Now(), 500*time.Millisecond)
+
+	// Make sure we log something:
+	assert.Contains(t, logBuffer.String(), "Submitting analytics event")
 }
 
 func logEventWithDelay(string, map[string]string, map[string]*models.FeatureState) error {
