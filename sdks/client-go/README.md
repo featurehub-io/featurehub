@@ -58,7 +58,7 @@ The client SDK offers various `Get` methods to retrieve different types of featu
 * `GetNumber(key)`: returns a float64
 * `GetString(key)`: returns a string
 
-#### Retrive a BOOLEAN value:
+#### Retrieve a BOOLEAN value:
 ```go
 	someBoolean, err := fhClient.GetBoolean("booleanfeature")
 	if err != nil {
@@ -67,7 +67,7 @@ The client SDK offers various `Get` methods to retrieve different types of featu
 	log.Printf("Retrieved a BOOLEAN feature: %v", someBoolean)
 ```
 
-#### Retrive a JSON value:
+#### Retrieve a JSON value:
 ```go
 	someJSON, err := fhClient.GetRawJSON("jsonfeature")
 	if err != nil {
@@ -76,7 +76,7 @@ The client SDK offers various `Get` methods to retrieve different types of featu
 	log.Printf("Retrieved a JSON feature: %s", someJSON)
 ```
 
-#### Retrive a NUMBER value:
+#### Retrieve a NUMBER value:
 ```go
 	someNumber, err := fhClient.GetNumber("numberfeature")
 	if err != nil {
@@ -85,7 +85,7 @@ The client SDK offers various `Get` methods to retrieve different types of featu
 	log.Printf("Retrieved a NUMBER feature: %f", someNumber)
 ```
 
-#### Retrive a STRING value:
+#### Retrieve a STRING value:
 ```go
 	someString, err := fhClient.GetString("stringfeature")
 	if err != nil {
