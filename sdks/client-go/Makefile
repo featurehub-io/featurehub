@@ -4,4 +4,4 @@ mocks:
 	@counterfeiter -o pkg/mocks/analytics_collector.go pkg/interfaces AnalyticsCollector
 
 test:
-	@go test -cover
+	@go test ./... -cover
