@@ -95,12 +95,22 @@ components:
           type: boolean
         valueJson:
           type: string
-        rolloutStrategy:
-          $ref: "#/components/schemas/FeatureEnabledStrategy"
         rolloutStrategyInstances:
           type: array
           items:
             $ref: "#/components/schemas/RolloutStrategyInstance"
+        rolloutStrategies:
+          description: "These are custom rollout strategies that only apply to this feature value."
+          type: array
+          items:
+            $ref: "#/components/schemas/RolloutStrategy"
+        sharedRolloutStrategies:
+          description: "This is list is either provided empty (when publishing) or anemic so the MR will client will understand which shared strategies are attached without having to back-call. If provided
+                        then it will mirror rolloutStrategyInstances and only enabled ones will be passed back. The value from the rolloutStrategyInstance will be embedded. This field will
+                        _always_ be ignored when being sent back to the server, only rolloutStrategyInstances is used."
+          type: array
+          items:
+            $ref: "#/components/schemas/RolloutStrategy"
         environmentId:
           type: string
         version:
@@ -115,52 +125,16 @@ components:
         whatUpdated:
           type: string
     RolloutStrategyInstance:
-      description: "if the feature in an environment is different from its default, this will be the reason for it"
       properties:
-        valueString:
-          description: "default value if no strategy matches. interpreted by type in parent"
-          type: string
-        valueNumber:
-          type: number
-        valueBoolean:
-          type: boolean
-        valueJson:
-          type: string
-        percentage:
-          type: number
-        attribute:
-          type: array
-          items:
-            $ref: "#/components/schemas/RolloutStrategyAttribute"
-    # e.g. (OR).(AND).(name='os', valueString='Android').(name='version', valueString='7+').(ENDAND).(AND).(name='os', valueString='ios').(name='version', valueString='9+').(ENDAND).(ENDOR)
-    # ==> (os = Android && valueString = "7+") or (os = ios && valueString = "9+")
-    # conditional and value in each case is optional but 1 must be specified
-    RolloutStrategyAttribute:
-      properties:
-        conditional:
-          $ref: "#/components/schemas/RolloutStrategyAttributeConditional"
         name:
+          description: "This is copied from the shared rollout strategy on return, it is read only from the client perspective"
           type: string
-        valueString:
+        strategyId:
           type: string
-        valueNumber:
-          type: number
-        valueJson:
-          type: string
-        valueBoolean:
+        value:
+          description: "the value for this rollout strategy for this feature value"
+        disabled:
           type: boolean
-    RolloutStrategyAttributeConditional:
-      type: string
-      enum:
-        - AND
-        - OR
-        - ENDOR
-        - ENDAND
-    FeatureEnabledStrategy:
-      type: string
-      enum:
-        - ATTRIBUTE
-        - PERCENTAGE
     Audit:
       properties:
         createdBy:

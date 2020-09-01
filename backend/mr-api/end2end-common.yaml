@@ -14,3 +14,81 @@ components:
         - LOCK
         - UNLOCK
         - CHANGE_VALUE
+    RolloutStrategy:
+      description: "if the feature in an environment is different from its default, this will be the reason for it.
+                    a rollout strategy is defined at the Application level and then applied to a specific feature value.
+                    When they are copied to the cache layer they are cloned and the feature value for that strategy
+                    is inserted into the clone and those are published."
+      required:
+        - name
+      properties:
+        id:
+          type: string
+        name:
+          description: "names are unique in a case insensitive fashion"
+          type: string
+          maxLength: 100
+        percentage:
+          description: "value between 0 and 1000000 - for four decimal places"
+          type: integer
+        percentageAttributes:
+          type: array
+          description: "if you don't wish to apply percentage based on user id, you can use one or more attributes defined here"
+          items:
+            type: string
+        colouring:
+          description: "the colour used to display the strategy in the UI. indexed table of background/foreground combos."
+          type: integer
+        avatar:
+          type: string
+          description: "url to avatar (if any). Not sent to SDK. Preferably a unicorn."
+          maxLength: 200
+        value:
+          description: "when we attach the RolloutStrategy for Dacha or SSE this lets us push the value out. Only visible in SDK and SSE Edge."
+        attributes:
+          type: array
+          items:
+            $ref: "#/components/schemas/RolloutStrategyAttribute"
+    RolloutStrategyAttribute:
+      properties:
+        conditional:
+          $ref: "#/components/schemas/RolloutStrategyAttributeConditional"
+        fieldName:
+          type: string
+        value:
+          description: "its value"
+        values:
+          description: "the values if it is an array"
+          type: array
+          items:
+            $ref: "#/components/schemas/RolloutStrategyArrayType"
+        type:
+          $ref: "#/components/schemas/RolloutStrategyFieldType"
+        array:
+          type: boolean
+    RolloutStrategyArrayType:
+      description: "values depend on the field type"
+    RolloutStrategyFieldType:
+      type: string
+      enum:
+        - STRING
+        - SEMANTIC_VERSION
+        - NUMBER
+        - DATE
+        - DATETIME
+        - BOOLEAN
+        - IP_ADDRESS
+    RolloutStrategyAttributeConditional:
+      type: string
+      enum:
+        - EQUALS
+        - ENDS_WITH
+        - STARTS_WITH
+        - GREATER
+        - GREATER_EQUALS
+        - LESS
+        - LESS_EQUALS
+        - NOT_EQUALS
+        - INCLUDES
+        - EXCLUDES
+        - REGEX

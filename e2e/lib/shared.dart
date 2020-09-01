@@ -27,5 +27,9 @@ class Shared {
   Environment get environment => _data['env'] as Environment;
   set environment(Environment e) => _data['env'] = e;
 
+  FeatureValue featureValue;
+
+  Feature feature;
+
   Group portfolioAdminGroup;
 }

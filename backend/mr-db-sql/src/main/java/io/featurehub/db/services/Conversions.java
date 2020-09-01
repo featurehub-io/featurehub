@@ -1,18 +1,18 @@
 package io.featurehub.db.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import io.featurehub.dacha.api.CacheJsonMapper;
 import io.featurehub.db.api.Opts;
 import io.featurehub.db.model.DbAcl;
 import io.featurehub.db.model.DbApplication;
 import io.featurehub.db.model.DbApplicationFeature;
 import io.featurehub.db.model.DbEnvironment;
-import io.featurehub.db.model.DbEnvironmentFeatureStrategy;
+import io.featurehub.db.model.DbFeatureValue;
 import io.featurehub.db.model.DbGroup;
 import io.featurehub.db.model.DbOrganization;
 import io.featurehub.db.model.DbPerson;
 import io.featurehub.db.model.DbPortfolio;
+import io.featurehub.db.model.DbRolloutStrategy;
 import io.featurehub.db.model.DbServiceAccount;
 import io.featurehub.db.model.DbServiceAccountEnvironment;
 import io.featurehub.mr.model.Application;
@@ -29,6 +29,8 @@ import io.featurehub.mr.model.Organization;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.Portfolio;
 import io.featurehub.mr.model.RoleType;
+import io.featurehub.mr.model.RolloutStrategy;
+import io.featurehub.mr.model.RolloutStrategyInfo;
 import io.featurehub.mr.model.ServiceAccount;
 import io.featurehub.mr.model.ServiceAccountPermission;
 
@@ -144,10 +146,10 @@ public interface Conversions {
 
   Feature toApplicationFeature(DbApplicationFeature af, Opts opts);
 
-  Feature toFeature(DbEnvironmentFeatureStrategy fs);
+  Feature toFeature(DbFeatureValue fs);
 
-  FeatureValue toFeatureValue(DbEnvironmentFeatureStrategy fs);
-  FeatureValue toFeatureValue(DbEnvironmentFeatureStrategy fs, Opts opts);
+  FeatureValue toFeatureValue(DbFeatureValue fs);
+  FeatureValue toFeatureValue(DbFeatureValue fs, Opts opts);
 
   Portfolio toPortfolio(DbPortfolio p, Opts opts);
 
@@ -168,8 +170,13 @@ public interface Conversions {
     return splitEnvironmentRoles(permissions);
   }
 
-  FeatureEnvironment toFeatureEnvironment(DbEnvironmentFeatureStrategy s, List<RoleType> roles, DbEnvironment dbEnvironment, Opts opts);
+  FeatureEnvironment toFeatureEnvironment(DbFeatureValue s, List<RoleType> roles, DbEnvironment dbEnvironment, Opts opts);
 
-  FeatureValue toFeatureValue(DbApplicationFeature feature, DbEnvironmentFeatureStrategy value);
-  FeatureValue toFeatureValue(DbApplicationFeature feature, DbEnvironmentFeatureStrategy value, Opts opts);
+  FeatureValue toFeatureValue(DbApplicationFeature feature, DbFeatureValue value);
+  FeatureValue toFeatureValue(DbApplicationFeature feature, DbFeatureValue value, Opts opts);
+
+  RolloutStrategyInfo toRolloutStrategy(DbRolloutStrategy rs, Opts opts);
+
+  DbRolloutStrategy uuidStrategy(String id);
+
 }

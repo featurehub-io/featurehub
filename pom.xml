@@ -54,6 +54,7 @@
     <module>backend/mr-db-ebean</module>
     <module>backend/mr-streaming-api</module>
     <module>backend/mr-publish-api</module>
+    <module>backend/sse-strategy-matchers</module>
     <module>backend/party-server</module>
     <module>backend/dacha</module>
     <module>backend/dacha-api</module>

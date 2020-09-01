@@ -146,6 +146,7 @@
             <configuration>
               <files>
                 <file>${project.basedir}/../../../backend/mr-api/end2end-common.yaml</file>
+                <file>${project.basedir}/../../../backend/mr-api/strategy-enums.yaml</file>
                 <file>${project.basedir}/../../../backend/sse-edge-api/src/main/resources/sse-api.yaml</file>
               </files>
               <finalYaml>${project.basedir}/final.yaml</finalYaml>

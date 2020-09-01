@@ -163,3 +163,8 @@ components:
           $ref: "#/components/schemas/FeatureValue"
         action:
           $ref: "#/components/schemas/PublishAction"
+        strategies:
+          type: array
+          description: "A copy of the strategies that apply to this feature at this time."
+          items:
+            $ref: "#/components/schemas/RolloutStrategy"

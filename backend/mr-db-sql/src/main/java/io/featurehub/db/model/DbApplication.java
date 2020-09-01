@@ -1,5 +1,7 @@
 package io.featurehub.db.model;
 
+import io.ebean.annotation.ConstraintMode;
+import io.ebean.annotation.DbForeignKey;
 import io.ebean.annotation.WhenCreated;
 import io.ebean.annotation.WhenModified;
 
@@ -13,6 +15,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Version;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -62,6 +65,11 @@ public class DbApplication {
   @Column(name = "when_archived")
   private LocalDateTime whenArchived;
 
+  @DbForeignKey(onDelete = ConstraintMode.CASCADE)
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "fk_app_id")
+  private List<DbRolloutStrategy> sharedRolloutStrategies;
+
   public DbApplication() {}
 
   private DbApplication(Builder builder) {
@@ -72,6 +80,7 @@ public class DbApplication {
     setEnvironments(builder.environments);
     setFeatures(builder.features);
     setGroupRolesAcl(builder.groupRolesAcl);
+    setSharedRolloutStrategies(builder.sharedRolloutStrategies);
   }
 
   public UUID getId() { return id; }
@@ -152,6 +161,15 @@ public class DbApplication {
     this.whenArchived = whenArchived;
   }
 
+  public List<DbRolloutStrategy> getSharedRolloutStrategies() {
+    return sharedRolloutStrategies;
+  }
+
+  public void setSharedRolloutStrategies(List<DbRolloutStrategy> sharedRolloutStrategies) {
+    this.sharedRolloutStrategies = sharedRolloutStrategies;
+  }
+
+
   public static final class Builder {
     private String name;
     private String description;
@@ -160,6 +178,7 @@ public class DbApplication {
     private Set<DbEnvironment> environments;
     private Set<DbApplicationFeature> features;
     private Set<DbAcl> groupRolesAcl;
+    private List<DbRolloutStrategy> sharedRolloutStrategies;
 
     public Builder() {
     }
@@ -196,6 +215,11 @@ public class DbApplication {
 
     public Builder groupRolesAcl(Set<DbAcl> val) {
       groupRolesAcl = val;
+      return this;
+    }
+
+    public Builder sharedRolloutStrategies(List<DbRolloutStrategy> val) {
+      sharedRolloutStrategies = val;
       return this;
     }
 

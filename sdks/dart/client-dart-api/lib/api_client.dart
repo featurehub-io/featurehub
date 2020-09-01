@@ -37,17 +37,20 @@ class LocalApiClient {
       if (value is RoleType) {
         return RoleTypeTypeTransformer.toJson(value);
       }
+      if (value is RolloutStrategy) {
+        return value.toJson();
+      }
+      if (value is RolloutStrategyAttribute) {
+        return value.toJson();
+      }
+      if (value is RolloutStrategyAttributeConditional) {
+        return RolloutStrategyAttributeConditionalTypeTransformer.toJson(value);
+      }
+      if (value is RolloutStrategyFieldType) {
+        return RolloutStrategyFieldTypeTypeTransformer.toJson(value);
+      }
       if (value is SSEResultState) {
         return SSEResultStateTypeTransformer.toJson(value);
-      }
-      if (value is Strategy) {
-        return value.toJson();
-      }
-      if (value is StrategyNameType) {
-        return StrategyNameTypeTypeTransformer.toJson(value);
-      }
-      if (value is StrategyPair) {
-        return value.toJson();
       }
       return value.toString();
     } on Exception catch (e, stack) {
@@ -93,14 +96,17 @@ class LocalApiClient {
           return FeatureValueTypeTypeTransformer.fromJson(value);
         case 'RoleType':
           return RoleTypeTypeTransformer.fromJson(value);
+        case 'RolloutStrategy':
+          return RolloutStrategy.fromJson(value);
+        case 'RolloutStrategyAttribute':
+          return RolloutStrategyAttribute.fromJson(value);
+        case 'RolloutStrategyAttributeConditional':
+          return RolloutStrategyAttributeConditionalTypeTransformer.fromJson(
+              value);
+        case 'RolloutStrategyFieldType':
+          return RolloutStrategyFieldTypeTypeTransformer.fromJson(value);
         case 'SSEResultState':
           return SSEResultStateTypeTransformer.fromJson(value);
-        case 'Strategy':
-          return Strategy.fromJson(value);
-        case 'StrategyNameType':
-          return StrategyNameTypeTypeTransformer.fromJson(value);
-        case 'StrategyPair':
-          return StrategyPair.fromJson(value);
         default:
           {
             Match match;
@@ -140,11 +146,15 @@ class LocalApiClient {
     if (value is RoleType) {
       return RoleTypeTypeTransformer.toJson(value).toString();
     }
+    if (value is RolloutStrategyAttributeConditional) {
+      return RolloutStrategyAttributeConditionalTypeTransformer.toJson(value)
+          .toString();
+    }
+    if (value is RolloutStrategyFieldType) {
+      return RolloutStrategyFieldTypeTypeTransformer.toJson(value).toString();
+    }
     if (value is SSEResultState) {
       return SSEResultStateTypeTransformer.toJson(value).toString();
-    }
-    if (value is StrategyNameType) {
-      return StrategyNameTypeTypeTransformer.toJson(value).toString();
     }
 
     return jsonEncode(value);

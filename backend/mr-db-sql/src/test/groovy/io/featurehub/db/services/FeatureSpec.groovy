@@ -1,17 +1,18 @@
 package io.featurehub.db.services
 
-import io.ebean.DB
-import io.ebean.Database
+
 import io.featurehub.db.api.ApplicationApi
 import io.featurehub.db.api.FeatureApi
 import io.featurehub.db.api.OptimisticLockingException
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonFeaturePermission
+import io.featurehub.db.api.RolloutStrategyValidator
 import io.featurehub.db.model.DbApplication
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
 import io.featurehub.db.model.query.QDbOrganization
 import io.featurehub.db.publish.CacheSource
+import io.featurehub.db.services.strategies.StrategyDiffer
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.ApplicationFeatureValues
 import io.featurehub.mr.model.ApplicationRoleType
@@ -22,13 +23,15 @@ import io.featurehub.mr.model.FeatureEnvironment
 import io.featurehub.mr.model.FeatureValue
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.Group
-import io.featurehub.mr.model.Organization
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.RoleType
+import io.featurehub.mr.model.RolloutStrategy
+import io.featurehub.mr.model.RolloutStrategyAttribute
+import io.featurehub.mr.model.RolloutStrategyAttributeConditional
+import io.featurehub.mr.model.RolloutStrategyFieldType
 import io.featurehub.mr.model.ServiceAccount
 import io.featurehub.mr.model.ServiceAccountPermission
 import spock.lang.Shared
-import spock.lang.Specification
 
 class FeatureSpec extends BaseSpec {
   @Shared PersonSqlApi personSqlApi
@@ -69,7 +72,7 @@ class FeatureSpec extends BaseSpec {
     environmentSqlApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
     envIdApp1 = environmentSqlApi.create(new Environment().name("feature-app-1-env-1"), new Application().id(appId), superPerson).id
 
-    featureSqlApi = new FeatureSqlApi(database, convertUtils, Mock(CacheSource))
+    featureSqlApi = new FeatureSqlApi(database, convertUtils, Mock(CacheSource), Mock(RolloutStrategyValidator), Mock(StrategyDiffer))
 
     def averageJoe = new DbPerson.Builder().email("averagejoe-fvs@featurehub.io").name("Average Joe").build()
     database.save(averageJoe)
@@ -230,34 +233,51 @@ class FeatureSpec extends BaseSpec {
       thrown(FeatureApi.NoAppropriateRole)
   }
 
+  def 'boolean features cannot be removed when a update all feature values for environment happens'() {
+    given: "i have a list of features"
+      String[] names = ['FEATURE_FBU_1', 'FEATURE_FBU_2', 'FEATURE_FBU_3', 'FEATURE_FBU_4', 'FEATURE_FBU_5']
+      names.each { k -> appApi.createApplicationFeature(appId, new Feature().key(k).valueType(FeatureValueType.BOOLEAN), superPerson) }
+      def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
+    when: "i get all the features"
+      List<FeatureValue> found = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FBU')})
+    and: "remove update none"
+      List<FeatureValue> remaining = featureSqlApi.updateAllFeatureValuesForEnvironment(envIdApp1, [], pers)
+    then:
+      found.findAll({ fv -> fv.key.startsWith('FEATURE_FBU')}).size() == 5
+      remaining.findAll({ fv -> fv.key.startsWith('FEATURE_FBU')}).size() == 5
+  }
 
   def "i can block update a bunch of features for an environment"() {
     given: "i have a list of features"
       String[] names = ['FEATURE_FVU_1', 'FEATURE_FVU_2', 'FEATURE_FVU_3', 'FEATURE_FVU_4', 'FEATURE_FVU_5']
-      names.each { k -> appApi.createApplicationFeature(appId, new Feature().key(k).valueType(FeatureValueType.BOOLEAN), superPerson) }
+      names.each { k -> appApi.createApplicationFeature(appId, new Feature().key(k).valueType(FeatureValueType.STRING), superPerson) }
       def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
     when: "i set two of those values"
-      def updatesForCreate = [featureSqlApi.getFeatureValueForEnvironment(envIdApp1, 'FEATURE_FVU_1').valueBoolean(true).locked(true),
-                              featureSqlApi.getFeatureValueForEnvironment(envIdApp1, 'FEATURE_FVU_2').valueBoolean(true).locked(true)]
+      def updatesForCreate = [new FeatureValue().key('FEATURE_FVU_1').valueString('h').locked(true),
+                              new FeatureValue().key( 'FEATURE_FVU_2').valueString('h').locked(true)]
       featureSqlApi.updateAllFeatureValuesForEnvironment(envIdApp1, updatesForCreate, pers)
     and:
       List<FeatureValue> found = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FVU')})
     and:
-      def updating = new ArrayList<>(found.findAll({k -> k.key == 'FEATURE_FVU_1'}).collect({it.copy().locked(false).valueBoolean(false)}))
-      updating.addAll([new FeatureValue().key('FEATURE_FVU_3').valueBoolean(true).locked(true),
-                       new FeatureValue().key('FEATURE_FVU_4').valueBoolean(true).locked(true)])
+      def updating = new ArrayList<>(found.findAll({k -> k.key == 'FEATURE_FVU_1'}).collect({it.copy().locked(false).valueString('z')}))
+//      updating.add(found.find({it.key == 'FEATURE_FVU_3'}).valueBoolean(true).locked(true))
+//      updating.add(found.find({it.key == 'FEATURE_FVU_4'}).valueBoolean(true).locked(true))
+      updating.addAll([new FeatureValue().key('FEATURE_FVU_3').valueString('h').locked(true),
+                       new FeatureValue().key('FEATURE_FVU_4').valueString('h').locked(true)])
       featureSqlApi.updateAllFeatureValuesForEnvironment(envIdApp1, updating, pers)
       def foundUpdating = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FVU')})
     then:
       found.size() == 2
       foundUpdating.size() == 3
       !foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_1'}).locked
-      !foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_1'}).valueBoolean
-      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_3'}).valueBoolean
-      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_4'}).valueBoolean
+      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_1'}).valueString == 'z'
+      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_3'}).valueString == 'h'
+      foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_4'}).valueString == 'h'
       foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_4'}).locked
       foundUpdating.find({fv -> fv.key == 'FEATURE_FVU_3'}).locked
   }
+
+
 
   def "i can block update a bunch of feature values for an application"() {
     given: "i create 3 environments"
@@ -340,4 +360,60 @@ class FeatureSpec extends BaseSpec {
       afvPortfolioAdminOfPortfolio1.environments.roles.each { it -> assert it == Arrays.asList(RoleType.values()) }
       afvPortfolioAdminOfPortfolio1.environments.find({it.environmentName == 'app2-dev-f1'}).features[0].locked
   }
+
+
+  def "updates to custom rollout strategies are persisted as expected"() {
+    given: "i create an environment (in app2)"
+      def env1 = environmentSqlApi.create(new Environment().name("rstrat-test-env1"), new Application().id(app2Id), superPerson)
+    and: "i have a boolean feature (which will automatically create a feature value in each environment)"
+      def key = 'FEATURE_MISINTERPRET'
+      appApi.createApplicationFeature(app2Id, new Feature().key(key).valueType(FeatureValueType.BOOLEAN), superPerson)
+    when: "i update the fv with the custom strategy"
+      def fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
+      def strat = new RolloutStrategy().name('freddy').percentage(20).percentageAttributes(['company'])
+        .value(Boolean.FALSE).attributes([
+          new RolloutStrategyAttribute()
+              .value('ios')
+              .fieldName('platform')
+              .conditional(RolloutStrategyAttributeConditional.EQUALS)
+              .type(RolloutStrategyFieldType.STRING)
+        ])
+      fv.locked(false)
+      fv.rolloutStrategies([strat])
+      def perms = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
+      def updated = featureSqlApi.updateFeatureValueForEnvironment(env1.id, key, fv, perms)
+    and:
+      def stored = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
+    then:
+      stored.rolloutStrategies.size() == 1
+      updated.rolloutStrategies.size() == 1
+      stored.rolloutStrategies[0] == strat
+  }
+
+  def "if a feature is locked the custom strategies will not update"() {
+    given: "i create an environment (in app2)"
+      def env1 = environmentSqlApi.create(new Environment().name("rstrat-test-env2"), new Application().id(app2Id), superPerson)
+    and: "i have a boolean feature (which will automatically create a feature value in each environment)"
+      def key = 'FEATURE_NOT_WHEN_LOCKED'
+      appApi.createApplicationFeature(app2Id, new Feature().key(key).valueType(FeatureValueType.BOOLEAN), superPerson)
+    when: "i update the fv with the custom strategy"
+      def fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
+      def strat = new RolloutStrategy().name('freddy').percentage(20).percentageAttributes(['company'])
+        .value(Boolean.FALSE).attributes([
+        new RolloutStrategyAttribute()
+          .value('ios')
+          .fieldName('platform')
+          .conditional(RolloutStrategyAttributeConditional.EQUALS)
+          .type(RolloutStrategyFieldType.STRING)
+      ])
+      fv.locked(true)
+      fv.rolloutStrategies([strat])
+      def perms = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
+      def updated = featureSqlApi.updateFeatureValueForEnvironment(env1.id, key, fv, perms)
+    and:
+      def stored = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
+    then:
+      stored.rolloutStrategies == null
+  }
+
 }

@@ -2,7 +2,6 @@ openapi: 3.0.1
 info:
   title: ManagementResourceApi
   description: This describes the API clients use for accessing features
-  version: "1.1.1"
 paths:
   /mr-api/user-data/state/{appId}/hidden-environments:
     parameters:

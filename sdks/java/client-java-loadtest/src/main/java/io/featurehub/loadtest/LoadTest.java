@@ -11,6 +11,7 @@ import io.featurehub.client.AnalyticsCollector;
 import io.featurehub.client.FeatureRepository;
 import io.featurehub.client.FeatureStateHolder;
 import io.featurehub.client.FeatureValueInterceptor;
+import io.featurehub.client.Readyness;
 import io.featurehub.client.ReadynessListener;
 import io.featurehub.client.jersey.JerseyClient;
 import io.featurehub.sse.model.FeatureState;
@@ -128,6 +129,16 @@ class InternetFeatureTrackerRepository implements FeatureRepository {
   @Override
   public FeatureRepository registerValueInterceptor(boolean allowLockOverride, FeatureValueInterceptor interceptor) {
     return null;
+  }
+
+  @Override
+  public Readyness getReadyness() {
+    return null;
+  }
+
+  @Override
+  public void setJsonConfigObjectMapper(ObjectMapper jsonConfigObjectMapper) {
+
   }
 }
 

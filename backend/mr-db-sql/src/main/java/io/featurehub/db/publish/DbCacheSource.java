@@ -6,28 +6,36 @@ import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.Opts;
 import io.featurehub.db.model.DbApplicationFeature;
 import io.featurehub.db.model.DbEnvironment;
-import io.featurehub.db.model.DbEnvironmentFeatureStrategy;
+import io.featurehub.db.model.DbFeatureValue;
 import io.featurehub.db.model.DbNamedCache;
+import io.featurehub.db.model.DbRolloutStrategy;
 import io.featurehub.db.model.DbServiceAccount;
+import io.featurehub.db.model.DbStrategyForFeatureValue;
 import io.featurehub.db.model.query.QDbApplicationFeature;
 import io.featurehub.db.model.query.QDbEnvironment;
-import io.featurehub.db.model.query.QDbEnvironmentFeatureStrategy;
+import io.featurehub.db.model.query.QDbFeatureValue;
 import io.featurehub.db.model.query.QDbNamedCache;
 import io.featurehub.db.model.query.QDbServiceAccount;
+import io.featurehub.db.model.query.QDbStrategyForFeatureValue;
 import io.featurehub.db.services.Conversions;
 import io.featurehub.mr.model.Environment;
 import io.featurehub.mr.model.EnvironmentCacheItem;
 import io.featurehub.mr.model.Feature;
 import io.featurehub.mr.model.FeatureValue;
 import io.featurehub.mr.model.FeatureValueCacheItem;
+import io.featurehub.mr.model.FeatureValueType;
 import io.featurehub.mr.model.PublishAction;
+import io.featurehub.mr.model.RolloutStrategy;
 import io.featurehub.mr.model.ServiceAccount;
 import io.featurehub.mr.model.ServiceAccountCacheItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -131,8 +139,8 @@ public class DbCacheSource implements CacheSource {
 
   private EnvironmentCacheItem fillEnvironmentCacheItem(int count, DbEnvironment env, PublishAction publishAction) {
     final Set<DbApplicationFeature> features =
-       new QDbApplicationFeature().parentApplication.eq(env.getParentApplication()).whenArchived.isNull().findSet();
-    Map<UUID, DbEnvironmentFeatureStrategy> envFeatures =
+      new QDbApplicationFeature().parentApplication.eq(env.getParentApplication()).whenArchived.isNull().findSet();
+    Map<UUID, DbFeatureValue> envFeatures =
       env.getEnvironmentFeatures()
         .stream()
         .filter(f -> f.getFeature().getWhenArchived() == null)
@@ -141,11 +149,18 @@ public class DbCacheSource implements CacheSource {
     final EnvironmentCacheItem eci = new EnvironmentCacheItem()
       .action(publishAction)
       .environment(convertUtils.toEnvironment(env, environmentOpts, features))
-      .featureValues(features.stream().map(f -> convertUtils.toFeatureValue(f, envFeatures.get(f.getId()), empty)).collect(Collectors.toList()))
+      .featureValues(features.stream().map(f -> {
+        final DbFeatureValue featureV = envFeatures.get(f.getId());
+        final FeatureValue featureValue = convertUtils.toFeatureValue(f, featureV, empty);
+        if (featureV != null) {
+          featureValue.setRolloutStrategies(collectCombinedRolloutStrategies(featureV, f.getValueType()));
+        }
+        return featureValue;
+      }).collect(Collectors.toList()))
       .serviceAccounts(env.getServiceAccountEnvironments().stream().map(s ->
-            new ServiceAccount()
-              .id(s.getServiceAccount().getId().toString())
-              .apiKey(s.getServiceAccount().getApiKey())).collect(Collectors.toList()))
+        new ServiceAccount()
+          .id(s.getServiceAccount().getId().toString())
+          .apiKey(s.getServiceAccount().getApiKey())).collect(Collectors.toList()))
       .count(count);
 
     return eci;
@@ -162,54 +177,106 @@ public class DbCacheSource implements CacheSource {
     );
   }
 
-
   @Override
-  public void publishFeatureChange(DbEnvironmentFeatureStrategy strategy) {
+  public void publishFeatureChange(DbFeatureValue featureValue) {
     executor.submit(() -> {
-      String cacheName = getFeatureValueCacheName(strategy);
+      String cacheName = getFeatureValueCacheName(featureValue);
       CacheBroadcast cacheBroadcast = cacheBroadcasters.get(cacheName);
 
       if (cacheBroadcast != null) {
-        final FeatureValue value = convertUtils.toFeatureValue(strategy, Opts.empty());
-        cacheBroadcast.publishFeature(
-          new FeatureValueCacheItem()
-            .feature(convertUtils.toFeature(strategy))
-            .value(value)
-            .environmentId(strategy.getEnvironment().getId().toString())
-            .action(PublishAction.UPDATE));
+        innerPublishFeatureValueChange(featureValue, cacheBroadcast);
       }
     });
+  }
+
+  public void innerPublishFeatureValueChange(DbFeatureValue featureValue, CacheBroadcast cacheBroadcast) {
+    final FeatureValue value = convertUtils.toFeatureValue(featureValue, Opts.empty());
+    final Feature feature = convertUtils.toFeature(featureValue);
+    cacheBroadcast.publishFeature(
+      new FeatureValueCacheItem()
+        .feature(feature)
+        .value(value)
+        .strategies(collectCombinedRolloutStrategies(featureValue, feature.getValueType()))
+        .environmentId(featureValue.getEnvironment().getId().toString())
+        .action(PublishAction.UPDATE));
+  }
+
+  // combines the custom and shared rollout strategies
+  private List<RolloutStrategy> collectCombinedRolloutStrategies(DbFeatureValue featureValue, FeatureValueType type) {
+
+    final List<DbStrategyForFeatureValue> activeSharedStrategies =
+      new QDbStrategyForFeatureValue()
+        .enabled.isTrue()
+        .featureValue.eq(featureValue)
+        .rolloutStrategy.whenArchived.isNull()
+        .rolloutStrategy.fetch().findList();
+
+    List<RolloutStrategy> allStrategies = new ArrayList<>();
+
+    if (featureValue.getRolloutStrategies() != null) {
+      allStrategies.addAll(featureValue.getRolloutStrategies());
+    }
+
+    allStrategies.addAll(
+      activeSharedStrategies.stream().map(s -> {
+        RolloutStrategy rs = s.getRolloutStrategy().getStrategy();
+
+        rs.setName(null);
+        rs.setColouring(null);
+        rs.setAvatar(null);
+
+        if (s.getValue() != null) {
+          switch (type) {
+            case BOOLEAN:
+              rs.setValue(Boolean.parseBoolean(s.getValue()));
+              break;
+            case STRING:
+            case JSON:
+              rs.setValue(s.getValue());
+              break;
+            case NUMBER:
+              rs.setValue(new BigDecimal(s.getValue()));
+              break;
+          }
+        }
+
+        return rs;
+      }).collect(Collectors.toList()));
+
+    return allStrategies;
   }
 
   @Override
   public void deleteFeatureChange(DbApplicationFeature feature, String environmentId) {
     executor.submit(() -> {
-      String cacheName = new QDbNamedCache().organizations.portfolios.applications.eq(feature.getParentApplication()).findOne().getCacheName();
-        CacheBroadcast cacheBroadcast = cacheBroadcasters.get(cacheName);
+      String cacheName =
+        new QDbNamedCache().organizations.portfolios.applications.eq(feature.getParentApplication()).findOne().getCacheName();
+      CacheBroadcast cacheBroadcast = cacheBroadcasters.get(cacheName);
 
-        if (cacheBroadcast != null) {
-          cacheBroadcast.publishFeature(
-            new FeatureValueCacheItem()
-              .feature(convertUtils.toApplicationFeature(feature, Opts.empty()))
-              .environmentId(environmentId)
-              .action(PublishAction.DELETE));
-        }
+      if (cacheBroadcast != null) {
+        cacheBroadcast.publishFeature(
+          new FeatureValueCacheItem()
+            .feature(convertUtils.toApplicationFeature(feature, Opts.empty()))
+            .environmentId(environmentId)
+            .action(PublishAction.DELETE));
+      }
     });
   }
 
-  // todo: consider caching
-  private String getFeatureValueCacheName(DbEnvironmentFeatureStrategy strategy) {
+  // todo: consider caching using an LRU map
+  private String getFeatureValueCacheName(DbFeatureValue strategy) {
     return new QDbNamedCache().organizations.portfolios.applications.environments.environmentFeatures.eq(strategy).findOne().getCacheName();
   }
 
   // this call comes in from the service layer
   @Override
   public void updateServiceAccount(DbServiceAccount serviceAccount, PublishAction publishAction) {
-    executor.submit(() ->  internalUpdateServiceAccount(serviceAccount, publishAction));
+    executor.submit(() -> internalUpdateServiceAccount(serviceAccount, publishAction));
   }
 
   private void internalUpdateServiceAccount(DbServiceAccount serviceAccount, PublishAction publishAction) {
-    String cacheName = new QDbNamedCache().organizations.portfolios.serviceAccounts.id.eq(serviceAccount.getId()).findOneOrEmpty().map(DbNamedCache::getCacheName).orElse(null);
+    String cacheName =
+      new QDbNamedCache().organizations.portfolios.serviceAccounts.id.eq(serviceAccount.getId()).findOneOrEmpty().map(DbNamedCache::getCacheName).orElse(null);
 
     if (cacheName != null) {
       CacheBroadcast cacheBroadcast = cacheBroadcasters.get(cacheName);
@@ -239,7 +306,8 @@ public class DbCacheSource implements CacheSource {
   }
 
   private void internalDeleteServiceAccount(UUID id) {
-    String cacheName = new QDbNamedCache().organizations.portfolios.serviceAccounts.id.eq(id).findOneOrEmpty().map(DbNamedCache::getCacheName).orElse(null);
+    String cacheName =
+      new QDbNamedCache().organizations.portfolios.serviceAccounts.id.eq(id).findOneOrEmpty().map(DbNamedCache::getCacheName).orElse(null);
 
     if (cacheName != null) {
       CacheBroadcast cacheBroadcast = cacheBroadcasters.get(cacheName);
@@ -257,19 +325,21 @@ public class DbCacheSource implements CacheSource {
 
   @Override
   public void updateEnvironment(DbEnvironment environment, PublishAction publishAction) {
-    executor.submit(() ->  internalUpdateEnvironment(environment, publishAction));
+    executor.submit(() -> internalUpdateEnvironment(environment, publishAction));
   }
 
   private void internalUpdateEnvironment(DbEnvironment environment, PublishAction publishAction) {
     if (environment != null) {
-      String cacheName = new QDbNamedCache().organizations.portfolios.applications.environments.eq(environment).findOneOrEmpty().map(DbNamedCache::getCacheName).orElse(null);
+      String cacheName =
+        new QDbNamedCache().organizations.portfolios.applications.environments.eq(environment).findOneOrEmpty().map(DbNamedCache::getCacheName).orElse(null);
 
       if (cacheName != null) {
         CacheBroadcast cacheBroadcast = cacheBroadcasters.get(cacheName);
 
         if (cacheBroadcast != null) {
           log.info("publishing environment {} ({})", environment.getName(), environment.getId());
-          final EnvironmentCacheItem environmentCacheItem = fillEnvironmentCacheItem(environmentsByCacheName(cacheName).findCount(), environment, publishAction);
+          final EnvironmentCacheItem environmentCacheItem =
+            fillEnvironmentCacheItem(environmentsByCacheName(cacheName).findCount(), environment, publishAction);
           cacheBroadcast.publishEnvironment(environmentCacheItem);
         }
       }
@@ -279,7 +349,8 @@ public class DbCacheSource implements CacheSource {
   @Override
   public void deleteEnvironment(UUID id) {
     if (id != null) {
-      String cacheName = new QDbNamedCache().organizations.portfolios.applications.environments.id.eq(id).findOneOrEmpty().map(DbNamedCache::getCacheName).orElse(null);
+      String cacheName =
+        new QDbNamedCache().organizations.portfolios.applications.environments.id.eq(id).findOneOrEmpty().map(DbNamedCache::getCacheName).orElse(null);
       if (cacheName != null) {
         CacheBroadcast cacheBroadcast = cacheBroadcasters.get(cacheName);
 
@@ -297,11 +368,13 @@ public class DbCacheSource implements CacheSource {
   /**
    * unlike pushing out feature values one by one as they change, this can represent the deletion of a feature value
    * across the board.
+   *
    * @param appFeature
    * @param action
    */
   private void publishAppLevelFeatureChange(DbApplicationFeature appFeature, PublishAction action) {
-    String cacheName = new QDbNamedCache().organizations.portfolios.applications.eq(appFeature.getParentApplication()).findOneOrEmpty().map(DbNamedCache::getCacheName).orElse(null);
+    String cacheName =
+      new QDbNamedCache().organizations.portfolios.applications.eq(appFeature.getParentApplication()).findOneOrEmpty().map(DbNamedCache::getCacheName).orElse(null);
 
     if (cacheName != null) {
       CacheBroadcast cacheBroadcast = cacheBroadcasters.get(cacheName);
@@ -309,11 +382,11 @@ public class DbCacheSource implements CacheSource {
       if (cacheBroadcast != null) {
         Feature feature = convertUtils.toApplicationFeature(appFeature, Opts.empty());
 
-        Map<UUID, DbEnvironmentFeatureStrategy> featureValues = new HashMap<>();
+        Map<UUID, DbFeatureValue> featureValues = new HashMap<>();
 
         if (action != PublishAction.DELETE) {
           // dont' care about values if deleting
-          new QDbEnvironmentFeatureStrategy()
+          new QDbFeatureValue()
             .environment.whenArchived.isNull()
             .environment.parentApplication.eq(appFeature.getParentApplication())
             .feature.eq(appFeature).findEach(fe -> {
@@ -322,7 +395,8 @@ public class DbCacheSource implements CacheSource {
         }
 
         new QDbEnvironment().parentApplication.eq(appFeature.getParentApplication()).whenArchived.isNull().findList().forEach(env -> {
-          final FeatureValue featureValue = convertUtils.toFeatureValue(appFeature, featureValues.get(env.getId()), Opts.empty());
+          final FeatureValue featureValue = convertUtils.toFeatureValue(appFeature, featureValues.get(env.getId()),
+            Opts.empty());
           cacheBroadcast.publishFeature(
             new FeatureValueCacheItem().feature(feature)
               .value(featureValue).environmentId(env.getId().toString()).action(action));
@@ -334,5 +408,34 @@ public class DbCacheSource implements CacheSource {
   @Override
   public void publishFeatureChange(DbApplicationFeature appFeature, PublishAction action) {
     executor.submit(() -> publishAppLevelFeatureChange(appFeature, action)); // background as not going away
+  }
+
+  /**
+   * This is triggered when a rollout strategy updates or is deleted. We need to find all attached feature values
+   * and republish them.
+   *
+   * @param rs - the rollout strategy that changed
+   */
+  @Override
+  public void publishRolloutStrategyChange(DbRolloutStrategy rs) {
+    executor.submit(() -> {
+      final List<DbFeatureValue> updatedValues =
+        new QDbFeatureValue().sharedRolloutStrategies.rolloutStrategy.eq(rs).sharedRolloutStrategies.enabled.isTrue().findList();
+
+      if (!updatedValues.isEmpty()) {
+        String cacheName = getFeatureValueCacheName(updatedValues.get(0));
+        // they are all the same application and
+        // hence the same cache
+        CacheBroadcast cacheBroadcast = cacheBroadcasters.get(cacheName);
+
+        if (cacheBroadcast != null) {
+          updatedValues.forEach(fv -> {
+            executor.submit(() -> {
+              innerPublishFeatureValueChange(fv, cacheBroadcast);
+            });
+          });
+        }
+      }
+    });
   }
 }

@@ -4,6 +4,7 @@ import io.featurehub.db.api.ApplicationApi;
 import io.featurehub.db.api.EnvironmentApi;
 import io.featurehub.db.api.FeatureApi;
 import io.featurehub.db.api.OptimisticLockingException;
+import io.featurehub.db.api.RolloutStrategyValidator;
 import io.featurehub.mr.api.FeatureServiceDelegate;
 import io.featurehub.mr.auth.AuthManagerService;
 import io.featurehub.mr.model.ApplicationFeatureValues;
@@ -42,7 +43,7 @@ public class FeatureResource implements FeatureServiceDelegate {
   @Override
   public List<Feature> createFeaturesForApplication(String id, Feature feature, SecurityContext securityContext) {
     // here we are only calling it to ensure the security check happens
-    final ApplicationPermissionCheck appFeaturePermCheck = applicationUtils.featureCheck(securityContext, id);
+    final ApplicationPermissionCheck appFeaturePermCheck = applicationUtils.featureAdminCheck(securityContext, id);
 
     try {
       return applicationApi.createApplicationFeature(id, feature, appFeaturePermCheck.getCurrent());
@@ -54,7 +55,7 @@ public class FeatureResource implements FeatureServiceDelegate {
   @Override
   public List<Feature> deleteFeatureForApplication(String id, String key, SecurityContext securityContext) {
     // here we are only calling it to ensure the security check happens
-    applicationUtils.featureCheck(securityContext, id);
+    applicationUtils.featureAdminCheck(securityContext, id);
 
     List<Feature> features = applicationApi.deleteApplicationFeature(id, key);
     if (features == null) {
@@ -118,6 +119,8 @@ public class FeatureResource implements FeatureServiceDelegate {
     } catch (FeatureApi.NoAppropriateRole noAppropriateRole) {
       log.warn("User attempted to update feature they had no access to", noAppropriateRole);
       throw new BadRequestException(noAppropriateRole);
+    } catch (RolloutStrategyValidator.PercentageStrategyGreaterThan100Percent| RolloutStrategyValidator.InvalidStrategyCombination bad) {
+      throw new WebApplicationException(400); // can't do anything with it
     }
 
     return featureApi.getFeatureValuesForApplicationForKeyForPerson(id, key, person);

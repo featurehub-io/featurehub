@@ -2,6 +2,7 @@ package io.featurehub.edge.client;
 
 import io.featurehub.dacha.api.CacheJsonMapper;
 import io.featurehub.edge.FeatureTransformer;
+import io.featurehub.edge.strategies.ClientAttributeCollection;
 import io.featurehub.mr.model.EdgeInitResponse;
 import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.mr.model.PublishAction;
@@ -25,6 +26,7 @@ public class TimedBucketClientConnection implements ClientConnection {
   private List<EjectHandler> handlers = new ArrayList<>();
   private List<FeatureValueCacheItem> heldFeatureUpdates = new ArrayList<>();
   private FeatureTransformer featureTransformer;
+  private ClientAttributeCollection attributesForStrategy;
 
   private TimedBucketClientConnection(Builder builder) {
     output = builder.output;
@@ -32,6 +34,8 @@ public class TimedBucketClientConnection implements ClientConnection {
     apiKey = builder.apiKey;
     namedCache = builder.namedCache;
     featureTransformer = builder.featureTransformer;
+
+    attributesForStrategy = ClientAttributeCollection.decode(builder.featureHubAttributes);
   }
 
   @Override
@@ -117,7 +121,7 @@ public class TimedBucketClientConnection implements ClientConnection {
     if (Boolean.TRUE.equals(edgeResponse.getSuccess())) {
       try {
         writeMessage(SSEResultState.FEATURES,
-          CacheJsonMapper.mapper.writeValueAsString(featureTransformer.transform(edgeResponse.getFeatures())));
+          CacheJsonMapper.mapper.writeValueAsString(featureTransformer.transform(edgeResponse.getFeatures(), attributesForStrategy)));
         List<FeatureValueCacheItem> heldUpdates = heldFeatureUpdates;
         heldFeatureUpdates = null;
         if (heldUpdates != null) {
@@ -138,7 +142,7 @@ public class TimedBucketClientConnection implements ClientConnection {
       heldFeatureUpdates.add(rf);
     } else {
       try {
-        String data = CacheJsonMapper.mapper.writeValueAsString(featureTransformer.transform(rf));
+        String data = CacheJsonMapper.mapper.writeValueAsString(featureTransformer.transform(rf, attributesForStrategy));
         if (rf.getAction() == PublishAction.DELETE) {
           writeMessage(SSEResultState.DELETE_FEATURE, data);
         } else {
@@ -157,6 +161,7 @@ public class TimedBucketClientConnection implements ClientConnection {
     private String environmentId;
     private String apiKey;
     private String namedCache;
+    private List<String> featureHubAttributes;
     private FeatureTransformer featureTransformer;
 
     public Builder() {
@@ -184,6 +189,11 @@ public class TimedBucketClientConnection implements ClientConnection {
 
     public Builder featureTransformer(FeatureTransformer val) {
       featureTransformer = val;
+      return this;
+    }
+
+    public Builder featureHubAttributes(List<String> val) {
+      featureHubAttributes = val;
       return this;
     }
 

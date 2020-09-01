@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: FeatureServiceApi
   description: This describes the API clients use for accessing features
-  version: "1.1.1"
+  version: "1.1.2"
 paths:
   /features/:
     get:
@@ -150,33 +150,9 @@ components:
           description: "This field is filled in from the client side in the GET api as the GET api is able to request multiple environments.
                         It is never passed from the server, as an array of feature states is wrapped in an environment."
           type: string
-        strategy:
-          $ref: "#/components/schemas/Strategy"
-    Strategy:
-#      description: "This tells the client which strategy for roll out is being used".
-      required:
-        - name
-      properties:
-        name:
-          $ref: "#/components/schemas/StrategyNameType"
-        value:
-          description: "this value is used if it is a simple attribute or percentage. If it is more complex then the pairs are passed"
-        pairs:
+        strategies:
           type: array
           items:
-            $ref: "#/components/schemas/StrategyPair"
-    StrategyNameType:
-      type: string
-      enum:
-        - ATTRIBUTE
-        - PERCENTAGE
-    StrategyPair:
- #     description: "This is simply information the feature wishes to pass"
-      required:
-        - name
-      properties:
-        name:
-          type: string
-        value:
-          type: string
+            $ref: "#/components/schemas/RolloutStrategy"
+
 

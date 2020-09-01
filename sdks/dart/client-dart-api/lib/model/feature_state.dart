@@ -17,12 +17,12 @@ class FeatureState {
   /* This field is filled in from the client side in the GET api as the GET api is able to request multiple environments. It is never passed from the server, as an array of feature states is wrapped in an environment. */
   String environmentId;
 
-  Strategy strategy;
+  List<RolloutStrategy> strategies = [];
   FeatureState();
 
   @override
   String toString() {
-    return 'FeatureState[id=$id, key=$key, l=$l, version=$version, type=$type, value=$value, environmentId=$environmentId, strategy=$strategy, ]';
+    return 'FeatureState[id=$id, key=$key, l=$l, version=$version, type=$type, value=$value, environmentId=$environmentId, strategies=$strategies, ]';
   }
 
   fromJson(Map<String, dynamic> json) {
@@ -59,8 +59,9 @@ class FeatureState {
       environmentId = (_jsonData == null) ? null : _jsonData;
     } // _jsonFieldName
     {
-      final _jsonData = json[r'strategy'];
-      strategy = (_jsonData == null) ? null : Strategy.fromJson(_jsonData);
+      final _jsonData = json[r'strategies'];
+      strategies =
+          (_jsonData == null) ? null : RolloutStrategy.listFromJson(_jsonData);
     } // _jsonFieldName
   }
 
@@ -91,8 +92,8 @@ class FeatureState {
     if (environmentId != null) {
       json[r'environmentId'] = LocalApiClient.serialize(environmentId);
     }
-    if (strategy != null) {
-      json[r'strategy'] = LocalApiClient.serialize(strategy);
+    if (strategies != null) {
+      json[r'strategies'] = LocalApiClient.serialize(strategies);
     }
     return json;
   }
@@ -126,7 +127,7 @@ class FeatureState {
           type == other.type &&
           value == other.value &&
           environmentId == other.environmentId &&
-          strategy == other.strategy;
+          const ListEquality().equals(strategies, other.strategies);
     }
 
     return false;
@@ -164,9 +165,7 @@ class FeatureState {
       hashCode = hashCode ^ environmentId.hashCode;
     }
 
-    if (strategy != null) {
-      hashCode = hashCode ^ strategy.hashCode;
-    }
+    hashCode = hashCode ^ const ListEquality().hash(strategies);
 
     return hashCode;
   }
@@ -179,7 +178,7 @@ class FeatureState {
     FeatureValueType type,
     dynamic value,
     String environmentId,
-    Strategy strategy,
+    List<RolloutStrategy> strategies,
   }) {
     FeatureState copy = FeatureState();
     copy.id = id ?? this.id;
@@ -189,7 +188,13 @@ class FeatureState {
     copy.type = type ?? this.type;
     copy.value = value ?? this.value;
     copy.environmentId = environmentId ?? this.environmentId;
-    copy.strategy = strategy ?? this.strategy?.copyWith();
+    {
+      var newVal;
+      final v = strategies ?? this.strategies;
+      newVal = <RolloutStrategy>[]
+        ..addAll((v ?? []).map((y) => y.copyWith()).toList());
+      copy.strategies = newVal;
+    }
     return copy;
   }
 }

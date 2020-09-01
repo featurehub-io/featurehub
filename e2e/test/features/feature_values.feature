@@ -193,3 +193,31 @@ Feature: Create feature values
       Examples:
         | appName           | appDesc                | portfolio                | group   | featureKey     | alias    | featureName    | link                  | envName | envDesc    | envName2 | envDesc2 | envName3 | envDesc3 | valueType |
         | ChangingPermsTest | ChangingPermsTest Desc | Features very restricted | testers | FEATURE_SAMPLE | sssshhhh | Sample feature | http://featurehub.dev | prod    | production | test     | test env | dev      | dev env  | boolean   |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

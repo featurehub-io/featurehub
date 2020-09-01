@@ -5,9 +5,9 @@ import io.ebean.annotation.DbForeignKey;
 import io.ebean.annotation.DbJson;
 import io.ebean.annotation.WhenCreated;
 import io.ebean.annotation.WhenModified;
-import io.featurehub.mr.model.FeatureEnabledStrategy;
-import io.featurehub.mr.model.RolloutStrategyInstance;
+import io.featurehub.mr.model.RolloutStrategy;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -16,6 +16,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Version;
 import java.time.LocalDateTime;
@@ -24,20 +25,20 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "fh_env_feature_strategy")
-public class DbEnvironmentFeatureStrategy {
+public class DbFeatureValue {
   @Id
   private UUID id;
 
-  private DbEnvironmentFeatureStrategy(Builder builder) {
+  private DbFeatureValue(Builder builder) {
     setWhoUpdated(builder.whoUpdated);
-    whatUpdated = builder.whatUpdated;
+    setWhatUpdated(builder.whatUpdated);
     setEnvironment(builder.environment);
     setFeature(builder.feature);
     setFeatureState(builder.featureState);
     setDefaultValue(builder.defaultValue);
-    setEnabledStrategy(builder.enabledStrategy);
     setLocked(builder.locked);
-    setRolloutStrategyInstances(builder.rolloutStrategyInstances);
+    setRolloutStrategies(builder.rolloutStrategies);
+    sharedRolloutStrategies = builder.sharedRolloutStrategies;
   }
 
   public UUID getId() { return id; }
@@ -95,17 +96,28 @@ public class DbEnvironmentFeatureStrategy {
   @Lob
   private String defaultValue;
 
-  @Enumerated(value = EnumType.STRING)
-  private FeatureEnabledStrategy enabledStrategy;
-
   @Column(nullable = false)
   private boolean locked;
 
+  // a user can have multiple strategies here that are specific to this feature value
+  // these are usually percentage only ones, but that may change in the future
   @DbJson
   @Column(name="rollout_strat")
-  private List<RolloutStrategyInstance> rolloutStrategyInstances;
+  private List<RolloutStrategy> rolloutStrategies;
 
-  public DbEnvironmentFeatureStrategy() {
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "fk_fv_id")
+  private List<DbStrategyForFeatureValue> sharedRolloutStrategies;
+
+  public DbFeatureValue() {
+  }
+
+  public List<DbStrategyForFeatureValue> getSharedRolloutStrategies() {
+    return sharedRolloutStrategies;
+  }
+
+  public void setSharedRolloutStrategies(List<DbStrategyForFeatureValue> sharedRolloutStrategies) {
+    this.sharedRolloutStrategies = sharedRolloutStrategies;
   }
 
   public DbPerson getWhoUpdated() {
@@ -156,20 +168,12 @@ public class DbEnvironmentFeatureStrategy {
     this.defaultValue = defaultValue;
   }
 
-  public List<RolloutStrategyInstance> getRolloutStrategyInstances() {
-    return rolloutStrategyInstances;
+  public List<RolloutStrategy> getRolloutStrategies() {
+    return rolloutStrategies;
   }
 
-  public void setRolloutStrategyInstances(List<RolloutStrategyInstance> rolloutStrategyInstances) {
-    this.rolloutStrategyInstances = rolloutStrategyInstances;
-  }
-
-  public FeatureEnabledStrategy getEnabledStrategy() {
-    return enabledStrategy;
-  }
-
-  public void setEnabledStrategy(FeatureEnabledStrategy enabledStrategy) {
-    this.enabledStrategy = enabledStrategy;
+  public void setRolloutStrategies(List<RolloutStrategy> rolloutStrategies) {
+    this.rolloutStrategies = rolloutStrategies;
   }
 
   public long getVersion() {
@@ -184,9 +188,9 @@ public class DbEnvironmentFeatureStrategy {
     private DbApplicationFeature feature;
     private FeatureState featureState;
     private String defaultValue;
-    private FeatureEnabledStrategy enabledStrategy;
     private boolean locked;
-    private List<RolloutStrategyInstance> rolloutStrategyInstances;
+    private List<RolloutStrategy> rolloutStrategies;
+    private List<DbStrategyForFeatureValue> sharedRolloutStrategies;
 
     public Builder() {
     }
@@ -221,23 +225,23 @@ public class DbEnvironmentFeatureStrategy {
       return this;
     }
 
-    public Builder enabledStrategy(FeatureEnabledStrategy val) {
-      enabledStrategy = val;
-      return this;
-    }
-
     public Builder locked(boolean val) {
       locked = val;
       return this;
     }
 
-    public Builder rolloutStrategyInstances(List<RolloutStrategyInstance> val) {
-      rolloutStrategyInstances = val;
+    public Builder rolloutStrategies(List<RolloutStrategy> val) {
+      rolloutStrategies = val;
       return this;
     }
 
-    public DbEnvironmentFeatureStrategy build() {
-      return new DbEnvironmentFeatureStrategy(this);
+    public Builder sharedRolloutStrategies(List<DbStrategyForFeatureValue> val) {
+      sharedRolloutStrategies = val;
+      return this;
+    }
+
+    public DbFeatureValue build() {
+      return new DbFeatureValue(this);
     }
   }
 }

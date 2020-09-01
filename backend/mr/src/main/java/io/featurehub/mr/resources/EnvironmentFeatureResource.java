@@ -5,6 +5,7 @@ import io.featurehub.db.api.EnvironmentRoles;
 import io.featurehub.db.api.FeatureApi;
 import io.featurehub.db.api.OptimisticLockingException;
 import io.featurehub.db.api.PersonFeaturePermission;
+import io.featurehub.db.api.RolloutStrategyValidator;
 import io.featurehub.mr.api.EnvironmentFeatureServiceDelegate;
 import io.featurehub.mr.auth.AuthManagerService;
 import io.featurehub.mr.model.EnvironmentFeaturesResult;
@@ -52,6 +53,8 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
       throw new WebApplicationException(422);
     } catch (FeatureApi.NoAppropriateRole noAppropriateRole) {
       throw new ForbiddenException(noAppropriateRole);
+    } catch (RolloutStrategyValidator.PercentageStrategyGreaterThan100Percent| RolloutStrategyValidator.InvalidStrategyCombination bad) {
+      throw new WebApplicationException(400); // can't do anything with it
     }
 
     if (featureForEnvironment == null) {
@@ -108,13 +111,24 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
 
   @Override
   public List<FeatureValue> updateAllFeaturesForEnvironment(String eid, List<FeatureValue> featureValues, SecurityContext securityContext) {
+    List<FeatureValue> updated;
+
     try {
-      return featureApi.updateAllFeatureValuesForEnvironment(eid, featureValues, requireRoleCheck(eid, securityContext));
+      updated = featureApi.updateAllFeatureValuesForEnvironment(eid, featureValues,
+        requireRoleCheck(eid, securityContext));
     } catch (OptimisticLockingException e) {
       throw new WebApplicationException(422);
     } catch (FeatureApi.NoAppropriateRole noAppropriateRole) {
       throw new ForbiddenException(noAppropriateRole);
+    } catch (RolloutStrategyValidator.PercentageStrategyGreaterThan100Percent| RolloutStrategyValidator.InvalidStrategyCombination bad) {
+      throw new WebApplicationException(400); // can't do anything with it
     }
+
+    if (updated == null) {
+      throw new NotFoundException();
+    }
+
+    return updated;
   }
 
   @Override
@@ -126,6 +140,8 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
       throw new WebApplicationException(422);
     } catch (FeatureApi.NoAppropriateRole noAppropriateRole) {
       throw new ForbiddenException(noAppropriateRole);
+    } catch (RolloutStrategyValidator.PercentageStrategyGreaterThan100Percent| RolloutStrategyValidator.InvalidStrategyCombination bad) {
+      throw new WebApplicationException(400); // can't do anything with it
     }
   }
 }

@@ -17,6 +17,7 @@ class UserCommon {
   ServiceAccountServiceApi _serviceAccountServiceApi;
   EnvironmentFeatureServiceApi _environmentFeatureServiceApi;
   UserStateServiceApi _userStateServiceApi;
+  RolloutStrategyServiceApi _rolloutStrategyServiceApi;
 
   UserCommon() {
     _apiClient = ApiClient(basePath: baseUrl());
@@ -32,6 +33,7 @@ class UserCommon {
     _serviceAccountServiceApi = ServiceAccountServiceApi(_apiClient);
     _environmentFeatureServiceApi = EnvironmentFeatureServiceApi(_apiClient);
     _userStateServiceApi = UserStateServiceApi(_apiClient);
+    _rolloutStrategyServiceApi = RolloutStrategyServiceApi(_apiClient);
   }
 
   PersonServiceApi get personService => _personService;
@@ -51,6 +53,9 @@ class UserCommon {
   FeatureServiceApi get featureService => _featureServiceApi;
 
   UserStateServiceApi get userStateService => _userStateServiceApi;
+
+  RolloutStrategyServiceApi get rolloutStrategyService =>
+      _rolloutStrategyServiceApi;
 
   EnvironmentFeatureServiceApi get environmentFeatureServiceApi =>
       _environmentFeatureServiceApi;

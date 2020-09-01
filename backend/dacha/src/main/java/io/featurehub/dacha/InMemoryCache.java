@@ -250,7 +250,12 @@ public class InMemoryCache implements InternalCache {
     // now create a map of featureId -> feature + feature-value that clients can consume easily.
     environmentFeatures.put(e.getEnvironment().getId(),
       e.getEnvironment().getFeatures().stream()
-        .collect(Collectors.toMap(Feature::getId, f -> new FeatureValueCacheItem().feature(f).value(values.get(f.getKey())))));
+        .collect(Collectors.toMap(Feature::getId, f -> {
+          final FeatureValue value = values.get(f.getKey());
+          final FeatureValueCacheItem fvci = new FeatureValueCacheItem().feature(f).value(value).strategies(value.getRolloutStrategies());
+          value.setRolloutStrategies(null);
+          return fvci;
+        })));
   }
 
   private String sdkKeyEnvId(String apiKey, String environmentId) {
@@ -306,8 +311,10 @@ public class InMemoryCache implements InternalCache {
           if (fv.getValue().getVersion() != null) {
             if (feature.getValue() == null) {
               feature.value(fv.getValue());
+              feature.strategies(fv.getStrategies());
             } else if (feature.getValue().getVersion() == null || (fv.getValue().getVersion() != null && feature.getValue().getVersion() < fv.getValue().getVersion())) {
               feature.value(fv.getValue());
+              feature.strategies(fv.getStrategies());
               log.trace("replacing with {}", fv.getFeature());
             } else if (!featureChanged) {
               log.warn("attempted to remove/update envId:key {}:{} that is older than existing version, ignoring", fv.getEnvironmentId(), fv.getFeature().getKey());

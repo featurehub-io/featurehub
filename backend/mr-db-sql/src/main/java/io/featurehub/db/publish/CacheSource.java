@@ -2,7 +2,8 @@ package io.featurehub.db.publish;
 
 import io.featurehub.db.model.DbApplicationFeature;
 import io.featurehub.db.model.DbEnvironment;
-import io.featurehub.db.model.DbEnvironmentFeatureStrategy;
+import io.featurehub.db.model.DbFeatureValue;
+import io.featurehub.db.model.DbRolloutStrategy;
 import io.featurehub.db.model.DbServiceAccount;
 import io.featurehub.mr.model.PublishAction;
 
@@ -16,7 +17,7 @@ public interface CacheSource {
    * Whenever a feature value changes in any way, publish it out.
    *
    */
-  void publishFeatureChange(DbEnvironmentFeatureStrategy strategy);
+  void publishFeatureChange(DbFeatureValue strategy);
 
   void deleteFeatureChange(DbApplicationFeature feature, String environmentId);
 
@@ -37,4 +38,6 @@ public interface CacheSource {
   void deleteEnvironment(UUID id);
 
   void publishFeatureChange(DbApplicationFeature appFeature, PublishAction update);
+
+  void publishRolloutStrategyChange(DbRolloutStrategy rs);
 }

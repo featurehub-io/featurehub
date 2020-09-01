@@ -2,6 +2,8 @@ package io.featurehub.db.listener;
 
 import cd.connect.app.config.ConfigKey;
 import io.featurehub.dacha.api.CacheJsonMapper;
+import io.featurehub.db.api.FeatureApi;
+import io.featurehub.db.api.RolloutStrategyValidator;
 import io.featurehub.mr.messaging.StreamedFeatureUpdate;
 import io.featurehub.mr.model.FeatureValue;
 import io.nats.client.Connection;
@@ -69,6 +71,8 @@ public class FeatureUpdateListener implements EdgeUpdateListener, MessageHandler
         });
     } catch (IOException e) {
       log.error("Unable to decompose incoming message to update feature.", e);
+    } catch (RolloutStrategyValidator.PercentageStrategyGreaterThan100Percent|RolloutStrategyValidator.InvalidStrategyCombination ignoreEx) {
+      // ignore
     }
   }
 }

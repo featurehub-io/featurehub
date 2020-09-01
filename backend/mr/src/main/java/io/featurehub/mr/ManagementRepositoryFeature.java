@@ -22,6 +22,8 @@ import io.featurehub.mr.api.PersonServiceDelegate;
 import io.featurehub.mr.api.PersonServiceDelegator;
 import io.featurehub.mr.api.PortfolioServiceDelegate;
 import io.featurehub.mr.api.PortfolioServiceDelegator;
+import io.featurehub.mr.api.RolloutStrategyServiceDelegate;
+import io.featurehub.mr.api.RolloutStrategyServiceDelegator;
 import io.featurehub.mr.api.ServiceAccountServiceDelegate;
 import io.featurehub.mr.api.ServiceAccountServiceDelegator;
 import io.featurehub.mr.api.SetupServiceDelegate;
@@ -41,6 +43,7 @@ import io.featurehub.mr.resources.FeatureResource;
 import io.featurehub.mr.resources.GroupResource;
 import io.featurehub.mr.resources.PersonResource;
 import io.featurehub.mr.resources.PortfolioResource;
+import io.featurehub.mr.resources.RolloutStrategyResource;
 import io.featurehub.mr.resources.ServiceAccountResource;
 import io.featurehub.mr.resources.SetupResource;
 import io.featurehub.mr.resources.UserStateResource;
@@ -75,6 +78,7 @@ public class ManagementRepositoryFeature implements Feature {
       ServiceAccountServiceDelegator.class,
       SetupServiceDelegator.class,
       UserStateServiceDelegator.class,
+      RolloutStrategyServiceDelegator.class,
       CorsFilter.class,
 //      ConstraintExceptionHandler.class,
       AuthApplicationEventListener.class
@@ -99,6 +103,7 @@ public class ManagementRepositoryFeature implements Feature {
           bind(GroupResource.class).to(GroupServiceDelegate.class).in(Singleton.class);
           bind(PersonResource.class).to(PersonServiceDelegate.class).in(Singleton.class);
           bind(PortfolioResource.class).to(PortfolioServiceDelegate.class).in(Singleton.class);
+          bind(RolloutStrategyResource.class).to(RolloutStrategyServiceDelegate.class).in(Singleton.class);
           bind(ServiceAccountResource.class).to(ServiceAccountServiceDelegate.class).in(Singleton.class);
           bind(SetupResource.class).to(SetupServiceDelegate.class).in(Singleton.class);
           bind(ApplicationUtils.class).to(ApplicationUtils.class).in(Singleton.class);

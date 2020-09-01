@@ -6,12 +6,13 @@ import io.featurehub.db.model.DbAcl;
 import io.featurehub.db.model.DbApplication;
 import io.featurehub.db.model.DbApplicationFeature;
 import io.featurehub.db.model.DbEnvironment;
-import io.featurehub.db.model.DbEnvironmentFeatureStrategy;
+import io.featurehub.db.model.DbFeatureValue;
 import io.featurehub.db.model.DbGroup;
 import io.featurehub.db.model.DbNamedCache;
 import io.featurehub.db.model.DbOrganization;
 import io.featurehub.db.model.DbPerson;
 import io.featurehub.db.model.DbPortfolio;
+import io.featurehub.db.model.DbRolloutStrategy;
 import io.featurehub.db.model.DbServiceAccount;
 import io.featurehub.db.model.DbServiceAccountEnvironment;
 import io.featurehub.db.model.query.QDbAcl;
@@ -23,6 +24,7 @@ import io.featurehub.db.model.query.QDbNamedCache;
 import io.featurehub.db.model.query.QDbOrganization;
 import io.featurehub.db.model.query.QDbPerson;
 import io.featurehub.db.model.query.QDbPortfolio;
+import io.featurehub.db.model.query.QDbRolloutStrategy;
 import io.featurehub.mr.model.Application;
 import io.featurehub.mr.model.ApplicationGroupRole;
 import io.featurehub.mr.model.ApplicationRoleType;
@@ -38,6 +40,9 @@ import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.PersonId;
 import io.featurehub.mr.model.Portfolio;
 import io.featurehub.mr.model.RoleType;
+import io.featurehub.mr.model.RolloutStrategy;
+import io.featurehub.mr.model.RolloutStrategyInfo;
+import io.featurehub.mr.model.RolloutStrategyInstance;
 import io.featurehub.mr.model.ServiceAccount;
 import io.featurehub.mr.model.ServiceAccountPermission;
 
@@ -434,7 +439,7 @@ public class ConvertUtils implements Conversions {
   }
 
   @Override
-  public Feature toFeature(DbEnvironmentFeatureStrategy fs) {
+  public Feature toFeature(DbFeatureValue fs) {
     if (fs == null) {
       return null;
     }
@@ -452,24 +457,20 @@ public class ConvertUtils implements Conversions {
       .version(f.getVersion());
   }
 
-  protected FeatureValue featureValue(DbApplicationFeature actualFeature, DbEnvironmentFeatureStrategy fs, Opts opts) {
+  protected FeatureValue featureValue(DbApplicationFeature actFeature, DbFeatureValue fs, Opts opts) {
     if (fs == null) {
       return null;
     }
 
-    if (actualFeature == null) {
-      actualFeature = fs.getFeature();
-    }
+    final DbApplicationFeature appFeature = actFeature == null ? fs.getFeature() : actFeature;
 
     final FeatureValue featureValue = new FeatureValue()
-      .key(stripArchived(actualFeature.getKey(), actualFeature.getWhenArchived()))
-      .rolloutStrategy(fs.getEnabledStrategy())
+      .key(stripArchived(appFeature.getKey(), appFeature.getWhenArchived()))
       .locked(fs.isLocked())
       .id(fs.getId().toString())
-      .version(fs.getVersion())
-      .rolloutStrategyInstances(fs.getRolloutStrategyInstances());
+      .version(fs.getVersion());
 
-    final DbApplicationFeature feature = actualFeature;
+    final DbApplicationFeature feature = appFeature;
     if (feature.getValueType() == FeatureValueType.BOOLEAN) {
       featureValue.valueBoolean(fs.getDefaultValue() == null ? Boolean.FALSE : Boolean.parseBoolean(fs.getDefaultValue()));
     }
@@ -485,6 +486,20 @@ public class ConvertUtils implements Conversions {
 
     featureValue.setEnvironmentId(fs.getEnvironment().getId().toString());
 
+    if (opts.contains(FillOpts.RolloutStrategies)) {
+      featureValue.setRolloutStrategies(fs.getRolloutStrategies());
+      featureValue.setRolloutStrategyInstances(fs.getSharedRolloutStrategies().stream()
+        .map(srs -> {
+            final DbRolloutStrategy rolloutStrategy = srs.getRolloutStrategy();
+            return new RolloutStrategyInstance()
+              .value(sharedRolloutStrategyToObject(srs.getValue(), appFeature.getValueType()))
+              .name(rolloutStrategy.getName())
+              .disabled(srs.isEnabled() ? null : true)
+              .strategyId(rolloutStrategy.getId().toString());
+          }
+        ).collect(Collectors.toList()));
+    }
+
     // this is an indicator it is for the UI not for the cache.
     if (opts.contains(FillOpts.People)) {
       featureValue.setWhenUpdated(toOff(fs.getWhenUpdated()));
@@ -494,31 +509,70 @@ public class ConvertUtils implements Conversions {
     return featureValue;
   }
 
+  private Object sharedRolloutStrategyToObject(String value, FeatureValueType valueType) {
+    switch (valueType) {
+      case BOOLEAN:
+        return Boolean.parseBoolean(value);
+      case STRING:
+      case JSON:
+        return value;
+      case NUMBER:
+        return new BigDecimal(value);
+    }
+
+    return value;
+  }
 
 
   @Override
-  public FeatureValue toFeatureValue(DbEnvironmentFeatureStrategy fs, Opts opts) {
+  public FeatureValue toFeatureValue(DbFeatureValue fs, Opts opts) {
     return featureValue(null, fs, opts);
   }
 
   @Override
-  public FeatureValue toFeatureValue(DbEnvironmentFeatureStrategy fs) {
-    return featureValue(null, fs, Opts.opts(FillOpts.People));
+  public FeatureValue toFeatureValue(DbFeatureValue fs) {
+    return featureValue(null, fs, Opts.opts(FillOpts.People, FillOpts.RolloutStrategies));
   }
 
   @Override
-  public FeatureValue toFeatureValue(DbApplicationFeature feature, DbEnvironmentFeatureStrategy value) {
+  public FeatureValue toFeatureValue(DbApplicationFeature feature, DbFeatureValue value) {
     return featureValue(feature, value, Opts.opts(FillOpts.People));
   }
 
   @Override
-  public FeatureValue toFeatureValue(DbApplicationFeature feature, DbEnvironmentFeatureStrategy value, Opts opts) {
+  public FeatureValue toFeatureValue(DbApplicationFeature feature, DbFeatureValue value, Opts opts) {
     if (value == null) {
       return new FeatureValue().id(feature.getId().toString()).key(stripArchived(feature.getKey(),
         feature.getWhenArchived())).version(0L).locked(false);
     }
 
     return featureValue(feature, value, opts);
+  }
+
+  @Override
+  public RolloutStrategyInfo toRolloutStrategy(DbRolloutStrategy rs, Opts opts) {
+    if (rs == null) {
+      return null;
+    }
+
+    RolloutStrategyInfo info = new RolloutStrategyInfo().rolloutStrategy(rs.getStrategy().id(rs.getId().toString()));
+
+    if (opts.contains(FillOpts.SimplePeople)) {
+      info.changedBy(toPerson(rs.getWhoChanged()));
+    }
+
+    return info;
+  }
+
+  @Override
+  public DbRolloutStrategy uuidStrategy(String id) {
+    UUID sId = Conversions.ifUuid(id);
+
+    if (sId != null) {
+      return new QDbRolloutStrategy().id.eq(sId).findOne();
+    }
+
+    return null;
   }
 
 
@@ -673,7 +727,7 @@ public class ConvertUtils implements Conversions {
   }
 
   @Override
-  public FeatureEnvironment toFeatureEnvironment(DbEnvironmentFeatureStrategy s, List<RoleType> roles, DbEnvironment dbEnvironment, Opts opts) {
+  public FeatureEnvironment toFeatureEnvironment(DbFeatureValue s, List<RoleType> roles, DbEnvironment dbEnvironment, Opts opts) {
     final FeatureEnvironment featureEnvironment = new FeatureEnvironment()
       .environment(toEnvironment(dbEnvironment, Opts.empty()))
       .roles(roles)

@@ -2,7 +2,8 @@ package io.featurehub.db.publish;
 
 import io.featurehub.db.model.DbApplicationFeature;
 import io.featurehub.db.model.DbEnvironment;
-import io.featurehub.db.model.DbEnvironmentFeatureStrategy;
+import io.featurehub.db.model.DbFeatureValue;
+import io.featurehub.db.model.DbRolloutStrategy;
 import io.featurehub.db.model.DbServiceAccount;
 import io.featurehub.mr.model.PublishAction;
 
@@ -23,7 +24,7 @@ public class DummyPublisher implements PublishManager, CacheSource {
   }
 
   @Override
-  public void publishFeatureChange(DbEnvironmentFeatureStrategy strategy) {
+  public void publishFeatureChange(DbFeatureValue strategy) {
 
   }
 
@@ -55,6 +56,11 @@ public class DummyPublisher implements PublishManager, CacheSource {
 
   @Override
   public void publishFeatureChange(DbApplicationFeature appFeature, PublishAction update) {
+
+  }
+
+  @Override
+  public void publishRolloutStrategyChange(DbRolloutStrategy rs) {
 
   }
 

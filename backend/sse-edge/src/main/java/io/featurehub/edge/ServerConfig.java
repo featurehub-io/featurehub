@@ -7,6 +7,7 @@ import cd.connect.lifecycle.LifecycleStatus;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.featurehub.dacha.api.CacheJsonMapper;
 import io.featurehub.edge.client.ClientConnection;
+import io.featurehub.edge.strategies.ClientAttributeCollection;
 import io.featurehub.mr.messaging.StreamedFeatureUpdate;
 import io.featurehub.mr.model.EdgeInitPermissionResponse;
 import io.featurehub.mr.model.EdgeInitRequest;
@@ -270,8 +271,8 @@ public class ServerConfig implements ServerController {
     inflightSSEListenerRequests.remove(key);
   }
 
-  protected Environment getEnvironmentFeaturesBySdk(String url, String namedCache, String apiKey,
-                                                              String envId) {
+  protected Environment getEnvironmentFeaturesBySdk(String namedCache, String apiKey,
+                                                    String envId, ClientAttributeCollection clientAttributeCollection) {
     EdgeInitRequest request = new EdgeInitRequest()
       .command(EdgeInitRequestCommand.LISTEN)
       .apiKey(apiKey)
@@ -289,7 +290,7 @@ public class ServerConfig implements ServerController {
 
 
         return new Environment().id(envId).features(featureTransformer
-          .transform(edgeResponse.getFeatures()));
+          .transform(edgeResponse.getFeatures(), clientAttributeCollection));
 
       }
     } catch (Exception e) {
@@ -299,14 +300,15 @@ public class ServerConfig implements ServerController {
     return null;
   }
 
-  public List<Environment> requestFeatures(List<String> sdkUrl) {
+  public List<Environment> requestFeatures(List<String> sdkUrl, ClientAttributeCollection clientAttributeCollection) {
     List<CompletableFuture<Environment>> futures = new ArrayList<>();
 
     sdkUrl.forEach(url -> {
       String[] parts = url.split("/");
       if (parts.length == 3) {
 
-        futures.add(CompletableFuture.supplyAsync(() -> getEnvironmentFeaturesBySdk(url, parts[0], parts[2], parts[1]),
+        futures.add(CompletableFuture.supplyAsync(() -> getEnvironmentFeaturesBySdk(parts[0], parts[2], parts[1]
+          , clientAttributeCollection),
           listenExecutor));
       }
     });

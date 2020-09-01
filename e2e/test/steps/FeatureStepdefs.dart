@@ -199,4 +199,96 @@ class FeatureStepdefs {
           "was not able to $lock feature flag and should have been able to");
     }
   }
+
+  FeatureValueType textToType(String txt) {
+    if (['string', 'text'].contains(txt.toLowerCase())) {
+      return FeatureValueType.STRING;
+    }
+
+    if (['number'].contains(txt.toLowerCase())) {
+      return FeatureValueType.NUMBER;
+    }
+
+    if (['json'].contains(txt.toLowerCase())) {
+      return FeatureValueType.JSON;
+    }
+
+    if (['flag', 'boolean'].contains(txt.toLowerCase())) {
+      return FeatureValueType.BOOLEAN;
+    }
+
+    return null;
+  }
+
+  @And(
+      r'^I ensure that the (string|number|boolean) feature with the key (.*) exists and has the default value (.*)$')
+  void iEnsureThatTheStringFeatureWithTheKeyExistsAndHasTheDefaultValue(
+      String type, String featureKey, String defaultValue) async {
+    assert(shared.application != null, 'please set application first');
+    assert(shared.environment != null, 'please set an environment!');
+    assert(shared.environment.applicationId == shared.application.id,
+        'environment is not in application');
+
+    final actualType = textToType(type);
+
+    assert(actualType != null, "${type} is not a valid feature type");
+
+    var feature;
+
+    try {
+      feature = await userCommon.featureService
+          .getFeatureByKey(shared.application.id, featureKey);
+      assert(feature.valueType == actualType,
+          'feature is not null and of the wrong type, please use another name');
+    } catch (e) {
+      final features =
+          await userCommon.featureService.createFeaturesForApplication(
+              shared.application.id,
+              new Feature()
+                ..valueType = actualType
+                ..name = featureKey
+                ..key = featureKey);
+
+      feature = features.firstWhere((element) => element.key == featureKey);
+    }
+
+    shared.feature = feature;
+
+    final allFeatures = await userCommon.featureService
+        .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
+            shared.application.id);
+
+    final efv = allFeatures.environments
+        .firstWhere((efv) => efv.environmentId == shared.environment.id);
+    var fv = efv.features
+        .firstWhere((fv) => fv.key == featureKey, orElse: () => null);
+
+    if (fv == null) {
+      fv = FeatureValue()
+        ..key = featureKey
+        ..environmentId = shared.environment.id;
+    }
+
+    switch (actualType) {
+      case FeatureValueType.BOOLEAN:
+        fv.valueBoolean = "true" == defaultValue;
+        break;
+      case FeatureValueType.STRING:
+        fv.valueString = defaultValue;
+        break;
+      case FeatureValueType.NUMBER:
+        fv.valueNumber = double.parse(defaultValue);
+        break;
+      case FeatureValueType.JSON:
+        fv.valueJson = defaultValue;
+        break;
+    }
+
+    fv.locked = false;
+
+    await userCommon.featureService.updateAllFeatureValuesByApplicationForKey(
+        shared.application.id, featureKey, [fv]);
+
+    shared.featureValue = fv;
+  }
 }

@@ -1,32 +1,53 @@
-import { featureHubRepository, SSEResultState } from 'featurehub-repository/dist';
+import { ClientFeatureRepository, featureHubRepository, SSEResultState } from 'featurehub-repository/dist';
 import * as EventSource from 'eventsource';
 
 export class FeatureHubEventSourceClient {
   private eventSource: EventSource;
   private sdkUrl: string;
+  private _repository: ClientFeatureRepository;
+  private _header: string;
 
-  constructor(sdkUrl: string) {
+  constructor(sdkUrl: string, repository?: ClientFeatureRepository) {
     this.sdkUrl = sdkUrl;
+    this._repository = repository || featureHubRepository;
+
+    if (this._repository.config) {
+      this._repository.config.registerChangeListener(() => {
+        this._header = this._repository.config.generateHeader();
+
+        if (this.eventSource != null) {
+          this.close();
+          this.init();
+        }
+      });
+    }
   }
 
   init() {
-    this.eventSource = new EventSource(this.sdkUrl);
+    const options: any = {};
+    if (this._header) {
+      options.headers = {
+        'x-featurehub': this._header
+      };
+    }
+    this.eventSource = new EventSource(this.sdkUrl, options);
+
 
     [SSEResultState.Features, SSEResultState.Feature, SSEResultState.DeleteFeature,
         SSEResultState.Bye, SSEResultState.Failure, SSEResultState.Ack].forEach((name) => {
           const fName = name.toString();
-      this.eventSource.addEventListener(fName,
-                                        e => {
+          this.eventSource.addEventListener(fName,
+                                            e => {
         try {
           // console.log("received ", fName, JSON.stringify(e));
-          featureHubRepository.notify(name, JSON.parse((e as any).data));
-        } catch (e) { console.error(JSON.stringify(e));}
+          this._repository.notify(name, JSON.parse((e as any).data));
+        } catch (e) { console.error(JSON.stringify(e)); }
                                         });
     });
 
     this.eventSource.onerror = (e) => {
       // console.error("got error", e);
-      featureHubRepository.notify(SSEResultState.Failure, null);
+      this._repository.notify(SSEResultState.Failure, null);
     };
   }
 
