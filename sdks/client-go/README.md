@@ -118,7 +118,7 @@ The client SDK provides the ability to generate analytics events with the `LogAn
 	tags := map[string]string{"user": "bob"}
 	client.LogAnalyticsEvent(action, tags)
 ```
-Currently the SDK only supports a logging analytics collector, which is configured by default whenever you use the SDK. It logs events to the console at DEBUG level.
+The SDK offers a logging analytics collector which will log events to the console at DEBUG level (useful in your unit tests probably).
 
 
 #### Google Analytics
