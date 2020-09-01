@@ -50,8 +50,6 @@ func (ac *GoogleAnalyticsCollector) LogEvent(action string, other map[string]str
 		event := ga.NewEvent(defaultCategory, action).
 			Label(fmt.Sprintf("%s : %v", featureState.Key, featureState.Value))
 
-		ac.client.UseTLS = true
-
 		// Send the event:
 		err := ac.client.
 			ClientID(clientID).
