@@ -1,4 +1,5 @@
 import 'package:app_singleapp/widgets/features/feature_value_cell.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'feature_dashboard_constants.dart';
@@ -42,13 +43,15 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                                   return Container(
 //                                  padding:
 //                                      EdgeInsets.only(left: 1.0, right: 1.0),
-                                    width: 170.0,
+                                    width: 230.0,
                                     child: Column(
                                       children: [
                                         Container(
-//                                        color: Theme.of(context).highlightColor,
+                                          width: 230,
+                                        color: Theme.of(context).highlightColor,
                                           height: headerHeight,
                                           child: Column(
+                                            mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
                                               HideEnvironmentContainer(
                                                 name: efv.environmentName,

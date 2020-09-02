@@ -39,35 +39,95 @@ class BooleanContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Container(
-          width: 70,
-          height: 30,
-          padding: EdgeInsets.symmetric(vertical: 6.0, horizontal: 12.0),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(16.0)),
-            color: fv.valueBoolean ? Color(0xff11C8B5) : Color(0xffF44C49),
+    return Container(
+      width: 170,
+      child: Stack(children: [
+        if (fv.locked)
+          Center(
+            child: Opacity(
+              opacity: 0.40,
+              child: Icon(
+                Icons.lock_outline,
+                color: Colors.black12,
+                size: 50.0,
+              ),
+            ),
           ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text(fv.valueBoolean ? 'ON' : 'OFF',
-                  style: GoogleFonts.openSans(
-                      textStyle: Theme.of(context).primaryTextTheme.button)),
-              fv.locked
-                  ? Padding(
-                      padding: const EdgeInsets.only(left: 4.0, top: 2.0),
-                      child: Icon(
-                        Icons.lock_outline,
-                        color: Colors.black54,
-                        size: 12.0,
-                      ),
-                    )
-                  : Container(),
-            ],
-          )),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _FlagValueContainer(name: 'default', value: fv.valueBoolean),
+            if (fv.rolloutStrategies != null)
+              StrategiesList(feature: feature, fv: fv)
+          ],
+        ),
+      ]),
     );
+  }
+}
+
+class StrategiesList extends StatelessWidget {
+  final Feature feature;
+  final FeatureValue fv;
+
+  const StrategiesList({Key key, @required this.feature, @required this.fv})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        for (RolloutStrategy rsi in fv.rolloutStrategies)
+          _FlagValueContainer(name: rsi.name, value: rsi.value)
+      ],
+    );
+  }
+}
+
+class _FlagValueContainer extends StatelessWidget {
+  final String name;
+  final bool value;
+
+  const _FlagValueContainer({Key key, this.name, this.value}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 4.0, bottom: 4.0),
+      child: Container(
+        height: 25,
+        padding: EdgeInsets.symmetric(horizontal: 8.0),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.lightBlue),
+          borderRadius: BorderRadius.all(Radius.circular(16.0)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(name, style: Theme.of(context).textTheme.caption),
+            FlagOnOffColoredIndicator(on: value)
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class FlagOnOffColoredIndicator extends StatelessWidget {
+  final bool on;
+
+  const FlagOnOffColoredIndicator({Key key, this.on}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return on
+        ? Text('ON',
+            style: GoogleFonts.openSans(
+                textStyle: Theme.of(context).textTheme.button.copyWith(
+                    color: Color(0xff11C8B5), fontWeight: FontWeight.bold)))
+        : Text('OFF',
+            style: GoogleFonts.openSans(
+                textStyle: Theme.of(context).textTheme.button.copyWith(
+                    color: Color(0xffF44C49), fontWeight: FontWeight.bold)));
   }
 }

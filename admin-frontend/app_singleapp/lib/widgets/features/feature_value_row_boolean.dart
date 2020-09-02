@@ -24,9 +24,11 @@ class FeatureValueBooleanEnvironmentCell extends StatefulWidget {
       _FeatureValueBooleanEnvironmentCellState();
 }
 
+
+
 class _FeatureValueBooleanEnvironmentCellState
     extends State<FeatureValueBooleanEnvironmentCell> {
-  bool featureOn;
+  String featureOn;
 
   @override
   Widget build(BuildContext context) {
@@ -37,44 +39,38 @@ class _FeatureValueBooleanEnvironmentCellState
           final canWrite = widget.environmentFeatureValue.roles
               .contains(RoleType.CHANGE_VALUE);
           if (snap.hasData) {
-            if (snap.data == false && canWrite) {
               return Row(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
-                    Switch(
-                        //Color(0xff11C8B5) : Color(0xffF44C49)
-                        activeTrackColor: Color(0xff11C8B5),
-                        activeColor: Colors.white,
+                    Text('default', style: Theme.of(context).textTheme.caption),
+                    SizedBox(width: 4.0,),
+                    DropdownButton(
+                      items:
+                        <String>['On', 'Off']
+                            .map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value, style: Theme.of(context).textTheme.bodyText2,),
+                          );
+                        }).toList(),
                         value: featureOn,
-                        inactiveTrackColor: Color(0xffF44C49),
-                        onChanged: (value) {
+                        onChanged: snap.data == false && canWrite ? (value) {
+
                           widget.fvBloc.dirty(
                               widget.environmentFeatureValue.environmentId,
-                              (original) => original.valueBoolean != value,
-                              value);
+                              (original) => original.valueBoolean != (value == 'On' ? true : false) ,
+                              value == 'On' ? true : false);
                           setState(() {
-                            featureOn = !featureOn;
+                            featureOn = value;
                           });
-                        }),
+                        } : null,
+                      disabledHint: Text(widget.featureValue.locked
+                          ? 'Unlock to change'
+                          : "You don't have permissions to update this setting", style: Theme.of(context).textTheme.caption),
+                        ),
                   ]);
-            }
 
-            return Tooltip(
-              message: widget.featureValue.locked
-                  ? 'Unlock to change'
-                  : "You don't have permissions to update this setting",
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Switch(
-                        //Color(0xff11C8B5) : Color(0xffF44C49)
-                        activeTrackColor: Color(0xff11C8B5),
-                        activeColor: Colors.white,
-                        value: featureOn,
-                        inactiveTrackColor: Colors.black12,
-                        onChanged: null),
-                  ]),
-            );
           }
           return SizedBox.shrink();
         });
@@ -84,7 +80,8 @@ class _FeatureValueBooleanEnvironmentCellState
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    featureOn = widget.featureValue.valueBoolean ?? false;
+      featureOn = widget.featureValue.valueBoolean ? 'On' : 'Off';
+
   }
 }
 
@@ -104,7 +101,7 @@ class FeatureValueBooleanCellEditor extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
+        Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             FeatureValueEditLockedCell(

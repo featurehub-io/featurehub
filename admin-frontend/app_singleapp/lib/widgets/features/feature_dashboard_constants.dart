@@ -1,3 +1,3 @@
-final unselectedRowHeight = 60.0;
-final selectedRowHeight = 130.0;
+final unselectedRowHeight = 100.0;
+final selectedRowHeight = 250.0;
 final headerHeight = 40.0;
