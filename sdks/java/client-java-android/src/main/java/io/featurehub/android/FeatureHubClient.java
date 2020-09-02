@@ -25,19 +25,23 @@ import java.util.stream.Collectors;
 public class FeatureHubClient implements ClientContext.ClientContextChanged {
   private static final Logger log = LoggerFactory.getLogger(FeatureHubClient.class);
   private final FeatureRepository repository;
-  private final OkHttpClient client;
+  private final Call.Factory client;
   private boolean makeRequests;
   private final String url;
   private final ObjectMapper mapper = new ObjectMapper();
   private String xFeaturehubHeader;
 
   public FeatureHubClient(String host, Collection<String> sdkUrls, FeatureRepository repository,
-                          OkHttpClient client) {
+                          Call.Factory client) {
     this.repository = repository;
     this.client = client;
 
-    this.makeRequests = sdkUrls != null && !sdkUrls.isEmpty();
-    if (this.makeRequests) {
+    if (host != null && sdkUrls != null && !sdkUrls.isEmpty()) {
+      // makeRequests is false, so this will give us the header (if any) and then not make a call
+      repository.clientContext().registerChangeListener(this);
+
+      this.makeRequests = true;
+
       url = host + "/features?" + sdkUrls.stream().map(u -> "sdkUrl=" + u).collect(Collectors.joining("&"));
     } else {
       log.error("FeatureHubClient initialized without any sdkUrls");
