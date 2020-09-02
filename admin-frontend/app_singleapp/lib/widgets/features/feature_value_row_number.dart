@@ -74,14 +74,12 @@ class _FeatureValueNumberEnvironmentCellState
                         : null,
                   ),
                   onChanged: (value) {
-                    widget.fvBloc.dirty(
-                        widget.environmentFeatureValue.environmentId,
-                        (originalFv) {
-                      return (value.isEmpty ? null : value) !=
-                          originalFv?.valueNumber?.toString();
-                    },
-                        FeatureValueDirtyHolder()
-                          ..value = value.isEmpty ? null : double.parse(value));
+                    widget.fvBloc
+                        .dirty(widget.environmentFeatureValue.environmentId,
+                            (current) {
+                      current.value =
+                          value.isEmpty ? null : double.parse(value);
+                    });
                   },
                   inputFormatters: [
                     DecimalTextInputFormatter(

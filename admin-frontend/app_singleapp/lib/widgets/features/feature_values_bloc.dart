@@ -2,12 +2,15 @@ import 'dart:async';
 
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:collection/collection.dart';
 import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'feature_status_bloc.dart';
 
 typedef DirtyCallback = bool Function(FeatureValue original);
+typedef DirtyFeatureHolderCallback = void Function(
+    FeatureValueDirtyHolder current);
 
 ///
 /// this allows us to keep track of the things that can change
@@ -90,10 +93,23 @@ class FeatureValuesBloc implements Bloc {
         _dirtyLock.values.any((d) => d == true));
   }
 
-  bool dirty(String envId, DirtyCallback originalCheck,
-      FeatureValueDirtyHolder dirtyValue) {
-    _dirty[envId] = originalCheck(_originalFeatureValues[envId]);
-    _dirtyValues[envId] = dirtyValue;
+  bool dirty(String envId, DirtyFeatureHolderCallback dirtyValueCallback) {
+    final current = _dirtyValues[envId] ?? FeatureValueDirtyHolder();
+    dirtyValueCallback(current);
+    _dirtyValues[envId] = current;
+
+    _dirty[envId] = false;
+
+    final original = _originalFeatureValues[envId];
+    if (original.valueBoolean != current.value) {
+      _dirty[envId] = true;
+    }
+
+    if (!(ListEquality()
+        .equals(original.rolloutStrategies, current.customStrategies))) {
+      _dirty[envId] = true;
+    }
+
     _dirtyCheck();
 
     return _dirty[envId];

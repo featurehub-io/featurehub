@@ -68,13 +68,11 @@ class _FeatureValueStringEnvironmentCellState
                           : 'No editing permissions',
                       hintStyle: Theme.of(context).textTheme.caption),
                   onChanged: (value) {
-                    widget.fvBloc.dirty(
-                        widget.environmentFeatureValue.environmentId,
-                        (originalFv) =>
-                            (value.isEmpty ? null : value) !=
-                            originalFv?.valueString,
-                        FeatureValueDirtyHolder()
-                          ..value = value.isEmpty ? null : tec.text?.trim());
+                    widget.fvBloc
+                        .dirty(widget.environmentFeatureValue.environmentId,
+                            (current) {
+                      current.value = value.isEmpty ? null : tec.text?.trim();
+                    });
                   },
                 )),
           );

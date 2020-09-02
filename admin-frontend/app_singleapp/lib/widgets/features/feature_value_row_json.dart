@@ -90,10 +90,14 @@ class _FeatureValueJsonEnvironmentCellState
     final value = tec.text?.trim();
 
     final dirty = widget.fvBloc
-        .dirty(widget.environmentFeatureValue.environmentId, (originalFv) {
-      return (value.isEmpty ? null : value) !=
-          originalFv?.valueJson?.toString();
-    }, FeatureValueDirtyHolder()..value = value.isEmpty ? null : value);
+        .dirty(widget.environmentFeatureValue.environmentId, (current) {
+      current.value = value.isEmpty ? null : value;
+    });
+
+    //         (originalFv) {
+    //   return (value.isEmpty ? null : value) !=
+    //       originalFv?.valueJson?.toString();
+    // }, FeatureValueDirtyHolder()..value = value.isEmpty ? null : value);
 
     if (dirty) {
       setState(() {});

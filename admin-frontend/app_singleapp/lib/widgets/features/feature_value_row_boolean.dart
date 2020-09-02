@@ -1,7 +1,9 @@
 import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/features/feature_value_updated_by.dart';
+import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:rxdart/rxdart.dart';
 
 import 'feature_value_row_locked.dart';
 import 'feature_values_bloc.dart';
@@ -62,13 +64,9 @@ class _FeatureValueBooleanEnvironmentCellState
                         ? (value) {
                             widget.fvBloc.dirty(
                                 widget.environmentFeatureValue.environmentId,
-                                (original) =>
-                                    original.valueBoolean !=
-                                    (value == 'On' ? true : false),
-                                FeatureValueDirtyHolder()
-                                  ..value = (value == 'On')
-                                // .customStrategies here Irina
-                                );
+                                (current) {
+                              current.value = (value == 'On');
+                            });
                             setState(() {
                               featureOn = value;
                             });
@@ -92,6 +90,39 @@ class _FeatureValueBooleanEnvironmentCellState
 
     featureOn = widget.featureValue.valueBoolean ? 'On' : 'Off';
   }
+}
+
+class _CustomStrategyBloc extends Bloc {
+  final EnvironmentFeatureValues environmentFeatureValue;
+  final Feature feature;
+  final FeatureValuesBloc fvBloc;
+  final FeatureValue featureValue;
+
+  final _strategySource =
+      BehaviorSubject<List<RolloutStrategy>>.seeded(<RolloutStrategy>[]);
+
+  Stream<List<RolloutStrategy>> get strategies => _strategySource.stream;
+
+  _CustomStrategyBloc(this.environmentFeatureValue, this.feature, this.fvBloc)
+      : featureValue = fvBloc
+            .featureValueByEnvironment(environmentFeatureValue.environmentId);
+
+  void markDirty() {
+    fvBloc.dirty(environmentFeatureValue.environmentId, (current) {
+      current.customStrategies = _strategySource.value;
+    });
+  }
+
+  // call from + Add Strategy to add one
+  void addStrategy(RolloutStrategy rs) {
+    final strategies = _strategySource.value;
+    strategies.add(rs);
+    markDirty();
+    _strategySource.add(strategies);
+  }
+
+  @override
+  void dispose() {}
 }
 
 class FeatureValueBooleanCellEditor extends StatelessWidget {
@@ -123,7 +154,30 @@ class FeatureValueBooleanCellEditor extends StatelessWidget {
               feature: feature,
               fvBloc: fvBloc,
             ),
-            _AddStrategyButton()
+            BlocProvider(
+              creator: (_c, _b) =>
+                  _CustomStrategyBloc(environmentFeatureValue, feature, fvBloc),
+              child: Builder(
+                builder: (ctx) {
+                  final strategyBloc =
+                      BlocProvider.of<_CustomStrategyBloc>(ctx);
+
+                  return Column(
+                    children: [
+                      StreamBuilder<List<RolloutStrategy>>(
+                        stream: strategyBloc.strategies,
+                        builder: (streamCtx, snap) {
+                          // render your strategies and stuff here, have them remove
+                          // themselves from the parent bloc and each  time it does so
+                          // it needs to trigger "dirty" call in fvBloc
+                        },
+                      ),
+                      _AddStrategyButton()
+                    ],
+                  );
+                },
+              ), // need to put custom strategies here, trigger dirty each time change something
+            ),
           ],
         ),
         FeatureValueUpdatedByCell(
@@ -142,6 +196,10 @@ class _AddStrategyButton extends StatelessWidget {
     return FHFlatButtonTransparent(
       title: '+ Add strategy',
       keepCase: true,
+      onPressed: () {
+        BlocProvider.of<_CustomStrategyBloc>(context)
+            .addStrategy(RolloutStrategy());
+      },
     );
   }
 }
