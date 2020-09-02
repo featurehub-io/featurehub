@@ -89,4 +89,6 @@ public interface FeatureRepository {
    *                               used to deserialize
    */
   void setJsonConfigObjectMapper(ObjectMapper jsonConfigObjectMapper);
+
+  ClientContext clientContext();
 }

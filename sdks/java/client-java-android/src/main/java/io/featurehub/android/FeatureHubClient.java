@@ -2,6 +2,7 @@ package io.featurehub.android;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.featurehub.client.ClientContext;
 import io.featurehub.client.FeatureRepository;
 import io.featurehub.sse.model.Environment;
 import io.featurehub.sse.model.FeatureState;
@@ -21,13 +22,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class FeatureHubClient {
+public class FeatureHubClient implements ClientContext.ClientContextChanged {
   private static final Logger log = LoggerFactory.getLogger(FeatureHubClient.class);
   private final FeatureRepository repository;
   private final OkHttpClient client;
   private boolean makeRequests;
   private final String url;
   private final ObjectMapper mapper = new ObjectMapper();
+  private String xFeaturehubHeader;
 
   public FeatureHubClient(String host, Collection<String> sdkUrls, FeatureRepository repository,
                           OkHttpClient client) {
@@ -54,7 +56,13 @@ public class FeatureHubClient {
     if (makeRequests && !busy) {
       busy = true;
 
-      Request request = new Request.Builder().url(url).build();
+      Request.Builder reqBuilder = new Request.Builder().url(this.url);
+
+      if (xFeaturehubHeader != null) {
+        reqBuilder = reqBuilder.addHeader("x-featurehub", xFeaturehubHeader);
+      }
+
+      Request request = reqBuilder.build();
 
       client.newCall(request).enqueue(new Callback() {
         @Override
@@ -89,5 +97,11 @@ public class FeatureHubClient {
         }
       });
     }
+  }
+
+  @Override
+  public void notify(String header) {
+    this.xFeaturehubHeader = header;
+    checkForUpdates();
   }
 }
