@@ -1,3 +1,4 @@
+import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/features/feature_value_updated_by.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
@@ -114,6 +115,7 @@ class FeatureValueBooleanCellEditor extends StatelessWidget {
               feature: feature,
               fvBloc: fvBloc,
             ),
+            _AddStrategyButton()
           ],
         ),
         FeatureValueUpdatedByCell(
@@ -123,5 +125,12 @@ class FeatureValueBooleanCellEditor extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+class _AddStrategyButton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return FHFlatButtonTransparent(title: '+ Add strategy', keepCase: true,);
   }
 }
