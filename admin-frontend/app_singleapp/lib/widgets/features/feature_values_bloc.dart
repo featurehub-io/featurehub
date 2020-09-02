@@ -9,6 +9,17 @@ import 'feature_status_bloc.dart';
 
 typedef DirtyCallback = bool Function(FeatureValue original);
 
+///
+/// this allows us to keep track of the things that can change
+/// which include the value, the custom strategies, their order or values
+/// and any linked shared strategies
+///
+class FeatureValueDirtyHolder {
+  dynamic value;
+  List<RolloutStrategy> customStrategies = [];
+  List<RolloutStrategyInstance> sharedStrategies = [];
+}
+
 class FeatureValuesBloc implements Bloc {
   final Feature feature;
   final String applicationId;
@@ -25,7 +36,7 @@ class FeatureValuesBloc implements Bloc {
   // environmentId, true/false (if dirty)
   final _dirty = <String, bool>{};
   final _dirtyLock = <String, bool>{};
-  final _dirtyValues = <String, dynamic>{};
+  final _dirtyValues = <String, FeatureValueDirtyHolder>{};
 
   // if any of the values are updated, this stream shows true, it can flick on and off during its lifetime
   final _dirtyBS = BehaviorSubject<bool>();
@@ -79,7 +90,8 @@ class FeatureValuesBloc implements Bloc {
         _dirtyLock.values.any((d) => d == true));
   }
 
-  bool dirty(String envId, DirtyCallback originalCheck, dynamic dirtyValue) {
+  bool dirty(String envId, DirtyCallback originalCheck,
+      FeatureValueDirtyHolder dirtyValue) {
     _dirty[envId] = originalCheck(_originalFeatureValues[envId]);
     _dirtyValues[envId] = dirtyValue;
     _dirtyCheck();
@@ -156,20 +168,25 @@ class FeatureValuesBloc implements Bloc {
     }
 
     if (_dirty[envId] == true) {
+      final fvDirty = _dirtyValues[envId];
+
       switch (feature.valueType) {
         case FeatureValueType.BOOLEAN:
-          newValue.valueBoolean = _dirtyValues[envId];
+          newValue.valueBoolean = fvDirty.value;
           break;
         case FeatureValueType.STRING:
-          newValue.valueString = _dirtyValues[envId];
+          newValue.valueString = fvDirty.value;
           break;
         case FeatureValueType.NUMBER:
-          newValue.valueNumber = _dirtyValues[envId];
+          newValue.valueNumber = fvDirty.value;
           break;
         case FeatureValueType.JSON:
-          newValue.valueJson = _dirtyValues[envId];
+          newValue.valueJson = fvDirty.value;
           break;
       }
+
+      newValue.rolloutStrategies = fvDirty.customStrategies;
+      newValue.rolloutStrategyInstances = fvDirty.sharedStrategies;
     }
   }
 

@@ -25,8 +25,6 @@ class FeatureValueBooleanEnvironmentCell extends StatefulWidget {
       _FeatureValueBooleanEnvironmentCellState();
 }
 
-
-
 class _FeatureValueBooleanEnvironmentCellState
     extends State<FeatureValueBooleanEnvironmentCell> {
   String featureOn;
@@ -40,38 +38,49 @@ class _FeatureValueBooleanEnvironmentCellState
           final canWrite = widget.environmentFeatureValue.roles
               .contains(RoleType.CHANGE_VALUE);
           if (snap.hasData) {
-              return Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Text('default', style: Theme.of(context).textTheme.caption),
-                    SizedBox(width: 4.0,),
-                    DropdownButton(
-                      items:
-                        <String>['On', 'Off']
-                            .map<DropdownMenuItem<String>>((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value, style: Theme.of(context).textTheme.bodyText2,),
-                          );
-                        }).toList(),
-                        value: featureOn,
-                        onChanged: snap.data == false && canWrite ? (value) {
-
-                          widget.fvBloc.dirty(
-                              widget.environmentFeatureValue.environmentId,
-                              (original) => original.valueBoolean != (value == 'On' ? true : false) ,
-                              value == 'On' ? true : false);
-                          setState(() {
-                            featureOn = value;
-                          });
-                        } : null,
-                      disabledHint: Text(widget.featureValue.locked
-                          ? 'Unlock to change'
-                          : "You don't have permissions to update this setting", style: Theme.of(context).textTheme.caption),
+            return Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Text('default', style: Theme.of(context).textTheme.caption),
+                  SizedBox(
+                    width: 4.0,
+                  ),
+                  DropdownButton(
+                    items: <String>['On', 'Off']
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(
+                          value,
+                          style: Theme.of(context).textTheme.bodyText2,
                         ),
-                  ]);
-
+                      );
+                    }).toList(),
+                    value: featureOn,
+                    onChanged: snap.data == false && canWrite
+                        ? (value) {
+                            widget.fvBloc.dirty(
+                                widget.environmentFeatureValue.environmentId,
+                                (original) =>
+                                    original.valueBoolean !=
+                                    (value == 'On' ? true : false),
+                                FeatureValueDirtyHolder()
+                                  ..value = (value == 'On')
+                                // .customStrategies here Irina
+                                );
+                            setState(() {
+                              featureOn = value;
+                            });
+                          }
+                        : null,
+                    disabledHint: Text(
+                        widget.featureValue.locked
+                            ? 'Unlock to change'
+                            : "You don't have permissions to update this setting",
+                        style: Theme.of(context).textTheme.caption),
+                  ),
+                ]);
           }
           return SizedBox.shrink();
         });
@@ -81,8 +90,7 @@ class _FeatureValueBooleanEnvironmentCellState
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-      featureOn = widget.featureValue.valueBoolean ? 'On' : 'Off';
-
+    featureOn = widget.featureValue.valueBoolean ? 'On' : 'Off';
   }
 }
 
@@ -131,6 +139,9 @@ class FeatureValueBooleanCellEditor extends StatelessWidget {
 class _AddStrategyButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return FHFlatButtonTransparent(title: '+ Add strategy', keepCase: true,);
+    return FHFlatButtonTransparent(
+      title: '+ Add strategy',
+      keepCase: true,
+    );
   }
 }

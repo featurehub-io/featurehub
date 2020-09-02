@@ -73,7 +73,8 @@ class _FeatureValueStringEnvironmentCellState
                         (originalFv) =>
                             (value.isEmpty ? null : value) !=
                             originalFv?.valueString,
-                        value.isEmpty ? null : tec.text?.trim());
+                        FeatureValueDirtyHolder()
+                          ..value = value.isEmpty ? null : tec.text?.trim());
                   },
                 )),
           );

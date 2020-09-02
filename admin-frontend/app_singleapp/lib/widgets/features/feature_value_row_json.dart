@@ -93,7 +93,7 @@ class _FeatureValueJsonEnvironmentCellState
         .dirty(widget.environmentFeatureValue.environmentId, (originalFv) {
       return (value.isEmpty ? null : value) !=
           originalFv?.valueJson?.toString();
-    }, value.isEmpty ? null : value);
+    }, FeatureValueDirtyHolder()..value = value.isEmpty ? null : value);
 
     if (dirty) {
       setState(() {});
