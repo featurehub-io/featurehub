@@ -37,6 +37,7 @@ public class JerseyClient implements ClientContext.ClientContextChanged {
   private boolean shutdownOnEdgeFailureConnection = false;
   private EventInput eventInput;
   private String xFeaturehubHeader;
+  private boolean closedBecauseHeaderChanged = false;
 
   public JerseyClient(String sdkUrl, boolean initializeOnConstruction, FeatureRepository featureRepository) {
     this(sdkUrl, initializeOnConstruction, featureRepository, null);
@@ -126,7 +127,9 @@ public class JerseyClient implements ClientContext.ClientContextChanged {
         }
       }
     } catch (Exception e) {
-      log.warn("Failed to connect to {}", sdkUrl, e);
+      if (!closedBecauseHeaderChanged) {
+        log.warn("Failed to connect to {}", sdkUrl, e);
+      }
       if (shutdownOnEdgeFailureConnection) {
         log.warn("Edge connection failed, shutting down");
         featureRepository.notify(SSEResultState.FAILURE, null);
@@ -134,6 +137,7 @@ public class JerseyClient implements ClientContext.ClientContextChanged {
       }
     }
 
+    closedBecauseHeaderChanged = false;
     eventInput = null; // so shutdown doesn't get confused
 
     log.debug("connection closed, reconnecting");
@@ -196,6 +200,7 @@ public class JerseyClient implements ClientContext.ClientContextChanged {
 
     if (initialized) {
       try {
+        closedBecauseHeaderChanged = true;
         eventInput.close();
       } catch (Exception ignored) {}
     }
