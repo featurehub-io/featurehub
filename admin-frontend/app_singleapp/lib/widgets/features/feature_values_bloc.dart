@@ -94,13 +94,16 @@ class FeatureValuesBloc implements Bloc {
   }
 
   bool dirty(String envId, DirtyFeatureHolderCallback dirtyValueCallback) {
-    final current = _dirtyValues[envId] ?? FeatureValueDirtyHolder();
+    final original = _originalFeatureValues[envId];
+    final current = _dirtyValues[envId] ?? FeatureValueDirtyHolder()
+      ..value = _originalValue(original)
+      ..customStrategies = original.rolloutStrategies
+      ..sharedStrategies = original.rolloutStrategyInstances;
     dirtyValueCallback(current);
     _dirtyValues[envId] = current;
 
     _dirty[envId] = false;
 
-    final original = _originalFeatureValues[envId];
     if (original.valueBoolean != current.value) {
       _dirty[envId] = true;
     }
@@ -113,6 +116,21 @@ class FeatureValuesBloc implements Bloc {
     _dirtyCheck();
 
     return _dirty[envId];
+  }
+
+  dynamic _originalValue(FeatureValue original) {
+    switch (feature.valueType) {
+      case FeatureValueType.BOOLEAN:
+        return original.valueBoolean;
+      case FeatureValueType.STRING:
+        return original.valueString;
+      case FeatureValueType.NUMBER:
+        return original.valueNumber;
+      case FeatureValueType.JSON:
+        return original.valueJson;
+    }
+
+    return null;
   }
 
   FeatureValuesBloc(
