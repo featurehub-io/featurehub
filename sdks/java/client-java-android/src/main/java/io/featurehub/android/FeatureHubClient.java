@@ -68,39 +68,52 @@ public class FeatureHubClient implements ClientContext.ClientContextChanged {
 
       Request request = reqBuilder.build();
 
-      client.newCall(request).enqueue(new Callback() {
+      final Call call = client.newCall(request);
+      call.enqueue(new Callback() {
         @Override
         public void onFailure(Call call,  IOException e) {
-          log.error("Unable to call for features", e);
-          repository.notify(SSEResultState.FAILURE, null);
-          busy = false;
+          processFailure(e);
         }
 
         @Override
         public void onResponse(Call call,  Response response) throws IOException {
-          busy = false;
-
-          try (ResponseBody body = response.body()) {
-            if (response.isSuccessful() && body != null) {
-              List<Environment> environments = mapper.readValue(body.bytes(), ref);
-              log.debug("updating feature repository: {}", environments);
-
-              List<FeatureState> states = new ArrayList<>();
-              environments.forEach(e -> {
-                e.getFeatures().forEach(f -> f.setEnvironmentId(e.getId()));
-                states.addAll(e.getFeatures());
-              });
-
-              repository.notify(states);
-            } else if (response.code() == 400) {
-              makeRequests = false;
-              log.error("Server indicated an error with our requests making future ones pointless.");
-              repository.notify(SSEResultState.FAILURE, null);
-            }
-          }
+          processResponse(response);
         }
       });
     }
+  }
+
+  protected void processFailure(IOException e) {
+    log.error("Unable to call for features", e);
+    repository.notify(SSEResultState.FAILURE, null);
+    busy = false;
+  }
+
+  protected void processResponse(Response response) throws IOException {
+    busy = false;
+
+    try (ResponseBody body = response.body()) {
+      if (response.isSuccessful() && body != null) {
+        List<Environment> environments = mapper.readValue(body.bytes(), ref);
+        log.debug("updating feature repository: {}", environments);
+
+        List<FeatureState> states = new ArrayList<>();
+        environments.forEach(e -> {
+          e.getFeatures().forEach(f -> f.setEnvironmentId(e.getId()));
+          states.addAll(e.getFeatures());
+        });
+
+        repository.notify(states);
+      } else if (response.code() == 400) {
+        makeRequests = false;
+        log.error("Server indicated an error with our requests making future ones pointless.");
+        repository.notify(SSEResultState.FAILURE, null);
+      }
+    }
+  }
+
+  boolean canMakeRequests() {
+    return makeRequests;
   }
 
   @Override
