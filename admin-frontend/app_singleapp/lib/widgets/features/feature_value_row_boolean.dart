@@ -105,7 +105,9 @@ class _CustomStrategyBloc extends Bloc {
 
   _CustomStrategyBloc(this.environmentFeatureValue, this.feature, this.fvBloc)
       : featureValue = fvBloc
-            .featureValueByEnvironment(environmentFeatureValue.environmentId);
+            .featureValueByEnvironment(environmentFeatureValue.environmentId) {
+    _strategySource.add(featureValue.rolloutStrategies);
+}
 
   void markDirty() {
     fvBloc.dirty(environmentFeatureValue.environmentId, (current) {
@@ -165,13 +167,24 @@ class FeatureValueBooleanCellEditor extends StatelessWidget {
                   return Column(
                     children: [
                       StreamBuilder<List<RolloutStrategy>>(
-                        stream: strategyBloc.strategies,
-                        builder: (streamCtx, snap) {
-                          // render your strategies and stuff here, have them remove
-                          // themselves from the parent bloc and each  time it does so
-                          // it needs to trigger "dirty" call in fvBloc
-                        },
-                      ),
+                          stream: strategyBloc.strategies,
+                          builder: (streamCtx, snap) {
+                            if (snap.hasData) {
+                              return Container(
+                                  child: Column(
+                                children: [
+                                  for (RolloutStrategy strategy in snap.data)
+                                    Text(strategy.name)
+                                ],
+                              ));
+
+                              // render your strategies and stuff here, have them remove
+                              // themselves from the parent bloc and each  time it does so
+                              // it needs to trigger "dirty" call in fvBloc
+                            } else {
+                              return Container();
+                            }
+                          }),
                       _AddStrategyButton()
                     ],
                   );
