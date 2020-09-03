@@ -17,10 +17,10 @@ public class JerseyClientSample {
   public void clientTest() throws InterruptedException {
     ClientFeatureRepository cfr = new ClientFeatureRepository(5);
 
-//    cfr.clientContext().userKey("jimbob")
-//      .platform(StrategyAttributePlatformName.MACOS)
-//      .device(StrategyAttributeDeviceName.DESKTOP)
-//      .attr("testapp", "sample-app").build();
+    cfr.clientContext().userKey("jimbob")
+      .platform(StrategyAttributePlatformName.MACOS)
+      .device(StrategyAttributeDeviceName.DESKTOP)
+      .attr("testapp", "sample,a%%").build();
 
     new JerseyClient("http://localhost:8553/features/default/ec6a720b-71ac-4cc1-8da1-b5e396fa00ca/Kps0MAqsGt5QhgmwMEoRougAflM2b8Q9e1EFeBPHtuIF0azpcCXeeOw1DabFojYdXXr26fyycqjBt3pa", true, cfr);
     Thread.sleep(5000);
