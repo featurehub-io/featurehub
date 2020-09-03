@@ -95,16 +95,17 @@ class FeatureValuesBloc implements Bloc {
 
   bool dirty(String envId, DirtyFeatureHolderCallback dirtyValueCallback) {
     final original = _originalFeatureValues[envId];
-    final current = _dirtyValues[envId] ?? FeatureValueDirtyHolder()
-      ..value = _originalValue(original)
-      ..customStrategies = original.rolloutStrategies
-      ..sharedStrategies = original.rolloutStrategyInstances;
+    final current = _dirtyValues[envId] ??
+        (FeatureValueDirtyHolder()
+          ..value = _originalValue(original)
+          ..customStrategies = original.rolloutStrategies
+          ..sharedStrategies = original.rolloutStrategyInstances);
     dirtyValueCallback(current);
     _dirtyValues[envId] = current;
 
     _dirty[envId] = false;
 
-    if (original.valueBoolean != current.value) {
+    if (_originalValue(original) != current.value) {
       _dirty[envId] = true;
     }
 
