@@ -15,9 +15,16 @@ class FeatureValueBooleanEnvironmentCell extends StatefulWidget {
   final Feature feature;
   final FeatureValuesBloc fvBloc;
   final FeatureValue featureValue;
+  final RolloutStrategy rolloutStrategy;
+  final _CustomStrategyBloc strBloc;
 
   FeatureValueBooleanEnvironmentCell(
-      {Key key, this.environmentFeatureValue, this.feature, this.fvBloc})
+      {Key key,
+      this.environmentFeatureValue,
+      this.feature,
+      this.fvBloc,
+      this.rolloutStrategy,
+      this.strBloc})
       : featureValue = fvBloc
             .featureValueByEnvironment(environmentFeatureValue.environmentId),
         super(key: key);
@@ -40,45 +47,55 @@ class _FeatureValueBooleanEnvironmentCellState
           final canWrite = widget.environmentFeatureValue.roles
               .contains(RoleType.CHANGE_VALUE);
           if (snap.hasData) {
-            return Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Text('default', style: Theme.of(context).textTheme.caption),
-                  SizedBox(
-                    width: 4.0,
-                  ),
-                  DropdownButton(
-                    items: <String>['On', 'Off']
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(
-                          value,
-                          style: Theme.of(context).textTheme.bodyText2,
-                        ),
-                      );
-                    }).toList(),
-                    value: featureOn,
-                    onChanged: snap.data == false && canWrite
-                        ? (value) {
-                            widget.fvBloc.dirty(
-                                widget.environmentFeatureValue.environmentId,
-                                (current) {
-                              current.value = (value == 'On');
-                            });
-                            setState(() {
-                              featureOn = value;
-                            });
-                          }
-                        : null,
-                    disabledHint: Text(
-                        widget.featureValue.locked
-                            ? 'Unlock to change'
-                            : "You don't have permissions to update this setting",
+            return Padding(
+              padding: const EdgeInsets.only(left: 16.0, right: 16.0),
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Text(
+                        widget.rolloutStrategy == null
+                            ? 'default'
+                            : widget.rolloutStrategy.name,
                         style: Theme.of(context).textTheme.caption),
-                  ),
-                ]);
+                    SizedBox(
+                      width: 4.0,
+                    ),
+                    DropdownButton(
+                      items: <String>['On', 'Off']
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(
+                            value,
+                            style: Theme.of(context).textTheme.bodyText2,
+                          ),
+                        );
+                      }).toList(),
+                      value: featureOn,
+                      onChanged: snap.data == false && canWrite
+                          ? (value) {
+                              if (widget.rolloutStrategy == null) {
+                                widget.fvBloc.dirty(
+                                    widget.environmentFeatureValue
+                                        .environmentId, (current) {
+                                  current.value = (value == 'On');
+                                });
+                              } else {
+                                widget.rolloutStrategy.value = (value == 'On');
+                                widget.strBloc.markDirty();
+                              }
+                              setState(() {
+                                featureOn = value;
+                              });
+                            }
+                          : null,
+                      disabledHint: Text(
+                          widget.featureValue.locked ? 'Locked' : 'No access',
+                          style: Theme.of(context).textTheme.caption),
+                    ),
+                  ]),
+            );
           }
           return SizedBox.shrink();
         });
@@ -88,7 +105,11 @@ class _FeatureValueBooleanEnvironmentCellState
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    featureOn = widget.featureValue.valueBoolean ? 'On' : 'Off';
+    if (widget.rolloutStrategy == null) {
+      featureOn = widget.featureValue.valueBoolean ? 'On' : 'Off';
+    } else {
+      featureOn = widget.rolloutStrategy.value ? 'On' : 'Off';
+    }
   }
 }
 
@@ -107,7 +128,7 @@ class _CustomStrategyBloc extends Bloc {
       : featureValue = fvBloc
             .featureValueByEnvironment(environmentFeatureValue.environmentId) {
     _strategySource.add(featureValue.rolloutStrategies);
-}
+  }
 
   void markDirty() {
     fvBloc.dirty(environmentFeatureValue.environmentId, (current) {
@@ -174,7 +195,14 @@ class FeatureValueBooleanCellEditor extends StatelessWidget {
                                   child: Column(
                                 children: [
                                   for (RolloutStrategy strategy in snap.data)
-                                    Text(strategy.name)
+                                    FeatureValueBooleanEnvironmentCell(
+                                      environmentFeatureValue:
+                                          environmentFeatureValue,
+                                      feature: feature,
+                                      fvBloc: fvBloc,
+                                      strBloc: strategyBloc,
+                                      rolloutStrategy: strategy,
+                                    ),
                                 ],
                               ));
 
