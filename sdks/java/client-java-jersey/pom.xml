@@ -67,6 +67,7 @@
           <artifactId>connect-app-declare-config</artifactId>
         </exclusion>
       </exclusions>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
