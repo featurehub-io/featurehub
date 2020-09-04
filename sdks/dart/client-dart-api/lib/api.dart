@@ -22,3 +22,6 @@ part 'model/rollout_strategy_attribute.dart';
 part 'model/rollout_strategy_attribute_conditional.dart';
 part 'model/rollout_strategy_field_type.dart';
 part 'model/sse_result_state.dart';
+part 'model/strategy_attribute_country_name.dart';
+part 'model/strategy_attribute_device_name.dart';
+part 'model/strategy_attribute_platform_name.dart';

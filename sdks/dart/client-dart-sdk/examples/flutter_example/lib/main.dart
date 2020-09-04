@@ -1,3 +1,4 @@
+import 'package:featurehub_client_api/api.dart';
 import 'package:featurehub_client_sdk/featurehub.dart';
 import 'package:featurehub_client_sdk/featurehub_get.dart';
 import 'package:flutter/material.dart';
@@ -26,9 +27,15 @@ void main() {
   featurehubApi = FeatureHubSimpleApi(
       'http://127.0.0.1:8553',
       [
-        'default/ce6b5f90-2a8a-4b29-b10f-7f1c98d878fe/VNftuX5LV6PoazPZsEEIBujM4OBqA1Iv9f9cBGho2LJylvxXMXKGxwD14xt2d7Ma3GHTsdsSO8DTvAYF'
+        'default/ec6a720b-71ac-4cc1-8da1-b5e396fa00ca/Kps0MAqsGt5QhgmwMEoRougAflM2b8Q9e1EFeBPHtuIF0azpcCXeeOw1DabFojYdXXr26fyycqjBt3pa'
       ],
       featurehub);
+  featurehub.clientContext
+      .userKey('susanna')
+      .device(StrategyAttributeDeviceName.desktop)
+      .platform(StrategyAttributePlatformName.macos)
+      .attr('sausage', 'cumberlands')
+      .build();
   featurehubApi.request();
   runApp(MyApp());
 }

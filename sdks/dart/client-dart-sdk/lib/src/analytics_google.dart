@@ -23,8 +23,8 @@ class GoogleAnalyticsListener {
   GoogleAnalyticsListener(ClientFeatureRepository repository, this.ua,
       {String cid, GoogleAnalyticsApiClient apiClient})
       : _repository = repository,
-        this._cid = cid,
-        this._apiClient = apiClient ?? GoogleAnalyticsDioApiClient(),
+        _cid = cid,
+        _apiClient = apiClient ?? GoogleAnalyticsDioApiClient(),
         assert(ua != null),
         assert(repository != null) {
     _analyticsListener = _repository.analyticsEvent.listen(_analyticsPublisher);
@@ -46,7 +46,6 @@ class GoogleAnalyticsListener {
         (event.other != null) ? (event.other['cid']?.toString() ?? _cid) : _cid;
 
     if (finalCid == null) {
-      print("cid is null");
       _log.severe('Unable to log GA event as no CID provided.');
       return;
     }
@@ -55,22 +54,22 @@ class GoogleAnalyticsListener {
         ? '&ev=' + Uri.encodeQueryComponent(event.other[_GA_KEY] ?? '')
         : '';
 
-    String batchData = "";
+    var batchData = '';
 
     final baseForEachLine = 'v=1&tid=' +
         ua +
-        "&cid=" +
+        '&cid=' +
         finalCid +
-        "&t=event&ec=FeatureHub%20Event&ea=" +
+        '&t=event&ec=FeatureHub%20Event&ea=' +
         Uri.encodeQueryComponent(event.action) +
         ev +
-        "&el=";
+        '&el=';
 
     event.features.forEach((f) {
       String line;
       switch (f.type) {
         case FeatureValueType.BOOLEAN:
-          line = f.booleanValue ? "on" : "off";
+          line = f.booleanValue ? 'on' : 'off';
           break;
         case FeatureValueType.STRING:
           line = f.stringValue;
@@ -91,7 +90,6 @@ class GoogleAnalyticsListener {
     });
 
     if (batchData.isNotEmpty) {
-      print(batchData);
       _apiClient.postAnalyticBatch(batchData);
     }
   }
@@ -104,15 +102,14 @@ abstract class GoogleAnalyticsApiClient {
 class GoogleAnalyticsDioApiClient implements GoogleAnalyticsApiClient {
   final Dio _dio;
 
-  GoogleAnalyticsDioApiClient() : _dio = new Dio();
+  GoogleAnalyticsDioApiClient() : _dio = Dio();
 
   @override
   void postAnalyticBatch(String data) {
     _dio
         .post('https://www.google-analytics.com/batch',
             data: data,
-            options:
-                new Options(contentType: 'application/x-www-form-urlencoded'))
+            options: Options(contentType: 'application/x-www-form-urlencoded'))
         .catchError((e, s) => _log.severe('Failed to update GA', e, s));
   }
 }

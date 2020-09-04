@@ -14,6 +14,9 @@ class EventSourceRepositoryListener {
   final ClientFeatureRepository _repository;
   StreamSubscription<Event> _subscription;
   final String url;
+  bool _initialized = false;
+  bool _closed = false;
+  String _xFeaturehubHeader;
 
   EventSourceRepositoryListener(this.url, ClientFeatureRepository repository,
       {bool doInit = true})
@@ -23,16 +26,35 @@ class EventSourceRepositoryListener {
     }
   }
 
+  Future<void> init() async {
+    if (!_initialized) {
+      _initialized = true;
+      await _repository.clientContext.registerChangeHandler((header) async {
+        _xFeaturehubHeader = header;
+        if (_subscription != null) {
+          retry();
+        } else {
+          // ignore: unawaited_futures
+          _init();
+        }
+      });
+    } else {
+      _repository.clientContext
+          .build(); // trigger shut and restart via the handler above
+    }
+  }
+
   void retry() {
     if (_subscription != null) {
       _subscription.cancel();
       _subscription = null;
-    }
 
-    init();
+      _init();
+    }
   }
 
-  Future<void> init() async {
+  Future<void> _init() async {
+    _closed = false;
     _log.fine('Connecting to $url');
     final es = await connect(url);
 
@@ -43,13 +65,13 @@ class EventSourceRepositoryListener {
         _repository.notify(SSEResultStateTypeTransformer.fromJson(event.event),
             event.data == null ? null : jsonDecode(event.data));
       }
-      if (event.event == 'bye' && readyness != Readyness.Failed) {
+      if (event.event == 'bye' && readyness != Readyness.Failed && !_closed) {
         retry();
       }
     }, onError: (e) {
       _repository.notify(SSEResultState.bye, null);
     }, onDone: () {
-      if (_repository.readyness != Readyness.Failed) {
+      if (_repository.readyness != Readyness.Failed && !_closed) {
         _repository.notify(SSEResultState.bye, null);
         retry();
       }
@@ -57,12 +79,16 @@ class EventSourceRepositoryListener {
   }
 
   Future<Stream<Event>> connect(String url) {
+    var sourceHeaders = {'content-type': 'application/json'};
+    if (_xFeaturehubHeader != null) {
+      sourceHeaders['x-featurehub'] = _xFeaturehubHeader;
+    }
     return EventSource.connect(url,
-        closeOnLastListener: true,
-        headers: {'content-type': 'application/json'});
+        closeOnLastListener: true, headers: sourceHeaders);
   }
 
   void close() {
+    _closed = true;
     if (_subscription != null) {
       _subscription.cancel();
       _subscription = null;
