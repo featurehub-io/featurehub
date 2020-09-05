@@ -1,7 +1,7 @@
 import 'package:app_singleapp/utils/utils.dart';
+import 'package:app_singleapp/widgets/common/input_fields_validators/input_field_number_formatter.dart';
 import 'package:app_singleapp/widgets/features/feature_value_updated_by.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:mrapi/api.dart';
 
 import 'feature_value_row_locked.dart';
@@ -91,35 +91,6 @@ class _FeatureValueNumberEnvironmentCellState
   }
 }
 
-class DecimalTextInputFormatter extends TextInputFormatter {
-  DecimalTextInputFormatter({int decimalRange, bool activatedNegativeValues})
-      : assert(decimalRange == null || decimalRange >= 0,
-            'DecimalTextInputFormatter declaration error') {
-    final dp = (decimalRange != null && decimalRange > 0)
-        ? '([.][0-9]{0,$decimalRange}){0,1}'
-        : '';
-    final num = '[0-9]*$dp';
-
-    if (activatedNegativeValues) {
-      _exp = RegExp('^((((-){0,1})|((-){0,1}[0-9]$num))){0,1}\$');
-    } else {
-      _exp = RegExp('^($num){0,1}\$');
-    }
-  }
-
-  RegExp _exp;
-
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    if (_exp.hasMatch(newValue.text)) {
-      return newValue;
-    }
-    return oldValue;
-  }
-}
 
 class FeatureValueNumberCellEditor extends StatelessWidget {
   final EnvironmentFeatureValues environmentFeatureValue;

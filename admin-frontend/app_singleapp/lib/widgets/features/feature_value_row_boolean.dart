@@ -1,9 +1,12 @@
-import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
+import 'package:app_singleapp/widgets/common/fh_icon_text_button.dart';
+import 'package:app_singleapp/widgets/common/fh_underline_button.dart';
+import 'package:app_singleapp/widgets/features/create-strategy-widget.dart';
+import 'package:app_singleapp/widgets/features/custom_strategy_bloc.dart';
 import 'package:app_singleapp/widgets/features/feature_value_updated_by.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
-import 'package:rxdart/rxdart.dart';
 
 import 'feature_value_row_locked.dart';
 import 'feature_values_bloc.dart';
@@ -16,7 +19,7 @@ class FeatureValueBooleanEnvironmentCell extends StatefulWidget {
   final FeatureValuesBloc fvBloc;
   final FeatureValue featureValue;
   final RolloutStrategy rolloutStrategy;
-  final _CustomStrategyBloc strBloc;
+  final CustomStrategyBloc strBloc;
 
   FeatureValueBooleanEnvironmentCell(
       {Key key,
@@ -53,11 +56,18 @@ class _FeatureValueBooleanEnvironmentCellState
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
-                    Text(
-                        widget.rolloutStrategy == null
-                            ? 'default'
-                            : widget.rolloutStrategy.name,
-                        style: Theme.of(context).textTheme.caption),
+              widget.rolloutStrategy == null ?
+                    Text('default', style: Theme.of(context).textTheme.caption) :
+                        FHUnderlineButton(title: widget.rolloutStrategy.name,
+              onPressed: () => {
+                          widget.fvBloc.mrClient.addOverlay((BuildContext context) {
+              //return null;
+              return CreateValueStrategyWidget(
+                fvBloc: widget.fvBloc,
+                bloc: widget.strBloc,
+                rolloutStrategy: widget.rolloutStrategy,
+              );
+                        })}),
                     SizedBox(
                       width: 4.0,
                     ),
@@ -113,40 +123,6 @@ class _FeatureValueBooleanEnvironmentCellState
   }
 }
 
-class _CustomStrategyBloc extends Bloc {
-  final EnvironmentFeatureValues environmentFeatureValue;
-  final Feature feature;
-  final FeatureValuesBloc fvBloc;
-  final FeatureValue featureValue;
-
-  final _strategySource =
-      BehaviorSubject<List<RolloutStrategy>>.seeded(<RolloutStrategy>[]);
-
-  Stream<List<RolloutStrategy>> get strategies => _strategySource.stream;
-
-  _CustomStrategyBloc(this.environmentFeatureValue, this.feature, this.fvBloc)
-      : featureValue = fvBloc
-            .featureValueByEnvironment(environmentFeatureValue.environmentId) {
-    _strategySource.add(featureValue.rolloutStrategies);
-  }
-
-  void markDirty() {
-    fvBloc.dirty(environmentFeatureValue.environmentId, (current) {
-      current.customStrategies = _strategySource.value;
-    });
-  }
-
-  // call from + Add Strategy to add one
-  void addStrategy(RolloutStrategy rs) {
-    final strategies = _strategySource.value;
-    strategies.add(rs);
-    markDirty();
-    _strategySource.add(strategies);
-  }
-
-  @override
-  void dispose() {}
-}
 
 class FeatureValueBooleanCellEditor extends StatelessWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
@@ -179,11 +155,11 @@ class FeatureValueBooleanCellEditor extends StatelessWidget {
             ),
             BlocProvider(
               creator: (_c, _b) =>
-                  _CustomStrategyBloc(environmentFeatureValue, feature, fvBloc),
+                  CustomStrategyBloc(environmentFeatureValue, feature, fvBloc),
               child: Builder(
                 builder: (ctx) {
                   final strategyBloc =
-                      BlocProvider.of<_CustomStrategyBloc>(ctx);
+                      BlocProvider.of<CustomStrategyBloc>(ctx);
 
                   return Column(
                     children: [
@@ -213,7 +189,7 @@ class FeatureValueBooleanCellEditor extends StatelessWidget {
                               return Container();
                             }
                           }),
-                      _AddStrategyButton()
+                      _AddStrategyButton(bloc: strategyBloc, fvBloc: fvBloc,)
                     ],
                   );
                 },
@@ -232,15 +208,30 @@ class FeatureValueBooleanCellEditor extends StatelessWidget {
 }
 
 class _AddStrategyButton extends StatelessWidget {
+  final CustomStrategyBloc bloc;
+  final FeatureValuesBloc fvBloc;
+
+  const _AddStrategyButton({Key key, this.bloc, this.fvBloc}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    return FHFlatButtonTransparent(
-      title: '+ Add strategy',
+    return FHIconTextButton(
+      label: 'Split rollout',
+      iconData: AntDesign.fork,
+      color: Colors.purple,
+      size: 16.0,
       keepCase: true,
-      onPressed: () {
-        BlocProvider.of<_CustomStrategyBloc>(context)
-            .addStrategy(RolloutStrategy());
-      },
+        onPressed: () =>
+            fvBloc.mrClient.addOverlay((BuildContext context) {
+              //return null;
+              return CreateValueStrategyWidget(
+                fvBloc: fvBloc,
+                bloc: bloc,
+              );
+            }),
+//        BlocProvider.of<_CustomStrategyBloc>(context)
+//            .addStrategy(RolloutStrategy());
+
     );
   }
 }
