@@ -42,17 +42,17 @@ class BooleanContainer extends StatelessWidget {
     return Container(
       width: 170,
       child: Stack(children: [
-        if (fv.locked)
-          Center(
-            child: Opacity(
-              opacity: 0.40,
-              child: Icon(
-                Icons.lock_outline,
-                color: Colors.black12,
-                size: 50.0,
-              ),
-            ),
-          ),
+//        if (fv.locked)
+//          Center(
+//            child: Opacity(
+//              opacity: 0.40,
+//              child: Icon(
+//                Icons.lock_outline,
+//                color: Colors.black12,
+//                size: 80.0,
+//              ),
+//            ),
+//          ),
         Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -78,7 +78,7 @@ class StrategiesList extends StatelessWidget {
     return Column(
       children: [
         for (RolloutStrategy rsi in fv.rolloutStrategies)
-          _FlagValueContainer(name: rsi.name, value: rsi.value)
+          _FlagValueContainer(name: rsi.name, value: rsi.value, percentage: rsi.percentage,)
       ],
     );
   }
@@ -87,8 +87,9 @@ class StrategiesList extends StatelessWidget {
 class _FlagValueContainer extends StatelessWidget {
   final String name;
   final bool value;
+  final int percentage;
 
-  const _FlagValueContainer({Key key, this.name, this.value}) : super(key: key);
+  const _FlagValueContainer({Key key, this.name, this.value, this.percentage}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -105,6 +106,7 @@ class _FlagValueContainer extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(name, style: Theme.of(context).textTheme.caption),
+            if(percentage != null)Text('${(percentage / 100).toString()}%', style: Theme.of(context).textTheme.overline),
             FlagOnOffColoredIndicator(on: value)
           ],
         ),

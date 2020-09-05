@@ -11,13 +11,13 @@ class CustomStrategyBloc extends Bloc {
   final FeatureValue featureValue;
 
   final _strategySource =
-  BehaviorSubject<List<RolloutStrategy>>.seeded(<RolloutStrategy>[]);
+      BehaviorSubject<List<RolloutStrategy>>.seeded(<RolloutStrategy>[]);
 
   Stream<List<RolloutStrategy>> get strategies => _strategySource.stream;
 
   CustomStrategyBloc(this.environmentFeatureValue, this.feature, this.fvBloc)
       : featureValue = fvBloc
-      .featureValueByEnvironment(environmentFeatureValue.environmentId) {
+            .featureValueByEnvironment(environmentFeatureValue.environmentId) {
     _strategySource.add(featureValue.rolloutStrategies);
   }
 
@@ -27,7 +27,6 @@ class CustomStrategyBloc extends Bloc {
     });
   }
 
-  // call from + Add Strategy to add one
   void addStrategy(RolloutStrategy rs) {
     final strategies = _strategySource.value;
     strategies.add(rs);
@@ -35,9 +34,8 @@ class CustomStrategyBloc extends Bloc {
     _strategySource.add(strategies);
   }
 
-  void updateStrategy(RolloutStrategy rs) {
+  void updateStrategy() {
     final strategies = _strategySource.value;
-    strategies.firstWhere((element) => element.id == rs.id)..name = rs.name..percentage = rs.percentage;
     markDirty();
     _strategySource.add(strategies);
   }

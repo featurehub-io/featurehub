@@ -143,19 +143,16 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
                   if (_formKey.currentState.validate()) {
                     try {
                       if (isUpdate) {
-                      widget.bloc.updateStrategy(widget.rolloutStrategy..name = _strategyName.text..percentage = int.parse(_strategyPercentage.text) * 100);
+                      widget.rolloutStrategy..name = _strategyName.text..percentage = (double.parse(_strategyPercentage.text) * 100).toInt();
+                      widget.bloc.updateStrategy();
                         widget.fvBloc.mrClient.removeOverlay();
-                        widget.fvBloc.mrClient.addSnackbar(
-                            Text('Strategy ${_strategyName.text} updated!'));
                       } else {
                         if (_dropDownStrategyType != null) {
                           widget.bloc.addStrategy(RolloutStrategy()
                             ..name = _strategyName.text
-                            ..percentage = int.parse(_strategyPercentage.text) * 100
+                            ..percentage = (double.parse(_strategyPercentage.text) * 100).toInt()
                             ..value = false);
                           widget.fvBloc.mrClient.removeOverlay();
-                          widget.fvBloc.mrClient.addSnackbar(
-                              Text('Strategy ${_strategyName.text} created!'));
                         } else {
                           setState(() {
                             isError = true;
