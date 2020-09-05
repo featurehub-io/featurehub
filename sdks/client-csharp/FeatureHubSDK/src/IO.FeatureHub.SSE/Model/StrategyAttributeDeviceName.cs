@@ -25,36 +25,30 @@ using OpenAPIDateConverter = IO.FeatureHub.SSE.Client.OpenAPIDateConverter;
 namespace IO.FeatureHub.SSE.Model
 {
     /// <summary>
-    /// Defines RoleType
+    /// Defines StrategyAttributeDeviceName
     /// </summary>
     
     [JsonConverter(typeof(StringEnumConverter))]
     
-    public enum RoleType
+    public enum StrategyAttributeDeviceName
     {
         /// <summary>
-        /// Enum READ for value: READ
+        /// Enum Browser for value: browser
         /// </summary>
-        [EnumMember(Value = "READ")]
-        READ = 1,
+        [EnumMember(Value = "browser")]
+        Browser = 1,
 
         /// <summary>
-        /// Enum LOCK for value: LOCK
+        /// Enum Mobile for value: mobile
         /// </summary>
-        [EnumMember(Value = "LOCK")]
-        LOCK = 2,
+        [EnumMember(Value = "mobile")]
+        Mobile = 2,
 
         /// <summary>
-        /// Enum UNLOCK for value: UNLOCK
+        /// Enum Desktop for value: desktop
         /// </summary>
-        [EnumMember(Value = "UNLOCK")]
-        UNLOCK = 3,
-
-        /// <summary>
-        /// Enum CHANGEVALUE for value: CHANGE_VALUE
-        /// </summary>
-        [EnumMember(Value = "CHANGE_VALUE")]
-        CHANGEVALUE = 4
+        [EnumMember(Value = "desktop")]
+        Desktop = 3
 
     }
 

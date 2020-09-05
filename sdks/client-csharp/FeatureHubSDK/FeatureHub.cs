@@ -68,6 +68,71 @@ namespace FeatureHubSDK
     //IFeatureStateHolder Copy();
   }
 
+  public interface IClientContext
+  {
+    event EventHandler<string> ContextUpdateHandler;
+
+    IClientContext UserKey(string key);
+    IClientContext SessionKey(string key);
+    IClientContext Device(StrategyAttributeDeviceName device);
+    IClientContext Platform(StrategyAttributePlatformName platform);
+    IClientContext Country(StrategyAttributeCountryName country);
+    IClientContext Attr(string key, string value);
+    IClientContext Attrs(string key, List<string> values);
+    IClientContext Clear();
+    void Build();
+  }
+
+  internal class ClientContext : IClientContext
+  {
+    private Dictionary<string, List<string>> attributes = new Dictionary<string,List<string>>();
+    public event EventHandler<string> ContextUpdateHandler;
+    public IClientContext UserKey(string key)
+    {
+      attributes.Add("userKey", [key]);
+    }
+
+    public IClientContext SessionKey(string key)
+    {
+      throw new NotImplementedException();
+    }
+
+    public IClientContext Device(StrategyAttributeDeviceName device)
+    {
+      throw new NotImplementedException();
+    }
+
+    public IClientContext Platform(StrategyAttributePlatformName platform)
+    {
+      throw new NotImplementedException();
+    }
+
+    public IClientContext Country(StrategyAttributeCountryName country)
+    {
+      throw new NotImplementedException();
+    }
+
+    public IClientContext Attr(string key, string value)
+    {
+      throw new NotImplementedException();
+    }
+
+    public IClientContext Attrs(string key, List<string> values)
+    {
+      throw new NotImplementedException();
+    }
+
+    public IClientContext Clear()
+    {
+      throw new NotImplementedException();
+    }
+
+    public void Build()
+    {
+      throw new NotImplementedException();
+    }
+  }
+
   internal class FeatureStateBaseHolder : IFeatureStateHolder
   {
     private static readonly ILog log = LogManager.GetLogger<FeatureStateBaseHolder>();
