@@ -95,7 +95,7 @@ readyness listener.
 If you choose to not have listeners, when you call:
 
 ```dart
-featureHubRepository.release();
+_repository.release();
 ```
 
 
@@ -143,6 +143,41 @@ to the repository.
 
 If the request has no data or an SDK Url that doesn't exist, that is not considered an error because they may just
 not yet be available and you don't want your application to fail.
+
+## Rollout Strategies
+
+FeatureHub at its core now supports server side evaluation of complex rollout strategies, both custom ones
+that are applied to individual feature values in a specific environment and shared ones across multiple environments
+in an application.
+
+This will in the next milestone (1.1) move to local SDK support as well as server side SDK support.
+
+To provide this ability for the strategy engine to know how to apply the strategies, you need to provide it
+information. There are five things we track specifically: user key, session key, country, device and platform and
+over time will be able to provide more intelligence over, but you can attach anything you like, both individual
+attributes and arrays of attributes.
+
+```dart
+_repository.clientContext.userKey("ideally-unique-id")
+  .country(StrategyAttributeCountryName.NewZealand)
+  .device(StrategyAttributeDeviceName.Mobile)
+  .build(); 
+
+```
+
+The `build()` method will trigger the regeneration of a special header (`x-featurehub`). This in turn
+will automatically retrigger a refresh of your events if you have already connected (unless you are using polling
+client).
+
+To add a generic key/value pair, use `attr(key, value)`, to use an array of values there is
+`attrs(key, List<String>)`. You can also `clear()`.
+
+In all cases, you need to call `build()` to re-trigger passing of the new attributes to the server for recalculation.
+
+By default, the _user key_ is used for percentage based calculations, and without it, you cannot participate in
+percentage based Rollout Strategies ("experiments"). However, a more advanced feature does let you specify other
+attributes (e.g. _company_, or _store_) that would allow you to specify your experiment on. For more details on how
+experiments work with Rollout Strategies, see the [core documentation](https://docs.featurehub.io).
     
 ## FeatureHub Test API
 
