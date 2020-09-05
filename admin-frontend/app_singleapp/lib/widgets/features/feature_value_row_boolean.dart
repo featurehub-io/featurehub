@@ -1,4 +1,3 @@
-import 'package:app_singleapp/widgets/common/fh_icon_text_button.dart';
 import 'package:app_singleapp/widgets/common/fh_underline_button.dart';
 import 'package:app_singleapp/widgets/features/create-strategy-widget.dart';
 import 'package:app_singleapp/widgets/features/custom_strategy_bloc.dart';
@@ -183,18 +182,24 @@ class FeatureValueBooleanCellEditor extends StatelessWidget {
                                     ),
                                 ],
                               ));
-
-                              // render your strategies and stuff here, have them remove
-                              // themselves from the parent bloc and each  time it does so
-                              // it needs to trigger "dirty" call in fvBloc
                             } else {
                               return Container();
                             }
                           }),
-                      _AddStrategyButton(
-                        bloc: strategyBloc,
-                        fvBloc: fvBloc,
-                      )
+                      StreamBuilder<bool>(
+                          stream: fvBloc.environmentIsLocked(
+                              environmentFeatureValue.environmentId),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              return _AddStrategyButton(
+                                  bloc: strategyBloc,
+                                  fvBloc: fvBloc,
+                                  locked: snapshot.data);
+                            } else {
+                              return Container();
+                            }
+                          }),
+                      _AddStrategyButton(bloc: strategyBloc, fvBloc: fvBloc,)
                     ],
                   );
                 },
@@ -215,24 +220,27 @@ class FeatureValueBooleanCellEditor extends StatelessWidget {
 class _AddStrategyButton extends StatelessWidget {
   final CustomStrategyBloc bloc;
   final FeatureValuesBloc fvBloc;
+  final bool locked;
 
-  const _AddStrategyButton({Key key, this.bloc, this.fvBloc}) : super(key: key);
+  const _AddStrategyButton({Key key, this.bloc, this.fvBloc, this.locked})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return FHIconTextButton(
-      label: 'Split rollout',
-      iconData: AntDesign.fork,
-      color: Colors.purple,
-      size: 16.0,
-      keepCase: true,
-      onPressed: () => fvBloc.mrClient.addOverlay((BuildContext context) {
-        //return null;
-        return CreateValueStrategyWidget(
-          fvBloc: fvBloc,
-          bloc: bloc,
-        );
-      }),
+    return FlatButton.icon(
+      label: Text('Split rollout'),
+      disabledColor: Colors.black12,
+      color: Theme.of(context).primaryColorLight,
+      disabledTextColor: Colors.black38,
+      icon: Icon(AntDesign.fork, color: Colors.purple, size: 16.0),
+      onPressed: !locked ? () =>
+          fvBloc.mrClient.addOverlay((BuildContext context) {
+            //return null;
+            return CreateValueStrategyWidget(
+              fvBloc: fvBloc,
+              bloc: bloc,
+            );
+          }) : null
 //        BlocProvider.of<_CustomStrategyBloc>(context)
 //            .addStrategy(RolloutStrategy());
     );
