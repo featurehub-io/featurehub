@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:bloc_provider/bloc_provider.dart';
@@ -40,6 +41,10 @@ class FeatureValuesBloc implements Bloc {
   final _dirty = <String, bool>{};
   final _dirtyLock = <String, bool>{};
   final _dirtyValues = <String, FeatureValueDirtyHolder>{};
+
+  int get maxLines => _dirtyValues.values
+      .map((e) => 1 + e.customStrategies.length + e.sharedStrategies.length)
+      .reduce(max);
 
   // if any of the values are updated, this stream shows true, it can flick on and off during its lifetime
   final _dirtyBS = BehaviorSubject<bool>();
@@ -152,6 +157,10 @@ class FeatureValuesBloc implements Bloc {
       // make a copy so our changes don't leak back into the main list
       _newFeatureValues[fv.environmentId] = fv.copyWith();
       _originalFeatureValues[fv.environmentId] = fv.copyWith();
+      _dirtyValues[fv.key] = FeatureValueDirtyHolder()
+        ..value = fv
+        ..customStrategies = fv.rolloutStrategies
+        ..sharedStrategies = fv.rolloutStrategyInstances;
     });
   }
 

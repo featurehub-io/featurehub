@@ -94,8 +94,14 @@ class FeatureValueCell extends StatelessWidget {
             }
           }
 
+          final extra = tabsBloc.featureExtraCellHeight(feature);
+          // final panelH =
+          //     extra + (amSelected ? selectedRowHeight : unselectedRowHeight);
+
           return Container(
-              height: amSelected ? selectedRowHeight : unselectedRowHeight,
+              color: Colors.red,
+              height: extra +
+                  (amSelected ? selectedRowHeight : unselectedRowHeight),
               child: cellWidget);
         });
   }

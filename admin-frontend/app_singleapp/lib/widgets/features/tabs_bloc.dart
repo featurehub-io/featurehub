@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:app_singleapp/api/client_api.dart';
+import 'package:app_singleapp/widgets/features/feature_dashboard_constants.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart';
@@ -85,13 +87,81 @@ class TabsBloc implements Bloc {
     shownEnvironments = environments;
   }
 
+  double featureExtraCellHeight(Feature feature) {
+    final selected = _currentlyEditingFeatureKeys.contains(feature.key);
+
+    if (selected) {
+      return featureValueBlocs.values.map((e) => e.maxLines).reduce(max) *
+          selectedRowHeightPerStrategy;
+    } else {
+      // find the max rows for this feature
+      final maxRowsForFeature =
+          (featureStatus.applicationFeatureValues.environments.map((e) {
+        final fv = e.features
+            .firstWhere((fw) => fw.key == feature.key, orElse: () => null);
+
+        return (fv == null)
+            ? 0
+            : (fv.rolloutStrategies.length +
+                fv.rolloutStrategyInstances.length);
+      }).reduce(max));
+
+      return maxRowsForFeature * unselectedRowHeightPerStrategy;
+    }
+  }
+
   int get unselectedFeatureCount => _featuresForTabs
       .where((f) => !_currentlyEditingFeatureKeys.contains(f.key))
       .length;
 
+  /// this gives the total height for the entire table based on
+  /// what tab we are on and what environments we have hidden
+  double get unselectedFeatureCountForHeight {
+    // go through the features on this tab and find those we are NOT
+    // currently editing
+    final sel = _featuresForTabs
+        .where((f) => !_currentlyEditingFeatureKeys.contains(f.key));
+    if (sel.isEmpty) {
+      return 0;
+    }
+    final unselectedKeys = sel.map((e) => e.key).toList();
+    // go through all environments looking for this feature, and where
+    // there are feature values, figure out how many lines they will take
+    final maxLinesInAllFeatures =
+        featureStatus.applicationFeatureValues.environments.map((e) {
+      final fv = e.features.firstWhere(
+          (fw) => fw.key != null && unselectedKeys.contains(fw.key),
+          orElse: () => null);
+
+      final r = (fv == null)
+          ? 0
+          : (fv.rolloutStrategies.length + fv.rolloutStrategyInstances.length);
+      return r;
+    }).reduce(max);
+
+    final retVal = (maxLinesInAllFeatures * unselectedRowHeightPerStrategy) +
+        unselectedRowHeight;
+    return retVal;
+  }
+
   int get selectedFeatureCount => _featuresForTabs
       .where((f) => _currentlyEditingFeatureKeys.contains(f.key))
       .length;
+
+  double get selectedFeatureCountForHeight {
+    final sel = _featuresForTabs
+        .where((f) => _currentlyEditingFeatureKeys.contains(f.key));
+    if (sel.isEmpty) {
+      return 0;
+    }
+
+    return sel
+                .map((e) =>
+                    featureValueBlocs.values.map((e) => e.maxLines).reduce(max))
+                .reduce((a, b) => a + b) *
+            selectedRowHeightPerStrategy +
+        selectedRowHeight;
+  }
 
   // turns them into a map for easy access
   void _refixFeaturesByKey() {

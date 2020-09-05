@@ -56,18 +56,22 @@ class _FeatureValueBooleanEnvironmentCellState
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
-              widget.rolloutStrategy == null ?
-                    Text('default', style: Theme.of(context).textTheme.caption) :
-                        FHUnderlineButton(title: widget.rolloutStrategy.name,
-              onPressed: () => {
-                          widget.fvBloc.mrClient.addOverlay((BuildContext context) {
-              //return null;
-              return CreateValueStrategyWidget(
-                fvBloc: widget.fvBloc,
-                bloc: widget.strBloc,
-                rolloutStrategy: widget.rolloutStrategy,
-              );
-                        })}),
+                    widget.rolloutStrategy == null
+                        ? Text('default',
+                            style: Theme.of(context).textTheme.caption)
+                        : FHUnderlineButton(
+                            title: widget.rolloutStrategy.name,
+                            onPressed: () => {
+                                  widget.fvBloc.mrClient
+                                      .addOverlay((BuildContext context) {
+                                    //return null;
+                                    return CreateValueStrategyWidget(
+                                      fvBloc: widget.fvBloc,
+                                      bloc: widget.strBloc,
+                                      rolloutStrategy: widget.rolloutStrategy,
+                                    );
+                                  })
+                                }),
                     SizedBox(
                       width: 4.0,
                     ),
@@ -123,7 +127,6 @@ class _FeatureValueBooleanEnvironmentCellState
   }
 }
 
-
 class FeatureValueBooleanCellEditor extends StatelessWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
   final Feature feature;
@@ -158,8 +161,7 @@ class FeatureValueBooleanCellEditor extends StatelessWidget {
                   CustomStrategyBloc(environmentFeatureValue, feature, fvBloc),
               child: Builder(
                 builder: (ctx) {
-                  final strategyBloc =
-                      BlocProvider.of<CustomStrategyBloc>(ctx);
+                  final strategyBloc = BlocProvider.of<CustomStrategyBloc>(ctx);
 
                   return Column(
                     children: [
@@ -189,7 +191,10 @@ class FeatureValueBooleanCellEditor extends StatelessWidget {
                               return Container();
                             }
                           }),
-                      _AddStrategyButton(bloc: strategyBloc, fvBloc: fvBloc,)
+                      _AddStrategyButton(
+                        bloc: strategyBloc,
+                        fvBloc: fvBloc,
+                      )
                     ],
                   );
                 },
@@ -221,17 +226,15 @@ class _AddStrategyButton extends StatelessWidget {
       color: Colors.purple,
       size: 16.0,
       keepCase: true,
-        onPressed: () =>
-            fvBloc.mrClient.addOverlay((BuildContext context) {
-              //return null;
-              return CreateValueStrategyWidget(
-                fvBloc: fvBloc,
-                bloc: bloc,
-              );
-            }),
+      onPressed: () => fvBloc.mrClient.addOverlay((BuildContext context) {
+        //return null;
+        return CreateValueStrategyWidget(
+          fvBloc: fvBloc,
+          bloc: bloc,
+        );
+      }),
 //        BlocProvider.of<_CustomStrategyBloc>(context)
 //            .addStrategy(RolloutStrategy());
-
     );
   }
 }

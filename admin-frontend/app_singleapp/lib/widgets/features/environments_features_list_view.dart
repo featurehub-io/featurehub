@@ -26,12 +26,12 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                     stream: bloc.featureCurrentlyEditingStream,
                     builder: (context, snapshot) {
                       return Container(
-                        height: (bloc.unselectedFeatureCount *
-                                unselectedRowHeight) +
-                            (bloc.selectedFeatureCount * selectedRowHeight +
-                                1.0) +
+                        color: Colors.purple,
+                        height: bloc.unselectedFeatureCountForHeight +
+                            bloc.selectedFeatureCountForHeight +
                             headerHeight +
-                            2,
+                            2 +
+                            35,
                         child: Scrollbar(
                           child: ListView(
                             scrollDirection: Axis.horizontal,
@@ -48,10 +48,12 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                                       children: [
                                         Container(
                                           width: 230,
-                                        color: Theme.of(context).highlightColor,
+                                          color:
+                                              Theme.of(context).highlightColor,
                                           height: headerHeight,
                                           child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: [
                                               HideEnvironmentContainer(
                                                 name: efv.environmentName,
