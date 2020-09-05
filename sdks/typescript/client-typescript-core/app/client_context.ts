@@ -1,4 +1,8 @@
-import { StrategyAttributeCountryName, StrategyAttributeDeviceName, StrategyAttributePlatformName } from './models/models';
+import {
+  StrategyAttributeCountryName,
+  StrategyAttributeDeviceName,
+  StrategyAttributePlatformName
+} from './models/models';
 
 export interface ConfigChangedListener {
   (config: ClientContext);
@@ -47,6 +51,11 @@ export class ClientContext {
     return this;
   }
 
+  clear(): ClientContext {
+    this._attributes.clear();
+    return this;
+  }
+
   async build() {
     for (let l of this._listeners) {
       (async () => {
@@ -65,7 +74,8 @@ export class ClientContext {
     try {
       cl(this);
       // tslint:disable-next-line:no-empty
-    } catch (e) {}
+    } catch (e) {
+    }
     return () => {
       const pos = this._listeners.indexOf(cl);
       if (pos >= 0) {
@@ -76,10 +86,12 @@ export class ClientContext {
 
   // we follow the W3C Baggage spec style for encoding
   generateHeader(): string {
-    if (this._attributes.size === 0) { return undefined; }
+    if (this._attributes.size === 0) {
+      return undefined;
+    }
 
     return Array.from(this._attributes.entries()).map((key,
-                                                ) =>
+    ) =>
       key[0] + '=' + encodeURIComponent(key[1].join(','))).join(',');
 
   }

@@ -103,7 +103,14 @@ async initializeFeatureHub() {
         { // update the UI, or tell user it needs to happen });
                                                      
     // prevent updates to features until we say so
-    featureHubRepository.catchAndReleaseMode = true; 
+    featureHubRepository.catchAndReleaseMode = true;
+               
+    // indicate some information about the user and client so we can get the right 
+    // rollout strategies applied to our features
+    featureHubRepository.clientContext.userKey('ideally-unique-id')
+      .country(StrategyAttributeCountryName.NewZealand)
+      .device(StrategyAttributeDeviceName.Browser)
+      .build(); 
 
     // load the config from the config json file
     const config = (await globalAxios.request({url: 'featurehub-config.json'})).data as ConfigData;
@@ -337,6 +344,41 @@ export enum Readyness {
   Failed = 'Failed'
 }
 ```
+## Rollout Strategies
+
+FeatureHub at its core now supports server side evaluation of complex rollout strategies, both custom ones
+that are applied to individual feature values in a specific environment and shared ones across multiple environments
+in an application. 
+
+This will in the next milestone (1.1) move to local SDK support as well as server side SDK support. 
+
+To provide this ability for the strategy engine to know how to apply the strategies, you need to provide it
+information. There are five things we track specifically: user key, session key, country, device and platform and
+over time will be able to provide more intelligence over, but you can attach anything you like, both individual
+attributes and arrays of attributes. 
+
+```typescript
+    featureHubRepository.clientContext.userKey('ideally-unique-id')
+      .country(StrategyAttributeCountryName.NewZealand)
+      .device(StrategyAttributeDeviceName.Browser)
+      .build(); 
+```
+
+The `build()` method will trigger the regeneration of a special header (`x-featurehub`) or parameter (nodejs
+it is a header, the browser needs a parameter as the SSE spec doesn't allow for extra headers). This in turn
+will automatically retrigger a refresh of your events if you have already connected (unless you are using polling
+and your polling interval is set to 0).
+
+To add a generic key/value pair, use `attribute_value(key, value)`, to use an array of values there is 
+`attribute_values(key, Array<value>)`. You can also `clear()`.
+
+In all cases, you need to call `build()` to re-trigger passing of the new attributes to the server for recalculation.
+
+By default, the _user key_ is used for percentage based calculations, and without it, you cannot participate in
+percentage based Rollout Strategies ("experiments"). However, a more advanced feature does let you specify other
+attributes (e.g. _company_, or _store_) that would allow you to specify your experiment on. For more details on how
+experiments work with Rollout Strategies, see the [core documentation](https://docs.featurehub.io).
+
 
 ## Analytics
 
