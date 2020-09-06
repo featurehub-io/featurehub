@@ -204,5 +204,34 @@ namespace FeatureHubTestProject
       _repository.Notify(SSEResultState.Deletefeature, JsonConvert.SerializeObject(feature));
       Assert.IsNull(_repository.FeatureState("1").Version);
     }
+
+    [Test]
+    public void ContextEncodesAsExpected()
+    {
+      _repository.ClientContext
+        .Attr("city", "Istanbul City")
+        .Attrs("family", new List<String> {"Bambam", "DJ Elif"})
+        .Country(StrategyAttributeCountryName.Turkey)
+        .Platform(StrategyAttributePlatformName.Ios)
+        .Device(StrategyAttributeDeviceName.Mobile)
+        .UserKey("tv-show")
+        .SessionKey("session-key");
+
+      string header = null;
+      _repository.ClientContext.ContextUpdateHandler += (sender, h) => header = h;
+      _repository.ClientContext.Build();
+      Assert.AreEqual(header, "city=Istanbul+City,family=Bambam%2cDJ+Elif,country=turkey,platform=ios,device=mobile,userKey=tv-show,sessionKey=session-key");
+
+      // i should be able to do the same thing again
+      _repository.ClientContext
+        .Attr("city", "Istanbul City")
+        .Attrs("family", new List<String> {"Bambam", "DJ Elif"})
+        .Country(StrategyAttributeCountryName.Turkey)
+        .Platform(StrategyAttributePlatformName.Ios)
+        .Device(StrategyAttributeDeviceName.Mobile)
+        .UserKey("tv-show")
+        .SessionKey("session-key");
+
+    }
   }
 }
