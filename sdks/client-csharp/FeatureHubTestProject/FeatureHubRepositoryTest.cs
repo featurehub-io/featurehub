@@ -220,7 +220,7 @@ namespace FeatureHubTestProject
       string header = null;
       _repository.ClientContext.ContextUpdateHandler += (sender, h) => header = h;
       _repository.ClientContext.Build();
-      Assert.AreEqual(header, "city=Istanbul+City,family=Bambam%2cDJ+Elif,country=turkey,platform=ios,device=mobile,userKey=tv-show,sessionKey=session-key");
+      Assert.AreEqual(header, "city=Istanbul+City,family=Bambam%2cDJ+Elif,country=turkey,platform=ios,device=mobile,userkey=tv-show,session=session-key");
 
       // i should be able to do the same thing again
       _repository.ClientContext

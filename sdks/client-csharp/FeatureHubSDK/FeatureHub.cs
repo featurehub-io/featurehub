@@ -94,7 +94,7 @@ namespace FeatureHubSDK
     public event EventHandler<string> ContextUpdateHandler;
     public IClientContext UserKey(string key)
     {
-      _attributes["userKey"] = new List<string>{key};
+      _attributes["userkey"] = new List<string>{key};
       return this;
     }
 
@@ -112,7 +112,7 @@ namespace FeatureHubSDK
 
     public IClientContext SessionKey(string key)
     {
-      _attributes["sessionKey"] = new List<string>{key};
+      _attributes["session"] = new List<string>{key};
       return this;
     }
 

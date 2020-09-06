@@ -35,9 +35,11 @@ namespace ConsoleApp1
       Console.Write("Press a key");
       Console.ReadKey();
 
-      Console.Write("Press a key (change context)");
+      Console.Write("Press a key (changed context)");
 
       fh.ClientContext.UserKey("DJElif").Country(StrategyAttributeCountryName.Turkey).Attr("city", "istanbul").Build();
+      Console.ReadKey();
+
       Console.Write("Press a key (change context2)");
       Console.ReadKey();
 
