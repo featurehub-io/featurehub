@@ -99,7 +99,6 @@ class FeatureValueCell extends StatelessWidget {
           //     extra + (amSelected ? selectedRowHeight : unselectedRowHeight);
 
           return Container(
-              color: Colors.red,
               height: extra +
                   (amSelected ? selectedRowHeight : unselectedRowHeight),
               child: cellWidget);

@@ -26,7 +26,6 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                     stream: bloc.featureCurrentlyEditingStream,
                     builder: (context, snapshot) {
                       return Container(
-                        color: Colors.purple,
                         height: bloc.unselectedFeatureCountForHeight +
                             bloc.selectedFeatureCountForHeight +
                             headerHeight +

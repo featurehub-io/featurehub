@@ -199,7 +199,6 @@ class FeatureValueBooleanCellEditor extends StatelessWidget {
                               return Container();
                             }
                           }),
-                      _AddStrategyButton(bloc: strategyBloc, fvBloc: fvBloc,)
                     ],
                   );
                 },
@@ -228,21 +227,22 @@ class _AddStrategyButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FlatButton.icon(
-      label: Text('Split rollout'),
-      disabledColor: Colors.black12,
-      color: Theme.of(context).primaryColorLight,
-      disabledTextColor: Colors.black38,
-      icon: Icon(AntDesign.fork, color: Colors.purple, size: 16.0),
-      onPressed: !locked ? () =>
-          fvBloc.mrClient.addOverlay((BuildContext context) {
-            //return null;
-            return CreateValueStrategyWidget(
-              fvBloc: fvBloc,
-              bloc: bloc,
-            );
-          }) : null
+        label: Text('Split rollout'),
+        disabledColor: Colors.black12,
+        color: Theme.of(context).primaryColorLight,
+        disabledTextColor: Colors.black38,
+        icon: Icon(AntDesign.fork, color: Colors.purple, size: 16.0),
+        onPressed: (locked != true)
+            ? () => fvBloc.mrClient.addOverlay((BuildContext context) {
+                  //return null;
+                  return CreateValueStrategyWidget(
+                    fvBloc: fvBloc,
+                    bloc: bloc,
+                  );
+                })
+            : null
 //        BlocProvider.of<_CustomStrategyBloc>(context)
 //            .addStrategy(RolloutStrategy());
-    );
+        );
   }
 }
