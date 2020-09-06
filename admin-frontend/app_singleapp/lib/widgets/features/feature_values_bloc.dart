@@ -43,7 +43,7 @@ class FeatureValuesBloc implements Bloc {
   final _dirtyValues = <String, FeatureValueDirtyHolder>{};
 
   int get maxLines => _dirtyValues.values
-      .map((e) => 1 + e.customStrategies.length + e.sharedStrategies.length)
+      .map((e) => e.customStrategies.length + e.sharedStrategies.length)
       .reduce(max);
 
   // if any of the values are updated, this stream shows true, it can flick on and off during its lifetime
