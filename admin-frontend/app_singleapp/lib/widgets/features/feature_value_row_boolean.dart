@@ -59,8 +59,9 @@ class _FeatureValueBooleanEnvironmentCellState
                         ? Text('default',
                             style: Theme.of(context).textTheme.caption)
                         : FHUnderlineButton(
+                            enabled: !snap.data && canWrite,
                             title: widget.rolloutStrategy.name,
-                            onPressed: () => {
+                            onPressed: !snap.data && canWrite ? () => {
                                   widget.fvBloc.mrClient
                                       .addOverlay((BuildContext context) {
                                     //return null;
@@ -70,7 +71,7 @@ class _FeatureValueBooleanEnvironmentCellState
                                       rolloutStrategy: widget.rolloutStrategy,
                                     );
                                   })
-                                }),
+                                } : null),
                     SizedBox(
                       width: 4.0,
                     ),
