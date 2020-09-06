@@ -90,21 +90,12 @@ class TabsBloc implements Bloc {
   double featureExtraCellHeight(Feature feature) {
     final selected = _currentlyEditingFeatureKeys.contains(feature.key);
 
+    final maxRowsForFeature = _totalStrategyLines([feature]);
+
     if (selected) {
-      return featureValueBlocs.values.map((e) => e.maxLines).reduce(max) *
-          selectedRowHeightPerStrategy;
+      return maxRowsForFeature * selectedRowHeightPerStrategy;
     } else {
-      // find the max rows for this feature
-      final maxRowsForFeature =
-          (featureStatus.applicationFeatureValues.environments.map((e) {
-        final fv = e.features
-            .firstWhere((fw) => fw.key == feature.key, orElse: () => null);
-
-        final rsLen = fv.rolloutStrategies?.length ?? 0;
-        final rsiLen = fv.rolloutStrategyInstances?.length ?? 0;
-        return (fv == null) ? 0 : (rsLen + rsiLen);
-      }).reduce(max));
-
+      print("feature ${feature.key} is $maxRowsForFeature");
       return maxRowsForFeature * unselectedRowHeightPerStrategy;
     }
   }
@@ -113,33 +104,51 @@ class TabsBloc implements Bloc {
       .where((f) => !_currentlyEditingFeatureKeys.contains(f.key))
       .length;
 
+  int _strategyLines(FeatureValue fv) {
+    if (fv == null) return 0;
+    final rsLen = fv.rolloutStrategies?.length ?? 0;
+    final rsiLen = fv.rolloutStrategyInstances?.length ?? 0;
+    return rsLen + rsiLen;
+  }
+
+  int _totalStrategyLines(List<Feature> sel) {
+    // go through the features on this tab and find those we are NOT
+    // currently editing
+
+    if (sel.isEmpty) {
+      return 0;
+    }
+
+    final fvKeys = sel.map((e) => e.key).toList();
+
+    // now we go through each environment sideways, finding the one with
+    // the highest rows and then summing them all
+
+    final maxLinesInAllFeatures =
+        featureStatus.applicationFeatureValues.environments.map((e) {
+      return e.features
+          .where((e) => e.key != null && fvKeys.contains(e.key))
+          .map((fv) => _strategyLines(fv))
+          .reduce(max);
+    }).reduce((a, b) => a + b);
+
+    return maxLinesInAllFeatures;
+  }
+
   /// this gives the total height for the entire table based on
   /// what tab we are on and what environments we have hidden
   double get unselectedFeatureCountForHeight {
     // go through the features on this tab and find those we are NOT
     // currently editing
     final sel = _featuresForTabs
-        .where((f) => !_currentlyEditingFeatureKeys.contains(f.key));
-    if (sel.isEmpty) {
-      return 0;
-    }
-    final unselectedKeys = sel.map((e) => e.key).toList();
-    // go through all environments looking for this feature, and where
-    // there are feature values, figure out how many lines they will take
-    final maxLinesInAllFeatures =
-        featureStatus.applicationFeatureValues.environments.map((e) {
-      final fv = e.features.firstWhere(
-          (fw) => fw.key != null && unselectedKeys.contains(fw.key),
-          orElse: () => null);
+        .where((f) => !_currentlyEditingFeatureKeys.contains(f.key))
+        .toList();
 
-      final r = (fv == null)
-          ? 0
-          : (fv.rolloutStrategies.length + fv.rolloutStrategyInstances.length);
-      return r;
-    }).reduce(max);
+    final maxLinesInAllFeatures = _totalStrategyLines(sel);
 
     final retVal = (maxLinesInAllFeatures * unselectedRowHeightPerStrategy) +
         unselectedRowHeight;
+
     return retVal;
   }
 
@@ -149,17 +158,18 @@ class TabsBloc implements Bloc {
 
   double get selectedFeatureCountForHeight {
     final sel = _featuresForTabs
-        .where((f) => _currentlyEditingFeatureKeys.contains(f.key));
+        .where((f) => _currentlyEditingFeatureKeys.contains(f.key))
+        .toList();
     if (sel.isEmpty) {
       return 0;
     }
 
-    return sel
-                .map((e) =>
-                    featureValueBlocs.values.map((e) => e.maxLines).reduce(max))
-                .reduce((a, b) => a + b) *
-            selectedRowHeightPerStrategy +
+    final maxLinesInAllFeatures = _totalStrategyLines(sel);
+
+    final retVal = (maxLinesInAllFeatures * selectedRowHeightPerStrategy) +
         selectedRowHeight;
+
+    return retVal;
   }
 
   // turns them into a map for easy access
