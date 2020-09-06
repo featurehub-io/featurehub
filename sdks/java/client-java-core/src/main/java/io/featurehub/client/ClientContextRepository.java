@@ -56,6 +56,12 @@ public class ClientContextRepository implements ClientContext {
   }
 
   @Override
+  public ClientContext version(String version) {
+    clientContext.put("version", Collections.singletonList(version));
+    return this;
+  }
+
+  @Override
   public ClientContext attr(String name, String value) {
     clientContext.put(name, Collections.singletonList(value));
     return this;
@@ -95,7 +101,7 @@ public class ClientContextRepository implements ClientContext {
     }
 
     return clientContext.entrySet().stream().map(e -> String.format("%s=%s", e.getKey(),
-     URLEncoder.encode(String.join(",", e.getValue())))).collect(Collectors.joining(","));
+     URLEncoder.encode(String.join(",", e.getValue())))).sorted().collect(Collectors.joining(","));
   }
 
   @Override

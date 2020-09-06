@@ -24,6 +24,7 @@ public interface ClientContext {
   ClientContext country(StrategyAttributeCountryName countryName);
   ClientContext device(StrategyAttributeDeviceName deviceName);
   ClientContext platform(StrategyAttributePlatformName platformName);
+  ClientContext version(String version);
   ClientContext attr(String name, String value);
   ClientContext attrs(String name, List<String> values);
 
