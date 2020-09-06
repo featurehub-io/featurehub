@@ -37,6 +37,11 @@ class ClientContext {
     return this;
   }
 
+  ClientContext version(String version) {
+    _attributes['version'] = [version];
+    return this;
+  }
+
   ClientContext attr(String key, String value) {
     _attributes[key] = [value];
     return this;
@@ -53,20 +58,22 @@ class ClientContext {
   }
 
   void build() {
-    final header = _generateHeader();
+    final header = generateHeader();
     for (var handler in _handlers) {
       handler(header);
     }
   }
 
-  String _generateHeader() {
+  String generateHeader() {
     if (_attributes.isEmpty) {
       return null;
     }
 
-    return _attributes.entries.map((entry) {
+    var params = _attributes.entries.map((entry) {
       return entry.key + '=' + Uri.encodeQueryComponent(entry.value.join(','));
-    }).join(',');
+    }).toList();
+    params.sort(); // i so hate the sort function
+    return params.join(',');
   }
 
   Future<Function> registerChangeHandler(
@@ -75,7 +82,7 @@ class ClientContext {
         handler); // have to do this first in case other code triggers before this callback
 
     try {
-      await handler(_generateHeader());
+      await handler(generateHeader());
       return () => {_handlers.remove(handler)};
     } catch (e) {
       _handlers.remove(handler);
