@@ -100,10 +100,9 @@ class TabsBloc implements Bloc {
         final fv = e.features
             .firstWhere((fw) => fw.key == feature.key, orElse: () => null);
 
-        return (fv == null)
-            ? 0
-            : (fv.rolloutStrategies.length +
-                fv.rolloutStrategyInstances.length);
+        final rsLen = fv.rolloutStrategies?.length ?? 0;
+        final rsiLen = fv.rolloutStrategyInstances?.length ?? 0;
+        return (fv == null) ? 0 : (rsLen + rsiLen);
       }).reduce(max));
 
       return maxRowsForFeature * unselectedRowHeightPerStrategy;
