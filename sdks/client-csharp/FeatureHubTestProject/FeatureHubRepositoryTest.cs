@@ -215,12 +215,13 @@ namespace FeatureHubTestProject
         .Platform(StrategyAttributePlatformName.Ios)
         .Device(StrategyAttributeDeviceName.Mobile)
         .UserKey("tv-show")
+        .Version("6.2.3")
         .SessionKey("session-key");
 
       string header = null;
       _repository.ClientContext.ContextUpdateHandler += (sender, h) => header = h;
       _repository.ClientContext.Build();
-      Assert.AreEqual(header, "city=Istanbul+City,family=Bambam%2cDJ+Elif,country=turkey,platform=ios,device=mobile,userkey=tv-show,session=session-key");
+      Assert.AreEqual(header, "city=Istanbul+City,country=turkey,device=mobile,family=Bambam%2cDJ+Elif,platform=ios,session=session-key,userkey=tv-show,version=6.2.3");
 
       // i should be able to do the same thing again
       _repository.ClientContext

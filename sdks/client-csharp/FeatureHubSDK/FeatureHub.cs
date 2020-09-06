@@ -80,6 +80,8 @@ namespace FeatureHubSDK
     IClientContext Device(StrategyAttributeDeviceName device);
     IClientContext Platform(StrategyAttributePlatformName platform);
     IClientContext Country(StrategyAttributeCountryName country);
+    /// expects semantic version
+    IClientContext Version(string version);
     IClientContext Attr(string key, string value);
     IClientContext Attrs(string key, List<string> values);
     IClientContext Clear();
@@ -134,6 +136,13 @@ namespace FeatureHubSDK
       return this;
     }
 
+    public IClientContext Version(string version)
+    {
+      _attributes["version"] = new List<string> {version};
+
+      return this;
+    }
+
     public IClientContext Attr(string key, string value)
     {
       _attributes[key] = new List<string>{value};
@@ -176,7 +185,7 @@ namespace FeatureHubSDK
 
       return string.Join(",",
         _attributes.Select((e) => e.Key + "=" +
-                                  HttpUtility.UrlEncode(string.Join(",", e.Value))));
+                                  HttpUtility.UrlEncode(string.Join(",", e.Value))).OrderBy(u => u));
     }
   }
 
