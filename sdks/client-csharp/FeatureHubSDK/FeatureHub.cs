@@ -169,6 +169,11 @@ namespace FeatureHubSDK
 
     public string GenerateHeader()
     {
+      if (_attributes.Count == 0)
+      {
+        return null;
+      }
+
       return string.Join(",",
         _attributes.Select((e) => e.Key + "=" +
                                   HttpUtility.UrlEncode(string.Join(",", e.Value))));

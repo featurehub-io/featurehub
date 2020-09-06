@@ -1,4 +1,94 @@
-# IO.FeatureHub.SSE - the C# library for the FeatureServiceApi
+# FeatureHubSDK
+
+This library is the client SDK for the [https://featurehub.io](FeatureHub) open source project,
+which brings you Cloud Native Feature Flag management, A/B experiments and remote configuration. 
+
+This package includes the client SDK for event source, which gives you realtime updates, the
+core repository, and the API required for allowing you to change the state of features using
+your Service Account URL. 
+
+The repository is isolated from the EventSource mechanism, so you can alternatively fill it
+from a file or a database if you wish - and it is likely what you would do in integration tests.
+
+## SDK features 
+Details about what general features are available in SDKs from FeatureHub are [available here](https://docs.featurehub.io/#sdks).
+
+## Using the EventSource SDK
+
+There is a sample application included in the [solution as a console application](https://github.com/featurehub-io/featurehub/tree/master/sdks/client-csharp/ConsoleApp1).
+You could implement it in the following way:
+
+## Rollout Strategies
+
+FeatureHub at its core now supports server side evaluation of complex rollout strategies, both custom ones
+that are applied to individual feature values in a specific environment and shared ones across multiple environments
+in an application.
+ 
+This will in the next milestone (1.1) move to local SDK support as well as server side SDK support. 
+To provide this ability for the strategy engine to know how to apply the strategies, you need to provide it
+information. There are five things we track specifically: user key, session key, country, device and platform and
+over time will be able to provide more intelligence over, but you can attach anything you like, both individual
+attributes and arrays of attributes.
+ 
+```c#
+    featureHubRepository.ClientContext().UserKey('ideally-unique-id')
+      .Country(StrategyAttributeCountryName.Australia)
+      .Device(StrategyAttributeDeviceName.Desktop)
+      .Build(); 
+```
+
+The `Build()` method will trigger the regeneration of a special header (`x-featurehub`). This in turn
+will automatically retrigger a refresh of your events if you have already connected (unless you are using polling
+and your polling interval is set to 0).
+
+To add a generic key/value pair, use `Attr(key, value)`, to use an array of values there is 
+`Attrs(key, Array<value>)`. You can also `Clear()` to remove all strategies.
+
+In all cases, you need to call `Build()` to re-trigger passing of the new attributes to the server for recalculation.
+By default, the _user key_ is used for percentage based calculations, and without it, you cannot participate in
+percentage based Rollout Strategies ("experiments"). However, a more advanced feature does let you specify other
+attributes (e.g. _company_, or _store_) that would allow you to specify your experiment on. For more details on how
+experiments work with Rollout Strategies, see the [core documentation](https://docs.featurehub.io).
+
+```c#
+var fh = new FeatureHubRepository(); // create a new repository
+
+// listen for changes to the feature FLUTTER_COLOUR and let me know what they are
+fh.FeatureState("FLUTTER_COLOUR").FeatureUpdateHandler += (object sender, IFeatureStateHolder holder) =>
+{
+  Console.WriteLine($"Received type {holder.Key}: {holder.StringValue}");        
+};
+
+// you can also query the fh.FeatureState("FLUTTER_COLOUR") directly to see what its current state is
+// and use it in IF statements or their equivalent
+
+// tell me when the features have appeared and we are ready to start
+fh.ReadynessHandler += (sender, readyness) =>
+{
+  Console.WriteLine($"Readyness is {readyness}");
+};
+
+// tell me when any new features or changes come in
+fh.NewFeatureHandler += (sender, repository) =>
+{
+  Console.WriteLine($"New features");
+};
+
+// create an event service listener and give it the Service Account URL from the Admin-UI
+var esl = new EventServiceListener();
+esl.Init("http://192.168.86.49:8553/features/default/ce6b5f90-2a8a-4b29-b10f-7f1c98d878fe/VNftuX5LV6PoazPZsEEIBujM4OBqA1Iv9f9cBGho2LJylvxXMXKGxwD14xt2d7Ma3GHTsdsSO8DTvAYF", fh);
+
+// it will now keep listening and updating the repository when changes come in. The server will kick it
+// off periodically to ensure the connection does not become stale, but it will automatically reconnect
+// and update itself and the repository again
+
+fh.ClientContext().UserKey('ideally-unique-id')
+  .Country(StrategyAttributeCountryName.Australia)
+  .Device(StrategyAttributeDeviceName.Desktop)
+  .Build();
+``` 
+
+## IO.FeatureHub.SSE
 
 This describes the API clients use for accessing features
 
