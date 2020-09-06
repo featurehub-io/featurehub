@@ -41,6 +41,11 @@ export class ClientContext {
     return this;
   }
 
+  version(version: String): ClientContext {
+    this._attributes.set('version', [version]);
+    return this;
+  }
+
   attribute_value(key: string, value: string): ClientContext {
     this._attributes.set(key, [value]);
     return this;
@@ -92,7 +97,7 @@ export class ClientContext {
 
     return Array.from(this._attributes.entries()).map((key,
     ) =>
-      key[0] + '=' + encodeURIComponent(key[1].join(','))).join(',');
+      key[0] + '=' + encodeURIComponent(key[1].join(','))).sort().join(',');
 
   }
 }
