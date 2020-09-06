@@ -95,7 +95,6 @@ class TabsBloc implements Bloc {
     if (selected) {
       return maxRowsForFeature * selectedRowHeightPerStrategy;
     } else {
-      print("feature ${feature.key} is $maxRowsForFeature");
       return maxRowsForFeature * unselectedRowHeightPerStrategy;
     }
   }
@@ -129,8 +128,8 @@ class TabsBloc implements Bloc {
       return e.features
           .where((e) => e.key != null && fvKeys.contains(e.key))
           .map((fv) => _strategyLines(fv))
-          .reduce(max);
-    }).reduce((a, b) => a + b);
+          .reduce((a, b) => a + b);
+    }).reduce(max);
 
     return maxLinesInAllFeatures;
   }
@@ -147,7 +146,7 @@ class TabsBloc implements Bloc {
     final maxLinesInAllFeatures = _totalStrategyLines(sel);
 
     final retVal = (maxLinesInAllFeatures * unselectedRowHeightPerStrategy) +
-        unselectedRowHeight;
+        (unselectedRowHeight * sel.length);
 
     return retVal;
   }
@@ -167,7 +166,7 @@ class TabsBloc implements Bloc {
     final maxLinesInAllFeatures = _totalStrategyLines(sel);
 
     final retVal = (maxLinesInAllFeatures * selectedRowHeightPerStrategy) +
-        selectedRowHeight;
+        (selectedRowHeight * sel.length);
 
     return retVal;
   }

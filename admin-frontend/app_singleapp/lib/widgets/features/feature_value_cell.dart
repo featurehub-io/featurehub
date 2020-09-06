@@ -95,11 +95,12 @@ class FeatureValueCell extends StatelessWidget {
           }
 
           final extra = tabsBloc.featureExtraCellHeight(feature);
+          // final extra = 35;
           // final panelH =
           //     extra + (amSelected ? selectedRowHeight : unselectedRowHeight);
+          // print("panelH is $panelH");
 
           return Container(
-              color: Colors.red,
               height: extra +
                   (amSelected ? selectedRowHeight : unselectedRowHeight),
               child: cellWidget);

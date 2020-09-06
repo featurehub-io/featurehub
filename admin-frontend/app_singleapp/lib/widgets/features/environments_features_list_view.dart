@@ -44,6 +44,8 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
 //                                      EdgeInsets.only(left: 1.0, right: 1.0),
                                     width: 230.0,
                                     child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
                                       children: [
                                         Container(
                                           width: 230,
