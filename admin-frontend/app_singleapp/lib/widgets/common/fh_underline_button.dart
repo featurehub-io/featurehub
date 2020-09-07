@@ -9,7 +9,7 @@ class FHUnderlineButton extends StatelessWidget {
 
   const FHUnderlineButton({
     Key key,
-    this.onPressed, this.title, this.keepCase=true, this.enabled
+    this.onPressed, this.title, this.keepCase=true, this.enabled=true
   }) : super(key: key);
 
   @override

@@ -42,13 +42,13 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                                   return Container(
 //                                  padding:
 //                                      EdgeInsets.only(left: 1.0, right: 1.0),
-                                    width: 230.0,
+                                    width: cellWidth,
                                     child: Column(
                                       mainAxisAlignment:
                                           MainAxisAlignment.start,
                                       children: [
                                         Container(
-                                          width: 230,
+                                          width: cellWidth,
                                           color:
                                               Theme.of(context).highlightColor,
                                           height: headerHeight,

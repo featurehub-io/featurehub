@@ -40,6 +40,16 @@ class CustomStrategyBloc extends Bloc {
     _strategySource.add(strategies);
   }
 
+  void removeStrategy(RolloutStrategy rs) {
+    rs.id = 'removing';
+    final strategies = _strategySource.value;
+    strategies.removeWhere((e) => e.id == rs.id);
+    markDirty();
+    _strategySource.add(strategies);
+  }
+
   @override
   void dispose() {}
+
+
 }
