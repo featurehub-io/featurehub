@@ -136,7 +136,7 @@ class _FeatureValueBooleanEnvironmentCellState
                                     mouseCursor: !snap.data && canWrite
                                         ? SystemMouseCursors.click
                                         : null,
-                                    icon: Icon(Icons.close, size: 14),
+                                    icon: Icon(AntDesign.delete, size: 14),
                                     onPressed: !snap.data && canWrite
                                         ? () => widget.strBloc.removeStrategy(
                                             widget.rolloutStrategy)
@@ -177,81 +177,85 @@ class FeatureValueBooleanCellEditor extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            FeatureValueEditLockedCell(
-              environmentFeatureValue: environmentFeatureValue,
-              feature: feature,
-              fvBloc: fvBloc,
-            ),
-            FeatureValueBooleanEnvironmentCell(
-              environmentFeatureValue: environmentFeatureValue,
-              feature: feature,
-              fvBloc: fvBloc,
-            ),
-            BlocProvider(
-              creator: (_c, _b) =>
-                  CustomStrategyBloc(environmentFeatureValue, feature, fvBloc),
-              child: Builder(
-                builder: (ctx) {
-                  final strategyBloc = BlocProvider.of<CustomStrategyBloc>(ctx);
-
-                  return Column(
-                    children: [
-                      StreamBuilder<List<RolloutStrategy>>(
-                          stream: strategyBloc.strategies,
-                          builder: (streamCtx, snap) {
-                            if (snap.hasData) {
-                              return Container(
-                                  child: Column(
-                                children: [
-                                  for (RolloutStrategy strategy in snap.data)
-                                    FeatureValueBooleanEnvironmentCell(
-                                      environmentFeatureValue:
-                                          environmentFeatureValue,
-                                      feature: feature,
-                                      fvBloc: fvBloc,
-                                      strBloc: strategyBloc,
-                                      rolloutStrategy: strategy,
-                                    ),
-                                ],
-                              ));
-                            } else {
-                              return Container();
-                            }
-                          }),
-                      StreamBuilder<bool>(
-                          stream: fvBloc.environmentIsLocked(
-                              environmentFeatureValue.environmentId),
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              return _AddStrategyButton(
-                                  bloc: strategyBloc,
-                                  fvBloc: fvBloc,
-                                  locked: snapshot.data);
-                            } else {
-                              return Container();
-                            }
-                          }),
-                    ],
-                  );
-                },
-              ), // need to put custom strategies here, trigger dirty each time change something
-            ),
-          ],
-        ),
-        FeatureValueUpdatedByCell(
-          environmentFeatureValue: environmentFeatureValue,
-          feature: feature,
-          fvBloc: fvBloc,
-        ),
-      ],
+    return BlocProvider(
+        creator: (_c, _b) =>
+            CustomStrategyBloc(environmentFeatureValue, feature, fvBloc),
+        child: Builder(
+            builder: (ctx) {
+              final strategyBloc = BlocProvider.of<CustomStrategyBloc>(ctx);
+              return Column(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: FeatureValueEditLockedCell(
+                      environmentFeatureValue: environmentFeatureValue,
+                      feature: feature,
+                      fvBloc: fvBloc,
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: FeatureValueBooleanEnvironmentCell(
+                      environmentFeatureValue: environmentFeatureValue,
+                      feature: feature,
+                      fvBloc: fvBloc,
+                    ),
+                  ),
+                  StreamBuilder<List<RolloutStrategy>>(
+                      stream: strategyBloc.strategies,
+                      builder: (streamCtx, snap) {
+                        if (snap.hasData) {
+                          return Expanded(
+                            flex: 4,
+                            child: Container(
+                                child: Column(
+                                  children: [
+                                    for (RolloutStrategy strategy in snap
+                                        .data)
+                                      FeatureValueBooleanEnvironmentCell(
+                                        environmentFeatureValue:
+                                        environmentFeatureValue,
+                                        feature: feature,
+                                        fvBloc: fvBloc,
+                                        strBloc: strategyBloc,
+                                        rolloutStrategy: strategy,
+                                      ),
+                                  ],
+                                )),
+                          );
+                        } else {
+                          return Container(color: Colors.blue);
+                        }
+                      }),
+                  Expanded(
+                    flex: 1,
+                    child: StreamBuilder<bool>(
+                        stream: fvBloc.environmentIsLocked(
+                            environmentFeatureValue.environmentId),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            return _AddStrategyButton(
+                                bloc: strategyBloc,
+                                fvBloc: fvBloc,
+                                locked: snapshot.data);
+                          } else {
+                            return Container();
+                          }
+                        }),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: FeatureValueUpdatedByCell(
+                      environmentFeatureValue: environmentFeatureValue,
+                      feature: feature,
+                      fvBloc: fvBloc,
+                    ),
+                  ),
+                ],
+              );
+            }
+        )
     );
   }
 }
@@ -266,23 +270,27 @@ class _AddStrategyButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FlatButton.icon(
-        label: Text('Split rollout'),
-        disabledColor: Colors.black12,
-        color: Theme.of(context).primaryColorLight,
-        disabledTextColor: Colors.black38,
-        icon: Icon(AntDesign.fork, color: Colors.purple, size: 16.0),
-        onPressed: (locked != true)
-            ? () => fvBloc.mrClient.addOverlay((BuildContext context) {
-                  //return null;
-                  return CreateValueStrategyWidget(
-                    fvBloc: fvBloc,
-                    bloc: bloc,
-                  );
-                })
-            : null
+    return Container(
+      child: FlatButton.icon(
+        height: 24,
+          label: Text('Split rollout'),
+          textColor: Colors.white,
+          disabledColor: Colors.black12,
+          color: Theme.of(context).buttonColor,
+          disabledTextColor: Colors.black38,
+          icon: Icon(AntDesign.fork, color: Colors.white, size: 16.0),
+          onPressed: (locked != true)
+              ? () => fvBloc.mrClient.addOverlay((BuildContext context) {
+                    //return null;
+                    return CreateValueStrategyWidget(
+                      fvBloc: fvBloc,
+                      bloc: bloc,
+                    );
+                  })
+              : null
 //        BlocProvider.of<_CustomStrategyBloc>(context)
 //            .addStrategy(RolloutStrategy());
-        );
+          ),
+    );
   }
 }

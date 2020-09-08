@@ -1,4 +1,4 @@
-final unselectedRowHeight = 100.0;
+final unselectedRowHeight = 70.0;
 final unselectedRowHeightPerStrategy = 20.0;
 final selectedRowHeight = 350.0;
 final selectedRowHeightPerStrategy = 30.0;
