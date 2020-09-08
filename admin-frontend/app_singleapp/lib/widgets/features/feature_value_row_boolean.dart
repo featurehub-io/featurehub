@@ -50,103 +50,106 @@ class _FeatureValueBooleanEnvironmentCellState
           final canWrite = widget.environmentFeatureValue.roles
               .contains(RoleType.CHANGE_VALUE);
           if (snap.hasData) {
-            return Card(
-              color: widget.rolloutStrategy == null
-                  ? Color(0xffeee6ff)
-                  : Color(0xfff2fde4),
-              child: Padding(
-                padding: const EdgeInsets.only(left: 8.0, right: 2.0),
-                child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.max,
-                    children: <Widget>[
-                      Expanded(
-                          flex: 5,
-                          child: widget.rolloutStrategy == null
-                              ? Text('default',
-                                  style: Theme.of(context).textTheme.caption)
-                              : FHUnderlineButton(
-                                  enabled: !snap.data && canWrite,
-                                  title: widget.rolloutStrategy.name,
-                                  onPressed: !snap.data && canWrite
-                                      ? () => {
-                                            widget.fvBloc.mrClient.addOverlay(
-                                                (BuildContext context) {
-                                              //return null;
-                                              return CreateValueStrategyWidget(
-                                                fvBloc: widget.fvBloc,
-                                                bloc: widget.strBloc,
-                                                rolloutStrategy:
-                                                    widget.rolloutStrategy,
-                                              );
-                                            })
-                                          }
-                                      : null)),
-                      Expanded(
-                        flex: 3,
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton(
-                            items: <String>['On', 'Off']
-                                .map<DropdownMenuItem<String>>((String value) {
-                              return DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(
-                                  value,
-                                  style: Theme.of(context).textTheme.bodyText2,
-                                ),
-                              );
-                            }).toList(),
-                            value: featureOn,
-                            onChanged: snap.data == false && canWrite
-                                ? (value) {
-                                    if (widget.rolloutStrategy == null) {
-                                      widget.fvBloc.dirty(
-                                          widget.environmentFeatureValue
-                                              .environmentId, (current) {
-                                        current.value = (value == 'On');
+            return SizedBox(
+              height: 50,
+              child: Card(
+                color: widget.rolloutStrategy == null
+                    ? Color(0xffeee6ff)
+                    : Color(0xfff2fde4),
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8.0, right: 2.0),
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Expanded(
+                            flex: 5,
+                            child: widget.rolloutStrategy == null
+                                ? Text('default',
+                                    style: Theme.of(context).textTheme.caption)
+                                : FHUnderlineButton(
+                                    enabled: !snap.data && canWrite,
+                                    title: widget.rolloutStrategy.name,
+                                    onPressed: !snap.data && canWrite
+                                        ? () => {
+                                              widget.fvBloc.mrClient.addOverlay(
+                                                  (BuildContext context) {
+                                                //return null;
+                                                return CreateValueStrategyWidget(
+                                                  fvBloc: widget.fvBloc,
+                                                  bloc: widget.strBloc,
+                                                  rolloutStrategy:
+                                                      widget.rolloutStrategy,
+                                                );
+                                              })
+                                            }
+                                        : null)),
+                        Expanded(
+                          flex: 3,
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton(
+                              items: <String>['On', 'Off']
+                                  .map<DropdownMenuItem<String>>((String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(
+                                    value,
+                                    style: Theme.of(context).textTheme.bodyText2,
+                                  ),
+                                );
+                              }).toList(),
+                              value: featureOn,
+                              onChanged: snap.data == false && canWrite
+                                  ? (value) {
+                                      if (widget.rolloutStrategy == null) {
+                                        widget.fvBloc.dirty(
+                                            widget.environmentFeatureValue
+                                                .environmentId, (current) {
+                                          current.value = (value == 'On');
+                                        });
+                                      } else {
+                                        widget.rolloutStrategy.value =
+                                            (value == 'On');
+                                        widget.strBloc.markDirty();
+                                      }
+                                      setState(() {
+                                        featureOn = value;
                                       });
-                                    } else {
-                                      widget.rolloutStrategy.value =
-                                          (value == 'On');
-                                      widget.strBloc.markDirty();
                                     }
-                                    setState(() {
-                                      featureOn = value;
-                                    });
-                                  }
-                                : null,
-                            disabledHint: Text(
-                                widget.featureValue.locked
-                                    ? 'Locked'
-                                    : 'No access',
-                                style: Theme.of(context).textTheme.caption),
+                                  : null,
+                              disabledHint: Text(
+                                  widget.featureValue.locked
+                                      ? 'Locked'
+                                      : 'No access',
+                                  style: Theme.of(context).textTheme.caption),
+                            ),
                           ),
                         ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: widget.rolloutStrategy != null
-                            ? Container(
-                                height: 32,
-                                width: 32,
-                                child: Material(
-                                  shape: CircleBorder(),
-                                  child: IconButton(
-                                    mouseCursor: !snap.data && canWrite
-                                        ? SystemMouseCursors.click
-                                        : null,
-                                    icon: Icon(AntDesign.delete, size: 14),
-                                    onPressed: !snap.data && canWrite
-                                        ? () => widget.strBloc.removeStrategy(
-                                            widget.rolloutStrategy)
-                                        : null,
+                        Expanded(
+                          flex: 2,
+                          child: widget.rolloutStrategy != null
+                              ? Container(
+                                  height: 32,
+                                  width: 32,
+                                  child: Material(
+                                    shape: CircleBorder(),
+                                    child: IconButton(
+                                      mouseCursor: !snap.data && canWrite
+                                          ? SystemMouseCursors.click
+                                          : null,
+                                      icon: Icon(AntDesign.delete, size: 14),
+                                      onPressed: !snap.data && canWrite
+                                          ? () => widget.strBloc.removeStrategy(
+                                              widget.rolloutStrategy)
+                                          : null,
+                                    ),
                                   ),
-                                ),
-                              )
-                            : SizedBox.shrink(),
-                      )
-                    ]),
+                                )
+                              : SizedBox.shrink(),
+                        )
+                      ]),
+                ),
               ),
             );
           }
