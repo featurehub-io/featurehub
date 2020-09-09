@@ -89,13 +89,16 @@ class _FeatureValueBooleanEnvironmentCellState
                           flex: 3,
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton(
-                              items: <String>['On', 'Off']
-                                  .map<DropdownMenuItem<String>>((String value) {
+                              items: <String>[
+                                'On',
+                                'Off'
+                              ].map<DropdownMenuItem<String>>((String value) {
                                 return DropdownMenuItem<String>(
                                   value: value,
                                   child: Text(
                                     value,
-                                    style: Theme.of(context).textTheme.bodyText2,
+                                    style:
+                                        Theme.of(context).textTheme.bodyText2,
                                   ),
                                 );
                               }).toList(),
@@ -183,83 +186,70 @@ class FeatureValueBooleanCellEditor extends StatelessWidget {
     return BlocProvider(
         creator: (_c, _b) =>
             CustomStrategyBloc(environmentFeatureValue, feature, fvBloc),
-        child: Builder(
-            builder: (ctx) {
-              final strategyBloc = BlocProvider.of<CustomStrategyBloc>(ctx);
-              return Column(
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: FeatureValueEditLockedCell(
-                      environmentFeatureValue: environmentFeatureValue,
-                      feature: feature,
-                      fvBloc: fvBloc,
+        child: Builder(builder: (ctx) {
+          final strategyBloc = BlocProvider.of<CustomStrategyBloc>(ctx);
+          return StreamBuilder<List<RolloutStrategy>>(
+              stream: strategyBloc.strategies,
+              builder: (streamCtx, snap) {
+                return Column(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: FeatureValueEditLockedCell(
+                        environmentFeatureValue: environmentFeatureValue,
+                        feature: feature,
+                        fvBloc: fvBloc,
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: FeatureValueBooleanEnvironmentCell(
-                      environmentFeatureValue: environmentFeatureValue,
-                      feature: feature,
-                      fvBloc: fvBloc,
+                    Expanded(
+                      flex: 1,
+                      child: FeatureValueBooleanEnvironmentCell(
+                        environmentFeatureValue: environmentFeatureValue,
+                        feature: feature,
+                        fvBloc: fvBloc,
+                      ),
                     ),
-                  ),
-                  StreamBuilder<List<RolloutStrategy>>(
-                      stream: strategyBloc.strategies,
-                      builder: (streamCtx, snap) {
-                        if (snap.hasData) {
-                          return Expanded(
-                            flex: 4,
-                            child: Container(
-                                child: Column(
-                                  children: [
-                                    for (RolloutStrategy strategy in snap
-                                        .data)
-                                      FeatureValueBooleanEnvironmentCell(
-                                        environmentFeatureValue:
-                                        environmentFeatureValue,
-                                        feature: feature,
-                                        fvBloc: fvBloc,
-                                        strBloc: strategyBloc,
-                                        rolloutStrategy: strategy,
-                                      ),
-                                  ],
-                                )),
-                          );
-                        } else {
-                          return Container(color: Colors.blue);
-                        }
-                      }),
-                  Expanded(
-                    flex: 1,
-                    child: StreamBuilder<bool>(
-                        stream: fvBloc.environmentIsLocked(
-                            environmentFeatureValue.environmentId),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            return _AddStrategyButton(
-                                bloc: strategyBloc,
-                                fvBloc: fvBloc,
-                                locked: snapshot.data);
-                          } else {
-                            return Container();
-                          }
-                        }),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: FeatureValueUpdatedByCell(
-                      environmentFeatureValue: environmentFeatureValue,
-                      feature: feature,
-                      fvBloc: fvBloc,
+                    if (snap.hasData)
+                      for (RolloutStrategy strategy in snap.data)
+                        Expanded(
+                          flex: 1,
+                          child: FeatureValueBooleanEnvironmentCell(
+                            environmentFeatureValue: environmentFeatureValue,
+                            feature: feature,
+                            fvBloc: fvBloc,
+                            strBloc: strategyBloc,
+                            rolloutStrategy: strategy,
+                          ),
+                        ),
+                    Expanded(
+                      flex: 1,
+                      child: StreamBuilder<bool>(
+                          stream: fvBloc.environmentIsLocked(
+                              environmentFeatureValue.environmentId),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              return _AddStrategyButton(
+                                  bloc: strategyBloc,
+                                  fvBloc: fvBloc,
+                                  locked: snapshot.data);
+                            } else {
+                              return Container();
+                            }
+                          }),
                     ),
-                  ),
-                ],
-              );
-            }
-        )
-    );
+                    Expanded(
+                      flex: 2,
+                      child: FeatureValueUpdatedByCell(
+                        environmentFeatureValue: environmentFeatureValue,
+                        feature: feature,
+                        fvBloc: fvBloc,
+                      ),
+                    ),
+                  ],
+                );
+              });
+        }));
   }
 }
 
@@ -275,7 +265,7 @@ class _AddStrategyButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       child: FlatButton.icon(
-        height: 24,
+          height: 24,
           label: Text('Split rollout'),
           textColor: Colors.white,
           disabledColor: Colors.black12,
