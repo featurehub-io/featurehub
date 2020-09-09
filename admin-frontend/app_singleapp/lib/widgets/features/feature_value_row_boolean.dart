@@ -194,57 +194,42 @@ class FeatureValueBooleanCellEditor extends StatelessWidget {
                 return Column(
                   mainAxisSize: MainAxisSize.max,
                   children: [
-                    Expanded(
-                      flex: 1,
-                      child: FeatureValueEditLockedCell(
-                        environmentFeatureValue: environmentFeatureValue,
-                        feature: feature,
-                        fvBloc: fvBloc,
-                      ),
+                    FeatureValueEditLockedCell(
+                      environmentFeatureValue: environmentFeatureValue,
+                      feature: feature,
+                      fvBloc: fvBloc,
                     ),
-                    Expanded(
-                      flex: 1,
-                      child: FeatureValueBooleanEnvironmentCell(
-                        environmentFeatureValue: environmentFeatureValue,
-                        feature: feature,
-                        fvBloc: fvBloc,
-                      ),
+                    FeatureValueBooleanEnvironmentCell(
+                      environmentFeatureValue: environmentFeatureValue,
+                      feature: feature,
+                      fvBloc: fvBloc,
                     ),
                     if (snap.hasData)
                       for (RolloutStrategy strategy in snap.data)
-                        Expanded(
-                          flex: 1,
-                          child: FeatureValueBooleanEnvironmentCell(
-                            environmentFeatureValue: environmentFeatureValue,
-                            feature: feature,
-                            fvBloc: fvBloc,
-                            strBloc: strategyBloc,
-                            rolloutStrategy: strategy,
-                          ),
+                        FeatureValueBooleanEnvironmentCell(
+                          environmentFeatureValue: environmentFeatureValue,
+                          feature: feature,
+                          fvBloc: fvBloc,
+                          strBloc: strategyBloc,
+                          rolloutStrategy: strategy,
                         ),
-                    Expanded(
-                      flex: 1,
-                      child: StreamBuilder<bool>(
-                          stream: fvBloc.environmentIsLocked(
-                              environmentFeatureValue.environmentId),
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              return _AddStrategyButton(
-                                  bloc: strategyBloc,
-                                  fvBloc: fvBloc,
-                                  locked: snapshot.data);
-                            } else {
-                              return Container();
-                            }
-                          }),
-                    ),
-                    Expanded(
-                      flex: 2,
-                      child: FeatureValueUpdatedByCell(
-                        environmentFeatureValue: environmentFeatureValue,
-                        feature: feature,
-                        fvBloc: fvBloc,
-                      ),
+                    StreamBuilder<bool>(
+                        stream: fvBloc.environmentIsLocked(
+                            environmentFeatureValue.environmentId),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            return _AddStrategyButton(
+                                bloc: strategyBloc,
+                                fvBloc: fvBloc,
+                                locked: snapshot.data);
+                          } else {
+                            return Container();
+                          }
+                        }),
+                    FeatureValueUpdatedByCell(
+                      environmentFeatureValue: environmentFeatureValue,
+                      feature: feature,
+                      fvBloc: fvBloc,
                     ),
                   ],
                 );
@@ -265,7 +250,7 @@ class _AddStrategyButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       child: FlatButton.icon(
-          height: 24,
+          height: 36,
           label: Text('Split rollout'),
           textColor: Colors.white,
           disabledColor: Colors.black12,
