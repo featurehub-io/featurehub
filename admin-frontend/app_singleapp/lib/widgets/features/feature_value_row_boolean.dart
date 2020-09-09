@@ -213,6 +213,7 @@ class FeatureValueBooleanCellEditor extends StatelessWidget {
                           strBloc: strategyBloc,
                           rolloutStrategy: strategy,
                         ),
+                    Expanded(child: SizedBox.shrink()),
                     StreamBuilder<bool>(
                         stream: fvBloc.environmentIsLocked(
                             environmentFeatureValue.environmentId),
