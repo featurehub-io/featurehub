@@ -25,17 +25,26 @@ class FeatureStatusFeatures {
   }
 }
 
+///
+/// This holds state relative to the whole set of features across the entire application
+/// so application level stuff should happen here.
+///
 class FeatureStatusBloc implements Bloc, ManagementRepositoryAwareBloc {
   String portfolioId;
   String applicationId;
   final ManagementRepositoryClientBloc _mrClient;
   ApplicationServiceApi _appServiceApi;
   EnvironmentServiceApi _environmentServiceApi;
+  UserStateServiceApi _userStateServiceApi;
 
   FeatureServiceApi _featureServiceApi;
 
   final _appSearchResultSource = BehaviorSubject<List<Application>>();
   Stream<List<Application>> get applications => _appSearchResultSource.stream;
+
+  final _shownEnvironmentsSource = BehaviorSubject<List<String>>();
+  Stream<List<String>> get shownEnvironmentsStream =>
+      _shownEnvironmentsSource.stream;
 
   final _appFeatureValuesBS = BehaviorSubject<FeatureStatusFeatures>();
   Stream<FeatureStatusFeatures> get appFeatureValues =>
@@ -56,9 +65,12 @@ class FeatureStatusBloc implements Bloc, ManagementRepositoryAwareBloc {
     _appServiceApi = ApplicationServiceApi(_mrClient.apiClient);
     _featureServiceApi = FeatureServiceApi(_mrClient.apiClient);
     _environmentServiceApi = EnvironmentServiceApi(_mrClient.apiClient);
+    _userStateServiceApi = UserStateServiceApi(_mrClient.apiClient);
+
     _currentPid = _mrClient.streamValley.currentPortfolioIdStream
         .listen(addApplicationsToStream);
     _currentAppId = _mrClient.streamValley.currentAppIdStream.listen(setAppId);
+
     _getAllAppValuesDebounceStream
         .debounceTime(Duration(milliseconds: 300))
         .listen((event) {
@@ -95,6 +107,8 @@ class FeatureStatusBloc implements Bloc, ManagementRepositoryAwareBloc {
   void _actuallyCallAddAppFeatureValuesToStream() async {
     if (applicationId != null) {
       try {
+        final environments =
+            await _userStateServiceApi.getHiddenEnvironments(applicationId);
         final appFeatureValues = await _featureServiceApi
             .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
                 applicationId);
@@ -102,10 +116,41 @@ class FeatureStatusBloc implements Bloc, ManagementRepositoryAwareBloc {
           _sortApplicationFeatureValues(appFeatureValues);
 
           _appFeatureValuesBS.add(FeatureStatusFeatures(appFeatureValues));
+
+          if (environments.environmentIds.isEmpty) {
+            if (appFeatureValues.environments.isNotEmpty) {
+              environments.environmentIds = [
+                appFeatureValues.environments.first.environmentId
+              ];
+              _updateShownEnvironments(environments.environmentIds);
+            }
+          } else {
+            _shownEnvironmentsSource.add(environments.environmentIds);
+          }
         }
       } catch (e, s) {
         mrClient.dialogError(e, s);
       }
+    }
+  }
+
+  void _updateShownEnvironments(List<String> environmentIds) async {
+    final envs = await _userStateServiceApi.saveHiddenEnvironments(
+        applicationId, HiddenEnvironments()..environmentIds = environmentIds);
+    _shownEnvironmentsSource.add(envs.environmentIds);
+  }
+
+  void addShownEnvironment(String envId) async {
+    final envs = <String>[..._shownEnvironmentsSource.value];
+    envs.add(envId);
+    _updateShownEnvironments(envs);
+  }
+
+  void removeShownEnvironment(String envId) async {
+    final envs = <String>[..._shownEnvironmentsSource.value];
+
+    if (envs.remove(envId)) {
+      _updateShownEnvironments(envs);
     }
   }
 

@@ -21,14 +21,19 @@ class HiddenEnvironmentsList extends StatelessWidget {
           ),
           Expanded(
             child: Container(
-              child: StreamBuilder<Set<String>>(
-                  stream: bloc.hiddenEnvironments,
+              child: StreamBuilder<List<String>>(
+                  stream: bloc.featureStatusBloc.shownEnvironmentsStream,
                   builder: (context, snapshot) {
+                    final shownEnvs = snapshot.hasData ? snapshot.data : [];
+                    final hiddenEnvironments = bloc
+                        .featureStatus.applicationEnvironments.keys
+                        .where((envId) => !shownEnvs.contains(envId))
+                        .toList(growable: false);
                     return ListView(
                       scrollDirection: Axis.horizontal,
                       children: [
                         if (snapshot.hasData)
-                          ..._sortedEnvironments(bloc, snapshot.data)
+                          ..._sortedEnvironments(bloc, hiddenEnvironments)
                               .map((env) {
                             return HideEnvironmentContainer(
                                 rowLayout: true,
@@ -46,7 +51,7 @@ class HiddenEnvironmentsList extends StatelessWidget {
   }
 
   List<EnvironmentFeatureValues> _sortedEnvironments(
-      TabsBloc bloc, Set<String> envIds) {
+      TabsBloc bloc, List<String> envIds) {
     final envs = bloc.featureStatus.applicationFeatureValues.environments
         .where((e) => envIds.contains(e.environmentId))
         .toList();
@@ -96,32 +101,30 @@ class HideEnvironmentContainer extends StatelessWidget {
       );
     }
 
-    return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Flexible(
-            child: Text(
-              name,
-              overflow: TextOverflow.ellipsis,
-            ),
+    return Row(mainAxisSize: MainAxisSize.min, children: [
+      Flexible(
+        child: Text(
+          name,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.only(left: 2.0, right: 2.0),
+        child: InkWell(
+          canRequestFocus: false,
+          mouseCursor: SystemMouseCursors.click,
+          hoverColor: Theme.of(context).primaryColorLight,
+          borderRadius: BorderRadius.circular(24),
+          child: Container(
+            width: 34.0,
+            child: Icon(Icons.visibility_off,
+                size: 18.0, color: Theme.of(context).primaryColorDark),
           ),
-          Padding(
-            padding: const EdgeInsets.only(left: 2.0, right: 2.0),
-            child: InkWell(
-              canRequestFocus: false,
-              mouseCursor: SystemMouseCursors.click,
-              hoverColor: Theme.of(context).primaryColorLight,
-              borderRadius: BorderRadius.circular(24),
-              child: Container(
-                width: 34.0,
-                child: Icon(Icons.visibility_off,
-                    size: 18.0, color: Theme.of(context).primaryColorDark),
-              ),
-              onTap: () {
-                BlocProvider.of<TabsBloc>(context).hideEnvironment(envId);
-              },
-            ),
-          )
-        ]);
+          onTap: () {
+            BlocProvider.of<TabsBloc>(context).hideEnvironment(envId);
+          },
+        ),
+      )
+    ]);
   }
 }
