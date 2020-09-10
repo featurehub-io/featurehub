@@ -47,7 +47,7 @@ class _FeatureValueStringEnvironmentCellState
     final valueSource = widget.rolloutStrategy != null
         ? widget.rolloutStrategy.value
         : widget.featureValue.valueString;
-    tec.text = valueSource ?? '';
+    tec.text = (valueSource ?? '').toString();
   }
 
   @override
