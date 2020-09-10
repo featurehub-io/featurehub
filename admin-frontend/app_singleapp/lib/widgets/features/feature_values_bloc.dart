@@ -104,20 +104,27 @@ class FeatureValuesBloc implements Bloc {
     final current = _dirtyValues[envId] ??
         (FeatureValueDirtyHolder()
           ..value = _originalValue(original)
-          ..customStrategies = original.rolloutStrategies
-          ..sharedStrategies = original.rolloutStrategyInstances);
+          ..customStrategies =
+              (original?.rolloutStrategies ?? <RolloutStrategy>[])
+          ..sharedStrategies = (original?.rolloutStrategyInstances) ??
+              <RolloutStrategyInstance>[]);
     dirtyValueCallback(current);
     _dirtyValues[envId] = current;
 
     _dirty[envId] = false;
 
-    if (_originalValue(original) != current.value) {
+    if (original == null &&
+        (current.value != null ||
+            current.customStrategies.isNotEmpty ||
+            current.sharedStrategies.isNotEmpty))
       _dirty[envId] = true;
-    }
-
-    if (!(ListEquality()
-        .equals(original.rolloutStrategies, current.customStrategies))) {
-      _dirty[envId] = true;
+    else if (original != null) {
+      if (_originalValue(original) != current.value) {
+        _dirty[envId] = true;
+      } else if (!(ListEquality()
+          .equals(original.rolloutStrategies, current.customStrategies))) {
+        _dirty[envId] = true;
+      }
     }
 
     _dirtyCheck();
@@ -126,15 +133,17 @@ class FeatureValuesBloc implements Bloc {
   }
 
   dynamic _originalValue(FeatureValue original) {
-    switch (feature.valueType) {
-      case FeatureValueType.BOOLEAN:
-        return original.valueBoolean;
-      case FeatureValueType.STRING:
-        return original.valueString;
-      case FeatureValueType.NUMBER:
-        return original.valueNumber;
-      case FeatureValueType.JSON:
-        return original.valueJson;
+    if (original != null) {
+      switch (feature.valueType) {
+        case FeatureValueType.BOOLEAN:
+          return original.valueBoolean;
+        case FeatureValueType.STRING:
+          return original.valueString;
+        case FeatureValueType.NUMBER:
+          return original.valueNumber;
+        case FeatureValueType.JSON:
+          return original.valueJson;
+      }
     }
 
     return null;
