@@ -15,9 +15,6 @@ class TabsBloc implements Bloc {
   FeatureStatusFeatures featureStatus;
   final _stateSource = BehaviorSubject<TabsState>.seeded(TabsState.FLAGS);
   List<Feature> _featuresForTabs;
-  final _hiddenEnvironments = <String>{}; // set of strings
-  final _hiddenEnvironmentsSource =
-      BehaviorSubject<Set<String>>.seeded(<String>{});
   final _currentlyEditingFeatureKeys = <String>{};
   final _featureCurrentlyEditingSource = BehaviorSubject<Set<String>>();
   final ManagementRepositoryClientBloc mrClient;
@@ -25,10 +22,6 @@ class TabsBloc implements Bloc {
 
   // determine which tab they have selected
   Stream<TabsState> get currentTab => _stateSource.stream;
-
-  // which environments are hidden
-  Stream<Set<String>> get hiddenEnvironments =>
-      _hiddenEnvironmentsSource.stream;
 
   Stream<Set<String>> get featureCurrentlyEditingStream =>
       _featureCurrentlyEditingSource.stream;
@@ -38,6 +31,9 @@ class TabsBloc implements Bloc {
   final FeatureStatusBloc featureStatusBloc;
   StreamSubscription<FeatureStatusFeatures> _featureStream;
   StreamSubscription<Feature> _newFeatureStream;
+  StreamSubscription<List<String>> _shownEnvironmentsStream;
+
+  var shownEnvironments = <String>[];
 
   TabsBloc(this.featureStatus, this.applicationId, this.mrClient,
       this.featureStatusBloc)
@@ -61,6 +57,9 @@ class TabsBloc implements Bloc {
       }
     });
 
+    _shownEnvironmentsStream = featureStatusBloc.shownEnvironmentsStream
+        .listen(_updatedShownEnvironments);
+
     _newFeatureStream =
         featureStatusBloc.publishNewFeatureStream.listen((feature) {
       switch (feature.valueType) {
@@ -80,6 +79,10 @@ class TabsBloc implements Bloc {
 
       _currentlyEditingFeatureKeys.add(feature.key);
     });
+  }
+
+  void _updatedShownEnvironments(List<String> environments) {
+    shownEnvironments = environments;
   }
 
   int get unselectedFeatureCount => _featuresForTabs
@@ -116,18 +119,18 @@ class TabsBloc implements Bloc {
   }
 
   void hideEnvironment(String envId) {
-    if (!_hiddenEnvironments.contains(envId)) {
-      _hiddenEnvironments.add(envId);
-    } else {
-      _hiddenEnvironments.remove(envId);
+    if (featureStatus.sortedByNameEnvironmentIds.contains(envId)) {
+      if (shownEnvironments.contains(envId)) {
+        featureStatusBloc.removeShownEnvironment(envId);
+      } else {
+        featureStatusBloc.addShownEnvironment(envId);
+      }
     }
-
-    _hiddenEnvironmentsSource.add(_hiddenEnvironments);
   }
 
   List<EnvironmentFeatureValues> get sortedEnvironmentsThatAreShowing {
     return featureStatus.sortedByNameEnvironmentIds
-        .where((id) => !_hiddenEnvironments.contains(id))
+        .where((id) => shownEnvironments.contains(id))
         .map((id) => featureStatus.applicationEnvironments[id])
         .toList();
   }
@@ -138,6 +141,7 @@ class TabsBloc implements Bloc {
     featureValueBlocs.values.forEach((element) => element.dispose());
     _featureStream.cancel();
     _newFeatureStream.cancel();
+    _shownEnvironmentsStream.cancel();
   }
 
   void hideOrShowFeature(Feature feature) {
@@ -160,7 +164,7 @@ class TabsBloc implements Bloc {
 
   void _createFeatureValueBlocForFeature(Feature feature) {
     var values = featureStatus.applicationFeatureValues.environments
-        .where((env) => !_hiddenEnvironments.contains(env.environmentId))
+        .where((env) => shownEnvironments.contains(env.environmentId))
         .map((env) => env.features
             .firstWhere((fv) => fv.key == feature.key, orElse: () => null))
         .where((fv) => fv != null)

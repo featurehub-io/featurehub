@@ -25,7 +25,10 @@ public class UserStateResource implements UserStateServiceDelegate {
   public HiddenEnvironments getHiddenEnvironments(String appId, SecurityContext securityContext) {
     applicationUtils.featureReadCheck(securityContext, appId);
 
-    return userStateApi.getHiddenEnvironments(authManager.from(securityContext), appId);
+    final HiddenEnvironments hiddenEnvironments =
+      userStateApi.getHiddenEnvironments(authManager.from(securityContext), appId);
+
+    return hiddenEnvironments == null ? new HiddenEnvironments() : hiddenEnvironments;
   }
 
   @Override

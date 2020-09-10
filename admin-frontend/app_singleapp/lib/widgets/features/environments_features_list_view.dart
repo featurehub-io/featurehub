@@ -15,8 +15,8 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<Set<String>>(
-        stream: bloc.hiddenEnvironments,
+    return StreamBuilder<List<String>>(
+        stream: bloc.featureStatusBloc.shownEnvironmentsStream,
         builder: (context, snapshot) {
           return StreamBuilder<TabsState>(
               stream: bloc.currentTab,
