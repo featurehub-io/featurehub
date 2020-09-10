@@ -43,45 +43,42 @@ class _ConfigurationValueContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Container(
-          width: 130,
-          height: 30,
-          padding: EdgeInsets.symmetric(vertical: 6.0, horizontal: 12.0),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(16.0)),
-            color: Colors.lightBlue,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Flexible(
-                fit: FlexFit.tight,
-                flex: 4,
-                child: Text(_getValue(),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                    style: GoogleFonts.openSans(
-                        textStyle: Theme.of(context).primaryTextTheme.button)),
-              ),
-              fv.locked
-                  ? Flexible(
-                      fit: FlexFit.tight,
-                      flex: 1,
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 4.0, top: 2.0),
-                        child: Icon(
-                          Icons.lock_outline,
-                          color: Colors.black54,
-                          size: 12.0,
-                        ),
+    return Container(
+        width: 130,
+        height: 30,
+        padding: EdgeInsets.symmetric(vertical: 6.0, horizontal: 12.0),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(16.0)),
+          color: Colors.lightBlue,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Flexible(
+              fit: FlexFit.tight,
+              flex: 4,
+              child: Text(_getValue(),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: GoogleFonts.openSans(
+                      textStyle: Theme.of(context).primaryTextTheme.button)),
+            ),
+            fv.locked
+                ? Flexible(
+                    fit: FlexFit.tight,
+                    flex: 1,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 4.0, top: 2.0),
+                      child: Icon(
+                        Icons.lock_outline,
+                        color: Colors.black54,
+                        size: 12.0,
                       ),
-                    )
-                  : Container(),
-            ],
-          )),
-    );
+                    ),
+                  )
+                : Container(),
+          ],
+        ));
   }
 
   String _getValue() {

@@ -2,6 +2,7 @@ import 'package:app_singleapp/widgets/common/fh_underline_button.dart';
 import 'package:app_singleapp/widgets/features/create-strategy-widget.dart';
 import 'package:app_singleapp/widgets/features/custom_strategy_bloc.dart';
 import 'package:app_singleapp/widgets/features/feature_value_updated_by.dart';
+import 'package:app_singleapp/widgets/features/split_rollout_button.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -47,7 +48,7 @@ class _FeatureValueBooleanEnvironmentCellState
         stream: widget.fvBloc
             .environmentIsLocked(widget.environmentFeatureValue.environmentId),
         builder: (ctx, snap) {
-          final canWrite = widget.environmentFeatureValue.roles
+          final canEdit = widget.environmentFeatureValue.roles
               .contains(RoleType.CHANGE_VALUE);
           if (snap.hasData) {
             return SizedBox(
@@ -69,9 +70,9 @@ class _FeatureValueBooleanEnvironmentCellState
                                 ? Text('default',
                                     style: Theme.of(context).textTheme.caption)
                                 : FHUnderlineButton(
-                                    enabled: !snap.data && canWrite,
+                                    enabled: !snap.data && canEdit,
                                     title: widget.rolloutStrategy.name,
-                                    onPressed: !snap.data && canWrite
+                                    onPressed: !snap.data && canEdit
                                         ? () => {
                                               widget.fvBloc.mrClient.addOverlay(
                                                   (BuildContext context) {
@@ -89,6 +90,8 @@ class _FeatureValueBooleanEnvironmentCellState
                           flex: 3,
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton(
+                              isDense: true,
+                              isExpanded: false,
                               items: <String>[
                                 'On',
                                 'Off'
@@ -103,7 +106,7 @@ class _FeatureValueBooleanEnvironmentCellState
                                 );
                               }).toList(),
                               value: featureOn,
-                              onChanged: snap.data == false && canWrite
+                              onChanged: snap.data == false && canEdit
                                   ? (value) {
                                       if (widget.rolloutStrategy == null) {
                                         widget.fvBloc.dirty(
@@ -138,11 +141,11 @@ class _FeatureValueBooleanEnvironmentCellState
                                   child: Material(
                                     shape: CircleBorder(),
                                     child: IconButton(
-                                      mouseCursor: !snap.data && canWrite
+                                      mouseCursor: !snap.data && canEdit
                                           ? SystemMouseCursors.click
                                           : null,
                                       icon: Icon(AntDesign.delete, size: 14),
-                                      onPressed: !snap.data && canWrite
+                                      onPressed: !snap.data && canEdit
                                           ? () => widget.strBloc.removeStrategy(
                                               widget.rolloutStrategy)
                                           : null,
@@ -213,13 +216,12 @@ class FeatureValueBooleanCellEditor extends StatelessWidget {
                           strBloc: strategyBloc,
                           rolloutStrategy: strategy,
                         ),
-                    Expanded(child: SizedBox.shrink()),
                     StreamBuilder<bool>(
                         stream: fvBloc.environmentIsLocked(
                             environmentFeatureValue.environmentId),
                         builder: (context, snapshot) {
                           if (snapshot.hasData) {
-                            return _AddStrategyButton(
+                            return AddStrategyButton(
                                 bloc: strategyBloc,
                                 fvBloc: fvBloc,
                                 locked: snapshot.data);
@@ -239,37 +241,3 @@ class FeatureValueBooleanCellEditor extends StatelessWidget {
   }
 }
 
-class _AddStrategyButton extends StatelessWidget {
-  final CustomStrategyBloc bloc;
-  final FeatureValuesBloc fvBloc;
-  final bool locked;
-
-  const _AddStrategyButton({Key key, this.bloc, this.fvBloc, this.locked})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      child: FlatButton.icon(
-          height: 36,
-          label: Text('Split rollout'),
-          textColor: Colors.white,
-          disabledColor: Colors.black12,
-          color: Theme.of(context).buttonColor,
-          disabledTextColor: Colors.black38,
-          icon: Icon(AntDesign.fork, color: Colors.white, size: 16.0),
-          onPressed: (locked != true)
-              ? () => fvBloc.mrClient.addOverlay((BuildContext context) {
-                    //return null;
-                    return CreateValueStrategyWidget(
-                      fvBloc: fvBloc,
-                      bloc: bloc,
-                    );
-                  })
-              : null
-//        BlocProvider.of<_CustomStrategyBloc>(context)
-//            .addStrategy(RolloutStrategy());
-          ),
-    );
-  }
-}

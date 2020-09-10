@@ -123,13 +123,15 @@ class TabsBloc implements Bloc {
     // now we go through each environment sideways, finding the one with
     // the highest rows and then summing them all
 
-    final maxLinesInAllFeatures =
-        featureStatus.applicationFeatureValues.environments.map((e) {
-      return e.features
+    var linesInAllFeatures =
+    featureStatus.applicationFeatureValues.environments.map((e) {
+      var map = e.features
           .where((e) => e.key != null && fvKeys.contains(e.key))
-          .map((fv) => _strategyLines(fv))
-          .reduce((a, b) => a + b);
-    }).reduce(max);
+          .map((fv) => _strategyLines(fv));
+      return map.isEmpty ? 0 : map.reduce((a, b) => a + b);
+    });
+    final maxLinesInAllFeatures =
+    linesInAllFeatures.isEmpty ? 0 : linesInAllFeatures.reduce(max);
 
     return maxLinesInAllFeatures;
   }
