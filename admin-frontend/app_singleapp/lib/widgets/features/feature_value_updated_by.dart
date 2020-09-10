@@ -29,17 +29,20 @@ class FeatureValueUpdatedByCell extends StatelessWidget {
     }
 
     return Container(
-        padding: EdgeInsets.only(top: 5, left: 8, right: 8),
+        padding: EdgeInsets.only(top: 16.0, left: 8, right: 8),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text(updatedBy,
-                style: Theme.of(context)
-                    .textTheme
-                    .caption
-                    .copyWith(color: Theme.of(context).buttonColor)),
-            SizedBox(height: 4.0),
-            Text(whoUpdated, style: Theme.of(context).textTheme.bodyText1),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(updatedBy,
+                    style: Theme.of(context)
+                        .textTheme
+                        .caption
+                        .copyWith(color: Theme.of(context).buttonColor)),
+                Text(whoUpdated, style: Theme.of(context).textTheme.bodyText1),
+              ],
+            ),
             Text(whenUpdated, style: Theme.of(context).textTheme.caption)
           ],
         ));

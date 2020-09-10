@@ -1,4 +1,5 @@
 import 'package:app_singleapp/widgets/features/feature_value_cell.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'feature_dashboard_constants.dart';
@@ -25,12 +26,11 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                     stream: bloc.featureCurrentlyEditingStream,
                     builder: (context, snapshot) {
                       return Container(
-                        height: (bloc.unselectedFeatureCount *
-                                unselectedRowHeight) +
-                            (bloc.selectedFeatureCount * selectedRowHeight +
-                                1.0) +
+                        height: bloc.unselectedFeatureCountForHeight +
+                            bloc.selectedFeatureCountForHeight +
                             headerHeight +
-                            2,
+                            2 +
+                            35,
                         child: Scrollbar(
                           child: ListView(
                             scrollDirection: Axis.horizontal,
@@ -42,13 +42,19 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                                   return Container(
 //                                  padding:
 //                                      EdgeInsets.only(left: 1.0, right: 1.0),
-                                    width: 170.0,
+                                    width: cellWidth,
                                     child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
                                       children: [
                                         Container(
-//                                        color: Theme.of(context).highlightColor,
+                                          width: cellWidth,
+                                          color:
+                                              Theme.of(context).highlightColor,
                                           height: headerHeight,
                                           child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: [
                                               HideEnvironmentContainer(
                                                 name: efv.environmentName,

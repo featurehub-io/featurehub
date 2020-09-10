@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:app_singleapp/api/client_api.dart';
+import 'package:app_singleapp/widgets/features/feature_dashboard_constants.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart';
@@ -85,13 +87,91 @@ class TabsBloc implements Bloc {
     shownEnvironments = environments;
   }
 
+  double featureExtraCellHeight(Feature feature) {
+    final selected = _currentlyEditingFeatureKeys.contains(feature.key);
+
+    final maxRowsForFeature = _totalStrategyLines([feature]);
+
+    if (selected) {
+      return maxRowsForFeature * selectedRowHeightPerStrategy;
+    } else {
+      return maxRowsForFeature * unselectedRowHeightPerStrategy;
+    }
+  }
+
   int get unselectedFeatureCount => _featuresForTabs
       .where((f) => !_currentlyEditingFeatureKeys.contains(f.key))
       .length;
 
+  int _strategyLines(FeatureValue fv) {
+    if (fv == null) return 0;
+    final rsLen = fv.rolloutStrategies?.length ?? 0;
+    final rsiLen = fv.rolloutStrategyInstances?.length ?? 0;
+    return rsLen + rsiLen;
+  }
+
+  int _totalStrategyLines(List<Feature> sel) {
+    // go through the features on this tab and find those we are NOT
+    // currently editing
+
+    if (sel.isEmpty) {
+      return 0;
+    }
+
+    final fvKeys = sel.map((e) => e.key).toList();
+
+    // now we go through each environment sideways, finding the one with
+    // the highest rows and then summing them all
+
+    var linesInAllFeatures =
+    featureStatus.applicationFeatureValues.environments.map((e) {
+      var map = e.features
+          .where((e) => e.key != null && fvKeys.contains(e.key))
+          .map((fv) => _strategyLines(fv));
+      return map.isEmpty ? 0 : map.reduce((a, b) => a + b);
+    });
+    final maxLinesInAllFeatures =
+    linesInAllFeatures.isEmpty ? 0 : linesInAllFeatures.reduce(max);
+
+    return maxLinesInAllFeatures;
+  }
+
+  /// this gives the total height for the entire table based on
+  /// what tab we are on and what environments we have hidden
+  double get unselectedFeatureCountForHeight {
+    // go through the features on this tab and find those we are NOT
+    // currently editing
+    final sel = _featuresForTabs
+        .where((f) => !_currentlyEditingFeatureKeys.contains(f.key))
+        .toList();
+
+    final maxLinesInAllFeatures = _totalStrategyLines(sel);
+
+    final retVal = (maxLinesInAllFeatures * unselectedRowHeightPerStrategy) +
+        (unselectedRowHeight * sel.length);
+
+    return retVal;
+  }
+
   int get selectedFeatureCount => _featuresForTabs
       .where((f) => _currentlyEditingFeatureKeys.contains(f.key))
       .length;
+
+  double get selectedFeatureCountForHeight {
+    final sel = _featuresForTabs
+        .where((f) => _currentlyEditingFeatureKeys.contains(f.key))
+        .toList();
+    if (sel.isEmpty) {
+      return 0;
+    }
+
+    final maxLinesInAllFeatures = _totalStrategyLines(sel);
+
+    final retVal = (maxLinesInAllFeatures * selectedRowHeightPerStrategy) +
+        (selectedRowHeight * sel.length);
+
+    return retVal;
+  }
 
   // turns them into a map for easy access
   void _refixFeaturesByKey() {

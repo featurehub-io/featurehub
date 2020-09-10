@@ -1,13 +1,28 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:collection/collection.dart';
 import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'feature_status_bloc.dart';
 
 typedef DirtyCallback = bool Function(FeatureValue original);
+typedef DirtyFeatureHolderCallback = void Function(
+    FeatureValueDirtyHolder current);
+
+///
+/// this allows us to keep track of the things that can change
+/// which include the value, the custom strategies, their order or values
+/// and any linked shared strategies
+///
+class FeatureValueDirtyHolder {
+  dynamic value;
+  List<RolloutStrategy> customStrategies = [];
+  List<RolloutStrategyInstance> sharedStrategies = [];
+}
 
 class FeatureValuesBloc implements Bloc {
   final Feature feature;
@@ -25,7 +40,12 @@ class FeatureValuesBloc implements Bloc {
   // environmentId, true/false (if dirty)
   final _dirty = <String, bool>{};
   final _dirtyLock = <String, bool>{};
-  final _dirtyValues = <String, dynamic>{};
+  final _dirtyValues = <String, FeatureValueDirtyHolder>{};
+
+  int get maxLines => _dirtyValues.values
+      .map((e) =>
+          (e.customStrategies?.length ?? 0) + (e.sharedStrategies?.length ?? 0))
+      .reduce(max);
 
   // if any of the values are updated, this stream shows true, it can flick on and off during its lifetime
   final _dirtyBS = BehaviorSubject<bool>();
@@ -79,12 +99,54 @@ class FeatureValuesBloc implements Bloc {
         _dirtyLock.values.any((d) => d == true));
   }
 
-  bool dirty(String envId, DirtyCallback originalCheck, dynamic dirtyValue) {
-    _dirty[envId] = originalCheck(_originalFeatureValues[envId]);
-    _dirtyValues[envId] = dirtyValue;
+  bool dirty(String envId, DirtyFeatureHolderCallback dirtyValueCallback) {
+    final original = _originalFeatureValues[envId];
+    final current = _dirtyValues[envId] ??
+        (FeatureValueDirtyHolder()
+          ..value = _originalValue(original)
+          ..customStrategies =
+              (original?.rolloutStrategies ?? <RolloutStrategy>[])
+          ..sharedStrategies = (original?.rolloutStrategyInstances) ??
+              <RolloutStrategyInstance>[]);
+    dirtyValueCallback(current);
+    _dirtyValues[envId] = current;
+
+    _dirty[envId] = false;
+
+    if (original == null &&
+        (current.value != null ||
+            current.customStrategies.isNotEmpty ||
+            current.sharedStrategies.isNotEmpty))
+      _dirty[envId] = true;
+    else if (original != null) {
+      if (_originalValue(original) != current.value) {
+        _dirty[envId] = true;
+      } else if (!(ListEquality()
+          .equals(original.rolloutStrategies, current.customStrategies))) {
+        _dirty[envId] = true;
+      }
+    }
+
     _dirtyCheck();
 
     return _dirty[envId];
+  }
+
+  dynamic _originalValue(FeatureValue original) {
+    if (original != null) {
+      switch (feature.valueType) {
+        case FeatureValueType.BOOLEAN:
+          return original.valueBoolean;
+        case FeatureValueType.STRING:
+          return original.valueString;
+        case FeatureValueType.NUMBER:
+          return original.valueNumber;
+        case FeatureValueType.JSON:
+          return original.valueJson;
+      }
+    }
+
+    return null;
   }
 
   FeatureValuesBloc(
@@ -105,6 +167,10 @@ class FeatureValuesBloc implements Bloc {
       // make a copy so our changes don't leak back into the main list
       _newFeatureValues[fv.environmentId] = fv.copyWith();
       _originalFeatureValues[fv.environmentId] = fv.copyWith();
+      _dirtyValues[fv.key] = FeatureValueDirtyHolder()
+        ..value = fv
+        ..customStrategies = fv.rolloutStrategies
+        ..sharedStrategies = fv.rolloutStrategyInstances;
     });
   }
 
@@ -156,20 +222,25 @@ class FeatureValuesBloc implements Bloc {
     }
 
     if (_dirty[envId] == true) {
+      final fvDirty = _dirtyValues[envId];
+
       switch (feature.valueType) {
         case FeatureValueType.BOOLEAN:
-          newValue.valueBoolean = _dirtyValues[envId];
+          newValue.valueBoolean = fvDirty.value;
           break;
         case FeatureValueType.STRING:
-          newValue.valueString = _dirtyValues[envId];
+          newValue.valueString = fvDirty.value;
           break;
         case FeatureValueType.NUMBER:
-          newValue.valueNumber = _dirtyValues[envId];
+          newValue.valueNumber = fvDirty.value;
           break;
         case FeatureValueType.JSON:
-          newValue.valueJson = _dirtyValues[envId];
+          newValue.valueJson = fvDirty.value;
           break;
       }
+
+      newValue.rolloutStrategies = fvDirty.customStrategies;
+      newValue.rolloutStrategyInstances = fvDirty.sharedStrategies;
     }
   }
 

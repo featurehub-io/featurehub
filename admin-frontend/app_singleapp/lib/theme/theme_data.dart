@@ -76,13 +76,13 @@ final ThemeData myTheme = ThemeData(
     ),
     helperStyle: TextStyle(
       color: Color(0xff4a4a4a),
-      fontSize: 16,
+      fontSize: 12,
       fontWeight: FontWeight.w400,
       fontStyle: FontStyle.normal,
     ),
     hintStyle: TextStyle(
       color: Color(0xff4a4a4a),
-      fontSize: 16,
+      fontSize: 12,
       fontWeight: FontWeight.w400,
       fontStyle: FontStyle.normal,
     ),

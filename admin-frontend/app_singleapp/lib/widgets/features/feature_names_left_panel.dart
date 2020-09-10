@@ -44,7 +44,8 @@ class FeatureNamesLeftPanel extends StatelessWidget {
 //                      blurRadius: 16),
                     ]),
                 padding: EdgeInsets.only(top: 8.0, left: 8.0),
-                height: (amSelected ? selectedRowHeight : unselectedRowHeight) +
+                height: tabsBloc.featureExtraCellHeight(feature) +
+                    (amSelected ? selectedRowHeight : unselectedRowHeight) +
                     0.5,
                 width: MediaQuery.of(context).size.width > 600 ? 260.0 : 180,
                 child: Column(
