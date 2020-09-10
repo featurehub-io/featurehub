@@ -44,7 +44,10 @@ class _FeatureValueStringEnvironmentCellState
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    tec.text = widget.featureValue.valueString ?? '';
+    final valueSource = widget.rolloutStrategy != null
+        ? widget.rolloutStrategy.value
+        : widget.featureValue.valueString;
+    tec.text = valueSource ?? '';
   }
 
   @override
@@ -57,6 +60,7 @@ class _FeatureValueStringEnvironmentCellState
               .contains(RoleType.CHANGE_VALUE);
           final isLocked = snap.hasData && snap.data;
           final enabled = canEdit && !isLocked;
+          final editable = snap.hasData && !snap.data && canEdit;
 
           return SizedBox(
               height: 50,
@@ -78,9 +82,9 @@ class _FeatureValueStringEnvironmentCellState
                                       style:
                                           Theme.of(context).textTheme.caption)
                                   : FHUnderlineButton(
-                                      enabled: !snap.data && canEdit,
+                                      enabled: editable,
                                       title: widget.rolloutStrategy.name,
-                                      onPressed: !snap.data && canEdit
+                                      onPressed: editable
                                           ? () => {
                                                 widget.fvBloc.mrClient
                                                     .addOverlay(
@@ -111,11 +115,11 @@ class _FeatureValueStringEnvironmentCellState
                                     child: Material(
                                       shape: CircleBorder(),
                                       child: IconButton(
-                                        mouseCursor: !snap.data && canEdit
+                                        mouseCursor: editable
                                             ? SystemMouseCursors.click
                                             : null,
                                         icon: Icon(AntDesign.delete, size: 14),
-                                        onPressed: !snap.data && canEdit
+                                        onPressed: editable
                                             ? () => widget.strBloc
                                                 .removeStrategy(
                                                     widget.rolloutStrategy)
@@ -168,10 +172,14 @@ class _ValueEditContainer extends StatelessWidget {
                   canEdit ? 'Enter string value' : 'No editing permissions',
               hintStyle: Theme.of(context).textTheme.caption),
           onChanged: (value) {
-            widget.fvBloc.dirty(widget.environmentFeatureValue.environmentId,
-                (current) {
-              current.value = value.isEmpty ? null : tec.text?.trim();
-            });
+            final replacementValue = value.isEmpty ? null : tec.text?.trim();
+            if (widget.rolloutStrategy != null) {
+              widget.rolloutStrategy.value = replacementValue;
+              widget.strBloc.markDirty();
+            } else {
+              widget.fvBloc.dirty(widget.environmentFeatureValue.environmentId,
+                  (current) => current.value = replacementValue);
+            }
           },
         ));
   }

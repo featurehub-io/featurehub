@@ -108,17 +108,11 @@ class _FeatureValueBooleanEnvironmentCellState
                               value: featureOn,
                               onChanged: snap.data == false && canEdit
                                   ? (value) {
-                                      if (widget.rolloutStrategy == null) {
-                                        widget.fvBloc.dirty(
-                                            widget.environmentFeatureValue
-                                                .environmentId, (current) {
-                                          current.value = (value == 'On');
-                                        });
-                                      } else {
-                                        widget.rolloutStrategy.value =
-                                            (value == 'On');
-                                        widget.strBloc.markDirty();
-                                      }
+                                      final replacementBoolean =
+                                          (value == 'On');
+
+                                      _notifyDirty(replacementBoolean);
+
                                       setState(() {
                                         featureOn = value;
                                       });
@@ -161,6 +155,16 @@ class _FeatureValueBooleanEnvironmentCellState
           }
           return SizedBox.shrink();
         });
+  }
+
+  void _notifyDirty(bool replacementBoolean) {
+    if (widget.rolloutStrategy == null) {
+      widget.fvBloc.dirty(widget.environmentFeatureValue.environmentId,
+          (current) => current.value = replacementBoolean);
+    } else {
+      widget.rolloutStrategy.value = replacementBoolean;
+      widget.strBloc.markDirty();
+    }
   }
 
   @override
@@ -240,4 +244,3 @@ class FeatureValueBooleanCellEditor extends StatelessWidget {
         }));
   }
 }
-
