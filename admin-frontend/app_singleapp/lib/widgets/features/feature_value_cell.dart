@@ -1,10 +1,10 @@
-import 'package:app_singleapp/widgets/features/dashboard-values-containers/non_boolean_value_cell.dart';
-import 'package:app_singleapp/widgets/features/dashboard-values-containers/value_boolean_cell.dart';
 import 'package:app_singleapp/widgets/features/feature_dashboard_constants.dart';
-import 'package:app_singleapp/widgets/features/feature_value_row_boolean.dart';
 import 'package:app_singleapp/widgets/features/feature_value_row_json.dart';
 import 'package:app_singleapp/widgets/features/feature_value_row_number.dart';
 import 'package:app_singleapp/widgets/features/feature_value_row_string.dart';
+import 'package:app_singleapp/widgets/features/table-collapsed-view/non_boolean_value_cell.dart';
+import 'package:app_singleapp/widgets/features/table-collapsed-view/value_boolean_cell.dart';
+import 'package:app_singleapp/widgets/features/table-expanded-view/boolean_cell_holder.dart';
 import 'package:app_singleapp/widgets/features/tabs_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';

@@ -58,6 +58,7 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                                               Text(
                                                 efv.environmentName,
                                                 overflow: TextOverflow.ellipsis,
+                                                style: Theme.of(context).textTheme.headline6
                                               ),
                                             ],
                                           ),
