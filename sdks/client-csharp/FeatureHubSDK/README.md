@@ -60,7 +60,7 @@ fh.ClientContext().UserKey('ideally-unique-id')
 FeatureHub at its core now supports _server side_ evaluation of complex rollout strategies, both custom ones
 that are applied to individual feature values in a specific environment and shared ones across multiple environments
 in an application. Exposing that level fo configurability via a UI is going to take some time to get right, 
-so rather than block until it is done, Milestone 1.0's goal was to expose the percentage based rollout functionality
+so rather than block until it is done, Milestone 1.0's goal is to expose the percentage based rollout functionality
 for you to start using straight away. 
 
 Future Milestones will expose more of the functionality via the UI and will support client side evaluation of 
