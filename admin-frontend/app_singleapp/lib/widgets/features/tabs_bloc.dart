@@ -3,16 +3,16 @@ import 'dart:math';
 
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/widgets/features/feature_dashboard_constants.dart';
+import 'package:app_singleapp/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart';
 
-import 'feature_status_bloc.dart';
-import 'feature_values_bloc.dart';
+import 'per_application_features_bloc.dart';
 
 enum TabsState { FLAGS, VALUES, CONFIGURATIONS }
 
-class TabsBloc implements Bloc {
+class FeaturesOnThisTabTrackerBloc implements Bloc {
   final String applicationId;
   FeatureStatusFeatures featureStatus;
   final _stateSource = BehaviorSubject<TabsState>.seeded(TabsState.FLAGS);
@@ -29,16 +29,16 @@ class TabsBloc implements Bloc {
       _featureCurrentlyEditingSource.stream;
 
   List<Feature> get features => _featuresForTabs;
-  final featureValueBlocs = <String, FeatureValuesBloc>{};
-  final FeatureStatusBloc featureStatusBloc;
+  final featureValueBlocs = <String, PerFeatureStateTrackingBloc>{};
+  final PerApplicationFeaturesBloc featureStatusBloc;
   StreamSubscription<FeatureStatusFeatures> _featureStream;
   StreamSubscription<Feature> _newFeatureStream;
   StreamSubscription<List<String>> _shownEnvironmentsStream;
 
   var shownEnvironments = <String>[];
 
-  TabsBloc(this.featureStatus, this.applicationId, this.mrClient,
-      this.featureStatusBloc)
+  FeaturesOnThisTabTrackerBloc(this.featureStatus, this.applicationId,
+      this.mrClient, this.featureStatusBloc)
       : assert(featureStatus != null),
         assert(featureStatusBloc != null),
         assert(applicationId != null) {
@@ -124,14 +124,14 @@ class TabsBloc implements Bloc {
     // the highest rows and then summing them all
 
     var linesInAllFeatures =
-    featureStatus.applicationFeatureValues.environments.map((e) {
+        featureStatus.applicationFeatureValues.environments.map((e) {
       var map = e.features
           .where((e) => e.key != null && fvKeys.contains(e.key))
           .map((fv) => _strategyLines(fv));
       return map.isEmpty ? 0 : map.reduce((a, b) => a + b);
     });
     final maxLinesInAllFeatures =
-    linesInAllFeatures.isEmpty ? 0 : linesInAllFeatures.reduce(max);
+        linesInAllFeatures.isEmpty ? 0 : linesInAllFeatures.reduce(max);
 
     return maxLinesInAllFeatures;
   }
@@ -250,7 +250,7 @@ class TabsBloc implements Bloc {
         .where((fv) => fv != null)
         .toList();
 
-    featureValueBlocs[feature.key] = FeatureValuesBloc(
+    featureValueBlocs[feature.key] = PerFeatureStateTrackingBloc(
         applicationId,
         feature,
         mrClient,

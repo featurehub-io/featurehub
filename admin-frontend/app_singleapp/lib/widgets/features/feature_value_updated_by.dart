@@ -1,13 +1,12 @@
+import 'package:app_singleapp/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-import 'feature_values_bloc.dart';
-
 class FeatureValueUpdatedByCell extends StatelessWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
   final Feature feature;
-  final FeatureValuesBloc fvBloc;
+  final PerFeatureStateTrackingBloc fvBloc;
   final FeatureValue featureValue;
 
   FeatureValueUpdatedByCell(

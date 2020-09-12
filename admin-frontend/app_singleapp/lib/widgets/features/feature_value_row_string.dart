@@ -1,5 +1,6 @@
 import 'package:app_singleapp/widgets/common/fh_underline_button.dart';
 import 'package:app_singleapp/widgets/features/feature_value_updated_by.dart';
+import 'package:app_singleapp/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:app_singleapp/widgets/features/split_rollout_button.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
@@ -10,12 +11,11 @@ import 'package:mrapi/api.dart';
 import 'create-strategy-widget.dart';
 import 'custom_strategy_bloc.dart';
 import 'feature_value_row_locked.dart';
-import 'feature_values_bloc.dart';
 
 class FeatureValueStringEnvironmentCell extends StatefulWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
   final Feature feature;
-  final FeatureValuesBloc fvBloc;
+  final PerFeatureStateTrackingBloc fvBloc;
   final FeatureValue featureValue;
   final RolloutStrategy rolloutStrategy;
   final CustomStrategyBloc strBloc;
@@ -188,7 +188,7 @@ class _ValueEditContainer extends StatelessWidget {
 class FeatureValueStringCellEditor extends StatelessWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
   final Feature feature;
-  final FeatureValuesBloc fvBloc;
+  final PerFeatureStateTrackingBloc fvBloc;
 
   const FeatureValueStringCellEditor(
       {Key key, this.environmentFeatureValue, this.feature, this.fvBloc})

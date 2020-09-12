@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
 
-import 'feature_status_bloc.dart';
+import 'per_application_features_bloc.dart';
 
 class HiddenEnvironmentsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<TabsBloc>(context);
+    final bloc = BlocProvider.of<FeaturesOnThisTabTrackerBloc>(context);
     return Container(
       color: Theme.of(context).selectedRowColor,
       margin: EdgeInsets.all(24.0),
@@ -45,14 +45,6 @@ class HiddenEnvironmentsList extends StatelessWidget {
       ),
     );
   }
-
-  List<EnvironmentFeatureValues> _sortedEnvironments(
-      TabsBloc bloc, List<String> envIds) {
-    final envs =
-        bloc.featureStatus.applicationFeatureValues.environments.toList();
-    envs.sort((e1, e2) => e1.environmentName.compareTo(e2.environmentName));
-    return envs;
-  }
 }
 
 class HideEnvironmentContainer extends StatefulWidget {
@@ -82,7 +74,7 @@ class _HideEnvironmentContainerState extends State<HideEnvironmentContainer> {
             ),
             selected: visible,
             onSelected: (bool newValue) {
-              final bloc = BlocProvider.of<FeatureStatusBloc>(context);
+              final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
 
               if (newValue) {
                 bloc.removeShownEnvironment(widget.efv.environmentId);
@@ -100,7 +92,8 @@ class _HideEnvironmentContainerState extends State<HideEnvironmentContainer> {
 
   @override
   void didChangeDependencies() {
-    visible = !BlocProvider.of<FeatureStatusBloc>(context)
+    super.didChangeDependencies();
+    visible = !BlocProvider.of<PerApplicationFeaturesBloc>(context)
         .environmentVisible(widget.efv.environmentId);
   }
 }

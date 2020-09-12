@@ -3,12 +3,13 @@ import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/copy_to_clipboard_html.dart';
 import 'package:app_singleapp/widgets/common/fh_alert_dialog.dart';
 import 'package:app_singleapp/widgets/common/fh_icon_button.dart';
-import 'package:app_singleapp/widgets/features/feature_status_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 
+import 'per_application_features_bloc.dart';
+
 class SDKDetailsWidget extends StatelessWidget {
-  final FeatureStatusBloc bloc;
+  final PerApplicationFeaturesBloc bloc;
   final String envId;
 
   const SDKDetailsWidget({Key key, @required this.bloc, @required this.envId})

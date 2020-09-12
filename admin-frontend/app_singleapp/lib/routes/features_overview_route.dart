@@ -7,8 +7,8 @@ import 'package:app_singleapp/widgets/common/fh_flat_button_accent.dart';
 import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/common/fh_header.dart';
 import 'package:app_singleapp/widgets/features/create-update-feature-dialog-widget.dart';
-import 'package:app_singleapp/widgets/features/feature_status_bloc.dart';
 import 'package:app_singleapp/widgets/features/features_overview_table_widget.dart';
+import 'package:app_singleapp/widgets/features/per_application_features_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
@@ -28,7 +28,7 @@ class _FeatureStatusWidget extends StatefulWidget {
 class _FeatureStatusState extends State<_FeatureStatusWidget> {
   @override
   Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<FeatureStatusBloc>(context);
+    final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,7 +42,7 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
     );
   }
 
-  Widget _headerRow(BuildContext context, FeatureStatusBloc bloc) {
+  Widget _headerRow(BuildContext context, PerApplicationFeaturesBloc bloc) {
     return Container(
         padding: const EdgeInsets.fromLTRB(0, 0, 30, 10),
         child: LayoutBuilder(builder: (context, constraints) {
@@ -66,7 +66,7 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
         }));
   }
 
-  Widget _filterRow(BuildContext context, FeatureStatusBloc bloc) {
+  Widget _filterRow(BuildContext context, PerApplicationFeaturesBloc bloc) {
     return Column(
       children: <Widget>[
         Container(
@@ -134,7 +134,7 @@ class _FeaturesOverviewHeader extends StatelessWidget {
 }
 
 class _CreateFeatureButton extends StatelessWidget {
-  final FeatureStatusBloc bloc;
+  final PerApplicationFeaturesBloc bloc;
 
   const _CreateFeatureButton({
     Key key,

@@ -3,15 +3,16 @@ import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/features/create-update-feature-dialog-widget.dart';
 import 'package:app_singleapp/widgets/features/delete_feature_widget.dart';
 import 'package:app_singleapp/widgets/features/feature_dashboard_constants.dart';
-import 'package:app_singleapp/widgets/features/feature_status_bloc.dart';
 import 'package:app_singleapp/widgets/features/tabs_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
 
+import 'per_application_features_bloc.dart';
+
 class FeatureNamesLeftPanel extends StatelessWidget {
-  final TabsBloc tabsBloc;
+  final FeaturesOnThisTabTrackerBloc tabsBloc;
   final Feature feature;
 
   const FeatureNamesLeftPanel(
@@ -20,7 +21,7 @@ class FeatureNamesLeftPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<FeatureStatusBloc>(context);
+    final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
     return StreamBuilder<Set<String>>(
         stream: tabsBloc.featureCurrentlyEditingStream,
         builder: (context, snapshot) {
@@ -162,7 +163,7 @@ class FeatureNamesLeftPanel extends StatelessWidget {
 
 class _FeatureListenForUpdatedFeatureValues extends StatelessWidget {
   final Feature feature;
-  final TabsBloc bloc;
+  final FeaturesOnThisTabTrackerBloc bloc;
 
   const _FeatureListenForUpdatedFeatureValues(
       {Key key, this.feature, this.bloc})

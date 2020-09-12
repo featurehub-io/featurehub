@@ -2,6 +2,7 @@ import 'package:app_singleapp/widgets/common/fh_underline_button.dart';
 import 'package:app_singleapp/widgets/features/create-strategy-widget.dart';
 import 'package:app_singleapp/widgets/features/custom_strategy_bloc.dart';
 import 'package:app_singleapp/widgets/features/feature_value_updated_by.dart';
+import 'package:app_singleapp/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:app_singleapp/widgets/features/split_rollout_button.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
@@ -10,14 +11,13 @@ import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
 
 import 'feature_value_row_locked.dart';
-import 'feature_values_bloc.dart';
 
 // represents the editing of the states of a single boolean flag on a single environment
 // function for dirty callback needs to be added
 class FeatureValueBooleanEnvironmentCell extends StatefulWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
   final Feature feature;
-  final FeatureValuesBloc fvBloc;
+  final PerFeatureStateTrackingBloc fvBloc;
   final FeatureValue featureValue;
   final RolloutStrategy rolloutStrategy;
   final CustomStrategyBloc strBloc;
@@ -182,7 +182,7 @@ class _FeatureValueBooleanEnvironmentCellState
 class FeatureValueBooleanCellEditor extends StatelessWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
   final Feature feature;
-  final FeatureValuesBloc fvBloc;
+  final PerFeatureStateTrackingBloc fvBloc;
 
   const FeatureValueBooleanCellEditor(
       {Key key, this.environmentFeatureValue, this.feature, this.fvBloc})

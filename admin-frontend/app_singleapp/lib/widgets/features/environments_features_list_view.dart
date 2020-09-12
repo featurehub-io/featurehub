@@ -11,7 +11,7 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
     @required this.bloc,
   }) : super(key: key);
 
-  final TabsBloc bloc;
+  final FeaturesOnThisTabTrackerBloc bloc;
 
   @override
   Widget build(BuildContext context) {

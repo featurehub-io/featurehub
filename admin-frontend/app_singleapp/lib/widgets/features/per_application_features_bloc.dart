@@ -28,7 +28,8 @@ class FeatureStatusFeatures {
 /// This holds state relative to the whole set of features across the entire application
 /// so application level stuff should happen here.
 ///
-class FeatureStatusBloc implements Bloc, ManagementRepositoryAwareBloc {
+class PerApplicationFeaturesBloc
+    implements Bloc, ManagementRepositoryAwareBloc {
   String portfolioId;
   String applicationId;
   final ManagementRepositoryClientBloc _mrClient;
@@ -60,7 +61,7 @@ class FeatureStatusBloc implements Bloc, ManagementRepositoryAwareBloc {
 
   final _getAllAppValuesDebounceStream = BehaviorSubject<bool>();
 
-  FeatureStatusBloc(this._mrClient) : assert(_mrClient != null) {
+  PerApplicationFeaturesBloc(this._mrClient) : assert(_mrClient != null) {
     _appServiceApi = ApplicationServiceApi(_mrClient.apiClient);
     _featureServiceApi = FeatureServiceApi(_mrClient.apiClient);
     _environmentServiceApi = EnvironmentServiceApi(_mrClient.apiClient);
@@ -114,18 +115,18 @@ class FeatureStatusBloc implements Bloc, ManagementRepositoryAwareBloc {
         if (!_appFeatureValuesBS.isClosed) {
           _sortApplicationFeatureValues(appFeatureValues);
 
-          _appFeatureValuesBS.add(FeatureStatusFeatures(appFeatureValues));
-
           if (environments.environmentIds.isEmpty) {
             if (appFeatureValues.environments.isNotEmpty) {
               environments.environmentIds = [
                 appFeatureValues.environments.first.environmentId
               ];
-              _updateShownEnvironments(environments.environmentIds);
+              await _updateShownEnvironments(environments.environmentIds);
             }
           } else {
             _shownEnvironmentsSource.add(environments.environmentIds);
           }
+
+          _appFeatureValuesBS.add(FeatureStatusFeatures(appFeatureValues));
         }
       } catch (e, s) {
         mrClient.dialogError(e, s);

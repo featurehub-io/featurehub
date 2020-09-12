@@ -11,7 +11,7 @@ import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
 
 class FeatureValueCell extends StatelessWidget {
-  final TabsBloc tabsBloc;
+  final FeaturesOnThisTabTrackerBloc tabsBloc;
   final FeatureValue value;
   final EnvironmentFeatureValues efv;
   final Feature feature;

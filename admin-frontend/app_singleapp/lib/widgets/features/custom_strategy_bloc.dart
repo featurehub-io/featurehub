@@ -1,13 +1,12 @@
+import 'package:app_singleapp/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart';
 
-import 'feature_values_bloc.dart';
-
 class CustomStrategyBloc extends Bloc {
   final EnvironmentFeatureValues environmentFeatureValue;
   final Feature feature;
-  final FeatureValuesBloc fvBloc;
+  final PerFeatureStateTrackingBloc fvBloc;
   final FeatureValue featureValue;
 
   final _strategySource =
@@ -50,6 +49,4 @@ class CustomStrategyBloc extends Bloc {
 
   @override
   void dispose() {}
-
-
 }

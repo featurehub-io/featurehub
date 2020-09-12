@@ -1,12 +1,11 @@
+import 'package:app_singleapp/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
-
-import 'feature_values_bloc.dart';
 
 class FeatureValueEditLockedCell extends StatefulWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
   final Feature feature;
-  final FeatureValuesBloc fvBloc;
+  final PerFeatureStateTrackingBloc fvBloc;
 
   const FeatureValueEditLockedCell(
       {Key key, this.environmentFeatureValue, this.feature, this.fvBloc})

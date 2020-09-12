@@ -1,16 +1,16 @@
 import 'package:app_singleapp/utils/utils.dart';
 import 'package:app_singleapp/widgets/common/input_fields_validators/input_field_number_formatter.dart';
 import 'package:app_singleapp/widgets/features/feature_value_updated_by.dart';
+import 'package:app_singleapp/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 
 import 'feature_value_row_locked.dart';
-import 'feature_values_bloc.dart';
 
 class FeatureValueNumberEnvironmentCell extends StatefulWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
   final Feature feature;
-  final FeatureValuesBloc fvBloc;
+  final PerFeatureStateTrackingBloc fvBloc;
   final FeatureValue featureValue;
 
   FeatureValueNumberEnvironmentCell(
@@ -91,11 +91,10 @@ class _FeatureValueNumberEnvironmentCellState
   }
 }
 
-
 class FeatureValueNumberCellEditor extends StatelessWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
   final Feature feature;
-  final FeatureValuesBloc fvBloc;
+  final PerFeatureStateTrackingBloc fvBloc;
 
   const FeatureValueNumberCellEditor(
       {Key key, this.environmentFeatureValue, this.feature, this.fvBloc})
