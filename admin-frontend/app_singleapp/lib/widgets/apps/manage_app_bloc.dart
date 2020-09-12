@@ -196,8 +196,13 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
             updateApplicationGroupRoles: true,
             updateEnvironmentGroupRoles: true)
         .catchError(_mrClient.dialogError);
-    unawaited(_mrClient.streamValley.getCurrentApplicationEnvironments());
+    _refreshEnvironments();
     return updatedGroup;
+  }
+
+  void _refreshEnvironments() async {
+    var list = await _mrClient.streamValley.getCurrentApplicationEnvironments();
+    _environmentBS.add(list);
   }
 
   Future<ServiceAccount> updateServiceAccountPermissions(
@@ -226,8 +231,8 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
         .catchError(_mrClient.dialogError);
     if (success) {
       environmentsList.remove(toRemove);
-      await updateEnvs(applicationId, environmentsList);
-      unawaited(_mrClient.streamValley.getCurrentApplicationEnvironments());
+      // await updateEnvs(applicationId, environmentsList);
+      _refreshEnvironments();
       return true;
     }
     return false;

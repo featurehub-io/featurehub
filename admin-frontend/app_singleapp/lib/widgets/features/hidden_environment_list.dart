@@ -85,9 +85,9 @@ class _HideEnvironmentContainerState extends State<HideEnvironmentContainer> {
               final bloc = BlocProvider.of<FeatureStatusBloc>(context);
 
               if (newValue) {
-                bloc.addShownEnvironment(widget.efv.environmentId);
-              } else {
                 bloc.removeShownEnvironment(widget.efv.environmentId);
+              } else {
+                bloc.addShownEnvironment(widget.efv.environmentId);
               }
 
               setState(() {
@@ -100,7 +100,7 @@ class _HideEnvironmentContainerState extends State<HideEnvironmentContainer> {
 
   @override
   void didChangeDependencies() {
-    visible = BlocProvider.of<FeatureStatusBloc>(context)
+    visible = !BlocProvider.of<FeatureStatusBloc>(context)
         .environmentVisible(widget.efv.environmentId);
   }
 }
