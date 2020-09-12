@@ -16,7 +16,7 @@ class HiddenEnvironmentsList extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text('Hidden environments',
+            child: Text('Choose environments',
                 style: Theme.of(context).textTheme.caption),
           ),
           Expanded(
@@ -72,10 +72,20 @@ class HideEnvironmentContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (rowLayout) {
+
       return Padding(
         padding: const EdgeInsets.only(right: 8.0),
         child: Row(children: [
+          ChoiceChip(
+          label:  Text(
+            name,
+            overflow: TextOverflow.ellipsis,
+          ),
+          selected: rowLayout,
+          onSelected: (bool newValue) {
+              BlocProvider.of<TabsBloc>(context).hideEnvironment(envId);
+            }
+          ),
           Text(
             name,
             overflow: TextOverflow.ellipsis,
@@ -99,32 +109,5 @@ class HideEnvironmentContainer extends StatelessWidget {
           )
         ]),
       );
-    }
-
-    return Row(mainAxisSize: MainAxisSize.min, children: [
-      Flexible(
-        child: Text(
-          name,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ),
-      Padding(
-        padding: const EdgeInsets.only(left: 2.0, right: 2.0),
-        child: InkWell(
-          canRequestFocus: false,
-          mouseCursor: SystemMouseCursors.click,
-          hoverColor: Theme.of(context).primaryColorLight,
-          borderRadius: BorderRadius.circular(24),
-          child: Container(
-            width: 34.0,
-            child: Icon(Icons.visibility_off,
-                size: 18.0, color: Theme.of(context).primaryColorDark),
-          ),
-          onTap: () {
-            BlocProvider.of<TabsBloc>(context).hideEnvironment(envId);
-          },
-        ),
-      )
-    ]);
   }
 }
