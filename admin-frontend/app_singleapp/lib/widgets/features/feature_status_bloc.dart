@@ -153,6 +153,10 @@ class FeatureStatusBloc implements Bloc, ManagementRepositoryAwareBloc {
     }
   }
 
+  bool environmentVisible(String envId) {
+    return _shownEnvironmentsSource.value.contains(envId);
+  }
+
   void addAppFeatureValuesToStream() async {
     _getAllAppValuesDebounceStream.add(
         true); // tell it to ask for the data, but debounce it through a 300ms stream

@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'feature_dashboard_constants.dart';
-import 'hidden_environment_list.dart';
 import 'tabs_bloc.dart';
 
 class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
@@ -49,16 +48,16 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                                       children: [
                                         Container(
                                           width: cellWidth,
-                                          color:
-                                              Theme.of(context).primaryColorLight,
+                                          color: Theme.of(context)
+                                              .primaryColorLight,
                                           height: headerHeight,
                                           child: Column(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.center,
                                             children: [
-                                              HideEnvironmentContainer(
-                                                name: efv.environmentName,
-                                                envId: efv.environmentId,
+                                              Text(
+                                                efv.environmentName,
+                                                overflow: TextOverflow.ellipsis,
                                               ),
                                             ],
                                           ),
