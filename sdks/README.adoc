@@ -654,6 +654,7 @@ Typically, because the repository is what the main code base will interact with,
 - holding all of the features
 - keeping a track of the new features coming in and checking their versions to make sure they are new versions
 - triggering events (callbacks, streams or whatever is idiomatic in your language) for when features change
+- keeping track of user context so you can apply rollout strategies (see Rollout Strategies below)
 - allowing clients to remove themselves from listening
 - indicating the clients when the full list of features has arrived ("ready"). If your SSE layer actually blocks
 until it has received the full list, this may be perfectly idiomatic, especially if your SDK is targeting servers or 
@@ -685,16 +686,95 @@ Essentially the `ClientContext` is information provided to the Repository about 
 designed to support rollout strategies both in their initial server side only implementation, and subsequently in their
 client side implementation. 
 
-The `ClientContext` is essentially a key/value pair repository with some keys having a special meaning:
+The `ClientContext` is essentially a key/value pair repository with some keys having a special meaning. The keys 
+themselves are case sensitive, but how they appear in your language and what case they use is up to you. All keys
+are stored as a key and a list of possible values, because the strategy API supports matching against arrays. 
+The keys at the moment are:
 
-- userkey
-- session
-- device
-- platform
-- country
-- version
+- `userkey` - an arbitrary key that is primarily used for percentage based rollout (the UI support for this 
+delivered in Milestone 1.0). This key will also be used in the future for individual user profiling if you wish to
+use it for that, so keep it as opaque as possible. A good opaque key is also useful for percentage rollout (see below).
+- `session` - a key which is usually used to indicate the current logged in session. 
+- `device` - the device the user is using (mobile, desktop, browser). Defined by the OpenAPI enum `StrategyAttributeDeviceName`
+- `platform` - the device's platform. Again defined by the OpenAPI enum `StrategyAttributePlatformName` 
+- country - the country of the user. We define acceptable variants using the OpenAPI enum `StrategyAttributeCountryName` 
+because it allows us to also infer geographical regions. Please let us know if we have missed from the Encyclopedia
+Britannica's list - if your country isn't on their list or shouldn't be on their list, please take it up with them.
+- version - the semantic version of your application. Generally the combination of version and platform is very 
+useful when rolling out features to specific platforms (such as Mobile). 
 
-- all other keys are key/value or a key with an array of values.
+We also expose the ability for a person to store a key/value pair or a key/list of values pair. 
+
+We encourage a fluid style API for developers to use for this context. 
+
+=== Supporting server side evaluation
+
+Milestone 1.0 support is designed for server side only evaluation. To support this, if a user puts data into the
+`ClientContext` then there needs to be a mechanism by which the user has indicated they have _finished_ putting this
+data into the `ClientContext` (`build` is used in the other SDKs), which then triggers whichever client the user
+is using to refresh its connection by passing a special header - `x-featurehub`. 
+
+At the moment, the other SDKs expose methods for these keys, a method for clients to register when the context is
+rebuilt by the code and a method to generate the necessary header. Pseudo-code where the repository is passed to
+the eventsource or polling client:
+
+----
+new EventSourceClient('url', repository)
+----
+
+which will allow the client to register a callback for when the context changes
+
+----
+repository.client_context.registerCallback((header) => {
+  // store new header for use. It could be null/nil if there is no data in the context
+  // trigger refresh, making sure it uses the header or removes header if it is now null/nil
+})
+----
+
+----
+repository
+    .client_context
+    .user_key('email'.to_guid)
+    .version('6.0.3')
+    .attrs('stores', ['302', '765', '667'])
+    .platform(StrategyAttributePlatformName.linux)
+    .country(StrategyAttributeCountryName.turkey)
+    .build() // triggers header rebuild and tells client
+----
+
+A client needs to expect that as of `build` they should have this context applied.
+
+A client also needs to have a way to clear the context if they wish to have it removed, so a `clear` method which
+removes this data should exist. On build, if the context is empty, it should pass some indication to the
+client there is no header to be sent.
+
+=== Percentage Rollout
+
+For percentage rollout, we apply the Murmur3 Hash to the user's key (by default) and the feature's ID and spread it out 
+over 1 million values. This means a given key will get consistent results across different devices for the same feature.
+
+So a user "fred" might get assigned a value of 23.2852%, and will always for that feature get that percentage. "mary" on
+the other hand may get 77.5421%, but for that feature will always get that percentage. For a different feature, they
+will both get different percentages. 
+
+When _applying_ percentage rollouts, _order matters_ for the rollout strategies that are defined on the feature. The _first_
+matching strategy will be taken and applied. Lets take an example, say we have a String rollout, where we have a 
+default of red, a 20% of blue and a 30% of green. This means that anyone with a 20% or lower calculated hash will get 
+blue. Anyone with a 50% (20% + 30%) or lower will get green - note however the people who had 20% will have already
+been matched and exited the criteria matching. If the strategies were in the opposite order, you would
+get 0-30% on green, and 30-50% would be blue.
+
+We do support the ability to indicate that the percentage rollout could or should be over different keys, so if
+for example you wanted percentage rollout over a `company` or `store` field, you will be able to do this in the future.
+The API and server side evaluation supports this, the most complex part is the UI to allow users to manage this data,
+so this will appear over time. It will only become important for SDKs when we start supporting client side evaluation.
+
+=== Client side evaluation?
+
+Writing the same client side libraries for each language and ensuring they consistently work is a lot of work and
+given FeatureHub, yet it is critically important for scalability. EventSourcing and GETs are able to be cached in CDNs
+for massive scale deployments, but because we are designed around a self-deployment it makes more sense to centralize
+it right now and slowly roll out client side evaluation.
 
 == Special thanks
 
