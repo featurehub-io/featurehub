@@ -18,38 +18,6 @@ Details about what general features are available in SDKs from FeatureHub are [a
 There is a sample application included in the [solution as a console application](https://github.com/featurehub-io/featurehub/tree/master/sdks/client-csharp/ConsoleApp1).
 You could implement it in the following way:
 
-## Rollout Strategies
-
-FeatureHub at its core now supports server side evaluation of complex rollout strategies, both custom ones
-that are applied to individual feature values in a specific environment and shared ones across multiple environments
-in an application.
- 
-This will in the next milestone (1.1) move to local SDK support as well as server side SDK support. 
-To provide this ability for the strategy engine to know how to apply the strategies, you need to provide it
-information. There are five things we track specifically: user key, session key, country, device and platform and
-over time will be able to provide more intelligence over, but you can attach anything you like, both individual
-attributes and arrays of attributes.
- 
-```c#
-    featureHubRepository.ClientContext().UserKey('ideally-unique-id')
-      .Country(StrategyAttributeCountryName.Australia)
-      .Device(StrategyAttributeDeviceName.Desktop)
-      .Build(); 
-```
-
-The `Build()` method will trigger the regeneration of a special header (`x-featurehub`). This in turn
-will automatically retrigger a refresh of your events if you have already connected (unless you are using polling
-and your polling interval is set to 0).
-
-To add a generic key/value pair, use `Attr(key, value)`, to use an array of values there is 
-`Attrs(key, Array<value>)`. You can also `Clear()` to remove all strategies.
-
-In all cases, you need to call `Build()` to re-trigger passing of the new attributes to the server for recalculation.
-By default, the _user key_ is used for percentage based calculations, and without it, you cannot participate in
-percentage based Rollout Strategies ("experiments"). However, a more advanced feature does let you specify other
-attributes (e.g. _company_, or _store_) that would allow you to specify your experiment on. For more details on how
-experiments work with Rollout Strategies, see the [core documentation](https://docs.featurehub.io).
-
 ```c#
 var fh = new FeatureHubRepository(); // create a new repository
 
@@ -88,7 +56,49 @@ fh.ClientContext().UserKey('ideally-unique-id')
   .Build();
 ``` 
 
-## IO.FeatureHub.SSE
+### Rollout Strategies
+FeatureHub at its core now supports _server side_ evaluation of complex rollout strategies, both custom ones
+that are applied to individual feature values in a specific environment and shared ones across multiple environments
+in an application. Exposing that level fo configurability via a UI is going to take some time to get right, 
+so rather than block until it is done, Milestone 1.0's goal was to expose the percentage based rollout functionality
+for you to start using straight away. 
+
+Future Milestones will expose more of the functionality via the UI and will support client side evaluation of 
+strategies as this scales better when you have 10000+ consumers. For more details on how
+experiments work with Rollout Strategies, see the [core documentation](https://docs.featurehub.io).
+ 
+#### Coding for Rollout strategies 
+To provide this ability for the strategy engine to know how to apply the strategies, you need to provide it
+information. There are five things we track specifically: user key, session key, country, device and platform and
+over time will be able to provide more intelligence over, but you can attach anything you like, both individual
+attributes and arrays of attributes. 
+
+Remember, as of Milestone 1.0 we only support percentage based strategies,
+so only UserKey is required to support this. We do however recommend you adding in as much information as you have
+so you don't have to change it in the future.
+
+Example: 
+```c#
+    featureHubRepository.ClientContext().UserKey('ideally-unique-id')
+      .Country(StrategyAttributeCountryName.Australia)
+      .Device(StrategyAttributeDeviceName.Desktop)
+      .Build(); 
+```
+
+The `Build()` method will trigger the regeneration of a special header (`x-featurehub`). This in turn
+will automatically retrigger a refresh of your events if you have already connected (unless you are using polling
+and your polling interval is set to 0).
+
+To add a generic key/value pair, use `Attr(key, value)`, to use an array of values there is 
+`Attrs(key, Array<value>)`. In later Milestones you will be able to match against your own attributes, among other 
+things. You can also `Clear()` to remove all strategies.
+
+In all cases, you need to call `Build()` to re-trigger passing of the new attributes to the server for recalculation.
+By default, the _user key_ is used for percentage based calculations, and without it, you cannot participate in
+percentage based Rollout Strategies ("experiments"). However, a more advanced feature does let you specify other
+attributes (e.g. _company_, or _store_) that would allow you to specify your experiment on. 
+
+### IO.FeatureHub.SSE
 
 This describes the API clients use for accessing features
 
@@ -99,13 +109,13 @@ This C# SDK is automatically generated by the [OpenAPI Generator](https://openap
 - Build package: org.openapitools.codegen.languages.CSharpNetCoreClientCodegen
 
 <a name="frameworks-supported"></a>
-## Frameworks supported
+#### Frameworks supported
 - .NET Core >=1.0
 - .NET Framework >=4.6
 - Mono/Xamarin >=vNext
 
 <a name="dependencies"></a>
-## Dependencies
+#### Dependencies
 
 - [RestSharp](https://www.nuget.org/packages/RestSharp) - 106.10.1 or later
 - [Json.NET](https://www.nuget.org/packages/Newtonsoft.Json/) - 12.0.1 or later
@@ -131,7 +141,10 @@ using IO.FeatureHub.SSE.Client;
 using IO.FeatureHub.SSE.Model;
 ```
 <a name="getting-started"></a>
-## Getting Started
+#### REST Endpoint for GET
+
+You should only use this if you do not want realtime updates. In a normal C# application this would 
+unusual.
 
 ```csharp
 using System.Collections.Generic;
@@ -170,7 +183,8 @@ namespace Example
 ```
 
 <a name="documentation-for-api-endpoints"></a>
-## Documentation for API Endpoints
+
+#### Documentation for API Endpoints
 
 All URIs are relative to *http://localhost*
 
@@ -178,27 +192,3 @@ Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *FeatureServiceApi* | [**GetFeatureStates**](docs/FeatureServiceApi.md#getfeaturestates) | **GET** /features/ | 
 *FeatureServiceApi* | [**SetFeatureState**](docs/FeatureServiceApi.md#setfeaturestate) | **PUT** /features/{sdkUrl}/{featureKey} | 
-
-
-<a name="documentation-for-models"></a>
-## Documentation for Models
-
- - [Model.Environment](docs/Environment.md)
- - [Model.FeatureState](docs/FeatureState.md)
- - [Model.FeatureStateUpdate](docs/FeatureStateUpdate.md)
- - [Model.FeatureValueType](docs/FeatureValueType.md)
- - [Model.RoleType](docs/RoleType.md)
- - [Model.RolloutStrategy](docs/RolloutStrategy.md)
- - [Model.RolloutStrategyAttribute](docs/RolloutStrategyAttribute.md)
- - [Model.RolloutStrategyAttributeConditional](docs/RolloutStrategyAttributeConditional.md)
- - [Model.RolloutStrategyFieldType](docs/RolloutStrategyFieldType.md)
- - [Model.SSEResultState](docs/SSEResultState.md)
- - [Model.StrategyAttributeCountryName](docs/StrategyAttributeCountryName.md)
- - [Model.StrategyAttributeDeviceName](docs/StrategyAttributeDeviceName.md)
- - [Model.StrategyAttributePlatformName](docs/StrategyAttributePlatformName.md)
-
-
-<a name="documentation-for-authorization"></a>
-## Documentation for Authorization
-
-All endpoints do not require authorization.
