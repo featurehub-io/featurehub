@@ -748,6 +748,37 @@ A client also needs to have a way to clear the context if they wish to have it r
 removes this data should exist. On build, if the context is empty, it should pass some indication to the
 client there is no header to be sent.
 
+=== Encoding the header
+
+The header `x-featurehub` is designed to follow the same kind of format as the W3C Baggage spec, where you have
+key value pairs where the value is URL-Encoded. In our case, we are sending arrays of values which we expect to be
+separated by commas. So the header will be:
+
+key=value,value,value,key=value,value,value,key=value
+
+to support this, the values are joined by commas and then url encoded, and then key value pairs are made of them.
+
+An example from the C# APi is as follows:
+
+----
+     _repository.ClientContext
+        .Attr("city", "Istanbul City")
+        .Attrs("family", new List<String> {"Bambam", "DJ Elif"})
+        .Country(StrategyAttributeCountryName.Turkey)
+        .Platform(StrategyAttributePlatformName.Ios)
+        .Device(StrategyAttributeDeviceName.Mobile)
+        .UserKey("tv-show")
+        .Version("6.2.3")
+        .SessionKey("session-key");
+
+----
+
+this makes the header:
+
+----
+city=Istanbul+City,country=turkey,device=mobile,family=Bambam%2cDJ+Elif,platform=ios,session=session-key,userkey=tv-show,version=6.2.3
+----
+
 === Percentage Rollout
 
 For percentage rollout, we apply the Murmur3 Hash to the user's key (by default) and the feature's ID and spread it out 
