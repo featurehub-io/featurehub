@@ -244,7 +244,6 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
 
   void _createFeatureValueBlocForFeature(Feature feature) {
     var values = featureStatus.applicationFeatureValues.environments
-        .where((env) => shownEnvironments.contains(env.environmentId))
         .map((env) => env.features
             .firstWhere((fv) => fv.key == feature.key, orElse: () => null))
         .where((fv) => fv != null)
