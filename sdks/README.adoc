@@ -75,8 +75,38 @@ openapi: 3.0.1
 info:
   title: FeatureServiceApi
   description: This describes the API clients use for accessing features
-  version: "1.1.1"
+  version: "1.1.2"
 paths:
+  /features/:
+    get:
+      tags:
+        - FeatureService
+      parameters:
+        - name: sdkUrl
+          in: query
+          description: "The SDK urls"
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+      description: Requests all features for this sdkurl and disconnects
+      operationId: getFeatureStates
+      responses:
+        "200":
+          description: feature request successful, all environments you have permission to or that were found are returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Environment"
+        "400":
+          description: you didn't ask for any environments
+          content:
+            application/json:
+              schema:
+                {}
   /features/{sdkUrl}/{featureKey}:
     put:
       tags:
@@ -85,14 +115,17 @@ paths:
         - name: sdkUrl
           in: path
           description: "The SDK key for the environment and service account"
+          required: true
           schema:
             type: string
         - name: featureKey
           in: path
           description: "The key you wish to update/action"
+          required: true
           schema:
             type: string
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -159,6 +192,14 @@ components:
         - features
         - feature
         - delete_feature
+    Environment:
+      properties:
+        id:
+          type: string
+        features:
+          type: array
+          items:
+            $ref: "#/components/schemas/FeatureState"
     FeatureState:
       required:
         - name
@@ -167,42 +208,27 @@ components:
           type: string
         key:
           type: string
+        l:
+          description: "Is this feature locked. Usually this doesn't matter because the value is the value, but for FeatureInterceptors it can matter."
+          type: boolean
         version:
+          description: "The version of the feature, this allows features to change values and it means we don't trigger events"
           type: integer
           format: int64
         type:
           $ref: "#/components/schemas/FeatureValueType"
         value:
           description: "the current value"
-        strategy:
-          $ref: "#/components/schemas/Strategy"
-    Strategy:
-#      description: "This tells the client which strategy for roll out is being used".
-      required:
-        - name
-      properties:
-        name:
-          $ref: "#/components/schemas/StrategyNameType"
-        value:
-          description: "this value is used if it is a simple attribute or percentage. If it is more complex then the pairs are passed"
-        pairs:
+        environmentId:
+          description: "This field is filled in from the client side in the GET api as the GET api is able to request multiple environments.
+                        It is never passed from the server, as an array of feature states is wrapped in an environment."
+          type: string
+        strategies:
           type: array
           items:
-            $ref: "#/components/schemas/StrategyPair"
-    StrategyNameType:
-      type: string
-      enum:
-        - ATTRIBUTE
-        - PERCENTAGE
-    StrategyPair:
- #     description: "This is simply information the feature wishes to pass"
-      required:
-        - name
-      properties:
-        name:
-          type: string
-        value:
-          type: string
+            $ref: "#/components/schemas/RolloutStrategy"
+components:
+  schemas:
     FeatureValueType:
       type: string
       enum:
@@ -217,6 +243,86 @@ components:
         - LOCK
         - UNLOCK
         - CHANGE_VALUE
+    RolloutStrategy:
+      description: "if the feature in an environment is different from its default, this will be the reason for it.
+                    a rollout strategy is defined at the Application level and then applied to a specific feature value.
+                    When they are copied to the cache layer they are cloned and the feature value for that strategy
+                    is inserted into the clone and those are published."
+      required:
+        - name
+      properties:
+        id:
+          type: string
+        name:
+          description: "names are unique in a case insensitive fashion"
+          type: string
+          maxLength: 100
+        percentage:
+          description: "value between 0 and 1000000 - for four decimal places"
+          type: integer
+        percentageAttributes:
+          type: array
+          description: "if you don't wish to apply percentage based on user id, you can use one or more attributes defined here"
+          items:
+            type: string
+        colouring:
+          description: "the colour used to display the strategy in the UI. indexed table of background/foreground combos."
+          type: integer
+        avatar:
+          type: string
+          description: "url to avatar (if any). Not sent to SDK. Preferably a unicorn."
+          maxLength: 200
+        value:
+          description: "when we attach the RolloutStrategy for Dacha or SSE this lets us push the value out. Only visible in SDK and SSE Edge."
+        attributes:
+          type: array
+          items:
+            $ref: "#/components/schemas/RolloutStrategyAttribute"
+    RolloutStrategyAttribute:
+      properties:
+        conditional:
+          $ref: "#/components/schemas/RolloutStrategyAttributeConditional"
+        fieldName:
+          type: string
+        value:
+          description: "its value"
+        values:
+          description: "the values if it is an array"
+          type: array
+          items:
+            $ref: "#/components/schemas/RolloutStrategyArrayType"
+        type:
+          $ref: "#/components/schemas/RolloutStrategyFieldType"
+        array:
+          type: boolean
+    RolloutStrategyArrayType:
+      description: "values depend on the field type"
+    RolloutStrategyFieldType:
+      type: string
+      enum:
+        - STRING
+        - SEMANTIC_VERSION
+        - NUMBER
+        - DATE
+        - DATETIME
+        - BOOLEAN
+        - IP_ADDRESS
+    RolloutStrategyAttributeConditional:
+      type: string
+      enum:
+        - EQUALS
+        - ENDS_WITH
+        - STARTS_WITH
+        - GREATER
+        - GREATER_EQUALS
+        - LESS
+        - LESS_EQUALS
+        - NOT_EQUALS
+        - INCLUDES
+        - EXCLUDES
+        - REGEX
+
+
 
 
 ----
