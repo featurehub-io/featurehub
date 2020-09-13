@@ -16,7 +16,7 @@ import {
   SSEResultState,
   FeatureStateTypeTransformer
 } from './models';
-import { FeatureHubConfig } from './config';
+import { ClientContext } from './client_context';
 
 export enum Readyness {
   NotReady = 'NotReady',
@@ -44,7 +44,7 @@ export class ClientFeatureRepository {
   // indexed by id
   private _catchReleaseStates = new Map<string, FeatureState>();
   private _newFeatureStateAvailableListeners: Array<PostLoadNewFeatureStateAvailableListener> = [];
-  private _config = new FeatureHubConfig();
+  private _clientContext = new ClientContext();
 
   public get readyness(): Readyness {
     return this.readynessState;
@@ -152,8 +152,8 @@ export class ClientFeatureRepository {
     return holder;
   }
 
-  get config(): FeatureHubConfig {
-    return this._config;
+  get clientContext(): ClientContext {
+    return this._clientContext;
   }
 
   get catchAndReleaseMode(): boolean {

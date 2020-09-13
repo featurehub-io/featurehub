@@ -196,10 +196,10 @@ export class FeatureHubPollingClient {
     this._url = host + '/features?' + envIds.map(e => 'sdkUrl=' + encodeURIComponent(e)).join('&');
 
     // backwards compatible
-    if (repository.config) {
-      repository.config.registerChangeListener(() => {
+    if (repository.clientContext) {
+      repository.clientContext.registerChangeListener(() => {
         if (this._pollingService && this._frequency) {
-          this._pollingService.attributeHeader(this._repository.config.generateHeader());
+          this._pollingService.attributeHeader(this._repository.clientContext.generateHeader());
         }
       });
     }
@@ -209,11 +209,11 @@ export class FeatureHubPollingClient {
     if (this._pollingService === undefined) {
       if (typeof window === 'object') {
         this._pollingService = new BrowserPollingService(this._options, this._url, this._frequency,
-                                                         this._repository.config.generateHeader(),
+                                                         this._repository.clientContext.generateHeader(),
                                                          (e) => this.response(e));
       } else {
         this._pollingService = new NodejsPollingService(this._options, this._url, this._frequency,
-                                                        this._repository.config.generateHeader(),
+                                                        this._repository.clientContext.generateHeader(),
                                                         (e) => this.response(e));
       }
     }
