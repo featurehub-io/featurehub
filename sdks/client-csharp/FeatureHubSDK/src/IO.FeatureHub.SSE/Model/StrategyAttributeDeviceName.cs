@@ -48,7 +48,25 @@ namespace IO.FeatureHub.SSE.Model
         /// Enum Desktop for value: desktop
         /// </summary>
         [EnumMember(Value = "desktop")]
-        Desktop = 3
+        Desktop = 3,
+
+        /// <summary>
+        /// Enum Server for value: server
+        /// </summary>
+        [EnumMember(Value = "server")]
+        Server = 4,
+
+        /// <summary>
+        /// Enum Watch for value: watch
+        /// </summary>
+        [EnumMember(Value = "watch")]
+        Watch = 5,
+
+        /// <summary>
+        /// Enum Embedded for value: embedded
+        /// </summary>
+        [EnumMember(Value = "embedded")]
+        Embedded = 6
 
     }
 

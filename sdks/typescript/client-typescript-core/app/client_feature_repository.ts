@@ -219,16 +219,16 @@ export class ClientFeatureRepository {
     let holder = this.features.get(fs.key);
     if (holder === undefined || holder.getKey() === undefined) {
       switch (fs.type) {
-        case FeatureValueType.BOOLEAN:
+        case FeatureValueType.Boolean:
           holder = new FeatureStateBooleanHolder(holder);
           break;
-        case FeatureValueType.JSON:
+        case FeatureValueType.Json:
           holder = new FeatureStateJsonHolder(holder);
           break;
-        case FeatureValueType.NUMBER:
+        case FeatureValueType.Number:
           holder = new FeatureStateNumberHolder(holder);
           break;
-        case FeatureValueType.STRING:
+        case FeatureValueType.String:
           holder = new FeatureStateStringHolder(holder);
           break;
         default:

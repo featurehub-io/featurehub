@@ -6,6 +6,9 @@ components:
         - browser
         - mobile
         - desktop
+        - server
+        - watch
+        - embedded
     StrategyAttributePlatformName:
       type: string
       enum:
