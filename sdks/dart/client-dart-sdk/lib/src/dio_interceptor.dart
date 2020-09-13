@@ -43,7 +43,7 @@ class JaegerDioInterceptor extends W3CTraceContextInterceptor {
   @override
   Future onRequest(RequestOptions options) {
     repository.availableFeatures.forEach((key) {
-      FeatureStateHolder fs = repository.getFeatureState(key);
+      final fs = repository.getFeatureState(key);
       if (fs.type != FeatureValueType.JSON && fs.value != null) {
         options.headers[
                 'uberctx-fhub.${key.toLowerCase().replaceAll(':', '_')}'] =

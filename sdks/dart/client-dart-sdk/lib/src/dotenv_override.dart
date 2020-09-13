@@ -17,5 +17,7 @@ class DotEnvOverride {
     if (env.containsKey(key)) {
       return ValueMatch(true, env[key]);
     }
+
+    return ValueMatch(false, null);
   }
 }

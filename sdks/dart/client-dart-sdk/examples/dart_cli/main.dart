@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:featurehub_client_api/api.dart';
 import 'package:featurehub_client_sdk/featurehub_io.dart';
 import 'package:logging/logging.dart';
 
@@ -33,6 +34,13 @@ void main() async {
     // ignore: avoid_print
     print('readyness $ready');
   });
+
+  repo.clientContext
+      .userKey(Platform.environment['USERKEY'] ?? 'jemima')
+      .device(StrategyAttributeDeviceName.desktop)
+      .platform(StrategyAttributePlatformName.macos)
+      .attr('sausage', 'kielbasa')
+      .build();
 
   repo.newFeatureStateAvailableStream.listen((event) {
     repo.availableFeatures.forEach((key) {

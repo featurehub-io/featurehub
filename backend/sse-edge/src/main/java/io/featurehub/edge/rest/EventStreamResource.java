@@ -30,6 +30,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 
 @Path("/features")
@@ -65,14 +66,15 @@ public class EventStreamResource {
   public EventOutput features(@PathParam("namedCache") String namedCache,
                               @PathParam("environmentId") String envId,
                               @PathParam("apiKey") String apiKey,
-                              @HeaderParam("x-featurehub") List<String> featureHubAttrs,
+                              @HeaderParam("x-featurehub") List<String> featureHubAttrs, // non browsers can set headers
+                              @QueryParam("xfeaturehub") String browserHubAttrs, // browsers can't set headers
                               FeatureStateUpdate update) {
     EventOutput o = new EventOutput();
 
     try {
       ClientConnection b = new TimedBucketClientConnection.Builder()
         .featureTransformer(featureTransformer)
-        .featureHubAttributes(featureHubAttrs)
+        .featureHubAttributes(browserHubAttrs == null ? featureHubAttrs : Collections.singletonList(browserHubAttrs))
         .environmentId(envId).apiKey(apiKey).namedCache(namedCache).output(o).build();
 
       if (b.discovery()) {

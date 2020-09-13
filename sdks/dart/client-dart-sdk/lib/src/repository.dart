@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:featurehub_client_api/api.dart';
+import 'package:featurehub_client_sdk/featurehub.dart';
 import 'package:logging/logging.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -118,7 +119,7 @@ class _FeatureStateBaseHolder implements FeatureStateHolder {
   }
 
   dynamic _findIntercept(Function determineDefault) {
-    bool locked = _featureState != null && true == _featureState.l;
+    final locked = _featureState != null && true == _featureState.l;
 
     final found = featureValueInterceptors
         .where((vi) => !locked || vi.allowLockOverride)
@@ -151,6 +152,7 @@ class ClientFeatureRepository {
   // indexed by id (not key)
   final Map<String, FeatureState> _catchReleaseStates = {};
   final List<_InterceptorHolder> _featureValueInterceptors = [];
+  final ClientContext clientContext = ClientContext();
 
   Stream<Readyness> get readynessStream => _readynessListeners.stream;
   Stream<ClientFeatureRepository> get newFeatureStateAvailableStream =>

@@ -13,12 +13,31 @@ class EventSourceRepositoryListener {
   final ClientFeatureRepository _repository;
   StreamSubscription<Event> _subscription;
   final String url;
+  bool _initialized = false;
+  String xFeaturehubHeader;
+  EventSource es;
 
   EventSourceRepositoryListener(this.url, ClientFeatureRepository repository,
       {bool doInit = true})
       : _repository = repository {
     if (doInit ?? true) {
       init();
+    }
+  }
+
+  Future<void> init() async {
+    if (!_initialized) {
+      _initialized = true;
+      await _repository.clientContext.registerChangeHandler((header) async {
+        xFeaturehubHeader = header;
+        if (es != null) {
+          es.close();
+        }
+        // ignore: unawaited_futures
+        _init();
+      });
+    } else {
+      _repository.clientContext.build();
     }
   }
 
@@ -38,10 +57,10 @@ class EventSourceRepositoryListener {
     }
   }
 
-  Future<void> init() async {
+  Future<void> _init() async {
     _log.fine('Connecting to $url');
 
-    final es = connect(url)
+    es = connect(url)
       ..onError.listen(_error, cancelOnError: true, onDone: _done);
 
     EventStreamProvider<MessageEvent>('features').forTarget(es).listen(_msg);
@@ -59,7 +78,9 @@ class EventSourceRepositoryListener {
   }
 
   EventSource connect(String url) {
-    return EventSource(url);
+    return EventSource(url + xFeaturehubHeader == null
+        ? ''
+        : '?xfeaturehub=${xFeaturehubHeader}');
   }
 
   void close() {

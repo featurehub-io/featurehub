@@ -13,22 +13,22 @@ void main() {
     poster = _MockPost();
   });
 
-  test("we can log an analytics event for a feature", () async {
+  test('we can log an analytics event for a feature', () async {
     GoogleAnalyticsListener(repo, '1234', cid: '123', apiClient: poster);
 
-    AnalyticsEvent ae = AnalyticsEvent('foo', [_MockStringFeature()], null);
+    final ae = AnalyticsEvent('foo', [_MockStringFeature()], null);
 
     repo.analyticsCollectors.add(ae);
     await Future.value();
 
     verify(poster.postAnalyticBatch(
-        "v=1&tid=1234&cid=123&t=event&ec=FeatureHub%20Event&ea=foo&el=key+%3A+sval\n"));
+        'v=1&tid=1234&cid=123&t=event&ec=FeatureHub%20Event&ea=foo&el=key+%3A+sval\n'));
   });
 
   test("when we don't provide a cid, no post happens", () async {
     GoogleAnalyticsListener(repo, '1234', apiClient: poster);
 
-    AnalyticsEvent ae = AnalyticsEvent('foo', [_MockStringFeature()], null);
+    final ae = AnalyticsEvent('foo', [_MockStringFeature()], null);
 
     repo.analyticsCollectors.add(ae);
     await Future.value();
@@ -39,13 +39,17 @@ void main() {
 
 class _MockFeatureRepository extends Mock implements ClientFeatureRepository {
   final analyticsCollectors = PublishSubject<AnalyticsEvent>();
+  @override
   Stream<AnalyticsEvent> get analyticsEvent => analyticsCollectors.stream;
 }
 
 class _MockPost extends Mock implements GoogleAnalyticsApiClient {}
 
 class _MockStringFeature extends Mock implements FeatureStateHolder {
-  String get stringValue => "sval";
-  String get key => "key";
+  @override
+  String get stringValue => 'sval';
+  @override
+  String get key => 'key';
+  @override
   FeatureValueType get type => FeatureValueType.STRING;
 }

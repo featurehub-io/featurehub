@@ -52,6 +52,15 @@ class LocalApiClient {
       if (value is SSEResultState) {
         return SSEResultStateTypeTransformer.toJson(value);
       }
+      if (value is StrategyAttributeCountryName) {
+        return StrategyAttributeCountryNameTypeTransformer.toJson(value);
+      }
+      if (value is StrategyAttributeDeviceName) {
+        return StrategyAttributeDeviceNameTypeTransformer.toJson(value);
+      }
+      if (value is StrategyAttributePlatformName) {
+        return StrategyAttributePlatformNameTypeTransformer.toJson(value);
+      }
       return value.toString();
     } on Exception catch (e, stack) {
       throw ApiException.withInner(
@@ -107,6 +116,12 @@ class LocalApiClient {
           return RolloutStrategyFieldTypeTypeTransformer.fromJson(value);
         case 'SSEResultState':
           return SSEResultStateTypeTransformer.fromJson(value);
+        case 'StrategyAttributeCountryName':
+          return StrategyAttributeCountryNameTypeTransformer.fromJson(value);
+        case 'StrategyAttributeDeviceName':
+          return StrategyAttributeDeviceNameTypeTransformer.fromJson(value);
+        case 'StrategyAttributePlatformName':
+          return StrategyAttributePlatformNameTypeTransformer.fromJson(value);
         default:
           {
             Match match;
@@ -155,6 +170,18 @@ class LocalApiClient {
     }
     if (value is SSEResultState) {
       return SSEResultStateTypeTransformer.toJson(value).toString();
+    }
+    if (value is StrategyAttributeCountryName) {
+      return StrategyAttributeCountryNameTypeTransformer.toJson(value)
+          .toString();
+    }
+    if (value is StrategyAttributeDeviceName) {
+      return StrategyAttributeDeviceNameTypeTransformer.toJson(value)
+          .toString();
+    }
+    if (value is StrategyAttributePlatformName) {
+      return StrategyAttributePlatformNameTypeTransformer.toJson(value)
+          .toString();
     }
 
     return jsonEncode(value);

@@ -243,4 +243,32 @@ void main() {
     }));
     repo.logAnalyticsEvent('fred', other: {'half': 1.0});
   });
+
+  test('client context should encode correctly', () {
+    // do twice to ensure we can set everything twice
+    repo.clientContext
+        .userKey('DJElif')
+        .sessionKey('Hot Situations')
+        .attr('source', 'youtube')
+        .attr('city', 'istanbul')
+        .attrs('musical styles', ['deep', 'psychedelic'])
+        .platform(StrategyAttributePlatformName.ios)
+        .device(StrategyAttributeDeviceName.desktop)
+        .version('8.9.2')
+        .country(StrategyAttributeCountryName.turkey)
+        .build();
+    repo.clientContext
+        .userKey('DJElif')
+        .sessionKey('Hot Situations')
+        .attr('source', 'youtube')
+        .attr('city', 'istanbul')
+        .attrs('musical styles', ['deep', 'psychedelic'])
+        .platform(StrategyAttributePlatformName.ios)
+        .device(StrategyAttributeDeviceName.desktop)
+        .version('8.9.2')
+        .country(StrategyAttributeCountryName.turkey)
+        .build();
+    expect(repo.clientContext.generateHeader(),
+        'city=istanbul,country=turkey,device=desktop,musical styles=deep%2Cpsychedelic,platform=ios,session=Hot+Situations,source=youtube,userkey=DJElif,version=8.9.2');
+  });
 }
