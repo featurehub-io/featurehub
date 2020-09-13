@@ -187,16 +187,25 @@ wish to dictate our own. However, if you do not have a jackson dependency, pleas
 
 == Rollout Strategies
 
-FeatureHub at its core now supports server side evaluation of complex rollout strategies, both custom ones
+FeatureHub at its core now supports _server side_ evaluation of complex rollout strategies, both custom ones
 that are applied to individual feature values in a specific environment and shared ones across multiple environments
-in an application.
+in an application. Exposing that level fo configurability via a UI is going to take some time to get right,
+so rather than block until it is done, Milestone 1.0's goal is to expose the percentage based rollout functionality
+for you to start using straight away.
 
-This will in the next milestone (1.1) move to local SDK support as well as server side SDK support.
+Future Milestones will expose more of the functionality via the UI and will support client side evaluation of
+strategies as this scales better when you have 10000+ consumers. For more details on how
+experiments work with Rollout Strategies, see the https://docs.featurehub.io[core documentation].
 
+=== Coding for Rollout strategies 
 To provide this ability for the strategy engine to know how to apply the strategies, you need to provide it
 information. There are five things we track specifically: user key, session key, country, device and platform and
 over time will be able to provide more intelligence over, but you can attach anything you like, both individual
 attributes and arrays of attributes.
+
+Remember, as of Milestone 1.0 we only support percentage based strategies,
+so only UserKey is required to support this. We do however recommend you adding in as much information as you have
+so you don't have to change it in the future.
 
 [source,java]
 ----
@@ -217,8 +226,7 @@ In all cases, you need to call `build()` to re-trigger passing of the new attrib
 
 By default, the _user key_ is used for percentage based calculations, and without it, you cannot participate in
 percentage based Rollout Strategies ("experiments"). However, a more advanced feature does let you specify other
-attributes (e.g. _company_, or _store_) that would allow you to specify your experiment on. For more details on how
-experiments work with Rollout Strategies, see the [core documentation](https://docs.featurehub.io).
+attributes (e.g. _company_, or _store_) that would allow you to specify your experiment on. 
 
 
 == Feature Interceptors
