@@ -42,10 +42,8 @@ class LandingRouteState extends State<LandingRoute> {
           Widget widget;
 
           if (snapshot.hasError) {
-            client.customError(
-                messageTitle:
-                    'Error getting initial state'); //return FailureWidget(error: snapshot.error);
-            widget = Text('Error MF!');
+            client.customError(messageTitle: 'Error getting initial state');
+            widget = Text('Error!');
           } else if (snapshot.data == InitializedCheckState.initialized) {
             if (client.currentRoute != null &&
                 client.currentRoute.route == '/register-url') {

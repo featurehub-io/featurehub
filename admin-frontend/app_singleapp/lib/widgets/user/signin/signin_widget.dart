@@ -63,16 +63,16 @@ class _SigninState extends State<SigninWidget> {
       setState(() {
         loggingIn = false;
       });
-    }).catchError((e, s) => {
-          if (e is ApiException && e.code == 404)
-            {
-              setState(() {
-                displayError = true;
-              })
-            }
-          else
-            bloc.dialogError(e, s)
+    }).catchError((e, s) {
+      if (e is ApiException && e.code == 404) {
+        setState(() {
+          displayError = true;
+          loggingIn = false;
         });
+      } else {
+        bloc.dialogError(e, s);
+      }
+    });
   }
 
   @override
