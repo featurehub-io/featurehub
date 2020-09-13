@@ -2,22 +2,22 @@ import 'package:app_singleapp/widgets/features/per_feature_state_tracking_bloc.d
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 
-class FeatureValueEditLockedCell extends StatefulWidget {
+class LockUnlockSwitch extends StatefulWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
   final Feature feature;
   final PerFeatureStateTrackingBloc fvBloc;
 
-  const FeatureValueEditLockedCell(
+  const LockUnlockSwitch(
       {Key key, this.environmentFeatureValue, this.feature, this.fvBloc})
       : super(key: key);
 
   @override
-  _FeatureValueEditLockedCellState createState() =>
-      _FeatureValueEditLockedCellState();
+  _LockUnlockSwitchState createState() =>
+      _LockUnlockSwitchState();
 }
 
-class _FeatureValueEditLockedCellState
-    extends State<FeatureValueEditLockedCell> {
+class _LockUnlockSwitchState
+    extends State<LockUnlockSwitch> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<bool>(

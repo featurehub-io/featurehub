@@ -1,11 +1,11 @@
 import 'package:app_singleapp/widgets/features/custom_strategy_bloc.dart';
 import 'package:app_singleapp/widgets/features/per_feature_state_tracking_bloc.dart';
-import 'package:app_singleapp/widgets/features/table-expanded-view/edit_boolean_value_dropdown_widget.dart';
-import 'package:app_singleapp/widgets/features/table-expanded-view/strategy_cards_widget.dart';
+import 'package:app_singleapp/widgets/features/table-expanded-view/number/edit_number_value_container.dart';
+import 'package:app_singleapp/widgets/features/table-expanded-view/strategy_card_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 
-class FeatureValueBooleanEnvironmentCell extends StatelessWidget {
+class NumberStrategyCard extends StatelessWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
   final Feature feature;
   final PerFeatureStateTrackingBloc fvBloc;
@@ -13,17 +13,16 @@ class FeatureValueBooleanEnvironmentCell extends StatelessWidget {
   final RolloutStrategy rolloutStrategy;
   final CustomStrategyBloc strBloc;
 
-  FeatureValueBooleanEnvironmentCell(
+  NumberStrategyCard(
       {Key key,
-        this.environmentFeatureValue,
-        this.feature,
-        this.fvBloc,
+        @required this.environmentFeatureValue,
+        @required this.feature,
+        @required this.fvBloc,
         this.rolloutStrategy,
         this.strBloc})
       : featureValue = fvBloc
       .featureValueByEnvironment(environmentFeatureValue.environmentId),
         super(key: key);
-
 
   @override
   Widget build(BuildContext context) {
@@ -35,18 +34,21 @@ class FeatureValueBooleanEnvironmentCell extends StatelessWidget {
             final canChangeValue = environmentFeatureValue.roles
                 .contains(RoleType.CHANGE_VALUE);
             var editable = !snap.data && canChangeValue;
-            return StrategyCardsListWidget(
+            final enabled = editable && !snap.data;
+            return StrategyCardWidget(
               editable: editable,
               strBloc: strBloc,
               rolloutStrategy: rolloutStrategy,
               fvBloc: fvBloc,
-              editableHolderWidget: EditBooleanValueDropDownWidget(
-                  editable: editable,
+              editableHolderWidget: EditNumberValueContainer(
+                  canEdit: editable,
+                  enabled: enabled,
                   rolloutStrategy: rolloutStrategy,
                   fvBloc: fvBloc,
                   strBloc: strBloc,
                   environmentFV: environmentFeatureValue,
-                  featureValue: featureValue),
+                featureValue: featureValue,
+                  ),
             );
           } else {
             return SizedBox.shrink();

@@ -1,9 +1,9 @@
 import 'package:app_singleapp/widgets/features/custom_strategy_bloc.dart';
-import 'package:app_singleapp/widgets/features/feature_value_row_locked.dart';
-import 'package:app_singleapp/widgets/features/feature_value_updated_by.dart';
 import 'package:app_singleapp/widgets/features/per_feature_state_tracking_bloc.dart';
-import 'package:app_singleapp/widgets/features/split_rollout_button.dart';
-import 'package:app_singleapp/widgets/features/table-expanded-view/boolean_values_card_list.dart';
+import 'package:app_singleapp/widgets/features/table-expanded-view/boolean/boolean_strategy_card.dart';
+import 'package:app_singleapp/widgets/features/table-expanded-view/feature_value_updated_by.dart';
+import 'package:app_singleapp/widgets/features/table-expanded-view/lock_unlock_switch.dart';
+import 'package:app_singleapp/widgets/features/table-expanded-view/split_rollout_button.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -12,12 +12,12 @@ import 'package:mrapi/api.dart';
 
 // represents the editing of the states of a single boolean flag on a single environment
 
-class FeatureValueBooleanCellEditor extends StatelessWidget {
+class BooleanCellHolder extends StatelessWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
   final Feature feature;
   final PerFeatureStateTrackingBloc fvBloc;
 
-  const FeatureValueBooleanCellEditor(
+  const BooleanCellHolder(
       {Key key, this.environmentFeatureValue, this.feature, this.fvBloc})
       : super(key: key);
 
@@ -34,19 +34,19 @@ class FeatureValueBooleanCellEditor extends StatelessWidget {
                 return Column(
                   mainAxisSize: MainAxisSize.max,
                   children: [
-                    FeatureValueEditLockedCell(
+                    LockUnlockSwitch(
                       environmentFeatureValue: environmentFeatureValue,
                       feature: feature,
                       fvBloc: fvBloc,
                     ),
-                    FeatureValueBooleanEnvironmentCell(
+                    BooleanStrategyCard(
                       environmentFeatureValue: environmentFeatureValue,
                       feature: feature,
                       fvBloc: fvBloc,
                     ),
                     if (snap.hasData)
                       for (RolloutStrategy strategy in snap.data)
-                        FeatureValueBooleanEnvironmentCell(
+                        BooleanStrategyCard(
                           environmentFeatureValue: environmentFeatureValue,
                           feature: feature,
                           fvBloc: fvBloc,

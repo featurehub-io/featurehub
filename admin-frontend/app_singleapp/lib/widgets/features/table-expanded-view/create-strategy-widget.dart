@@ -155,12 +155,17 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
                         widget.fvBloc.mrClient.removeOverlay();
                       } else {
                         if (_dropDownStrategyType != null) {
+                          var defaultValue;
+                          //when creating new strategy - set value as "not set" (null) for strings,numbers, json. And set "false" for boolean
+                          if(widget.bloc.featureValue.valueBoolean != null) {
+                            defaultValue = false;
+                          }
                           widget.bloc.addStrategy(RolloutStrategy()
                             ..name = _strategyName.text
                             ..percentage =
                                 (double.parse(_strategyPercentage.text) * 100)
                                     .toInt()
-                            ..value = false);
+                            ..value = defaultValue);
                           widget.fvBloc.mrClient.removeOverlay();
                         } else {
                           setState(() {
