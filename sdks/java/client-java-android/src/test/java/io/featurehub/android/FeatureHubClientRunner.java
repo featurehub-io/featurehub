@@ -2,6 +2,8 @@ package io.featurehub.android;
 
 import io.featurehub.client.ClientFeatureRepository;
 import io.featurehub.client.FeatureRepository;
+import io.featurehub.sse.model.StrategyAttributeDeviceName;
+import io.featurehub.sse.model.StrategyAttributePlatformName;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -15,14 +17,17 @@ public class FeatureHubClientRunner {
     repo.addReadynessListener(rl -> System.out.println("readyness " + rl.toString()));
 
     final FeatureHubClient client = new FeatureHubClient("http://localhost:8553",
-      Collections.singleton("default/ce6b5f90-2a8a-4b29-b10f-7f1c98d878fe/VNftuX5LV6PoazPZsEEIBujM4OBqA1Iv9f9cBGho2LJylvxXMXKGxwD14xt2d7Ma3GHTsdsSO8DTvAYF")
+      Collections.singleton("default/ec6a720b-71ac-4cc1-8da1-b5e396fa00ca/Kps0MAqsGt5QhgmwMEoRougAflM2b8Q9e1EFeBPHtuIF0azpcCXeeOw1DabFojYdXXr26fyycqjBt3pa")
       , repo);
+
+    repo.clientContext().userKey("andrew")
+      .platform(StrategyAttributePlatformName.ANDROID)
+      .device(StrategyAttributeDeviceName.MOBILE)
+      .attr("testapp", "android-pretend").build();
 
     client.checkForUpdates();
 
     System.out.println("waiting");
     System.in.read();
-
-
   }
 }

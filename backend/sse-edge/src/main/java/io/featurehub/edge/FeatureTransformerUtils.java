@@ -28,8 +28,6 @@ public class FeatureTransformerUtils implements FeatureTransformer {
   }
 
   public FeatureState transform(FeatureValueCacheItem rf, ClientAttributeCollection clientAttributes) {
-
-
     FeatureState fs = new FeatureState()
 //      .key(rf.getFeature().getAlias() != null ? rf.getFeature().getAlias() : rf.getFeature().getKey())
       .key(rf.getFeature().getKey())

@@ -1,6 +1,7 @@
 package io.featurehub.client.jersey;
 
 import cd.connect.openapi.support.ApiClient;
+import io.featurehub.client.ClientContext;
 import io.featurehub.client.FeatureRepository;
 import io.featurehub.client.Feature;
 import io.featurehub.sse.api.FeatureService;
@@ -17,12 +18,13 @@ import javax.annotation.PostConstruct;
 import javax.inject.Singleton;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 @Singleton
-public class JerseyClient {
+public class JerseyClient implements ClientContext.ClientContextChanged {
   private static final Logger log = LoggerFactory.getLogger(JerseyClient.class);
   protected final String sdkUrl;
   private final WebTarget target;
@@ -34,6 +36,8 @@ public class JerseyClient {
   private boolean shutdownOnServerFailure = true;
   private boolean shutdownOnEdgeFailureConnection = false;
   private EventInput eventInput;
+  private String xFeaturehubHeader;
+  private boolean closedBecauseHeaderChanged = false;
 
   public JerseyClient(String sdkUrl, boolean initializeOnConstruction, FeatureRepository featureRepository) {
     this(sdkUrl, initializeOnConstruction, featureRepository, null);
@@ -58,6 +62,8 @@ public class JerseyClient {
     this.sdkUrl = sdkUrl.substring(sdkUrl.indexOf("/features/") + 1);
 
     featuresService = makeFeatureServiceClient(apiClient);
+
+    this.featureRepository.clientContext().registerChangeListener(this);
 
     if (initializeOnConstruction) {
       init();
@@ -96,7 +102,14 @@ public class JerseyClient {
   private void listenUntilDead() {
     long start = System.currentTimeMillis();
     try {
-      eventInput = target.request().get(EventInput.class);
+      Invocation.Builder request = target.request();
+
+      if (xFeaturehubHeader != null) {
+        request = request.header("x-featurehub", xFeaturehubHeader);
+      }
+
+      eventInput = request
+            .get(EventInput.class);
 
       while (!eventInput.isClosed()) {
         final InboundEvent inboundEvent = eventInput.read();
@@ -114,7 +127,9 @@ public class JerseyClient {
         }
       }
     } catch (Exception e) {
-      log.warn("Failed to connect to {}", sdkUrl, e);
+      if (!closedBecauseHeaderChanged) {
+        log.warn("Failed to connect to {}", sdkUrl, e);
+      }
       if (shutdownOnEdgeFailureConnection) {
         log.warn("Edge connection failed, shutting down");
         featureRepository.notify(SSEResultState.FAILURE, null);
@@ -122,6 +137,7 @@ public class JerseyClient {
       }
     }
 
+    closedBecauseHeaderChanged = false;
     eventInput = null; // so shutdown doesn't get confused
 
     log.debug("connection closed, reconnecting");
@@ -175,5 +191,18 @@ public class JerseyClient {
 
   public void setShutdownOnEdgeFailureConnection(boolean shutdownOnEdgeFailureConnection) {
     this.shutdownOnEdgeFailureConnection = shutdownOnEdgeFailureConnection;
+  }
+
+  // the x-featurehub header has changed, so store it and trigger another run at the server
+  @Override
+  public void notify(String header) {
+    xFeaturehubHeader = header;
+
+    if (initialized) {
+      try {
+        closedBecauseHeaderChanged = true;
+        eventInput.close();
+      } catch (Exception ignored) {}
+    }
   }
 }

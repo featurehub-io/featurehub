@@ -1,6 +1,7 @@
 package io.featurehub.client.jersey
 
 import cd.connect.openapi.support.ApiClient
+import io.featurehub.client.ClientContext
 import io.featurehub.client.ClientFeatureRepository
 import io.featurehub.sse.api.FeatureService
 import io.featurehub.sse.model.FeatureStateUpdate
@@ -132,5 +133,6 @@ class JerseyClientSpec extends Specification {
       client.init()
     then: "mock repository should have been called with a FEATURE event and the text 'features'"
       1 * mockRepository.notify(SSEResultState.FEATURE, "features")
+      1 * mockRepository.clientContext() >> Mock(ClientContext)
   }
 }

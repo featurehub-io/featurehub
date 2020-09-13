@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.featurehub.sse.model.FeatureState
 import io.featurehub.sse.model.FeatureValueType
 import io.featurehub.sse.model.SSEResultState
+import io.featurehub.sse.model.StrategyAttributeCountryName
+import io.featurehub.sse.model.StrategyAttributeDeviceName
+import io.featurehub.sse.model.StrategyAttributePlatformName
 import spock.lang.Specification
 
 import java.util.concurrent.Executor
@@ -275,5 +278,33 @@ class RepositorySpec extends Specification {
         repo.getFeatureState(it.key).rawJson == null
     }
 
+  }
+
+  String header;
+
+  def "the client context encodes as expected"() {
+    given: "i register a trigger"
+      repo.clientContext().registerChangeListener((h) -> header = h);
+    when: "i encode the context"
+      repo.clientContext().userKey("DJElif")
+        .country(StrategyAttributeCountryName.TURKEY)
+        .attr("city", "Istanbul")
+        .attrs("musical styles", Arrays.asList("psychedelic", "deep"))
+        .device(StrategyAttributeDeviceName.DESKTOP)
+        .platform(StrategyAttributePlatformName.ANDROID)
+        .version("2.3.7")
+        .sessionKey("anjunadeep").build();
+
+    and: "i do the same thing again to ensure i can reset everything"
+      repo.clientContext().userKey("DJElif")
+        .country(StrategyAttributeCountryName.TURKEY)
+        .attr("city", "Istanbul")
+        .attrs("musical styles", Arrays.asList("psychedelic", "deep"))
+        .device(StrategyAttributeDeviceName.DESKTOP)
+        .platform(StrategyAttributePlatformName.ANDROID)
+        .version("2.3.7")
+        .sessionKey("anjunadeep").build();
+    then:
+      header == 'city=Istanbul,country=turkey,device=desktop,musical styles=psychedelic%2Cdeep,platform=android,session=anjunadeep,userkey=DJElif,version=2.3.7'
   }
 }

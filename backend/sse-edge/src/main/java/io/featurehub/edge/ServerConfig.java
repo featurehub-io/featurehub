@@ -288,7 +288,6 @@ public class ServerConfig implements ServerController {
         EdgeInitResponse edgeResponse = CacheJsonMapper.mapper.readValue(response.getData(),
           EdgeInitResponse.class);
 
-
         return new Environment().id(envId).features(featureTransformer
           .transform(edgeResponse.getFeatures(), clientAttributeCollection));
 

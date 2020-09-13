@@ -33,11 +33,13 @@ public class ClientFeatureRepository implements FeatureRepository {
   private final List<ReadynessListener> readynessListeners = new ArrayList<>();
   private final List<FeatureValueInterceptorHolder> featureValueInterceptors = new ArrayList<>();
   private ObjectMapper jsonConfigObjectMapper;
+  private final ClientContext clientContext;
 
   public ClientFeatureRepository(int threadPoolSize) {
     mapper = initializeMapper();
     jsonConfigObjectMapper = mapper;
     executor = getExecutor(threadPoolSize);
+    this.clientContext = new ClientContextRepository(executor);
   }
 
   public ClientFeatureRepository() {
@@ -48,6 +50,7 @@ public class ClientFeatureRepository implements FeatureRepository {
     mapper = initializeMapper();
     jsonConfigObjectMapper = mapper;
     this.executor = executor;
+    this.clientContext = new ClientContextRepository(executor);
   }
 
   protected ObjectMapper initializeMapper() {
@@ -66,6 +69,11 @@ public class ClientFeatureRepository implements FeatureRepository {
 
   public void setJsonConfigObjectMapper(ObjectMapper jsonConfigObjectMapper) {
     this.jsonConfigObjectMapper = jsonConfigObjectMapper;
+  }
+
+  @Override
+  public ClientContext clientContext() {
+    return clientContext;
   }
 
   public Readyness getReadyness() {
