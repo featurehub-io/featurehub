@@ -25,48 +25,54 @@ using OpenAPIDateConverter = IO.FeatureHub.SSE.Client.OpenAPIDateConverter;
 namespace IO.FeatureHub.SSE.Model
 {
     /// <summary>
-    /// Defines SSEResultState
+    /// Defines RolloutStrategyFieldType
     /// </summary>
     
     [JsonConverter(typeof(StringEnumConverter))]
     
-    public enum SSEResultState
+    public enum RolloutStrategyFieldType
     {
         /// <summary>
-        /// Enum Ack for value: ack
+        /// Enum STRING for value: STRING
         /// </summary>
-        [EnumMember(Value = "ack")]
-        Ack = 1,
+        [EnumMember(Value = "STRING")]
+        STRING = 1,
 
         /// <summary>
-        /// Enum Bye for value: bye
+        /// Enum SEMANTICVERSION for value: SEMANTIC_VERSION
         /// </summary>
-        [EnumMember(Value = "bye")]
-        Bye = 2,
+        [EnumMember(Value = "SEMANTIC_VERSION")]
+        SEMANTICVERSION = 2,
 
         /// <summary>
-        /// Enum Failure for value: failure
+        /// Enum NUMBER for value: NUMBER
         /// </summary>
-        [EnumMember(Value = "failure")]
-        Failure = 3,
+        [EnumMember(Value = "NUMBER")]
+        NUMBER = 3,
 
         /// <summary>
-        /// Enum Features for value: features
+        /// Enum DATE for value: DATE
         /// </summary>
-        [EnumMember(Value = "features")]
-        Features = 4,
+        [EnumMember(Value = "DATE")]
+        DATE = 4,
 
         /// <summary>
-        /// Enum Feature for value: feature
+        /// Enum DATETIME for value: DATETIME
         /// </summary>
-        [EnumMember(Value = "feature")]
-        Feature = 5,
+        [EnumMember(Value = "DATETIME")]
+        DATETIME = 5,
 
         /// <summary>
-        /// Enum Deletefeature for value: delete_feature
+        /// Enum BOOLEAN for value: BOOLEAN
         /// </summary>
-        [EnumMember(Value = "delete_feature")]
-        Deletefeature = 6
+        [EnumMember(Value = "BOOLEAN")]
+        BOOLEAN = 6,
+
+        /// <summary>
+        /// Enum IPADDRESS for value: IP_ADDRESS
+        /// </summary>
+        [EnumMember(Value = "IP_ADDRESS")]
+        IPADDRESS = 7
 
     }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using FeatureHubSDK;
+using IO.FeatureHub.SSE.Model;
 
 namespace ConsoleApp1
 {
@@ -29,10 +30,22 @@ namespace ConsoleApp1
 
       var esl = new EventServiceListener();
 
-      esl.Init("http://192.168.86.49:8553/features/default/ce6b5f90-2a8a-4b29-b10f-7f1c98d878fe/VNftuX5LV6PoazPZsEEIBujM4OBqA1Iv9f9cBGho2LJylvxXMXKGxwD14xt2d7Ma3GHTsdsSO8DTvAYF", fh);
+      esl.Init("http://localhost:8553/features/default/ec6a720b-71ac-4cc1-8da1-b5e396fa00ca/Kps0MAqsGt5QhgmwMEoRougAflM2b8Q9e1EFeBPHtuIF0azpcCXeeOw1DabFojYdXXr26fyycqjBt3pa", fh);
 
+      Console.Write("Press a key");
       Console.ReadKey();
 
+      Console.Write("Press a key (changed context)");
+
+      fh.ClientContext.UserKey("DJElif").Country(StrategyAttributeCountryName.Turkey).Attr("city", "istanbul").Build();
+      Console.ReadKey();
+
+      Console.Write("Press a key (change context2)");
+      Console.ReadKey();
+
+      fh.ClientContext.UserKey("AmyWiles").Country(StrategyAttributeCountryName.Unitedkingdom).Attr("city", "london").Build();
+      Console.WriteLine("Ready to close");
+      Console.ReadKey();
       esl.Close();
     }
   }

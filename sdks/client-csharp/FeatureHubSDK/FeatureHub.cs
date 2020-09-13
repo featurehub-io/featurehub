@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.Web;
 using IO.FeatureHub.SSE.Model;
 using Newtonsoft.Json;
 using Common.Logging; // because dependent library does
@@ -68,6 +71,124 @@ namespace FeatureHubSDK
     //IFeatureStateHolder Copy();
   }
 
+  public interface IClientContext
+  {
+    event EventHandler<string> ContextUpdateHandler;
+
+    IClientContext UserKey(string key);
+    IClientContext SessionKey(string key);
+    IClientContext Device(StrategyAttributeDeviceName device);
+    IClientContext Platform(StrategyAttributePlatformName platform);
+    IClientContext Country(StrategyAttributeCountryName country);
+    /// expects semantic version
+    IClientContext Version(string version);
+    IClientContext Attr(string key, string value);
+    IClientContext Attrs(string key, List<string> values);
+    IClientContext Clear();
+    void Build();
+    string GenerateHeader();
+  }
+
+  internal class ClientContext : IClientContext
+  {
+    private static readonly ILog Log = LogManager.GetLogger<ClientContext>();
+    private readonly Dictionary<string, List<string>> _attributes = new Dictionary<string,List<string>>();
+    public event EventHandler<string> ContextUpdateHandler;
+    public IClientContext UserKey(string key)
+    {
+      _attributes["userkey"] = new List<string>{key};
+      return this;
+    }
+
+    private static string GetEnumMemberValue(Enum enumValue)
+    {
+      var type = enumValue.GetType();
+      var info = type.GetField(enumValue.ToString());
+      var da = (EnumMemberAttribute[])(info.GetCustomAttributes(typeof(EnumMemberAttribute), false));
+
+      if (da.Length > 0)
+        return da[0].Value;
+      else
+        return string.Empty;
+    }
+
+    public IClientContext SessionKey(string key)
+    {
+      _attributes["session"] = new List<string>{key};
+      return this;
+    }
+
+    public IClientContext Device(StrategyAttributeDeviceName device)
+    {
+      _attributes["device"] = new List<string>{GetEnumMemberValue(device)};
+      return this;
+    }
+
+    public IClientContext Platform(StrategyAttributePlatformName platform)
+    {
+      _attributes["platform"] = new List<string>{GetEnumMemberValue(platform)};
+      return this;
+    }
+
+    public IClientContext Country(StrategyAttributeCountryName country)
+    {
+      _attributes["country"] = new List<string>{GetEnumMemberValue(country)};
+      return this;
+    }
+
+    public IClientContext Version(string version)
+    {
+      _attributes["version"] = new List<string> {version};
+
+      return this;
+    }
+
+    public IClientContext Attr(string key, string value)
+    {
+      _attributes[key] = new List<string>{value};
+      return this;
+    }
+
+    public IClientContext Attrs(string key, List<string> values)
+    {
+      _attributes[key] = values;
+      return this;
+    }
+
+    public IClientContext Clear()
+    {
+      _attributes.Clear();
+      return this;
+    }
+
+    public void Build()
+    {
+      var header = GenerateHeader();
+
+      var handler = ContextUpdateHandler;
+      try
+      {
+        handler?.Invoke(this, header);
+      }
+      catch (Exception e)
+      {
+        Log.Error($"Failed to process client context update", e);
+      }
+    }
+
+    public string GenerateHeader()
+    {
+      if (_attributes.Count == 0)
+      {
+        return null;
+      }
+
+      return string.Join(",",
+        _attributes.Select((e) => e.Key + "=" +
+                                  HttpUtility.UrlEncode(string.Join(",", e.Value))).OrderBy(u => u));
+    }
+  }
+
   internal class FeatureStateBaseHolder : IFeatureStateHolder
   {
     private static readonly ILog log = LogManager.GetLogger<FeatureStateBaseHolder>();
@@ -134,12 +255,15 @@ namespace FeatureHubSDK
     private static readonly ILog log = LogManager.GetLogger<FeatureHubRepository>();
     private readonly Dictionary<string, FeatureStateBaseHolder> _features =
       new Dictionary<string, FeatureStateBaseHolder>();
+    private readonly IClientContext _clientContext = new ClientContext();
 
     private Readyness _readyness = Readyness.NotReady;
     public event EventHandler<Readyness> ReadynessHandler;
     public event EventHandler<FeatureHubRepository> NewFeatureHandler;
 
     public Readyness Readyness => _readyness;
+
+    public IClientContext ClientContext => _clientContext;
 
     private void TriggerReadyness()
     {
