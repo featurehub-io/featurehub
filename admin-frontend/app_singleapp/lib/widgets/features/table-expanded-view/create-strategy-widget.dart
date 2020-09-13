@@ -45,6 +45,7 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
           (widget.rolloutStrategy.percentage / 100).toString();
 //      _dropDownStrategyType = widget.feature.valueType;
       isUpdate = true;
+      _dropDownStrategyType = 'percentage';
     }
   }
 
@@ -56,7 +57,7 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
       key: _formKey,
       child: FHAlertDialog(
         title: Text(widget.rolloutStrategy == null
-            ? 'Add new value to split your feature rollout'
+            ? 'Add percentage rollout strategy'
             : (isReadOnly ? 'View rollout strategy' : 'Edit rollout strategy')),
         content: Container(
           width: 500,
@@ -67,7 +68,7 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
               TextFormField(
                   controller: _strategyName,
                   decoration: InputDecoration(
-                      labelText: 'Split rollout strategy name',
+                      labelText: 'Rollout strategy name',
                       helperText: 'E.g. 20% rollout'),
                   readOnly: isReadOnly,
                   autofocus: true,
@@ -78,37 +79,37 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
                     }
                     return null;
                   })),
-              Padding(
-                padding: const EdgeInsets.only(top: 14.0),
-                child: InkWell(
-                  mouseCursor: SystemMouseCursors.click,
-                  child: DropdownButton(
-                    icon: Padding(
-                      padding: EdgeInsets.only(left: 8.0),
-                      child: Icon(
-                        Icons.keyboard_arrow_down,
-                        size: 24,
-                      ),
-                    ),
-                    isExpanded: false,
-                    items: [
-                      DropdownMenuItem(
-                          value: 'percentage',
-                          child: Text('Percentage rollout'))
-                    ],
-                    hint: Text('Select rollout condition',
-                        style: Theme.of(context).textTheme.subtitle2),
-                    onChanged: (value) {
-                      if (!isReadOnly) {
-                        setState(() {
-                          _dropDownStrategyType = value;
-                        });
-                      }
-                    },
-                    value: _dropDownStrategyType,
-                  ),
-                ),
-              ),
+//              Padding(
+//                padding: const EdgeInsets.only(top: 14.0),
+//                child: InkWell(
+//                  mouseCursor: SystemMouseCursors.click,
+//                  child: DropdownButton(
+//                    icon: Padding(
+//                      padding: EdgeInsets.only(left: 8.0),
+//                      child: Icon(
+//                        Icons.keyboard_arrow_down,
+//                        size: 24,
+//                      ),
+//                    ),
+//                    isExpanded: false,
+//                    items: [
+//                      DropdownMenuItem(
+//                          value: 'percentage',
+//                          child: Text('Percentage rollout'))
+//                    ],
+//                    hint: Text('Select rollout condition',
+//                        style: Theme.of(context).textTheme.subtitle2),
+//                    onChanged: (value) {
+//                      if (!isReadOnly) {
+//                        setState(() {
+//                          _dropDownStrategyType = value;
+//                        });
+//                      }
+//                    },
+//                    value: _dropDownStrategyType,
+//                  ),
+//                ),
+//              ),
               TextFormField(
                   controller: _strategyPercentage,
                   decoration: InputDecoration(

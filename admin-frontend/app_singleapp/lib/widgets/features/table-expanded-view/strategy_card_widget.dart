@@ -45,7 +45,8 @@ class StrategyCardWidget extends StatelessWidget {
                             fvBloc: fvBloc,
                             strBloc: strBloc,
                           )),
-                Expanded(flex: 5, child: editableHolderWidget),
+                Flexible(flex: 5, child: editableHolderWidget),
+                Spacer(),
                 Expanded(
                   flex: 1,
                   child: rolloutStrategy != null
