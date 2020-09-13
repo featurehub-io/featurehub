@@ -1,17 +1,30 @@
 part of featurehub_client_api.api;
 
-enum StrategyAttributeDeviceName { browser, mobile, desktop }
+enum StrategyAttributeDeviceName {
+  browser,
+  mobile,
+  desktop,
+  server,
+  watch,
+  embedded
+}
 
 class StrategyAttributeDeviceNameTypeTransformer {
   static Map<String, StrategyAttributeDeviceName> fromJsonMap = {
     'browser': StrategyAttributeDeviceName.browser,
     'mobile': StrategyAttributeDeviceName.mobile,
-    'desktop': StrategyAttributeDeviceName.desktop
+    'desktop': StrategyAttributeDeviceName.desktop,
+    'server': StrategyAttributeDeviceName.server,
+    'watch': StrategyAttributeDeviceName.watch,
+    'embedded': StrategyAttributeDeviceName.embedded
   };
   static Map<StrategyAttributeDeviceName, String> toJsonMap = {
     StrategyAttributeDeviceName.browser: 'browser',
     StrategyAttributeDeviceName.mobile: 'mobile',
-    StrategyAttributeDeviceName.desktop: 'desktop'
+    StrategyAttributeDeviceName.desktop: 'desktop',
+    StrategyAttributeDeviceName.server: 'server',
+    StrategyAttributeDeviceName.watch: 'watch',
+    StrategyAttributeDeviceName.embedded: 'embedded'
   };
 
   static StrategyAttributeDeviceName fromJson(dynamic data) {
