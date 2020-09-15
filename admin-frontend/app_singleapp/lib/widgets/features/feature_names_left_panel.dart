@@ -36,8 +36,10 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                 decoration: BoxDecoration(
                     color: Colors.white,
                     border: Border(
-                        top: BorderSide(color: Colors.black45, width: 0.5),
-                        right: BorderSide(color: Colors.black45, width: 0.5)),
+                        bottom: BorderSide(color: Colors.black45, width: 0.5),
+                        right: BorderSide(color: Colors.black45, width: 0.5),
+                        left: BorderSide(color: Colors.black45, width: 0.5),
+                    ),
                     boxShadow: [
 //                  BoxShadow(
 //                      color: Color(0xffe5e7f1),

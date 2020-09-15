@@ -56,9 +56,9 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                                                 MainAxisAlignment.center,
                                             children: [
                                               Text(
-                                                efv.environmentName,
+                                                efv.environmentName.toUpperCase(),
                                                 overflow: TextOverflow.ellipsis,
-                                                style: Theme.of(context).textTheme.headline6
+                                                style: Theme.of(context).textTheme.overline.copyWith(color: Colors.black54, fontSize: 14)
                                               ),
                                             ],
                                           ),
@@ -67,7 +67,7 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                                           return Container(
                                             decoration: BoxDecoration(
                                                 border: Border(
-                                              top: BorderSide(
+                                              bottom: BorderSide(
                                                   color: Colors.black45,
                                                   width: 0.5),
                                               right: BorderSide(

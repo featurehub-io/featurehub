@@ -35,7 +35,7 @@ class StrategyCardWidget extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 Expanded(
-                    flex: 4,
+                    flex: 3,
                     child: rolloutStrategy == null
                         ? Text('default',
                             style: Theme.of(context).textTheme.caption)
@@ -45,7 +45,7 @@ class StrategyCardWidget extends StatelessWidget {
                             fvBloc: fvBloc,
                             strBloc: strBloc,
                           )),
-                Flexible(flex: 5, child: editableHolderWidget),
+                Flexible(flex: 4, child: editableHolderWidget),
                 Spacer(),
                 Expanded(
                   flex: 1,

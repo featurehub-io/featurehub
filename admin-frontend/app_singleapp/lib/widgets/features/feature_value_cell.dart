@@ -1,6 +1,5 @@
 import 'package:app_singleapp/widgets/features/feature_dashboard_constants.dart';
-import 'package:app_singleapp/widgets/features/table-collapsed-view/non_boolean_value_cell.dart';
-import 'package:app_singleapp/widgets/features/table-collapsed-view/value_boolean_cell.dart';
+import 'package:app_singleapp/widgets/features/table-collapsed-view/value_cell.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/boolean/boolean_cell_holder.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/json/json_cell_holder.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/number/number_cell_holder.dart';
@@ -34,19 +33,12 @@ class FeatureValueCell extends StatelessWidget {
 
           Widget cellWidget;
           if (!amSelected) {
-            if (feature.valueType == FeatureValueType.BOOLEAN) {
-              cellWidget = BooleanCell(
+              cellWidget = CollapsedViewValueCellHolder(
                 fv: value,
                 efv: efv,
                 feature: feature,
               );
-            } else {
-              cellWidget = ValueCell(
-                fv: value,
-                efv: efv,
-                feature: feature,
-              );
-            }
+
 
             cellWidget = InkWell(
                 canRequestFocus: false,

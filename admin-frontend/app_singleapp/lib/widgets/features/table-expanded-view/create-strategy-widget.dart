@@ -45,7 +45,7 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
           (widget.rolloutStrategy.percentage / 100).toString();
 //      _dropDownStrategyType = widget.feature.valueType;
       isUpdate = true;
-      _dropDownStrategyType = 'percentage';
+//      _dropDownStrategyType = 'percentage';
     }
   }
 
@@ -155,7 +155,6 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
                         widget.bloc.updateStrategy();
                         widget.fvBloc.mrClient.removeOverlay();
                       } else {
-                        if (_dropDownStrategyType != null) {
                           var defaultValue;
                           //when creating new strategy - set value as "not set" (null) for strings,numbers, json. And set "false" for boolean
                           if(widget.bloc.featureValue.valueBoolean != null) {
@@ -168,11 +167,7 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
                                     .toInt()
                             ..value = defaultValue);
                           widget.fvBloc.mrClient.removeOverlay();
-                        } else {
-                          setState(() {
-                            isError = true;
-                          });
-                        }
+
                       }
                     } catch (e, s) {
                       if (e is ApiException && e.code == 409) {

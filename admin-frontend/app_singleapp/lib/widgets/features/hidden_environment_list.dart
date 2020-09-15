@@ -69,7 +69,8 @@ class _HideEnvironmentContainerState extends State<HideEnvironmentContainer> {
       child: Row(children: [
         ChoiceChip(
             label: Text(
-              widget.efv.environmentName,
+              widget.efv.environmentName.toUpperCase(),
+              style: Theme.of(context).textTheme.overline,
               overflow: TextOverflow.ellipsis,
             ),
             selected: visible,

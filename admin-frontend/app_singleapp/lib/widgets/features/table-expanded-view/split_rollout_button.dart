@@ -14,24 +14,27 @@ class AddStrategyButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: FlatButton.icon(
-          height: 36,
-          label: Text('Split rollout'),
-          textColor: Colors.white,
-          disabledColor: Colors.black12,
-          color: Theme.of(context).buttonColor,
-          disabledTextColor: Colors.black38,
-          icon: Icon(AntDesign.fork, color: Colors.white, size: 16.0),
-          onPressed: (locked != true)
-              ? () => fvBloc.mrClient.addOverlay((BuildContext context) {
-                    //return null;
-                    return CreateValueStrategyWidget(
-                      fvBloc: fvBloc,
-                      bloc: bloc,
-                    );
-                  })
-              : null),
+    return Padding(
+      padding: const EdgeInsets.only(top: 16.0),
+      child: Container(
+        child: FlatButton.icon(
+            height: 36,
+            label: Text('Add percentage rollout'),
+            textColor: Colors.white,
+            disabledColor: Colors.black12,
+            color: Theme.of(context).buttonColor,
+            disabledTextColor: Colors.black38,
+            icon: Icon(AntDesign.fork, color: Colors.white, size: 16.0),
+            onPressed: (locked != true)
+                ? () => fvBloc.mrClient.addOverlay((BuildContext context) {
+                      //return null;
+                      return CreateValueStrategyWidget(
+                        fvBloc: fvBloc,
+                        bloc: bloc,
+                      );
+                    })
+                : null),
+      ),
     );
   }
 }
