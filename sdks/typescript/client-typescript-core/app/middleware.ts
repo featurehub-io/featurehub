@@ -21,6 +21,10 @@ class BaggageHolder implements FeatureStateHolder {
   }
 
   getBoolean(): boolean | undefined {
+    if (this.existing.isLocked()) {
+      return this.existing.getBoolean();
+    }
+
     return this.existing.getType() === FeatureValueType.Boolean ? ('true' === this.value) : undefined;
   }
 
@@ -29,6 +33,10 @@ class BaggageHolder implements FeatureStateHolder {
   }
 
   getNumber(): number | undefined {
+    if (this.existing.isLocked()) {
+      return this.existing.getNumber();
+    }
+
     if (this.existing.getType() === FeatureValueType.Number && this.value !== undefined) {
       if (this.value.includes('.')) {
         return parseFloat(this.value);
@@ -46,6 +54,10 @@ class BaggageHolder implements FeatureStateHolder {
   }
 
   getString(): string | undefined {
+    if (this.existing.isLocked()) {
+      return this.existing.getString();
+    }
+
     if (this.existing.getType() === FeatureValueType.String) {
       return this.value;
     }
@@ -72,7 +84,7 @@ class BaggageHolder implements FeatureStateHolder {
 
 class BaggageRepository implements FeatureHubRepository {
   private readonly repo: FeatureHubRepository;
-  private baggage: Map<string, string>;
+  private baggage: Map<string, string|undefined>;
   private mappedBaggage = new Map<string, FeatureStateHolder>();
 
   constructor(repo: FeatureHubRepository, baggage: Map<string, string>) {
@@ -80,7 +92,7 @@ class BaggageRepository implements FeatureHubRepository {
     this.baggage = baggage;
   }
 
-  public get readyness(): Readyness {
+  get readyness(): Readyness {
     return this.repo.readyness;
   }
 
@@ -119,9 +131,19 @@ class BaggageRepository implements FeatureHubRepository {
 
     this.repo.logAnalyticsEvent(action, baggageCopy);
   }
+
+  simpleFeatures(): Map<string, string | undefined> {
+    // captures what they are right now
+    const features = this.repo.simpleFeatures();
+
+    // override them with what we have
+    this.baggage.forEach((value, key) => features.set(key, value));
+
+    return features;
+  }
 }
 
-export function featurehubMiddleware(repo: ClientFeatureRepository) {
+export function featurehubMiddleware(repo: FeatureHubRepository) {
 
   return (req: any, res: any, next: any) => {
     let reqRepo: FeatureHubRepository = repo;
@@ -130,7 +152,7 @@ export function featurehubMiddleware(repo: ClientFeatureRepository) {
       const baggage = req.header('baggage');
 
       if (baggage != null) {
-        const baggageMap = new Map<string, string>();
+        const baggageMap = new Map<string, string|undefined>();
 
         // we are expecting a single key/value pair, fhub=
         baggage.split(',')
@@ -144,6 +166,8 @@ export function featurehubMiddleware(repo: ClientFeatureRepository) {
                 const parts = feature.split('=');
                 if (parts.length === 2) {
                   baggageMap.set(parts[0], decodeURIComponent(parts[1]));
+                } else if (parts.length === 1) {
+                  baggageMap.set(parts[0], undefined);
                 }
               });
           });

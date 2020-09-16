@@ -44,6 +44,9 @@ export interface FeatureHubRepository {
 
   // synonym for getFeatureState
   feature(key: string): FeatureStateHolder;
+
+  // primary used to pass down the line in headers
+  simpleFeatures(): Map<string, string|undefined>;
 }
 
 export class ClientFeatureRepository implements FeatureHubRepository {
@@ -141,6 +144,19 @@ export class ClientFeatureRepository implements FeatureHubRepository {
 
   public addAnalyticCollector(collector: AnalyticsCollector): void {
     this.analyticsCollectors.push(collector);
+  }
+
+  public simpleFeatures(): Map<string, string|undefined> {
+    const vals = new Map<string, string|undefined>();
+
+    this.features.forEach((value, key) => {
+      if (value.getKey()) { // only include value features
+        const val = value.getFeatureState().value;
+        vals.set(key, val ? val.toString() : undefined);
+      }
+    });
+
+    return vals;
   }
 
   public async logAnalyticsEvent(action: string, other?: Map<string, string>) {

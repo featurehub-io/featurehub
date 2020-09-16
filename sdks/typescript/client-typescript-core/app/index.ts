@@ -6,3 +6,4 @@ export * from './analytics';
 export * from './test_sdk';
 export * from './polling_sdk';
 export * from './middleware';
+export * from './baggage_header';
