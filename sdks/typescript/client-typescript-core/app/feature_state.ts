@@ -1,3 +1,5 @@
+import { FeatureValueType } from './models/models';
+
 export interface FeatureListener {
   (featureChanged: FeatureStateHolder): void;
 }
@@ -15,5 +17,11 @@ export interface FeatureStateHolder {
 
   isSet(): boolean;
 
+  isLocked(): boolean | undefined;
+
   addListener(listener: FeatureListener): void;
+
+  getVersion(): number | undefined;
+
+  getType(): FeatureValueType | undefined;
 }

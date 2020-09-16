@@ -1,5 +1,5 @@
 import { FeatureListener, FeatureStateHolder } from './feature_state';
-import { FeatureState } from './models/models';
+import { FeatureState, FeatureValueType } from './models/models';
 
 export class FeatureStateBaseHolder implements FeatureStateHolder {
   protected featureState: FeatureState;
@@ -53,6 +53,18 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
     return null;
   }
 
+  getType(): FeatureValueType | undefined {
+    return undefined;
+  }
+
+  getVersion(): number | undefined {
+    return this.featureState === undefined ? undefined : this.featureState.version;
+  }
+
+  isLocked(): boolean {
+    return this.featureState === undefined ? undefined : this.featureState.l;
+  }
+
   protected async notifyListeners() {
     this.listeners.forEach((l) => {
       try {
@@ -62,6 +74,7 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
       } // don't care
     });
   }
+
 }
 
 export class FeatureStateBooleanHolder extends FeatureStateBaseHolder {
@@ -98,6 +111,10 @@ export class FeatureStateBooleanHolder extends FeatureStateBaseHolder {
   copy(): FeatureStateHolder {
     return new FeatureStateBooleanHolder(null, this.featureState);
   }
+
+  getType(): FeatureValueType | undefined {
+    return FeatureValueType.Boolean;
+  }
 }
 
 export class FeatureStateStringHolder extends FeatureStateBaseHolder {
@@ -132,6 +149,10 @@ export class FeatureStateStringHolder extends FeatureStateBaseHolder {
 
   copy(): FeatureStateHolder {
     return new FeatureStateStringHolder(null, this.featureState);
+  }
+
+  getType(): FeatureValueType | undefined {
+    return FeatureValueType.String;
   }
 }
 
@@ -169,6 +190,10 @@ export class FeatureStateNumberHolder extends FeatureStateBaseHolder {
   copy(): FeatureStateHolder {
     return new FeatureStateNumberHolder(null, this.featureState);
   }
+
+  getType(): FeatureValueType | undefined {
+    return FeatureValueType.Number;
+  }
 }
 
 export class FeatureStateJsonHolder extends FeatureStateBaseHolder {
@@ -204,5 +229,9 @@ export class FeatureStateJsonHolder extends FeatureStateBaseHolder {
 
   copy(): FeatureStateHolder {
     return new FeatureStateJsonHolder(null, this.featureState);
+  }
+
+  getType(): FeatureValueType | undefined {
+    return FeatureValueType.Json;
   }
 }

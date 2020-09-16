@@ -32,7 +32,21 @@ export interface PostLoadNewFeatureStateAvailableListener {
   (repo: ClientFeatureRepository): void;
 }
 
-export class ClientFeatureRepository {
+export interface FeatureHubRepository {
+  // determines if the repository is ready
+  readyness: Readyness;
+
+  // allows us to log an analytics event with this set of features
+  logAnalyticsEvent(action: string, other?: Map<string, string>);
+
+  // returns undefined if the feature does not exist
+  hasFeature(key: string): FeatureStateHolder;
+
+  // synonym for getFeatureState
+  feature(key: string): FeatureStateHolder;
+}
+
+export class ClientFeatureRepository implements FeatureHubRepository {
 
   private hasReceivedInitialState: boolean;
   // indexed by key as that what the user cares about
@@ -141,7 +155,11 @@ export class ClientFeatureRepository {
     this.analyticsCollectors.forEach((ac) => ac.logEvent(action, other, featureStateAtCurrentTime));
   }
 
-  public getFeatureState(key: string): FeatureStateHolder {
+  public hasFeature(key: string): FeatureStateHolder {
+    return this.features.get(key);
+  }
+
+  public feature(key: string): FeatureStateHolder {
     let holder = this.features.get(key);
 
     if (holder === undefined) {
@@ -150,6 +168,11 @@ export class ClientFeatureRepository {
     }
 
     return holder;
+  }
+
+  // deprecated
+  public getFeatureState(key: string): FeatureStateHolder {
+    return this.feature(key);
   }
 
   get clientContext(): ClientContext {

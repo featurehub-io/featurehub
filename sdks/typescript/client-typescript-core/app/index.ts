@@ -5,3 +5,4 @@ export * from './models/models';
 export * from './analytics';
 export * from './test_sdk';
 export * from './polling_sdk';
+export * from './middleware';
