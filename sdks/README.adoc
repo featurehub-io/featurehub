@@ -697,7 +697,7 @@ use it for that, so keep it as opaque as possible. A good opaque key is also use
 - `session` - a key which is usually used to indicate the current logged in session. 
 - `device` - the device the user is using (mobile, desktop, browser). Defined by the OpenAPI enum `StrategyAttributeDeviceName`
 - `platform` - the device's platform. Again defined by the OpenAPI enum `StrategyAttributePlatformName` 
-- country - the country of the user. We define acceptable variants using the OpenAPI enum `StrategyAttributeCountryName` 
+- `country` - the country of the user. We define acceptable variants using the OpenAPI enum `StrategyAttributeCountryName` 
 because it allows us to also infer geographical regions. Please let us know if we have missed from the Encyclopedia
 Britannica's list - if your country isn't on their list or shouldn't be on their list, please take it up with them.
 - version - the semantic version of your application. Generally the combination of version and platform is very 
