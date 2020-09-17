@@ -75,8 +75,38 @@ openapi: 3.0.1
 info:
   title: FeatureServiceApi
   description: This describes the API clients use for accessing features
-  version: "1.1.1"
+  version: "1.1.2"
 paths:
+  /features/:
+    get:
+      tags:
+        - FeatureService
+      parameters:
+        - name: sdkUrl
+          in: query
+          description: "The SDK urls"
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+      description: Requests all features for this sdkurl and disconnects
+      operationId: getFeatureStates
+      responses:
+        "200":
+          description: feature request successful, all environments you have permission to or that were found are returned
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Environment"
+        "400":
+          description: you didn't ask for any environments
+          content:
+            application/json:
+              schema:
+                {}
   /features/{sdkUrl}/{featureKey}:
     put:
       tags:
@@ -85,14 +115,17 @@ paths:
         - name: sdkUrl
           in: path
           description: "The SDK key for the environment and service account"
+          required: true
           schema:
             type: string
         - name: featureKey
           in: path
           description: "The key you wish to update/action"
+          required: true
           schema:
             type: string
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -159,6 +192,14 @@ components:
         - features
         - feature
         - delete_feature
+    Environment:
+      properties:
+        id:
+          type: string
+        features:
+          type: array
+          items:
+            $ref: "#/components/schemas/FeatureState"
     FeatureState:
       required:
         - name
@@ -167,42 +208,27 @@ components:
           type: string
         key:
           type: string
+        l:
+          description: "Is this feature locked. Usually this doesn't matter because the value is the value, but for FeatureInterceptors it can matter."
+          type: boolean
         version:
+          description: "The version of the feature, this allows features to change values and it means we don't trigger events"
           type: integer
           format: int64
         type:
           $ref: "#/components/schemas/FeatureValueType"
         value:
           description: "the current value"
-        strategy:
-          $ref: "#/components/schemas/Strategy"
-    Strategy:
-#      description: "This tells the client which strategy for roll out is being used".
-      required:
-        - name
-      properties:
-        name:
-          $ref: "#/components/schemas/StrategyNameType"
-        value:
-          description: "this value is used if it is a simple attribute or percentage. If it is more complex then the pairs are passed"
-        pairs:
+        environmentId:
+          description: "This field is filled in from the client side in the GET api as the GET api is able to request multiple environments.
+                        It is never passed from the server, as an array of feature states is wrapped in an environment."
+          type: string
+        strategies:
           type: array
           items:
-            $ref: "#/components/schemas/StrategyPair"
-    StrategyNameType:
-      type: string
-      enum:
-        - ATTRIBUTE
-        - PERCENTAGE
-    StrategyPair:
- #     description: "This is simply information the feature wishes to pass"
-      required:
-        - name
-      properties:
-        name:
-          type: string
-        value:
-          type: string
+            $ref: "#/components/schemas/RolloutStrategy"
+components:
+  schemas:
     FeatureValueType:
       type: string
       enum:
@@ -217,15 +243,303 @@ components:
         - LOCK
         - UNLOCK
         - CHANGE_VALUE
+    RolloutStrategy:
+      description: "if the feature in an environment is different from its default, this will be the reason for it.
+                    a rollout strategy is defined at the Application level and then applied to a specific feature value.
+                    When they are copied to the cache layer they are cloned and the feature value for that strategy
+                    is inserted into the clone and those are published."
+      required:
+        - name
+      properties:
+        id:
+          type: string
+        name:
+          description: "names are unique in a case insensitive fashion"
+          type: string
+          maxLength: 100
+        percentage:
+          description: "value between 0 and 1000000 - for four decimal places"
+          type: integer
+        percentageAttributes:
+          type: array
+          description: "if you don't wish to apply percentage based on user id, you can use one or more attributes defined here"
+          items:
+            type: string
+        colouring:
+          description: "the colour used to display the strategy in the UI. indexed table of background/foreground combos."
+          type: integer
+        avatar:
+          type: string
+          description: "url to avatar (if any). Not sent to SDK. Preferably a unicorn."
+          maxLength: 200
+        value:
+          description: "when we attach the RolloutStrategy for Dacha or SSE this lets us push the value out. Only visible in SDK and SSE Edge."
+        attributes:
+          type: array
+          items:
+            $ref: "#/components/schemas/RolloutStrategyAttribute"
+    RolloutStrategyAttribute:
+      properties:
+        conditional:
+          $ref: "#/components/schemas/RolloutStrategyAttributeConditional"
+        fieldName:
+          type: string
+        value:
+          description: "its value"
+        values:
+          description: "the values if it is an array"
+          type: array
+          items:
+            $ref: "#/components/schemas/RolloutStrategyArrayType"
+        type:
+          $ref: "#/components/schemas/RolloutStrategyFieldType"
+        array:
+          type: boolean
+    RolloutStrategyArrayType:
+      description: "values depend on the field type"
+    RolloutStrategyFieldType:
+      type: string
+      enum:
+        - STRING
+        - SEMANTIC_VERSION
+        - NUMBER
+        - DATE
+        - DATETIME
+        - BOOLEAN
+        - IP_ADDRESS
+    RolloutStrategyAttributeConditional:
+      type: string
+      enum:
+        - EQUALS
+        - ENDS_WITH
+        - STARTS_WITH
+        - GREATER
+        - GREATER_EQUALS
+        - LESS
+        - LESS_EQUALS
+        - NOT_EQUALS
+        - INCLUDES
+        - EXCLUDES
+        - REGEX
+    StrategyAttributeDeviceName:
+      type: string
+      enum:
+        - browser
+        - mobile
+        - desktop
+    StrategyAttributePlatformName:
+      type: string
+      enum:
+        - linux
+        - windows
+        - macos
+        - android
+        - ios
+    StrategyAttributeCountryName:
+      type: string
+      description: "https://www.britannica.com/topic/list-of-countries-1993160 - we put these in API so everyone can have the same list"
+      enum:
+        - afghanistan
+        - albania
+        - algeria
+        - andorra
+        - angola
+        - antigua_and_barbuda
+        - argentina
+        - armenia
+        - australia
+        - austria
+        - azerbaijan
+        - the_bahamas
+        - bahrain
+        - bangladesh
+        - barbados
+        - belarus
+        - belgium
+        - belize
+        - benin
+        - bhutan
+        - bolivia
+        - bosnia_and_herzegovina
+        - botswana
+        - brazil
+        - brunei
+        - bulgaria
+        - burkina_faso
+        - burundi
+        - cabo_verde
+        - cambodia
+        - cameroon
+        - canada
+        - central_african_republic
+        - chad
+        - chile
+        - china
+        - colombia
+        - comoros
+        - congo_democratic_republic_of_the
+        - congo_republic_of_the
+        - costa_rica
+        - cote_divoire
+        - croatia
+        - cuba
+        - cyprus
+        - czech_republic
+        - denmark
+        - djibouti
+        - dominica
+        - dominican_republic
+        - east_timor
+        - ecuador
+        - egypt
+        - el_salvador
+        - equatorial_guinea
+        - eritrea
+        - estonia
+        - eswatini
+        - ethiopia
+        - fiji
+        - finland
+        - france
+        - gabon
+        - the_gambia
+        - georgia
+        - germany
+        - ghana
+        - greece
+        - grenada
+        - guatemala
+        - guinea
+        - guinea_bissau
+        - guyana
+        - haiti
+        - honduras
+        - hungary
+        - iceland
+        - india
+        - indonesia
+        - iran
+        - iraq
+        - ireland
+        - israel
+        - italy
+        - jamaica
+        - japan
+        - jordan
+        - kazakhstan
+        - kenya
+        - kiribati
+        - korea_north
+        - korea_south
+        - kosovo
+        - kuwait
+        - kyrgyzstan
+        - laos
+        - latvia
+        - lebanon
+        - lesotho
+        - liberia
+        - libya
+        - liechtenstein
+        - lithuania
+        - luxembourg
+        - madagascar
+        - malawi
+        - malaysia
+        - maldives
+        - mali
+        - malta
+        - marshall_islands
+        - mauritania
+        - mauritius
+        - mexico
+        - micronesia_federated_states_of
+        - moldova
+        - monaco
+        - mongolia
+        - montenegro
+        - morocco
+        - mozambique
+        - myanmar
+        - namibia
+        - nauru
+        - nepal
+        - netherlands
+        - new_zealand
+        - nicaragua
+        - niger
+        - nigeria
+        - north_macedonia
+        - norway
+        - oman
+        - pakistan
+        - palau
+        - panama
+        - papua_new_guinea
+        - paraguay
+        - peru
+        - philippines
+        - poland
+        - portugal
+        - qatar
+        - romania
+        - russia
+        - rwanda
+        - saint_kitts_and_nevis
+        - saint_lucia
+        - saint_vincent_and_the_grenadines
+        - samoa
+        - san_marino
+        - sao_tome_and_principe
+        - saudi_arabia
+        - senegal
+        - serbia
+        - seychelles
+        - sierra_leone
+        - singapore
+        - slovakia
+        - slovenia
+        - solomon_islands
+        - somalia
+        - south_africa
+        - spain
+        - sri_lanka
+        - sudan
+        - sudan_south
+        - suriname
+        - sweden
+        - switzerland
+        - syria
+        - taiwan
+        - tajikistan
+        - tanzania
+        - thailand
+        - togo
+        - tonga
+        - trinidad_and_tobago
+        - tunisia
+        - turkey
+        - turkmenistan
+        - tuvalu
+        - uganda
+        - ukraine
+        - united_arab_emirates
+        - united_kingdom
+        - united_states
+        - uruguay
+        - uzbekistan
+        - vanuatu
+        - vatican_city
+        - venezuela
+        - vietnam
+        - yemen
+        - zambia
+        - zimbabwe
+
 
 
 ----
 
-def credentialsValue
-withCredentials(.....) {
-  credentialsValue = env.SSH_something
-}
-echo $credentialsValue
 
 You will notice the eventsource url is missing, and it is. If you use the standard 
 https://github.com/OpenAPITools/openapi-generator[OpenAPI generator] as supported by the community, then you will
@@ -340,6 +654,7 @@ Typically, because the repository is what the main code base will interact with,
 - holding all of the features
 - keeping a track of the new features coming in and checking their versions to make sure they are new versions
 - triggering events (callbacks, streams or whatever is idiomatic in your language) for when features change
+- keeping track of user context so you can apply rollout strategies (see Rollout Strategies below)
 - allowing clients to remove themselves from listening
 - indicating the clients when the full list of features has arrived ("ready"). If your SSE layer actually blocks
 until it has received the full list, this may be perfectly idiomatic, especially if your SDK is targeting servers or 
@@ -360,7 +675,137 @@ was available, you might hold onto this until it told you it was ready or it tim
 === The Test Client
 
 The Test API is something that an integration or e2e test would use to toggle features. Where it sits in your SDK is
-up to you, it could simple be available by the generated OpenAPI client like it is in Dart. 
+up to you, it could simple be available by the generated OpenAPI client like it is in Dart and C#. 
+
+== Rollout Strategies
+
+New in Milestone 1.0 is the support for Rollout Strategies, and each of the SDKs has had a `ClientContext` added to it
+to support this. 
+
+Essentially the `ClientContext` is information provided to the Repository about the client that is using it. It is
+designed to support rollout strategies both in their initial server side only implementation, and subsequently in their
+client side implementation. 
+
+The `ClientContext` is essentially a key/value pair repository with some keys having a special meaning. The keys 
+themselves are case sensitive, but how they appear in your language and what case they use is up to you. All keys
+are stored as a key and a list of possible values, because the strategy API supports matching against arrays. 
+The keys at the moment are:
+
+- `userkey` - an arbitrary key that is primarily used for percentage based rollout (the UI support for this 
+delivered in Milestone 1.0). This key will also be used in the future for individual user profiling if you wish to
+use it for that, so keep it as opaque as possible. A good opaque key is also useful for percentage rollout (see below).
+- `session` - a key which is usually used to indicate the current logged in session. 
+- `device` - the device the user is using (mobile, desktop, browser). Defined by the OpenAPI enum `StrategyAttributeDeviceName`
+- `platform` - the device's platform. Again defined by the OpenAPI enum `StrategyAttributePlatformName` 
+- `country` - the country of the user. We define acceptable variants using the OpenAPI enum `StrategyAttributeCountryName` 
+because it allows us to also infer geographical regions. Please let us know if we have missed from the Encyclopedia
+Britannica's list - if your country isn't on their list or shouldn't be on their list, please take it up with them.
+- version - the semantic version of your application. Generally the combination of version and platform is very 
+useful when rolling out features to specific platforms (such as Mobile). 
+
+We also expose the ability for a person to store a key/value pair or a key/list of values pair. 
+
+We encourage a fluid style API for developers to use for this context. 
+
+=== Supporting server side evaluation
+
+Milestone 1.0 support is designed for server side only evaluation. To support this, if a user puts data into the
+`ClientContext` then there needs to be a mechanism by which the user has indicated they have _finished_ putting this
+data into the `ClientContext` (`build` is used in the other SDKs), which then triggers whichever client the user
+is using to refresh its connection by passing a special header - `x-featurehub`. 
+
+At the moment, the other SDKs expose methods for these keys, a method for clients to register when the context is
+rebuilt by the code and a method to generate the necessary header. Pseudo-code where the repository is passed to
+the eventsource or polling client:
+
+----
+new EventSourceClient('url', repository)
+----
+
+which will allow the client to register a callback for when the context changes
+
+----
+repository.client_context.registerCallback((header) => {
+  // store new header for use. It could be null/nil if there is no data in the context
+  // trigger refresh, making sure it uses the header or removes header if it is now null/nil
+})
+----
+
+----
+repository
+    .client_context
+    .user_key('email'.to_guid)
+    .version('6.0.3')
+    .attrs('stores', ['302', '765', '667'])
+    .platform(StrategyAttributePlatformName.linux)
+    .country(StrategyAttributeCountryName.turkey)
+    .build() // triggers header rebuild and tells client
+----
+
+A client needs to expect that as of `build` they should have this context applied.
+
+A client also needs to have a way to clear the context if they wish to have it removed, so a `clear` method which
+removes this data should exist. On build, if the context is empty, it should pass some indication to the
+client there is no header to be sent.
+
+=== Encoding the header
+
+The header `x-featurehub` is designed to follow the same kind of format as the W3C Baggage spec, where you have
+key value pairs where the value is URL-Encoded. In our case, we are sending arrays of values which we expect to be
+separated by commas. So the header will be:
+
+key=value,value,value,key=value,value,value,key=value
+
+to support this, the values are joined by commas and then url encoded, and then key value pairs are made of them.
+
+An example from the C# APi is as follows:
+
+----
+     _repository.ClientContext
+        .Attr("city", "Istanbul City")
+        .Attrs("family", new List<String> {"Bambam", "DJ Elif"})
+        .Country(StrategyAttributeCountryName.Turkey)
+        .Platform(StrategyAttributePlatformName.Ios)
+        .Device(StrategyAttributeDeviceName.Mobile)
+        .UserKey("tv-show")
+        .Version("6.2.3")
+        .SessionKey("session-key");
+
+----
+
+this makes the header:
+
+----
+city=Istanbul+City,country=turkey,device=mobile,family=Bambam%2cDJ+Elif,platform=ios,session=session-key,userkey=tv-show,version=6.2.3
+----
+
+=== Percentage Rollout
+
+For percentage rollout, we apply the Murmur3 Hash to the user's key (by default) and the feature's ID and spread it out 
+over 1 million values. This means a given key will get consistent results across different devices for the same feature.
+
+So a user "fred" might get assigned a value of 23.2852%, and will always for that feature get that percentage. "mary" on
+the other hand may get 77.5421%, but for that feature will always get that percentage. For a different feature, they
+will both get different percentages. 
+
+When _applying_ percentage rollouts, _order matters_ for the rollout strategies that are defined on the feature. The _first_
+matching strategy will be taken and applied. Lets take an example, say we have a String rollout, where we have a 
+default of red, a 20% of blue and a 30% of green. This means that anyone with a 20% or lower calculated hash will get 
+blue. Anyone with a 50% (20% + 30%) or lower will get green - note however the people who had 20% will have already
+been matched and exited the criteria matching. If the strategies were in the opposite order, you would
+get 0-30% on green, and 30-50% would be blue.
+
+We do support the ability to indicate that the percentage rollout could or should be over different keys, so if
+for example you wanted percentage rollout over a `company` or `store` field, you will be able to do this in the future.
+The API and server side evaluation supports this, the most complex part is the UI to allow users to manage this data,
+so this will appear over time. It will only become important for SDKs when we start supporting client side evaluation.
+
+=== Client side evaluation?
+
+Writing the same client side libraries for each language and ensuring they consistently work is a lot of work and
+given FeatureHub, yet it is critically important for scalability. EventSourcing and GETs are able to be cached in CDNs
+for massive scale deployments, but because we are designed around a self-deployment it makes more sense to centralize
+it right now and slowly roll out client side evaluation.
 
 == Special thanks
 
