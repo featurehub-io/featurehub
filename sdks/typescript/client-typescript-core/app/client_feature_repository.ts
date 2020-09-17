@@ -152,7 +152,7 @@ export class ClientFeatureRepository implements FeatureHubRepository {
     this.features.forEach((value, key) => {
       if (value.getKey()) { // only include value features
         const val = value.getFeatureState().value;
-        vals.set(key, val ? val.toString() : undefined);
+        vals.set(key, val === undefined ? val : val.toString());
       }
     });
 
