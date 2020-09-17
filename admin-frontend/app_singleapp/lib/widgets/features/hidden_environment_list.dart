@@ -60,7 +60,7 @@ class HideEnvironmentContainer extends StatefulWidget {
 }
 
 class _HideEnvironmentContainerState extends State<HideEnvironmentContainer> {
-  bool visible;
+  bool selected;
 
   @override
   Widget build(BuildContext context) {
@@ -73,18 +73,19 @@ class _HideEnvironmentContainerState extends State<HideEnvironmentContainer> {
               style: Theme.of(context).textTheme.overline,
               overflow: TextOverflow.ellipsis,
             ),
-            selected: visible,
+            selectedColor: Color(0xffced6fd),
+            selected: selected,
             onSelected: (bool newValue) {
               final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
 
               if (newValue) {
-                bloc.removeShownEnvironment(widget.efv.environmentId);
-              } else {
                 bloc.addShownEnvironment(widget.efv.environmentId);
+              } else {
+                bloc.removeShownEnvironment(widget.efv.environmentId);
               }
 
               setState(() {
-                visible = newValue;
+                selected = newValue;
               });
             }),
       ]),
@@ -94,7 +95,7 @@ class _HideEnvironmentContainerState extends State<HideEnvironmentContainer> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    visible = !BlocProvider.of<PerApplicationFeaturesBloc>(context)
+    selected = BlocProvider.of<PerApplicationFeaturesBloc>(context)
         .environmentVisible(widget.efv.environmentId);
   }
 }
