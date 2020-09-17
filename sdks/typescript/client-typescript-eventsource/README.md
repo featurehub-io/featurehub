@@ -514,9 +514,9 @@ the default one, you can leave the repo out. The above example could just be:
 
 ### Using in a test API
 
-Another option lets you override the values, not even bothering with a repository on your side. This is useful inside
-an API oriented test where you want to define a test that specifies a particular feature value or values. The other
-way of calling the `w3cBaggageHeader` method is to pass a name of keys and their values (which may be strings or 
+Another option lets you override the values, not even requiring a repository on your side. This is useful inside
+an API oriented test where you want to define a test that specifies a particular feature value or values. To support this,
+the other way of calling the `w3cBaggageHeader` method is to pass a name of keys and their values (which may be strings or 
 undefined - for non flag values, undefined for a flag value is false). So
 
 ```typescript
@@ -526,6 +526,20 @@ undefined - for non flag values, undefined for a flag value is false). So
 Will generate a baggage header that your server will understand as overriding those values. 
 
 ### User testing in a browser
+
+Sometimes it can be useful to allow the user to be able to turn features on and off, something a manual tester
+or someone testing some functionality in a UAT environment. Being able to do this for _just them_ is particularly
+useful. FeatureHub allows you to do this by the concept of a User Repository, where the normal feature repository
+for an environment is wrapped and any overridden values are stored in local storage, so when you move from page 
+to page (if using page based or a Single-Page-App), as long as the repository you use is the User Repository, 
+it will honour the values you have set and pass them using the Baggage headers.
+
+
+TODO: example after writing it
+
+### Features in a Web 1.0 application (form post)  
+
+
 
 ### Using on the server (nodejs)
 
@@ -574,7 +588,7 @@ const baggage = w3cBaggageHeader({repo: req.repo, header: req.header('baggage')}
 
 And if defined, add the baggage header to your outgoing request.
 
-### The User Repository
+### The file repository
 
 
 
