@@ -73,7 +73,7 @@ class _HideEnvironmentContainerState extends State<HideEnvironmentContainer> {
               style: Theme.of(context).textTheme.overline,
               overflow: TextOverflow.ellipsis,
             ),
-            selectedColor: Colors.lightGreenAccent,
+            selectedColor: Color(0xffced6fd),
             selected: selected,
             onSelected: (bool newValue) {
               final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
