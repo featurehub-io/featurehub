@@ -65,20 +65,20 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              TextFormField(
-                  controller: _strategyName,
-                  decoration: InputDecoration(
-                      labelText: 'Rollout strategy name',
-                      helperText: 'E.g. 20% rollout'),
-                  readOnly: isReadOnly,
-                  autofocus: true,
-                  onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
-                  validator: ((v) {
-                    if (v.isEmpty) {
-                      return 'Strategy name required';
-                    }
-                    return null;
-                  })),
+//              TextFormField(
+//                  controller: _strategyName,
+//                  decoration: InputDecoration(
+//                      labelText: 'Rollout strategy name',
+//                      helperText: 'E.g. 20% rollout'),
+//                  readOnly: isReadOnly,
+//                  autofocus: true,
+//                  onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+//                  validator: ((v) {
+//                    if (v.isEmpty) {
+//                      return 'Strategy name required';
+//                    }
+//                    return null;
+//                  })),
 //              Padding(
 //                padding: const EdgeInsets.only(top: 14.0),
 //                child: InkWell(
@@ -148,7 +148,7 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
                     try {
                       if (isUpdate) {
                         widget.rolloutStrategy
-                          ..name = _strategyName.text
+                          ..name = _strategyPercentage.text
                           ..percentage =
                               (double.parse(_strategyPercentage.text) * 100)
                                   .toInt();
@@ -161,7 +161,7 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
                             defaultValue = false;
                           }
                           widget.bloc.addStrategy(RolloutStrategy()
-                            ..name = _strategyName.text
+                            ..name = _strategyPercentage.text
                             ..percentage =
                                 (double.parse(_strategyPercentage.text) * 100)
                                     .toInt()
@@ -173,7 +173,7 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
                       if (e is ApiException && e.code == 409) {
                         widget.fvBloc.mrClient.customError(
                             messageTitle:
-                                "Strategy with name '${_strategyName.text}' already exists");
+                                "Strategy with name '${_strategyPercentage.text}' already exists");
                       } else {
                         widget.fvBloc.mrClient.dialogError(e, s);
                       }

@@ -56,18 +56,30 @@ class _ValueContainer extends StatelessWidget {
         ],
       ),
         if (fv.locked)
-          Container(
-            width: cellWidth-1,
-            child: Align(
-              alignment: Alignment.topRight,
-              child: Container(
-                padding: EdgeInsets.all(2.0),
-                color: Colors.red.withOpacity(0.3),
-                child: Icon(Icons.lock_outline, size: 16.0, color: Colors.red
-                ),
-              ),
-            ),
-          ),],
+        LockedIndicator()
+      ],
+    );
+  }
+}
+
+class LockedIndicator extends StatelessWidget {
+  const LockedIndicator({
+    Key key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: cellWidth-1,
+      child: Align(
+        alignment: Alignment.topLeft,
+        child: Container(
+          padding: EdgeInsets.all(8.0),
+//          color: Colors.black.withOpacity(0.1),
+          child: Icon(Icons.lock_outline, size: 16.0, color: Colors.black45
+          ),
+        ),
+      ),
     );
   }
 }
@@ -119,8 +131,8 @@ class _ValueCard extends StatelessWidget {
               padding: EdgeInsets.symmetric(horizontal: 8.0),
               decoration: BoxDecoration(
                 color: rolloutStrategy == null
-                    ? Color(0xffE0EEFD)
-                    : Color(0xffE6F7EE),
+                    ? defaultValueColor
+                    : strategyValueColor,
 //                borderRadius: BorderRadius.all(Radius.circular(16.0)),
               ),
               child: Row(
@@ -136,8 +148,8 @@ class _ValueCard extends StatelessWidget {
                                 : 'default',
                             style: Theme.of(context).textTheme.caption.copyWith(
                                 color: rolloutStrategy != null
-                                    ? Color(0xff2DCD7A)
-                                    : Color(0xff4DA1FF)))),
+                                    ? strategyTextColor
+                                    : defaultTextColor))),
                   if (fv.rolloutStrategies != null &&
                       fv.rolloutStrategies.isNotEmpty)
                     VerticalDivider(
@@ -187,3 +199,9 @@ class _ValueCard extends StatelessWidget {
   }
 }
 
+
+//      if (fv.locked)
+//        Padding(
+//          padding: const EdgeInsets.only(top: 4.0),
+//          child: Icon(Icons.lock_outline, size: 16, color: Colors.black26,),
+//        ),

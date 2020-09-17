@@ -1,4 +1,5 @@
 import 'package:app_singleapp/widgets/features/custom_strategy_bloc.dart';
+import 'package:app_singleapp/widgets/features/feature_dashboard_constants.dart';
 import 'package:app_singleapp/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/delete_strategy_icon_button.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/edit_value_strategy_link_button.dart';
@@ -26,7 +27,7 @@ class StrategyCardWidget extends StatelessWidget {
     return SizedBox(
       height: 50,
       child: Card(
-        color: rolloutStrategy == null ? Color(0xffeee6ff) : Color(0xfff2fde4),
+        color: rolloutStrategy == null ? defaultValueColor : strategyValueColor,
         child: Padding(
           padding: const EdgeInsets.only(left: 8.0, right: 2.0),
           child: Row(
@@ -38,7 +39,7 @@ class StrategyCardWidget extends StatelessWidget {
                     flex: 3,
                     child: rolloutStrategy == null
                         ? Text('default',
-                            style: Theme.of(context).textTheme.caption)
+                            style: Theme.of(context).textTheme.caption.copyWith(color: defaultTextColor))
                         : EditValueStrategyLinkButton(
                             editable: editable,
                             rolloutStrategy: rolloutStrategy,

@@ -57,7 +57,7 @@ class _EditBooleanValueDropDownWidgetState
                 });
               }
             : null,
-        disabledHint: Text(widget.featureValue.locked ? 'Locked' : 'No access',
+        disabledHint: Text(featureOn,
             style: Theme.of(context).textTheme.caption),
       ),
     );
