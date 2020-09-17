@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
-import 'feature_status_bloc.dart';
+import 'per_application_features_bloc.dart';
 
 class FeatureDeleteDialogWidget extends StatelessWidget {
   final Feature feature;
-  final FeatureStatusBloc bloc;
+  final PerApplicationFeaturesBloc bloc;
 
   const FeatureDeleteDialogWidget(
       {Key key, @required this.bloc, @required this.feature})

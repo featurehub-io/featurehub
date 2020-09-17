@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
 
+import 'per_application_features_bloc.dart';
+
 class HiddenEnvironmentsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<TabsBloc>(context);
+    final bloc = BlocProvider.of<FeaturesOnThisTabTrackerBloc>(context);
     return Container(
       color: Theme.of(context).selectedRowColor,
       margin: EdgeInsets.all(24.0),
@@ -16,30 +18,24 @@ class HiddenEnvironmentsList extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text('Hidden environments',
+            child: Text('Choose environments',
                 style: Theme.of(context).textTheme.caption),
           ),
           Expanded(
             child: Container(
-              child: StreamBuilder<List<String>>(
-                  stream: bloc.featureStatusBloc.shownEnvironmentsStream,
+              child: StreamBuilder<FeatureStatusFeatures>(
+                  stream: bloc.featureStatusBloc.appFeatureValues,
                   builder: (context, snapshot) {
-                    final shownEnvs = snapshot.hasData ? snapshot.data : [];
-                    final hiddenEnvironments = bloc
-                        .featureStatus.applicationEnvironments.keys
-                        .where((envId) => !shownEnvs.contains(envId))
-                        .toList(growable: false);
                     return ListView(
                       scrollDirection: Axis.horizontal,
                       children: [
                         if (snapshot.hasData)
-                          ..._sortedEnvironments(bloc, hiddenEnvironments)
-                              .map((env) {
-                            return HideEnvironmentContainer(
-                                rowLayout: true,
-                                envId: env.environmentId,
-                                name: env.environmentName);
-                          }).toList(),
+                          ...snapshot.data.sortedByNameEnvironmentIds
+                              .map((e) => HideEnvironmentContainer(
+                                  envId: e,
+                                  efv:
+                                      snapshot.data.applicationEnvironments[e]))
+                              .toList()
                       ],
                     );
                   }),
@@ -49,82 +45,56 @@ class HiddenEnvironmentsList extends StatelessWidget {
       ),
     );
   }
-
-  List<EnvironmentFeatureValues> _sortedEnvironments(
-      TabsBloc bloc, List<String> envIds) {
-    final envs = bloc.featureStatus.applicationFeatureValues.environments
-        .where((e) => envIds.contains(e.environmentId))
-        .toList();
-    envs.sort((e1, e2) => e1.environmentName.compareTo(e2.environmentName));
-    return envs;
-  }
 }
 
-class HideEnvironmentContainer extends StatelessWidget {
-  final String name;
+class HideEnvironmentContainer extends StatefulWidget {
   final String envId;
-  final bool rowLayout;
+  final EnvironmentFeatureValues efv;
 
-  const HideEnvironmentContainer(
-      {Key key, this.name, this.envId, bool rowLayout})
-      : rowLayout = rowLayout ?? false,
-        super(key: key);
+  const HideEnvironmentContainer({Key key, this.envId, this.efv})
+      : super(key: key);
+
+  @override
+  _HideEnvironmentContainerState createState() =>
+      _HideEnvironmentContainerState();
+}
+
+class _HideEnvironmentContainerState extends State<HideEnvironmentContainer> {
+  bool visible;
 
   @override
   Widget build(BuildContext context) {
-    if (rowLayout) {
-      return Padding(
-        padding: const EdgeInsets.only(right: 8.0),
-        child: Row(children: [
-          Text(
-            name,
-            overflow: TextOverflow.ellipsis,
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 2.0, right: 2.0),
-            child: InkWell(
-              canRequestFocus: false,
-              mouseCursor: SystemMouseCursors.click,
-              hoverColor: Theme.of(context).primaryColorLight,
-              borderRadius: BorderRadius.circular(24),
-              child: Container(
-                width: 34,
-                child: Icon(Icons.visibility,
-                    size: 18.0, color: Theme.of(context).primaryColorDark),
-              ),
-              onTap: () {
-                BlocProvider.of<TabsBloc>(context).hideEnvironment(envId);
-              },
+    return Padding(
+      padding: const EdgeInsets.only(right: 8.0),
+      child: Row(children: [
+        ChoiceChip(
+            label: Text(
+              widget.efv.environmentName.toUpperCase(),
+              style: Theme.of(context).textTheme.overline,
+              overflow: TextOverflow.ellipsis,
             ),
-          )
-        ]),
-      );
-    }
+            selected: visible,
+            onSelected: (bool newValue) {
+              final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
 
-    return Row(mainAxisSize: MainAxisSize.min, children: [
-      Flexible(
-        child: Text(
-          name,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ),
-      Padding(
-        padding: const EdgeInsets.only(left: 2.0, right: 2.0),
-        child: InkWell(
-          canRequestFocus: false,
-          mouseCursor: SystemMouseCursors.click,
-          hoverColor: Theme.of(context).primaryColorLight,
-          borderRadius: BorderRadius.circular(24),
-          child: Container(
-            width: 34.0,
-            child: Icon(Icons.visibility_off,
-                size: 18.0, color: Theme.of(context).primaryColorDark),
-          ),
-          onTap: () {
-            BlocProvider.of<TabsBloc>(context).hideEnvironment(envId);
-          },
-        ),
-      )
-    ]);
+              if (newValue) {
+                bloc.removeShownEnvironment(widget.efv.environmentId);
+              } else {
+                bloc.addShownEnvironment(widget.efv.environmentId);
+              }
+
+              setState(() {
+                visible = newValue;
+              });
+            }),
+      ]),
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    visible = !BlocProvider.of<PerApplicationFeaturesBloc>(context)
+        .environmentVisible(widget.efv.environmentId);
   }
 }

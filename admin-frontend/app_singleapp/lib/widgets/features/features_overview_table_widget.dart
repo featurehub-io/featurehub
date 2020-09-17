@@ -12,15 +12,15 @@ import 'package:flutter/rendering.dart';
 import 'package:logging/logging.dart';
 
 import 'feature_dashboard_constants.dart';
-import 'feature_status_bloc.dart';
 import 'hidden_environment_list.dart';
+import 'per_application_features_bloc.dart';
 
 final _log = Logger('FeaturesOverviewTable');
 
 class FeaturesOverviewTableWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<FeatureStatusBloc>(context);
+    final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
 
     try {
       return StreamBuilder<FeatureStatusFeatures>(
@@ -64,7 +64,7 @@ class FeaturesOverviewTableWidget extends StatelessWidget {
 class TabsView extends StatelessWidget {
   final FeatureStatusFeatures featureStatus;
   final String applicationId;
-  final FeatureStatusBloc bloc;
+  final PerApplicationFeaturesBloc bloc;
 
   const TabsView(
       {Key key,
@@ -76,8 +76,11 @@ class TabsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-        creator: (_c, _b) => TabsBloc(featureStatus, applicationId,
-            BlocProvider.of<ManagementRepositoryClientBloc>(context), bloc),
+        creator: (_c, _b) => FeaturesOnThisTabTrackerBloc(
+            featureStatus,
+            applicationId,
+            BlocProvider.of<ManagementRepositoryClientBloc>(context),
+            bloc),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -99,7 +102,7 @@ class TabsView extends StatelessWidget {
 class _FeatureTabsBodyHolder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<TabsBloc>(context);
+    final bloc = BlocProvider.of<FeaturesOnThisTabTrackerBloc>(context);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -117,9 +120,11 @@ class _FeatureTabsBodyHolder extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          color: Theme.of(context).highlightColor,
+                            color: Theme.of(context).primaryColorLight,
                             height: headerHeight,
-                            width: MediaQuery.of(context).size.width > 600 ? 260.0 : 180,
+                            width: MediaQuery.of(context).size.width > 600
+                                ? 260.0
+                                : 180,
                             padding: EdgeInsets.only(left: 8.0),
                             child: Text('',
                                 style: Theme.of(context).textTheme.caption)),
@@ -185,7 +190,7 @@ class _FeatureTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<TabsBloc>(context);
+    final bloc = BlocProvider.of<FeaturesOnThisTabTrackerBloc>(context);
 
     return StreamBuilder<TabsState>(
         stream: bloc.currentTab,
@@ -227,7 +232,7 @@ class NoEnvironmentMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<FeatureStatusBloc>(context);
+    final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
 
     return Row(
       children: <Widget>[

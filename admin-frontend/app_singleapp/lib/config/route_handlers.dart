@@ -15,7 +15,7 @@ import 'package:app_singleapp/routes/service_env_route.dart';
 import 'package:app_singleapp/widgets/apps/apps_bloc.dart';
 import 'package:app_singleapp/widgets/apps/manage_app_bloc.dart';
 import 'package:app_singleapp/widgets/apps/manage_service_accounts_bloc.dart';
-import 'package:app_singleapp/widgets/features/feature_status_bloc.dart';
+import 'package:app_singleapp/widgets/features/per_application_features_bloc.dart';
 import 'package:app_singleapp/widgets/group/group_bloc.dart';
 import 'package:app_singleapp/widgets/portfolio/portfolio_bloc.dart';
 import 'package:app_singleapp/widgets/service-accounts/service_accounts_env_bloc.dart';
@@ -104,8 +104,8 @@ Widget serviceAccount(mrBloc, {params}) {
 }
 
 Widget featureStatus(ManagementRepositoryClientBloc mrBloc, {params}) {
-  return BlocProvider<FeatureStatusBloc>(
-      creator: (_c, _b) => FeatureStatusBloc(mrBloc),
+  return BlocProvider<PerApplicationFeaturesBloc>(
+      creator: (_c, _b) => PerApplicationFeaturesBloc(mrBloc),
       child: Builder(builder: (context) => FeatureStatusRoute()));
 }
 

@@ -7,7 +7,7 @@ import 'package:collection/collection.dart';
 import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart';
 
-import 'feature_status_bloc.dart';
+import 'per_application_features_bloc.dart';
 
 typedef DirtyCallback = bool Function(FeatureValue original);
 typedef DirtyFeatureHolderCallback = void Function(
@@ -24,7 +24,7 @@ class FeatureValueDirtyHolder {
   List<RolloutStrategyInstance> sharedStrategies = [];
 }
 
-class FeatureValuesBloc implements Bloc {
+class PerFeatureStateTrackingBloc implements Bloc {
   final Feature feature;
   final String applicationId;
   final ManagementRepositoryClientBloc mrClient;
@@ -35,7 +35,7 @@ class FeatureValuesBloc implements Bloc {
   final _fvUpdates = <String, FeatureValue>{};
   final _fvLockedUpdates = <String, BehaviorSubject<bool>>{};
   final ApplicationFeatureValues applicationFeatureValues;
-  final FeatureStatusBloc _featureStatusBloc;
+  final PerApplicationFeaturesBloc _featureStatusBloc;
 
   // environmentId, true/false (if dirty)
   final _dirty = <String, bool>{};
@@ -149,12 +149,12 @@ class FeatureValuesBloc implements Bloc {
     return null;
   }
 
-  FeatureValuesBloc(
+  PerFeatureStateTrackingBloc(
       this.applicationId,
       this.feature,
       this.mrClient,
       List<FeatureValue> featureValuesThisFeature,
-      FeatureStatusBloc featureStatusBloc,
+      PerApplicationFeaturesBloc featureStatusBloc,
       this.applicationFeatureValues)
       : assert(applicationFeatureValues != null),
         assert(featureStatusBloc != null),

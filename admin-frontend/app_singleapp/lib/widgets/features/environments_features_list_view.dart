@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'feature_dashboard_constants.dart';
-import 'hidden_environment_list.dart';
 import 'tabs_bloc.dart';
 
 class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
@@ -12,7 +11,7 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
     @required this.bloc,
   }) : super(key: key);
 
-  final TabsBloc bloc;
+  final FeaturesOnThisTabTrackerBloc bloc;
 
   @override
   Widget build(BuildContext context) {
@@ -49,16 +48,17 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                                       children: [
                                         Container(
                                           width: cellWidth,
-                                          color:
-                                              Theme.of(context).highlightColor,
+                                          color: Theme.of(context)
+                                              .primaryColorLight,
                                           height: headerHeight,
                                           child: Column(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.center,
                                             children: [
-                                              HideEnvironmentContainer(
-                                                name: efv.environmentName,
-                                                envId: efv.environmentId,
+                                              Text(
+                                                efv.environmentName.toUpperCase(),
+                                                overflow: TextOverflow.ellipsis,
+                                                style: Theme.of(context).textTheme.overline.copyWith(color: Colors.black54, fontSize: 14)
                                               ),
                                             ],
                                           ),
@@ -67,7 +67,7 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                                           return Container(
                                             decoration: BoxDecoration(
                                                 border: Border(
-                                              top: BorderSide(
+                                              bottom: BorderSide(
                                                   color: Colors.black45,
                                                   width: 0.5),
                                               right: BorderSide(
