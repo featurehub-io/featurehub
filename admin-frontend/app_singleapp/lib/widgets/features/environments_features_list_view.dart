@@ -58,7 +58,7 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                                               Text(
                                                 efv.environmentName.toUpperCase(),
                                                 overflow: TextOverflow.ellipsis,
-                                                style: Theme.of(context).textTheme.overline.copyWith(color: Colors.black54, fontSize: 14)
+                                                style: Theme.of(context).textTheme.overline.copyWith(color: Colors.black87, fontSize: 14)
                                               ),
                                             ],
                                           ),

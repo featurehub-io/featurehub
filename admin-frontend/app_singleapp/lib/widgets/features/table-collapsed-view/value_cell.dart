@@ -166,11 +166,11 @@ class _ValueCard extends StatelessWidget {
                                 on: rolloutStrategy != null ? rolloutStrategy.value : fv.valueBoolean)
                             : Text(
                             rolloutStrategy != null
-                                    ? rolloutStrategy.value.toString()
+                                    ? (rolloutStrategy.value != null ? rolloutStrategy.value.toString() : 'not set')
                                     : _getValue(),
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
-                                style: Theme.of(context).textTheme.bodyText2),
+                                style: (rolloutStrategy != null && rolloutStrategy?.value == null) ? Theme.of(context).textTheme.caption : Theme.of(context).textTheme.bodyText2),
                       ),
                     ),
                   )
