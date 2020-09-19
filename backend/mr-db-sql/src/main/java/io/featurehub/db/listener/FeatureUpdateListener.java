@@ -71,7 +71,7 @@ public class FeatureUpdateListener implements EdgeUpdateListener, MessageHandler
         });
     } catch (IOException e) {
       log.error("Unable to decompose incoming message to update feature.", e);
-    } catch (RolloutStrategyValidator.PercentageStrategyGreaterThan100Percent|RolloutStrategyValidator.InvalidStrategyCombination ignoreEx) {
+    } catch (RolloutStrategyValidator.InvalidStrategyCombination ignoreEx) {
       // ignore
     }
   }

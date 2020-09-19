@@ -8,5 +8,5 @@ import java.util.function.Function;
 
 public interface FeatureUpdateBySDKApi {
   void updateFeature(String sdkUrl, String envId, String featureKey, boolean updatingValue, Function<FeatureValueType, FeatureValue> buildFeatureValue)
-    throws  RolloutStrategyValidator.PercentageStrategyGreaterThan100Percent, RolloutStrategyValidator.InvalidStrategyCombination;
+    throws RolloutStrategyValidator.InvalidStrategyCombination;
 }

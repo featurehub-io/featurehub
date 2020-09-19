@@ -51,7 +51,10 @@ class StrategyDifferUtilsSpec extends BaseSpec {
     def environmentSqlApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
     envId = environmentSqlApi.create(new Environment().name("strategy-diff-env-1"), new Application().id(app1.id), superPerson).id
 
-    featureSqlApi = new FeatureSqlApi(database, convertUtils, Mock(CacheSource), Mock(RolloutStrategyValidator), new StrategyDifferUtils())
+    def rsv = Mock(RolloutStrategyValidator)
+    rsv.validateStrategies(_, _) >> new RolloutStrategyValidator.ValidationFailure()
+
+    featureSqlApi = new FeatureSqlApi(database, convertUtils, Mock(CacheSource), rsv, new StrategyDifferUtils())
     rolloutStrategyApi = new RolloutStrategySqlApi(database, convertUtils, Mock(CacheSource))
   }
 

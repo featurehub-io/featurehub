@@ -19,6 +19,7 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.util.List;
 
@@ -50,11 +51,11 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
     try {
       featureForEnvironment = featureApi.createFeatureValueForEnvironment(eid, key, featureValue, requireRoleCheck(eid, securityContext));
     } catch (OptimisticLockingException e) {
-      throw new WebApplicationException(422);
+      throw new WebApplicationException(409);
     } catch (FeatureApi.NoAppropriateRole noAppropriateRole) {
       throw new ForbiddenException(noAppropriateRole);
-    } catch (RolloutStrategyValidator.PercentageStrategyGreaterThan100Percent| RolloutStrategyValidator.InvalidStrategyCombination bad) {
-      throw new WebApplicationException(400); // can't do anything with it
+    } catch (RolloutStrategyValidator.InvalidStrategyCombination bad) {
+      throw new WebApplicationException(Response.status(422).entity(bad.failure).build()); // can't do anything with it
     }
 
     if (featureForEnvironment == null) {
@@ -117,11 +118,11 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
       updated = featureApi.updateAllFeatureValuesForEnvironment(eid, featureValues,
         requireRoleCheck(eid, securityContext));
     } catch (OptimisticLockingException e) {
-      throw new WebApplicationException(422);
+      throw new WebApplicationException(409);
     } catch (FeatureApi.NoAppropriateRole noAppropriateRole) {
       throw new ForbiddenException(noAppropriateRole);
-    } catch (RolloutStrategyValidator.PercentageStrategyGreaterThan100Percent| RolloutStrategyValidator.InvalidStrategyCombination bad) {
-      throw new WebApplicationException(400); // can't do anything with it
+    } catch (RolloutStrategyValidator.InvalidStrategyCombination bad) {
+      throw new WebApplicationException(Response.status(422).entity(bad.failure).build()); // can't do anything with it
     }
 
     if (updated == null) {
@@ -137,11 +138,11 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
       return featureApi.updateFeatureValueForEnvironment(eid, key, featureValue, requireRoleCheck(eid, securityContext));
     } catch (OptimisticLockingException e) {
       log.error("optimistic locking", e);
-      throw new WebApplicationException(422);
+      throw new WebApplicationException(409);
     } catch (FeatureApi.NoAppropriateRole noAppropriateRole) {
       throw new ForbiddenException(noAppropriateRole);
-    } catch (RolloutStrategyValidator.PercentageStrategyGreaterThan100Percent| RolloutStrategyValidator.InvalidStrategyCombination bad) {
-      throw new WebApplicationException(400); // can't do anything with it
+    } catch (RolloutStrategyValidator.InvalidStrategyCombination bad) {
+      throw new WebApplicationException(Response.status(422).entity(bad.failure).build()); // can't do anything with it
     }
   }
 }
