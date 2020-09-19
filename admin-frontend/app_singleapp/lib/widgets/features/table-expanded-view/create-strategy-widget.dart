@@ -13,12 +13,14 @@ class CreateValueStrategyWidget extends StatefulWidget {
   final PerFeatureStateTrackingBloc fvBloc;
   final CustomStrategyBloc bloc;
   final RolloutStrategy rolloutStrategy;
+  final bool editable;
 
   const CreateValueStrategyWidget({
     Key key,
     @required this.fvBloc,
-    this.rolloutStrategy,
-    this.bloc,
+    @required this.rolloutStrategy,
+    @required this.bloc,
+    @required this.editable,
   }) : super(key: key);
 
   @override
@@ -51,14 +53,12 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final isReadOnly =
-        !widget.fvBloc.mrClient.userIsFeatureAdminOfCurrentApplication;
     return Form(
       key: _formKey,
       child: FHAlertDialog(
         title: Text(widget.rolloutStrategy == null
             ? 'Add percentage rollout strategy'
-            : (isReadOnly ? 'View rollout strategy' : 'Edit rollout strategy')),
+            : (widget.editable ?  'Edit rollout strategy' : 'View rollout strategy')),
         content: Container(
           width: 500,
           child: Column(
@@ -116,7 +116,7 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
                       labelText: 'Percentage value',
                       helperText:
                           'You can enter a value with up to 4 decimal points, e.g. 0.0005 %'),
-                  readOnly: isReadOnly,
+                  readOnly: !widget.editable,
                   autofocus: true,
                   onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
                   inputFormatters: [
@@ -140,7 +140,7 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
               widget.fvBloc.mrClient.removeOverlay();
             },
           ),
-          if (!isReadOnly)
+          if (widget.editable)
             FHFlatButton(
                 title: isUpdate ? 'Update' : 'Add',
                 onPressed: (() async {

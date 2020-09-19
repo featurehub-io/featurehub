@@ -54,10 +54,13 @@ class JsonCellHolder extends StatelessWidget {
                           environmentFeatureValue.environmentId),
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
+              final canChangeValue = environmentFeatureValue.roles
+                  .contains(RoleType.CHANGE_VALUE);
+              var editable = !snapshot.data && canChangeValue;
                           return AddStrategyButton(
                               bloc: strategyBloc,
                               fvBloc: fvBloc,
-                              locked: snapshot.data);
+                              editable: editable);
                         } else {
                           return Container();
                         }

@@ -7,9 +7,9 @@ import 'package:flutter_icons/flutter_icons.dart';
 class AddStrategyButton extends StatelessWidget {
   final CustomStrategyBloc bloc;
   final PerFeatureStateTrackingBloc fvBloc;
-  final bool locked;
+  final bool editable;
 
-  const AddStrategyButton({Key key, this.bloc, this.fvBloc, this.locked})
+  const AddStrategyButton({Key key, this.bloc, this.fvBloc, this.editable})
       : super(key: key);
 
   @override
@@ -25,12 +25,13 @@ class AddStrategyButton extends StatelessWidget {
             color: Theme.of(context).buttonColor,
             disabledTextColor: Colors.black38,
             icon: Icon(MaterialCommunityIcons.percent, color: Colors.white, size: 16.0),
-            onPressed: (locked != true)
+            onPressed: (editable == true)
                 ? () => fvBloc.mrClient.addOverlay((BuildContext context) {
                       //return null;
                       return CreateValueStrategyWidget(
                         fvBloc: fvBloc,
                         bloc: bloc,
+                        editable: editable,
                       );
                     })
                 : null),
