@@ -12,6 +12,15 @@ import 'per_application_features_bloc.dart';
 
 enum TabsState { FLAGS, VALUES, CONFIGURATIONS }
 
+class FeatureStrategyCountOverride {
+  final Feature feature;
+  final String environmentId;
+  final int strategyCount;
+
+  FeatureStrategyCountOverride(
+      this.feature, this.environmentId, this.strategyCount);
+}
+
 class FeaturesOnThisTabTrackerBloc implements Bloc {
   final String applicationId;
   FeatureStatusFeatures featureStatus;
@@ -27,6 +36,11 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
 
   Stream<Set<String>> get featureCurrentlyEditingStream =>
       _featureCurrentlyEditingSource.stream;
+
+  // when editing, the base count we have doesn't match what is actually being used
+  // so we need to override it. We also need to clean it up on save or edit
+  List<FeatureStrategyCountOverride>
+      _featurePerEnvironmentStrategyCountOverrides = [];
 
   List<Feature> get features => _featuresForTabs;
   final featureValueBlocs = <String, PerFeatureStateTrackingBloc>{};
@@ -81,6 +95,19 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
 
       _currentlyEditingFeatureKeys.add(feature.key);
     });
+  }
+
+  void addFeatureEnvironmentStrategyCountOverride(
+      FeatureStrategyCountOverride fsco) {
+    _featurePerEnvironmentStrategyCountOverrides.removeWhere((e) =>
+        e.environmentId == fsco.environmentId &&
+        e.feature.id == fsco.feature.id);
+    _featurePerEnvironmentStrategyCountOverrides.add(fsco);
+  }
+
+  void cleanFeatureStrategyCountOverridesOnSaveOrCancel(Feature feature) {
+    _featurePerEnvironmentStrategyCountOverrides
+        .removeWhere((e) => e.feature.id == feature.id);
   }
 
   void _updatedShownEnvironments(List<String> environments) {
