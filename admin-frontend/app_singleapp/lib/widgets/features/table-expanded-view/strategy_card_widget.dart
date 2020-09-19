@@ -1,6 +1,5 @@
 import 'package:app_singleapp/widgets/features/custom_strategy_bloc.dart';
 import 'package:app_singleapp/widgets/features/feature_dashboard_constants.dart';
-import 'package:app_singleapp/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/delete_strategy_icon_button.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/edit_value_strategy_link_button.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +9,6 @@ class StrategyCardWidget extends StatelessWidget {
   final bool editable;
   final Widget editableHolderWidget;
   final RolloutStrategy rolloutStrategy;
-  final PerFeatureStateTrackingBloc fvBloc;
   final CustomStrategyBloc strBloc;
 
   const StrategyCardWidget(
@@ -18,7 +16,6 @@ class StrategyCardWidget extends StatelessWidget {
       @required this.editable,
       @required this.editableHolderWidget,
       @required this.rolloutStrategy,
-      @required this.fvBloc,
       @required this.strBloc})
       : super(key: key);
 
@@ -39,11 +36,14 @@ class StrategyCardWidget extends StatelessWidget {
                     flex: 3,
                     child: rolloutStrategy == null
                         ? Text('default',
-                            style: Theme.of(context).textTheme.caption.copyWith(color: defaultTextColor))
+                            style: Theme.of(context)
+                                .textTheme
+                                .caption
+                                .copyWith(color: defaultTextColor))
                         : EditValueStrategyLinkButton(
                             editable: editable,
                             rolloutStrategy: rolloutStrategy,
-                            fvBloc: fvBloc,
+                            fvBloc: strBloc.fvBloc,
                             strBloc: strBloc,
                           )),
                 Flexible(flex: 4, child: editableHolderWidget),
@@ -52,7 +52,10 @@ class StrategyCardWidget extends StatelessWidget {
                   flex: 1,
                   child: rolloutStrategy != null
                       ? DeleteStrategyIconButton(
-                          editable: editable, rolloutStrategy: rolloutStrategy, strBloc: strBloc,)
+                          editable: editable,
+                          rolloutStrategy: rolloutStrategy,
+                          strBloc: strBloc,
+                        )
                       : SizedBox.shrink(),
                 )
               ]),

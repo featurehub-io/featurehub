@@ -1,19 +1,13 @@
-import 'package:app_singleapp/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:mrapi/api.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-class FeatureValueUpdatedByCell extends StatelessWidget {
-  final EnvironmentFeatureValues environmentFeatureValue;
-  final Feature feature;
-  final PerFeatureStateTrackingBloc fvBloc;
-  final FeatureValue featureValue;
+import '../custom_strategy_bloc.dart';
 
-  FeatureValueUpdatedByCell(
-      {Key key, this.environmentFeatureValue, this.feature, this.fvBloc})
-      : featureValue = fvBloc
-            .featureValueByEnvironment(environmentFeatureValue.environmentId),
-        super(key: key);
+class FeatureValueUpdatedByCell extends StatelessWidget {
+  final CustomStrategyBloc strBloc;
+
+  FeatureValueUpdatedByCell({Key key, @required this.strBloc})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -21,10 +15,11 @@ class FeatureValueUpdatedByCell extends StatelessWidget {
     var whenUpdated = '';
     var whoUpdated = '';
 
-    if (featureValue.whenUpdated != null && featureValue.whoUpdated != null) {
+    if (strBloc.featureValue.whenUpdated != null &&
+        strBloc.featureValue.whoUpdated != null) {
       updatedBy = 'Updated by: ';
-      whenUpdated = timeago.format(featureValue.whenUpdated.toLocal());
-      whoUpdated = featureValue.whoUpdated.name;
+      whenUpdated = timeago.format(strBloc.featureValue.whenUpdated.toLocal());
+      whoUpdated = strBloc.featureValue.whoUpdated.name;
     }
 
     return Container(

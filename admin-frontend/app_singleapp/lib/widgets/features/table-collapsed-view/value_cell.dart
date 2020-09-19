@@ -20,11 +20,7 @@ class CollapsedViewValueCellHolder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (efv.roles.isNotEmpty) {
-      if (fv != null && fv.id != null && fv.isSet(feature)) {
-        return _ValueContainer(feature: feature, fv: fv);
-      } else {
-        return NotSetContainer();
-      }
+      return _ValueContainer(feature: feature, fv: fv);
     }
     if ((fv == null || fv.id == null) && efv.roles.isEmpty) {
       return noAccessTag(null);
@@ -41,22 +37,21 @@ class _ValueContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cardHasValue = (fv != null && fv.id != null && fv.isSet(feature));
     return Stack(
       alignment: AlignmentDirectional.center,
       children: [
-
         Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-
-          _ValueCard(feature: feature, fv: fv),
-          if (fv.rolloutStrategies != null)
-            _StrategiesList(feature: feature, fv: fv)
-        ],
-      ),
-        if (fv.locked)
-        LockedIndicator()
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            if (cardHasValue) _ValueCard(feature: feature, fv: fv),
+            if (!cardHasValue) NotSetContainer(),
+            if (fv != null && fv.rolloutStrategies != null)
+              _StrategiesList(feature: feature, fv: fv)
+          ],
+        ),
+        if (fv != null && fv.locked) LockedIndicator()
       ],
     );
   }
@@ -70,14 +65,13 @@ class LockedIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: cellWidth-1,
+      width: cellWidth - 1,
       child: Align(
         alignment: Alignment.topLeft,
         child: Container(
           padding: EdgeInsets.all(8.0),
 //          color: Colors.black.withOpacity(0.1),
-          child: Icon(Icons.lock_outline, size: 16.0, color: Colors.black45
-          ),
+          child: Icon(Icons.lock_outline, size: 16.0, color: Colors.black45),
         ),
       ),
     );
@@ -97,10 +91,7 @@ class _StrategiesList extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         for (RolloutStrategy rsi in fv.rolloutStrategies)
-          _ValueCard(
-              rolloutStrategy: rsi,
-              fv: fv,
-              feature: feature)
+          _ValueCard(rolloutStrategy: rsi, fv: fv, feature: feature)
       ],
     );
   }
@@ -110,12 +101,12 @@ class _ValueCard extends StatelessWidget {
   final FeatureValue fv;
   final Feature feature;
   final RolloutStrategy rolloutStrategy;
-  const _ValueCard(
-      {Key key,
-      @required this.fv,
-      @required this.feature, this.rolloutStrategy,
-      })
-      : super(key: key);
+  const _ValueCard({
+    Key key,
+    @required this.fv,
+    @required this.feature,
+    this.rolloutStrategy,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -163,14 +154,21 @@ class _ValueCard extends StatelessWidget {
                         padding: const EdgeInsets.only(left: 4.0),
                         child: feature.valueType == FeatureValueType.BOOLEAN
                             ? FlagOnOffColoredIndicator(
-                                on: rolloutStrategy != null ? rolloutStrategy.value : fv.valueBoolean)
+                                on: rolloutStrategy != null
+                                    ? rolloutStrategy.value
+                                    : fv.valueBoolean)
                             : Text(
-                            rolloutStrategy != null
-                                    ? (rolloutStrategy.value != null ? rolloutStrategy.value.toString() : 'not set')
+                                rolloutStrategy != null
+                                    ? (rolloutStrategy.value != null
+                                        ? rolloutStrategy.value.toString()
+                                        : 'not set')
                                     : _getValue(),
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
-                                style: (rolloutStrategy != null && rolloutStrategy?.value == null) ? Theme.of(context).textTheme.caption : Theme.of(context).textTheme.bodyText2),
+                                style: (rolloutStrategy != null &&
+                                        rolloutStrategy?.value == null)
+                                    ? Theme.of(context).textTheme.caption
+                                    : Theme.of(context).textTheme.bodyText2),
                       ),
                     ),
                   )
@@ -198,7 +196,6 @@ class _ValueCard extends StatelessWidget {
     return '';
   }
 }
-
 
 //      if (fv.locked)
 //        Padding(

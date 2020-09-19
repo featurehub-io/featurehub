@@ -1,15 +1,13 @@
 import 'package:app_singleapp/widgets/features/custom_strategy_bloc.dart';
-import 'package:app_singleapp/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/create-strategy-widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
 class AddStrategyButton extends StatelessWidget {
   final CustomStrategyBloc bloc;
-  final PerFeatureStateTrackingBloc fvBloc;
   final bool editable;
 
-  const AddStrategyButton({Key key, this.bloc, this.fvBloc, this.editable})
+  const AddStrategyButton({Key key, @required this.bloc, this.editable})
       : super(key: key);
 
   @override
@@ -24,12 +22,12 @@ class AddStrategyButton extends StatelessWidget {
             disabledColor: Colors.black12,
             color: Theme.of(context).buttonColor,
             disabledTextColor: Colors.black38,
-            icon: Icon(MaterialCommunityIcons.percent, color: Colors.white, size: 16.0),
+            icon: Icon(MaterialCommunityIcons.percent,
+                color: Colors.white, size: 16.0),
             onPressed: (editable == true)
-                ? () => fvBloc.mrClient.addOverlay((BuildContext context) {
+                ? () => bloc.fvBloc.mrClient.addOverlay((BuildContext context) {
                       //return null;
                       return CreateValueStrategyWidget(
-                        fvBloc: fvBloc,
                         bloc: bloc,
                         editable: editable,
                       );

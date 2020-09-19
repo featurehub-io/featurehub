@@ -47,8 +47,6 @@ class CustomStrategyBloc extends Bloc {
     _strategySource.add(strategies);
   }
 
-  bool validateStrategy(RolloutStrategy rs) {}
-
   @override
   void dispose() {}
 }

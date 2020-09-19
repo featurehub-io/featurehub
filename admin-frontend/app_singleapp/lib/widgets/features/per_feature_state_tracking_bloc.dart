@@ -116,9 +116,9 @@ class PerFeatureStateTrackingBloc implements Bloc {
     if (original == null &&
         (current.value != null ||
             current.customStrategies.isNotEmpty ||
-            current.sharedStrategies.isNotEmpty))
+            current.sharedStrategies.isNotEmpty)) {
       _dirty[envId] = true;
-    else if (original != null) {
+    } else if (original != null) {
       if (_originalValue(original) != current.value) {
         _dirty[envId] = true;
       } else if (!(ListEquality()
