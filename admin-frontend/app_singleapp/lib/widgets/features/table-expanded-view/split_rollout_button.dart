@@ -24,7 +24,7 @@ class AddStrategyButton extends StatelessWidget {
             disabledColor: Colors.black12,
             color: Theme.of(context).buttonColor,
             disabledTextColor: Colors.black38,
-            icon: Icon(AntDesign.fork, color: Colors.white, size: 16.0),
+            icon: Icon(MaterialCommunityIcons.percent, color: Colors.white, size: 16.0),
             onPressed: (locked != true)
                 ? () => fvBloc.mrClient.addOverlay((BuildContext context) {
                       //return null;
