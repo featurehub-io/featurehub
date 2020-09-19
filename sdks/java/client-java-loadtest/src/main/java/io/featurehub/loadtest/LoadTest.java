@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.featurehub.client.AnalyticsCollector;
+import io.featurehub.client.ClientContext;
+import io.featurehub.client.ClientContextRepository;
 import io.featurehub.client.FeatureRepository;
 import io.featurehub.client.FeatureStateHolder;
 import io.featurehub.client.FeatureValueInterceptor;
@@ -25,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 
 class FeatureVersionHolder {
   private static final Logger log = LoggerFactory.getLogger(FeatureVersionHolder.class);
@@ -55,6 +58,12 @@ class InternetFeatureTrackerRepository implements FeatureRepository {
   Map<Long, FeatureVersionHolder> versionMap = new ConcurrentHashMap<>();
   static ObjectMapper mapper;
   private final int maxConnections;
+  private final ClientContext clientContext = new ClientContextRepository(new Executor() {
+    @Override
+    public void execute(Runnable command) {
+      command.run();
+    }
+  });
 
   static {
     mapper = new ObjectMapper();
@@ -139,6 +148,11 @@ class InternetFeatureTrackerRepository implements FeatureRepository {
   @Override
   public void setJsonConfigObjectMapper(ObjectMapper jsonConfigObjectMapper) {
 
+  }
+
+  @Override
+  public ClientContext clientContext() {
+    return clientContext;
   }
 }
 

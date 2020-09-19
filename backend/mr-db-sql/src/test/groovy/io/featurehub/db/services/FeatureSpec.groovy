@@ -72,7 +72,10 @@ class FeatureSpec extends BaseSpec {
     environmentSqlApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
     envIdApp1 = environmentSqlApi.create(new Environment().name("feature-app-1-env-1"), new Application().id(appId), superPerson).id
 
-    featureSqlApi = new FeatureSqlApi(database, convertUtils, Mock(CacheSource), Mock(RolloutStrategyValidator), Mock(StrategyDiffer))
+    def rsv = Mock(RolloutStrategyValidator)
+    rsv.validateStrategies(_, _) >> new RolloutStrategyValidator.ValidationFailure()
+
+    featureSqlApi = new FeatureSqlApi(database, convertUtils, Mock(CacheSource), rsv, Mock(StrategyDiffer))
 
     def averageJoe = new DbPerson.Builder().email("averagejoe-fvs@featurehub.io").name("Average Joe").build()
     database.save(averageJoe)

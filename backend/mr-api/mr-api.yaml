@@ -736,6 +736,38 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RolloutStrategyInfo"
+  /mr-api/application/{appId}/rollout-strategy-validation:
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - RolloutStrategyService
+      description: "Provide server validation responses for this group of rollout strategies"
+      parameters:
+        - name: appId
+          description: "The id of the application to find"
+          in: path
+          schema:
+            type: string
+          required: true
+      operationId: validate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RolloutStrategyValidationRequest"
+      responses:
+        "200":
+          description: "validation results"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RolloutStrategyValidationResponse"
+        "400":
+          description: "invalid body"
+        "401":
+          description: "no permission"
   /mr-api/application/{appId}/rollout-strategy/{strategyId}:
     parameters:
       - name: appId
@@ -976,6 +1008,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/FeatureEnvironment"
+        409:
+          description: "Conflict in trying to save, someone else updated a record first"
+        422:
+          description: "There were validation failures in the rollout strategies"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RolloutStrategyValidationResponse"
   /mr-api/application/{id}/all-feature-environment:
     parameters:
       - name: id
@@ -1218,6 +1258,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/FeatureValue"
+        409:
+          description: "Conflict in trying to save, someone else updated a record first"
+        422:
+          description: "There were validation failures in the rollout strategies"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RolloutStrategyValidationResponse"
   /mr-api/features/{eid}/feature/{key}:
     parameters:
       - name: eid
@@ -1266,6 +1314,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FeatureValue"
+        409:
+          description: "Conflict in trying to save, someone else updated a record first"
+        422:
+          description: "There were validation failures in the rollout strategies"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RolloutStrategyValidationResponse"
     post:
       security:
         - bearerAuth: []
@@ -1286,6 +1342,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FeatureValue"
+        409:
+          description: "Conflict in trying to save, someone else updated a record first"
+        422:
+          description: "There were validation failures in the rollout strategies"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RolloutStrategyValidationResponse"
     delete:
       security:
         - bearerAuth: []
@@ -1817,4 +1881,70 @@ components:
           format: date-time
         changedBy:
           $ref: "#/components/schemas/Person"
-
+    RolloutStrategyValidationRequest:
+      type: object
+      description: "A collection of strategies to validate together to see if it violates any rules"
+      properties:
+        customStrategies:
+          type: array
+          items:
+            $ref: "#/components/schemas/RolloutStrategy"
+        sharedStrategies:
+          type: array
+          items:
+            $ref: "#/components/schemas/RolloutStrategyInstance"
+    CustomRolloutStrategyViolation:
+      type: object
+      properties:
+        strategy:
+          $ref: "#/components/schemas/RolloutStrategy"
+        violations:
+          type: array
+          items:
+            $ref: "#/components/schemas/RolloutStrategyViolationType"
+    SharedRolloutStrategyViolation:
+      type: object
+      properties:
+        strategy:
+          $ref: "#/components/schemas/RolloutStrategyInstance"
+        violation:
+          type: array
+          items:
+            $ref: "#/components/schemas/RolloutStrategyViolationType"
+    RolloutStrategyValidationResponse:
+      type: object
+      properties:
+        customStategyViolations:
+          type: array
+          items:
+            $ref: "#/components/schemas/CustomRolloutStrategyViolation"
+        sharedStrategyViolations:
+          type: array
+          items:
+            $ref: "#/components/schemas/SharedRolloutStrategyViolation"
+        violations:
+          type: array
+          items:
+            $ref: "#/components/schemas/RolloutStrategyCollectionViolationType"
+    RolloutStrategyViolationType:
+      type: string
+      enum:
+        - no_name
+        - name_too_long
+        - empty_match_criteria
+        - negative_percentage
+        - percentage_over_100_percent
+        - array_attribute_no_values
+        - attr_missing_conditional
+        - attr_missing_field_name
+        - attr_missing_field_type
+        - attr_val_not_semantic_version
+        - attr_val_not_number
+        - attr_val_not_date
+        - attr_val_not_date_time
+        - attr_val_not_cidr
+        - attr_unknown_failure
+    RolloutStrategyCollectionViolationType:
+      type: string
+      enum:
+        - percentage_adds_over_100_percent
