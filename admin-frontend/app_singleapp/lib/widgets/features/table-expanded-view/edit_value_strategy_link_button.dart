@@ -34,6 +34,7 @@ class EditValueStrategyLinkButton extends StatelessWidget {
                       fvBloc: fvBloc,
                       bloc: strBloc,
                       rolloutStrategy: rolloutStrategy,
+                      editable: editable
                     );
                   })
                 }

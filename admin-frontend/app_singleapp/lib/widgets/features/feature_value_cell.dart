@@ -1,4 +1,5 @@
 import 'package:app_singleapp/widgets/features/feature_dashboard_constants.dart';
+import 'package:app_singleapp/widgets/features/feature_value_status_tags.dart';
 import 'package:app_singleapp/widgets/features/table-collapsed-view/value_cell.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/boolean/boolean_cell_holder.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/json/json_cell_holder.dart';
@@ -56,7 +57,12 @@ class FeatureValueCell extends StatelessWidget {
                 ));
           } else if (feature == null) {
             cellWidget = Text('');
-          } else {
+          } else if
+          ((value == null || value.id == null) && efv.roles.isEmpty) {
+          cellWidget = noAccessTag(null);
+
+          }
+          else {
             final fvBloc = tabsBloc.featureValueBlocs[feature.key];
             switch (feature.valueType) {
               case FeatureValueType.BOOLEAN:

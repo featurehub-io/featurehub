@@ -22,10 +22,11 @@ class FHTagWidget extends StatelessWidget {
     }
 
     return Align(
-      alignment: Alignment.center,
+      alignment: Alignment.topCenter,
       child: Container(
         width: 100,
         height: 30,
+        margin: EdgeInsets.all(8.0),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(10.0)),
           color: labelColor,
