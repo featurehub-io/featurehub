@@ -109,7 +109,7 @@ class _ValueCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var displayValue = _findDisplayValue(rolloutStrategy);
+    var displayValue = _findDisplayValue();
     return Padding(
       padding: const EdgeInsets.only(top: 4.0, bottom: 4.0),
       child: Row(
@@ -176,7 +176,7 @@ class _ValueCard extends StatelessWidget {
     );
   }
 
-  String _findDisplayValue(RolloutStrategy rolloutStrategy) {
+  String _findDisplayValue() {
     if (rolloutStrategy != null) {
       if (rolloutStrategy.value != null) {
         return rolloutStrategy.value.toString();
