@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:app_singleapp/api/client_api.dart';
+import 'package:app_singleapp/widgets/features/tabs_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:mrapi/api.dart';
@@ -36,6 +37,7 @@ class PerFeatureStateTrackingBloc implements Bloc {
   final _fvLockedUpdates = <String, BehaviorSubject<bool>>{};
   final ApplicationFeatureValues applicationFeatureValues;
   final PerApplicationFeaturesBloc _featureStatusBloc;
+  final FeaturesOnThisTabTrackerBloc featuresOnTabBloc;
 
   // environmentId, true/false (if dirty)
   final _dirty = <String, bool>{};
@@ -127,6 +129,10 @@ class PerFeatureStateTrackingBloc implements Bloc {
       }
     }
 
+    featuresOnTabBloc.addFeatureEnvironmentStrategyCountOverride(
+        FeatureStrategyCountOverride(
+            feature, envId, current.customStrategies.length));
+
     _dirtyCheck();
 
     return _dirty[envId];
@@ -153,6 +159,7 @@ class PerFeatureStateTrackingBloc implements Bloc {
       this.applicationId,
       this.feature,
       this.mrClient,
+      this.featuresOnTabBloc,
       List<FeatureValue> featureValuesThisFeature,
       PerApplicationFeaturesBloc featureStatusBloc,
       this.applicationFeatureValues)

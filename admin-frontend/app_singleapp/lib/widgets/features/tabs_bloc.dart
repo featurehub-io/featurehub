@@ -15,10 +15,15 @@ enum TabsState { FLAGS, VALUES, CONFIGURATIONS }
 class FeatureStrategyCountOverride {
   final Feature feature;
   final String environmentId;
-  final int strategyCount;
+  int strategyCount;
 
   FeatureStrategyCountOverride(
       this.feature, this.environmentId, this.strategyCount);
+
+  @override
+  String toString() {
+    return 'FeatureStrategyCountOverride{feature: $feature, environmentId: $environmentId, strategyCount: $strategyCount}';
+  }
 }
 
 class FeaturesOnThisTabTrackerBloc implements Bloc {
@@ -39,7 +44,7 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
 
   // when editing, the base count we have doesn't match what is actually being used
   // so we need to override it. We also need to clean it up on save or edit
-  List<FeatureStrategyCountOverride>
+  final List<FeatureStrategyCountOverride>
       _featurePerEnvironmentStrategyCountOverrides = [];
 
   List<Feature> get features => _featuresForTabs;
@@ -99,13 +104,25 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
 
   void addFeatureEnvironmentStrategyCountOverride(
       FeatureStrategyCountOverride fsco) {
-    _featurePerEnvironmentStrategyCountOverrides.removeWhere((e) =>
-        e.environmentId == fsco.environmentId &&
-        e.feature.id == fsco.feature.id);
-    _featurePerEnvironmentStrategyCountOverrides.add(fsco);
+    final found = _featurePerEnvironmentStrategyCountOverrides.firstWhere(
+        (e) =>
+            e.environmentId == fsco.environmentId &&
+            e.feature.id == fsco.feature.id,
+        orElse: () => null);
+
+    if (found == null || found.strategyCount != fsco.strategyCount) {
+      if (found == null) {
+        _featurePerEnvironmentStrategyCountOverrides.add(fsco);
+      } else {
+        found.strategyCount = fsco.strategyCount;
+      }
+
+      // trigger a re-layout
+      _featureCurrentlyEditingSource.add(_featureCurrentlyEditingSource.value);
+    }
   }
 
-  void cleanFeatureStrategyCountOverridesOnSaveOrCancel(Feature feature) {
+  void _cleanFeatureStrategyCountOverridesOnSaveOrCancel(Feature feature) {
     _featurePerEnvironmentStrategyCountOverrides
         .removeWhere((e) => e.feature.id == feature.id);
   }
@@ -154,7 +171,15 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
         featureStatus.applicationFeatureValues.environments.map((e) {
       var map = e.features
           .where((e) => e.key != null && fvKeys.contains(e.key))
-          .map((fv) => _strategyLines(fv));
+          .map((fv) {
+        final oride = _featurePerEnvironmentStrategyCountOverrides.firstWhere(
+            (e) =>
+                e.environmentId == e.environmentId &&
+                e.feature.id == e.feature.id,
+            orElse: () => null);
+
+        return oride == null ? _strategyLines(fv) : oride.strategyCount;
+      });
       return map.isEmpty ? 0 : map.reduce((a, b) => a + b);
     });
     final maxLinesInAllFeatures =
@@ -280,6 +305,7 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
         applicationId,
         feature,
         mrClient,
+        this,
         values,
         featureStatusBloc,
         featureStatus.applicationFeatureValues);
@@ -295,6 +321,9 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
     removeMissing.where((key) {
       final remove = _allFeaturesByKey[key] == null;
       if (remove) {
+        // stop tracking any override sizes for this feature
+        _cleanFeatureStrategyCountOverridesOnSaveOrCancel(
+            featureValueBlocs[key].feature);
         // get rid of the block
         featureValueBlocs[key].dispose();
         featureValueBlocs.remove(key);
