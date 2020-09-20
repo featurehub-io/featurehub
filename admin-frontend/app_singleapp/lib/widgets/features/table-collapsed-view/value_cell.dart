@@ -135,7 +135,7 @@ class _ValueCard extends StatelessWidget {
                         flex: 4,
                         child: Text(
                             rolloutStrategy != null
-                                ? '${rolloutStrategy.name}%'
+                                ? '${(rolloutStrategy.percentage / 10000).toString()}%'
                                 : 'default',
                             style: Theme.of(context).textTheme.caption.copyWith(
                                 color: rolloutStrategy != null

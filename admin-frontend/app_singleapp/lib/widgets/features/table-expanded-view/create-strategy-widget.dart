@@ -32,7 +32,7 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
   final TextEditingController _strategyPercentage = TextEditingController();
 
   bool isUpdate = false;
-  bool isError = false;
+  bool isTotalPercentageError = false;
 
   @override
   void initState() {
@@ -126,6 +126,13 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
                     }
                     return null;
                   })),
+              if (isTotalPercentageError)
+                Text(
+                    'Your percentage total across all rollout values cannot be over 100%. Please enter different value.',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyText2
+                        .copyWith(color: Theme.of(context).errorColor))
             ],
           ),
         ),
@@ -211,5 +218,10 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
   void layoutValidationFailures(
       RolloutStrategyValidationResponse validationCheck) {
     print('validation failures $validationCheck');
+    setState(() {
+      if (validationCheck.violations.contains(
+          RolloutStrategyCollectionViolationType.percentageAddsOver100Percent))
+        isTotalPercentageError = true;
+    });
   }
 }
