@@ -135,7 +135,7 @@ class _ValueCard extends StatelessWidget {
                         flex: 4,
                         child: Text(
                             rolloutStrategy != null
-                                ? '${(rolloutStrategy.percentage / 100).toString()}%'
+                                ? '${rolloutStrategy.name}%'
                                 : 'default',
                             style: Theme.of(context).textTheme.caption.copyWith(
                                 color: rolloutStrategy != null
@@ -158,7 +158,7 @@ class _ValueCard extends StatelessWidget {
                                     ? rolloutStrategy.value
                                     : fv.valueBoolean)
                             : Text(
-                               displayValue.isEmpty ? 'not set' : displayValue,
+                                displayValue.isEmpty ? 'not set' : displayValue,
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
                                 style: displayValue.isEmpty
