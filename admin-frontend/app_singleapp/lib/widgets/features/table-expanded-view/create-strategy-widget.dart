@@ -7,7 +7,6 @@ import 'package:app_singleapp/widgets/features/percentage_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
-import 'package:openapi_dart_common/openapi.dart';
 
 class CreateValueStrategyWidget extends StatefulWidget {
   final CustomStrategyBloc bloc;
@@ -141,40 +140,76 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
           if (widget.editable)
             FHFlatButton(
                 title: isUpdate ? 'Update' : 'Add',
-                onPressed: (() async {
-                  if (_formKey.currentState.validate()) {
-                    try {
-                      if (isUpdate) {
-                        widget.rolloutStrategy
-                          ..name = _strategyPercentage.text
-                          ..percentageFromText = _strategyPercentage.text;
-                        widget.bloc.updateStrategy();
-                        widget.bloc.fvBloc.mrClient.removeOverlay();
-                      } else {
-                        var defaultValue;
-                        //when creating new strategy - set value as "not set" (null) for strings,numbers, json. And set "false" for boolean
-                        if (widget.bloc.featureValue.valueBoolean != null) {
-                          defaultValue = false;
-                        }
-                        widget.bloc.addStrategy(RolloutStrategy()
-                          ..name = _strategyPercentage.text
-                          ..percentageFromText = _strategyPercentage.text
-                          ..value = defaultValue);
-                        widget.bloc.fvBloc.mrClient.removeOverlay();
-                      }
-                    } catch (e, s) {
-                      if (e is ApiException && e.code == 409) {
-                        widget.bloc.fvBloc.mrClient.customError(
-                            messageTitle:
-                                "Strategy with name '${_strategyPercentage.text}' already exists");
-                      } else {
-                        widget.bloc.fvBloc.mrClient.dialogError(e, s);
-                      }
-                    }
-                  }
-                }))
+                onPressed: () => _validationAction()),
         ],
       ),
     );
+  }
+
+  void _validationAction() async {
+    if (_formKey.currentState.validate()) {
+      if (isUpdate) {
+        await _processUpdate();
+      } else {
+        await _processCreate();
+      }
+    }
+  }
+
+  void _processUpdate() async {
+    // this deals with the idea we may not have ids yet for stuff
+    widget.bloc.ensureStrategiesAreUnique();
+
+    final update = widget.rolloutStrategy.copyWith()
+      ..name = _strategyPercentage.text
+      ..percentageFromText = _strategyPercentage.text;
+
+    final validationCheck = await widget.bloc.validationCheck(update);
+
+    if (isValidationOk(validationCheck)) {
+      widget.rolloutStrategy
+        ..name = _strategyPercentage.text
+        ..percentageFromText = _strategyPercentage.text;
+      widget.bloc.updateStrategy();
+      widget.bloc.fvBloc.mrClient.removeOverlay();
+    } else {
+      layoutValidationFailures(validationCheck);
+    }
+  }
+
+  bool isValidationOk(RolloutStrategyValidationResponse validationCheck) {
+    return validationCheck.customStategyViolations.isEmpty &&
+        validationCheck.sharedStrategyViolations.isEmpty &&
+        validationCheck.violations.isEmpty;
+  }
+
+  void _processCreate() async {
+    // this deals with the idea we may not have ids yet for stuff
+    widget.bloc.ensureStrategiesAreUnique();
+
+    final defaultValue =
+        widget.bloc.feature.valueType == FeatureValueType.BOOLEAN
+            ? false
+            : null;
+
+    final newStrategy = RolloutStrategy()
+      ..name = _strategyPercentage.text
+      ..percentageFromText = _strategyPercentage.text
+      ..value = defaultValue;
+
+    final validationCheck = await widget.bloc.validationCheck(newStrategy);
+
+    if (isValidationOk(validationCheck)) {
+      newStrategy.id = DateTime.now().millisecond.toString();
+      widget.bloc.addStrategy(newStrategy);
+      widget.bloc.fvBloc.mrClient.removeOverlay();
+    } else {
+      layoutValidationFailures(validationCheck);
+    }
+  }
+
+  void layoutValidationFailures(
+      RolloutStrategyValidationResponse validationCheck) {
+    print('validation failures $validationCheck');
   }
 }
