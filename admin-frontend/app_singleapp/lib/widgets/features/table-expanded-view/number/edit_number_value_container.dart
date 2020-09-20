@@ -63,14 +63,15 @@ class _EditNumberValueContainerState extends State<EditNumberValueContainer> {
                 validateNumber(tec.text) != null ? 'Not a valid number' : null,
           ),
           onChanged: (value) {
-            final replacementValue = value.isEmpty ? null : tec.text?.trim();
+            final replacementValue =
+                value.trim().isEmpty ? null : double.parse(tec.text?.trim());
             if (widget.rolloutStrategy != null) {
-              widget.rolloutStrategy.value = double.parse(replacementValue);
+              widget.rolloutStrategy.value = replacementValue;
               widget.strBloc.markDirty();
             } else {
               widget.strBloc.fvBloc.dirty(
                   widget.strBloc.environmentFeatureValue.environmentId,
-                  (current) => current.value = double.parse(replacementValue));
+                  (current) => current.value = replacementValue);
             }
           },
           inputFormatters: [

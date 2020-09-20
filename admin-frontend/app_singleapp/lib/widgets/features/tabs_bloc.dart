@@ -156,7 +156,7 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
 
   int _totalStrategyLines(List<Feature> sel) {
     // go through the features on this tab and find those we are NOT
-    // currently editing
+    // currently interested in
 
     if (sel.isEmpty) {
       return 0;
@@ -173,9 +173,8 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
           .where((e) => e.key != null && fvKeys.contains(e.key))
           .map((fv) {
         final oride = _featurePerEnvironmentStrategyCountOverrides.firstWhere(
-            (e) =>
-                e.environmentId == e.environmentId &&
-                e.feature.id == e.feature.id,
+            (x) =>
+                x.environmentId == e.environmentId && x.feature.key == fv.key,
             orElse: () => null);
 
         return oride == null ? _strategyLines(fv) : oride.strategyCount;
