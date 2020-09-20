@@ -37,7 +37,6 @@ class _ValueContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cardHasValue = (fv != null && fv.id != null && fv.isSet(feature));
     return Stack(
       alignment: AlignmentDirectional.center,
       children: [
@@ -45,8 +44,8 @@ class _ValueContainer extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            if (cardHasValue) _ValueCard(feature: feature, fv: fv),
-            if (!cardHasValue) NotSetContainer(),
+            if (fv != null) _ValueCard(feature: feature, fv: fv),
+            if (fv == null) NotSetContainer(),
             if (fv != null && fv.rolloutStrategies != null)
               _StrategiesList(feature: feature, fv: fv)
           ],
@@ -110,6 +109,7 @@ class _ValueCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var displayValue = _findDisplayValue();
     return Padding(
       padding: const EdgeInsets.only(top: 4.0, bottom: 4.0),
       child: Row(
@@ -158,15 +158,10 @@ class _ValueCard extends StatelessWidget {
                                     ? rolloutStrategy.value
                                     : fv.valueBoolean)
                             : Text(
-                                rolloutStrategy != null
-                                    ? (rolloutStrategy.value != null
-                                        ? rolloutStrategy.value.toString()
-                                        : 'not set')
-                                    : _getValue(),
+                               displayValue.isEmpty ? 'not set' : displayValue,
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
-                                style: (rolloutStrategy != null &&
-                                        rolloutStrategy?.value == null)
+                                style: displayValue.isEmpty
                                     ? Theme.of(context).textTheme.caption
                                     : Theme.of(context).textTheme.bodyText2),
                       ),
@@ -181,7 +176,19 @@ class _ValueCard extends StatelessWidget {
     );
   }
 
-  String _getValue() {
+  String _findDisplayValue() {
+    if (rolloutStrategy != null) {
+      if (rolloutStrategy.value != null) {
+        return rolloutStrategy.value.toString();
+      } else {
+        return '';
+      }
+    } else {
+      return _getFeatureValue();
+    }
+  }
+
+  String _getFeatureValue() {
     switch (feature.valueType) {
       case FeatureValueType.STRING:
         return fv.valueString ?? '';
@@ -190,7 +197,7 @@ class _ValueCard extends StatelessWidget {
       case FeatureValueType.BOOLEAN:
         return ''; // shouldn't happen
       case FeatureValueType.JSON:
-        return fv.valueJson.replaceAll('\n', '') ?? '';
+        return fv.valueJson?.replaceAll('\n', '') ?? '';
     }
 
     return '';
