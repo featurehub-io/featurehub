@@ -1,5 +1,4 @@
 import 'package:app_singleapp/widgets/features/custom_strategy_bloc.dart';
-import 'package:app_singleapp/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 
@@ -8,28 +7,21 @@ class EditStringValueContainer extends StatefulWidget {
     Key key,
     @required this.enabled,
     @required this.canEdit,
-    @required this.fvBloc,
     @required this.rolloutStrategy,
     @required this.strBloc,
-    @required this.environmentFV,
-    @required this.featureValue,
   }) : super(key: key);
 
   final bool enabled;
   final bool canEdit;
-  final PerFeatureStateTrackingBloc fvBloc;
   final RolloutStrategy rolloutStrategy;
   final CustomStrategyBloc strBloc;
-  final EnvironmentFeatureValues environmentFV;
-  final FeatureValue featureValue;
-
 
   @override
-  _EditStringValueContainerState createState() => _EditStringValueContainerState();
+  _EditStringValueContainerState createState() =>
+      _EditStringValueContainerState();
 }
 
 class _EditStringValueContainerState extends State<EditStringValueContainer> {
-
   TextEditingController tec = TextEditingController();
 
   @override
@@ -38,7 +30,7 @@ class _EditStringValueContainerState extends State<EditStringValueContainer> {
 
     final valueSource = widget.rolloutStrategy != null
         ? widget.rolloutStrategy.value
-        : widget.featureValue.valueString;
+        : widget.strBloc.featureValue.valueString;
     tec.text = (valueSource ?? '').toString();
   }
 
@@ -55,14 +47,15 @@ class _EditStringValueContainerState extends State<EditStringValueContainer> {
               contentPadding: EdgeInsets.only(left: 4.0, right: 4.0),
               enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                    color: Theme.of(context).buttonColor,
-                  )),
+                color: Theme.of(context).buttonColor,
+              )),
               disabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                    color: Colors.grey,
-                  )),
-              hintText:
-              widget.canEdit ? 'Enter string value' : 'No editing permissions',
+                color: Colors.grey,
+              )),
+              hintText: widget.canEdit
+                  ? 'Enter string value'
+                  : 'No editing permissions',
               hintStyle: Theme.of(context).textTheme.caption),
           onChanged: (value) {
             final replacementValue = value.isEmpty ? null : tec.text?.trim();
@@ -70,8 +63,9 @@ class _EditStringValueContainerState extends State<EditStringValueContainer> {
               widget.rolloutStrategy.value = replacementValue;
               widget.strBloc.markDirty();
             } else {
-              widget.fvBloc.dirty(widget.environmentFV.environmentId,
-                      (current) => current.value = replacementValue);
+              widget.strBloc.fvBloc.dirty(
+                  widget.strBloc.environmentFeatureValue.environmentId,
+                  (current) => current.value = replacementValue);
             }
           },
         ));

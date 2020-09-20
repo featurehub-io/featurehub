@@ -3,22 +3,19 @@ import 'package:app_singleapp/widgets/common/fh_alert_dialog.dart';
 import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/common/input_fields_validators/input_field_number_formatter.dart';
 import 'package:app_singleapp/widgets/features/custom_strategy_bloc.dart';
-import 'package:app_singleapp/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
 class CreateValueStrategyWidget extends StatefulWidget {
-  final PerFeatureStateTrackingBloc fvBloc;
   final CustomStrategyBloc bloc;
   final RolloutStrategy rolloutStrategy;
   final bool editable;
 
   const CreateValueStrategyWidget({
     Key key,
-    @required this.fvBloc,
-    @required this.rolloutStrategy,
+    this.rolloutStrategy,
     @required this.bloc,
     @required this.editable,
   }) : super(key: key);
@@ -36,7 +33,6 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
 
   bool isUpdate = false;
   bool isError = false;
-  String _dropDownStrategyType;
 
   @override
   void initState() {
@@ -58,7 +54,9 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
       child: FHAlertDialog(
         title: Text(widget.rolloutStrategy == null
             ? 'Add percentage rollout strategy'
-            : (widget.editable ?  'Edit rollout strategy' : 'View rollout strategy')),
+            : (widget.editable
+                ? 'Edit rollout strategy'
+                : 'View rollout strategy')),
         content: Container(
           width: 500,
           child: Column(
@@ -137,7 +135,7 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
             title: 'Cancel',
             keepCase: true,
             onPressed: () {
-              widget.fvBloc.mrClient.removeOverlay();
+              widget.bloc.fvBloc.mrClient.removeOverlay();
             },
           ),
           if (widget.editable)
@@ -153,29 +151,28 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
                               (double.parse(_strategyPercentage.text) * 100)
                                   .toInt();
                         widget.bloc.updateStrategy();
-                        widget.fvBloc.mrClient.removeOverlay();
+                        widget.bloc.fvBloc.mrClient.removeOverlay();
                       } else {
-                          var defaultValue;
-                          //when creating new strategy - set value as "not set" (null) for strings,numbers, json. And set "false" for boolean
-                          if(widget.bloc.featureValue.valueBoolean != null) {
-                            defaultValue = false;
-                          }
-                          widget.bloc.addStrategy(RolloutStrategy()
-                            ..name = _strategyPercentage.text
-                            ..percentage =
-                                (double.parse(_strategyPercentage.text) * 100)
-                                    .toInt()
-                            ..value = defaultValue);
-                          widget.fvBloc.mrClient.removeOverlay();
-
+                        var defaultValue;
+                        //when creating new strategy - set value as "not set" (null) for strings,numbers, json. And set "false" for boolean
+                        if (widget.bloc.featureValue.valueBoolean != null) {
+                          defaultValue = false;
+                        }
+                        widget.bloc.addStrategy(RolloutStrategy()
+                          ..name = _strategyPercentage.text
+                          ..percentage =
+                              (double.parse(_strategyPercentage.text) * 100)
+                                  .toInt()
+                          ..value = defaultValue);
+                        widget.bloc.fvBloc.mrClient.removeOverlay();
                       }
                     } catch (e, s) {
                       if (e is ApiException && e.code == 409) {
-                        widget.fvBloc.mrClient.customError(
+                        widget.bloc.fvBloc.mrClient.customError(
                             messageTitle:
                                 "Strategy with name '${_strategyPercentage.text}' already exists");
                       } else {
-                        widget.fvBloc.mrClient.dialogError(e, s);
+                        widget.bloc.fvBloc.mrClient.dialogError(e, s);
                       }
                     }
                   }

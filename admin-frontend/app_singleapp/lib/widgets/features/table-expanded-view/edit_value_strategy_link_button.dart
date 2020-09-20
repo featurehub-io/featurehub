@@ -31,11 +31,9 @@ class EditValueStrategyLinkButton extends StatelessWidget {
                   fvBloc.mrClient.addOverlay((BuildContext context) {
                     //return null;
                     return CreateValueStrategyWidget(
-                      fvBloc: fvBloc,
-                      bloc: strBloc,
-                      rolloutStrategy: rolloutStrategy,
-                      editable: editable
-                    );
+                        bloc: strBloc,
+                        rolloutStrategy: rolloutStrategy,
+                        editable: editable);
                   })
                 }
             : null);

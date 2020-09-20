@@ -39,18 +39,20 @@ class _FHJsonEditorState extends State<FHJsonEditorWidget> {
               style: Theme.of(context).textTheme.caption,
             ),
           ),
-          Form(
-            key: _formKey,
-            autovalidate: true,
-            child: Container(
-              padding: EdgeInsets.all(10),
-              width: 600,
-              color: Theme.of(context).scaffoldBackgroundColor,
-              child: TextFormField(
-                style: TextStyle(fontFamily: 'source', fontSize: 13),
-                maxLines: 20,
-                controller: widget.controller,
-                validator: validateJson,
+          Expanded(
+            child: Form(
+              key: _formKey,
+              autovalidate: true,
+              child: Container(
+                width: 600,
+                padding: EdgeInsets.all(10),
+                color: Theme.of(context).scaffoldBackgroundColor,
+                child: TextFormField(
+                  style: TextStyle(fontFamily: 'source', fontSize: 13),
+                  maxLines: 20,
+                  controller: widget.controller,
+                  validator: validateJson,
+                ),
               ),
             ),
           ),

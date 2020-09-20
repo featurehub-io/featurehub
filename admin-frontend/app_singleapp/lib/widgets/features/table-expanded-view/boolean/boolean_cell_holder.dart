@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
 
-
 // represents the editing of the states of a single boolean flag on a single environment
 
 class BooleanCellHolder extends StatelessWidget {
@@ -40,16 +39,11 @@ class BooleanCellHolder extends StatelessWidget {
                       fvBloc: fvBloc,
                     ),
                     BooleanStrategyCard(
-                      environmentFeatureValue: environmentFeatureValue,
-                      feature: feature,
-                      fvBloc: fvBloc,
+                      strBloc: strategyBloc,
                     ),
                     if (snap.hasData)
                       for (RolloutStrategy strategy in snap.data)
                         BooleanStrategyCard(
-                          environmentFeatureValue: environmentFeatureValue,
-                          feature: feature,
-                          fvBloc: fvBloc,
                           strBloc: strategyBloc,
                           rolloutStrategy: strategy,
                         ),
@@ -59,20 +53,16 @@ class BooleanCellHolder extends StatelessWidget {
                         builder: (context, snapshot) {
                           if (snapshot.hasData) {
                             final canChangeValue = environmentFeatureValue.roles
-                              .contains(RoleType.CHANGE_VALUE);
-                          var editable = !snapshot.data && canChangeValue;
+                                .contains(RoleType.CHANGE_VALUE);
+                            var editable = !snapshot.data && canChangeValue;
                             return AddStrategyButton(
-                                bloc: strategyBloc,
-                                fvBloc: fvBloc,
-                                editable: editable);
+                                bloc: strategyBloc, editable: editable);
                           } else {
                             return Container();
                           }
                         }),
                     FeatureValueUpdatedByCell(
-                      environmentFeatureValue: environmentFeatureValue,
-                      feature: feature,
-                      fvBloc: fvBloc,
+                      strBloc: strategyBloc,
                     ),
                   ],
                 );
@@ -80,5 +70,3 @@ class BooleanCellHolder extends StatelessWidget {
         }));
   }
 }
-
-

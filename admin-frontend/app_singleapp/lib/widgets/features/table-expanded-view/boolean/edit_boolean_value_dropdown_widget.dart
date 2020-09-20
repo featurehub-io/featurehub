@@ -1,5 +1,4 @@
 import 'package:app_singleapp/widgets/features/custom_strategy_bloc.dart';
-import 'package:app_singleapp/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 
@@ -7,19 +6,13 @@ class EditBooleanValueDropDownWidget extends StatefulWidget {
   const EditBooleanValueDropDownWidget({
     Key key,
     @required this.editable,
-    this.fvBloc,
     this.rolloutStrategy,
     this.strBloc,
-    this.environmentFV,
-    this.featureValue,
   }) : super(key: key);
 
   final bool editable;
-  final PerFeatureStateTrackingBloc fvBloc;
   final RolloutStrategy rolloutStrategy;
   final CustomStrategyBloc strBloc;
-  final EnvironmentFeatureValues environmentFV;
-  final FeatureValue featureValue;
 
   @override
   _EditBooleanValueDropDownWidgetState createState() =>
@@ -57,15 +50,16 @@ class _EditBooleanValueDropDownWidgetState
                 });
               }
             : null,
-        disabledHint: Text(featureOn,
-            style: Theme.of(context).textTheme.caption),
+        disabledHint:
+            Text(featureOn, style: Theme.of(context).textTheme.caption),
       ),
     );
   }
 
   void _notifyDirty(bool replacementBoolean) {
     if (widget.rolloutStrategy == null) {
-      widget.fvBloc.dirty(widget.environmentFV.environmentId,
+      widget.strBloc.fvBloc.dirty(
+          widget.strBloc.environmentFeatureValue.environmentId,
           (current) => current.value = replacementBoolean);
     } else {
       widget.rolloutStrategy.value = replacementBoolean;
@@ -78,7 +72,8 @@ class _EditBooleanValueDropDownWidgetState
     super.didChangeDependencies();
 
     if (widget.rolloutStrategy == null) {
-      featureOn = (widget.featureValue.valueBoolean ?? false) ? 'On' : 'Off';
+      featureOn =
+          (widget.strBloc.featureValue.valueBoolean ?? false) ? 'On' : 'Off';
     } else {
       featureOn = widget.rolloutStrategy.value ? 'On' : 'Off';
     }
