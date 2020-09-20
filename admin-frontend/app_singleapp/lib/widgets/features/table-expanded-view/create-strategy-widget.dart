@@ -3,6 +3,7 @@ import 'package:app_singleapp/widgets/common/fh_alert_dialog.dart';
 import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/common/input_fields_validators/input_field_number_formatter.dart';
 import 'package:app_singleapp/widgets/features/custom_strategy_bloc.dart';
+import 'package:app_singleapp/widgets/features/percentage_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
@@ -39,8 +40,7 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
     super.initState();
     if (widget.rolloutStrategy != null) {
       _strategyName.text = widget.rolloutStrategy.name;
-      _strategyPercentage.text =
-          (widget.rolloutStrategy.percentage / 100).toString();
+      _strategyPercentage.text = widget.rolloutStrategy.percentageText;
 //      _dropDownStrategyType = widget.feature.valueType;
       isUpdate = true;
 //      _dropDownStrategyType = 'percentage';
@@ -147,9 +147,7 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
                       if (isUpdate) {
                         widget.rolloutStrategy
                           ..name = _strategyPercentage.text
-                          ..percentage =
-                              (double.parse(_strategyPercentage.text) * 100)
-                                  .toInt();
+                          ..percentageFromText = _strategyPercentage.text;
                         widget.bloc.updateStrategy();
                         widget.bloc.fvBloc.mrClient.removeOverlay();
                       } else {
@@ -160,9 +158,7 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
                         }
                         widget.bloc.addStrategy(RolloutStrategy()
                           ..name = _strategyPercentage.text
-                          ..percentage =
-                              (double.parse(_strategyPercentage.text) * 100)
-                                  .toInt()
+                          ..percentageFromText = _strategyPercentage.text
                           ..value = defaultValue);
                         widget.bloc.fvBloc.mrClient.removeOverlay();
                       }
