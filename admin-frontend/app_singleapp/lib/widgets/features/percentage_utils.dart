@@ -7,7 +7,6 @@ extension RolloutStrategyExtensions on RolloutStrategy {
   set percentageFromText(String p) =>
       percentage = (double.parse(p) * percentageMultiplier).round();
 
-  String get percentageText => this.percentage == null
-      ? ''
-      : (percentage / percentageMultiplier).toString();
+  String get percentageText =>
+      percentage == null ? '' : (percentage / percentageMultiplier).toString();
 }

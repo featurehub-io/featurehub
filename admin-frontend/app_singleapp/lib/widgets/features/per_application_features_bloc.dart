@@ -36,6 +36,7 @@ class PerApplicationFeaturesBloc
   ApplicationServiceApi _appServiceApi;
   EnvironmentServiceApi _environmentServiceApi;
   UserStateServiceApi _userStateServiceApi;
+  RolloutStrategyServiceApi _rolloutStrategyServiceApi;
 
   FeatureServiceApi _featureServiceApi;
 
@@ -66,6 +67,7 @@ class PerApplicationFeaturesBloc
     _featureServiceApi = FeatureServiceApi(_mrClient.apiClient);
     _environmentServiceApi = EnvironmentServiceApi(_mrClient.apiClient);
     _userStateServiceApi = UserStateServiceApi(_mrClient.apiClient);
+    _rolloutStrategyServiceApi = RolloutStrategyServiceApi(_mrClient.apiClient);
 
     _currentPid = _mrClient.streamValley.currentPortfolioIdStream
         .listen(addApplicationsToStream);
@@ -89,6 +91,16 @@ class PerApplicationFeaturesBloc
       _appFeatureValuesBS
           .add(FeatureStatusFeatures(ApplicationFeatureValues()));
     }
+  }
+
+  Future<RolloutStrategyValidationResponse> validationCheck(
+      List<RolloutStrategy> customStrategies,
+      List<RolloutStrategyInstance> sharedStrategies) async {
+    return _rolloutStrategyServiceApi.validate(
+        applicationId,
+        RolloutStrategyValidationRequest()
+          ..customStrategies = customStrategies
+          ..sharedStrategies = sharedStrategies);
   }
 
   Future<Environment> getEnvironment(String envId) async {

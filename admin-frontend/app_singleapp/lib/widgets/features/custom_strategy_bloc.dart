@@ -49,4 +49,45 @@ class CustomStrategyBloc extends Bloc {
 
   @override
   void dispose() {}
+
+  /// this goes through the strategies and ensures they have unique ids
+  /// unique based on this specific feature value
+  void ensureStrategiesAreUnique() {
+    final strategies = _strategySource.value;
+
+    var start = DateTime.now().microsecond;
+
+    final strategiesById = <String, RolloutStrategy>{};
+
+    strategies.forEach((s) {
+      if (s.id != null) {
+        strategiesById[s.id] = s;
+      }
+    });
+
+    strategies.forEach((s) {
+      if (s.id == null) {
+        while (strategiesById[start.toString()] != null) {
+          start++;
+        }
+        s.id = start.toString();
+        strategiesById[s.id] = s;
+      }
+    });
+  }
+
+  Future<RolloutStrategyValidationResponse> validationCheck(
+      RolloutStrategy strategy) async {
+    // we need a list of strategies to send to the server, only 1 of which will be the created
+    // one
+    var strategies =
+        _strategySource.value.where((s) => s.id != strategy.id).toList();
+
+    strategy.id ??= 'created';
+
+    strategies.add(strategy);
+
+    return fvBloc.featuresOnTabBloc.featureStatusBloc
+        .validationCheck(strategies, <RolloutStrategyInstance>[]);
+  }
 }

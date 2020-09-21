@@ -53,6 +53,9 @@ class PerFeatureStateTrackingBloc implements Bloc {
   final _dirtyBS = BehaviorSubject<bool>();
   Stream<bool> get anyDirty => _dirtyBS.stream;
 
+  PerApplicationFeaturesBloc get perApplicationFeaturesBloc =>
+      _featureStatusBloc;
+
   // provides back a stream of updates to any listener for this cell
   FeatureValue featureValueByEnvironment(String envId) {
     return _fvUpdates.putIfAbsent(envId, () {

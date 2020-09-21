@@ -117,6 +117,8 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
         found.strategyCount = fsco.strategyCount;
       }
 
+      print("triggered $fsco");
+
       // trigger a re-layout
       _featureCurrentlyEditingSource.add(_featureCurrentlyEditingSource.value);
     }
@@ -167,20 +169,37 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
     // now we go through each environment sideways, finding the one with
     // the highest rows and then summing them all
 
+    // pull the overrides out for this set of features
+    final overridesForFeatures = _featurePerEnvironmentStrategyCountOverrides
+        .where((e) => fvKeys.contains(e.feature.key))
+        .toList();
+
     var linesInAllFeatures =
         featureStatus.applicationFeatureValues.environments.map((e) {
-      var map = e.features
-          .where((e) => e.key != null && fvKeys.contains(e.key))
-          .map((fv) {
-        final oride = _featurePerEnvironmentStrategyCountOverrides.firstWhere(
-            (x) =>
-                x.environmentId == e.environmentId && x.feature.key == fv.key,
-            orElse: () => null);
+      // this will only pick up where we have actual features,
+      // if we have an environment with a null feature value and
+      // we start editing it, we will have to pull this from
+      // the overrides (if any)
 
-        return oride == null ? _strategyLines(fv) : oride.strategyCount;
+      var map = fvKeys.map((key) {
+        final uneditedFeat =
+            e.features.firstWhere((fv) => fv.key == key, orElse: () => null);
+        final editedFeat = overridesForFeatures.firstWhere(
+            (x) => x.environmentId == e.environmentId && x.feature.key == key,
+            orElse: () => null);
+        if (editedFeat != null) {
+          return editedFeat.strategyCount;
+        }
+
+        return _strategyLines(uneditedFeat);
       });
+
+      // this is the count of all of the features indicated going across
+      // this one environment. This effectively finds the maximum size spacing
+      // for this specific environment
       return map.isEmpty ? 0 : map.reduce((a, b) => a + b);
     });
+
     final maxLinesInAllFeatures =
         linesInAllFeatures.isEmpty ? 0 : linesInAllFeatures.reduce(max);
 
