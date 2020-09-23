@@ -34,12 +34,11 @@ class FeatureValueCell extends StatelessWidget {
 
           Widget cellWidget;
           if (!amSelected) {
-              cellWidget = CollapsedViewValueCellHolder(
-                fv: value,
-                efv: efv,
-                feature: feature,
-              );
-
+            cellWidget = CollapsedViewValueCellHolder(
+              fv: value,
+              efv: efv,
+              feature: feature,
+            );
 
             cellWidget = InkWell(
                 canRequestFocus: false,
@@ -57,12 +56,9 @@ class FeatureValueCell extends StatelessWidget {
                 ));
           } else if (feature == null) {
             cellWidget = Text('');
-          } else if
-          ((value == null || value.id == null) && efv.roles.isEmpty) {
-          cellWidget = noAccessTag(null);
-
-          }
-          else {
+          } else if ((value == null || value.id == null) && efv.roles.isEmpty) {
+            cellWidget = noAccessTag(null);
+          } else {
             final fvBloc = tabsBloc.featureValueBlocs[feature.key];
             switch (feature.valueType) {
               case FeatureValueType.BOOLEAN:
@@ -94,9 +90,9 @@ class FeatureValueCell extends StatelessWidget {
 
           final extra = tabsBloc.featureExtraCellHeight(feature);
           // final extra = 35;
-          // final panelH =
-          //     extra + (amSelected ? selectedRowHeight : unselectedRowHeight);
-          // print("panelH is $panelH");
+          // final baseH = (amSelected ? selectedRowHeight : unselectedRowHeight);
+          // final panelH = extra + baseH;
+          // print("${feature.key} is $baseH + $extra = $panelH");
 
           return Container(
               height: extra +

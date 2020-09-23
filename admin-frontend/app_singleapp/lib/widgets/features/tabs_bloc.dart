@@ -117,10 +117,8 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
         found.strategyCount = fsco.strategyCount;
       }
 
-      print("triggered $fsco");
-
       // trigger a re-layout
-      _featureCurrentlyEditingSource.add(_featureCurrentlyEditingSource.value);
+      _stateSource.add(_stateSource.value);
     }
   }
 
@@ -131,6 +129,7 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
 
   void _updatedShownEnvironments(List<String> environments) {
     shownEnvironments = environments;
+    _stateSource.add(_stateSource.value);
   }
 
   double featureExtraCellHeight(Feature feature) {
@@ -174,8 +173,9 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
         .where((e) => fvKeys.contains(e.feature.key))
         .toList();
 
-    var linesInAllFeatures =
-        featureStatus.applicationFeatureValues.environments.map((e) {
+    var linesInAllFeatures = featureStatus.applicationFeatureValues.environments
+        .where((env) => shownEnvironments.contains(env.environmentId))
+        .map((e) {
       // this will only pick up where we have actual features,
       // if we have an environment with a null feature value and
       // we start editing it, we will have to pull this from
@@ -215,7 +215,9 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
         .where((f) => !_currentlyEditingFeatureKeys.contains(f.key))
         .toList();
 
-    final maxLinesInAllFeatures = _totalStrategyLines(sel);
+    final maxLinesInAllFeatures = sel.isEmpty
+        ? 0
+        : sel.map((f) => _totalStrategyLines([f])).reduce((a, b) => a + b);
 
     final retVal = (maxLinesInAllFeatures * unselectedRowHeightPerStrategy) +
         (unselectedRowHeight * sel.length);
@@ -231,11 +233,10 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
     final sel = _featuresForTabs
         .where((f) => _currentlyEditingFeatureKeys.contains(f.key))
         .toList();
-    if (sel.isEmpty) {
-      return 0;
-    }
 
-    final maxLinesInAllFeatures = _totalStrategyLines(sel);
+    final maxLinesInAllFeatures = sel.isEmpty
+        ? 0
+        : sel.map((f) => _totalStrategyLines([f])).reduce((a, b) => a + b);
 
     final retVal = (maxLinesInAllFeatures * selectedRowHeightPerStrategy) +
         (selectedRowHeight * sel.length);
@@ -266,16 +267,6 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
   void swapTab(TabsState tab) {
     _fixFeaturesForTabs(tab);
     _stateSource.add(tab);
-  }
-
-  void hideEnvironment(String envId) {
-    if (featureStatus.sortedByNameEnvironmentIds.contains(envId)) {
-      if (shownEnvironments.contains(envId)) {
-        featureStatusBloc.removeShownEnvironment(envId);
-      } else {
-        featureStatusBloc.addShownEnvironment(envId);
-      }
-    }
   }
 
   List<EnvironmentFeatureValues> get sortedEnvironmentsThatAreShowing {

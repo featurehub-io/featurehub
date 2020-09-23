@@ -217,11 +217,12 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
 
   void layoutValidationFailures(
       RolloutStrategyValidationResponse validationCheck) {
-    print('validation failures $validationCheck');
     setState(() {
       if (validationCheck.violations.contains(
-          RolloutStrategyCollectionViolationType.percentageAddsOver100Percent))
+          RolloutStrategyCollectionViolationType
+              .percentageAddsOver100Percent)) {
         isTotalPercentageError = true;
+      }
     });
   }
 }
