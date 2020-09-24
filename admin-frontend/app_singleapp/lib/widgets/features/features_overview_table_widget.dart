@@ -119,7 +119,7 @@ class _FeatureTabsBodyHolder extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
+                        if(bloc.features.isNotEmpty) Container(
                             color: Theme.of(context).primaryColorLight,
                             height: headerHeight,
                             width: MediaQuery.of(context).size.width > 600
