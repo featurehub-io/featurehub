@@ -34,10 +34,10 @@ public class ApplyFeature {
       Integer percentage = null;
       String percentageKey = null;
       Map<String, Integer> basePercentage = new HashMap<>();
-      String userKey = cac.userKey();
+      String defaultPercentageKey = cac.defaultPercentageKey();
 
       for(RolloutStrategy rsi : strategies ) {
-        if (rsi.getPercentage() != null && (userKey != null || !rsi.getPercentageAttributes().isEmpty())) {
+        if (rsi.getPercentage() != null && (defaultPercentageKey != null || !rsi.getPercentageAttributes().isEmpty())) {
           // determine what the percentage key is
           String newPercentageKey = determinePercentageKey(cac, rsi.getPercentageAttributes());
 
@@ -49,7 +49,7 @@ public class ApplyFeature {
 
             percentage = percentageCalculator.determineClientPercentage(percentageKey,
               featureValueId);
-            log.info("percentage for {} on {} calculated at {}", cac.userKey(), key, percentage);
+            log.info("percentage for {} on {} calculated at {}", defaultPercentageKey, key, percentage);
           }
 
           log.info("comparing actual {} vs required: {}", percentage, rsi.getPercentage());
@@ -126,7 +126,7 @@ public class ApplyFeature {
 
   private String determinePercentageKey(ClientAttributeCollection cac, List<String> percentageAttributes) {
     if (percentageAttributes.isEmpty()) {
-      return cac.userKey();
+      return cac.defaultPercentageKey();
     }
 
     return percentageAttributes.stream().map(pa -> cac.get(pa, "<none>")).collect(Collectors.joining("$"));
