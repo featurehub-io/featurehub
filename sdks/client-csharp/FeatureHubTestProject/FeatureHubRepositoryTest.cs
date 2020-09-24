@@ -189,6 +189,24 @@ namespace FeatureHubTestProject
     }
 
     [Test]
+    public void ChangingFeatureValueWithSameVersionButDifferentValueTriggersEventHandler()
+    {
+      IFeatureStateHolder holder = null;
+      var hCount = 0;
+      _repository.FeatureState("1").FeatureUpdateHandler += (sender, fs) => {
+        holder = fs;
+        Console.WriteLine($"{fs}");
+        hCount++;
+      };
+      _repository.Notify(SSEResultState.Features, EncodeFeatures()); // false, 1, boolean
+      _repository.Notify(SSEResultState.Features, EncodeFeatures(true, 1, FeatureValueType.BOOLEAN));
+
+      Assert.AreEqual(2, hCount);
+      Assert.IsNotNull(holder);
+      Assert.AreEqual(true, holder.BooleanValue);
+    }
+
+    [Test]
     public void ANumberCanBeAnInteger()
     {
       _repository.Notify(SSEResultState.Features, EncodeFeatures(1L, version: 1, type: FeatureValueType.NUMBER));
