@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/common/stream_valley.dart';
 import 'package:app_singleapp/utils/utils.dart';
@@ -47,8 +48,6 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
   final Widget child;
   final int scrollAtWidth;
   final MainAxisAlignment bodyMainAxisAlignment;
-
-  final int _HEADER_PADDING = 56;
 
   const _InternalFHScaffoldWidgetWidgetState(
       {Key key, this.child, this.scrollAtWidth, this.bodyMainAxisAlignment})
@@ -125,7 +124,7 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
           child: LayoutBuilder(builder: (context, constraints) {
             if (constraints.maxWidth > scrollAtWidth) {
               return Container(
-                  height: MediaQuery.of(context).size.height - _HEADER_PADDING,
+                  height: MediaQuery.of(context).size.height - kToolbarHeight,
                   padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
                   child: Column(children: [
                     Expanded(
@@ -139,7 +138,7 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 child: Container(
                     height:
-                        MediaQuery.of(context).size.height - _HEADER_PADDING,
+                        MediaQuery.of(context).size.height - kToolbarHeight,
                     padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
                     width: scrollAtWidth.toDouble(),
                     child: ListView(
@@ -156,7 +155,6 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
                 return Container(
                     child: StepperContainer(
                   mrBloc: mrBloc,
-                  headerPadding: _HEADER_PADDING,
                 ));
               } else {
                 return SizedBox.shrink();

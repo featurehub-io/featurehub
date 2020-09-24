@@ -7,12 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
 class StepperContainer extends StatelessWidget {
-  final int headerPadding;
   final ManagementRepositoryClientBloc mrBloc;
 
   const StepperContainer({
     Key key,
-    this.headerPadding,
     this.mrBloc,
   }) : super(key: key);
 
@@ -23,11 +21,9 @@ class StepperContainer extends StatelessWidget {
       stream: mrBloc.stepperOpened,
       builder: (context, snapshot) {
         if (snapshot.hasData && snapshot.data == true) {
-            return SingleChildScrollView(
-              child: BlocProvider(
-                  creator: (_context, _bag) => StepperBloc(mrBloc),
-                  child: FHSetupProgressStepper()),
-            );
+            return BlocProvider(
+                creator: (_context, _bag) => StepperBloc(mrBloc),
+                child: FHSetupProgressStepper());
           } else {
             return SizedBox.shrink();
           }

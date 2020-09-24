@@ -15,7 +15,6 @@ class DrawerViewWidget extends StatefulWidget {
 }
 
 class _DrawerViewWidgetState extends State<DrawerViewWidget> {
-  final int _HEADER_PADDING = 56;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +32,6 @@ class _DrawerViewWidgetState extends State<DrawerViewWidget> {
           if (snapshot.data) {
             return _MenuContainer(
               mrBloc: mrBloc,
-              headerPadding: _HEADER_PADDING,
             );
           } else {
             return SizedBox.shrink();
@@ -43,17 +41,16 @@ class _DrawerViewWidgetState extends State<DrawerViewWidget> {
 }
 
 class _MenuContainer extends StatelessWidget {
-  final int headerPadding;
   final ManagementRepositoryClientBloc mrBloc;
 
-  const _MenuContainer({Key key, this.headerPadding, this.mrBloc})
+  const _MenuContainer({Key key, this.mrBloc})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: 260,
-      height: MediaQuery.of(context).size.height - headerPadding,
+      height: MediaQuery.of(context).size.height - kToolbarHeight,
       child: Drawer(
         child: SingleChildScrollView(
           child: Column(
