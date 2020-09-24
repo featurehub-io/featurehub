@@ -46,10 +46,9 @@ class StrategyCardWidget extends StatelessWidget {
                             fvBloc: strBloc.fvBloc,
                             strBloc: strBloc,
                           )),
-                Flexible(flex: 4, child: editableHolderWidget),
-                Spacer(),
+                Flexible(flex: 5, child: editableHolderWidget),
                 Expanded(
-                  flex: 1,
+                  flex: 2,
                   child: rolloutStrategy != null
                       ? DeleteStrategyIconButton(
                           editable: editable,

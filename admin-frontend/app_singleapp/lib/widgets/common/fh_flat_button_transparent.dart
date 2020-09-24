@@ -1,4 +1,3 @@
-import 'package:app_singleapp/utils/custom_cursor.dart';
 import 'package:flutter/material.dart';
 
 class FHFlatButtonTransparent extends StatelessWidget {
@@ -13,14 +12,12 @@ class FHFlatButtonTransparent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomCursor(
-      child: FlatButton(
-          onPressed:onPressed,
-          child: Text(keepCase ? title : title.toUpperCase(),
-              style: Theme.of(context)
-                  .textTheme
-                  .subtitle2
-                  .merge(TextStyle(color: Theme.of(context).buttonColor)))),
-    );
+    return FlatButton(
+        onPressed:onPressed,
+        child: Text(keepCase ? title : title.toUpperCase(),
+            style: Theme.of(context)
+                .textTheme
+                .subtitle2
+                .merge(TextStyle(color: Theme.of(context).buttonColor))));
   }
 }

@@ -53,6 +53,7 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                 width: MediaQuery.of(context).size.width > 600 ? 260.0 : 180,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -179,8 +180,10 @@ class _FeatureListenForUpdatedFeatureValues extends StatelessWidget {
       stream: featureBloc.anyDirty,
       builder: (context, snapshot) {
         if (snapshot.data == true) {
-          return Expanded(
+          return Flexible(
             child: ButtonBar(
+              buttonHeight: 42,
+              buttonMinWidth: 70,
               alignment: MainAxisAlignment.start,
               children: [
                 FHFlatButtonTransparent(

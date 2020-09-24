@@ -182,6 +182,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
           if (!isReadOnly)
             FHFlatButton(
                 title: isUpdate ? 'Update' : 'Create',
+                keepCase: true,
                 onPressed: (() async {
                   if (_formKey.currentState.validate()) {
                     try {

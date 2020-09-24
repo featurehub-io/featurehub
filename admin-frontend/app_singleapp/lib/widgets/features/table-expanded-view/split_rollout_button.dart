@@ -15,8 +15,8 @@ class AddStrategyButton extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 16.0),
       child: Container(
+        height: 36,
         child: FlatButton.icon(
-            height: 36,
             label: Text('Add percentage rollout'),
             textColor: Colors.white,
             disabledColor: Colors.black12,

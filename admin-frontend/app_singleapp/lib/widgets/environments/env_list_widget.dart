@@ -300,7 +300,7 @@ class _EnvUpdateDialogWidgetState extends State<EnvUpdateDialogWidget> {
                     return null;
                   })),
               CheckboxListTile(
-                title: Text('Production Environment'),
+                title: Text('Mark as production environment', style: Theme.of(context).textTheme.caption),
                 value: _isProduction,
                 onChanged: (bool val) {
                   setState(() {

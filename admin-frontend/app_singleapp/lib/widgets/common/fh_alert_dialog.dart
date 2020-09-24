@@ -12,7 +12,7 @@ class FHAlertDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(children: [
     ModalBarrier(dismissible: true, color: Colors.black54),
-    AlertDialog(title: title, content: content, actions: actions)
+    AlertDialog(title: title, content: content, actions: actions, buttonPadding: EdgeInsets.symmetric(horizontal: 16.0), )
     ]);
   }
 }

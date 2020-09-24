@@ -44,7 +44,7 @@ class _EditStringValueContainerState extends State<EditStringValueContainer> {
           enabled: widget.enabled,
           controller: tec,
           decoration: InputDecoration(
-              contentPadding: EdgeInsets.only(left: 4.0, right: 4.0),
+              contentPadding: EdgeInsets.only(left: 4.0, right: 4.0, bottom: 8.0),
               enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(
                 color: Theme.of(context).buttonColor,
