@@ -113,6 +113,19 @@ void main() {
     repo.shutdown();
   });
 
+  test(
+      'A feature will trigger a change on change of value with the same version to support server side strategies',
+      () {
+    final sub = repo.getFeatureState('1').featureUpdateStream;
+    // should emit twice and shut down, even if we filled with features three times
+    expectLater(
+        sub, emitsInOrder([emits(anything), emits(anything), emitsDone]));
+    repo.notify(SSEResultState.features, _initialFeatures());
+    repo.notify(
+        SSEResultState.features, _initialFeatures(version: 1, value: true));
+    repo.shutdown();
+  });
+
   test('Features and then feature trigger change', () {
     final sub = repo.getFeatureState('1').featureUpdateStream;
     // should emit twice and shut down, even if we filled with features three times
