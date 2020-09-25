@@ -16,7 +16,7 @@ class FeatureValueCell extends StatelessWidget {
   final EnvironmentFeatureValues efv;
   final Feature feature;
 
-  const FeatureValueCell(
+  FeatureValueCell(
       {Key key,
       @required this.tabsBloc,
       @required this.value,
@@ -63,27 +63,19 @@ class FeatureValueCell extends StatelessWidget {
             switch (feature.valueType) {
               case FeatureValueType.BOOLEAN:
                 cellWidget = BooleanCellHolder(
-                    environmentFeatureValue: efv,
-                    feature: feature,
-                    fvBloc: fvBloc);
+                    environmentFeatureValue: efv, fvBloc: fvBloc);
                 break;
               case FeatureValueType.STRING:
                 cellWidget = StringCellHolder(
-                    environmentFeatureValue: efv,
-                    feature: feature,
-                    fvBloc: fvBloc);
+                    environmentFeatureValue: efv, fvBloc: fvBloc);
                 break;
               case FeatureValueType.NUMBER:
                 cellWidget = NumberCellHolder(
-                    environmentFeatureValue: efv,
-                    feature: feature,
-                    fvBloc: fvBloc);
+                    environmentFeatureValue: efv, fvBloc: fvBloc);
                 break;
               case FeatureValueType.JSON:
                 cellWidget = JsonCellHolder(
-                    environmentFeatureValue: efv,
-                    feature: feature,
-                    fvBloc: fvBloc);
+                    environmentFeatureValue: efv, fvBloc: fvBloc);
                 break;
             }
           }

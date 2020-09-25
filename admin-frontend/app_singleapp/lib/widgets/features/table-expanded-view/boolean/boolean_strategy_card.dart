@@ -26,6 +26,9 @@ class BooleanStrategyCard extends StatelessWidget {
               strBloc: strBloc,
               rolloutStrategy: rolloutStrategy,
               editableHolderWidget: EditBooleanValueDropDownWidget(
+                key: ValueKey(strBloc.environmentFeatureValue.environmentId +
+                    '-' +
+                    strBloc.feature.key),
                 editable: editable,
                 rolloutStrategy: rolloutStrategy,
                 strBloc: strBloc,

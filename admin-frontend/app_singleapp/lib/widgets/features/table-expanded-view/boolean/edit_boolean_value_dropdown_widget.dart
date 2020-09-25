@@ -71,11 +71,18 @@ class _EditBooleanValueDropDownWidgetState
   void didChangeDependencies() {
     super.didChangeDependencies();
 
+    String newOn;
     if (widget.rolloutStrategy == null) {
-      featureOn =
+      newOn =
           (widget.strBloc.featureValue.valueBoolean ?? false) ? 'On' : 'Off';
     } else {
-      featureOn = widget.rolloutStrategy.value ? 'On' : 'Off';
+      newOn = widget.rolloutStrategy.value ? 'On' : 'Off';
+    }
+
+    if (newOn != featureOn) {
+      setState(() {
+        featureOn = newOn;
+      });
     }
   }
 }

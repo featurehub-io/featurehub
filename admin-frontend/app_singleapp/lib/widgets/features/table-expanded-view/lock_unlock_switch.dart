@@ -1,29 +1,32 @@
+import 'package:app_singleapp/widgets/features/feature_dashboard_constants.dart';
 import 'package:app_singleapp/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 
 class LockUnlockSwitch extends StatefulWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
-  final Feature feature;
   final PerFeatureStateTrackingBloc fvBloc;
 
-  const LockUnlockSwitch(
-      {Key key, this.environmentFeatureValue, this.feature, this.fvBloc})
+  const LockUnlockSwitch({Key key, this.environmentFeatureValue, this.fvBloc})
       : super(key: key);
 
   @override
-  _LockUnlockSwitchState createState() =>
-      _LockUnlockSwitchState();
+  _LockUnlockSwitchState createState() => _LockUnlockSwitchState();
 }
 
-class _LockUnlockSwitchState
-    extends State<LockUnlockSwitch> {
+class _LockUnlockSwitchState extends State<LockUnlockSwitch> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<bool>(
         stream: widget.fvBloc
             .environmentIsLocked(widget.environmentFeatureValue.environmentId),
         builder: (ctx, snap) {
+          if (!snap.hasData) {
+            return Container(
+              height: lockHeight,
+            );
+          }
+
           // must always return the same "shaped" data in a table cell
           final disabled = (!widget.environmentFeatureValue.roles
                       .contains(RoleType.UNLOCK) &&
@@ -41,7 +44,7 @@ class _LockUnlockSwitchState
           }
 
           return Container(
-            height: 60.0,
+            height: lockHeight,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[

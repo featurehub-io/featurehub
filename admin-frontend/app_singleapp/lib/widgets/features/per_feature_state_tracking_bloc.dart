@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:app_singleapp/api/client_api.dart';
+import 'package:app_singleapp/widgets/features/custom_strategy_bloc.dart';
 import 'package:app_singleapp/widgets/features/tabs_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
@@ -38,11 +39,17 @@ class PerFeatureStateTrackingBloc implements Bloc {
   final ApplicationFeatureValues applicationFeatureValues;
   final PerApplicationFeaturesBloc _featureStatusBloc;
   final FeaturesOnThisTabTrackerBloc featuresOnTabBloc;
+  final _customStrategyBlocs = <EnvironmentFeatureValues, CustomStrategyBloc>{};
 
   // environmentId, true/false (if dirty)
   final _dirty = <String, bool>{};
   final _dirtyLock = <String, bool>{};
   final _dirtyValues = <String, FeatureValueDirtyHolder>{};
+
+  CustomStrategyBloc matchingCustomStrategyBloc(EnvironmentFeatureValues efv) {
+    return _customStrategyBlocs.putIfAbsent(
+        efv, () => CustomStrategyBloc(efv, feature, this));
+  }
 
   int get maxLines => _dirtyValues.values
       .map((e) =>
@@ -189,6 +196,8 @@ class PerFeatureStateTrackingBloc implements Bloc {
     _fvLockedUpdates.values.forEach((element) {
       element.close();
     });
+
+    _customStrategyBlocs.values.forEach((b) => b.dispose());
   }
 
   bool hasValue(FeatureEnvironment fe) {
