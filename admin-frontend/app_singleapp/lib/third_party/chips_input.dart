@@ -335,6 +335,11 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
   @override
   // TODO: implement currentAutofillScope
   AutofillScope get currentAutofillScope => throw UnimplementedError();
+
+  @override
+  void performPrivateCommand(String action, Map<String, dynamic> data) {
+    // TODO: implement performPrivateCommand
+  }
 }
 
 class AlwaysDisabledFocusNode extends FocusNode {

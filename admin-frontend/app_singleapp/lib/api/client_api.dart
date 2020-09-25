@@ -518,7 +518,6 @@ class ManagementRepositoryClientBloc implements Bloc {
       if (!foundValidStoredPortfolio && _portfolios?.isNotEmpty == true) {
         setCurrentPid(_portfolios.first.id.toString());
         setCurrentAid(null);
-        menuOpened.value = true;
       }
     } catch (e, s) {
       dialogError(e, s);

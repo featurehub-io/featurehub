@@ -18,12 +18,10 @@ class DeleteStrategyIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 32,
-      width: 32,
       child: Material(
         type: MaterialType.transparency,
-        shape: CircleBorder(),
         child: IconButton(
+          splashRadius: 20,
           mouseCursor: editable
               ? SystemMouseCursors.click
               : null,

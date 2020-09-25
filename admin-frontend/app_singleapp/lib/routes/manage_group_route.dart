@@ -327,6 +327,7 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
           ),
           FHFlatButton(
               title: 'Add to group',
+              keepCase: true,
               onPressed: () async {
                 final group = widget.group;
                 group.members = List.from(group.members)..addAll(membersToAdd);

@@ -46,7 +46,7 @@ class _EditNumberValueContainerState extends State<EditNumberValueContainer> {
           enabled: widget.enabled,
           controller: tec,
           decoration: InputDecoration(
-            contentPadding: EdgeInsets.only(left: 4.0, top: 4.0),
+            contentPadding: EdgeInsets.only(left: 4.0, top: 4.0, bottom: 8.0),
             enabledBorder: OutlineInputBorder(
                 borderSide: BorderSide(
               color: Theme.of(context).buttonColor,

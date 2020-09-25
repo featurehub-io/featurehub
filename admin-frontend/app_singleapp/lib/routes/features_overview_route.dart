@@ -33,7 +33,6 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        _filterRow(context, bloc),
         _headerRow(context, bloc),
         FHPageDivider(),
         SizedBox(height: 16.0),
@@ -45,25 +44,18 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
   Widget _headerRow(BuildContext context, PerApplicationFeaturesBloc bloc) {
     return Container(
         padding: const EdgeInsets.fromLTRB(0, 0, 30, 10),
-        child: LayoutBuilder(builder: (context, constraints) {
-          if (constraints.maxWidth < 800) {
-            return Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  _FeaturesOverviewHeader(),
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              _FeaturesOverviewHeader(),
+              Row(
+                children: [
+                  _filterRow(context, bloc),
                   _CreateFeatureButton(bloc: bloc),
-                ]);
-          } else {
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: <Widget>[
-                _FeaturesOverviewHeader(),
-                _CreateFeatureButton(bloc: bloc),
-              ],
-            );
-          }
-        }));
+                ],
+              ),
+            ]));
   }
 
   Widget _filterRow(BuildContext context, PerApplicationFeaturesBloc bloc) {
