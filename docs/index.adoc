@@ -141,11 +141,46 @@ You can create features of the following types:
 
 NOTE: future support will exist for YAML and JSON-Schema to ensure valid configuration for JSON and YAML types.
 
-==== Feature key
+==== Feature keys
 
 The feature key is the reference you use in your application, when you use the SDK,
 you can check the value of a feature, referencing the feature key.
 It *must be unique* for your application.
+
+==== Feature Rollout Strategies and Experiments
+
+New in 1.0 is the ability to create a Rollout Strategy that lets you identify an approximate percentage of your user base
+and have the feature have a different value for that percentage.
+
+A typical scenario for a flag for example would be that the "default value" would be `off` and you set some arbitrary percentage
+to `on` (say 20%). As your analytics roll in about the effect of this change, and you monitor your logging for any issues, you will start
+to increase it rolling it out to more and more people in your user base, eventually setting it to 100%, changing the default to
+"on" and removing the strategy. This is set _per environment_.
+
+You are able to specify one or more rollout strategies, all of which
+may add up to 100%. If you add percentage based rollout strategies that do not add to 100%, then the remainder continues to use the
+default value. 
+
+You can also use this to *_A/B test_* functionality, or *_run experiments_*, using the on/off of feature flags, 
+or feature values where you can set on numbers or strings. Given that the actual feature value a client is using is
+what is tracked in your Analytics provider, this will mean you will immediately be able to see the result of your experimentation
+in your chosen Analytics (for example, Google Analytics) as you log events.
+
+NOTE: It is important to note that the percentages are an approximation, the algorithm works by taking contextual data you provide
+in SDK in the client side (either a session or a user key, ideally consistent for the user across platforms) and it uses
+an algorithm to spread that across a range giving you control down to four decimal points, but the algorithm is more accurate
+the greater the number of clients you have. i.e. you can rollout to 0.0001% of your usage base if you wish. 
+If you only have five users, this probably won't turn it on for anyone, if you have a million it will
+be more accurate.
+
+==== Future Rollout Strategies
+
+The code base is capable of identifying percentage rollouts on other attributes that you provide in your client SDK
+data, like country, company, warehouse, or any other similar thing. We also have the ability to match on individual users,
+groups of users based on arbitrary attributes you provide, countries and so forth, which we call attribute matching. This
+will be surfaced in the UI in coming milestones.
+
+Further, we will be surfacing in the UI the ability to have 
 
 NOTE: See <<Feature Permissions>> for details on the various states a feature can have.
 
