@@ -3,7 +3,7 @@ import {
   FeatureStateBooleanHolder,
   FeatureStateJsonHolder,
   FeatureStateNumberHolder,
-  FeatureStateStringHolder,
+  FeatureStateStringHolder, FeatureStateValueInterceptor,
 } from './feature_state_holders';
 
 import { FeatureStateHolder } from './feature_state';
@@ -62,6 +62,7 @@ export class ClientFeatureRepository implements FeatureHubRepository {
   private _catchReleaseStates = new Map<string, FeatureState>();
   private _newFeatureStateAvailableListeners: Array<PostLoadNewFeatureStateAvailableListener> = [];
   private _clientContext = new ClientContext();
+  private _matchers: Array<FeatureStateValueInterceptor> = [];
 
   public get readyness(): Readyness {
     return this.readynessState;
@@ -123,6 +124,15 @@ export class ClientFeatureRepository implements FeatureHubRepository {
     }
   }
 
+  public addValueInterceptor(matcher: FeatureStateValueInterceptor) {
+    this._matchers.push(matcher);
+
+    matcher.repository(this);
+
+    // add this one to the existing ones
+    Array.from(this.features).forEach((e) => e[1].addValueInterceptor(matcher));
+  }
+
   public addPostLoadNewFeatureStateAvailableListener(listener: PostLoadNewFeatureStateAvailableListener) {
     this._newFeatureStateAvailableListeners.push(listener);
 
@@ -180,6 +190,8 @@ export class ClientFeatureRepository implements FeatureHubRepository {
 
     if (holder === undefined) {
       holder = new FeatureStateBaseHolder();
+
+      this.addMatchers(holder);
       this.features.set(key, holder);
     }
 
@@ -250,6 +262,10 @@ export class ClientFeatureRepository implements FeatureHubRepository {
     }
   }
 
+  private addMatchers(fs: FeatureStateHolder) {
+    this._matchers.forEach((m) => fs.addValueInterceptor(m));
+  }
+
   private featureUpdate(fs: FeatureState): boolean {
     if (fs === undefined || fs.key === undefined) {
       return false;
@@ -257,26 +273,32 @@ export class ClientFeatureRepository implements FeatureHubRepository {
 
     let holder = this.features.get(fs.key);
     if (holder === undefined || holder.getKey() === undefined) {
+      let newFeature: FeatureStateBaseHolder;
+
       switch (fs.type) {
         case FeatureValueType.Boolean:
-          holder = new FeatureStateBooleanHolder(holder);
+          newFeature = new FeatureStateBooleanHolder(holder);
           break;
         case FeatureValueType.Json:
-          holder = new FeatureStateJsonHolder(holder);
+          newFeature = new FeatureStateJsonHolder(holder);
           break;
         case FeatureValueType.Number:
-          holder = new FeatureStateNumberHolder(holder);
+          newFeature = new FeatureStateNumberHolder(holder);
           break;
         case FeatureValueType.String:
-          holder = new FeatureStateStringHolder(holder);
+          newFeature = new FeatureStateStringHolder(holder);
           break;
         default:
           return false;
       }
 
-      if (holder !== undefined) {
-        this.features.set(fs.key, holder);
+      this.features.set(fs.key, newFeature);
+
+      if (holder === undefined) { // if we aren't replacing a fake base, we have to add the matchers
+        this.addMatchers(newFeature);
       }
+
+      holder = newFeature;
     } else if (fs.version < holder.getFeatureState().version) {
       return false;
     } else if (fs.version === holder.getFeatureState().version && fs.value === holder.getFeatureState().value) {

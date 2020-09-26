@@ -1,4 +1,5 @@
 import { FeatureValueType } from './models/models';
+import { FeatureStateValueInterceptor } from './feature_state_holders';
 
 export interface FeatureListener {
   (featureChanged: FeatureStateHolder): void;
@@ -20,6 +21,13 @@ export interface FeatureStateHolder {
   isLocked(): boolean | undefined;
 
   addListener(listener: FeatureListener): void;
+
+  addValueInterceptor(matcher: FeatureStateValueInterceptor): void;
+
+  // this is intended for override repositories (such as the UserFeatureRepository)
+  // to force the listeners to trigger if they detect an actual state change in their layer
+  // it passes in the feature state holder to notify with
+  triggerListeners(feature?: FeatureStateHolder): void;
 
   getVersion(): number | undefined;
 

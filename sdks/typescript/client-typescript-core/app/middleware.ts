@@ -6,6 +6,7 @@
 import { ClientFeatureRepository, FeatureHubRepository, Readyness } from './client_feature_repository';
 import { FeatureListener, FeatureStateHolder } from './feature_state';
 import { FeatureValueType } from './models/models';
+import { FeatureStateValueInterceptor } from './feature_state_holders';
 
 class BaggageHolder implements FeatureStateHolder {
   protected readonly existing: FeatureStateHolder;
@@ -79,6 +80,14 @@ class BaggageHolder implements FeatureStateHolder {
 
   isSet(): boolean {
     return this.value != null;
+  }
+
+  triggerListeners(feature: FeatureStateHolder): void {
+    this.existing.triggerListeners(feature);
+  }
+
+  addValueInterceptor(matcher: FeatureStateValueInterceptor): void {
+    this.existing.addValueInterceptor(matcher);
   }
 }
 
