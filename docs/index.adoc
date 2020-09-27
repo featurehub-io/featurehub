@@ -152,19 +152,17 @@ It *must be unique* for your application.
 New in 1.0 is the ability to create a Rollout Strategy that lets you identify an approximate percentage of your user base
 and have the feature have a different value for that percentage.
 
-A typical scenario for a flag for example would be that the "default value" would be `off` and you set some arbitrary percentage
-to `on` (say 20%). As your analytics roll in about the effect of this change, and you monitor your logging for any issues, you will start
-to increase it rolling it out to more and more people in your user base, eventually setting it to 100%, changing the default to
-"on" and removing the strategy. This is set _per environment_.
+A typical scenario for a flag for example would be a "soft launch". The "default value" of your flag would be `off` and you set some arbitrary percentage
+to `on` (e.g. 20%). Then you would analyse how your feature performing for those 20%, collect any user feedback, monitor your logging for any issues and if you are happy you will start
+increasing the rollout to more and more people in your user base, eventually setting it to 100%, changing the default to
+"on" and removing the strategy. (This is set _per environment_).
 
-You are able to specify one or more rollout strategies, all of which
-may add up to 100%. If you add percentage based rollout strategies that do not add to 100%, then the remainder continues to use the
+There is an ability to specify one or more rollout strategies, all of which
+may add up to 100%. A typical scenario for multiple strategies would be when you operate with Feature Values (non-binary flag). If you add percentage based rollout strategies that do not add to 100%, then the remainder continues to use the
 default value. 
 
-You can also use this to *_A/B test_* functionality, or *_run experiments_*, using the on/off of feature flags, 
-or feature values where you can set on numbers or strings. Given that the actual feature value a client is using is
-what is tracked in your Analytics provider, this will mean you will immediately be able to see the result of your experimentation
-in your chosen Analytics (for example, Google Analytics) as you log events.
+You can also use percentage rollout to perform *_A-B testing_* or *_run experiments_*, using the on/off of feature flags, 
+or feature values where you can set on numbers or strings. Given FeatureHub provides GoogleAnalytics connector - you can see the result of your experimentation in Google Analytics Events dashboard in real time.
 
 NOTE: It is important to note that the percentages are an approximation, the algorithm works by taking contextual data you provide
 in SDK in the client side (either a session or a user key, ideally consistent for the user across platforms) and it uses
@@ -173,14 +171,11 @@ the greater the number of clients you have. i.e. you can rollout to 0.0001% of y
 If you only have five users, this probably won't turn it on for anyone, if you have a million it will
 be more accurate.
 
-==== Future Rollout Strategies
+====  Attribute based Rollout Strategies - coming soon
 
-The code base is capable of identifying percentage rollouts on other attributes that you provide in your client SDK
-data, like country, company, warehouse, or any other similar thing. We also have the ability to match on individual users,
-groups of users based on arbitrary attributes you provide, countries and so forth, which we call attribute matching. This
-will be surfaced in the UI in coming milestones.
-
-Further, we will be surfacing in the UI the ability to have 
+We are currently developing percentage rollouts based on attributes that you provide in your client SDK
+data, like country, company, warehouse, or any other value. We will also have the ability to match on individual users,
+groups of users based on arbitrary attributes you provide, countries and so forth, which we call attribute matching. 
 
 NOTE: See <<Feature Permissions>> for details on the various states a feature can have.
 
