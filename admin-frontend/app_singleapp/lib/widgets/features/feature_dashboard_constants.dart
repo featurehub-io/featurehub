@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 final unselectedRowHeight = 70.0;
 final unselectedRowHeightPerStrategy = 45.0;
+final lockHeight = 60.0;
 final selectedRowHeight = 260.0;
 final selectedRowHeightPerStrategy = 40.0;
 final headerHeight = 40.0;
