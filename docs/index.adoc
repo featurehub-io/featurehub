@@ -147,13 +147,13 @@ The feature key is the reference you use in your application, when you use the S
 you can check the value of a feature, referencing the feature key.
 It *must be unique* for your application.
 
-==== Feature Rollout Strategies and Experiments
+==== Feature Percentage Rollout Strategies and Experiments
 
 New in 1.0 is the ability to create a Rollout Strategy that lets you identify an approximate percentage of your user base
 and have the feature have a different value for that percentage.
 
 A typical scenario for a flag for example would be a "soft launch". The "default value" of your flag would be `off` and you set some arbitrary percentage
-to `on` (e.g. 20%). Then you would analyse how your feature performing for those 20%, collect any user feedback, monitor your logging for any issues and if you are happy you will start
+to `on` (e.g. 20%). Then you would analyse how your feature is performing for those 20%, collect any user feedback, monitor your logging for any issues and if you are happy you will start
 increasing the rollout to more and more people in your user base, eventually setting it to 100%, changing the default to
 "on" and removing the strategy. (This is set _per environment_).
 
@@ -162,7 +162,7 @@ may add up to 100%. A typical scenario for multiple strategies would be when you
 default value. 
 
 You can also use percentage rollout to perform *_A-B testing_* or *_run experiments_*, using the on/off of feature flags, 
-or feature values where you can set on numbers or strings. Given FeatureHub provides GoogleAnalytics connector - you can see the result of your experimentation in Google Analytics Events dashboard in real time.
+or feature values where you can set on numbers or strings. Given FeatureHub provides a GoogleAnalytics connector - you can see the result of your experimentation in the Google Analytics Events dashboard in real time.
 
 NOTE: It is important to note that the percentages are an approximation, the algorithm works by taking contextual data you provide
 in SDK in the client side (either a session or a user key, ideally consistent for the user across platforms) and it uses
