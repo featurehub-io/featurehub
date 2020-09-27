@@ -71,7 +71,7 @@ class LockedIndicator extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.all(8.0),
 //          color: Colors.black.withOpacity(0.1),
-          child: Icon(Icons.lock_outline, size: 16.0, color: Colors.black45),
+          child: Icon(Icons.lock_outline, size: 16.0, color: Colors.red),
         ),
       ),
     );
@@ -117,6 +117,10 @@ class _ValueCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Card(
+            elevation: 4.0,
+            shadowColor: rolloutStrategy == null
+                ? Colors.blue
+                : Colors.green,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(15.0),
             ),
