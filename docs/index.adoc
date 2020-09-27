@@ -147,7 +147,7 @@ The feature key is the reference you use in your application, when you use the S
 you can check the value of a feature, referencing the feature key.
 It *must be unique* for your application.
 
-==== Feature Percentage Rollout Strategies and Experiments
+==== Percentage Rollout Strategies and Experiments
 
 New in 1.0 is the ability to create a Rollout Strategy that lets you identify an approximate percentage of your user base
 and have the feature have a different value for that percentage.
