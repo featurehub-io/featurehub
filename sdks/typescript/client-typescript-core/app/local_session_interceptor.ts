@@ -10,17 +10,20 @@ import { FeatureStateValueInterceptor, InterceptorValueMatch } from './feature_s
 export class LocalSessionInterceptor implements FeatureStateValueInterceptor {
   private repo: FeatureHubRepository;
   private storage: Storage;
+  private _alreadySetListener: boolean = false;
 
   constructor() {
     this.storage = window.localStorage;
-
-    if (this.storage) {
-      window.addEventListener('storage', (e: StorageEvent) => this.storageChangedListener(e));
-    }
   }
 
   repository(repo: FeatureHubRepository): void {
+
     this.repo = repo;
+
+    if (this.storage && !this._alreadySetListener) {
+      this._alreadySetListener = true;
+      window.addEventListener('storage', (e: StorageEvent) => this.storageChangedListener(e, this.repo));
+    }
   }
 
   public setFeatureValue(key: string, value: string): void {
@@ -84,7 +87,7 @@ export class LocalSessionInterceptor implements FeatureStateValueInterceptor {
     return`fh_value_${key}`;
   }
 
-  private storageChangedListener(e: StorageEvent) {
+  private storageChangedListener(e: StorageEvent, repo: FeatureHubRepository) {
     let key: string = undefined;
 
     // ideal would be to have a post load event, find all the features
@@ -92,6 +95,10 @@ export class LocalSessionInterceptor implements FeatureStateValueInterceptor {
     // that we on a "clear" trigger the right listeners. This is MVP.
     if (e === undefined || e.key === undefined || e.key === null) {
       return;
+    }
+
+    if (repo === undefined) {
+      console.log('repo is undefined?');
     }
 
     if (e.key.startsWith('fh_null_')) {
@@ -103,7 +110,7 @@ export class LocalSessionInterceptor implements FeatureStateValueInterceptor {
     if (key !== undefined && e.oldValue !== e.newValue) {
       // this will return a UserRepoHolder if we are actually overriding
       // and thus it is different from the underlying value
-      const feature = this.repo.feature(key);
+      const feature = repo.feature(key);
       if (feature && !feature.isLocked()) {
         feature.triggerListeners();
       }
