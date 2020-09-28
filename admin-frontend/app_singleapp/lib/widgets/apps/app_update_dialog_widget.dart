@@ -85,20 +85,17 @@ class _AppUpdateDialogWidgetState extends State<AppUpdateDialogWidget> {
             ),
           )),
       actions: [
-        ButtonBar(
-          children: <Widget>[
-            FHFlatButtonTransparent(
-              title: 'Cancel',
-              keepCase: true,
-              onPressed: () {
-                widget.bloc.mrClient.removeOverlay();
-              },
-            ),
-            FHFlatButton(
-                title: isUpdate ? 'Update' : 'Create',
-                onPressed: () => _busy ? null : _handleValidation())
-          ],
+        FHFlatButtonTransparent(
+          title: 'Cancel',
+          keepCase: true,
+          onPressed: () {
+            widget.bloc.mrClient.removeOverlay();
+          },
         ),
+        FHFlatButton(
+            title: isUpdate ? 'Update' : 'Create',
+            keepCase: true,
+            onPressed: () => _busy ? null : _handleValidation()),
       ],
     );
   }

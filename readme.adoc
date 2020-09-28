@@ -7,7 +7,7 @@ issues, contribute a new SDK or just get a deeper understanding of how it works,
 
 https://demo.featurehub.io[Try FeatureHub demo now]
 
-image::https://docs.featurehub.io//images/FH-flags.gif[FeatureHub console demo,800]
+image::docs/images/fh-feature-console-flags.png[FeatureHub console demo,800]
 
 == Why FeatureHub?
 
@@ -18,8 +18,13 @@ image::https://docs.featurehub.io//images/FH-flags.gif[FeatureHub console demo,8
 * Unlimited clients requesting features
 * Unlimited Applications and Environments
 * Unlimited scalability
+
+
+=== Feature flags, A/B testing, experimentation and analytics support
 * Choice of how to run your experiment - feature flag, number, string or remote configuration
-* Integration with analytics so you can see how your experiments perform, with Google Analytics out of the box
+* Gradual rollout strategies support: incremental percentage, targeting by country, device, platform, version or any custom attribute specific to your application.
+* Integration with analytics so you can see how your experiments perform, with Google Analytics support out of the box
+
 
 === Easy to use
 

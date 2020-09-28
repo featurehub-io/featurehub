@@ -11,8 +11,8 @@ If you are considering helping us by writing a new SDK for your favourite langua
 |Readyness Listeners|Y|Y|Y|Y|Y
 |Feature Listeners|Y|Y|Y|Y|Y
 |Feature Listener Removal|N|N|Y|Y|Y
-|Analytics Support|Y|Y|N|Y|N
-|Google Analytics|Y|Y|N|N|N
+|Analytics Support|Y|Y|Y|Y|N
+|Google Analytics|Y|Y|Y|N|N
 |===================================
 
 ==== Web + Mobile focused capabilities for SDKs
@@ -30,12 +30,12 @@ If you are considering helping us by writing a new SDK for your favourite langua
 |===================================
 |Dev/Test Capability|Java|Javascript^1^|Go|Dart^2^|C#
 |Test Client|Y|Y|N|Y|Y
-|Feature Interceptors|Y|N|N|N|N
+|Feature Interceptors|Y|Y|N|N|N
 |===================================
 
 - *(1)* Javascript and Typescript are supported via a Typescript libraries.
 This is available https://www.npmjs.com/org/featurehub[ at the npm repository].
 - *(2)* Dart and Flutter are supported by Dart libraries available at https://pub.dev/publishers/featurehub.io/packages[pub.dev].
-- *(3)* Java is supported by libraries from Apache Maven Central. [needs ref]
+- *(3)* Java is supported by libraries from https://search.maven.org/artifact/io.featurehub.sdk/java-client-core[Apache Maven Central]. 
 - *(4)* C# and .NET is supported by libraries from nuget. [needs ref]
 
