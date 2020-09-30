@@ -17,12 +17,17 @@ export class LocalSessionInterceptor implements FeatureStateValueInterceptor {
   }
 
   repository(repo: FeatureHubRepository): void {
-
     this.repo = repo;
 
     if (this.storage && !this._alreadySetListener) {
       this._alreadySetListener = true;
       window.addEventListener('storage', (e: StorageEvent) => this.storageChangedListener(e, this.repo));
+    }
+  }
+
+  setUrl(url: string): void {
+    if (this.storage) {
+      this.storage.setItem('fh_url', url);
     }
   }
 

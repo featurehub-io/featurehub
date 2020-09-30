@@ -6,6 +6,7 @@ import 'package:featurehub_client_api/api.dart';
 import 'package:featurehub_client_sdk/featurehub.dart';
 import 'package:fh_userstate/repository_loader.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:rxdart/rxdart.dart';
 
 void main() {
@@ -93,13 +94,19 @@ class _HostingPageState extends State<HostingPage> {
     return Scaffold(
       appBar: AppBar(
           actions: [
-            RaisedButton(
-              onPressed: () => bloc.changeEnvironments(),
-              child: Text('Logout'),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: RaisedButton(
+                onPressed: () => bloc.changeEnvironments(),
+                child: Text('Swap Env'),
+              ),
             ),
-            RaisedButton(
-                onPressed: () => bloc.repositoryLoaderBloc.reset(),
-                child: Text('Reset'))
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: RaisedButton(
+                  onPressed: () => bloc.repositoryLoaderBloc.reset(),
+                  child: Text('Reset')),
+            )
           ],
           title: StreamBuilder<HostingPageState>(
             stream: bloc.hostingPageSource,
@@ -282,9 +289,10 @@ class ShowEditingFeature extends StatelessWidget {
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<EditingBloc>(context);
     final rLoader = BlocProvider.of<RepositoryLoaderBloc>(context);
+    final ds = rLoader.getDisplayValue(keyField);
 
-    return GestureDetector(
-      onTap: () => bloc.editing(keyField),
+    Widget child = Container(
+      color: ds.overridden ? Colors.lime : Colors.white,
       child: Row(children: [
         Flexible(
             flex: 1,
@@ -297,22 +305,29 @@ class ShowEditingFeature extends StatelessWidget {
             flex: 1,
             child: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Text(value(rLoader, keyField)),
+              child: Text(value(ds)),
             ))
       ]),
     );
+
+    if (ds.type == FeatureValueType.JSON) {
+      return child;
+    }
+
+    return GestureDetector(
+      onTap: () => bloc.editing(keyField),
+      child: child,
+    );
   }
 
-  String value(RepositoryLoaderBloc bloc, String key) {
-    final fs = bloc.repository.getFeatureState(key);
-    final val = bloc.getDisplayValue(key, nullReturn: true);
-    switch (fs.type) {
+  String value(DisplayValue ds) {
+    switch (ds.type) {
       case FeatureValueType.BOOLEAN:
-        return val;
+        return ds.value;
       case FeatureValueType.STRING:
       case FeatureValueType.NUMBER:
       case FeatureValueType.JSON:
-        return val == null ? '(not set)' : val;
+        return ds.value == null ? '(not set)' : ds.value;
     }
   }
 }
@@ -341,13 +356,15 @@ class _EditFeatureState extends State<EditFeature> {
     fs = bloc.repository.getFeatureState(widget.keyField);
 
     if (fs.type != FeatureValueType.BOOLEAN) {
-      tec.text = repositoryBloc.getDisplayValue(widget.keyField);
+      tec.text = repositoryBloc.getDisplayValue(widget.keyField).value;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     Widget edit;
+
+    final ds = repositoryBloc.getDisplayValue(widget.keyField);
 
     switch (fs.type) {
       case FeatureValueType.BOOLEAN:
@@ -365,19 +382,20 @@ class _EditFeatureState extends State<EditFeature> {
                 ),
               );
             }).toList(),
-            value: repositoryBloc.getDisplayValue(widget.keyField),
+            value: ds.value,
             onChanged: (value) {
               final replacementBoolean = (value == 'On');
               setState(() {
                 repositoryBloc.setValue(widget.keyField, replacementBoolean);
               });
             },
-            disabledHint: Text(repositoryBloc.getDisplayValue(widget.keyField),
-                style: Theme.of(context).textTheme.caption),
+            disabledHint:
+                Text(ds.value, style: Theme.of(context).textTheme.caption),
           ),
         );
         break;
       case FeatureValueType.STRING:
+      case FeatureValueType.NUMBER:
         edit = TextField(
           style: Theme.of(context).textTheme.bodyText1,
           controller: tec,
@@ -392,7 +410,7 @@ class _EditFeatureState extends State<EditFeature> {
                   borderSide: BorderSide(
                 color: Colors.grey,
               )),
-              hintText: 'Enter string value',
+              hintText: 'Enter value',
               hintStyle: Theme.of(context).textTheme.caption),
           onChanged: (value) {},
           onSubmitted: (value) {
@@ -400,35 +418,71 @@ class _EditFeatureState extends State<EditFeature> {
             repositoryBloc.setValue(widget.keyField, replacementValue);
             bloc.editing(widget.keyField);
           },
+          inputFormatters: [
+            if (fs.type == FeatureValueType.NUMBER)
+              DecimalTextInputFormatter(
+                  decimalRange: 5, activatedNegativeValues: true)
+          ],
         );
         break;
-      case FeatureValueType.NUMBER:
-        edit = Text('no dice');
-        break;
       case FeatureValueType.JSON:
-        edit = Text('no dice');
+        edit = Text('no editing supported');
         break;
     }
 
     return GestureDetector(
       onTap: () => bloc.editing(widget.keyField),
-      child: Row(
-        children: [
-          Flexible(
-              flex: 1,
-              fit: FlexFit.tight,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(widget.keyField),
-              )),
-          Flexible(
-              flex: 1,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: edit,
-              ))
-        ],
+      child: Container(
+        color: ds.overridden ? Colors.lime : Colors.white,
+        child: Row(
+          children: [
+            Flexible(
+                flex: 1,
+                fit: FlexFit.tight,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(widget.keyField),
+                )),
+            Flexible(
+                flex: 1,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: edit,
+                ))
+          ],
+        ),
       ),
     );
+  }
+}
+
+class DecimalTextInputFormatter extends TextInputFormatter {
+  DecimalTextInputFormatter(
+      {int decimalRange, bool activatedNegativeValues = true})
+      : assert(decimalRange == null || decimalRange >= 0,
+            'DecimalTextInputFormatter declaration error') {
+    final dp = (decimalRange != null && decimalRange > 0)
+        ? '([.][0-9]{0,$decimalRange}){0,1}'
+        : '';
+    final num = '[0-9]*$dp';
+
+    if (activatedNegativeValues) {
+      _exp = RegExp('^((((-){0,1})|((-){0,1}[0-9]$num))){0,1}\$');
+    } else {
+      _exp = RegExp('^($num){0,1}\$');
+    }
+  }
+
+  RegExp _exp;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (_exp.hasMatch(newValue.text)) {
+      return newValue;
+    }
+    return oldValue;
   }
 }

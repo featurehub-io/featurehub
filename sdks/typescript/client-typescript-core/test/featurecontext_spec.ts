@@ -4,7 +4,7 @@ import { expect } from 'chai';
 describe('feature context should work as expected', () => {
   it('should respond as expected to a proper feature', () => {
     const features = [
-      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.BOOLEAN, value: true}),
+      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.Boolean, value: true}),
     ];
 
     featureHubRepository.notify(SSEResultState.Features, features);
@@ -18,7 +18,7 @@ describe('feature context should work as expected', () => {
 
     featureHubRepository.notify(SSEResultState.Feature,
                                 new FeatureState({id: '1', key: 'banana', version: 2,
-                                  type: FeatureValueType.BOOLEAN, value: false}),
+                                  type: FeatureValueType.Boolean, value: false}),
       );
 
     // tslint:disable-next-line:no-unused-expression
@@ -30,7 +30,7 @@ describe('feature context should work as expected', () => {
 
     featureHubRepository.notify(SSEResultState.DeleteFeature,
                                 new FeatureState({id: '1', key: 'banana', version: 3,
-        type: FeatureValueType.BOOLEAN, value: true}),
+        type: FeatureValueType.Boolean, value: true}),
     );
 
     // tslint:disable-next-line:no-unused-expression

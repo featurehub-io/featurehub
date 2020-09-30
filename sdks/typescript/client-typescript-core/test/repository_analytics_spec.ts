@@ -49,7 +49,7 @@ describe( 'We should be able to log an analytics event', () => {
 
   it('should snapshot the features', () => {
     const features = [
-      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.BOOLEAN, value: true}),
+      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.Boolean, value: true}),
     ];
 
     repo.notify(SSEResultState.Features, features);

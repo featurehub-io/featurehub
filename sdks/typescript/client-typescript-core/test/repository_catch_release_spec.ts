@@ -21,17 +21,17 @@ describe('Catch and release should hold and then release feature changes', () =>
     expect(repo.catchAndReleaseMode).to.eq(true);
 
     const features = [
-      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.BOOLEAN, value: true}),
+      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.Boolean, value: true}),
     ];
 
     repo.notify(SSEResultState.Features, features);
     // change banana, change change banana
     repo.notify(SSEResultState.Feature, new FeatureState({id: '1', key: 'banana', version: 2,
-      type: FeatureValueType.BOOLEAN, value: false}));
+      type: FeatureValueType.Boolean, value: false}));
     expect(postNewTrigger).to.eq(1);
     expect(bananaTrigger).to.eq(1); // new list of features always trigger
     repo.notify(SSEResultState.Feature, new FeatureState({id: '1', key: 'banana', version: 3,
-      type: FeatureValueType.BOOLEAN, value: false}));
+      type: FeatureValueType.Boolean, value: false}));
 
     expect(postNewTrigger).to.eq(2);
     expect(bananaTrigger).to.eq(1);
@@ -43,7 +43,7 @@ describe('Catch and release should hold and then release feature changes', () =>
 
     // notify with new state, should still hold
     const features2 = [
-      new FeatureState({id: '1', key: 'banana', version: 4, type: FeatureValueType.BOOLEAN, value: true}),
+      new FeatureState({id: '1', key: 'banana', version: 4, type: FeatureValueType.Boolean, value: true}),
     ];
 
     repo.notify(SSEResultState.Features, features);

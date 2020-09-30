@@ -134,7 +134,7 @@ class BaggageRepository implements FeatureHubRepository {
 
   logAnalyticsEvent(action: string, other?: Map<string, string>) {
     const otherCopy = other ? other : new Map<string, string>();
-    const baggageCopy = new Map<string, string>([...this.baggage, ...otherCopy]);
+    const baggageCopy = new Map<string, string>([...this.baggage.entries(), ...otherCopy.entries()]);
 
     // merge bother together and
 

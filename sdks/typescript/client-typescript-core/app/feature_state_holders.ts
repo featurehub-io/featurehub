@@ -123,10 +123,11 @@ export class FeatureStateBooleanHolder extends FeatureStateBaseHolder {
   }
 
   setFeatureState(fs: FeatureState): boolean {
+    const oldLocked = this.featureState?.l;
     this.featureState = fs;
     const oldValue = this.value;
     this.value = fs.value !== undefined ? fs.value as unknown as boolean : undefined;
-    if (oldValue !== this.value) {
+    if (oldValue !== this.getBoolean() || (oldLocked !== fs.l && this.match())) {
       this.notifyListeners();
       return true;
     }
@@ -171,10 +172,11 @@ export class FeatureStateStringHolder extends FeatureStateBaseHolder {
   }
 
   setFeatureState(fs: FeatureState): boolean {
+    const oldLocked = this.featureState?.l;
     this.featureState = fs;
     const oldValue = this.value;
     this.value = fs.value !== undefined ? fs.value.toString() : undefined;
-    if (oldValue !== this.value) {
+    if (oldValue !== this.getString() || (oldLocked !== fs.l && this.match())) {
       this.notifyListeners();
       return true;
     }
@@ -218,10 +220,11 @@ export class FeatureStateNumberHolder extends FeatureStateBaseHolder {
   }
 
   setFeatureState(fs: FeatureState): boolean {
+    const oldLocked = this.featureState?.l;
     this.featureState = fs;
     const oldValue = this.value;
     this.value = fs.value !== undefined ? fs.value as unknown as number : undefined;
-    if (oldValue !== this.value) {
+    if (oldValue !== this.getNumber() || (oldLocked !== fs.l && this.match())) {
       this.notifyListeners();
       return true;
     }
@@ -275,10 +278,11 @@ export class FeatureStateJsonHolder extends FeatureStateBaseHolder {
   }
 
   setFeatureState(fs: FeatureState): boolean {
+    const oldLocked = this.featureState?.l;
     this.featureState = fs;
     const oldValue = this.value;
     this.value = fs.value !== undefined ? fs.value.toString() : undefined;
-    if (oldValue !== this.value) {
+    if (oldValue !== this.getRawJson() || (oldLocked !== fs.l && this.match()) ) {
       this.notifyListeners();
       return true;
     }

@@ -161,7 +161,23 @@ export class ClientFeatureRepository implements FeatureHubRepository {
 
     this.features.forEach((value, key) => {
       if (value.getKey()) { // only include value features
-        const val = value.getFeatureState().value;
+        let val: any;
+        switch (value.getType()) {// we need to pick up any overrides
+          case FeatureValueType.Boolean:
+            val = value.getBoolean() ? 'true' : 'false';
+            break;
+          case FeatureValueType.String:
+            val = value.getString();
+            break;
+          case FeatureValueType.Number:
+            val = value.getNumber();
+            break;
+          case FeatureValueType.Json:
+            val = value.getRawJson();
+            break;
+          default:
+            val = undefined;
+        }
         vals.set(key, val === undefined ? val : val.toString());
       }
     });

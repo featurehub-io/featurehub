@@ -27,10 +27,10 @@ describe('Googe analytics collector should output correct info', () => {
     repo.addAnalyticCollector(ga);
 
     const features = [
-      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.BOOLEAN, value: true}),
-      new FeatureState({id: '2', key: 'pear', version: 1, type: FeatureValueType.NUMBER, value: 12.3}),
-      new FeatureState({id: '3', key: 'peach', version: 1, type: FeatureValueType.STRING, value: 'golden'}),
-      new FeatureState({id: '4', key: 'cherimoya', version: 1, type: FeatureValueType.JSON, value: '"custard apple"'}),
+      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.Boolean, value: true}),
+      new FeatureState({id: '2', key: 'pear', version: 1, type: FeatureValueType.Number, value: 12.3}),
+      new FeatureState({id: '3', key: 'peach', version: 1, type: FeatureValueType.String, value: 'golden'}),
+      new FeatureState({id: '4', key: 'cherimoya', version: 1, type: FeatureValueType.Json, value: '"custard apple"'}),
     ];
 
     repo.notify(SSEResultState.Features, features);

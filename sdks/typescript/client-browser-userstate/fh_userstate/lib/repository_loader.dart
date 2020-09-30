@@ -5,11 +5,36 @@ import 'package:featurehub_client_api/api.dart';
 import 'package:featurehub_client_sdk/featurehub.dart';
 import 'package:featurehub_client_sdk/featurehub_get.dart';
 
+class DisplayValue {
+  final String value;
+  final bool overridden;
+  final FeatureValueType type;
+
+  DisplayValue(this.value, this.overridden, this.type);
+}
+
 class RepositoryLoaderBloc extends Bloc {
   ClientFeatureRepository _repository = ClientFeatureRepository();
   String _host;
   String _environment;
   FeatureHubSimpleApi _simpleApi;
+
+  RepositoryLoaderBloc() {
+    html.window.addEventListener('storage', (event) {
+      if (event is html.StorageEvent) {
+        if (event != null && event.key == 'fh_url' && event.newValue != null) {
+          final parts = event.newValue.split('features');
+          // environment has changed
+          if (parts != null && parts.length == 2) {
+            if (_host != parts[0].substring(0, parts[0].length - 1) ||
+                _environment != parts[1].substring(1)) {
+              init();
+            }
+          }
+        }
+      }
+    });
+  }
 
   set sdkUrl(String sdkUrl) {
     html.window.localStorage['fh_url'] = sdkUrl;
@@ -68,30 +93,35 @@ class RepositoryLoaderBloc extends Bloc {
   @override
   void dispose() {}
 
-  String getDisplayValue(String keyField, {bool nullReturn = false}) {
+  DisplayValue getDisplayValue(String keyField, {bool nullReturn = false}) {
     final fs = _repository.getFeatureState(keyField);
 
     final nullVal = html.window.localStorage['fh_null_$keyField'];
     if (nullVal != null) {
-      return fs.type == FeatureValueType.BOOLEAN ? 'Off' : null;
+      return DisplayValue(
+          fs.type == FeatureValueType.BOOLEAN ? 'Off' : null, true, fs.type);
     }
 
     final value = html.window.localStorage['fh_value_$keyField'];
     if (value != null) {
-      return fs.type == FeatureValueType.BOOLEAN
-          ? (value == 'true' ? 'On' : 'Off')
-          : value;
+      return DisplayValue(
+          fs.type == FeatureValueType.BOOLEAN
+              ? (value == 'true' ? 'On' : 'Off')
+              : value,
+          true,
+          fs.type);
     }
 
     switch (fs.type) {
       case FeatureValueType.BOOLEAN:
-        return fs.value == true ? 'On' : 'Off';
+        return DisplayValue(fs.value == true ? 'On' : 'Off', false, fs.type);
       case FeatureValueType.STRING:
       case FeatureValueType.NUMBER:
       case FeatureValueType.JSON:
-        return fs.value == null
-            ? (nullReturn ? null : '')
-            : fs.value.toString();
+        return DisplayValue(
+            fs.value == null ? (nullReturn ? null : '') : fs.value.toString(),
+            false,
+            fs.type);
     }
   }
 
