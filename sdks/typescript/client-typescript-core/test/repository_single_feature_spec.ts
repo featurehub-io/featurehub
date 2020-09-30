@@ -54,7 +54,8 @@ describe('repository reacts to single feature changes as expected', () => {
       new FeatureState({id: '1', key: 'apricot', version: 1, type: FeatureValueType.Number, value: 12.8}),
     ];
     repo.notify(SSEResultState.Features, features);
-    repo.notify(SSEResultState.Feature, new FeatureState(({id: '1', key: 'apricot', version: 1, type: FeatureValueType.Number, value: 12.9})));
+    repo.notify(SSEResultState.Feature, new FeatureState(({id: '1', key: 'apricot', version: 1,
+      type: FeatureValueType.Number, value: 12.9})));
     // expect(triggerApricot).to.eq(2);
     expect(repo.feature('apricot').getNumber()).to.eq(12.9);
   });
