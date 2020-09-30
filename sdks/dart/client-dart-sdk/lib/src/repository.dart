@@ -288,8 +288,12 @@ class ClientFeatureRepository {
     if (holder == null || holder.key == null) {
       holder = _FeatureStateBaseHolder(holder, _featureValueInterceptors);
     } else {
-      if (holder.version != null && holder.version >= feature.version) {
-        return false;
+      if (holder.version != null) {
+        if (holder.version > feature.version ||
+            (holder.version == feature.version &&
+                holder.value == feature.value)) {
+          return false;
+        }
       }
     }
 

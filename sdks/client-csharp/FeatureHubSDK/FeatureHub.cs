@@ -234,7 +234,7 @@ namespace FeatureHubSDK
         _value = value.Value;
 
         // did the value change? if so, tell everyone listening via event handler
-        if ((_value != null && !_value.Equals(oldVal)) || (oldVal != null && !oldVal.Equals(_value)))
+        if (ValueChanged(oldVal, _value))
         {
           var handler = FeatureUpdateHandler;
           try
@@ -247,6 +247,11 @@ namespace FeatureHubSDK
           }
         }
       }
+    }
+
+    public static bool ValueChanged(object oldVal, object value)
+    {
+      return (value != null && !value.Equals(oldVal)) || (oldVal != null && !oldVal.Equals(value));
     }
   }
 
@@ -373,13 +378,12 @@ namespace FeatureHubSDK
       {
         holder = new FeatureStateBaseHolder(holder);
       }
-      else if (holder.Version != null && holder.Version >= fs.Version)
+      else if (holder.Version != null)
       {
-        // Console.WriteLine($"discarding {fs}");
+        if (holder.Version > fs.Version || (
+          holder.Version == fs.Version && !FeatureStateBaseHolder.ValueChanged(holder.Value, fs.Value)))
         return false;
       }
-
-      // Console.WriteLine($"storing {fs}");
 
       holder.FeatureState = fs;
       if (keyExists)

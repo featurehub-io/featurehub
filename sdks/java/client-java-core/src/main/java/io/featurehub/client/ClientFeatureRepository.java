@@ -227,10 +227,17 @@ public class ClientFeatureRepository implements FeatureRepository {
       }
 
       features.put(featureState.getKey(), holder);
-    } else if (!force && holder.featureState != null
-      && holder.featureState.getVersion() >= featureState.getVersion()) {
-      return;
+    } else if (!force && holder.featureState != null) {
+      if (holder.featureState.getVersion() > featureState.getVersion() ||
+        (
+        holder.featureState.getVersion().equals(featureState.getVersion()) &&
+        !FeatureStateUtils.changed(holder.featureState.getValue(), featureState.getValue()))) {
+        // if the old version is newer, or they are the same version and the value hasn't changed.
+        // it can change with server side evaluation based on user data
+        return;
+      }
     }
+
 
     holder.setFeatureState(featureState);
   }

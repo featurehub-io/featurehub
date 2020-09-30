@@ -83,7 +83,7 @@ class RepositorySpec extends Specification {
     when:
       repo.notify(features, false)
       def feature = repo.getFeatureState('banana').copy()
-    and: "i make a change to the state but keep the version the same"
+    and: "i make a change to the state but keep the version the same (ok because this is what rollout strategies do)"
       repo.notify([
         new FeatureState().id('1').key('banana').version(1L).value(true).type(FeatureValueType.BOOLEAN),
       ])
@@ -100,7 +100,7 @@ class RepositorySpec extends Specification {
       def feature4 = repo.getFeatureState('banana').copy()
     then:
       feature.boolean == false
-      feature2.boolean == false
+      feature2.boolean == true
       feature3.boolean == true
       feature4.boolean == false
   }

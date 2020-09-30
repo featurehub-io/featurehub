@@ -15,9 +15,15 @@ import java.util.Map;
 public class ClientAttributeCollection {
   public Map<String, List<String>> attributes = new HashMap<>();
   public static final String USERKEY = "userkey";
+  public static final String SESSIONKEY = "sessionkey";
 
-  String userKey() {
-    List<String> uKey = attributes.get(USERKEY);
+  String defaultPercentageKey() {
+    List<String> uKey = attributes.get(SESSIONKEY);
+
+    if (uKey == null) {
+      uKey = attributes.get(USERKEY);
+    }
+
     return (uKey == null || uKey.isEmpty()) ? null : uKey.get(0);
   }
 
