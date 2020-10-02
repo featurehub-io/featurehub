@@ -25,7 +25,7 @@ namespace FeatureHubSDK
     Failed
   }
 
-  public interface AnalyticsCollector
+  public interface IAnalyticsCollector
   {
     void LogEvent(string action, Dictionary<string, string> other, List<IFeatureStateHolder> featureStates);
   }
@@ -302,7 +302,7 @@ namespace FeatureHubSDK
     private Readyness _readyness = Readyness.NotReady;
     public event EventHandler<Readyness> ReadynessHandler;
     public event EventHandler<FeatureHubRepository> NewFeatureHandler;
-    private IList<AnalyticsCollector> _analyticsCollectors = new List<AnalyticsCollector>();
+    private IList<IAnalyticsCollector> _analyticsCollectors = new List<IAnalyticsCollector>();
 
     public Readyness Readyness => _readyness;
 
@@ -407,12 +407,12 @@ namespace FeatureHubSDK
       }
     }
 
-    public void LogAnalyticEvent(string action)
+    public FeatureHubRepository LogAnalyticEvent(string action)
     {
-      LogAnalyticEvent(action, new Dictionary<string, string>());
+      return LogAnalyticEvent(action, new Dictionary<string, string>());
     }
 
-    public void LogAnalyticEvent(string action, Dictionary<string, string> other)
+    public FeatureHubRepository LogAnalyticEvent(string action, Dictionary<string, string> other)
     {
       // take a snapshot copy
       var featureCopies =
@@ -429,6 +429,14 @@ namespace FeatureHubSDK
           log.Error("Failed to log analytic event", e);
         }
       }
+
+      return this;
+    }
+
+    public FeatureHubRepository AddAnalyticCollector(IAnalyticsCollector collector)
+    {
+      _analyticsCollectors.Add(collector);
+      return this;
     }
 
     // update the feature if its version is greater than the version we currently store

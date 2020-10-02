@@ -1,9 +1,10 @@
+using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 
 namespace FeatureHubSDK
 {
-  public class GoogleAnalyticsHttpClient : GoogleAnalyticsClient
+  public class GoogleAnalyticsHttpClient : IGoogleAnalyticsClient
   {
     private HttpClient _client;
 

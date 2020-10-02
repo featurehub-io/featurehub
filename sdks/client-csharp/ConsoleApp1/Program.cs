@@ -28,24 +28,34 @@ namespace ConsoleApp1
         Console.WriteLine($"New features");
       };
 
+      fh.AddAnalyticCollector(new GoogleAnalyticsCollector("UA-example", "1234-5678-abcd-abcd",
+        new GoogleAnalyticsHttpClient()));
+
       var esl = new EventServiceListener();
 
-      esl.Init("http://localhost:8553/features/default/ec6a720b-71ac-4cc1-8da1-b5e396fa00ca/Kps0MAqsGt5QhgmwMEoRougAflM2b8Q9e1EFeBPHtuIF0azpcCXeeOw1DabFojYdXXr26fyycqjBt3pa", fh);
+      esl.Init("http://localhost:8553/features/default/ce6b5f90-2a8a-4b29-b10f-7f1c98d878fe/VNftuX5LV6PoazPZsEEIBujM4OBqA1Iv9f9cBGho2LJylvxXMXKGxwD14xt2d7Ma3GHTsdsSO8DTvAYF", fh);
 
-      Console.Write("Press a key");
-      Console.ReadKey();
+      do
+      {
+        fh.LogAnalyticEvent("c-sharp-console");
+        Console.Write("Press a Key");
+      } while (Console.ReadLine() != "x");
 
-      Console.Write("Press a key (changed context)");
 
-      fh.ClientContext.UserKey("DJElif").Country(StrategyAttributeCountryName.Turkey).Attr("city", "istanbul").Build();
-      Console.ReadKey();
-
-      Console.Write("Press a key (change context2)");
-      Console.ReadKey();
-
-      fh.ClientContext.UserKey("AmyWiles").Country(StrategyAttributeCountryName.Unitedkingdom).Attr("city", "london").Build();
-      Console.WriteLine("Ready to close");
-      Console.ReadKey();
+      // Console.Write("Press a key");
+      // Console.ReadKey();
+      //
+      // Console.Write("Press a key (changed context)");
+      //
+      // fh.ClientContext.UserKey("DJElif").Country(StrategyAttributeCountryName.Turkey).Attr("city", "istanbul").Build();
+      // Console.ReadKey();
+      //
+      // Console.Write("Press a key (change context2)");
+      // Console.ReadKey();
+      //
+      // fh.ClientContext.UserKey("AmyWiles").Country(StrategyAttributeCountryName.Unitedkingdom).Attr("city", "london").Build();
+      // Console.WriteLine("Ready to close");
+      // Console.ReadKey();
       esl.Close();
     }
   }

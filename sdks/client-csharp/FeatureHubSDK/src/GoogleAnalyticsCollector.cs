@@ -6,22 +6,25 @@ using IO.FeatureHub.SSE.Model;
 
 namespace FeatureHubSDK
 {
-  public interface GoogleAnalyticsClient
+  public static class GoogleConstants
   {
     // if you wish to pass in the "value" field to analytics, add this to the "other" dictionary
-    const string GaValue = "gaValue";
+    public const string GaValue = "gaValue";
     // if you wish to override the CID, add this to the "other" dictionary
-    const string Cid = "cid";
+    public const string Cid = "cid";
+  }
 
+  public interface IGoogleAnalyticsClient
+  {
     void PostBatchUpdate(string batchData);
   }
 
-  public class GoogleAnalyticsCollector : AnalyticsCollector
+  public class GoogleAnalyticsCollector : IAnalyticsCollector
   {
     private static readonly ILog log = LogManager.GetLogger<GoogleAnalyticsCollector>();
     private string _uaKey;
     private string _cid;
-    private GoogleAnalyticsClient _client;
+    private IGoogleAnalyticsClient _client;
 
     public string Cid
     {
@@ -35,7 +38,7 @@ namespace FeatureHubSDK
       get => _cid;
     }
 
-    public GoogleAnalyticsCollector(string uaKey, string cid, GoogleAnalyticsClient client)
+    public GoogleAnalyticsCollector(string uaKey, string cid, IGoogleAnalyticsClient client)
     {
       if (string.IsNullOrWhiteSpace(uaKey))
       {
@@ -56,7 +59,7 @@ namespace FeatureHubSDK
     {
       var batchData = "";
 
-      var finalCid = _cid == null ? other[GoogleAnalyticsClient.Cid] : _cid;
+      var finalCid = _cid == null ? (other.ContainsKey(GoogleConstants.Cid) ? other[GoogleConstants.Cid] : null) : _cid;
 
       if (finalCid == null)
       {
@@ -64,8 +67,8 @@ namespace FeatureHubSDK
         return;
       }
 
-      var ev = (other != null && other[GoogleAnalyticsClient.GaValue] != null)
-        ? ("&ev=" + HttpUtility.UrlEncode(other[GoogleAnalyticsClient.GaValue]))
+      var ev = (other != null && other.ContainsKey(GoogleConstants.GaValue))
+        ? ("&ev=" + HttpUtility.UrlEncode(other[GoogleConstants.GaValue]))
         : "";
 
       var baseForEachLine = "v=1&tid=" + _uaKey + "&cid=" + finalCid + "&t=event&ec=FeatureHub%20Event&ea=" +
@@ -73,35 +76,35 @@ namespace FeatureHubSDK
 
       foreach (var fsh in featureStates)
       {
-        string line = null;
-        switch (fsh.Type)
+        if (fsh.IsSet)
         {
-          case FeatureValueType.BOOLEAN:
-            line = fsh.BooleanValue == true ? "on" : "off";
-            break;
-          case FeatureValueType.STRING:
-            line = fsh.StringValue;
-            break;
-          case FeatureValueType.NUMBER:
-            line = fsh.NumberValue == null ? null : fsh.NumberValue.ToString();
-            break;
-          case FeatureValueType.JSON:
-            break;
-          case null:
-            break;
-          default:
-            throw new ArgumentOutOfRangeException();
-        }
+          string line = null;
+          switch (fsh.Type)
+          {
+            case FeatureValueType.BOOLEAN:
+              line = fsh.BooleanValue == true ? "on" : "off";
+              break;
+            case FeatureValueType.STRING:
+              line = fsh.StringValue;
+              break;
+            case FeatureValueType.NUMBER:
+              line = fsh.NumberValue == null ? null : fsh.NumberValue.ToString();
+              break;
+            case FeatureValueType.JSON:
+              break;
+          }
 
-        if (line != null)
-        {
-          line = HttpUtility.UrlEncode(fsh.Key + " : " + line);
-          batchData += baseForEachLine + line + "\n";
+          if (line != null)
+          {
+            line = HttpUtility.UrlEncode(fsh.Key + " : " + line);
+            batchData += baseForEachLine + line + "\n";
+          }
         }
       }
 
       if (batchData.Length > 0)
       {
+        Console.WriteLine(batchData);
         _client.PostBatchUpdate(batchData);
       }
     }

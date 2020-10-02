@@ -43,8 +43,6 @@ namespace FeatureHubSDK
       _eventSource = new EventSource(config);
       _eventSource.MessageReceived += (sender, args) =>
       {
-        // Console.WriteLine($"{args.EventName}:\n\t {args.Message.Data}");
-
         SSEResultState? state;
         switch (args.EventName)
         {
