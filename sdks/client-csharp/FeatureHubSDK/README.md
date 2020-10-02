@@ -96,7 +96,49 @@ things. You can also `Clear()` to remove all strategies.
 In all cases, you need to call `Build()` to re-trigger passing of the new attributes to the server for recalculation.
 By default, the _user key_ is used for percentage based calculations, and without it, you cannot participate in
 percentage based Rollout Strategies ("experiments"). However, a more advanced feature does let you specify other
-attributes (e.g. _company_, or _store_) that would allow you to specify your experiment on. 
+attributes (e.g. _company_, or _store_) that would allow you to specify your experiment on.
+
+### Analytics Support for C#
+
+This allows you to connect your application and see your features performing in Google Analytics. The
+adapter is generic but we provide specific support here for Google's Analytics platform at the moment.
+
+When you log an event on the repository,
+it will capture the value of all of the feature flags and featutre values (in case they change),
+and log that event against your Google Analytics, once for each feature. This allows you to
+slice and dice your events by state each of the features were in. We send them as a batch, so it
+is only one request.
+
+There is a plan to support other Analytics tools in the future. The only one we
+currently support is Google Analytics, so you need:
+
+- a Google analytics key - usually in the form `UA-123456`. You must provide this up front.
+- a CID - a customer id this is associate with this. You can provide this up front or you can
+provide it with each call, or you can set it later. 
+
+1) You can set it in the constructor:
+
+```c#
+fh.AddAnalyticCollector(new GoogleAnalyticsCollector("UA-example", "1234-5678-abcd-abcd",
+new GoogleAnalyticsHttpClient()));
+```
+
+2) If you hold onto the Collector, you can set the CID on the collector later.
+
+```c#
+_collector.Cid = "some-value"; // you can set it here
+```
+
+3) When you log an event, you can pass it in the map:
+
+```c#
+var _data = new Dictionary<string, string>();
+_data[GoogleConstants.Cid] = "some-cid";
+
+_repo.LogAnalyticsEvent("event-name", _data);
+```
+
+Read more on how to interpret events in Google Analytics [here](https://docs.featurehub.io/analytics.html) 
 
 ### IO.FeatureHub.SSE
 
