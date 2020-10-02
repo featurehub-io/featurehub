@@ -29,6 +29,37 @@ namespace FeatureHubTestProject
     }
 
     [Test]
+    public void ABooleanIsStoredCorrectly()
+    {
+      _repository.Notify(SSEResultState.Features, EncodeFeatures(true, 1, FeatureValueType.BOOLEAN));
+      Assert.AreEqual(true, _repository.GetFlag("1"));
+    }
+
+    [Test]
+    public void ANumberIsStoredCorrectly()
+    {
+      _repository.Notify(SSEResultState.Features, EncodeFeatures(16.3, 1, FeatureValueType.NUMBER));
+      Assert.AreEqual(16.3, _repository.GetNumber("1"));
+    }
+
+    [Test]
+    public void AStringIsStoredCorrectly()
+    {
+      _repository.Notify(SSEResultState.Features, EncodeFeatures("some duck", 1, FeatureValueType.STRING));
+      Assert.AreEqual("some duck", _repository.GetString("1"));
+      Assert.IsNull(_repository.GetNumber("1"));
+      Assert.IsNull(_repository.GetJson("1"));
+      Assert.IsFalse(_repository.GetFlag("1"));
+    }
+
+    [Test]
+    public void JsonIsStoredCorrectly()
+    {
+      _repository.Notify(SSEResultState.Features, EncodeFeatures("{}", 1, FeatureValueType.JSON));
+      Assert.AreEqual("{}", _repository.GetJson("1"));
+    }
+
+    [Test]
     public void ReadynessWhenFeaturesAppear()
     {
       var found = false;
@@ -211,6 +242,7 @@ namespace FeatureHubTestProject
     {
       _repository.Notify(SSEResultState.Features, EncodeFeatures(1L, version: 1, type: FeatureValueType.NUMBER));
       Assert.AreEqual(1, _repository.FeatureState("1").NumberValue);
+      Assert.AreEqual(1, _repository.GetNumber("1"));
     }
 
     [Test]

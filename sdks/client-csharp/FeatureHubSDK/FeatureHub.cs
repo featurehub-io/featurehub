@@ -64,6 +64,12 @@ namespace FeatureHubSDK
     /// The version of the current feature
     /// </summary>
     long? Version { get; }
+
+    /// <summary>
+    /// Determines if the feature actually has a value
+    /// </summary>
+    bool IsSet { get; }
+
     /// <summary>
     /// Triggered when the value changes
     /// </summary>
@@ -217,6 +223,8 @@ namespace FeatureHubSDK
     public FeatureValueType? Type => _feature?.Type;
     public object Value => _value;
 
+    public bool IsSet => _value != null;
+
     public long? Version => _feature?.Version;
 
     // public EventHandler<IFeatureStateHolder> FeatureUpdateHandler => _featureUpdateHandler;
@@ -255,7 +263,22 @@ namespace FeatureHubSDK
     }
   }
 
-  public class FeatureHubRepository
+  public interface IFeatureHubRepository
+  {
+    bool GetFlag(string key);
+
+    double? GetNumber(string key);
+
+    string GetString(string key);
+
+    string GetJson(string key);
+
+    bool Exists(string key);
+
+    bool IsSet(string key);
+  }
+
+  public class FeatureHubRepository : IFeatureHubRepository
   {
     private static readonly ILog log = LogManager.GetLogger<FeatureHubRepository>();
     private readonly Dictionary<string, FeatureStateBaseHolder> _features =
@@ -407,7 +430,40 @@ namespace FeatureHubSDK
 
       return _features[key];
     }
+
+    public bool GetFlag(string key)
+    {
+      return FeatureState(key).BooleanValue == true;
+    }
+
+    public double? GetNumber(string key)
+    {
+      return FeatureState(key).NumberValue;
+    }
+
+    public string GetString(string key)
+    {
+      return FeatureState(key).StringValue;
+    }
+
+    public string GetJson(string key)
+    {
+      return FeatureState(key).JsonValue;
+    }
+
+    public bool Exists(string key)
+    {
+      if (_features.ContainsKey(key))
+      {
+        return _features[key].Type != null;
+      }
+
+      return false;
+    }
+
+    public bool IsSet(string key)
+    {
+      return FeatureState(key).IsSet;
+    }
   }
-
-
 }
