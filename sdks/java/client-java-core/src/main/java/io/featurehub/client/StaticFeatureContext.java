@@ -4,8 +4,9 @@ import java.util.Map;
 
 /**
  * this is the only one independent of system. in Spring or JAX-RS this can be wired into the system
- * and injected.
+ * and injected. Ideally don't use this.
  */
+@Deprecated
 public class StaticFeatureContext implements FeatureContext {
   public static FeatureRepository repository;
 

@@ -78,8 +78,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: StreamBuilder<FeatureStateHolder>(
-          stream:
-              featurehub.getFeatureState('FLUTTER_COLOUR').featureUpdateStream,
+          stream: featurehub.feature('FLUTTER_COLOUR').featureUpdateStream,
           builder: (context, snapshot) {
             return RefreshIndicator(
               onRefresh: () => featurehubApi.request(),

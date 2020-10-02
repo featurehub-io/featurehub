@@ -10,6 +10,7 @@ import io.featurehub.sse.model.SSEResultState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -184,6 +185,81 @@ public class ClientFeatureRepository implements FeatureRepository {
 
       return new FeatureStatePlaceHolder(executor, featureValueInterceptors, key, mapper);
     });
+  }
+
+  @Override
+  public FeatureStateHolder getFeatureState(Feature feature) {
+    return this.getFeatureState(feature.name());
+  }
+
+    @Override
+  public boolean getFlag(Feature feature) {
+    return getFlag(feature.name());
+  }
+
+  @Override
+  public boolean getFlag(String key) {
+    return getFeatureState(key).getBoolean() == Boolean.TRUE;
+  }
+
+  @Override
+  public String getString(Feature feature) {
+    return getString(feature.name());
+  }
+
+  @Override
+  public String getString(String key) {
+    return getFeatureState(key).getString();
+  }
+
+  @Override
+  public BigDecimal getNumber(String key) {
+    return getFeatureState(key).getNumber();
+  }
+
+  @Override
+  public BigDecimal getNumber(Feature feature) {
+    return getNumber(feature.name());
+  }
+
+  @Override
+  public <T> T getJson(String key, Class<T> type) {
+    return getFeatureState(key).getJson(type);
+  }
+
+  @Override
+  public <T> T getJson(Feature feature, Class<T> type) {
+    return getJson(feature.name(), type);
+  }
+
+  @Override
+  public String getRawJson(String key) {
+    return getFeatureState(key).getRawJson();
+  }
+
+  @Override
+  public String getRawJson(Feature feature) {
+    return getRawJson(feature.name());
+  }
+
+  @Override
+  public boolean isSet(String key) {
+    return getFeatureState(key).isSet();
+  }
+
+  @Override
+  public boolean isSet(Feature feature) {
+    return isSet(feature.name());
+  }
+
+  @Override
+  public boolean exists(String key) {
+    return !(getFeatureState(key) instanceof FeatureStatePlaceHolder);
+  }
+
+  @Override
+  public boolean exists(Feature feature) {
+    return exists(feature.name());
   }
 
   @Override

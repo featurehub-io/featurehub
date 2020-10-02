@@ -17,6 +17,7 @@
         <RepositoryType>git</RepositoryType>
         <PackageTags>FeatureFlags Features Toggles CloudNative</PackageTags>
         <PackageReleaseNotes>Initial 1.0.0 release</PackageReleaseNotes>
+        <PackageVersion>1.1.0</PackageVersion>
     </PropertyGroup>
 
     <ItemGroup>

@@ -3,19 +3,15 @@ import {
   FeatureStateBooleanHolder,
   FeatureStateJsonHolder,
   FeatureStateNumberHolder,
-  FeatureStateStringHolder, FeatureStateValueInterceptor,
+  FeatureStateStringHolder,
+  FeatureStateValueInterceptor,
 } from './feature_state_holders';
 
 import { FeatureStateHolder } from './feature_state';
 
 import { AnalyticsCollector } from './analytics';
 
-import {
-  FeatureState,
-  FeatureValueType,
-  SSEResultState,
-  FeatureStateTypeTransformer
-} from './models';
+import { FeatureState, FeatureStateTypeTransformer, FeatureValueType, SSEResultState } from './models';
 import { ClientContext } from './client_context';
 
 export enum Readyness {
@@ -46,7 +42,17 @@ export interface FeatureHubRepository {
   feature(key: string): FeatureStateHolder;
 
   // primary used to pass down the line in headers
-  simpleFeatures(): Map<string, string|undefined>;
+  simpleFeatures(): Map<string, string | undefined>;
+
+  getFlag(key: string): boolean | undefined;
+
+  getString(key: string): string | undefined;
+
+  getJson(key: string): string | undefined;
+
+  getNumber(key: string): number | undefined;
+
+  isSet(key: string): boolean;
 }
 
 export class ClientFeatureRepository implements FeatureHubRepository {
@@ -234,6 +240,26 @@ export class ClientFeatureRepository implements FeatureHubRepository {
   public async release() {
     this._catchReleaseStates.forEach((fs) => this.featureUpdate(fs));
     this._catchReleaseStates.clear(); // remove all existing items
+  }
+
+  public getFlag(key: string): boolean | undefined {
+    return this.feature(key).getFlag();
+  }
+
+  public getString(key: string): string | undefined {
+    return this.feature(key).getString();
+  }
+
+  public getJson(key: string): string | undefined {
+    return this.feature(key).getRawJson();
+  }
+
+  public getNumber(key: string): number | undefined {
+    return this.feature(key).getNumber();
+  }
+
+  public isSet(key: string): boolean {
+    return this.feature(key).isSet();
   }
 
   private _catchUpdatedFeatures(features: FeatureState[]) {

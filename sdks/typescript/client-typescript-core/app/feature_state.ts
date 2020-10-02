@@ -12,6 +12,8 @@ export interface FeatureStateHolder {
 
   getBoolean(): boolean | undefined;
 
+  getFlag(): boolean | undefined;
+
   getNumber(): number | undefined;
 
   getRawJson(): string | undefined;

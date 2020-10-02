@@ -25,26 +25,23 @@ public class JerseyClientSample {
     new JerseyClient("http://localhost:8553/features/default/ec6a720b-71ac-4cc1-8da1-b5e396fa00ca/Kps0MAqsGt5QhgmwMEoRougAflM2b8Q9e1EFeBPHtuIF0azpcCXeeOw1DabFojYdXXr26fyycqjBt3pa", true, cfr);
     Thread.sleep(5000);
 
-    StaticFeatureContext.repository = cfr;
-    StaticFeatureContext ctx = StaticFeatureContext.getInstance();
-
     System.out.println("exists tests");
     for(Features f : Features.values()) {
-      System.out.println(f.name() + ": " + ctx.exists(f));
+      System.out.println(f.name() + ": " + cfr.exists(f));
     }
     System.out.println("set tests");
     for(Features f : Features.values()) {
-      System.out.println(f.name() + ": " + ctx.isSet(f));
+      System.out.println(f.name() + ": " + cfr.isSet(f));
     }
 
     System.out.println("active tests");
     for(Features f : Features.values()) {
-      System.out.println(f.name() + ": " + ctx.isActive(f));
+      System.out.println(f.name() + ": " + cfr.getFlag(f));
     }
 
     for(Features f : Features.values()) {
       Features feat = f;
-      ctx.addListener(feat, (featureState) -> {
+      cfr.getFeatureState(feat.name()).addListener((featureState) -> {
         System.out.print("feature " + feat.name() + " has changed to ");
         if (feat == Features.NEW_BOAT || feat == Features.NEW_BUTTON || feat == Features.FEATURE_SAMPLE) {
           System.out.println(featureState.getBoolean());
@@ -56,8 +53,6 @@ public class JerseyClientSample {
           System.out.println(featureState.getNumber());
         }
       });
-
-
     }
 
     Thread.currentThread().join();

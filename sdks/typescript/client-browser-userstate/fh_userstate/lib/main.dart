@@ -353,7 +353,7 @@ class _EditFeatureState extends State<EditFeature> {
 
     bloc = BlocProvider.of<EditingBloc>(context);
     repositoryBloc = BlocProvider.of<RepositoryLoaderBloc>(context);
-    fs = bloc.repository.getFeatureState(widget.keyField);
+    fs = bloc.repository.feature(widget.keyField);
 
     if (fs.type != FeatureValueType.BOOLEAN) {
       tec.text = repositoryBloc.getDisplayValue(widget.keyField).value;
