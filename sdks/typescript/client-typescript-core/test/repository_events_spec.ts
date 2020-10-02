@@ -26,12 +26,12 @@ describe('Feature repository reacts to incoming event lists as expected', () => 
     });
     repo.addPostLoadNewFeatureStateAvailableListener(() => postTrigger ++);
     const features = [
-      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.BOOLEAN, value: true}),
+      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.Boolean, value: true}),
     ];
 
     repo.notify(SSEResultState.Features, features);
     repo.notify(SSEResultState.Feature, new FeatureState({id: '1', key: 'banana', version: 2,
-      type: FeatureValueType.BOOLEAN, value: false}));
+      type: FeatureValueType.Boolean, value: false}));
 
     expect(postTrigger).to.eq(1);
     expect(failTrigger).to.eq(1);
@@ -58,9 +58,9 @@ describe('Feature repository reacts to incoming event lists as expected', () => 
     expect(repo.getFeatureState('peach').getBoolean()).to.be.undefined;
 
     const features = [
-      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.BOOLEAN, value: true}),
-      new FeatureState({id: '2', key: 'pear', version: 1, type: FeatureValueType.BOOLEAN, value: false}),
-      new FeatureState({id: '3', key: 'peach', version: 1, type: FeatureValueType.BOOLEAN, value: true}),
+      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.Boolean, value: true}),
+      new FeatureState({id: '2', key: 'pear', version: 1, type: FeatureValueType.Boolean, value: false}),
+      new FeatureState({id: '3', key: 'peach', version: 1, type: FeatureValueType.Boolean, value: true}),
     ];
 
     repo.notify(SSEResultState.Features, features);
@@ -76,9 +76,9 @@ describe('Feature repository reacts to incoming event lists as expected', () => 
     expect(repo.getFeatureState('peach').getBoolean()).to.be.true;
 
     const features2 = [
-      new FeatureState({id: '1', key: 'banana', version: 2, type: FeatureValueType.BOOLEAN, value: false}),
-      new FeatureState({id: '2', key: 'pear', version: 1, type: FeatureValueType.BOOLEAN, value: false}),
-      new FeatureState({id: '3', key: 'peach', version: 2, type: FeatureValueType.BOOLEAN, value: true}),
+      new FeatureState({id: '1', key: 'banana', version: 2, type: FeatureValueType.Boolean, value: false}),
+      new FeatureState({id: '2', key: 'pear', version: 1, type: FeatureValueType.Boolean, value: false}),
+      new FeatureState({id: '3', key: 'peach', version: 2, type: FeatureValueType.Boolean, value: true}),
     ];
 
     // only banana should trigger as it has changed its value and its version
@@ -105,9 +105,9 @@ describe('Feature repository reacts to incoming event lists as expected', () => 
     repo.getFeatureState('peach').addListener(() => triggerPeach ++);
 
     const features = [
-      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.NUMBER, value: 7.2}),
-      new FeatureState({id: '2', key: 'pear', version: 1, type: FeatureValueType.NUMBER, value: 15}),
-      new FeatureState({id: '3', key: 'peach', version: 1, type: FeatureValueType.NUMBER, value: 56534.23}),
+      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.Number, value: 7.2}),
+      new FeatureState({id: '2', key: 'pear', version: 1, type: FeatureValueType.Number, value: 15}),
+      new FeatureState({id: '3', key: 'peach', version: 1, type: FeatureValueType.Number, value: 56534.23}),
     ];
 
     repo.notify(SSEResultState.Features, features);
@@ -120,9 +120,9 @@ describe('Feature repository reacts to incoming event lists as expected', () => 
     expect(repo.getFeatureState('peach').getNumber()).to.eq(56534.23);
 
     const features2 = [
-      new FeatureState({id: '1', key: 'banana', version: 2, type: FeatureValueType.NUMBER, value: 16}),
-      new FeatureState({id: '2', key: 'pear', version: 1, type: FeatureValueType.NUMBER, value: 15}),
-      new FeatureState({id: '3', key: 'peach', version: 2, type: FeatureValueType.NUMBER, value: 56534.23}),
+      new FeatureState({id: '1', key: 'banana', version: 2, type: FeatureValueType.Number, value: 16}),
+      new FeatureState({id: '2', key: 'pear', version: 1, type: FeatureValueType.Number, value: 15}),
+      new FeatureState({id: '3', key: 'peach', version: 2, type: FeatureValueType.Number, value: 56534.23}),
     ];
 
     // only banana should trigger as it has changed its value and its version
@@ -146,9 +146,9 @@ describe('Feature repository reacts to incoming event lists as expected', () => 
     repo.getFeatureState('peach').addListener(() => triggerPeach ++);
 
     const features = [
-      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.STRING, value: '7.2'}),
-      new FeatureState({id: '2', key: 'pear', version: 1, type: FeatureValueType.STRING, value: '15'}),
-      new FeatureState({id: '3', key: 'peach', version: 1, type: FeatureValueType.STRING, value: '56534.23'}),
+      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.String, value: '7.2'}),
+      new FeatureState({id: '2', key: 'pear', version: 1, type: FeatureValueType.String, value: '15'}),
+      new FeatureState({id: '3', key: 'peach', version: 1, type: FeatureValueType.String, value: '56534.23'}),
     ];
 
     repo.notify(SSEResultState.Features, features);
@@ -161,9 +161,9 @@ describe('Feature repository reacts to incoming event lists as expected', () => 
     expect(repo.getFeatureState('peach').getString()).to.eq('56534.23');
 
     const features2 = [
-      new FeatureState({id: '1', key: 'banana', version: 2, type: FeatureValueType.STRING, value: '16'}),
-      new FeatureState({id: '2', key: 'pear', version: 1, type: FeatureValueType.STRING, value: '15'}),
-      new FeatureState({id: '3', key: 'peach', version: 2, type: FeatureValueType.STRING, value: '56534.23'}),
+      new FeatureState({id: '1', key: 'banana', version: 2, type: FeatureValueType.String, value: '16'}),
+      new FeatureState({id: '2', key: 'pear', version: 1, type: FeatureValueType.String, value: '15'}),
+      new FeatureState({id: '3', key: 'peach', version: 2, type: FeatureValueType.String, value: '56534.23'}),
     ];
 
     // only banana should trigger as it has changed its value and its version
@@ -187,9 +187,9 @@ describe('Feature repository reacts to incoming event lists as expected', () => 
     repo.getFeatureState('peach').addListener(() => triggerPeach ++);
 
     const features = [
-      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.JSON, value: '{}'}),
-      new FeatureState({id: '2', key: 'pear', version: 1, type: FeatureValueType.JSON, value: '"nashi"'}),
-      new FeatureState({id: '3', key: 'peach', version: 1, type: FeatureValueType.JSON, value: '{"variety": "golden queen"}'}),
+      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.Json, value: '{}'}),
+      new FeatureState({id: '2', key: 'pear', version: 1, type: FeatureValueType.Json, value: '"nashi"'}),
+      new FeatureState({id: '3', key: 'peach', version: 1, type: FeatureValueType.Json, value: '{"variety": "golden queen"}'}),
     ];
 
     repo.notify(SSEResultState.Features, features);
@@ -202,9 +202,9 @@ describe('Feature repository reacts to incoming event lists as expected', () => 
     expect(repo.getFeatureState('peach').getRawJson()).to.eq('{"variety": "golden queen"}');
 
     const features2 = [
-      new FeatureState({id: '1', key: 'banana', version: 2, type: FeatureValueType.JSON, value: '"yellow"'}),
-      new FeatureState({id: '2', key: 'pear', version: 1, type: FeatureValueType.JSON, value: '"nashi"'}),
-      new FeatureState({id: '3', key: 'peach', version: 2, type: FeatureValueType.JSON, value: '{"variety": "golden queen"}'}),
+      new FeatureState({id: '1', key: 'banana', version: 2, type: FeatureValueType.Json, value: '"yellow"'}),
+      new FeatureState({id: '2', key: 'pear', version: 1, type: FeatureValueType.Json, value: '"nashi"'}),
+      new FeatureState({id: '3', key: 'peach', version: 2, type: FeatureValueType.Json, value: '{"variety": "golden queen"}'}),
     ];
 
     // only banana should trigger as it has changed its value and its version

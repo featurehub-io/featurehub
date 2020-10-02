@@ -182,7 +182,7 @@ or just one.
 This is when you ask the repository for a specific feature and for its state. Something like:
 
 ```typescript
-if (featureHubRepository.getFeatureState('FEATURE_X').getBoolean()) {
+if (featureHubRepository.feature('FEATURE_X').getBoolean()) {
   // do something
 }
 ``` 
@@ -196,7 +196,7 @@ as you like.
 This would look something like:
 
 ```typescript
-featureHubRepository.getFeatureState('FEATURE_X').addListener((fs: FeatureStateHolder) => {
+featureHubRepository.feature('FEATURE_X').addListener((fs: FeatureStateHolder) => {
   console.log(fs.getKey(), 'is', fs.getBoolean());
 });
 ```
@@ -427,7 +427,7 @@ collector.cid = 'some-value'; // you can set it here
 const data = new Map<string, string>();
 data.set('cid', 'some-cid');
 
-featureHubRepository.logAnalyticsEvent('event-name', other: data)
+featureHubRepository.logAnalyticsEvent('event-name', other: data);
 ```
 
 4) For a NODE server, you can set as an environment variable named `GA_CID`.
@@ -440,7 +440,157 @@ As you can see from above (in option 3), to log an event, you simply tell the re
 log an analytics event. It will take care of bundling everything up, passing it off to the
 Google Analytics collector which will post it off.
 
-Read more on how to interpret events in Google Analytics [here](https://docs.featurehub.io/analytics.html) 
+Read more on how to interpret events in Google Analytics [here](https://docs.featurehub.io/analytics.html)
+
+## Feature consistency between client and server
+
+There are a number of use cases where it makes sense that the features the client sees should be the same
+as the features that the server sees. In any environment however where both the server and client are pulling (or
+getting pushed) their features from the FeatureHub servers, both should update at the same time. 
+
+With the _Catch and Release_ functionality however, the client may choose to stash those incoming changes and not 
+apply them, but the _server will not know this_. We need a method of allowing the client to tell the server
+what features it is using so it knows which ones to apply. This actually becomes more interesting when you consider
+server to server communication down the line as well, where you ideally wish to pass the feature state through
+http and event-streaming layers if possible. 
+
+The second use case is when doing any kind of testing, being able to indicate on each request in a Mocha / Jest / Cucumber
+test that a feature is in a particular state lets you _parallelize_ your testing. If you have to set the entire
+environment to a particular state, you can only run tests that expect those features in those states and you can very
+quickly get sufficiently complex in your feature set that testing becomes a nightmare.
+
+There is an important caveat to this. You can only send features that exist and _are not locked_. Locked features 
+cannot be overridden. The reason for this is that in "catch and release" mode, you may wish to keep overriding features
+available even in your production application. However, this could lead to hackers trying to turn on un-ready features
+so forcing features to be locked and false is an important security safeguard.
+
+### W3C Baggage Standard
+
+In FeatureHub we are using the [W3C Baggage standard](https://w3c.github.io/baggage/) to pass the feature states. 
+This concept is not new, it has been used in tracing stacks
+for a long time, and forms a crucial part of the CNCF's OpenTelemetry project. At time of writing the header name and
+format is close to agreement, such that several significant open source projects have decided to use it. 
+We have decided to use it as well. The benefit will be in a cloud native environment, more tools will recognize and
+understand this header and you will end up getting a lot of extra value for having used it (such as distributed
+logging, tracing and diagnostics).
+
+It essentially lets you send key/value pairs between servers using any transport mechanism and there is a guarantee
+that servers will pass that header on down the wire.
+
+A caveat is that you need to make sure that the header `Baggage` is added to your allowed CORS headers on your
+server.
+
+### Using in a browser
+
+In a browser, we expect that you will want to make sure that the server knows what features you are using. This is 
+an example using Axios:
+
+```typescript 
+import {
+  featureHubRepository,
+  w3cBaggageHeader
+} from 'featurehub-repository/dist';
+
+globalAxios.interceptors.request.use(function (config: AxiosRequestConfig) {
+  const baggage = w3cBaggageHeader({repo: featureHubRepository, header: config.headers.baggage});
+  if (baggage) {
+    config.headers.baggage = baggage;
+  }
+  return config;
+}, function (error: any) {
+  // Do something with request error
+  return Promise.reject(error);
+});
+```     
+
+This just ensures that with every outgoing request, we take any existing `Baggage` header you may have you tell the 
+w3cBaggageHeader method what your repository
+is and what the existing baggage header is. Note we give you the option to pass the repository, if you are using
+the default one, you can leave the repo out. The above example could just be:
+
+```typescript
+  const baggage = w3cBaggageHeader({});
+```  
+
+### Using in a test API
+
+Another option lets you override the values, not even requiring a repository on your side. This is useful inside
+an API oriented test where you want to define a test that specifies a particular feature value or values. To support this,
+the other way of calling the `w3cBaggageHeader` method is to pass a name of keys and their values (which may be strings or 
+undefined - for non flag values, undefined for a flag value is false). So
+
+```typescript
+  const baggage = w3cBaggageHeader({values: new Map([['FEATURE_FLAG', 'true'], ['FEATURE_STRING', undefined]])});
+```  
+
+Will generate a baggage header that your server will understand as overriding those values. 
+
+### User testing in a browser
+
+Sometimes it can be useful to allow the user to be able to turn features on and off, something a manual tester
+or someone testing some functionality in a UAT environment. Being able to do this for _just them_ is particularly
+useful. FeatureHub allows you to do this by the concept of a User Repository, where the normal feature repository
+for an environment is wrapped and any overridden values are stored in local storage, so when you move from page 
+to page (if using page based or a Single-Page-App), as long as the repository you use is the User Repository, 
+it will honour the values you have set and pass them using the Baggage headers.
+
+
+TODO: example after writing it
+
+### Features in a Web 1.0 application (form post)  
+
+
+
+### Using on the server (nodejs)
+
+Both express and restify use the concept of middleware - where you can give it a function that will be passed the
+request, response and a next function that needs to be called. We take advantage of this to extract the baggage header,
+determine if it has a featurehub set of overrides in it and create a `FeatureHubRepository` that holds onto these
+overrides but keeps the normal repository as a fallback. It _overlays_ the normal repository with the overridden
+values (unless they are locked) and puts this overlay repository into the request.
+
+To use it in either express or restify, you need to `use` it.
+
+```typescript
+import {featureHubRepository, featurehubMiddleware} from 'featurehub-repository/dist';
+
+api.use(featurehubMiddleware(featureHubRepository));
+```
+
+this means when you are processing your request you will be able to do things like:
+
+```typescript
+if (req.repo.feature('FEATURE_TITLE_TO_UPPERCASE').getBoolean()) {
+}
+```
+
+Note the global `featureHubRepository` will always be the main repository and will not be contextual per request. 
+
+If you log an event against the analytics provider, we will preserve your per-request overrides as well so they will
+get logged correctly. e.g.
+
+```typescript
+req.repo.logAnalyticsEvent('todo-add', new Map([['gaValue', '10']]));
+``` 
+
+Will use the overlay values by preference over the ones in the repository.
+
+### Node-Node
+
+If you are making a call from one node server to another FeatureHub integrated server (in any supported language)
+where Baggage is wired in, you can use the per request repository to pass to the `w3BaggageContext` method.
+
+This means you can go:
+
+```typescript
+const baggage = w3cBaggageHeader({repo: req.repo, header: req.header('baggage')});
+```
+
+And if defined, add the baggage header to your outgoing request.
+
+### The file repository
+
+
 
 ## FeatureHub Test API
 

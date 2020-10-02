@@ -15,7 +15,7 @@ describe('if a feature is deleted it becomes undefined', () => {
 
   it('should allow us to delete a feature', () => {
     const features = [
-      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.BOOLEAN, value: true}),
+      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.Boolean, value: true}),
     ];
 
     repo.notify(SSEResultState.Features, features);
@@ -30,7 +30,7 @@ describe('if a feature is deleted it becomes undefined', () => {
   it('should ignore deleting a feature that doesnt exist', () => {
     repo.notify(SSEResultState.DeleteFeature,
       new FeatureState(
-        {id: '1', key: 'banana', version: 1, type: FeatureValueType.BOOLEAN, value: true})
+        {id: '1', key: 'banana', version: 1, type: FeatureValueType.Boolean, value: true})
     );
 
     // tslint:disable-next-line:no-unused-expression

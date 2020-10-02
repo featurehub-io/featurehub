@@ -21,7 +21,7 @@ describe('Readyness listeners should fire on appropriate events', () => {
     expect(readynessTrigger).to.eq(1);
 
     const features = [
-      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.BOOLEAN, value: true}),
+      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.Boolean, value: true}),
     ];
 
     repo.notify(SSEResultState.Features, features);
@@ -44,7 +44,7 @@ describe('Readyness listeners should fire on appropriate events', () => {
       return readynessTrigger++;
     });
     const features = [
-      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.BOOLEAN, value: true}),
+      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.Boolean, value: true}),
     ];
 
     repo.notify(SSEResultState.Features, features);
@@ -55,5 +55,3 @@ describe('Readyness listeners should fire on appropriate events', () => {
 
   });
 });
-
-

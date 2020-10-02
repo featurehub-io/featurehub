@@ -314,10 +314,14 @@ class ClientFeatureRepository {
     _features.remove(feature.key);
   }
 
-  /// after this this repository is not usable, create a new one.
-  void shutdown() {
+  /// call this to clear the repository if you are swapping environments
+  void shutdownFeatures() {
     _features.values.forEach((f) => f.shutdown());
     _features.clear();
+  }
+
+  /// after this this repository is not usable, create a new one.
+  void shutdown() {
     _readynessListeners.close();
     _newFeatureStateAvailableListeners.close();
     _analyticsCollectors.close();
