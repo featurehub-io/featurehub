@@ -25,6 +25,11 @@ namespace FeatureHubSDK
     Failed
   }
 
+  public interface AnalyticsCollector
+  {
+    void LogEvent(string action, Dictionary<string, string> other, List<IFeatureStateHolder> featureStates);
+  }
+
   public interface IFeatureStateHolder
   {
     /// <summary>
@@ -210,6 +215,15 @@ namespace FeatureHubSDK
       }
     }
 
+    public IFeatureStateHolder Copy()
+    {
+      var fs = new FeatureStateBaseHolder(null);
+
+      fs.FeatureState = this._feature;
+
+      return fs;
+    }
+
     public bool Exists => _value != null;
 
     public bool? BooleanValue => _feature?.Type == FeatureValueType.BOOLEAN ? (bool?) Convert.ToBoolean(_value) : null;
@@ -288,6 +302,7 @@ namespace FeatureHubSDK
     private Readyness _readyness = Readyness.NotReady;
     public event EventHandler<Readyness> ReadynessHandler;
     public event EventHandler<FeatureHubRepository> NewFeatureHandler;
+    private IList<AnalyticsCollector> _analyticsCollectors = new List<AnalyticsCollector>();
 
     public Readyness Readyness => _readyness;
 
@@ -389,6 +404,30 @@ namespace FeatureHubSDK
       if (_features.Remove(fs.Key))
       {
         TriggerNewUpdate();
+      }
+    }
+
+    public void LogAnalyticEvent(string action)
+    {
+      LogAnalyticEvent(action, new Dictionary<string, string>());
+    }
+
+    public void LogAnalyticEvent(string action, Dictionary<string, string> other)
+    {
+      // take a snapshot copy
+      var featureCopies =
+         _features.Values.Where((f) => f.Exists).Select(f => f.Copy()).ToList();
+
+      foreach (var analyticsCollector in _analyticsCollectors)
+      {
+        try
+        {
+          analyticsCollector.LogEvent(action, other, featureCopies);
+        }
+        catch (Exception e)
+        {
+          log.Error("Failed to log analytic event", e);
+        }
       }
     }
 
