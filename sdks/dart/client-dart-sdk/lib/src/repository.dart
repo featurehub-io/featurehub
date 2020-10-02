@@ -274,7 +274,7 @@ class ClientFeatureRepository {
     return getFeatureState(key);
   }
 
-  bool getBool(String key) {
+  bool getFlag(String key) {
     return feature(key).booleanValue;
   }
 

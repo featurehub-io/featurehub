@@ -56,7 +56,7 @@ void main() {
 
   test('boolean values work as expected', () {
     repo.notify(SSEResultState.features, _initialFeatures(value: true));
-    expect(repo.getBool('1'), equals(true));
+    expect(repo.getFlag('1'), equals(true));
     expect(repo.exists('1'), equals(true));
   });
 
@@ -65,7 +65,7 @@ void main() {
         _initialFeatures(value: 26.3, type: FeatureValueType.NUMBER));
     expect(repo.getNumber('1'), equals(26.3));
     expect(repo.getString('1'), isNull);
-    expect(repo.getBool('1'), isNull);
+    expect(repo.getFlag('1'), isNull);
     expect(repo.exists('1'), equals(true));
   });
 
@@ -76,7 +76,7 @@ void main() {
         _initialFeatures(value: 'друг Тима', type: FeatureValueType.STRING));
     expect(repo.getString('1'), equals('друг Тима'));
     expect(repo.getNumber('1'), isNull);
-    expect(repo.getBool('1'), isNull);
+    expect(repo.getFlag('1'), isNull);
     expect(repo.exists('1'), equals(true));
   });
 
@@ -85,7 +85,7 @@ void main() {
         _initialFeatures(value: '{"a":"b"}', type: FeatureValueType.JSON));
     expect(repo.getJson('1'), equals({"a": "b"}));
     expect(repo.getNumber('1'), isNull);
-    expect(repo.getBool('1'), isNull);
+    expect(repo.getFlag('1'), isNull);
     expect(repo.getString('1'), '{"a":"b"}');
     expect(repo.exists('1'), equals(true));
   });
@@ -262,7 +262,7 @@ void main() {
     repo.notify(SSEResultState.feature, data.toJson());
 
     expect(repo.getFeatureState('1').booleanValue, equals(false));
-    expect(repo.getBool('1'), equals(false));
+    expect(repo.getFlag('1'), equals(false));
     expect(repo.getFeatureState('1').type, equals(FeatureValueType.BOOLEAN));
     expect(repo.getFeatureState('1').version, equals(1));
     repo.release();
