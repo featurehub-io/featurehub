@@ -37,7 +37,7 @@ void main() async {
 
   repo.newFeatureStateAvailableStream.listen((event) {
     repo.availableFeatures.forEach((key) {
-      final feature = repo.getFeatureState(key);
+      final feature = repo.feature(key);
       // ignore: avoid_print
       print(
           'feature ${key} is of type ${feature.type} and has the value ${feature.value}');

@@ -94,7 +94,7 @@ class RepositoryLoaderBloc extends Bloc {
   void dispose() {}
 
   DisplayValue getDisplayValue(String keyField, {bool nullReturn = false}) {
-    final fs = _repository.getFeatureState(keyField);
+    final fs = _repository.feature(keyField);
 
     final nullVal = html.window.localStorage['fh_null_$keyField'];
     if (nullVal != null) {
@@ -126,7 +126,7 @@ class RepositoryLoaderBloc extends Bloc {
   }
 
   void setValue(String keyField, dynamic replacement) {
-    final fs = _repository.getFeatureState(keyField);
+    final fs = _repository.feature(keyField);
     if (fs.value == replacement) {
       html.window.localStorage.remove('fh_value_$keyField');
       html.window.localStorage.remove('fh_null_$keyField');

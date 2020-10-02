@@ -270,6 +270,30 @@ class ClientFeatureRepository {
         key, () => _FeatureStateBaseHolder(null, _featureValueInterceptors));
   }
 
+  FeatureStateHolder feature(String key) {
+    return getFeatureState(key);
+  }
+
+  bool getBool(String key) {
+    return feature(key).booleanValue;
+  }
+
+  num getNumber(String key) {
+    return feature(key).numberValue;
+  }
+
+  String getString(String key) {
+    return feature(key).stringValue;
+  }
+
+  dynamic getJson(String key) {
+    return feature(key).jsonValue;
+  }
+
+  bool exists(String key) {
+    return feature(key).exists;
+  }
+
   bool get catchAndReleaseMode => _catchAndReleaseMode;
   set catchAndReleaseMode(bool val) => _catchAndReleaseMode = val;
   Readyness get readyness => _readynessState;
@@ -325,5 +349,6 @@ class ClientFeatureRepository {
     _readynessListeners.close();
     _newFeatureStateAvailableListeners.close();
     _analyticsCollectors.close();
+    shutdownFeatures();
   }
 }
