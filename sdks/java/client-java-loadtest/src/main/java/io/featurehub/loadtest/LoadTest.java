@@ -10,6 +10,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.featurehub.client.AnalyticsCollector;
 import io.featurehub.client.ClientContext;
 import io.featurehub.client.ClientContextRepository;
+import io.featurehub.client.Feature;
 import io.featurehub.client.FeatureRepository;
 import io.featurehub.client.FeatureStateHolder;
 import io.featurehub.client.FeatureValueInterceptor;
@@ -22,6 +23,7 @@ import org.codehaus.groovy.runtime.metaclass.ConcurrentReaderHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -123,6 +125,81 @@ class InternetFeatureTrackerRepository implements FeatureRepository {
   @Override
   public FeatureStateHolder getFeatureState(String key) {
     return null;
+  }
+
+  @Override
+  public FeatureStateHolder getFeatureState(Feature feature) {
+    return null;
+  }
+
+  @Override
+  public boolean getFlag(String key) {
+    return false;
+  }
+
+  @Override
+  public boolean getFlag(Feature feature) {
+    return false;
+  }
+
+  @Override
+  public String getString(String key) {
+    return null;
+  }
+
+  @Override
+  public String getString(Feature feature) {
+    return null;
+  }
+
+  @Override
+  public BigDecimal getNumber(String key) {
+    return null;
+  }
+
+  @Override
+  public BigDecimal getNumber(Feature feature) {
+    return null;
+  }
+
+  @Override
+  public <T> T getJson(String key, Class<T> type) {
+    return null;
+  }
+
+  @Override
+  public <T> T getJson(Feature feature, Class<T> type) {
+    return null;
+  }
+
+  @Override
+  public String getRawJson(String key) {
+    return null;
+  }
+
+  @Override
+  public String getRawJson(Feature feature) {
+    return null;
+  }
+
+  @Override
+  public boolean isSet(String key) {
+    return false;
+  }
+
+  @Override
+  public boolean isSet(Feature feature) {
+    return false;
+  }
+
+  @Override
+  public boolean exists(String key) {
+    return false;
+  }
+
+  @Override
+  public boolean exists(Feature feature) {
+    return false;
   }
 
   @Override

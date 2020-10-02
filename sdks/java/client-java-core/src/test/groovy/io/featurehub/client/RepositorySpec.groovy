@@ -11,6 +11,9 @@ import spock.lang.Specification
 
 import java.util.concurrent.Executor
 
+
+enum Fruit implements Feature { banana, peach, peach_quantity, peach_config, dragonfruit }
+
 class RepositorySpec extends Specification {
   FeatureRepository repo
 
@@ -41,8 +44,8 @@ class RepositorySpec extends Specification {
       def features = [
         new FeatureState().id('1').key('banana').version(1L).value(false).type(FeatureValueType.BOOLEAN),
         new FeatureState().id('2').key('peach').version(1L).value("orange").type(FeatureValueType.STRING),
-        new FeatureState().id('3').key('peach-quantity').version(1L).value(17).type(FeatureValueType.NUMBER),
-        new FeatureState().id('4').key('peach-config').version(1L).value("{}").type(FeatureValueType.JSON),
+        new FeatureState().id('3').key('peach_quantity').version(1L).value(17).type(FeatureValueType.NUMBER),
+        new FeatureState().id('4').key('peach_config').version(1L).value("{}").type(FeatureValueType.JSON),
       ]
     and: "we have a readyness listener"
       def readynessListener = Mock(ReadynessListener)
@@ -53,26 +56,44 @@ class RepositorySpec extends Specification {
       1 * readynessListener.notify(Readyness.Ready)
       !repo.getFeatureState('banana').boolean
       repo.getFeatureState('banana').key == 'banana'
+      !repo.getFlag('banana')
+      !repo.getFlag(Fruit.banana)
+      repo.isSet('banana')
+      repo.isSet(Fruit.banana)
+      repo.exists('banana')
+      repo.exists(Fruit.banana)
+      !repo.exists('dragonfruit')
+      !repo.exists(Fruit.dragonfruit)
       repo.getFeatureState('banana').rawJson == null
       repo.getFeatureState('banana').string == null
       repo.getFeatureState('banana').number == null
       repo.getFeatureState('banana').number == null
       repo.getFeatureState('banana').set
       repo.getFeatureState('peach').string == 'orange'
+      repo.getString('peach') == 'orange'
+      repo.isSet('peach')
+      repo.exists('peach')
+      repo.getString(Fruit.peach) == 'orange'
+      repo.isSet(Fruit.peach)
+      repo.exists(Fruit.peach)
       repo.getFeatureState('peach').key == 'peach'
       repo.getFeatureState('peach').number == null
       repo.getFeatureState('peach').rawJson == null
       repo.getFeatureState('peach').boolean == null
-      repo.getFeatureState('peach-quantity').number == 17
-      repo.getFeatureState('peach-quantity').rawJson == null
-      repo.getFeatureState('peach-quantity').boolean == null
-      repo.getFeatureState('peach-quantity').string == null
-      repo.getFeatureState('peach-quantity').key == 'peach-quantity'
-      repo.getFeatureState('peach-config').rawJson == '{}'
-      repo.getFeatureState('peach-config').string == null
-      repo.getFeatureState('peach-config').number == null
-      repo.getFeatureState('peach-config').boolean == null
-      repo.getFeatureState('peach-config').key == 'peach-config'
+      repo.getFeatureState('peach_quantity').number == 17
+      repo.getNumber('peach_quantity') == 17
+      repo.getNumber(Fruit.peach_quantity) == 17
+      repo.getFeatureState('peach_quantity').rawJson == null
+      repo.getFeatureState('peach_quantity').boolean == null
+      repo.getFeatureState('peach_quantity').string == null
+      repo.getFeatureState('peach_quantity').key == 'peach_quantity'
+      repo.getRawJson('peach_config') == '{}'
+      repo.getRawJson(Fruit.peach_config) == '{}'
+      repo.getFeatureState('peach_config').rawJson == '{}'
+      repo.getFeatureState('peach_config').string == null
+      repo.getFeatureState('peach_config').number == null
+      repo.getFeatureState('peach_config').boolean == null
+      repo.getFeatureState('peach_config').key == 'peach_config'
   }
 
   def "i can make all features available directly"() {
@@ -134,6 +155,7 @@ class RepositorySpec extends Specification {
     then:
       f.boolean
       !repo.getFeatureState('banana').set
+      !repo.isSet('banana')
   }
 
 
@@ -142,8 +164,8 @@ class RepositorySpec extends Specification {
       def features = [
         new FeatureState().id('1').key('banana').version(1L).value(false).type(FeatureValueType.BOOLEAN),
         new FeatureState().id('2').key('peach').version(1L).value("orange").type(FeatureValueType.STRING),
-        new FeatureState().id('3').key('peach-quantity').version(1L).value(17).type(FeatureValueType.NUMBER),
-        new FeatureState().id('4').key('peach-config').version(1L).value("{}").type(FeatureValueType.JSON),
+        new FeatureState().id('3').key('peach_quantity').version(1L).value(17).type(FeatureValueType.NUMBER),
+        new FeatureState().id('4').key('peach_config').version(1L).value("{}").type(FeatureValueType.JSON),
       ]
     and: "i redefine the executor in the repository so i can prevent the event logging and update first"
       List<Runnable> commands = []
@@ -187,6 +209,8 @@ class RepositorySpec extends Specification {
     then: 'the json object is there and deserialises'
       repo.getFeatureState('banana').getJson(BananaSample) instanceof BananaSample
       repo.getFeatureState('banana').getJson(BananaSample).sample == 12
+      repo.getJson('banana', BananaSample).sample == 12
+      repo.getJson(Fruit.banana, BananaSample).sample == 12
   }
 
   def "failure changes readyness to failure"() {
@@ -226,8 +250,8 @@ class RepositorySpec extends Specification {
       def features = [
         new FeatureState().id('1').key('banana').version(1L).value(false).type(FeatureValueType.BOOLEAN),
         new FeatureState().id('2').key('peach').version(1L).value("orange").type(FeatureValueType.STRING),
-        new FeatureState().id('3').key('peach-quantity').version(1L).value(17).type(FeatureValueType.NUMBER),
-        new FeatureState().id('4').key('peach-config').version(1L).value("{}").type(FeatureValueType.JSON),
+        new FeatureState().id('3').key('peach_quantity').version(1L).value(17).type(FeatureValueType.NUMBER),
+        new FeatureState().id('4').key('peach_config').version(1L).value("{}").type(FeatureValueType.JSON),
       ]
     and: "I listen for updates for those features"
       def updateListener = []

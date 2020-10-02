@@ -2,6 +2,8 @@ package io.featurehub.client;
 
 import java.util.Map;
 
+// use the repository directly
+@Deprecated
 public interface FeatureContext {
   /**
    * Determine if a feature flag is set (or overridden either by local settings or
@@ -10,6 +12,7 @@ public interface FeatureContext {
    * @param feature - the feature we are using
    * @return - true if the feature is active. Does not determine if the feature even exists in the back-end system
    */
+  @Deprecated
   boolean isActive(Feature feature);
 
   /**
@@ -20,6 +23,7 @@ public interface FeatureContext {
    * @return - true if the feature exists. If we haven't received a response yet from the back-end due to communication
    * issues this will return false.
    */
+  @Deprecated
   boolean exists(Feature feature);
 
   /**
@@ -29,6 +33,7 @@ public interface FeatureContext {
    * @param feature - the feature we are checking for
    * @return - true if the value is not null
    */
+  @Deprecated
   boolean isSet(Feature feature);
 
   /**
@@ -37,6 +42,7 @@ public interface FeatureContext {
    * @param feature         - feature name
    * @param featureListener - a notify listener that returns the FeatureStateHolder
    */
+  @Deprecated
   void addListener(Feature feature, FeatureListener featureListener);
 
   /**
@@ -46,6 +52,7 @@ public interface FeatureContext {
    * @param action - passed directly as a name or key
    * @param other  - any other data (or null)
    */
+  @Deprecated
   void logAnalyticsEvent(String action, Map<String, String> other);
 
   /**
@@ -54,5 +61,6 @@ public interface FeatureContext {
    *
    * @param action - passed directly as a name or key
    */
+  @Deprecated
   void logAnalyticsEvent(String action);
 }

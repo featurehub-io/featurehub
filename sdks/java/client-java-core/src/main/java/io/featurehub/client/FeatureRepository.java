@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.featurehub.sse.model.FeatureState;
 import io.featurehub.sse.model.SSEResultState;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -25,7 +26,7 @@ public interface FeatureRepository {
 
 
   /**
-   * Update the feature states and force them to be updated, ignoring their versin numbers.
+   * Update the feature states and force them to be updated, ignoring their version numbers.
    * This still may not cause events to be triggered as event triggers are done on actual value changes.
    *
    * @param states - the list of feature states
@@ -49,12 +50,80 @@ public interface FeatureRepository {
    */
 
   FeatureStateHolder getFeatureState(String key);
+  FeatureStateHolder getFeatureState(Feature feature);
+
+  /**
+   * The value of the flag/boolean feature.
+   *
+   * @param key - the feature key
+   * @return - true or false depending on the flag. If the feature doesn't exist, it will return false.
+   */
+  boolean getFlag(String key);
+  boolean getFlag(Feature feature);
+
+  /**
+   * The value of the string feature.
+   *
+   * @param key - the feature key
+   * @return - the value of the string feature or null if it is unset or doesn't exist.
+   */
+  String getString(String key);
+  String getString(Feature feature);
+
+
+
+  /**
+   * The value of the number feature.
+   *
+   * @param key - the feature key
+   * @return - the value of the number feature or null if it is unset or doesn't exist.
+   */
+  BigDecimal getNumber(String key);
+  BigDecimal getNumber(Feature feature);
+
+  /**
+   * The value of the json feature decoded into the correct class (if possible).
+   *
+   * @param key - the feature key
+   * @return - the value of the json feature or null if it is unset or doesn't exist. If it cannot be decoded then it
+   * may throw an exception.
+   */
+  <T> T getJson(String key, Class<T> type);
+  <T> T getJson(Feature feature, Class<T> type);
+
+  /**
+   * The value of the json feature in string form.
+   *
+   * @param key - the feature key
+   * @return - the value of the json feature or null if it is unset or doesn't exist.
+   */
+  String getRawJson(String key);
+  String getRawJson(Feature feature);
+
+  /**
+   * Returns whether there is a value associated with this feature. Boolean features only return false if there
+   * is in fact no feature.
+   *
+   * @param key - the feature key
+   * @return - true or false
+   */
+  boolean isSet(String key);
+  boolean isSet(Feature feature);
+
+  /**
+   * Returns whether this feature does in fact not exist.
+   *
+   * @param key - the feature key
+   * @return - true or false
+   */
+  boolean exists(String key);
+  boolean exists(Feature feature);
 
   /**
    * Log an analytics event against the analytics collectors.
    *
-   * @param action
-   * @param other
+   * @param action - the action you wish to log with your analytics provider
+   * @param other - any other data
    */
   FeatureRepository logAnalyticsEvent(String action, Map<String, String> other);
 
