@@ -134,6 +134,8 @@ describe('Feature repository reacts to incoming event lists as expected', () => 
     expect(repo.getFeatureState('banana').getNumber()).to.eq(16);
     expect(repo.getFeatureState('pear').getNumber()).to.eq(15);
     expect(repo.getFeatureState('peach').getNumber()).to.eq(56534.23);
+    expect(repo.getNumber('pear')).to.eq(15);
+    expect(repo.isSet('pear')).to.eq(true);
   });
 
   it('should accept a list of string features sets and triggers updates and stores values as expect', () => {
@@ -175,6 +177,7 @@ describe('Feature repository reacts to incoming event lists as expected', () => 
     expect(repo.getFeatureState('banana').getString()).to.eq('16');
     expect(repo.getFeatureState('pear').getString()).to.eq('15');
     expect(repo.getFeatureState('peach').getString()).to.eq('56534.23');
+    expect(repo.getString('peach')).to.eq('56534.23');
   });
 
   it('should accept a list of json features sets and triggers updates and stores values as expect', () => {
@@ -216,5 +219,7 @@ describe('Feature repository reacts to incoming event lists as expected', () => 
     expect(repo.getFeatureState('banana').getRawJson()).to.eq('"yellow"');
     expect(repo.getFeatureState('pear').getRawJson()).to.eq('"nashi"');
     expect(repo.getFeatureState('peach').getRawJson()).to.eq('{"variety": "golden queen"}');
+    expect(repo.getJson('pear')).to.eq('"nashi"');
+    expect(repo.isSet('pear')).to.eq(true);
   });
 });

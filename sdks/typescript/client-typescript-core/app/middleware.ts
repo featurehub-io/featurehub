@@ -29,6 +29,10 @@ class BaggageHolder implements FeatureStateHolder {
     return this.existing.getType() === FeatureValueType.Boolean ? ('true' === this.value) : undefined;
   }
 
+  getFlag(): boolean | undefined {
+    return this.getBoolean();
+  }
+
   getKey(): string | undefined {
     return this.existing.getKey();
   }
@@ -99,6 +103,26 @@ class BaggageRepository implements FeatureHubRepository {
   constructor(repo: FeatureHubRepository, baggage: Map<string, string>) {
     this.repo = repo;
     this.baggage = baggage;
+  }
+
+  public getFlag(key: string): boolean | undefined {
+    return this.feature(key).getFlag();
+  }
+
+  public getString(key: string): string | undefined {
+    return this.feature(key).getString();
+  }
+
+  public getJson(key: string): string | undefined {
+    return this.feature(key).getRawJson();
+  }
+
+  public getNumber(key: string): number | undefined {
+    return this.feature(key).getNumber();
+  }
+
+  public isSet(key: string): boolean {
+    return this.feature(key).isSet();
   }
 
   get readyness(): Readyness {

@@ -39,6 +39,10 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
     return undefined;
   }
 
+  getFlag(): boolean | undefined {
+    return this.getBoolean();
+  }
+
   getKey(): string | undefined {
     return this.featureState === undefined ? undefined : this.featureState.key;
   }
