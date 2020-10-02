@@ -12,13 +12,18 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageIconUrl>https://docs.featurehub.io/favicon.ico</PackageIconUrl>
         <PackageIcon>FeatureHub-icon.png</PackageIcon>
+        <Description>.Net SDK implementation for FeatureHub.io - Cloud Native platform to help software teams manage their features, from feature flags (also known as feature toggles) to A/B experiments and remote or centralised configuration.</Description>
+        <RepositoryUrl>https://github.com/featurehub-io/featurehub/tree/master/sdks/client-csharp</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>FeatureFlags Features Toggles CloudNative</PackageTags>
+        <PackageReleaseNotes>Initial 1.0.0 release</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="LaunchDarkly.EventSource" Version="3.3.2" />
       <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
       <PackageReference Include="RestSharp" Version="106.10.1" />
-      <None Include="FeatureHub-icon.png" Pack="true" PackagePath="\"/>
+      <None Include="FeatureHub-icon.png" Pack="true" PackagePath="\" />
     </ItemGroup>
 
 </Project>
