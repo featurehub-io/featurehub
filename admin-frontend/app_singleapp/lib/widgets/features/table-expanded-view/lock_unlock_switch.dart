@@ -1,6 +1,7 @@
 import 'package:app_singleapp/widgets/features/feature_dashboard_constants.dart';
 import 'package:app_singleapp/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
 
 class LockUnlockSwitch extends StatefulWidget {
@@ -71,16 +72,25 @@ class _LockUnlockIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 36,
-      height: 36,
-      child: Material(
-        shape: CircleBorder(),
-        child: IconButton(
-            icon: Icon(lock ? Icons.lock_outline : Icons.lock_open,
-                size: 20, color: lock ? Colors.red : Colors.green),
-            onPressed: onPressed),
-      ),
+    return Row(
+      children: [
+        Container(
+          width: 36,
+          height: 36,
+          child: Material(
+            shape: CircleBorder(),
+            child: IconButton(
+              mouseCursor: onPressed != null
+                  ? SystemMouseCursors.click
+                  : null,
+              tooltip: onPressed != null ? (lock ? 'Unlock to edit feature value' : 'Lock feature value'): null,
+                icon: Icon(lock ? Icons.lock_outline : Icons.lock_open,
+                    size: 20, color: lock ? Colors.red : Colors.green),
+                onPressed: onPressed),
+          ),
+        ),
+        Text(lock ? 'Locked' : 'Unlocked', style: Theme.of(context).textTheme.caption,)
+      ],
     );
   }
 }

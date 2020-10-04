@@ -129,7 +129,7 @@ class RegisterURLState extends State<RegisterURLRoute> {
           TextFormField(
               controller: _pw2,
               obscureText: true,
-              autovalidate: true,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
               textInputAction: TextInputAction.next,
               decoration: InputDecoration(labelText: 'Confirm Password'),
               validator: (v) {

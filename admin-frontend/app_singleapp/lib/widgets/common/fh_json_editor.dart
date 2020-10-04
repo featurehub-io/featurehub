@@ -42,7 +42,7 @@ class _FHJsonEditorState extends State<FHJsonEditorWidget> {
           Expanded(
             child: Form(
               key: _formKey,
-              autovalidate: true,
+              autovalidateMode: AutovalidateMode.always,
               child: Container(
                 width: 600,
                 padding: EdgeInsets.all(10),
