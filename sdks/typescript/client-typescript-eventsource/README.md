@@ -1,167 +1,127 @@
 # Javascript/Typescript Client SDK for FeatureHub
 
-Welcome to the Javascript/Typescript SDK implementation for FeatureHub. It is the supported version, but it does not mean
-you cannot write your own, please follow [Contributing](https://github.com/featurehub-io/featurehub/blob/master/.github/CONTRIBUTING.adoc)
-guidelines.
-
 ## Overview
+Welcome to the Javascript/Typescript SDK implementation for [FeatureHub.io](https://featurehub.io) - Open source Feature flags management, A/B testing and remote configuration platform.
 
 Below explains how you can use the FeatureHub SDK in Javascript or Typescript for applications like Node.js
-backend server or Web front-end (e.g. React). 
+backend server, Web front-end (e.g. React) or Mobile apps (React Native, Ionic, etc.). 
 
-This repository includes the Server Sent Events realtime update SDK for Javascript and Typescript.
+The SDK is based on SSE (Server Sent Events) realtime updates mechanism.
 
-When you install the SDK it will also install the dependency [featurehub-repository](https://www.npmjs.com/package/featurehub-repository)
-which is a core library that holds features and creates events. 
+To control the feature flags from the FeatureHub Admin console, either use our [demo](https://demo.featurehub.io) version for evaluation or install the app using our guide [here](http://docs.featurehub.io/#_installation)
 
-It is designed this way, so we can separate core functionality and add different implementations in the future, similar to EventSource.   
-
-See [FeatureHub.io](https://featurehub.io) for more details. There you can find a link to try our demo version of FeatureHub Web Console. 
-If you like you can experiment with this SDK in your code and play with the feature flags and control them from the FeatureHub Web Console.
-You can use one of the service accounts SDK Url to substitute ```<sdk_url>``` in below examples.
-
-## Installation Instructions
+## Installation
 
 Run the following command: 
 
 `npm install featurehub-eventsource-sdk`
 
-## Service account SDK Url
+When you install the SDK it will also install the dependency [featurehub-repository](https://www.npmjs.com/package/featurehub-repository)
+which is a core library that holds feature flags and creates events. 
 
-Find and copy your SDK Url from the FeatureHub Web Console (you can find it also in the Demo version) - 
+It is designed this way, so we can separate core functionality and add different implementations in the future.   
+
+
+## Quick start
+
+### Connecting to FeatureHub
+There are 3 steps to connecting:
+1) Copy SDK Url from the FeatureHub Admin Console
+2) Use the SDK Url to make a client
+3) Tell the client to start handling features
+4) Get the state of the feature values
+
+#### Copy SDK Url from the FeatureHub Admin Console
+Find and copy your SDK Url from the FeatureHub Admin Console (you can find it also in our Demo version on Service Accounts page) - 
 you will use this in your code to configure feature updates for your environments. 
-It should look similar to this: ```https://vrtfs.demo.featurehub.io/features/default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE```
-
+It should look similar to this: ```/default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE```
 ![Service account](images/service-account-copy.png) 
 
-## Recipes
-
-We include these up front because its likely you want to just get up and started. 
-
-### A simple nodejs server
-
-To startup with a simple nodejs server with FeatureHub you are likely to do this. This is taken
-from our sample `todo-backend-typescript` client.
-
+#### Make a client:
 ```typescript
-import { FeatureHubEventSourceClient } from 'featurehub-eventsource-sdk/dist';
-import {FeatureContext, featureHubRepository, GoogleAnalyticsCollector, Readyness} from 'featurehub-repository/dist';
-
-// find the full url for your FeatureHub environment and start listening to it in realtime mode                                   
-const featureHubEventSourceClient  = new FeatureHubEventSourceClient(process.env.FEATUREHUB_APP_ENV_URL);
-featureHubEventSourceClient.init();
-
-// .. do some initialization
-
-// .. now you are ready, tell the featurehub repository to let you know when the features
-// are ready so you can start listening for traffic
-
-featureHubRepository.addReadynessListener((ready) => {
-  if (ready == Readyness.Ready) {
-    console.log("Features are available, starting server...");
-
-    api.listen(port, function () {
-      console.log('server is listening on port', port);
-    });
-  }
-});
+const featureHubEventSourceClient  = new FeatureHubEventSourceClient(`${config.fhServerBaseUrl}/features/${config.sdkUrl}`);
 ```
 
-### A simple browser based client
-
-In this case, you are again using the event source method of connecting, but you will probably want to use _catch
-and release_ mode, which is described below. This is again taken from the `todo-frontend-react-typescript` example.
-
-
-```typescript 
-import {
-  FeatureContext,
-  featureHubRepository,
-  // GoogleAnalyticsCollector,
-  Readyness,
-  FeatureUpdater,
-  FeatureHubPollingClient
-} from 'featurehub-repository/dist';
-import { FeatureHubEventSourceClient } from 'featurehub-eventsource-sdk/dist';
-import globalAxios from 'axios';
-
-// some class that defines what your config json file will look like
-class ConfigData {
-  sdkUrl: string;
-  baseUrl: string;
-}
-
-async initializeFeatureHub() {
-    featureHubRepository.addReadynessListener((readyness) => {
-      if (readyness === Readyness.Ready) {
-         // maybe take loading screen off...
-      }
-    });
-
-    featureHubRepository
-      .addPostLoadNewFeatureStateAvailableListener((_) =>
-        { // update the UI, or tell user it needs to happen });
-                                                     
-    // prevent updates to features until we say so
-    featureHubRepository.catchAndReleaseMode = true;
-               
-    // indicate some information about the user and client so we can get the right 
-    // rollout strategies applied to our features
-    featureHubRepository.clientContext.userKey('ideally-unique-id')
-      .country(StrategyAttributeCountryName.NewZealand)
-      .device(StrategyAttributeDeviceName.Browser)
-      .build(); 
-
-    // load the config from the config json file
-    const config = (await globalAxios.request({url: 'featurehub-config.json'})).data as ConfigData;
-
-    // listen for features from the url from the json you just loaded above
-    this.eventSource = new FeatureHubEventSourceClient(config.sdkUrl);
-    this.eventSource.init();
-
-    // this lets you add callback listeners for features. If when you "release" below and this changes, you will
-    // get a callback event
-    // featureHubRepository.getFeatureState('SUBMIT_COLOR_BUTTON').addListener((fs: FeatureStateHolder) => {
-    //   // do something with changed colour
-    // });
-    
-    // add an analytics adapter with a random or known CID
-    // featureHubRepository.addAnalyticCollector(new GoogleAnalyticsCollector('UA-1234', '1234-5678-abcd-1234'));
-  }
-
-// somewhere else in the code, depending on say navigation or a pull to refresh event
-featureHubRepository.release();
-``` 
-
-### A Mobile device
-
-On a mobile device you will swap out the code above:
+or for mobile devices, e.g React Native, Ionic 
 
 ```typescript
-    // listen for features from the url from the json you just loaded above
-    this.eventSource = new FeatureHubEventSourceClient(config.sdkUrl);
-    this.eventSource.init();
-```
-
-with the following:
-
-```typescript
-const fp = new FeatureHubPollingClient(
-  featureHubRepository, // repository 
-  config.baseUrl,  // host
+const featureHubPollingClient = new FeatureHubPollingClient(featureHubRepository, // repository f
+  config.fhServerBaseUrl,  // host
   300000,    // every 300 seconds, 0 if only fire once
   [config.sdkUrl] 
 );
-
-fp.start();
 ```
 
-This will change to a GET request that triggers every five minutes or so. 
- 
+#### Start handling data
+```typescript
+   featureHubEventSourceClient.init();
+```
 
-## The FeatureHub repository
+of for mobile devices 
 
-### Overview
+```typescript
+   featureHubPollingClient.start(); //This will change to a GET request that triggers every 300 seconds as specified above. 
+
+```
+
+#### Request feature state 
+
+   * Get feature value through "Get" methods (imperative way)
+        - `getFlag('FEATURE_KEY')` returns a boolean feature (by key), or an error if it is unable to assert the value to a boolean
+        - `getNumber('FEATURE_KEY')` / `getString('FEATURE_KEY')` / `getJson('FEATURE_KEY')` as above
+```typescript
+if (featureHubRepository.getFlag('FEATURE_KEY')) {
+  // do something
+}
+```         
+        
+   * To get the feature details
+        - `feature('FEATURE_KEY')` returns a whole feature (by key)      
+   
+   * Check if a feature is set 
+        - `isSet('FEATURE_KEY')` - returns true if a feature is set, otherwise false. If a feature doesn't exist returns false;  
+
+
+   * Get feature value through attached listeners (real-time event-driven feature updates)
+
+This is when, if the feature changes (either from nothing to something, which happens when we first get the features,
+or an update comes through), a callback is made into your provided function. You can have multiple listeners attached.
+
+```typescript
+featureHubRepository.feature('FEATURE_KEY').addListener((fs: FeatureStateHolder) => {
+  console.log(fs.getKey(), 'is', fs.getFlag());
+});
+```
+
+### Connecting to Google Analytics 
+
+To see feature analytics (events) fire in your Google Analytics, you will require to have valid GA Tracking ID, e.g. 'UA-XXXXXXXXX-X'.
+You also need to specify a CID - a customer id this is associate with GA.
+Read more about CID [here](https://stackoverflow.com/questions/14227331/what-is-the-client-id-when-sending-tracking-data-to-google-analytics-via-the-mea)
+
+```typescript
+// add an analytics adapter with a random or known CID
+  featureHubRepository.addAnalyticCollector(new GoogleAnalyticsCollector('UA-1234', '1234-5678-abcd-1234'));   
+```
+
+To log an event in Google Analytics: 
+ ```typescript
+FeatureContext.logAnalyticsEvent('todo-add', new Map([['gaValue', '10']]));  //indicate value of the event through gaValue   
+```
+
+
+
+### NodeJS server usage
+
+For the full example refer to the FeatureHub examples repo [here](https://github.com/featurehub-io/featurehub-examples/tree/master/todo-backend-typescript)
+
+### React usage 
+
+For the full example refer to the FeatureHub examples repo [here](https://github.com/featurehub-io/featurehub-examples/tree/master/todo-frontend-react-typescript)
+
+##Detailed documentation
+
+### The FeatureHub repository Overview
 
 The FeatureHub repository is a single class that holds and tracks features in your system. It gets features delivered
 to it to process, tracks changes, and allows you to find and act on features in a useful way. 
@@ -182,7 +142,7 @@ or just one.
 This is when you ask the repository for a specific feature and for its state. Something like:
 
 ```typescript
-if (featureHubRepository.feature('FEATURE_X').getBoolean()) {
+if (featureHubRepository.getFlag('FEATURE_KEY')) {
   // do something
 }
 ``` 
@@ -196,8 +156,8 @@ as you like.
 This would look something like:
 
 ```typescript
-featureHubRepository.feature('FEATURE_X').addListener((fs: FeatureStateHolder) => {
-  console.log(fs.getKey(), 'is', fs.getBoolean());
+featureHubRepository.feature('FEATURE_KEY').addListener((fs: FeatureStateHolder) => {
+  console.log(fs.getKey(), 'is', fs.getFlag());
 });
 ```
 
@@ -299,7 +259,7 @@ It will automatically update the repository.
 
 ## Reacting to feature changes
 
-Unlike the server focused APIs, Typescript/Javascript, like Dart (for Flutter) has two modes of operation.
+Unlike the server focused APIs, Typescript/Javascript has two modes of operation.
 
 ### Immediate reaction (recommended for servers)
 
