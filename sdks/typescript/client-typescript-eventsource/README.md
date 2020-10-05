@@ -10,7 +10,7 @@ The SDK is based on SSE (Server Sent Events) realtime updates mechanism.
 
 To control the feature flags from the FeatureHub Admin console, either use our [demo](https://demo.featurehub.io) version for evaluation or install the app using our guide [here](http://docs.featurehub.io/#_installation)
 
-## Installation Instructions
+## Installation
 
 Run the following command: 
 
@@ -27,7 +27,7 @@ It is designed this way, so we can separate core functionality and add different
 ### Connecting to FeatureHub
 There are 3 steps to connecting:
 1) Copy SDK Url from the FeatureHub Admin Console
-2) Use the SDK URL to make a client
+2) Use the SDK Url to make a client
 3) Tell the client to start handling features
 4) Get the state of the feature values
 
@@ -39,14 +39,14 @@ It should look similar to this: ```/default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac
 
 #### Make a client:
 ```typescript
-const featureHubEventSourceClient  = new FeatureHubEventSourceClient(`${config.baseUrl}${config.sdkUrl}`);
+const featureHubEventSourceClient  = new FeatureHubEventSourceClient(`${config.fhServerBaseUrl}${config.sdkUrl}`);
 ```
 
 or for mobile devices, e.g React Native, Ionic 
 
 ```typescript
 const featureHubPollingClient = new FeatureHubPollingClient(featureHubRepository, // repository f
-  config.baseUrl,  // host
+  config.fhServerBaseUrl,  // host
   300000,    // every 300 seconds, 0 if only fire once
   [config.sdkUrl] 
 );
