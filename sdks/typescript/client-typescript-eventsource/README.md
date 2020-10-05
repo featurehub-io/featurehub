@@ -39,7 +39,7 @@ It should look similar to this: ```/default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac
 
 #### Make a client:
 ```typescript
-const featureHubEventSourceClient  = new FeatureHubEventSourceClient(`${config.fhServerBaseUrl}${config.sdkUrl}`);
+const featureHubEventSourceClient  = new FeatureHubEventSourceClient(`${config.fhServerBaseUrl}/features/${config.sdkUrl}`);
 ```
 
 or for mobile devices, e.g React Native, Ionic 
