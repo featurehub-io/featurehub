@@ -147,7 +147,7 @@ The feature key is the reference you use in your application, when you use the S
 you can check the value of a feature, referencing the feature key.
 It *must be unique* for your application.
 
-==== Percentage Rollout Strategies and Experiments
+=== Percentage Rollout Strategies and Experiments
 
 New in 1.0 is the ability to create a Rollout Strategy that lets you identify an approximate percentage of your user base
 and have the feature have a different value for that percentage.
@@ -171,7 +171,7 @@ the greater the number of clients you have. i.e. you can rollout to 0.0001% of y
 If you only have five users, this probably won't turn it on for anyone, if you have a million it will
 be more accurate.
 
-====  Attribute based Rollout Strategies - coming soon
+===  Attribute based Rollout Strategies - coming soon
 
 We are currently developing percentage rollouts based on attributes that you provide in your client SDK
 data, like country, company, warehouse, or any other value. We will also have the ability to match on individual users,
