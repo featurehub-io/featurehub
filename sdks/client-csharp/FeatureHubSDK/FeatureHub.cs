@@ -25,6 +25,11 @@ namespace FeatureHubSDK
     Failed
   }
 
+  public interface IAnalyticsCollector
+  {
+    void LogEvent(string action, Dictionary<string, string> other, List<IFeatureStateHolder> featureStates);
+  }
+
   public interface IFeatureStateHolder
   {
     /// <summary>
@@ -210,6 +215,15 @@ namespace FeatureHubSDK
       }
     }
 
+    public IFeatureStateHolder Copy()
+    {
+      var fs = new FeatureStateBaseHolder(null);
+
+      fs.FeatureState = this._feature;
+
+      return fs;
+    }
+
     public bool Exists => _value != null;
 
     public bool? BooleanValue => _feature?.Type == FeatureValueType.BOOLEAN ? (bool?) Convert.ToBoolean(_value) : null;
@@ -288,6 +302,7 @@ namespace FeatureHubSDK
     private Readyness _readyness = Readyness.NotReady;
     public event EventHandler<Readyness> ReadynessHandler;
     public event EventHandler<FeatureHubRepository> NewFeatureHandler;
+    private IList<IAnalyticsCollector> _analyticsCollectors = new List<IAnalyticsCollector>();
 
     public Readyness Readyness => _readyness;
 
@@ -390,6 +405,38 @@ namespace FeatureHubSDK
       {
         TriggerNewUpdate();
       }
+    }
+
+    public FeatureHubRepository LogAnalyticEvent(string action)
+    {
+      return LogAnalyticEvent(action, new Dictionary<string, string>());
+    }
+
+    public FeatureHubRepository LogAnalyticEvent(string action, Dictionary<string, string> other)
+    {
+      // take a snapshot copy
+      var featureCopies =
+         _features.Values.Where((f) => f.Exists).Select(f => f.Copy()).ToList();
+
+      foreach (var analyticsCollector in _analyticsCollectors)
+      {
+        try
+        {
+          analyticsCollector.LogEvent(action, other, featureCopies);
+        }
+        catch (Exception e)
+        {
+          log.Error("Failed to log analytic event", e);
+        }
+      }
+
+      return this;
+    }
+
+    public FeatureHubRepository AddAnalyticCollector(IAnalyticsCollector collector)
+    {
+      _analyticsCollectors.Add(collector);
+      return this;
     }
 
     // update the feature if its version is greater than the version we currently store

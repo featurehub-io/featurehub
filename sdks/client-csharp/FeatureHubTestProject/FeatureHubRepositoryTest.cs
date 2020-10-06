@@ -9,7 +9,7 @@ namespace FeatureHubTestProject
 {
   public class Tests
   {
-     FeatureHubRepository _repository;
+    FeatureHubRepository _repository;
 
     [SetUp]
     public void Setup()
@@ -20,7 +20,7 @@ namespace FeatureHubTestProject
     private string EncodeFeatures(object value, int version = 1, FeatureValueType type = FeatureValueType.BOOLEAN)
     {
       var feature = new FeatureState(id: "1", key: "1", version: version, value: value, type: type);
-      return JsonConvert.SerializeObject(new List<FeatureState>(new FeatureState[]{feature}));
+      return JsonConvert.SerializeObject(new List<FeatureState>(new FeatureState[] {feature}));
     }
 
     private string EncodeFeatures(int version = 1, FeatureValueType type = FeatureValueType.BOOLEAN)
@@ -130,7 +130,7 @@ namespace FeatureHubTestProject
     public void SendingTheSameVersionsWillNotTriggerNewFeaturesHook()
     {
       var nfCount = 0;
-      _repository.NewFeatureHandler += (sender, repository) => { nfCount ++; };
+      _repository.NewFeatureHandler += (sender, repository) => { nfCount++; };
       var features = EncodeFeatures();
       _repository.Notify(SSEResultState.Features, features);
       _repository.Notify(SSEResultState.Features, features);
@@ -143,7 +143,8 @@ namespace FeatureHubTestProject
     {
       IFeatureStateHolder holder = null;
       var hCount = 0;
-      _repository.FeatureState("1").FeatureUpdateHandler += (sender, fs) => {
+      _repository.FeatureState("1").FeatureUpdateHandler += (sender, fs) =>
+      {
         holder = fs;
         hCount++;
       };
@@ -160,12 +161,10 @@ namespace FeatureHubTestProject
     public void ListeningForAStringValueWorksAsExpected()
     {
       IFeatureStateHolder holder = null;
-      _repository.FeatureState("1").FeatureUpdateHandler += (sender, fs) => {
-        holder = fs;
-      };
+      _repository.FeatureState("1").FeatureUpdateHandler += (sender, fs) => { holder = fs; };
       _repository.Notify(SSEResultState.Features, EncodeFeatures("fred", version: 2, type: FeatureValueType.STRING));
       Assert.AreEqual(FeatureValueType.STRING, holder.Type);
-      Assert.AreEqual("fred", holder.StringValue );
+      Assert.AreEqual("fred", holder.StringValue);
       Assert.AreEqual("fred", _repository.FeatureState("1").Value);
     }
 
@@ -173,24 +172,20 @@ namespace FeatureHubTestProject
     public void ListeningForNumberValueWorksAsExpected()
     {
       IFeatureStateHolder holder = null;
-      _repository.FeatureState("1").FeatureUpdateHandler += (sender, fs) => {
-        holder = fs;
-      };
+      _repository.FeatureState("1").FeatureUpdateHandler += (sender, fs) => { holder = fs; };
       _repository.Notify(SSEResultState.Features, EncodeFeatures(78.3, version: 2, type: FeatureValueType.NUMBER));
       Assert.AreEqual(FeatureValueType.NUMBER, holder.Type);
-      Assert.AreEqual(78.3, holder.NumberValue );
+      Assert.AreEqual(78.3, holder.NumberValue);
     }
 
     [Test]
     public void ListeningForAJsonValueWorksAsExpected()
     {
       IFeatureStateHolder holder = null;
-      _repository.FeatureState("1").FeatureUpdateHandler += (sender, fs) => {
-        holder = fs;
-      };
+      _repository.FeatureState("1").FeatureUpdateHandler += (sender, fs) => { holder = fs; };
       _repository.Notify(SSEResultState.Features, EncodeFeatures("fred", version: 2, type: FeatureValueType.JSON));
       Assert.AreEqual(FeatureValueType.JSON, holder.Type);
-      Assert.AreEqual("fred", holder.JsonValue );
+      Assert.AreEqual("fred", holder.JsonValue);
       Assert.IsNull(holder.StringValue);
       Assert.IsNull(holder.BooleanValue);
       Assert.IsNull(holder.NumberValue);
@@ -201,7 +196,8 @@ namespace FeatureHubTestProject
     {
       IFeatureStateHolder holder = null;
       var hCount = 0;
-      _repository.FeatureState("1").FeatureUpdateHandler += (sender, fs) => {
+      _repository.FeatureState("1").FeatureUpdateHandler += (sender, fs) =>
+      {
         holder = fs;
         Console.WriteLine($"{fs}");
         hCount++;
@@ -213,7 +209,7 @@ namespace FeatureHubTestProject
       Assert.AreEqual(2, hCount);
       Assert.IsNotNull(holder);
       Assert.AreEqual(true, holder.BooleanValue);
-      var feature = new FeatureState(id: "1", key: "1", version: 4, value: false, type:FeatureValueType.BOOLEAN);
+      var feature = new FeatureState(id: "1", key: "1", version: 4, value: false, type: FeatureValueType.BOOLEAN);
       _repository.Notify(SSEResultState.Feature, JsonConvert.SerializeObject(feature));
       Assert.AreEqual(3, hCount);
       Assert.AreEqual(false, holder.BooleanValue);
@@ -224,7 +220,8 @@ namespace FeatureHubTestProject
     {
       IFeatureStateHolder holder = null;
       var hCount = 0;
-      _repository.FeatureState("1").FeatureUpdateHandler += (sender, fs) => {
+      _repository.FeatureState("1").FeatureUpdateHandler += (sender, fs) =>
+      {
         holder = fs;
         Console.WriteLine($"{fs}");
         hCount++;
@@ -249,7 +246,7 @@ namespace FeatureHubTestProject
     public void DeleteRemovesFeature()
     {
       _repository.Notify(SSEResultState.Features, EncodeFeatures());
-      var feature = new FeatureState(id: "1", key: "1", version: 2, value: true, type:FeatureValueType.BOOLEAN);
+      var feature = new FeatureState(id: "1", key: "1", version: 2, value: true, type: FeatureValueType.BOOLEAN);
       Assert.AreEqual(1, _repository.FeatureState("1").Version);
       _repository.Notify(SSEResultState.Deletefeature, JsonConvert.SerializeObject(feature));
       Assert.IsNull(_repository.FeatureState("1").Version);
@@ -271,7 +268,8 @@ namespace FeatureHubTestProject
       string header = null;
       _repository.ClientContext.ContextUpdateHandler += (sender, h) => header = h;
       _repository.ClientContext.Build();
-      Assert.AreEqual(header, "city=Istanbul+City,country=turkey,device=mobile,family=Bambam%2cDJ+Elif,platform=ios,session=session-key,userkey=tv-show,version=6.2.3");
+      Assert.AreEqual(header,
+        "city=Istanbul+City,country=turkey,device=mobile,family=Bambam%2cDJ+Elif,platform=ios,session=session-key,userkey=tv-show,version=6.2.3");
 
       // i should be able to do the same thing again
       _repository.ClientContext
@@ -282,7 +280,34 @@ namespace FeatureHubTestProject
         .Device(StrategyAttributeDeviceName.Mobile)
         .UserKey("tv-show")
         .SessionKey("session-key");
+    }
 
+    [Test]
+    public void AnalyticsCollectorsAreCalled()
+    {
+      TestAnalyticsCollector ac1 = new TestAnalyticsCollector();
+      TestAnalyticsCollector ac2 = new TestAnalyticsCollector();
+
+      _repository.AddAnalyticCollector(ac1).AddAnalyticCollector(ac2);
+      _repository.LogAnalyticEvent("action");
+
+      Assert.AreEqual(ac1.Counter, 1);
+      Assert.AreEqual(ac2.Counter, 1);
+
+      _repository.LogAnalyticEvent("next-action", new Dictionary<string, string>());
+
+      Assert.AreEqual(ac1.Counter, 2);
+      Assert.AreEqual(ac2.Counter, 2);
+    }
+  }
+
+  internal class TestAnalyticsCollector : IAnalyticsCollector
+  {
+    public int Counter = 0;
+
+    public void LogEvent(string action, Dictionary<string, string> other, List<IFeatureStateHolder> featureStates)
+    {
+      Counter++;
     }
   }
 }

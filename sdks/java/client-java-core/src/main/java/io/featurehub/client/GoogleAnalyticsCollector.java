@@ -57,9 +57,9 @@ public class GoogleAnalyticsCollector implements AnalyticsCollector {
         String line = null;
         if (fsh instanceof FeatureStateBooleanHolder) {
           line = fsh.getBoolean().equals(Boolean.TRUE) ? "on" : "off";
-        } else if (fsh instanceof FeatureStateStringHolder) {
+        } else if (fsh instanceof FeatureStateStringHolder && fsh.getString() != null) {
           line = fsh.getString();
-        } else if (fsh instanceof FeatureStateNumberHolder) {
+        } else if (fsh instanceof FeatureStateNumberHolder && fsh.getNumber() != null) {
           line = fsh.getNumber().toPlainString();
         }
         if (line != null) {
