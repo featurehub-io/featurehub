@@ -60,7 +60,7 @@
     <dependency>
       <groupId>io.featurehub.composites</groupId>
       <artifactId>composite-jackson</artifactId>
-      <version>[1.1, 2)</version>
+      <version>1.2</version>
       <scope>provided</scope>
     </dependency>
 
@@ -79,7 +79,7 @@
     <dependency>
       <groupId>io.featurehub.composites</groupId>
       <artifactId>composite-test</artifactId>
-      <version>[1.1, 2)</version>
+      <version>1.1</version>
       <scope>test</scope>
     </dependency>
 
