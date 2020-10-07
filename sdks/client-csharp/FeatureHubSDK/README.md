@@ -13,6 +13,11 @@ from a file or a database if you wish - and it is likely what you would do in in
 ## SDK features 
 Details about what general features are available in SDKs from FeatureHub are [available here](https://docs.featurehub.io/#sdks).
 
+## Changelog
+
+1.1.0 - analytics support
+1.0.0 - initial functionality with near-realtime event updates, full feature repository, server side rollout stratgies.
+
 ## Using the EventSource SDK
 
 There is a sample application included in the [solution as a console application](https://github.com/featurehub-io/featurehub/tree/master/sdks/client-csharp/ConsoleApp1).
