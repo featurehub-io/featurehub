@@ -10,7 +10,7 @@
   </parent>
 
   <artifactId>composite-jersey</artifactId>
-  <version>1.2-SNAPSHOT</version>
+  <version>1.2</version>
   <name>composite-jersey</name>
 
   <description>
@@ -45,7 +45,7 @@
     <connection>scm:git:git@github.com:featurehub-io/featurehub.git</connection>
     <developerConnection>scm:git:git@github.com:featurehub-io/featurehub.git</developerConnection>
     <url>git@github.com:featurehub-io/featurehub.git</url>
-    <tag>HEAD</tag>
+    <tag>composite-jersey-1.2</tag>
   </scm>
 
 
