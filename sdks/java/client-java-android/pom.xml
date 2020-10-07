@@ -51,7 +51,7 @@
     <dependency>
       <groupId>io.featurehub.sdk</groupId>
       <artifactId>java-client-core</artifactId>
-      <version>1.3-SNAPSHOT</version>
+      <version>1.3</version>
     </dependency>
 
     <dependency>
@@ -61,16 +61,11 @@
     </dependency>
 
     <dependency>
-      <groupId>io.featurehub.edge</groupId>
-      <artifactId>sse-edge-api</artifactId>
-      <version>[1.2, 2)</version>
-    </dependency>
-
-    <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
       <version>${jackson.version}</version>
     </dependency>
+
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
