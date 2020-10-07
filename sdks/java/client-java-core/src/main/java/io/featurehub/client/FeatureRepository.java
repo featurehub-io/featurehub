@@ -39,16 +39,16 @@ public interface FeatureRepository {
    * calls fail.
    *
    * @param readynessListener - a callback lambda
+   * @return - this FeatureRepository
    */
   FeatureRepository addReadynessListener(ReadynessListener readynessListener);
 
   /**
    * Get a feature state isolated from the API.
    *
-   * @param key
-   * @return the FeatureStateHolder referring to this key, can exist but not refer to an actual feature
+   * @param key - the key of the feature
+   * @return - the FeatureStateHolder referring to this key, can exist but not refer to an actual feature
    */
-
   FeatureStateHolder getFeatureState(String key);
   FeatureStateHolder getFeatureState(Feature feature);
 
@@ -85,6 +85,8 @@ public interface FeatureRepository {
    * The value of the json feature decoded into the correct class (if possible).
    *
    * @param key - the feature key
+   * @param type - the class type - as an Class.class
+   * @param <T> - the type of the class you want back
    * @return - the value of the json feature or null if it is unset or doesn't exist. If it cannot be decoded then it
    * may throw an exception.
    */
@@ -124,6 +126,7 @@ public interface FeatureRepository {
    *
    * @param action - the action you wish to log with your analytics provider
    * @param other - any other data
+   * @return - this
    */
   FeatureRepository logAnalyticsEvent(String action, Map<String, String> other);
 
@@ -131,6 +134,7 @@ public interface FeatureRepository {
    * Register an analytics collector
    *
    * @param collector - a class implementing the AnalyticsCollector interface
+   * @return - thimvn s
    */
   FeatureRepository addAnalyticCollector(AnalyticsCollector collector);
 
