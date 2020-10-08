@@ -1,7 +1,6 @@
 package io.featurehub.mr.auth;
 
 import io.featurehub.mr.api.AllowedDuringPasswordReset;
-import io.swagger.annotations.ApiOperation;
 import org.glassfish.jersey.server.monitoring.ApplicationEvent;
 import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
 import org.glassfish.jersey.server.monitoring.RequestEvent;
@@ -111,7 +110,7 @@ public class AuthApplicationEventListener implements ApplicationEventListener {
     }
 
     Method getMethod(RequestEvent event) {
-      log.debug("request method: {}", event.getUriInfo().getPath());
+      log.trace("request method: {}", event.getUriInfo().getPath());
       return event.getUriInfo().getMatchedResourceMethod().getInvocable().getHandlingMethod();
     }
 
@@ -119,41 +118,5 @@ public class AuthApplicationEventListener implements ApplicationEventListener {
       event.getContainerRequest().abortWith(response);
     }
 
-  }
-
-  private ApiOperation findAnnotationInClass(Method method, Class c) {
-    Method found = null;
-    ApiOperation op = null;
-    try {
-      found = c.getMethod(method.getName(), method.getParameterTypes());
-    } catch (NoSuchMethodException e) {
-      return null;
-    }
-    if (found != null) {
-      op = found.getAnnotation(ApiOperation.class);
-      if (op != null) {
-        return op;
-      }
-    } else {
-      return null;
-    }
-
-    return null;
-  }
-
-  private ApiOperation findAnnotationInInterfaces(Method method) {
-    ApiOperation op = method.getAnnotation(ApiOperation.class);
-    if (op != null) {
-      return op;
-    }
-
-    for (Class<?> anInterface : method.getDeclaringClass().getInterfaces()) {
-      op = findAnnotationInClass(method, anInterface);
-      if (op != null) {
-        return op;
-      }
-    }
-
-    return null;
   }
 }
