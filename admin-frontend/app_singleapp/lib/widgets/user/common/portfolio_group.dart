@@ -8,12 +8,17 @@ class PortfolioGroup {
 
   @override
   bool operator ==(Object other) =>
-    identical(this, other) ||
+      identical(this, other) ||
       other is PortfolioGroup &&
-        runtimeType == other.runtimeType &&
-        portfolio == other.portfolio &&
-        group == other.group;
+          runtimeType == other.runtimeType &&
+          portfolio == other.portfolio &&
+          group == other.group;
 
   @override
   int get hashCode => portfolio.hashCode ^ group.hashCode;
+
+  @override
+  String toString() {
+    return "portfolioGroup: (portfolio: ${portfolio?.toString()}, group: ${group?.toString()}";
+  }
 }

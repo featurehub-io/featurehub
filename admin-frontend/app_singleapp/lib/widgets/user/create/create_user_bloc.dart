@@ -37,7 +37,10 @@ class CreateUserBloc implements Bloc {
     final cpd = CreatePersonDetails()
       ..email = email
       ..name = name
-      ..groupIds = listOfAddedPortfolioGroups.map((pg) => pg.group.id).toList();
+      ..groupIds = listOfAddedPortfolioGroups
+          .where((pg) => pg.group != null)
+          .map((pg) => pg.group.id)
+          .toList();
 
     return client.personServiceApi.createPerson(cpd).then((data) {
       registrationUrl = data;
