@@ -6,7 +6,7 @@
   <parent>
     <groupId>io.featurehub.composites</groupId>
     <artifactId>composite-parent</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.2-SNAPSHOT</version>
     <relativePath>../composite-parent</relativePath>
   </parent>
 
@@ -150,7 +150,7 @@
     <dependency>
       <groupId>io.featurehub.composites</groupId>
       <artifactId>composite-common</artifactId>
-      <version>1.1-SNAPSHOT</version>
+      <version>[1.1, 2)</version>
     </dependency>
 
     <dependency>
@@ -162,7 +162,7 @@
     <dependency>
       <groupId>io.featurehub.composites</groupId>
       <artifactId>composite-jersey</artifactId>
-      <version>1.1-SNAPSHOT</version>
+      <version>[1.1, 2)</version>
     </dependency>
 
     <dependency>

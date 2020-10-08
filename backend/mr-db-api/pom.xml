@@ -47,18 +47,18 @@
     <dependency>
       <groupId>io.featurehub.composites</groupId>
       <artifactId>composite-common</artifactId>
-      <version>1.1-SNAPSHOT</version>
+      <version>[1.1, 2)</version>
     </dependency>
     <dependency>
       <groupId>io.featurehub.composites</groupId>
       <artifactId>composite-test</artifactId>
-      <version>1.1-SNAPSHOT</version>
+      <version>[1.1, 2)</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.featurehub.composites</groupId>
       <artifactId>composite-logging</artifactId>
-      <version>1.1-SNAPSHOT</version>
+      <version>[1.1, 2)</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

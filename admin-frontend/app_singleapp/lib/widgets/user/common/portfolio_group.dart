@@ -19,6 +19,6 @@ class PortfolioGroup {
 
   @override
   String toString() {
-    return "portfolioGroup: (portfolio: ${portfolio?.toString()}, group: ${group?.toString()}";
+    return 'portfolioGroup: (portfolio: ${portfolio?.toString()}, group: ${group?.toString()}';
   }
 }
