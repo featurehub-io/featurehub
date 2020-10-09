@@ -37,5 +37,5 @@ If you are considering helping us by writing a new SDK for your favourite langua
 This is available https://www.npmjs.com/org/featurehub[ at the npm repository].
 - *(2)* Dart and Flutter are supported by Dart libraries available at https://pub.dev/publishers/featurehub.io/packages[pub.dev].
 - *(3)* Java is supported by libraries from https://search.maven.org/artifact/io.featurehub.sdk/java-client-core[Apache Maven Central]. 
-- *(4)* C# and .NET is supported by libraries from nuget. [needs ref]
+- *(4)* C# and .NET is supported by libraries from nuget. https://www.nuget.org/packages/FeatureHub.SDK/1.0.0[Nuget.org]
 
