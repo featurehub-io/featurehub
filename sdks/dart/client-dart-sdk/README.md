@@ -219,7 +219,4 @@ _api.setFeatureState(sdkUrl, key, FeatureStateUpdate()..lock = false ..value = '
 ```   
 
 Here the sdkHost and sdkUrl have the same meaning as above.
- 
 
-
-[]: https://www.featurehub.io/[here
