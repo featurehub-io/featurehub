@@ -6,13 +6,15 @@ If you are considering helping us by writing a new SDK for your favourite langua
 |===================================
 |Runtime Capability|Java|Javascript^1^|Go|Dart^2^|C#
 |Event Streaming|Y|Y|Y|Y|Y
+|Server Side Rollout Strategies|Y|Y|N|Y|Y
 |Background Start|Y|Y|Y|Y|Y
 |Block until Start|N|N|Y|N|N
 |Readyness Listeners|Y|Y|Y|Y|Y
 |Feature Listeners|Y|Y|Y|Y|Y
 |Feature Listener Removal|N|N|Y|Y|Y
-|Analytics Support|Y|Y|Y|Y|N
-|Google Analytics|Y|Y|Y|N|N
+|Analytics Support|Y|Y|Y|Y|Y
+|Google Analytics|Y|Y|Y|Y|Y
+|Feature Overrides|N|Y|N|N|N
 |===================================
 
 ==== Web + Mobile focused capabilities for SDKs
@@ -23,19 +25,19 @@ If you are considering helping us by writing a new SDK for your favourite langua
 |Catch & Release|N|Y|N|Y|N
 |===================================
 
-
 ==== Development and Test capabilities for SDKs
 
 [options="header"]
 |===================================
 |Dev/Test Capability|Java|Javascript^1^|Go|Dart^2^|C#
 |Test Client|Y|Y|N|Y|Y
-|Feature Interceptors|Y|Y|N|N|N
+|Feature Interceptors|Y|Y|N|Y|N
 |===================================
 
-- *(1)* Javascript and Typescript are supported via a Typescript libraries.
+- *(1)* Javascript and Typescript are supported via a Typescript library.
 This is available https://www.npmjs.com/org/featurehub[ at the npm repository].
 - *(2)* Dart and Flutter are supported by Dart libraries available at https://pub.dev/publishers/featurehub.io/packages[pub.dev].
-- *(3)* Java is supported by libraries from https://search.maven.org/artifact/io.featurehub.sdk/java-client-core[Apache Maven Central]. 
-- *(4)* C# and .NET is supported by libraries from nuget. https://www.nuget.org/packages/FeatureHub.SDK/1.0.0[Nuget.org]
+- *(3)* Java is supported by libraries from https://search.maven.org/artifact/io.featurehub.sdk/java-client-core[Apache Maven Central].
+You will need to chose an https://search.maven.org/artifact/io.featurehub.sdk/java-client-android[OKHttp] or https://search.maven.org/artifact/io.featurehub.sdk/java-client-jersey[Jersey] client.
+- *(4)* C# and .NET is supported by libraries from nuget. https://www.nuget.org/packages/FeatureHub.SDK/1.1.0[Nuget.org]
 
