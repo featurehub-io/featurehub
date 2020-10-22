@@ -83,7 +83,7 @@ starting example to work from.
 
 == Coming soon
 
-* Gradual rollout and A/B testing
+* Additional rollout strategies
 * Feature auditing
 * SDK's : Mobile (Swift), Python, Ruby
 * SAML support
