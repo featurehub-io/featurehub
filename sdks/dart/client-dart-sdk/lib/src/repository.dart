@@ -295,13 +295,26 @@ class ClientFeatureRepository {
   }
 
   bool get catchAndReleaseMode => _catchAndReleaseMode;
-  set catchAndReleaseMode(bool val) => _catchAndReleaseMode = val;
+  set catchAndReleaseMode(bool val) {
+    if (_catchAndReleaseMode && !val) {
+      release(disableCatchAndRelease: true);
+    } else {
+      _catchAndReleaseMode = val;
+    }
+  }
+
   Readyness get readyness => _readynessState;
 
-  void release() {
-    final states = <FeatureState>[..._catchReleaseStates.values];
-    _catchReleaseStates.clear();
-    states.forEach((f) => _featureUpdate(f));
+  Future<void> release({bool disableCatchAndRelease = false}) async {
+    while (_catchReleaseStates.isNotEmpty) {
+      final states = <FeatureState>[..._catchReleaseStates.values];
+      _catchReleaseStates.clear();
+      states.forEach((f) => _featureUpdate(f));
+    }
+
+    if (disableCatchAndRelease == true) {
+      _catchAndReleaseMode = false;
+    }
   }
 
   bool _featureUpdate(FeatureState feature) {

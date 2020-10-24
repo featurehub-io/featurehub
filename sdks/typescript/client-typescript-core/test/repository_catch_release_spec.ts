@@ -7,7 +7,7 @@ import {
 import { expect } from 'chai';
 
 describe('Catch and release should hold and then release feature changes', () => {
-  it('should enable me to turn on catch and no changes should flow and then i can release', () => {
+  it('should enable me to turn on catch and no changes should flow and then i can release', async () => {
     const repo = new ClientFeatureRepository();
     let postNewTrigger = 0;
     repo.addPostLoadNewFeatureStateAvailableListener(() => postNewTrigger ++);
@@ -36,18 +36,29 @@ describe('Catch and release should hold and then release feature changes', () =>
     expect(postNewTrigger).to.eq(2);
     expect(bananaTrigger).to.eq(1);
     expect(repo.getFeatureState('banana').getBoolean()).to.eq(true);
-    repo.release();
+    await repo.release();
+    expect(repo.catchAndReleaseMode).to.eq(true);
     expect(postNewTrigger).to.eq(2);
     expect(bananaTrigger).to.eq(2);
     expect(repo.getFeatureState('banana').getBoolean()).to.eq(false);
-
     // notify with new state, should still hold
     const features2 = [
       new FeatureState({id: '1', key: 'banana', version: 4, type: FeatureValueType.Boolean, value: true}),
     ];
 
-    repo.notify(SSEResultState.Features, features);
-    expect(postNewTrigger).to.eq(2);
+    repo.notify(SSEResultState.Features, features2);
+    expect(postNewTrigger).to.eq(3);
     expect(bananaTrigger).to.eq(2);
+    expect(repo.getFlag('banana')).to.eq(false);
+    expect(repo.getFeatureState('banana').getVersion()).to.eq(3);
+    await repo.release(true);
+    expect(repo.getFlag('banana')).to.eq(true);
+    expect(repo.getFeatureState('banana').getVersion()).to.eq(4);
+    // and now ensure c&r mode is off
+    repo.notify(SSEResultState.Feature, new FeatureState({id: '1', key: 'banana', version: 5,
+      type: FeatureValueType.Boolean, value: false}));
+    expect(repo.getFlag('banana')).to.eq(false);
+    expect(repo.getFeatureState('banana').getVersion()).to.eq(5);
+
   });
 });

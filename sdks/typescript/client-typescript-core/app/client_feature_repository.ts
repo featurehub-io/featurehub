@@ -234,12 +234,22 @@ export class ClientFeatureRepository implements FeatureHubRepository {
   }
 
   set catchAndReleaseMode(value: boolean) {
+    if (this._catchAndReleaseMode !== value && value === false) {
+      this.release(true);
+    }
     this._catchAndReleaseMode = value;
   }
 
-  public async release() {
-    this._catchReleaseStates.forEach((fs) => this.featureUpdate(fs));
-    this._catchReleaseStates.clear(); // remove all existing items
+  public async release(disableCatchAndRelease?: boolean): Promise<void> {
+    while (this._catchReleaseStates.size > 0) {
+      const states = [...this._catchReleaseStates.values()];
+      this._catchReleaseStates.clear(); // remove all existing items
+      states.forEach((fs) => this.featureUpdate(fs));
+    }
+
+    if (disableCatchAndRelease === true) {
+      this._catchAndReleaseMode = false;
+    }
   }
 
   public getFlag(key: string): boolean | undefined {

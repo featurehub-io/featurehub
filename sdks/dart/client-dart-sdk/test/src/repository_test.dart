@@ -83,7 +83,7 @@ void main() {
   test('json values work as expected', () {
     repo.notify(SSEResultState.features,
         _initialFeatures(value: '{"a":"b"}', type: FeatureValueType.JSON));
-    expect(repo.getJson('1'), equals({"a": "b"}));
+    expect(repo.getJson('1'), equals({'a': 'b'}));
     expect(repo.getNumber('1'), isNull);
     expect(repo.getFlag('1'), isNull);
     expect(repo.getString('1'), '{"a":"b"}');
@@ -240,7 +240,7 @@ void main() {
 
   test(
       'We get initial events for features but once catch and release is enabled, it stops until we release.',
-      () {
+      () async {
     final sub = repo.newFeatureStateAvailableStream;
     expect(repo.readyness, equals(Readyness.NotReady));
     repo.notify(SSEResultState.features, _initialFeatures());
@@ -265,9 +265,25 @@ void main() {
     expect(repo.getFlag('1'), equals(false));
     expect(repo.getFeatureState('1').type, equals(FeatureValueType.BOOLEAN));
     expect(repo.getFeatureState('1').version, equals(1));
-    repo.release();
+    await repo.release();
     expect(repo.getFeatureState('1').booleanValue, equals(true));
     expect(repo.getFeatureState('1').version, equals(3));
+    // but the repo is still in catch mode
+    final data1 = FeatureState()
+      ..version = 4
+      ..id = '1'
+      ..key = '1'
+      ..value = false
+      ..type = FeatureValueType.BOOLEAN;
+
+    repo.notify(SSEResultState.feature, data1.toJson());
+    expect(repo.getFlag('1'), equals(true));
+    expect(repo.getFeatureState('1').version, equals(3));
+    // and now we release and turn off the release mode
+    await repo.release(disableCatchAndRelease: true);
+    expect(repo.catchAndReleaseMode, equals(false));
+    expect(repo.getFlag('1'), equals(false));
+    expect(repo.getFeatureState('1').version, equals(4));
     repo.shutdown();
   });
 
