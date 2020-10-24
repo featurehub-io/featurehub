@@ -1,3 +1,7 @@
+1.1.2
+=====
+* Updated documentation
+
 1.1.1
 =====
 * Update documentation
