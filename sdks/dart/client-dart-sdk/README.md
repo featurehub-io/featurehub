@@ -2,25 +2,41 @@
 
 
 Welcome to the Dart SDK implementation for FeatureHub. It is the supported version, but it does not mean
-you cannot write your own, the functionality is quite straightforward. For more information about the platform please visit our official web page https://www.featurehub.io/
+you cannot write your own, the functionality is quite straightforward. For more information about the platform 
+please visit our official web page https://www.featurehub.io/
 
 ![Code Coverage](coverage_badge.svg)
 
 ## Overview
 
-This is the core library for Dart.
+This is the core library for Dart, and can be used for Flutter in all forms (Mobile, Desktop, Web).
 
 It provides the core functionality of the
 repository which holds features and creates events. It depends on our own fork of the EventSourcing library
 for Dart (until the main library merges the changes in or we release our own). 
 
-This library only provides one recommended type of operation, which is that the server will update all the features
-all of the time. _This is not appropriate for Mobile operation at this time as it will drain battery_. 
+This library holds a Feature Repository that you will include in your code and use to determine the state of
+specific features. It attempts to follow Dart based idioms.  
 
-> This readme does not deal with the SDK capability of updating features while running your tests. That
-capability is API client specific, and the sample we have is for Jersey and Typescript. 
+## Approaches to updating the repository
 
-## Mechanisms for use
+The library includes two different ways you can get the feature states from the FeatureHub
+Edge Server into your feature repository:
+
+- *GET* - this does a simple HTTP GET request and will retrieve the current state of the features for one
+or more environments. You would use this for Mobile (e.g. Flutter) and periodically update your repository
+by making this API call. 
+- *EventSource* - this provides real time updates for features by keeping a link open to the FeatureHub
+Edge Server, as you can imagine this is an expensive operation to do on a battery and we do not recommend it
+for Mobile except for short periods.  
+ 
+Because these two update methods are interchangeable, you can include them in the same application if you want. You
+could swap between *GET* when your app swaps to the background and *EventSource* when your app swaps to the foreground 
+if immediate updates are important.
+
+This is discussed in more detail below under the heading _Mobile API_. 
+ 
+## Approaches to using the Repository
 
 Like the Typescript SDK, there are four ways to use this library due to the more _user_ based interaction that your
 application will operate under. Unlike the Typescript library, the Dart library uses _streams_.
@@ -55,7 +71,7 @@ _repository.readynessStream.listen((readyness) {
 });
 
 // this will cause the event source listener to immediately start. It has a close()
-// method to allow for shutdown 
+// method to allow for shutdown. this is the EventSource listener and will give you immediate updates 
 final _eventSource = EventSourceRepositoryListener(sdkUrl, _repository);
 
 const featureXUnsubscribe = featureHubRepository.getFeatureState('FEATURE_X')
@@ -123,12 +139,13 @@ The reason for this is that Mobile devices connection doesn't always stay on, so
 features would be the right choice here. 
 
 If you are running a Dart web server or Dart command line app or any other Flutter based application - you should 
-use the Event Source above. For Flutter for Mobile, please use this API.
+use the Event Source above. For Flutter for Mobile, generally you should use this API.
 
 It is simple to use, you need to specify the host base url and the environment(s) that you wish to pull into your 
 application. Do not have features with the same keys otherwise you will encounter issues with versioning.
 
-Construction is fairly simple, you need a repository and there is an example in `example/dart_cli/get_main.dart`.
+Construction is fairly simple, you need a repository (as discussed above) and there is an example 
+in `example/dart_cli/get_main.dart`.
 
 ```dart
 final es = FeatureHubSimpleApi(sdkHost, [sdkUrl], repo);
@@ -136,10 +153,11 @@ es.request();
 ```
 
 `sdkHost` - this is the base address of the Edge host
-`sdkUrl` - this is the part from the admin UI that identifies your particular environment, API key and Dacha cluster.
+`sdkUrl` - this is the part from the admin UI that identifies your particular environment and API key.
 
-`request` is an async method and it will return the repository. A failed call is caught and a Failure status is sent
-to the repository. 
+`request` is an async method and it will return its content directly to the repository. 
+A failed call is caught and a Failure status is sent to the repository, which will have an updated error status
+(such as FAILED, in the Readyness listener). 
 
 If the request has no data or an SDK Url that doesn't exist, that is not considered an error because they may just
 not yet be available and you don't want your application to fail.
