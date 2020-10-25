@@ -3,7 +3,7 @@ import 'package:app_singleapp/widgets/features/custom_strategy_bloc.dart';
 import 'package:app_singleapp/widgets/features/feature_dashboard_constants.dart';
 import 'package:app_singleapp/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:app_singleapp/widgets/features/percentage_utils.dart';
-import 'package:app_singleapp/widgets/features/table-expanded-view/create-strategy-widget.dart';
+import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/create-strategy-widget.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 

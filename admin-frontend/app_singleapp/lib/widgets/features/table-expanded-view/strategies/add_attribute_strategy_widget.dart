@@ -1,3 +1,5 @@
+import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/transform_strategy_conditions.dart';
+import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/transform_strategy_type_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
@@ -5,7 +7,7 @@ import 'package:mrapi/api.dart';
 class AttributeStrategyWidget extends StatefulWidget {
   final RolloutStrategyAttribute attribute;
 
-  final  attributeStrategyFieldName;
+  final  String attributeStrategyFieldName;
 
   const AttributeStrategyWidget({
     Key key, this.attribute, this.attributeStrategyFieldName,
@@ -22,6 +24,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
   final TextEditingController _customAttributeValue = TextEditingController();
 
   RolloutStrategyAttributeConditional _dropDownCustomAttributeMatchingCriteria;
+  RolloutStrategyFieldType _rolloutStrategyFieldType;
   bool isUpdate = false;
   String attributeStrategyType;
 
@@ -48,28 +51,71 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
       mainAxisSize: MainAxisSize.max,
       children: [
         if(attributeStrategyType == 'country') Text('Country')
-        else if (attributeStrategyType == 'device') Text ('Device')
-        else Flexible(
-            child:  TextFormField(
-                controller: _customAttributeKey,
-                decoration: InputDecoration(
-                    labelText: 'Custom attribute key',
-                    helperText:
-                    'E.g. userId'),
-                // readOnly: !widget.widget.editable,
-                autofocus: true,
-                onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
-                // inputFormatters: [
-                //   DecimalTextInputFormatter(
-                //       decimalRange: 4, activatedNegativeValues: false)
-                // ],
-                validator: ((v) {
-                  if (v.isEmpty) {
-                    return 'Attribute key required';
-                  }
-                  return null;
-                })),
+        else
+          if (attributeStrategyType == 'device') Text('Device')
+          else
+            Flexible(
+              child: TextFormField(
+                  controller: _customAttributeKey,
+                  decoration: InputDecoration(
+                      labelText: 'Custom attribute key',
+                      helperText:
+                      'E.g. userId'),
+                  // readOnly: !widget.widget.editable,
+                  autofocus: true,
+                  onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+                  // inputFormatters: [
+                  //   DecimalTextInputFormatter(
+                  //       decimalRange: 4, activatedNegativeValues: false)
+                  // ],
+                  validator: ((v) {
+                    if (v.isEmpty) {
+                      return 'Attribute key required';
+                    }
+                    return null;
+                  })),
+            ),
+        Spacer(),
+        InkWell(
+          mouseCursor: SystemMouseCursors.click,
+          child: DropdownButton(
+            icon: Padding(
+              padding: EdgeInsets.only(left: 8.0),
+              child: Icon(
+                Icons.keyboard_arrow_down,
+                size: 24,
+              ),
+            ),
+            isExpanded: false,
+            items: RolloutStrategyFieldType.values
+                .map((RolloutStrategyFieldType dropDownStringItem) {
+              return DropdownMenuItem<RolloutStrategyFieldType>(
+                  value: dropDownStringItem,
+                  child: Text(
+                      transformRolloutStrategyTypeFieldToString(
+                          dropDownStringItem),
+                      style: Theme
+                          .of(context)
+                          .textTheme
+                          .bodyText2));
+            }).toList(),
+
+            hint: Text('Select value type',
+                style: Theme
+                    .of(context)
+                    .textTheme
+                    .subtitle2),
+            onChanged: (value) {
+              var readOnly = true; //TODO parametrise this if needed
+              if (!readOnly) {
+                setState(() {
+                  _rolloutStrategyFieldType = value;
+                });
+              }
+            },
+            value: _rolloutStrategyFieldType,
           ),
+        ),
         Spacer(),
         InkWell(
           mouseCursor: SystemMouseCursors.click,
@@ -87,14 +133,21 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
               return DropdownMenuItem<RolloutStrategyAttributeConditional>(
                   value: dropDownStringItem,
                   child: Text(
-                      _transformValuesToString(dropDownStringItem),
-                      style: Theme.of(context).textTheme.bodyText2));
+                      transformStrategyAttributeConditionalValueToString(
+                          dropDownStringItem),
+                      style: Theme
+                          .of(context)
+                          .textTheme
+                          .bodyText2));
             }).toList(),
 
             hint: Text('Select condition',
-                style: Theme.of(context).textTheme.subtitle2),
+                style: Theme
+                    .of(context)
+                    .textTheme
+                    .subtitle2),
             onChanged: (value) {
-              var readOnly = true;//TODO parametrise this if needed
+              var readOnly = true; //TODO parametrise this if needed
               if (!readOnly) {
                 setState(() {
                   _dropDownCustomAttributeMatchingCriteria = value;
@@ -130,41 +183,6 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
     );
   }
 
-  String _transformValuesToString(RolloutStrategyAttributeConditional dropDownStringItem) {
-    switch (dropDownStringItem) {
-      case RolloutStrategyAttributeConditional.EQUALS:
-        return 'equals';
-      case RolloutStrategyAttributeConditional.NOT_EQUALS:
-        return 'not equals';
-      case RolloutStrategyAttributeConditional.ENDS_WITH:
-        return 'ends with';
-      case RolloutStrategyAttributeConditional.STARTS_WITH:
-        return 'starts with';
-      case RolloutStrategyAttributeConditional.GREATER:
-        return 'greater';
-        break;
-      case RolloutStrategyAttributeConditional.GREATER_EQUALS:
-        return 'greater or equals';
-        break;
-      case RolloutStrategyAttributeConditional.LESS:
-        return 'less';
-        break;
-      case RolloutStrategyAttributeConditional.LESS_EQUALS:
-        return 'less or equals';
-        break;
-      case RolloutStrategyAttributeConditional.INCLUDES:
-        return 'includes';
-        break;
-      case RolloutStrategyAttributeConditional.EXCLUDES:
-        return 'excludes';
-        break;
-      case RolloutStrategyAttributeConditional.REGEX:
-        return 'regex';
-        break;
-    }
-
-    return '';
-  }
-
-
 }
+
+

@@ -2,7 +2,7 @@ import 'package:app_singleapp/widgets/features/per_feature_state_tracking_bloc.d
 import 'package:app_singleapp/widgets/features/table-expanded-view/feature_value_updated_by.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/lock_unlock_switch.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/number/number_strategy_card.dart';
-import 'package:app_singleapp/widgets/features/table-expanded-view/split_rollout_button.dart';
+import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/split_rollout_button.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 

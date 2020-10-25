@@ -4,7 +4,7 @@ import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/common/input_fields_validators/input_field_number_formatter.dart';
 import 'package:app_singleapp/widgets/features/custom_strategy_bloc.dart';
 import 'package:app_singleapp/widgets/features/percentage_utils.dart';
-import 'package:app_singleapp/widgets/features/table-expanded-view/add_attribute_strategy_widget.dart';
+import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/add_attribute_strategy_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
