@@ -4,6 +4,7 @@ import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/common/input_fields_validators/input_field_number_formatter.dart';
 import 'package:app_singleapp/widgets/features/custom_strategy_bloc.dart';
 import 'package:app_singleapp/widgets/features/percentage_utils.dart';
+import 'package:app_singleapp/widgets/features/table-expanded-view/add_attribute_strategy_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
@@ -44,7 +45,6 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
       _strategyPercentage.text = widget.rolloutStrategy.percentageText;
       rolloutStrategyAttributeList = widget.rolloutStrategy?.attributes;
       isUpdate = true;
-//      _dropDownCustomAttributeMatchingCriteria = 'percentage';
     }
   }
 
@@ -78,37 +78,6 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
 //                    }
 //                    return null;
 //                  })),
-//              Padding(
-//                padding: const EdgeInsets.only(top: 14.0),
-//                child: InkWell(
-//                  mouseCursor: SystemMouseCursors.click,
-//                  child: DropdownButton(
-//                    icon: Padding(
-//                      padding: EdgeInsets.only(left: 8.0),
-//                      child: Icon(
-//                        Icons.keyboard_arrow_down,
-//                        size: 24,
-//                      ),
-//                    ),
-//                    isExpanded: false,
-//                    items: [
-//                      DropdownMenuItem(
-//                          value: 'percentage',
-//                          child: Text('Percentage rollout'))
-//                    ],
-//                    hint: Text('Select rollout condition',
-//                        style: Theme.of(context).textTheme.subtitle2),
-//                    onChanged: (value) {
-//                      if (!isReadOnly) {
-//                        setState(() {
-//                          _dropDownStrategyType = value;
-//                        });
-//                      }
-//                    },
-//                    value: _dropDownStrategyType,
-//                  ),
-//                ),
-//              ),
               TextFormField(
                   controller: _strategyPercentage,
                   decoration: InputDecoration(
@@ -130,6 +99,14 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
                   })),
               if(rolloutStrategyAttributeList.isNotEmpty) Column (children: [for(var rolloutStrategyAttribute in rolloutStrategyAttributeList )
                 AttributeStrategyWidget(attribute: rolloutStrategyAttribute)]),
+              AttributeStrategyWidget(attributeStrategyFieldName: 'custom',), //we need to show this only when "Add custom attribute" button is clicked. Maybe it should be a stream of strategies we are about to add? We need to be able to remove them too
+              Row(
+                children: [
+                  TextButton(onPressed: null, child: Text('Add custom attribute')), //ToDo: onPressed should call a state change
+                  TextButton(onPressed: null, child: Text('Add country')),
+                  TextButton(onPressed: null, child: Text('Add device')),
+                ],
+              ),
               if (isTotalPercentageError)
                 Text(
                     'Your percentage total across all rollout values cannot be over 100%. Please enter different value.',
@@ -231,160 +208,3 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
   }
 }
 
-class AttributeStrategyWidget extends StatefulWidget {
-  final RolloutStrategyAttribute attribute;
-
-  const AttributeStrategyWidget({
-    Key key, this.attribute,
-
-  }) :  super(key: key);
-
-
-  @override
-  _AttributeStrategyWidgetState createState() => _AttributeStrategyWidgetState();
-}
-
-class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
-  final TextEditingController _customAttributeKey = TextEditingController();
-  final TextEditingController _customAttributeValue = TextEditingController();
-
-  RolloutStrategyAttributeConditional _dropDownCustomAttributeMatchingCriteria;
-  bool isUpdate = false;
-
-  _AttributeStrategyWidgetState();
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.attribute != null) {
-      _dropDownCustomAttributeMatchingCriteria = widget.attribute.conditional;
-      isUpdate = true;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisSize: MainAxisSize.max,
-      children: [
-        Flexible(
-          child: TextFormField(
-              controller: _customAttributeKey,
-              decoration: InputDecoration(
-                  labelText: 'Custom attribute key',
-                  helperText:
-                  'E.g. userId'),
-              // readOnly: !widget.widget.editable,
-              // autofocus: true,
-              onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
-              // inputFormatters: [
-              //   DecimalTextInputFormatter(
-              //       decimalRange: 4, activatedNegativeValues: false)
-              // ],
-              validator: ((v) {
-                if (v.isEmpty) {
-                  return 'Attribute key required';
-                }
-                return null;
-              })),
-        ),
-        Padding(
-     padding: const EdgeInsets.only(top: 14.0),
-     child: InkWell(
-       mouseCursor: SystemMouseCursors.click,
-       child: DropdownButton(
-         icon: Padding(
-           padding: EdgeInsets.only(left: 8.0),
-           child: Icon(
-             Icons.keyboard_arrow_down,
-             size: 24,
-           ),
-         ),
-         isExpanded: false,
-           items: RolloutStrategyAttributeConditional.values
-               .map((RolloutStrategyAttributeConditional dropDownStringItem) {
-             return DropdownMenuItem<RolloutStrategyAttributeConditional>(
-                 value: dropDownStringItem,
-                 child: Text(
-                     _transformValuesToString(dropDownStringItem),
-                     style: Theme.of(context).textTheme.bodyText2));
-           }).toList(),
-
-         hint: Text('Select condition',
-             style: Theme.of(context).textTheme.subtitle2),
-         onChanged: (value) {
-           var readOnly = true;//TODO parametrise this
-           if (!readOnly) {
-             setState(() {
-               _dropDownCustomAttributeMatchingCriteria = value;
-             });
-           }
-         },
-         value: _dropDownCustomAttributeMatchingCriteria,
-       ),
-     )),
-        Flexible(
-          child: TextFormField(
-              controller: _customAttributeValue,
-              decoration: InputDecoration(
-                  labelText: 'Custom attribute value(s)',
-                  helperText:
-                  'E.g. bob@xyz.com, mary@xyz.com'),
-              // readOnly: !widget.widget.editable,
-              // autofocus: true,
-              onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
-              // inputFormatters: [
-              //   DecimalTextInputFormatter(
-              //       decimalRange: 4, activatedNegativeValues: false)
-              // ],
-              validator: ((v) {
-                if (v.isEmpty) {
-                  return 'Attribute value(s) required';
-                }
-                return null;
-              })),
-        ),
-      ],
-    );
-  }
-
-  String _transformValuesToString(RolloutStrategyAttributeConditional dropDownStringItem) {
-      switch (dropDownStringItem) {
-        case RolloutStrategyAttributeConditional.EQUALS:
-          return 'equals';
-        case RolloutStrategyAttributeConditional.NOT_EQUALS:
-          return 'not equals';
-        case RolloutStrategyAttributeConditional.ENDS_WITH:
-          return 'ends with';
-        case RolloutStrategyAttributeConditional.STARTS_WITH:
-          return 'starts with';
-        case RolloutStrategyAttributeConditional.GREATER:
-          return 'greater';
-          break;
-        case RolloutStrategyAttributeConditional.GREATER_EQUALS:
-          return 'greater equals';
-          break;
-        case RolloutStrategyAttributeConditional.LESS:
-          return 'less';
-          break;
-        case RolloutStrategyAttributeConditional.LESS_EQUALS:
-          return 'less equals';
-          break;
-        case RolloutStrategyAttributeConditional.INCLUDES:
-          return 'includes';
-          break;
-        case RolloutStrategyAttributeConditional.EXCLUDES:
-          return 'excludes';
-          break;
-        case RolloutStrategyAttributeConditional.REGEX:
-          return 'regex';
-          break;
-      }
-
-      return '';
-    }
-
-
-}
