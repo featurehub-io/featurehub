@@ -99,7 +99,7 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
                   })),
               if(rolloutStrategyAttributeList.isNotEmpty) Column (children: [for(var rolloutStrategyAttribute in rolloutStrategyAttributeList )
                 AttributeStrategyWidget(attribute: rolloutStrategyAttribute)]),
-              AttributeStrategyWidget(attributeStrategyFieldName: 'custom',), //we need to show this only when "Add custom attribute" button is clicked. Maybe it should be a stream of strategies we are about to add? We need to be able to remove them too
+              AttributeStrategyWidget(attributeStrategyFieldName: 'country',), //we need to show this only when "Add custom attribute" button is clicked. Maybe it should be a stream of strategies we are about to add? We need to be able to remove them too
               Row(
                 children: [
                   TextButton(onPressed: null, child: Text('Add custom attribute')), //ToDo: onPressed should call a state change

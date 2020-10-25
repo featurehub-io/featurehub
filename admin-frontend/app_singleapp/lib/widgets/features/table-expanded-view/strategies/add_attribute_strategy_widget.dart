@@ -1,5 +1,7 @@
+import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/country_attribute_strategy_dropdown.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/transform_strategy_conditions.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/transform_strategy_type_field.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
@@ -53,6 +55,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
         if(attributeStrategyType == 'country') Text('Country')
         else
           if (attributeStrategyType == 'device') Text('Device')
+        else if(attributeStrategyType == 'platform') Text('Platform')
           else
             Flexible(
               child: TextFormField(
@@ -76,7 +79,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
                   })),
             ),
         Spacer(),
-        InkWell(
+        if(attributeStrategyType == 'custom') InkWell(
           mouseCursor: SystemMouseCursors.click,
           child: DropdownButton(
             icon: Padding(
@@ -106,7 +109,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
                     .textTheme
                     .subtitle2),
             onChanged: (value) {
-              var readOnly = true; //TODO parametrise this if needed
+              var readOnly = false; //TODO parametrise this if needed
               if (!readOnly) {
                 setState(() {
                   _rolloutStrategyFieldType = value;
@@ -147,7 +150,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
                     .textTheme
                     .subtitle2),
             onChanged: (value) {
-              var readOnly = true; //TODO parametrise this if needed
+              var readOnly = false; //TODO parametrise this if needed
               if (!readOnly) {
                 setState(() {
                   _dropDownCustomAttributeMatchingCriteria = value;
@@ -158,6 +161,11 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
           ),
         ),
         Spacer(),
+        if(attributeStrategyType == 'country') CountryAttributeStrategyDropdown(attribute: widget.attribute)
+        // else
+        //   if (attributeStrategyType == 'device') DeviceDropdown()
+        //   else if(attributeStrategyType == 'platform') PlatformDropdown()
+          else
         Flexible(
           child: TextFormField(
               controller: _customAttributeValue,
