@@ -1,4 +1,6 @@
 import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/country_attribute_strategy_dropdown.dart';
+import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/device_attribute_strategy_dropdown.dart';
+import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/platform_attribute_strategy_dropdown.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/transform_strategy_conditions.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/transform_strategy_type_field.dart';
 import 'package:flutter/cupertino.dart';
@@ -162,9 +164,9 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
         ),
         Spacer(),
         if(attributeStrategyType == 'country') CountryAttributeStrategyDropdown(attribute: widget.attribute)
-        // else
-        //   if (attributeStrategyType == 'device') DeviceDropdown()
-        //   else if(attributeStrategyType == 'platform') PlatformDropdown()
+        else
+          if (attributeStrategyType == 'device') DeviceAttributeStrategyDropdown()
+          else if(attributeStrategyType == 'platform') PlatformAttributeStrategyDropdown()
           else
         Flexible(
           child: TextFormField(
