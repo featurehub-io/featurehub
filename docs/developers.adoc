@@ -4,6 +4,7 @@ ifdef::env-github,env-browser[:outfilesuffix: .adoc]
 :toc: left
 :toclevels: 4
 :toc-title: Contents
+:google-analytics-code: UA-173153929-1
 
 link:index{outfilesuffix}[Back to index]
 

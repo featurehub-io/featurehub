@@ -5,6 +5,7 @@ ifdef::env-github,env-browser[:outfilesuffix: .adoc]
 :toclevels: 2
 :toc-title: Contents
 :favicon: favicon.ico
+:google-analytics-code: UA-173153929-1
 
 FeatureHub Team <info@featurehub.io>
 
