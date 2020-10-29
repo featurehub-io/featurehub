@@ -42,7 +42,7 @@ class StrategyDifferUtilsSpec extends BaseSpec {
     appApi = new ApplicationSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
 
     // now set up the environments we need
-    portfolio1 = new DbPortfolio.Builder().name("p1-app-feature").whoCreated(dbSuperPerson).organization(new QDbOrganization().findOne()).build()
+    portfolio1 = new DbPortfolio.Builder().name("p1-app-feature-sdus").whoCreated(dbSuperPerson).organization(new QDbOrganization().findOne()).build()
 
     database.save(portfolio1)
 
