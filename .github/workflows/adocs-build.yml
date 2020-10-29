@@ -13,16 +13,14 @@ jobs:
         uses: actions/checkout@v2
       - name: Get build container
         id: adocbuild
-        uses: avattathil/asciidoctor-action@master
-        with:
-          program: "asciidoctor -D docs --backend=html5 -a stylesheet=featurehub-skin.css  docs/*.adoc"
+        uses: ./doc-gen
       - name: Print execution time
         run: echo "Time ${{ steps.adocbuild.outputs.timestamp }}"
       - name: Deploy docs to ghpages
         uses: peaceiris/actions-gh-pages@v3
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-          publish_dir: ./docs
+          publish_dir: ./doc-gen/target/generated-docs
           external_repository: featurehub-io/featurehub-io
           publish_branch: master
           cname: docs.featurehub.io

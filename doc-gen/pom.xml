@@ -1,0 +1,96 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>io.featurehub</groupId>
+  <artifactId>featurehub-docs</artifactId>
+  <version>1.1.1</version>
+  <packaging>pom</packaging>
+
+  <repositories>
+    <repository>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>bintray-puravida-software-repo</id>
+      <name>bintray</name>
+      <url>https://dl.bintray.com/puravida-software/repo</url>
+    </repository>
+  </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>bintray-puravida-software-repo</id>
+      <name>bintray-plugins</name>
+      <url>https://dl.bintray.com/puravida-software/repo</url>
+    </pluginRepository>
+  </pluginRepositories>
+
+  <properties>
+    <asciidoctor.maven.plugin.version>2.1.0</asciidoctor.maven.plugin.version>
+    <jruby.version>9.2.13.0</jruby.version>
+    <asciidoctorj.version>2.4.1</asciidoctorj.version>
+    <puravida.asciidoctor.version>2.3.0</puravida.asciidoctor.version>
+  </properties>
+
+  <build>
+    <defaultGoal>process-resources</defaultGoal>
+    <plugins>
+      <plugin>
+        <groupId>org.asciidoctor</groupId>
+        <artifactId>asciidoctor-maven-plugin</artifactId>
+        <version>${asciidoctor.maven.plugin.version}</version>
+        <dependencies>
+          <!-- Comment this section to use the default jruby artifact provided by the plugin -->
+          <dependency>
+            <groupId>org.jruby</groupId>
+            <artifactId>jruby-complete</artifactId>
+            <version>${jruby.version}</version>
+          </dependency>
+          <!-- Comment this section to use the default AsciidoctorJ artifact provided by the plugin -->
+          <dependency>
+            <groupId>org.asciidoctor</groupId>
+            <artifactId>asciidoctorj</artifactId>
+            <version>${asciidoctorj.version}</version>
+          </dependency>
+
+          <!-- Add PuraVida Asciidoctor Extension -->
+          <!-- https://puravida-asciidoctor.gitlab.io/asciidoctor-extensions/ -->
+
+          <dependency>
+            <groupId>com.puravida.asciidoctor</groupId>
+            <artifactId>asciidoctor-extensions</artifactId>
+            <version>${puravida.asciidoctor.version}</version>
+          </dependency>
+
+        </dependencies>
+        <configuration>
+          <sourceDirectory>${project.basedir}/../docs</sourceDirectory>
+        </configuration>
+        <executions>
+          <execution>
+            <id>generate-html-doc</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>process-asciidoc</goal>
+            </goals>
+            <configuration>
+              <backend>html5</backend>
+              <attributes>
+<!--                <imagesdir>./images</imagesdir>-->
+                <toc>left</toc>
+                <icons>font</icons>
+                <sectanchors>true</sectanchors>
+                <idprefix/>
+                <idseparator>-</idseparator>
+              </attributes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

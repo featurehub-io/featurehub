@@ -1,0 +1,6 @@
+name: 'maven-docs'
+description: 'Crazy stuffing around with Github actions to run docker'
+runs:
+  using: docker
+  image: Dockerfile
+
