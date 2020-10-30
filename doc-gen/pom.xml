@@ -84,7 +84,7 @@
                 <toc>left</toc>
                 <icons>font</icons>
                 <sectanchors>true</sectanchors>
-                <idprefix/>
+                <idprefix>_</idprefix>
                 <idseparator>-</idseparator>
               </attributes>
             </configuration>
