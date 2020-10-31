@@ -1,6 +1,7 @@
 package client
 
 import (
+	"net/http"
 	"sync"
 	"time"
 
@@ -9,6 +10,11 @@ import (
 	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/interfaces"
 	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/models"
 	"github.com/sirupsen/logrus"
+)
+
+const (
+	// ClientContextHeaderName allows the FeatureHub server to provide client-specific rollout strategies:
+	ClientContextHeaderName = "x-featurehub"
 )
 
 // StreamingClient implements the client interface by by subscribing to server-side events:
@@ -59,8 +65,20 @@ func NewStreamingClient(config *Config) (*StreamingClient, error) {
 	// Report that we're starting:
 	logger.WithField("server_address", client.config.ServerAddress).Info("Subscribing to FeatureHub server")
 
+	// Prepare a custom HTTP request:
+	req, err := http.NewRequest("GET", config.featuresURL(), nil)
+	if err != nil {
+		client.logger.WithError(err).Error("Error preparing request")
+		return nil, err
+	}
+
+	// Add the client context header (if we have it):
+	if config.Context != nil {
+		req.Header.Add(ClientContextHeaderName, config.Context.String())
+	}
+
 	// Prepare an API client:
-	apiClient, err := eventsource.Subscribe(config.featuresURL(), "")
+	apiClient, err := eventsource.SubscribeWithRequest("", req)
 	if err != nil {
 		client.logger.WithError(err).Error("Error subscribing to server")
 		return nil, err

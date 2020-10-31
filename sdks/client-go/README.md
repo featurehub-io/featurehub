@@ -33,7 +33,10 @@ There are 3 steps to connecting:
     config := &client.Config{
         SDKKey:        "default/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee/ajhsgdJHGAFKJAHSGDFKAJHHSDLFKAJLSKJDHFLAJKHlkjahlkjhfsld",
         ServerAddress: "http://1.2.3.4:8085",
-        WaitForData:   true,
+		WaitForData:   true,
+		ClientContext: &client.Context{
+			Userkey: uuid.New().String(),
+		},
     }
 ```
 
@@ -145,5 +148,6 @@ Todo
 - [X] Global "readyness" callback (either OK when data has arrived, or an error if there was a fail)
 - [X] Analytics support
 - [X] Google Analytics support
+- [X] Add support for ClientContext, and submit this as an x-featurehub header upon connection
 - [ ] Re-introduce the "polling" client (if we decide to go down that route for other SDKs)
 - [ ] Run tests and code-generation inside Docker (instead of requiring Go to be installed locally)

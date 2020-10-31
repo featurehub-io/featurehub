@@ -14,6 +14,7 @@ const (
 
 // Config defines parameters for the client:
 type Config struct {
+	Context       *Context     // Client context metadata (optional)
 	LogLevel      logrus.Level // Logging level (default is "info")
 	SDKKey        string       // SDK key (copied from the UI), in the format "{namedCache}/environmentID/APIKey"
 	ServerAddress string       // FeatureHub API endpoint
