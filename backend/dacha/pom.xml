@@ -43,8 +43,8 @@
 
   <dependencies>
     <dependency>
-      <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-app</artifactId>
+      <groupId>io.featurehub.common</groupId>
+      <artifactId>common-web</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
 

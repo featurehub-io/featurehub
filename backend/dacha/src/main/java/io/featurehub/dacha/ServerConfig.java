@@ -31,7 +31,7 @@ public class ServerConfig {
   public String natsServer;
   @ConfigKey("cache.name")
   public String name = ChannelConstants.DEFAULT_CACHE_NAME;
-  private Connection connection;
+  private final Connection connection;
   private final List<Runnable> dispatchers = new ArrayList<>();
 
   public ServerConfig(InternalCache cache) {
