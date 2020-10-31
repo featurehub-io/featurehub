@@ -3,6 +3,7 @@ package io.featurehub.db.services
 import io.ebean.Database
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.UserStateApi
+import io.featurehub.db.model.DbApplication
 import io.featurehub.db.model.DbOrganization
 import io.featurehub.db.model.DbPortfolio
 import io.featurehub.db.publish.CacheSource
@@ -66,5 +67,41 @@ class UserStateSpec extends BaseSpec {
       us.saveHiddenEnvironments(null, null, null)
     then:
       0 * database.save(any())
+  }
+
+  def "I attempt to add > max environments and i get an invalid state"() {
+    given: "a new user state"
+        def us = new UserStateSqlApi(convertUtils, database)
+    and: "a new user state with too manny environments"
+      def he = new HiddenEnvironments();
+      for(int count = 0; count < us.maximumEnvironmentsPerApplication + 5; count ++) {
+        he.addEnvironmentIdsItem("1")
+      }
+    when: "i save"
+        us.saveHiddenEnvironments(superPerson, he, app1.id)
+    then:
+        thrown UserStateApi.InvalidUserStateException
+  }
+
+  def "I attempt to add environments that aren't valid uuids"() {
+    given: "a new user state impl"
+      def us = new UserStateSqlApi(convertUtils, database)
+    and: "a new user state with invalid environment uuids"
+      def he = new HiddenEnvironments().addEnvironmentIdsItem("1").addEnvironmentIdsItem("2")
+    when: "i save"
+        us.saveHiddenEnvironments(superPerson, he, app1.id)
+    then:
+        thrown UserStateApi.InvalidUserStateException
+  }
+
+  def "I attempt to add environments that don't exist"() {
+    given: "a new user state impl"
+      def us = new UserStateSqlApi(convertUtils, database)
+    and: "a new user state with invalid environment uuids"
+      def he = new HiddenEnvironments().addEnvironmentIdsItem(UUID.randomUUID().toString()).addEnvironmentIdsItem(UUID.randomUUID().toString())
+    when: "i save"
+        us.saveHiddenEnvironments(superPerson, he, app1.id)
+    then:
+        thrown UserStateApi.InvalidUserStateException
   }
 }

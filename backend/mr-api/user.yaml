@@ -30,6 +30,8 @@ paths:
           description: "no permission to environment"
         "404":
           description: "no such application"
+        "422":
+          description: "couldn't process request, something wrong"
     post:
       security:
         - bearerAuth: []
