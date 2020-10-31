@@ -4,6 +4,11 @@ import io.featurehub.mr.model.HiddenEnvironments;
 import io.featurehub.mr.model.Person;
 
 public interface UserStateApi {
+  class InvalidUserStateException extends Exception {
+    public InvalidUserStateException(String message) {
+      super(message);
+    }
+  }
   /**
    * Get the list of environments stashed for this user.
    *
@@ -21,5 +26,5 @@ public interface UserStateApi {
    * @param environments
    * @param appId
    */
-  void saveHiddenEnvironments(Person person, HiddenEnvironments environments, String appId);
+  void saveHiddenEnvironments(Person person, HiddenEnvironments environments, String appId) throws InvalidUserStateException;
 }

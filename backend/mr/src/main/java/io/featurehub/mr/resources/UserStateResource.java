@@ -7,6 +7,8 @@ import io.featurehub.mr.model.HiddenEnvironments;
 import io.featurehub.mr.utils.ApplicationUtils;
 
 import javax.inject.Inject;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
 public class UserStateResource implements UserStateServiceDelegate {
@@ -35,7 +37,11 @@ public class UserStateResource implements UserStateServiceDelegate {
   public HiddenEnvironments saveHiddenEnvironments(String appId, HiddenEnvironments hiddenEnvironments, SecurityContext securityContext) {
     applicationUtils.featureReadCheck(securityContext, appId);
 
-    userStateApi.saveHiddenEnvironments(authManager.from(securityContext), hiddenEnvironments, appId);
+    try {
+      userStateApi.saveHiddenEnvironments(authManager.from(securityContext), hiddenEnvironments, appId);
+    } catch (UserStateApi.InvalidUserStateException e) {
+      throw new WebApplicationException(Response.status(422).entity(e.getMessage()).build());
+    }
 
     return hiddenEnvironments;
   }
