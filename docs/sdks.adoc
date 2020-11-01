@@ -1,4 +1,4 @@
-[#sdks]
+[#_sdks]
 == Client SDKs for Feature Hub
 
 The client SDKs for FeatureHub are designed to allow various supported languages to connect to the Edge server and receive updates on the features.
