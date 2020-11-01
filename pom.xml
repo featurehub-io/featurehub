@@ -34,6 +34,7 @@
   </licenses>
 
   <modules>
+    <module>backend/common-web</module>
     <module>backend/composite-jackson</module>
     <module>backend/composite-ebean</module>
     <module>backend/composite-app</module>

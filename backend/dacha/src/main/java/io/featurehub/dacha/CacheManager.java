@@ -44,7 +44,6 @@ public class CacheManager implements MessageHandler {
   Integer cachePoolSize = 10;
 
 
-
   public CacheManager(InternalCache internalCache,  ServerConfig config) {
     this.internalCache = internalCache;
     this.config = config;

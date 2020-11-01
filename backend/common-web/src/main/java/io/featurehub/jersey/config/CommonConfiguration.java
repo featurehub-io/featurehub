@@ -1,4 +1,4 @@
-package io.featurehub.mr.filters;
+package io.featurehub.jersey.config;
 
 import cd.connect.jersey.common.JacksonContextProvider;
 import org.glassfish.jersey.CommonProperties;
