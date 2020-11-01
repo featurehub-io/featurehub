@@ -85,7 +85,7 @@
                 <icons>font</icons>
                 <sectanchors>true</sectanchors>
                 <idprefix>_</idprefix>
-                <idseparator>-</idseparator>
+                <idseparator>_</idseparator>
               </attributes>
             </configuration>
           </execution>
