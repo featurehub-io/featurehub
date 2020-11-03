@@ -1,3 +1,4 @@
+import 'package:app_singleapp/widgets/features/custom_strategy_bloc.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/country_attribute_strategy_dropdown.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/device_attribute_strategy_dropdown.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/platform_attribute_strategy_dropdown.dart';
@@ -10,11 +11,12 @@ import 'package:mrapi/api.dart';
 
 class AttributeStrategyWidget extends StatefulWidget {
   final RolloutStrategyAttribute attribute;
+  final CustomStrategyBloc bloc;
 
   final  String attributeStrategyFieldName;
 
   const AttributeStrategyWidget({
-    Key key, this.attribute, this.attributeStrategyFieldName,
+    Key key, this.attribute, this.attributeStrategyFieldName, this.bloc,
 
   }) :  super(key: key);
 
@@ -61,6 +63,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
           else
             Flexible(
               child: TextFormField(
+                  onEditingComplete: () => _updateAttribute(),
                   controller: _customAttributeKey,
                   decoration: InputDecoration(
                       labelText: 'Custom attribute key',
@@ -191,6 +194,11 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
         ),
       ],
     );
+  }
+
+  _updateAttribute() {
+    widget.attribute..value = _customAttributeKey..value = _customAttributeValue;
+    widget.bloc.updateAttribute(attribute);
   }
 
 }

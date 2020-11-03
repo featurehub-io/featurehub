@@ -35,7 +35,7 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
   bool isUpdate = false;
   bool isTotalPercentageError = false;
 
-  List<RolloutStrategyAttribute> rolloutStrategyAttributeList = [];
+
 
   @override
   void initState() {
@@ -43,7 +43,6 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
     if (widget.rolloutStrategy != null) {
       _strategyName.text = widget.rolloutStrategy.name;
       _strategyPercentage.text = widget.rolloutStrategy.percentageText;
-      rolloutStrategyAttributeList = widget.rolloutStrategy?.attributes;
       isUpdate = true;
     }
   }
@@ -97,12 +96,25 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
                     }
                     return null;
                   })),
-              if(rolloutStrategyAttributeList.isNotEmpty) Column (children: [for(var rolloutStrategyAttribute in rolloutStrategyAttributeList )
-                AttributeStrategyWidget(attribute: rolloutStrategyAttribute)]),
+              StreamBuilder<List<RolloutStrategyAttribute>>(
+                stream: widget.bloc.attributes,
+                builder: (context, snapshot) {
+                  if(snapshot.data.isNotEmpty) {
+                    return Column(children: [
+                      for(var rolloutStrategyAttribute in snapshot.data )
+                        AttributeStrategyWidget(
+                            attribute: rolloutStrategyAttribute)
+                    ]);
+                  }
+                  else {
+                    return Container();
+                  }
+                }
+              ),
               AttributeStrategyWidget(attributeStrategyFieldName: 'platform',), //we need to show this only when "Add custom attribute" button is clicked. Maybe it should be a stream of strategies we are about to add? We need to be able to remove them too
               Row(
                 children: [
-                  TextButton(onPressed: null, child: Text('Add custom attribute')), //ToDo: onPressed should call a state change
+                  TextButton(onPressed: () => widget.bloc.addStrategyAttribute(widget.rolloutStrategy), child: Text('Add custom attribute')), //ToDo: onPressed should call a state change
                   TextButton(onPressed: null, child: Text('Add country')),
                   TextButton(onPressed: null, child: Text('Add device')),
                 ],
@@ -148,11 +160,13 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
     // this deals with the idea we may not have ids yet for stuff
     widget.bloc.ensureStrategiesAreUnique();
 
-    final update = widget.rolloutStrategy.copyWith()
+    final updatedStrategy = widget.rolloutStrategy.copyWith()
       ..name = _strategyPercentage.text
+      ..attributes = widget.bloc.attributes
       ..percentageFromText = _strategyPercentage.text;
 
-    final validationCheck = await widget.bloc.validationCheck(update);
+
+    final validationCheck = await widget.bloc.validationCheck(updatedStrategy);
 
     if (isValidationOk(validationCheck)) {
       widget.rolloutStrategy
@@ -183,6 +197,7 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
     final newStrategy = RolloutStrategy()
       ..name = _strategyPercentage.text
       ..percentageFromText = _strategyPercentage.text
+      ..attributes
       ..value = defaultValue;
 
     final validationCheck = await widget.bloc.validationCheck(newStrategy);

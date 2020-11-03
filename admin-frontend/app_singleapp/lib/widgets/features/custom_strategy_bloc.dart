@@ -11,6 +11,8 @@ class CustomStrategyBloc extends Bloc {
 
   final _strategySource =
       BehaviorSubject<List<RolloutStrategy>>.seeded(<RolloutStrategy>[]);
+  final _rolloutStartegyAttributeList = BehaviorSubject<List<RolloutStrategyAttribute>>();
+  Stream<List<RolloutStrategyAttribute>> get attributes => _rolloutStartegyAttributeList.stream;
 
   Stream<List<RolloutStrategy>> get strategies => _strategySource.stream;
 
@@ -45,6 +47,18 @@ class CustomStrategyBloc extends Bloc {
     strategies.removeWhere((e) => e.id == rs.id);
     markDirty();
     _strategySource.add(strategies);
+  }
+
+  void addStrategyAttribute() {
+    // _strategySource.value
+    var rsa = RolloutStrategyAttribute();
+    final attributes = _strategySource.value.last.attributes;
+    attributes.add(rsa);
+    _rolloutStartegyAttributeList.add(attributes);
+  }
+
+  void updateAttribute(attribute) {
+
   }
 
   @override
@@ -90,4 +104,8 @@ class CustomStrategyBloc extends Bloc {
     return fvBloc.featuresOnTabBloc.featureStatusBloc
         .validationCheck(strategies, <RolloutStrategyInstance>[]);
   }
+
+
+
+
 }
