@@ -13,39 +13,78 @@ class AttributeStrategyWidget extends StatefulWidget {
   final RolloutStrategyAttribute attribute;
   final CustomStrategyBloc bloc;
 
-  final  String attributeStrategyFieldName;
-
   const AttributeStrategyWidget({
-    Key key, this.attribute, this.attributeStrategyFieldName, this.bloc,
-
-  }) :  super(key: key);
-
+    Key key,
+    this.attribute,
+    this.bloc,
+  }) : super(key: key);
 
   @override
-  _AttributeStrategyWidgetState createState() => _AttributeStrategyWidgetState();
+  _AttributeStrategyWidgetState createState() =>
+      _AttributeStrategyWidgetState();
 }
 
 class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
   final TextEditingController _customAttributeKey = TextEditingController();
-  final TextEditingController _customAttributeValue = TextEditingController();
+  final TextEditingController _fieldName = TextEditingController();
+  final TextEditingController _value = TextEditingController();
 
   RolloutStrategyAttributeConditional _dropDownCustomAttributeMatchingCriteria;
-  RolloutStrategyFieldType _rolloutStrategyFieldType;
-  bool isUpdate = false;
-  String attributeStrategyType;
+  RolloutStrategyAttribute _attribute;
+  StrategyAttributeWellKnownNames _wellKnown;
 
   _AttributeStrategyWidgetState();
 
   @override
   void initState() {
     super.initState();
-    if (widget.attribute != null) {
-      _dropDownCustomAttributeMatchingCriteria = widget.attribute.conditional;
-      isUpdate = true;
-      attributeStrategyType = widget.attribute.fieldName;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _attribute = widget.attribute.copyWith();
+
+    if (_attribute.fieldName != null) {
+      _fieldName.text = _attribute.fieldName;
     }
-    else {
-      attributeStrategyType = widget.attributeStrategyFieldName;
+
+    if (_attribute.value != null) {
+      _value.text = _attribute.value.toString();
+    }
+
+    _wellKnown = StrategyAttributeWellKnownNamesTypeTransformer
+        .fromJsonMap[_attribute.fieldName ?? ''];
+  }
+
+  Map<StrategyAttributeWellKnownNames, String> _nameFieldMap = {
+    StrategyAttributeWellKnownNames.country: 'Country',
+    StrategyAttributeWellKnownNames.device: 'Device',
+    StrategyAttributeWellKnownNames.platform: 'Platform',
+    StrategyAttributeWellKnownNames.version: 'Version',
+    StrategyAttributeWellKnownNames.userkey: 'User',
+    StrategyAttributeWellKnownNames.session: 'Session',
+  };
+
+  Widget _nameField() {
+    if (_wellKnown != null) {
+      return Text(_nameFieldMap[_wellKnown]);
+    } else {
+      return Flexible(
+        child: TextFormField(
+            onEditingComplete: () => _updateAttribute(),
+            controller: _fieldName,
+            decoration: InputDecoration(
+                labelText: 'Custom field name', helperText: 'e.g. warehouseId'),
+            autofocus: true,
+            onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+            validator: ((v) {
+              if (v.isEmpty) {
+                return 'Field name required';
+              }
+              return null;
+            })),
+      );
     }
   }
 
@@ -56,74 +95,42 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisSize: MainAxisSize.max,
       children: [
-        if(attributeStrategyType == 'country') Text('Country')
-        else
-          if (attributeStrategyType == 'device') Text('Device')
-        else if(attributeStrategyType == 'platform') Text('Platform')
-          else
-            Flexible(
-              child: TextFormField(
-                  onEditingComplete: () => _updateAttribute(),
-                  controller: _customAttributeKey,
-                  decoration: InputDecoration(
-                      labelText: 'Custom attribute key',
-                      helperText:
-                      'E.g. userId'),
-                  // readOnly: !widget.widget.editable,
-                  autofocus: true,
-                  onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
-                  // inputFormatters: [
-                  //   DecimalTextInputFormatter(
-                  //       decimalRange: 4, activatedNegativeValues: false)
-                  // ],
-                  validator: ((v) {
-                    if (v.isEmpty) {
-                      return 'Attribute key required';
-                    }
-                    return null;
-                  })),
-            ),
+        _nameField(),
         Spacer(),
-        if(attributeStrategyType == 'custom') InkWell(
-          mouseCursor: SystemMouseCursors.click,
-          child: DropdownButton(
-            icon: Padding(
-              padding: EdgeInsets.only(left: 8.0),
-              child: Icon(
-                Icons.keyboard_arrow_down,
-                size: 24,
+        if (attributeStrategyType == 'custom')
+          InkWell(
+            mouseCursor: SystemMouseCursors.click,
+            child: DropdownButton(
+              icon: Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Icon(
+                  Icons.keyboard_arrow_down,
+                  size: 24,
+                ),
               ),
+              isExpanded: false,
+              items: RolloutStrategyFieldType.values
+                  .map((RolloutStrategyFieldType dropDownStringItem) {
+                return DropdownMenuItem<RolloutStrategyFieldType>(
+                    value: dropDownStringItem,
+                    child: Text(
+                        transformRolloutStrategyTypeFieldToString(
+                            dropDownStringItem),
+                        style: Theme.of(context).textTheme.bodyText2));
+              }).toList(),
+              hint: Text('Select value type',
+                  style: Theme.of(context).textTheme.subtitle2),
+              onChanged: (value) {
+                var readOnly = false; //TODO parametrise this if needed
+                if (!readOnly) {
+                  setState(() {
+                    _rolloutStrategyFieldType = value;
+                  });
+                }
+              },
+              value: _rolloutStrategyFieldType,
             ),
-            isExpanded: false,
-            items: RolloutStrategyFieldType.values
-                .map((RolloutStrategyFieldType dropDownStringItem) {
-              return DropdownMenuItem<RolloutStrategyFieldType>(
-                  value: dropDownStringItem,
-                  child: Text(
-                      transformRolloutStrategyTypeFieldToString(
-                          dropDownStringItem),
-                      style: Theme
-                          .of(context)
-                          .textTheme
-                          .bodyText2));
-            }).toList(),
-
-            hint: Text('Select value type',
-                style: Theme
-                    .of(context)
-                    .textTheme
-                    .subtitle2),
-            onChanged: (value) {
-              var readOnly = false; //TODO parametrise this if needed
-              if (!readOnly) {
-                setState(() {
-                  _rolloutStrategyFieldType = value;
-                });
-              }
-            },
-            value: _rolloutStrategyFieldType,
           ),
-        ),
         Spacer(),
         InkWell(
           mouseCursor: SystemMouseCursors.click,
@@ -143,17 +150,10 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
                   child: Text(
                       transformStrategyAttributeConditionalValueToString(
                           dropDownStringItem),
-                      style: Theme
-                          .of(context)
-                          .textTheme
-                          .bodyText2));
+                      style: Theme.of(context).textTheme.bodyText2));
             }).toList(),
-
             hint: Text('Select condition',
-                style: Theme
-                    .of(context)
-                    .textTheme
-                    .subtitle2),
+                style: Theme.of(context).textTheme.subtitle2),
             onChanged: (value) {
               var readOnly = false; //TODO parametrise this if needed
               if (!readOnly) {
@@ -166,41 +166,49 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
           ),
         ),
         Spacer(),
-        if(attributeStrategyType == 'country') CountryAttributeStrategyDropdown(attribute: widget.attribute)
+        if (attributeStrategyType == 'country')
+          CountryAttributeStrategyDropdown(attribute: widget.attribute)
+        else if (attributeStrategyType == 'device')
+          DeviceAttributeStrategyDropdown()
+        else if (attributeStrategyType == 'platform')
+          PlatformAttributeStrategyDropdown()
         else
-          if (attributeStrategyType == 'device') DeviceAttributeStrategyDropdown()
-          else if(attributeStrategyType == 'platform') PlatformAttributeStrategyDropdown()
-          else
-        Flexible(
-          child: TextFormField(
-              controller: _customAttributeValue,
-              decoration: InputDecoration(
-                  labelText: 'Custom attribute value(s)',
-                  helperText:
-                  'E.g. bob@xyz.com, mary@xyz.com'),
-              // readOnly: !widget.widget.editable,
-              autofocus: true,
-              onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
-              // inputFormatters: [
-              //   DecimalTextInputFormatter(
-              //       decimalRange: 4, activatedNegativeValues: false)
-              // ],
-              validator: ((v) {
-                if (v.isEmpty) {
-                  return 'Attribute value(s) required';
-                }
-                return null;
-              })),
-        ),
+          Flexible(
+            child: TextFormField(
+                controller: _value,
+                decoration: InputDecoration(
+                    labelText: 'Custom attribute value(s)',
+                    helperText: 'E.g. bob@xyz.com, mary@xyz.com'),
+                // readOnly: !widget.widget.editable,
+                autofocus: true,
+                onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+                // inputFormatters: [
+                //   DecimalTextInputFormatter(
+                //       decimalRange: 4, activatedNegativeValues: false)
+                // ],
+                validator: ((v) {
+                  if (v.isEmpty) {
+                    return 'Attribute value(s) required';
+                  }
+                  return null;
+                })),
+          ),
       ],
     );
   }
 
   _updateAttribute() {
-    widget.attribute..value = _customAttributeKey..value = _customAttributeValue;
-    widget.bloc.updateAttribute(attribute);
+    final newWellKnown = StrategyAttributeWellKnownNamesTypeTransformer
+        .fromJsonMap[_fieldName.text ?? ''];
+
+    if (newWellKnown != _wellKnown) {
+      setState(() {
+        _wellKnown = newWellKnown;
+      });
+    }
+    // widget.attribute
+    //   ..value = _customAttributeKey
+    //   ..value = _value;
+    // widget.bloc.updateAttribute(attribute);
   }
-
 }
-
-

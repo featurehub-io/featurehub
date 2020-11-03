@@ -4,17 +4,20 @@ import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/common/input_fields_validators/input_field_number_formatter.dart';
 import 'package:app_singleapp/widgets/features/custom_strategy_bloc.dart';
 import 'package:app_singleapp/widgets/features/percentage_utils.dart';
-import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/add_attribute_strategy_widget.dart';
+import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
 
-class CreateValueStrategyWidget extends StatefulWidget {
+import '../custom_strategy_attributes_bloc.dart';
+import 'rollout_strategies_widget.dart';
+
+class StrategyEditingWidget extends StatefulWidget {
   final CustomStrategyBloc bloc;
   final RolloutStrategy rolloutStrategy;
   final bool editable;
 
-  const CreateValueStrategyWidget({
+  const StrategyEditingWidget({
     Key key,
     this.rolloutStrategy,
     @required this.bloc,
@@ -23,19 +26,18 @@ class CreateValueStrategyWidget extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return _CreateValueStrategyWidgetState();
+    return _StrategyEditingWidgetState();
   }
 }
 
-class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
+class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _strategyName = TextEditingController();
   final TextEditingController _strategyPercentage = TextEditingController();
+  IndividualStrategyBloc individualStrategyBloc;
 
   bool isUpdate = false;
   bool isTotalPercentageError = false;
-
-
 
   @override
   void initState() {
@@ -45,6 +47,12 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
       _strategyPercentage.text = widget.rolloutStrategy.percentageText;
       isUpdate = true;
     }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    individualStrategyBloc = BlocProvider.of(context);
   }
 
   @override
@@ -96,29 +104,7 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
                     }
                     return null;
                   })),
-              StreamBuilder<List<RolloutStrategyAttribute>>(
-                stream: widget.bloc.attributes,
-                builder: (context, snapshot) {
-                  if(snapshot.data.isNotEmpty) {
-                    return Column(children: [
-                      for(var rolloutStrategyAttribute in snapshot.data )
-                        AttributeStrategyWidget(
-                            attribute: rolloutStrategyAttribute)
-                    ]);
-                  }
-                  else {
-                    return Container();
-                  }
-                }
-              ),
-              AttributeStrategyWidget(attributeStrategyFieldName: 'platform',), //we need to show this only when "Add custom attribute" button is clicked. Maybe it should be a stream of strategies we are about to add? We need to be able to remove them too
-              Row(
-                children: [
-                  TextButton(onPressed: () => widget.bloc.addStrategyAttribute(widget.rolloutStrategy), child: Text('Add custom attribute')), //ToDo: onPressed should call a state change
-                  TextButton(onPressed: null, child: Text('Add country')),
-                  TextButton(onPressed: null, child: Text('Add device')),
-                ],
-              ),
+              RolloutStrategiesWidget(),
               if (isTotalPercentageError)
                 Text(
                     'Your percentage total across all rollout values cannot be over 100%. Please enter different value.',
@@ -162,9 +148,8 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
 
     final updatedStrategy = widget.rolloutStrategy.copyWith()
       ..name = _strategyPercentage.text
-      ..attributes = widget.bloc.attributes
+      ..attributes = individualStrategyBloc.currentAttributes
       ..percentageFromText = _strategyPercentage.text;
-
 
     final validationCheck = await widget.bloc.validationCheck(updatedStrategy);
 
@@ -222,4 +207,3 @@ class _CreateValueStrategyWidgetState extends State<CreateValueStrategyWidget> {
     });
   }
 }
-

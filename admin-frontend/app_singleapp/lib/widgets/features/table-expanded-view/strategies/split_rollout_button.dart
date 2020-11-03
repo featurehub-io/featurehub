@@ -1,7 +1,10 @@
 import 'package:app_singleapp/widgets/features/custom_strategy_bloc.dart';
-import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/create-strategy-widget.dart';
+import 'package:app_singleapp/widgets/features/table-expanded-view/custom_strategy_attributes_bloc.dart';
+import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/strategy_editing_widget.dart';
+import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:mrapi/api.dart';
 
 class AddStrategyButton extends StatelessWidget {
   final CustomStrategyBloc bloc;
@@ -26,10 +29,13 @@ class AddStrategyButton extends StatelessWidget {
                 color: Colors.white, size: 16.0),
             onPressed: (editable == true)
                 ? () => bloc.fvBloc.mrClient.addOverlay((BuildContext context) {
-                      //return null;
-                      return CreateValueStrategyWidget(
-                        bloc: bloc,
-                        editable: editable,
+                      return BlocProvider(
+                        creator: (_c, _b) => IndividualStrategyBloc(
+                            bloc.environmentFeatureValue, RolloutStrategy()),
+                        child: StrategyEditingWidget(
+                          bloc: bloc,
+                          editable: editable,
+                        ),
                       );
                     })
                 : null),
