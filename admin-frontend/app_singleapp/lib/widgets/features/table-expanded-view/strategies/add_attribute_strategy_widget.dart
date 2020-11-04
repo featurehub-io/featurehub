@@ -131,6 +131,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
               if (!readOnly) {
                 setState(() {
                   _dropDownCustomAttributeMatchingCriteria = value;
+                  _attribute.conditional = value;
                 });
               }
             },
