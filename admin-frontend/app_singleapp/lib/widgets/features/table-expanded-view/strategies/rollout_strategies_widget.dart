@@ -1,4 +1,3 @@
-
 import 'package:app_singleapp/widgets/features/table-expanded-view/custom_strategy_attributes_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/cupertino.dart';
@@ -16,25 +15,27 @@ class RolloutStrategiesWidget extends StatelessWidget {
       StreamBuilder<List<RolloutStrategyAttribute>>(
           stream: bloc.attributes,
           builder: (context, snapshot) {
-            if(snapshot.data.isNotEmpty) {
+            if (snapshot.hasData && snapshot.data.isNotEmpty) {
               return Column(children: [
-                for(var rolloutStrategyAttribute in snapshot.data )
-                  AttributeStrategyWidget(
-                      attribute: rolloutStrategyAttribute)
+                for (var rolloutStrategyAttribute in snapshot.data)
+                  AttributeStrategyWidget(attribute: rolloutStrategyAttribute)
               ]);
-            }
-            else {
+            } else {
               return Container();
             }
-          }
-      ),
+          }),
       Row(
         children: [
-          TextButton(onPressed: () => bloc.createAttribute(), child: Text('Add Custom')), //ToDo: onPressed should call a state change
-          for(var e in StrategyAttributeWellKnownNames.values)
-            TextButton(onPressed: () => bloc.createAttribute(type: e), child: Text('Add ${e.name}'))
+          TextButton(
+              onPressed: () => bloc.createAttribute(),
+              child: Text(
+                  'Add Custom')), //ToDo: onPressed should call a state change
+          for (var e in StrategyAttributeWellKnownNames.values)
+            TextButton(
+                onPressed: () => bloc.createAttribute(type: e),
+                child: Text('Add ${e.name}'))
         ],
       ),
-    ],)
+    ]);
   }
 }

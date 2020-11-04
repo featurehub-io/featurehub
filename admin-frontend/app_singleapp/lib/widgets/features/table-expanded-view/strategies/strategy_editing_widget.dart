@@ -179,10 +179,12 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
             ? false
             : null;
 
+    print("attrs are ${individualStrategyBloc.currentAttributes}");
+
     final newStrategy = RolloutStrategy()
       ..name = _strategyPercentage.text
       ..percentageFromText = _strategyPercentage.text
-      ..attributes
+      ..attributes = individualStrategyBloc.currentAttributes
       ..value = defaultValue;
 
     final validationCheck = await widget.bloc.validationCheck(newStrategy);

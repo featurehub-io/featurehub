@@ -21,7 +21,9 @@ class IndividualStrategyBloc extends Bloc {
         assert(rolloutStrategy.attributes != null),
         _rolloutStartegyAttributeSource =
             BehaviorSubject<List<RolloutStrategyAttribute>>.seeded(
-                rolloutStrategy.attributes);
+                rolloutStrategy.attributes) {
+    print("Attributes are ${rolloutStrategy.attributes}");
+  }
 
   void createAttribute({StrategyAttributeWellKnownNames type}) {
     final rs = RolloutStrategyAttribute()..fieldName = type?.name;
@@ -47,6 +49,7 @@ class IndividualStrategyBloc extends Bloc {
   void addAttribute(RolloutStrategyAttribute rs) {
     rolloutStrategy.attributes.add(rs);
     _rolloutStartegyAttributeSource.add(rolloutStrategy.attributes);
+    print("Attributes are ${rolloutStrategy.attributes}");
   }
 
   void updateStrategy(RolloutStrategyAttribute rs) {

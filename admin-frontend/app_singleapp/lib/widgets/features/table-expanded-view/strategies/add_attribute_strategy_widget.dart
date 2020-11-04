@@ -1,3 +1,4 @@
+import 'package:app_singleapp/widgets/common/input_fields_validators/input_field_number_formatter.dart';
 import 'package:app_singleapp/widgets/features/custom_strategy_bloc.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/country_attribute_strategy_dropdown.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/device_attribute_strategy_dropdown.dart';
@@ -7,6 +8,7 @@ import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/tr
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:mrapi/api.dart';
 
 class AttributeStrategyWidget extends StatefulWidget {
@@ -32,6 +34,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
   RolloutStrategyAttributeConditional _dropDownCustomAttributeMatchingCriteria;
   RolloutStrategyAttribute _attribute;
   StrategyAttributeWellKnownNames _wellKnown;
+  RolloutStrategyFieldType _attributeType;
 
   _AttributeStrategyWidgetState();
 
@@ -43,7 +46,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _attribute = widget.attribute.copyWith();
+    _attribute = widget.attribute;
 
     if (_attribute.fieldName != null) {
       _fieldName.text = _attribute.fieldName;
@@ -52,6 +55,8 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
     if (_attribute.value != null) {
       _value.text = _attribute.value.toString();
     }
+
+    _attributeType = _attribute.type; // which could be null
 
     _wellKnown = StrategyAttributeWellKnownNamesTypeTransformer
         .fromJsonMap[_attribute.fieldName ?? ''];
@@ -72,7 +77,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
     } else {
       return Flexible(
         child: TextFormField(
-            onEditingComplete: () => _updateAttribute(),
+            onEditingComplete: () => _updateAttributeFieldName(),
             controller: _fieldName,
             decoration: InputDecoration(
                 labelText: 'Custom field name', helperText: 'e.g. warehouseId'),
@@ -97,40 +102,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
       children: [
         _nameField(),
         Spacer(),
-        if (attributeStrategyType == 'custom')
-          InkWell(
-            mouseCursor: SystemMouseCursors.click,
-            child: DropdownButton(
-              icon: Padding(
-                padding: EdgeInsets.only(left: 8.0),
-                child: Icon(
-                  Icons.keyboard_arrow_down,
-                  size: 24,
-                ),
-              ),
-              isExpanded: false,
-              items: RolloutStrategyFieldType.values
-                  .map((RolloutStrategyFieldType dropDownStringItem) {
-                return DropdownMenuItem<RolloutStrategyFieldType>(
-                    value: dropDownStringItem,
-                    child: Text(
-                        transformRolloutStrategyTypeFieldToString(
-                            dropDownStringItem),
-                        style: Theme.of(context).textTheme.bodyText2));
-              }).toList(),
-              hint: Text('Select value type',
-                  style: Theme.of(context).textTheme.subtitle2),
-              onChanged: (value) {
-                var readOnly = false; //TODO parametrise this if needed
-                if (!readOnly) {
-                  setState(() {
-                    _rolloutStrategyFieldType = value;
-                  });
-                }
-              },
-              value: _rolloutStrategyFieldType,
-            ),
-          ),
+        if (_wellKnown == null) _customFieldType(),
         Spacer(),
         InkWell(
           mouseCursor: SystemMouseCursors.click,
@@ -166,38 +138,19 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
           ),
         ),
         Spacer(),
-        if (attributeStrategyType == 'country')
-          CountryAttributeStrategyDropdown(attribute: widget.attribute)
-        else if (attributeStrategyType == 'device')
-          DeviceAttributeStrategyDropdown()
-        else if (attributeStrategyType == 'platform')
-          PlatformAttributeStrategyDropdown()
+        if (_wellKnown == StrategyAttributeWellKnownNames.country)
+          CountryAttributeStrategyDropdown(attribute: _attribute)
+        else if (_wellKnown == StrategyAttributeWellKnownNames.device)
+          DeviceAttributeStrategyDropdown(attribute: _attribute)
+        else if (_wellKnown == StrategyAttributeWellKnownNames.platform)
+          PlatformAttributeStrategyDropdown(attribute: _attribute)
         else
-          Flexible(
-            child: TextFormField(
-                controller: _value,
-                decoration: InputDecoration(
-                    labelText: 'Custom attribute value(s)',
-                    helperText: 'E.g. bob@xyz.com, mary@xyz.com'),
-                // readOnly: !widget.widget.editable,
-                autofocus: true,
-                onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
-                // inputFormatters: [
-                //   DecimalTextInputFormatter(
-                //       decimalRange: 4, activatedNegativeValues: false)
-                // ],
-                validator: ((v) {
-                  if (v.isEmpty) {
-                    return 'Attribute value(s) required';
-                  }
-                  return null;
-                })),
-          ),
+          _fieldValueEditorByFieldType(),
       ],
     );
   }
 
-  _updateAttribute() {
+  _updateAttributeFieldName() {
     final newWellKnown = StrategyAttributeWellKnownNamesTypeTransformer
         .fromJsonMap[_fieldName.text ?? ''];
 
@@ -206,9 +159,115 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
         _wellKnown = newWellKnown;
       });
     }
-    // widget.attribute
-    //   ..value = _customAttributeKey
-    //   ..value = _value;
-    // widget.bloc.updateAttribute(attribute);
+
+    _attribute.fieldName = _fieldName.text;
+  }
+
+  Widget _customFieldType() {
+    return InkWell(
+      mouseCursor: SystemMouseCursors.click,
+      child: DropdownButton(
+        icon: Padding(
+          padding: EdgeInsets.only(left: 8.0),
+          child: Icon(
+            Icons.keyboard_arrow_down,
+            size: 24,
+          ),
+        ),
+        isExpanded: false,
+        items: RolloutStrategyFieldType.values
+            .map((RolloutStrategyFieldType dropDownStringItem) {
+          return DropdownMenuItem<RolloutStrategyFieldType>(
+              value: dropDownStringItem,
+              child: Text(
+                  transformRolloutStrategyTypeFieldToString(dropDownStringItem),
+                  style: Theme.of(context).textTheme.bodyText2));
+        }).toList(),
+        hint: Text('Select value type',
+            style: Theme.of(context).textTheme.subtitle2),
+        onChanged: (value) {
+          setState(() {
+            _attributeType = value;
+          });
+        },
+        value: _attributeType,
+      ),
+    );
+  }
+
+  Widget _fieldValueEditorByFieldType() {
+    String labelText;
+    String helperText;
+    List<TextInputFormatter> inputFormatters = [];
+    switch (_attributeType) {
+      case RolloutStrategyFieldType.STRING:
+        switch (_wellKnown) {
+          case StrategyAttributeWellKnownNames.userkey:
+            labelText = 'User key(s)';
+            helperText = 'e.g. bob@xyz.com';
+            break;
+          case StrategyAttributeWellKnownNames.session:
+            labelText = 'Session id(s)';
+            helperText = 'e.g. test uuids';
+            break;
+          case StrategyAttributeWellKnownNames.version:
+            labelText = 'Version(s)';
+            helperText = 'e.g. 1.3.4, 7.8.1-SNAPSHOT';
+            break;
+          default:
+            labelText = 'Custom value(s)';
+            helperText = 'e.g. WarehouseA, WarehouseB';
+            break;
+        }
+        break;
+      case RolloutStrategyFieldType.SEMANTIC_VERSION:
+        labelText = 'Version(s)';
+        helperText = 'e.g. 1.3.4, 7.8.1-SNAPSHOT';
+        break;
+      case RolloutStrategyFieldType.NUMBER:
+        labelText = 'Number(s)';
+        helperText = 'e.g. 6, 7.87543';
+        inputFormatters = [
+          DecimalTextInputFormatter(
+              decimalRange: 6, activatedNegativeValues: true)
+        ];
+        break;
+      case RolloutStrategyFieldType.DATE:
+        labelText = 'Date(s) - YYYY/MM/DD';
+        helperText = '2017/04/16';
+        break;
+      case RolloutStrategyFieldType.DATETIME:
+        labelText = 'Date/Time(s) - ISO8601 format';
+        helperText = 'e.g. 2007-03-01T13:00:00Z';
+        break;
+      case RolloutStrategyFieldType.BOOLEAN:
+        // TODO: this needs a drop down for a true/false
+        return Text('needs true/false container');
+      case RolloutStrategyFieldType.IP_ADDRESS:
+        labelText = 'IP Address(es) with or without CIDR';
+        helperText = 'e.g. 168.192.54.3 or 192.168.86.1/8';
+        break;
+      default:
+        return Container(); // nothing until they have chosen one
+    }
+
+    return Flexible(
+      child: TextFormField(
+          controller: _value,
+          decoration:
+              InputDecoration(labelText: labelText, helperText: helperText),
+          // readOnly: !widget.widget.editable,
+          autofocus: true,
+          // TODO: it actually has to be the right type, so a number has to be a number, a bool a bool
+          onEditingComplete: () => _attribute.value = _value.text,
+          onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+          inputFormatters: inputFormatters,
+          validator: ((v) {
+            if (v.isEmpty) {
+              return 'Attribute value(s) required';
+            }
+            return null;
+          })),
+    );
   }
 }
