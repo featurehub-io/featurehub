@@ -1,7 +1,24 @@
 steps:
-  - name: 'maven:3.6.3-jdk-11'
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
+    entrypoint: '/bin/sh'
+    id: tile-install
+    args:
+      - '-c'
+      - 'cd backend && mvn -s ../pipeline/m2/settings.xml --no-transfer-progress install -f pom-first.xml'
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
     entrypoint: '/bin/sh'
     args:
       - '-c'
-      - cd backend && mvn --no-transfer-progress install -f pom-first.xml && cd .. && mvn -T4C --no-transfer-progress install
+      - 'if [ -f all-build ]; then mvn -s pipeline/m2/settings.xml --no-transfer-progress install -f pom.xml; else true; fi'
+    waitFor:
+      - tile-install
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
+    # run partial build if special "all-build" file is missing
+    entrypoint: '/bin/sh'
+    args:
+      - '-c'
+      - 'if [ ! -f all-build ]; then mvn -s pipeline/m2/settings.xml --no-transfer-progress install -Dgib.disable=false -Dgib.referenceBranch=refs/remotes/origin/master -f pom.xml; else true; fi'
+    waitFor:
+      - tile-install
+
 
