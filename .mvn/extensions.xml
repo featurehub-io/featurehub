@@ -5,4 +5,9 @@
     <artifactId>artifactregistry-maven-wagon</artifactId>
     <version>2.1.1</version>
   </extension>
+  <extension>
+    <groupId>com.vackosar.gitflowincrementalbuilder</groupId>
+    <artifactId>gitflow-incremental-builder</artifactId>
+    <version>3.12.0</version>
+  </extension>
 </extensions>

@@ -69,4 +69,8 @@
     <module>sdks/dart/client-dart-sdk</module>
     <module>admin-frontend/app_mr_layer</module>
   </modules>
+
+  <properties>
+    <gib.disable>true</gib.disable>
+  </properties>
 </project>
