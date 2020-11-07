@@ -1,15 +1,15 @@
 steps:
-  - name: 'maven:3.6.3-jdk-11'
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
     entrypoint: '/bin/sh'
     args:
       - '-c'
       - 'cd backend && mvn -s ../pipeline/m2/settings.xml --no-transfer-progress install -f pom-first.xml'
-  - name: 'maven:3.6.3-jdk-11'
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
     entrypoint: '/bin/sh'
     args:
       - '-c'
       - '[ -f all-build ] && mvn -s pipeline/m2/settings.xml --no-transfer-progress install -f pom.xml'
-  - name: 'maven:3.6.3-jdk-11'
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
     # run partial build if special "all-build" file is missing
     entrypoint: '/bin/sh'
     args:
