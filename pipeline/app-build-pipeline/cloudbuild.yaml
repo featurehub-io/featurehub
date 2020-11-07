@@ -3,17 +3,17 @@ steps:
     entrypoint: '/bin/sh'
     args:
       - '-c'
-      - cd backend && mvn -s ../pipeline/m2/settings.xml --no-transfer-progress install -f pom-first.xml
+      - 'cd backend && mvn -s ../pipeline/m2/settings.xml --no-transfer-progress install -f pom-first.xml'
   - name: 'maven:3.6.3-jdk-11'
     entrypoint: '/bin/sh'
     args:
       - '-c'
-      - [ -f all-build ] && mvn -s pipeline/m2/settings.xml --no-transfer-progress install -f pom.xml
+      - '[ -f all-build ] && mvn -s pipeline/m2/settings.xml --no-transfer-progress install -f pom.xml'
   - name: 'maven:3.6.3-jdk-11'
     # run partial build if special "all-build" file is missing
     entrypoint: '/bin/sh'
     args:
       - '-c'
-      - [ ! -f all-build ] && mvn -s pipeline/m2/settings.xml --no-transfer-progress install -Dgib.disable=false -Dgib.referenceBranch=refs/remotes/origin/master -f pom.xml
+      - '[ ! -f all-build ] && mvn -s pipeline/m2/settings.xml --no-transfer-progress install -Dgib.disable=false -Dgib.referenceBranch=refs/remotes/origin/master -f pom.xml'
 
 
