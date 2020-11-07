@@ -9,7 +9,7 @@ steps:
     entrypoint: '/bin/sh'
     args:
       - '-c'
-      - 'mvn -s pipeline/m2/settings.xml --no-transfer-progress -DaltDeploymentRepository=artifact-registry::default::artifactregistry://us-central1-maven.pkg.dev/demohub-283022/fh-build-repo  install deploy -f pom.xml'
+      - 'mvn -s pipeline/m2/settings.xml --no-transfer-progress -DaltDeploymentRepository=artifact-registry::default::artifactregistry://us-central1-maven.pkg.dev/demohub-283022/fh-build-repo deploy -f pom.xml'
     waitFor:
       - tile-install
 
