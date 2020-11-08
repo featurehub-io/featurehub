@@ -1,5 +1,4 @@
 import 'package:app_singleapp/widgets/common/input_fields_validators/input_field_number_formatter.dart';
-import 'package:app_singleapp/widgets/features/custom_strategy_bloc.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/country_attribute_strategy_dropdown.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/device_attribute_strategy_dropdown.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/platform_attribute_strategy_dropdown.dart';
@@ -13,12 +12,11 @@ import 'package:mrapi/api.dart';
 
 class AttributeStrategyWidget extends StatefulWidget {
   final RolloutStrategyAttribute attribute;
-  final CustomStrategyBloc bloc;
+  final bool attributeIsFirst;
 
   const AttributeStrategyWidget({
     Key key,
-    this.attribute,
-    this.bloc,
+    @required this.attribute, @required this.attributeIsFirst,
   }) : super(key: key);
 
   @override
@@ -97,13 +95,14 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Container(
+       if(!widget.attributeIsFirst) Container(
             padding: EdgeInsets.all(4.0),
             margin: EdgeInsets.all(8.0),
             decoration: BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(6.0)),
           color: Theme.of(context).primaryColorLight,
-        ), child: Text('AND', style: Theme.of(context).textTheme.overline)),
+        ), child:
+         Text('AND', style: Theme.of(context).textTheme.overline)),
         Container(
           padding: EdgeInsets.symmetric(horizontal: 8.0),
     decoration: BoxDecoration(

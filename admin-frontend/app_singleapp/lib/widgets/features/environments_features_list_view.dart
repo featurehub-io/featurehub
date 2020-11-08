@@ -63,9 +63,9 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                                       decoration: BoxDecoration(
                                           border: Border(
                                         bottom: BorderSide(
-                                            color: Colors.black45, width: 0.5),
+                                            color: Colors.black45, width: 1),
                                         right: BorderSide(
-                                            color: Colors.black45, width: 0.5),
+                                            color: Colors.black45, width: 1),
                                       )),
                                       child: FeatureValueCell(
                                           tabsBloc: bloc,

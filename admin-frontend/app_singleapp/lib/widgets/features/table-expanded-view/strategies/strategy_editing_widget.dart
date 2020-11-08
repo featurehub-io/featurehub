@@ -70,91 +70,94 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
             : (widget.editable
                 ? 'Edit split targeting'
                 : 'View split targeting')),
-        content: Container(
-          width: 800,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-             Container(
-                 padding: EdgeInsets.symmetric(horizontal: 8.0),
-                 decoration: BoxDecoration(
-                   borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                   color: Theme.of(context).primaryColorLight.withOpacity(0.3)),
-               child: TextFormField(
-                   controller: _strategyName,
-                   decoration: InputDecoration(
-                       labelText: 'Rollout strategy name',
-                       helperText: 'E.g. 20% rollout'),
-                   readOnly: !widget.editable,
-                   autofocus: true,
-                   onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
-                   validator: ((v) {
-                     if (v.isEmpty) {
-                       return 'Strategy name required';
-                     }
-                     return null;
-                   })),
-             ),
-              RolloutStrategiesWidget(),
-              SizedBox(height: 16.0),
-              FHPageDivider(),
-              SizedBox(height: 16.0),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.0),
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                    color: Theme.of(context).selectedRowColor),
-                child: Column(
-                children: [
-                        if ((widget.rolloutStrategy?.percentage != null) || showPercentageField)
-                           TextFormField(
-                            controller: _strategyPercentage,
-                            decoration: InputDecoration(
-                                labelText: 'Percentage value',
-                                helperText:
-                                'You can enter a value with up to 4 decimal points, e.g. 0.0005 %'),
-                            readOnly: !widget.editable,
-                            autofocus: true,
-                            onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
-                            inputFormatters: [
-                              DecimalTextInputFormatter(
-                                  decimalRange: 4, activatedNegativeValues: false)
-                            ],
-                            validator: ((v) {
-                              if (v.isEmpty) {
-                                return 'Percentage value required';
-                              }
-                              return null;
-                            }),
-                          )
-                      ]),
-              ),
-                Row(
+        content: SingleChildScrollView(
+          child: Container(
+            width: 800,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+               Container(
+                   padding: EdgeInsets.symmetric(horizontal: 8.0),
+                   decoration: BoxDecoration(
+                     borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                     color: Theme.of(context).primaryColorLight.withOpacity(0.3)),
+                 child: TextFormField(
+                     controller: _strategyName,
+                     decoration: InputDecoration(
+                         labelText: 'Rollout strategy name',
+                         helperText: 'E.g. 20% rollout'),
+                     readOnly: !widget.editable,
+                     autofocus: true,
+                     onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+                     validator: ((v) {
+                       if (v.isEmpty) {
+                         return 'Strategy name required';
+                       }
+                       return null;
+                     })),
+               ),
+                SizedBox(height: 16),
+                RolloutStrategiesWidget(),
+                SizedBox(height: 16.0),
+                FHPageDivider(),
+                SizedBox(height: 16.0),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.0),
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                      color: Theme.of(context).selectedRowColor),
+                  child: Column(
                   children: [
-                    Text('Add percentage rollout rule',
-                        style: Theme.of(context).textTheme.caption),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: FHOutlineButton(
-                          onPressed: () {
-                            setState(() {
-                              showPercentageField = true;
-                            });
-                          },
-                          title: '+ Percentage'),
-                    ),
-                  ],
+                          if ((widget.rolloutStrategy?.percentage != null) || showPercentageField)
+                             TextFormField(
+                              controller: _strategyPercentage,
+                              decoration: InputDecoration(
+                                  labelText: 'Percentage value',
+                                  helperText:
+                                  'You can enter a value with up to 4 decimal points, e.g. 0.0005 %'),
+                              readOnly: !widget.editable,
+                              autofocus: true,
+                              onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+                              inputFormatters: [
+                                DecimalTextInputFormatter(
+                                    decimalRange: 4, activatedNegativeValues: false)
+                              ],
+                              validator: ((v) {
+                                if (v.isEmpty) {
+                                  return 'Percentage value required';
+                                }
+                                return null;
+                              }),
+                            )
+                        ]),
                 ),
+                  Row(
+                    children: [
+                      Text('Add percentage rollout rule',
+                          style: Theme.of(context).textTheme.caption),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: FHOutlineButton(
+                            onPressed: () {
+                              setState(() {
+                                showPercentageField = true;
+                              });
+                            },
+                            title: '+ Percentage'),
+                      ),
+                    ],
+                  ),
 
-             if (isTotalPercentageError)
-                Text(
-                    'Your percentage total across all rollout values cannot be over 100%. Please enter different value.',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyText2
-                        .copyWith(color: Theme.of(context).errorColor))
-            ],
+               if (isTotalPercentageError)
+                  Text(
+                      'Your percentage total across all rollout values cannot be over 100%. Please enter different value.',
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyText2
+                          .copyWith(color: Theme.of(context).errorColor))
+              ],
+            ),
           ),
         ),
         actions: <Widget>[
