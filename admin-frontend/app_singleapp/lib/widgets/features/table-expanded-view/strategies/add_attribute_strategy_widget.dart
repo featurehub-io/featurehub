@@ -95,58 +95,77 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisSize: MainAxisSize.max,
+    return Column(
       children: [
-        _nameField(),
-        Spacer(),
-        if (_wellKnown == null) _customFieldType(),
-        Spacer(),
-        InkWell(
-          mouseCursor: SystemMouseCursors.click,
-          child: DropdownButton(
-            icon: Padding(
-              padding: EdgeInsets.only(left: 8.0),
-              child: Icon(
-                Icons.keyboard_arrow_down,
-                size: 24,
+        Container(
+            padding: EdgeInsets.all(4.0),
+            margin: EdgeInsets.all(8.0),
+            decoration: BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(6.0)),
+          color: Theme.of(context).primaryColorLight,
+        ), child: Text('AND', style: Theme.of(context).textTheme.overline)),
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 8.0),
+    decoration: BoxDecoration(
+    borderRadius: BorderRadius.all(Radius.circular(6.0)),
+    color: Theme.of(context).selectedRowColor,
+    ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            // mainAxisSize: MainAxisSize.max,
+            children: [
+              Expanded(flex: 1, child: _nameField()),
+              if (_wellKnown == null) _customFieldType(),
+              Expanded(
+                flex: 1,
+                child: InkWell(
+                  mouseCursor: SystemMouseCursors.click,
+                  child: DropdownButton(
+                    icon: Padding(
+                      padding: EdgeInsets.only(left: 8.0),
+                      child: Icon(
+                        Icons.keyboard_arrow_down,
+                        size: 24,
+                      ),
+                    ),
+                    isExpanded: false,
+                    items: RolloutStrategyAttributeConditional.values
+                        .map((RolloutStrategyAttributeConditional dropDownStringItem) {
+                      return DropdownMenuItem<RolloutStrategyAttributeConditional>(
+                          value: dropDownStringItem,
+                          child: Text(
+                              transformStrategyAttributeConditionalValueToString(
+                                  dropDownStringItem),
+                              style: Theme.of(context).textTheme.bodyText2));
+                    }).toList(),
+                    hint: Text('Select condition',
+                        style: Theme.of(context).textTheme.subtitle2),
+                    onChanged: (value) {
+                      var readOnly = false; //TODO parametrise this if needed
+                      if (!readOnly) {
+                        setState(() {
+                          _dropDownCustomAttributeMatchingCriteria = value;
+                          _attribute.conditional = value;
+                        });
+                      }
+                    },
+                    value: _dropDownCustomAttributeMatchingCriteria,
+                  ),
+                ),
               ),
-            ),
-            isExpanded: false,
-            items: RolloutStrategyAttributeConditional.values
-                .map((RolloutStrategyAttributeConditional dropDownStringItem) {
-              return DropdownMenuItem<RolloutStrategyAttributeConditional>(
-                  value: dropDownStringItem,
-                  child: Text(
-                      transformStrategyAttributeConditionalValueToString(
-                          dropDownStringItem),
-                      style: Theme.of(context).textTheme.bodyText2));
-            }).toList(),
-            hint: Text('Select condition',
-                style: Theme.of(context).textTheme.subtitle2),
-            onChanged: (value) {
-              var readOnly = false; //TODO parametrise this if needed
-              if (!readOnly) {
-                setState(() {
-                  _dropDownCustomAttributeMatchingCriteria = value;
-                  _attribute.conditional = value;
-                });
-              }
-            },
-            value: _dropDownCustomAttributeMatchingCriteria,
+              SizedBox(width: 16.0),
+              if (_wellKnown == StrategyAttributeWellKnownNames.country)
+                Expanded(flex: 3, child: CountryAttributeStrategyDropdown(attribute: _attribute))
+              else if (_wellKnown == StrategyAttributeWellKnownNames.device)
+                Expanded(flex: 3, child: DeviceAttributeStrategyDropdown(attribute: _attribute))
+              else if (_wellKnown == StrategyAttributeWellKnownNames.platform)
+                Expanded(flex: 3, child: PlatformAttributeStrategyDropdown(attribute: _attribute))
+              else
+                Expanded(flex: 3, child: _fieldValueEditorByFieldType()),
+            ],
           ),
         ),
-        Spacer(),
-        if (_wellKnown == StrategyAttributeWellKnownNames.country)
-          CountryAttributeStrategyDropdown(attribute: _attribute)
-        else if (_wellKnown == StrategyAttributeWellKnownNames.device)
-          DeviceAttributeStrategyDropdown(attribute: _attribute)
-        else if (_wellKnown == StrategyAttributeWellKnownNames.platform)
-          PlatformAttributeStrategyDropdown(attribute: _attribute)
-        else
-          _fieldValueEditorByFieldType(),
       ],
     );
   }
@@ -252,23 +271,21 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
         return Container(); // nothing until they have chosen one
     }
 
-    return Flexible(
-      child: TextFormField(
-          controller: _value,
-          decoration:
-              InputDecoration(labelText: labelText, helperText: helperText),
-          // readOnly: !widget.widget.editable,
-          autofocus: true,
-          // TODO: it actually has to be the right type, so a number has to be a number, a bool a bool
-          onEditingComplete: () => _attribute.value = _value.text,
-          onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
-          inputFormatters: inputFormatters,
-          validator: ((v) {
-            if (v.isEmpty) {
-              return 'Attribute value(s) required';
-            }
-            return null;
-          })),
-    );
+    return TextFormField(
+        controller: _value,
+        decoration:
+            InputDecoration(labelText: labelText, helperText: helperText, labelStyle: Theme.of(context).textTheme.bodyText1.copyWith(fontSize: 12.0, color: Theme.of(context).primaryColor)),
+        // readOnly: !widget.widget.editable,
+        autofocus: true,
+        // TODO: it actually has to be the right type, so a number has to be a number, a bool a bool
+        onEditingComplete: () => _attribute.value = _value.text,
+        onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+        inputFormatters: inputFormatters,
+        validator: ((v) {
+          if (v.isEmpty) {
+            return 'Attribute value(s) required';
+          }
+          return null;
+        }));
   }
 }

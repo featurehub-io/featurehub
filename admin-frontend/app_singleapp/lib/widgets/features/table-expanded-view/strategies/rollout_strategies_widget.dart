@@ -1,3 +1,4 @@
+import 'package:app_singleapp/widgets/common/fh_outline_button.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/custom_strategy_attributes_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/cupertino.dart';
@@ -24,16 +25,29 @@ class RolloutStrategiesWidget extends StatelessWidget {
               return Container();
             }
           }),
+      SizedBox(height: 16.0,),
       Row(
         children: [
-          TextButton(
-              onPressed: () => bloc.createAttribute(),
-              child: Text(
-                  'Add Custom')), //ToDo: onPressed should call a state change
+          Text('Add rule', style: Theme.of(context).textTheme.caption),
           for (var e in StrategyAttributeWellKnownNames.values)
-            TextButton(
-                onPressed: () => bloc.createAttribute(type: e),
-                child: Text('Add ${e.name}'))
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: FHOutlineButton(
+                  onPressed: () => bloc.createAttribute(type: e),
+                  title: '+ ${e.name}'),
+            ),
+        ],
+      ),
+      Row(
+        children: [
+          Text('Add custom rule', style: Theme.of(context).textTheme.caption),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: FHOutlineButton(
+                onPressed: () => bloc.createAttribute(),
+                title:
+                '+ Custom'),
+          ),
         ],
       ),
     ]);

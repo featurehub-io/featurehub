@@ -20,12 +20,12 @@ class AddStrategyButton extends StatelessWidget {
       child: Container(
         height: 36,
         child: FlatButton.icon(
-            label: Text('Add percentage rollout'),
+            label: Text('Add split targeting'),
             textColor: Colors.white,
             disabledColor: Colors.black12,
             color: Theme.of(context).buttonColor,
             disabledTextColor: Colors.black38,
-            icon: Icon(MaterialCommunityIcons.percent,
+            icon: Icon(MaterialCommunityIcons.arrow_split_vertical,
                 color: Colors.white, size: 16.0),
             onPressed: (editable == true)
                 ? () => bloc.fvBloc.mrClient.addOverlay((BuildContext context) {

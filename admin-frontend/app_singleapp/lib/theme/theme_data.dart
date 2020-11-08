@@ -31,6 +31,9 @@ final ThemeData myTheme = ThemeData(
   indicatorColor: Color(0xff051d94),
   hintColor: Color(0x8a000000),
   errorColor: Color(0xffd32f2f),
+textButtonTheme: TextButtonThemeData(
+       style: TextButton.styleFrom(primary: Color(0xff473e8f)),
+     ),
   buttonTheme: ButtonThemeData(
     textTheme: ButtonTextTheme.normal,
     minWidth: 88,

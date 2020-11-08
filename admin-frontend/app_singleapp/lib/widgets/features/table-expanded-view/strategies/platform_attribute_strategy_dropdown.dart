@@ -24,41 +24,44 @@ class _PlatformAttributeStrategyDropdownState extends State<PlatformAttributeStr
   Widget build(BuildContext context) {
     return InkWell(
       mouseCursor: SystemMouseCursors.click,
-      child: DropdownButton(
-        icon: Padding(
-          padding: EdgeInsets.only(left: 8.0),
-          child: Icon(
-            Icons.keyboard_arrow_down,
-            size: 24,
+      child: Container(
+        constraints: BoxConstraints(maxWidth: 250),
+        child: DropdownButton(
+          icon: Padding(
+            padding: EdgeInsets.only(left: 8.0),
+            child: Icon(
+              Icons.keyboard_arrow_down,
+              size: 24,
+            ),
           ),
-        ),
-        isExpanded: false,
-        items: StrategyAttributePlatformName.values
-            .map((StrategyAttributePlatformName dropDownStringItem) {
-          return DropdownMenuItem<StrategyAttributePlatformName>(
-              value: dropDownStringItem,
-              child: Text(
-                  StrategyAttributePlatformNameTypeTransformer.toJson(dropDownStringItem),
-                  style: Theme
-                      .of(context)
-                      .textTheme
-                      .bodyText2));
-        }).toList(),
+          isExpanded: true,
+          items: StrategyAttributePlatformName.values
+              .map((StrategyAttributePlatformName dropDownStringItem) {
+            return DropdownMenuItem<StrategyAttributePlatformName>(
+                value: dropDownStringItem,
+                child: Text(
+                    StrategyAttributePlatformNameTypeTransformer.toJson(dropDownStringItem),
+                    style: Theme
+                        .of(context)
+                        .textTheme
+                        .bodyText2));
+          }).toList(),
 
-        hint: Text('Select platform',
-            style: Theme
-                .of(context)
-                .textTheme
-                .subtitle2),
-        onChanged: (value) {
-          var readOnly = false; //TODO parametrise this if needed
-          if (!readOnly) {
-            setState(() {
-              _strategyAttributePlatformName = value;
-            });
-          }
-        },
-        value: _strategyAttributePlatformName,
+          hint: Text('Select platform',
+              style: Theme
+                  .of(context)
+                  .textTheme
+                  .subtitle2),
+          onChanged: (value) {
+            var readOnly = false; //TODO parametrise this if needed
+            if (!readOnly) {
+              setState(() {
+                _strategyAttributePlatformName = value;
+              });
+            }
+          },
+          value: _strategyAttributePlatformName,
+        ),
       ),
     );
   }
