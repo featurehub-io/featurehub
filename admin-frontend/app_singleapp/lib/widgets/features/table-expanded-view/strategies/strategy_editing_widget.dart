@@ -49,7 +49,9 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
     super.initState();
     if (widget.rolloutStrategy != null) {
       _strategyName.text = widget.rolloutStrategy.name;
-      _strategyPercentage.text = widget.rolloutStrategy.percentageText;
+      if(widget.rolloutStrategy.percentage != null) {
+        _strategyPercentage.text = widget.rolloutStrategy.percentageText;
+      }
       isUpdate = true;
     }
   }
@@ -228,9 +230,13 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
 
     final newStrategy = RolloutStrategy()
       ..name = _strategyName.text
-      ..percentageFromText = _strategyPercentage.text
       ..attributes = individualStrategyBloc.currentAttributes
       ..value = defaultValue;
+
+    if(_strategyPercentage.text.isNotEmpty){
+    newStrategy..percentageFromText = _strategyPercentage.text;
+    }
+
 
     final validationCheck = await widget.bloc.validationCheck(newStrategy);
 
