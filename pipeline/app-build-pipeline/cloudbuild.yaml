@@ -1,24 +1,81 @@
 steps:
-  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
-    entrypoint: '/bin/sh'
-    id: tile-install
+  - name: 'gcr.io/cloud-builders/git'
     args:
-      - '-c'
-      - 'cd backend && mvn -s ../pipeline/m2/settings.xml --no-transfer-progress install -f pom-first.xml'
-  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
-    entrypoint: '/bin/sh'
+      - fetch
+      - --unshallow
+  - name: 'gcr.io/cloud-builders/git'
     args:
-      - '-c'
-      - 'if [ -f all-build ]; then mvn -s pipeline/m2/settings.xml --no-transfer-progress install -f pom.xml; else true; fi'
-    waitFor:
-      - tile-install
-  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
-    # run partial build if special "all-build" file is missing
-    entrypoint: '/bin/sh'
+      - checkout
+      - -b
+      - workbranch
+  - name: 'gcr.io/cloud-builders/git'
     args:
-      - '-c'
-      - 'if [ ! -f all-build ]; then mvn -s pipeline/m2/settings.xml --no-transfer-progress install -Dgib.disable=false -Dgib.referenceBranch=refs/remotes/origin/master -f pom.xml; else true; fi'
-    waitFor:
-      - tile-install
+      - checkout
+      - -b
+      - realmaster
+      - origin/master
+  - name: 'gcr.io/cloud-builders/git'
+    args:
+      - log
+      - HEAD~2
+  - name: 'gcr.io/cloud-builders/git'
+    args:
+      - 'branch'
+  - name: 'gcr.io/cloud-builders/git'
+    args:
+      - checkout
+      - workbranch
+  - name: 'gcr.io/cloud-builders/git'
+    args:
+      - log
+      - HEAD~2
+  - name: 'gcr.io/cloud-builders/git'
+    args:
+      - 'diff'
+      - 'realmaster'
+#  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
+#    entrypoint: '/bin/sh'
+#    args:
+#      - '-c'
+#      - 'cd backend && mvn -s ../pipeline/m2/settings.xml --no-transfer-progress install -f pom-first.xml'
+## this next section deals with the Admin front-end. This is expensive to build every time, so we need to detect if
+## it or its upstream dependencies have changed and only build it then
+#  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
+#    entrypoint: '/bin/sh'
+#    # if anything in the front-end list of stuff has changed, touch the file `build-frontend` and the next two
+#    # steps will cause everything necessary to build. The pom-front-end.xml is just a dependency tree and change checker.
+#    args:
+#      - '-c'
+#      - 'mvn -s pipeline/m2/settings.xml --no-transfer-progress validate -f pom-front-end.xml && touch front-end-changed.projects && CHANGED=`wc -l < front-end-changed.projects|xargs` && if [ "$CHANGED" != "0" ]; then touch build-frontend; fi'
+#  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
+#    entrypoint: '/bin/sh'
+#    args:
+#      - '-c'
+#      - 'ls -l'
+#  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
+#    entrypoint: '/bin/sh'
+#    # these are required for the flutter build to work
+#    args:
+#      - '-c'
+#      - 'if [ -f build-frontend ]; then mvn -s pipeline/m2/settings.xml --no-transfer-progress install -f admin-frontend/app_mr_layer/pom.xml; else true; fi'
+#  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/flutter-build:f654346777603871f32cbf339c6652ef7b658ec0'
+#    # the version of flutter-build refers to the commit message. It is the base image used to build the front end. This will *only build the artifacts and
+#    # not generate the installable file required to build the docker images. That is not done in this pipeline (only when building the actual docker images)
+#    entrypoint: '/bin/sh'
+#    args:
+#      - 'admin-frontend/pipeline-build.sh'
+#  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
+#    entrypoint: '/bin/sh'
+#    args:
+#      - '-c'
+#      - 'if [ -f all-build ]; then mvn -s pipeline/m2/settings.xml --no-transfer-progress install -f pom.xml; else true; fi'
+#  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
+#    # run partial build if special "all-build" file is missing
+#    entrypoint: '/bin/sh'
+#    args:
+#      - '-c'
+#      - 'if [ ! -f all-build ]; then mvn -s pipeline/m2/settings.xml --no-transfer-progress install -Dgib.disable=false -Dgib.referenceBranch=master -f pom.xml; else true; fi'
+
+
 
 
