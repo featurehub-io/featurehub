@@ -10,39 +10,17 @@ steps:
       - --unshallow
   - name: 'gcr.io/cloud-builders/git'
     args:
-      - checkout
-      - -b
-      - realmaster
-      - '--track'
+      - fetch
+      - --all
+  - name: 'gcr.io/cloud-builders/git'
+    args:
+      - 'reset'
+      - '--hard'
       - 'origin/master'
   - name: 'gcr.io/cloud-builders/git'
     args:
-      - 'config'
-      - 'pull.rebase'
-      - 'true'
-  - name: 'gcr.io/cloud-builders/git'
-    args:
-      - pull
-  - name: 'gcr.io/cloud-builders/git'
-    args:
       - log
       - HEAD~2
-  - name: 'gcr.io/cloud-builders/git'
-    entrypoint: '/bin/sh'
-    args:
-      - '-c'
-      - 'git checkout -b workbranch `cat current-ref`'
-  - name: 'gcr.io/cloud-builders/git'
-    args:
-      - 'branch'
-  - name: 'gcr.io/cloud-builders/git'
-    args:
-      - log
-      - HEAD~2
-  - name: 'gcr.io/cloud-builders/git'
-    args:
-      - 'diff'
-      - 'realmaster'
 #  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
 #    entrypoint: '/bin/sh'
 #    args:
