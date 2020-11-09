@@ -10,25 +10,20 @@ steps:
       - --unshallow
   - name: 'gcr.io/cloud-builders/git'
     args:
-      - branch
-      - -D
-      - master
-  - name: 'gcr.io/cloud-builders/git'
-    args:
       - checkout
       - -b
-      - master
+      - realmaster
       - origin/master
-#  - name: 'gcr.io/cloud-builders/git'
-#    args:
-#      - config
-#      - pull.rebase
-#      - true
-#  - name: 'gcr.io/cloud-builders/git'
-#    args:
-#      - pull
-#      - origin
-#      - master
+  - name: 'gcr.io/cloud-builders/git'
+    args:
+      - config
+      - pull.rebase
+      - true
+  - name: 'gcr.io/cloud-builders/git'
+    args:
+      - pull
+      - origin
+      - master
   - name: 'gcr.io/cloud-builders/git'
     args:
       - log
@@ -48,7 +43,7 @@ steps:
   - name: 'gcr.io/cloud-builders/git'
     args:
       - 'diff'
-      - 'master'
+      - 'realmaster'
 #  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
 #    entrypoint: '/bin/sh'
 #    args:
