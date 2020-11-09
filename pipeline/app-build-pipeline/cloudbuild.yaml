@@ -11,9 +11,12 @@ steps:
   - name: 'gcr.io/cloud-builders/git'
     args:
       - checkout
-      - -b
-      - realmaster
-      - origin/master
+      - master
+  - name: 'gcr.io/cloud-builders/git'
+    args:
+      - pull
+      - origin
+      - master
   - name: 'gcr.io/cloud-builders/git'
     args:
       - log
