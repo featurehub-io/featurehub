@@ -4,39 +4,19 @@ steps:
     args:
       - '-c'
       - 'git rev-parse HEAD > current-ref'
-
   - name: 'gcr.io/cloud-builders/git'
     args:
-      - fetch
-      - --unshallow
+      - clone
+      - 'https://github.com/featurehub-io/featurehub.git'
+  - name: 'gcr.io/cloud-builders/git'
+    entrypoint: '/bin/sh'
+    args:
+      - '-c'
+      - 'cd featurehub;git checkout -b workbranch `cat ../current-ref`'
   - name: 'gcr.io/cloud-builders/git'
     args:
-      - checkout
-      - -b
-      - hollow
-  - name: 'gcr.io/cloud-builders/git'
-    args:
-      - branch
-      - -D
-      - master
-  - name: 'gcr.io/cloud-builders/git'
-    args:
-      - fetch
-      - --all
-  - name: 'gcr.io/cloud-builders/git'
-    args:
-      - checkout
-      - -b
-      - master
-  - name: 'gcr.io/cloud-builders/git'
-    args:
-      - 'reset'
-      - '--hard'
-      - 'origin/master'
-  - name: 'gcr.io/cloud-builders/git'
-    args:
-      - log
-      - HEAD~2
+      - '-c'
+      - 'cd featurehub;git diff master'
 #  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
 #    entrypoint: '/bin/sh'
 #    args:
