@@ -16,7 +16,11 @@ class _DeviceAttributeStrategyDropdownState extends State<DeviceAttributeStrateg
 
   @override
   void initState() {
-    _strategyAttributeDeviceName = widget?.attribute?.value;
+    if(widget.attribute.value != null) {
+      _strategyAttributeDeviceName =
+          StrategyAttributeDeviceNameTypeTransformer.fromJson(
+              widget.attribute.value);
+    }
     super.initState();
   }
 
@@ -52,12 +56,12 @@ class _DeviceAttributeStrategyDropdownState extends State<DeviceAttributeStrateg
                   .of(context)
                   .textTheme
                   .subtitle2),
-          onChanged: (value) {
+          onChanged: (StrategyAttributeDeviceName value) {
             var readOnly = false; //TODO parametrise this if needed
             if (!readOnly) {
               setState(() {
                 _strategyAttributeDeviceName = value;
-                widget.attribute.value = value;
+                widget.attribute.value = value.name;
               });
             }
           },

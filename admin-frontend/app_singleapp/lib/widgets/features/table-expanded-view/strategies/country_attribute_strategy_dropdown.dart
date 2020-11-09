@@ -16,7 +16,11 @@ class _CountryAttributeStrategyDropdownState extends State<CountryAttributeStrat
 
   @override
   void initState() {
-    _strategyAttributeCountryName = widget?.attribute?.value;
+    if(widget.attribute.value != null) {
+      _strategyAttributeCountryName =
+          StrategyAttributeCountryNameTypeTransformer.fromJson(
+              widget.attribute.value);
+    }
     super.initState();
   }
 
@@ -57,7 +61,7 @@ class _CountryAttributeStrategyDropdownState extends State<CountryAttributeStrat
             if (!readOnly) {
               setState(() {
                 _strategyAttributeCountryName = value;
-                widget.attribute.value = value;
+                widget.attribute.value = value.name;
               });
             }
           },

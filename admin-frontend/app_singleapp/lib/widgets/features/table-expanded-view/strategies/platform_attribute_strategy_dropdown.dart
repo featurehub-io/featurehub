@@ -16,7 +16,11 @@ class _PlatformAttributeStrategyDropdownState extends State<PlatformAttributeStr
 
   @override
   void initState() {
-    _strategyAttributePlatformName = widget?.attribute?.value;
+    if(widget.attribute.value != null) {
+      _strategyAttributePlatformName =
+          StrategyAttributePlatformNameTypeTransformer.fromJson(
+              widget.attribute.value);
+    }
     super.initState();
   }
 
@@ -52,12 +56,12 @@ class _PlatformAttributeStrategyDropdownState extends State<PlatformAttributeStr
                   .of(context)
                   .textTheme
                   .subtitle2),
-          onChanged: (value) {
+          onChanged: (StrategyAttributePlatformName value) {
             var readOnly = false; //TODO parametrise this if needed
             if (!readOnly) {
               setState(() {
                 _strategyAttributePlatformName = value;
-                widget.attribute.value = value;
+                widget.attribute.value = value.name;
               });
             }
           },
