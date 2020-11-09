@@ -13,12 +13,12 @@ steps:
       - checkout
       - -b
       - realmaster
-      - origin/master
+      - 'origin/master'
   - name: 'gcr.io/cloud-builders/git'
     args:
-      - config
-      - pull.rebase
-      - true
+      - 'config'
+      - 'pull.rebase'
+      - 'true'
   - name: 'gcr.io/cloud-builders/git'
     args:
       - pull
