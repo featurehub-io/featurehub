@@ -1,13 +1,13 @@
 steps:
   - name: 'gcr.io/cloud-builders/git'
+    entrypoint: '/bin/sh'
+    args:
+      - '-c'
+      - 'git rev-parse HEAD > current-ref'
+  - name: 'gcr.io/cloud-builders/git'
     args:
       - fetch
       - --unshallow
-  - name: 'gcr.io/cloud-builders/git'
-    args:
-      - checkout
-      - -b
-      - workbranch
   - name: 'gcr.io/cloud-builders/git'
     args:
       - checkout
@@ -22,12 +22,13 @@ steps:
       - log
       - HEAD~2
   - name: 'gcr.io/cloud-builders/git'
+    entrypoint: '/bin/sh'
     args:
-      - 'branch'
+      - '-c'
+      - 'git checkout -b workbranch `cat current-ref`'
   - name: 'gcr.io/cloud-builders/git'
     args:
-      - checkout
-      - workbranch
+      - 'branch'
   - name: 'gcr.io/cloud-builders/git'
     args:
       - log
@@ -35,7 +36,7 @@ steps:
   - name: 'gcr.io/cloud-builders/git'
     args:
       - 'diff'
-      - 'realmaster'
+      - 'master'
 #  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
 #    entrypoint: '/bin/sh'
 #    args:
