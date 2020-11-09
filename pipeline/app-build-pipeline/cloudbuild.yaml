@@ -13,30 +13,25 @@ steps:
     args:
       - '-c'
       - 'cd featurehub;git checkout -b workbranch `cat ../current-ref`'
-  - name: 'gcr.io/cloud-builders/git'
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
     entrypoint: '/bin/sh'
     args:
       - '-c'
-      - 'cd featurehub;git diff master'
-#  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
-#    entrypoint: '/bin/sh'
-#    args:
-#      - '-c'
-#      - 'cd backend && mvn -s ../pipeline/m2/settings.xml --no-transfer-progress install -f pom-first.xml'
-## this next section deals with the Admin front-end. This is expensive to build every time, so we need to detect if
-## it or its upstream dependencies have changed and only build it then
-#  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
-#    entrypoint: '/bin/sh'
-#    # if anything in the front-end list of stuff has changed, touch the file `build-frontend` and the next two
-#    # steps will cause everything necessary to build. The pom-front-end.xml is just a dependency tree and change checker.
-#    args:
-#      - '-c'
-#      - 'mvn -s pipeline/m2/settings.xml --no-transfer-progress validate -f pom-front-end.xml && touch front-end-changed.projects && CHANGED=`wc -l < front-end-changed.projects|xargs` && if [ "$CHANGED" != "0" ]; then touch build-frontend; fi'
-#  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
-#    entrypoint: '/bin/sh'
-#    args:
-#      - '-c'
-#      - 'ls -l'
+      - 'cd featurehub/backend && mvn -s ../pipeline/m2/settings.xml --no-transfer-progress install -f pom-first.xml'
+# this next section deals with the Admin front-end. This is expensive to build every time, so we need to detect if
+# it or its upstream dependencies have changed and only build it then
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
+    entrypoint: '/bin/sh'
+    # if anything in the front-end list of stuff has changed, touch the file `build-frontend` and the next two
+    # steps will cause everything necessary to build. The pom-front-end.xml is just a dependency tree and change checker.
+    args:
+      - '-c'
+      - 'cd featurehub && mvn -s pipeline/m2/settings.xml --no-transfer-progress validate -f pom-front-end.xml && touch front-end-changed.projects && CHANGED=`wc -l < front-end-changed.projects|xargs` && if [ "$CHANGED" != "0" ]; then touch build-frontend; fi'
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
+    entrypoint: '/bin/sh'
+    args:
+      - '-c'
+      - 'cd featurehub && ls -l'
 #  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
 #    entrypoint: '/bin/sh'
 #    # these are required for the flutter build to work
