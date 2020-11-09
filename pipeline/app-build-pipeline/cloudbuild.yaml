@@ -14,6 +14,7 @@ steps:
       - '-c'
       - 'cd featurehub;git checkout -b workbranch `cat ../current-ref`'
   - name: 'gcr.io/cloud-builders/git'
+    entrypoint: '/bin/sh'
     args:
       - '-c'
       - 'cd featurehub;git diff master'
