@@ -38,6 +38,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
 
   @override
   void initState() {
+    _dropDownCustomAttributeMatchingCriteria = widget.attribute.conditional;
     super.initState();
   }
 
