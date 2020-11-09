@@ -16,7 +16,7 @@ class _PlatformAttributeStrategyDropdownState extends State<PlatformAttributeStr
 
   @override
   void initState() {
-    _strategyAttributePlatformName == widget?.attribute?.value;
+    _strategyAttributePlatformName = widget?.attribute?.value;
     super.initState();
   }
 
@@ -57,6 +57,7 @@ class _PlatformAttributeStrategyDropdownState extends State<PlatformAttributeStr
             if (!readOnly) {
               setState(() {
                 _strategyAttributePlatformName = value;
+                widget.attribute.value = value;
               });
             }
           },

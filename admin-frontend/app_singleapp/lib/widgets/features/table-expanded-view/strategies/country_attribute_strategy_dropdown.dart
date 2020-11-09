@@ -16,7 +16,7 @@ class _CountryAttributeStrategyDropdownState extends State<CountryAttributeStrat
 
   @override
   void initState() {
-    _strategyAttributeCountryName == widget?.attribute?.value;
+    _strategyAttributeCountryName = widget?.attribute?.value;
     super.initState();
   }
 
@@ -52,11 +52,12 @@ class _CountryAttributeStrategyDropdownState extends State<CountryAttributeStrat
                   .of(context)
                   .textTheme
                   .subtitle2),
-          onChanged: (value) {
+          onChanged: (StrategyAttributeCountryName value) {
             var readOnly = false; //TODO parametrise this if needed
             if (!readOnly) {
               setState(() {
                 _strategyAttributeCountryName = value;
+                widget.attribute.value = value;
               });
             }
           },

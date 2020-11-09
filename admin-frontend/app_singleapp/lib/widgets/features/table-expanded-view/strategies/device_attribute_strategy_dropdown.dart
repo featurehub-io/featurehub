@@ -16,7 +16,7 @@ class _DeviceAttributeStrategyDropdownState extends State<DeviceAttributeStrateg
 
   @override
   void initState() {
-    _strategyAttributeDeviceName == widget?.attribute?.value;
+    _strategyAttributeDeviceName = widget?.attribute?.value;
     super.initState();
   }
 
@@ -57,6 +57,7 @@ class _DeviceAttributeStrategyDropdownState extends State<DeviceAttributeStrateg
             if (!readOnly) {
               setState(() {
                 _strategyAttributeDeviceName = value;
+                widget.attribute.value = value;
               });
             }
           },

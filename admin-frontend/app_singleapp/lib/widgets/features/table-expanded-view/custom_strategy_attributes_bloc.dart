@@ -49,7 +49,7 @@ class IndividualStrategyBloc extends Bloc {
   void addAttribute(RolloutStrategyAttribute rs) {
     rolloutStrategy.attributes.add(rs);
     _rolloutStartegyAttributeSource.add(rolloutStrategy.attributes);
-    print("Attributes are ${rolloutStrategy.attributes}");
+    print("Added attributes ${rolloutStrategy.attributes}");
   }
 
   void updateStrategy(RolloutStrategyAttribute rs) {
