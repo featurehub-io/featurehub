@@ -10,13 +10,25 @@ steps:
       - --unshallow
   - name: 'gcr.io/cloud-builders/git'
     args:
-      - checkout
+      - branch
+      - -D
       - master
   - name: 'gcr.io/cloud-builders/git'
     args:
-      - pull
-      - origin
+      - checkout
+      - -b
       - master
+      - origin/master
+#  - name: 'gcr.io/cloud-builders/git'
+#    args:
+#      - config
+#      - pull.rebase
+#      - true
+#  - name: 'gcr.io/cloud-builders/git'
+#    args:
+#      - pull
+#      - origin
+#      - master
   - name: 'gcr.io/cloud-builders/git'
     args:
       - log
