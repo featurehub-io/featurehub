@@ -19,8 +19,6 @@ class StrategyEditingWidget extends StatefulWidget {
   final RolloutStrategy rolloutStrategy;
   final bool editable;
 
-
-
   const StrategyEditingWidget({
     Key key,
     this.rolloutStrategy,
@@ -49,7 +47,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
     super.initState();
     if (widget.rolloutStrategy != null) {
       _strategyName.text = widget.rolloutStrategy.name;
-      if(widget.rolloutStrategy.percentage != null) {
+      if (widget.rolloutStrategy.percentage != null) {
         _strategyPercentage.text = widget.rolloutStrategy.percentageText;
       }
       isUpdate = true;
@@ -79,26 +77,28 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-               Container(
-                   padding: EdgeInsets.symmetric(horizontal: 8.0),
-                   decoration: BoxDecoration(
-                     borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                     color: Theme.of(context).primaryColorLight.withOpacity(0.3)),
-                 child: TextFormField(
-                     controller: _strategyName,
-                     decoration: InputDecoration(
-                         labelText: 'Rollout strategy name',
-                         helperText: 'E.g. 20% rollout'),
-                     readOnly: !widget.editable,
-                     autofocus: true,
-                     onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
-                     validator: ((v) {
-                       if (v.isEmpty) {
-                         return 'Strategy name required';
-                       }
-                       return null;
-                     })),
-               ),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.0),
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                      color:
+                          Theme.of(context).primaryColorLight.withOpacity(0.3)),
+                  child: TextFormField(
+                      controller: _strategyName,
+                      decoration: InputDecoration(
+                          labelText: 'Rollout strategy name',
+                          helperText: 'E.g. 20% rollout'),
+                      readOnly: !widget.editable,
+                      autofocus: true,
+                      onFieldSubmitted: (_) =>
+                          FocusScope.of(context).nextFocus(),
+                      validator: ((v) {
+                        if (v.isEmpty) {
+                          return 'Strategy name required';
+                        }
+                        return null;
+                      })),
+                ),
                 SizedBox(height: 16),
                 RolloutStrategiesWidget(),
                 SizedBox(height: 16.0),
@@ -109,49 +109,49 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.all(Radius.circular(6.0)),
                       color: Theme.of(context).selectedRowColor),
-                  child: Column(
-                  children: [
-                          if ((widget.rolloutStrategy?.percentage != null) || showPercentageField)
-                             TextFormField(
-                              controller: _strategyPercentage,
-                              decoration: InputDecoration(
-                                  labelText: 'Percentage value',
-                                  helperText:
-                                  'You can enter a value with up to 4 decimal points, e.g. 0.0005 %'),
-                              readOnly: !widget.editable,
-                              autofocus: true,
-                              onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
-                              inputFormatters: [
-                                DecimalTextInputFormatter(
-                                    decimalRange: 4, activatedNegativeValues: false)
-                              ],
-                              validator: ((v) {
-                                if (v.isEmpty) {
-                                  return 'Percentage value required';
-                                }
-                                return null;
-                              }),
-                            )
-                        ]),
+                  child: Column(children: [
+                    if ((widget.rolloutStrategy?.percentage != null) ||
+                        showPercentageField)
+                      TextFormField(
+                        controller: _strategyPercentage,
+                        decoration: InputDecoration(
+                            labelText: 'Percentage value',
+                            helperText:
+                                'You can enter a value with up to 4 decimal points, e.g. 0.0005 %'),
+                        readOnly: !widget.editable,
+                        autofocus: true,
+                        onFieldSubmitted: (_) =>
+                            FocusScope.of(context).nextFocus(),
+                        inputFormatters: [
+                          DecimalTextInputFormatter(
+                              decimalRange: 4, activatedNegativeValues: false)
+                        ],
+                        validator: ((v) {
+                          if (v.isEmpty) {
+                            return 'Percentage value required';
+                          }
+                          return null;
+                        }),
+                      )
+                  ]),
                 ),
-                  Row(
-                    children: [
-                      Text('Add percentage rollout rule',
-                          style: Theme.of(context).textTheme.caption),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: FHOutlineButton(
-                            onPressed: () {
-                              setState(() {
-                                showPercentageField = true;
-                              });
-                            },
-                            title: '+ Percentage'),
-                      ),
-                    ],
-                  ),
-
-               if (isTotalPercentageError)
+                Row(
+                  children: [
+                    Text('Add percentage rollout rule',
+                        style: Theme.of(context).textTheme.caption),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: FHOutlineButton(
+                          onPressed: () {
+                            setState(() {
+                              showPercentageField = true;
+                            });
+                          },
+                          title: '+ Percentage'),
+                    ),
+                  ],
+                ),
+                if (isTotalPercentageError)
                   Text(
                       'Your percentage total across all rollout values cannot be over 100%. Please enter different value.',
                       style: Theme.of(context)
@@ -226,17 +226,16 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
             ? false
             : null;
 
-    print("attrs are ${individualStrategyBloc.currentAttributes}");
+    print('attrs are ${individualStrategyBloc.currentAttributes}');
 
     final newStrategy = RolloutStrategy()
       ..name = _strategyName.text
       ..attributes = individualStrategyBloc.currentAttributes
       ..value = defaultValue;
 
-    if(_strategyPercentage.text.isNotEmpty){
-    newStrategy..percentageFromText = _strategyPercentage.text;
+    if (_strategyPercentage.text.isNotEmpty) {
+      newStrategy.percentageFromText = _strategyPercentage.text;
     }
-
 
     final validationCheck = await widget.bloc.validationCheck(newStrategy);
 

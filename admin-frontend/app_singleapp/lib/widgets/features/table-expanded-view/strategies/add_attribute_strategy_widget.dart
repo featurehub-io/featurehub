@@ -61,7 +61,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
         .fromJsonMap[_attribute.fieldName ?? ''];
   }
 
-  Map<StrategyAttributeWellKnownNames, String> _nameFieldMap = {
+  final Map<StrategyAttributeWellKnownNames, String> _nameFieldMap = {
     StrategyAttributeWellKnownNames.country: 'Country',
     StrategyAttributeWellKnownNames.device: 'Device',
     StrategyAttributeWellKnownNames.platform: 'Platform',
@@ -75,13 +75,17 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
       return Text(_nameFieldMap[_wellKnown]);
     } else {
       return TextFormField(
-          onEditingComplete: () => _updateAttributeFieldName(),
           controller: _fieldName,
           decoration: InputDecoration(
-              labelText: 'Custom field name', helperText: 'e.g. warehouseId', labelStyle: Theme.of(context).textTheme.bodyText1.copyWith(
-              fontSize: 12.0, color: Theme.of(context).buttonColor)),
+              labelText: 'Custom field name',
+              helperText: 'e.g. warehouseId',
+              labelStyle: Theme.of(context).textTheme.bodyText1.copyWith(
+                  fontSize: 12.0, color: Theme.of(context).buttonColor)),
           autofocus: true,
-          onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+          onFieldSubmitted: (_) {
+            _updateAttributeFieldName();
+            return FocusScope.of(context).nextFocus();
+          },
           validator: ((v) {
             if (v.isEmpty) {
               return 'Field name required';
@@ -190,7 +194,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
     );
   }
 
-  _updateAttributeFieldName() {
+  void _updateAttributeFieldName() {
     final newWellKnown = StrategyAttributeWellKnownNamesTypeTransformer
         .fromJsonMap[_fieldName.text ?? ''];
 
@@ -231,6 +235,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
           onChanged: (value) {
             setState(() {
               _attributeType = value;
+              _attribute.type = value;
             });
           },
           value: _attributeType,
@@ -242,7 +247,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
   Widget _fieldValueEditorByFieldType() {
     String labelText;
     String helperText;
-    List<TextInputFormatter> inputFormatters = [];
+    var inputFormatters = <TextInputFormatter>[];
     switch (_attributeType) {
       case RolloutStrategyFieldType.STRING:
         switch (_wellKnown) {
@@ -295,6 +300,31 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
         return Container(); // nothing until they have chosen one
     }
 
+    if (_attributeType == RolloutStrategyFieldType.BOOLEAN) {
+      return DropdownButton(
+        icon: Padding(
+          padding: EdgeInsets.only(left: 16.0),
+          child: Icon(
+            Icons.keyboard_arrow_down,
+            size: 24,
+          ),
+        ),
+        isExpanded: true,
+        items: [
+          DropdownMenuItem(value: true, child: Text('true/on')),
+          DropdownMenuItem(value: false, child: Text('false/off')),
+        ],
+        hint: Text('Select value type',
+            style: Theme.of(context).textTheme.subtitle2),
+        onChanged: (value) {
+          setState(() {
+            _attribute.value = value;
+          });
+        },
+        value: _attribute.value == true,
+      );
+    }
+
     return TextFormField(
         controller: _value,
         decoration: InputDecoration(
@@ -304,9 +334,17 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
                 fontSize: 12.0, color: Theme.of(context).buttonColor)),
         // readOnly: !widget.widget.editable,
         autofocus: true,
-        // TODO: it actually has to be the right type, so a number has to be a number, a bool a bool
-        onEditingComplete: () => _attribute.value = _value.text,
-        onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+        onFieldSubmitted: (_) {
+          if (_value.text.trim().isEmpty) {
+            _attribute.value = null;
+          } else if (_attributeType == RolloutStrategyFieldType.NUMBER) {
+            _attribute.value = double.parse(_value.text);
+          } else {
+            _attribute.value = _value.text;
+          }
+
+          return FocusScope.of(context).nextFocus();
+        },
         inputFormatters: inputFormatters,
         validator: ((v) {
           if (v.isEmpty) {

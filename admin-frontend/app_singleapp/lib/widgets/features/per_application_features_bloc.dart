@@ -96,6 +96,8 @@ class PerApplicationFeaturesBloc
   Future<RolloutStrategyValidationResponse> validationCheck(
       List<RolloutStrategy> customStrategies,
       List<RolloutStrategyInstance> sharedStrategies) async {
+    print('validating custom strategies $customStrategies');
+
     return _rolloutStrategyServiceApi.validate(
         applicationId,
         RolloutStrategyValidationRequest()

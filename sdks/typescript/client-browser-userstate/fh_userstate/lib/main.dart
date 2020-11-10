@@ -126,6 +126,8 @@ class _HostingPageState extends State<HostingPage> {
                   return Text('User Overrides');
                   break;
               }
+
+              return SizedBox.shrink();
             },
           )),
       body: StreamBuilder<HostingPageState>(
@@ -149,6 +151,8 @@ class _HostingPageState extends State<HostingPage> {
                     child: EditingPage());
                 break;
             }
+
+            return SizedBox.shrink();
           }),
     );
   }
@@ -329,6 +333,8 @@ class ShowEditingFeature extends StatelessWidget {
       case FeatureValueType.JSON:
         return ds.value == null ? '(not set)' : ds.value;
     }
+
+    return '';
   }
 }
 

@@ -11,8 +11,10 @@ class CustomStrategyBloc extends Bloc {
 
   final _strategySource =
       BehaviorSubject<List<RolloutStrategy>>.seeded(<RolloutStrategy>[]);
-  final _rolloutStartegyAttributeList = BehaviorSubject<List<RolloutStrategyAttribute>>();
-  Stream<List<RolloutStrategyAttribute>> get attributes => _rolloutStartegyAttributeList.stream;
+  final _rolloutStartegyAttributeList =
+      BehaviorSubject<List<RolloutStrategyAttribute>>();
+  Stream<List<RolloutStrategyAttribute>> get attributes =>
+      _rolloutStartegyAttributeList.stream;
 
   Stream<List<RolloutStrategy>> get strategies => _strategySource.stream;
 
@@ -33,7 +35,7 @@ class CustomStrategyBloc extends Bloc {
     strategies.add(rs);
     markDirty();
     _strategySource.add(strategies);
-    print("added strategy is $rs");
+    print('added strategy is $rs');
   }
 
   void updateStrategy() {
@@ -58,9 +60,7 @@ class CustomStrategyBloc extends Bloc {
     _rolloutStartegyAttributeList.add(attributes);
   }
 
-  void updateAttribute(attribute) {
-
-  }
+  void updateAttribute(attribute) {}
 
   @override
   void dispose() {}
@@ -105,8 +105,4 @@ class CustomStrategyBloc extends Bloc {
     return fvBloc.featuresOnTabBloc.featureStatusBloc
         .validationCheck(strategies, <RolloutStrategyInstance>[]);
   }
-
-
-
-
 }

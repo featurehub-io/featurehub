@@ -31,9 +31,8 @@ class EditValueStrategyLinkButton extends StatelessWidget {
         onPressed: editable
             ? () => {
                   fvBloc.mrClient.addOverlay((BuildContext context) {
-                    if (rolloutStrategy.attributes == null) {
-                      rolloutStrategy.attributes = [];
-                    }
+                    rolloutStrategy.attributes ??= [];
+
                     return BlocProvider(
                       creator: (_c, _b) => IndividualStrategyBloc(
                           strBloc.environmentFeatureValue, rolloutStrategy),
