@@ -62,17 +62,17 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: FHAlertDialog(
-        title: Text(widget.rolloutStrategy == null
-            ? 'Add split targeting'
-            : (widget.editable
-                ? 'Edit split targeting'
-                : 'View split targeting')),
-        content: SingleChildScrollView(
-          child: Container(
-            width: 800,
+    return FHAlertDialog(
+      title: Text(widget.rolloutStrategy == null
+          ? 'Add split targeting'
+          : (widget.editable
+              ? 'Edit split targeting'
+              : 'View split targeting')),
+      content: SingleChildScrollView(
+        child: Container(
+          width: 800,
+          child: Form(
+            key: _formKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -162,20 +162,20 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
             ),
           ),
         ),
-        actions: <Widget>[
-          FHFlatButtonTransparent(
-            title: 'Cancel',
-            keepCase: true,
-            onPressed: () {
-              widget.bloc.fvBloc.mrClient.removeOverlay();
-            },
-          ),
-          if (widget.editable)
-            FHFlatButton(
-                title: isUpdate ? 'Update' : 'Add',
-                onPressed: () => _validationAction()),
-        ],
       ),
+      actions: <Widget>[
+        FHFlatButtonTransparent(
+          title: 'Cancel',
+          keepCase: true,
+          onPressed: () {
+            widget.bloc.fvBloc.mrClient.removeOverlay();
+          },
+        ),
+        if (widget.editable)
+          FHFlatButton(
+              title: isUpdate ? 'Update' : 'Add',
+              onPressed: () => _validationAction()),
+      ],
     );
   }
 
