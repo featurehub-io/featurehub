@@ -27,10 +27,12 @@ class FHHeader extends StatelessWidget {
 
     titleChildren = List.from(titleChildren)..addAll(children);
 
-    return Container(
-      padding: EdgeInsets.fromLTRB(10, 10, 25, 0),
-      child: Row(
-        children: titleChildren,
+    return FittedBox(
+      child: Container(
+        padding: EdgeInsets.fromLTRB(10, 10, 25, 0),
+        child: Row(
+          children: titleChildren,
+        ),
       ),
     );
   }

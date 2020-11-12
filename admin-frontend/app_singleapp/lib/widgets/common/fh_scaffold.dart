@@ -20,7 +20,7 @@ class FHScaffoldWidget extends StatefulWidget {
   const FHScaffoldWidget(
       {Key key,
       @required this.body,
-      this.scrollAtWidth = 800,
+      this.scrollAtWidth = 375,
       this.bodyMainAxisAlignment})
       : super(key: key);
 

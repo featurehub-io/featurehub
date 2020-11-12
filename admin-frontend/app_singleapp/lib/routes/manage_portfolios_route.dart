@@ -30,25 +30,28 @@ class _PortfolioSearchWidget extends StatelessWidget {
   }
 
   Widget _headerRow(BuildContext context, PortfolioBloc bloc) {
-    return Container(
-        padding: const EdgeInsets.fromLTRB(0, 8, 30, 0),
-        child: FHHeader(
+    return Wrap(
+      children: [
+        FHHeader(
           title: 'Manage portfolios',
-          children: [
-            if (bloc.mrClient.userIsSuperAdmin == true)
-              FHIconTextButton(
-                iconData: Icons.add,
-                label: 'Create new portfolio',
-                onPressed: () =>
-                    bloc.mrClient.addOverlay((BuildContext context) {
-                  return PortfolioUpdateDialogWidget(
-                    bloc: bloc,
-                  );
-                }),
-                keepCase: true,
-              )
-          ],
-        ));
+        ),
+        if (bloc.mrClient.userIsSuperAdmin == true)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: FHIconTextButton(
+              iconData: Icons.add,
+              label: 'Create new portfolio',
+              onPressed: () =>
+                  bloc.mrClient.addOverlay((BuildContext context) {
+                    return PortfolioUpdateDialogWidget(
+                      bloc: bloc,
+                    );
+                  }),
+              keepCase: true,
+            ),
+          )
+      ],
+    );
   }
 
   Widget _filterRow(BuildContext context, PortfolioBloc bloc) {

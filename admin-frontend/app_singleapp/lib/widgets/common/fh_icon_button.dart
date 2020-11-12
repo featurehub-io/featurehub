@@ -1,4 +1,3 @@
-import 'package:app_singleapp/utils/custom_cursor.dart';
 import 'package:flutter/material.dart';
 
 class FHIconButton extends StatelessWidget {
@@ -17,17 +16,15 @@ class FHIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomCursor(
-      child: Container(
-        padding: const EdgeInsets.all(0.0),
-        width: width ?? 48.0, // you can adjust the width as you need
-        child: IconButton(
-          splashRadius: 1.0,
-          icon: icon,
-          tooltip: tooltip,
-          iconSize: 20,
-          onPressed: onPressed,
-        ),
+    return Container(
+      padding: const EdgeInsets.all(0.0),
+      width: width ?? 48.0, // you can adjust the width as you need
+      child: IconButton(
+        splashRadius: 1.0,
+        icon: icon,
+        tooltip: tooltip,
+        iconSize: 20,
+        onPressed: onPressed,
       ),
     );
   }
