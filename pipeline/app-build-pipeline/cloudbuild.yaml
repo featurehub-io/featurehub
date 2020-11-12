@@ -27,34 +27,34 @@ steps:
     args:
       - '-c'
       - 'cd featurehub && mvn -s pipeline/m2/settings.xml --no-transfer-progress validate -f pom-front-end.xml && touch front-end-changed.projects && CHANGED=`wc -l < front-end-changed.projects|xargs` && if [ "$CHANGED" != "0" ]; then touch build-frontend; fi'
+#  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
+#    entrypoint: '/bin/sh'
+#    args:
+#      - '-c'
+#      - 'cd featurehub && ls -l'
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
+    entrypoint: '/bin/sh'
+    # these are required for the flutter build to work
+    args:
+      - '-c'
+      - 'cd featurehub && if [ -f build-frontend ]; then mvn -s pipeline/m2/settings.xml --no-transfer-progress install -f admin-frontend/app_mr_layer/pom.xml; else true; fi'
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/flutter-build:f654346777603871f32cbf339c6652ef7b658ec0'
+    # the version of flutter-build refers to the commit message. It is the base image used to build the front end. This will *only build the artifacts and
+    # not generate the installable file required to build the docker images. That is not done in this pipeline (only when building the actual docker images)
+    entrypoint: '/bin/sh'
+    args:
+      - 'cd featurehub && admin-frontend/pipeline-build.sh'
   - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
     entrypoint: '/bin/sh'
     args:
       - '-c'
-      - 'cd featurehub && ls -l'
-#  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
-#    entrypoint: '/bin/sh'
-#    # these are required for the flutter build to work
-#    args:
-#      - '-c'
-#      - 'if [ -f build-frontend ]; then mvn -s pipeline/m2/settings.xml --no-transfer-progress install -f admin-frontend/app_mr_layer/pom.xml; else true; fi'
-#  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/flutter-build:f654346777603871f32cbf339c6652ef7b658ec0'
-#    # the version of flutter-build refers to the commit message. It is the base image used to build the front end. This will *only build the artifacts and
-#    # not generate the installable file required to build the docker images. That is not done in this pipeline (only when building the actual docker images)
-#    entrypoint: '/bin/sh'
-#    args:
-#      - 'admin-frontend/pipeline-build.sh'
-#  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
-#    entrypoint: '/bin/sh'
-#    args:
-#      - '-c'
-#      - 'if [ -f all-build ]; then mvn -s pipeline/m2/settings.xml --no-transfer-progress install -f pom.xml; else true; fi'
-#  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
-#    # run partial build if special "all-build" file is missing
-#    entrypoint: '/bin/sh'
-#    args:
-#      - '-c'
-#      - 'if [ ! -f all-build ]; then mvn -s pipeline/m2/settings.xml --no-transfer-progress install -Dgib.disable=false -Dgib.referenceBranch=master -f pom.xml; else true; fi'
+      - 'cd featurehub && if [ -f all-build ]; then mvn -s pipeline/m2/settings.xml --no-transfer-progress install -f pom.xml; else true; fi'
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
+    # run partial build if special "all-build" file is missing
+    entrypoint: '/bin/sh'
+    args:
+      - '-c'
+      - 'cd featurehub && if [ ! -f all-build ]; then mvn -s pipeline/m2/settings.xml --no-transfer-progress install -Dgib.disable=false -Dgib.referenceBranch=master -f pom.xml; else true; fi'
 
 
 
