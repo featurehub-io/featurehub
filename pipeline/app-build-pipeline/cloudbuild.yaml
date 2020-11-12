@@ -43,7 +43,8 @@ steps:
     # not generate the installable file required to build the docker images. That is not done in this pipeline (only when building the actual docker images)
     entrypoint: '/bin/sh'
     args:
-      - 'cd featurehub && admin-frontend/pipeline-build.sh'
+      - '-c'
+      - 'cd featurehub && chmod u+x admin-frontend/pipeline-build.sh && admin-frontend/pipeline-build.sh'
   - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
     entrypoint: '/bin/sh'
     args:
