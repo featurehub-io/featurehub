@@ -26,13 +26,12 @@ class _AppsRouteState extends State<AppsRoute> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Row(
+            Wrap(
               children: [
                 Container(
                   padding: EdgeInsets.only(bottom: 10),
                   child: FHHeader(
                     title: 'Applications',
-                    children: <Widget>[],
                   ),
                 ),
                 StreamBuilder<ReleasedPortfolio>(

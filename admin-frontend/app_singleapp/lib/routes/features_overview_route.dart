@@ -49,11 +49,13 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               _FeaturesOverviewHeader(),
-              Row(
-                children: [
-                  _filterRow(context, bloc),
-                  _CreateFeatureButton(bloc: bloc),
-                ],
+              FittedBox(
+                child: Row(
+                  children: [
+                    _filterRow(context, bloc),
+                    _CreateFeatureButton(bloc: bloc),
+                  ],
+                ),
               ),
             ]));
   }
@@ -144,18 +146,17 @@ class _CreateFeatureButton extends StatelessWidget {
                     .personCanEditFeaturesForCurrentApplication(snapshot.data),
                 builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
                   if (snapshot.data == true || bloc.mrClient.userIsSuperAdmin) {
-                    return Container(
-                        child: FHFlatButtonAccent(
+                    return FHFlatButtonAccent(
                       keepCase: true,
                       title: 'Create new feature',
                       onPressed: () =>
-                          bloc.mrClient.addOverlay((BuildContext context) {
-                        //return null;
-                        return CreateFeatureDialogWidget(
-                          bloc: bloc,
-                        );
+                      bloc.mrClient.addOverlay((BuildContext context) {
+                    //return null;
+                    return CreateFeatureDialogWidget(
+                      bloc: bloc,
+                    );
                       }),
-                    ));
+                    );
                   }
 
                   return SizedBox.shrink();

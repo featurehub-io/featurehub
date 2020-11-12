@@ -1,4 +1,3 @@
-import 'package:app_singleapp/utils/custom_cursor.dart';
 import 'package:flutter/material.dart';
 
 class FHFlatButtonSave extends StatelessWidget {
@@ -9,17 +8,15 @@ class FHFlatButtonSave extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomCursor(
-      child: FlatButton(
-        onPressed: () {
-          onPressedFunc();
-        },
-        child: Text('SAVE',
-          style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(color: Colors.white))
-        ),
-        color: Theme.of(context).buttonColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
+    return FlatButton(
+      onPressed: () {
+        onPressedFunc();
+      },
+      child: Text('SAVE',
+        style: Theme.of(context).textTheme.subtitle2.merge(TextStyle(color: Colors.white))
       ),
+      color: Theme.of(context).buttonColor,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5.0)),
     );
   }
 }
