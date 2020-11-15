@@ -108,59 +108,63 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
 
   Widget _mainContent(BuildContext context) {
     var mrBloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: bodyMainAxisAlignment ?? MainAxisAlignment.start,
-      children: <Widget>[
-        StreamBuilder<Person>(
-            stream: mrBloc.personStream,
-            builder: (BuildContext context, AsyncSnapshot<Person> snapshot) {
-              if (snapshot.hasData) {
-                return Container(child: DrawerViewWidget());
-              }
-              return Container();
-            }),
-        Expanded(
-          child: LayoutBuilder(builder: (context, constraints) {
-            if (constraints.maxWidth > scrollAtWidth) {
-              return Container(
-                  height: MediaQuery.of(context).size.height - kToolbarHeight,
-                  padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
-                  child: Column(children: [
-                    Expanded(
-                        child: SingleChildScrollView(
-                            child: Column(
-                      children: <Widget>[child, Container(height: 20)],
-                    ))),
-                  ]));
-            }
-            return SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Container(
-                    height:
-                        MediaQuery.of(context).size.height - kToolbarHeight,
-                    padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
-                    width: scrollAtWidth.toDouble(),
-                    child: ListView(
-                      shrinkWrap: true,
-                      children: <Widget>[child, Container(height: 20)],
-                    )));
-          }),
-        ),
-        StreamBuilder<ReleasedPortfolio>(
-            stream: mrBloc.personState.isCurrentPortfolioOrSuperAdmin,
-            builder: (context, snapshot) {
-              if (snapshot.data != null &&
-                  (snapshot.data.currentPortfolioOrSuperAdmin == true)) {
+    return Expanded(
+        child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: bodyMainAxisAlignment ?? MainAxisAlignment.start,
+        children: <Widget>[
+          StreamBuilder<Person>(
+              stream: mrBloc.personStream,
+              builder: (BuildContext context, AsyncSnapshot<Person> snapshot) {
+                if (snapshot.hasData) {
+                  return Container(child: DrawerViewWidget());
+                }
+                return Container();
+              }),
+          Expanded(
+            child: LayoutBuilder(builder: (context, constraints) {
+              if (constraints.maxWidth > scrollAtWidth) {
                 return Container(
-                    child: StepperContainer(
-                  mrBloc: mrBloc,
-                ));
-              } else {
-                return SizedBox.shrink();
+                    height: MediaQuery.of(context).size.height - kToolbarHeight,
+                    padding: EdgeInsets.fromLTRB(8, 0, 8, 0),
+                    child: Column(children: [
+                      Expanded(
+                          child: SingleChildScrollView(
+                              child: Column(
+                        children: <Widget>[child,
+                          Container(height: 70)
+                        ],
+                      ))),
+                    ]));
               }
+              return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Container(
+                      height:
+                          MediaQuery.of(context).size.height - kToolbarHeight,
+                      padding: EdgeInsets.fromLTRB(8, 0, 8, 0),
+                      width: scrollAtWidth.toDouble(),
+                      child: ListView(
+                        shrinkWrap: true,
+                        children: <Widget>[child, Container(height: 70)],
+                      )));
             }),
-      ],
+          ),
+          StreamBuilder<ReleasedPortfolio>(
+              stream: mrBloc.personState.isCurrentPortfolioOrSuperAdmin,
+              builder: (context, snapshot) {
+                if (snapshot.data != null &&
+                    (snapshot.data.currentPortfolioOrSuperAdmin == true)) {
+                  return Container(
+                      child: StepperContainer(
+                    mrBloc: mrBloc,
+                  ));
+                } else {
+                  return SizedBox.shrink();
+                }
+              }),
+        ],
+      ),
     );
   }
 }
