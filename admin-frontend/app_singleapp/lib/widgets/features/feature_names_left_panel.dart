@@ -37,9 +37,9 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                 decoration: BoxDecoration(
                     color: Colors.white,
                     border: Border(
-                        bottom: BorderSide(color: Colors.black45, width: 0.5),
-                        right: BorderSide(color: Colors.black45, width: 0.5),
-                        left: BorderSide(color: Colors.black45, width: 0.5),
+                      bottom: BorderSide(color: Colors.black45, width: 0.5),
+                      right: BorderSide(color: Colors.black45, width: 0.5),
+                      left: BorderSide(color: Colors.black45, width: 0.5),
                     ),
                     boxShadow: [
 //                  BoxShadow(
@@ -66,25 +66,26 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(
                                     child: Row(
                                       children: [
-                                        Flexible(
-                                            child: Icon(
-                                              amSelected
-                                                  ? Icons.keyboard_arrow_down
-                                                  : Icons.keyboard_arrow_right,
-                                              size: 24.0,
-                                            )),
+                                        Icon(
+                                          amSelected
+                                              ? Icons.keyboard_arrow_down
+                                              : Icons.keyboard_arrow_right,
+                                          size: 24.0,
+                                        ),
                                         Expanded(
                                           child: Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
                                               AutoSizeText('${feature.name}',
-                                                  overflow: TextOverflow.ellipsis,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                   maxLines: 3,
                                                   minFontSize: 8.0,
                                                   style: Theme.of(context)
@@ -92,7 +93,8 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                                       .bodyText1),
                                               Text(
                                                   '${feature.valueType.toString().split('.').last}',
-                                                  overflow: TextOverflow.ellipsis,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                   style: TextStyle(
                                                       fontFamily: 'Source',
                                                       fontSize: 10,
@@ -103,50 +105,48 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                       ],
                                     ),
                                   ),
-                                  Flexible(
-                                    child: Container(
-                                      padding: EdgeInsets.only(right: 4.0),
-                                      child: Material(
-                                        shape: CircleBorder(),
-                                        child: PopupMenuButton(
-                                          tooltip: 'Show more',
-                                          icon: Icon(Icons.more_vert),
-                                          onSelected: (value) {
-                                            if (value == 'edit') {
-                                              tabsBloc.mrClient.addOverlay(
-                                                  (BuildContext context) =>
-                                                      CreateFeatureDialogWidget(
-                                                          bloc: bloc,
-                                                          feature: feature));
-                                            }
-                                            if (value == 'delete') {
-                                              tabsBloc.mrClient.addOverlay(
-                                                  (BuildContext context) =>
-                                                      FeatureDeleteDialogWidget(
-                                                          bloc: bloc,
-                                                          feature: feature));
-                                            }
-                                          },
-                                          itemBuilder: (BuildContext context) {
-                                            return [
+                                  Container(
+                                    padding: EdgeInsets.only(right: 4.0),
+                                    child: Material(
+                                      shape: CircleBorder(),
+                                      child: PopupMenuButton(
+                                        tooltip: 'Show more',
+                                        icon: Icon(Icons.more_vert),
+                                        onSelected: (value) {
+                                          if (value == 'edit') {
+                                            tabsBloc.mrClient.addOverlay(
+                                                (BuildContext context) =>
+                                                    CreateFeatureDialogWidget(
+                                                        bloc: bloc,
+                                                        feature: feature));
+                                          }
+                                          if (value == 'delete') {
+                                            tabsBloc.mrClient.addOverlay(
+                                                (BuildContext context) =>
+                                                    FeatureDeleteDialogWidget(
+                                                        bloc: bloc,
+                                                        feature: feature));
+                                          }
+                                        },
+                                        itemBuilder: (BuildContext context) {
+                                          return [
+                                            PopupMenuItem(
+                                                value: 'edit',
+                                                child: Text('View details',
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .bodyText2)),
+                                            if (bloc.mrClient
+                                                .userIsFeatureAdminOfCurrentApplication)
                                               PopupMenuItem(
-                                                  value: 'edit',
-                                                  child: Text('View details',
-                                                      style: Theme.of(context)
-                                                          .textTheme
-                                                          .bodyText2)),
-                                              if (bloc.mrClient
-                                                  .userIsFeatureAdminOfCurrentApplication)
-                                                PopupMenuItem(
-                                                  value: 'delete',
-                                                  child: Text('Delete',
-                                                      style: Theme.of(context)
-                                                          .textTheme
-                                                          .bodyText2),
-                                                ),
-                                            ];
-                                          },
-                                        ),
+                                                value: 'delete',
+                                                child: Text('Delete',
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .bodyText2),
+                                              ),
+                                          ];
+                                        },
                                       ),
                                     ),
                                   )
