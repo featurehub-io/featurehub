@@ -41,7 +41,7 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                                 children: [
                                   Container(
                                     width: cellWidth,
-                                    color: Theme.of(context).primaryColorLight,
+                                    color: Theme.of(context).highlightColor,
                                     height: headerHeight,
                                     child: Column(
                                       mainAxisAlignment:

@@ -4,6 +4,7 @@ import 'package:app_singleapp/widgets/features/create-update-feature-dialog-widg
 import 'package:app_singleapp/widgets/features/delete_feature_widget.dart';
 import 'package:app_singleapp/widgets/features/feature_dashboard_constants.dart';
 import 'package:app_singleapp/widgets/features/tabs_bloc.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -50,7 +51,7 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                 height: tabsBloc.featureExtraCellHeight(feature) +
                     (amSelected ? selectedRowHeight : unselectedRowHeight) +
                     0.5,
-                width: MediaQuery.of(context).size.width > 600 ? 260.0 : 180,
+                width: MediaQuery.of(context).size.width > 600 ? 260.0 : 130,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -65,44 +66,46 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(
-                                      flex: 1,
-                                      child: Icon(
-                                        amSelected
-                                            ? Icons.keyboard_arrow_down
-                                            : Icons.keyboard_arrow_right,
-                                        size: 24.0,
-                                      )),
-                                  Expanded(
-                                    flex: 4,
-                                    child: Container(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text('${feature.name}',
-                                              overflow: TextOverflow.ellipsis,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyText1),
-                                          Text(
-                                              '${feature.valueType.toString().split('.').last}',
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                  fontFamily: 'Source',
-                                                  fontSize: 10,
-                                                  letterSpacing: 1.0)),
-                                        ],
-                                      ),
+                                    child: Row(
+                                      children: [
+                                        Flexible(
+                                            child: Icon(
+                                              amSelected
+                                                  ? Icons.keyboard_arrow_down
+                                                  : Icons.keyboard_arrow_right,
+                                              size: 24.0,
+                                            )),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              AutoSizeText('${feature.name}',
+                                                  overflow: TextOverflow.ellipsis,
+                                                  maxLines: 3,
+                                                  minFontSize: 8.0,
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyText1),
+                                              Text(
+                                                  '${feature.valueType.toString().split('.').last}',
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                      fontFamily: 'Source',
+                                                      fontSize: 10,
+                                                      letterSpacing: 1.0)),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  Expanded(
-                                    flex: 1,
+                                  Flexible(
                                     child: Container(
-                                      height: 40,
-                                      width: 30,
+                                      padding: EdgeInsets.only(right: 4.0),
                                       child: Material(
                                         shape: CircleBorder(),
                                         child: PopupMenuButton(
