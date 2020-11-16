@@ -20,7 +20,7 @@ class FHScaffoldWidget extends StatefulWidget {
   const FHScaffoldWidget(
       {Key key,
       @required this.body,
-      this.scrollAtWidth = 375,
+      this.scrollAtWidth = 320,
       this.bodyMainAxisAlignment})
       : super(key: key);
 
@@ -61,7 +61,6 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
         appBar: PreferredSize(
             preferredSize: const Size(double.infinity, kToolbarHeight),
             child: FHappBar()),
-//        drawer: FHDrawer(),
         body: Stack(children: [
           Column(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -123,16 +122,15 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
               }),
           Expanded(
             child: LayoutBuilder(builder: (context, constraints) {
-              if (constraints.maxWidth > scrollAtWidth) {
+              if (constraints.maxWidth > scrollAtWidth) { //parent that constraints this widget is the page width (without a menu)
                 return Container(
                     height: MediaQuery.of(context).size.height - kToolbarHeight,
-                    padding: EdgeInsets.fromLTRB(8, 0, 8, 0),
+                    padding: EdgeInsets.fromLTRB(16, 0, 16, 0),
                     child: Column(children: [
                       Expanded(
                           child: SingleChildScrollView(
                               child: Column(
                         children: <Widget>[child,
-                          Container(height: 70)
                         ],
                       ))),
                     ]));
@@ -142,11 +140,12 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
                   child: Container(
                       height:
                           MediaQuery.of(context).size.height - kToolbarHeight,
-                      padding: EdgeInsets.fromLTRB(8, 0, 8, 0),
+                      padding: EdgeInsets.fromLTRB(16, 0, 16, 0),
                       width: scrollAtWidth.toDouble(),
                       child: ListView(
                         shrinkWrap: true,
-                        children: <Widget>[child, Container(height: 70)],
+                        children: <Widget>[child,
+                        ],
                       )));
             }),
           ),

@@ -1,5 +1,4 @@
 import 'package:app_singleapp/api/mr_client_aware.dart';
-import 'package:app_singleapp/widgets/common/decorations/fh_dropdown_outline_decoration.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
@@ -18,7 +17,8 @@ class ApplicationDropDown extends StatefulWidget {
 class _ApplicationDropDownState extends State<ApplicationDropDown> {
   @override
   Widget build(BuildContext context) {
-    return DropDownOutlineDecoration(
+    return OutlinedButton(
+      onPressed: () => {},
       child: Container(
         padding: EdgeInsets.all(4.0),
         constraints: BoxConstraints(maxWidth: 200),

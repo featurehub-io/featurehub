@@ -3,8 +3,7 @@ import 'package:app_singleapp/api/router.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 
-// because Andy asked where the Scaffold was. It should be easy to find.
-// ironically the scaffold is in the LandingRoute
+
 class AndysScaffoldRoute extends StatefulWidget {
   @override
   _AndysScaffoldRouteState createState() => _AndysScaffoldRouteState();
