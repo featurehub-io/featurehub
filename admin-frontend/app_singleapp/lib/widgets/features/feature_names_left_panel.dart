@@ -37,9 +37,9 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                 decoration: BoxDecoration(
                     color: Colors.white,
                     border: Border(
-                      bottom: BorderSide(color: Colors.black45, width: 0.5),
-                      right: BorderSide(color: Colors.black45, width: 0.5),
-                      left: BorderSide(color: Colors.black45, width: 0.5),
+                      bottom: BorderSide(color: Theme.of(context).buttonTheme.colorScheme.onSurface.withOpacity(0.12), width: 1.0),
+                      right: BorderSide(color: Theme.of(context).buttonTheme.colorScheme.onSurface.withOpacity(0.12), width: 1.0),
+                      left: BorderSide(color: Theme.of(context).buttonTheme.colorScheme.onSurface.withOpacity(0.12), width: 1.0),
                     ),
                     boxShadow: [
 //                  BoxShadow(

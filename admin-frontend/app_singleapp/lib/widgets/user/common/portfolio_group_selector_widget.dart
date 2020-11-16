@@ -25,12 +25,12 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
       children: <Widget>[
         Container(
           padding: const EdgeInsets.only(top: 8.0),
-          constraints: BoxConstraints(maxWidth: 700),
           child: LayoutBuilder(
             builder: (context, constraints) {
-              if (constraints.maxWidth < 620) {
+              if (constraints.maxWidth < 600) {
                 return Column(children: <Widget>[
                   buildPortfolioDropDown(bloc),
+                  SizedBox(height: 16.0),
                   buildGroupDropDown(bloc)
                 ]);
               } else {
