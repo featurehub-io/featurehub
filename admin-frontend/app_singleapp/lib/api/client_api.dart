@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:html';
 
 import 'package:app_singleapp/api/identity_providers.dart';
 import 'package:app_singleapp/api/router.dart';
+import 'package:app_singleapp/api/web_interface/url_handler.dart';
+import 'package:app_singleapp/api/web_interface/url_handler_stub.dart'
+    if (dart.library.io) 'package:app_singleapp/api/web_interface/io_url_handler.dart'
+    if (dart.library.html) 'package:app_singleapp/api/web_interface/web_url_handler.dart';
 import 'package:app_singleapp/common/fh_shared_prefs.dart';
 import 'package:app_singleapp/common/person_state.dart';
 import 'package:app_singleapp/common/stream_valley.dart';
@@ -24,6 +27,7 @@ import 'package:rxdart/rxdart.dart';
 ///
 /// When they are in the 'logged_in' state, we have a bearer token and information about the
 /// organisation and their basic role within it (admin or not).
+///
 
 enum InitializedCheckState {
   uninitialized,
@@ -222,25 +226,16 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   StreamValley streamValley;
 
-  static Uri originUri;
+  static AbstractWebInterface webInterface = getUrlAuthInstance();
 
   static String homeUrl() {
-    final origin = window.location.origin;
-    originUri = Uri.parse(window.location.origin);
-    if (overrideOrigin) {
-      return '${originUri.scheme}://${originUri.host}:8903';
-    } else if (overrideOrigin && origin.startsWith('http://[::1]')) {
-      return 'http://[::1]:8903';
-    } else {
-      final url = Uri.parse(origin);
-      return url.replace(path: url.path).toString();
-    }
+    return webInterface.homeUrl(overrideOrigin);
   }
 
   ManagementRepositoryClientBloc({String basePathUrl})
       : _client = ApiClient(basePath: basePathUrl ?? homeUrl()) {
     _basePath = Uri.parse(_client.basePath);
-    originUri = Uri.parse(window.location.origin);
+    webInterface.setOrigin();
     setupApi = SetupServiceApi(_client);
     personServiceApi = PersonServiceApi(_client);
 
@@ -296,7 +291,7 @@ class ManagementRepositoryClientBloc implements Bloc {
         requestOwnDetails();
       } else if (setupResponse.redirectUrl != null) {
         // they can only authenticate via one provider, so lets use them
-        window.location.href = setupResponse.redirectUrl;
+        webInterface.authenticateViaProvider(setupResponse.redirectUrl);
       } else {
         _initializedSource.add(InitializedCheckState.initialized);
       }
@@ -315,27 +310,16 @@ class ManagementRepositoryClientBloc implements Bloc {
     });
   }
 
-  static const bearerToken = 'bearer-token';
-
   String getBearerCookie() {
-    final cookies = document.cookie.split(';')
-      ..retainWhere((s) => s.trim().startsWith('$bearerToken='));
-
-    if (cookies.isNotEmpty) {
-      return cookies.first.trim().substring('$bearerToken='.length);
-    }
-
-    return null;
+    return webInterface.getStoredAuthToken();
   }
 
   void _setBearerCookie(String token) {
-    document.cookie = '$bearerToken=$token; path=/';
+    webInterface.setStoredAuthToken(token);
   }
 
   void _clearBearerCookie() {
-    // expires back in 1970
-    document.cookie =
-        '$bearerToken=Da; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
+    webInterface.clearStoredAuthToken();
   }
 
   // ask for my own details and if there are some, set the person and transition
@@ -448,8 +432,7 @@ class ManagementRepositoryClientBloc implements Bloc {
   }
 
   void consoleError(e, s) {
-    window.console.error(e?.toString());
-    window.console.error(s?.toString());
+    _log.severe('Failed', e, s);
   }
 
   Future<void> login(String email, String password) async {
@@ -557,7 +540,11 @@ class ManagementRepositoryClientBloc implements Bloc {
     final uri = Uri.parse(url);
 
     if (uri.host == _basePath.host && uri.port == _basePath.port) {
-      return uri.replace(host: originUri.host, port: originUri.port).toString();
+      return uri
+          .replace(
+              host: webInterface.originUri.host,
+              port: webInterface.originUri.port)
+          .toString();
     }
 
     return url;
