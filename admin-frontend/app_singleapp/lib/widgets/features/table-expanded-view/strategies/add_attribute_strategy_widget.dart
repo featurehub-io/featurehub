@@ -82,10 +82,8 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
               labelStyle: Theme.of(context).textTheme.bodyText1.copyWith(
                   fontSize: 12.0, color: Theme.of(context).buttonColor)),
           autofocus: true,
-          onFieldSubmitted: (_) {
-            _updateAttributeFieldName();
-            return FocusScope.of(context).nextFocus();
-          },
+          onChanged: (v) => _updateAttributeFieldName(),
+          onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
           validator: ((v) {
             if (v.isEmpty) {
               return 'Field name required';
@@ -326,31 +324,31 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
     }
 
     return TextFormField(
-        controller: _value,
-        decoration: InputDecoration(
-            labelText: labelText,
-            helperText: helperText,
-            labelStyle: Theme.of(context).textTheme.bodyText1.copyWith(
-                fontSize: 12.0, color: Theme.of(context).buttonColor)),
-        // readOnly: !widget.widget.editable,
-        autofocus: true,
-        onFieldSubmitted: (_) {
-          if (_value.text.trim().isEmpty) {
-            _attribute.value = null;
-          } else if (_attributeType == RolloutStrategyFieldType.NUMBER) {
-            _attribute.value = double.parse(_value.text);
-          } else {
-            _attribute.value = _value.text;
-          }
+      controller: _value,
+      decoration: InputDecoration(
+          labelText: labelText,
+          helperText: helperText,
+          labelStyle: Theme.of(context)
+              .textTheme
+              .bodyText1
+              .copyWith(fontSize: 12.0, color: Theme.of(context).buttonColor)),
+      // readOnly: !widget.widget.editable,
+      autofocus: true,
+      onChanged: (v) => _valueFieldChanged(v),
+      onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+      inputFormatters: inputFormatters,
+    );
+  }
 
-          return FocusScope.of(context).nextFocus();
-        },
-        inputFormatters: inputFormatters,
-        validator: ((v) {
-          if (v.isEmpty) {
-            return 'Attribute value(s) required';
-          }
-          return null;
-        }));
+  void _valueFieldChanged(String v) {
+    if (v.trim().isEmpty) {
+      _attribute.value = null;
+    } else if (_attributeType == RolloutStrategyFieldType.NUMBER) {
+      try {
+        _attribute.value = double.parse(v);
+      } catch (e) {}
+    } else {
+      _attribute.value = v;
+    }
   }
 }
