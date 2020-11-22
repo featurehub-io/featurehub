@@ -31,23 +31,27 @@ class _PersonSearchWidget extends StatelessWidget {
   }
 
   Widget _headerRow(BuildContext context, ListUsersBloc bloc) {
-    return Container(
-        padding: const EdgeInsets.fromLTRB(0, 0, 30, 0),
-        child: FHHeader(
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        FHHeader(
           title: 'Manage users',
-          children: [
-            if (bloc.mrClient.userIsSuperAdmin == true)
-              FHIconTextButton(
-                iconData: Icons.add,
-                label: 'Create new user',
-                onPressed: () {
-                  ManagementRepositoryClientBloc.router
-                      .navigateTo(context, '/create-user');
-                },
-                keepCase: true,
-              )
-          ],
-        ));
+        ),
+        if (bloc.mrClient.userIsSuperAdmin == true)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: FHIconTextButton(
+              iconData: Icons.add,
+              label: 'Create new user',
+              onPressed: () {
+                ManagementRepositoryClientBloc.router
+                    .navigateTo(context, '/create-user');
+              },
+              keepCase: true,
+            ),
+          )
+      ],
+    );
   }
 
   Widget _filterRow(BuildContext context, ListUsersBloc bloc) {

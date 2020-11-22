@@ -112,71 +112,62 @@ class _ValueCard extends StatelessWidget {
   Widget build(BuildContext context) {
     var displayValue = _findDisplayValue();
     return Padding(
-      padding: const EdgeInsets.only(top: 4.0, bottom: 4.0),
+      padding: const EdgeInsets.only(top: 8.0, bottom: 4.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Card(
-            elevation: 4.0,
-            shadowColor: rolloutStrategy == null
-                ? Colors.blue
-                : Colors.green,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15.0),
+          Container(
+            height: 30,
+            width: 150,
+            padding: EdgeInsets.symmetric(horizontal: 8.0),
+            decoration: BoxDecoration(
+              color: rolloutStrategy == null
+                  ? defaultValueColor
+                  : strategyValueColor,
+             borderRadius: BorderRadius.all(Radius.circular(16.0)),
             ),
-            child: Container(
-              height: 30,
-              width: 150,
-              padding: EdgeInsets.symmetric(horizontal: 8.0),
-              decoration: BoxDecoration(
-                color: rolloutStrategy == null
-                    ? defaultValueColor
-                    : strategyValueColor,
-//                borderRadius: BorderRadius.all(Radius.circular(16.0)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  if (fv.rolloutStrategies != null &&
-                      fv.rolloutStrategies.isNotEmpty)
-                    Expanded(
-                        flex: 4,
-                        child: Text(
-                            rolloutStrategy != null
-                                ? '${(rolloutStrategy.percentageText)}%'
-                                : 'default',
-                            style: Theme.of(context).textTheme.caption.copyWith(
-                                color: rolloutStrategy != null
-                                    ? strategyTextColor
-                                    : defaultTextColor))),
-                  if (fv.rolloutStrategies != null &&
-                      fv.rolloutStrategies.isNotEmpty)
-                    VerticalDivider(
-                      thickness: 1.0,
-                    ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                if (fv.rolloutStrategies != null &&
+                    fv.rolloutStrategies.isNotEmpty)
                   Expanded(
-                    flex: 4,
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 4.0),
-                        child: feature.valueType == FeatureValueType.BOOLEAN
-                            ? FlagOnOffColoredIndicator(
-                                on: rolloutStrategy != null
-                                    ? rolloutStrategy.value
-                                    : fv.valueBoolean)
-                            : Text(
-                                displayValue.isEmpty ? 'not set' : displayValue,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                                style: displayValue.isEmpty
-                                    ? Theme.of(context).textTheme.caption
-                                    : Theme.of(context).textTheme.bodyText2),
-                      ),
+                      flex: 4,
+                      child: Text(
+                          rolloutStrategy != null
+                              ? '${(rolloutStrategy.percentageText)}%'
+                              : 'default',
+                          style: Theme.of(context).textTheme.caption.copyWith(
+                              color: rolloutStrategy != null
+                                  ? strategyTextColor
+                                  : defaultTextColor))),
+                if (fv.rolloutStrategies != null &&
+                    fv.rolloutStrategies.isNotEmpty)
+                  VerticalDivider(
+                    thickness: 1.0,
+                  ),
+                Expanded(
+                  flex: 4,
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 4.0),
+                      child: feature.valueType == FeatureValueType.BOOLEAN
+                          ? FlagOnOffColoredIndicator(
+                              on: rolloutStrategy != null
+                                  ? rolloutStrategy.value
+                                  : fv.valueBoolean)
+                          : Text(
+                              displayValue.isEmpty ? 'not set' : displayValue,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: displayValue.isEmpty
+                                  ? Theme.of(context).textTheme.caption
+                                  : Theme.of(context).textTheme.bodyText2),
                     ),
-                  )
-                ],
-              ),
+                  ),
+                )
+              ],
             ),
           ),
         ],

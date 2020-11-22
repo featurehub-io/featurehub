@@ -20,7 +20,7 @@ class FHScaffoldWidget extends StatefulWidget {
   const FHScaffoldWidget(
       {Key key,
       @required this.body,
-      this.scrollAtWidth = 800,
+      this.scrollAtWidth = 320,
       this.bodyMainAxisAlignment})
       : super(key: key);
 
@@ -61,7 +61,6 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
         appBar: PreferredSize(
             preferredSize: const Size(double.infinity, kToolbarHeight),
             child: FHappBar()),
-//        drawer: FHDrawer(),
         body: Stack(children: [
           Column(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -108,59 +107,63 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
 
   Widget _mainContent(BuildContext context) {
     var mrBloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: bodyMainAxisAlignment ?? MainAxisAlignment.start,
-      children: <Widget>[
-        StreamBuilder<Person>(
-            stream: mrBloc.personStream,
-            builder: (BuildContext context, AsyncSnapshot<Person> snapshot) {
-              if (snapshot.hasData) {
-                return Container(child: DrawerViewWidget());
-              }
-              return Container();
-            }),
-        Expanded(
-          child: LayoutBuilder(builder: (context, constraints) {
-            if (constraints.maxWidth > scrollAtWidth) {
-              return Container(
-                  height: MediaQuery.of(context).size.height - kToolbarHeight,
-                  padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
-                  child: Column(children: [
-                    Expanded(
-                        child: SingleChildScrollView(
-                            child: Column(
-                      children: <Widget>[child, Container(height: 20)],
-                    ))),
-                  ]));
-            }
-            return SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Container(
-                    height:
-                        MediaQuery.of(context).size.height - kToolbarHeight,
-                    padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
-                    width: scrollAtWidth.toDouble(),
-                    child: ListView(
-                      shrinkWrap: true,
-                      children: <Widget>[child, Container(height: 20)],
-                    )));
-          }),
-        ),
-        StreamBuilder<ReleasedPortfolio>(
-            stream: mrBloc.personState.isCurrentPortfolioOrSuperAdmin,
-            builder: (context, snapshot) {
-              if (snapshot.data != null &&
-                  (snapshot.data.currentPortfolioOrSuperAdmin == true)) {
+    return Expanded(
+        child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: bodyMainAxisAlignment ?? MainAxisAlignment.start,
+        children: <Widget>[
+          StreamBuilder<Person>(
+              stream: mrBloc.personStream,
+              builder: (BuildContext context, AsyncSnapshot<Person> snapshot) {
+                if (snapshot.hasData) {
+                  return Container(child: DrawerViewWidget());
+                }
+                return Container();
+              }),
+          Expanded(
+            child: LayoutBuilder(builder: (context, constraints) {
+              if (constraints.maxWidth > scrollAtWidth) { //parent that constraints this widget is the page width (without a menu)
                 return Container(
-                    child: StepperContainer(
-                  mrBloc: mrBloc,
-                ));
-              } else {
-                return SizedBox.shrink();
+                    height: MediaQuery.of(context).size.height - kToolbarHeight,
+                    padding: EdgeInsets.fromLTRB(16, 0, 16, 0),
+                    child: Column(children: [
+                      Expanded(
+                          child: SingleChildScrollView(
+                              child: Column(
+                        children: <Widget>[child,
+                        ],
+                      ))),
+                    ]));
               }
+              return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Container(
+                      height:
+                          MediaQuery.of(context).size.height - kToolbarHeight,
+                      padding: EdgeInsets.fromLTRB(16, 0, 16, 0),
+                      width: scrollAtWidth.toDouble(),
+                      child: ListView(
+                        shrinkWrap: true,
+                        children: <Widget>[child,
+                        ],
+                      )));
             }),
-      ],
+          ),
+          StreamBuilder<ReleasedPortfolio>(
+              stream: mrBloc.personState.isCurrentPortfolioOrSuperAdmin,
+              builder: (context, snapshot) {
+                if (snapshot.data != null &&
+                    (snapshot.data.currentPortfolioOrSuperAdmin == true)) {
+                  return Container(
+                      child: StepperContainer(
+                    mrBloc: mrBloc,
+                  ));
+                } else {
+                  return SizedBox.shrink();
+                }
+              }),
+        ],
+      ),
     );
   }
 }

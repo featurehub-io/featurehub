@@ -1,7 +1,6 @@
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/api/router.dart';
 import 'package:app_singleapp/common/stream_valley.dart';
-import 'package:app_singleapp/utils/custom_cursor.dart';
 import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/features/environments_features_list_view.dart';
 import 'package:app_singleapp/widgets/features/feature_names_left_panel.dart';
@@ -120,11 +119,11 @@ class _FeatureTabsBodyHolder extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         if(bloc.features.isNotEmpty) Container(
-                            color: Theme.of(context).primaryColorLight,
+                            color: Theme.of(context).highlightColor,
                             height: headerHeight,
                             width: MediaQuery.of(context).size.width > 600
                                 ? 260.0
-                                : 180,
+                                : 130,
                             padding: EdgeInsets.only(left: 8.0),
                             child: Text('',
                                 style: Theme.of(context).textTheme.caption)),
@@ -149,26 +148,29 @@ class _FeatureTabsBodyHolder extends StatelessWidget {
 class _FeatureTabsHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _FeatureTab(
-            text: 'Feature Flags',
-            icon: Icons.flag,
-            state: TabsState.FLAGS,
-            color: Colors.green),
-        _FeatureTab(
-            text: 'Feature Values',
-            icon: Icons.code,
-            state: TabsState.VALUES,
-            color: Colors.blue),
-        _FeatureTab(
-            text: 'Configurations',
-            icon: Icons.device_hub,
-            state: TabsState.CONFIGURATIONS,
-            color: Colors.orange),
-      ],
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _FeatureTab(
+              text: 'Feature Flags',
+              icon: Icons.flag,
+              state: TabsState.FLAGS,
+              color: Colors.green),
+          _FeatureTab(
+              text: 'Feature Values',
+              icon: Icons.code,
+              state: TabsState.VALUES,
+              color: Colors.blue),
+          _FeatureTab(
+              text: 'Configurations',
+              icon: Icons.device_hub,
+              state: TabsState.CONFIGURATIONS,
+              color: Colors.orange),
+        ],
+      ),
     );
   }
 }
@@ -195,32 +197,30 @@ class _FeatureTab extends StatelessWidget {
     return StreamBuilder<TabsState>(
         stream: bloc.currentTab,
         builder: (context, snapshot) {
-          return CustomCursor(
-            child: Container(
-                padding: const EdgeInsets.all(8.0),
-                child: InkWell(
-                    canRequestFocus: false,
-                    mouseCursor: SystemMouseCursors.click,
-                    borderRadius: BorderRadius.circular(16.0),
-                    onTap: () {
-                      bloc.swapTab(state);
-                    },
-                    child: Container(
-                        padding: EdgeInsets.symmetric(
-                            vertical: 6.0, horizontal: 12.0),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.all(Radius.circular(16.0)),
-                          color: state == snapshot.data
-                              ? Theme.of(context).primaryColorLight
-                              : Colors.transparent,
-                        ),
-                        child: Row(children: <Widget>[
-                          Icon(icon, color: color, size: 20.0),
-                          SizedBox(width: 4.0),
-                          Text(text,
-                              style: Theme.of(context).textTheme.subtitle1),
-                        ])))),
-          );
+          return Container(
+              padding: const EdgeInsets.all(8.0),
+              child: InkWell(
+                  canRequestFocus: false,
+                  mouseCursor: SystemMouseCursors.click,
+                  borderRadius: BorderRadius.circular(16.0),
+                  onTap: () {
+                    bloc.swapTab(state);
+                  },
+                  child: Container(
+                      padding: EdgeInsets.symmetric(
+                          vertical: 6.0, horizontal: 12.0),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(16.0)),
+                        color: state == snapshot.data
+                            ? Theme.of(context).primaryColorLight
+                            : Colors.transparent,
+                      ),
+                      child: Row(children: <Widget>[
+                        Icon(icon, color: color, size: 20.0),
+                        SizedBox(width: 4.0),
+                        Text(text,
+                            style: Theme.of(context).textTheme.subtitle1),
+                      ]))));
         });
   }
 }
