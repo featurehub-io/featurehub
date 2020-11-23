@@ -10,6 +10,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:mrapi/api.dart';
 
+import 'matchers.dart';
+
 class AttributeStrategyWidget extends StatefulWidget {
   final RolloutStrategyAttribute attribute;
   final bool attributeIsFirst;
@@ -33,6 +35,8 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
   RolloutStrategyAttribute _attribute;
   StrategyAttributeWellKnownNames _wellKnown;
   RolloutStrategyFieldType _attributeType;
+
+  List<RolloutStrategyAttributeConditional> _matchers;
 
   _AttributeStrategyWidgetState();
 
@@ -59,7 +63,10 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
 
     _wellKnown = StrategyAttributeWellKnownNamesTypeTransformer
         .fromJsonMap[_attribute.fieldName ?? ''];
+
+    _matchers = defineMatchers(_attributeType, _wellKnown);
   }
+
 
   final Map<StrategyAttributeWellKnownNames, String> _nameFieldMap = {
     StrategyAttributeWellKnownNames.country: 'Country',
@@ -135,7 +142,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
                         ),
                       ),
                       isExpanded: true,
-                      items: RolloutStrategyAttributeConditional.values.map(
+                      items: _matchers.map(
                           (RolloutStrategyAttributeConditional
                               dropDownStringItem) {
                         return DropdownMenuItem<
@@ -234,6 +241,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
             setState(() {
               _attributeType = value;
               _attribute.type = value;
+              _matchers = defineMatchers(_attributeType, _wellKnown);
             });
           },
           value: _attributeType,
@@ -292,7 +300,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
         return Text('needs true/false container');
       case RolloutStrategyFieldType.IP_ADDRESS:
         labelText = 'IP Address(es) with or without CIDR';
-        helperText = 'e.g. 168.192.54.3 or 192.168.86.1/8';
+        helperText = 'e.g. 168.192.54.3 or 192.168.86.1/8 or 10.34.0.0/32';
         break;
       default:
         return Container(); // nothing until they have chosen one
