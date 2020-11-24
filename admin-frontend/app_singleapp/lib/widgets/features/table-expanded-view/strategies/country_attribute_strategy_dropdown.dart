@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
 
+import 'string_caps_extension.dart';
+
 class CountryAttributeStrategyDropdown extends StatefulWidget {
   final RolloutStrategyAttribute attribute;
 
@@ -44,7 +46,12 @@ class _CountryAttributeStrategyDropdownState extends State<CountryAttributeStrat
             return DropdownMenuItem<StrategyAttributeCountryName>(
                 value: dropDownStringItem,
                 child: Text(
-                    StrategyAttributeCountryNameTypeTransformer.toJson(dropDownStringItem),
+                    StrategyAttributeCountryNameTypeTransformer.toJson(dropDownStringItem)
+                        .toString().replaceAll('_', ' ')
+                        .replaceAll('of the', '')
+                        .replaceAll('of', '')
+                        .trim()
+                        .capitalizeFirstofEach,
                     style: Theme
                         .of(context)
                         .textTheme
