@@ -242,6 +242,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
               _attributeType = value;
               _attribute.type = value;
               _matchers = defineMatchers(_attributeType, _wellKnown);
+              _dropDownCustomAttributeMatchingCriteria = null;
             });
           },
           value: _attributeType,
