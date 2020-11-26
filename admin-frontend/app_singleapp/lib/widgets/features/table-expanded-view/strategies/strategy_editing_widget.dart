@@ -127,7 +127,8 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                                   FocusScope.of(context).nextFocus(),
                               inputFormatters: [
                                 DecimalTextInputFormatter(
-                                    decimalRange: 4, activatedNegativeValues: false)
+                                    decimalRange: 4,
+                                    activatedNegativeValues: false)
                               ],
                               validator: ((v) {
                                 if (v.isEmpty) {
@@ -141,17 +142,22 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                             child: Material(
                                 type: MaterialType.transparency,
                                 shape: CircleBorder(),
-                                child: IconButton(icon: Icon(Icons.delete_sharp, size: 18.0,),
-                                    hoverColor: Theme.of(context).primaryColorLight,
+                                child: IconButton(
+                                    icon: Icon(
+                                      Icons.delete_sharp,
+                                      size: 18.0,
+                                    ),
+                                    hoverColor:
+                                        Theme.of(context).primaryColorLight,
                                     splashRadius: 20,
                                     onPressed: () {
-                                  setState(() {
-                                    widget.rolloutStrategy.percentage = null;
-                                    widget.bloc.updateStrategy();
-                                  });
-
-                                    })
-                            ),
+                                      setState(() {
+                                        _strategyPercentage.text = '';
+                                        widget.rolloutStrategy.percentage =
+                                            null;
+                                        widget.bloc.updateStrategy();
+                                      });
+                                    })),
                           )
                         ],
                       ),
