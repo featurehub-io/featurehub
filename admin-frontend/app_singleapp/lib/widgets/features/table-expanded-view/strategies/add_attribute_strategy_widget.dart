@@ -1,4 +1,5 @@
 import 'package:app_singleapp/widgets/common/input_fields_validators/input_field_number_formatter.dart';
+import 'package:app_singleapp/widgets/features/table-expanded-view/custom_strategy_attributes_bloc.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/country_attribute_strategy_dropdown.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/device_attribute_strategy_dropdown.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/platform_attribute_strategy_dropdown.dart';
@@ -15,11 +16,13 @@ import 'matchers.dart';
 class AttributeStrategyWidget extends StatefulWidget {
   final RolloutStrategyAttribute attribute;
   final bool attributeIsFirst;
+  final IndividualStrategyBloc bloc;
 
   const AttributeStrategyWidget({
     Key key,
     @required this.attribute,
     @required this.attributeIsFirst,
+    @required this.bloc,
   }) : super(key: key);
 
   @override
@@ -74,7 +77,6 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
     StrategyAttributeWellKnownNames.platform: 'Platform',
     StrategyAttributeWellKnownNames.version: 'Version',
     StrategyAttributeWellKnownNames.userkey: 'User',
-    StrategyAttributeWellKnownNames.session: 'Session',
   };
 
   Widget _nameField() {
@@ -192,6 +194,14 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
                       padding: const EdgeInsets.only(left: 16.0),
                       child: _fieldValueEditorByFieldType(),
                     )),
+              Material(
+                type: MaterialType.transparency,
+                shape: CircleBorder(),
+                child: IconButton(icon: Icon(Icons.delete_sharp, size: 18.0,),
+                    hoverColor: Theme.of(context).primaryColorLight,
+                    splashRadius: 20,
+                  onPressed: () => widget.bloc.deleteAttribute(_attribute))
+              )
             ],
           ),
         ),
@@ -261,10 +271,6 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
           case StrategyAttributeWellKnownNames.userkey:
             labelText = 'User key(s)';
             helperText = 'e.g. bob@xyz.com';
-            break;
-          case StrategyAttributeWellKnownNames.session:
-            labelText = 'Session id(s)';
-            helperText = 'e.g. test uuids';
             break;
           case StrategyAttributeWellKnownNames.version:
             labelText = 'Version(s)';

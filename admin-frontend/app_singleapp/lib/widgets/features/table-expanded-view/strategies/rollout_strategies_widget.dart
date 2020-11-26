@@ -19,7 +19,9 @@ class RolloutStrategiesWidget extends StatelessWidget {
             if (snapshot.hasData && snapshot.data.isNotEmpty) {
               return Column(children: [
                 for (var rolloutStrategyAttribute in snapshot.data)
-                  AttributeStrategyWidget(attribute: rolloutStrategyAttribute, attributeIsFirst: rolloutStrategyAttribute == snapshot.data.first,)
+                  AttributeStrategyWidget(attribute: rolloutStrategyAttribute,
+                    attributeIsFirst: rolloutStrategyAttribute == snapshot.data.first,
+                  bloc: bloc)
               ]);
             } else {
               return Container();
@@ -30,7 +32,7 @@ class RolloutStrategiesWidget extends StatelessWidget {
         children: [
           Text('Add rule', style: Theme.of(context).textTheme.caption),
           for (var e in StrategyAttributeWellKnownNames.values)
-            Padding(
+            if(e != StrategyAttributeWellKnownNames.session) Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: FHOutlineButton(
                   onPressed: () => bloc.createAttribute(type: e),

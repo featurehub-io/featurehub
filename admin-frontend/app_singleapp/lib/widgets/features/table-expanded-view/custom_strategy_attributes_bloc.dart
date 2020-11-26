@@ -34,7 +34,7 @@ class IndividualStrategyBloc extends Bloc {
         case StrategyAttributeWellKnownNames.country:
         case StrategyAttributeWellKnownNames.platform:
         case StrategyAttributeWellKnownNames.userkey:
-        case StrategyAttributeWellKnownNames.session:
+        case StrategyAttributeWellKnownNames.session: //session is not used in the UI
           rs.type = RolloutStrategyFieldType.STRING;
           break;
         case StrategyAttributeWellKnownNames.version:
@@ -48,6 +48,11 @@ class IndividualStrategyBloc extends Bloc {
 
   void addAttribute(RolloutStrategyAttribute rs) {
     rolloutStrategy.attributes.add(rs);
+    _rolloutStartegyAttributeSource.add(rolloutStrategy.attributes);
+  }
+
+  void deleteAttribute(RolloutStrategyAttribute rs) {
+    rolloutStrategy.attributes.remove(rs);
     _rolloutStartegyAttributeSource.add(rolloutStrategy.attributes);
   }
 

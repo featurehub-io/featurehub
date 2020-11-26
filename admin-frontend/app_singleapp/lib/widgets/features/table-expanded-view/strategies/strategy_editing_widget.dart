@@ -112,27 +112,49 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                   child: Column(children: [
                     if ((widget.rolloutStrategy?.percentage != null) ||
                         showPercentageField)
-                      TextFormField(
-                        controller: _strategyPercentage,
-                        decoration: InputDecoration(
-                            labelText: 'Percentage value',
-                            helperText:
-                                'You can enter a value with up to 4 decimal points, e.g. 0.0005 %'),
-                        readOnly: !widget.editable,
-                        autofocus: true,
-                        onFieldSubmitted: (_) =>
-                            FocusScope.of(context).nextFocus(),
-                        inputFormatters: [
-                          DecimalTextInputFormatter(
-                              decimalRange: 4, activatedNegativeValues: false)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _strategyPercentage,
+                              decoration: InputDecoration(
+                                  labelText: 'Percentage value',
+                                  helperText:
+                                      'You can enter a value with up to 4 decimal points, e.g. 0.0005 %'),
+                              readOnly: !widget.editable,
+                              autofocus: true,
+                              onFieldSubmitted: (_) =>
+                                  FocusScope.of(context).nextFocus(),
+                              inputFormatters: [
+                                DecimalTextInputFormatter(
+                                    decimalRange: 4, activatedNegativeValues: false)
+                              ],
+                              validator: ((v) {
+                                if (v.isEmpty) {
+                                  return 'Percentage value required';
+                                }
+                                return null;
+                              }),
+                            ),
+                          ),
+                          Expanded(
+                            child: Material(
+                                type: MaterialType.transparency,
+                                shape: CircleBorder(),
+                                child: IconButton(icon: Icon(Icons.delete_sharp, size: 18.0,),
+                                    hoverColor: Theme.of(context).primaryColorLight,
+                                    splashRadius: 20,
+                                    onPressed: () {
+                                  setState(() {
+                                    widget.rolloutStrategy.percentage = null;
+                                    widget.bloc.updateStrategy();
+                                  });
+
+                                    })
+                            ),
+                          )
                         ],
-                        validator: ((v) {
-                          if (v.isEmpty) {
-                            return 'Percentage value required';
-                          }
-                          return null;
-                        }),
-                      )
+                      ),
                   ]),
                 ),
                 Row(
