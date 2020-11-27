@@ -122,11 +122,13 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
           ),
           child: Row(
             children: [
-              Expanded(flex: 3, child: _nameField()),
+              Expanded(flex: 2, child: _nameField()),
+              Expanded(flex: 7, child: Row(
+    children:[
               if (_wellKnown == null)
                 Padding(
                   padding: const EdgeInsets.only(left: 16.0),
-                  child: Expanded(flex: 3, child: _customFieldType()),
+                  child: Expanded(flex: 2, child: _customFieldType()),
                 ),
               Padding(
                 padding: const EdgeInsets.only(left: 16.0),
@@ -197,7 +199,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
                     child: Padding(
                       padding: const EdgeInsets.only(left: 16.0),
                       child: _fieldValueEditorByFieldType(),
-                    )),
+                    ))])),
               Expanded(
                 flex: 1,
                 child: Row(
