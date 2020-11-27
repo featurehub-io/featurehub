@@ -114,7 +114,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                         showPercentageField)
                       Row(
                         children: [
-                          Expanded(
+                          Flexible(
                             child: TextFormField(
                               controller: _strategyPercentage,
                               decoration: InputDecoration(
@@ -138,7 +138,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                               }),
                             ),
                           ),
-                          Expanded(
+                          Flexible(
                             child: Material(
                                 type: MaterialType.transparency,
                                 shape: CircleBorder(),

@@ -70,7 +70,6 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
     _matchers = defineMatchers(_attributeType, _wellKnown);
   }
 
-
   final Map<StrategyAttributeWellKnownNames, String> _nameFieldMap = {
     StrategyAttributeWellKnownNames.country: 'Country',
     StrategyAttributeWellKnownNames.device: 'Device',
@@ -122,51 +121,56 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
             color: Theme.of(context).selectedRowColor,
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            // mainAxisSize: MainAxisSize.max,
             children: [
-              Expanded(flex: 1, child: _nameField()),
+              Expanded(flex: 3, child: _nameField()),
               if (_wellKnown == null)
-                Expanded(flex: 1, child: _customFieldType()),
-              Expanded(
-                flex: 1,
-                child: InkWell(
-                  mouseCursor: SystemMouseCursors.click,
-                  child: Container(
-                    constraints: BoxConstraints(maxWidth: 250),
-                    child: DropdownButton(
-                      icon: Padding(
-                        padding: EdgeInsets.only(left: 8.0),
-                        child: Icon(
-                          Icons.keyboard_arrow_down,
-                          size: 24,
+                Padding(
+                  padding: const EdgeInsets.only(left: 16.0),
+                  child: Expanded(flex: 3, child: _customFieldType()),
+                ),
+              Padding(
+                padding: const EdgeInsets.only(left: 16.0),
+                child: Expanded(
+                  flex: 1,
+                  child: InkWell(
+                    mouseCursor: SystemMouseCursors.click,
+                    child: Container(
+                      constraints: BoxConstraints(maxWidth: 250),
+                      child: DropdownButton(
+                        icon: Padding(
+                          padding: EdgeInsets.only(left: 8.0),
+                          child: Icon(
+                            Icons.keyboard_arrow_down,
+                            size: 24,
+                          ),
                         ),
+                        isExpanded: false,
+                        items: _matchers.map(
+                            (RolloutStrategyAttributeConditional
+                                dropDownStringItem) {
+                          return DropdownMenuItem<
+                                  RolloutStrategyAttributeConditional>(
+                              value: dropDownStringItem,
+                              child: Text(
+                                  transformStrategyAttributeConditionalValueToString(
+                                      dropDownStringItem),
+                                  style:
+                                      Theme.of(context).textTheme.bodyText2));
+                        }).toList(),
+                        hint: Text('Select condition',
+                            style: Theme.of(context).textTheme.subtitle2),
+                        onChanged: (value) {
+                          var readOnly =
+                              false; //TODO parametrise this if needed
+                          if (!readOnly) {
+                            setState(() {
+                              _dropDownCustomAttributeMatchingCriteria = value;
+                              _attribute.conditional = value;
+                            });
+                          }
+                        },
+                        value: _dropDownCustomAttributeMatchingCriteria,
                       ),
-                      isExpanded: true,
-                      items: _matchers.map(
-                          (RolloutStrategyAttributeConditional
-                              dropDownStringItem) {
-                        return DropdownMenuItem<
-                                RolloutStrategyAttributeConditional>(
-                            value: dropDownStringItem,
-                            child: Text(
-                                transformStrategyAttributeConditionalValueToString(
-                                    dropDownStringItem),
-                                style: Theme.of(context).textTheme.bodyText2));
-                      }).toList(),
-                      hint: Text('Select condition',
-                          style: Theme.of(context).textTheme.subtitle2),
-                      onChanged: (value) {
-                        var readOnly = false; //TODO parametrise this if needed
-                        if (!readOnly) {
-                          setState(() {
-                            _dropDownCustomAttributeMatchingCriteria = value;
-                            _attribute.conditional = value;
-                          });
-                        }
-                      },
-                      value: _dropDownCustomAttributeMatchingCriteria,
                     ),
                   ),
                 ),
@@ -174,33 +178,45 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
               SizedBox(width: 16.0),
               if (_wellKnown == StrategyAttributeWellKnownNames.country)
                 Expanded(
-                    flex: 3,
+                    flex: 4,
                     child:
                         CountryAttributeStrategyDropdown(attribute: _attribute))
               else if (_wellKnown == StrategyAttributeWellKnownNames.device)
                 Expanded(
-                    flex: 3,
+                    flex: 4,
                     child:
                         DeviceAttributeStrategyDropdown(attribute: _attribute))
               else if (_wellKnown == StrategyAttributeWellKnownNames.platform)
                 Expanded(
-                    flex: 3,
+                    flex: 4,
                     child: PlatformAttributeStrategyDropdown(
                         attribute: _attribute))
               else
                 Expanded(
-                    flex: 3,
+                    flex: 4,
                     child: Padding(
                       padding: const EdgeInsets.only(left: 16.0),
                       child: _fieldValueEditorByFieldType(),
                     )),
-              Material(
-                type: MaterialType.transparency,
-                shape: CircleBorder(),
-                child: IconButton(icon: Icon(Icons.delete_sharp, size: 18.0,),
-                    hoverColor: Theme.of(context).primaryColorLight,
-                    splashRadius: 20,
-                  onPressed: () => widget.bloc.deleteAttribute(_attribute))
+              Expanded(
+                flex: 1,
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Material(
+                        type: MaterialType.transparency,
+                        shape: CircleBorder(),
+                        child: IconButton(
+                            icon: Icon(
+                              Icons.delete_sharp,
+                              size: 18.0,
+                            ),
+                            hoverColor: Theme.of(context).primaryColorLight,
+                            splashRadius: 20,
+                            onPressed: () =>
+                                widget.bloc.deleteAttribute(_attribute))),
+                  ],
+                ),
               )
             ],
           ),
@@ -235,7 +251,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
               size: 24,
             ),
           ),
-          isExpanded: true,
+          isExpanded: false,
           items: RolloutStrategyFieldType.values
               .map((RolloutStrategyFieldType dropDownStringItem) {
             return DropdownMenuItem<RolloutStrategyFieldType>(
@@ -303,8 +319,35 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
         helperText = 'e.g. 2007-03-01T13:00:00Z';
         break;
       case RolloutStrategyFieldType.BOOLEAN:
-        // TODO: this needs a drop down for a true/false
-        return Text('needs true/false container');
+        return DropdownButton(
+          isDense: true,
+          icon: Padding(
+            padding: EdgeInsets.only(left: 16.0),
+            child: Icon(
+              Icons.keyboard_arrow_down,
+              size: 24,
+            ),
+          ),
+          isExpanded: true,
+          items: <String>['true', 'false']
+              .map<DropdownMenuItem<String>>((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(
+                value,
+                style: Theme.of(context).textTheme.bodyText2,
+              ),
+            );
+          }).toList(),
+          value: widget.attribute.value,
+          onChanged: (value) {
+            setState(() {
+              widget.attribute.value = value;
+            });
+          },
+          hint: Text('Select value',
+              style: Theme.of(context).textTheme.subtitle2),
+        );
       case RolloutStrategyFieldType.IP_ADDRESS:
         labelText = 'IP Address(es) with or without CIDR';
         helperText = 'e.g. 168.192.54.3 or 192.168.86.1/8 or 10.34.0.0/32';
