@@ -151,3 +151,4 @@ Todo
 - [X] Add support for ClientContext, and submit this as an x-featurehub header upon connection
 - [ ] Re-introduce the "polling" client (if we decide to go down that route for other SDKs)
 - [ ] Run tests and code-generation inside Docker (instead of requiring Go to be installed locally)
+- [ ] Client-side rollout strategies (https://github.com/featurehub-io/featurehub/tree/master/backend/sse-strategy-matchers/src)
