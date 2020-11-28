@@ -41,6 +41,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
   bool isUpdate = false;
   bool isTotalPercentageError = false;
   bool showPercentageField = false;
+  String errorText;
 
   @override
   void initState() {
@@ -58,6 +59,8 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     individualStrategyBloc = BlocProvider.of(context);
+    isTotalPercentageError = false;
+    errorText = null;
   }
 
   @override
@@ -185,7 +188,8 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                       style: Theme.of(context)
                           .textTheme
                           .bodyText2
-                          .copyWith(color: Theme.of(context).errorColor))
+                          .copyWith(color: Theme.of(context).errorColor)),
+                _NaughtyDataEntryWidget(bloc: individualStrategyBloc)
               ],
             ),
           ),
@@ -254,8 +258,6 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
             ? false
             : null;
 
-    print('attrs are ${individualStrategyBloc.currentAttributes}');
-
     final newStrategy = RolloutStrategy()
       ..name = _strategyName.text
       ..attributes = individualStrategyBloc.currentAttributes
@@ -278,6 +280,9 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
 
   void layoutValidationFailures(
       RolloutStrategyValidationResponse validationCheck) {
+    individualStrategyBloc.updateStrategyViolations(
+        validationCheck, widget.rolloutStrategy);
+
     setState(() {
       if (validationCheck.violations.contains(
           RolloutStrategyCollectionViolationType
@@ -285,5 +290,32 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
         isTotalPercentageError = true;
       }
     });
+  }
+}
+
+class _NaughtyDataEntryWidget extends StatelessWidget {
+  final IndividualStrategyBloc bloc;
+
+  const _NaughtyDataEntryWidget({Key key, @required this.bloc})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<List<RolloutStrategyViolation>>(
+        stream: bloc.violationStream,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData ||
+              snapshot.data.isEmpty ||
+              snapshot.data.where((element) => element.id == null).isEmpty) {
+            return SizedBox.shrink();
+          }
+
+          final globalErrors = snapshot.data
+              .where((vio) => vio.id == null)
+              .map((e) => Text('error ${e.violation.toString()}'))
+              .toList();
+
+          return Column(children: globalErrors);
+        });
   }
 }

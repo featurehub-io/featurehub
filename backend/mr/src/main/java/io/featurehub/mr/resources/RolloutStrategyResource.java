@@ -48,6 +48,8 @@ public class RolloutStrategyResource implements RolloutStrategyServiceDelegate {
     applicationUtils.featureAdminCheck(securityContext, appId);
     Person person = authManager.from(securityContext);
 
+    cleanStrategy(rolloutStrategy);
+
     final RolloutStrategyInfo strategy;
 
     try {
@@ -111,6 +113,8 @@ public class RolloutStrategyResource implements RolloutStrategyServiceDelegate {
     applicationUtils.featureAdminCheck(securityContext, appId);
     Person person = authManager.from(securityContext);
 
+    cleanStrategy(rolloutStrategy);
+
     RolloutStrategyInfo strategy;
     try {
       strategy = rolloutStrategyApi.updateStrategy(appId, rolloutStrategy, person,
@@ -125,6 +129,11 @@ public class RolloutStrategyResource implements RolloutStrategyServiceDelegate {
     }
 
     return strategy;
+  }
+
+  // we always clear the ids as we don't need them on saving, they are only used in the UI for validation tracking
+  private void cleanStrategy(RolloutStrategy rs) {
+    rs.getAttributes().forEach(attr -> attr.setId(null));
   }
 
   @Override

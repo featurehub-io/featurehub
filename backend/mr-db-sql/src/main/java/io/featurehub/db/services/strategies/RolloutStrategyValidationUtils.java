@@ -4,8 +4,11 @@ import io.featurehub.db.api.RolloutStrategyValidator;
 import io.featurehub.mr.model.RolloutStrategy;
 import io.featurehub.mr.model.RolloutStrategyAttribute;
 import io.featurehub.mr.model.RolloutStrategyCollectionViolationType;
+import io.featurehub.mr.model.RolloutStrategyFieldType;
 import io.featurehub.mr.model.RolloutStrategyInstance;
+import io.featurehub.mr.model.RolloutStrategyViolation;
 import io.featurehub.mr.model.RolloutStrategyViolationType;
+import io.featurehub.mr.model.StrategyAttributeWellKnownNames;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,9 +17,10 @@ import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -70,7 +74,8 @@ public class RolloutStrategyValidationUtils implements RolloutStrategyValidator 
   }
 
   public ValidationFailure validateStrategies(List<RolloutStrategy> strategies,
-                                              List<RolloutStrategyInstance> sharedStrategies, ValidationFailure failure) {
+                                              List<RolloutStrategyInstance> sharedStrategies,
+                                              ValidationFailure failure) {
 
     ValidationFailure failures = failure == null ? new ValidationFailure() : failure;
 
@@ -82,40 +87,47 @@ public class RolloutStrategyValidationUtils implements RolloutStrategyValidator 
     // or no name or a name that is > 200 long
     strategies.forEach(rs -> {
       if (rs.getName() == null || rs.getName().isEmpty()) {
-        failures.add(RolloutStrategyViolationType.NO_NAME, rs);
+        failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.NO_NAME), rs);
       } else if (rs.getName().trim().length() > 200) {
-        failures.add(RolloutStrategyViolationType.NAME_TOO_LONG, rs);
+        failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.NAME_TOO_LONG), rs);
       }
 
       if (rs.getAttributes().isEmpty() && rs.getPercentage() == null) {
-        failures.add(RolloutStrategyViolationType.EMPTY_MATCH_CRITERIA, rs);
+        failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.EMPTY_MATCH_CRITERIA), rs);
       }
 
       if (rs.getPercentage() != null && rs.getPercentage() < 0) {
-        failures.add(RolloutStrategyViolationType.NEGATIVE_PERCENTAGE, rs);
+        failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.NEGATIVE_PERCENTAGE), rs);
       }
 
       if (rs.getPercentage() != null && rs.getPercentage() > MAX_PERCENTAGE) {
-        failures.add(RolloutStrategyViolationType.PERCENTAGE_OVER_100_PERCENT, rs);
+        failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.PERCENTAGE_OVER_100_PERCENT), rs);
       }
 
-      if (rs.getAttributes()
+      rs.getAttributes()
         .stream()
-        .anyMatch(a -> Boolean.TRUE.equals(a.getArray()) && (a.getValues() == null || a.getValues().isEmpty()))) {
-        failures.add(RolloutStrategyViolationType.ARRAY_ATTRIBUTE_NO_VALUES, rs);
-      }
+        .filter(a -> Boolean.TRUE.equals(a.getArray()) && (a.getValues() == null || a.getValues().isEmpty()))
+        .forEach(a -> {
+          failures.add(new RolloutStrategyViolation()
+            .violation(RolloutStrategyViolationType.ARRAY_ATTRIBUTE_NO_VALUES)
+            .id(a.getId()), rs);
+        });
+
       if (!rs.getAttributes().isEmpty()) {
+        Set<String> wellKnownFieldNames =
+          Arrays.stream(StrategyAttributeWellKnownNames.values()).map(StrategyAttributeWellKnownNames::getValue).collect(Collectors.toSet());
+
         for (RolloutStrategyAttribute attr : rs.getAttributes()) {
           if (attr.getConditional() == null) {
-            failures.add(RolloutStrategyViolationType.ATTR_MISSING_CONDITIONAL, rs);
+            failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.ATTR_MISSING_CONDITIONAL).id(attr.getId()), rs);
           }
 
           if (attr.getFieldName() == null) {
-            failures.add(RolloutStrategyViolationType.ATTR_MISSING_FIELD_NAME, rs);
+            failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.ATTR_MISSING_FIELD_NAME).id(attr.getId()), rs);
           }
 
           if (attr.getType() == null) {
-            failures.add(RolloutStrategyViolationType.ATTR_MISSING_FIELD_TYPE, rs);
+            failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.ATTR_MISSING_FIELD_TYPE).id(attr.getId()), rs);
           }
 
           if (Boolean.TRUE.equals(attr.getArray()) && attr.getType() != null) {
@@ -127,22 +139,22 @@ public class RolloutStrategyValidationUtils implements RolloutStrategyValidator 
                   break;
                 case SEMANTIC_VERSION:
                   if (attr.getValues().stream().anyMatch(n -> n == null || notSemanticVersion(n))) {
-                    failures.add(RolloutStrategyViolationType.ATTR_VAL_NOT_SEMANTIC_VERSION, rs);
+                    failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.ATTR_VAL_NOT_SEMANTIC_VERSION).id(attr.getId()), rs);
                   }
                   break;
                 case NUMBER:
                   if (attr.getValues().stream().anyMatch(n -> n == null || notNumber(n))) {
-                    failures.add(RolloutStrategyViolationType.ATTR_VAL_NOT_NUMBER, rs);
+                    failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.ATTR_VAL_NOT_NUMBER).id(attr.getId()), rs);
                   }
                   break;
                 case DATE:
                   if (attr.getValues().stream().anyMatch(n -> n == null || notDate(n))) {
-                    failures.add(RolloutStrategyViolationType.ATTR_VAL_NOT_DATE, rs);
+                    failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.ATTR_VAL_NOT_DATE).id(attr.getId()), rs);
                   }
                   break;
                 case DATETIME:
                   if (attr.getValues().stream().anyMatch(n -> n == null || notDateTime(n))) {
-                    failures.add(RolloutStrategyViolationType.ATTR_VAL_NOT_DATE_TIME, rs);
+                    failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.ATTR_VAL_NOT_DATE_TIME).id(attr.getId()), rs);
                   }
                   break;
                 case BOOLEAN:
@@ -151,45 +163,52 @@ public class RolloutStrategyValidationUtils implements RolloutStrategyValidator 
                   break;
                 case IP_ADDRESS:
                   if (attr.getValues().stream().anyMatch(n -> n == null || notIpAddress(n))) {
-                    failures.add(RolloutStrategyViolationType.ATTR_VAL_NOT_CIDR, rs);
+                    failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.ATTR_VAL_NOT_CIDR).id(attr.getId()), rs);
                   }
                   break;
               }
             } catch (Exception e) {
               log.warn("Failed to cleanup strategy {}", rs, e);
-              failures.add(RolloutStrategyViolationType.ATTR_UNKNOWN_FAILURE, rs);
+              failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.ATTR_UNKNOWN_FAILURE).id(attr.getId()), rs);
             }
           } else {
             attr.getValues().clear();
+            if (attr.getType() == RolloutStrategyFieldType.STRING &&
+              attr.getFieldName() != null &&
+              wellKnownFieldNames.contains(attr.getFieldName()) &&
+              (attr.getValue() == null || attr.getValue().toString().trim().isEmpty())) {
+              failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.ATTR_MISSING_VALUE).id(attr.getId()), rs);
+            }
+
             if (attr.getValue() != null && attr.getType() != null) {
               switch (attr.getType()) {
                 case STRING:
                   break;
                 case SEMANTIC_VERSION:
                   if (notSemanticVersion(attr.getValue())) {
-                    failures.add(RolloutStrategyViolationType.ATTR_VAL_NOT_SEMANTIC_VERSION, rs);
+                    failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.ATTR_VAL_NOT_SEMANTIC_VERSION).id(attr.getId()), rs);
                   }
                   break;
                 case NUMBER:
                   if (notNumber(attr.getValue())) {
-                    failures.add(RolloutStrategyViolationType.ATTR_VAL_NOT_NUMBER, rs);
+                    failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.ATTR_VAL_NOT_NUMBER).id(attr.getId()), rs);
                   }
                   break;
                 case DATE:
                   if (notDate(attr.getValue())) {
-                    failures.add(RolloutStrategyViolationType.ATTR_VAL_NOT_DATE, rs);
+                    failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.ATTR_VAL_NOT_DATE).id(attr.getId()), rs);
                   }
                   break;
                 case DATETIME:
                   if (notDateTime(attr.getValue())) {
-                    failures.add(RolloutStrategyViolationType.ATTR_VAL_NOT_DATE_TIME, rs);
+                    failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.ATTR_VAL_NOT_DATE_TIME).id(attr.getId()), rs);
                   }
                   break;
                 case BOOLEAN:
                   break;
                 case IP_ADDRESS:
                   if (notIpAddress(attr.getValue())) {
-                    failures.add(RolloutStrategyViolationType.ATTR_VAL_NOT_CIDR, rs);
+                    failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.ATTR_VAL_NOT_CIDR).id(attr.getId()), rs);
                   }
                   break;
               }
@@ -201,10 +220,9 @@ public class RolloutStrategyValidationUtils implements RolloutStrategyValidator 
     });
 
 
-
     // if total amount of > MAX_PERCENTAGE for only percentage strategies not allowed
     if (strategies.stream()
-      .filter(rsi -> (rsi.getAttributes() == null || rsi.getAttributes().isEmpty()) && rsi.getPercentage() != null )
+      .filter(rsi -> (rsi.getAttributes() == null || rsi.getAttributes().isEmpty()) && rsi.getPercentage() != null)
       .map(RolloutStrategy::getPercentage).reduce(0,
         Integer::sum) > MAX_PERCENTAGE) {
       failures.add(RolloutStrategyCollectionViolationType.PERCENTAGE_ADDS_OVER_100_PERCENT);

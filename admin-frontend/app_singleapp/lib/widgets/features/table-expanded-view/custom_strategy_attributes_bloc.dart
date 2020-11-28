@@ -9,6 +9,10 @@ class IndividualStrategyBloc extends Bloc {
   final BehaviorSubject<List<RolloutStrategyAttribute>>
       _rolloutStartegyAttributeSource;
 
+  final BehaviorSubject<List<RolloutStrategyViolation>> _violationSource;
+  Stream<List<RolloutStrategyViolation>> get violationStream =>
+      _violationSource.stream;
+
   Stream<List<RolloutStrategyAttribute>> get attributes =>
       _rolloutStartegyAttributeSource.stream;
 
@@ -19,14 +23,24 @@ class IndividualStrategyBloc extends Bloc {
       : assert(environmentFeatureValue != null),
         assert(rolloutStrategy != null),
         assert(rolloutStrategy.attributes != null),
+        _violationSource =
+            BehaviorSubject<List<RolloutStrategyViolation>>.seeded([]),
         _rolloutStartegyAttributeSource =
             BehaviorSubject<List<RolloutStrategyAttribute>>.seeded(
                 rolloutStrategy.attributes) {
+    int counter = 1;
+    // ensure all attributes have a unique id
+    rolloutStrategy.attributes.forEach((a) {
+      a.id = (counter++).toString();
+    });
+
     print('Attributes are ${rolloutStrategy.attributes}');
   }
 
   void createAttribute({StrategyAttributeWellKnownNames type}) {
-    final rs = RolloutStrategyAttribute()..fieldName = type?.name;
+    final rs = RolloutStrategyAttribute()
+      ..id = DateTime.now().millisecond.toRadixString(16) // hex, just because
+      ..fieldName = type?.name;
 
     if (type != null) {
       switch (type) {
@@ -34,7 +48,8 @@ class IndividualStrategyBloc extends Bloc {
         case StrategyAttributeWellKnownNames.country:
         case StrategyAttributeWellKnownNames.platform:
         case StrategyAttributeWellKnownNames.userkey:
-        case StrategyAttributeWellKnownNames.session: //session is not used in the UI
+        case StrategyAttributeWellKnownNames
+            .session: //session is not used in the UI
           rs.type = RolloutStrategyFieldType.STRING;
           break;
         case StrategyAttributeWellKnownNames.version:
@@ -47,6 +62,9 @@ class IndividualStrategyBloc extends Bloc {
   }
 
   void addAttribute(RolloutStrategyAttribute rs) {
+    if (rs.id == null) {
+      rs.id = DateTime.now().millisecond.toRadixString(16);
+    }
     rolloutStrategy.attributes.add(rs);
     _rolloutStartegyAttributeSource.add(rolloutStrategy.attributes);
   }
@@ -62,4 +80,21 @@ class IndividualStrategyBloc extends Bloc {
 
   @override
   void dispose() {}
+
+  /// updates our list of violations and updates the stream
+  void updateStrategyViolations(
+      RolloutStrategyValidationResponse validationCheck,
+      RolloutStrategy rolloutStrategy) {
+    List<RolloutStrategyViolation> _violations = [];
+
+    final customViolations = validationCheck.customStategyViolations.firstWhere(
+        (rs) => rs.strategy.id == rolloutStrategy.id,
+        orElse: () => null);
+
+    if (customViolations != null && customViolations.violations.isNotEmpty) {
+      _violations.addAll(customViolations.violations);
+    }
+
+    _violationSource.add(_violations);
+  }
 }

@@ -103,128 +103,156 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        if (!widget.attributeIsFirst)
-          Container(
-              padding: EdgeInsets.all(4.0),
-              margin: EdgeInsets.all(8.0),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                color: Theme.of(context).primaryColorLight,
-              ),
-              child: Text('AND', style: Theme.of(context).textTheme.overline)),
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 8.0),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(6.0)),
-            color: Theme.of(context).selectedRowColor,
-          ),
-          child: Row(
+    return StreamBuilder<List<RolloutStrategyViolation>>(
+        stream: widget.bloc.violationStream,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return SizedBox.shrink();
+          }
+
+          final violation = snapshot.data.firstWhere(
+              (vio) => vio.id == widget.attribute.id,
+              orElse: () => null);
+
+          return Column(
             children: [
-              Expanded(flex: 2, child: _nameField()),
-              Expanded(flex: 7, child: Row(
-    children:[
-              if (_wellKnown == null)
-                Padding(
-                  padding: const EdgeInsets.only(left: 16.0),
-                  child: Expanded(flex: 2, child: _customFieldType()),
-                ),
-              Padding(
-                padding: const EdgeInsets.only(left: 16.0),
-                child: Expanded(
-                  flex: 1,
-                  child: InkWell(
-                    mouseCursor: SystemMouseCursors.click,
-                    child: Container(
-                      constraints: BoxConstraints(maxWidth: 250),
-                      child: DropdownButton(
-                        icon: Padding(
-                          padding: EdgeInsets.only(left: 8.0),
-                          child: Icon(
-                            Icons.keyboard_arrow_down,
-                            size: 24,
-                          ),
-                        ),
-                        isExpanded: false,
-                        items: _matchers.map(
-                            (RolloutStrategyAttributeConditional
-                                dropDownStringItem) {
-                          return DropdownMenuItem<
-                                  RolloutStrategyAttributeConditional>(
-                              value: dropDownStringItem,
-                              child: Text(
-                                  transformStrategyAttributeConditionalValueToString(
-                                      dropDownStringItem),
-                                  style:
-                                      Theme.of(context).textTheme.bodyText2));
-                        }).toList(),
-                        hint: Text('Select condition',
-                            style: Theme.of(context).textTheme.subtitle2),
-                        onChanged: (value) {
-                          var readOnly =
-                              false; //TODO parametrise this if needed
-                          if (!readOnly) {
-                            setState(() {
-                              _dropDownCustomAttributeMatchingCriteria = value;
-                              _attribute.conditional = value;
-                            });
-                          }
-                        },
-                        value: _dropDownCustomAttributeMatchingCriteria,
-                      ),
+              if (!widget.attributeIsFirst)
+                Container(
+                    padding: EdgeInsets.all(4.0),
+                    margin: EdgeInsets.all(8.0),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                      color: Theme.of(context).primaryColorLight,
                     ),
-                  ),
+                    child: Text('AND',
+                        style: Theme.of(context).textTheme.overline)),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.0),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                  color: Theme.of(context).selectedRowColor,
                 ),
-              ),
-              SizedBox(width: 16.0),
-              if (_wellKnown == StrategyAttributeWellKnownNames.country)
-                Expanded(
-                    flex: 4,
-                    child:
-                        CountryAttributeStrategyDropdown(attribute: _attribute))
-              else if (_wellKnown == StrategyAttributeWellKnownNames.device)
-                Expanded(
-                    flex: 4,
-                    child:
-                        DeviceAttributeStrategyDropdown(attribute: _attribute))
-              else if (_wellKnown == StrategyAttributeWellKnownNames.platform)
-                Expanded(
-                    flex: 4,
-                    child: PlatformAttributeStrategyDropdown(
-                        attribute: _attribute))
-              else
-                Expanded(
-                    flex: 4,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 16.0),
-                      child: _fieldValueEditorByFieldType(),
-                    ))])),
-              Expanded(
-                flex: 1,
                 child: Row(
-                  mainAxisSize: MainAxisSize.max,
                   children: [
-                    Material(
-                        type: MaterialType.transparency,
-                        shape: CircleBorder(),
-                        child: IconButton(
-                            icon: Icon(
-                              Icons.delete_sharp,
-                              size: 18.0,
+                    Expanded(flex: 2, child: _nameField()),
+                    Expanded(
+                        flex: 7,
+                        child: Row(children: [
+                          if (_wellKnown == null)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 16.0),
+                              child:
+                                  Expanded(flex: 2, child: _customFieldType()),
                             ),
-                            hoverColor: Theme.of(context).primaryColorLight,
-                            splashRadius: 20,
-                            onPressed: () =>
-                                widget.bloc.deleteAttribute(_attribute))),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 16.0),
+                            child: Expanded(
+                              flex: 1,
+                              child: InkWell(
+                                mouseCursor: SystemMouseCursors.click,
+                                child: Container(
+                                  constraints: BoxConstraints(maxWidth: 250),
+                                  child: DropdownButton(
+                                    icon: Padding(
+                                      padding: EdgeInsets.only(left: 8.0),
+                                      child: Icon(
+                                        Icons.keyboard_arrow_down,
+                                        size: 24,
+                                      ),
+                                    ),
+                                    isExpanded: false,
+                                    items: _matchers.map(
+                                        (RolloutStrategyAttributeConditional
+                                            dropDownStringItem) {
+                                      return DropdownMenuItem<
+                                              RolloutStrategyAttributeConditional>(
+                                          value: dropDownStringItem,
+                                          child: Text(
+                                              transformStrategyAttributeConditionalValueToString(
+                                                  dropDownStringItem),
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyText2));
+                                    }).toList(),
+                                    hint: Text('Select condition',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .subtitle2),
+                                    onChanged: (value) {
+                                      var readOnly =
+                                          false; //TODO parametrise this if needed
+                                      if (!readOnly) {
+                                        setState(() {
+                                          _dropDownCustomAttributeMatchingCriteria =
+                                              value;
+                                          _attribute.conditional = value;
+                                        });
+                                      }
+                                    },
+                                    value:
+                                        _dropDownCustomAttributeMatchingCriteria,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 16.0),
+                          if (_wellKnown ==
+                              StrategyAttributeWellKnownNames.country)
+                            Expanded(
+                                flex: 4,
+                                child: CountryAttributeStrategyDropdown(
+                                    attribute: _attribute))
+                          else if (_wellKnown ==
+                              StrategyAttributeWellKnownNames.device)
+                            Expanded(
+                                flex: 4,
+                                child: DeviceAttributeStrategyDropdown(
+                                    attribute: _attribute))
+                          else if (_wellKnown ==
+                              StrategyAttributeWellKnownNames.platform)
+                            Expanded(
+                                flex: 4,
+                                child: PlatformAttributeStrategyDropdown(
+                                    attribute: _attribute))
+                          else
+                            Expanded(
+                                flex: 4,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 16.0),
+                                  child: _fieldValueEditorByFieldType(),
+                                ))
+                        ])),
+                    Expanded(
+                      flex: 1,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Material(
+                              type: MaterialType.transparency,
+                              shape: CircleBorder(),
+                              child: IconButton(
+                                  icon: Icon(
+                                    Icons.delete_sharp,
+                                    size: 18.0,
+                                  ),
+                                  hoverColor:
+                                      Theme.of(context).primaryColorLight,
+                                  splashRadius: 20,
+                                  onPressed: () =>
+                                      widget.bloc.deleteAttribute(_attribute))),
+                        ],
+                      ),
+                    )
                   ],
                 ),
-              )
+              ),
+              if (violation != null)
+                Text('bad thing ${violation.violation.toString()}',
+                    style: TextStyle(color: Colors.red))
             ],
-          ),
-        ),
-      ],
-    );
+          );
+        });
   }
 
   void _updateAttributeFieldName() {

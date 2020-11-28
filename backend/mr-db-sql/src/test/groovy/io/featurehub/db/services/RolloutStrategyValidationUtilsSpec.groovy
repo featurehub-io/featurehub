@@ -41,7 +41,7 @@ class RolloutStrategyValidationUtilsSpec extends Specification {
     then:
       validations.isInvalid()
       !validations.customStrategyViolations.isEmpty()
-      validations.customStrategyViolations[fv[0]].contains(RolloutStrategyViolationType.NEGATIVE_PERCENTAGE)
+      validations.customStrategyViolations[fv[0]]*.violation.contains(RolloutStrategyViolationType.NEGATIVE_PERCENTAGE)
   }
 
   def "updating all environment features in an application by a specific feature will fail if we have attributes update with no attributes"() {
@@ -52,7 +52,7 @@ class RolloutStrategyValidationUtilsSpec extends Specification {
     then:
       validations.isInvalid()
       !validations.customStrategyViolations.isEmpty()
-      validations.customStrategyViolations[fv[0]].contains(RolloutStrategyViolationType.EMPTY_MATCH_CRITERIA)
+      validations.customStrategyViolations[fv[0]]*.violation.contains(RolloutStrategyViolationType.EMPTY_MATCH_CRITERIA)
   }
 
   def 'updating features and having a strategy with no name causes a failure'() {
@@ -64,7 +64,7 @@ class RolloutStrategyValidationUtilsSpec extends Specification {
     then:
       validations.isInvalid()
       !validations.customStrategyViolations.isEmpty()
-      validations.customStrategyViolations[fv[0]].contains(RolloutStrategyViolationType.NO_NAME)
+      validations.customStrategyViolations[fv[0]]*.violation.contains(RolloutStrategyViolationType.NO_NAME)
   }
 
   def "we specify an array but the values aren't in the array"() {
@@ -74,7 +74,7 @@ class RolloutStrategyValidationUtilsSpec extends Specification {
     then:
       validations.isInvalid()
       !validations.customStrategyViolations.isEmpty()
-      validations.customStrategyViolations[fv[0]].contains(RolloutStrategyViolationType.ARRAY_ATTRIBUTE_NO_VALUES)
+      validations.customStrategyViolations[fv[0]]*.violation.contains(RolloutStrategyViolationType.ARRAY_ATTRIBUTE_NO_VALUES)
   }
 
   def "when we specify all attributes is ok"() {
@@ -92,16 +92,17 @@ class RolloutStrategyValidationUtilsSpec extends Specification {
   def "we specify a attr with no field"() {
     when: "attr has no field name"
       def fv = [new RolloutStrategy().name("fred").attributes([
-        new RolloutStrategyAttribute().value('x')
+        new RolloutStrategyAttribute().id("ecks").value('x')
       ])]
       def validations = validator.validateStrategies(fv, [])
     then:
       validations.isInvalid()
       !validations.customStrategyViolations.isEmpty()
       validations.customStrategyViolations[fv[0]].size() == 3
-      validations.customStrategyViolations[fv[0]].contains(RolloutStrategyViolationType.ATTR_MISSING_FIELD_NAME)
-      validations.customStrategyViolations[fv[0]].contains(RolloutStrategyViolationType.ATTR_MISSING_FIELD_TYPE)
-      validations.customStrategyViolations[fv[0]].contains(RolloutStrategyViolationType.ATTR_MISSING_CONDITIONAL)
+      validations.customStrategyViolations[fv[0]]*.id == ["ecks", "ecks", "ecks"]
+      validations.customStrategyViolations[fv[0]]*.violation.contains(RolloutStrategyViolationType.ATTR_MISSING_FIELD_NAME)
+      validations.customStrategyViolations[fv[0]]*.violation.contains(RolloutStrategyViolationType.ATTR_MISSING_FIELD_TYPE)
+      validations.customStrategyViolations[fv[0]]*.violation.contains(RolloutStrategyViolationType.ATTR_MISSING_CONDITIONAL)
   }
 
   private RolloutStrategyViolationType violationFromFieldType(RolloutStrategyFieldType fieldType) {
@@ -137,7 +138,7 @@ class RolloutStrategyValidationUtilsSpec extends Specification {
     then:
       validations.isInvalid()
       !validations.customStrategyViolations.isEmpty()
-      validations.customStrategyViolations[fv[0]].contains(violationType)
+      validations.customStrategyViolations[fv[0]]*.violation.contains(violationType)
     where:
       fieldType                                 | value
       RolloutStrategyFieldType.IP_ADDRESS       | 'fred'
@@ -171,7 +172,7 @@ class RolloutStrategyValidationUtilsSpec extends Specification {
     then:
       validations.isInvalid()
       !validations.customStrategyViolations.isEmpty()
-      validations.customStrategyViolations[fv[0]].contains(violationType)
+      validations.customStrategyViolations[fv[0]]*.violation.contains(violationType)
     where:
       fieldType                                 | values
       RolloutStrategyFieldType.IP_ADDRESS       | ['fred']
