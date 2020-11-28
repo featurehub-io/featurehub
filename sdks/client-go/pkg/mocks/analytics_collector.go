@@ -34,15 +34,16 @@ func (fake *FakeAnalyticsCollector) LogEvent(arg1 string, arg2 map[string]string
 		arg2 map[string]string
 		arg3 map[string]*models.FeatureState
 	}{arg1, arg2, arg3})
+	stub := fake.LogEventStub
+	fakeReturns := fake.logEventReturns
 	fake.recordInvocation("LogEvent", []interface{}{arg1, arg2, arg3})
 	fake.logEventMutex.Unlock()
-	if fake.LogEventStub != nil {
-		return fake.LogEventStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.logEventReturns
 	return fakeReturns.result1
 }
 
