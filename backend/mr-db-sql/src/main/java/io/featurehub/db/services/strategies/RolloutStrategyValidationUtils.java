@@ -92,9 +92,9 @@ public class RolloutStrategyValidationUtils implements RolloutStrategyValidator 
         failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.NAME_TOO_LONG), rs);
       }
 
-      if (rs.getAttributes().isEmpty() && rs.getPercentage() == null) {
-        failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.EMPTY_MATCH_CRITERIA), rs);
-      }
+//      if (rs.getAttributes().isEmpty() && rs.getPercentage() == null) {
+//        failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.EMPTY_MATCH_CRITERIA), rs);
+//      }
 
       if (rs.getPercentage() != null && rs.getPercentage() < 0) {
         failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.NEGATIVE_PERCENTAGE), rs);
