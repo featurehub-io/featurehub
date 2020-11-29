@@ -25,6 +25,8 @@ func (c *Context) String() string {
 // UniqueKey returns our preferred unique key:
 func (c *Context) UniqueKey() (string, bool) {
 	switch {
+	case c == nil:
+		return "", false
 	case len(c.Session) > 0:
 		return c.Session, true
 	case len(c.Userkey) > 0:

@@ -36,7 +36,7 @@ func (fs *FeatureState) AsBoolean() (bool, error) {
 	}
 
 	// Return the default value through the boolean rollout strategy:
-	return fs.Strategies.boolean(value, fs.clientContext), nil
+	return fs.Strategies.calculateBoolean(value, fs.clientContext), nil
 }
 
 // AsNumber returns a number value for this feature:
@@ -95,9 +95,6 @@ func (fs *FeatureState) AsString() (string, error) {
 		return "", errors.NewErrInvalidType("Unable to assert value as a string")
 	}
 
-	// Handle client-side rollout strategies:
-	if fs.clientContext != nil {
-	}
-
-	return value, nil
+	// Return the default value through the string rollout strategy:
+	return fs.Strategies.calculateString(value, fs.clientContext), nil
 }

@@ -29,31 +29,100 @@ type StrategyPair struct {
 	Value string `json:"value,omitempty"`
 }
 
-// Boolean determines the value of a boolean:
-func (s Strategies) boolean(defaultValue bool, ctx *Context) bool {
+// calculateBoolean determines the value of a boolean:
+func (s Strategies) calculateBoolean(defaultValue bool, ctx *Context) bool {
 
 	// Handle client-side rollout strategies:
 	if hashKey, ok := ctx.UniqueKey(); ok {
 
 		// Booleans only have two states, so only one strategy:
-		if len(s) == 1 {
+		for _, strategy := range s {
 
 			// And we only support percentage (currently):
-			if s[0].Percentage != 0 {
+			if strategy.Percentage != 0 {
+
+				// Assert the value:
+				strategyValue, ok := strategy.Value.(bool)
+				if !ok {
+					continue
+				}
 
 				// Murmur32 sum on the key gives us a consistent number:
 				hashedPercentage := float64(murmur3.Sum32([]byte(hashKey))) / maxMurmur32Hash * 1000000
 
 				// If our calculated percentage is less than the strategy percentage then take the new value:
-				if hashedPercentage <= s[0].Percentage {
-					logrus.Warnf("Using percentage strategy (%f): %v\n", s[0].Percentage, hashedPercentage)
-					return s[0].Value.(bool)
+				if hashedPercentage <= strategy.Percentage {
+					logrus.Warnf("Using percentage strategy (%s:%f = %v) for calculated percentage: %v\n", strategy.ID, strategy.Percentage, strategyValue, hashedPercentage)
+					return strategyValue
 				}
-				logrus.Warnf("Not using percentage strategy (%f): %v\n", s[0].Percentage, hashedPercentage)
+				logrus.Warnf("Not using percentage strategy (%s:%f = %v) for calculated percentage: %v\n", strategy.ID, strategy.Percentage, strategyValue, hashedPercentage)
 			}
 		}
 	}
 
 	// Otherwise just carry on with the default value:
 	return defaultValue
+}
+
+// calculateString determines the value of a boolean:
+func (s Strategies) calculateString(defaultValue string, ctx *Context) string {
+
+	// Handle client-side rollout strategies:
+	if hashKey, ok := ctx.UniqueKey(); ok {
+
+		// Booleans only have two states, so only one strategy:
+		for _, strategy := range s {
+
+			// And we only support percentage (currently):
+			if strategy.Percentage != 0 {
+
+				// Assert the value:
+				strategyValue, ok := strategy.Value.(string)
+				if !ok {
+					continue
+				}
+
+				// Murmur32 sum on the key gives us a consistent number:
+				hashedPercentage := float64(murmur3.Sum32([]byte(hashKey))) / maxMurmur32Hash * 1000000
+
+				// If our calculated percentage is less than the strategy percentage then take the new value:
+				if hashedPercentage <= strategy.Percentage {
+					logrus.Warnf("Using percentage strategy (%s:%f = %s) for calculated percentage: %v\n", strategy.ID, strategy.Percentage, strategyValue, hashedPercentage)
+					return strategyValue
+				}
+				logrus.Warnf("Not using percentage strategy (%s:%f = %s) for calculated percentage: %v\n", strategy.ID, strategy.Percentage, strategyValue, hashedPercentage)
+			}
+		}
+	}
+
+	// Otherwise just carry on with the default value:
+	return defaultValue
+}
+
+func (s Strategies) calculate(ctx *Context) interface{} {
+
+	// Handle client-side rollout strategies:
+	if hashKey, ok := ctx.UniqueKey(); ok {
+
+		// Booleans only have two states, so only one strategy:
+		for _, strategy := range s {
+
+			// And we only support percentage (currently):
+			if strategy.Percentage != 0 {
+
+				// Murmur32 sum on the key gives us a consistent number:
+				hashedPercentage := float64(murmur3.Sum32([]byte(hashKey))) / maxMurmur32Hash * 1000000
+
+				// If our calculated percentage is less than the strategy percentage then take the new value:
+				if hashedPercentage <= strategy.Percentage {
+					logrus.Warnf("Using percentage strategy (%s:%f = %s) for calculated percentage: %v\n", strategy.ID, strategy.Percentage, strategy.Value, hashedPercentage)
+					return strategy.Value
+				}
+				logrus.Warnf("Not using percentage strategy (%s:%f = %s) for calculated percentage: %v\n", strategy.ID, strategy.Percentage, strategy.Value, hashedPercentage)
+			}
+		}
+	}
+
+	// Otherwise just return nil:
+	return nil
 }
