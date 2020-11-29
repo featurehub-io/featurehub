@@ -9,6 +9,7 @@ import (
 	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/errors"
 	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/interfaces"
 	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/models"
+	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/strategies"
 	"github.com/sirupsen/logrus"
 )
 
@@ -31,6 +32,7 @@ type StreamingClient struct {
 	notifiers           notifiers
 	notifiersMutex      sync.Mutex
 	readinessListener   func()
+	strategiesDecider   *strategies.Decider
 }
 
 // New wraps NewStreamingClient (as the default / only implementation):
@@ -57,9 +59,10 @@ func NewStreamingClient(config *Config) (*StreamingClient, error) {
 
 	// Put this into a new StreamingClient:
 	client := &StreamingClient{
-		config:    config,
-		logger:    logger,
-		notifiers: make(notifiers),
+		config:            config,
+		logger:            logger,
+		notifiers:         make(notifiers),
+		strategiesDecider: strategies.New(logger),
 	}
 
 	// Report that we're starting:

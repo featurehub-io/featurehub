@@ -22,6 +22,18 @@ func (c *Context) String() string {
 	return url.QueryEscape(fmt.Sprintf("userkey=%s,session=%s,device=%s,platform=%s,country=%s,version=%s", c.Userkey, c.Session, c.Device, c.Platform, c.Country, c.Version))
 }
 
+// UniqueKey returns our preferred unique key:
+func (c *Context) UniqueKey() (string, bool) {
+	switch {
+	case len(c.Session) > 0:
+		return c.Session, true
+	case len(c.Userkey) > 0:
+		return c.Userkey, true
+	default:
+		return "", false
+	}
+}
+
 // ContextDevice is the client's device type:
 type ContextDevice string
 

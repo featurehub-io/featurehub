@@ -1,15 +1,17 @@
 package models
 
-import "github.com/featurehub-io/featurehub/sdks/client-go/pkg/errors"
+import (
+	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/errors"
+)
 
 // FeatureState defines model for FeatureState.
 type FeatureState struct {
-	ID            string           `json:"id,omitempty"`       // ID
-	Key           string           `json:"key,omitempty"`      // Name of the feature
-	Strategy      Strategy         `json:"strategy,omitempty"` // Rollout strategy
-	Type          FeatureValueType `json:"type,omitempty"`     // Data type
-	Value         interface{}      `json:"value,omitempty"`    // the current value
-	Version       int64            `json:"version,omitempty"`  // Version
+	ID            string           `json:"id,omitempty"`         // ID
+	Key           string           `json:"key,omitempty"`        // Name of the feature
+	Strategies    Strategies       `json:"strategies,omitempty"` // Rollout strategy
+	Type          FeatureValueType `json:"type,omitempty"`       // Data type
+	Value         interface{}      `json:"value,omitempty"`      // the current value
+	Version       int64            `json:"version,omitempty"`    // Version
 	clientContext *Context         // ClientContext to apply to this FeatureState
 }
 
@@ -33,11 +35,8 @@ func (fs *FeatureState) AsBoolean() (bool, error) {
 		return false, errors.NewErrInvalidType("Unable to assert value as a bool")
 	}
 
-	// Handle client-side rollout strategies:
-	if fs.clientContext != nil {
-	}
-
-	return value, nil
+	// Return the default value through the boolean rollout strategy:
+	return fs.Strategies.boolean(value, fs.clientContext), nil
 }
 
 // AsNumber returns a number value for this feature:
