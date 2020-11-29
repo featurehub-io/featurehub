@@ -53,11 +53,8 @@ func (fs *FeatureState) AsNumber() (float64, error) {
 		return 0, errors.NewErrInvalidType("Unable to assert value as a float64")
 	}
 
-	// Handle client-side rollout strategies:
-	if fs.clientContext != nil {
-	}
-
-	return value, nil
+	// Return the default value through the string rollout strategy:
+	return fs.Strategies.calculateNumber(value, fs.clientContext), nil
 }
 
 // AsRawJSON returns a raw JSON value for this feature:
