@@ -4,18 +4,18 @@ import "github.com/featurehub-io/featurehub/sdks/client-go/pkg/errors"
 
 // FeatureState defines model for FeatureState.
 type FeatureState struct {
-	ClientContext *Context         `json:"-"`                  // ClientContext to apply to this FeatureState
 	ID            string           `json:"id,omitempty"`       // ID
 	Key           string           `json:"key,omitempty"`      // Name of the feature
 	Strategy      Strategy         `json:"strategy,omitempty"` // Rollout strategy
 	Type          FeatureValueType `json:"type,omitempty"`     // Data type
 	Value         interface{}      `json:"value,omitempty"`    // the current value
 	Version       int64            `json:"version,omitempty"`  // Version
+	clientContext *Context         // ClientContext to apply to this FeatureState
 }
 
 // WithContext adds a client context to a featurestate:
 func (fs *FeatureState) WithContext(context *Context) *FeatureState {
-	fs.ClientContext = context
+	fs.clientContext = context
 	return fs
 }
 
@@ -28,11 +28,16 @@ func (fs *FeatureState) AsBoolean() (bool, error) {
 	}
 
 	// Assert the value:
-	if value, ok := fs.Value.(bool); ok {
-		return value, nil
+	value, ok := fs.Value.(bool)
+	if !ok {
+		return false, errors.NewErrInvalidType("Unable to assert value as a bool")
 	}
 
-	return false, errors.NewErrInvalidType("Unable to assert value as a bool")
+	// Handle client-side rollout strategies:
+	if fs.clientContext != nil {
+	}
+
+	return value, nil
 }
 
 // AsNumber returns a number value for this feature:
@@ -44,11 +49,16 @@ func (fs *FeatureState) AsNumber() (float64, error) {
 	}
 
 	// Assert the value:
-	if value, ok := fs.Value.(float64); ok {
-		return value, nil
+	value, ok := fs.Value.(float64)
+	if !ok {
+		return 0, errors.NewErrInvalidType("Unable to assert value as a float64")
 	}
 
-	return 0, errors.NewErrInvalidType("Unable to assert value as a float64")
+	// Handle client-side rollout strategies:
+	if fs.clientContext != nil {
+	}
+
+	return value, nil
 }
 
 // AsRawJSON returns a raw JSON value for this feature:
@@ -60,11 +70,16 @@ func (fs *FeatureState) AsRawJSON() (string, error) {
 	}
 
 	// Assert the value:
-	if value, ok := fs.Value.(string); ok {
-		return value, nil
+	value, ok := fs.Value.(string)
+	if !ok {
+		return "{}", errors.NewErrInvalidType("Unable to assert value as a string")
 	}
 
-	return "{}", errors.NewErrInvalidType("Unable to assert value as a string")
+	// Handle client-side rollout strategies:
+	if fs.clientContext != nil {
+	}
+
+	return value, nil
 }
 
 // AsString returns a string value for this feature:
@@ -76,9 +91,14 @@ func (fs *FeatureState) AsString() (string, error) {
 	}
 
 	// Assert the value:
-	if value, ok := fs.Value.(string); ok {
-		return value, nil
+	value, ok := fs.Value.(string)
+	if !ok {
+		return "", errors.NewErrInvalidType("Unable to assert value as a string")
 	}
 
-	return "", errors.NewErrInvalidType("Unable to assert value as a string")
+	// Handle client-side rollout strategies:
+	if fs.clientContext != nil {
+	}
+
+	return value, nil
 }
