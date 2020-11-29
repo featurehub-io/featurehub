@@ -32,19 +32,31 @@ class RolloutStrategiesWidget extends StatelessWidget {
       SizedBox(
         height: 16.0,
       ),
-      Row(
-        children: [
-          Text('Add rule', style: Theme.of(context).textTheme.caption),
-          for (var e in StrategyAttributeWellKnownNames.values)
-            if (e != StrategyAttributeWellKnownNames.session)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: FHOutlineButton(
-                    onPressed: () => bloc.createAttribute(type: e),
-                    title: '+ ${e.name}'),
-              ),
-        ],
-      ),
+      StreamBuilder<List<RolloutStrategyAttribute>>(
+          stream: bloc.attributes,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return SizedBox.shrink();
+            }
+
+            return Row(
+              children: [
+                Text('Add rule', style: Theme.of(context).textTheme.caption),
+                for (var e in StrategyAttributeWellKnownNames.values)
+                  if (e != StrategyAttributeWellKnownNames.session &&
+                      !snapshot.data.any((rsa) =>
+                          StrategyAttributeWellKnownNamesTypeTransformer
+                              .fromJson(rsa.fieldName) ==
+                          e))
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: FHOutlineButton(
+                          onPressed: () => bloc.createAttribute(type: e),
+                          title: '+ ${e.name}'),
+                    ),
+              ],
+            );
+          }),
       Row(
         children: [
           Text('Add custom rule', style: Theme.of(context).textTheme.caption),
