@@ -1,5 +1,6 @@
 import 'package:app_singleapp/widgets/common/input_fields_validators/input_field_number_formatter.dart';
-import 'package:app_singleapp/widgets/features/table-expanded-view/custom_strategy_attributes_bloc.dart';
+import 'package:app_singleapp/widgets/features/strategy_utils.dart';
+import 'package:app_singleapp/widgets/features/table-expanded-view/individual_strategy_bloc.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/country_attribute_strategy_dropdown.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/device_attribute_strategy_dropdown.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/platform_attribute_strategy_dropdown.dart';
@@ -248,7 +249,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
                 ),
               ),
               if (violation != null)
-                Text('bad thing ${violation.violation.toString()}',
+                Text(violation.violation.toDescription(),
                     style: TextStyle(color: Colors.red))
             ],
           );

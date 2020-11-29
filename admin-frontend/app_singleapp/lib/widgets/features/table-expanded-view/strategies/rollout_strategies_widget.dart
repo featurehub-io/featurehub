@@ -1,5 +1,5 @@
 import 'package:app_singleapp/widgets/common/fh_outline_button.dart';
-import 'package:app_singleapp/widgets/features/table-expanded-view/custom_strategy_attributes_bloc.dart';
+import 'package:app_singleapp/widgets/features/table-expanded-view/individual_strategy_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -19,25 +19,30 @@ class RolloutStrategiesWidget extends StatelessWidget {
             if (snapshot.hasData && snapshot.data.isNotEmpty) {
               return Column(children: [
                 for (var rolloutStrategyAttribute in snapshot.data)
-                  AttributeStrategyWidget(attribute: rolloutStrategyAttribute,
-                    attributeIsFirst: rolloutStrategyAttribute == snapshot.data.first,
-                  bloc: bloc)
+                  AttributeStrategyWidget(
+                      attribute: rolloutStrategyAttribute,
+                      attributeIsFirst:
+                          rolloutStrategyAttribute == snapshot.data.first,
+                      bloc: bloc)
               ]);
             } else {
               return Container();
             }
           }),
-      SizedBox(height: 16.0,),
+      SizedBox(
+        height: 16.0,
+      ),
       Row(
         children: [
           Text('Add rule', style: Theme.of(context).textTheme.caption),
           for (var e in StrategyAttributeWellKnownNames.values)
-            if(e != StrategyAttributeWellKnownNames.session) Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: FHOutlineButton(
-                  onPressed: () => bloc.createAttribute(type: e),
-                  title: '+ ${e.name}'),
-            ),
+            if (e != StrategyAttributeWellKnownNames.session)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: FHOutlineButton(
+                    onPressed: () => bloc.createAttribute(type: e),
+                    title: '+ ${e.name}'),
+              ),
         ],
       ),
       Row(
@@ -46,9 +51,7 @@ class RolloutStrategiesWidget extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: FHOutlineButton(
-                onPressed: () => bloc.createAttribute(),
-                title:
-                '+ Custom'),
+                onPressed: () => bloc.createAttribute(), title: '+ Custom'),
           ),
         ],
       ),

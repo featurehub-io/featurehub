@@ -1,5 +1,5 @@
 import 'package:app_singleapp/widgets/features/custom_strategy_bloc.dart';
-import 'package:app_singleapp/widgets/features/table-expanded-view/custom_strategy_attributes_bloc.dart';
+import 'package:app_singleapp/widgets/features/table-expanded-view/individual_strategy_bloc.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/strategy_editing_widget.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';

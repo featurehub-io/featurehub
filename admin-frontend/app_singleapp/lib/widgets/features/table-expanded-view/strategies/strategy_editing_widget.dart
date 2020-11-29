@@ -6,12 +6,13 @@ import 'package:app_singleapp/widgets/common/fh_outline_button.dart';
 import 'package:app_singleapp/widgets/common/input_fields_validators/input_field_number_formatter.dart';
 import 'package:app_singleapp/widgets/features/custom_strategy_bloc.dart';
 import 'package:app_singleapp/widgets/features/percentage_utils.dart';
+import 'package:app_singleapp/widgets/features/strategy_utils.dart';
+import 'package:app_singleapp/widgets/features/table-expanded-view/individual_strategy_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
 
-import '../custom_strategy_attributes_bloc.dart';
 import 'rollout_strategies_widget.dart';
 
 class StrategyEditingWidget extends StatefulWidget {
@@ -312,7 +313,7 @@ class _NaughtyDataEntryWidget extends StatelessWidget {
 
           final globalErrors = snapshot.data
               .where((vio) => vio.id == null)
-              .map((e) => Text('error ${e.violation.toString()}'))
+              .map((e) => Text(e.violation.toDescription()))
               .toList();
 
           return Column(children: globalErrors);
