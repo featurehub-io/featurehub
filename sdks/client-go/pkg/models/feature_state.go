@@ -30,13 +30,22 @@ func (fs *FeatureState) AsBoolean() (bool, error) {
 	}
 
 	// Assert the value:
-	value, ok := fs.Value.(bool)
+	defaultValue, ok := fs.Value.(bool)
 	if !ok {
 		return false, errors.NewErrInvalidType("Unable to assert value as a bool")
 	}
 
-	// Return the default value through the boolean rollout strategy:
-	return fs.Strategies.calculateBoolean(value, fs.clientContext), nil
+	// Figure out which value to use:
+	if calculatedValue := fs.Strategies.calculate(fs.clientContext); calculatedValue != nil {
+
+		// Assert the value:
+		if strategyValue, ok := calculatedValue.(bool); ok {
+			return strategyValue, nil
+		}
+	}
+
+	// Return the default value as a fall-back:
+	return defaultValue, nil
 }
 
 // AsNumber returns a number value for this feature:
@@ -48,13 +57,22 @@ func (fs *FeatureState) AsNumber() (float64, error) {
 	}
 
 	// Assert the value:
-	value, ok := fs.Value.(float64)
+	defaultValue, ok := fs.Value.(float64)
 	if !ok {
 		return 0, errors.NewErrInvalidType("Unable to assert value as a float64")
 	}
 
-	// Return the default value through the string rollout strategy:
-	return fs.Strategies.calculateNumber(value, fs.clientContext), nil
+	// Figure out which value to use:
+	if calculatedValue := fs.Strategies.calculate(fs.clientContext); calculatedValue != nil {
+
+		// Assert the value:
+		if strategyValue, ok := calculatedValue.(float64); ok {
+			return strategyValue, nil
+		}
+	}
+
+	// Return the default value as a fall-back:
+	return defaultValue, nil
 }
 
 // AsRawJSON returns a raw JSON value for this feature:
@@ -66,16 +84,22 @@ func (fs *FeatureState) AsRawJSON() (string, error) {
 	}
 
 	// Assert the value:
-	value, ok := fs.Value.(string)
+	defaultValue, ok := fs.Value.(string)
 	if !ok {
 		return "{}", errors.NewErrInvalidType("Unable to assert value as a string")
 	}
 
-	// Handle client-side rollout strategies:
-	if fs.clientContext != nil {
+	// Figure out which value to use:
+	if calculatedValue := fs.Strategies.calculate(fs.clientContext); calculatedValue != nil {
+
+		// Assert the value:
+		if strategyValue, ok := calculatedValue.(string); ok {
+			return strategyValue, nil
+		}
 	}
 
-	return value, nil
+	// Return the default value as a fall-back:
+	return defaultValue, nil
 }
 
 // AsString returns a string value for this feature:
@@ -87,11 +111,20 @@ func (fs *FeatureState) AsString() (string, error) {
 	}
 
 	// Assert the value:
-	value, ok := fs.Value.(string)
+	defaultValue, ok := fs.Value.(string)
 	if !ok {
 		return "", errors.NewErrInvalidType("Unable to assert value as a string")
 	}
 
-	// Return the default value through the string rollout strategy:
-	return fs.Strategies.calculateString(value, fs.clientContext), nil
+	// Figure out which value to use:
+	if calculatedValue := fs.Strategies.calculate(fs.clientContext); calculatedValue != nil {
+
+		// Assert the value:
+		if strategyValue, ok := calculatedValue.(string); ok {
+			return strategyValue, nil
+		}
+	}
+
+	// Return the default value as a fall-back:
+	return defaultValue, nil
 }

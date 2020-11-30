@@ -29,54 +29,6 @@ type StrategyPair struct {
 	Value string `json:"value,omitempty"`
 }
 
-// calculateBoolean determines the value of a boolean:
-func (s Strategies) calculateBoolean(defaultValue bool, ctx *Context) bool {
-
-	// Figure out which value to use:
-	if calculatedValue := s.calculate(ctx); calculatedValue != nil {
-
-		// Assert the value:
-		if strategyValue, ok := calculatedValue.(bool); ok {
-			return strategyValue
-		}
-	}
-
-	// Otherwise just carry on with the default value:
-	return defaultValue
-}
-
-// calculateNumber determines the value of a number:
-func (s Strategies) calculateNumber(defaultValue float64, ctx *Context) float64 {
-
-	// Figure out which value to use:
-	if calculatedValue := s.calculate(ctx); calculatedValue != nil {
-
-		// Assert the value:
-		if strategyValue, ok := calculatedValue.(float64); ok {
-			return strategyValue
-		}
-	}
-
-	// Otherwise just carry on with the default value:
-	return defaultValue
-}
-
-// calculateString determines the value of a string:
-func (s Strategies) calculateString(defaultValue string, ctx *Context) string {
-
-	// Figure out which value to use:
-	if calculatedValue := s.calculate(ctx); calculatedValue != nil {
-
-		// Assert the value:
-		if strategyValue, ok := calculatedValue.(string); ok {
-			return strategyValue
-		}
-	}
-
-	// Otherwise just carry on with the default value:
-	return defaultValue
-}
-
 // calculate contains the logic to check each strategy and decide which one applies (if any):
 func (s Strategies) calculate(ctx *Context) interface{} {
 
