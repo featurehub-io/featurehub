@@ -116,6 +116,7 @@ The client SDK allows the user to define a callback function which will be trigg
 
 ### Analytics Collector
 The client SDK provides the ability to generate analytics events with the `LogAnalyticsEvent` method. An event will be generated for each feature that we have.
+
 ```go
 	action := "payment"
 	tags := map[string]string{"user": "bob"}
@@ -126,6 +127,7 @@ The SDK offers a logging analytics collector which will log events to the consol
 
 #### Google Analytics
 The GoLang SDK comes with a pre-made Google Analytics collector. Here is how to use it:
+
 ```go
 	googleAnalyticsCollector, err := analytics.NewGoogleAnalyticsCollector(clientID, trackingID, userAgentKey)
 	if err != nil {
@@ -134,6 +136,25 @@ The GoLang SDK comes with a pre-made Google Analytics collector. Here is how to 
 	client.AddAnalyticsCollector(googleAnalyticsCollector)
 ```
 Any subsequent calls to `client.LogAnalyticsEvent()` will result in events being sent via the Google Analytics collector (as well as any other which you have added).
+
+
+### Client-side rollout strategies
+Some rollout strategies need to be calculated per-request, which means that we can't rely on the server to do this for us. For this we provide the ability to apply a client context to a feature before using its value:
+
+```go
+	// Define your client context (rollout strategies will hash by Session, or Userkey if Session is unset):
+	clientContext := &Context{
+		Userkey: "12345",
+	}
+
+	// First retrieve the value as a feature:
+	featureValue, _ := fhClient.GetFeature("feature-key")
+
+	// Then you can apply a client context and read your value as its specific type, with rollout strategies applied:
+	numberValue, _ := featureValue.WithContext(clientContext).AsNumber()
+```
+If the featureValue has rollout strategies defined then they will be applied according to client context you provide.
+
 
 
 Todo
@@ -151,4 +172,4 @@ Todo
 - [X] Add support for ClientContext, and submit this as an x-featurehub header upon connection
 - [ ] Re-introduce the "polling" client (if we decide to go down that route for other SDKs)
 - [ ] Run tests and code-generation inside Docker (instead of requiring Go to be installed locally)
-- [ ] Client-side rollout strategies (https://github.com/featurehub-io/featurehub/tree/master/backend/sse-strategy-matchers/src)
+- [X] Client-side rollout strategies (https://github.com/featurehub-io/featurehub/tree/master/backend/sse-strategy-matchers/src)
