@@ -86,7 +86,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
       return TextFormField(
           controller: _fieldName,
           decoration: InputDecoration(
-              labelText: 'Custom field name',
+              labelText: 'Custom rule name',
               helperText: 'e.g. warehouseId',
               labelStyle: Theme.of(context).textTheme.bodyText1.copyWith(
                   fontSize: 12.0, color: Theme.of(context).buttonColor)),
@@ -95,7 +95,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
           onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
           validator: ((v) {
             if (v.isEmpty) {
-              return 'Field name required';
+              return 'Rule name required';
             }
             return null;
           }));
@@ -250,7 +250,10 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
               ),
               if (violation != null)
                 Text(violation.violation.toDescription(),
-                    style: TextStyle(color: Colors.red))
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyText2
+                        .copyWith(color: Theme.of(context).errorColor))
             ],
           );
         });

@@ -4,39 +4,39 @@ extension MapNamesForRolloutStrategyViolations on RolloutStrategyViolationType {
   String toDescription() {
     switch (this) {
       case RolloutStrategyViolationType.noName:
-        return 'No name provided for the rollout strategy, one is required';
+        return 'Strategy name is required';
       case RolloutStrategyViolationType.nameTooLong:
-        return 'Name for strategy is too long';
+        return 'Strategy name is too long';
       case RolloutStrategyViolationType.emptyMatchCriteria:
-        return 'You have not provided any criteria to match against, no percentage or attributes.';
+        return 'You have not provided any rules to match against, please add a rule';
       case RolloutStrategyViolationType.negativePercentage:
-        return 'You are trying to match against a negative percentage';
+        return 'Percentage cannot be a negative number';
       case RolloutStrategyViolationType.percentageOver100Percent:
-        return 'The total percentage with this strategy now exceeds 100%, please decrease to within 100%.';
+        return 'The total percentage value across all strategies is above 100%, please decrease the percentage rule';
       case RolloutStrategyViolationType.arrayAttributeNoValues:
-        return 'This attribute is an array but has no values';
+        return 'Please provide at least one value for this rule';
       case RolloutStrategyViolationType.attrInvalidWellKnownEnum:
-        return 'The value for this attribute is missing';
+        return 'Please select a value for this rule';
       case RolloutStrategyViolationType.attrMissingValue:
-        return 'The value for this attribute is missing';
+        return 'Please select a value for this rule';
       case RolloutStrategyViolationType.attrMissingConditional:
-        return 'This attribute is missing the condition.';
+        return 'Please select a matching condition for this rule';
       case RolloutStrategyViolationType.attrMissingFieldName:
-        return 'This custom attribute is missing the field name';
+        return 'Please enter the rule name';
       case RolloutStrategyViolationType.attrMissingFieldType:
-        return 'This attribute is missing the field type';
+        return 'Please select a value type for this rule';
       case RolloutStrategyViolationType.attrValNotSemanticVersion:
-        return 'One of the value(s) is not a valid semantic version.';
+        return 'Please provide a valid semantic version';
       case RolloutStrategyViolationType.attrValNotNumber:
-        return 'Expected a number but one of the value(s) is not a number';
+        return 'Please provide a valid number';
       case RolloutStrategyViolationType.attrValNotDate:
-        return 'Expected a Date in YYYY-MM-DD format and value(s) were invalid.';
+        return 'Please provide a valid date in YYYY-MM-DD format';
       case RolloutStrategyViolationType.attrValNotDateTime:
-        return 'Expected a DateTime in YYYY-MM-DDTHH:MM:SS format and value(s) were invalid.';
+        return 'Please provide a valid date and time in YYYY-MM-DDTHH:MM:SS format';
       case RolloutStrategyViolationType.attrValNotCidr:
-        return 'One of the value(s) is not a value IP or CIDR address';
+        return 'Please provide a valid IP or CIDR address';
       case RolloutStrategyViolationType.attrUnknownFailure:
-        return 'There was an unknown failure validating your strategy';
+        return 'There was an unknown strategy validation error';
     }
   }
 }
