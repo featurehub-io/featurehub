@@ -46,7 +46,7 @@ class RolloutStrategiesWidget extends StatelessWidget {
                   if (e != StrategyAttributeWellKnownNames.session &&
                       !snapshot.data.any((rsa) =>
                           StrategyAttributeWellKnownNamesTypeTransformer
-                              .fromJson(rsa.fieldName) ==
+                              .fromJsonMap[rsa.fieldName ?? ''] ==
                           e))
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
