@@ -95,7 +95,7 @@ public class ApplyFeature {
         }
       }
 
-      Object val = attr.getArray() ? attr.getValues() : attr.getValue();
+      Object val = attr.getValues();
 
       // both are null, just check against equals
       if (val == null && suppliedValue == null) {

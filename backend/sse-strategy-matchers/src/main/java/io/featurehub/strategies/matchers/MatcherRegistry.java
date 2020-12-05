@@ -5,23 +5,21 @@ import io.featurehub.sse.model.RolloutStrategyAttribute;
 public class MatcherRegistry implements MatcherRepository {
   @Override
   public StrategyMatcher findMatcher(String suppliedValue, RolloutStrategyAttribute attr) {
-    boolean isArray = Boolean.TRUE.equals(attr.getArray());
-
     switch (attr.getType()) {
       case STRING:
-        return isArray ? new StringArrayMatcher() : new StringMatcher();
+        return new StringArrayMatcher();
       case SEMANTIC_VERSION:
-        return isArray ? new SemanticVersionArrayMatcher() : new SemanticVersionMatcher();
+        return new SemanticVersionArrayMatcher();
       case NUMBER:
-        return isArray ? new NumberArrayMatcher() : new NumberMatcher();
+        return new NumberArrayMatcher();
       case DATE:
-        return isArray ? new DateArrayMatcher() : new DateMatcher();
+        return new DateArrayMatcher();
       case DATETIME:
-        return isArray ? new DateTimeArrayMatcher() : new DateTimeMatcher();
+        return new DateTimeArrayMatcher();
       case BOOLEAN: // can't have arrays, that would be silly
-        return new BooleanMatcher();
+        return new BooleanArrayMatcher();
       case IP_ADDRESS:
-        return isArray ? new IpAddressArrayMatcher() : new IpAddressMatcher();
+        return new IpAddressArrayMatcher();
     }
 
     return new FallthroughMatcher();

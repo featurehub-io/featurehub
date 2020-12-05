@@ -4,7 +4,6 @@ import io.featurehub.db.api.RolloutStrategyValidator;
 import io.featurehub.mr.model.RolloutStrategy;
 import io.featurehub.mr.model.RolloutStrategyAttribute;
 import io.featurehub.mr.model.RolloutStrategyCollectionViolationType;
-import io.featurehub.mr.model.RolloutStrategyFieldType;
 import io.featurehub.mr.model.RolloutStrategyInstance;
 import io.featurehub.mr.model.RolloutStrategyViolation;
 import io.featurehub.mr.model.RolloutStrategyViolationType;
@@ -106,7 +105,7 @@ public class RolloutStrategyValidationUtils implements RolloutStrategyValidator 
 
       rs.getAttributes()
         .stream()
-        .filter(a -> Boolean.TRUE.equals(a.getArray()) && (a.getValues() == null || a.getValues().isEmpty()))
+        .filter(a -> a.getValues() == null || a.getValues().isEmpty())
         .forEach(a -> {
           failures.add(new RolloutStrategyViolation()
             .violation(RolloutStrategyViolationType.ARRAY_ATTRIBUTE_NO_VALUES)
@@ -130,8 +129,7 @@ public class RolloutStrategyValidationUtils implements RolloutStrategyValidator 
             failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.ATTR_MISSING_FIELD_TYPE).id(attr.getId()), rs);
           }
 
-          if (Boolean.TRUE.equals(attr.getArray()) && attr.getType() != null) {
-            attr.setValue(null);
+          if (attr.getType() != null) {
             try {
               switch (attr.getType()) {
                 case STRING:
@@ -170,48 +168,6 @@ public class RolloutStrategyValidationUtils implements RolloutStrategyValidator 
             } catch (Exception e) {
               log.warn("Failed to cleanup strategy {}", rs, e);
               failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.ATTR_UNKNOWN_FAILURE).id(attr.getId()), rs);
-            }
-          } else {
-            attr.getValues().clear();
-            if (attr.getType() == RolloutStrategyFieldType.STRING &&
-              attr.getFieldName() != null &&
-              wellKnownFieldNames.contains(attr.getFieldName()) &&
-              (attr.getValue() == null || attr.getValue().toString().trim().isEmpty())) {
-              failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.ATTR_MISSING_VALUE).id(attr.getId()), rs);
-            }
-
-            if (attr.getValue() != null && attr.getType() != null) {
-              switch (attr.getType()) {
-                case STRING:
-                  break;
-                case SEMANTIC_VERSION:
-                  if (notSemanticVersion(attr.getValue())) {
-                    failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.ATTR_VAL_NOT_SEMANTIC_VERSION).id(attr.getId()), rs);
-                  }
-                  break;
-                case NUMBER:
-                  if (notNumber(attr.getValue())) {
-                    failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.ATTR_VAL_NOT_NUMBER).id(attr.getId()), rs);
-                  }
-                  break;
-                case DATE:
-                  if (notDate(attr.getValue())) {
-                    failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.ATTR_VAL_NOT_DATE).id(attr.getId()), rs);
-                  }
-                  break;
-                case DATETIME:
-                  if (notDateTime(attr.getValue())) {
-                    failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.ATTR_VAL_NOT_DATE_TIME).id(attr.getId()), rs);
-                  }
-                  break;
-                case BOOLEAN:
-                  break;
-                case IP_ADDRESS:
-                  if (notIpAddress(attr.getValue())) {
-                    failures.add(new RolloutStrategyViolation().violation(RolloutStrategyViolationType.ATTR_VAL_NOT_CIDR).id(attr.getId()), rs);
-                  }
-                  break;
-              }
             }
           }
         }

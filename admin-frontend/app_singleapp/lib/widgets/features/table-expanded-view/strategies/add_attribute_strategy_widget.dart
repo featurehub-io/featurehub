@@ -511,17 +511,20 @@ class _TextDeleteWidget extends StatelessWidget {
   }
 }
 
-final _countryNameMapper = (dynamic val) =>
-    StrategyAttributeCountryNameTypeTransformer.toJson(val)
-        .toString()
-        .replaceAll('_', ' ')
-        .replaceAll('of the', '')
-        .replaceAll('of', '')
-        .trim()
-        .capitalizeFirstofEach;
+final _countryNameMapper = (dynamic val) => ((val is String)
+        ? val
+        : StrategyAttributeCountryNameTypeTransformer.toJson(val))
+    .toString()
+    .replaceAll('_', ' ')
+    .replaceAll('of the', '')
+    .replaceAll('of', '')
+    .trim()
+    .capitalizeFirstofEach;
 
-final _deviceNameMapper = (dynamic val) =>
-    StrategyAttributeDeviceNameTypeTransformer.toJson(val).toString();
+final _deviceNameMapper = (dynamic val) => (val is String)
+    ? val
+    : StrategyAttributeDeviceNameTypeTransformer.toJson(val).toString();
 
-final _platformNameMapper = (dynamic val) =>
-    StrategyAttributePlatformNameTypeTransformer.toJson(val).toString();
+final _platformNameMapper = (dynamic val) => (val is String)
+    ? val
+    : StrategyAttributePlatformNameTypeTransformer.toJson(val).toString();
