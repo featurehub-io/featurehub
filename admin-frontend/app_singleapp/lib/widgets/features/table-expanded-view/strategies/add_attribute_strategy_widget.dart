@@ -1,9 +1,8 @@
+import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/input_fields_validators/input_field_number_formatter.dart';
 import 'package:app_singleapp/widgets/features/strategy_utils.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/individual_strategy_bloc.dart';
-import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/country_attribute_strategy_dropdown.dart';
-import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/device_attribute_strategy_dropdown.dart';
-import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/platform_attribute_strategy_dropdown.dart';
+import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/multiselect_dropdown.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/transform_strategy_conditions.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/transform_strategy_type_field.dart';
 import 'package:flutter/cupertino.dart';
@@ -13,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:mrapi/api.dart';
 
 import 'matchers.dart';
+import 'string_caps_extension.dart';
 
 class AttributeStrategyWidget extends StatefulWidget {
   final RolloutStrategyAttribute attribute;
@@ -59,14 +59,16 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
       _fieldName.text = _attribute.fieldName;
     }
 
-    if (_attribute.value != null) {
-      _value.text = _attribute.value.toString();
-    }
-
     _attributeType = _attribute.type; // which could be null
 
     _wellKnown = StrategyAttributeWellKnownNamesTypeTransformer
         .fromJsonMap[_attribute.fieldName ?? ''];
+
+    _value.text = '';
+
+    if (_attribute.values == null) {
+      _attribute.values = [];
+    }
 
     _matchers = defineMatchers(_attributeType, _wellKnown);
   }
@@ -115,60 +117,66 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
               (vio) => vio.id == widget.attribute.id,
               orElse: () => null);
 
-          return Column(
-            children: [
-              if (!widget.attributeIsFirst)
-                Container(
-                    padding: EdgeInsets.all(4.0),
-                    margin: EdgeInsets.all(8.0),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                      color: Theme.of(context).primaryColorLight,
-                    ),
-                    child: Text('AND',
-                        style: Theme.of(context).textTheme.overline)),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.0),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                  color: Theme.of(context).selectedRowColor,
-                ),
-                child: Row(
-                  children: [
-                    Expanded(flex: 2, child: _nameField()),
-                    Expanded(flex: 7, child: _buildCondition(context)),
-                    Expanded(
-                      flex: 1,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          Material(
-                              type: MaterialType.transparency,
-                              shape: CircleBorder(),
-                              child: IconButton(
-                                  icon: Icon(
-                                    Icons.delete_sharp,
-                                    size: 18.0,
-                                  ),
-                                  hoverColor:
-                                      Theme.of(context).primaryColorLight,
-                                  splashRadius: 20,
-                                  onPressed: () =>
-                                      widget.bloc.deleteAttribute(_attribute))),
-                        ],
+          try {
+            return Column(
+              children: [
+                if (!widget.attributeIsFirst)
+                  Container(
+                      padding: EdgeInsets.all(4.0),
+                      margin: EdgeInsets.all(8.0),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                        color: Theme.of(context).primaryColorLight,
                       ),
-                    )
-                  ],
+                      child: Text('AND',
+                          style: Theme.of(context).textTheme.overline)),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                    color: Theme.of(context).selectedRowColor,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(flex: 2, child: _nameField()),
+                      Expanded(flex: 7, child: _buildCondition(context)),
+                      Expanded(
+                        flex: 1,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                            Material(
+                                type: MaterialType.transparency,
+                                shape: CircleBorder(),
+                                child: IconButton(
+                                    icon: Icon(
+                                      Icons.delete_sharp,
+                                      size: 18.0,
+                                    ),
+                                    hoverColor:
+                                        Theme.of(context).primaryColorLight,
+                                    splashRadius: 20,
+                                    onPressed: () => widget.bloc
+                                        .deleteAttribute(_attribute))),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
                 ),
-              ),
-              if (violation != null)
-                Text(violation.violation.toDescription(),
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyText2
-                        .copyWith(color: Theme.of(context).errorColor))
-            ],
-          );
+                if (violation != null)
+                  Text(violation.violation.toDescription(),
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyText2
+                          .copyWith(color: Theme.of(context).errorColor))
+              ],
+            );
+          } catch (e, s) {
+            print(e);
+            print(s);
+            return SizedBox.shrink();
+          }
         });
   }
 
@@ -229,15 +237,27 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
       if (_wellKnown == StrategyAttributeWellKnownNames.country)
         Expanded(
             flex: 4,
-            child: CountryAttributeStrategyDropdown(attribute: _attribute))
+            child: MultiSelectDropdown(
+                _attribute.values,
+                StrategyAttributeCountryName.values,
+                _countryNameMapper,
+                'Select Country'))
       else if (_wellKnown == StrategyAttributeWellKnownNames.device)
         Expanded(
             flex: 4,
-            child: DeviceAttributeStrategyDropdown(attribute: _attribute))
+            child: MultiSelectDropdown(
+                _attribute.values,
+                StrategyAttributeDeviceName.values,
+                _deviceNameMapper,
+                'Select Device'))
       else if (_wellKnown == StrategyAttributeWellKnownNames.platform)
         Expanded(
             flex: 4,
-            child: PlatformAttributeStrategyDropdown(attribute: _attribute))
+            child: MultiSelectDropdown(
+                _attribute.values,
+                StrategyAttributePlatformName.values,
+                _platformNameMapper,
+                'Select Platform'))
       else
         Expanded(
             flex: 4,
@@ -362,10 +382,12 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
               ),
             );
           }).toList(),
-          value: widget.attribute.value,
+          value: widget.attribute.values.isEmpty
+              ? null
+              : widget.attribute.values[0],
           onChanged: (value) {
             setState(() {
-              widget.attribute.value = value;
+              widget.attribute.values = [value];
             });
           },
           hint: Text('Select value',
@@ -397,39 +419,109 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
             style: Theme.of(context).textTheme.subtitle2),
         onChanged: (value) {
           setState(() {
-            _attribute.value = value;
+            _attribute.values = [value];
           });
         },
-        value: _attribute.value == true,
+        value: _attribute.values.isEmpty ? null : _attribute.values[0] == true,
       );
     }
 
-    return TextFormField(
-      controller: _value,
-      decoration: InputDecoration(
-          labelText: labelText,
-          helperText: helperText,
-          labelStyle: Theme.of(context)
-              .textTheme
-              .bodyText1
-              .copyWith(fontSize: 12.0, color: Theme.of(context).buttonColor)),
-      // readOnly: !widget.widget.editable,
-      autofocus: true,
-      onChanged: (v) => _valueFieldChanged(v),
-      onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
-      inputFormatters: inputFormatters,
+    return Column(
+      children: [
+        Row(
+          children: [
+            Container(
+              constraints: BoxConstraints(maxWidth: 250),
+              child: TextFormField(
+                controller: _value,
+                decoration: InputDecoration(
+                    labelText: labelText,
+                    helperText: helperText,
+                    labelStyle: Theme.of(context).textTheme.bodyText1.copyWith(
+                        fontSize: 12.0, color: Theme.of(context).buttonColor)),
+                // readOnly: !widget.widget.editable,
+                autofocus: true,
+                onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+                inputFormatters: inputFormatters,
+              ),
+            ),
+            FHFlatButton(
+                onPressed: () => _valueFieldChanged(_value.text), title: 'Add')
+          ],
+        ),
+        Wrap(
+          children: [
+            for (dynamic val in _attribute.values)
+              _TextDeleteWidget(
+                label: val.toString(),
+                value: val,
+                onSelected: (e) => setState(() => _attribute.values.remove(e)),
+              )
+          ],
+        )
+      ],
     );
   }
 
   void _valueFieldChanged(String v) {
-    if (v.trim().isEmpty) {
-      _attribute.value = null;
+    final val = v.trim();
+    if (val.isEmpty) {
+      return;
     } else if (_attributeType == RolloutStrategyFieldType.NUMBER) {
       try {
-        _attribute.value = double.parse(v);
+        final num = double.parse(val);
+        if (!_attribute.values.contains(num)) {
+          setState(() {
+            _attribute.values.add(num);
+            _value.text = '';
+          });
+        }
       } catch (e) {}
     } else {
-      _attribute.value = v;
+      if (!_attribute.values.contains(val)) {
+        setState(() {
+          _attribute.values.add(val);
+          _value.text = '';
+        });
+      }
     }
   }
 }
+
+class _TextDeleteWidget extends StatelessWidget {
+  final String label;
+  final dynamic value;
+  final ValueChanged<dynamic> onSelected;
+
+  const _TextDeleteWidget(
+      {Key key, @required this.label, @required this.value, this.onSelected})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: InkWell(
+        onTap: () => onSelected(value),
+        child: Row(
+          children: [Text(label), Icon(Icons.delete_forever_sharp)],
+        ),
+      ),
+    );
+  }
+}
+
+final _countryNameMapper = (dynamic val) =>
+    StrategyAttributeCountryNameTypeTransformer.toJson(val)
+        .toString()
+        .replaceAll('_', ' ')
+        .replaceAll('of the', '')
+        .replaceAll('of', '')
+        .trim()
+        .capitalizeFirstofEach;
+
+final _deviceNameMapper = (dynamic val) =>
+    StrategyAttributeDeviceNameTypeTransformer.toJson(val).toString();
+
+final _platformNameMapper = (dynamic val) =>
+    StrategyAttributePlatformNameTypeTransformer.toJson(val).toString();
