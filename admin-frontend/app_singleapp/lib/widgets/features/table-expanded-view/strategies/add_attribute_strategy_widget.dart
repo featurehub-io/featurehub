@@ -136,94 +136,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
                 child: Row(
                   children: [
                     Expanded(flex: 2, child: _nameField()),
-                    Expanded(
-                        flex: 7,
-                        child: Row(children: [
-                          if (_wellKnown == null)
-                            Padding(
-                              padding: const EdgeInsets.only(left: 16.0),
-                              child:
-                                  Expanded(flex: 2, child: _customFieldType()),
-                            ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 16.0),
-                            child: Expanded(
-                              flex: 1,
-                              child: InkWell(
-                                mouseCursor: SystemMouseCursors.click,
-                                child: Container(
-                                  constraints: BoxConstraints(maxWidth: 250),
-                                  child: DropdownButton(
-                                    icon: Padding(
-                                      padding: EdgeInsets.only(left: 8.0),
-                                      child: Icon(
-                                        Icons.keyboard_arrow_down,
-                                        size: 24,
-                                      ),
-                                    ),
-                                    isExpanded: false,
-                                    items: _matchers.map(
-                                        (RolloutStrategyAttributeConditional
-                                            dropDownStringItem) {
-                                      return DropdownMenuItem<
-                                              RolloutStrategyAttributeConditional>(
-                                          value: dropDownStringItem,
-                                          child: Text(
-                                              transformStrategyAttributeConditionalValueToString(
-                                                  dropDownStringItem),
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyText2));
-                                    }).toList(),
-                                    hint: Text('Select condition',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .subtitle2),
-                                    onChanged: (value) {
-                                      var readOnly =
-                                          false; //TODO parametrise this if needed
-                                      if (!readOnly) {
-                                        setState(() {
-                                          _dropDownCustomAttributeMatchingCriteria =
-                                              value;
-                                          _attribute.conditional = value;
-                                        });
-                                      }
-                                    },
-                                    value:
-                                        _dropDownCustomAttributeMatchingCriteria,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 16.0),
-                          if (_wellKnown ==
-                              StrategyAttributeWellKnownNames.country)
-                            Expanded(
-                                flex: 4,
-                                child: CountryAttributeStrategyDropdown(
-                                    attribute: _attribute))
-                          else if (_wellKnown ==
-                              StrategyAttributeWellKnownNames.device)
-                            Expanded(
-                                flex: 4,
-                                child: DeviceAttributeStrategyDropdown(
-                                    attribute: _attribute))
-                          else if (_wellKnown ==
-                              StrategyAttributeWellKnownNames.platform)
-                            Expanded(
-                                flex: 4,
-                                child: PlatformAttributeStrategyDropdown(
-                                    attribute: _attribute))
-                          else
-                            Expanded(
-                                flex: 4,
-                                child: Padding(
-                                  padding: const EdgeInsets.only(left: 16.0),
-                                  child: _fieldValueEditorByFieldType(),
-                                ))
-                        ])),
+                    Expanded(flex: 7, child: _buildCondition(context)),
                     Expanded(
                       flex: 1,
                       child: Row(
@@ -257,6 +170,82 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
             ],
           );
         });
+  }
+
+  Row _buildCondition(BuildContext context) {
+    return Row(children: [
+      if (_wellKnown == null)
+        Expanded(
+          flex: 2,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 16.0),
+            child: _customFieldType(),
+          ),
+        ),
+      Expanded(
+        flex: 2,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 16.0),
+          child: InkWell(
+            mouseCursor: SystemMouseCursors.click,
+            child: Container(
+              constraints: BoxConstraints(maxWidth: 250),
+              child: DropdownButton(
+                icon: Padding(
+                  padding: EdgeInsets.only(left: 8.0),
+                  child: Icon(
+                    Icons.keyboard_arrow_down,
+                    size: 24,
+                  ),
+                ),
+                isExpanded: false,
+                items: _matchers.map(
+                    (RolloutStrategyAttributeConditional dropDownStringItem) {
+                  return DropdownMenuItem<RolloutStrategyAttributeConditional>(
+                      value: dropDownStringItem,
+                      child: Text(
+                          transformStrategyAttributeConditionalValueToString(
+                              dropDownStringItem),
+                          style: Theme.of(context).textTheme.bodyText2));
+                }).toList(),
+                hint: Text('Select condition',
+                    style: Theme.of(context).textTheme.subtitle2),
+                onChanged: (value) {
+                  var readOnly = false; //TODO parametrise this if needed
+                  if (!readOnly) {
+                    setState(() {
+                      _dropDownCustomAttributeMatchingCriteria = value;
+                      _attribute.conditional = value;
+                    });
+                  }
+                },
+                value: _dropDownCustomAttributeMatchingCriteria,
+              ),
+            ),
+          ),
+        ),
+      ),
+      SizedBox(width: 16.0),
+      if (_wellKnown == StrategyAttributeWellKnownNames.country)
+        Expanded(
+            flex: 4,
+            child: CountryAttributeStrategyDropdown(attribute: _attribute))
+      else if (_wellKnown == StrategyAttributeWellKnownNames.device)
+        Expanded(
+            flex: 4,
+            child: DeviceAttributeStrategyDropdown(attribute: _attribute))
+      else if (_wellKnown == StrategyAttributeWellKnownNames.platform)
+        Expanded(
+            flex: 4,
+            child: PlatformAttributeStrategyDropdown(attribute: _attribute))
+      else
+        Expanded(
+            flex: 4,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 16.0),
+              child: _fieldValueEditorByFieldType(),
+            ))
+    ]);
   }
 
   void _updateAttributeFieldName() {
