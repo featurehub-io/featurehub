@@ -29,14 +29,9 @@ class _TextDeleteWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: InkWell(
-        onTap: () => onSelected(value),
-        child: Row(
-          children: [Text(label), Icon(Icons.delete_forever_sharp)],
-        ),
-      ),
+    return Chip(
+      onDeleted: () => onSelected(value),
+      label: Text(label, style: Theme.of(context).textTheme.bodyText1,)
     );
   }
 }
@@ -57,20 +52,22 @@ class _MultiSelectDropdownState extends State<MultiSelectDropdown> {
       children: [
         buildDropDown(context),
         Wrap(
+          spacing: 4.0,
           children: [
-            for (dynamic val in widget.values)
-              _TextDeleteWidget(
-                label: widget.mapper(val),
-                value: val,
-                onSelected: (e) {
-                  setState(() {
-                    selectableValues.add(e);
-                    widget.values.remove(e);
-                  });
-                },
-              )
-          ],
-        )
+              for (dynamic val in widget.values)
+                _TextDeleteWidget(
+                  label: widget.mapper(val),
+                  value: val,
+                  onSelected: (e) {
+                    setState(() {
+                      selectableValues.add(e);
+                      widget.values.remove(e);
+                    });
+                  },
+                )
+            ],
+          ),
+
       ],
     );
   }

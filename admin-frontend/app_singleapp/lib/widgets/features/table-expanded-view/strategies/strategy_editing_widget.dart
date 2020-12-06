@@ -74,7 +74,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
               : 'View split targeting')),
       content: SingleChildScrollView(
         child: Container(
-          width: 800,
+          width: 1000,
           child: Form(
             key: _formKey,
             child: Column(

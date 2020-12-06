@@ -1,4 +1,4 @@
-import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
+import 'package:app_singleapp/widgets/common/fh_underline_button.dart';
 import 'package:app_singleapp/widgets/common/input_fields_validators/input_field_number_formatter.dart';
 import 'package:app_singleapp/widgets/features/strategy_utils.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/individual_strategy_bloc.dart';
@@ -427,6 +427,8 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
     }
 
     return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
@@ -435,6 +437,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
               child: TextFormField(
                 controller: _value,
                 decoration: InputDecoration(
+                    border: OutlineInputBorder(),
                     labelText: labelText,
                     helperText: helperText,
                     labelStyle: Theme.of(context).textTheme.bodyText1.copyWith(
@@ -445,11 +448,15 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
                 inputFormatters: inputFormatters,
               ),
             ),
-            FHFlatButton(
-                onPressed: () => _valueFieldChanged(_value.text), title: 'Add')
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: FHUnderlineButton(
+                  onPressed: () => _valueFieldChanged(_value.text), title: 'Add'),
+            )
           ],
         ),
         Wrap(
+          spacing: 4.0,
           children: [
             for (dynamic val in _attribute.values)
               _TextDeleteWidget(
@@ -499,14 +506,9 @@ class _TextDeleteWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: InkWell(
-        onTap: () => onSelected(value),
-        child: Row(
-          children: [Text(label), Icon(Icons.delete_forever_sharp)],
-        ),
-      ),
+    return Chip(
+      onDeleted: () => onSelected(value),
+      label: Text(label, style: Theme.of(context).textTheme.bodyText1,)
     );
   }
 }

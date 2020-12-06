@@ -18,7 +18,7 @@ extension MapNamesForRolloutStrategyViolations on RolloutStrategyViolationType {
       case RolloutStrategyViolationType.attrInvalidWellKnownEnum:
         return 'Please select a value for this rule';
       case RolloutStrategyViolationType.attrMissingValue:
-        return 'Please select a value for this rule';
+        return 'Please provide a value for this rule';
       case RolloutStrategyViolationType.attrMissingConditional:
         return 'Please select a matching condition for this rule';
       case RolloutStrategyViolationType.attrMissingFieldName:
