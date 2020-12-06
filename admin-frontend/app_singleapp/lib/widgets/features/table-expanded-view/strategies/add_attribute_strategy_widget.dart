@@ -83,7 +83,8 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
 
   Widget _nameField() {
     if (_wellKnown != null) {
-      return Text(_nameFieldMap[_wellKnown]);
+      return Text(_nameFieldMap[_wellKnown], style: Theme.of(context).textTheme.subtitle2.copyWith(color:
+      Theme.of(context).buttonColor),);
     } else {
       return TextFormField(
           controller: _fieldName,
@@ -92,6 +93,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
               helperText: 'e.g. warehouseId',
               labelStyle: Theme.of(context).textTheme.bodyText1.copyWith(
                   fontSize: 12.0, color: Theme.of(context).buttonColor)),
+          style: TextStyle(fontSize: 14.0),
           autofocus: true,
           onChanged: (v) => _updateAttributeFieldName(),
           onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
@@ -131,27 +133,30 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
                       child: Text('AND',
                           style: Theme.of(context).textTheme.overline)),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.0),
+                  padding: EdgeInsets.all(8.0),
+                  margin: EdgeInsets.symmetric(vertical: 8.0),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.all(Radius.circular(6.0)),
                     color: Theme.of(context).selectedRowColor,
                   ),
                   child: Row(
                     children: [
-                      Expanded(flex: 2, child: _nameField()),
+                      Expanded(flex: 1, child: _nameField()),
                       Expanded(flex: 7, child: _buildCondition(context)),
                       Expanded(
                         flex: 1,
                         child: Row(
-                          mainAxisSize: MainAxisSize.max,
+                          mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             Material(
                                 type: MaterialType.transparency,
                                 shape: CircleBorder(),
                                 child: IconButton(
+                                  tooltip: 'Delete rule',
                                     icon: Icon(
-                                      Icons.delete_sharp,
-                                      size: 18.0,
+                                      Icons.delete_forever_sharp,
+                                      color: Colors.red,
+                                      size: 20.0,
                                     ),
                                     hoverColor:
                                         Theme.of(context).primaryColorLight,
@@ -186,27 +191,23 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
         Expanded(
           flex: 2,
           child: Padding(
-            padding: const EdgeInsets.only(left: 16.0),
+            padding: const EdgeInsets.only(left: 8.0),
             child: _customFieldType(),
           ),
         ),
       Expanded(
         flex: 2,
         child: Padding(
-          padding: const EdgeInsets.only(left: 16.0),
-          child: InkWell(
-            mouseCursor: SystemMouseCursors.click,
-            child: Container(
-              constraints: BoxConstraints(maxWidth: 250),
+          padding: const EdgeInsets.only(left: 8.0),
+          child: OutlinedButton(
+            onPressed: () => {},
+            child: DropdownButtonHideUnderline(
               child: DropdownButton(
-                icon: Padding(
-                  padding: EdgeInsets.only(left: 8.0),
-                  child: Icon(
-                    Icons.keyboard_arrow_down,
-                    size: 24,
-                  ),
+                icon: Icon(
+                  Icons.keyboard_arrow_down,
+                  size: 24,
                 ),
-                isExpanded: false,
+                isExpanded: true,
                 items: _matchers.map(
                     (RolloutStrategyAttributeConditional dropDownStringItem) {
                   return DropdownMenuItem<RolloutStrategyAttributeConditional>(
@@ -282,10 +283,9 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
   }
 
   Widget _customFieldType() {
-    return InkWell(
-      mouseCursor: SystemMouseCursors.click,
-      child: Container(
-        constraints: BoxConstraints(maxWidth: 250),
+    return OutlinedButton(
+      onPressed: () => {},
+      child: DropdownButtonHideUnderline(
         child: DropdownButton(
           icon: Padding(
             padding: EdgeInsets.only(left: 16.0),
@@ -294,7 +294,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
               size: 24,
             ),
           ),
-          isExpanded: false,
+          isExpanded: true,
           items: RolloutStrategyFieldType.values
               .map((RolloutStrategyFieldType dropDownStringItem) {
             return DropdownMenuItem<RolloutStrategyFieldType>(
@@ -450,8 +450,11 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
             ),
             Padding(
               padding: const EdgeInsets.only(left: 8.0),
-              child: FHUnderlineButton(
-                  onPressed: () => _valueFieldChanged(_value.text), title: 'Add'),
+              child: Tooltip(
+                message: 'Add value',
+                child: FHUnderlineButton(
+                    onPressed: () => _valueFieldChanged(_value.text), title: 'Add'),
+              ),
             )
           ],
         ),

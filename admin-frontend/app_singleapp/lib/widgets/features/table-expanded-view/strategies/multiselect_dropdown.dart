@@ -72,11 +72,10 @@ class _MultiSelectDropdownState extends State<MultiSelectDropdown> {
     );
   }
 
-  InkWell buildDropDown(BuildContext context) {
-    return InkWell(
-      mouseCursor: SystemMouseCursors.click,
-      child: Container(
-        constraints: BoxConstraints(maxWidth: 250),
+   Widget buildDropDown(BuildContext context) {
+    return OutlinedButton(
+      onPressed: () => {},
+      child: DropdownButtonHideUnderline(
         child: DropdownButton(
           icon: Padding(
             padding: EdgeInsets.only(left: 8.0),
