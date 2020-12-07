@@ -73,35 +73,38 @@ class _MultiSelectDropdownState extends State<MultiSelectDropdown> {
   }
 
    Widget buildDropDown(BuildContext context) {
-    return OutlinedButton(
-      onPressed: () => {},
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton(
-          icon: Padding(
-            padding: EdgeInsets.only(left: 8.0),
-            child: Icon(
-              Icons.keyboard_arrow_down,
-              size: 24,
+    return Container(
+      height: 32,
+      child: OutlinedButton(
+        onPressed: () => {},
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton(
+            icon: Padding(
+              padding: EdgeInsets.only(left: 8.0),
+              child: Icon(
+                Icons.keyboard_arrow_down,
+                size: 24,
+              ),
             ),
+            isExpanded: true,
+            items: selectableValues
+                .map((e) => DropdownMenuItem(
+                    value: e,
+                    child: Text(widget.mapper(e),
+                        style: Theme.of(context).textTheme.bodyText2)))
+                .toList(),
+            hint: Text(widget.hint, style: Theme.of(context).textTheme.subtitle2),
+            onChanged: (value) {
+              var readOnly = false; //TODO parametrise this if needed
+              if (!readOnly) {
+                setState(() {
+                  widget.values.add(value);
+                  selectableValues.remove(value);
+                });
+              }
+            },
+            value: null,
           ),
-          isExpanded: true,
-          items: selectableValues
-              .map((e) => DropdownMenuItem(
-                  value: e,
-                  child: Text(widget.mapper(e),
-                      style: Theme.of(context).textTheme.bodyText2)))
-              .toList(),
-          hint: Text(widget.hint, style: Theme.of(context).textTheme.subtitle2),
-          onChanged: (value) {
-            var readOnly = false; //TODO parametrise this if needed
-            if (!readOnly) {
-              setState(() {
-                widget.values.add(value);
-                selectableValues.remove(value);
-              });
-            }
-          },
-          value: null,
         ),
       ),
     );

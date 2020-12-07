@@ -199,36 +199,39 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
         flex: 2,
         child: Padding(
           padding: const EdgeInsets.only(left: 8.0),
-          child: OutlinedButton(
-            onPressed: () => {},
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton(
-                icon: Icon(
-                  Icons.keyboard_arrow_down,
-                  size: 24,
+          child: Container(
+            height: 32,
+            child: OutlinedButton(
+              onPressed: () => {},
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton(
+                  icon: Icon(
+                    Icons.keyboard_arrow_down,
+                    size: 24,
+                  ),
+                  isExpanded: true,
+                  items: _matchers.map(
+                      (RolloutStrategyAttributeConditional dropDownStringItem) {
+                    return DropdownMenuItem<RolloutStrategyAttributeConditional>(
+                        value: dropDownStringItem,
+                        child: Text(
+                            transformStrategyAttributeConditionalValueToString(
+                                dropDownStringItem),
+                            style: Theme.of(context).textTheme.bodyText2));
+                  }).toList(),
+                  hint: Text('Select condition',
+                      style: Theme.of(context).textTheme.subtitle2),
+                  onChanged: (value) {
+                    var readOnly = false; //TODO parametrise this if needed
+                    if (!readOnly) {
+                      setState(() {
+                        _dropDownCustomAttributeMatchingCriteria = value;
+                        _attribute.conditional = value;
+                      });
+                    }
+                  },
+                  value: _dropDownCustomAttributeMatchingCriteria,
                 ),
-                isExpanded: true,
-                items: _matchers.map(
-                    (RolloutStrategyAttributeConditional dropDownStringItem) {
-                  return DropdownMenuItem<RolloutStrategyAttributeConditional>(
-                      value: dropDownStringItem,
-                      child: Text(
-                          transformStrategyAttributeConditionalValueToString(
-                              dropDownStringItem),
-                          style: Theme.of(context).textTheme.bodyText2));
-                }).toList(),
-                hint: Text('Select condition',
-                    style: Theme.of(context).textTheme.subtitle2),
-                onChanged: (value) {
-                  var readOnly = false; //TODO parametrise this if needed
-                  if (!readOnly) {
-                    setState(() {
-                      _dropDownCustomAttributeMatchingCriteria = value;
-                      _attribute.conditional = value;
-                    });
-                  }
-                },
-                value: _dropDownCustomAttributeMatchingCriteria,
               ),
             ),
           ),
@@ -283,38 +286,41 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
   }
 
   Widget _customFieldType() {
-    return OutlinedButton(
-      onPressed: () => {},
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton(
-          icon: Padding(
-            padding: EdgeInsets.only(left: 16.0),
-            child: Icon(
-              Icons.keyboard_arrow_down,
-              size: 24,
+    return Container(
+      height: 32,
+      child: OutlinedButton(
+        onPressed: () => {},
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton(
+            icon: Padding(
+              padding: EdgeInsets.only(left: 16.0),
+              child: Icon(
+                Icons.keyboard_arrow_down,
+                size: 24,
+              ),
             ),
+            isExpanded: true,
+            items: RolloutStrategyFieldType.values
+                .map((RolloutStrategyFieldType dropDownStringItem) {
+              return DropdownMenuItem<RolloutStrategyFieldType>(
+                  value: dropDownStringItem,
+                  child: Text(
+                      transformRolloutStrategyTypeFieldToString(
+                          dropDownStringItem),
+                      style: Theme.of(context).textTheme.bodyText2));
+            }).toList(),
+            hint: Text('Select value type',
+                style: Theme.of(context).textTheme.subtitle2),
+            onChanged: (value) {
+              setState(() {
+                _attributeType = value;
+                _attribute.type = value;
+                _matchers = defineMatchers(_attributeType, _wellKnown);
+                _dropDownCustomAttributeMatchingCriteria = null;
+              });
+            },
+            value: _attributeType,
           ),
-          isExpanded: true,
-          items: RolloutStrategyFieldType.values
-              .map((RolloutStrategyFieldType dropDownStringItem) {
-            return DropdownMenuItem<RolloutStrategyFieldType>(
-                value: dropDownStringItem,
-                child: Text(
-                    transformRolloutStrategyTypeFieldToString(
-                        dropDownStringItem),
-                    style: Theme.of(context).textTheme.bodyText2));
-          }).toList(),
-          hint: Text('Select value type',
-              style: Theme.of(context).textTheme.subtitle2),
-          onChanged: (value) {
-            setState(() {
-              _attributeType = value;
-              _attribute.type = value;
-              _matchers = defineMatchers(_attributeType, _wellKnown);
-              _dropDownCustomAttributeMatchingCriteria = null;
-            });
-          },
-          value: _attributeType,
         ),
       ),
     );
@@ -362,36 +368,44 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
         helperText = 'e.g. 2007-03-01T13:00:00Z';
         break;
       case RolloutStrategyFieldType.BOOLEAN:
-        return DropdownButton(
-          isDense: true,
-          icon: Padding(
-            padding: EdgeInsets.only(left: 16.0),
-            child: Icon(
-              Icons.keyboard_arrow_down,
-              size: 24,
+        return Container(
+          height: 32,
+          child: OutlinedButton(
+            onPressed: () => {},
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton(
+                isDense: true,
+                icon: Padding(
+                  padding: EdgeInsets.only(left: 16.0),
+                  child: Icon(
+                    Icons.keyboard_arrow_down,
+                    size: 24,
+                  ),
+                ),
+                isExpanded: true,
+                items: <String>['true', 'false']
+                    .map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(
+                      value,
+                      style: Theme.of(context).textTheme.bodyText2,
+                    ),
+                  );
+                }).toList(),
+                value: widget.attribute.values.isEmpty
+                    ? null
+                    : widget.attribute.values[0],
+                onChanged: (value) {
+                  setState(() {
+                    widget.attribute.values = [value];
+                  });
+                },
+                hint: Text('Select value',
+                    style: Theme.of(context).textTheme.subtitle2),
+              ),
             ),
           ),
-          isExpanded: true,
-          items: <String>['true', 'false']
-              .map<DropdownMenuItem<String>>((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Text(
-                value,
-                style: Theme.of(context).textTheme.bodyText2,
-              ),
-            );
-          }).toList(),
-          value: widget.attribute.values.isEmpty
-              ? null
-              : widget.attribute.values[0],
-          onChanged: (value) {
-            setState(() {
-              widget.attribute.values = [value];
-            });
-          },
-          hint: Text('Select value',
-              style: Theme.of(context).textTheme.subtitle2),
         );
       case RolloutStrategyFieldType.IP_ADDRESS:
         labelText = 'IP Address(es) with or without CIDR';
