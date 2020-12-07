@@ -83,8 +83,13 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
 
   Widget _nameField() {
     if (_wellKnown != null) {
-      return Text(_nameFieldMap[_wellKnown], style: Theme.of(context).textTheme.subtitle2.copyWith(color:
-      Theme.of(context).buttonColor),);
+      return Text(
+        _nameFieldMap[_wellKnown],
+        style: Theme.of(context)
+            .textTheme
+            .subtitle2
+            .copyWith(color: Theme.of(context).buttonColor),
+      );
     } else {
       return TextFormField(
           controller: _fieldName,
@@ -152,7 +157,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
                                 type: MaterialType.transparency,
                                 shape: CircleBorder(),
                                 child: IconButton(
-                                  tooltip: 'Delete rule',
+                                    tooltip: 'Delete rule',
                                     icon: Icon(
                                       Icons.delete_forever_sharp,
                                       color: Colors.red,
@@ -212,7 +217,8 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
                   isExpanded: true,
                   items: _matchers.map(
                       (RolloutStrategyAttributeConditional dropDownStringItem) {
-                    return DropdownMenuItem<RolloutStrategyAttributeConditional>(
+                    return DropdownMenuItem<
+                            RolloutStrategyAttributeConditional>(
                         value: dropDownStringItem,
                         child: Text(
                             transformStrategyAttributeConditionalValueToString(
@@ -242,7 +248,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
         Expanded(
             flex: 4,
             child: MultiSelectDropdown(
-                _attribute.values,
+                _attribute.values.map(_countryNameReverseMapper).toList(),
                 StrategyAttributeCountryName.values,
                 _countryNameMapper,
                 'Select Country'))
@@ -250,7 +256,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
         Expanded(
             flex: 4,
             child: MultiSelectDropdown(
-                _attribute.values,
+                _attribute.values.map(_deviceNameReverseMapper).toList(),
                 StrategyAttributeDeviceName.values,
                 _deviceNameMapper,
                 'Select Device'))
@@ -258,7 +264,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
         Expanded(
             flex: 4,
             child: MultiSelectDropdown(
-                _attribute.values,
+                _attribute.values.map(_platformNameReverseMapper).toList(),
                 StrategyAttributePlatformName.values,
                 _platformNameMapper,
                 'Select Platform'))
@@ -467,7 +473,8 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
               child: Tooltip(
                 message: 'Add value',
                 child: FHUnderlineButton(
-                    onPressed: () => _valueFieldChanged(_value.text), title: 'Add'),
+                    onPressed: () => _valueFieldChanged(_value.text),
+                    title: 'Add'),
               ),
             )
           ],
@@ -524,11 +531,17 @@ class _TextDeleteWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Chip(
-      onDeleted: () => onSelected(value),
-      label: Text(label, style: Theme.of(context).textTheme.bodyText1,)
-    );
+        onDeleted: () => onSelected(value),
+        label: Text(
+          label,
+          style: Theme.of(context).textTheme.bodyText1,
+        ));
   }
 }
+
+final _countryNameReverseMapper = (val) => (val is String)
+    ? StrategyAttributeCountryNameTypeTransformer.fromJson(val)
+    : val;
 
 final _countryNameMapper = (dynamic val) => ((val is String)
         ? val
@@ -543,6 +556,14 @@ final _countryNameMapper = (dynamic val) => ((val is String)
 final _deviceNameMapper = (dynamic val) => (val is String)
     ? val
     : StrategyAttributeDeviceNameTypeTransformer.toJson(val).toString();
+
+final _deviceNameReverseMapper = (val) => (val is String)
+    ? StrategyAttributeDeviceNameTypeTransformer.fromJson(val)
+    : val;
+
+final _platformNameReverseMapper = (val) => (val is String)
+    ? StrategyAttributePlatformNameTypeTransformer.fromJson(val)
+    : val;
 
 final _platformNameMapper = (dynamic val) => (val is String)
     ? val
