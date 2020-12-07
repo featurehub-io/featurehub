@@ -68,6 +68,17 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
 
     if (_attribute.values == null) {
       _attribute.values = [];
+    } else {
+      if (_wellKnown == StrategyAttributeWellKnownNames.platform) {
+        _attribute.values =
+            _attribute.values.map(_platformNameReverseMapper).toList();
+      } else if (_wellKnown == StrategyAttributeWellKnownNames.device) {
+        _attribute.values =
+            _attribute.values.map(_deviceNameReverseMapper).toList();
+      } else if (_wellKnown == StrategyAttributeWellKnownNames.country) {
+        _attribute.values =
+            _attribute.values.map(_countryNameReverseMapper).toList();
+      }
     }
 
     _matchers = defineMatchers(_attributeType, _wellKnown);
@@ -248,7 +259,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
         Expanded(
             flex: 4,
             child: MultiSelectDropdown(
-                _attribute.values.map(_countryNameReverseMapper).toList(),
+                _attribute.values,
                 StrategyAttributeCountryName.values,
                 _countryNameMapper,
                 'Select Country'))
@@ -256,7 +267,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
         Expanded(
             flex: 4,
             child: MultiSelectDropdown(
-                _attribute.values.map(_deviceNameReverseMapper).toList(),
+                _attribute.values,
                 StrategyAttributeDeviceName.values,
                 _deviceNameMapper,
                 'Select Device'))
@@ -264,7 +275,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
         Expanded(
             flex: 4,
             child: MultiSelectDropdown(
-                _attribute.values.map(_platformNameReverseMapper).toList(),
+                _attribute.values,
                 StrategyAttributePlatformName.values,
                 _platformNameMapper,
                 'Select Platform'))
