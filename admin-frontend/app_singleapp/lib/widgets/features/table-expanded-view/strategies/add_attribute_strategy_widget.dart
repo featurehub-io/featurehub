@@ -106,7 +106,6 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
           controller: _fieldName,
           decoration: InputDecoration(
               labelText: 'Custom rule name',
-              helperText: 'e.g. warehouseId',
               labelStyle: Theme.of(context).textTheme.bodyText1.copyWith(
                   fontSize: 12.0, color: Theme.of(context).buttonColor)),
           style: TextStyle(fontSize: 14.0),
@@ -203,57 +202,64 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
 
   Row _buildCondition(BuildContext context) {
     return Row(children: [
-      if (_wellKnown == null)
         Expanded(
           flex: 2,
-          child: Padding(
-            padding: const EdgeInsets.only(left: 8.0),
-            child: _customFieldType(),
-          ),
-        ),
-      Expanded(
-        flex: 2,
-        child: Padding(
-          padding: const EdgeInsets.only(left: 8.0),
-          child: Container(
-            height: 32,
-            child: OutlinedButton(
-              onPressed: () => {},
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton(
-                  icon: Icon(
-                    Icons.keyboard_arrow_down,
-                    size: 24,
+          child: Column(
+            children: [
+              if (_wellKnown == null)
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: _customFieldType(),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Container(
+                  padding: EdgeInsets.all(4.0),
+                  margin: EdgeInsets.all(8.0),
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                      color: Theme.of(context).cardColor),
+                  height: 32,
+                  child: OutlinedButton(
+                    onPressed: () => {},
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton(
+                        icon: Icon(
+                          Icons.keyboard_arrow_down,
+                          size: 24,
+                        ),
+                        isExpanded: true,
+                        items: _matchers.map(
+                                (RolloutStrategyAttributeConditional dropDownStringItem) {
+                              return DropdownMenuItem<
+                                  RolloutStrategyAttributeConditional>(
+                                  value: dropDownStringItem,
+                                  child: Text(
+                                      transformStrategyAttributeConditionalValueToString(
+                                          dropDownStringItem),
+                                      style: Theme.of(context).textTheme.bodyText2));
+                            }).toList(),
+                        hint: Text('Select condition',
+                            style: Theme.of(context).textTheme.subtitle2),
+                        onChanged: (value) {
+                          var readOnly = false; //TODO parametrise this if needed
+                          if (!readOnly) {
+                            setState(() {
+                              _dropDownCustomAttributeMatchingCriteria = value;
+                              _attribute.conditional = value;
+                            });
+                          }
+                        },
+                        value: _dropDownCustomAttributeMatchingCriteria,
+                      ),
+                    ),
                   ),
-                  isExpanded: true,
-                  items: _matchers.map(
-                      (RolloutStrategyAttributeConditional dropDownStringItem) {
-                    return DropdownMenuItem<
-                            RolloutStrategyAttributeConditional>(
-                        value: dropDownStringItem,
-                        child: Text(
-                            transformStrategyAttributeConditionalValueToString(
-                                dropDownStringItem),
-                            style: Theme.of(context).textTheme.bodyText2));
-                  }).toList(),
-                  hint: Text('Select condition',
-                      style: Theme.of(context).textTheme.subtitle2),
-                  onChanged: (value) {
-                    var readOnly = false; //TODO parametrise this if needed
-                    if (!readOnly) {
-                      setState(() {
-                        _dropDownCustomAttributeMatchingCriteria = value;
-                        _attribute.conditional = value;
-                      });
-                    }
-                  },
-                  value: _dropDownCustomAttributeMatchingCriteria,
                 ),
               ),
-            ),
+            ],
           ),
         ),
-      ),
+
       SizedBox(width: 16.0),
       if (_wellKnown == StrategyAttributeWellKnownNames.country)
         Expanded(
@@ -282,10 +288,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
       else
         Expanded(
             flex: 4,
-            child: Padding(
-              padding: const EdgeInsets.only(left: 16.0),
-              child: _fieldValueEditorByFieldType(),
-            ))
+            child: _fieldValueEditorByFieldType())
     ]);
   }
 
@@ -304,6 +307,11 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
 
   Widget _customFieldType() {
     return Container(
+      padding: EdgeInsets.all(4.0),
+      margin: EdgeInsets.all(8.0),
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(6.0)),
+          color: Theme.of(context).cardColor),
       height: 32,
       child: OutlinedButton(
         onPressed: () => {},
@@ -457,51 +465,63 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
       );
     }
 
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Container(
-              constraints: BoxConstraints(maxWidth: 250),
-              child: TextFormField(
-                controller: _value,
-                decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: labelText,
-                    helperText: helperText,
-                    labelStyle: Theme.of(context).textTheme.bodyText1.copyWith(
-                        fontSize: 12.0, color: Theme.of(context).buttonColor)),
-                // readOnly: !widget.widget.editable,
-                autofocus: true,
-                onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
-                inputFormatters: inputFormatters,
+    return Container(
+        padding: EdgeInsets.all(4.0),
+    margin: EdgeInsets.all(8.0),
+    decoration: BoxDecoration(
+    borderRadius: BorderRadius.all(Radius.circular(6.0)),
+    color: Theme.of(context).cardColor),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                constraints: BoxConstraints(maxWidth: 250),
+                child: TextFormField(
+                  controller: _value,
+                  decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: labelText,
+                      helperText: helperText,
+                      labelStyle: Theme.of(context)
+                          .textTheme
+                          .bodyText1
+                          .copyWith(
+                              fontSize: 12.0,
+                              color: Theme.of(context).buttonColor)),
+                  // readOnly: !widget.widget.editable,
+                  autofocus: true,
+                  onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+                  inputFormatters: inputFormatters,
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Tooltip(
-                message: 'Add value',
-                child: FHUnderlineButton(
-                    onPressed: () => _valueFieldChanged(_value.text),
-                    title: 'Add'),
-              ),
-            )
-          ],
-        ),
-        Wrap(
-          spacing: 4.0,
-          children: [
-            for (dynamic val in _attribute.values)
-              _TextDeleteWidget(
-                label: val.toString(),
-                value: val,
-                onSelected: (e) => setState(() => _attribute.values.remove(e)),
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Tooltip(
+                  message: 'Add value',
+                  child: FHUnderlineButton(
+                      onPressed: () => _valueFieldChanged(_value.text),
+                      title: '+Add'),
+                ),
               )
-          ],
-        )
-      ],
+            ],
+          ),
+          Wrap(
+            spacing: 4.0,
+            children: [
+              for (dynamic val in _attribute.values)
+                _TextDeleteWidget(
+                  label: val.toString(),
+                  value: val,
+                  onSelected: (e) =>
+                      setState(() => _attribute.values.remove(e)),
+                )
+            ],
+          )
+        ],
+      ),
     );
   }
 

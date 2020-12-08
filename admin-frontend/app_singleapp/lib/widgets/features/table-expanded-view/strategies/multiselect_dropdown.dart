@@ -48,27 +48,36 @@ class _MultiSelectDropdownState extends State<MultiSelectDropdown> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        buildDropDown(context),
-        Wrap(
-          spacing: 4.0,
-          children: [
-              for (dynamic val in widget.values)
-                _TextDeleteWidget(
-                  label: widget.mapper(val),
-                  value: val,
-                  onSelected: (e) {
-                    setState(() {
-                      selectableValues.add(e);
-                      widget.values.remove(e);
-                    });
-                  },
-                )
-            ],
-          ),
+    return Container(
+      padding: EdgeInsets.all(4.0),
+      margin: EdgeInsets.all(8.0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.all(Radius.circular(6.0)),
+        color: Theme.of(context).cardColor,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          buildDropDown(context),
+          Wrap(
+            spacing: 4.0,
+            children: [
+                for (dynamic val in widget.values)
+                  _TextDeleteWidget(
+                    label: widget.mapper(val),
+                    value: val,
+                    onSelected: (e) {
+                      setState(() {
+                        selectableValues.add(e);
+                        widget.values.remove(e);
+                      });
+                    },
+                  )
+              ],
+            ),
 
-      ],
+        ],
+      ),
     );
   }
 
