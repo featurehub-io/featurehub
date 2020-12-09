@@ -89,7 +89,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
     StrategyAttributeWellKnownNames.device: 'Device',
     StrategyAttributeWellKnownNames.platform: 'Platform',
     StrategyAttributeWellKnownNames.version: 'Version',
-    StrategyAttributeWellKnownNames.userkey: 'User',
+    StrategyAttributeWellKnownNames.userkey: 'User Key',
   };
 
   Widget _nameField() {

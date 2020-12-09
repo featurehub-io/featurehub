@@ -90,7 +90,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                   child: TextFormField(
                       controller: _strategyName,
                       decoration: InputDecoration(
-                          labelText: 'Rollout strategy name',
+                          labelText: 'Split strategy name',
                           helperText: 'E.g. 20% rollout'),
                       readOnly: !widget.editable,
                       autofocus: true,
@@ -148,8 +148,9 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                                 shape: CircleBorder(),
                                 child: IconButton(
                                     icon: Icon(
-                                      Icons.delete_sharp,
-                                      size: 18.0,
+                                      Icons.delete_forever_sharp,
+                                      color: Colors.red,
+                                      size: 20.0,
                                     ),
                                     hoverColor:
                                         Theme.of(context).primaryColorLight,

@@ -20,7 +20,7 @@ class AddStrategyButton extends StatelessWidget {
       child: Container(
         height: 36,
         child: FlatButton.icon(
-            label: Text('Add split targeting'),
+            label: Text('Add split targeting rules'),
             textColor: Colors.white,
             disabledColor: Colors.black12,
             color: Theme.of(context).buttonColor,
