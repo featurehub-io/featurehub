@@ -5,7 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 
-import 'add_attribute_strategy_widget.dart';
+import 'attribute_strategy_widget.dart';
 
 class RolloutStrategiesWidget extends StatelessWidget {
   @override
@@ -20,10 +20,10 @@ class RolloutStrategiesWidget extends StatelessWidget {
               return Column(children: [
                 for (var rolloutStrategyAttribute in snapshot.data)
                   AttributeStrategyWidget(
-                      attribute: rolloutStrategyAttribute,
-                      attributeIsFirst:
-                          rolloutStrategyAttribute == snapshot.data.first,
-                      bloc: bloc)
+                    attribute: rolloutStrategyAttribute,
+                    attributeIsFirst:
+                        rolloutStrategyAttribute == snapshot.data.first,
+                  )
               ]);
             } else {
               return Container();

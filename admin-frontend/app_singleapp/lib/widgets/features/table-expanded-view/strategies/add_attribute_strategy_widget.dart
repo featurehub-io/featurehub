@@ -1,6 +1,5 @@
 import 'package:app_singleapp/widgets/common/fh_underline_button.dart';
 import 'package:app_singleapp/widgets/common/input_fields_validators/input_field_number_formatter.dart';
-import 'package:app_singleapp/widgets/features/strategy_utils.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/individual_strategy_bloc.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/multiselect_dropdown.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/transform_strategy_conditions.dart';
@@ -14,12 +13,12 @@ import 'package:mrapi/api.dart';
 import 'matchers.dart';
 import 'string_caps_extension.dart';
 
-class AttributeStrategyWidget extends StatefulWidget {
+class EditAttributeStrategyWidget extends StatefulWidget {
   final RolloutStrategyAttribute attribute;
   final bool attributeIsFirst;
   final IndividualStrategyBloc bloc;
 
-  const AttributeStrategyWidget({
+  const EditAttributeStrategyWidget({
     Key key,
     @required this.attribute,
     @required this.attributeIsFirst,
@@ -27,11 +26,12 @@ class AttributeStrategyWidget extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _AttributeStrategyWidgetState createState() =>
-      _AttributeStrategyWidgetState();
+  _EditAttributeStrategyWidgetState createState() =>
+      _EditAttributeStrategyWidgetState();
 }
 
-class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
+class _EditAttributeStrategyWidgetState
+    extends State<EditAttributeStrategyWidget> {
   final TextEditingController _fieldName = TextEditingController();
   final TextEditingController _value = TextEditingController();
 
@@ -42,7 +42,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
 
   List<RolloutStrategyAttributeConditional> _matchers;
 
-  _AttributeStrategyWidgetState();
+  _EditAttributeStrategyWidgetState();
 
   @override
   void initState() {
@@ -51,8 +51,15 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void didUpdateWidget(EditAttributeStrategyWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.attribute.id != widget.attribute.id) {
+      _didChange();
+    }
+  }
+
+  void _didChange() {
     _attribute = widget.attribute;
 
     if (_attribute.fieldName != null) {
@@ -82,6 +89,12 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
     }
 
     _matchers = defineMatchers(_attributeType, _wellKnown);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _didChange();
   }
 
   final Map<StrategyAttributeWellKnownNames, String> _nameFieldMap = {
@@ -123,143 +136,103 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<List<RolloutStrategyViolation>>(
-        stream: widget.bloc.violationStream,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return SizedBox.shrink();
-          }
-
-          final violation = snapshot.data.firstWhere(
-              (vio) => vio.id == widget.attribute.id,
-              orElse: () => null);
-
-          try {
-            return Column(
+    return Container(
+      padding: EdgeInsets.all(8.0),
+      margin: EdgeInsets.symmetric(vertical: 8.0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.all(Radius.circular(6.0)),
+        color: Theme.of(context).selectedRowColor,
+      ),
+      child: Row(
+        children: [
+          Expanded(flex: 1, child: _nameField()),
+          Expanded(flex: 7, child: _buildCondition(context)),
+          Expanded(
+            flex: 1,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                if (!widget.attributeIsFirst)
-                  Container(
-                      padding: EdgeInsets.all(4.0),
-                      margin: EdgeInsets.all(8.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                        color: Theme.of(context).primaryColorLight,
-                      ),
-                      child: Text('AND',
-                          style: Theme.of(context).textTheme.overline)),
-                Container(
-                  padding: EdgeInsets.all(8.0),
-                  margin: EdgeInsets.symmetric(vertical: 8.0),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                    color: Theme.of(context).selectedRowColor,
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(flex: 1, child: _nameField()),
-                      Expanded(flex: 7, child: _buildCondition(context)),
-                      Expanded(
-                        flex: 1,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Material(
-                                type: MaterialType.transparency,
-                                shape: CircleBorder(),
-                                child: IconButton(
-                                    tooltip: 'Delete rule',
-                                    icon: Icon(
-                                      Icons.delete_forever_sharp,
-                                      color: Colors.red,
-                                      size: 20.0,
-                                    ),
-                                    hoverColor:
-                                        Theme.of(context).primaryColorLight,
-                                    splashRadius: 20,
-                                    onPressed: () => widget.bloc
-                                        .deleteAttribute(_attribute))),
-                          ],
+                Material(
+                    type: MaterialType.transparency,
+                    shape: CircleBorder(),
+                    child: IconButton(
+                        tooltip: 'Delete rule',
+                        icon: Icon(
+                          Icons.delete_forever_sharp,
+                          color: Colors.red,
+                          size: 20.0,
                         ),
-                      )
-                    ],
-                  ),
-                ),
-                if (violation != null)
-                  Text(violation.violation.toDescription(),
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyText2
-                          .copyWith(color: Theme.of(context).errorColor))
+                        hoverColor: Theme.of(context).primaryColorLight,
+                        splashRadius: 20,
+                        onPressed: () =>
+                            widget.bloc.deleteAttribute(_attribute))),
               ],
-            );
-          } catch (e, s) {
-            print(e);
-            print(s);
-            return SizedBox.shrink();
-          }
-        });
+            ),
+          )
+        ],
+      ),
+    );
   }
 
   Row _buildCondition(BuildContext context) {
     return Row(children: [
-        Expanded(
-          flex: 2,
-          child: Column(
-            children: [
-              if (_wellKnown == null)
+      Expanded(
+        flex: 2,
+        child: Column(
+          children: [
+            if (_wellKnown == null)
               Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: _customFieldType(),
               ),
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Container(
-                  padding: EdgeInsets.all(4.0),
-                  margin: EdgeInsets.all(8.0),
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                      color: Theme.of(context).cardColor),
-                  height: 32,
-                  child: OutlinedButton(
-                    onPressed: () => {},
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton(
-                        icon: Icon(
-                          Icons.keyboard_arrow_down,
-                          size: 24,
-                        ),
-                        isExpanded: true,
-                        items: _matchers.map(
-                                (RolloutStrategyAttributeConditional dropDownStringItem) {
-                              return DropdownMenuItem<
-                                  RolloutStrategyAttributeConditional>(
-                                  value: dropDownStringItem,
-                                  child: Text(
-                                      transformStrategyAttributeConditionalValueToString(
-                                          dropDownStringItem),
-                                      style: Theme.of(context).textTheme.bodyText2));
-                            }).toList(),
-                        hint: Text('Select condition',
-                            style: Theme.of(context).textTheme.subtitle2),
-                        onChanged: (value) {
-                          var readOnly = false; //TODO parametrise this if needed
-                          if (!readOnly) {
-                            setState(() {
-                              _dropDownCustomAttributeMatchingCriteria = value;
-                              _attribute.conditional = value;
-                            });
-                          }
-                        },
-                        value: _dropDownCustomAttributeMatchingCriteria,
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Container(
+                padding: EdgeInsets.all(4.0),
+                margin: EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                    color: Theme.of(context).cardColor),
+                height: 32,
+                child: OutlinedButton(
+                  onPressed: () => {},
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton(
+                      icon: Icon(
+                        Icons.keyboard_arrow_down,
+                        size: 24,
                       ),
+                      isExpanded: true,
+                      items: _matchers.map((RolloutStrategyAttributeConditional
+                          dropDownStringItem) {
+                        return DropdownMenuItem<
+                                RolloutStrategyAttributeConditional>(
+                            value: dropDownStringItem,
+                            child: Text(
+                                transformStrategyAttributeConditionalValueToString(
+                                    dropDownStringItem),
+                                style: Theme.of(context).textTheme.bodyText2));
+                      }).toList(),
+                      hint: Text('Select condition',
+                          style: Theme.of(context).textTheme.subtitle2),
+                      onChanged: (value) {
+                        var readOnly = false; //TODO parametrise this if needed
+                        if (!readOnly) {
+                          setState(() {
+                            _dropDownCustomAttributeMatchingCriteria = value;
+                            _attribute.conditional = value;
+                          });
+                        }
+                      },
+                      value: _dropDownCustomAttributeMatchingCriteria,
                     ),
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-
+      ),
       SizedBox(width: 16.0),
       if (_wellKnown == StrategyAttributeWellKnownNames.country)
         Expanded(
@@ -286,9 +259,7 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
                 _platformNameMapper,
                 'Select Platform'))
       else
-        Expanded(
-            flex: 4,
-            child: _fieldValueEditorByFieldType())
+        Expanded(flex: 4, child: _fieldValueEditorByFieldType())
     ]);
   }
 
@@ -466,11 +437,11 @@ class _AttributeStrategyWidgetState extends State<AttributeStrategyWidget> {
     }
 
     return Container(
-        padding: EdgeInsets.all(4.0),
-    margin: EdgeInsets.all(8.0),
-    decoration: BoxDecoration(
-    borderRadius: BorderRadius.all(Radius.circular(6.0)),
-    color: Theme.of(context).cardColor),
+      padding: EdgeInsets.all(4.0),
+      margin: EdgeInsets.all(8.0),
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(6.0)),
+          color: Theme.of(context).cardColor),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
