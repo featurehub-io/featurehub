@@ -391,7 +391,7 @@ class _EditAttributeStrategyWidgetState
                 }).toList(),
                 value: widget.attribute.values.isEmpty
                     ? null
-                    : widget.attribute.values[0],
+                    : _asBoolean(widget.attribute.values[0]),
                 onChanged: (value) {
                   setState(() {
                     widget.attribute.values = [value];
@@ -409,31 +409,6 @@ class _EditAttributeStrategyWidgetState
         break;
       default:
         return Container(); // nothing until they have chosen one
-    }
-
-    if (_attributeType == RolloutStrategyFieldType.BOOLEAN) {
-      return DropdownButton(
-        icon: Padding(
-          padding: EdgeInsets.only(left: 16.0),
-          child: Icon(
-            Icons.keyboard_arrow_down,
-            size: 24,
-          ),
-        ),
-        isExpanded: true,
-        items: [
-          DropdownMenuItem(value: true, child: Text('true/on')),
-          DropdownMenuItem(value: false, child: Text('false/off')),
-        ],
-        hint: Text('Select value type',
-            style: Theme.of(context).textTheme.subtitle2),
-        onChanged: (value) {
-          setState(() {
-            _attribute.values = [value];
-          });
-        },
-        value: _attribute.values.isEmpty ? null : _attribute.values[0] == true,
-      );
     }
 
     return Container(
@@ -494,6 +469,12 @@ class _EditAttributeStrategyWidgetState
         ],
       ),
     );
+  }
+
+  String _asBoolean(dynamic val) {
+    return (val is String)
+        ? val.toLowerCase()
+        : (val == true ? 'true' : 'false');
   }
 
   void _valueFieldChanged(String v) {
