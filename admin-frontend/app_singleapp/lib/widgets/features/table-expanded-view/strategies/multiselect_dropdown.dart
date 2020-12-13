@@ -1,3 +1,4 @@
+import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/attribute_value_chip_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -15,24 +16,6 @@ class MultiSelectDropdown extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
     return _MultiSelectDropdownState();
-  }
-}
-
-class _TextDeleteWidget extends StatelessWidget {
-  final String label;
-  final dynamic value;
-  final ValueChanged<dynamic> onSelected;
-
-  const _TextDeleteWidget(
-      {Key key, @required this.label, @required this.value, this.onSelected})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Chip(
-      onDeleted: () => onSelected(value),
-      label: Text(label, style: Theme.of(context).textTheme.bodyText1,)
-    );
   }
 }
 
@@ -63,7 +46,7 @@ class _MultiSelectDropdownState extends State<MultiSelectDropdown> {
             spacing: 4.0,
             children: [
                 for (dynamic val in widget.values)
-                  _TextDeleteWidget(
+                  AttributeValueChipWidget(
                     label: widget.mapper(val),
                     value: val,
                     onSelected: (e) {
@@ -76,8 +59,8 @@ class _MultiSelectDropdownState extends State<MultiSelectDropdown> {
               ],
             ),
 
-        ],
-      ),
+          ],
+        ),
     );
   }
 

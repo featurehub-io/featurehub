@@ -13,7 +13,8 @@ List<RolloutStrategyAttributeConditional> defineMatchers(RolloutStrategyFieldTyp
   final _userkeyMatchers = <RolloutStrategyAttributeConditional>[
     RolloutStrategyAttributeConditional.EQUALS, RolloutStrategyAttributeConditional.NOT_EQUALS,
     RolloutStrategyAttributeConditional.ENDS_WITH, RolloutStrategyAttributeConditional.STARTS_WITH,
-    RolloutStrategyAttributeConditional.REGEX,];
+    RolloutStrategyAttributeConditional.REGEX,
+    RolloutStrategyAttributeConditional.EXCLUDES, RolloutStrategyAttributeConditional.INCLUDES];
 
   final _stringMatchers = <RolloutStrategyAttributeConditional>[
     RolloutStrategyAttributeConditional.EQUALS, RolloutStrategyAttributeConditional.NOT_EQUALS,

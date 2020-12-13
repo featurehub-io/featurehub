@@ -23,10 +23,10 @@ String transformStrategyAttributeConditionalValueToString(RolloutStrategyAttribu
       return 'less or equals';
       break;
     case RolloutStrategyAttributeConditional.INCLUDES:
-      return 'includes';
+      return 'includes substring';
       break;
     case RolloutStrategyAttributeConditional.EXCLUDES:
-      return 'excludes';
+      return 'excludes substring';
       break;
     case RolloutStrategyAttributeConditional.REGEX:
       return 'regex';

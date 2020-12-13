@@ -10,6 +10,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:mrapi/api.dart';
 
+import 'attribute_value_chip_widget.dart';
 import 'matchers.dart';
 import 'string_caps_extension.dart';
 
@@ -458,7 +459,7 @@ class _EditAttributeStrategyWidgetState
             spacing: 4.0,
             children: [
               for (dynamic val in _attribute.values)
-                _TextDeleteWidget(
+                AttributeValueChipWidget(
                   label: val.toString(),
                   value: val,
                   onSelected: (e) =>
@@ -499,26 +500,6 @@ class _EditAttributeStrategyWidgetState
         });
       }
     }
-  }
-}
-
-class _TextDeleteWidget extends StatelessWidget {
-  final String label;
-  final dynamic value;
-  final ValueChanged<dynamic> onSelected;
-
-  const _TextDeleteWidget(
-      {Key key, @required this.label, @required this.value, this.onSelected})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Chip(
-        onDeleted: () => onSelected(value),
-        label: Text(
-          label,
-          style: Theme.of(context).textTheme.bodyText1,
-        ));
   }
 }
 
