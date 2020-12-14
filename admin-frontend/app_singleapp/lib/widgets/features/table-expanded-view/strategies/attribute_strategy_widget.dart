@@ -53,9 +53,7 @@ class AttributeStrategyWidget extends StatelessWidget {
                         .bodyText2
                         .copyWith(color: Theme.of(context).errorColor))
             ]);
-          } catch (e, s) {
-            print(e);
-            print(s);
+          } catch (e) {
             return SizedBox.shrink();
           }
         });

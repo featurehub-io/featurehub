@@ -491,6 +491,7 @@ class _EditAttributeStrategyWidgetState
             _value.text = '';
           });
         }
+      // ignore: empty_catches
       } catch (e) {}
     } else {
       if (!_attribute.values.contains(val)) {

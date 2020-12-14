@@ -28,13 +28,13 @@ class IndividualStrategyBloc extends Bloc {
         _rolloutStartegyAttributeSource =
             BehaviorSubject<List<RolloutStrategyAttribute>>.seeded(
                 rolloutStrategy.attributes) {
-    int counter = 1;
+    var counter = 1;
     // ensure all attributes have a unique id
     rolloutStrategy.attributes.forEach((a) {
       a.id = (counter++).toString();
     });
 
-    print('Attributes are ${rolloutStrategy.attributes}');
+    // print('Attributes are ${rolloutStrategy.attributes}');
   }
 
   void createAttribute({StrategyAttributeWellKnownNames type}) {
@@ -62,9 +62,7 @@ class IndividualStrategyBloc extends Bloc {
   }
 
   void addAttribute(RolloutStrategyAttribute rs) {
-    if (rs.id == null) {
-      rs.id = DateTime.now().millisecond.toRadixString(16);
-    }
+    rs.id ??= DateTime.now().millisecond.toRadixString(16);
     rolloutStrategy.attributes.add(rs);
     _rolloutStartegyAttributeSource.add(rolloutStrategy.attributes);
   }
@@ -85,7 +83,7 @@ class IndividualStrategyBloc extends Bloc {
   void updateStrategyViolations(
       RolloutStrategyValidationResponse validationCheck,
       RolloutStrategy rolloutStrategy) {
-    List<RolloutStrategyViolation> _violations = [];
+    var _violations = <RolloutStrategyViolation>[];
 
     final customViolations = validationCheck.customStategyViolations.firstWhere(
         (rs) => rs.strategy.id == rolloutStrategy.id,

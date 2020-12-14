@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
-typedef String MultiSelectMapPossibleValueToName(dynamic value);
+typedef MultiSelectMapPossibleValueToName = String Function(dynamic value);
 
 class MultiSelectDropdown extends StatefulWidget {
   final List<dynamic> values;

@@ -1,6 +1,7 @@
 import 'package:mrapi/api.dart';
 
 extension MapNamesForRolloutStrategyViolations on RolloutStrategyViolationType {
+  // ignore: missing_return
   String toDescription() {
     switch (this) {
       case RolloutStrategyViolationType.noName:
