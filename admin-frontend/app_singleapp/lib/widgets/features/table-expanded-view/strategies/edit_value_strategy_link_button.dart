@@ -1,6 +1,5 @@
 import 'package:app_singleapp/widgets/common/fh_underline_button.dart';
 import 'package:app_singleapp/widgets/features/custom_strategy_bloc.dart';
-import 'package:app_singleapp/widgets/features/feature_dashboard_constants.dart';
 import 'package:app_singleapp/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/individual_strategy_bloc.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/strategy_editing_widget.dart';
@@ -27,7 +26,6 @@ class EditValueStrategyLinkButton extends StatelessWidget {
     return FHUnderlineButton(
         enabled: editable,
         title: '${rolloutStrategy.name}',
-        color: strategyTextColor,
         onPressed: editable
             ? () => {
                   fvBloc.mrClient.addOverlay((BuildContext context) {

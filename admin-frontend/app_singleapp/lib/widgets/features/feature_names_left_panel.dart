@@ -90,7 +90,7 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                                   minFontSize: 8.0,
                                                   style: Theme.of(context)
                                                       .textTheme
-                                                      .bodyText1),
+                                                      .bodyText1.copyWith(fontWeight: FontWeight.bold)),
                                               Text(
                                                   '${feature.valueType.toString().split('.').last}',
                                                   overflow:
