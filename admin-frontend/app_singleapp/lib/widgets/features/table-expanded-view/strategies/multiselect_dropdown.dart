@@ -27,6 +27,7 @@ class _MultiSelectDropdownState extends State<MultiSelectDropdown> {
     selectableValues = widget.possibleValues
         .where((e) => !widget.values.contains(e))
         .toList(growable: true);
+    super.didChangeDependencies();
   }
 
   @override
