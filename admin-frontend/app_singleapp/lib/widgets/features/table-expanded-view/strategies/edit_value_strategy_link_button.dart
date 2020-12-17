@@ -24,10 +24,8 @@ class EditValueStrategyLinkButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FHUnderlineButton(
-        enabled: editable,
         title: '${rolloutStrategy.name}',
-        onPressed: editable
-            ? () => {
+        onPressed:  () => {
                   fvBloc.mrClient.addOverlay((BuildContext context) {
                     rolloutStrategy.attributes ??= [];
 
@@ -41,6 +39,6 @@ class EditValueStrategyLinkButton extends StatelessWidget {
                     );
                   })
                 }
-            : null);
+            );
   }
 }
