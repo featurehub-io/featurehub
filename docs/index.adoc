@@ -148,9 +148,78 @@ The feature key is the reference you use in your application, when you use the S
 you can check the value of a feature, referencing the feature key.
 It *must be unique* for your application.
 
-=== Percentage Rollout Strategies and Experiments
+NOTE: See <<Feature Permissions>> for details on the various states a feature can have.
 
-New in 1.0 is the ability to create a Rollout Strategy that lets you identify an approximate percentage of your user base
+=== Split targeting strategies and targeting rules
+
+Split targeting provides an ability to rollout features to a limited audience based on targeting rules, for example if you want to turn your feature on 
+for a user only on a mobile device or only with a specific email or userId. Apart from the targeting rules you can also split by percentage, or mix attributes with percentages.
+
+*How many split targeting strategies can a feature flag have?*
+
+There can be *multiple split targeting strategies* assigned to rollout a feature flag. Imagine you have a feature flag of type string which controlls a "submit button color" that can be in multiple states, e.g green, blue, red etc. With rollout strategies, you can serve a `green` value to users on `iOS` devices, `blue` value to users whose emails ending with `gmail.com` and `red` value to users who are in `New Zealand or United States or United Kingdom`.   
+
+**How many rules can a strategy have?**
+
+A split targeting strategy can have multiple rules setup at the same time and as many custom rules as you like.  
+
+**How many values can be used to set up a rule? **
+
+You can set a single value for a rule or you can send an array of values. For example, you can add multiple User Keys to match on, e.g. all users which emails ending with `gmail.com` and all users which emails ending with `my-company.com`
+
+
+**What split targeting rules types can I use?**
+
+- Country
+
+Available https://www.britannica.com/topic/list-of-countries-1993160[list of countries to match on] 
+
+
+- Device
+
+Available values to match on:
+`browser, mobile, desktop, server, watch, embedded`
+
+- Platform
+
+Available values to match on:
+`linux, windows, macos, android, ios`
+
+- User Key 
+
+For example, can be used to match on email address, partial email address, user id, partial user id or regex. 
+
+- Version
+    
+Requires to be in semantic version format, e.g. 1.2.0 -  read more about semantic versioning https://semver.org/[here] 
+
+
+- Custom
+
+If you cannot find a suitable rule from those listed above, you can create your own rule. When setting up a custom rule you will be required to select a rule type. 
+
+Supported custom rules types:
+
+[source]
+----
+string 
+
+number 
+
+boolean
+
+semantic version
+
+date 
+
+date-time
+
+ip-address
+----
+
+=== Percentage rollout rules
+
+As well as setting up targeting rules you can also setup percentage rollout rules. Percentage rules lets you identify an approximate percentage of your user base
 and have the feature have a different value for that percentage.
 
 A typical scenario for a flag for example would be a "soft launch". The "default value" of your flag would be `off` and you set some arbitrary percentage
@@ -158,12 +227,14 @@ to `on` (e.g. 20%). Then you would analyse how your feature is performing for th
 increasing the rollout to more and more people in your user base, eventually setting it to 100%, changing the default to
 "on" and removing the strategy. (This is set _per environment_).
 
-There is an ability to specify one or more rollout strategies, all of which
-may add up to 100%. A typical scenario for multiple strategies would be when you operate with Feature Values (non-binary flag). If you add percentage based rollout strategies that do not add to 100%, then the remainder continues to use the
+As you can specify one or more split targeting strategies for a feature flag, in case of percentages, the sum of all of them cannot be over 100%. 
+A typical scenario for multiple strategies would be when you operate with non-binary Feature Flag (e.g. string). If you add percentage based rollout strategies that do not add to 100%, then the remainder continues to use the
 default value. 
 
-You can also use percentage rollout to perform *_A-B testing_* or *_run experiments_*, using the on/off of feature flags, 
+You can also use percentage rules to perform *_A-B testing_* or *_run experiments_*, using the on/off of feature flags, 
 or feature values where you can set on numbers or strings. Given FeatureHub provides a GoogleAnalytics connector - you can see the result of your experimentation in the Google Analytics Events dashboard in real time.
+
+Percentage rules can be mixed with other rules, for example a strategy can have a country rule and a percentage rule, e.g. turn on the feature flag to 25% of the audience in New Zealand. 
 
 NOTE: It is important to note that the percentages are an approximation, the algorithm works by taking contextual data you provide
 in SDK in the client side (either a session or a user key, ideally consistent for the user across platforms) and it uses
@@ -172,13 +243,6 @@ the greater the number of clients you have. i.e. you can rollout to 0.0001% of y
 If you only have five users, this probably won't turn it on for anyone, if you have a million it will
 be more accurate.
 
-===  Attribute based Rollout Strategies - coming soon
-
-We are currently developing percentage rollouts based on attributes that you provide in your client SDK
-data, like country, company, warehouse, or any other value. We will also have the ability to match on individual users,
-groups of users based on arbitrary attributes you provide, countries and so forth, which we call attribute matching. 
-
-NOTE: See <<Feature Permissions>> for details on the various states a feature can have.
 
 == Security
 
