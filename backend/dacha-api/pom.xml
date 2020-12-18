@@ -41,6 +41,13 @@
       <artifactId>composite-jersey</artifactId>
       <version>[1.1, 2)</version>
     </dependency>
+    <!-- we need this because these two generate the same code and it can clash if dacha-api isn't built -->
+    <dependency>
+      <groupId>io.featurehub.mr</groupId>
+      <artifactId>mr-api</artifactId>
+      <version>1.1-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 
   <build>
