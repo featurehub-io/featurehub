@@ -113,28 +113,28 @@ class _ValueCard extends StatelessWidget {
     var displayValue = _findDisplayValue();
     return Padding(
       padding: const EdgeInsets.only(top: 8.0, bottom: 4.0),
-      child: StrategyRulesSuperTooltip(
-        rolloutStrategy: rolloutStrategy,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Container(
-              height: 30,
-              width: 150,
-              padding: EdgeInsets.symmetric(horizontal: 8.0),
-              decoration: BoxDecoration(
-                color: rolloutStrategy == null
-                    ? defaultValueColor
-                    : strategyValueColor,
-               borderRadius: BorderRadius.all(Radius.circular(16.0)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  if (fv.rolloutStrategies != null &&
-                      fv.rolloutStrategies.isNotEmpty)
-                    Expanded(
-                        flex: 4,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Container(
+            height: 30,
+            width: 150,
+            padding: EdgeInsets.symmetric(horizontal: 8.0),
+            decoration: BoxDecoration(
+              color: rolloutStrategy == null
+                  ? defaultValueColor
+                  : strategyValueColor,
+             borderRadius: BorderRadius.all(Radius.circular(16.0)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                if (fv.rolloutStrategies != null &&
+                    fv.rolloutStrategies.isNotEmpty)
+                  Expanded(
+                      flex: 4,
+                      child: StrategyRulesSuperTooltip(
+                        rolloutStrategy: rolloutStrategy,
                         child: Text(
                             rolloutStrategy != null
                                 ? rolloutStrategy.name
@@ -142,38 +142,38 @@ class _ValueCard extends StatelessWidget {
                             style: Theme.of(context).textTheme.caption.copyWith(
                                 color: rolloutStrategy != null
                                     ? strategyTextColor
-                                    : defaultTextColor))),
-                  if (fv.rolloutStrategies != null &&
-                      fv.rolloutStrategies.isNotEmpty)
-                    VerticalDivider(
-                      thickness: 1.0,
+                                    : defaultTextColor)),
+                      )),
+                if (fv.rolloutStrategies != null &&
+                    fv.rolloutStrategies.isNotEmpty)
+                  VerticalDivider(
+                    thickness: 1.0,
+                  ),
+                Expanded(
+                  flex: 4,
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 4.0),
+                      child: feature.valueType == FeatureValueType.BOOLEAN
+                          ? FlagOnOffColoredIndicator(
+                              on: rolloutStrategy != null
+                                  ? rolloutStrategy.value
+                                  : fv.valueBoolean)
+                          : Text(
+                              displayValue.isEmpty ? 'not set' : displayValue,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: displayValue.isEmpty
+                                  ? Theme.of(context).textTheme.caption
+                                  : Theme.of(context).textTheme.bodyText2),
                     ),
-                  Expanded(
-                    flex: 4,
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 4.0),
-                        child: feature.valueType == FeatureValueType.BOOLEAN
-                            ? FlagOnOffColoredIndicator(
-                                on: rolloutStrategy != null
-                                    ? rolloutStrategy.value
-                                    : fv.valueBoolean)
-                            : Text(
-                                displayValue.isEmpty ? 'not set' : displayValue,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                                style: displayValue.isEmpty
-                                    ? Theme.of(context).textTheme.caption
-                                    : Theme.of(context).textTheme.bodyText2),
-                      ),
-                    ),
-                  )
-                ],
-              ),
+                  ),
+                )
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
