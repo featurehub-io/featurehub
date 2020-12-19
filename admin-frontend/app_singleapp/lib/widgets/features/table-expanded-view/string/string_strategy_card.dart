@@ -1,5 +1,5 @@
 import 'package:app_singleapp/widgets/features/custom_strategy_bloc.dart';
-import 'package:app_singleapp/widgets/features/table-expanded-view/strategy_card_widget.dart';
+import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/strategy_card_widget.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/string/edit_string_value_container.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';

@@ -27,7 +27,8 @@ components:
         name:
           description: "names are unique in a case insensitive fashion"
           type: string
-          maxLength: 100
+          # validator is checking this
+#          maxLength: 100
         percentage:
           description: "value between 0 and 1000000 - for four decimal places"
           type: integer
@@ -50,22 +51,26 @@ components:
           items:
             $ref: "#/components/schemas/RolloutStrategyAttribute"
     RolloutStrategyAttribute:
+      # although they are required,  they aren't here because we need to validate against them
+#      required:
+#        - conditional
+#        - fieldName
+#        - type
       properties:
+        id:
+          type: string
+          description: "A temporary id used only when validating. Saving strips these out as they are not otherwise necessary"
         conditional:
           $ref: "#/components/schemas/RolloutStrategyAttributeConditional"
         fieldName:
           type: string
-        value:
-          description: "its value"
         values:
-          description: "the values if it is an array"
+          description: "the value(s) associated with this rule"
           type: array
           items:
             $ref: "#/components/schemas/RolloutStrategyArrayType"
         type:
           $ref: "#/components/schemas/RolloutStrategyFieldType"
-        array:
-          type: boolean
     RolloutStrategyArrayType:
       description: "values depend on the field type"
     RolloutStrategyFieldType:

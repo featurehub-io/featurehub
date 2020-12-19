@@ -61,6 +61,9 @@ class LocalApiClient {
       if (value is StrategyAttributePlatformName) {
         return StrategyAttributePlatformNameTypeTransformer.toJson(value);
       }
+      if (value is StrategyAttributeWellKnownNames) {
+        return StrategyAttributeWellKnownNamesTypeTransformer.toJson(value);
+      }
       return value.toString();
     } on Exception catch (e, stack) {
       throw ApiException.withInner(
@@ -122,6 +125,8 @@ class LocalApiClient {
           return StrategyAttributeDeviceNameTypeTransformer.fromJson(value);
         case 'StrategyAttributePlatformName':
           return StrategyAttributePlatformNameTypeTransformer.fromJson(value);
+        case 'StrategyAttributeWellKnownNames':
+          return StrategyAttributeWellKnownNamesTypeTransformer.fromJson(value);
         default:
           {
             Match match;
@@ -181,6 +186,10 @@ class LocalApiClient {
     }
     if (value is StrategyAttributePlatformName) {
       return StrategyAttributePlatformNameTypeTransformer.toJson(value)
+          .toString();
+    }
+    if (value is StrategyAttributeWellKnownNames) {
+      return StrategyAttributeWellKnownNamesTypeTransformer.toJson(value)
           .toString();
     }
 

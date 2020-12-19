@@ -1,7 +1,7 @@
 import 'package:app_singleapp/widgets/features/feature_dashboard_constants.dart';
 import 'package:app_singleapp/widgets/features/feature_value_status_tags.dart';
-import 'package:app_singleapp/widgets/features/percentage_utils.dart';
 import 'package:app_singleapp/widgets/features/table-collapsed-view/flag_colored_on_off_label.dart';
+import 'package:app_singleapp/widgets/features/table-collapsed-view/str_rules_super_tooltip.dart';
 import 'package:app_singleapp/widgets/features/table-collapsed-view/value_not_set_container.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -133,14 +133,17 @@ class _ValueCard extends StatelessWidget {
                     fv.rolloutStrategies.isNotEmpty)
                   Expanded(
                       flex: 4,
-                      child: Text(
-                          rolloutStrategy != null
-                              ? '${(rolloutStrategy.percentageText)}%'
-                              : 'default',
-                          style: Theme.of(context).textTheme.caption.copyWith(
-                              color: rolloutStrategy != null
-                                  ? strategyTextColor
-                                  : defaultTextColor))),
+                      child: StrategyRulesSuperTooltip(
+                        rolloutStrategy: rolloutStrategy,
+                        child: Text(
+                            rolloutStrategy != null
+                                ? rolloutStrategy.name
+                                : 'default',
+                            style: Theme.of(context).textTheme.caption.copyWith(
+                                color: rolloutStrategy != null
+                                    ? strategyTextColor
+                                    : defaultTextColor)),
+                      )),
                 if (fv.rolloutStrategies != null &&
                     fv.rolloutStrategies.isNotEmpty)
                   VerticalDivider(

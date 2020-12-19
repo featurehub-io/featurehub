@@ -12,9 +12,9 @@ class FHOutlineButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return OutlineButton(
-        hoverColor: Theme.of(context).primaryColorLight,
-        borderSide: BorderSide(width: 2, color: Theme.of(context).buttonColor),
+    return OutlinedButton(
+        // hoverColor: Theme.of(context).primaryColorLight,
+        // borderSide: BorderSide(width: 2, color: Theme.of(context).buttonColor),
         onPressed:onPressed,
         child: Text(keepCase ? title : title.toUpperCase(),
             style: Theme.of(context)

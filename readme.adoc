@@ -22,7 +22,7 @@ image::docs/images/fh-feature-console-flags.png[FeatureHub console demo,800]
 
 === Feature flags, A/B testing, experimentation and analytics support
 * Choice of how to run your experiment - feature flag, number, string or remote configuration
-* Gradual rollout strategies support: incremental percentage, targeting by country, device, platform, version or any custom attribute specific to your application.
+* Split targeting strategies support: percentage rollout, targeting by country, device, platform, version or any custom attribute specific to your application.
 * Integration with analytics so you can see how your experiments perform, with Google Analytics support out of the box
 
 
@@ -83,7 +83,6 @@ starting example to work from.
 
 == Coming soon
 
-* Additional rollout strategies
 * Feature auditing
 * SDK's : Mobile (Swift), Python, Ruby
 * SAML support

@@ -25,3 +25,4 @@ part 'model/sse_result_state.dart';
 part 'model/strategy_attribute_country_name.dart';
 part 'model/strategy_attribute_device_name.dart';
 part 'model/strategy_attribute_platform_name.dart';
+part 'model/strategy_attribute_well_known_names.dart';

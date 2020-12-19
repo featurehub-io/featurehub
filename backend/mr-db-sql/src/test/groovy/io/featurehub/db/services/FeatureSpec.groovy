@@ -376,7 +376,7 @@ class FeatureSpec extends BaseSpec {
       def strat = new RolloutStrategy().name('freddy').percentage(20).percentageAttributes(['company'])
         .value(Boolean.FALSE).attributes([
           new RolloutStrategyAttribute()
-              .value('ios')
+              .values(['ios'])
               .fieldName('platform')
               .conditional(RolloutStrategyAttributeConditional.EQUALS)
               .type(RolloutStrategyFieldType.STRING)
@@ -404,7 +404,7 @@ class FeatureSpec extends BaseSpec {
       def strat = new RolloutStrategy().name('freddy').percentage(20).percentageAttributes(['company'])
         .value(Boolean.FALSE).attributes([
         new RolloutStrategyAttribute()
-          .value('ios')
+          .values(['ios'])
           .fieldName('platform')
           .conditional(RolloutStrategyAttributeConditional.EQUALS)
           .type(RolloutStrategyFieldType.STRING)

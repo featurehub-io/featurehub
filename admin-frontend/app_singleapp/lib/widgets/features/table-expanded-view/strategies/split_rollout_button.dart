@@ -1,7 +1,10 @@
 import 'package:app_singleapp/widgets/features/custom_strategy_bloc.dart';
-import 'package:app_singleapp/widgets/features/table-expanded-view/create-strategy-widget.dart';
+import 'package:app_singleapp/widgets/features/table-expanded-view/individual_strategy_bloc.dart';
+import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/strategy_editing_widget.dart';
+import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:mrapi/api.dart';
 
 class AddStrategyButton extends StatelessWidget {
   final CustomStrategyBloc bloc;
@@ -17,19 +20,22 @@ class AddStrategyButton extends StatelessWidget {
       child: Container(
         height: 36,
         child: FlatButton.icon(
-            label: Text('Add percentage rollout'),
+            label: Text('Add split targeting rules'),
             textColor: Colors.white,
             disabledColor: Colors.black12,
             color: Theme.of(context).buttonColor,
             disabledTextColor: Colors.black38,
-            icon: Icon(MaterialCommunityIcons.percent,
+            icon: Icon(MaterialCommunityIcons.arrow_split_vertical,
                 color: Colors.white, size: 16.0),
             onPressed: (editable == true)
                 ? () => bloc.fvBloc.mrClient.addOverlay((BuildContext context) {
-                      //return null;
-                      return CreateValueStrategyWidget(
-                        bloc: bloc,
-                        editable: editable,
+                      return BlocProvider(
+                        creator: (_c, _b) => IndividualStrategyBloc(
+                            bloc.environmentFeatureValue, RolloutStrategy()),
+                        child: StrategyEditingWidget(
+                          bloc: bloc,
+                          editable: editable,
+                        ),
                       );
                     })
                 : null),

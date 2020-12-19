@@ -123,6 +123,8 @@ class RepositoryLoaderBloc extends Bloc {
             false,
             fs.type);
     }
+
+    return null; // shouldn't happen
   }
 
   void setValue(String keyField, dynamic replacement) {

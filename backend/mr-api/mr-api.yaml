@@ -1901,7 +1901,7 @@ components:
         violations:
           type: array
           items:
-            $ref: "#/components/schemas/RolloutStrategyViolationType"
+            $ref: "#/components/schemas/RolloutStrategyViolation"
     SharedRolloutStrategyViolation:
       type: object
       properties:
@@ -1910,7 +1910,7 @@ components:
         violation:
           type: array
           items:
-            $ref: "#/components/schemas/RolloutStrategyViolationType"
+            $ref: "#/components/schemas/RolloutStrategyViolation"
     RolloutStrategyValidationResponse:
       type: object
       properties:
@@ -1926,6 +1926,16 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/RolloutStrategyCollectionViolationType"
+    RolloutStrategyViolation:
+      type: object
+      required:
+        - violation
+      properties:
+        id:
+          description: "The id of the attribute (if any)"
+          type: string
+        violation:
+          $ref: "#/components/schemas/RolloutStrategyViolationType"
     RolloutStrategyViolationType:
       type: string
       enum:
@@ -1935,6 +1945,8 @@ components:
         - negative_percentage
         - percentage_over_100_percent
         - array_attribute_no_values
+        - attr_invalid_well_known_enum
+        - attr_missing_value
         - attr_missing_conditional
         - attr_missing_field_name
         - attr_missing_field_type

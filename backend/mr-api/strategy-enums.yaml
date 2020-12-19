@@ -1,5 +1,14 @@
 components:
   schemas:
+    StrategyAttributeWellKnownNames:
+      type: string
+      enum:
+        - device
+        - country
+        - platform
+        - userkey
+        - session
+        - version
     StrategyAttributeDeviceName:
       type: string
       enum:
