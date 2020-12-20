@@ -150,30 +150,53 @@ It *must be unique* for your application.
 
 NOTE: See <<Feature Permissions>> for details on the various states a feature can have.
 
-=== Split targeting strategies and targeting rules
+=== Strategy Splits and general targeting rules
 
-Split targeting provides an ability to rollout features to a limited audience based on targeting rules, for example if you want to turn your feature on 
-for a user only on a mobile device or only with a specific email or userId. Apart from the targeting rules you can also split by percentage, or mix attributes with percentages.
+Each feature in an environment always has a default value. You can also apply zero or more
+rollout strategies to this feature. e.g. a feature flag in each environment has one default value 
+and can have zero or more rollout strategies.
 
-*How many split targeting strategies can a feature flag have?*
+A rollout strategy consists of one or more rules. That rule can consist of any combination of matching criteria, so we refer to them
+often as targeting rules. e.g. if you want to turn your feature on for a user only on a mobile device or 
+only with a specific email or userIds. 
 
-There can be *multiple split targeting strategies* assigned to rollout a feature flag. Imagine you have a feature flag of type string which controlls a "submit button color" that can be in multiple states, e.g green, blue, red etc. With rollout strategies, you can serve a `green` value to users on `iOS` devices, `blue` value to users whose emails ending with `gmail.com` and `red` value to users who are in `New Zealand or United States or United Kingdom`.   
+==== Each rule is an AND condition
 
-**How many rules can a strategy have?**
+Each additional rule is always applied as an AND condition - the user is using a mobile device that is iOS *AND*
+their country is Australia.
 
-A split targeting strategy can have multiple rules setup at the same time and as many custom rules as you like.  
+==== Percentage Splits rules
 
-**How many values can be used to set up a rule? **
+There is a special rule which allows you to target based on percentage as well, which is by default done against
+a single field value provided by the client. By default this is sessionId, if that isn't provided userKey is used, 
+but in all cases you can provide a special field to base your percentage rollouts on.
 
-You can set a single value for a rule or you can send an array of values. For example, you can add multiple User Keys to match on, e.g. all users which emails ending with `gmail.com` and all users which emails ending with `my-company.com`
+Percentage splits can be on their own or they can be applied in conjuction with general targeting rules (i.e. field
+based match rules). More detail of Percentage splits is available below under <<Percentage rollout rules>>.
 
+==== Maximum rules
 
-**What split targeting rules types can I use?**
+Each split has zero or more rules associated with it. If it has zero rules, it must at least have a percentage
+associated with it, otherwise it will be ignored. There is no maximum number of rules you can apply.
+
+==== Each Value is an OR condition
+
+Each rule is essentially a field, a condition (equals, includes, etc) and one or more values. Whereas each rule
+is an AND condition, each _value_ is an *OR* condition. For exanple, If the `country` is `New Zealand` *OR* `Indonesia` 
+*AND* the custom field `transport`_ is equal to `boat` *OR* `ship`. 
+
+*How many splits can a feature flag have?*
+
+Imagine you have a feature flag of type string which controls a "submit button color" that can be in multiple states, 
+e.g green, blue, red etc. With rollout strategies, you can serve a `green` value to users on `iOS` devices, 
+`blue` value to users whose emails ending with `gmail.com` and `red` value to users who are in 
+`New Zealand or United States or United Kingdom`.
+
+**What Rule types can I use in my splits??**
 
 - Country
 
 Available https://www.britannica.com/topic/list-of-countries-1993160[list of countries to match on] 
-
 
 - Device
 
@@ -193,7 +216,6 @@ For example, can be used to match on email address, partial email address, user 
     
 Requires to be in semantic version format, e.g. 1.2.0 -  read more about semantic versioning https://semver.org/[here] 
 
-
 - Custom
 
 If you cannot find a suitable rule from those listed above, you can create your own rule. When setting up a custom rule you will be required to select a rule type. 
@@ -204,18 +226,20 @@ Supported custom rules types:
 ----
 string 
 
-number 
+number - any valid number 
 
-boolean
+boolean - true and false
 
-semantic version
+semantic version - as per semantic version format. If you are only targeting Java you also get the additional formats supported by Maven and Gradle.
 
-date 
+date - international format only - YYYY-MM-DD 
 
-date-time
+date-time - international format only - YYYY-MM-DDTHH:MM:SS.NNN with an optional timezone, UTC is assumed
 
-ip-address
+ip-address - CIDR or specific IP addresses are supported.
 ----
+
+Also matched is `null` or "no value". If you leave the value blank, we are expecting you to match that there is no value passed.
 
 === Percentage rollout rules
 
