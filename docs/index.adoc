@@ -142,61 +142,52 @@ You can create features of the following types:
 
 NOTE: future support will exist for YAML and JSON-Schema to ensure valid configuration for JSON and YAML types.
 
-==== Feature keys
+==== Feature key
 
 The feature key is the reference you use in your application, when you use the SDK,
 you can check the value of a feature, referencing the feature key.
 It *must be unique* for your application.
 
-NOTE: See <<Feature Permissions>> for details on the various states a feature can have.
+==== Feature value
 
-=== Strategy Splits and general targeting rules
+When you add a feature flag, this will also automatically create a feature value in each environment. The default feature value will be set to `*off*` for `boolean` type and to `*null*` for `string`, `number` and `json`. By default, each feature value will be locked. Essentially feature value is always associated with an application and an environment for that application.  
 
-Each feature in an environment always has a default value. You can also apply zero or more
-rollout strategies to this feature. e.g. a feature flag in each environment has one default value 
-and can have zero or more rollout strategies.
+NOTE: See <<Feature Permissions>> for details on the various permission states a feature can have.
 
+== Rollout strategies and targeting rules
+
+=== Rollout strategies
+
+Rollout strategies provide an ability to rollout features to a limited audience based on targeting rules, for example imagine you have a feature flag of type string which controls a "submit button color" that can be in multiple states,
+e.g green, blue, red etc. With rollout strategies, you can serve a `green` value to users on `iOS` devices,
+`blue` value to users whose emails ending with `gmail.com` and `red` value to users whose location is
+`New Zealand or United States or United Kingdom`. You can also use percentage based rollouts and for example, turn your feature "on" only to 50% of the audience.
+
+Rollout strategies are created and added per <<Feature value>>. Once you add a strategy you will be able to set a feature value for this strategy, for example "on" or "off" value. A feature will always have "default value", which will be applied for any of your users that do not match rollout strategies rules. You can change the default strategy value at any time (given you have permissions). 
+
+You can apply zero or more rollout strategies to a feature. Each rollout strategy can be assigned a different feature value.
+
+=== Targeting rules
 A rollout strategy consists of one or more rules. That rule can consist of any combination of matching criteria, so we refer to them
-often as targeting rules. e.g. if you want to turn your feature on for a user only on a mobile device or 
-only with a specific email or userIds. 
+often as targeting rules. 
 
-==== Each rule is an AND condition
-
-Each additional rule is always applied as an AND condition - the user is using a mobile device that is iOS *AND*
+Each additional rule is always applied as an `AND` condition - the user is using a mobile device that is iOS `AND`
 their country is Australia.
 
-==== Percentage Splits rules
+Each rule is essentially a key, a condition (equals, includes, etc) and zero or more values. Whereas each targeting rule
+is an `AND` condition, each _value_ is an `OR` condition. For example, if the `country` is `New Zealand` `OR` `Indonesia`
+`AND` the custom field `payment_method` is equal to `credit_card` `OR` `direct_debit`.
 
-There is a special rule which allows you to target based on percentage as well, which is by default done against
-a single field value provided by the client. By default this is sessionId, if that isn't provided userKey is used, 
-but in all cases you can provide a special field to base your percentage rollouts on.
+Each rollout strategy can have zero or more rules associated with it. If it has zero rules and no percentage rule 
+the strategy will be ignored. There is no limit on how many rules you can apply. There are 3 main rule types: *General*, *Custom* and *Percentage split* 
 
-Percentage splits can be on their own or they can be applied in conjuction with general targeting rules (i.e. field
-based match rules). More detail of Percentage splits is available below under <<Percentage rollout rules>>.
+=== Targeting rule types
 
-==== Maximum rules
-
-Each split has zero or more rules associated with it. If it has zero rules, it must at least have a percentage
-associated with it, otherwise it will be ignored. There is no maximum number of rules you can apply.
-
-==== Each Value is an OR condition
-
-Each rule is essentially a field, a condition (equals, includes, etc) and one or more values. Whereas each rule
-is an AND condition, each _value_ is an *OR* condition. For exanple, If the `country` is `New Zealand` *OR* `Indonesia` 
-*AND* the custom field `transport`_ is equal to `boat` *OR* `ship`. 
-
-*How many splits can a feature flag have?*
-
-Imagine you have a feature flag of type string which controls a "submit button color" that can be in multiple states, 
-e.g green, blue, red etc. With rollout strategies, you can serve a `green` value to users on `iOS` devices, 
-`blue` value to users whose emails ending with `gmail.com` and `red` value to users who are in 
-`New Zealand or United States or United Kingdom`.
-
-**What Rule types can I use in my splits??**
+==== General
 
 - Country
 
-Available https://www.britannica.com/topic/list-of-countries-1993160[list of countries to match on] 
+Available https://www.britannica.com/topic/list-of-countries-1993160[list of countries to match on]
 
 - Device
 
@@ -206,64 +197,67 @@ Available values to match on:
 - Platform
 
 Available values to match on:
+
 `linux, windows, macos, android, ios`
 
-- User Key 
+- User Key
 
-For example, can be used to match on email address, partial email address, user id, partial user id or regex. 
+For example, can be used to match on email address, partial email address, user id, partial user id or regex.
 
 - Version
-    
-Requires to be in semantic version format, e.g. 1.2.0 -  read more about semantic versioning https://semver.org/[here] 
 
-- Custom
+Requires to be in semantic version format, e.g. `1.2.0` -  read more about semantic versioning https://semver.org/[here]
 
-If you cannot find a suitable rule from those listed above, you can create your own rule. When setting up a custom rule you will be required to select a rule type. 
+==== Custom
 
-Supported custom rules types:
+If you cannot find a suitable rule from those listed above, you can create your own rule. When setting up a custom rule you will be required to select a rule type.
 
-[source]
-----
-string 
+*Supported custom rules types:*
 
-number - any valid number 
+`string` 
 
-boolean - true and false
+`number` - any valid number 
 
-semantic version - as per semantic version format. If you are only targeting Java you also get the additional formats supported by Maven and Gradle.
+`boolean` - true and false
 
-date - international format only - YYYY-MM-DD 
+`semantic version` - as per semantic version format. If you are only targeting Java you also get the additional formats supported by Maven and Gradle.
 
-date-time - international format only - YYYY-MM-DDTHH:MM:SS.NNN with an optional timezone, UTC is assumed
+`date` - international format only - ``YYYY-MM-DD ``
 
-ip-address - CIDR or specific IP addresses are supported.
-----
+`date-time` - international format only - `YYYY-MM-DDTHH:MM:SS.NNN` with an optional timezone, UTC is assumed
 
-Also matched is `null` or "no value". If you leave the value blank, we are expecting you to match that there is no value passed.
+`ip-address` - CIDR or specific IP addresses are supported.
 
-=== Percentage rollout rules
 
-As well as setting up targeting rules you can also setup percentage rollout rules. Percentage rules lets you identify an approximate percentage of your user base
-and have the feature have a different value for that percentage.
+If you do not set the value in the client context in the SDK, and the rule indicates to match `blank` value then this rule will evaluate to true.
+
+=== Percentage split rule
+
+As well as setting up targeting rules you can also setup percentage split rule. Percentage rules lets you rollout a feature value to an approximate percentage of your user base.
 
 A typical scenario for a flag for example would be a "soft launch". The "default value" of your flag would be `off` and you set some arbitrary percentage
 to `on` (e.g. 20%). Then you would analyse how your feature is performing for those 20%, collect any user feedback, monitor your logging for any issues and if you are happy you will start
 increasing the rollout to more and more people in your user base, eventually setting it to 100%, changing the default to
 "on" and removing the strategy. (This is set _per environment_).
 
-As you can specify one or more split targeting strategies for a feature flag, in case of percentages, the sum of all of them cannot be over 100%. 
+As you can specify one or more split targeting strategies for a feature flag, in case of percentages, the sum of all of them cannot be over 100%.
 A typical scenario for multiple strategies would be when you operate with non-binary Feature Flag (e.g. string). If you add percentage based rollout strategies that do not add to 100%, then the remainder continues to use the
-default value. 
+default value.
 
-You can also use percentage rules to perform *_A-B testing_* or *_run experiments_*, using the on/off of feature flags, 
+You can also use percentage rules to perform *_A-B testing_* or *_run experiments_*, using the on/off of feature flags,
 or feature values where you can set on numbers or strings. Given FeatureHub provides a GoogleAnalytics connector - you can see the result of your experimentation in the Google Analytics Events dashboard in real time.
 
-Percentage rules can be mixed with other rules, for example a strategy can have a country rule and a percentage rule, e.g. turn on the feature flag to 25% of the audience in New Zealand. 
+Percentage rules can be mixed with other rules, for example a strategy can have a country rule and a percentage rule, e.g. turn on the feature flag to 25% of the audience in New Zealand.
+
+Percentage rule is by default implemented against
+a single field value provided by the client. By default this is `sessionId`, if that isn't provided `userKey` is used.
+Otherwise you can provide your own field to base your percentage rollouts on.
+
 
 NOTE: It is important to note that the percentages are an approximation, the algorithm works by taking contextual data you provide
-in SDK in the client side (either a session or a user key, ideally consistent for the user across platforms) and it uses
+in SDK in the client side (either a `sessionId` or a `userKey` or your own field, ideally consistent for the user across platforms) and it uses
 an algorithm to spread that across a range giving you control down to four decimal points, but the algorithm is more accurate
-the greater the number of clients you have. i.e. you can rollout to 0.0001% of your usage base if you wish. 
+the greater the number of clients you have. i.e. you can rollout to 0.0001% of your usage base if you wish.
 If you only have five users, this probably won't turn it on for anyone, if you have a million it will
 be more accurate.
 
@@ -294,6 +288,7 @@ will make them administrators for this portfolio.
 Service accounts are used for programmatic access to the features for an application.
 A service account will need a minimum of `READ` access to an environment in order to access a feature value.
 
+
 ==== Feature Permissions
 For each application environment, there are permissions you can assign to portfolio groups or service accounts.
 
@@ -303,8 +298,7 @@ safety net when deploying incomplete code into production.
 (Typically developers and testers keep features locked until they are finished and ready to be set)
 * `UNLOCK` Can unlock a feature, so it's value can be changed
 * `CHANGE_VALUE` Can change the value of a feature
-
-All feature flags are automatically created in all environments, set to "off" and locked. 
+ 
 
 NOTE: Groups can also separately be assigned the permission to create, edit and delete entire features.
 
