@@ -9,7 +9,7 @@ steps:
     entrypoint: '/bin/sh'
     args:
       - '-c'
-      - 'cd backend && mvn -s pipeline/m2/settings.xml --no-transfer-progress -DaltDeploymentRepository=artifact-registry::default::artifactregistry://us-central1-maven.pkg.dev/demohub-283022/fh-build-repo -Dbuild.version=$TAG_NAME -Ddocker.prefix=us.gcr.io/demohub-283022/demohub install -f pom-packages.xml'
+      - 'cd backend && mvn -s ../pipeline/m2/settings.xml --no-transfer-progress -DaltDeploymentRepository=artifact-registry::default::artifactregistry://us-central1-maven.pkg.dev/demohub-283022/fh-build-repo -Dbuild.version=$TAG_NAME -Ddocker.prefix=us.gcr.io/demohub-283022/demohub install -f pom-packages.xml'
     waitFor:
       - tile-install
 
