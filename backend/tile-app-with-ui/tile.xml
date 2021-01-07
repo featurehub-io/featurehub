@@ -3,6 +3,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
+  <properties>
+    <docker.prefix>featurehub</docker.prefix>
+    <docker.project-name>${project.artifactId}</docker.project-name>
+  </properties>
   <profiles>
     <profile>
       <id>docker-cloud-build</id>
@@ -109,7 +113,7 @@
                 <image>${app.baseimage}</image>
               </from>
               <to>
-                <image>featurehub/${project.artifactId}:${build.version}</image>
+                <image>${docker.prefix}/${docker.project-name}:${build.version}</image>
               </to>
               <extraDirectories>
                 <paths>

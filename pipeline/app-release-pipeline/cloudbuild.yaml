@@ -1,0 +1,16 @@
+steps:
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
+    entrypoint: '/bin/sh'
+    id: tile-install
+    args:
+      - '-c'
+      - 'cd backend && mvn -s ../pipeline/m2/settings.xml --no-transfer-progress install -f pom-first.xml'
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
+    entrypoint: '/bin/sh'
+    args:
+      - '-c'
+      - 'cd backend && mvn -s pipeline/m2/settings.xml --no-transfer-progress -DaltDeploymentRepository=artifact-registry::default::artifactregistry://us-central1-maven.pkg.dev/demohub-283022/fh-build-repo -Dbuild.version=$TAG_NAME -Ddocker.prefix=us.gcr.io/demohub-283022/demohub install -f pom-packages.xml'
+    waitFor:
+      - tile-install
+
+

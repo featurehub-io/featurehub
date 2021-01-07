@@ -1,0 +1,4 @@
+= Master build pipeline
+
+This occurs when a push to master occurs. Its a bit nasty as it rebuilds everything, ideally merge to master
+should only be done from the build daemon, but we don't have a Winch or Marge style process running.
