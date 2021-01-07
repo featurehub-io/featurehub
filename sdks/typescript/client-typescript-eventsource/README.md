@@ -25,19 +25,18 @@ It is designed this way, so we can separate core functionality and add different
 ## Quick start
 
 ### Connecting to FeatureHub
-There are 3 steps to connecting:
+There are 4 steps to connecting:
 1) Copy SDK Url from the FeatureHub Admin Console
 2) Use the SDK Url to make a client
 3) Tell the client to start handling features
-4) Get the state of the feature values
+4) Check FeatureHub Repository readyness and get the state of the feature values
 
-#### Copy SDK Url from the FeatureHub Admin Console
+#### 1. Copy SDK Url from the FeatureHub Admin Console
 Find and copy your SDK Url from the FeatureHub Admin Console (you can find it also in our Demo version on Service Accounts page) - 
 you will use this in your code to configure feature updates for your environments. 
 It should look similar to this: ```/default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE```
-![Service account](images/service-account-copy.png) 
 
-#### Make a client:
+#### 2. Make a client:
 ```typescript
 const featureHubEventSourceClient  = new FeatureHubEventSourceClient(`${config.fhServerBaseUrl}/features/${config.sdkUrl}`);
 ```
@@ -52,7 +51,7 @@ const featureHubPollingClient = new FeatureHubPollingClient(featureHubRepository
 );
 ```
 
-#### Start handling data
+#### 3. Start handling data
 ```typescript
    featureHubEventSourceClient.init();
 ```
@@ -64,15 +63,27 @@ of for mobile devices
 
 ```
 
-#### Request feature state 
+#### 4. Check FeatureHub Repository readyness and request feature state 
 
    * Get feature value through "Get" methods (imperative way)
         - `getFlag('FEATURE_KEY')` returns a boolean feature (by key), or an error if it is unable to assert the value to a boolean
         - `getNumber('FEATURE_KEY')` / `getString('FEATURE_KEY')` / `getJson('FEATURE_KEY')` as above
 ```typescript
-if (featureHubRepository.getFlag('FEATURE_KEY')) {
-  // do something
-}
+    let initialized = false;
+    if (featureHubRepository.readyness === Readyness.Ready || this.featureHubEventSourceClient) {
+      return;
+    }
+    featureHubRepository.addReadynessListener((readyness) => {
+      if (!initialized) {
+        console.log('readyness', readyness);
+        if (readyness === Readyness.Ready) {
+          initialized = true;
+          if (featureHubRepository.getFlag('FEATURE_KEY')) {
+            // do something
+          }
+        }
+      }
+    });
 ```         
         
    * To get the feature details
@@ -306,30 +317,27 @@ export enum Readyness {
 ```
 ## Rollout Strategies
 
-FeatureHub at its core now supports _server side_ evaluation of complex rollout strategies, both custom ones
-that are applied to individual feature values in a specific environment and shared ones across multiple environments
-in an application. Exposing that level fo configurability via a UI is going to take some time to get right,
-so rather than block until it is done, Milestone 1.0's goal is to expose the percentage based rollout functionality
-for you to start using straight away.
+Starting from version 1.1.0 FeatureHub supports _server side_ evaluation of complex rollout strategies
+that are applied to individual feature values in a specific environment. This includes support of generic rules, e.g. per user key, country, device type as well as percentage splits rules and custom rules that you can create according to your application needs. 
 
-Future Milestones will expose more of the functionality via the UI and will support client side evaluation of
-strategies as this scales better when you have 10000+ consumers. For more details on how
-experiments work with Rollout Strategies, see the [core documentation](https://docs.featurehub.io).
+For more details on rollout strategies, targeting rules and feature experiments see the [core documentation](https://docs.featurehub.io/#_rollout_strategies_and_targeting_rules).
 
-#### Coding for Rollout strategies 
-To provide this ability for the strategy engine to know how to apply the strategies, you need to provide it
-information. There are five things we track specifically: user key, session key, country, device and platform and
-over time will be able to provide more intelligence over, but you can attach anything you like, both individual
-attributes and arrays of attributes. 
+We are actively working on supporting client side evaluation of
+strategies in the future releases as this scales better when you have 10000+ consumers. 
 
-Remember, as of Milestone 1.0 we only support percentage based strategies,
-so only UserKey is required to support this. We do however recommend you adding in as much information as you have
-so you don't have to change it in the future. 
+#### Coding for rollout strategies 
+There are several generic attribute rules we track specifically: `user key`, `country`, `device` and `platform`. However, if those do not satisfy your requirements you also have an ability to attach a custom rule. Custom rules can be created as following types: `string`, `number`, `boolean`, `date`, `date-time`, `semantic-version`, `ip-address` 
+
+In order for the strategy engine to know how to apply the strategies rules, you are required to provide the following:
+
+**Sending generic attributes:** 
 
 ```typescript
     featureHubRepository.clientContext.userKey('ideally-unique-id')
       .country(StrategyAttributeCountryName.NewZealand)
       .device(StrategyAttributeDeviceName.Browser)
+      .platform(StrategyAttributePlatformName.Android)
+      .version('1.2.0')
       .build(); 
 ```
 
@@ -338,14 +346,34 @@ it is a header, the browser needs a parameter as the SSE spec doesn't allow for 
 will automatically retrigger a refresh of your events if you have already connected (unless you are using polling
 and your polling interval is set to 0).
 
-To add a generic key/value pair, use `attribute_value(key, value)`, to use an array of values there is 
-`attribute_values(key, Array<value>)`. You can also `clear()`.
+**Sending custom attributes:**
+
+To add a custom key/value pair, use `attribute_value(key, value)`
+
+```typescript
+    featureHubRepository.clientContext.attribute_value('first-language', 'russian').build();
+```
+
+Or with array of values (only applicable to custom strategies):
+
+```typescript
+   featureHubRepository.clientContext.attribute_value('languages', ['russian', 'english', 'german']).build();
+```
+
+You can also `clear()`.
 
 In all cases, you need to call `build()` to re-trigger passing of the new attributes to the server for recalculation.
 
-By default, the _user key_ is used for percentage based calculations, and without it, you cannot participate in
-percentage based Rollout Strategies ("experiments"). However, a more advanced feature does let you specify other
-attributes (e.g. _company_, or _store_) that would allow you to specify your experiment on..
+
+**Coding for percentage splits:**
+For percentage rollout you are only required to provide the `userKey`. 
+
+```typescript
+    featureHubRepository.clientContext.userKey('ideally-unique-id').build(); 
+```
+
+For more details on percentage splits and feature experiments see [Percentage Split Rule](https://docs.featurehub.io/#_percentage_split_rule).
+
 
 ## Analytics
 
