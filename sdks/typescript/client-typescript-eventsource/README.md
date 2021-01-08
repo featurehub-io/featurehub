@@ -318,7 +318,7 @@ export enum Readyness {
 ## Rollout Strategies
 
 Starting from version 1.1.0 FeatureHub supports _server side_ evaluation of complex rollout strategies
-that are applied to individual feature values in a specific environment. This includes support of generic rules, e.g. per user key, country, device type as well as percentage splits rules and custom rules that you can create according to your application needs. 
+that are applied to individual feature values in a specific environment. This includes support of preset rules, e.g. per **_user key_**, **_country_**, **_device type_**, **_platform type_** as well as **_percentage splits_** rules and custom rules that you can create according to your application needs. 
 
 For more details on rollout strategies, targeting rules and feature experiments see the [core documentation](https://docs.featurehub.io/#_rollout_strategies_and_targeting_rules).
 
@@ -326,11 +326,43 @@ We are actively working on supporting client side evaluation of
 strategies in the future releases as this scales better when you have 10000+ consumers. 
 
 #### Coding for rollout strategies 
-There are several generic attribute rules we track specifically: `user key`, `country`, `device` and `platform`. However, if those do not satisfy your requirements you also have an ability to attach a custom rule. Custom rules can be created as following types: `string`, `number`, `boolean`, `date`, `date-time`, `semantic-version`, `ip-address` 
+There are several preset strategies rules we track specifically: `user key`, `country`, `device` and `platform`. However, if those do not satisfy your requirements you also have an ability to attach a custom rule. Custom rules can be created as following types: `string`, `number`, `boolean`, `date`, `date-time`, `semantic-version`, `ip-address` 
 
-In order for the strategy engine to know how to apply the strategies rules, you are required to provide the following:
+FeatureHub SDK will match your users according to those rules, so you need to provide attributes to match on in the SDK:
 
-**Sending generic attributes:** 
+**Sending preset attributes:** 
+
+Provide the following attribute to support `userKey` rule: 
+
+```typescript
+    featureHubRepository.clientContext.userKey('ideally-unique-id').build(); 
+```
+
+to support `country` rule:
+
+```typescript
+    featureHubRepository.clientContext.country(StrategyAttributeCountryName.NewZealand).build(); 
+```
+
+to support `device` rule:
+
+```typescript
+    featureHubRepository.clientContext.device(StrategyAttributeDeviceName.Browser).build(); 
+```
+
+to support `platform` rule:
+
+```typescript
+    featureHubRepository.clientContext.platform(StrategyAttributePlatformName.Android).build(); 
+```
+
+to support `semantic-version` rule:
+
+```typescript
+    featureHubRepository.clientContext.version('1.2.0').build(); 
+```
+
+or if you are using multiple rules, you can combine attributes as follows: 
 
 ```typescript
     featureHubRepository.clientContext.userKey('ideally-unique-id')
@@ -354,22 +386,27 @@ To add a custom key/value pair, use `attribute_value(key, value)`
     featureHubRepository.clientContext.attribute_value('first-language', 'russian').build();
 ```
 
-Or with array of values (only applicable to custom strategies):
+Or with array of values (only applicable to custom rules):
 
 ```typescript
    featureHubRepository.clientContext.attribute_value('languages', ['russian', 'english', 'german']).build();
 ```
 
-You can also `clear()`.
+You can also use `featureHubRepository.clientContext.clear()` to empty your context.
 
 In all cases, you need to call `build()` to re-trigger passing of the new attributes to the server for recalculation.
 
 
 **Coding for percentage splits:**
-For percentage rollout you are only required to provide the `userKey`. 
+For percentage rollout you are only required to provide the `userKey` or `sessionKey`. 
 
 ```typescript
-    featureHubRepository.clientContext.userKey('ideally-unique-id').build(); 
+    featureHubRepository.clientContext.userKey('ideally-unique-id').build();
+```
+or
+
+```typescript
+    featureHubRepository.clientContext.sessionKey('session-id').build();
 ```
 
 For more details on percentage splits and feature experiments see [Percentage Split Rule](https://docs.featurehub.io/#_percentage_split_rule).
