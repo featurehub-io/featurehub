@@ -365,10 +365,17 @@ class _EditAttributeStrategyWidgetState
         helperText = 'e.g. 2007-03-01T13:00:00Z';
         break;
       case RolloutStrategyFieldType.BOOLEAN:
-        return Container(
-          height: 32,
-          child: OutlinedButton(
-            onPressed: () => {},
+        return Padding(
+            padding: const EdgeInsets.only(left: 8.0),
+            child: Container(
+              padding: EdgeInsets.all(4.0),
+              margin: EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                  color: Theme.of(context).cardColor),
+              height: 32,
+              child: OutlinedButton(
+                onPressed: () => {},
             child: DropdownButtonHideUnderline(
               child: DropdownButton(
                 isDense: true,
@@ -403,7 +410,7 @@ class _EditAttributeStrategyWidgetState
               ),
             ),
           ),
-        );
+        ));
       case RolloutStrategyFieldType.IP_ADDRESS:
         labelText = 'IP Address(es) with or without CIDR';
         helperText = 'e.g. 168.192.54.3 or 192.168.86.1/8 or 10.34.0.0/32';

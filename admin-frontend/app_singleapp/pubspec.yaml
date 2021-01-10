@@ -16,7 +16,7 @@ dependencies:
     sdk: flutter
 
   rxdart: ^0.24.1
-  bloc_provider: ^0.6.2
+  bloc_provider: ^0.7.0+3
   logging: ^0.11.4
   mrapi:
     path: ../app_mr_layer

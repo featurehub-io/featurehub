@@ -2,6 +2,7 @@ import 'package:app_singleapp/widgets/features/feature_dashboard_constants.dart'
 import 'package:app_singleapp/widgets/features/percentage_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
 import 'package:super_tooltip/super_tooltip.dart';
 
@@ -19,9 +20,12 @@ class StrategyRulesSuperTooltip extends StatefulWidget {
 
 class _StrategyRulesSuperTooltipState extends State<StrategyRulesSuperTooltip> {
   SuperTooltip tooltip;
+  bool _show = false;
 
   void onTap() {
+    print("in the hover");
     tooltip = SuperTooltip(
+      showCloseButton: ShowCloseButton.inside,
       maxWidth: 180,
       minWidth: 50,
       maxHeight: 60,
@@ -38,26 +42,33 @@ class _StrategyRulesSuperTooltipState extends State<StrategyRulesSuperTooltip> {
         if(widget.rolloutStrategy.attributes.any((rsa) => rsa.fieldName == StrategyAttributeWellKnownNames.userkey.name))
           Icon(Icons.person_outline, size: 16.0,),
         if(widget.rolloutStrategy.attributes.any((rsa) => rsa.fieldName == StrategyAttributeWellKnownNames.country.name))
-          Icon(Icons.tour_outlined, size: 16.0,),
+          Icon(Octicons.globe, size: 16.0,),
         if(widget.rolloutStrategy.attributes.any((rsa) => rsa.fieldName == StrategyAttributeWellKnownNames.platform.name))
           Icon(Icons.desktop_windows, size: 16.0,),
         if(widget.rolloutStrategy.attributes.any((rsa) => rsa.fieldName == StrategyAttributeWellKnownNames.device.name))
-          Icon(Icons.devices, size: 16.0,),
+          Icon(MaterialCommunityIcons.devices, size: 16.0,),
         if(widget.rolloutStrategy.attributes.any((rsa) => rsa.fieldName == StrategyAttributeWellKnownNames.version.name))
-          Icon(Icons.looks_one_outlined, size: 16.0,),
+          Icon(MaterialCommunityIcons.tag_multiple, size: 16.0,),
         if(widget.rolloutStrategy.attributes.any((rsa) => StrategyAttributeWellKnownNames.values.every((value) => rsa.fieldName != value.name)))
           Icon(Icons.construction_outlined, size: 16.0,),
       ],),
     );
 
-    tooltip.show(context);
+    _show ? tooltip.show(context) : tooltip.close();
   }
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      mouseCursor: SystemMouseCursors.click,
-      onTap: () => onTap(),
+      onHover: (hover) {
+        if (mounted) {
+          setState(() {
+            _show = hover;
+            onTap();
+          });
+        }
+      },
+      onTap: () {},
       child: widget.child,
     );
   }
