@@ -57,6 +57,7 @@ class RolloutStrategiesWidget extends StatelessWidget {
               ],
             );
           }),
+      SizedBox(height: 8.0,),
       Row(
         children: [
           Text('Add custom rule', style: Theme.of(context).textTheme.caption),

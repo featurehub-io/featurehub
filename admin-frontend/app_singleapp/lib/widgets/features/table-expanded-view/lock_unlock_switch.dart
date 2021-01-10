@@ -77,17 +77,15 @@ class _LockUnlockIconButton extends StatelessWidget {
         Container(
           width: 36,
           height: 36,
-          child: Material(
-            shape: CircleBorder(),
-            child: IconButton(
-              mouseCursor: onPressed != null
-                  ? SystemMouseCursors.click
-                  : null,
-              tooltip: onPressed != null ? (lock ? 'Unlock to edit feature value' : 'Lock feature value'): null,
-                icon: Icon(lock ? Icons.lock_outline : Icons.lock_open,
-                    size: 20, color: lock ? Colors.red : Colors.green),
-                onPressed: onPressed),
-          ),
+          child: IconButton(
+              splashRadius: 20,
+            mouseCursor: onPressed != null
+                ? SystemMouseCursors.click
+                : null,
+            tooltip: onPressed != null ? (lock ? 'Unlock to edit feature value' : 'Lock feature value'): null,
+              icon: Icon(lock ? Icons.lock_outline : Icons.lock_open,
+                  size: 20, color: lock ? Colors.red : Colors.green),
+              onPressed: onPressed),
         ),
         Text(lock ? 'Locked' : 'Unlocked', style: Theme.of(context).textTheme.caption,)
       ],

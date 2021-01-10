@@ -168,6 +168,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                       ),
                   ]),
                 ),
+                SizedBox(height: 8.0),
                 Row(
                   children: [
                     Text('Add percentage rollout rule',
