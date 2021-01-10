@@ -22,10 +22,9 @@ class _StrategyRulesSuperTooltipState extends State<StrategyRulesSuperTooltip> {
   SuperTooltip tooltip;
   bool _show = false;
 
-  void onTap() {
+  void onHover() {
     print("in the hover");
     tooltip = SuperTooltip(
-      showCloseButton: ShowCloseButton.inside,
       maxWidth: 180,
       minWidth: 50,
       maxHeight: 60,
@@ -64,7 +63,7 @@ class _StrategyRulesSuperTooltipState extends State<StrategyRulesSuperTooltip> {
         if (mounted) {
           setState(() {
             _show = hover;
-            onTap();
+            onHover();
           });
         }
       },
