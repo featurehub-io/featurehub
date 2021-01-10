@@ -179,11 +179,11 @@ is an `AND` condition, each _value_ is an `OR` condition. For example, if the `c
 `AND` the custom field `payment_method` is equal to `credit_card` `OR` `direct_debit`.
 
 Each rollout strategy can have zero or more rules associated with it. If it has zero rules and no percentage rule 
-the strategy will be ignored. There is no limit on how many rules you can apply. There are 3 main rule types: *General*, *Custom* and *Percentage split* 
+the strategy will be ignored. There is no limit on how many rules you can apply. There are 3 main rule types: *Preset*, *Custom* and *Percentage split* 
 
 === Targeting rule types
 
-==== General
+==== Preset
 
 - Country
 
