@@ -267,11 +267,7 @@ Or with array of values (only applicable to custom rules):
 
 [source,java]
 ----
-List<String> languages = new ArrayList<String>();
-        itemList.add("russian");
-        itemList.add("english");
-        itemList.add("german");
-    cfr.clientContext.attrs("languages", languages).build();
+cfr.clientContext.attrs(“languages”, Arrays.asList(“russian”, “english”, “german”)).build();
 ----
 
 
