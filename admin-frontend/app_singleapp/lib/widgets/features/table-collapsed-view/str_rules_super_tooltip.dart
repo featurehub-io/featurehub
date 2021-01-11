@@ -22,6 +22,7 @@ class StrategyRulesSuperTooltip extends StatefulWidget {
 class _StrategyRulesSuperTooltipState extends State<StrategyRulesSuperTooltip> {
   SuperTooltip tooltip;
   bool _show = false;
+  bool _oldShow = null;
 
   @override
   void didUpdateWidget(StrategyRulesSuperTooltip oldWidget) {
@@ -89,8 +90,20 @@ class _StrategyRulesSuperTooltipState extends State<StrategyRulesSuperTooltip> {
   }
 
   void onHover() {
-    print("in the hover");
-    _show ? tooltip.show(context) : tooltip.close();
+    if (tooltip != null) {
+      _show ? tooltip.show(context) : tooltip.close();
+      _oldShow = _show;
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    if (tooltip != null) {
+      tooltip.close();
+      tooltip = null;
+    }
   }
 
   @override
@@ -99,8 +112,10 @@ class _StrategyRulesSuperTooltipState extends State<StrategyRulesSuperTooltip> {
       onHover: (hover) {
         if (mounted) {
           setState(() {
-            _show = hover;
-            onHover();
+            if (!_show && hover) {
+              _show = hover;
+              onHover();
+            }
           });
         }
       },
