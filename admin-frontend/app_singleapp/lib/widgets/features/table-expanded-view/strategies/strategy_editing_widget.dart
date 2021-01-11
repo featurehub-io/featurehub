@@ -158,8 +158,11 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                                     onPressed: () {
                                       setState(() {
                                         _strategyPercentage.text = '';
-                                        widget.rolloutStrategy.percentage =
-                                            null;
+                                        if (widget.rolloutStrategy != null) {
+                                          widget.rolloutStrategy.percentage =
+                                              null;
+                                        }
+                                        showPercentageField = false;
                                         widget.bloc.updateStrategy();
                                       });
                                     })),
