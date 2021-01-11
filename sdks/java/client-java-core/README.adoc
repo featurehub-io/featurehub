@@ -292,14 +292,6 @@ cfr.clientContext().sessionKey("session-id").build();
 
 For more details on percentage splits and feature experiments see https://docs.featurehub.io/#_percentage_split_rule[Percentage Split Rule].
 
-[source,java]
-----
-cfr.clientContext().userKey("ideally-unique-id")
-  .country(StrategyAttributeCountryName.NewZealand)
-  .device(StrategyAttributeDeviceName.Browser)
-  .build(); 
-----
-
 == Feature Interceptors
 
 Feature Interceptors are the ability to intercept the request for a feature. They only operate in imperative state. For
