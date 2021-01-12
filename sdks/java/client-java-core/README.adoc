@@ -256,7 +256,7 @@ client that is not set up to do this (such as the OkHttp Android client)).
 
 **Sending custom attributes:**
 
-To add a custom key/value pair, use `attribute_value(key, value)`
+To add a custom key/value pair, use `attr(key, value)`
 
 [source,java]
 ----
