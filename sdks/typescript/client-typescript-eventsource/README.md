@@ -373,8 +373,7 @@ or if you are using multiple rules, you can combine attributes as follows:
       .build(); 
 ```
 
-The `build()` method will trigger the regeneration of a special header (`x-featurehub`) or parameter (nodejs
-it is a header, the browser needs a parameter as the SSE spec doesn't allow for extra headers). This in turn
+The `build()` method will trigger the regeneration of a special header (`x-featurehub`) or parameter (in NodeJS is it is a header, in the Browser it is a parameter as the SSE spec doesn’t allow for extra headers). This in turn
 will automatically retrigger a refresh of your events if you have already connected (unless you are using polling
 and your polling interval is set to 0).
 
