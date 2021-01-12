@@ -16,7 +16,7 @@ Details about what general features are available in SDKs from FeatureHub are [a
 ## Changelog
 
 1.1.0 - analytics support
-1.0.0 - initial functionality with near-realtime event updates, full feature repository, server side rollout stratgies.
+1.0.0 - initial functionality with near-realtime event updates, full feature repository, server side rollout strategies.
 
 ## Using the EventSource SDK
 
@@ -62,46 +62,79 @@ fh.ClientContext().UserKey('ideally-unique-id')
 ``` 
 
 ### Rollout Strategies
-FeatureHub at its core now supports _server side_ evaluation of complex rollout strategies, both custom ones
-that are applied to individual feature values in a specific environment and shared ones across multiple environments
-in an application. Exposing that level fo configurability via a UI is going to take some time to get right, 
-so rather than block until it is done, Milestone 1.0's goal is to expose the percentage based rollout functionality
-for you to start using straight away. 
+Starting from version 1.1.0 FeatureHub supports _server side_ evaluation of complex rollout strategies
+that are applied to individual feature values in a specific environment. This includes support of preset rules, e.g. per **_user key_**, **_country_**, **_device type_**, **_platform type_** as well as **_percentage splits_** rules and custom rules that you can create according to your application needs.
 
-Future Milestones will expose more of the functionality via the UI and will support client side evaluation of 
-strategies as this scales better when you have 10000+ consumers. For more details on how
-experiments work with Rollout Strategies, see the [core documentation](https://docs.featurehub.io).
- 
+For more details on rollout strategies, targeting rules and feature experiments see the [core documentation](https://docs.featurehub.io/#_rollout_strategies_and_targeting_rules).
+
+We are actively working on supporting client side evaluation of
+strategies in the future releases as this scales better when you have 10000+ consumers.
+
 #### Coding for Rollout strategies 
-To provide this ability for the strategy engine to know how to apply the strategies, you need to provide it
-information. There are five things we track specifically: user key, session key, country, device and platform and
-over time will be able to provide more intelligence over, but you can attach anything you like, both individual
-attributes and arrays of attributes. 
+There are several preset strategies rules we track specifically: `user key`, `country`, `device` and `platform`. However, if those do not satisfy your requirements you also have an ability to attach a custom rule. Custom rules can be created as following types: `string`, `number`, `boolean`, `date`, `date-time`, `semantic-version`, `ip-address`
 
-Remember, as of Milestone 1.0 we only support percentage based strategies,
-so only UserKey is required to support this. We do however recommend you adding in as much information as you have
-so you don't have to change it in the future.
+FeatureHub SDK will match your users according to those rules, so you need to provide attributes to match on in the SDK:
 
-Example: 
+**Sending preset attributes:**
+
+Provide the following attribute to support `userKey` rule:
+
 ```c#
-    featureHubRepository.ClientContext().UserKey('ideally-unique-id')
-      .Country(StrategyAttributeCountryName.Australia)
-      .Device(StrategyAttributeDeviceName.Desktop)
+    featureHubRepository.ClientContext().UserKey("ideally-unique-id").Build(); 
+```
+
+to support `country` rule:
+```c#
+    featureHubRepository.ClientContext().Country(StrategyAttributeCountryName.Australia).Build(); 
+```
+
+to support `device` rule:
+```c#
+    featureHubRepository.ClientContext().Device(StrategyAttributeDeviceName.Desktop).Build(); 
+```
+
+to support `platform` rule:
+```c#
+    featureHubRepository.ClientContext().Platform(StrategyAttributePlatformName.Android).Build(); 
+```
+
+to support `semantic-version` rule:
+```c#
+    featureHubRepository.ClientContext().Version("1.2.0").Build(); 
+```
+or if you are using multiple rules, you can combine attributes as follows:
+
+```c#
+    featureHubRepository.ClientContext.UserKey("ideally-unique-id")
+      .Country(StrategyAttributeCountryName.NewZealand)
+      .Device(StrategyAttributeDeviceName.Browser)
+      .Platform(StrategyAttributePlatformName.Android)
+      .Version("1.2.0")
       .Build(); 
 ```
+
 
 The `Build()` method will trigger the regeneration of a special header (`x-featurehub`). This in turn
 will automatically retrigger a refresh of your events if you have already connected (unless you are using polling
 and your polling interval is set to 0).
 
-To add a generic key/value pair, use `Attr(key, value)`, to use an array of values there is 
-`Attrs(key, Array<value>)`. In later Milestones you will be able to match against your own attributes, among other 
-things. You can also `Clear()` to remove all strategies.
+**Sending custom attributes:**
+
+To add a custom key/value pair, use `Attr(key, value)`
+
+```C#
+    featureHubRepository.ClientContext.Attr("first-language", "russian").Build();
+```
+
+Or with array of values (only applicable to custom rules):
+
+```C#
+   featureHubRepository.ClientContext.Attrs("languages", new List<String> {"Russian", "English", "German"}).Build();
+```
+
+You can also use `featureHubRepository.ClientContext.Clear()` to empty your context.
 
 In all cases, you need to call `Build()` to re-trigger passing of the new attributes to the server for recalculation.
-By default, the _user key_ is used for percentage based calculations, and without it, you cannot participate in
-percentage based Rollout Strategies ("experiments"). However, a more advanced feature does let you specify other
-attributes (e.g. _company_, or _store_) that would allow you to specify your experiment on.
 
 ### Analytics Support for C#
 
