@@ -45,6 +45,6 @@ String generateTooltipMessage(RolloutStrategy rolloutStrategy) {
     customNameMessage = 'Custom\n';
   }
 
-  var finalString =  '\n --Applied rules-- \n\n ${percentageMessage}${userKeyMessage}${countryNameMessage} ${platformNameMessage} ${deviceNameMessage} ${versionNameMessage} ${customNameMessage}';
+  var finalString =  '\n-- Applied rules -- \n\n${percentageMessage}${userKeyMessage}${countryNameMessage}${platformNameMessage}${deviceNameMessage}${versionNameMessage}${customNameMessage}';
   return finalString;
 }

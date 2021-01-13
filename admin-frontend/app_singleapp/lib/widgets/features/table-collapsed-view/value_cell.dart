@@ -136,11 +136,11 @@ class _ValueCard extends StatelessWidget {
                     flex: 4,
                     child: rolloutStrategy != null
                         ? Tooltip(
-                            textStyle: Theme.of(context).textTheme.bodyText2,
-                            decoration: BoxDecoration(
-                                color: Theme.of(context).primaryColorLight,
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(4.0))),
+                            textStyle: TextStyle(fontFamily: 'source', fontSize: 12, color: Colors.white),
+                            // decoration: BoxDecoration(
+                            //     color: Theme.of(context).primaryColorLight,
+                            //     borderRadius:
+                            //         BorderRadius.all(Radius.circular(4.0))),
                             message: generateTooltipMessage(rolloutStrategy),
                             child: Text(rolloutStrategy.name,
                                 style: Theme.of(context)
