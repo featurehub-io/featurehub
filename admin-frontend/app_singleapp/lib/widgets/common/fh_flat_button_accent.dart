@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class FHFlatButtonAccent extends StatelessWidget {
   final Function onPressed;
@@ -16,17 +15,16 @@ class FHFlatButtonAccent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FlatButton(
+    return TextButton(
       onPressed: onPressed,
-      child: Text(
-        keepCase ? title : title.toUpperCase(),
-        style: GoogleFonts.openSans(
-            textStyle: Theme.of(context)
-                .textTheme
-                .subtitle2
-                .merge(TextStyle(color: Colors.white))),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text(
+          keepCase ? title : title.toUpperCase(),
+          style: TextStyle(color: Colors.white),
+        ),
       ),
-      color: Colors.orange,
+      style: TextButton.styleFrom(backgroundColor: Theme.of(context).accentColor),
     );
   }
 }

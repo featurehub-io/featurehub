@@ -12,12 +12,12 @@ class FHFlatButtonTransparent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FlatButton(
+    return TextButton(
         onPressed:onPressed,
-        child: Text(keepCase ? title : title.toUpperCase(),
-            style: Theme.of(context)
-                .textTheme
-                .subtitle2
-                .merge(TextStyle(color: Theme.of(context).buttonColor))));
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(keepCase ? title : title.toUpperCase(),
+              style: TextStyle(color: Theme.of(context).buttonColor))),
+        );
   }
 }

@@ -24,7 +24,7 @@ class FHCopyToClipboardFlatButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget fb = FlatButton(
+    Widget fb = TextButton(
       onPressed: () async {
         final clipboardText = text ?? (await textProvider());
         if (clipboardText != null) {

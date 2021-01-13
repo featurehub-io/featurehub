@@ -15,11 +15,14 @@ class FHIconTextButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FlatButton.icon(
+    return TextButton.icon(
         icon: Icon(iconData, color: color ?? Theme.of(context).buttonColor, size: size,),
-        textColor: Theme.of(context).buttonColor,
+        // textColor: Theme.of(context).buttonColor,
         onPressed:onPressed,
-        label: Text(keepCase ? label : label.toUpperCase(), style: TextStyle(color: color)
-    ));
+        label: Padding(
+          padding: const EdgeInsets.fromLTRB(0.0, 8.0, 8.0, 8.0),
+          child: Text(keepCase ? label : label.toUpperCase(), style: TextStyle(color: color)
+    ),
+        ));
   }
 }

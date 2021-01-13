@@ -19,12 +19,10 @@ class AddStrategyButton extends StatelessWidget {
       padding: const EdgeInsets.only(top: 16.0),
       child: Container(
         height: 36,
-        child: FlatButton.icon(
+        child: ElevatedButton.icon(
             label: Text('Add split targeting rules'),
-            textColor: Colors.white,
-            disabledColor: Colors.black12,
-            color: Theme.of(context).buttonColor,
-            disabledTextColor: Colors.black38,
+            style: ElevatedButton.styleFrom(primary: Theme.of(context).buttonColor
+    ),
             icon: Icon(MaterialCommunityIcons.arrow_split_vertical,
                 color: Colors.white, size: 16.0),
             onPressed: (editable == true)

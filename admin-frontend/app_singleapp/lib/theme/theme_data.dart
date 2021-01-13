@@ -23,17 +23,20 @@ final ThemeData myTheme = ThemeData(
   buttonColor: Color(0xff473e8f),
   toggleableActiveColor: Color(0xff678de5),
   secondaryHeaderColor: Color(0xfff6f6f6),
-  textSelectionColor: Color(0xff9cacfc),
-  cursorColor: Color(0xff4285f4),
-  textSelectionHandleColor: Color(0xff6b83fa),
+
   backgroundColor: Color(0x226DD3F4),
   dialogBackgroundColor: Color(0xffffffff),
   indicatorColor: Color(0xff051d94),
   hintColor: Color(0x8a000000),
   errorColor: Color(0xffd32f2f),
-textButtonTheme: TextButtonThemeData(
-       style: TextButton.styleFrom(primary: Color(0xff473e8f)),
-     ),
+  textSelectionTheme: TextSelectionThemeData(
+    selectionColor: Color(0xff9cacfc),
+    cursorColor: Color(0xff4285f4),
+    selectionHandleColor: Color(0xff6b83fa),
+  ),
+  textButtonTheme: TextButtonThemeData(
+    style: TextButton.styleFrom(primary: Color(0xff473e8f)),
+  ),
   buttonTheme: ButtonThemeData(
     textTheme: ButtonTextTheme.normal,
     minWidth: 88,
@@ -155,7 +158,8 @@ textButtonTheme: TextButtonThemeData(
         width: 1,
         style: BorderStyle.solid,
       ),
-      borderRadius: BorderRadius.only(topLeft: Radius.circular(4.0), topRight: Radius.circular(4.0)),
+      borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(4.0), topRight: Radius.circular(4.0)),
     ),
     border: UnderlineInputBorder(
       borderSide: BorderSide(
@@ -163,7 +167,8 @@ textButtonTheme: TextButtonThemeData(
         width: 1,
         style: BorderStyle.solid,
       ),
-      borderRadius: BorderRadius.only(topLeft: Radius.circular(4.0), topRight: Radius.circular(4.0)),
+      borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(4.0), topRight: Radius.circular(4.0)),
     ),
   ),
   iconTheme: IconThemeData(

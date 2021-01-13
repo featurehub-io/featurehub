@@ -1,7 +1,7 @@
 import 'package:app_singleapp/widgets/features/feature_dashboard_constants.dart';
 import 'package:app_singleapp/widgets/features/feature_value_status_tags.dart';
 import 'package:app_singleapp/widgets/features/table-collapsed-view/flag_colored_on_off_label.dart';
-import 'package:app_singleapp/widgets/features/table-collapsed-view/str_rules_super_tooltip.dart';
+import 'package:app_singleapp/widgets/features/table-collapsed-view/tooltip.dart';
 import 'package:app_singleapp/widgets/features/table-collapsed-view/value_not_set_container.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -101,6 +101,7 @@ class _ValueCard extends StatelessWidget {
   final FeatureValue fv;
   final Feature feature;
   final RolloutStrategy rolloutStrategy;
+
   const _ValueCard({
     Key key,
     @required this.fv,
@@ -124,7 +125,7 @@ class _ValueCard extends StatelessWidget {
               color: rolloutStrategy == null
                   ? defaultValueColor
                   : strategyValueColor,
-             borderRadius: BorderRadius.all(Radius.circular(16.0)),
+              borderRadius: BorderRadius.all(Radius.circular(16.0)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -132,18 +133,27 @@ class _ValueCard extends StatelessWidget {
                 if (fv.rolloutStrategies != null &&
                     fv.rolloutStrategies.isNotEmpty)
                   Expanded(
-                      flex: 4,
-                      child: StrategyRulesSuperTooltip(
-                        rolloutStrategy: rolloutStrategy,
-                        child: Text(
-                            rolloutStrategy != null
-                                ? rolloutStrategy.name
-                                : 'default',
-                            style: Theme.of(context).textTheme.caption.copyWith(
-                                color: rolloutStrategy != null
-                                    ? strategyTextColor
-                                    : defaultTextColor)),
-                      )),
+                    flex: 4,
+                    child: rolloutStrategy != null
+                        ? Tooltip(
+                            textStyle: Theme.of(context).textTheme.bodyText2,
+                            decoration: BoxDecoration(
+                                color: Theme.of(context).primaryColorLight,
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(4.0))),
+                            message: generateTooltipMessage(rolloutStrategy),
+                            child: Text(rolloutStrategy.name,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .caption
+                                    .copyWith(color: strategyTextColor)),
+                          )
+                        : Text('default',
+                            style: Theme.of(context)
+                                .textTheme
+                                .caption
+                                .copyWith(color: defaultTextColor)),
+                  ),
                 if (fv.rolloutStrategies != null &&
                     fv.rolloutStrategies.isNotEmpty)
                   VerticalDivider(

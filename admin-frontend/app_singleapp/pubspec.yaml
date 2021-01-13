@@ -34,7 +34,6 @@ dependencies:
   flutter_icons: ^1.1.0
   auto_size_text: 2.1.0
   collection: ^1.14.11
-  super_tooltip: ^0.9.6
 
 dev_dependencies:
   flutter_test:

@@ -30,7 +30,7 @@ class _FHJsonEditorState extends State<FHJsonEditorWidget> {
                     widget.controller.text = encoder.convert(jsonMap);
                   });
                 },
-                title: 'Format json'),
+                title: 'Format json', keepCase: true,),
           ]),
           Container(
             child: Text(
@@ -48,7 +48,7 @@ class _FHJsonEditorState extends State<FHJsonEditorWidget> {
                 padding: EdgeInsets.all(10),
                 color: Theme.of(context).scaffoldBackgroundColor,
                 child: TextFormField(
-                  style: TextStyle(fontFamily: 'source', fontSize: 13),
+                  style: TextStyle(fontFamily: 'source', fontSize: 14),
                   maxLines: 20,
                   controller: widget.controller,
                   validator: validateJson,
