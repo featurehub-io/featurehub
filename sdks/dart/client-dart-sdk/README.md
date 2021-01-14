@@ -164,46 +164,99 @@ not yet be available and you don't want your application to fail.
 
 ## Rollout Strategies
 
-FeatureHub at its core now supports _server side_ evaluation of complex rollout strategies, both custom ones
-that are applied to individual feature values in a specific environment and shared ones across multiple environments
-in an application. Exposing that level fo configurability via a UI is going to take some time to get right,
-so rather than block until it is done, Milestone 1.0's goal is to expose the percentage based rollout functionality
-for you to start using straight away.
+Starting from version 1.1.0 FeatureHub supports _server side_ evaluation of complex rollout strategies
+that are applied to individual feature values in a specific environment. This includes support of preset rules, e.g. per **_user key_**, **_country_**, **_device type_**, **_platform type_** as well as **_percentage splits_** rules and custom rules that you can create according to your application needs.
 
-Future Milestones will expose more of the functionality via the UI and will support client side evaluation of
-strategies as this scales better when you have 10000+ consumers. For more details on how
-experiments work with Rollout Strategies, see the [core documentation](https://docs.featurehub.io).
+For more details on rollout strategies, targeting rules and feature experiments see the [core documentation](https://docs.featurehub.io/#_rollout_strategies_and_targeting_rules).
+
+We are actively working on supporting client side evaluation of
+strategies in the future releases as this scales better when you have 10000+ consumers.
 
 #### Coding for Rollout strategies 
-To provide this ability for the strategy engine to know how to apply the strategies, you need to provide it
-information. There are five things we track specifically: user key, session key, country, device and platform and
-over time will be able to provide more intelligence over, but you can attach anything you like, both individual
-attributes and arrays of attributes. 
+There are several preset strategies rules we track specifically: `user key`, `country`, `device` and `platform`. However, if those do not satisfy your requirements you also have an ability to attach a custom rule. Custom rules can be created as following types: `string`, `number`, `boolean`, `date`, `date-time`, `semantic-version`, `ip-address`
 
-Remember, as of Milestone 1.0 we only support percentage based strategies,
-so only UserKey is required to support this. We do however recommend you adding in as much information as you have
-so you don't have to change it in the future.
+FeatureHub SDK will match your users according to those rules, so you need to provide attributes to match on in the SDK:
+
+**Sending preset attributes:**
+
+Provide the following attribute to support `userKey` rule:
 
 ```dart
-_repository.clientContext.userKey("ideally-unique-id")
-  .country(StrategyAttributeCountryName.NewZealand)
-  .device(StrategyAttributeDeviceName.Mobile)
-  .build(); 
+    _repository.clientContext.userKey('ideally-unique-id').build(); 
+```
 
+to support `country` rule:
+
+```dart
+    _repository.clientContext.country(StrategyAttributeCountryName.NewZealand).build(); 
+```
+
+to support `device` rule:
+
+```dart
+    _repository.clientContext.device(StrategyAttributeDeviceName.Browser).build(); 
+```
+
+to support `platform` rule:
+
+```dart
+    _repository.clientContext.platform(StrategyAttributePlatformName.Android).build(); 
+```
+
+to support `semantic-version` rule:
+
+```dart
+    _repository.clientContext.version('1.2.0').build(); 
+```
+
+or if you are using multiple rules, you can combine attributes as follows:
+
+```dart
+    _repository.clientContext.userKey('ideally-unique-id')
+      .country(StrategyAttributeCountryName.NewZealand)
+      .device(StrategyAttributeDeviceName.Browser)
+      .platform(StrategyAttributePlatformName.Android)
+      .version('1.2.0')
+      .build(); 
 ```
 
 The `build()` method will trigger the regeneration of a special header (`x-featurehub`). This in turn
 will automatically retrigger a refresh of your events if you have already connected (unless you are using polling
 client).
 
-To add a generic key/value pair, use `attr(key, value)`, to use an array of values there is
-`attrs(key, List<String>)`. You can also `clear()`.
+**Sending custom attributes:**
+
+To add a custom key/value pair, use `attr(key, value)`
+
+```dart
+    _repository.clientContext.attr('first-language', 'russian').build();
+```
+
+Or with array of values (only applicable to custom rules):
+
+```dart
+   _repository.clientContext.attrs('languages', ['russian', 'english', 'german']).build();
+```
+
+You can also use `featureHubRepository.clientContext.clear()` to empty your context.
 
 In all cases, you need to call `build()` to re-trigger passing of the new attributes to the server for recalculation.
 
-By default, the _user key_ is used for percentage based calculations, and without it, you cannot participate in
-percentage based Rollout Strategies ("experiments"). However, a more advanced feature does let you specify other
-attributes (e.g. _company_, or _store_) that would allow you to specify your experiment on. 
+
+**Coding for percentage splits:**
+For percentage rollout you are only required to provide the `userKey` or `sessionKey`.
+
+```dart
+    featureHubRepository.clientContext.userKey('ideally-unique-id').build();
+```
+or
+
+```dart
+    featureHubRepository.clientContext.sessionKey('session-id').build();
+```
+
+For more details on percentage splits and feature experiments see [Percentage Split Rule](https://docs.featurehub.io/#_percentage_split_rule).
+
     
 ## FeatureHub Test API
 
