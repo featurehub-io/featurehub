@@ -38,7 +38,7 @@ steps:
     args:
       - '-c'
       - 'cd featurehub && if [ -f build-frontend ]; then mvn -s pipeline/m2/settings.xml --no-transfer-progress install -f admin-frontend/app_mr_layer/pom.xml; else true; fi'
-  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/flutter-build:f654346777603871f32cbf339c6652ef7b658ec0'
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/flutter-build:d9044a8a61e4d7d0afbd4fe8bad6d40762c289dd'
     # the version of flutter-build refers to the commit message. It is the base image used to build the front end. This will *only build the artifacts and
     # not generate the installable file required to build the docker images. That is not done in this pipeline (only when building the actual docker images)
     entrypoint: '/bin/sh'

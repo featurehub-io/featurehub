@@ -79,7 +79,7 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
                   );
                   // make async as calls another build
                   Timer(Duration(milliseconds: 1),
-                      () => Scaffold.of(context).showSnackBar(snackBar));
+                      () =>  ScaffoldMessenger.of(context).showSnackBar(snackBar));
                   //after snackbar message shows up - need to make sure it doesn't show up again
                   mrBloc.addSnackbar(null);
                 }

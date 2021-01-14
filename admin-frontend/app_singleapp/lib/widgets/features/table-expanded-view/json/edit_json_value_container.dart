@@ -99,7 +99,7 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
                       ),
                       enabled
                           ? FHFlatButton(
-                              title: 'set value',
+                              title: 'Set value',
                               onPressed: (() {
                                 if (validateJson(tec.text) != null) {
                                   widget.strBloc.fvBloc.mrClient.customError(

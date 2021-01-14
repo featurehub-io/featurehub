@@ -83,7 +83,6 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
               TextFormField(
                   controller: _featureKey,
                   readOnly: isReadOnly,
-                  // initialValue: _featureName.toString(),
                   decoration: InputDecoration(
                       labelText: 'Feature key',
                       hintText: 'To be used in the code with FeatureHub SDK',
@@ -94,7 +93,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                       return 'Please enter feature key';
                     }
                     if (!validateFeatureKey(v)) {
-                      return ('Can only include letters and underscores');
+                      return ('Can only include alphanumeric characters and underscores');
                     }
                     return null;
                   })),

@@ -415,7 +415,6 @@ class _CustomStepperState extends State<CustomStepper>
 
     assert(cancelColor != null);
 
-    final themeData = Theme.of(context);
     final localizations = MaterialLocalizations.of(context);
 
     return Container(
@@ -424,21 +423,14 @@ class _CustomStepperState extends State<CustomStepper>
         constraints: const BoxConstraints.tightFor(height: 48.0),
         child: Row(
           children: <Widget>[
-            FlatButton(
+            TextButton(
               onPressed: widget.onStepContinue,
-              color: _isDark()
-                  ? themeData.backgroundColor
-                  : themeData.primaryColor,
-              textColor: Colors.white,
-              textTheme: ButtonTextTheme.normal,
               child: Text(localizations.continueButtonLabel),
             ),
             Container(
               margin: const EdgeInsetsDirectional.only(start: 8.0),
-              child: FlatButton(
+              child: TextButton(
                 onPressed: widget.onStepCancel,
-                textColor: cancelColor,
-                textTheme: ButtonTextTheme.normal,
                 child: Text(localizations.cancelButtonLabel),
               ),
             ),

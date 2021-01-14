@@ -72,9 +72,7 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.separated(
-        separatorBuilder: (BuildContext context, int index) =>
-            Divider(height: 1.0),
+    return ListView.builder(
         shrinkWrap: true,
         itemCount: serviceAccounts.environments.length,
         itemBuilder: (context, index) {
