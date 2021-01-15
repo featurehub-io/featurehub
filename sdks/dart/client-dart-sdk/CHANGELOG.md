@@ -1,3 +1,7 @@
+1.1.4
+=====
+* documentation updates
+
 1.1.3
 =====
 * allow the release process for catch & release to turn the catch flag off once released. Ensure turning
