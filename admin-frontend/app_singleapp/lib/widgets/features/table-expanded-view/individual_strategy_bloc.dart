@@ -37,6 +37,9 @@ class IndividualStrategyBloc extends Bloc {
     // print('Attributes are ${rolloutStrategy.attributes}');
   }
 
+  bool get isUnsavedStrategy =>
+      (rolloutStrategy.id == null || rolloutStrategy.id == 'created');
+
   void createAttribute({StrategyAttributeWellKnownNames type}) {
     final rs = RolloutStrategyAttribute()
       ..id = DateTime.now().millisecond.toRadixString(16) // hex, just because
@@ -81,8 +84,7 @@ class IndividualStrategyBloc extends Bloc {
 
   /// updates our list of violations and updates the stream
   void updateStrategyViolations(
-      RolloutStrategyValidationResponse validationCheck,
-      RolloutStrategy rolloutStrategy) {
+      RolloutStrategyValidationResponse validationCheck) {
     var _violations = <RolloutStrategyViolation>[];
 
     final customViolations = validationCheck.customStategyViolations.firstWhere(

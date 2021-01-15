@@ -175,7 +175,7 @@ class PortfolioStepdefs {
         orElse: () => null);
     if (saPermission == null) {
       saPermission = ServiceAccountPermission();
-      List<RoleType> permissions = List();
+      List<RoleType> permissions = [];
       permissions.add(permission);
       saPermission.environmentId = environment.id;
       saPermission.permissions = permissions;

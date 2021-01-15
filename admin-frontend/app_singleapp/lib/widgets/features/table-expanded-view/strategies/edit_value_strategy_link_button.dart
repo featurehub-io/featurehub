@@ -25,20 +25,17 @@ class EditValueStrategyLinkButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return FHUnderlineButton(
         title: '${rolloutStrategy.name}',
-        onPressed:  () => {
-                  fvBloc.mrClient.addOverlay((BuildContext context) {
-                    rolloutStrategy.attributes ??= [];
+        onPressed: () => {
+              fvBloc.mrClient.addOverlay((BuildContext context) {
+                rolloutStrategy.attributes ??= [];
 
-                    return BlocProvider(
-                      creator: (_c, _b) => IndividualStrategyBloc(
-                          strBloc.environmentFeatureValue, rolloutStrategy),
-                      child: StrategyEditingWidget(
-                          bloc: strBloc,
-                          rolloutStrategy: rolloutStrategy,
-                          editable: editable),
-                    );
-                  })
-                }
-            );
+                return BlocProvider(
+                  creator: (_c, _b) => IndividualStrategyBloc(
+                      strBloc.environmentFeatureValue, rolloutStrategy),
+                  child:
+                      StrategyEditingWidget(bloc: strBloc, editable: editable),
+                );
+              })
+            });
   }
 }
