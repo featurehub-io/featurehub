@@ -17,12 +17,10 @@ import 'rollout_strategies_widget.dart';
 
 class StrategyEditingWidget extends StatefulWidget {
   final CustomStrategyBloc bloc;
-  final RolloutStrategy rolloutStrategy;
   final bool editable;
 
-  const StrategyEditingWidget({
+  StrategyEditingWidget({
     Key key,
-    this.rolloutStrategy,
     @required this.bloc,
     @required this.editable,
   }) : super(key: key);
@@ -47,11 +45,17 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
   @override
   void initState() {
     super.initState();
-    if (widget.rolloutStrategy != null) {
-      _strategyName.text = widget.rolloutStrategy.name;
-      if (widget.rolloutStrategy.percentage != null) {
-        _strategyPercentage.text = widget.rolloutStrategy.percentageText;
+
+    individualStrategyBloc = BlocProvider.of(context);
+
+    if (!individualStrategyBloc.isUnsavedStrategy) {
+      _strategyName.text = individualStrategyBloc.rolloutStrategy.name;
+
+      if (individualStrategyBloc.rolloutStrategy.percentage != null) {
+        _strategyPercentage.text =
+            individualStrategyBloc.rolloutStrategy.percentageText;
       }
+
       isUpdate = true;
     }
   }
@@ -67,7 +71,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
   @override
   Widget build(BuildContext context) {
     return FHAlertDialog(
-      title: Text(widget.rolloutStrategy == null
+      title: Text(individualStrategyBloc.rolloutStrategy == null
           ? 'Add split targeting'
           : (widget.editable
               ? 'Edit split targeting'
@@ -114,7 +118,8 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                       borderRadius: BorderRadius.all(Radius.circular(6.0)),
                       color: Theme.of(context).selectedRowColor),
                   child: Column(children: [
-                    if ((widget.rolloutStrategy?.percentage != null) ||
+                    if ((individualStrategyBloc.rolloutStrategy?.percentage !=
+                            null) ||
                         showPercentageField)
                       Row(
                         children: [
@@ -158,9 +163,11 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                                     onPressed: () {
                                       setState(() {
                                         _strategyPercentage.text = '';
-                                        if (widget.rolloutStrategy != null) {
-                                          widget.rolloutStrategy.percentage =
-                                              null;
+                                        if (individualStrategyBloc
+                                                .rolloutStrategy !=
+                                            null) {
+                                          individualStrategyBloc.rolloutStrategy
+                                              .percentage = null;
                                         }
                                         showPercentageField = false;
                                         widget.bloc.updateStrategy();
@@ -231,7 +238,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
     // this deals with the idea we may not have ids yet for stuff
     widget.bloc.ensureStrategiesAreUnique();
 
-    final updatedStrategy = widget.rolloutStrategy.copyWith()
+    final updatedStrategy = individualStrategyBloc.rolloutStrategy.copyWith()
       ..name = _strategyName.text
       ..attributes = individualStrategyBloc.currentAttributes
       ..percentageFromText = _strategyPercentage.text;
@@ -239,7 +246,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
     final validationCheck = await widget.bloc.validationCheck(updatedStrategy);
 
     if (isValidationOk(validationCheck)) {
-      widget.rolloutStrategy
+      individualStrategyBloc.rolloutStrategy
         ..name = _strategyName.text
         ..percentageFromText = _strategyPercentage.text;
       widget.bloc.updateStrategy();
@@ -286,8 +293,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
 
   void layoutValidationFailures(
       RolloutStrategyValidationResponse validationCheck) {
-    individualStrategyBloc.updateStrategyViolations(
-        validationCheck, widget.rolloutStrategy);
+    individualStrategyBloc.updateStrategyViolations(validationCheck);
 
     setState(() {
       if (validationCheck.violations.contains(

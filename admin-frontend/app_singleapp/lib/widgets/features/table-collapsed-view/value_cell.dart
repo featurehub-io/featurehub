@@ -136,17 +136,22 @@ class _ValueCard extends StatelessWidget {
                     flex: 4,
                     child: rolloutStrategy != null
                         ? Tooltip(
-                            textStyle: TextStyle(fontFamily: 'source', fontSize: 12, color: Colors.white),
+                            textStyle: TextStyle(
+                                fontFamily: 'source',
+                                fontSize: 12,
+                                color: Colors.white),
                             // decoration: BoxDecoration(
                             //     color: Theme.of(context).primaryColorLight,
                             //     borderRadius:
                             //         BorderRadius.all(Radius.circular(4.0))),
                             message: generateTooltipMessage(rolloutStrategy),
-                            child: Text(rolloutStrategy.name,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .caption
-                                    .copyWith(color: strategyTextColor)),
+                            child: rolloutStrategy == null
+                                ? SizedBox.shrink()
+                                : Text(rolloutStrategy.name,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .caption
+                                        .copyWith(color: strategyTextColor)),
                           )
                         : Text('default',
                             style: Theme.of(context)

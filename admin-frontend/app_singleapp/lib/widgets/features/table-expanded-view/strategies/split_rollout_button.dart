@@ -21,15 +21,16 @@ class AddStrategyButton extends StatelessWidget {
         height: 36,
         child: ElevatedButton.icon(
             label: Text('Add split targeting rules'),
-            style: ElevatedButton.styleFrom(primary: Theme.of(context).buttonColor
-    ),
+            style: ElevatedButton.styleFrom(
+                primary: Theme.of(context).buttonColor),
             icon: Icon(MaterialCommunityIcons.arrow_split_vertical,
                 color: Colors.white, size: 16.0),
             onPressed: (editable == true)
                 ? () => bloc.fvBloc.mrClient.addOverlay((BuildContext context) {
                       return BlocProvider(
                         creator: (_c, _b) => IndividualStrategyBloc(
-                            bloc.environmentFeatureValue, RolloutStrategy()),
+                            bloc.environmentFeatureValue,
+                            RolloutStrategy()..id = 'created'),
                         child: StrategyEditingWidget(
                           bloc: bloc,
                           editable: editable,
