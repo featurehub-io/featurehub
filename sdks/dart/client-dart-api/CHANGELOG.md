@@ -1,3 +1,7 @@
+1.1.2
+=====
+* Documentation update
+
 1.1.1
 =====
 * Updated API for Edge, including GET api.
