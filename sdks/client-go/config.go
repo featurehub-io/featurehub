@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/errors"
-	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/models"
 	"github.com/sirupsen/logrus"
 )
 
@@ -15,11 +14,10 @@ const (
 
 // Config defines parameters for the client:
 type Config struct {
-	Context       *models.Context // Client context metadata for server-side strategies (optional)
-	LogLevel      logrus.Level    // Logging level (default is "info")
-	SDKKey        string          // SDK key (copied from the UI), in the format "{namedCache}/environmentID/APIKey"
-	ServerAddress string          // FeatureHub API endpoint
-	WaitForData   bool            // New() will block until some data has arrived
+	LogLevel      logrus.Level // Logging level (default is "info")
+	SDKKey        string       // SDK key (copied from the UI), in the format "{namedCache}/environmentID/APIKey"
+	ServerAddress string       // FeatureHub API endpoint
+	WaitForData   bool         // New() will block until some data has arrived
 }
 
 // featuresURL give us the full URL for receiving features:

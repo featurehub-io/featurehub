@@ -12,11 +12,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const (
-	// ClientContextHeaderName allows the FeatureHub server to provide client-specific rollout strategies:
-	ClientContextHeaderName = "x-featurehub"
-)
-
 // StreamingClient implements the client interface by by subscribing to server-side events:
 type StreamingClient struct {
 	analyticsCollectors []interfaces.AnalyticsCollector
@@ -70,11 +65,6 @@ func NewStreamingClient(config *Config) (*StreamingClient, error) {
 	if err != nil {
 		client.logger.WithError(err).Error("Error preparing request")
 		return nil, err
-	}
-
-	// Add the client context header (if we have it):
-	if config.Context != nil {
-		req.Header.Add(ClientContextHeaderName, config.Context.String())
 	}
 
 	// Prepare an API client:
