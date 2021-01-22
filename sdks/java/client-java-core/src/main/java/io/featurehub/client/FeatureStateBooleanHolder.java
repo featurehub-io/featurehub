@@ -36,6 +36,10 @@ public class FeatureStateBooleanHolder extends FeatureStateBaseHolder {
       return Boolean.parseBoolean(vm.value);
     }
 
+    if (context != null) {
+
+    }
+
     return value;
   }
 

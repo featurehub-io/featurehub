@@ -20,6 +20,7 @@ abstract class FeatureStateBaseHolder implements FeatureStateHolder {
   private final Executor executor;
   protected FeatureState featureState;
   List<FeatureListener> listeners = new ArrayList<>();
+  protected ClientContext context;
 
   public FeatureStateBaseHolder(Executor executor, FeatureStateBaseHolder oldHolder,
                                 List<FeatureValueInterceptorHolder> valueInterceptors, String key) {
@@ -34,6 +35,15 @@ abstract class FeatureStateBaseHolder implements FeatureStateHolder {
     this.executor = executor;
     this.valueInterceptors = valueInterceptors;
     this.key = key;
+  }
+
+  public FeatureStateHolder withContext(ClientContext context) {
+    return ((FeatureStateBaseHolder)copy()).setContext(context);
+  }
+
+  protected FeatureStateHolder setContext(ClientContext ctx) {
+    this.context = ctx;
+    return this;
   }
 
   protected void notifyListeners() {

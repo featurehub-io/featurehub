@@ -18,4 +18,6 @@ public interface FeatureStateHolder {
   boolean isSet();
 
   void addListener(FeatureListener listener);
+
+  FeatureStateHolder withContext(ClientContext ctx);
 }

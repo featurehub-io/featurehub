@@ -52,6 +52,9 @@ public interface FeatureRepository {
   FeatureStateHolder getFeatureState(String key);
   FeatureStateHolder getFeatureState(Feature feature);
 
+  FeatureStateHolder getFeatureState(String key, ClientContext ctx);
+  FeatureStateHolder getFeatureState(Feature feature, ClientContext ctx);
+
   /**
    * The value of the flag/boolean feature.
    *
@@ -61,6 +64,9 @@ public interface FeatureRepository {
   boolean getFlag(String key);
   boolean getFlag(Feature feature);
 
+  boolean getFlag(String key, ClientContext ctx);
+  boolean getFlag(Feature feature, ClientContext ctx);
+
   /**
    * The value of the string feature.
    *
@@ -69,8 +75,8 @@ public interface FeatureRepository {
    */
   String getString(String key);
   String getString(Feature feature);
-
-
+  String getString(String key, ClientContext ctx);
+  String getString(Feature feature, ClientContext ctx);
 
   /**
    * The value of the number feature.
@@ -80,6 +86,8 @@ public interface FeatureRepository {
    */
   BigDecimal getNumber(String key);
   BigDecimal getNumber(Feature feature);
+  BigDecimal getNumber(String key, ClientContext ctx);
+  BigDecimal getNumber(Feature feature, ClientContext ctx);
 
   /**
    * The value of the json feature decoded into the correct class (if possible).
@@ -92,6 +100,8 @@ public interface FeatureRepository {
    */
   <T> T getJson(String key, Class<T> type);
   <T> T getJson(Feature feature, Class<T> type);
+  <T> T getJson(String key, Class<T> type, ClientContext ctx);
+  <T> T getJson(Feature feature, Class<T> type, ClientContext ctx);
 
   /**
    * The value of the json feature in string form.
@@ -101,6 +111,8 @@ public interface FeatureRepository {
    */
   String getRawJson(String key);
   String getRawJson(Feature feature);
+  String getRawJson(String key, ClientContext ctx);
+  String getRawJson(Feature feature, ClientContext ctx);
 
   /**
    * Returns whether there is a value associated with this feature. Boolean features only return false if there
@@ -111,6 +123,8 @@ public interface FeatureRepository {
    */
   boolean isSet(String key);
   boolean isSet(Feature feature);
+  boolean isSet(String key, ClientContext ctx);
+  boolean isSet(Feature feature, ClientContext ctx);
 
   /**
    * Returns whether this feature does in fact not exist.
@@ -120,6 +134,8 @@ public interface FeatureRepository {
    */
   boolean exists(String key);
   boolean exists(Feature feature);
+  boolean exists(String key, ClientContext ctx);
+  boolean exists(Feature feature, ClientContext ctx);
 
   /**
    * Log an analytics event against the analytics collectors.
@@ -163,5 +179,9 @@ public interface FeatureRepository {
    */
   void setJsonConfigObjectMapper(ObjectMapper jsonConfigObjectMapper);
 
+  /**
+   * global context, only relevant when using Java SDK from single identified client
+   * @return
+   */
   ClientContext clientContext();
 }
