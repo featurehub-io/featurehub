@@ -192,9 +192,29 @@ public class ClientFeatureRepository implements FeatureRepository {
     return this.getFeatureState(feature.name());
   }
 
-    @Override
+  @Override
+  public FeatureStateHolder getFeatureState(String key, ClientContext ctx) {
+    return null;
+  }
+
+  @Override
+  public FeatureStateHolder getFeatureState(Feature feature, ClientContext ctx) {
+    return null;
+  }
+
+  @Override
   public boolean getFlag(Feature feature) {
     return getFlag(feature.name());
+  }
+
+  @Override
+  public boolean getFlag(String key, ClientContext ctx) {
+    return false;
+  }
+
+  @Override
+  public boolean getFlag(Feature feature, ClientContext ctx) {
+    return false;
   }
 
   @Override
@@ -205,6 +225,16 @@ public class ClientFeatureRepository implements FeatureRepository {
   @Override
   public String getString(Feature feature) {
     return getString(feature.name());
+  }
+
+  @Override
+  public String getString(String key, ClientContext ctx) {
+    return null;
+  }
+
+  @Override
+  public String getString(Feature feature, ClientContext ctx) {
+    return null;
   }
 
   @Override
@@ -223,6 +253,16 @@ public class ClientFeatureRepository implements FeatureRepository {
   }
 
   @Override
+  public BigDecimal getNumber(String key, ClientContext ctx) {
+    return null;
+  }
+
+  @Override
+  public BigDecimal getNumber(Feature feature, ClientContext ctx) {
+    return null;
+  }
+
+  @Override
   public <T> T getJson(String key, Class<T> type) {
     return getFeatureState(key).getJson(type);
   }
@@ -230,6 +270,16 @@ public class ClientFeatureRepository implements FeatureRepository {
   @Override
   public <T> T getJson(Feature feature, Class<T> type) {
     return getJson(feature.name(), type);
+  }
+
+  @Override
+  public <T> T getJson(String key, Class<T> type, ClientContext ctx) {
+    return null;
+  }
+
+  @Override
+  public <T> T getJson(Feature feature, Class<T> type, ClientContext ctx) {
+    return null;
   }
 
   @Override
@@ -243,6 +293,16 @@ public class ClientFeatureRepository implements FeatureRepository {
   }
 
   @Override
+  public String getRawJson(String key, ClientContext ctx) {
+    return null;
+  }
+
+  @Override
+  public String getRawJson(Feature feature, ClientContext ctx) {
+    return null;
+  }
+
+  @Override
   public boolean isSet(String key) {
     return getFeatureState(key).isSet();
   }
@@ -253,6 +313,16 @@ public class ClientFeatureRepository implements FeatureRepository {
   }
 
   @Override
+  public boolean isSet(String key, ClientContext ctx) {
+    return false;
+  }
+
+  @Override
+  public boolean isSet(Feature feature, ClientContext ctx) {
+    return false;
+  }
+
+  @Override
   public boolean exists(String key) {
     return !(getFeatureState(key) instanceof FeatureStatePlaceHolder);
   }
@@ -260,6 +330,16 @@ public class ClientFeatureRepository implements FeatureRepository {
   @Override
   public boolean exists(Feature feature) {
     return exists(feature.name());
+  }
+
+  @Override
+  public boolean exists(String key, ClientContext ctx) {
+    return false;
+  }
+
+  @Override
+  public boolean exists(Feature feature, ClientContext ctx) {
+    return false;
   }
 
   @Override
