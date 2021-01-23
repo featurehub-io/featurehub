@@ -183,9 +183,10 @@ func (fake *FakeClient) AddAnalyticsCollector(arg1 interfaces.AnalyticsCollector
 	fake.addAnalyticsCollectorArgsForCall = append(fake.addAnalyticsCollectorArgsForCall, struct {
 		arg1 interfaces.AnalyticsCollector
 	}{arg1})
+	stub := fake.AddAnalyticsCollectorStub
 	fake.recordInvocation("AddAnalyticsCollector", []interface{}{arg1})
 	fake.addAnalyticsCollectorMutex.Unlock()
-	if fake.AddAnalyticsCollectorStub != nil {
+	if stub != nil {
 		fake.AddAnalyticsCollectorStub(arg1)
 	}
 }
@@ -216,15 +217,16 @@ func (fake *FakeClient) AddNotifierBoolean(arg1 string, arg2 models.CallbackFunc
 		arg1 string
 		arg2 models.CallbackFuncBoolean
 	}{arg1, arg2})
+	stub := fake.AddNotifierBooleanStub
+	fakeReturns := fake.addNotifierBooleanReturns
 	fake.recordInvocation("AddNotifierBoolean", []interface{}{arg1, arg2})
 	fake.addNotifierBooleanMutex.Unlock()
-	if fake.AddNotifierBooleanStub != nil {
-		return fake.AddNotifierBooleanStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.addNotifierBooleanReturns
 	return fakeReturns.result1
 }
 
@@ -277,15 +279,16 @@ func (fake *FakeClient) AddNotifierFeature(arg1 string, arg2 models.CallbackFunc
 		arg1 string
 		arg2 models.CallbackFuncFeature
 	}{arg1, arg2})
+	stub := fake.AddNotifierFeatureStub
+	fakeReturns := fake.addNotifierFeatureReturns
 	fake.recordInvocation("AddNotifierFeature", []interface{}{arg1, arg2})
 	fake.addNotifierFeatureMutex.Unlock()
-	if fake.AddNotifierFeatureStub != nil {
-		return fake.AddNotifierFeatureStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.addNotifierFeatureReturns
 	return fakeReturns.result1
 }
 
@@ -338,15 +341,16 @@ func (fake *FakeClient) AddNotifierJSON(arg1 string, arg2 models.CallbackFuncJSO
 		arg1 string
 		arg2 models.CallbackFuncJSON
 	}{arg1, arg2})
+	stub := fake.AddNotifierJSONStub
+	fakeReturns := fake.addNotifierJSONReturns
 	fake.recordInvocation("AddNotifierJSON", []interface{}{arg1, arg2})
 	fake.addNotifierJSONMutex.Unlock()
-	if fake.AddNotifierJSONStub != nil {
-		return fake.AddNotifierJSONStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.addNotifierJSONReturns
 	return fakeReturns.result1
 }
 
@@ -399,15 +403,16 @@ func (fake *FakeClient) AddNotifierNumber(arg1 string, arg2 models.CallbackFuncN
 		arg1 string
 		arg2 models.CallbackFuncNumber
 	}{arg1, arg2})
+	stub := fake.AddNotifierNumberStub
+	fakeReturns := fake.addNotifierNumberReturns
 	fake.recordInvocation("AddNotifierNumber", []interface{}{arg1, arg2})
 	fake.addNotifierNumberMutex.Unlock()
-	if fake.AddNotifierNumberStub != nil {
-		return fake.AddNotifierNumberStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.addNotifierNumberReturns
 	return fakeReturns.result1
 }
 
@@ -460,15 +465,16 @@ func (fake *FakeClient) AddNotifierString(arg1 string, arg2 models.CallbackFuncS
 		arg1 string
 		arg2 models.CallbackFuncString
 	}{arg1, arg2})
+	stub := fake.AddNotifierStringStub
+	fakeReturns := fake.addNotifierStringReturns
 	fake.recordInvocation("AddNotifierString", []interface{}{arg1, arg2})
 	fake.addNotifierStringMutex.Unlock()
-	if fake.AddNotifierStringStub != nil {
-		return fake.AddNotifierStringStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.addNotifierStringReturns
 	return fakeReturns.result1
 }
 
@@ -521,15 +527,16 @@ func (fake *FakeClient) DeleteNotifier(arg1 string, arg2 string) error {
 		arg1 string
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.DeleteNotifierStub
+	fakeReturns := fake.deleteNotifierReturns
 	fake.recordInvocation("DeleteNotifier", []interface{}{arg1, arg2})
 	fake.deleteNotifierMutex.Unlock()
-	if fake.DeleteNotifierStub != nil {
-		return fake.DeleteNotifierStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deleteNotifierReturns
 	return fakeReturns.result1
 }
 
@@ -581,15 +588,16 @@ func (fake *FakeClient) GetBoolean(arg1 string) (bool, error) {
 	fake.getBooleanArgsForCall = append(fake.getBooleanArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.GetBooleanStub
+	fakeReturns := fake.getBooleanReturns
 	fake.recordInvocation("GetBoolean", []interface{}{arg1})
 	fake.getBooleanMutex.Unlock()
-	if fake.GetBooleanStub != nil {
-		return fake.GetBooleanStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getBooleanReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -644,15 +652,16 @@ func (fake *FakeClient) GetFeature(arg1 string) (*models.FeatureState, error) {
 	fake.getFeatureArgsForCall = append(fake.getFeatureArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.GetFeatureStub
+	fakeReturns := fake.getFeatureReturns
 	fake.recordInvocation("GetFeature", []interface{}{arg1})
 	fake.getFeatureMutex.Unlock()
-	if fake.GetFeatureStub != nil {
-		return fake.GetFeatureStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getFeatureReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -707,15 +716,16 @@ func (fake *FakeClient) GetNumber(arg1 string) (float64, error) {
 	fake.getNumberArgsForCall = append(fake.getNumberArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.GetNumberStub
+	fakeReturns := fake.getNumberReturns
 	fake.recordInvocation("GetNumber", []interface{}{arg1})
 	fake.getNumberMutex.Unlock()
-	if fake.GetNumberStub != nil {
-		return fake.GetNumberStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getNumberReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -770,15 +780,16 @@ func (fake *FakeClient) GetRawJSON(arg1 string) (string, error) {
 	fake.getRawJSONArgsForCall = append(fake.getRawJSONArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.GetRawJSONStub
+	fakeReturns := fake.getRawJSONReturns
 	fake.recordInvocation("GetRawJSON", []interface{}{arg1})
 	fake.getRawJSONMutex.Unlock()
-	if fake.GetRawJSONStub != nil {
-		return fake.GetRawJSONStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getRawJSONReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -833,15 +844,16 @@ func (fake *FakeClient) GetString(arg1 string) (string, error) {
 	fake.getStringArgsForCall = append(fake.getStringArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.GetStringStub
+	fakeReturns := fake.getStringReturns
 	fake.recordInvocation("GetString", []interface{}{arg1})
 	fake.getStringMutex.Unlock()
-	if fake.GetStringStub != nil {
-		return fake.GetStringStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getStringReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -896,9 +908,10 @@ func (fake *FakeClient) LogAnalyticsEvent(arg1 string, arg2 map[string]string) {
 		arg1 string
 		arg2 map[string]string
 	}{arg1, arg2})
+	stub := fake.LogAnalyticsEventStub
 	fake.recordInvocation("LogAnalyticsEvent", []interface{}{arg1, arg2})
 	fake.logAnalyticsEventMutex.Unlock()
-	if fake.LogAnalyticsEventStub != nil {
+	if stub != nil {
 		fake.LogAnalyticsEventStub(arg1, arg2)
 	}
 }
@@ -929,15 +942,16 @@ func (fake *FakeClient) LogAnalyticsEventSync(arg1 string, arg2 map[string]strin
 		arg1 string
 		arg2 map[string]string
 	}{arg1, arg2})
+	stub := fake.LogAnalyticsEventSyncStub
+	fakeReturns := fake.logAnalyticsEventSyncReturns
 	fake.recordInvocation("LogAnalyticsEventSync", []interface{}{arg1, arg2})
 	fake.logAnalyticsEventSyncMutex.Unlock()
-	if fake.LogAnalyticsEventSyncStub != nil {
-		return fake.LogAnalyticsEventSyncStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.logAnalyticsEventSyncReturns
 	return fakeReturns.result1
 }
 
@@ -988,9 +1002,10 @@ func (fake *FakeClient) ReadinessListener(arg1 func()) {
 	fake.readinessListenerArgsForCall = append(fake.readinessListenerArgsForCall, struct {
 		arg1 func()
 	}{arg1})
+	stub := fake.ReadinessListenerStub
 	fake.recordInvocation("ReadinessListener", []interface{}{arg1})
 	fake.readinessListenerMutex.Unlock()
-	if fake.ReadinessListenerStub != nil {
+	if stub != nil {
 		fake.ReadinessListenerStub(arg1)
 	}
 }

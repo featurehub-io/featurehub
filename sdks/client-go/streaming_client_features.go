@@ -29,17 +29,7 @@ func (c *StreamingClient) GetBoolean(key string) (bool, error) {
 		return false, err
 	}
 
-	// Make sure the feature is the correct type:
-	if feature.Type != models.TypeBoolean {
-		return false, errors.NewErrInvalidType(string(feature.Type))
-	}
-
-	// Assert the value:
-	if value, ok := feature.Value.(bool); ok {
-		return value, nil
-	}
-
-	return false, errors.NewErrInvalidType("Unable to assert value as a bool")
+	return feature.AsBoolean()
 }
 
 // GetNumber searches for a feature by key, returns the value as a float64:
@@ -51,17 +41,7 @@ func (c *StreamingClient) GetNumber(key string) (float64, error) {
 		return 0, err
 	}
 
-	// Make sure the feature is the correct type:
-	if feature.Type != models.TypeNumber {
-		return 0, errors.NewErrInvalidType(string(feature.Type))
-	}
-
-	// Assert the value:
-	if value, ok := feature.Value.(float64); ok {
-		return value, nil
-	}
-
-	return 0, errors.NewErrInvalidType("Unable to assert value as a float64")
+	return feature.AsNumber()
 }
 
 // GetRawJSON searches for a feature by key, returns the value as a JSON string:
@@ -73,17 +53,7 @@ func (c *StreamingClient) GetRawJSON(key string) (string, error) {
 		return "{}", err
 	}
 
-	// Make sure the feature is the correct type:
-	if feature.Type != models.TypeJSON {
-		return "{}", errors.NewErrInvalidType(string(feature.Type))
-	}
-
-	// Assert the value:
-	if value, ok := feature.Value.(string); ok {
-		return value, nil
-	}
-
-	return "{}", errors.NewErrInvalidType("Unable to assert value as a string")
+	return feature.AsRawJSON()
 }
 
 // GetString searches for a feature by key, returns the value as a string:
@@ -95,15 +65,5 @@ func (c *StreamingClient) GetString(key string) (string, error) {
 		return "", err
 	}
 
-	// Make sure the feature is the correct type:
-	if feature.Type != models.TypeString {
-		return "", errors.NewErrInvalidType(string(feature.Type))
-	}
-
-	// Assert the value:
-	if value, ok := feature.Value.(string); ok {
-		return value, nil
-	}
-
-	return "", errors.NewErrInvalidType("Unable to assert value as a string")
+	return feature.AsString()
 }

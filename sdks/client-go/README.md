@@ -33,7 +33,7 @@ There are 3 steps to connecting:
     config := &client.Config{
         SDKKey:        "default/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee/ajhsgdJHGAFKJAHSGDFKAJHHSDLFKAJLSKJDHFLAJKHlkjahlkjhfsld",
         ServerAddress: "http://1.2.3.4:8085",
-        WaitForData:   true,
+		WaitForData:   true,
     }
 ```
 
@@ -113,6 +113,7 @@ The client SDK allows the user to define a callback function which will be trigg
 
 ### Analytics Collector
 The client SDK provides the ability to generate analytics events with the `LogAnalyticsEvent` method. An event will be generated for each feature that we have.
+
 ```go
 	action := "payment"
 	tags := map[string]string{"user": "bob"}
@@ -123,6 +124,7 @@ The SDK offers a logging analytics collector which will log events to the consol
 
 #### Google Analytics
 The GoLang SDK comes with a pre-made Google Analytics collector. Here is how to use it:
+
 ```go
 	googleAnalyticsCollector, err := analytics.NewGoogleAnalyticsCollector(clientID, trackingID, userAgentKey)
 	if err != nil {
@@ -131,6 +133,29 @@ The GoLang SDK comes with a pre-made Google Analytics collector. Here is how to 
 	client.AddAnalyticsCollector(googleAnalyticsCollector)
 ```
 Any subsequent calls to `client.LogAnalyticsEvent()` will result in events being sent via the Google Analytics collector (as well as any other which you have added).
+
+
+### Client-side rollout strategies
+Some rollout strategies need to be calculated per-request, which means that we can't rely on the server to do this for us. For this we provide the ability to apply a client context to a feature before using its value:
+
+```go
+	// Define your client context (rollout strategies will hash by Session, or Userkey if Session is unset):
+	clientContext := &Context{
+		Userkey:  "12345",
+		Device:   "server",
+		Platform: "linux",
+		Country:  "russia",
+		Version:  "1.0.5",
+	}
+
+	// First retrieve the value as a feature:
+	featureValue, _ := fhClient.GetFeature("feature-key")
+
+	// Then you can apply a client context and read your value as its specific type, with rollout strategies applied:
+	numberValue, _ := featureValue.WithContext(clientContext).AsNumber()
+```
+If the featureValue has rollout strategies defined then they will be applied according to the client context you provide.
+
 
 
 Todo
@@ -145,5 +170,29 @@ Todo
 - [X] Global "readyness" callback (either OK when data has arrived, or an error if there was a fail)
 - [X] Analytics support
 - [X] Google Analytics support
-- [ ] Re-introduce the "polling" client (if we decide to go down that route for other SDKs)
+- [X] Removed support for server-side ClientContext, and submit this as an x-featurehub header upon connection
 - [ ] Run tests and code-generation inside Docker (instead of requiring Go to be installed locally)
+- [X] Client-side rollout strategies (https://github.com/featurehub-io/featurehub/tree/master/backend/sse-strategy-matchers/src)
+	- [x] Percentages [==, !=]
+	- [x] Country [==, !=]
+	- [x] Device [==, !=]
+	- [x] Platform [==, !=]
+	- [x] Version [==, !=, >, >=, <, <=]
+	- [ ] Custom
+		- [ ] string
+		- [ ] semver
+		- [ ] number
+		- [ ] date
+		- [ ] date-time
+		- [ ] boolean
+		- [ ] ip-address
+
+Strategy matching logic:
+- If strategy has a percentage then hash on userkey or session and decide
+- If the percentage doesn't match then continue with the next strategy
+- If percentage matches (or there is no percentage) then continue and iterate through the attributes
+	- If the attribute doesn't match then fall back and continue with the next strategy
+	- If attribute matches then continue and check the next attribute
+	- If all attributes match then we return the value from this strategy
+	- Otherwise continue with the next strategy
+- If no strategies match then return the default value for the feature

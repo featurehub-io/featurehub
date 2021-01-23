@@ -1,6 +1,7 @@
 package client
 
 import (
+	"net/http"
 	"sync"
 	"time"
 
@@ -49,6 +50,9 @@ func NewStreamingClient(config *Config) (*StreamingClient, error) {
 	logger := logrus.New()
 	logger.SetLevel(config.LogLevel)
 
+	// Set this logger in the models package (they use a global to keep the API simple):
+	models.SetLogger(logger)
+
 	// Put this into a new StreamingClient:
 	client := &StreamingClient{
 		config:    config,
@@ -59,8 +63,15 @@ func NewStreamingClient(config *Config) (*StreamingClient, error) {
 	// Report that we're starting:
 	logger.WithField("server_address", client.config.ServerAddress).Info("Subscribing to FeatureHub server")
 
+	// Prepare a custom HTTP request:
+	req, err := http.NewRequest("GET", config.featuresURL(), nil)
+	if err != nil {
+		client.logger.WithError(err).Error("Error preparing request")
+		return nil, err
+	}
+
 	// Prepare an API client:
-	apiClient, err := eventsource.Subscribe(config.featuresURL(), "")
+	apiClient, err := eventsource.SubscribeWithRequest("", req)
 	if err != nil {
 		client.logger.WithError(err).Error("Error subscribing to server")
 		return nil, err
