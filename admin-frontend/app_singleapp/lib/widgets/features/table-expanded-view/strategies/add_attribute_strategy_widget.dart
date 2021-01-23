@@ -69,8 +69,8 @@ class _EditAttributeStrategyWidgetState
 
     _attributeType = _attribute.type; // which could be null
 
-    _wellKnown = StrategyAttributeWellKnownNamesTypeTransformer
-        .fromJsonMap[_attribute.fieldName ?? ''];
+    _wellKnown =
+        StrategyAttributeWellKnownNamesExtension.fromJson(_attribute.fieldName);
 
     _value.text = '';
 
@@ -265,8 +265,8 @@ class _EditAttributeStrategyWidgetState
   }
 
   void _updateAttributeFieldName() {
-    final newWellKnown = StrategyAttributeWellKnownNamesTypeTransformer
-        .fromJsonMap[_fieldName.text ?? ''];
+    final newWellKnown =
+        StrategyAttributeWellKnownNamesExtension.fromJson(_fieldName.text);
 
     if (newWellKnown != _wellKnown) {
       setState(() {
@@ -498,7 +498,7 @@ class _EditAttributeStrategyWidgetState
             _value.text = '';
           });
         }
-      // ignore: empty_catches
+        // ignore: empty_catches
       } catch (e) {}
     } else {
       if (!_attribute.values.contains(val)) {
@@ -511,32 +511,27 @@ class _EditAttributeStrategyWidgetState
   }
 }
 
-final _countryNameReverseMapper = (val) => (val is String)
-    ? StrategyAttributeCountryNameTypeTransformer.fromJson(val)
-    : val;
+final _countryNameReverseMapper = (val) =>
+    (val is String) ? StrategyAttributeCountryNameExtension.fromJson(val) : val;
 
-final _countryNameMapper = (dynamic val) => ((val is String)
-        ? val
-        : StrategyAttributeCountryNameTypeTransformer.toJson(val))
-    .toString()
-    .replaceAll('_', ' ')
-    .replaceAll('of the', '')
-    .replaceAll('of', '')
-    .trim()
-    .capitalizeFirstofEach;
+final _countryNameMapper = (dynamic val) =>
+    ((val is StrategyAttributeCountryName) ? val.toJson() : val.toString())
+        .toString()
+        .replaceAll('_', ' ')
+        .replaceAll('of the', '')
+        .replaceAll('of', '')
+        .trim()
+        .capitalizeFirstofEach;
 
-final _deviceNameMapper = (dynamic val) => (val is String)
-    ? val
-    : StrategyAttributeDeviceNameTypeTransformer.toJson(val).toString();
+final _deviceNameMapper = (dynamic val) =>
+    (val is StrategyAttributeDeviceName) ? val.toJson() : val.toString();
 
-final _deviceNameReverseMapper = (val) => (val is String)
-    ? StrategyAttributeDeviceNameTypeTransformer.fromJson(val)
-    : val;
+final _deviceNameReverseMapper = (val) =>
+    (val is String) ? StrategyAttributeDeviceNameExtension.fromJson(val) : val;
 
 final _platformNameReverseMapper = (val) => (val is String)
-    ? StrategyAttributePlatformNameTypeTransformer.fromJson(val)
+    ? StrategyAttributePlatformNameExtension.fromJson(val)
     : val;
 
-final _platformNameMapper = (dynamic val) => (val is String)
-    ? val
-    : StrategyAttributePlatformNameTypeTransformer.toJson(val).toString();
+final _platformNameMapper = (dynamic val) =>
+    (val is StrategyAttributePlatformName) ? val.toJson() : val.toString();
