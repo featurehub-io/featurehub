@@ -171,10 +171,21 @@ Todo
 - [X] Analytics support
 - [X] Google Analytics support
 - [X] Removed support for server-side ClientContext, and submit this as an x-featurehub header upon connection
-- [ ] Re-introduce the "polling" client (if we decide to go down that route for other SDKs)
 - [ ] Run tests and code-generation inside Docker (instead of requiring Go to be installed locally)
 - [X] Client-side rollout strategies (https://github.com/featurehub-io/featurehub/tree/master/backend/sse-strategy-matchers/src)
-
+	- [x] Percentages [==, !=]
+	- [x] Country [==, !=]
+	- [x] Device [==, !=]
+	- [x] Platform [==, !=]
+	- [x] Version [==, !=, >, >=, <, <=]
+	- [ ] Custom
+		- [ ] string
+		- [ ] semver
+		- [ ] number
+		- [ ] date
+		- [ ] date-time
+		- [ ] boolean
+		- [ ] ip-address
 
 Strategy matching logic:
 - If strategy has a percentage then hash on userkey or session and decide
