@@ -141,7 +141,11 @@ Some rollout strategies need to be calculated per-request, which means that we c
 ```go
 	// Define your client context (rollout strategies will hash by Session, or Userkey if Session is unset):
 	clientContext := &Context{
-		Userkey: "12345",
+		Userkey:  "12345",
+		Device:   "server",
+		Platform: "linux",
+		Country:  "russia",
+		Version:  "1.0.5",
 	}
 
 	// First retrieve the value as a feature:
@@ -150,7 +154,7 @@ Some rollout strategies need to be calculated per-request, which means that we c
 	// Then you can apply a client context and read your value as its specific type, with rollout strategies applied:
 	numberValue, _ := featureValue.WithContext(clientContext).AsNumber()
 ```
-If the featureValue has rollout strategies defined then they will be applied according to client context you provide.
+If the featureValue has rollout strategies defined then they will be applied according to the client context you provide.
 
 
 
@@ -170,3 +174,14 @@ Todo
 - [ ] Re-introduce the "polling" client (if we decide to go down that route for other SDKs)
 - [ ] Run tests and code-generation inside Docker (instead of requiring Go to be installed locally)
 - [X] Client-side rollout strategies (https://github.com/featurehub-io/featurehub/tree/master/backend/sse-strategy-matchers/src)
+
+
+Strategy matching logic:
+- If strategy has a percentage then hash on userkey or session and decide
+- If the percentage doesn't match then continue with the next strategy
+- If percentage matches (or there is no percentage) then continue and iterate through the attributes
+	- If the attribute doesn't match then fall back and continue with the next strategy
+	- If attribute matches then continue and check the next attribute
+	- If all attributes match then we return the value from this strategy
+	- Otherwise continue with the next strategy
+- If no strategies match then return the default value for the feature

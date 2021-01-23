@@ -40,9 +40,12 @@ func (c *Context) UniqueKey() (string, bool) {
 type ContextDevice string
 
 const (
-	ContextDeviceBrowser ContextDevice = "browser"
-	ContextDeviceDesktop ContextDevice = "desktop"
-	ContextDeviceMobile  ContextDevice = "mobile"
+	ContextDeviceBrowser  ContextDevice = "browser"
+	ContextDeviceDesktop  ContextDevice = "desktop"
+	ContextDeviceEmbedded ContextDevice = "embedded"
+	ContextDeviceMobile   ContextDevice = "mobile"
+	ContextDeviceServer   ContextDevice = "server"
+	ContextDeviceWatch    ContextDevice = "watch"
 )
 
 // ContextPlatform is the client's platform (OS):

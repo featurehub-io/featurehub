@@ -111,6 +111,8 @@ func (c *StreamingClient) handleFHFeature(event eventsource.Event) {
 
 func (c *StreamingClient) handleFHFeatures(event eventsource.Event) {
 
+	// spew.Dump(event.Data())
+
 	// Unmarshal the event payload:
 	features := []*models.FeatureState{}
 	if err := json.Unmarshal([]byte(event.Data()), &features); err != nil {

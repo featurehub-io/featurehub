@@ -50,6 +50,9 @@ func NewStreamingClient(config *Config) (*StreamingClient, error) {
 	logger := logrus.New()
 	logger.SetLevel(config.LogLevel)
 
+	// Set the global log level (because we can't pass the logger everywhere just yet):
+	logrus.SetLevel(config.LogLevel)
+
 	// Put this into a new StreamingClient:
 	client := &StreamingClient{
 		config:    config,
