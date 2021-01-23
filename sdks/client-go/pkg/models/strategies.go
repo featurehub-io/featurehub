@@ -4,7 +4,6 @@ import (
 	"math"
 
 	"github.com/mcuadros/go-version"
-	"github.com/sirupsen/logrus"
 	"github.com/spaolacci/murmur3"
 )
 
@@ -62,22 +61,22 @@ func (ss Strategies) calculate(ctx *Context) interface{} {
 
 	// Go through the available strategies:
 	for _, strategy := range ss {
-		logrus.Tracef("Checking strategy (%s)", strategy.ID)
+		logger.Tracef("Checking strategy (%s)", strategy.ID)
 
 		// Check if we match any percentage-based rule:
 		if !strategy.proceedWithPercentage(hashKey) {
-			logrus.Tracef("Failed strategy (%s) percentage - trying next strategy", strategy.ID)
+			logger.Tracef("Failed strategy (%s) percentage - trying next strategy", strategy.ID)
 			continue
 		}
 
 		// Check if we match the attribute-based rules:
 		if !strategy.proceedWithAttributes(ctx) {
-			logrus.Tracef("Failed strategy (%s) attributes - trying next strategy", strategy.ID)
+			logger.Tracef("Failed strategy (%s) attributes - trying next strategy", strategy.ID)
 			continue
 		}
 
 		// If we got this far then we matched this strategy, so we return its value:
-		logrus.Debugf("Matched strategy (%s:%s)", strategy.ID, strategy.Name)
+		logger.Debugf("Matched strategy (%s:%s)", strategy.ID, strategy.Name)
 		return strategy.Value
 	}
 
@@ -103,11 +102,11 @@ func (s Strategy) proceedWithPercentage(hashKey string) bool {
 
 	// If our calculated percentage is less than the strategy percentage then we matched!
 	if hashedPercentage <= s.Percentage {
-		logrus.Tracef("Matched percentage strategy (%s:%f = %v) for calculated percentage: %v\n", s.ID, s.Percentage, s.Value, hashedPercentage)
+		logger.Tracef("Matched percentage strategy (%s:%f = %v) for calculated percentage: %v\n", s.ID, s.Percentage, s.Value, hashedPercentage)
 		return true
 	}
 
-	logrus.Debugf("Didn't match percentage strategy (%s:%f = %v) for calculated percentage: %v\n", s.ID, s.Percentage, s.Value, hashedPercentage)
+	logger.Debugf("Didn't match percentage strategy (%s:%f = %v) for calculated percentage: %v\n", s.ID, s.Percentage, s.Value, hashedPercentage)
 	return false
 }
 
@@ -124,7 +123,7 @@ func (s Strategy) proceedWithAttributes(ctx *Context) bool {
 			if sa.matchConditional(sa.Values, string(ctx.Country)) {
 				continue
 			}
-			logrus.Tracef("Didn't match attribute strategy (%s:%s = %v) for country: %v\n", sa.ID, sa.FieldName, sa.Values, ctx.Country)
+			logger.Tracef("Didn't match attribute strategy (%s:%s = %v) for country: %v\n", sa.ID, sa.FieldName, sa.Values, ctx.Country)
 			return false
 
 		// Match by device type:
@@ -132,7 +131,7 @@ func (s Strategy) proceedWithAttributes(ctx *Context) bool {
 			if sa.matchConditional(sa.Values, string(ctx.Device)) {
 				continue
 			}
-			logrus.Tracef("Didn't match attribute strategy (%s:%s = %v) for device: %v\n", sa.ID, sa.FieldName, sa.Values, ctx.Device)
+			logger.Tracef("Didn't match attribute strategy (%s:%s = %v) for device: %v\n", sa.ID, sa.FieldName, sa.Values, ctx.Device)
 			return false
 
 		// Match by platform:
@@ -140,21 +139,21 @@ func (s Strategy) proceedWithAttributes(ctx *Context) bool {
 			if sa.matchConditional(sa.Values, string(ctx.Platform)) {
 				continue
 			}
-			logrus.Tracef("Didn't match attribute strategy (%s:%s = %v) for platform: %v\n", sa.ID, sa.FieldName, sa.Values, ctx.Platform)
+			logger.Tracef("Didn't match attribute strategy (%s:%s = %v) for platform: %v\n", sa.ID, sa.FieldName, sa.Values, ctx.Platform)
 			return false
 
 		// Match by version:
 		case strategyFieldNameVersion:
-			logrus.Trace("Trying version")
+			logger.Trace("Trying version")
 			if sa.matchConditional(sa.Values, string(ctx.Version)) {
 				continue
 			}
-			logrus.Tracef("Didn't match attribute strategy (%s:%s = %v) for version: %v\n", sa.ID, sa.FieldName, sa.Values, ctx.Version)
+			logger.Tracef("Didn't match attribute strategy (%s:%s = %v) for version: %v\n", sa.ID, sa.FieldName, sa.Values, ctx.Version)
 			return false
 
 		// Some other (unsupported) field:
 		default:
-			logrus.Infof("Unsupported strategy field (%s)", sa.FieldName)
+			logger.Infof("Unsupported strategy field (%s)", sa.FieldName)
 			return false
 		}
 	}
