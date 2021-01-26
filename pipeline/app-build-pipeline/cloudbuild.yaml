@@ -16,7 +16,7 @@ steps:
   - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
     entrypoint: '/bin/sh'
     env:
-      - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3 -Dmaven.wagon.http.pool=false -Dhttp.keepAlive=false
+      - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3
     args:
       - '-c'
       - 'cd featurehub/backend && mvn -s ../pipeline/m2/settings.xml --no-transfer-progress install -f pom-first.xml'
@@ -27,7 +27,7 @@ steps:
     # if anything in the front-end list of stuff has changed, touch the file `build-frontend` and the next two
     # steps will cause everything necessary to build. The pom-front-end.xml is just a dependency tree and change checker.
     env:
-      - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3 -Dmaven.wagon.http.pool=false -Dhttp.keepAlive=false
+      - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3
     args:
       - '-c'
       - 'cd featurehub && mvn -s pipeline/m2/settings.xml --no-transfer-progress validate -f pom-front-end.xml && touch front-end-changed.projects && CHANGED=`wc -l < front-end-changed.projects|xargs` && if [ "$CHANGED" != "0" ]; then touch build-frontend; fi'
@@ -39,7 +39,7 @@ steps:
   - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
     entrypoint: '/bin/sh'
     env:
-      - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3 -Dmaven.wagon.http.pool=false -Dhttp.keepAlive=false
+      - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3
     # these are required for the flutter build to work
     args:
       - '-c'
@@ -53,7 +53,7 @@ steps:
       - 'cd featurehub && chmod u+x admin-frontend/pipeline-build.sh && admin-frontend/pipeline-build.sh'
   - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
     env:
-      - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3 -Dmaven.wagon.http.pool=false -Dhttp.keepAlive=false
+      - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3
     entrypoint: '/bin/sh'
     args:
       - '-c'
@@ -61,7 +61,7 @@ steps:
   - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
     # run partial build if special "all-build" file is missing
     env:
-      - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3 -Dmaven.wagon.http.pool=false -Dhttp.keepAlive=false
+      - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3
     entrypoint: '/bin/sh'
     args:
       - '-c'
