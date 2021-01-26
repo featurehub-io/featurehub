@@ -5,8 +5,11 @@ import io.featurehub.sse.model.StrategyAttributeDeviceName;
 import io.featurehub.sse.model.StrategyAttributePlatformName;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ClientContext {
+  String get(String key, String defaultValue);
+
   interface ClientContextChanged {
     /**
      *
@@ -36,6 +39,9 @@ public interface ClientContext {
    * @return this
    */
   ClientContext build();
+
+  Map<String, List<String>> context();
+  String defaultPercentageKey();
 
   ClientContextListenerRemoval registerChangeListener(ClientContextChanged listener);
 }

@@ -2,7 +2,6 @@ package io.featurehub.client.jersey;
 
 import io.featurehub.client.ClientFeatureRepository;
 import io.featurehub.client.Feature;
-import io.featurehub.client.StaticFeatureContext;
 import io.featurehub.sse.model.FeatureStateUpdate;
 import io.featurehub.sse.model.StrategyAttributeDeviceName;
 import io.featurehub.sse.model.StrategyAttributePlatformName;

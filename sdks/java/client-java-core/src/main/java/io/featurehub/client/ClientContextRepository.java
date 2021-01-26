@@ -26,6 +26,16 @@ public class ClientContextRepository implements ClientContext {
   }
 
   @Override
+  public String get(String key, String defaultValue) {
+    if (clientContext.containsKey(key)) {
+      final List<String> vals = clientContext.get(key);
+      return vals.isEmpty() ? defaultValue : vals.get(0);
+    }
+
+    return defaultValue;
+  }
+
+  @Override
   public ClientContext userKey(String userKey) {
     clientContext.put("userkey", Collections.singletonList(userKey));
     return this;
@@ -93,6 +103,22 @@ public class ClientContextRepository implements ClientContext {
       }
     });
     return this;
+  }
+
+  @Override
+  public Map<String, List<String>> context() {
+    return clientContext;
+  }
+
+  @Override
+  public String defaultPercentageKey() {
+    if (clientContext.containsKey("session")) {
+      return clientContext.get("session").get(0);
+    } else if (clientContext.containsKey("userkey")) {
+      return clientContext.get("userkey").get(0);
+    }
+
+    return null;
   }
 
   private String generateHeader() {
