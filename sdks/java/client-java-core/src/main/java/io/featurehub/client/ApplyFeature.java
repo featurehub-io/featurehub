@@ -122,7 +122,7 @@ public class ApplyFeature {
     return true;
   }
 
-  private String determinePercentageKey(ClientAttributeCollection cac, List<String> percentageAttributes) {
+  private String determinePercentageKey(ClientContext cac, List<String> percentageAttributes) {
     if (percentageAttributes.isEmpty()) {
       return cac.defaultPercentageKey();
     }

@@ -20,14 +20,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-public class ClientFeatureRepository implements FeatureRepository {
+public class ClientFeatureRepository extends AbstractFeatureRepository {
   private static final Logger log = LoggerFactory.getLogger(ClientFeatureRepository.class);
   // feature-key, feature-state
   private final Map<String, FeatureStateBaseHolder> features = new ConcurrentHashMap<>();
   private final Executor executor;
   private final ObjectMapper mapper;
-  private final TypeReference<List<FeatureState>> FEATURE_LIST_TYPEDEF
-    = new TypeReference<List<FeatureState>>() {};
   private boolean hasReceivedInitialState = false;
   private final List<AnalyticsCollector> analyticsCollectors = new ArrayList<>();
   private Readyness readyness = Readyness.NotReady;
@@ -35,6 +33,9 @@ public class ClientFeatureRepository implements FeatureRepository {
   private final List<FeatureValueInterceptorHolder> featureValueInterceptors = new ArrayList<>();
   private ObjectMapper jsonConfigObjectMapper;
   private final ClientContext clientContext;
+
+  private final TypeReference<List<FeatureState>> FEATURE_LIST_TYPEDEF
+    = new TypeReference<List<FeatureState>>() {};
 
   public ClientFeatureRepository(int threadPoolSize) {
     mapper = initializeMapper();
@@ -185,161 +186,6 @@ public class ClientFeatureRepository implements FeatureRepository {
 
       return new FeatureStatePlaceHolder(executor, featureValueInterceptors, key, mapper);
     });
-  }
-
-  @Override
-  public FeatureStateHolder getFeatureState(Feature feature) {
-    return this.getFeatureState(feature.name());
-  }
-
-  @Override
-  public FeatureStateHolder getFeatureState(String key, ClientContext ctx) {
-    return null;
-  }
-
-  @Override
-  public FeatureStateHolder getFeatureState(Feature feature, ClientContext ctx) {
-    return null;
-  }
-
-  @Override
-  public boolean getFlag(Feature feature) {
-    return getFlag(feature.name());
-  }
-
-  @Override
-  public boolean getFlag(String key, ClientContext ctx) {
-    return false;
-  }
-
-  @Override
-  public boolean getFlag(Feature feature, ClientContext ctx) {
-    return false;
-  }
-
-  @Override
-  public boolean getFlag(String key) {
-    return getFeatureState(key).getBoolean() == Boolean.TRUE;
-  }
-
-  @Override
-  public String getString(Feature feature) {
-    return getString(feature.name());
-  }
-
-  @Override
-  public String getString(String key, ClientContext ctx) {
-    return null;
-  }
-
-  @Override
-  public String getString(Feature feature, ClientContext ctx) {
-    return null;
-  }
-
-  @Override
-  public String getString(String key) {
-    return getFeatureState(key).getString();
-  }
-
-  @Override
-  public BigDecimal getNumber(String key) {
-    return getFeatureState(key).getNumber();
-  }
-
-  @Override
-  public BigDecimal getNumber(Feature feature) {
-    return getNumber(feature.name());
-  }
-
-  @Override
-  public BigDecimal getNumber(String key, ClientContext ctx) {
-    return null;
-  }
-
-  @Override
-  public BigDecimal getNumber(Feature feature, ClientContext ctx) {
-    return null;
-  }
-
-  @Override
-  public <T> T getJson(String key, Class<T> type) {
-    return getFeatureState(key).getJson(type);
-  }
-
-  @Override
-  public <T> T getJson(Feature feature, Class<T> type) {
-    return getJson(feature.name(), type);
-  }
-
-  @Override
-  public <T> T getJson(String key, Class<T> type, ClientContext ctx) {
-    return null;
-  }
-
-  @Override
-  public <T> T getJson(Feature feature, Class<T> type, ClientContext ctx) {
-    return null;
-  }
-
-  @Override
-  public String getRawJson(String key) {
-    return getFeatureState(key).getRawJson();
-  }
-
-  @Override
-  public String getRawJson(Feature feature) {
-    return getRawJson(feature.name());
-  }
-
-  @Override
-  public String getRawJson(String key, ClientContext ctx) {
-    return null;
-  }
-
-  @Override
-  public String getRawJson(Feature feature, ClientContext ctx) {
-    return null;
-  }
-
-  @Override
-  public boolean isSet(String key) {
-    return getFeatureState(key).isSet();
-  }
-
-  @Override
-  public boolean isSet(Feature feature) {
-    return isSet(feature.name());
-  }
-
-  @Override
-  public boolean isSet(String key, ClientContext ctx) {
-    return false;
-  }
-
-  @Override
-  public boolean isSet(Feature feature, ClientContext ctx) {
-    return false;
-  }
-
-  @Override
-  public boolean exists(String key) {
-    return !(getFeatureState(key) instanceof FeatureStatePlaceHolder);
-  }
-
-  @Override
-  public boolean exists(Feature feature) {
-    return exists(feature.name());
-  }
-
-  @Override
-  public boolean exists(String key, ClientContext ctx) {
-    return false;
-  }
-
-  @Override
-  public boolean exists(Feature feature, ClientContext ctx) {
-    return false;
   }
 
   @Override

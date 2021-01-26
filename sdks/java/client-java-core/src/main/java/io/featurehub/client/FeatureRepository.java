@@ -134,8 +134,6 @@ public interface FeatureRepository {
    */
   boolean exists(String key);
   boolean exists(Feature feature);
-  boolean exists(String key, ClientContext ctx);
-  boolean exists(Feature feature, ClientContext ctx);
 
   /**
    * Log an analytics event against the analytics collectors.
