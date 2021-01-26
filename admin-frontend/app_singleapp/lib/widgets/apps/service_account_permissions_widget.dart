@@ -237,9 +237,8 @@ class _ServiceAccountPermissionDetailState
                               'Set the service account access to features for each environment',
                               style: Theme.of(context)
                                   .textTheme
-                                  .subtitle1
-                                  .copyWith(
-                                      color: Theme.of(context).hintColor)),
+                                  .caption
+                          ),
                         )),
                     table,
                     FHButtonBar(children: [

@@ -35,7 +35,7 @@ class FeatureNamesLeftPanel extends StatelessWidget {
             onTap: () => tabsBloc.hideOrShowFeature(feature),
             child: Container(
                 decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).cardColor,
                     border: Border(
                       bottom: BorderSide(color: Theme.of(context).buttonTheme.colorScheme.onSurface.withOpacity(0.12), width: 1.0),
                       right: BorderSide(color: Theme.of(context).buttonTheme.colorScheme.onSurface.withOpacity(0.12), width: 1.0),
@@ -91,6 +91,7 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                                   style: Theme.of(context)
                                                       .textTheme
                                                       .bodyText1.copyWith(fontWeight: FontWeight.bold)),
+                                              SizedBox(height: 4.0,),
                                               Text(
                                                   '${feature.valueType.toString().split('.').last}',
                                                   overflow:

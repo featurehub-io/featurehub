@@ -11,8 +11,7 @@ class HiddenEnvironmentsList extends StatelessWidget {
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<FeaturesOnThisTabTrackerBloc>(context);
     return Container(
-      color: Theme.of(context).selectedRowColor,
-      margin: EdgeInsets.all(24.0),
+      margin: EdgeInsets.only(top: 24.0, bottom: 24.0, right: 24.0),
       height: 40,
       child: Row(
         children: [
@@ -73,7 +72,7 @@ class _HideEnvironmentContainerState extends State<HideEnvironmentContainer> {
               style: Theme.of(context).textTheme.overline,
               overflow: TextOverflow.ellipsis,
             ),
-            selectedColor: Color(0xffced6fd),
+            selectedColor: Theme.of(context).primaryColorLight,
             selected: selected,
             onSelected: (bool newValue) {
               final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);

@@ -59,7 +59,7 @@ class _PersonSearchWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 5, 30, 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         border: Border(bottom: bs, left: bs, right: bs, top: bs),
       ),
       child: Row(

@@ -20,10 +20,11 @@ class FHHeader extends StatelessWidget {
         title,
         style: Theme.of(context)
             .textTheme
-            .headline4
-            .copyWith(color: Theme.of(context).primaryColor),
+            .headline5
+            // .copyWith(color: Theme.of(context).primaryColor
+        ),
       ),
-    ));
+    );
 
     titleChildren = List.from(titleChildren)..addAll(children);
 

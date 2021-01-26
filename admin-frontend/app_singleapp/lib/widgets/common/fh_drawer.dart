@@ -290,10 +290,11 @@ class _MenuItem extends StatelessWidget {
     final bloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
     final menuOkForThisUser = (bloc.userIsCurrentPortfolioAdmin ||
         permissionType == PermissionType.regular);
+    var light = Theme.of(context).brightness == Brightness.light;
     return InkWell(
       canRequestFocus: false,
       mouseCursor: SystemMouseCursors.click,
-      hoverColor: Theme.of(context).selectedRowColor,
+      hoverColor: light ? Theme.of(context).selectedRowColor : Theme.of(context).accentColor.withOpacity(0.2),
       onTap: () {
         if (menuOkForThisUser) {
           ManagementRepositoryClientBloc.router.navigateTo(context, path,
@@ -309,14 +310,14 @@ class _MenuItem extends StatelessWidget {
                   equalsParams(snapshot.data.params);
               return Container(
                 padding: EdgeInsets.fromLTRB(16, 12, 0, 12),
-                color: selected ? Theme.of(context).primaryColorLight : null,
+                color: selected ? (light? Theme.of(context).primaryColorLight : Theme.of(context).accentColor) : null,
                 child: Row(
                   children: <Widget>[
                     Icon(
                       iconData,
                       color: selected
                           ? Theme.of(context).primaryColor
-                          : Color(0xff4a4a4a),
+                          : (light ? Color(0xff4a4a4a) : Colors.white),
                       size: iconSize ?? 20.0,
                     ),
                     Padding(

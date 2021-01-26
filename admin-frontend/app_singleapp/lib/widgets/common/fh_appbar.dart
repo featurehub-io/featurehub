@@ -1,6 +1,7 @@
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/widgets/stepper/stepper_container.dart';
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:dynamic_theme/dynamic_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
@@ -68,11 +69,15 @@ class FHappBar extends StatelessWidget {
                       ),
                       VerticalDivider(
                         width: 1.0,
-                        color: Colors.white,
+                        color: Theme.of(context).cardColor,
                       ),
                       SizedBox(
                         width: 16.0,
                       ),
+                      IconButton(icon: Icon(Icons.nightlight_round), onPressed: () {
+                DynamicTheme.of(context).setBrightness(Theme.of(context).brightness ==
+                    Brightness.dark? Brightness.light: Brightness.dark);
+                }),
                       StepperRocketButton(mrBloc: mrBloc),
                       IconButton(
                           onPressed: () async {

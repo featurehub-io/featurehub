@@ -256,7 +256,7 @@ class MemberWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(30, 5, 30, 5),
       decoration: BoxDecoration(
-          color: Colors.white, border: Border(bottom: bs, left: bs, right: bs)),
+          color: Theme.of(context).cardColor, border: Border(bottom: bs, left: bs, right: bs)),
       child: Row(
         children: <Widget>[
           Expanded(

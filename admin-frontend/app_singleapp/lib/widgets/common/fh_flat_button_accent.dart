@@ -21,7 +21,7 @@ class FHFlatButtonAccent extends StatelessWidget {
         padding: const EdgeInsets.all(8.0),
         child: Text(
           keepCase ? title : title.toUpperCase(),
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: Theme.of(context).brightness == Brightness.light ?  Colors.white :  Colors.black),
         ),
       ),
       style: TextButton.styleFrom(backgroundColor: Theme.of(context).accentColor),

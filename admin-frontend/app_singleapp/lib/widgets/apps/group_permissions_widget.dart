@@ -216,9 +216,8 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                               'Set the group access to features for each environment',
                               style: Theme.of(context)
                                   .textTheme
-                                  .subtitle1
-                                  .copyWith(
-                                      color: Theme.of(context).hintColor)),
+                                  .caption
+                                  ),
                         )),
                     Table(children: rows),
                     FHButtonBar(children: [
