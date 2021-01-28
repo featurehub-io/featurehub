@@ -8,7 +8,7 @@ import java.util.List;
 public interface ServiceAccountApi {
   ServiceAccount get(String id, Opts opts);
 
-  ServiceAccount update(String id, Person updater, ServiceAccount serviceAccount, Opts opts) throws OptimisticLockingException;
+  ServiceAccount update(String serviceAccountId, Person updater, ServiceAccount serviceAccount, Opts opts) throws OptimisticLockingException;
 
   /**
    * This has to determine if this user has access based on what they are asking for. If they have any access to the
