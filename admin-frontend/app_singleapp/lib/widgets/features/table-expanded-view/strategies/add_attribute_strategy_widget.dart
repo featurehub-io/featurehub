@@ -376,41 +376,41 @@ class _EditAttributeStrategyWidgetState
               height: 32,
               child: OutlinedButton(
                 onPressed: () => {},
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton(
-                isDense: true,
-                icon: Padding(
-                  padding: EdgeInsets.only(left: 16.0),
-                  child: Icon(
-                    Icons.keyboard_arrow_down,
-                    size: 24,
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton(
+                    isDense: true,
+                    icon: Padding(
+                      padding: EdgeInsets.only(left: 16.0),
+                      child: Icon(
+                        Icons.keyboard_arrow_down,
+                        size: 24,
+                      ),
+                    ),
+                    isExpanded: true,
+                    items: <String>['true', 'false']
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(
+                          value,
+                          style: Theme.of(context).textTheme.bodyText2,
+                        ),
+                      );
+                    }).toList(),
+                    value: widget.attribute.values.isEmpty
+                        ? null
+                        : _asBoolean(widget.attribute.values[0]),
+                    onChanged: (value) {
+                      setState(() {
+                        widget.attribute.values = [value];
+                      });
+                    },
+                    hint: Text('Select value',
+                        style: Theme.of(context).textTheme.subtitle2),
                   ),
                 ),
-                isExpanded: true,
-                items: <String>['true', 'false']
-                    .map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(
-                      value,
-                      style: Theme.of(context).textTheme.bodyText2,
-                    ),
-                  );
-                }).toList(),
-                value: widget.attribute.values.isEmpty
-                    ? null
-                    : _asBoolean(widget.attribute.values[0]),
-                onChanged: (value) {
-                  setState(() {
-                    widget.attribute.values = [value];
-                  });
-                },
-                hint: Text('Select value',
-                    style: Theme.of(context).textTheme.subtitle2),
               ),
-            ),
-          ),
-        ));
+            ));
       case RolloutStrategyFieldType.IP_ADDRESS:
         labelText = 'IP Address(es) with or without CIDR';
         helperText = 'e.g. 168.192.54.3 or 192.168.86.1/8 or 10.34.0.0/32';
@@ -515,7 +515,9 @@ final _countryNameReverseMapper = (val) =>
     (val is String) ? StrategyAttributeCountryNameExtension.fromJson(val) : val;
 
 final _countryNameMapper = (dynamic val) =>
-    ((val is StrategyAttributeCountryName) ? val.toJson() : val.toString())
+    ((val is StrategyAttributeCountryName)
+            ? val.toJson().toString()
+            : val.toString())
         .toString()
         .replaceAll('_', ' ')
         .replaceAll('of the', '')
@@ -523,8 +525,9 @@ final _countryNameMapper = (dynamic val) =>
         .trim()
         .capitalizeFirstofEach;
 
-final _deviceNameMapper = (dynamic val) =>
-    (val is StrategyAttributeDeviceName) ? val.toJson() : val.toString();
+final _deviceNameMapper = (dynamic val) => (val is StrategyAttributeDeviceName)
+    ? val.toJson().toString()
+    : val.toString();
 
 final _deviceNameReverseMapper = (val) =>
     (val is String) ? StrategyAttributeDeviceNameExtension.fromJson(val) : val;
@@ -534,4 +537,6 @@ final _platformNameReverseMapper = (val) => (val is String)
     : val;
 
 final _platformNameMapper = (dynamic val) =>
-    (val is StrategyAttributePlatformName) ? val.toJson() : val.toString();
+    (val is StrategyAttributePlatformName)
+        ? val.toJson().toString()
+        : val.toString();
