@@ -1,5 +1,6 @@
 package io.featurehub.client;
 
+import io.featurehub.sse.model.FeatureValueType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,13 +56,18 @@ public class GoogleAnalyticsCollector implements AnalyticsCollector {
 
       featureStateAtCurrentTime.forEach((fsh) -> {
         String line = null;
-        if (fsh instanceof FeatureStateBooleanHolder) {
-          line = fsh.getBoolean().equals(Boolean.TRUE) ? "on" : "off";
-        } else if (fsh instanceof FeatureStateStringHolder && fsh.getString() != null) {
-          line = fsh.getString();
-        } else if (fsh instanceof FeatureStateNumberHolder && fsh.getNumber() != null) {
-          line = fsh.getNumber().toPlainString();
+        FeatureStateBaseHolder fs = (FeatureStateBaseHolder)fsh;
+
+        if (fs.isSet()) {
+          if (fs.type() == FeatureValueType.BOOLEAN) {
+            line = fsh.getBoolean().equals(Boolean.TRUE) ? "on" : "off";
+          } else if (fs.type() == FeatureValueType.STRING) {
+            line = fsh.getString();
+          } else if (fs.type() == FeatureValueType.NUMBER) {
+            line = fsh.getNumber().toPlainString();
+          }
         }
+
         if (line != null) {
 
           try {

@@ -1,10 +1,6 @@
 package io.featurehub.client;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import io.featurehub.sse.model.FeatureState;
-
 import java.math.BigDecimal;
-import java.util.List;
 
 abstract public class AbstractFeatureRepository implements FeatureRepository {
 
@@ -145,7 +141,7 @@ abstract public class AbstractFeatureRepository implements FeatureRepository {
 
   @Override
   public boolean exists(String key) {
-    return !(getFeatureState(key) instanceof FeatureStatePlaceHolder);
+    return ((FeatureStateBaseHolder)getFeatureState(key)).exists();
   }
 
   @Override

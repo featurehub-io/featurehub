@@ -18,7 +18,7 @@ public class FeatureStateUtils {
 
   static boolean exists(FeatureRepository repository, Feature feature) {
     FeatureStateHolder fs = repository.getFeatureState(feature.name());
-    return !(fs instanceof FeatureStatePlaceHolder);
+    return ((FeatureStateBaseHolder)fs).exists();
   }
 
   static boolean isSet(FeatureRepository repository, Feature feature) {
