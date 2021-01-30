@@ -15,21 +15,15 @@ import java.util.concurrent.Executor
 enum Fruit implements Feature { banana, peach, peach_quantity, peach_config, dragonfruit }
 
 class RepositorySpec extends Specification {
-  FeatureRepository repo
+  ClientFeatureRepository repo
 
   def setup() {
-    repo = new ClientFeatureRepository(1) {
+    repo = new ClientFeatureRepository(new Executor() {
       @Override
-      protected Executor getExecutor(int threadPoolSize) {
-        return new Executor() {
-          @Override
-          void execute(Runnable command) {
-            // make it synchronous
-            command.run()
-          }
-        }
+      void execute(Runnable command) {
+        command.run();
       }
-    }
+    })
   }
 
   def "an empty repository is not ready"() {
