@@ -24,32 +24,33 @@ class StrategySpec extends Specification {
       }
     })
   }
+
   def "basic boolean strategy"() {
     given: "i have a basic boolean feature with a rollout strategy"
-      def f = new FeatureState()
-        .key("bool1")
-        .value(true)
-        .version(1)
-        .type(FeatureValueType.BOOLEAN)
-        .strategies([new RolloutStrategy().value(false).attributes(
-          [new RolloutStrategyAttribute().type(RolloutStrategyFieldType.STRING)
-             .conditional(RolloutStrategyAttributeConditional.EQUALS)
-             .fieldName(StrategyAttributeWellKnownNames.COUNTRY.getValue())
-              .values([StrategyAttributeCountryName.TURKEY.getValue()])
-          ]
-        )])
+        def f = new FeatureState()
+          .key("bool1")
+          .value(true)
+          .version(1)
+          .type(FeatureValueType.BOOLEAN)
+          .strategies([new RolloutStrategy().value(false).attributes(
+            [new RolloutStrategyAttribute().type(RolloutStrategyFieldType.STRING)
+               .conditional(RolloutStrategyAttributeConditional.EQUALS)
+               .fieldName(StrategyAttributeWellKnownNames.COUNTRY.getValue())
+               .values([StrategyAttributeCountryName.TURKEY.getValue()])
+            ]
+          )])
     and: "we have a feature repository with this in it"
-      repo.notify([f])
+        repo.notify([f])
     when: "we create a client context matching the strategy"
-      def cc = new ClientContextRepository().country(StrategyAttributeCountryName.TURKEY)
+        def cc = new ClientContextRepository().country(StrategyAttributeCountryName.TURKEY)
     and: "we create a context not matching the strategy"
-      def ccNot = new ClientContextRepository().country(StrategyAttributeCountryName.NEW_ZEALAND)
+        def ccNot = new ClientContextRepository().country(StrategyAttributeCountryName.NEW_ZEALAND)
     then: "without the context it is true"
-      repo.getFlag("bool1")
+        repo.getFlag("bool1")
     and: "with the good context it is false"
-      !repo.getFlag("bool1", cc)
+        !repo.getFlag("bool1", cc)
     and: "with the bad context it is true"
-      repo.getFlag("bool1", ccNot)
+        repo.getFlag("bool1", ccNot)
   }
 
   def "number strategy"() {
@@ -66,14 +67,14 @@ class StrategySpec extends Specification {
                .values([40])
             ]
           )
-          ,new RolloutStrategy().value(10).attributes(
+                       , new RolloutStrategy().value(10).attributes(
             [new RolloutStrategyAttribute().type(RolloutStrategyFieldType.NUMBER)
                .conditional(RolloutStrategyAttributeConditional.GREATER_EQUALS)
                .fieldName("age")
                .values([20])
             ]
           )
-            ])
+          ])
     and: "we have a feature repository with this in it"
         repo.notify([f])
     when: "we create a client context matching the strategy"
@@ -101,7 +102,7 @@ class StrategySpec extends Specification {
                .values([StrategyAttributePlatformName.ANDROID.value, StrategyAttributePlatformName.IOS.value])
             ]
           )
-           ,new RolloutStrategy().value("older-than-twenty").attributes(
+                       , new RolloutStrategy().value("older-than-twenty").attributes(
             [new RolloutStrategyAttribute().type(RolloutStrategyFieldType.NUMBER)
                .conditional(RolloutStrategyAttributeConditional.GREATER_EQUALS)
                .fieldName("age")
@@ -124,5 +125,45 @@ class StrategySpec extends Specification {
         repo.getString("feat1", ccFirst) == "older-than-twenty"
         repo.getString("feat1", ccThird) == "not-mobile"
         repo.getString("feat1", ccEmpty) == "feature"
+  }
+
+  def "json strategy"() {
+    given: "i have a basic json feature with a rollout strategy"
+        def f = new FeatureState()
+          .key("feat1")
+          .value("feature")
+          .version(1)
+          .type(FeatureValueType.JSON)
+          .strategies([new RolloutStrategy().value("not-mobile").attributes(
+            [new RolloutStrategyAttribute().type(RolloutStrategyFieldType.STRING)
+               .conditional(RolloutStrategyAttributeConditional.EXCLUDES)
+               .fieldName(StrategyAttributeWellKnownNames.PLATFORM.getValue())
+               .values([StrategyAttributePlatformName.ANDROID.value, StrategyAttributePlatformName.IOS.value])
+            ]
+          ), new RolloutStrategy().value("older-than-twenty").attributes(
+            [new RolloutStrategyAttribute().type(RolloutStrategyFieldType.NUMBER)
+               .conditional(RolloutStrategyAttributeConditional.GREATER_EQUALS)
+               .fieldName("age")
+               .values([20])
+            ]
+          )
+          ])
+    and: "we have a feature repository with this in it"
+        repo.notify([f])
+    when: "we create a client context matching the strategy"
+        def ccFirst = new ClientContextRepository().attr("age", "27").platform(StrategyAttributePlatformName.IOS)
+        def ccNoMatch = new ClientContextRepository().attr("age", "18").platform(StrategyAttributePlatformName.ANDROID)
+        def ccSecond = new ClientContextRepository().attr("age", "43").platform(StrategyAttributePlatformName.MACOS)
+        def ccThird = new ClientContextRepository().attr("age", "18").platform(StrategyAttributePlatformName.MACOS)
+        def ccEmpty = new ClientContextRepository()
+    then: "without the context it is true"
+        repo.getRawJson("feat1") == "feature"
+        repo.getString("feat1") == null
+        repo.getRawJson("feat1", ccNoMatch) == "feature"
+        repo.getString("feat1", ccNoMatch) == null
+        repo.getRawJson("feat1", ccSecond) == "not-mobile"
+        repo.getRawJson("feat1", ccFirst) == "older-than-twenty"
+        repo.getRawJson("feat1", ccThird) == "not-mobile"
+        repo.getRawJson("feat1", ccEmpty) == "feature"
   }
 }
