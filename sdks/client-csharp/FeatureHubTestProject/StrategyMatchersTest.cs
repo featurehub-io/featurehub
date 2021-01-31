@@ -121,6 +121,73 @@ namespace FeatureHubTestProject
     }
 
 
+    [Test, TestCaseSource("IPAddressMatcherProvider")]
+    public void IPAddressMatcher(RolloutStrategyAttributeConditional conditional, List<object> vals, string suppliedVal,
+      bool matches)
+    {
+      var rsa = new RolloutStrategyAttribute();
+      rsa.Conditional = conditional;
+      rsa.Type = RolloutStrategyFieldType.IPADDRESS;
+      rsa.Values = vals.Select(v => v as object).ToList();
+
+      Assert.AreEqual(matches, registry.FindMatcher(rsa).Match(suppliedVal, rsa));
+    }
+
+    public static IEnumerable<TestCaseData> IPAddressMatcherProvider()
+    {
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"192.168.86.75"}, "192.168.86.75", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS, new List<object>{"192.168.86.75"}, "192.168.86.75", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"192.168.86.75"}, "192.168.86.72", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS, new List<object>{"192.168.86.75"}, "192.168.86.72", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"192.168.0.0/16"}, "192.168.86.75", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"192.168.0.0/16"}, "192.162.86.75", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"10.0.0.0/24", "192.168.0.0/16"}, "192.168.86.75", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"10.0.0.0/24", "192.168.0.0/16"}, "172.168.86.75", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"10.7.4.8", "192.168.86.75"}, "192.168.86.75", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.INCLUDES, new List<object>{"10.7.4.8", "192.168.86.75"}, "192.168.86.75", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"10.7.4.8", "192.168.86.75"}, "192.168.83.75", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EXCLUDES, new List<object>{"10.7.4.8", "192.168.86.75"}, "192.168.83.75", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EXCLUDES, new List<object>{"10.7.4.8", "192.168.86.75"}, "192.168.86.75", false);
+
+      // library can't handle padded zeros
+      // yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"192.168.86.75"}, "192.168.086.075", true);
+
+    }
+
+    [Test, TestCaseSource("NumberMatcherProvider")]
+    public void NumberMatcher(RolloutStrategyAttributeConditional conditional, List<object> vals, string suppliedVal,
+      bool matches)
+    {
+      var rsa = new RolloutStrategyAttribute();
+      rsa.Conditional = conditional;
+      rsa.Type = RolloutStrategyFieldType.NUMBER;
+      rsa.Values = vals.Select(v => v as object).ToList();
+
+      Assert.AreEqual(matches, registry.FindMatcher(rsa).Match(suppliedVal, rsa));
+    }
+
+    public static IEnumerable<TestCaseData> NumberMatcherProvider()
+    {
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object> {10, 5}, "5", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object> {5}, "5", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object> {4}, "5", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object> {4,7}, "5", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.INCLUDES, new List<object> {4,7}, "5", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS, new List<object> {23,100923}, "5", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EXCLUDES, new List<object> {23,100923}, "5", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS, new List<object> {5}, "5", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATER, new List<object> {2,4}, "5", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATEREQUALS, new List<object> {2,5}, "5", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATEREQUALS, new List<object> {6,5}, "5", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESSEQUALS, new List<object> {2,5}, "5", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESS, new List<object> {8,7}, "5", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATER, new List<object> {7,10}, "5", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATEREQUALS, new List<object> {6,7}, "5", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESSEQUALS, new List<object> {2,3}, "5", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESS, new List<object> {1,-1}, "5", false);
+
+    }
+
   }
 
 
