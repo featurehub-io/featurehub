@@ -81,12 +81,12 @@ internal class BooleanMatcher : IStrategyMatcher
 
     if (attr.Conditional == RolloutStrategyAttributeConditional.EQUALS)
     {
-      return val == (bool)attr.Values[0];
+      return val == (attr.Values[0] is bool ? ((bool)attr.Values[0]) : bool.Parse(attr.Values[0].ToString()));
     }
 
     if (attr.Conditional == RolloutStrategyAttributeConditional.NOTEQUALS)
     {
-      return val != (bool)attr.Values[0];
+      return val != (attr.Values[0] is bool ? ((bool)attr.Values[0]) : bool.Parse(attr.Values[0].ToString()));
     }
 
     return false;
