@@ -77,6 +77,8 @@ namespace FeatureHubTestProject
     public static IEnumerable<TestCaseData> BooleanMatcherProvider()
     {
       yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"true"}, "true", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS, new List<object>{"true"}, "true", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS, new List<object>{"true"}, "false", true);
       yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{true}, "true", true);
       yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"true"}, "false", false);
       yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{true}, "false", false);
@@ -85,5 +87,41 @@ namespace FeatureHubTestProject
       yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"false"}, "true", false);
       yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{false}, "true", false);
     }
+
+    [Test, TestCaseSource("SemanticVersionMatcherProvider")]
+    public void SemanticVersionMatcher(RolloutStrategyAttributeConditional conditional, List<object> vals, string suppliedVal,
+      bool matches)
+    {
+      var rsa = new RolloutStrategyAttribute();
+      rsa.Conditional = conditional;
+      rsa.Type = RolloutStrategyFieldType.SEMANTICVERSION;
+      rsa.Values = vals.Select(v => v as object).ToList();
+
+      Assert.AreEqual(registry.FindMatcher(rsa).Match(suppliedVal, rsa), matches);
+    }
+
+    public static IEnumerable<TestCaseData> SemanticVersionMatcherProvider()
+    {
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"2.0.3"}, "2.0.3", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"2.0.3", "2.0.1"}, "2.0.3", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"2.0.3"}, "2.0.1", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS, new List<object>{"2.0.3"}, "2.0.3", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS, new List<object>{"2.0.3"}, "2.0.1", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATER, new List<object>{"2.0.0"}, "2.1.0", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATER, new List<object>{"2.0.0"}, "2.0.1", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATEREQUALS, new List<object>{"7.1.0"}, "7.1.6", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATEREQUALS, new List<object>{"7.1.6"}, "7.1.6", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATER, new List<object>{"8.1.0"}, "7.1.6", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESS, new List<object>{"8.1.0"}, "7.1.6", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESS, new List<object>{"6.1.0"}, "7.1.6", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESS, new List<object>{"7.1.6"}, "7.1.6", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESSEQUALS, new List<object>{"7.1.6"}, "7.1.6", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESSEQUALS, new List<object>{"7.1.6"}, "6.1.6", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESSEQUALS, new List<object>{"7.1.6"}, "8.1.6", false);
+    }
+
+
   }
+
+
 }
