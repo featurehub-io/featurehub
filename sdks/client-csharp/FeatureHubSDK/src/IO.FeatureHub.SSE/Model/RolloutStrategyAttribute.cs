@@ -43,22 +43,27 @@ namespace IO.FeatureHub.SSE.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="RolloutStrategyAttribute" /> class.
         /// </summary>
+        /// <param name="id">A temporary id used only when validating. Saving strips these out as they are not otherwise necessary.</param>
         /// <param name="conditional">conditional.</param>
         /// <param name="fieldName">fieldName.</param>
-        /// <param name="value">its value.</param>
-        /// <param name="values">the values if it is an array.</param>
+        /// <param name="values">the value(s) associated with this rule.</param>
         /// <param name="type">type.</param>
-        /// <param name="array">array.</param>
-        public RolloutStrategyAttribute(RolloutStrategyAttributeConditional? conditional = default(RolloutStrategyAttributeConditional?), string fieldName = default(string), object value = default(object), List<object> values = default(List<object>), RolloutStrategyFieldType? type = default(RolloutStrategyFieldType?), bool array = default(bool))
+        public RolloutStrategyAttribute(string id = default(string), RolloutStrategyAttributeConditional? conditional = default(RolloutStrategyAttributeConditional?), string fieldName = default(string), List<object> values = default(List<object>), RolloutStrategyFieldType? type = default(RolloutStrategyFieldType?))
         {
+            this.Id = id;
             this.Conditional = conditional;
             this.FieldName = fieldName;
-            this.Value = value;
             this.Values = values;
             this.Type = type;
-            this.Array = array;
         }
         
+        /// <summary>
+        /// A temporary id used only when validating. Saving strips these out as they are not otherwise necessary
+        /// </summary>
+        /// <value>A temporary id used only when validating. Saving strips these out as they are not otherwise necessary</value>
+        [DataMember(Name="id", EmitDefaultValue=false)]
+        public string Id { get; set; }
+
         /// <summary>
         /// Gets or Sets FieldName
         /// </summary>
@@ -66,24 +71,11 @@ namespace IO.FeatureHub.SSE.Model
         public string FieldName { get; set; }
 
         /// <summary>
-        /// its value
+        /// the value(s) associated with this rule
         /// </summary>
-        /// <value>its value</value>
-        [DataMember(Name="value", EmitDefaultValue=false)]
-        public object Value { get; set; }
-
-        /// <summary>
-        /// the values if it is an array
-        /// </summary>
-        /// <value>the values if it is an array</value>
+        /// <value>the value(s) associated with this rule</value>
         [DataMember(Name="values", EmitDefaultValue=false)]
         public List<object> Values { get; set; }
-
-        /// <summary>
-        /// Gets or Sets Array
-        /// </summary>
-        [DataMember(Name="array", EmitDefaultValue=false)]
-        public bool Array { get; set; }
 
         /// <summary>
         /// Returns the string presentation of the object
@@ -93,12 +85,11 @@ namespace IO.FeatureHub.SSE.Model
         {
             var sb = new StringBuilder();
             sb.Append("class RolloutStrategyAttribute {\n");
+            sb.Append("  Id: ").Append(Id).Append("\n");
             sb.Append("  Conditional: ").Append(Conditional).Append("\n");
             sb.Append("  FieldName: ").Append(FieldName).Append("\n");
-            sb.Append("  Value: ").Append(Value).Append("\n");
             sb.Append("  Values: ").Append(Values).Append("\n");
             sb.Append("  Type: ").Append(Type).Append("\n");
-            sb.Append("  Array: ").Append(Array).Append("\n");
             sb.Append("}\n");
             return sb.ToString();
         }
@@ -134,6 +125,11 @@ namespace IO.FeatureHub.SSE.Model
 
             return 
                 (
+                    this.Id == input.Id ||
+                    (this.Id != null &&
+                    this.Id.Equals(input.Id))
+                ) && 
+                (
                     this.Conditional == input.Conditional ||
                     this.Conditional.Equals(input.Conditional)
                 ) && 
@@ -141,11 +137,6 @@ namespace IO.FeatureHub.SSE.Model
                     this.FieldName == input.FieldName ||
                     (this.FieldName != null &&
                     this.FieldName.Equals(input.FieldName))
-                ) && 
-                (
-                    this.Value == input.Value ||
-                    (this.Value != null &&
-                    this.Value.Equals(input.Value))
                 ) && 
                 (
                     this.Values == input.Values ||
@@ -156,10 +147,6 @@ namespace IO.FeatureHub.SSE.Model
                 (
                     this.Type == input.Type ||
                     this.Type.Equals(input.Type)
-                ) && 
-                (
-                    this.Array == input.Array ||
-                    this.Array.Equals(input.Array)
                 );
         }
 
@@ -172,15 +159,14 @@ namespace IO.FeatureHub.SSE.Model
             unchecked // Overflow is fine, just wrap
             {
                 int hashCode = 41;
+                if (this.Id != null)
+                    hashCode = hashCode * 59 + this.Id.GetHashCode();
                 hashCode = hashCode * 59 + this.Conditional.GetHashCode();
                 if (this.FieldName != null)
                     hashCode = hashCode * 59 + this.FieldName.GetHashCode();
-                if (this.Value != null)
-                    hashCode = hashCode * 59 + this.Value.GetHashCode();
                 if (this.Values != null)
                     hashCode = hashCode * 59 + this.Values.GetHashCode();
                 hashCode = hashCode * 59 + this.Type.GetHashCode();
-                hashCode = hashCode * 59 + this.Array.GetHashCode();
                 return hashCode;
             }
         }
