@@ -4,9 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 using IO.FeatureHub.SSE.Model;
 using NodaTime;
+using Version = SemVer.Version;
 
 public interface IPercentageCalculator
 {
@@ -42,7 +44,7 @@ public class MatcherRegistry : IMatcherRepository
       case RolloutStrategyFieldType.STRING:
         return new StringMatcher();
       case RolloutStrategyFieldType.SEMANTICVERSION:
-        break;
+        return new SemanticVersionMatcher();
       case RolloutStrategyFieldType.NUMBER:
         return new NumberMatcher();
       case RolloutStrategyFieldType.DATE:
@@ -52,7 +54,7 @@ public class MatcherRegistry : IMatcherRepository
       case RolloutStrategyFieldType.BOOLEAN:
         return new BooleanMatcher();
       case RolloutStrategyFieldType.IPADDRESS:
-        break;
+        return new IPNetworkMatcher();
       case null:
         return new FallthroughMatcher();
       default:
@@ -218,24 +220,102 @@ internal class NumberMatcher : IStrategyMatcher
     {
       case RolloutStrategyAttributeConditional.EQUALS:
       case RolloutStrategyAttributeConditional.INCLUDES:
-        return DVals.Any(v => v.Equals(dec));
+        return DVals.Any(v => dec.Equals(v));
       case RolloutStrategyAttributeConditional.ENDSWITH:
         return attr.Values.Where(v => v != null).Any(v => suppliedValue.EndsWith(v.ToString()));
       case RolloutStrategyAttributeConditional.STARTSWITH:
         return attr.Values.Where(v => v != null).Any(v => suppliedValue.StartsWith(v.ToString()));
       case RolloutStrategyAttributeConditional.GREATER:
-        return DVals.Any(v => v.CompareTo(dec) > 0);
+        return DVals.Any(v => dec.CompareTo(v) > 0);
       case RolloutStrategyAttributeConditional.GREATEREQUALS:
-        return DVals.Any(v => v.CompareTo(dec) >= 0);
+        return DVals.Any(v => dec.CompareTo(v) >= 0);
       case RolloutStrategyAttributeConditional.LESS:
-        return DVals.Any(v => v.CompareTo(dec) < 0);
+        return DVals.Any(v => dec.CompareTo(v) < 0);
       case RolloutStrategyAttributeConditional.LESSEQUALS:
-        return DVals.Any(v => v.CompareTo(dec) <= 0);
+        return DVals.Any(v => dec.CompareTo(v) <= 0);
       case RolloutStrategyAttributeConditional.NOTEQUALS:
       case RolloutStrategyAttributeConditional.EXCLUDES:
-        return !DVals.Any(v => v.Equals(dec));
+        return !DVals.Any(v => dec.Equals(v));
       case RolloutStrategyAttributeConditional.REGEX:
         break;
+      case null:
+        return false;
+      default:
+        return false;
+    }
+
+    return false;
+  }
+}
+
+internal class SemanticVersionMatcher : IStrategyMatcher
+{
+  public bool Match(string suppliedValue, RolloutStrategyAttribute attr)
+  {
+    var vals = attr.Values.Where(v => v != null).Select(v => new Version(v.ToString())).ToList();
+    var version = new Version(suppliedValue);
+
+    switch (attr.Conditional)
+    {
+      case RolloutStrategyAttributeConditional.EQUALS:
+      case RolloutStrategyAttributeConditional.INCLUDES:
+        return vals.Any(v => version.Equals(v));
+      case RolloutStrategyAttributeConditional.ENDSWITH:
+        break;
+      case RolloutStrategyAttributeConditional.STARTSWITH:
+        break;
+      case RolloutStrategyAttributeConditional.GREATER:
+        return vals.Any(v => version.CompareTo(v) > 0);
+      case RolloutStrategyAttributeConditional.GREATEREQUALS:
+        return vals.Any(v => version.CompareTo(v) >= 0);
+      case RolloutStrategyAttributeConditional.LESS:
+        return vals.Any(v => version.CompareTo(v) < 0);
+      case RolloutStrategyAttributeConditional.LESSEQUALS:
+        return vals.Any(v => version.CompareTo(v) <= 0);
+      case RolloutStrategyAttributeConditional.NOTEQUALS:
+      case RolloutStrategyAttributeConditional.EXCLUDES:
+        return !vals.Any(v => version.Equals(v));
+      case RolloutStrategyAttributeConditional.REGEX:
+        break;
+      case null:
+        return false;
+      default:
+        return false;
+    }
+
+    return false;
+  }
+}
+
+internal class IPNetworkMatcher : IStrategyMatcher
+{
+  public bool Match(string suppliedValue, RolloutStrategyAttribute attr)
+  {
+    var vals = attr.Values.Where(v => v != null).Select(v => IPNetwork.Parse(v.ToString())).ToList();
+    var ip = IPNetwork.Parse(suppliedValue);
+
+    switch (attr.Conditional)
+    {
+      case RolloutStrategyAttributeConditional.EQUALS:
+      case RolloutStrategyAttributeConditional.INCLUDES:
+        return vals.Any(v => v.Contains(ip));
+      case RolloutStrategyAttributeConditional.ENDSWITH:
+        break;
+      case RolloutStrategyAttributeConditional.STARTSWITH:
+        break;
+      case RolloutStrategyAttributeConditional.GREATER:
+        return vals.Any(v => ip.CompareTo(v) > 0);
+      case RolloutStrategyAttributeConditional.GREATEREQUALS:
+        return vals.Any(v => ip.CompareTo(v) >= 0);
+      case RolloutStrategyAttributeConditional.LESS:
+        return vals.Any(v => ip.CompareTo(v) < 0);
+      case RolloutStrategyAttributeConditional.LESSEQUALS:
+        return vals.Any(v => ip.CompareTo(v) <= 0);
+      case RolloutStrategyAttributeConditional.NOTEQUALS:
+      case RolloutStrategyAttributeConditional.EXCLUDES:
+        return !vals.Any(v => v.Contains(ip));
+      case RolloutStrategyAttributeConditional.REGEX:
+        return false;
       case null:
         return false;
       default:
