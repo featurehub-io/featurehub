@@ -67,7 +67,7 @@
         <configuration>
           <filesets>
             <fileset>
-              <directory>src</directory>
+              <directory>src/IO</directory>
               <includes>
                 <include>**/**</include>
               </includes>
