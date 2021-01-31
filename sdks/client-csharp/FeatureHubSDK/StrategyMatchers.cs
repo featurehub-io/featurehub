@@ -291,26 +291,14 @@ internal class IPNetworkMatcher : IStrategyMatcher
 {
   public bool Match(string suppliedValue, RolloutStrategyAttribute attr)
   {
-    var vals = attr.Values.Where(v => v != null).Select(v => IPNetwork.Parse(v.ToString())).ToList();
-    var ip = IPNetwork.Parse(suppliedValue);
+    var vals = attr.Values.Where(v => v != null).Select(v => new IPNetworkProxy(v.ToString())).ToList();
+    var ip = new IPNetworkProxy(suppliedValue);
 
     switch (attr.Conditional)
     {
       case RolloutStrategyAttributeConditional.EQUALS:
       case RolloutStrategyAttributeConditional.INCLUDES:
         return vals.Any(v => v.Contains(ip));
-      case RolloutStrategyAttributeConditional.ENDSWITH:
-        break;
-      case RolloutStrategyAttributeConditional.STARTSWITH:
-        break;
-      case RolloutStrategyAttributeConditional.GREATER:
-        return vals.Any(v => ip.CompareTo(v) > 0);
-      case RolloutStrategyAttributeConditional.GREATEREQUALS:
-        return vals.Any(v => ip.CompareTo(v) >= 0);
-      case RolloutStrategyAttributeConditional.LESS:
-        return vals.Any(v => ip.CompareTo(v) < 0);
-      case RolloutStrategyAttributeConditional.LESSEQUALS:
-        return vals.Any(v => ip.CompareTo(v) <= 0);
       case RolloutStrategyAttributeConditional.NOTEQUALS:
       case RolloutStrategyAttributeConditional.EXCLUDES:
         return !vals.Any(v => v.Contains(ip));
@@ -323,6 +311,48 @@ internal class IPNetworkMatcher : IStrategyMatcher
     }
 
     return false;
+  }
+}
+
+internal class IPNetworkProxy
+{
+  private IPAddress _address;
+  private IPNetwork _network;
+  private bool _isAddress;
+
+  public IPNetworkProxy(String addr)
+  {
+    if (addr.Contains("/"))
+    { // it is a CIDR
+      _isAddress = false;
+      _network = IPNetwork.Parse(addr);
+    }
+    else
+    {
+      _isAddress = true;
+      _address = IPAddress.Parse(addr);
+    }
+  }
+
+  public bool Contains(IPNetworkProxy proxy)
+  {
+    if (proxy._isAddress && _isAddress)
+    {
+      return proxy._address.Equals(_address);
+    }
+
+    if (!proxy._isAddress && !_isAddress)
+    {
+      return _network.Contains(proxy._network);
+    }
+
+    // they are an address and we are a network
+    if (proxy._isAddress && !_isAddress)
+    {
+      return _network.Contains(proxy._address);
+    }
+
+    return false; // an ip address cannot contain a network
   }
 }
 
