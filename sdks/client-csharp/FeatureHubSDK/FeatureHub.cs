@@ -75,6 +75,8 @@ namespace FeatureHubSDK
     /// </summary>
     bool IsSet { get; }
 
+    IFeatureStateHolder WithContext(IClientContext context);
+
     /// <summary>
     /// Triggered when the value changes
     /// </summary>
@@ -214,10 +216,27 @@ namespace FeatureHubSDK
     private static readonly ILog log = LogManager.GetLogger<FeatureStateBaseHolder>();
     private object _value;
     private FeatureState _feature;
-    public event EventHandler<IFeatureStateHolder> FeatureUpdateHandler;
+    private readonly ApplyFeature _applyFeature;
 
-    public FeatureStateBaseHolder(FeatureStateBaseHolder fs)
+    public IFeatureStateHolder WithContext(IClientContext context)
     {
+      var fsh = Copy() as FeatureStateBaseHolder;
+      fsh.SetContext( context );
+      return fsh;
+    }
+
+    public event EventHandler<IFeatureStateHolder> FeatureUpdateHandler;
+    private IClientContext _context;
+
+    internal void SetContext(IClientContext context)
+    {
+      _context = context;
+    }
+
+    public FeatureStateBaseHolder(FeatureStateBaseHolder fs, ApplyFeature applyFeature)
+    {
+      _applyFeature = applyFeature;
+
       if (fs != null)
       {
         FeatureUpdateHandler = fs.FeatureUpdateHandler;
@@ -226,7 +245,7 @@ namespace FeatureHubSDK
 
     public IFeatureStateHolder Copy()
     {
-      var fs = new FeatureStateBaseHolder(null);
+      var fs = new FeatureStateBaseHolder(null, _applyFeature);
 
       fs.FeatureState = this._feature;
 
@@ -235,13 +254,61 @@ namespace FeatureHubSDK
 
     public bool Exists => _value != null;
 
-    public bool? BooleanValue => _feature?.Type == FeatureValueType.BOOLEAN ? (bool?) Convert.ToBoolean(_value) : null;
+    private object GetValue(FeatureValueType type)
+    {
+      if (_feature?.Type != type)
+      {
+        return null;
+      }
 
-    public string StringValue => _feature?.Type == FeatureValueType.STRING ? Convert.ToString(_value) : null;
+      if (_context != null)
+      {
+        Applied matched = _applyFeature.applyFeature(_feature.Strategies, Key, _feature.Id, _context);
 
-    public double? NumberValue => _feature?.Type == FeatureValueType.NUMBER ? (double?) Convert.ToDouble(_value) : null;
+        if (matched.Matched)
+        {
+          return matched.Value;
+        }
+      }
 
-    public string JsonValue => _feature?.Type == FeatureValueType.JSON ? Convert.ToString(_value) : null;
+      return _feature.Value;
+    }
+
+    public bool? BooleanValue
+    {
+      get
+      {
+        var val = GetValue(FeatureValueType.BOOLEAN);
+        return val == null ? (bool?)null : Convert.ToBoolean(val);
+      }
+    }
+
+    public string StringValue
+    {
+      get
+      {
+        var val = GetValue(FeatureValueType.STRING);
+        return val == null ? null : Convert.ToString(val);
+      }
+    }
+
+    public double? NumberValue
+    {
+      get
+      {
+        var val = GetValue(FeatureValueType.NUMBER);
+        return val == null ? (double?)null : Convert.ToDouble(val);
+      }
+    }
+
+    public string JsonValue
+    {
+      get
+      {
+        var val = GetValue(FeatureValueType.JSON);
+        return val == null ? null : Convert.ToString(val);
+      }
+    }
     public string Key => _feature?.Key;
     public FeatureValueType? Type => _feature?.Type;
     public object Value => _value;
@@ -288,20 +355,68 @@ namespace FeatureHubSDK
 
   public interface IFeatureHubRepository
   {
-    bool GetFlag(string key);
+    bool? GetFlag(string key);
 
     double? GetNumber(string key);
 
     string GetString(string key);
+    string GetString(string key, IClientContext context);
 
     string GetJson(string key);
+    string GetJson(string key, IClientContext context);
 
     bool Exists(string key);
 
-    bool IsSet(string key);
+    bool IsSet(string key, IClientContext context);
+
+    bool? GetFlag(string key, IClientContext context);
+
+    double? GetNumber(string key, IClientContext context);
+
+    IFeatureStateHolder GetFeature(string key);
   }
 
-  public class FeatureHubRepository : IFeatureHubRepository
+  public abstract class AbstractFeatureHubRepository : IFeatureHubRepository
+  {
+    public abstract bool? GetFlag(string key);
+
+    public abstract double? GetNumber(string key);
+
+    public abstract string GetString(string key);
+
+    public string GetString(string key, IClientContext context)
+    {
+      return GetFeature(key).WithContext(context).StringValue;
+    }
+
+    public abstract string GetJson(string key);
+
+    public string GetJson(string key, IClientContext context)
+    {
+      return GetFeature(key).WithContext(context).JsonValue;
+    }
+
+    public abstract bool Exists(string key);
+
+    public bool IsSet(string key, IClientContext context)
+    {
+      return GetFeature(key).WithContext(context).IsSet;
+    }
+
+    public bool? GetFlag(string key, IClientContext context)
+    {
+      return GetFeature(key).WithContext(context).BooleanValue;
+    }
+
+    public double? GetNumber(string key, IClientContext context)
+    {
+      return GetFeature(key).WithContext(context).NumberValue;
+    }
+
+    public abstract IFeatureStateHolder GetFeature(string key);
+  }
+
+  public class FeatureHubRepository : AbstractFeatureHubRepository
   {
     private static readonly ILog log = LogManager.GetLogger<FeatureHubRepository>();
     private readonly Dictionary<string, FeatureStateBaseHolder> _features =
@@ -312,10 +427,21 @@ namespace FeatureHubSDK
     public event EventHandler<Readyness> ReadynessHandler;
     public event EventHandler<FeatureHubRepository> NewFeatureHandler;
     private IList<IAnalyticsCollector> _analyticsCollectors = new List<IAnalyticsCollector>();
+    private readonly ApplyFeature _applyFeature;
 
     public Readyness Readyness => _readyness;
 
     public IHostedClientContext HostedClientContext => _hostedClientContext;
+
+    public FeatureHubRepository()
+    {
+      _applyFeature = new ApplyFeature(new PercentageMurmur3Calculator(), new MatcherRegistry());
+    }
+
+    public FeatureHubRepository(ApplyFeature applyFeature)
+    {
+      _applyFeature = applyFeature;
+    }
 
     private void TriggerReadyness()
     {
@@ -455,7 +581,7 @@ namespace FeatureHubSDK
       FeatureStateBaseHolder holder = keyExists ? _features[fs.Key] : null;
       if (holder?.Key == null)
       {
-        holder = new FeatureStateBaseHolder(holder);
+        holder = new FeatureStateBaseHolder(holder, _applyFeature);
       }
       else if (holder.Version != null)
       {
@@ -481,33 +607,33 @@ namespace FeatureHubSDK
     {
       if (!_features.ContainsKey(key))
       {
-        _features.Add(key, new FeatureStateBaseHolder(null));
+        _features.Add(key, new FeatureStateBaseHolder(null, _applyFeature));
       }
 
       return _features[key];
     }
 
-    public bool GetFlag(string key)
+    public override bool? GetFlag(string key)
     {
       return FeatureState(key).BooleanValue == true;
     }
 
-    public double? GetNumber(string key)
+    public override double? GetNumber(string key)
     {
       return FeatureState(key).NumberValue;
     }
 
-    public string GetString(string key)
+    public override string GetString(string key)
     {
       return FeatureState(key).StringValue;
     }
 
-    public string GetJson(string key)
+    public override string GetJson(string key)
     {
       return FeatureState(key).JsonValue;
     }
 
-    public bool Exists(string key)
+    public override bool Exists(string key)
     {
       if (_features.ContainsKey(key))
       {
@@ -515,6 +641,11 @@ namespace FeatureHubSDK
       }
 
       return false;
+    }
+
+    public override IFeatureStateHolder GetFeature(string key)
+    {
+      return FeatureState(key);
     }
 
     public bool IsSet(string key)

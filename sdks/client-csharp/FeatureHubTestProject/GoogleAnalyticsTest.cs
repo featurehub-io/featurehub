@@ -122,6 +122,11 @@ namespace FeatureHubTestProject
       get => _data != null;
     }
 
+    public IFeatureStateHolder WithContext(IClientContext context)
+    {
+      throw new NotImplementedException();
+    }
+
     public event EventHandler<IFeatureStateHolder> FeatureUpdateHandler;
   }
 
