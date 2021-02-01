@@ -2,26 +2,210 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
+using FeatureHubSDK;
 using IO.FeatureHub.SSE.Model;
+using Murmur;
 using NodaTime;
+using NodaTime.Text;
 using Version = SemVer.Version;
 
 public interface IPercentageCalculator
 {
-  int DetermineClientPercentage(string userKey, string id);
+  int DetermineClientPercentage(string percentageText, string featureId);
 }
 
-public class PercentageMumur3Calculator : IPercentageCalculator
+public class PercentageMurmur3Calculator : IPercentageCalculator, IDisposable
 {
   public static int MAX_PERCENTAGE = 1000000;
+  private readonly HashAlgorithm _hashAlgorithm;
 
-  public int DetermineClientPercentage(string UserKey, string Id)
+  public PercentageMurmur3Calculator()
   {
-    throw new System.NotImplementedException();
+    _hashAlgorithm = MurmurHash.Create32();
+  }
+
+  public PercentageMurmur3Calculator(uint seed)
+  {
+    _hashAlgorithm = MurmurHash.Create32(seed: seed);
+  }
+
+  public int DetermineClientPercentage(string percentageText, string featureId)
+  {
+    var hashCode = _hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(percentageText + featureId));
+    var result = BitConverter.ToInt32(hashCode, 0);
+    var ratio = (result & 0xFFFFFFFFL) / Math.Pow(2, 32);
+    return (int)Math.Floor(MAX_PERCENTAGE * ratio);
+  }
+
+  public void Dispose()
+  {
+    _hashAlgorithm?.Dispose();
+  }
+}
+
+public class Applied
+{
+  public bool Matched { get; }
+  public object Value { get; }
+
+  public Applied(bool matched, object value)
+  {
+    this.Matched = matched;
+    this.Value = value;
+  }
+}
+
+public class IndividualClientContext : BaseClientContext
+{
+  public override void Build()
+  {
+  }
+}
+
+public class ApplyFeature
+{
+  private readonly IPercentageCalculator _percentageCalculator;
+  private readonly IMatcherRepository _matcherRepository;
+
+  public ApplyFeature(IPercentageCalculator percentageCalculator, IMatcherRepository matcherRepository)
+  {
+    _percentageCalculator = percentageCalculator;
+    _matcherRepository = matcherRepository;
+  }
+
+  public Applied applyFeature(List<RolloutStrategy> strategies, string key, string featureValueId,
+    IClientContext context)
+  {
+    if (context != null && strategies != null && strategies.Count != 0)
+    {
+      int? percentage = null;
+      string percentageKey = null;
+      var basePercentage = new Dictionary<string, int>();
+      var defaultPercentageKey = context.DefaultPercentageKey;
+
+      foreach (var rsi in strategies)
+      {
+        if (rsi.Percentage != 0 && (defaultPercentageKey != null || rsi.PercentageAttributes.Count > 0))
+        {
+          // determine what the percentage key is
+          var newPercentageKey = DeterminePercentageKey(context, rsi.PercentageAttributes);
+
+          if (!basePercentage.ContainsKey(newPercentageKey))
+          {
+            basePercentage[newPercentageKey] = 0;
+          }
+
+          var basePercentageVal = basePercentage[newPercentageKey];
+
+          // if we have changed the key or we have never calculated it, calculate it and set the
+          // base percentage to null
+          if (percentage == null || !newPercentageKey.Equals(percentageKey))
+          {
+            percentageKey = newPercentageKey;
+            percentage = _percentageCalculator.DetermineClientPercentage(percentageKey, featureValueId);
+          }
+
+          int useBasePercentage = (rsi.Attributes == null || rsi.Attributes.Count == 0) ? basePercentageVal : 0;
+          // if the percentage is lower than the user's key +
+          // id of feature value then apply it
+          if (percentage < (useBasePercentage + rsi.Percentage))
+          {
+            if (rsi.Attributes != null && rsi.Attributes.Count != 0)
+            {
+              if (MatchAttributes(context, rsi))
+              {
+                return new Applied(true, rsi.Value);
+              }
+            }
+            else
+            {
+              return new Applied(true, rsi.Value);
+            }
+          }
+
+          // this was only a percentage and had no other attributes
+          if (rsi.Attributes == null || rsi.Attributes.Count == 0)
+          {
+            basePercentage[percentageKey] = basePercentage[percentageKey] + rsi.Percentage;
+          }
+        }
+        else if (rsi.Attributes != null && rsi.Attributes.Count > 0)
+        {
+          if (MatchAttributes(context, rsi))
+          {
+            return new Applied(true, rsi.Value);
+          }
+        }
+      }
+
+    }
+
+    return new Applied(false, null);
+  }
+
+  private bool MatchAttributes(IClientContext context, RolloutStrategy rsi)
+  {
+    foreach (var attr in rsi.Attributes)
+    {
+      var suppliedValue = context.GetAttr(attr.FieldName, null);
+
+      if (suppliedValue == null && attr.FieldName.ToLower().Equals("now"))
+      {
+        switch (attr.Type)
+        {
+          case RolloutStrategyFieldType.DATE:
+            suppliedValue = LocalDatePattern.Iso.Format(LocalDate.FromDateTime(DateTime.Now));
+            break;
+          case RolloutStrategyFieldType.DATETIME:
+            suppliedValue = LocalDateTimePattern.GeneralIso.Format(LocalDateTime.FromDateTime(DateTime.Now));
+            break;
+        }
+      }
+
+      object val = attr.Values;
+
+      if (val == null && suppliedValue == null)
+      {
+        if (attr.Conditional != RolloutStrategyAttributeConditional.EQUALS)
+        {
+          return false;
+        }
+
+        continue; //skip
+      }
+
+      if (val == null || suppliedValue == null)
+      {
+        if (attr.Conditional == RolloutStrategyAttributeConditional.NOTEQUALS)
+        {
+          return false;
+        }
+
+        continue; // skip
+      }
+
+      if (!_matcherRepository.FindMatcher(attr).Match(suppliedValue, attr))
+      {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  private string DeterminePercentageKey(IClientContext context, List<string> rsiPercentageAttributes)
+  {
+    if (rsiPercentageAttributes.Count == 0)
+    {
+      return context.DefaultPercentageKey;
+    }
+
+    return string.Join("$", rsiPercentageAttributes.Select(pa => context.GetAttr(pa, "<none>")));
   }
 }
 

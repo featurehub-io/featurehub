@@ -82,29 +82,17 @@ namespace FeatureHubSDK
     //IFeatureStateHolder Copy();
   }
 
-  public interface IClientContext
+  public interface IHostedClientContext
   {
     event EventHandler<string> ContextUpdateHandler;
-
-    IClientContext UserKey(string key);
-    IClientContext SessionKey(string key);
-    IClientContext Device(StrategyAttributeDeviceName device);
-    IClientContext Platform(StrategyAttributePlatformName platform);
-    IClientContext Country(StrategyAttributeCountryName country);
-    /// expects semantic version
-    IClientContext Version(string version);
-    IClientContext Attr(string key, string value);
-    IClientContext Attrs(string key, List<string> values);
-    IClientContext Clear();
-    void Build();
     string GenerateHeader();
   }
 
-  internal class ClientContext : IClientContext
+  public abstract class BaseClientContext : IClientContext
   {
-    private static readonly ILog Log = LogManager.GetLogger<ClientContext>();
-    private readonly Dictionary<string, List<string>> _attributes = new Dictionary<string,List<string>>();
-    public event EventHandler<string> ContextUpdateHandler;
+    private static readonly ILog Log = LogManager.GetLogger<BaseClientContext>();
+    protected readonly Dictionary<string, List<string>> _attributes = new Dictionary<string,List<string>>();
+
     public IClientContext UserKey(string key)
     {
       _attributes["userkey"] = new List<string>{key};
@@ -117,10 +105,7 @@ namespace FeatureHubSDK
       var info = type.GetField(enumValue.ToString());
       var da = (EnumMemberAttribute[])(info.GetCustomAttributes(typeof(EnumMemberAttribute), false));
 
-      if (da.Length > 0)
-        return da[0].Value;
-      else
-        return string.Empty;
+      return da.Length > 0 ? da[0].Value : string.Empty;
     }
 
     public IClientContext SessionKey(string key)
@@ -172,7 +157,31 @@ namespace FeatureHubSDK
       return this;
     }
 
-    public void Build()
+    public string GetAttr(string key, string defaultValue)
+    {
+      if (_attributes.ContainsKey(key) && _attributes[key].Count > 0)
+      {
+        return _attributes[key][0];
+      }
+
+      return defaultValue;
+    }
+
+
+    public string DefaultPercentageKey => _attributes.ContainsKey("session") ? _attributes["session"][0] : _attributes["userkey"][0];
+
+    public abstract void Build();
+  }
+
+  // this is for use only by the repository itself if it represents a single client
+  // and is not changing context based on users
+  internal class HostedClientContext : BaseClientContext, IClientContext, IHostedClientContext
+  {
+    private static readonly ILog Log = LogManager.GetLogger<HostedClientContext>();
+
+    public event EventHandler<string> ContextUpdateHandler;
+
+    public override void Build()
     {
       var header = GenerateHeader();
 
@@ -297,7 +306,7 @@ namespace FeatureHubSDK
     private static readonly ILog log = LogManager.GetLogger<FeatureHubRepository>();
     private readonly Dictionary<string, FeatureStateBaseHolder> _features =
       new Dictionary<string, FeatureStateBaseHolder>();
-    private readonly IClientContext _clientContext = new ClientContext();
+    private readonly HostedClientContext _hostedClientContext = new HostedClientContext();
 
     private Readyness _readyness = Readyness.NotReady;
     public event EventHandler<Readyness> ReadynessHandler;
@@ -306,7 +315,7 @@ namespace FeatureHubSDK
 
     public Readyness Readyness => _readyness;
 
-    public IClientContext ClientContext => _clientContext;
+    public IHostedClientContext HostedClientContext => _hostedClientContext;
 
     private void TriggerReadyness()
     {
