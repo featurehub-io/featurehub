@@ -230,7 +230,7 @@ class ApplicationStepdefs {
     }
 
     api.ApplicationRoleType desiredRole =
-        api.ApplicationRoleTypeTypeTransformer.fromJson(roleName);
+        api.ApplicationRoleTypeExtension.fromJson(roleName);
 
     if (!agr.roles.any((role) => role == desiredRole)) {
       agr.roles.add(desiredRole);

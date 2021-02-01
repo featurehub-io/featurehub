@@ -18,6 +18,7 @@ paths:
       operationId: getSuperuserGroup
       parameters:
         - name: id
+          required: true
           in: path
           description: "the id of the organisation"
           schema:
@@ -1494,6 +1495,7 @@ paths:
       - name: id
         description: "the portfolio this service account belongs to"
         in: path
+        required: true
         schema:
           type: string
       - name: includePermissions
@@ -1558,6 +1560,7 @@ paths:
       - name: id
         description: "the id for the service account to get"
         in: path
+        required: true
         schema:
           type: string
       - name: includePermissions
@@ -1624,6 +1627,7 @@ paths:
       parameters:
         - name: id
           description: "the id for the service account to get"
+          required: true
           in: path
           schema:
             type: string

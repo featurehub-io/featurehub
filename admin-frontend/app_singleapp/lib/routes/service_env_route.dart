@@ -147,11 +147,7 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
             ? Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Text(
-                      perms
-                          .map((p) =>
-                              RoleTypeTypeTransformer.toJson(p).toString())
-                          .join(', '),
+                  Text(perms.map((p) => p.toJson().toString()).join(', '),
                       style: TextStyle(
                           fontFamily: 'Source',
                           fontSize: 12,
@@ -200,9 +196,7 @@ class _CopyServiceAccountUrlToClipboard extends StatelessWidget {
         hoverColor: Theme.of(context).primaryColorLight,
         splashColor: Theme.of(context).primaryColor,
         child: Container(
-            width: 20,
-            height: 20,
-            child: Icon(Icons.content_copy, size: 16.0)),
+            width: 20, height: 20, child: Icon(Icons.content_copy, size: 16.0)),
         onTap: () async {
           await html.window.navigator.permissions
               .query({'name': 'clipboard-write'});
