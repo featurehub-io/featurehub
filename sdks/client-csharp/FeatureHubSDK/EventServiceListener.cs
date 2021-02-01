@@ -22,9 +22,9 @@ namespace FeatureHubSDK
         _url = url;
         _repository = repository;
 
-        xFeatureHubHeader = _repository.ClientContext.GenerateHeader();
+        xFeatureHubHeader = _repository.HostedClientContext.GenerateHeader();
 
-        _repository.ClientContext.ContextUpdateHandler += (sender, header) =>
+        _repository.HostedClientContext.ContextUpdateHandler += (sender, header) =>
         {
           if (header == xFeatureHubHeader || (_eventSource.ReadyState != ReadyState.Open && _eventSource.ReadyState != ReadyState.Connecting)) return;
 
