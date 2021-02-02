@@ -159,12 +159,7 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
                     width: 16.0,
                   ),
                   if (account.sdkUrl != null)
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        FHCopyToClipboard(copyString: account.sdkUrl, tooltipMessage: account.sdkUrl),
-                      ],
-                    ),
+                    FHCopyToClipboard(copyString: account.sdkUrl, tooltipMessage: account.sdkUrl),
                   if (account.sdkUrl == null)
                     Tooltip(
                       message:
@@ -183,38 +178,5 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
                       style: Theme.of(context).textTheme.caption),
                 ],
               ));
-  }
-}
-
-class _CopyServiceAccountUrlToClipboard extends StatelessWidget {
-  final ServiceAccountPermission account;
-
-  const _CopyServiceAccountUrlToClipboard({Key key, @required this.account})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return
-//      sa.sdkUrl  != null ?
-        Tooltip(
-      message: 'Copy SDK Url to clipboard',
-      child: InkWell(
-        mouseCursor: SystemMouseCursors.click,
-        borderRadius: BorderRadius.circular(10.0),
-        hoverColor: Theme.of(context).primaryColorLight,
-        splashColor: Theme.of(context).primaryColor,
-        child: Container(
-            width: 20,
-            height: 20,
-            child: Icon(Icons.content_copy, size: 16.0)),
-        onTap: () async {
-          await html.window.navigator.permissions
-              .query({'name': 'clipboard-write'});
-          await html.window.navigator.clipboard.writeText(account.sdkUrl);
-        },
-      ),
-    )
-//        : SizedBox.shrink()
-        ;
   }
 }
