@@ -1,6 +1,5 @@
-import 'dart:html' as html;
-
 import 'package:app_singleapp/widgets/common/application_drop_down.dart';
+import 'package:app_singleapp/widgets/common/copy_to_clipboard_html.dart';
 import 'package:app_singleapp/widgets/common/decorations/fh_page_divider.dart';
 import 'package:app_singleapp/widgets/common/fh_header.dart';
 import 'package:app_singleapp/widgets/service-accounts/service_accounts_env_bloc.dart';
@@ -160,7 +159,12 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
                     width: 16.0,
                   ),
                   if (account.sdkUrl != null)
-                    _CopyServiceAccountUrlToClipboard(account: account),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        FHCopyToClipboard(copyString: account.sdkUrl, tooltipMessage: account.sdkUrl),
+                      ],
+                    ),
                   if (account.sdkUrl == null)
                     Tooltip(
                       message:
