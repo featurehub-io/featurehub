@@ -1,6 +1,5 @@
-import 'dart:html' as html;
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 typedef CopyToClipboardTextProvider = Future<String> Function();
 
@@ -28,9 +27,7 @@ class FHCopyToClipboardFlatButton extends StatelessWidget {
       onPressed: () async {
         final clipboardText = text ?? (await textProvider());
         if (clipboardText != null) {
-          await html.window.navigator.permissions
-              .query({'name': 'clipboard-write'});
-          await html.window.navigator.clipboard.writeText(clipboardText);
+          await Clipboard.setData(ClipboardData(text: clipboardText));
         }
       },
       child: Row(
@@ -79,9 +76,7 @@ class FHCopyToClipboard extends StatelessWidget {
       icon: Icon(Icons.content_copy, size: 16.0),
       tooltip: tooltipMessage,
       onPressed: () async {
-        await html.window.navigator.permissions
-            .query({'name': 'clipboard-write'});
-        await html.window.navigator.clipboard.writeText(copyString);
+        await Clipboard.setData(ClipboardData(text: copyString));
       },
     );
   }
