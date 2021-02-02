@@ -146,11 +146,7 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
             ? Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Text(
-                      perms
-                          .map((p) =>
-                              RoleTypeTypeTransformer.toJson(p).toString())
-                          .join(', '),
+                  Text(perms.map((p) => p.toJson().toString()).join(', '),
                       style: TextStyle(
                           fontFamily: 'Source',
                           fontSize: 12,

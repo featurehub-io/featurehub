@@ -168,7 +168,7 @@ class PortfolioStepdefs {
     }
 
     RoleType permission =
-        RoleTypeTypeTransformer.fromJson(permissionType) ?? RoleType.READ;
+        RoleTypeExtension.fromJson(permissionType) ?? RoleType.READ;
 
     ServiceAccountPermission saPermission = sa.permissions.firstWhere(
         (item) => item.environmentId == environment.id,
@@ -221,7 +221,7 @@ class PortfolioStepdefs {
     assert(shared.environment != null, 'no set environment');
 
     RoleType permissionType =
-        RoleTypeTypeTransformer.fromJson(permission) ?? RoleType.READ;
+        RoleTypeExtension.fromJson(permission) ?? RoleType.READ;
 
     final sa =
         await userCommon.serviceAccountService.createServiceAccountInPortfolio(
@@ -257,7 +257,7 @@ class PortfolioStepdefs {
         applicationId: environment.applicationId);
     assert(sa != null, 'Failed to find service account');
     RoleType permissionType =
-        RoleTypeTypeTransformer.fromJson(permission) ?? RoleType.READ;
+        RoleTypeExtension.fromJson(permission) ?? RoleType.READ;
     var sap = sa.permissions.firstWhere(
         (item) => item.environmentId == environment.id,
         orElse: () => null);
