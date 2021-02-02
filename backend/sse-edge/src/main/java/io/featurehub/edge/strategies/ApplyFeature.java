@@ -116,7 +116,7 @@ public class ApplyFeature {
       }
 
       // find the appropriate matcher based on type and match against the supplied value
-      if (!matcherRepository.findMatcher(suppliedValue, attr).match(suppliedValue, attr)) {
+      if (!matcherRepository.findMatcher(attr).match(suppliedValue, attr)) {
         return false;
       }
     }
