@@ -130,7 +130,7 @@ public class ServiceAccountResource implements ServiceAccountServiceDelegate {
   }
 
   @Override
-  public ServiceAccount update(String id, ServiceAccount serviceAccount, UpdateHolder holder, SecurityContext securityContext) {
+  public ServiceAccount update(String serviceAccountId, ServiceAccount serviceAccount, UpdateHolder holder, SecurityContext securityContext) {
     Person person = authManager.from(securityContext);
 
     Set<String> envIds =
@@ -140,11 +140,15 @@ public class ServiceAccountResource implements ServiceAccountServiceDelegate {
       throw new BadRequestException("Duplicate environment ids were passed.");
     }
 
-    if (authManager.isPortfolioAdmin(id, person) || authManager.isOrgAdmin(person) ) {
+    if (serviceAccount.getPortfolioId() == null) {
+      throw new BadRequestException("No portfolio passed");
+    }
+
+    if (authManager.isPortfolioAdmin(serviceAccount.getPortfolioId(), person) || authManager.isOrgAdmin(person) ) {
       ServiceAccount result = null;
 
       try {
-        result = serviceAccountApi.update(id, person, serviceAccount, new Opts().add(FillOpts.Permissions, holder.includePermissions));
+        result = serviceAccountApi.update(serviceAccountId, person, serviceAccount, new Opts().add(FillOpts.Permissions, holder.includePermissions));
       } catch (OptimisticLockingException e) {
         throw new WebApplicationException(422);
       }
