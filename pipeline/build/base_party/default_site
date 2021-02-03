@@ -21,6 +21,12 @@ server {
           proxy_pass http://localhost:8903/mr-api/;
         }
 
+        location /oauth/ {
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_pass http://localhost:8903/oauth/;
+        }
+
         # sse-cache is loaded here
         location /features/ {
           proxy_set_header Host $host;
