@@ -50,7 +50,7 @@ You can watch the video with some instructions https://youtu.be/DRVqXJmbvTk[here
 Start with running this simple line:
 
 ----
-docker run -p 8085:80 -v ~/tmp/party:/db featurehub/party-server:1.1.1
+docker run -p 8085:80 -v ~/tmp/party:/db featurehub/party-server:latest
 ----
 
 where `~/tmp` is where you wish to store the database (h2).

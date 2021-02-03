@@ -26,7 +26,7 @@ We provide two evaluation examples - one for H2 and one for Postgres
 
 To install, grab the latest version of FeatureHub tagged release, e.g.
 
-`curl https://github.com/featurehub-io/featurehub-install/archive/release-1.1.1.tar.gz -o featurehub.tar.gz`
+`curl https://github.com/featurehub-io/featurehub-install/archive/release-1.1.2.tar.gz -o featurehub.tar.gz | tar -xvz`
 
 You can check for the latest versions https://github.com/featurehub-io/featurehub-install/releases[here] 
 
@@ -34,13 +34,13 @@ Make sure you have your docker running, and run the following commands from the 
 
 For H2 option:
 
-`cd featurehub-install-release-1.1.1/docker-compose-options/all-in-one-h2`
+`cd featurehub-install-release-1.1.2/docker-compose-options/all-in-one-h2`
 
 `docker-compose up`
 
 For Postgres option:
 
-`cd featurehub-install-release-1.1.1/docker-compose-options/all-in-one-postgres`
+`cd featurehub-install-release-1.1.2/docker-compose-options/all-in-one-postgres`
 
 `docker-compose up`
 
@@ -56,7 +56,7 @@ In this deployment, all components (MR, Dacha, NATS, Edge) are split into separa
 split and separate the configuration for each of these pieces.
 
 Because they are deployed in separate containers, you have considerably greater control over what
-network traffic gains access to each of these pieces, and they do not all sit under the same Web server. However
+network traffic gains access to each of these pieces, and they do not all sit under the same Web server. However,
 because they run in a single Docker-Compose, they must run on different ports, which means you will need further
 configuration to expose them in a normal organisation.
 
@@ -65,13 +65,13 @@ NOTE: In this `docker-compose` image, there is a sample database along with an i
 
 To install, grab the latest version of FeatureHub tagged release, e.g.
 
-`curl https://github.com/featurehub-io/featurehub-install/archive/release-1.1.1.tar.gz -o featurehub.tar.gz`
+`curl https://github.com/featurehub-io/featurehub-install/archive/release-1.1.2.tar.gz -o featurehub.tar.gz | tar -xvz`
 
 You can check for the latest versions https://github.com/featurehub-io/featurehub-install/releases[here]
 
 Make sure you have your docker running, and run the following commands from the folder where you saved the FeatureHub executable:
 
-`cd featurehub-install-release-1.1.1/docker-compose-options/all-separate-postgres`
+`cd featurehub-install-release-1.1.2/docker-compose-options/all-separate-postgres`
 
 `docker-compose up`
 
