@@ -9,8 +9,13 @@ enum StrategyAttributeDeviceName {
   embedded
 }
 
-class StrategyAttributeDeviceNameTypeTransformer {
-  static Map<String, StrategyAttributeDeviceName> fromJsonMap = {
+extension StrategyAttributeDeviceNameExtension on StrategyAttributeDeviceName {
+  String get name => toMap[this];
+
+  // you have to call this extension class to use this as this is not yet supported
+  static StrategyAttributeDeviceName type(String name) => fromMap[name];
+
+  static Map<String, StrategyAttributeDeviceName> fromMap = {
     'browser': StrategyAttributeDeviceName.browser,
     'mobile': StrategyAttributeDeviceName.mobile,
     'desktop': StrategyAttributeDeviceName.desktop,
@@ -18,7 +23,7 @@ class StrategyAttributeDeviceNameTypeTransformer {
     'watch': StrategyAttributeDeviceName.watch,
     'embedded': StrategyAttributeDeviceName.embedded
   };
-  static Map<StrategyAttributeDeviceName, String> toJsonMap = {
+  static Map<StrategyAttributeDeviceName, String> toMap = {
     StrategyAttributeDeviceName.browser: 'browser',
     StrategyAttributeDeviceName.mobile: 'mobile',
     StrategyAttributeDeviceName.desktop: 'desktop',
@@ -27,28 +32,19 @@ class StrategyAttributeDeviceNameTypeTransformer {
     StrategyAttributeDeviceName.embedded: 'embedded'
   };
 
-  static StrategyAttributeDeviceName fromJson(dynamic data) {
-    var found = fromJsonMap[data];
-    if (found == null) {
-      throw ('Unknown enum value to decode: $data');
-    }
-    return found;
-  }
+  static StrategyAttributeDeviceName fromJson(dynamic data) =>
+      data == null ? null : fromMap[data];
 
-  static dynamic toJson(StrategyAttributeDeviceName data) {
-    return toJsonMap[data];
-  }
+  dynamic toJson() => toMap[this];
 
-  static List<StrategyAttributeDeviceName> listFromJson(List<dynamic> json) {
-    return json == null
-        ? <StrategyAttributeDeviceName>[]
-        : json.map((value) => fromJson(value)).toList();
-  }
+  static List<StrategyAttributeDeviceName> listFromJson(List<dynamic> json) =>
+      json == null
+          ? <StrategyAttributeDeviceName>[]
+          : json.map((value) => fromJson(value)).toList();
 
   static StrategyAttributeDeviceName copyWith(
-      StrategyAttributeDeviceName instance) {
-    return instance;
-  }
+          StrategyAttributeDeviceName instance) =>
+      instance;
 
   static Map<String, StrategyAttributeDeviceName> mapFromJson(
       Map<String, dynamic> json) {

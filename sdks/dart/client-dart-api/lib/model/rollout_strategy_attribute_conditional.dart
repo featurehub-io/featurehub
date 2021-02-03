@@ -14,8 +14,14 @@ enum RolloutStrategyAttributeConditional {
   REGEX
 }
 
-class RolloutStrategyAttributeConditionalTypeTransformer {
-  static Map<String, RolloutStrategyAttributeConditional> fromJsonMap = {
+extension RolloutStrategyAttributeConditionalExtension
+    on RolloutStrategyAttributeConditional {
+  String get name => toMap[this];
+
+  // you have to call this extension class to use this as this is not yet supported
+  static RolloutStrategyAttributeConditional type(String name) => fromMap[name];
+
+  static Map<String, RolloutStrategyAttributeConditional> fromMap = {
     'EQUALS': RolloutStrategyAttributeConditional.EQUALS,
     'ENDS_WITH': RolloutStrategyAttributeConditional.ENDS_WITH,
     'STARTS_WITH': RolloutStrategyAttributeConditional.STARTS_WITH,
@@ -28,7 +34,7 @@ class RolloutStrategyAttributeConditionalTypeTransformer {
     'EXCLUDES': RolloutStrategyAttributeConditional.EXCLUDES,
     'REGEX': RolloutStrategyAttributeConditional.REGEX
   };
-  static Map<RolloutStrategyAttributeConditional, String> toJsonMap = {
+  static Map<RolloutStrategyAttributeConditional, String> toMap = {
     RolloutStrategyAttributeConditional.EQUALS: 'EQUALS',
     RolloutStrategyAttributeConditional.ENDS_WITH: 'ENDS_WITH',
     RolloutStrategyAttributeConditional.STARTS_WITH: 'STARTS_WITH',
@@ -42,29 +48,20 @@ class RolloutStrategyAttributeConditionalTypeTransformer {
     RolloutStrategyAttributeConditional.REGEX: 'REGEX'
   };
 
-  static RolloutStrategyAttributeConditional fromJson(dynamic data) {
-    var found = fromJsonMap[data];
-    if (found == null) {
-      throw ('Unknown enum value to decode: $data');
-    }
-    return found;
-  }
+  static RolloutStrategyAttributeConditional fromJson(dynamic data) =>
+      data == null ? null : fromMap[data];
 
-  static dynamic toJson(RolloutStrategyAttributeConditional data) {
-    return toJsonMap[data];
-  }
+  dynamic toJson() => toMap[this];
 
   static List<RolloutStrategyAttributeConditional> listFromJson(
-      List<dynamic> json) {
-    return json == null
-        ? <RolloutStrategyAttributeConditional>[]
-        : json.map((value) => fromJson(value)).toList();
-  }
+          List<dynamic> json) =>
+      json == null
+          ? <RolloutStrategyAttributeConditional>[]
+          : json.map((value) => fromJson(value)).toList();
 
   static RolloutStrategyAttributeConditional copyWith(
-      RolloutStrategyAttributeConditional instance) {
-    return instance;
-  }
+          RolloutStrategyAttributeConditional instance) =>
+      instance;
 
   static Map<String, RolloutStrategyAttributeConditional> mapFromJson(
       Map<String, dynamic> json) {

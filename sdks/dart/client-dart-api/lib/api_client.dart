@@ -32,10 +32,10 @@ class LocalApiClient {
         return value.toJson();
       }
       if (value is FeatureValueType) {
-        return FeatureValueTypeTypeTransformer.toJson(value);
+        return value.toJson();
       }
       if (value is RoleType) {
-        return RoleTypeTypeTransformer.toJson(value);
+        return value.toJson();
       }
       if (value is RolloutStrategy) {
         return value.toJson();
@@ -44,26 +44,27 @@ class LocalApiClient {
         return value.toJson();
       }
       if (value is RolloutStrategyAttributeConditional) {
-        return RolloutStrategyAttributeConditionalTypeTransformer.toJson(value);
+        return value.toJson();
       }
       if (value is RolloutStrategyFieldType) {
-        return RolloutStrategyFieldTypeTypeTransformer.toJson(value);
+        return value.toJson();
       }
       if (value is SSEResultState) {
-        return SSEResultStateTypeTransformer.toJson(value);
+        return value.toJson();
       }
       if (value is StrategyAttributeCountryName) {
-        return StrategyAttributeCountryNameTypeTransformer.toJson(value);
+        return value.toJson();
       }
       if (value is StrategyAttributeDeviceName) {
-        return StrategyAttributeDeviceNameTypeTransformer.toJson(value);
+        return value.toJson();
       }
       if (value is StrategyAttributePlatformName) {
-        return StrategyAttributePlatformNameTypeTransformer.toJson(value);
+        return value.toJson();
       }
       if (value is StrategyAttributeWellKnownNames) {
-        return StrategyAttributeWellKnownNamesTypeTransformer.toJson(value);
+        return value.toJson();
       }
+
       return value.toString();
     } on Exception catch (e, stack) {
       throw ApiException.withInner(
@@ -105,28 +106,27 @@ class LocalApiClient {
         case 'FeatureStateUpdate':
           return FeatureStateUpdate.fromJson(value);
         case 'FeatureValueType':
-          return FeatureValueTypeTypeTransformer.fromJson(value);
+          return FeatureValueTypeExtension.fromJson(value);
         case 'RoleType':
-          return RoleTypeTypeTransformer.fromJson(value);
+          return RoleTypeExtension.fromJson(value);
         case 'RolloutStrategy':
           return RolloutStrategy.fromJson(value);
         case 'RolloutStrategyAttribute':
           return RolloutStrategyAttribute.fromJson(value);
         case 'RolloutStrategyAttributeConditional':
-          return RolloutStrategyAttributeConditionalTypeTransformer.fromJson(
-              value);
+          return RolloutStrategyAttributeConditionalExtension.fromJson(value);
         case 'RolloutStrategyFieldType':
-          return RolloutStrategyFieldTypeTypeTransformer.fromJson(value);
+          return RolloutStrategyFieldTypeExtension.fromJson(value);
         case 'SSEResultState':
-          return SSEResultStateTypeTransformer.fromJson(value);
+          return SSEResultStateExtension.fromJson(value);
         case 'StrategyAttributeCountryName':
-          return StrategyAttributeCountryNameTypeTransformer.fromJson(value);
+          return StrategyAttributeCountryNameExtension.fromJson(value);
         case 'StrategyAttributeDeviceName':
-          return StrategyAttributeDeviceNameTypeTransformer.fromJson(value);
+          return StrategyAttributeDeviceNameExtension.fromJson(value);
         case 'StrategyAttributePlatformName':
-          return StrategyAttributePlatformNameTypeTransformer.fromJson(value);
+          return StrategyAttributePlatformNameExtension.fromJson(value);
         case 'StrategyAttributeWellKnownNames':
-          return StrategyAttributeWellKnownNamesTypeTransformer.fromJson(value);
+          return StrategyAttributeWellKnownNamesExtension.fromJson(value);
         default:
           {
             Match match;
@@ -161,36 +161,31 @@ class LocalApiClient {
     }
 
     if (value is FeatureValueType) {
-      return FeatureValueTypeTypeTransformer.toJson(value).toString();
+      return value.toJson().toString();
     }
     if (value is RoleType) {
-      return RoleTypeTypeTransformer.toJson(value).toString();
+      return value.toJson().toString();
     }
     if (value is RolloutStrategyAttributeConditional) {
-      return RolloutStrategyAttributeConditionalTypeTransformer.toJson(value)
-          .toString();
+      return value.toJson().toString();
     }
     if (value is RolloutStrategyFieldType) {
-      return RolloutStrategyFieldTypeTypeTransformer.toJson(value).toString();
+      return value.toJson().toString();
     }
     if (value is SSEResultState) {
-      return SSEResultStateTypeTransformer.toJson(value).toString();
+      return value.toJson().toString();
     }
     if (value is StrategyAttributeCountryName) {
-      return StrategyAttributeCountryNameTypeTransformer.toJson(value)
-          .toString();
+      return value.toJson().toString();
     }
     if (value is StrategyAttributeDeviceName) {
-      return StrategyAttributeDeviceNameTypeTransformer.toJson(value)
-          .toString();
+      return value.toJson().toString();
     }
     if (value is StrategyAttributePlatformName) {
-      return StrategyAttributePlatformNameTypeTransformer.toJson(value)
-          .toString();
+      return value.toJson().toString();
     }
     if (value is StrategyAttributeWellKnownNames) {
-      return StrategyAttributeWellKnownNamesTypeTransformer.toJson(value)
-          .toString();
+      return value.toJson().toString();
     }
 
     return jsonEncode(value);

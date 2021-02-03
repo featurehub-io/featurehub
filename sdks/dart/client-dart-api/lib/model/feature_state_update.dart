@@ -18,18 +18,10 @@ class FeatureStateUpdate {
   fromJson(Map<String, dynamic> json) {
     if (json == null) return;
 
-    {
-      final _jsonData = json[r'value'];
-      value = (_jsonData == null) ? null : _jsonData;
-    } // _jsonFieldName
-    {
-      final _jsonData = json[r'updateValue'];
-      updateValue = (_jsonData == null) ? null : _jsonData;
-    } // _jsonFieldName
-    {
-      final _jsonData = json[r'lock'];
-      lock = (_jsonData == null) ? null : _jsonData;
-    } // _jsonFieldName
+    value = (json[r'value'] == null) ? null : (json[r'value'] as dynamic);
+    updateValue =
+        (json[r'updateValue'] == null) ? null : (json[r'updateValue'] as bool);
+    lock = (json[r'lock'] == null) ? null : (json[r'lock'] as bool);
   }
 
   FeatureStateUpdate.fromJson(Map<String, dynamic> json) {
@@ -38,14 +30,12 @@ class FeatureStateUpdate {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (value != null) {
-      json[r'value'] = LocalApiClient.serialize(value);
-    }
+    json[r'value'] = value;
     if (updateValue != null) {
-      json[r'updateValue'] = LocalApiClient.serialize(updateValue);
+      json[r'updateValue'] = updateValue;
     }
     if (lock != null) {
-      json[r'lock'] = LocalApiClient.serialize(lock);
+      json[r'lock'] = lock;
     }
     return json;
   }
@@ -86,15 +76,15 @@ class FeatureStateUpdate {
     var hashCode = runtimeType.hashCode;
 
     if (value != null) {
-      hashCode = hashCode ^ value.hashCode;
+      hashCode = hashCode * 31 + value.hashCode;
     }
 
     if (updateValue != null) {
-      hashCode = hashCode ^ updateValue.hashCode;
+      hashCode = hashCode * 31 + updateValue.hashCode;
     }
 
     if (lock != null) {
-      hashCode = hashCode ^ lock.hashCode;
+      hashCode = hashCode * 31 + lock.hashCode;
     }
 
     return hashCode;
@@ -106,9 +96,14 @@ class FeatureStateUpdate {
     bool lock,
   }) {
     FeatureStateUpdate copy = FeatureStateUpdate();
-    copy.value = value ?? this.value;
-    copy.updateValue = updateValue ?? this.updateValue;
-    copy.lock = lock ?? this.lock;
+    value ??= this.value;
+    updateValue ??= this.updateValue;
+    lock ??= this.lock;
+
+    copy.value = value;
+    copy.updateValue = updateValue;
+    copy.lock = lock;
+
     return copy;
   }
 }

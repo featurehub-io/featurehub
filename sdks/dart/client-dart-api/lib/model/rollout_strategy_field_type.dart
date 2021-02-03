@@ -10,8 +10,13 @@ enum RolloutStrategyFieldType {
   IP_ADDRESS
 }
 
-class RolloutStrategyFieldTypeTypeTransformer {
-  static Map<String, RolloutStrategyFieldType> fromJsonMap = {
+extension RolloutStrategyFieldTypeExtension on RolloutStrategyFieldType {
+  String get name => toMap[this];
+
+  // you have to call this extension class to use this as this is not yet supported
+  static RolloutStrategyFieldType type(String name) => fromMap[name];
+
+  static Map<String, RolloutStrategyFieldType> fromMap = {
     'STRING': RolloutStrategyFieldType.STRING,
     'SEMANTIC_VERSION': RolloutStrategyFieldType.SEMANTIC_VERSION,
     'NUMBER': RolloutStrategyFieldType.NUMBER,
@@ -20,7 +25,7 @@ class RolloutStrategyFieldTypeTypeTransformer {
     'BOOLEAN': RolloutStrategyFieldType.BOOLEAN,
     'IP_ADDRESS': RolloutStrategyFieldType.IP_ADDRESS
   };
-  static Map<RolloutStrategyFieldType, String> toJsonMap = {
+  static Map<RolloutStrategyFieldType, String> toMap = {
     RolloutStrategyFieldType.STRING: 'STRING',
     RolloutStrategyFieldType.SEMANTIC_VERSION: 'SEMANTIC_VERSION',
     RolloutStrategyFieldType.NUMBER: 'NUMBER',
@@ -30,27 +35,18 @@ class RolloutStrategyFieldTypeTypeTransformer {
     RolloutStrategyFieldType.IP_ADDRESS: 'IP_ADDRESS'
   };
 
-  static RolloutStrategyFieldType fromJson(dynamic data) {
-    var found = fromJsonMap[data];
-    if (found == null) {
-      throw ('Unknown enum value to decode: $data');
-    }
-    return found;
-  }
+  static RolloutStrategyFieldType fromJson(dynamic data) =>
+      data == null ? null : fromMap[data];
 
-  static dynamic toJson(RolloutStrategyFieldType data) {
-    return toJsonMap[data];
-  }
+  dynamic toJson() => toMap[this];
 
-  static List<RolloutStrategyFieldType> listFromJson(List<dynamic> json) {
-    return json == null
-        ? <RolloutStrategyFieldType>[]
-        : json.map((value) => fromJson(value)).toList();
-  }
+  static List<RolloutStrategyFieldType> listFromJson(List<dynamic> json) =>
+      json == null
+          ? <RolloutStrategyFieldType>[]
+          : json.map((value) => fromJson(value)).toList();
 
-  static RolloutStrategyFieldType copyWith(RolloutStrategyFieldType instance) {
-    return instance;
-  }
+  static RolloutStrategyFieldType copyWith(RolloutStrategyFieldType instance) =>
+      instance;
 
   static Map<String, RolloutStrategyFieldType> mapFromJson(
       Map<String, dynamic> json) {

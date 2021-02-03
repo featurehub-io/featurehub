@@ -11,7 +11,6 @@ class FeatureState {
   int version;
 
   FeatureValueType type;
-  //enum typeEnum {  BOOLEAN,  STRING,  NUMBER,  JSON,  };{
   /* the current value */
   dynamic value;
   /* This field is filled in from the client side in the GET api as the GET api is able to request multiple environments. It is never passed from the server, as an array of feature states is wrapped in an environment. */
@@ -28,40 +27,24 @@ class FeatureState {
   fromJson(Map<String, dynamic> json) {
     if (json == null) return;
 
-    {
-      final _jsonData = json[r'id'];
-      id = (_jsonData == null) ? null : _jsonData;
-    } // _jsonFieldName
-    {
-      final _jsonData = json[r'key'];
-      key = (_jsonData == null) ? null : _jsonData;
-    } // _jsonFieldName
-    {
-      final _jsonData = json[r'l'];
-      l = (_jsonData == null) ? null : _jsonData;
-    } // _jsonFieldName
-    {
-      final _jsonData = json[r'version'];
-      version = (_jsonData == null) ? null : _jsonData;
-    } // _jsonFieldName
-    {
-      final _jsonData = json[r'type'];
-      type = (_jsonData == null)
-          ? null
-          : FeatureValueTypeTypeTransformer.fromJson(_jsonData);
-    } // _jsonFieldName
-    {
-      final _jsonData = json[r'value'];
-      value = (_jsonData == null) ? null : _jsonData;
-    } // _jsonFieldName
-    {
-      final _jsonData = json[r'environmentId'];
-      environmentId = (_jsonData == null) ? null : _jsonData;
-    } // _jsonFieldName
+    id = (json[r'id'] == null) ? null : (json[r'id'] as String);
+    key = (json[r'key'] == null) ? null : (json[r'key'] as String);
+    l = (json[r'l'] == null) ? null : (json[r'l'] as bool);
+    version = (json[r'version'] == null) ? null : (json[r'version'] as int);
+    type = (json[r'type'] == null)
+        ? null
+        : FeatureValueTypeExtension.fromJson(json[r'type']);
+    value = (json[r'value'] == null) ? null : (json[r'value'] as dynamic);
+    environmentId = (json[r'environmentId'] == null)
+        ? null
+        : (json[r'environmentId'] as String);
     {
       final _jsonData = json[r'strategies'];
-      strategies =
-          (_jsonData == null) ? null : RolloutStrategy.listFromJson(_jsonData);
+      strategies = (_jsonData == null)
+          ? null
+          : ((dynamic data) {
+              return RolloutStrategy.listFromJson(data);
+            }(_jsonData));
     } // _jsonFieldName
   }
 
@@ -72,28 +55,27 @@ class FeatureState {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     if (id != null) {
-      json[r'id'] = LocalApiClient.serialize(id);
+      json[r'id'] = id;
     }
     if (key != null) {
-      json[r'key'] = LocalApiClient.serialize(key);
+      json[r'key'] = key;
     }
     if (l != null) {
-      json[r'l'] = LocalApiClient.serialize(l);
+      json[r'l'] = l;
     }
     if (version != null) {
-      json[r'version'] = LocalApiClient.serialize(version);
+      json[r'version'] = version;
     }
     if (type != null) {
-      json[r'type'] = LocalApiClient.serialize(type);
+      json[r'type'] = type.toJson();
     }
-    if (value != null) {
-      json[r'value'] = LocalApiClient.serialize(value);
-    }
+    json[r'value'] = value;
     if (environmentId != null) {
-      json[r'environmentId'] = LocalApiClient.serialize(environmentId);
+      json[r'environmentId'] = environmentId;
     }
     if (strategies != null) {
-      json[r'strategies'] = LocalApiClient.serialize(strategies);
+      json[r'strategies'] =
+          strategies.map((v) => LocalApiClient.serialize(v)).toList();
     }
     return json;
   }
@@ -124,7 +106,8 @@ class FeatureState {
           key == other.key &&
           l == other.l &&
           version == other.version &&
-          type == other.type &&
+          type == other.type && // other
+
           value == other.value &&
           environmentId == other.environmentId &&
           const ListEquality().equals(strategies, other.strategies);
@@ -138,34 +121,36 @@ class FeatureState {
     var hashCode = runtimeType.hashCode;
 
     if (id != null) {
-      hashCode = hashCode ^ id.hashCode;
+      hashCode = hashCode * 31 + id.hashCode;
     }
 
     if (key != null) {
-      hashCode = hashCode ^ key.hashCode;
+      hashCode = hashCode * 31 + key.hashCode;
     }
 
     if (l != null) {
-      hashCode = hashCode ^ l.hashCode;
+      hashCode = hashCode * 31 + l.hashCode;
     }
 
     if (version != null) {
-      hashCode = hashCode ^ version.hashCode;
+      hashCode = hashCode * 31 + version.hashCode;
     }
 
     if (type != null) {
-      hashCode = hashCode ^ type.hashCode;
+      hashCode = hashCode * 31 + type.hashCode;
     }
 
     if (value != null) {
-      hashCode = hashCode ^ value.hashCode;
+      hashCode = hashCode * 31 + value.hashCode;
     }
 
     if (environmentId != null) {
-      hashCode = hashCode ^ environmentId.hashCode;
+      hashCode = hashCode * 31 + environmentId.hashCode;
     }
 
-    hashCode = hashCode ^ const ListEquality().hash(strategies);
+    if (strategies != null) {
+      hashCode = hashCode * 31 + const ListEquality().hash(strategies);
+    }
 
     return hashCode;
   }
@@ -181,20 +166,30 @@ class FeatureState {
     List<RolloutStrategy> strategies,
   }) {
     FeatureState copy = FeatureState();
-    copy.id = id ?? this.id;
-    copy.key = key ?? this.key;
-    copy.l = l ?? this.l;
-    copy.version = version ?? this.version;
-    copy.type = type ?? this.type;
-    copy.value = value ?? this.value;
-    copy.environmentId = environmentId ?? this.environmentId;
-    {
-      var newVal;
-      final v = strategies ?? this.strategies;
-      newVal = <RolloutStrategy>[]
-        ..addAll((v ?? []).map((y) => y.copyWith()).toList());
-      copy.strategies = newVal;
-    }
+    id ??= this.id;
+    key ??= this.key;
+    l ??= this.l;
+    version ??= this.version;
+    type ??= this.type;
+    value ??= this.value;
+    environmentId ??= this.environmentId;
+    strategies ??= this.strategies;
+
+    copy.id = id;
+    copy.key = key;
+    copy.l = l;
+    copy.version = version;
+    copy.type = type;
+    copy.value = value;
+    copy.environmentId = environmentId;
+    copy.strategies = (strategies == null)
+        ? null
+        : ((data) {
+            return (data as List<RolloutStrategy>)
+                .map((data) => data.copyWith())
+                .toList();
+          }(strategies));
+
     return copy;
   }
 }

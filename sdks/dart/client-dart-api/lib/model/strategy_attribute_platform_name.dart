@@ -2,15 +2,21 @@ part of featurehub_client_api.api;
 
 enum StrategyAttributePlatformName { linux, windows, macos, android, ios }
 
-class StrategyAttributePlatformNameTypeTransformer {
-  static Map<String, StrategyAttributePlatformName> fromJsonMap = {
+extension StrategyAttributePlatformNameExtension
+    on StrategyAttributePlatformName {
+  String get name => toMap[this];
+
+  // you have to call this extension class to use this as this is not yet supported
+  static StrategyAttributePlatformName type(String name) => fromMap[name];
+
+  static Map<String, StrategyAttributePlatformName> fromMap = {
     'linux': StrategyAttributePlatformName.linux,
     'windows': StrategyAttributePlatformName.windows,
     'macos': StrategyAttributePlatformName.macos,
     'android': StrategyAttributePlatformName.android,
     'ios': StrategyAttributePlatformName.ios
   };
-  static Map<StrategyAttributePlatformName, String> toJsonMap = {
+  static Map<StrategyAttributePlatformName, String> toMap = {
     StrategyAttributePlatformName.linux: 'linux',
     StrategyAttributePlatformName.windows: 'windows',
     StrategyAttributePlatformName.macos: 'macos',
@@ -18,28 +24,19 @@ class StrategyAttributePlatformNameTypeTransformer {
     StrategyAttributePlatformName.ios: 'ios'
   };
 
-  static StrategyAttributePlatformName fromJson(dynamic data) {
-    var found = fromJsonMap[data];
-    if (found == null) {
-      throw ('Unknown enum value to decode: $data');
-    }
-    return found;
-  }
+  static StrategyAttributePlatformName fromJson(dynamic data) =>
+      data == null ? null : fromMap[data];
 
-  static dynamic toJson(StrategyAttributePlatformName data) {
-    return toJsonMap[data];
-  }
+  dynamic toJson() => toMap[this];
 
-  static List<StrategyAttributePlatformName> listFromJson(List<dynamic> json) {
-    return json == null
-        ? <StrategyAttributePlatformName>[]
-        : json.map((value) => fromJson(value)).toList();
-  }
+  static List<StrategyAttributePlatformName> listFromJson(List<dynamic> json) =>
+      json == null
+          ? <StrategyAttributePlatformName>[]
+          : json.map((value) => fromJson(value)).toList();
 
   static StrategyAttributePlatformName copyWith(
-      StrategyAttributePlatformName instance) {
-    return instance;
-  }
+          StrategyAttributePlatformName instance) =>
+      instance;
 
   static Map<String, StrategyAttributePlatformName> mapFromJson(
       Map<String, dynamic> json) {

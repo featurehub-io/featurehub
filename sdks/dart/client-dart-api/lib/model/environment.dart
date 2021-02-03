@@ -15,14 +15,14 @@ class Environment {
   fromJson(Map<String, dynamic> json) {
     if (json == null) return;
 
-    {
-      final _jsonData = json[r'id'];
-      id = (_jsonData == null) ? null : _jsonData;
-    } // _jsonFieldName
+    id = (json[r'id'] == null) ? null : (json[r'id'] as String);
     {
       final _jsonData = json[r'features'];
-      features =
-          (_jsonData == null) ? null : FeatureState.listFromJson(_jsonData);
+      features = (_jsonData == null)
+          ? null
+          : ((dynamic data) {
+              return FeatureState.listFromJson(data);
+            }(_jsonData));
     } // _jsonFieldName
   }
 
@@ -33,10 +33,11 @@ class Environment {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     if (id != null) {
-      json[r'id'] = LocalApiClient.serialize(id);
+      json[r'id'] = id;
     }
     if (features != null) {
-      json[r'features'] = LocalApiClient.serialize(features);
+      json[r'features'] =
+          features.map((v) => LocalApiClient.serialize(v)).toList();
     }
     return json;
   }
@@ -75,10 +76,12 @@ class Environment {
     var hashCode = runtimeType.hashCode;
 
     if (id != null) {
-      hashCode = hashCode ^ id.hashCode;
+      hashCode = hashCode * 31 + id.hashCode;
     }
 
-    hashCode = hashCode ^ const ListEquality().hash(features);
+    if (features != null) {
+      hashCode = hashCode * 31 + const ListEquality().hash(features);
+    }
 
     return hashCode;
   }
@@ -88,14 +91,18 @@ class Environment {
     List<FeatureState> features,
   }) {
     Environment copy = Environment();
-    copy.id = id ?? this.id;
-    {
-      var newVal;
-      final v = features ?? this.features;
-      newVal = <FeatureState>[]
-        ..addAll((v ?? []).map((y) => y.copyWith()).toList());
-      copy.features = newVal;
-    }
+    id ??= this.id;
+    features ??= this.features;
+
+    copy.id = id;
+    copy.features = (features == null)
+        ? null
+        : ((data) {
+            return (data as List<FeatureState>)
+                .map((data) => data.copyWith())
+                .toList();
+          }(features));
+
     return copy;
   }
 }
