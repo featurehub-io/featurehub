@@ -21,7 +21,9 @@ class CustomStrategyBloc extends Bloc {
   CustomStrategyBloc(this.environmentFeatureValue, this.feature, this.fvBloc)
       : featureValue = fvBloc
             .featureValueByEnvironment(environmentFeatureValue.environmentId) {
-    _strategySource.add(featureValue.rolloutStrategies);
+    if (featureValue.rolloutStrategies != null) {
+      _strategySource.add(featureValue.rolloutStrategies);
+    }
   }
 
   void markDirty() {
@@ -69,6 +71,10 @@ class CustomStrategyBloc extends Bloc {
   /// unique based on this specific feature value
   void ensureStrategiesAreUnique() {
     final strategies = _strategySource.value;
+
+    if (strategies == null) {
+      return;
+    }
 
     var start = DateTime.now().microsecond;
 
