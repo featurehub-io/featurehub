@@ -1,9 +1,6 @@
-
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using IO.FeatureHub.SSE.Model;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using NUnit.Framework;
 
 namespace FeatureHubTestProject
@@ -76,20 +73,30 @@ namespace FeatureHubTestProject
 
     public static IEnumerable<TestCaseData> BooleanMatcherProvider()
     {
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"true"}, "true", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS, new List<object>{"true"}, "true", false);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS, new List<object>{"true"}, "false", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{true}, "true", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"true"}, "false", false);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{true}, "false", false);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"false"}, "false", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{false}, "false", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"false"}, "true", false);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{false}, "true", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object> {"true"}, "true",
+        true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS, new List<object> {"true"}, "true",
+        false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS, new List<object> {"true"}, "false",
+        true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object> {true}, "true", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object> {"true"}, "false",
+        false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object> {true}, "false",
+        false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object> {"false"}, "false",
+        true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object> {false}, "false",
+        true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object> {"false"}, "true",
+        false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object> {false}, "true",
+        false);
     }
 
     [Test, TestCaseSource("SemanticVersionMatcherProvider")]
-    public void SemanticVersionMatcher(RolloutStrategyAttributeConditional conditional, List<object> vals, string suppliedVal,
+    public void SemanticVersionMatcher(RolloutStrategyAttributeConditional conditional, List<object> vals,
+      string suppliedVal,
       bool matches)
     {
       var rsa = new RolloutStrategyAttribute();
@@ -102,22 +109,38 @@ namespace FeatureHubTestProject
 
     public static IEnumerable<TestCaseData> SemanticVersionMatcherProvider()
     {
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"2.0.3"}, "2.0.3", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"2.0.3", "2.0.1"}, "2.0.3", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"2.0.3"}, "2.0.1", false);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS, new List<object>{"2.0.3"}, "2.0.3", false);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS, new List<object>{"2.0.3"}, "2.0.1", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATER, new List<object>{"2.0.0"}, "2.1.0", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATER, new List<object>{"2.0.0"}, "2.0.1", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATEREQUALS, new List<object>{"7.1.0"}, "7.1.6", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATEREQUALS, new List<object>{"7.1.6"}, "7.1.6", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATER, new List<object>{"8.1.0"}, "7.1.6", false);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESS, new List<object>{"8.1.0"}, "7.1.6", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESS, new List<object>{"6.1.0"}, "7.1.6", false);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESS, new List<object>{"7.1.6"}, "7.1.6", false);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESSEQUALS, new List<object>{"7.1.6"}, "7.1.6", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESSEQUALS, new List<object>{"7.1.6"}, "6.1.6", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESSEQUALS, new List<object>{"7.1.6"}, "8.1.6", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object> {"2.0.3"}, "2.0.3",
+        true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object> {"2.0.3", "2.0.1"},
+        "2.0.3", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object> {"2.0.3"}, "2.0.1",
+        false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS, new List<object> {"2.0.3"}, "2.0.3",
+        false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS, new List<object> {"2.0.3"}, "2.0.1",
+        true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATER, new List<object> {"2.0.0"}, "2.1.0",
+        true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATER, new List<object> {"2.0.0"}, "2.0.1",
+        true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATEREQUALS, new List<object> {"7.1.0"},
+        "7.1.6", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATEREQUALS, new List<object> {"7.1.6"},
+        "7.1.6", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATER, new List<object> {"8.1.0"}, "7.1.6",
+        false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESS, new List<object> {"8.1.0"}, "7.1.6",
+        true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESS, new List<object> {"6.1.0"}, "7.1.6",
+        false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESS, new List<object> {"7.1.6"}, "7.1.6",
+        false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESSEQUALS, new List<object> {"7.1.6"}, "7.1.6",
+        true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESSEQUALS, new List<object> {"7.1.6"}, "6.1.6",
+        true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESSEQUALS, new List<object> {"7.1.6"}, "8.1.6",
+        false);
     }
 
 
@@ -135,23 +158,35 @@ namespace FeatureHubTestProject
 
     public static IEnumerable<TestCaseData> IPAddressMatcherProvider()
     {
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"192.168.86.75"}, "192.168.86.75", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS, new List<object>{"192.168.86.75"}, "192.168.86.75", false);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"192.168.86.75"}, "192.168.86.72", false);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS, new List<object>{"192.168.86.75"}, "192.168.86.72", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"192.168.0.0/16"}, "192.168.86.75", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"192.168.0.0/16"}, "192.162.86.75", false);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"10.0.0.0/24", "192.168.0.0/16"}, "192.168.86.75", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"10.0.0.0/24", "192.168.0.0/16"}, "172.168.86.75", false);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"10.7.4.8", "192.168.86.75"}, "192.168.86.75", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.INCLUDES, new List<object>{"10.7.4.8", "192.168.86.75"}, "192.168.86.75", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"10.7.4.8", "192.168.86.75"}, "192.168.83.75", false);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.EXCLUDES, new List<object>{"10.7.4.8", "192.168.86.75"}, "192.168.83.75", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.EXCLUDES, new List<object>{"10.7.4.8", "192.168.86.75"}, "192.168.86.75", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object> {"192.168.86.75"},
+        "192.168.86.75", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS, new List<object> {"192.168.86.75"},
+        "192.168.86.75", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object> {"192.168.86.75"},
+        "192.168.86.72", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS, new List<object> {"192.168.86.75"},
+        "192.168.86.72", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object> {"192.168.0.0/16"},
+        "192.168.86.75", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object> {"192.168.0.0/16"},
+        "192.162.86.75", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS,
+        new List<object> {"10.0.0.0/24", "192.168.0.0/16"}, "192.168.86.75", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS,
+        new List<object> {"10.0.0.0/24", "192.168.0.0/16"}, "172.168.86.75", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS,
+        new List<object> {"10.7.4.8", "192.168.86.75"}, "192.168.86.75", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.INCLUDES,
+        new List<object> {"10.7.4.8", "192.168.86.75"}, "192.168.86.75", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS,
+        new List<object> {"10.7.4.8", "192.168.86.75"}, "192.168.83.75", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EXCLUDES,
+        new List<object> {"10.7.4.8", "192.168.86.75"}, "192.168.83.75", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EXCLUDES,
+        new List<object> {"10.7.4.8", "192.168.86.75"}, "192.168.86.75", false);
 
       // library can't handle padded zeros
       // yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object>{"192.168.86.75"}, "192.168.086.075", true);
-
     }
 
     [Test, TestCaseSource("NumberMatcherProvider")]
@@ -171,24 +206,27 @@ namespace FeatureHubTestProject
       yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object> {10, 5}, "5", true);
       yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object> {5}, "5", true);
       yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object> {4}, "5", false);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object> {4,7}, "5", false);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.INCLUDES, new List<object> {4,7}, "5", false);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS, new List<object> {23,100923}, "5", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.EXCLUDES, new List<object> {23,100923}, "5", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object> {4, 7}, "5", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.INCLUDES, new List<object> {4, 7}, "5", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS, new List<object> {23, 100923}, "5",
+        true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EXCLUDES, new List<object> {23, 100923}, "5",
+        true);
       yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS, new List<object> {5}, "5", false);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATER, new List<object> {2,4}, "5", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATEREQUALS, new List<object> {2,5}, "5", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATEREQUALS, new List<object> {6,5}, "5", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESSEQUALS, new List<object> {2,5}, "5", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESS, new List<object> {8,7}, "5", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATER, new List<object> {7,10}, "5", false);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATEREQUALS, new List<object> {6,7}, "5", false);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESSEQUALS, new List<object> {2,3}, "5", false);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESS, new List<object> {1,-1}, "5", false);
-
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATER, new List<object> {2, 4}, "5", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATEREQUALS, new List<object> {2, 5}, "5",
+        true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATEREQUALS, new List<object> {6, 5}, "5",
+        true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESSEQUALS, new List<object> {2, 5}, "5", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESS, new List<object> {8, 7}, "5", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATER, new List<object> {7, 10}, "5", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATEREQUALS, new List<object> {6, 7}, "5",
+        false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESSEQUALS, new List<object> {2, 3}, "5",
+        false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESS, new List<object> {1, -1}, "5", false);
     }
 
   }
-
-
 }
