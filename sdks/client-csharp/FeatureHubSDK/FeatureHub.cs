@@ -170,7 +170,7 @@ namespace FeatureHubSDK
     }
 
 
-    public string DefaultPercentageKey => _attributes.ContainsKey("session") ? _attributes["session"][0] : _attributes["userkey"][0];
+    public string DefaultPercentageKey => _attributes.ContainsKey("session") ? _attributes["session"][0] : (_attributes.ContainsKey("userkey") ? _attributes["userkey"][0] : null);
 
     public abstract void Build();
   }
@@ -469,6 +469,28 @@ namespace FeatureHubSDK
       }
     }
 
+    public void Notify(IEnumerable<FeatureState> features)
+    {
+      var updated = false;
+      foreach (var featureState in features)
+      {
+        updated = FeatureUpdate(featureState) || updated;
+      }
+
+      if (_readyness != Readyness.Ready)
+      {
+        // are we newly ready?
+        _readyness = Readyness.Ready;
+        TriggerReadyness();
+      }
+
+      // we updated something, so let the folks know
+      if (updated)
+      {
+        TriggerNewUpdate();
+      }
+    }
+
     // Notify
     public void Notify(SSEResultState state, string data)
     {
@@ -490,25 +512,7 @@ namespace FeatureHubSDK
         case SSEResultState.Features:
           if (data != null)
           {
-            List<FeatureState> features = JsonConvert.DeserializeObject<List<FeatureState>>(data);
-            var updated = false;
-            foreach (var featureState in features)
-            {
-              updated = FeatureUpdate(featureState) || updated;
-            }
-
-            if (_readyness != Readyness.Ready)
-            {
-              // are we newly ready?
-              _readyness = Readyness.Ready;
-              TriggerReadyness();
-            }
-
-            // we updated something, so let the folks know
-            if (updated)
-            {
-              TriggerNewUpdate();
-            }
+            Notify(JsonConvert.DeserializeObject<List<FeatureState>>(data));
           }
 
           break;
