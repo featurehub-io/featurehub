@@ -83,6 +83,7 @@ public class ApplyFeature
   {
     if (context != null && strategies != null && strategies.Count != 0)
     {
+      Console.WriteLine($"Context is {context}");
       int? percentage = null;
       string percentageKey = null;
       var basePercentage = new Dictionary<string, int>();
