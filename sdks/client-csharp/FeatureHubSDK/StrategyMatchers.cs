@@ -201,7 +201,7 @@ public class ApplyFeature
 
   private string DeterminePercentageKey(IClientContext context, List<string> rsiPercentageAttributes)
   {
-    if (rsiPercentageAttributes.Count == 0)
+    if (rsiPercentageAttributes == null || rsiPercentageAttributes.Count == 0)
     {
       return context.DefaultPercentageKey;
     }
