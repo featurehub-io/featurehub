@@ -173,6 +173,22 @@ namespace FeatureHubSDK
     public string DefaultPercentageKey => _attributes.ContainsKey("session") ? _attributes["session"][0] : (_attributes.ContainsKey("userkey") ? _attributes["userkey"][0] : null);
 
     public abstract void Build();
+
+    public override string ToString()
+    {
+      var s = "CONTEXT: ";
+      foreach (var key in _attributes.Keys)
+      {
+        s += $"key: {key} = ";
+        foreach (var val in _attributes[key])
+        {
+          s += $"`{val}`,";
+        }
+
+        s += "\n";
+      }
+      return s;
+    }
   }
 
   // this is for use only by the repository itself if it represents a single client
