@@ -1,12 +1,17 @@
+timeout: 900s
 steps:
   - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
     entrypoint: '/bin/sh'
     id: tile-install
+    env:
+      - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3
     args:
       - '-c'
       - 'cd backend && mvn -s ../pipeline/m2/settings.xml --no-transfer-progress install -f pom-first.xml'
   - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
     entrypoint: '/bin/sh'
+    env:
+      - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3
     args:
       - '-c'
       - 'mvn -s pipeline/m2/settings.xml --no-transfer-progress -DaltDeploymentRepository=artifact-registry::default::artifactregistry://us-central1-maven.pkg.dev/demohub-283022/fh-build-repo deploy -f pom.xml'

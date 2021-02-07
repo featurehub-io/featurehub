@@ -1,46 +1,40 @@
 part of featurehub_client_api.api;
 
-enum SSEResultState { ack, bye, failure, features, feature, delete_feature }
+enum SSEResultState { ack, bye, failure, features, feature, deleteFeature }
 
-class SSEResultStateTypeTransformer {
-  static Map<String, SSEResultState> fromJsonMap = {
+extension SSEResultStateExtension on SSEResultState {
+  String get name => toMap[this];
+
+  // you have to call this extension class to use this as this is not yet supported
+  static SSEResultState type(String name) => fromMap[name];
+
+  static Map<String, SSEResultState> fromMap = {
     'ack': SSEResultState.ack,
     'bye': SSEResultState.bye,
     'failure': SSEResultState.failure,
     'features': SSEResultState.features,
     'feature': SSEResultState.feature,
-    'delete_feature': SSEResultState.delete_feature
+    'delete_feature': SSEResultState.deleteFeature
   };
-  static Map<SSEResultState, String> toJsonMap = {
+  static Map<SSEResultState, String> toMap = {
     SSEResultState.ack: 'ack',
     SSEResultState.bye: 'bye',
     SSEResultState.failure: 'failure',
     SSEResultState.features: 'features',
     SSEResultState.feature: 'feature',
-    SSEResultState.delete_feature: 'delete_feature'
+    SSEResultState.deleteFeature: 'delete_feature'
   };
 
-  static SSEResultState fromJson(dynamic data) {
-    var found = fromJsonMap[data];
-    if (found == null) {
-      throw ('Unknown enum value to decode: $data');
-    }
-    return found;
-  }
+  static SSEResultState fromJson(dynamic data) =>
+      data == null ? null : fromMap[data];
 
-  static dynamic toJson(SSEResultState data) {
-    return toJsonMap[data];
-  }
+  dynamic toJson() => toMap[this];
 
-  static List<SSEResultState> listFromJson(List<dynamic> json) {
-    return json == null
-        ? <SSEResultState>[]
-        : json.map((value) => fromJson(value)).toList();
-  }
+  static List<SSEResultState> listFromJson(List<dynamic> json) => json == null
+      ? <SSEResultState>[]
+      : json.map((value) => fromJson(value)).toList();
 
-  static SSEResultState copyWith(SSEResultState instance) {
-    return instance;
-  }
+  static SSEResultState copyWith(SSEResultState instance) => instance;
 
   static Map<String, SSEResultState> mapFromJson(Map<String, dynamic> json) {
     final map = <String, SSEResultState>{};

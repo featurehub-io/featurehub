@@ -186,7 +186,7 @@ class EnvironmentStepdefs {
         .map((e) => e.trim())
         .where((element) => element.length > 0 && element != 'NONE')
         .forEach((p) {
-      egr.roles.add(RoleTypeTypeTransformer.fromJson(p));
+      egr.roles.add(RoleTypeExtension.fromJson(p));
     });
 
     group.environmentRoles.add(egr);
@@ -225,7 +225,7 @@ class EnvironmentStepdefs {
 
     final updatedGroup = await common.groupService
         .getGroup(shared.group.id, includeGroupRoles: true);
-    final roleType = RoleTypeTypeTransformer.fromJson(perm);
+    final roleType = RoleTypeExtension.fromJson(perm);
     var eRoles = updatedGroup.environmentRoles.firstWhere(
         (er) => er.environmentId == shared.environment.id,
         orElse: () => null);

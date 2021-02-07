@@ -1,6 +1,5 @@
-import 'dart:html' as html;
-
 import 'package:app_singleapp/widgets/common/application_drop_down.dart';
+import 'package:app_singleapp/widgets/common/copy_to_clipboard_html.dart';
 import 'package:app_singleapp/widgets/common/decorations/fh_page_divider.dart';
 import 'package:app_singleapp/widgets/common/fh_header.dart';
 import 'package:app_singleapp/widgets/service-accounts/service_accounts_env_bloc.dart';
@@ -146,11 +145,7 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
             ? Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Text(
-                      perms
-                          .map((p) =>
-                              RoleTypeTypeTransformer.toJson(p).toString())
-                          .join(', '),
+                  Text(perms.map((p) => p.toJson().toString()).join(', '),
                       style: TextStyle(
                           fontFamily: 'Source',
                           fontSize: 12,
@@ -159,7 +154,7 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
                     width: 16.0,
                   ),
                   if (account.sdkUrl != null)
-                    _CopyServiceAccountUrlToClipboard(account: account),
+                    FHCopyToClipboard(copyString: account.sdkUrl, tooltipMessage: account.sdkUrl),
                   if (account.sdkUrl == null)
                     Tooltip(
                       message:
@@ -178,38 +173,5 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
                       style: Theme.of(context).textTheme.caption),
                 ],
               ));
-  }
-}
-
-class _CopyServiceAccountUrlToClipboard extends StatelessWidget {
-  final ServiceAccountPermission account;
-
-  const _CopyServiceAccountUrlToClipboard({Key key, @required this.account})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return
-//      sa.sdkUrl  != null ?
-        Tooltip(
-      message: 'Copy SDK Url to clipboard',
-      child: InkWell(
-        mouseCursor: SystemMouseCursors.click,
-        borderRadius: BorderRadius.circular(10.0),
-        hoverColor: Theme.of(context).primaryColorLight,
-        splashColor: Theme.of(context).primaryColor,
-        child: Container(
-            width: 20,
-            height: 20,
-            child: Icon(Icons.content_copy, size: 16.0)),
-        onTap: () async {
-          await html.window.navigator.permissions
-              .query({'name': 'clipboard-write'});
-          await html.window.navigator.clipboard.writeText(account.sdkUrl);
-        },
-      ),
-    )
-//        : SizedBox.shrink()
-        ;
   }
 }

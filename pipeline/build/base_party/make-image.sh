@@ -1,2 +1,2 @@
 #!/bin/sh
-docker build -t featurehub/base_party:1.4 .
+docker build  $DOCKER_OPTS -t featurehub/base_party:1.5 .

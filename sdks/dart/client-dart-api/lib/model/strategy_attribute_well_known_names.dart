@@ -9,8 +9,14 @@ enum StrategyAttributeWellKnownNames {
   version
 }
 
-class StrategyAttributeWellKnownNamesTypeTransformer {
-  static Map<String, StrategyAttributeWellKnownNames> fromJsonMap = {
+extension StrategyAttributeWellKnownNamesExtension
+    on StrategyAttributeWellKnownNames {
+  String get name => toMap[this];
+
+  // you have to call this extension class to use this as this is not yet supported
+  static StrategyAttributeWellKnownNames type(String name) => fromMap[name];
+
+  static Map<String, StrategyAttributeWellKnownNames> fromMap = {
     'device': StrategyAttributeWellKnownNames.device,
     'country': StrategyAttributeWellKnownNames.country,
     'platform': StrategyAttributeWellKnownNames.platform,
@@ -18,7 +24,7 @@ class StrategyAttributeWellKnownNamesTypeTransformer {
     'session': StrategyAttributeWellKnownNames.session,
     'version': StrategyAttributeWellKnownNames.version
   };
-  static Map<StrategyAttributeWellKnownNames, String> toJsonMap = {
+  static Map<StrategyAttributeWellKnownNames, String> toMap = {
     StrategyAttributeWellKnownNames.device: 'device',
     StrategyAttributeWellKnownNames.country: 'country',
     StrategyAttributeWellKnownNames.platform: 'platform',
@@ -27,29 +33,20 @@ class StrategyAttributeWellKnownNamesTypeTransformer {
     StrategyAttributeWellKnownNames.version: 'version'
   };
 
-  static StrategyAttributeWellKnownNames fromJson(dynamic data) {
-    var found = fromJsonMap[data];
-    if (found == null) {
-      throw ('Unknown enum value to decode: $data');
-    }
-    return found;
-  }
+  static StrategyAttributeWellKnownNames fromJson(dynamic data) =>
+      data == null ? null : fromMap[data];
 
-  static dynamic toJson(StrategyAttributeWellKnownNames data) {
-    return toJsonMap[data];
-  }
+  dynamic toJson() => toMap[this];
 
   static List<StrategyAttributeWellKnownNames> listFromJson(
-      List<dynamic> json) {
-    return json == null
-        ? <StrategyAttributeWellKnownNames>[]
-        : json.map((value) => fromJson(value)).toList();
-  }
+          List<dynamic> json) =>
+      json == null
+          ? <StrategyAttributeWellKnownNames>[]
+          : json.map((value) => fromJson(value)).toList();
 
   static StrategyAttributeWellKnownNames copyWith(
-      StrategyAttributeWellKnownNames instance) {
-    return instance;
-  }
+          StrategyAttributeWellKnownNames instance) =>
+      instance;
 
   static Map<String, StrategyAttributeWellKnownNames> mapFromJson(
       Map<String, dynamic> json) {
