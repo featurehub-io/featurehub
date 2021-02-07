@@ -60,13 +60,6 @@ public class Applied
   }
 }
 
-public class IndividualClientContext : BaseClientContext
-{
-  public override void Build()
-  {
-  }
-}
-
 public class ApplyFeature
 {
   private readonly IPercentageCalculator _percentageCalculator;
@@ -78,7 +71,7 @@ public class ApplyFeature
     _matcherRepository = matcherRepository;
   }
 
-  public Applied applyFeature(List<RolloutStrategy> strategies, string key, string featureValueId,
+  public Applied Apply(List<RolloutStrategy> strategies, string key, string featureValueId,
     IClientContext context)
   {
     if (context != null && strategies != null && strategies.Count != 0)

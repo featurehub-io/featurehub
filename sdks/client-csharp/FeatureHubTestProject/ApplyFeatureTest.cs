@@ -1,6 +1,7 @@
 
 
 using System.Collections.Generic;
+using FeatureHubSDK;
 using IO.FeatureHub.SSE.Model;
 using NUnit.Framework;
 
@@ -15,10 +16,27 @@ namespace FeatureHubTestProject
       return pc;
     }
   }
+
+  class TestClientContext : BaseClientContext
+  {
+    public override IFeature this[string name] => throw new System.NotImplementedException();
+
+    public override bool IsEnabled(string name)
+    {
+      throw new System.NotImplementedException();
+    }
+
+    public override IClientContext Build()
+    {
+      return this;
+    }
+  }
+
   class ApplyFeatureTest
   {
     private ApplyFeature _applyFeature;
     private TestPercentageCalculator _percentageCalculator;
+
 
     [SetUp]
     public void Setup()
@@ -36,9 +54,9 @@ namespace FeatureHubTestProject
       rs.Value = "blue";
 
       // and: we have a context
-      var cc = new IndividualClientContext().UserKey("mary@mary.com");
+      var cc = new TestClientContext().UserKey("mary@mary.com");
 
-      var val = _applyFeature.applyFeature(new List<RolloutStrategy> {rs}, "fred", "id", null);
+      var val = _applyFeature.Apply(new List<RolloutStrategy> {rs}, "fred", "id", null);
 
       Assert.AreEqual(val.Matched, false);
     }
@@ -52,9 +70,9 @@ namespace FeatureHubTestProject
       rs.Value = "blue";
 
       // and: we have a context
-      var cc = new IndividualClientContext().UserKey("mary@mary.com");
+      var cc = new TestClientContext().UserKey("mary@mary.com");
 
-      var val = _applyFeature.applyFeature(new List<RolloutStrategy> {rs}, "fred", "id", cc);
+      var val = _applyFeature.Apply(new List<RolloutStrategy> {rs}, "fred", "id", cc);
 
       Assert.AreEqual(expected, val.Value);
       Assert.AreEqual(matched, val.Matched);
@@ -72,9 +90,9 @@ namespace FeatureHubTestProject
     public void NoRolloutStrategy(int underPercent, string expected, bool matched)
     {
       // and: we have a context
-      var cc = new IndividualClientContext().UserKey("mary@mary.com");
+      var cc = new TestClientContext().UserKey("mary@mary.com");
 
-      var val = _applyFeature.applyFeature(new List<RolloutStrategy> {}, "fred", "id", cc);
+      var val = _applyFeature.Apply(new List<RolloutStrategy> {}, "fred", "id", cc);
 
       Assert.AreEqual(expected, val.Value);
       Assert.AreEqual(matched, val.Matched);

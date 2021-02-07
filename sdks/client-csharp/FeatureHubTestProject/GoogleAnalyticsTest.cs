@@ -22,13 +22,13 @@ namespace FeatureHubTestProject
     [Test]
     public void WithNoFeaturesBatcherGeneratesNothing()
     {
-      _gac.LogEvent("action", null, new List<IFeatureStateHolder>());
+      _gac.LogEvent("action", null, new List<IFeature>());
       Assert.AreEqual(_client.CalledCount, 0);
     }
 
-    private List<IFeatureStateHolder> Features(FakeFeatureHolder[] items)
+    private List<IFeature> Features(FakeFeatureHolder[] items)
     {
-      List<IFeatureStateHolder> l = new List<IFeatureStateHolder>();
+      List<IFeature> l = new List<IFeature>();
       foreach (var fakeFeatureHolder in items)
       {
         l.Add(fakeFeatureHolder);
@@ -68,7 +68,7 @@ namespace FeatureHubTestProject
     }
   }
 
-  internal class FakeFeatureHolder : IFeatureStateHolder
+  internal class FakeFeatureHolder : IFeature
   {
     private object _data;
     private FeatureValueType _type;
@@ -122,12 +122,12 @@ namespace FeatureHubTestProject
       get => _data != null;
     }
 
-    public IFeatureStateHolder WithContext(IClientContext context)
+    public IFeature WithContext(IClientContext context)
     {
       throw new NotImplementedException();
     }
 
-    public event EventHandler<IFeatureStateHolder> FeatureUpdateHandler;
+    public event EventHandler<IFeature> FeatureUpdateHandler;
   }
 
   internal class FakeClient : IGoogleAnalyticsClient

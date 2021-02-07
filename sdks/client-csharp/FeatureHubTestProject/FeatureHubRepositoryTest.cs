@@ -141,7 +141,7 @@ namespace FeatureHubTestProject
     [Test]
     public void ListeningForAFeatureThatDoesntExistAndThenTriggeringItTriggersHandler()
     {
-      IFeatureStateHolder holder = null;
+      IFeature holder = null;
       var hCount = 0;
       _repository.FeatureState("1").FeatureUpdateHandler += (sender, fs) =>
       {
@@ -160,7 +160,7 @@ namespace FeatureHubTestProject
     [Test]
     public void ListeningForAStringValueWorksAsExpected()
     {
-      IFeatureStateHolder holder = null;
+      IFeature holder = null;
       _repository.FeatureState("1").FeatureUpdateHandler += (sender, fs) => { holder = fs; };
       _repository.Notify(SSEResultState.Features, EncodeFeatures("fred", version: 2, type: FeatureValueType.STRING));
       Assert.AreEqual(FeatureValueType.STRING, holder.Type);
@@ -171,7 +171,7 @@ namespace FeatureHubTestProject
     [Test]
     public void ListeningForNumberValueWorksAsExpected()
     {
-      IFeatureStateHolder holder = null;
+      IFeature holder = null;
       _repository.FeatureState("1").FeatureUpdateHandler += (sender, fs) => { holder = fs; };
       _repository.Notify(SSEResultState.Features, EncodeFeatures(78.3, version: 2, type: FeatureValueType.NUMBER));
       Assert.AreEqual(FeatureValueType.NUMBER, holder.Type);
@@ -181,7 +181,7 @@ namespace FeatureHubTestProject
     [Test]
     public void ListeningForAJsonValueWorksAsExpected()
     {
-      IFeatureStateHolder holder = null;
+      IFeature holder = null;
       _repository.FeatureState("1").FeatureUpdateHandler += (sender, fs) => { holder = fs; };
       _repository.Notify(SSEResultState.Features, EncodeFeatures("fred", version: 2, type: FeatureValueType.JSON));
       Assert.AreEqual(FeatureValueType.JSON, holder.Type);
@@ -194,7 +194,7 @@ namespace FeatureHubTestProject
     [Test]
     public void ChangingFeatureValueFromOriginalTriggersEventHandler()
     {
-      IFeatureStateHolder holder = null;
+      IFeature holder = null;
       var hCount = 0;
       _repository.FeatureState("1").FeatureUpdateHandler += (sender, fs) =>
       {
@@ -218,7 +218,7 @@ namespace FeatureHubTestProject
     [Test]
     public void ChangingFeatureValueWithSameVersionButDifferentValueTriggersEventHandler()
     {
-      IFeatureStateHolder holder = null;
+      IFeature holder = null;
       var hCount = 0;
       _repository.FeatureState("1").FeatureUpdateHandler += (sender, fs) =>
       {
@@ -252,10 +252,27 @@ namespace FeatureHubTestProject
       Assert.IsNull(_repository.FeatureState("1").Version);
     }
 
-    [Test]
-    public void ContextEncodesAsExpected()
+    internal class EdgeServiceStub : IEdgeService
     {
-      (_repository.HostedClientContext as IClientContext)
+      public Dictionary<string, List<string>> attributes;
+
+      public void ContextChange(Dictionary<string, List<string>> attributes)
+      {
+        this.attributes = attributes;
+      }
+
+      public bool ClientEvaluation => true;
+      public void Close()
+      {
+        throw new NotImplementedException();
+      }
+    }
+
+    [Test]
+    public void ChangeInContextFiresRequestToEdgeService()
+    {
+      var edgeStub = new EdgeServiceStub();
+      var ctx = new FeatureContext(_repository, edgeStub)
         .Attr("city", "Istanbul City")
         .Attrs("family", new List<String> {"Bambam", "DJ Elif"})
         .Country(StrategyAttributeCountryName.Turkey)
@@ -263,23 +280,18 @@ namespace FeatureHubTestProject
         .Device(StrategyAttributeDeviceName.Mobile)
         .UserKey("tv-show")
         .Version("6.2.3")
-        .SessionKey("session-key");
+        .SessionKey("session-key")
+        .Build();
 
-      string header = null;
-      _repository.HostedClientContext.ContextUpdateHandler += (sender, h) => header = h;
-      (_repository.HostedClientContext as IClientContext).Build();
-      Assert.AreEqual(header,
-        "city=Istanbul+City,country=turkey,device=mobile,family=Bambam%2cDJ+Elif,platform=ios,session=session-key,userkey=tv-show,version=6.2.3");
+      Assert.AreEqual(new List<string>{"turkey"}, edgeStub.attributes["country"]);
+      Assert.AreEqual(new List<string> { "mobile" }, edgeStub.attributes["device"]);
+      Assert.AreEqual(new List<string> {"Bambam", "DJ Elif"}, edgeStub.attributes["family"]);
+      Assert.AreEqual(new List<string> {"tv-show"}, edgeStub.attributes["userkey"]);
+      Assert.AreEqual(new List<string> {"6.2.3"}, edgeStub.attributes["version"]);
+      Assert.AreEqual(new List<string> {"Istanbul City"}, edgeStub.attributes["city"]);
 
-      // i should be able to do the same thing again
-      (_repository.HostedClientContext as IClientContext)
-        .Attr("city", "Istanbul City")
-        .Attrs("family", new List<String> {"Bambam", "DJ Elif"})
-        .Country(StrategyAttributeCountryName.Turkey)
-        .Platform(StrategyAttributePlatformName.Ios)
-        .Device(StrategyAttributeDeviceName.Mobile)
-        .UserKey("tv-show")
-        .SessionKey("session-key");
+      // Assert.AreEqual(header,
+      //   "city=Istanbul+City,country=turkey,device=mobile,family=Bambam%2cDJ+Elif,platform=ios,session=session-key,userkey=tv-show,version=6.2.3");
     }
 
     [Test]
@@ -305,7 +317,7 @@ namespace FeatureHubTestProject
   {
     public int Counter = 0;
 
-    public void LogEvent(string action, Dictionary<string, string> other, List<IFeatureStateHolder> featureStates)
+    public void LogEvent(string action, Dictionary<string, string> other, List<IFeature> featureStates)
     {
       Counter++;
     }

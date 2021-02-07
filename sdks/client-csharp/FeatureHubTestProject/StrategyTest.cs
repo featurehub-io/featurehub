@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
 using FeatureHubSDK;
 using IO.FeatureHub.SSE.Model;
@@ -50,8 +49,8 @@ namespace FeatureHubTestProject
 
       repo.Notify(new List<FeatureState>{feature});
 
-      var matchCC = new IndividualClientContext().Country(StrategyAttributeCountryName.Turkey);
-      var unmatchCC = new IndividualClientContext().Country(StrategyAttributeCountryName.Newzealand);
+      var matchCC = new TestClientContext().Country(StrategyAttributeCountryName.Turkey);
+      var unmatchCC = new TestClientContext().Country(StrategyAttributeCountryName.Newzealand);
 
       Assert.AreEqual(false, repo.GetFeature("bool1").WithContext(matchCC).BooleanValue);
       Assert.AreEqual(true, repo.GetFeature("bool1").WithContext(unmatchCC).BooleanValue);
@@ -91,9 +90,9 @@ namespace FeatureHubTestProject
       // when: setup repo
       repo.Notify(new List<FeatureState>{feature});
 
-      var age27 = new IndividualClientContext().Attr("age", "27");
-      var age18 = new IndividualClientContext().Attr("age", "18");
-      var age43 = new IndividualClientContext().Attr("age", "43");
+      var age27 = new TestClientContext().Attr("age", "27");
+      var age18 = new TestClientContext().Attr("age", "18");
+      var age43 = new TestClientContext().Attr("age", "43");
 
       // then
       Assert.AreEqual(10, repo.GetFeature("num1").WithContext(age27).NumberValue);
@@ -133,11 +132,11 @@ namespace FeatureHubTestProject
       // when: setup repo
       repo.Notify(new List<FeatureState>{feature});
 
-      var ccAge27Ios = new IndividualClientContext().Platform(StrategyAttributePlatformName.Ios).Attr("age", "27");
-      var ccAge18Android = new IndividualClientContext().Platform(StrategyAttributePlatformName.Android).Attr("age", "18");
-      var ccAge43MacOS = new IndividualClientContext().Platform(StrategyAttributePlatformName.Macos).Attr("age", "43");
-      var ccAge18MacOS = new IndividualClientContext().Platform(StrategyAttributePlatformName.Macos).Attr("age", "18");
-      var ccEmpty = new IndividualClientContext();
+      var ccAge27Ios = new TestClientContext().Platform(StrategyAttributePlatformName.Ios).Attr("age", "27");
+      var ccAge18Android = new TestClientContext().Platform(StrategyAttributePlatformName.Android).Attr("age", "18");
+      var ccAge43MacOS = new TestClientContext().Platform(StrategyAttributePlatformName.Macos).Attr("age", "43");
+      var ccAge18MacOS = new TestClientContext().Platform(StrategyAttributePlatformName.Macos).Attr("age", "18");
+      var ccEmpty = new TestClientContext();
 
       switch (ft)
       {

@@ -1,46 +1,74 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Linq;
+using System.Web;
 using IO.FeatureHub.SSE.Model;
 using LaunchDarkly.EventSource;
 
 namespace FeatureHubSDK
 {
-  public class EventServiceListener
+  public interface IEdgeService
+  {
+    void ContextChange(Dictionary<string, List<string>> attributes);
+    bool ClientEvaluation { get; }
+    void Close();
+  }
+
+  public class EventServiceListener : IEdgeService
   {
     private EventSource _eventSource;
-    private string _url;
-    private FeatureHubRepository _repository;
-    private bool _initialized = false;
-    private string xFeatureHubHeader = null;
+    private readonly IFeatureHubEdgeUrl _featureHost;
+    private readonly IFeatureHubNotify _repository;
+    private string _xFeatureHubHeader = null;
 
-    public void Init(string url, FeatureHubRepository repository)
+    public EventServiceListener(IFeatureHubNotify repository, IFeatureHubEdgeUrl edgeUrl)
     {
-      if (!_initialized)
+      _repository = repository;
+      _featureHost = edgeUrl;
+    }
+
+    public void ContextChange(Dictionary<string, List<string>> attributes)
+    {
+      if (_featureHost.ServerEvaluation && attributes != null && attributes.Count != 0)
       {
-        _initialized = true;
-        _url = url;
-        _repository = repository;
+        var newHeader = string.Join(",",
+          attributes.Select((e) => e.Key + "=" +
+                                   HttpUtility.UrlEncode(string.Join(",", e.Value))).OrderBy(u => u));
 
-        xFeatureHubHeader = _repository.HostedClientContext.GenerateHeader();
-
-        _repository.HostedClientContext.ContextUpdateHandler += (sender, header) =>
+        if (newHeader != _xFeatureHubHeader)
         {
-          if (header == xFeatureHubHeader || (_eventSource.ReadyState != ReadyState.Open && _eventSource.ReadyState != ReadyState.Connecting)) return;
+          _xFeatureHubHeader = newHeader;
 
-          xFeatureHubHeader = header;
-          _eventSource.Close();
-          Init(_url, _repository);
-        };
+          if (_eventSource.ReadyState == ReadyState.Open || _eventSource.ReadyState == ReadyState.Connecting)
+          {
+            _eventSource.Close();
+            Init();
+          }
+        }
       }
+    }
 
+    public bool ClientEvaluation => !_featureHost.ServerEvaluation;
+
+    private Dictionary<string, string> BuildContextHeader()
+    {
       var headers = new Dictionary<string, string>();
-      if (xFeatureHubHeader != null)
+
+      if (_featureHost.ServerEvaluation && _xFeatureHubHeader != null)
       {
-        headers.Add("x-featurehub", xFeatureHubHeader);
+        headers.Add("x-featurehub", _xFeatureHubHeader);
       }
-      var config = new Configuration(uri: new UriBuilder(url).Uri, requestHeaders: headers);
+
+      return headers;
+    }
+
+    public void Init()
+    {
+      var config = new Configuration(uri: new UriBuilder(_featureHost.Url).Uri,
+        requestHeaders: _featureHost.ServerEvaluation ? BuildContextHeader() : null);
+
       _eventSource = new EventSource(config);
+
       _eventSource.MessageReceived += (sender, args) =>
       {
         SSEResultState? state;
@@ -65,7 +93,7 @@ namespace FeatureHubSDK
 
         if (state == null) return;
 
-        repository.Notify(state.Value, args.Message.Data);
+        _repository.Notify(state.Value, args.Message.Data);
 
         if (state == SSEResultState.Failure)
         {
