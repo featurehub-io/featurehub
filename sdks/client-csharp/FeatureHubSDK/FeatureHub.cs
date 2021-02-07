@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Web;
 using IO.FeatureHub.SSE.Model;
 using Newtonsoft.Json;
 using Common.Logging; // because dependent library does
@@ -27,10 +26,10 @@ namespace FeatureHubSDK
 
   public interface IAnalyticsCollector
   {
-    void LogEvent(string action, Dictionary<string, string> other, List<IFeatureStateHolder> featureStates);
+    void LogEvent(string action, Dictionary<string, string> other, List<IFeature> featureStates);
   }
 
-  public interface IFeatureStateHolder
+  public interface IFeature
   {
     /// <summary>
     /// if the value is not null, exists returns true
@@ -75,19 +74,13 @@ namespace FeatureHubSDK
     /// </summary>
     bool IsSet { get; }
 
-    IFeatureStateHolder WithContext(IClientContext context);
+    IFeature WithContext(IClientContext context);
 
     /// <summary>
     /// Triggered when the value changes
     /// </summary>
-    event EventHandler<IFeatureStateHolder> FeatureUpdateHandler;
+    event EventHandler<IFeature> FeatureUpdateHandler;
     //IFeatureStateHolder Copy();
-  }
-
-  public interface IHostedClientContext
-  {
-    event EventHandler<string> ContextUpdateHandler;
-    string GenerateHeader();
   }
 
   public abstract class BaseClientContext : IClientContext
@@ -171,8 +164,10 @@ namespace FeatureHubSDK
 
 
     public string DefaultPercentageKey => _attributes.ContainsKey("session") ? _attributes["session"][0] : (_attributes.ContainsKey("userkey") ? _attributes["userkey"][0] : null);
+    public abstract IFeature this[string name] { get; }
 
-    public abstract void Build();
+    public abstract bool IsEnabled(string name);
+    public abstract IClientContext Build();
 
     public override string ToString()
     {
@@ -191,57 +186,84 @@ namespace FeatureHubSDK
     }
   }
 
-  // this is for use only by the repository itself if it represents a single client
-  // and is not changing context based on users
-  internal class HostedClientContext : BaseClientContext, IClientContext, IHostedClientContext
+
+  public interface IFeatureRepositoryContext: IFeatureHubRepository, IFeatureHubNotify
+  {}
+
+  public class FeatureContext : BaseClientContext
   {
-    private static readonly ILog Log = LogManager.GetLogger<HostedClientContext>();
+    private readonly IFeatureRepositoryContext _repository;
+    private IEdgeService _edgeService;
+    private readonly IFeatureHubEdgeUrl _edgeUrl;
 
-    public event EventHandler<string> ContextUpdateHandler;
+    public IFeatureHubRepository repository => _repository;
 
-    public override void Build()
+    public FeatureContext(IFeatureRepositoryContext repository)
     {
-      var header = GenerateHeader();
-
-      var handler = ContextUpdateHandler;
-      try
-      {
-        handler?.Invoke(this, header);
-      }
-      catch (Exception e)
-      {
-        Log.Error($"Failed to process client context update", e);
-      }
+      _repository = repository;
     }
 
-    public string GenerateHeader()
+    public FeatureContext(IFeatureHubEdgeUrl url)
     {
-      if (_attributes.Count == 0)
+      _edgeUrl = url;
+      _repository = new FeatureHubRepository();
+    }
+
+    public FeatureContext(IFeatureRepositoryContext repository, IEdgeService edgeService)
+    {
+      _repository = repository;
+      _edgeService = edgeService;
+    }
+
+    public FeatureContext(IEdgeService edgeService)
+    {
+      _repository = new FeatureHubRepository();
+      _edgeService = edgeService;
+    }
+
+    public override IFeature this[string name] => _edgeService != null && _edgeService.ClientEvaluation
+      ? _repository.GetFeature(name).WithContext(this)
+      : _repository.GetFeature(name);
+
+    public override bool IsEnabled(string name)
+    {
+      var feat = this[name];
+      var val = feat.BooleanValue;
+      return val == true;
+    }
+
+    public override IClientContext Build()
+    {
+      if (_edgeService == null && _edgeUrl != null)
       {
-        return null;
+        _edgeService = new EventServiceListener(_repository, _edgeUrl);
       }
 
-      return string.Join(",",
-        _attributes.Select((e) => e.Key + "=" +
-                                  HttpUtility.UrlEncode(string.Join(",", e.Value))).OrderBy(u => u));
+      _edgeService?.ContextChange(_attributes);
+
+      return this;
+    }
+
+    public void Close()
+    {
+      _edgeService?.Close();
     }
   }
 
-  internal class FeatureStateBaseHolder : IFeatureStateHolder
+  internal class FeatureStateBaseHolder : IFeature
   {
     private static readonly ILog log = LogManager.GetLogger<FeatureStateBaseHolder>();
-    private object _value;
     private FeatureState _feature;
     private readonly ApplyFeature _applyFeature;
 
-    public IFeatureStateHolder WithContext(IClientContext context)
+    public IFeature WithContext(IClientContext context)
     {
       var fsh = Copy() as FeatureStateBaseHolder;
       fsh.SetContext( context );
       return fsh;
     }
 
-    public event EventHandler<IFeatureStateHolder> FeatureUpdateHandler;
+    public event EventHandler<IFeature> FeatureUpdateHandler;
     private IClientContext _context;
 
     internal void SetContext(IClientContext context)
@@ -259,7 +281,7 @@ namespace FeatureHubSDK
       }
     }
 
-    public IFeatureStateHolder Copy()
+    public IFeature Copy()
     {
       var fs = new FeatureStateBaseHolder(null, _applyFeature);
 
@@ -268,18 +290,18 @@ namespace FeatureHubSDK
       return fs;
     }
 
-    public bool Exists => _value != null;
+    public bool Exists => _feature != null;
 
-    private object GetValue(FeatureValueType type)
+    private object GetValue(FeatureValueType? type)
     {
-      if (_feature?.Type != type)
+      if (type == null || _feature?.Type != type)
       {
         return null;
       }
 
       if (_context != null)
       {
-        Applied matched = _applyFeature.applyFeature(_feature.Strategies, Key, _feature.Id, _context);
+        Applied matched = _applyFeature.Apply(_feature.Strategies, Key, _feature.Id, _context);
 
         if (matched.Matched)
         {
@@ -327,28 +349,23 @@ namespace FeatureHubSDK
     }
     public string Key => _feature?.Key;
     public FeatureValueType? Type => _feature?.Type;
-    public object Value => _value;
+    public object Value => _feature == null ? null : GetValue(_feature.Type);
 
-    public bool IsSet => _value != null;
+
+    public bool IsSet => GetValue(_feature?.Type) != null;
 
     public long? Version => _feature?.Version;
-
-    // public EventHandler<IFeatureStateHolder> FeatureUpdateHandler => _featureUpdateHandler;
-    // public IFeatureStateHolder Copy()
-    // {
-    //   throw new NotImplementedException();
-    // }
 
     public FeatureState FeatureState
     {
       set
       {
+        var oldVal = GetValue(_feature?.Type);
         _feature = value;
-        var oldVal = _value;
-        _value = value.Value;
+        var val = GetValue(_feature?.Type);
 
         // did the value change? if so, tell everyone listening via event handler
-        if (ValueChanged(oldVal, _value))
+        if (ValueChanged(oldVal, val))
         {
           var handler = FeatureUpdateHandler;
           try
@@ -389,7 +406,20 @@ namespace FeatureHubSDK
 
     double? GetNumber(string key, IClientContext context);
 
-    IFeatureStateHolder GetFeature(string key);
+    IFeature GetFeature(string key);
+
+    event EventHandler<Readyness> ReadynessHandler;
+    event EventHandler<FeatureHubRepository> NewFeatureHandler;
+    Readyness Readyness { get; }
+    FeatureHubRepository LogAnalyticEvent(string action);
+    FeatureHubRepository LogAnalyticEvent(string action, Dictionary<string, string> other);
+    FeatureHubRepository AddAnalyticCollector(IAnalyticsCollector collector);
+
+  }
+
+  public interface IFeatureHubNotify
+  {
+    void Notify(SSEResultState state, string data);
   }
 
   public abstract class AbstractFeatureHubRepository : IFeatureHubRepository
@@ -429,25 +459,29 @@ namespace FeatureHubSDK
       return GetFeature(key).WithContext(context).NumberValue;
     }
 
-    public abstract IFeatureStateHolder GetFeature(string key);
+    public abstract IFeature GetFeature(string key);
+    public abstract event EventHandler<Readyness> ReadynessHandler;
+    public abstract event EventHandler<FeatureHubRepository> NewFeatureHandler;
+    public abstract Readyness Readyness { get; }
+    public abstract FeatureHubRepository LogAnalyticEvent(string action);
+    public abstract FeatureHubRepository LogAnalyticEvent(string action, Dictionary<string, string> other);
+    public abstract FeatureHubRepository AddAnalyticCollector(IAnalyticsCollector collector);
   }
 
-  public class FeatureHubRepository : AbstractFeatureHubRepository
+
+  public class FeatureHubRepository : AbstractFeatureHubRepository, IFeatureRepositoryContext
   {
     private static readonly ILog log = LogManager.GetLogger<FeatureHubRepository>();
     private readonly Dictionary<string, FeatureStateBaseHolder> _features =
       new Dictionary<string, FeatureStateBaseHolder>();
-    private readonly HostedClientContext _hostedClientContext = new HostedClientContext();
 
     private Readyness _readyness = Readyness.NotReady;
-    public event EventHandler<Readyness> ReadynessHandler;
-    public event EventHandler<FeatureHubRepository> NewFeatureHandler;
+    public override event EventHandler<Readyness> ReadynessHandler;
+    public override event EventHandler<FeatureHubRepository> NewFeatureHandler;
     private IList<IAnalyticsCollector> _analyticsCollectors = new List<IAnalyticsCollector>();
     private readonly ApplyFeature _applyFeature;
 
-    public Readyness Readyness => _readyness;
-
-    public IHostedClientContext HostedClientContext => _hostedClientContext;
+    public override Readyness Readyness => _readyness;
 
     public FeatureHubRepository()
     {
@@ -562,12 +596,12 @@ namespace FeatureHubSDK
       }
     }
 
-    public FeatureHubRepository LogAnalyticEvent(string action)
+    public override FeatureHubRepository LogAnalyticEvent(string action)
     {
       return LogAnalyticEvent(action, new Dictionary<string, string>());
     }
 
-    public FeatureHubRepository LogAnalyticEvent(string action, Dictionary<string, string> other)
+    public override FeatureHubRepository LogAnalyticEvent(string action, Dictionary<string, string> other)
     {
       // take a snapshot copy
       var featureCopies =
@@ -588,7 +622,7 @@ namespace FeatureHubSDK
       return this;
     }
 
-    public FeatureHubRepository AddAnalyticCollector(IAnalyticsCollector collector)
+    public override FeatureHubRepository AddAnalyticCollector(IAnalyticsCollector collector)
     {
       _analyticsCollectors.Add(collector);
       return this;
@@ -623,7 +657,7 @@ namespace FeatureHubSDK
       return true;
     }
 
-    public IFeatureStateHolder FeatureState(string key)
+    public IFeature FeatureState(string key)
     {
       if (!_features.ContainsKey(key))
       {
@@ -663,7 +697,7 @@ namespace FeatureHubSDK
       return false;
     }
 
-    public override IFeatureStateHolder GetFeature(string key)
+    public override IFeature GetFeature(string key)
     {
       return FeatureState(key);
     }

@@ -21,6 +21,10 @@ namespace FeatureHubSDK
 
     string DefaultPercentageKey { get; }
 
-    void Build();
+    IFeature this[string name] { get; }
+
+    bool IsEnabled(string name);
+
+    IClientContext Build();
   }
 }

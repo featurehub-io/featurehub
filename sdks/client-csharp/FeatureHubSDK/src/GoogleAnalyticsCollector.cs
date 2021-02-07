@@ -55,7 +55,7 @@ namespace FeatureHubSDK
       this._client = client;
     }
 
-    public void LogEvent(string action, Dictionary<string, string> other, List<IFeatureStateHolder> featureStates)
+    public void LogEvent(string action, Dictionary<string, string> other, List<IFeature> featureStates)
     {
       var batchData = "";
 
