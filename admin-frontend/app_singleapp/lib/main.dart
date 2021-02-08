@@ -1,6 +1,6 @@
 import 'package:app_singleapp/theme/theme_data.dart';
+import 'package:app_singleapp/widgets/dynamic-theme/fh_dynamic_theme.dart';
 import 'package:bloc_provider/bloc_provider.dart';
-import 'package:dynamic_theme/dynamic_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 
