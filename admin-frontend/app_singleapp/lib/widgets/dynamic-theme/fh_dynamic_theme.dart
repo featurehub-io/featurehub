@@ -69,7 +69,7 @@ class DynamicThemeState extends State<DynamicTheme> {
       _data = widget.data(brightness);
       _brightness = brightness;
     });
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(
         _sharedPreferencesKey, brightness == Brightness.dark ? true : false);
   }
@@ -81,7 +81,7 @@ class DynamicThemeState extends State<DynamicTheme> {
   }
 
   Future<bool> loadBrightness() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_sharedPreferencesKey) ??
         widget.defaultBrightness == Brightness.dark;
   }
