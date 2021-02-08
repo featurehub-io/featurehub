@@ -42,15 +42,16 @@ class StrategySpec extends Specification {
     and: "we have a feature repository with this in it"
         repo.notify([f])
     when: "we create a client context matching the strategy"
-        def cc = new BaseClientContext().country(StrategyAttributeCountryName.TURKEY)
+        def cc = new TestContext(repo).country(StrategyAttributeCountryName.TURKEY)
     and: "we create a context not matching the strategy"
-        def ccNot = new BaseClientContext().country(StrategyAttributeCountryName.NEW_ZEALAND)
+        def ccNot = new TestContext(repo).country(StrategyAttributeCountryName.NEW_ZEALAND)
     then: "without the context it is true"
-        repo.getFlag("bool1")
+        repo.getFeatureState("bool1").boolean
     and: "with the good context it is false"
-        !repo.getFlag("bool1", cc)
+        !cc.feature("bool1").boolean
+        !cc.isEnabled("bool1")
     and: "with the bad context it is true"
-        repo.getFlag("bool1", ccNot)
+        ccNot.feature("bool1").boolean
   }
 
   def "number strategy"() {
@@ -78,14 +79,14 @@ class StrategySpec extends Specification {
     and: "we have a feature repository with this in it"
         repo.notify([f])
     when: "we create a client context matching the strategy"
-        def ccFirst = new BaseClientContext().attr("age", "27")
-        def ccNoMatch = new BaseClientContext().attr("age", "18")
-        def ccSecond = new BaseClientContext().attr("age", "43")
+        def ccFirst = new TestContext(repo).attr("age", "27")
+        def ccNoMatch = new TestContext(repo).attr("age", "18")
+        def ccSecond = new TestContext(repo).attr("age", "43")
     then: "without the context it is true"
-        repo.getNumber("num1") == 16
-        repo.getNumber("num1", ccNoMatch) == 16
-        repo.getNumber("num1", ccSecond) == 6
-        repo.getNumber("num1", ccFirst) == 10
+        repo.getFeatureState("num1").number == 16
+        ccNoMatch.feature("num1").number == 16
+        ccSecond.feature("num1").number == 6
+        ccFirst.feature("num1").number == 10
   }
 
   def "string strategy"() {
@@ -113,18 +114,18 @@ class StrategySpec extends Specification {
     and: "we have a feature repository with this in it"
         repo.notify([f])
     when: "we create a client context matching the strategy"
-        def ccFirst = new BaseClientContext().attr("age", "27").platform(StrategyAttributePlatformName.IOS)
-        def ccNoMatch = new BaseClientContext().attr("age", "18").platform(StrategyAttributePlatformName.ANDROID)
-        def ccSecond = new BaseClientContext().attr("age", "43").platform(StrategyAttributePlatformName.MACOS)
-        def ccThird = new BaseClientContext().attr("age", "18").platform(StrategyAttributePlatformName.MACOS)
-        def ccEmpty = new BaseClientContext()
+        def ccFirst = new TestContext(repo).attr("age", "27").platform(StrategyAttributePlatformName.IOS)
+        def ccNoMatch = new TestContext(repo).attr("age", "18").platform(StrategyAttributePlatformName.ANDROID)
+        def ccSecond = new TestContext(repo).attr("age", "43").platform(StrategyAttributePlatformName.MACOS)
+        def ccThird = new TestContext(repo).attr("age", "18").platform(StrategyAttributePlatformName.MACOS)
+        def ccEmpty = new TestContext(repo)
     then: "without the context it is true"
-        repo.getString("feat1") == "feature"
-        repo.getString("feat1", ccNoMatch) == "feature"
-        repo.getString("feat1", ccSecond) == "not-mobile"
-        repo.getString("feat1", ccFirst) == "older-than-twenty"
-        repo.getString("feat1", ccThird) == "not-mobile"
-        repo.getString("feat1", ccEmpty) == "feature"
+        repo.getFeatureState("feat1").string == "feature"
+        ccNoMatch.feature("feat1").string == "feature"
+        ccSecond.feature("feat1").string == "not-mobile"
+        ccFirst.feature("feat1").string == "older-than-twenty"
+        ccThird.feature("feat1").string == "not-mobile"
+        ccEmpty.feature("feat1").string == "feature"
   }
 
   def "json strategy"() {
@@ -151,19 +152,19 @@ class StrategySpec extends Specification {
     and: "we have a feature repository with this in it"
         repo.notify([f])
     when: "we create a client context matching the strategy"
-        def ccFirst = new BaseClientContext().attr("age", "27").platform(StrategyAttributePlatformName.IOS)
-        def ccNoMatch = new BaseClientContext().attr("age", "18").platform(StrategyAttributePlatformName.ANDROID)
-        def ccSecond = new BaseClientContext().attr("age", "43").platform(StrategyAttributePlatformName.MACOS)
-        def ccThird = new BaseClientContext().attr("age", "18").platform(StrategyAttributePlatformName.MACOS)
-        def ccEmpty = new BaseClientContext()
+        def ccFirst = new TestContext(repo).attr("age", "27").platform(StrategyAttributePlatformName.IOS)
+        def ccNoMatch = new TestContext(repo).attr("age", "18").platform(StrategyAttributePlatformName.ANDROID)
+        def ccSecond = new TestContext(repo).attr("age", "43").platform(StrategyAttributePlatformName.MACOS)
+        def ccThird = new TestContext(repo).attr("age", "18").platform(StrategyAttributePlatformName.MACOS)
+        def ccEmpty = new TestContext(repo)
     then: "without the context it is true"
-        repo.getRawJson("feat1") == "feature"
-        repo.getString("feat1") == null
-        repo.getRawJson("feat1", ccNoMatch) == "feature"
-        repo.getString("feat1", ccNoMatch) == null
-        repo.getRawJson("feat1", ccSecond) == "not-mobile"
-        repo.getRawJson("feat1", ccFirst) == "older-than-twenty"
-        repo.getRawJson("feat1", ccThird) == "not-mobile"
-        repo.getRawJson("feat1", ccEmpty) == "feature"
+        repo.getFeatureState("feat1").rawJson == "feature"
+        repo.getFeatureState("feat1").string == null
+        ccNoMatch.feature("feat1").rawJson == "feature"
+        ccNoMatch.feature("feat1").string == null
+        ccSecond.feature("feat1").rawJson == "not-mobile"
+        ccFirst.feature("feat1").rawJson == "older-than-twenty"
+        ccThird.feature("feat1").rawJson == "not-mobile"
+        ccEmpty.feature("feat1").rawJson == "feature"
   }
 }

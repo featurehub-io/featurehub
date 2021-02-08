@@ -100,6 +100,13 @@ public abstract class BaseClientContext implements ClientContext {
   }
 
   @Override
+  public FeatureState feature(String name) {
+    final FeatureState fs = getRepository().getFeatureState(name);
+
+    return getRepository().isServerEvaluation() ? fs : fs.withContext(this);
+  }
+
+  @Override
   public FeatureState feature(Feature name) {
     return feature(name.name());
   }
@@ -107,6 +114,12 @@ public abstract class BaseClientContext implements ClientContext {
   @Override
   public boolean isEnabled(Feature name) {
     return isEnabled(name.name());
+  }
+
+  @Override
+  public boolean isEnabled(String name) {
+    // we use this mechanism as it will return the state within the context (vs repository which might be different)
+    return feature(name).getBoolean() == Boolean.TRUE;
   }
 
   @Override

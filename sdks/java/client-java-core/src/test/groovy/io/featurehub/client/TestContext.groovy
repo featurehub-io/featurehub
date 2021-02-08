@@ -13,18 +13,8 @@ class TestContext extends BaseClientContext {
   }
 
   @Override
-  FeatureState feature(String name) {
-    return repository.getFeatureState(name)
-  }
-
-  @Override
   FeatureRepository getRepository() {
     return repository
-  }
-
-  @Override
-  boolean isEnabled(String name) {
-    return repository.isEnabled(name);
   }
 
   @Override

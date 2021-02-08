@@ -61,11 +61,6 @@ public class FeatureContext extends BaseClientContext {
   }
 
   @Override
-  public boolean isEnabled(String name) {
-    return feature(name).getBoolean() == Boolean.TRUE;
-  }
-
-  @Override
   public void close() {
     if (edgeService != null) {
       edgeService.close();

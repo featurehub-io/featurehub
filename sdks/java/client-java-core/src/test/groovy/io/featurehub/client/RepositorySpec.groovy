@@ -50,10 +50,6 @@ class RepositorySpec extends Specification {
       1 * readynessListener.notify(Readyness.Ready)
       !repo.getFeatureState('banana').boolean
       repo.getFeatureState('banana').key == 'banana'
-      !repo.getFlag('banana')
-      !repo.getFlag(Fruit.banana)
-      repo.isSet('banana')
-      repo.isSet(Fruit.banana)
       repo.exists('banana')
       repo.exists(Fruit.banana)
       !repo.exists('dragonfruit')
@@ -64,25 +60,17 @@ class RepositorySpec extends Specification {
       repo.getFeatureState('banana').number == null
       repo.getFeatureState('banana').set
       repo.getFeatureState('peach').string == 'orange'
-      repo.getString('peach') == 'orange'
-      repo.isSet('peach')
       repo.exists('peach')
-      repo.getString(Fruit.peach) == 'orange'
-      repo.isSet(Fruit.peach)
       repo.exists(Fruit.peach)
       repo.getFeatureState('peach').key == 'peach'
       repo.getFeatureState('peach').number == null
       repo.getFeatureState('peach').rawJson == null
       repo.getFeatureState('peach').boolean == null
       repo.getFeatureState('peach_quantity').number == 17
-      repo.getNumber('peach_quantity') == 17
-      repo.getNumber(Fruit.peach_quantity) == 17
       repo.getFeatureState('peach_quantity').rawJson == null
       repo.getFeatureState('peach_quantity').boolean == null
       repo.getFeatureState('peach_quantity').string == null
       repo.getFeatureState('peach_quantity').key == 'peach_quantity'
-      repo.getRawJson('peach_config') == '{}'
-      repo.getRawJson(Fruit.peach_config) == '{}'
       repo.getFeatureState('peach_config').rawJson == '{}'
       repo.getFeatureState('peach_config').string == null
       repo.getFeatureState('peach_config').number == null
@@ -149,7 +137,6 @@ class RepositorySpec extends Specification {
     then:
       f.boolean
       !repo.getFeatureState('banana').set
-      !repo.isSet('banana')
   }
 
 
@@ -202,9 +189,9 @@ class RepositorySpec extends Specification {
       repo.notify(features)
     then: 'the json object is there and deserialises'
       repo.getFeatureState('banana').getJson(BananaSample) instanceof BananaSample
+      repo.getFeatureState(Fruit.banana).getJson(BananaSample) instanceof BananaSample
       repo.getFeatureState('banana').getJson(BananaSample).sample == 12
-      repo.getJson('banana', BananaSample).sample == 12
-      repo.getJson(Fruit.banana, BananaSample).sample == 12
+      repo.getFeatureState(Fruit.banana).getJson(BananaSample).sample == 12
   }
 
   def "failure changes readyness to failure"() {
@@ -298,31 +285,28 @@ class RepositorySpec extends Specification {
 
   }
 
-  String header;
-
   def "the client context encodes as expected"() {
-    given: "i register a trigger"
-      repo.clientContext().registerChangeListener((h) -> header = h);
     when: "i encode the context"
-      repo.clientContext().userKey("DJElif")
+      def tc = new TestContext().userKey("DJElif")
         .country(StrategyAttributeCountryName.TURKEY)
         .attr("city", "Istanbul")
         .attrs("musical styles", Arrays.asList("psychedelic", "deep"))
         .device(StrategyAttributeDeviceName.DESKTOP)
         .platform(StrategyAttributePlatformName.ANDROID)
         .version("2.3.7")
-        .sessionKey("anjunadeep").build();
+        .sessionKey("anjunadeep").build()
 
     and: "i do the same thing again to ensure i can reset everything"
-      repo.clientContext().userKey("DJElif")
+      tc.userKey("DJElif")
         .country(StrategyAttributeCountryName.TURKEY)
         .attr("city", "Istanbul")
         .attrs("musical styles", Arrays.asList("psychedelic", "deep"))
         .device(StrategyAttributeDeviceName.DESKTOP)
         .platform(StrategyAttributePlatformName.ANDROID)
         .version("2.3.7")
-        .sessionKey("anjunadeep").build();
+        .sessionKey("anjunadeep").build()
     then:
-      header == 'city=Istanbul,country=turkey,device=desktop,musical styles=psychedelic%2Cdeep,platform=android,session=anjunadeep,userkey=DJElif,version=2.3.7'
+      FeatureStateUtils.generateXFeatureHubHeaderFromMap(tc.context()) ==
+        'city=Istanbul,country=turkey,device=desktop,musical styles=psychedelic%2Cdeep,platform=android,session=anjunadeep,userkey=DJElif,version=2.3.7'
   }
 }

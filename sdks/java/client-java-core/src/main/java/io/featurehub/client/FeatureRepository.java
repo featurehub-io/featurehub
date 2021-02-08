@@ -67,8 +67,10 @@ public interface FeatureRepository {
   void setJsonConfigObjectMapper(ObjectMapper jsonConfigObjectMapper);
 
   boolean exists(String key);
+  boolean exists(Feature key);
 
   boolean isServerEvaluation();
 
   boolean isEnabled(String name);
+  boolean isEnabled(Feature key);
 }

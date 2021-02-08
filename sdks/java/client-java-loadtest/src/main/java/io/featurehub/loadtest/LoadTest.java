@@ -185,6 +185,11 @@ class InternetFeatureTrackerRepository extends AbstractFeatureRepository impleme
   public boolean isServerEvaluation() {
     return false;
   }
+
+  @Override
+  public boolean isEnabled(String name) {
+    return false;
+  }
 }
 
 class ClientHolder {

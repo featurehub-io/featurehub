@@ -33,7 +33,7 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
   private final List<FeatureValueInterceptorHolder> featureValueInterceptors = new ArrayList<>();
   private ObjectMapper jsonConfigObjectMapper;
   private final ApplyFeature applyFeature;
-  private boolean serverEvaluation; // the client tells us, we pass it out to others
+  private boolean serverEvaluation = false; // the client tells us, we pass it out to others
 
   private final TypeReference<List<io.featurehub.sse.model.FeatureState>> FEATURE_LIST_TYPEDEF
     = new TypeReference<List<io.featurehub.sse.model.FeatureState>>() {};
