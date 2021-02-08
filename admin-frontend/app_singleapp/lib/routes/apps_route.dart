@@ -41,18 +41,21 @@ class _AppsRouteState extends State<AppsRoute> {
                       if (snapshot.data != null &&
                           (snapshot.data.currentPortfolioOrSuperAdmin ==
                               true)) {
-                        return Container(
-                            child: FHIconTextButton(
-                          iconData: Icons.add,
-                          keepCase: true,
-                          label: 'Create new application',
-                          onPressed: () =>
-                              bloc.mrClient.addOverlay((BuildContext context) {
-                            return AppUpdateDialogWidget(
-                              bloc: bloc,
-                            );
-                          }),
-                        ));
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Container(
+                              child: FHIconTextButton(
+                            iconData: Icons.add,
+                            keepCase: true,
+                            label: 'Create new application',
+                            onPressed: () =>
+                                bloc.mrClient.addOverlay((BuildContext context) {
+                              return AppUpdateDialogWidget(
+                                bloc: bloc,
+                              );
+                            }),
+                          )),
+                        );
                       } else {
                         return SizedBox.shrink();
                       }

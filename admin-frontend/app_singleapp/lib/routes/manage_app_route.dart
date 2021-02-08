@@ -9,6 +9,7 @@ import 'package:app_singleapp/widgets/common/application_drop_down.dart';
 import 'package:app_singleapp/widgets/common/decorations/fh_page_divider.dart';
 import 'package:app_singleapp/widgets/common/fh_card.dart';
 import 'package:app_singleapp/widgets/common/fh_header.dart';
+import 'package:app_singleapp/widgets/common/link_to_applications_page.dart';
 import 'package:app_singleapp/widgets/environments/env_list_widget.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
@@ -41,7 +42,13 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
                     bloc.setApplicationId(bloc.mrClient.currentAid);
                     return Container(
                         padding: EdgeInsets.only(left: 8, top: 15),
-                        child: Text('No applications found!'));
+                        child: Row(
+                          children: [
+                            Text('There are no applications in this portfolio', style: Theme.of(context).textTheme.caption),
+                            LinkToApplicationsPage(),
+                          ],
+                        ));
+
                   }
                 }),
             Container(

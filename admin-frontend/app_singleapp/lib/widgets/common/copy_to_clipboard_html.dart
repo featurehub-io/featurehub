@@ -1,3 +1,4 @@
+import 'package:app_singleapp/widgets/common/fh_icon_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -72,7 +73,7 @@ class FHCopyToClipboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
+    return FHIconButton(
       icon: Icon(Icons.content_copy, size: 16.0),
       tooltip: tooltipMessage,
       onPressed: () async {

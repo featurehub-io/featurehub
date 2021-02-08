@@ -56,6 +56,7 @@ class FHappBar extends StatelessWidget {
 //                snapshot.data == InitializedCheckState.logged_in) {
               if (snapshot.hasData) {
                 final person = snapshot.data;
+                var light = Theme.of(context).brightness == Brightness.light;
                 return Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Row(
@@ -74,10 +75,15 @@ class FHappBar extends StatelessWidget {
                       SizedBox(
                         width: 16.0,
                       ),
-                      IconButton(icon: Icon(Icons.nightlight_round), onPressed: () {
-                DynamicTheme.of(context).setBrightness(Theme.of(context).brightness ==
-                    Brightness.dark? Brightness.light: Brightness.dark);
-                }),
+                      IconButton(
+                          tooltip: light ? 'Dark mode' : 'Light mode',
+                          icon: Icon(light
+                              ? MaterialCommunityIcons.weather_night
+                              : Feather.sun),
+                          onPressed: () {
+                            DynamicTheme.of(context).setBrightness(
+                                light ? Brightness.dark : Brightness.light);
+                          }),
                       StepperRocketButton(mrBloc: mrBloc),
                       IconButton(
                           onPressed: () async {

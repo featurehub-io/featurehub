@@ -7,7 +7,6 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_icons/flutter_icons.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class DrawerViewWidget extends StatefulWidget {
   @override
@@ -15,7 +14,6 @@ class DrawerViewWidget extends StatefulWidget {
 }
 
 class _DrawerViewWidgetState extends State<DrawerViewWidget> {
-
   @override
   Widget build(BuildContext context) {
     final mrBloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
@@ -43,8 +41,7 @@ class _DrawerViewWidgetState extends State<DrawerViewWidget> {
 class _MenuContainer extends StatelessWidget {
   final ManagementRepositoryClientBloc mrBloc;
 
-  const _MenuContainer({Key key, this.mrBloc})
-      : super(key: key);
+  const _MenuContainer({Key key, this.mrBloc}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -294,7 +291,9 @@ class _MenuItem extends StatelessWidget {
     return InkWell(
       canRequestFocus: false,
       mouseCursor: SystemMouseCursors.click,
-      hoverColor: light ? Theme.of(context).selectedRowColor : Theme.of(context).accentColor.withOpacity(0.2),
+      hoverColor: light
+          ? Theme.of(context).selectedRowColor
+          : Theme.of(context).accentColor.withOpacity(0.2),
       onTap: () {
         if (menuOkForThisUser) {
           ManagementRepositoryClientBloc.router.navigateTo(context, path,
@@ -310,28 +309,31 @@ class _MenuItem extends StatelessWidget {
                   equalsParams(snapshot.data.params);
               return Container(
                 padding: EdgeInsets.fromLTRB(16, 12, 0, 12),
-                color: selected ? (light? Theme.of(context).primaryColorLight : Theme.of(context).accentColor) : null,
+                color: selected
+                    ? (light
+                        ? Theme.of(context).primaryColorLight
+                        : Theme.of(context).accentColor)
+                    : null,
                 child: Row(
                   children: <Widget>[
                     Icon(
                       iconData,
-                      color: selected
-                          ? Theme.of(context).primaryColor
-                          : (light ? Color(0xff4a4a4a) : Colors.white),
+                      color: Theme.of(context).buttonColor,
                       size: iconSize ?? 20.0,
                     ),
                     Padding(
                       padding:
                           EdgeInsets.only(left: iconSize != null ? 18.0 : 24.0),
-                      child: selected
-                          ? Text(' ${name}',
-                              style: GoogleFonts.roboto(
-                                  textStyle:
-                                      Theme.of(context).textTheme.bodyText2,
-                                  fontWeight: FontWeight.w600,
-                                  color: Theme.of(context).primaryColor))
-                          : Text(' ${name}',
-                              style: Theme.of(context).textTheme.bodyText2),
+                      child: Text(' ${name}',
+                          style: Theme.of(context).textTheme.bodyText2.copyWith(
+                              fontWeight: selected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                              color: light
+                                  ? null
+                                  : (selected
+                                      ? Theme.of(context).primaryColor
+                                      : null))),
                     )
                   ],
                 ),

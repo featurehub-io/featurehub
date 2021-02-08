@@ -1,11 +1,9 @@
-import 'package:app_singleapp/api/client_api.dart';
-import 'package:app_singleapp/api/router.dart';
 import 'package:app_singleapp/common/stream_valley.dart';
 import 'package:app_singleapp/widgets/common/application_drop_down.dart';
 import 'package:app_singleapp/widgets/common/decorations/fh_page_divider.dart';
 import 'package:app_singleapp/widgets/common/fh_flat_button_accent.dart';
-import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/common/fh_header.dart';
+import 'package:app_singleapp/widgets/common/link_to_applications_page.dart';
 import 'package:app_singleapp/widgets/features/create-update-feature-dialog-widget.dart';
 import 'package:app_singleapp/widgets/features/features_overview_table_widget.dart';
 import 'package:app_singleapp/widgets/features/per_application_features_bloc.dart';
@@ -73,38 +71,28 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
                       applications: snapshot.data, bloc: bloc);
                 }
                 if (snapshot.hasData && snapshot.data.isEmpty) {
-                  return Container(
-                      padding: EdgeInsets.only(left: 30.0),
-                      child: StreamBuilder<ReleasedPortfolio>(
-                          stream: bloc.mrClient.personState
-                              .isCurrentPortfolioOrSuperAdmin,
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData &&
-                                snapshot.data.currentPortfolioOrSuperAdmin) {
-                              return Row(
-                                children: <Widget>[
-                                  Text(
-                                      'There are no applications in this portfolio',
-                                      style:
-                                          Theme.of(context).textTheme.caption),
-                                  FHFlatButtonTransparent(
-                                      title: 'Manage applications',
-                                      keepCase: true,
-                                      onPressed: () =>
-                                          ManagementRepositoryClientBloc.router
-                                              .navigateTo(
-                                                  context, '/applications',
-                                                  transition:
-                                                      TransitionType.material)),
-                                ],
-                              );
-                            } else {
-                              return Text(
-                                  "Either there are no applications in this portfolio or you don't have access to any of the applications.\n"
-                                  'Please contact your administrator.',
-                                  style: Theme.of(context).textTheme.caption);
-                            }
-                          }));
+                  return StreamBuilder<ReleasedPortfolio>(
+                      stream: bloc.mrClient.personState
+                          .isCurrentPortfolioOrSuperAdmin,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData &&
+                            snapshot.data.currentPortfolioOrSuperAdmin) {
+                          return Row(
+                            children: <Widget>[
+                              Text(
+                                  'There are no applications in this portfolio',
+                                  style:
+                                      Theme.of(context).textTheme.caption),
+                            LinkToApplicationsPage(),
+                            ],
+                          );
+                        } else {
+                          return Text(
+                              "Either there are no applications in this portfolio or you don't have access to any of the applications.\n"
+                              'Please contact your administrator.',
+                              style: Theme.of(context).textTheme.caption);
+                        }
+                      });
                 }
                 return Container();
               }),

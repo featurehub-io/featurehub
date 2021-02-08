@@ -234,31 +234,34 @@ class NoEnvironmentMessage extends StatelessWidget {
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
 
-    return Row(
-      children: <Widget>[
-        Text(
-            'Either there are no environments defined for this application or you don\'t have permissions to access any of them',
-            style: Theme.of(context).textTheme.caption),
-        StreamBuilder<ReleasedPortfolio>(
-            stream: bloc.mrClient.personState.isCurrentPortfolioOrSuperAdmin,
-            builder: (context, snapshot) {
-              if (snapshot.hasData &&
-                  snapshot.data.currentPortfolioOrSuperAdmin) {
-                return FHFlatButtonTransparent(
-                    title: 'Manage application',
-                    keepCase: true,
-                    onPressed: () => ManagementRepositoryClientBloc.router
-                            .navigateTo(context, '/manage-app',
-                                transition: TransitionType.material,
-                                params: {
-                              'id': [bloc.applicationId],
-                              'tab-name': ['environments']
-                            }));
-              } else {
-                return Container();
-              }
-            })
-      ],
+    return Padding(
+      padding: const EdgeInsets.only(left: 12.0),
+      child: Row(
+        children: <Widget>[
+          Text(
+              'Either there are no environments defined for this application or you don\'t have permissions to access any of them',
+              style: Theme.of(context).textTheme.caption),
+          StreamBuilder<ReleasedPortfolio>(
+              stream: bloc.mrClient.personState.isCurrentPortfolioOrSuperAdmin,
+              builder: (context, snapshot) {
+                if (snapshot.hasData &&
+                    snapshot.data.currentPortfolioOrSuperAdmin) {
+                  return FHFlatButtonTransparent(
+                      title: 'Environments',
+                      keepCase: true,
+                      onPressed: () => ManagementRepositoryClientBloc.router
+                              .navigateTo(context, '/manage-app',
+                                  transition: TransitionType.material,
+                                  params: {
+                                'id': [bloc.applicationId],
+                                'tab-name': ['environments']
+                              }));
+                } else {
+                  return Container();
+                }
+              })
+        ],
+      ),
     );
   }
 }

@@ -23,6 +23,7 @@ class _PortfolioSearchWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         _headerRow(context, bloc),
+        SizedBox(height: 16.0),
         _filterRow(context, bloc),
         PortfolioListWidget(),
       ],

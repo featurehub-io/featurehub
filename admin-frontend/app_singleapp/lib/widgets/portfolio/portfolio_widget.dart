@@ -78,8 +78,7 @@ class _PortfolioWidget extends StatelessWidget {
               ? Row(
                   children: <Widget>[
                     FHIconButton(
-                        icon: Icon(Icons.edit,
-                            color: Theme.of(context).buttonColor),
+                        icon: Icon(Icons.edit),
                         onPressed: () =>
                             bloc.mrClient.addOverlay((BuildContext context) {
                               return PortfolioUpdateDialogWidget(
@@ -87,8 +86,7 @@ class _PortfolioWidget extends StatelessWidget {
                             })),
                     if (mr.userIsSuperAdmin)
                       FHIconButton(
-                          icon: Icon(Icons.delete,
-                              color: Theme.of(context).buttonColor),
+                          icon: Icon(Icons.delete),
                           onPressed: () =>
                               bloc.mrClient.addOverlay((BuildContext context) {
                                 return PortfolioDeleteDialogWidget(

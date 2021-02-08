@@ -103,6 +103,7 @@ class _ServiceAccountWidget extends StatelessWidget {
 
   Widget _adminFunctions(BuildContext context) {
     return Row(children: [
+
       FHIconButton(
           icon: Icon(Icons.edit),
           onPressed: () => bloc.mrClient.addOverlay((BuildContext context) =>
