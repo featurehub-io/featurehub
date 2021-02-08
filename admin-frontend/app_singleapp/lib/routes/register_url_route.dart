@@ -144,16 +144,19 @@ class RegisterURLState extends State<RegisterURLRoute> {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: <Widget>[
-              FHFlatButton(
-                  onPressed: () {
-                    if (_formKey.currentState.validate()) {
-                      bloc.completeRegistration(widget.token, bloc.person.email,
-                          _name.text, _pw1.text, _pw2.text);
-                      ManagementRepositoryClientBloc.router
-                          .navigateTo(context, '/');
-                    }
-                  },
-                  title: 'Register')
+              Padding(
+                padding: const EdgeInsets.only(top: 16.0),
+                child: FHFlatButton(
+                    onPressed: () {
+                      if (_formKey.currentState.validate()) {
+                        bloc.completeRegistration(widget.token, bloc.person.email,
+                            _name.text, _pw1.text, _pw2.text);
+                        ManagementRepositoryClientBloc.router
+                            .navigateTo(context, '/');
+                      }
+                    },
+                    title: 'Register'),
+              )
             ],
           )
         ],

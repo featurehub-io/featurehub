@@ -128,7 +128,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
               return Row(children: <Widget>[
                 FHIconButton(
                     icon:
-                        Icon(Icons.edit, color: Theme.of(context).buttonColor),
+                        Icon(Icons.edit),
                     onPressed: () => bloc.mrClient.addOverlay(
                         (BuildContext context) => GroupUpdateDialogWidget(
                               bloc: bloc,
@@ -138,8 +138,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                 snapshot.data.admin
                     ? Container()
                     : FHIconButton(
-                        icon: Icon(Icons.delete,
-                            color: Theme.of(context).buttonColor),
+                        icon: Icon(Icons.delete),
                         onPressed: () =>
                             bloc.mrClient.addOverlay((BuildContext context) {
                               return GroupDeleteDialogWidget(
@@ -256,7 +255,7 @@ class MemberWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(30, 5, 30, 5),
       decoration: BoxDecoration(
-          color: Colors.white, border: Border(bottom: bs, left: bs, right: bs)),
+          color: Theme.of(context).cardColor, border: Border(bottom: bs, left: bs, right: bs)),
       child: Row(
         children: <Widget>[
           Expanded(
@@ -369,11 +368,14 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
       // it can include an image, so we should perhaps consider this?
       chipBuilder: (context, state, p) {
         final person = p as Person;
-        return InputChip(
-          key: ObjectKey(p),
-          label: Text('${person.name} (${person.email})'),
-          onDeleted: () => state.deleteChip(p),
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        return Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: InputChip(
+            key: ObjectKey(p),
+            label: Text('${person.name} (${person.email})'),
+            onDeleted: () => state.deleteChip(p),
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
         );
       },
       // this is what is used to show the suggestions.

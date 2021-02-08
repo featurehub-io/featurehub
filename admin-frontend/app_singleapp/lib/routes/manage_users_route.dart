@@ -24,6 +24,7 @@ class _PersonSearchWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         _headerRow(context, bloc),
+        SizedBox(height: 16.0),
         _filterRow(context, bloc),
         PersonListWidget(),
       ],
@@ -39,7 +40,7 @@ class _PersonSearchWidget extends StatelessWidget {
         ),
         if (bloc.mrClient.userIsSuperAdmin == true)
           Padding(
-            padding: const EdgeInsets.only(top: 8.0),
+            padding: const EdgeInsets.only(top: 12.0),
             child: FHIconTextButton(
               iconData: Icons.add,
               label: 'Create new user',
@@ -57,9 +58,9 @@ class _PersonSearchWidget extends StatelessWidget {
   Widget _filterRow(BuildContext context, ListUsersBloc bloc) {
     final bs = BorderSide(color: Theme.of(context).dividerColor);
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 5, 30, 10),
+      padding: const EdgeInsets.fromLTRB(20, 8, 30, 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         border: Border(bottom: bs, left: bs, right: bs, top: bs),
       ),
       child: Row(

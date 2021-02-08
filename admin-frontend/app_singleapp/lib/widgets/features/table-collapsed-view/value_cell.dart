@@ -122,10 +122,15 @@ class _ValueCard extends StatelessWidget {
             width: 150,
             padding: EdgeInsets.symmetric(horizontal: 8.0),
             decoration: BoxDecoration(
-              color: rolloutStrategy == null
-                  ? defaultValueColor
-                  : strategyValueColor,
-              borderRadius: BorderRadius.all(Radius.circular(16.0)),
+              color: rolloutStrategy == null ? (Theme.of(context).brightness == Brightness.light ?
+                   defaultValueColor : Colors.transparent)
+                  : (Theme.of(context).brightness == Brightness.light ? strategyValueColor : Colors.transparent),
+             borderRadius: BorderRadius.all(Radius.circular(16.0)),
+              border: Theme.of(context).brightness == Brightness.light ? null : Border.all(
+                  color: Theme.of(context).disabledColor,
+                  width: 1.0,
+              ),
+
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -136,14 +141,6 @@ class _ValueCard extends StatelessWidget {
                     flex: 4,
                     child: rolloutStrategy != null
                         ? Tooltip(
-                            textStyle: TextStyle(
-                                fontFamily: 'source',
-                                fontSize: 12,
-                                color: Colors.white),
-                            // decoration: BoxDecoration(
-                            //     color: Theme.of(context).primaryColorLight,
-                            //     borderRadius:
-                            //         BorderRadius.all(Radius.circular(4.0))),
                             message: generateTooltipMessage(rolloutStrategy),
                             child: rolloutStrategy == null
                                 ? SizedBox.shrink()

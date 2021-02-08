@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+final fontFamily = GoogleFonts.roboto().fontFamily;
+
 final ThemeData myTheme = ThemeData(
   // primarySwatch: MaterialColor(4278391389,{50: Instance of 'minified:i', 100: Instance of 'minified:i', 200: Instance of 'minified:i', 300: Instance of 'minified:i', 400: Instance of 'minified:i', 500: Instance of 'minified:i', 600: Instance of 'minified:i', 700: Instance of 'minified:i', 800: Instance of 'minified:i', 900: Instance of 'minified:i'}),
   brightness: Brightness.light,
@@ -251,4 +253,9 @@ final ThemeData myTheme = ThemeData(
     ),
     borderRadius: BorderRadius.all(Radius.circular(4.0)),
   )),
+);
+final ThemeData darkTheme = ThemeData(
+  primarySwatch: Colors.blue,
+  brightness: Brightness.dark,
+  fontFamily: fontFamily,
 );

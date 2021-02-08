@@ -41,18 +41,21 @@ class _AppsRouteState extends State<AppsRoute> {
                       if (snapshot.data != null &&
                           (snapshot.data.currentPortfolioOrSuperAdmin ==
                               true)) {
-                        return Container(
-                            child: FHIconTextButton(
-                          iconData: Icons.add,
-                          keepCase: true,
-                          label: 'Create new application',
-                          onPressed: () =>
-                              bloc.mrClient.addOverlay((BuildContext context) {
-                            return AppUpdateDialogWidget(
-                              bloc: bloc,
-                            );
-                          }),
-                        ));
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Container(
+                              child: FHIconTextButton(
+                            iconData: Icons.add,
+                            keepCase: true,
+                            label: 'Create new application',
+                            onPressed: () =>
+                                bloc.mrClient.addOverlay((BuildContext context) {
+                              return AppUpdateDialogWidget(
+                                bloc: bloc,
+                              );
+                            }),
+                          )),
+                        );
                       } else {
                         return SizedBox.shrink();
                       }
@@ -152,7 +155,7 @@ class _ApplicationCard extends StatelessWidget {
                                     .textTheme
                                     .bodyText2
                                     .copyWith(
-                                        color: Theme.of(context).primaryColor)),
+                                        color: Theme.of(context).brightness == Brightness.light ? Theme.of(context).primaryColor : null)),
                             SizedBox(height: 4.0),
                             Text(application.description,
                                 maxLines: 2,
@@ -318,7 +321,7 @@ class _NumberContainer extends StatelessWidget {
         padding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(12.0)),
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
         ),
         child: child);
   }

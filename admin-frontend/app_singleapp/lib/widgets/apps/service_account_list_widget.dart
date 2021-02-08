@@ -65,7 +65,7 @@ class _ServiceAccountWidget extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
         decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).cardColor,
             border: Border(bottom: bs, left: bs, right: bs)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -103,6 +103,7 @@ class _ServiceAccountWidget extends StatelessWidget {
 
   Widget _adminFunctions(BuildContext context) {
     return Row(children: [
+
       FHIconButton(
           icon: Icon(Icons.edit),
           onPressed: () => bloc.mrClient.addOverlay((BuildContext context) =>
@@ -226,6 +227,7 @@ class _ServiceAccountDescription extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var light = Theme.of(context).brightness == Brightness.light;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -233,7 +235,7 @@ class _ServiceAccountDescription extends StatelessWidget {
             style: Theme.of(context)
                 .textTheme
                 .subtitle1
-                .copyWith(color: Theme.of(context).primaryColor)),
+                .copyWith(color: light ? Theme.of(context).primaryColor : Theme.of(context).accentColor)),
         Text(
           serviceAccount.description != null
               ? '${serviceAccount.description}'

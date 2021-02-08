@@ -1,4 +1,5 @@
 import 'package:app_singleapp/theme/theme_data.dart';
+import 'package:app_singleapp/widgets/dynamic-theme/fh_dynamic_theme.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
@@ -35,20 +36,26 @@ class FeatureHubApp extends StatelessWidget {
   // This widget is the root of the application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'FeatureHub',
-      theme: myTheme,
-      home: LandingRoute(title: 'FeatureHub'),
-      onGenerateRoute: (RouteSettings settings) {
-        final uri = Uri.parse(settings.name);
-        final params = uri.queryParametersAll;
-        ManagementRepositoryClientBloc.router
-            .navigateTo(context, uri.path, params: params);
-        BlocProvider.of<ManagementRepositoryClientBloc>(context)
-            .resetInitialized();
-        return null;
-      },
-    );
+    return DynamicTheme(
+        defaultBrightness: Brightness.light,
+        data: (brightness) => brightness == Brightness.light ? myTheme : darkTheme
+    ,
+    themedWidgetBuilder: (context, theme) {
+      return MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'FeatureHub',
+        theme: theme,
+        home: LandingRoute(title: 'FeatureHub'),
+        onGenerateRoute: (RouteSettings settings) {
+          final uri = Uri.parse(settings.name);
+          final params = uri.queryParametersAll;
+          ManagementRepositoryClientBloc.router
+              .navigateTo(context, uri.path, params: params);
+          BlocProvider.of<ManagementRepositoryClientBloc>(context)
+              .resetInitialized();
+          return null;
+        },
+      );
+    });
   }
 }

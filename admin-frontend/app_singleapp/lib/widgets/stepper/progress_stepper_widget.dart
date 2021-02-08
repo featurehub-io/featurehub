@@ -34,8 +34,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
             'Application setup progress',
             style: Theme.of(context)
                 .textTheme
-                .subtitle1
-                .copyWith(color: Theme.of(context).primaryColor),
+                .subtitle1,
           ),
           CircleIconButton(
               icon: Icon(

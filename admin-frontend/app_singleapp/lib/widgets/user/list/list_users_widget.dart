@@ -90,8 +90,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                               }),
                             ),
                             FHIconButton(
-                                icon: Icon(Icons.edit,
-                                    color: Theme.of(context).buttonColor),
+                                icon: Icon(Icons.edit),
                                 onPressed: () => {
                                       ManagementRepositoryClientBloc.router
                                           .navigateTo(context, '/manage-user',
@@ -104,8 +103,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                               width: 20.0,
                             ),
                             FHIconButton(
-                              icon: Icon(Icons.delete,
-                                  color: Theme.of(context).buttonColor),
+                              icon: Icon(Icons.delete),
                               onPressed: () => bloc.mrClient
                                   .addOverlay((BuildContext context) {
                                 return bloc.mrClient.person.id.id ==

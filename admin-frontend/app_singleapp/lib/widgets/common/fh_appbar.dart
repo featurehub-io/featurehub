@@ -1,4 +1,5 @@
 import 'package:app_singleapp/api/client_api.dart';
+import 'package:app_singleapp/widgets/dynamic-theme/fh_dynamic_theme.dart';
 import 'package:app_singleapp/widgets/stepper/stepper_container.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
@@ -55,6 +56,7 @@ class FHappBar extends StatelessWidget {
 //                snapshot.data == InitializedCheckState.logged_in) {
               if (snapshot.hasData) {
                 final person = snapshot.data;
+                var light = Theme.of(context).brightness == Brightness.light;
                 return Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Row(
@@ -68,11 +70,20 @@ class FHappBar extends StatelessWidget {
                       ),
                       VerticalDivider(
                         width: 1.0,
-                        color: Colors.white,
+                        color: Theme.of(context).cardColor,
                       ),
                       SizedBox(
                         width: 16.0,
                       ),
+                      IconButton(
+                          tooltip: light ? 'Dark mode' : 'Light mode',
+                          icon: Icon(light
+                              ? MaterialCommunityIcons.weather_night
+                              : Feather.sun),
+                          onPressed: () {
+                            DynamicTheme.of(context).setBrightness(
+                                light ? Brightness.dark : Brightness.light);
+                          }),
                       StepperRocketButton(mrBloc: mrBloc),
                       IconButton(
                           onPressed: () async {

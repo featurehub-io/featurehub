@@ -128,7 +128,7 @@ class _EnvWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(30, 5, 30, 5),
       decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
           border: Border.all(color: Theme.of(context).dividerColor)),
       child: Container(
         height: 50,
@@ -193,7 +193,7 @@ class _ProductionEnvironmentIndicatorWidget extends StatelessWidget {
         decoration: BoxDecoration(color: Colors.red, shape: BoxShape.circle),
         child: Center(
             child: Text('P',
-                style: TextStyle(color: Colors.white, fontSize: 18.0))),
+                style: TextStyle(color: Theme.of(context).cardColor, fontSize: 18.0))),
       ),
     );
   }

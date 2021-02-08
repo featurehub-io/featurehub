@@ -53,7 +53,7 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                                                 .textTheme
                                                 .overline
                                                 .copyWith(
-                                                    color: Colors.black87,
+                                                    color: Theme.of(context).brightness == Brightness.light ? Colors.black87 : null,
                                                     fontSize: 14)),
                                       ],
                                     ),

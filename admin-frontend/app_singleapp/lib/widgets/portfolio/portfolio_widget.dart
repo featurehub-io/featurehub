@@ -60,7 +60,7 @@ class _PortfolioWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(30, 5, 30, 5),
       decoration: BoxDecoration(
-          color: Colors.white, border: Border(bottom: bs, left: bs, right: bs)),
+          color: Theme.of(context).cardColor, border: Border(bottom: bs, left: bs, right: bs)),
       child: Row(
         children: <Widget>[
           Expanded(
@@ -78,8 +78,7 @@ class _PortfolioWidget extends StatelessWidget {
               ? Row(
                   children: <Widget>[
                     FHIconButton(
-                        icon: Icon(Icons.edit,
-                            color: Theme.of(context).buttonColor),
+                        icon: Icon(Icons.edit),
                         onPressed: () =>
                             bloc.mrClient.addOverlay((BuildContext context) {
                               return PortfolioUpdateDialogWidget(
@@ -87,8 +86,7 @@ class _PortfolioWidget extends StatelessWidget {
                             })),
                     if (mr.userIsSuperAdmin)
                       FHIconButton(
-                          icon: Icon(Icons.delete,
-                              color: Theme.of(context).buttonColor),
+                          icon: Icon(Icons.delete),
                           onPressed: () =>
                               bloc.mrClient.addOverlay((BuildContext context) {
                                 return PortfolioDeleteDialogWidget(

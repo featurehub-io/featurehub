@@ -116,7 +116,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                   padding: EdgeInsets.symmetric(horizontal: 8.0),
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                      color: Theme.of(context).selectedRowColor),
+                      color: Theme.of(context).brightness == Brightness.light ? Theme.of(context).selectedRowColor : Theme.of(context).primaryColorLight.withOpacity(0.1)),
                   child: Column(children: [
                     if ((individualStrategyBloc.rolloutStrategy?.percentage !=
                             null) ||

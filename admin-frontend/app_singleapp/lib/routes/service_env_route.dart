@@ -36,7 +36,6 @@ class ServiceAccountEnvRoute extends StatelessWidget {
               padding: EdgeInsets.only(bottom: 10),
               child: FHHeader(
                 title: 'Service Accounts',
-                children: <Widget>[],
               ),
             ),
             FHPageDivider(),
@@ -77,7 +76,7 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
         itemBuilder: (context, index) {
           final env = serviceAccounts.environments[index];
           return Card(
-            color: Colors.white,
+            color: Theme.of(context).cardColor,
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Row(
@@ -89,7 +88,7 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
                         style: Theme.of(context)
                             .textTheme
                             .subtitle1
-                            .copyWith(color: Theme.of(context).primaryColor)),
+                            .copyWith(color: Theme.of(context).brightness == Brightness.light ? Theme.of(context).buttonColor : Theme.of(context).accentColor)),
                   ),
                   Expanded(
                       flex: 5,
