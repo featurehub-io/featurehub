@@ -17,14 +17,18 @@ namespace FeatureHubSDK
   public class EventServiceListener : IEdgeService
   {
     private EventSource _eventSource;
-    private readonly IFeatureHubEdgeUrl _featureHost;
+    private readonly IFeatureHubConfig _featureHost;
     private readonly IFeatureHubNotify _repository;
     private string _xFeatureHubHeader = null;
 
-    public EventServiceListener(IFeatureHubNotify repository, IFeatureHubEdgeUrl edgeUrl)
+    public EventServiceListener(IFeatureHubNotify repository, IFeatureHubConfig config)
     {
       _repository = repository;
-      _featureHost = edgeUrl;
+      _featureHost = config;
+
+      // tell the repository about how evaluation works
+      // this means features don't need to know about the IEdgeService
+      _repository.ServerSideEvaluation = config.ServerEvaluation;
     }
 
     public void ContextChange(Dictionary<string, List<string>> attributes)

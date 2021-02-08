@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import io.featurehub.sse.model.FeatureState;
 import io.featurehub.sse.model.RolloutStrategy;
 import io.featurehub.sse.model.SSEResultState;
 import io.featurehub.strategies.matchers.MatcherRegistry;
@@ -13,20 +12,18 @@ import io.featurehub.strategies.percentage.PercentageMumurCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-public class ClientFeatureRepository extends AbstractFeatureRepository implements FeatureStore {
+public class ClientFeatureRepository extends AbstractFeatureRepository implements FeatureRepositoryContext {
   private static final Logger log = LoggerFactory.getLogger(ClientFeatureRepository.class);
   // feature-key, feature-state
-  private final Map<String, FeatureStateBaseHolder> features = new ConcurrentHashMap<>();
+  private final Map<String, FeatureStateBase> features = new ConcurrentHashMap<>();
   private final Executor executor;
   private final ObjectMapper mapper;
   private boolean hasReceivedInitialState = false;
@@ -35,11 +32,11 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
   private final List<ReadynessListener> readynessListeners = new ArrayList<>();
   private final List<FeatureValueInterceptorHolder> featureValueInterceptors = new ArrayList<>();
   private ObjectMapper jsonConfigObjectMapper;
-  private final ClientContext clientContext;
   private final ApplyFeature applyFeature;
+  private boolean serverEvaluation; // the client tells us, we pass it out to others
 
-  private final TypeReference<List<FeatureState>> FEATURE_LIST_TYPEDEF
-    = new TypeReference<List<FeatureState>>() {};
+  private final TypeReference<List<io.featurehub.sse.model.FeatureState>> FEATURE_LIST_TYPEDEF
+    = new TypeReference<List<io.featurehub.sse.model.FeatureState>>() {};
 
   public ClientFeatureRepository(Executor executor, ApplyFeature applyFeature) {
     mapper = initializeMapper();
@@ -47,8 +44,6 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
     jsonConfigObjectMapper = mapper;
 
     this.executor = executor;
-
-    this.clientContext = new ClientContextRepository(executor);
 
     this.applyFeature = applyFeature == null ? new ApplyFeature(new PercentageMumurCalculator(),
       new MatcherRegistry()) : applyFeature;
@@ -85,8 +80,18 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
   }
 
   @Override
-  public ClientContext clientContext() {
-    return clientContext;
+  public boolean exists(String key) {
+    return features.containsKey(key);
+  }
+
+  @Override
+  public boolean isServerEvaluation() {
+    return serverEvaluation;
+  }
+
+  @Override
+  public boolean isEnabled(String name) {
+    return getFeatureState(name).getBoolean() == Boolean.TRUE;
   }
 
   public Readyness getReadyness() {
@@ -118,13 +123,13 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
           case BYE:
             break;
           case DELETE_FEATURE:
-            deleteFeature(mapper.readValue(data, FeatureState.class));
+            deleteFeature(mapper.readValue(data, io.featurehub.sse.model.FeatureState.class));
             break;
           case FEATURE:
-            featureUpdate(mapper.readValue(data, FeatureState.class));
+            featureUpdate(mapper.readValue(data, io.featurehub.sse.model.FeatureState.class));
             break;
           case FEATURES:
-            List<FeatureState> features = mapper.readValue(data, FEATURE_LIST_TYPEDEF);
+            List<io.featurehub.sse.model.FeatureState> features = mapper.readValue(data, FEATURE_LIST_TYPEDEF);
             notify(features);
             break;
           case FAILURE:
@@ -139,7 +144,7 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
   }
 
   @Override
-  public void notify(List<FeatureState> states, boolean force) {
+  public void notify(List<io.featurehub.sse.model.FeatureState> states, boolean force) {
     states.forEach(s -> featureUpdate(s, force));
 
     if (!hasReceivedInitialState) {
@@ -171,7 +176,12 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
   }
 
   @Override
-  public void notify(List<FeatureState> states) {
+  public void setServerEvaluation(boolean val) {
+    this.serverEvaluation = val;
+  }
+
+  @Override
+  public void notify(List<io.featurehub.sse.model.FeatureState> states) {
     notify(states, false);
   }
 
@@ -191,7 +201,7 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
   }
 
 
-  private void deleteFeature(FeatureState readValue) {
+  private void deleteFeature(io.featurehub.sse.model.FeatureState readValue) {
     readValue.setValue(null);
     featureUpdate(readValue);
   }
@@ -199,29 +209,29 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
   private void checkForInvalidFeatures() {
     String invalidKeys =
       features.values().stream().filter(v -> v.getKey() == null)
-        .map(FeatureStateHolder::getKey).collect(Collectors.joining(", "));
+        .map(FeatureState::getKey).collect(Collectors.joining(", "));
     if (invalidKeys.length() > 0) {
       log.error("FeatureHub error: application is requesting use of invalid keys: {}", invalidKeys);
     }
   }
 
   @Override
-  public FeatureStateHolder getFeatureState(String key) {
+  public FeatureState getFeatureState(String key) {
     return features.computeIfAbsent(key, key1 -> {
       if (hasReceivedInitialState) {
         log.error("FeatureHub error: application requesting use of invalid key after initialization: `{}`", key1);
       }
 
-      return new FeatureStateBaseHolder(null, this, key);
+      return new FeatureStateBase(null, this, key);
     });
   }
 
   @Override
   public FeatureRepository logAnalyticsEvent(String action, Map<String, String> other) {
     // take a snapshot of the current state of the features
-    List<FeatureStateHolder> featureStateAtCurrentTime = features.values().stream()
-      .filter(FeatureStateBaseHolder::isSet)
-      .map(FeatureStateBaseHolder::copy)
+    List<FeatureState> featureStateAtCurrentTime = features.values().stream()
+      .filter(FeatureStateBase::isSet)
+      .map(FeatureStateBase::copy)
       .collect(Collectors.toList());
 
     executor.execute(() -> analyticsCollectors.forEach((c) -> c.logEvent(action, other, featureStateAtCurrentTime)));
@@ -229,14 +239,14 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
     return this;
   }
 
-  private void featureUpdate(FeatureState featureState) {
+  private void featureUpdate(io.featurehub.sse.model.FeatureState featureState) {
     featureUpdate(featureState, false);
   }
 
-  private void featureUpdate(FeatureState featureState, boolean force) {
-    FeatureStateBaseHolder holder = features.get(featureState.getKey());
+  private void featureUpdate(io.featurehub.sse.model.FeatureState featureState, boolean force) {
+    FeatureStateBase holder = features.get(featureState.getKey());
     if (holder == null || holder.getKey() == null) {
-      holder = new FeatureStateBaseHolder(holder, this, featureState.getKey());
+      holder = new FeatureStateBase(holder, this, featureState.getKey());
 
       features.put(featureState.getKey(), holder);
     } else if (!force && holder.featureState != null) {

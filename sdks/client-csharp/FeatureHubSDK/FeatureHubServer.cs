@@ -1,24 +1,18 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using IO.FeatureHub.SSE.Model;
-using LaunchDarkly.EventSource;
 
 namespace FeatureHubSDK
 {
-  public interface IFeatureHubEdgeUrl
+  public interface IFeatureHubConfig
   {
     string Url { get; }
     bool ServerEvaluation { get; }
   }
 
-  public class FeatureHubEdgeUrl : IFeatureHubEdgeUrl
+  public class FeatureHubConfig : IFeatureHubConfig
   {
     private readonly string _url;
     private readonly bool _serverEvaluation;
 
-    public FeatureHubEdgeUrl(string edgeUrl, string sdkKey)
+    public FeatureHubConfig(string edgeUrl, string sdkKey)
     {
       _serverEvaluation = sdkKey != null && sdkKey.Contains("*"); // two part keys are server evaluated
 

@@ -10,18 +10,6 @@ import java.util.Map;
 public interface ClientContext {
   String get(String key, String defaultValue);
 
-  interface ClientContextChanged {
-    /**
-     *
-     * @param header a correctly formatted header that has been url escaped or null (if no properties)
-     */
-    void notify(String header);
-  }
-
-  interface  ClientContextListenerRemoval {
-    void remove();
-  }
-
   ClientContext userKey(String userKey);
   ClientContext sessionKey(String sessionKey);
   ClientContext country(StrategyAttributeCountryName countryName);
@@ -43,5 +31,22 @@ public interface ClientContext {
   Map<String, List<String>> context();
   String defaultPercentageKey();
 
-  ClientContextListenerRemoval registerChangeListener(ClientContextChanged listener);
+  FeatureState feature(String name);
+  FeatureState feature(Feature name);
+
+  FeatureRepository getRepository();
+
+  /**
+   * true if it is a boolean feature and is true within this context.
+   *
+   * @param name
+   * @return false if not true or not boolean, true otherwise.
+   */
+  boolean isEnabled(String name);
+  boolean isEnabled(Feature name);
+
+  void close();
+
+  boolean exists(String key);
+  boolean exists(Feature key);
 }

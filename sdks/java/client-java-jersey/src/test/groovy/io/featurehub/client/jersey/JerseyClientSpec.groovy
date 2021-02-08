@@ -40,7 +40,7 @@ class JerseyClientSpec extends Specification {
         @Override
         protected FeatureService makeFeatureServiceClient(ApiClient apiClient) {
           basePath = apiClient.basePath
-          sdkPartialUrl = sdkUrl
+          sdkPartialUrl = fhConfig
           return super.makeFeatureServiceClient(apiClient)
         }
       }

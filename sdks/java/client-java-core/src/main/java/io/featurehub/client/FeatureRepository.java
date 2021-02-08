@@ -1,11 +1,8 @@
 package io.featurehub.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.featurehub.sse.model.FeatureState;
-import io.featurehub.sse.model.SSEResultState;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Map;
 
 public interface FeatureRepository {
@@ -24,91 +21,8 @@ public interface FeatureRepository {
    * @param key - the key of the feature
    * @return - the FeatureStateHolder referring to this key, can exist but not refer to an actual feature
    */
-  FeatureStateHolder getFeatureState(String key);
-  FeatureStateHolder getFeatureState(Feature feature);
-
-  FeatureStateHolder getFeatureState(String key, ClientContext ctx);
-  FeatureStateHolder getFeatureState(Feature feature, ClientContext ctx);
-
-  /**
-   * The value of the flag/boolean feature.
-   *
-   * @param key - the feature key
-   * @return - true or false depending on the flag. If the feature doesn't exist, it will return false.
-   */
-  boolean getFlag(String key);
-  boolean getFlag(Feature feature);
-
-  boolean getFlag(String key, ClientContext ctx);
-  boolean getFlag(Feature feature, ClientContext ctx);
-
-  /**
-   * The value of the string feature.
-   *
-   * @param key - the feature key
-   * @return - the value of the string feature or null if it is unset or doesn't exist.
-   */
-  String getString(String key);
-  String getString(Feature feature);
-  String getString(String key, ClientContext ctx);
-  String getString(Feature feature, ClientContext ctx);
-
-  /**
-   * The value of the number feature.
-   *
-   * @param key - the feature key
-   * @return - the value of the number feature or null if it is unset or doesn't exist.
-   */
-  BigDecimal getNumber(String key);
-  BigDecimal getNumber(Feature feature);
-  BigDecimal getNumber(String key, ClientContext ctx);
-  BigDecimal getNumber(Feature feature, ClientContext ctx);
-
-  /**
-   * The value of the json feature decoded into the correct class (if possible).
-   *
-   * @param key - the feature key
-   * @param type - the class type - as an Class.class
-   * @param <T> - the type of the class you want back
-   * @return - the value of the json feature or null if it is unset or doesn't exist. If it cannot be decoded then it
-   * may throw an exception.
-   */
-  <T> T getJson(String key, Class<T> type);
-  <T> T getJson(Feature feature, Class<T> type);
-  <T> T getJson(String key, Class<T> type, ClientContext ctx);
-  <T> T getJson(Feature feature, Class<T> type, ClientContext ctx);
-
-  /**
-   * The value of the json feature in string form.
-   *
-   * @param key - the feature key
-   * @return - the value of the json feature or null if it is unset or doesn't exist.
-   */
-  String getRawJson(String key);
-  String getRawJson(Feature feature);
-  String getRawJson(String key, ClientContext ctx);
-  String getRawJson(Feature feature, ClientContext ctx);
-
-  /**
-   * Returns whether there is a value associated with this feature. Boolean features only return false if there
-   * is in fact no feature.
-   *
-   * @param key - the feature key
-   * @return - true or false
-   */
-  boolean isSet(String key);
-  boolean isSet(Feature feature);
-  boolean isSet(String key, ClientContext ctx);
-  boolean isSet(Feature feature, ClientContext ctx);
-
-  /**
-   * Returns whether this feature does in fact not exist.
-   *
-   * @param key - the feature key
-   * @return - true or false
-   */
-  boolean exists(String key);
-  boolean exists(Feature feature);
+  FeatureState getFeatureState(String key);
+  FeatureState getFeatureState(Feature feature);
 
   /**
    * Log an analytics event against the analytics collectors.
@@ -152,9 +66,9 @@ public interface FeatureRepository {
    */
   void setJsonConfigObjectMapper(ObjectMapper jsonConfigObjectMapper);
 
-  /**
-   * global context, only relevant when using Java SDK from single identified client
-   * @return
-   */
-  ClientContext clientContext();
+  boolean exists(String key);
+
+  boolean isServerEvaluation();
+
+  boolean isEnabled(String name);
 }

@@ -9,28 +9,28 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.featurehub.client.AbstractFeatureRepository;
 import io.featurehub.client.AnalyticsCollector;
+import io.featurehub.client.Applied;
 import io.featurehub.client.ClientContext;
-import io.featurehub.client.ClientContextRepository;
+import io.featurehub.client.EdgeFeatureHubConfig;
 import io.featurehub.client.Feature;
+import io.featurehub.client.FeatureHubConfig;
 import io.featurehub.client.FeatureRepository;
-import io.featurehub.client.FeatureStateHolder;
+import io.featurehub.client.FeatureState;
+import io.featurehub.client.FeatureStore;
 import io.featurehub.client.FeatureValueInterceptor;
+import io.featurehub.client.FeatureValueInterceptorHolder;
 import io.featurehub.client.Readyness;
 import io.featurehub.client.ReadynessListener;
 import io.featurehub.client.jersey.JerseyClient;
-import io.featurehub.sse.model.FeatureState;
+import io.featurehub.sse.model.RolloutStrategy;
 import io.featurehub.sse.model.SSEResultState;
-import org.codehaus.groovy.runtime.metaclass.ConcurrentReaderHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
 
 class FeatureVersionHolder {
   private static final Logger log = LoggerFactory.getLogger(FeatureVersionHolder.class);
@@ -55,18 +55,12 @@ class FeatureVersionHolder {
   }
 }
 
-class InternetFeatureTrackerRepository extends AbstractFeatureRepository {
+class InternetFeatureTrackerRepository extends AbstractFeatureRepository implements FeatureStore {
   private static final Logger log = LoggerFactory.getLogger(InternetFeatureTrackerRepository.class);
   public static int fullDataCount = 0;
   Map<Long, FeatureVersionHolder> versionMap = new ConcurrentHashMap<>();
   static ObjectMapper mapper;
   private final int maxConnections;
-  private final ClientContext clientContext = new ClientContextRepository(new Executor() {
-    @Override
-    public void execute(Runnable command) {
-      command.run();
-    }
-  });
 
   static {
     mapper = new ObjectMapper();
@@ -94,9 +88,9 @@ class InternetFeatureTrackerRepository extends AbstractFeatureRepository {
         }
       }
     } else if (state == SSEResultState.FEATURE) {
-      final FeatureState featureState;
+      final io.featurehub.sse.model.FeatureState featureState;
       try {
-        featureState = mapper.readValue(data, FeatureState.class);
+        featureState = mapper.readValue(data, io.featurehub.sse.model.FeatureState.class);
       } catch (JsonProcessingException e) {
         return;
       }
@@ -111,11 +105,36 @@ class InternetFeatureTrackerRepository extends AbstractFeatureRepository {
   }
 
   @Override
-  public void notify(List<FeatureState> states) {
+  public void notify(List<io.featurehub.sse.model.FeatureState> states) {
   }
 
   @Override
-  public void notify(List<FeatureState> states, boolean force) {
+  public void notify(List<io.featurehub.sse.model.FeatureState> states, boolean force) {
+  }
+
+  @Override
+  public List<FeatureValueInterceptorHolder> getFeatureValueInterceptors() {
+    return null;
+  }
+
+  @Override
+  public Applied applyFeature(List<RolloutStrategy> strategies, String key, String featureValueId, ClientContext cac) {
+    return null;
+  }
+
+  @Override
+  public void execute(Runnable command) {
+
+  }
+
+  @Override
+  public ObjectMapper getJsonObjectMapper() {
+    return null;
+  }
+
+  @Override
+  public void setServerEvaluation(boolean val) {
+
   }
 
   @Override
@@ -124,83 +143,13 @@ class InternetFeatureTrackerRepository extends AbstractFeatureRepository {
   }
 
   @Override
-  public FeatureStateHolder getFeatureState(String key) {
+  public FeatureState getFeatureState(String key) {
     return null;
   }
 
   @Override
-  public FeatureStateHolder getFeatureState(Feature feature) {
+  public FeatureState getFeatureState(Feature feature) {
     return null;
-  }
-
-  @Override
-  public boolean getFlag(String key) {
-    return false;
-  }
-
-  @Override
-  public boolean getFlag(Feature feature) {
-    return false;
-  }
-
-  @Override
-  public String getString(String key) {
-    return null;
-  }
-
-  @Override
-  public String getString(Feature feature) {
-    return null;
-  }
-
-  @Override
-  public BigDecimal getNumber(String key) {
-    return null;
-  }
-
-  @Override
-  public BigDecimal getNumber(Feature feature) {
-    return null;
-  }
-
-  @Override
-  public <T> T getJson(String key, Class<T> type) {
-    return null;
-  }
-
-  @Override
-  public <T> T getJson(Feature feature, Class<T> type) {
-    return null;
-  }
-
-  @Override
-  public String getRawJson(String key) {
-    return null;
-  }
-
-  @Override
-  public String getRawJson(Feature feature) {
-    return null;
-  }
-
-  @Override
-  public boolean isSet(String key) {
-    return false;
-  }
-
-  @Override
-  public boolean isSet(Feature feature) {
-    return false;
-  }
-
-  @Override
-  public boolean exists(String key) {
-    return false;
-  }
-
-  @Override
-  public boolean exists(Feature feature) {
-    return false;
   }
 
   @Override
@@ -225,20 +174,24 @@ class InternetFeatureTrackerRepository extends AbstractFeatureRepository {
 
   @Override
   public void setJsonConfigObjectMapper(ObjectMapper jsonConfigObjectMapper) {
-
   }
 
   @Override
-  public ClientContext clientContext() {
-    return clientContext;
+  public boolean exists(String key) {
+    return false;
+  }
+
+  @Override
+  public boolean isServerEvaluation() {
+    return false;
   }
 }
 
 class ClientHolder {
   JerseyClient client;
 
-  public ClientHolder(String url, FeatureRepository repo) {
-    client = new JerseyClient(url, true, repo);
+  public ClientHolder(FeatureHubConfig url, FeatureStore repo) {
+    client = new JerseyClient(url, true, repo, null);
   }
 }
 
@@ -250,8 +203,10 @@ public class LoadTest {
   Integer rampUpSeconds = 5;
   @ConfigKey("start-connections")
   Integer startConnections = 5;
-  @ConfigKey("server.url")
-  String url;
+  @ConfigKey("server.base-url")
+  String baseurl;
+  @ConfigKey("server.sdk-key")
+  String sdkKey;
   private final InternetFeatureTrackerRepository repo = new InternetFeatureTrackerRepository(maxConnections);
   private List<ClientHolder> holders = new ArrayList<>();
 
@@ -260,7 +215,9 @@ public class LoadTest {
   }
 
   public void run() throws InterruptedException {
-    log.info("Connecting to {}", url);
+    log.info("Connecting to {} : {}", baseurl, sdkKey);
+
+    final EdgeFeatureHubConfig url = new EdgeFeatureHubConfig(this.baseurl, sdkKey);
 
     for(int count = 0; count < maxConnections; count ++) {
       log.info("kicking off connection {}", count);

@@ -2,7 +2,7 @@ package io.featurehub.client;
 
 import java.math.BigDecimal;
 
-public interface FeatureStateHolder {
+public interface FeatureState {
   String getKey();
 
   String getString();
@@ -19,5 +19,5 @@ public interface FeatureStateHolder {
 
   void addListener(FeatureListener listener);
 
-  FeatureStateHolder withContext(ClientContext ctx);
+  FeatureState withContext(ClientContext ctx);
 }

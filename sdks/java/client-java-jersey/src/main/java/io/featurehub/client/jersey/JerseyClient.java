@@ -1,9 +1,11 @@
 package io.featurehub.client.jersey;
 
 import cd.connect.openapi.support.ApiClient;
-import io.featurehub.client.ClientContext;
-import io.featurehub.client.FeatureRepository;
+import io.featurehub.client.EdgeService;
 import io.featurehub.client.Feature;
+import io.featurehub.client.FeatureHubConfig;
+import io.featurehub.client.FeatureStateUtils;
+import io.featurehub.client.FeatureStore;
 import io.featurehub.sse.api.FeatureService;
 import io.featurehub.sse.model.FeatureStateUpdate;
 import io.featurehub.sse.model.SSEResultState;
@@ -20,50 +22,50 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 @Singleton
-public class JerseyClient implements ClientContext.ClientContextChanged {
+public class JerseyClient implements EdgeService {
   private static final Logger log = LoggerFactory.getLogger(JerseyClient.class);
-  protected final String sdkUrl;
   private final WebTarget target;
   private boolean initialized;
   private final Executor executor;
-  private final FeatureRepository featureRepository;
+  private final FeatureStore featureRepository;
   private final FeatureService featuresService;
   private boolean shutdown = false;
   private boolean shutdownOnServerFailure = true;
   private boolean shutdownOnEdgeFailureConnection = false;
   private EventInput eventInput;
   private String xFeaturehubHeader;
+  private final FeatureHubConfig fhConfig;
   private boolean closedBecauseHeaderChanged = false;
 
-  public JerseyClient(String sdkUrl, boolean initializeOnConstruction, FeatureRepository featureRepository) {
-    this(sdkUrl, initializeOnConstruction, featureRepository, null);
+  public JerseyClient(FeatureHubConfig url, FeatureStore repository) {
+    this(url, System.getProperties().contains("featurehub.jersey.init-on-construction"), repository, null);
   }
 
-  public JerseyClient(String sdkUrl, boolean initializeOnConstruction,
-                      FeatureRepository featureRepository, ApiClient apiClient) {
+  public JerseyClient(FeatureHubConfig url, boolean initializeOnConstruction,
+                      FeatureStore featureRepository, ApiClient apiClient) {
     this.featureRepository = featureRepository;
+    this.fhConfig = url;
+
+    featureRepository.setServerEvaluation(url.isServerEvaluation());
 
     Client client = ClientBuilder.newBuilder()
       .register(JacksonFeature.class)
       .register(SseFeature.class).build();
 
-    target = makeEventSourceTarget(client, sdkUrl);
+    target = makeEventSourceTarget(client, url.getUrl());
     executor = makeExecutor();
 
     if (apiClient == null) {
-      String basePath = sdkUrl.substring(0, sdkUrl.indexOf("/features"));
-      apiClient = new ApiClient(client, basePath);
+      apiClient = new ApiClient(client, url.baseUrl());
     }
 
-    this.sdkUrl = sdkUrl.substring(sdkUrl.indexOf("/features/") + 1);
-
     featuresService = makeFeatureServiceClient(apiClient);
-
-    this.featureRepository.clientContext().registerChangeListener(this);
 
     if (initializeOnConstruction) {
       init();
@@ -83,7 +85,7 @@ public class JerseyClient implements ClientContext.ClientContextChanged {
   }
 
   public void setFeatureState(String key, FeatureStateUpdate update) {
-    featuresService.setFeatureState(sdkUrl, key, update);
+    featuresService.setFeatureState(fhConfig.sdkKey(), key, update);
   }
 
   public void setFeatureState(Feature feature, FeatureStateUpdate update) {
@@ -128,7 +130,7 @@ public class JerseyClient implements ClientContext.ClientContextChanged {
       }
     } catch (Exception e) {
       if (!closedBecauseHeaderChanged) {
-        log.warn("Failed to connect to {}", sdkUrl, e);
+        log.warn("Failed to connect to {}", fhConfig, e);
       }
       if (shutdownOnEdgeFailureConnection) {
         log.warn("Edge connection failed, shutting down");
@@ -195,14 +197,30 @@ public class JerseyClient implements ClientContext.ClientContextChanged {
 
   // the x-featurehub header has changed, so store it and trigger another run at the server
   @Override
-  public void notify(String header) {
-    xFeaturehubHeader = header;
+  public void contextChange(Map<String, List<String>> attributes) {
+    if (fhConfig.isServerEvaluation() && attributes != null) {
+      String header = FeatureStateUtils.generateXFeatureHubHeaderFromMap(attributes);
 
-    if (initialized) {
-      try {
-        closedBecauseHeaderChanged = true;
-        eventInput.close();
-      } catch (Exception ignored) {}
+      if (!header.equals(xFeaturehubHeader)) {
+        xFeaturehubHeader = header;
+
+        if (initialized) {
+          try {
+            closedBecauseHeaderChanged = true;
+            eventInput.close();
+          } catch (Exception ignored) {}
+        }
+      }
     }
+  }
+
+  @Override
+  public boolean isClientEvaluation() {
+    return !fhConfig.isServerEvaluation();
+  }
+
+  @Override
+  public void close() {
+    shutdown();
   }
 }

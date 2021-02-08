@@ -1,5 +1,10 @@
 package io.featurehub.client;
 
+import java.net.URLEncoder;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 public class FeatureStateUtils {
 
   static boolean changed(Object oldValue, Object newValue) {
@@ -7,18 +12,27 @@ public class FeatureStateUtils {
       (oldValue != null && !oldValue.equals(newValue)) || (newValue != null && !newValue.equals(oldValue)));
   }
 
+  public static String generateXFeatureHubHeaderFromMap(Map<String, List<String>> attributes) {
+    if (attributes == null || attributes.isEmpty()) {
+      return null;
+    }
+
+    return attributes.entrySet().stream().map(e -> String.format("%s=%s", e.getKey(),
+     URLEncoder.encode(String.join(",", e.getValue())))).sorted().collect(Collectors.joining(","));
+  }
+
   static boolean isActive(FeatureRepository repository, Feature feature) {
     if (repository == null) {
       throw new RuntimeException("You must configure your feature repository before using it.");
     }
 
-    FeatureStateHolder fs = repository.getFeatureState(feature.name());
+    FeatureState fs = repository.getFeatureState(feature.name());
     return Boolean.TRUE.equals(fs.getBoolean());
   }
 
   static boolean exists(FeatureRepository repository, Feature feature) {
-    FeatureStateHolder fs = repository.getFeatureState(feature.name());
-    return ((FeatureStateBaseHolder)fs).exists();
+    FeatureState fs = repository.getFeatureState(feature.name());
+    return ((FeatureStateBase)fs).exists();
   }
 
   static boolean isSet(FeatureRepository repository, Feature feature) {

@@ -1,7 +1,11 @@
 package io.featurehub.client.jersey;
 
+import io.featurehub.client.ClientContext;
 import io.featurehub.client.ClientFeatureRepository;
+import io.featurehub.client.EdgeFeatureHubConfig;
 import io.featurehub.client.Feature;
+import io.featurehub.client.FeatureContext;
+import io.featurehub.client.FeatureRepository;
 import io.featurehub.sse.model.FeatureStateUpdate;
 import io.featurehub.sse.model.StrategyAttributeDeviceName;
 import io.featurehub.sse.model.StrategyAttributePlatformName;
@@ -14,28 +18,31 @@ enum Features implements Feature {
 public class JerseyClientSample {
   @Test
   public void clientTest() throws InterruptedException {
-    ClientFeatureRepository cfr = new ClientFeatureRepository(5);
+    final FeatureContext ctx = new FeatureContext(new EdgeFeatureHubConfig("ttp://localhost:8553/",
+      "ec6a720b-71ac-4cc1-8da1-b5e396fa00ca" +
+        "/Kps0MAqsGt5QhgmwMEoRougAflM2b8Q9e1EFeBPHtuIF0azpcCXeeOw1DabFojYdXXr26fyycqjBt3pa"));
 
-    cfr.clientContext().userKey("jimbob")
+    FeatureRepository cfr = ctx.getRepository();
+
+    ctx.userKey("jimbob")
       .platform(StrategyAttributePlatformName.MACOS)
       .device(StrategyAttributeDeviceName.DESKTOP)
       .attr("testapp", "sample,a%%").build();
 
-    new JerseyClient("http://localhost:8553/features/default/ec6a720b-71ac-4cc1-8da1-b5e396fa00ca/Kps0MAqsGt5QhgmwMEoRougAflM2b8Q9e1EFeBPHtuIF0azpcCXeeOw1DabFojYdXXr26fyycqjBt3pa", true, cfr);
     Thread.sleep(5000);
 
     System.out.println("exists tests");
     for(Features f : Features.values()) {
-      System.out.println(f.name() + ": " + cfr.exists(f));
+      System.out.println(f.name() + ": " + ctx.exists(f));
     }
     System.out.println("set tests");
     for(Features f : Features.values()) {
-      System.out.println(f.name() + ": " + cfr.isSet(f));
+      System.out.println(f.name() + ": " + cfr.getFeatureState(f).isSet());
     }
 
     System.out.println("active tests");
     for(Features f : Features.values()) {
-      System.out.println(f.name() + ": " + cfr.getFlag(f));
+      System.out.println(f.name() + ": " + cfr.getFeatureState(f).getBoolean());
     }
 
     for(Features f : Features.values()) {
@@ -64,7 +71,9 @@ public class JerseyClientSample {
   @Test
   public void changeToggleTest() {
     ClientFeatureRepository cfr = new ClientFeatureRepository(5);
-    final JerseyClient client = new JerseyClient("http://localhost:8553/features/" + changeToggleEnv, false, cfr);
+    final JerseyClient client =
+      new JerseyClient(new EdgeFeatureHubConfig("http://localhost:8553", changeToggleEnv), false,
+        cfr, null);
 
     client.setFeatureState("NEW_BOAT", new FeatureStateUpdate().lock(false).value(Boolean.TRUE));
   }

@@ -34,7 +34,7 @@ public class GoogleAnalyticsCollector implements AnalyticsCollector {
   }
 
   @Override
-  public void logEvent(String action, Map<String, String> other, List<FeatureStateHolder> featureStateAtCurrentTime) {
+  public void logEvent(String action, Map<String, String> other, List<FeatureState> featureStateAtCurrentTime) {
     StringBuilder batchData = new StringBuilder();
 
     String finalCid = cid == null ? other.get("cid") : cid;
@@ -56,7 +56,7 @@ public class GoogleAnalyticsCollector implements AnalyticsCollector {
 
       featureStateAtCurrentTime.forEach((fsh) -> {
         String line = null;
-        FeatureStateBaseHolder fs = (FeatureStateBaseHolder)fsh;
+        FeatureStateBase fs = (FeatureStateBase)fsh;
 
         if (fs.isSet()) {
           if (fs.type() == FeatureValueType.BOOLEAN) {

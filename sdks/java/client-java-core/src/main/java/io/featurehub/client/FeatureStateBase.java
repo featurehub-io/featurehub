@@ -1,6 +1,5 @@
 package io.featurehub.client;
 
-import io.featurehub.sse.model.FeatureState;
 import io.featurehub.sse.model.FeatureValueType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,17 +14,17 @@ import java.util.Objects;
  * This class is just the base class to avoid a whole lot of duplication effort and to ensure the
  * maximum performance for each feature in updating its listeners and knowing what type it is.
  */
-public class FeatureStateBaseHolder implements FeatureStateHolder {
-  private static final Logger log = LoggerFactory.getLogger(FeatureStateBaseHolder.class);
+public class FeatureStateBase implements FeatureState {
+  private static final Logger log = LoggerFactory.getLogger(FeatureStateBase.class);
   protected final String key;
-  protected FeatureState featureState;
+  protected io.featurehub.sse.model.FeatureState featureState;
   List<FeatureListener> listeners = new ArrayList<>();
   protected ClientContext context;
   protected FeatureStore featureStore;
   protected Object value;
 
-  public FeatureStateBaseHolder(
-      FeatureStateBaseHolder oldHolder, FeatureStore featureStore, String key) {
+  public FeatureStateBase(
+    FeatureStateBase oldHolder, FeatureStore featureStore, String key) {
     this(featureStore, key);
 
     if (oldHolder != null) {
@@ -33,16 +32,16 @@ public class FeatureStateBaseHolder implements FeatureStateHolder {
     }
   }
 
-  public FeatureStateBaseHolder(FeatureStore featureStore, String key) {
+  public FeatureStateBase(FeatureStore featureStore, String key) {
     this.key = key;
     this.featureStore = featureStore;
   }
 
-  public FeatureStateHolder withContext(ClientContext context) {
-    return ((FeatureStateBaseHolder) copy()).setContext(context);
+  public FeatureState withContext(ClientContext context) {
+    return ((FeatureStateBase) copy()).setContext(context);
   }
 
-  protected FeatureStateHolder setContext(ClientContext ctx) {
+  protected FeatureState setContext(ClientContext ctx) {
     this.context = ctx;
     return this;
   }
@@ -186,7 +185,7 @@ public class FeatureStateBaseHolder implements FeatureStateHolder {
     listeners.add(listener);
   }
 
-  public FeatureStateHolder setFeatureState(FeatureState featureState) {
+  public FeatureState setFeatureState(io.featurehub.sse.model.FeatureState featureState) {
     if (featureState != null) {
       this.featureState = featureState;
 
@@ -223,8 +222,8 @@ public class FeatureStateBaseHolder implements FeatureStateHolder {
     return this;
   }
 
-  protected FeatureStateHolder copy() {
-    return new FeatureStateBaseHolder(this, featureStore, key).setFeatureState(featureState);
+  protected FeatureState copy() {
+    return new FeatureStateBase(this, featureStore, key).setFeatureState(featureState);
   }
 
   protected boolean exists() {

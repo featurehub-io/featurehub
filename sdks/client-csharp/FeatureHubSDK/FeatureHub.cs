@@ -194,19 +194,19 @@ namespace FeatureHubSDK
   {
     private readonly IFeatureRepositoryContext _repository;
     private IEdgeService _edgeService;
-    private readonly IFeatureHubEdgeUrl _edgeUrl;
+    private IFeatureHubConfig _config;
 
-    public IFeatureHubRepository repository => _repository;
+    public IFeatureHubRepository Repository => _repository;
+
+    public FeatureContext(IFeatureHubConfig url)
+    {
+      _config = url;
+      _repository = new FeatureHubRepository();
+    }
 
     public FeatureContext(IFeatureRepositoryContext repository)
     {
       _repository = repository;
-    }
-
-    public FeatureContext(IFeatureHubEdgeUrl url)
-    {
-      _edgeUrl = url;
-      _repository = new FeatureHubRepository();
     }
 
     public FeatureContext(IFeatureRepositoryContext repository, IEdgeService edgeService)
@@ -215,31 +215,26 @@ namespace FeatureHubSDK
       _edgeService = edgeService;
     }
 
-    public FeatureContext(IEdgeService edgeService)
-    {
-      _repository = new FeatureHubRepository();
-      _edgeService = edgeService;
-    }
-
-    public override IFeature this[string name] => _edgeService != null && _edgeService.ClientEvaluation
-      ? _repository.GetFeature(name).WithContext(this)
-      : _repository.GetFeature(name);
+    public override IFeature this[string name] =>
+      _repository.ServerSideEvaluation ?
+        _repository.GetFeature(name) : _repository.GetFeature(name).WithContext(this);
 
     public override bool IsEnabled(string name)
     {
-      var feat = this[name];
-      var val = feat.BooleanValue;
-      return val == true;
+      return this[name].BooleanValue == true;
     }
 
     public override IClientContext Build()
     {
-      if (_edgeService == null && _edgeUrl != null)
+      if (!_repository.ServerSideEvaluation)
       {
-        _edgeService = new EventServiceListener(_repository, _edgeUrl);
-      }
+        if (_edgeService == null && _config != null)
+        {
+          _edgeService = new EventServiceListener(_repository, _config);
+        }
 
-      _edgeService?.ContextChange(_attributes);
+        _edgeService?.ContextChange(_attributes);
+      }
 
       return this;
     }
@@ -388,24 +383,6 @@ namespace FeatureHubSDK
 
   public interface IFeatureHubRepository
   {
-    bool? GetFlag(string key);
-
-    double? GetNumber(string key);
-
-    string GetString(string key);
-    string GetString(string key, IClientContext context);
-
-    string GetJson(string key);
-    string GetJson(string key, IClientContext context);
-
-    bool Exists(string key);
-
-    bool IsSet(string key, IClientContext context);
-
-    bool? GetFlag(string key, IClientContext context);
-
-    double? GetNumber(string key, IClientContext context);
-
     IFeature GetFeature(string key);
 
     event EventHandler<Readyness> ReadynessHandler;
@@ -414,51 +391,17 @@ namespace FeatureHubSDK
     FeatureHubRepository LogAnalyticEvent(string action);
     FeatureHubRepository LogAnalyticEvent(string action, Dictionary<string, string> other);
     FeatureHubRepository AddAnalyticCollector(IAnalyticsCollector collector);
-
+    bool Exists(string key);
   }
 
   public interface IFeatureHubNotify
   {
+    bool ServerSideEvaluation { set; get; }
     void Notify(SSEResultState state, string data);
   }
 
   public abstract class AbstractFeatureHubRepository : IFeatureHubRepository
   {
-    public abstract bool? GetFlag(string key);
-
-    public abstract double? GetNumber(string key);
-
-    public abstract string GetString(string key);
-
-    public string GetString(string key, IClientContext context)
-    {
-      return GetFeature(key).WithContext(context).StringValue;
-    }
-
-    public abstract string GetJson(string key);
-
-    public string GetJson(string key, IClientContext context)
-    {
-      return GetFeature(key).WithContext(context).JsonValue;
-    }
-
-    public abstract bool Exists(string key);
-
-    public bool IsSet(string key, IClientContext context)
-    {
-      return GetFeature(key).WithContext(context).IsSet;
-    }
-
-    public bool? GetFlag(string key, IClientContext context)
-    {
-      return GetFeature(key).WithContext(context).BooleanValue;
-    }
-
-    public double? GetNumber(string key, IClientContext context)
-    {
-      return GetFeature(key).WithContext(context).NumberValue;
-    }
-
     public abstract IFeature GetFeature(string key);
     public abstract event EventHandler<Readyness> ReadynessHandler;
     public abstract event EventHandler<FeatureHubRepository> NewFeatureHandler;
@@ -466,6 +409,7 @@ namespace FeatureHubSDK
     public abstract FeatureHubRepository LogAnalyticEvent(string action);
     public abstract FeatureHubRepository LogAnalyticEvent(string action, Dictionary<string, string> other);
     public abstract FeatureHubRepository AddAnalyticCollector(IAnalyticsCollector collector);
+    public abstract bool Exists(string key);
   }
 
 
@@ -480,6 +424,7 @@ namespace FeatureHubSDK
     public override event EventHandler<FeatureHubRepository> NewFeatureHandler;
     private IList<IAnalyticsCollector> _analyticsCollectors = new List<IAnalyticsCollector>();
     private readonly ApplyFeature _applyFeature;
+    private bool _serverSideEvaluation;
 
     public override Readyness Readyness => _readyness;
 
@@ -542,6 +487,12 @@ namespace FeatureHubSDK
     }
 
     // Notify
+    public bool ServerSideEvaluation
+    {
+      get => _serverSideEvaluation;
+      set => _serverSideEvaluation = value;
+    }
+
     public void Notify(SSEResultState state, string data)
     {
       // Console.WriteLine($"received {state} with object {data}");
@@ -665,26 +616,6 @@ namespace FeatureHubSDK
       }
 
       return _features[key];
-    }
-
-    public override bool? GetFlag(string key)
-    {
-      return FeatureState(key).BooleanValue == true;
-    }
-
-    public override double? GetNumber(string key)
-    {
-      return FeatureState(key).NumberValue;
-    }
-
-    public override string GetString(string key)
-    {
-      return FeatureState(key).StringValue;
-    }
-
-    public override string GetJson(string key)
-    {
-      return FeatureState(key).JsonValue;
     }
 
     public override bool Exists(string key)

@@ -14,11 +14,11 @@ namespace ConsoleApp1
     {
       Console.WriteLine("Hello World!");
 
-      var featureHubEdgeUrl = new FeatureHubEdgeUrl("http://localhost:8553",
+      var featureHubEdgeUrl = new FeatureHubConfig("http://localhost:8553",
         "ce6b5f90-2a8a-4b29-b10f-7f1c98d878fe/VNftuX5LV6PoazPZsEEIBujM4OBqA1Iv9f9cBGho2LJylvxXMXKGxwD14xt2d7Ma3GHTsdsSO8DTvAYF");
       var context = new FeatureContext(featureHubEdgeUrl);
 
-      var fh = context.repository;
+      var fh = context.Repository;
       if (featureHubEdgeUrl.ServerEvaluation)
       {
         fh.GetFeature("FLUTTER_COLOUR").FeatureUpdateHandler += (object sender, IFeature holder) =>

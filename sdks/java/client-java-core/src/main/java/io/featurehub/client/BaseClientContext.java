@@ -15,15 +15,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
-public class ClientContextRepository implements ClientContext {
-  private static final Logger log = LoggerFactory.getLogger(ClientContextRepository.class);
+public abstract class BaseClientContext implements ClientContext {
+  private static final Logger log = LoggerFactory.getLogger(BaseClientContext.class);
   private final Map<String, List<String>> clientContext = new ConcurrentHashMap<>();
-  private final List<ClientContextChanged> listeners = new ArrayList<>();
-  private final Executor executor;
-
-  public ClientContextRepository(Executor executor) {
-    this.executor = executor;
-  }
 
   @Override
   public String get(String key, String defaultValue) {
@@ -90,22 +84,6 @@ public class ClientContextRepository implements ClientContext {
   }
 
   @Override
-  public ClientContext build() {
-    executor.execute(() -> {
-      String header = generateHeader();
-
-      for(ClientContextChanged l : listeners) {
-        try {
-          l.notify(header);
-        } catch (Exception e) {
-          log.error("Failed to set header: {}", header, e);
-        }
-      }
-    });
-    return this;
-  }
-
-  @Override
   public Map<String, List<String>> context() {
     return clientContext;
   }
@@ -121,29 +99,18 @@ public class ClientContextRepository implements ClientContext {
     return null;
   }
 
-  private String generateHeader() {
-    if (clientContext.isEmpty()) {
-      return null;
-    }
-
-    return clientContext.entrySet().stream().map(e -> String.format("%s=%s", e.getKey(),
-     URLEncoder.encode(String.join(",", e.getValue())))).sorted().collect(Collectors.joining(","));
+  @Override
+  public FeatureState feature(Feature name) {
+    return feature(name.name());
   }
 
   @Override
-  public ClientContextListenerRemoval registerChangeListener(ClientContextChanged listener) {
-    // immediately trigger it
-    executor.execute(() -> {
-      try {
-        listener.notify(generateHeader());
-        listeners.add(listener);
-      } catch (Exception e) {
-        log.error("Unable to trigger listener", e);
-      }
-    });
+  public boolean isEnabled(Feature name) {
+    return isEnabled(name.name());
+  }
 
-    return () -> {
-      listeners.remove(listener);
-    };
+  @Override
+  public boolean exists(Feature key) {
+    return exists(key.name());
   }
 }

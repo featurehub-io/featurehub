@@ -184,7 +184,7 @@ class RepositorySpec extends Specification {
       heldNotificationCalls.each {it.run() } // process
     then:
       newRepo.getFeatureState('banana').boolean
-      1 * mockAnalytics.logEvent('action', ['a': 'b'], { List<FeatureStateHolder> f ->
+      1 * mockAnalytics.logEvent('action', ['a': 'b'], { List<io.featurehub.client.FeatureState> f ->
         f.size() == 4
         f.find({return it.key == 'banana'}) != null
         !f.find({return it.key == 'banana'}).boolean
@@ -249,7 +249,7 @@ class RepositorySpec extends Specification {
       ]
     and: "I listen for updates for those features"
       def updateListener = []
-      List<FeatureStateHolder> emptyFeatures = []
+      List<io.featurehub.client.FeatureState> emptyFeatures = []
       features.each {f ->
         def feature = repo.getFeatureState(f.key)
         def listener = Mock(FeatureListener)

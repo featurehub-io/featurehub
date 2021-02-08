@@ -42,9 +42,9 @@ class StrategySpec extends Specification {
     and: "we have a feature repository with this in it"
         repo.notify([f])
     when: "we create a client context matching the strategy"
-        def cc = new ClientContextRepository().country(StrategyAttributeCountryName.TURKEY)
+        def cc = new BaseClientContext().country(StrategyAttributeCountryName.TURKEY)
     and: "we create a context not matching the strategy"
-        def ccNot = new ClientContextRepository().country(StrategyAttributeCountryName.NEW_ZEALAND)
+        def ccNot = new BaseClientContext().country(StrategyAttributeCountryName.NEW_ZEALAND)
     then: "without the context it is true"
         repo.getFlag("bool1")
     and: "with the good context it is false"
@@ -78,9 +78,9 @@ class StrategySpec extends Specification {
     and: "we have a feature repository with this in it"
         repo.notify([f])
     when: "we create a client context matching the strategy"
-        def ccFirst = new ClientContextRepository().attr("age", "27")
-        def ccNoMatch = new ClientContextRepository().attr("age", "18")
-        def ccSecond = new ClientContextRepository().attr("age", "43")
+        def ccFirst = new BaseClientContext().attr("age", "27")
+        def ccNoMatch = new BaseClientContext().attr("age", "18")
+        def ccSecond = new BaseClientContext().attr("age", "43")
     then: "without the context it is true"
         repo.getNumber("num1") == 16
         repo.getNumber("num1", ccNoMatch) == 16
@@ -113,11 +113,11 @@ class StrategySpec extends Specification {
     and: "we have a feature repository with this in it"
         repo.notify([f])
     when: "we create a client context matching the strategy"
-        def ccFirst = new ClientContextRepository().attr("age", "27").platform(StrategyAttributePlatformName.IOS)
-        def ccNoMatch = new ClientContextRepository().attr("age", "18").platform(StrategyAttributePlatformName.ANDROID)
-        def ccSecond = new ClientContextRepository().attr("age", "43").platform(StrategyAttributePlatformName.MACOS)
-        def ccThird = new ClientContextRepository().attr("age", "18").platform(StrategyAttributePlatformName.MACOS)
-        def ccEmpty = new ClientContextRepository()
+        def ccFirst = new BaseClientContext().attr("age", "27").platform(StrategyAttributePlatformName.IOS)
+        def ccNoMatch = new BaseClientContext().attr("age", "18").platform(StrategyAttributePlatformName.ANDROID)
+        def ccSecond = new BaseClientContext().attr("age", "43").platform(StrategyAttributePlatformName.MACOS)
+        def ccThird = new BaseClientContext().attr("age", "18").platform(StrategyAttributePlatformName.MACOS)
+        def ccEmpty = new BaseClientContext()
     then: "without the context it is true"
         repo.getString("feat1") == "feature"
         repo.getString("feat1", ccNoMatch) == "feature"
@@ -151,11 +151,11 @@ class StrategySpec extends Specification {
     and: "we have a feature repository with this in it"
         repo.notify([f])
     when: "we create a client context matching the strategy"
-        def ccFirst = new ClientContextRepository().attr("age", "27").platform(StrategyAttributePlatformName.IOS)
-        def ccNoMatch = new ClientContextRepository().attr("age", "18").platform(StrategyAttributePlatformName.ANDROID)
-        def ccSecond = new ClientContextRepository().attr("age", "43").platform(StrategyAttributePlatformName.MACOS)
-        def ccThird = new ClientContextRepository().attr("age", "18").platform(StrategyAttributePlatformName.MACOS)
-        def ccEmpty = new ClientContextRepository()
+        def ccFirst = new BaseClientContext().attr("age", "27").platform(StrategyAttributePlatformName.IOS)
+        def ccNoMatch = new BaseClientContext().attr("age", "18").platform(StrategyAttributePlatformName.ANDROID)
+        def ccSecond = new BaseClientContext().attr("age", "43").platform(StrategyAttributePlatformName.MACOS)
+        def ccThird = new BaseClientContext().attr("age", "18").platform(StrategyAttributePlatformName.MACOS)
+        def ccEmpty = new BaseClientContext()
     then: "without the context it is true"
         repo.getRawJson("feat1") == "feature"
         repo.getString("feat1") == null

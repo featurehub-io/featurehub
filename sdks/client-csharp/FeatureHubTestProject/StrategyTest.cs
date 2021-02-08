@@ -142,7 +142,6 @@ namespace FeatureHubTestProject
       {
         case FeatureValueType.STRING:
           // then
-          Assert.AreEqual("feature", repo.GetString("s1"));
           Assert.AreEqual("feature", repo.GetFeature("s1").StringValue);
           Assert.AreEqual("not-mobile", repo.GetFeature("s1").WithContext(ccEmpty).StringValue);
           Assert.AreEqual("feature", repo.GetFeature("s1").WithContext(ccAge18Android).StringValue);
@@ -151,7 +150,6 @@ namespace FeatureHubTestProject
           Assert.AreEqual("not-mobile", repo.GetFeature("s1").WithContext(ccAge43MacOS).StringValue);
           break;
         case FeatureValueType.JSON:
-          Assert.AreEqual("feature", repo.GetJson("s1"));
           Assert.AreEqual("feature", repo.GetFeature("s1").JsonValue);
           Assert.AreEqual("not-mobile", repo.GetFeature("s1").WithContext(ccEmpty).JsonValue);
           Assert.AreEqual("feature", repo.GetFeature("s1").WithContext(ccAge18Android).JsonValue);
