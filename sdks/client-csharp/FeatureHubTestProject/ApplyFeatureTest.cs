@@ -19,12 +19,8 @@ namespace FeatureHubTestProject
 
   class TestClientContext : BaseClientContext
   {
-    public override IFeature this[string name] => throw new System.NotImplementedException();
-
-    public override bool IsEnabled(string name)
-    {
-      throw new System.NotImplementedException();
-    }
+    public TestClientContext() : base(null)
+    {}
 
     public override IClientContext Build()
     {

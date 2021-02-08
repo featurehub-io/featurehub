@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Transactions;
 using IO.FeatureHub.SSE.Model;
 using Newtonsoft.Json;
 using Common.Logging; // because dependent library does
@@ -87,6 +88,14 @@ namespace FeatureHubSDK
   {
     private static readonly ILog Log = LogManager.GetLogger<BaseClientContext>();
     protected readonly Dictionary<string, List<string>> _attributes = new Dictionary<string,List<string>>();
+    protected readonly IFeatureRepositoryContext _repository;
+
+    public IFeatureHubRepository Repository => _repository;
+
+    public BaseClientContext(IFeatureRepositoryContext repository)
+    {
+      this._repository = repository;
+    }
 
     public IClientContext UserKey(string key)
     {
@@ -164,9 +173,16 @@ namespace FeatureHubSDK
 
 
     public string DefaultPercentageKey => _attributes.ContainsKey("session") ? _attributes["session"][0] : (_attributes.ContainsKey("userkey") ? _attributes["userkey"][0] : null);
-    public abstract IFeature this[string name] { get; }
 
-    public abstract bool IsEnabled(string name);
+    public IFeature this[string name] =>
+      _repository.ServerSideEvaluation ?
+        _repository.GetFeature(name) : _repository.GetFeature(name).WithContext(this);
+
+
+    public bool IsEnabled(string name)
+    {
+      return this[name].BooleanValue == true;
+    }
     public abstract IClientContext Build();
 
     public override string ToString()
@@ -192,37 +208,23 @@ namespace FeatureHubSDK
 
   public class FeatureContext : BaseClientContext
   {
-    private readonly IFeatureRepositoryContext _repository;
     private IEdgeService _edgeService;
     private IFeatureHubConfig _config;
 
-    public IFeatureHubRepository Repository => _repository;
-
-    public FeatureContext(IFeatureHubConfig url)
+    public FeatureContext(IFeatureHubConfig url) : base(new FeatureHubRepository())
     {
       _config = url;
-      _repository = new FeatureHubRepository();
     }
 
-    public FeatureContext(IFeatureRepositoryContext repository)
+    public FeatureContext(IFeatureRepositoryContext repository) : base(repository)
     {
-      _repository = repository;
     }
 
-    public FeatureContext(IFeatureRepositoryContext repository, IEdgeService edgeService)
+    public FeatureContext(IFeatureRepositoryContext repository, IEdgeService edgeService) : base(repository)
     {
-      _repository = repository;
       _edgeService = edgeService;
     }
 
-    public override IFeature this[string name] =>
-      _repository.ServerSideEvaluation ?
-        _repository.GetFeature(name) : _repository.GetFeature(name).WithContext(this);
-
-    public override bool IsEnabled(string name)
-    {
-      return this[name].BooleanValue == true;
-    }
 
     public override IClientContext Build()
     {
