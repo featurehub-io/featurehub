@@ -31,7 +31,7 @@ steps:
       - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3
     args:
       - '-c'
-      - 'cd featurehub && mvn -s pipeline/m2/settings.xml --no-transfer-progress validate -f pom-front-end.xml && touch front-end-changed.projects && CHANGED=`wc -l < front-end-changed.projects|xargs` && if [ "$CHANGED" != "0" ]; then touch build-frontend; fi'
+      - 'cd featurehub && mvn -s pipeline/m2/settings.xml --no-transfer-progress validate -f pom-front-end.xml && touch front-end-changed.projects && _CHANGED=`wc -l < front-end-changed.projects|xargs` && if [ "$_CHANGED" != "0" ]; then touch build-frontend; fi'
 #  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
 #    entrypoint: '/bin/sh'
 #    args:
