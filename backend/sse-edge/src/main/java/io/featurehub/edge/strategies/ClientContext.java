@@ -12,10 +12,15 @@ import java.util.Map;
  * The client attributes are expected to be in the format key=val where val is url-encoded. It can
  * have multiple values separated by commas and there can be multiple headers.
  */
-public class ClientAttributeCollection {
+public class ClientContext {
   public Map<String, List<String>> attributes = new HashMap<>();
   public static final String USERKEY = "userkey";
   public static final String SESSIONKEY = "sessionkey";
+  public final boolean isClientEvaluation;
+
+  public ClientContext(boolean isClientEvaluation) {
+    this.isClientEvaluation = isClientEvaluation;
+  }
 
   String defaultPercentageKey() {
     List<String> uKey = attributes.get(SESSIONKEY);
@@ -27,8 +32,8 @@ public class ClientAttributeCollection {
     return (uKey == null || uKey.isEmpty()) ? null : uKey.get(0);
   }
 
-  public static ClientAttributeCollection decode(List<String> headers) {
-    ClientAttributeCollection strategy = new ClientAttributeCollection();
+  public static ClientContext decode(List<String> headers, List<String> apiKeys) {
+    ClientContext strategy = new ClientContext(apiKeys.stream().anyMatch((k) -> k.contains("*")));
 
     if (headers != null) {
       for (String header : headers) {

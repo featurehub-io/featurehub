@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import io.featurehub.dacha.api.CacheJsonMapper;
 import io.featurehub.edge.strategies.Applied;
 import io.featurehub.edge.strategies.ApplyFeature;
-import io.featurehub.edge.strategies.ClientAttributeCollection;
+import io.featurehub.edge.strategies.ClientContext;
 import io.featurehub.strategies.percentage.PercentageMumurCalculator;
 import io.featurehub.strategies.matchers.MatcherRegistry;
 import io.featurehub.mr.model.FeatureValueCacheItem;
@@ -23,11 +23,11 @@ public class FeatureTransformerUtils implements FeatureTransformer {
   private static final Logger log = LoggerFactory.getLogger(FeatureTransformerUtils.class);
   private final ApplyFeature applyFeature = new ApplyFeature(new PercentageMumurCalculator(), new MatcherRegistry());
 
-  public List<FeatureState> transform(List<FeatureValueCacheItem> features, ClientAttributeCollection clientAttributes) {
+  public List<FeatureState> transform(List<FeatureValueCacheItem> features, ClientContext clientAttributes) {
     return features.stream().map(f -> transform(f, clientAttributes)).collect(Collectors.toList());
   }
 
-  public FeatureState transform(FeatureValueCacheItem rf, ClientAttributeCollection clientAttributes) {
+  public FeatureState transform(FeatureValueCacheItem rf, ClientContext clientAttributes) {
     FeatureState fs = new FeatureState()
 //      .key(rf.getFeature().getAlias() != null ? rf.getFeature().getAlias() : rf.getFeature().getKey())
       .key(rf.getFeature().getKey())

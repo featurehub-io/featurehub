@@ -7,7 +7,7 @@ import cd.connect.lifecycle.LifecycleStatus;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.featurehub.dacha.api.CacheJsonMapper;
 import io.featurehub.edge.client.ClientConnection;
-import io.featurehub.edge.strategies.ClientAttributeCollection;
+import io.featurehub.edge.strategies.ClientContext;
 import io.featurehub.mr.messaging.StreamedFeatureUpdate;
 import io.featurehub.mr.model.EdgeInitPermissionResponse;
 import io.featurehub.mr.model.EdgeInitRequest;
@@ -197,7 +197,11 @@ public class ServerConfig implements ServerController {
   public void requestFeatures(final ClientConnection client) {
     clientBuckets.computeIfAbsent(client.getEnvironmentId(), (k) -> new ConcurrentLinkedQueue<>()).add(client);
 
-    final String key = client.getApiKey() + "," + client.getEnvironmentId();
+    final int clientEvaluationIndex = client.getApiKey().indexOf("*");
+    // this is temporary, we just strip the *... off
+    final String apiKey = clientEvaluationIndex >= 0 ? client.getApiKey().substring(0, clientEvaluationIndex) :
+      client.getApiKey();
+    final String key = apiKey + "," + client.getEnvironmentId();
     final InflightSSEListenerRequest inflightSSEListenerRequest = inflightSSEListenerRequests.computeIfAbsent(key,
         (k) -> new InflightSSEListenerRequest(key, this));
 
@@ -272,7 +276,7 @@ public class ServerConfig implements ServerController {
   }
 
   protected Environment getEnvironmentFeaturesBySdk(String namedCache, String apiKey,
-                                                    String envId, ClientAttributeCollection clientAttributeCollection) {
+                                                    String envId, ClientContext clientContext) {
     EdgeInitRequest request = new EdgeInitRequest()
       .command(EdgeInitRequestCommand.LISTEN)
       .apiKey(apiKey)
@@ -289,7 +293,7 @@ public class ServerConfig implements ServerController {
           EdgeInitResponse.class);
 
         return new Environment().id(envId).features(featureTransformer
-          .transform(edgeResponse.getFeatures(), clientAttributeCollection));
+          .transform(edgeResponse.getFeatures(), clientContext));
 
       }
     } catch (Exception e) {
@@ -299,7 +303,7 @@ public class ServerConfig implements ServerController {
     return null;
   }
 
-  public List<Environment> requestFeatures(List<String> sdkUrl, ClientAttributeCollection clientAttributeCollection) {
+  public List<Environment> requestFeatures(List<String> sdkUrl, ClientContext clientContext) {
     List<CompletableFuture<Environment>> futures = new ArrayList<>();
 
     sdkUrl.forEach(url -> {
@@ -307,7 +311,7 @@ public class ServerConfig implements ServerController {
       if (parts.length == 3) {
 
         futures.add(CompletableFuture.supplyAsync(() -> getEnvironmentFeaturesBySdk(parts[0], parts[2], parts[1]
-          , clientAttributeCollection),
+          , clientContext),
           listenExecutor));
       }
     });

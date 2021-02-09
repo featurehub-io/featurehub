@@ -32,8 +32,8 @@ class ApplyFeatureSpec extends Specification {
           .value("blue")
       ]
     and:
-      def cac = new ClientAttributeCollection()
-      cac.attributes.put(ClientAttributeCollection.USERKEY, ['mary@mary.com'])
+      def cac = new ClientContext(isClientEvaluation)
+      cac.attributes.put(ClientContext.USERKEY, ['mary@mary.com'])
     and: "a feature cache item"
       def fci = new FeatureValueCacheItem()
         .value(new FeatureValue().valueString("yellow").id('1'))
@@ -56,8 +56,8 @@ class ApplyFeatureSpec extends Specification {
     given: "we have rollout strategies set"
       def rollout = new ArrayList<RolloutStrategy>()
     and:
-      def cac = new ClientAttributeCollection()
-      cac.attributes.put(ClientAttributeCollection.USERKEY, ['mary@mary.com'])
+      def cac = new ClientContext(isClientEvaluation)
+      cac.attributes.put(ClientContext.USERKEY, ['mary@mary.com'])
     and: "a feature cache item"
       def fci = new FeatureValueCacheItem()
         .value(new FeatureValue().valueString("yellow").id('1'))
@@ -83,7 +83,7 @@ class ApplyFeatureSpec extends Specification {
           .value("blue")
       ]
     and:
-      def cac = new ClientAttributeCollection()
+      def cac = new ClientContext(isClientEvaluation)
     and: "a feature cache item"
       def fci = new FeatureValueCacheItem()
         .value(new FeatureValue().valueString("yellow").id('1'))

@@ -14,4 +14,8 @@ public interface FeatureHubConfig {
    * The SDK URL indicates this is going to be server based evaluation
    */
   boolean isServerEvaluation();
+
+  static boolean sdkKeyIsClientSideEvaluated(String sdkKey) {
+    return sdkKey.contains("*");
+  }
 }

@@ -12,7 +12,7 @@ public class EdgeFeatureHubConfig implements FeatureHubConfig {
       throw new RuntimeException("Both edge url and sdk key must be set.");
     }
 
-    serverEvaluation = sdkKey.contains("*");
+    serverEvaluation = FeatureHubConfig.sdkKeyIsClientSideEvaluated(sdkKey);
 
     if (edgeUrl.endsWith("/")) {
       edgeUrl = edgeUrl.substring(0, edgeUrl.length()-1);

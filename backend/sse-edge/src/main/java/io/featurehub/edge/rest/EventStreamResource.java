@@ -6,7 +6,7 @@ import io.featurehub.edge.ServerConfig;
 import io.featurehub.edge.bucket.EventOutputBucketService;
 import io.featurehub.edge.client.ClientConnection;
 import io.featurehub.edge.client.TimedBucketClientConnection;
-import io.featurehub.edge.strategies.ClientAttributeCollection;
+import io.featurehub.edge.strategies.ClientContext;
 import io.featurehub.mr.messaging.StreamedFeatureUpdate;
 import io.featurehub.mr.model.EdgeInitPermissionResponse;
 import io.featurehub.mr.model.FeatureValue;
@@ -56,7 +56,7 @@ public class EventStreamResource {
       throw new BadRequestException();
     }
 
-    return serverConfig.requestFeatures(sdkUrl, ClientAttributeCollection.decode(featureHubAttrs));
+    return serverConfig.requestFeatures(sdkUrl, ClientContext.decode(featureHubAttrs, sdkUrl));
   }
 
 

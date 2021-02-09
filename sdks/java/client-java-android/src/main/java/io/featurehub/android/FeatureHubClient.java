@@ -2,8 +2,10 @@ package io.featurehub.android;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.featurehub.client.ClientContext;
-import io.featurehub.client.FeatureRepository;
+import io.featurehub.client.EdgeService;
+import io.featurehub.client.FeatureHubConfig;
+import io.featurehub.client.FeatureStateUtils;
+import io.featurehub.client.FeatureStore;
 import io.featurehub.sse.model.Environment;
 import io.featurehub.sse.model.FeatureState;
 import io.featurehub.sse.model.SSEResultState;
@@ -20,25 +22,26 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-public class FeatureHubClient implements ClientContext.ClientContextChanged {
+public class FeatureHubClient implements EdgeService {
   private static final Logger log = LoggerFactory.getLogger(FeatureHubClient.class);
-  private final FeatureRepository repository;
+  private final FeatureStore repository;
   private final Call.Factory client;
   private boolean makeRequests;
   private final String url;
   private final ObjectMapper mapper = new ObjectMapper();
   private String xFeaturehubHeader;
+  private final boolean clientSideEvaluation;
 
-  public FeatureHubClient(String host, Collection<String> sdkUrls, FeatureRepository repository,
+  public FeatureHubClient(String host, Collection<String> sdkUrls, FeatureStore repository,
                           Call.Factory client) {
     this.repository = repository;
     this.client = client;
 
     if (host != null && sdkUrls != null && !sdkUrls.isEmpty()) {
-      // makeRequests is false, so this will give us the header (if any) and then not make a call
-      repository.clientContext().registerChangeListener(this);
+      this.clientSideEvaluation = sdkUrls.stream().anyMatch(FeatureHubConfig::sdkKeyIsClientSideEvaluated);
 
       this.makeRequests = true;
 
@@ -46,10 +49,11 @@ public class FeatureHubClient implements ClientContext.ClientContextChanged {
     } else {
       log.error("FeatureHubClient initialized without any sdkUrls");
       url = null;
+      this.clientSideEvaluation = false;
     }
   }
 
-  public FeatureHubClient(String host, Collection<String> sdkUrls, FeatureRepository repository) {
+  public FeatureHubClient(String host, Collection<String> sdkUrls, FeatureStore repository) {
     this(host, sdkUrls, repository, new OkHttpClient());
   }
 
@@ -117,8 +121,24 @@ public class FeatureHubClient implements ClientContext.ClientContextChanged {
   }
 
   @Override
-  public void notify(String header) {
-    this.xFeaturehubHeader = header;
-    checkForUpdates();
+  public void contextChange(Map<String, List<String>> attributes) {
+    if (attributes != null) {
+      String header = FeatureStateUtils.generateXFeatureHubHeaderFromMap(attributes);
+
+      if (!header.equals(xFeaturehubHeader)) {
+        xFeaturehubHeader = header;
+        checkForUpdates();
+      }
+    }
+  }
+
+  @Override
+  public boolean isClientEvaluation() {
+    return clientSideEvaluation;
+  }
+
+  @Override
+  public void close() {
+    makeRequests = false;
   }
 }

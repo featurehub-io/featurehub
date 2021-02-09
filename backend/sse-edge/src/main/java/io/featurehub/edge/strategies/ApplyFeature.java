@@ -29,7 +29,7 @@ public class ApplyFeature {
   }
 
   public Applied applyFeature(List<RolloutStrategy> strategies, String key, String featureValueId,
-                             ClientAttributeCollection cac) {
+                             ClientContext cac) {
     if (cac != null & strategies != null && !strategies.isEmpty()) {
       Integer percentage = null;
       String percentageKey = null;
@@ -82,7 +82,7 @@ public class ApplyFeature {
   }
 
   // This applies the rules as an AND. If at any point it fails it jumps out.
-  private boolean matchAttributes(ClientAttributeCollection cac, RolloutStrategy rsi) {
+  private boolean matchAttributes(ClientContext cac, RolloutStrategy rsi) {
     for(RolloutStrategyAttribute attr : rsi.getAttributes()) {
       String suppliedValue = cac.get(attr.getFieldName(), null);
 
@@ -124,7 +124,7 @@ public class ApplyFeature {
     return true;
   }
 
-  private String determinePercentageKey(ClientAttributeCollection cac, List<String> percentageAttributes) {
+  private String determinePercentageKey(ClientContext cac, List<String> percentageAttributes) {
     if (percentageAttributes.isEmpty()) {
       return cac.defaultPercentageKey();
     }
