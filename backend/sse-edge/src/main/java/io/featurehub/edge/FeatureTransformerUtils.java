@@ -35,21 +35,22 @@ public class FeatureTransformerUtils implements FeatureTransformer {
       .id(rf.getFeature().getId())
       .l(rf.getValue().getLocked());
 
-    List<RolloutStrategy> clientStrategies = transformStrategies(rf.getStrategies());
-    if (clientAttributes != null && clientAttributes.hasAttributes()) {
-      Applied applied = applyFeature.applyFeature(clientStrategies, rf.getFeature().getKey(), rf.getValue().getId()
-        , clientAttributes);
-      fs.value(applied.isMatched() ? applied.getValue() : valueAsObject(rf));
-    } else {
-      fs.strategies(clientStrategies);
-      fs.value(valueAsObject(rf));
-    }
-
-
     if (rf.getValue() == null || rf.getValue().getVersion() == null) {
       fs.setVersion(0L);
     } else {
       fs.setVersion(rf.getValue().getVersion());
+    }
+
+    if (clientAttributes != null) {
+      List<RolloutStrategy> clientStrategies = transformStrategies(rf.getStrategies());
+      if (clientAttributes.isClientEvaluation) {
+        fs.strategies(clientStrategies);
+        fs.value(valueAsObject(rf));
+      } else {
+        Applied applied = applyFeature.applyFeature(clientStrategies, rf.getFeature().getKey(), rf.getValue().getId()
+          , clientAttributes);
+        fs.value(applied.isMatched() ? applied.getValue() : valueAsObject(rf));
+      }
     }
 
     return fs;
