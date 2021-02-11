@@ -5,6 +5,7 @@ import io.featurehub.db.publish.CacheSource;
 import io.featurehub.db.publish.MRPublishModule;
 import io.featurehub.db.publish.PublishManager;
 import io.featurehub.db.utils.ApiToSqlApiBinder;
+import io.featurehub.db.utils.ComplexUpdateMigrations;
 import io.featurehub.db.utils.DatabaseBinder;
 import io.featurehub.mr.api.ApplicationServiceDelegate;
 import io.featurehub.mr.api.ApplicationServiceDelegator;
@@ -86,6 +87,7 @@ public class ManagementRepositoryFeature implements Feature {
 
     context.register(new DatabaseBinder());
     context.register(new ApiToSqlApiBinder());
+    context.register(new ComplexUpdateMigrations());
     context.register(new MRPublishModule());
     context.property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
     context.register(new AbstractBinder() {

@@ -118,7 +118,9 @@ class PortfolioStepdefs {
         await userCommon.findExactServiceAccount(serviceAccountName, p.id);
     assert(sa != null,
         "I couldn't find the service account " + serviceAccountName);
-    assert(sa.apiKey != null,
+    assert(sa.apiKeyServerSide != null,
+        'API key for Service account $serviceAccountName not set.');
+    assert(sa.apiKeyClientSide != null,
         'API key for Service account $serviceAccountName not set.');
   }
 

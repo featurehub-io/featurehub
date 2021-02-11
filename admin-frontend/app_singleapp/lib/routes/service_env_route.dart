@@ -146,7 +146,7 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
             ? Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Text(perms.map((p) => p.toJson().toString()).join(', '),
+                  Text(perms.map((p) => p.name).join(', '),
                       style: TextStyle(
                           fontFamily: 'Source',
                           fontSize: 12,
@@ -154,11 +154,15 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
                   SizedBox(
                     width: 16.0,
                   ),
-                  if (account.sdkUrl != null)
+                  if (account.sdkUrlClientEval != null)
                     FHCopyToClipboard(
-                        copyString: account.sdkUrl,
-                        tooltipMessage: account.sdkUrl),
-                  if (account.sdkUrl == null)
+                        copyString: account.sdkUrlClientEval,
+                        tooltipMessage: 'Client Eval SDK Url'),
+                  if (account.sdkUrlServerEval != null)
+                    FHCopyToClipboard(
+                        copyString: account.sdkUrlServerEval,
+                        tooltipMessage: 'Server Eval SDK Url'),
+                  if (account.sdkUrlClientEval == null)
                     Tooltip(
                       message:
                           'SDK URL is unavailable because your current permissions for this environment are lower level',

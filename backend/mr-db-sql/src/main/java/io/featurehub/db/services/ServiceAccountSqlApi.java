@@ -219,6 +219,27 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
     return null;
   }
 
+  @Transactional
+  public void cleanupServiceAccountApiKeys() {
+    if (new QDbServiceAccount().or().apiKeyClientEval.isNull().apiKeyServerEval.isNull().endOr().findCount() > 0) {
+      log.info("Updating service account keys as incomplete.");
+      new QDbServiceAccount().or().apiKeyClientEval.isNull().apiKeyServerEval.isNull().endOr().findEach(sa -> {
+        boolean updated = false;
+        if (sa.getApiKeyClientEval() == null) {
+          updated = true;
+          sa.setApiKeyClientEval(newClientEvalKey());
+        }
+        if (sa.getApiKeyServerEval() == null) {
+          updated = true;
+          sa.setApiKeyServerEval(newServerEvalKey());
+        }
+        if (updated) {
+          database.update(sa);
+        }
+      });
+    }
+  }
+
   private String newServerEvalKey() {
     return RandomStringUtils.randomAlphanumeric(40);
   }

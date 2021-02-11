@@ -19,7 +19,7 @@ class PartyStepdefs {
     eventsCommon.setAppSdkUrl([
       'default',
       shared.environment.id,
-      shared.serviceAccount.apiKey
+      shared.serviceAccount.apiKeyServerSide
     ].join('/'));
 
     int count = 10;
