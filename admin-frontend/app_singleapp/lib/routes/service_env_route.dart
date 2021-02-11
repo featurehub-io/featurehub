@@ -85,10 +85,11 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
                     flex: 1,
                     child: Text(env.name,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context)
-                            .textTheme
-                            .subtitle1
-                            .copyWith(color: Theme.of(context).brightness == Brightness.light ? Theme.of(context).buttonColor : Theme.of(context).accentColor)),
+                        style: Theme.of(context).textTheme.subtitle1.copyWith(
+                            color:
+                                Theme.of(context).brightness == Brightness.light
+                                    ? Theme.of(context).buttonColor
+                                    : Theme.of(context).accentColor)),
                   ),
                   Expanded(
                       flex: 5,
@@ -154,7 +155,9 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
                     width: 16.0,
                   ),
                   if (account.sdkUrl != null)
-                    FHCopyToClipboard(copyString: account.sdkUrl, tooltipMessage: account.sdkUrl),
+                    FHCopyToClipboard(
+                        copyString: account.sdkUrl,
+                        tooltipMessage: account.sdkUrl),
                   if (account.sdkUrl == null)
                     Tooltip(
                       message:
