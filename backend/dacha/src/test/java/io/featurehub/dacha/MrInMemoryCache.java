@@ -28,7 +28,8 @@ public class MrInMemoryCache implements InternalCache {
     );
     serviceAccounts.put("2",
       new ServiceAccountCacheItem()
-        .serviceAccount(new ServiceAccount().id("2").version(1L).apiKey("apikey"))
+        .serviceAccount(new ServiceAccount().id("2").version(1L).apiKeyServerSide("apikey")
+          .apiKeyClientSide("apikey2#2"))
         .count(1)
         .action(PublishAction.CREATE)
       );

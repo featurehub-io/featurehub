@@ -40,7 +40,7 @@ public class JerseyClient implements EdgeService {
   private boolean shutdownOnEdgeFailureConnection = false;
   private EventInput eventInput;
   private String xFeaturehubHeader;
-  private final FeatureHubConfig fhConfig;
+  protected final FeatureHubConfig fhConfig;
   private boolean closedBecauseHeaderChanged = false;
 
   public JerseyClient(FeatureHubConfig url, FeatureStore repository) {
@@ -212,6 +212,10 @@ public class JerseyClient implements EdgeService {
         }
       }
     }
+  }
+
+  public String getFeaturehubContextHeader() {
+    return xFeaturehubHeader;
   }
 
   @Override

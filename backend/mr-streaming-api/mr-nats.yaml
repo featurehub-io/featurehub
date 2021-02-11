@@ -27,7 +27,7 @@ components:
       type: object
       description: "This object is passed on the nats stream /named-cache/updates from the edge client. Note that
             version is not passed as the Edge client is intended for testing only, and it is not expected to know
-            the version of the feature."
+            the version of the feature. The key used can only ever be a server key, client eval'd keys are ignored."
       required:
         - apiKey
         - environmentId
@@ -36,6 +36,8 @@ components:
         - updatingValue
       properties:
         apiKey:
+          type: string
+        apiKeyServerSide:
           type: string
         environmentId:
           type: string

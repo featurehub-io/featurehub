@@ -209,13 +209,22 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
     if (id != null) {
       DbServiceAccount sa = new QDbServiceAccount().id.eq(id).whenArchived.isNull().findOne();
       if (sa != null) {
-        sa.setApiKey(RandomStringUtils.random(80));
+        sa.setApiKeyServerEval(newServerEvalKey());
+        sa.setApiKeyClientEval(newClientEvalKey());
         update(sa, null);
         return convertUtils.toServiceAccount(sa, Opts.empty());
       }
     }
 
     return null;
+  }
+
+  private String newServerEvalKey() {
+    return RandomStringUtils.randomAlphanumeric(40);
+  }
+
+  private String newClientEvalKey() {
+    return RandomStringUtils.randomAlphanumeric(30) + "*" + RandomStringUtils.randomAlphanumeric(20);
   }
 
   @Override
@@ -249,7 +258,8 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
         .name(serviceAccount.getName())
         .description(serviceAccount.getDescription())
         .whoChanged(who)
-        .apiKey(RandomStringUtils.randomAlphanumeric(80))
+        .apiKeyServerEval(newServerEvalKey())
+        .apiKeyClientEval(newClientEvalKey())
         .serviceAccountEnvironments(perms)
         .portfolio(portfolio)
         .build();

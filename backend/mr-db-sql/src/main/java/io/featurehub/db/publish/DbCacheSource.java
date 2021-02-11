@@ -160,7 +160,9 @@ public class DbCacheSource implements CacheSource {
       .serviceAccounts(env.getServiceAccountEnvironments().stream().map(s ->
         new ServiceAccount()
           .id(s.getServiceAccount().getId().toString())
-          .apiKey(s.getServiceAccount().getApiKey())).collect(Collectors.toList()))
+          .apiKeyServerSide(s.getServiceAccount().getApiKeyServerEval())
+          .apiKeyClientSide(s.getServiceAccount().getApiKeyClientEval())
+          ).collect(Collectors.toList()))
       .count(count);
 
     return eci;
@@ -283,7 +285,7 @@ public class DbCacheSource implements CacheSource {
 
       if (cacheBroadcast != null) {
         if (publishAction != PublishAction.DELETE) {
-          log.debug("Updating service account {} -> {}", serviceAccount.getId(), serviceAccount.getApiKey());
+          log.debug("Updating service account {} -> {}", serviceAccount.getId(), serviceAccount.getApiKeyServerEval());
           cacheBroadcast.publishServiceAccount(new ServiceAccountCacheItem()
             .count(serviceAccountsByCacheName(cacheName).findCount())
             .serviceAccount(fillServiceAccount(serviceAccount))

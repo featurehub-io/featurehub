@@ -41,7 +41,9 @@ public class DbServiceAccount {
   @Column(name = "when_created")
   private LocalDateTime whenCreated;
   @Column(name = "api_key", unique = true, nullable = false, length = 100)
-  private String apiKey;
+  private String apiKeyServerEval;
+  @Column(name = "api_key_client_eval", unique = true, nullable = false, length = 100)
+  private String apiKeyClientEval;
   @Version
   private long version;
 
@@ -61,7 +63,8 @@ public class DbServiceAccount {
     setDescription(builder.description);
     setServiceAccountEnvironments(builder.serviceAccountEnvironments);
     setWhoChanged(builder.whoChanged);
-    setApiKey(builder.apiKey);
+    setApiKeyServerEval(builder.apiKeyServerEval);
+    setApiKeyClientEval(builder.apiKeyClientEval);
     portfolio = builder.portfolio;
   }
 
@@ -102,12 +105,12 @@ public class DbServiceAccount {
     return serviceAccountEnvironments;
   }
 
-  public String getApiKey() {
-    return apiKey;
+  public String getApiKeyServerEval() {
+    return apiKeyServerEval;
   }
 
-  public void setApiKey(String apiKey) {
-    this.apiKey = apiKey;
+  public void setApiKeyServerEval(String apiKeyServerEval) {
+    this.apiKeyServerEval = apiKeyServerEval;
   }
 
   public void setServiceAccountEnvironments(Set<DbServiceAccountEnvironment> serviceAccountEnvironments) {
@@ -142,13 +145,23 @@ public class DbServiceAccount {
     this.whenArchived = whenArchived;
   }
 
+  public String getApiKeyClientEval() {
+    return apiKeyClientEval;
+  }
+
+  public void setApiKeyClientEval(String apiKeyClientEval) {
+    this.apiKeyClientEval = apiKeyClientEval;
+  }
+
   public static final class Builder {
     private String name;
     private String description;
     private Set<DbServiceAccountEnvironment> serviceAccountEnvironments;
     private DbPerson whoChanged;
-    private String apiKey;
+    private String apiKeyServerEval;
+    private String apiKeyClientEval;
     private DbPortfolio portfolio;
+
 
     public Builder() {
     }
@@ -168,13 +181,18 @@ public class DbServiceAccount {
       return this;
     }
 
+    public Builder apiKeyClientEval(String val) {
+      apiKeyClientEval = val;
+      return this;
+    }
+
     public Builder whoChanged(DbPerson val) {
       whoChanged = val;
       return this;
     }
 
-    public Builder apiKey(String val) {
-      apiKey = val;
+    public Builder apiKeyServerEval(String val) {
+      apiKeyServerEval = val;
       return this;
     }
 
