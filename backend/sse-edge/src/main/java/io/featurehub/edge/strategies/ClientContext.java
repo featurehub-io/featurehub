@@ -60,7 +60,7 @@ public class ClientContext {
       }
     }
 
-    return strategy.attributes.isEmpty() ? null : strategy;
+    return strategy;
   }
 
   public String get(String key, String defaultValue) {
