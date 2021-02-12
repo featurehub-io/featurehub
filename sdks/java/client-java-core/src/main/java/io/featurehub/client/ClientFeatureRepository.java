@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
@@ -178,6 +179,18 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
   @Override
   public void setServerEvaluation(boolean val) {
     this.serverEvaluation = val;
+  }
+
+  @Override
+  public void close() {
+    features.clear();
+
+    readyness = Readyness.NotReady;
+    readynessListeners.stream().forEach(rl -> rl.notify(readyness));
+
+    if (executor instanceof ExecutorService) {
+      ((ExecutorService)executor).shutdownNow();
+    }
   }
 
   @Override

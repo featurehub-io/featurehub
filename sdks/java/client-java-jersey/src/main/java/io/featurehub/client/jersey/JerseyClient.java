@@ -25,6 +25,7 @@ import javax.ws.rs.client.WebTarget;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Singleton
@@ -41,10 +42,9 @@ public class JerseyClient implements EdgeService {
   private EventInput eventInput;
   private String xFeaturehubHeader;
   protected final FeatureHubConfig fhConfig;
-  private boolean closedBecauseHeaderChanged = false;
 
   public JerseyClient(FeatureHubConfig url, FeatureStore repository) {
-    this(url, System.getProperties().contains("featurehub.jersey.init-on-construction"), repository, null);
+    this(url, !url.isServerEvaluation(), repository, null);
   }
 
   public JerseyClient(FeatureHubConfig url, boolean initializeOnConstruction,
@@ -73,7 +73,9 @@ public class JerseyClient implements EdgeService {
   }
 
   protected Executor makeExecutor() {
-    return Executors.newSingleThreadExecutor();
+    // in case they keep changing the context, it will ask the server and cancel and ask and cancel
+    // if they are in client mode
+    return Executors.newFixedThreadPool(4);
   }
 
   protected WebTarget makeEventSourceTarget(Client client, String sdkUrl) {
@@ -94,64 +96,82 @@ public class JerseyClient implements EdgeService {
 
   // backoff algorithm should be configurable
   private void avoidServerDdos() {
+    if (request != null) {
+      request.active = false;
+      request = null;
+    }
+
     try {
       Thread.sleep(10000); // wait 10 seconds
     } catch (InterruptedException e) {
     }
-    executor.execute(this::listenUntilDead);
+
+    if (!shutdown) {
+      executor.execute(this::restartRequest);
+    }
   }
 
-  private void listenUntilDead() {
-    long start = System.currentTimeMillis();
-    try {
-      Invocation.Builder request = target.request();
+  private CurrentRequest request;
 
-      if (xFeaturehubHeader != null) {
-        request = request.header("x-featurehub", xFeaturehubHeader);
-      }
+  class CurrentRequest {
+    public boolean active = true;
 
-      eventInput = request
-            .get(EventInput.class);
+    public void listenUntilDead() {
+      long start = System.currentTimeMillis();
+      try {
+        Invocation.Builder request = target.request();
 
-      while (!eventInput.isClosed()) {
-        final InboundEvent inboundEvent = eventInput.read();
-        initialized = true;
-        if (inboundEvent == null) { // connection has been closed
-          break;
+        if (xFeaturehubHeader != null) {
+          request = request.header("x-featurehub", xFeaturehubHeader);
         }
 
-        final SSEResultState state = SSEResultState.fromValue(inboundEvent.getName());
-        featureRepository.notify(state, inboundEvent.readData());
+        eventInput = request
+          .get(EventInput.class);
 
-        if (state == SSEResultState.FAILURE && shutdownOnServerFailure) {
-          log.warn("Failed to connect to FeatureHub Edge, shutting down.");
+        while (!eventInput.isClosed()) {
+          final InboundEvent inboundEvent = eventInput.read();
+          initialized = true;
+
+          // we cannot force close the client input, it hangs around and waits for the server
+          if (!active) {
+            return; // ignore all data from this call, it is no longer active or relevant
+          }
+
+          if (shutdown || inboundEvent == null) { // connection has been closed or is shutdown
+            break;
+          }
+
+          final SSEResultState state = SSEResultState.fromValue(inboundEvent.getName());
+          featureRepository.notify(state, inboundEvent.readData());
+
+          if (state == SSEResultState.FAILURE && shutdownOnServerFailure) {
+            log.warn("Failed to connect to FeatureHub Edge, shutting down.");
+            shutdown();
+          }
+        }
+      } catch (Exception e) {
+        if (shutdownOnEdgeFailureConnection) {
+          log.warn("Edge connection failed, shutting down");
+          featureRepository.notify(SSEResultState.FAILURE, null);
           shutdown();
         }
       }
-    } catch (Exception e) {
-      if (!closedBecauseHeaderChanged) {
-        log.warn("Failed to connect to {}", fhConfig, e);
-      }
-      if (shutdownOnEdgeFailureConnection) {
-        log.warn("Edge connection failed, shutting down");
-        featureRepository.notify(SSEResultState.FAILURE, null);
-        shutdown();
-      }
-    }
 
-    closedBecauseHeaderChanged = false;
-    eventInput = null; // so shutdown doesn't get confused
+      eventInput = null; // so shutdown doesn't get confused
 
-    log.debug("connection closed, reconnecting");
-    initialized = false;
+      initialized = false;
 
-    if (!shutdown) {
-      // timeout should be configurable
-      if (System.currentTimeMillis() - start < 2000) {
-        executor.execute(this::avoidServerDdos);
+      if (!shutdown) {
+        log.debug("connection closed, reconnecting");
+        // timeout should be configurable
+        if (System.currentTimeMillis() - start < 2000) {
+          executor.execute(JerseyClient.this::avoidServerDdos);
+        } else {
+          // if we have fallen out, try again
+          executor.execute(this::listenUntilDead);
+        }
       } else {
-        // if we have fallen out, try again
-        executor.execute(this::listenUntilDead);
+        log.info("featurehub client shut down");
       }
     }
   }
@@ -160,10 +180,20 @@ public class JerseyClient implements EdgeService {
     return initialized;
   }
 
-  @PostConstruct
+  private void restartRequest() {
+    if (request != null) {
+      request.active = false;
+    }
+
+    initialized = false;
+
+    request = new CurrentRequest();
+    request.listenUntilDead();
+  }
+
   void init() {
     if (!initialized) {
-      executor.execute(this::listenUntilDead);
+      executor.execute(this::restartRequest);
     }
   }
 
@@ -172,10 +202,13 @@ public class JerseyClient implements EdgeService {
    */
   public void shutdown() {
     this.shutdown = true;
-    if (eventInput != null) {
-      try {
-        eventInput.close();
-      } catch (Exception e) {} // ignore
+
+    if (request != null) {
+      request.active = false;
+    }
+
+    if (executor instanceof ExecutorService) {
+      ((ExecutorService)executor).shutdownNow();
     }
   }
 
@@ -204,12 +237,7 @@ public class JerseyClient implements EdgeService {
       if (!header.equals(xFeaturehubHeader)) {
         xFeaturehubHeader = header;
 
-        if (initialized) {
-          try {
-            closedBecauseHeaderChanged = true;
-            eventInput.close();
-          } catch (Exception ignored) {}
-        }
+        executor.execute(this::restartRequest);
       }
     }
   }

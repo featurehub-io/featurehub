@@ -214,10 +214,12 @@ namespace FeatureHubSDK
     public FeatureContext(IFeatureHubConfig url) : base(new FeatureHubRepository())
     {
       _config = url;
-    }
 
-    public FeatureContext(IFeatureRepositoryContext repository) : base(repository)
-    {
+      var edge = new EventServiceListener(_repository, _config);
+
+      _edgeService = edge;
+
+      edge.Init(); // start it up
     }
 
     public FeatureContext(IFeatureRepositoryContext repository, IEdgeService edgeService) : base(repository)
@@ -228,15 +230,7 @@ namespace FeatureHubSDK
 
     public override IClientContext Build()
     {
-      if (!_repository.ServerSideEvaluation)
-      {
-        if (_edgeService == null && _config != null)
-        {
-          _edgeService = new EventServiceListener(_repository, _config);
-        }
-
-        _edgeService?.ContextChange(_attributes);
-      }
+      _edgeService?.ContextChange(_attributes);
 
       return this;
     }

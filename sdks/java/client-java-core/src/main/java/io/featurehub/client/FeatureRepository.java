@@ -73,4 +73,6 @@ public interface FeatureRepository {
 
   boolean isEnabled(String name);
   boolean isEnabled(Feature key);
+
+  void close();
 }

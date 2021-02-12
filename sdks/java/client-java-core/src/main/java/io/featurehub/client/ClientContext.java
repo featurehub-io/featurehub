@@ -35,6 +35,7 @@ public interface ClientContext {
   FeatureState feature(Feature name);
 
   FeatureRepository getRepository();
+  EdgeService getEdgeService();
 
   /**
    * true if it is a boolean feature and is true within this context.
@@ -45,8 +46,8 @@ public interface ClientContext {
   boolean isEnabled(String name);
   boolean isEnabled(Feature name);
 
-  void close();
-
   boolean exists(String key);
   boolean exists(Feature key);
+
+  void close();
 }

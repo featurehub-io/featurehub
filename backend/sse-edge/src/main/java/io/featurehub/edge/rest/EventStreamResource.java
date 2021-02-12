@@ -59,7 +59,6 @@ public class EventStreamResource {
     return serverConfig.requestFeatures(sdkUrl, ClientContext.decode(featureHubAttrs, sdkUrl));
   }
 
-
   @GET
   @Path("{namedCache}/{environmentId}/{apiKey}")
   @Produces(SseFeature.SERVER_SENT_EVENTS)

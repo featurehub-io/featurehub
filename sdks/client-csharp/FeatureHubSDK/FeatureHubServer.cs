@@ -14,7 +14,7 @@ namespace FeatureHubSDK
 
     public FeatureHubConfig(string edgeUrl, string sdkKey)
     {
-      _serverEvaluation = sdkKey != null && sdkKey.Contains("*"); // two part keys are server evaluated
+      _serverEvaluation = sdkKey != null && !sdkKey.Contains("*"); // two part keys are server evaluated
 
       if (edgeUrl.EndsWith("/"))
       {

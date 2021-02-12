@@ -10,6 +10,7 @@ public class FeatureContext extends BaseClientContext {
   public FeatureContext(FeatureHubConfig url) {
     this.repository = new ClientFeatureRepository();
     this.url = url;
+    this.edgeService = loadEdgeService(url);
   }
 
   public FeatureContext(FeatureRepositoryContext repository, EdgeService edgeService) {
@@ -19,10 +20,6 @@ public class FeatureContext extends BaseClientContext {
 
   @Override
   public ClientContext build() {
-    if (edgeService == null) {
-      this.edgeService = loadEdgeService(url);
-    }
-
     if (edgeService != null) {
       edgeService.contextChange(context());
     }
@@ -44,6 +41,11 @@ public class FeatureContext extends BaseClientContext {
     return repository;
   }
 
+  @Override
+  public EdgeService getEdgeService() {
+    return edgeService;
+  }
+
   /**
    * dynamically load an edge service implementation
    */
@@ -61,15 +63,17 @@ public class FeatureContext extends BaseClientContext {
   }
 
   @Override
-  public void close() {
-    if (edgeService != null) {
-      edgeService.close();
-    }
-  }
-
-  @Override
   public boolean exists(String key) {
     return repository.exists(key);
+  }
+
+  /**
+   * Only use this if this is the _only_ Context, otherwise all contexts will invalidate.
+   */
+  @Override
+  public void close() {
+    repository.close();
+    edgeService.close();
   }
 
 

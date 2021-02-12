@@ -18,6 +18,11 @@ class TestContext extends BaseClientContext {
   }
 
   @Override
+  EdgeService getEdgeService() {
+    return null
+  }
+
+  @Override
   void close() {
   }
 

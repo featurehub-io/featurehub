@@ -238,8 +238,6 @@ public class MatcherRegistry : IMatcherRepository
       default:
         return new FallthroughMatcher();
     }
-
-    return new FallthroughMatcher();
   }
 
   private class FallthroughMatcher : IStrategyMatcher
@@ -487,8 +485,6 @@ internal class IPNetworkMatcher : IStrategyMatcher
       default:
         return false;
     }
-
-    return false;
   }
 }
 

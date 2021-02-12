@@ -46,4 +46,6 @@ public interface FeatureStore {
   ObjectMapper getJsonObjectMapper();
 
   void setServerEvaluation(boolean val);
+
+  void close();
 }
