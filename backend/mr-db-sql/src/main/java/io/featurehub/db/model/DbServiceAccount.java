@@ -42,7 +42,7 @@ public class DbServiceAccount {
   private LocalDateTime whenCreated;
   @Column(name = "api_key", unique = true, nullable = false, length = 100)
   private String apiKeyServerEval;
-  @Column(name = "api_key_client_eval", unique = true, nullable = false, length = 100)
+  @Column(name = "api_key_client_eval", unique = true, nullable = true, length = 100)
   private String apiKeyClientEval;
   @Version
   private long version;
