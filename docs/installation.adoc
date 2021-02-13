@@ -26,7 +26,7 @@ We provide two evaluation examples - one for H2 and one for Postgres
 
 To install, grab the latest version of FeatureHub tagged release, e.g.
 
-`curl https://github.com/featurehub-io/featurehub-install/archive/release-1.1.2.tar.gz -o featurehub.tar.gz | tar -xvz`
+`curl https://github.com/featurehub-io/featurehub-install/archive/release-1.2.0.tar.gz -o featurehub.tar.gz | tar -xvz`
 
 You can check for the latest versions https://github.com/featurehub-io/featurehub-install/releases[here] 
 
@@ -34,13 +34,13 @@ Make sure you have your docker running, and run the following commands from the 
 
 For H2 option:
 
-`cd featurehub-install-release-1.1.2/docker-compose-options/all-in-one-h2`
+`cd featurehub-install-release-1.2.0/docker-compose-options/all-in-one-h2`
 
 `docker-compose up`
 
 For Postgres option:
 
-`cd featurehub-install-release-1.1.2/docker-compose-options/all-in-one-postgres`
+`cd featurehub-install-release-1.2.0/docker-compose-options/all-in-one-postgres`
 
 `docker-compose up`
 
@@ -65,13 +65,13 @@ NOTE: In this `docker-compose` image, there is a sample database along with an i
 
 To install, grab the latest version of FeatureHub tagged release, e.g.
 
-`curl https://github.com/featurehub-io/featurehub-install/archive/release-1.1.2.tar.gz -o featurehub.tar.gz | tar -xvz`
+`curl https://github.com/featurehub-io/featurehub-install/archive/release-1.2.0.tar.gz -o featurehub.tar.gz | tar -xvz`
 
 You can check for the latest versions https://github.com/featurehub-io/featurehub-install/releases[here]
 
 Make sure you have your docker running, and run the following commands from the folder where you saved the FeatureHub executable:
 
-`cd featurehub-install-release-1.1.2/docker-compose-options/all-separate-postgres`
+`cd featurehub-install-release-1.2.0/docker-compose-options/all-separate-postgres`
 
 `docker-compose up`
 
