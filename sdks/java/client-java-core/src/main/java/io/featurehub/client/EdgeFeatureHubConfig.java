@@ -1,7 +1,9 @@
 package io.featurehub.client;
 
+import java.util.function.Supplier;
+
 public class EdgeFeatureHubConfig implements FeatureHubConfig {
-  private final String url;
+  private final String realtimeUrl;
   private final boolean serverEvaluation;
   private final String edgeUrl;
   private final String sdkKey;
@@ -25,12 +27,12 @@ public class EdgeFeatureHubConfig implements FeatureHubConfig {
     this.edgeUrl = String.format("%s", edgeUrl);
     this.sdkKey = sdkKey;
 
-    url = String.format("%s/features/%s", edgeUrl, sdkKey);
+    realtimeUrl = String.format("%s/features/%s", edgeUrl, sdkKey);
   }
 
   @Override
-  public String getUrl() {
-    return url;
+  public String getRealtimeUrl() {
+    return realtimeUrl;
   }
 
   @Override
@@ -46,5 +48,23 @@ public class EdgeFeatureHubConfig implements FeatureHubConfig {
   @Override
   public boolean isServerEvaluation() {
     return serverEvaluation;
+  }
+
+  @Override
+  public ClientContext newContext() {
+    if (isServerEvaluation()) {
+      return new ServerEvalFeatureContext(this);
+    }
+
+    return new ClientEvalFeatureContext(this);
+  }
+
+  @Override
+  public ClientContext newContext(FeatureRepositoryContext repository, Supplier<EdgeService> edgeService) {
+    if (isServerEvaluation()) {
+      return new ServerEvalFeatureContext(this, repository, edgeService);
+    }
+
+    return new ClientEvalFeatureContext(this, repository, edgeService.get());
   }
 }

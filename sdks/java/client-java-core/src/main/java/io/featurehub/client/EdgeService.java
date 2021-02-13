@@ -5,11 +5,11 @@ import java.util.Map;
 
 public interface EdgeService {
   /**
-   * The context attributes have changed, notify edge service in case it uses them.
+   * called only when the new attribute header has changed
    *
-   * @param attributes
+   * @param newHeader
    */
-  void contextChange(Map<String, List<String>> attributes);
+  void contextChange(String newHeader);
 
   /**
    * are we doing client side evaluation?
@@ -21,4 +21,10 @@ public interface EdgeService {
    * Shut down this service
    */
   void close();
+
+  FeatureHubConfig getConfig();
+
+  boolean isRequiresReplacementOnHeaderChange();
+
+  void poll();
 }

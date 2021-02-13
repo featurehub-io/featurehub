@@ -6,18 +6,23 @@ import io.featurehub.sse.model.StrategyAttributePlatformName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
-import java.util.stream.Collectors;
+import java.util.function.Supplier;
 
 public abstract class BaseClientContext implements ClientContext {
   private static final Logger log = LoggerFactory.getLogger(BaseClientContext.class);
-  private final Map<String, List<String>> clientContext = new ConcurrentHashMap<>();
+  protected final Map<String, List<String>> clientContext = new ConcurrentHashMap<>();
+  protected final FeatureRepositoryContext repository;
+  protected final FeatureHubConfig config;
+
+  public BaseClientContext(FeatureRepositoryContext repository, FeatureHubConfig config) {
+    this.repository = repository;
+    this.config = config;
+  }
 
   @Override
   public String get(String key, String defaultValue) {
@@ -125,5 +130,36 @@ public abstract class BaseClientContext implements ClientContext {
   @Override
   public boolean exists(Feature key) {
     return exists(key.name());
+  }
+
+
+  @Override
+  public FeatureRepository getRepository() {
+    return repository;
+  }
+
+  @Override
+  public boolean exists(String key) {
+    return repository.exists(key);
+  }
+
+  /**
+   * dynamically load an edge service implementation
+   */
+  protected static Supplier<EdgeService> loadEdgeService(FeatureHubConfig url, FeatureRepositoryContext repository) {
+    ServiceLoader<FeatureHubClientFactory> loader = ServiceLoader.load(FeatureHubClientFactory.class);
+
+    if (repository == null) {
+      repository = new ClientFeatureRepository();
+    }
+
+    for(FeatureHubClientFactory f : loader) {
+      Supplier<EdgeService> edgeService = f.createEdgeService(url, repository);
+      if (edgeService != null) {
+        return edgeService;
+      }
+    }
+
+    throw new RuntimeException("Unable to find an edge service for featurehub, please include one on classpath.");
   }
 }

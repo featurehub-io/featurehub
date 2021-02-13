@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using IO.FeatureHub.SSE.Model;
 using LaunchDarkly.EventSource;
 
@@ -9,9 +7,12 @@ namespace FeatureHubSDK
 {
   public interface IEdgeService
   {
-    void ContextChange(Dictionary<string, List<string>> attributes);
+    void ContextChange(string header);
     bool ClientEvaluation { get; }
+
+    bool IsRequiresReplacementOnHeaderChange { get;  }
     void Close();
+    void Poll();
   }
 
   public class EventServiceListener : IEdgeService
@@ -31,14 +32,10 @@ namespace FeatureHubSDK
       _repository.ServerSideEvaluation = config.ServerEvaluation;
     }
 
-    public void ContextChange(Dictionary<string, List<string>> attributes)
+    public void ContextChange(string newHeader)
     {
-      if (_featureHost.ServerEvaluation && attributes != null && attributes.Count != 0)
+      if (_featureHost.ServerEvaluation)
       {
-        var newHeader = string.Join(",",
-          attributes.Select((e) => e.Key + "=" +
-                                   HttpUtility.UrlEncode(string.Join(",", e.Value))).OrderBy(u => u));
-
         if (newHeader != _xFeatureHubHeader)
         {
           _xFeatureHubHeader = newHeader;
@@ -53,6 +50,9 @@ namespace FeatureHubSDK
     }
 
     public bool ClientEvaluation => !_featureHost.ServerEvaluation;
+
+    // "close" works on this events source and doesn't hang
+    public bool IsRequiresReplacementOnHeaderChange => false;
 
     private Dictionary<string, string> BuildContextHeader()
     {
@@ -111,6 +111,10 @@ namespace FeatureHubSDK
     public void Close()
     {
       _eventSource.Close();
+    }
+
+    public void Poll()
+    { // do nothing, is SSE
     }
   }
 }

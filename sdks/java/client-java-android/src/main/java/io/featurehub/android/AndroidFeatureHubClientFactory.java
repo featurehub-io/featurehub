@@ -6,10 +6,11 @@ import io.featurehub.client.FeatureHubConfig;
 import io.featurehub.client.FeatureStore;
 
 import java.util.Arrays;
+import java.util.function.Supplier;
 
 public class AndroidFeatureHubClientFactory implements FeatureHubClientFactory {
   @Override
-  public EdgeService createEdgeService(FeatureHubConfig url, FeatureStore repository) {
-    return new FeatureHubClient(url.baseUrl(), Arrays.asList(url.sdkKey()), repository);
+  public Supplier<EdgeService> createEdgeService(final FeatureHubConfig config, final FeatureStore repository) {
+    return () -> new FeatureHubClient(config.baseUrl(), Arrays.asList(config.sdkKey()), repository, config);
   }
 }

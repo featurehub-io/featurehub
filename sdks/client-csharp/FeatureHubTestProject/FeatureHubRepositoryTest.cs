@@ -49,7 +49,7 @@ namespace FeatureHubTestProject
       Assert.AreEqual("some duck", _repository.GetFeature("1").StringValue);
       Assert.IsNull(_repository.GetFeature("1").NumberValue);
       Assert.IsNull(_repository.GetFeature("1").JsonValue);
-      Assert.IsFalse(_repository.GetFeature("1").BooleanValue);
+      Assert.IsNull(_repository.GetFeature("1").BooleanValue);
     }
 
     [Test]
@@ -254,17 +254,22 @@ namespace FeatureHubTestProject
 
     internal class EdgeServiceStub : IEdgeService
     {
-      public Dictionary<string, List<string>> attributes;
+      public string header;
 
-      public void ContextChange(Dictionary<string, List<string>> attributes)
+      public void ContextChange(string header)
       {
-        this.attributes = attributes;
+        this.header = header;
       }
 
       public bool ClientEvaluation => true;
+      public bool IsRequiresReplacementOnHeaderChange => false;
+
       public void Close()
       {
-        throw new NotImplementedException();
+      }
+
+      public void Poll()
+      {
       }
     }
 
@@ -272,7 +277,7 @@ namespace FeatureHubTestProject
     public void ChangeInContextFiresRequestToEdgeService()
     {
       var edgeStub = new EdgeServiceStub();
-      var ctx = new FeatureContext(_repository, edgeStub)
+      var ctx = new ServerEvalFeatureContext(_repository, null, () => edgeStub)
         .Attr("city", "Istanbul City")
         .Attrs("family", new List<String> {"Bambam", "DJ Elif"})
         .Country(StrategyAttributeCountryName.Turkey)
@@ -283,15 +288,24 @@ namespace FeatureHubTestProject
         .SessionKey("session-key")
         .Build();
 
-      Assert.AreEqual(new List<string>{"turkey"}, edgeStub.attributes["country"]);
-      Assert.AreEqual(new List<string> { "mobile" }, edgeStub.attributes["device"]);
-      Assert.AreEqual(new List<string> {"Bambam", "DJ Elif"}, edgeStub.attributes["family"]);
-      Assert.AreEqual(new List<string> {"tv-show"}, edgeStub.attributes["userkey"]);
-      Assert.AreEqual(new List<string> {"6.2.3"}, edgeStub.attributes["version"]);
-      Assert.AreEqual(new List<string> {"Istanbul City"}, edgeStub.attributes["city"]);
+      Assert.AreEqual(
+      "city=Istanbul+City,country=turkey,device=mobile,family=Bambam%2cDJ+Elif,platform=ios,session=session-key,userkey=tv-show,version=6.2.3", edgeStub.header);
 
-      // Assert.AreEqual(header,
-      //   "city=Istanbul+City,country=turkey,device=mobile,family=Bambam%2cDJ+Elif,platform=ios,session=session-key,userkey=tv-show,version=6.2.3");
+      Assert.NotNull(ctx.ToString());
+
+      ctx.Clear().Build();
+      Assert.AreEqual("", edgeStub.header);
+    }
+
+    [Test]
+    public void EnabledFlagWorksIsTrueOnlyOnTrue()
+    {
+      var ctx = new ClientEvalFeatureContext(_repository, null, () => null);
+      Assert.AreEqual(false, ctx.IsEnabled("1"));
+      _repository.Notify(SSEResultState.Features, EncodeFeatures(true, 2, FeatureValueType.BOOLEAN));
+      Assert.AreEqual(true, ctx.IsEnabled("1"));
+      _repository.Notify(SSEResultState.Features, EncodeFeatures(false, 3, FeatureValueType.BOOLEAN));
+      Assert.AreEqual(false, ctx.IsEnabled("1"));
     }
 
     [Test]

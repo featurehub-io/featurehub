@@ -16,7 +16,6 @@ import org.glassfish.jersey.media.sse.SseFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Singleton;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -43,26 +42,28 @@ public class JerseyClient implements EdgeService {
   private String xFeaturehubHeader;
   protected final FeatureHubConfig fhConfig;
 
-  public JerseyClient(FeatureHubConfig url, FeatureStore repository) {
-    this(url, !url.isServerEvaluation(), repository, null);
+  public JerseyClient(FeatureHubConfig config, FeatureStore repository) {
+    this(config, !config.isServerEvaluation(), repository, null);
   }
 
-  public JerseyClient(FeatureHubConfig url, boolean initializeOnConstruction,
+  public JerseyClient(FeatureHubConfig config, boolean initializeOnConstruction,
                       FeatureStore featureRepository, ApiClient apiClient) {
     this.featureRepository = featureRepository;
-    this.fhConfig = url;
+    this.fhConfig = config;
 
-    featureRepository.setServerEvaluation(url.isServerEvaluation());
+    log.info("new jersey client created");
+
+    featureRepository.setServerEvaluation(config.isServerEvaluation());
 
     Client client = ClientBuilder.newBuilder()
       .register(JacksonFeature.class)
       .register(SseFeature.class).build();
 
-    target = makeEventSourceTarget(client, url.getUrl());
+    target = makeEventSourceTarget(client, config.getRealtimeUrl());
     executor = makeExecutor();
 
     if (apiClient == null) {
-      apiClient = new ApiClient(client, url.baseUrl());
+      apiClient = new ApiClient(client, config.baseUrl());
     }
 
     featuresService = makeFeatureServiceClient(apiClient);
@@ -134,12 +135,16 @@ public class JerseyClient implements EdgeService {
 
           // we cannot force close the client input, it hangs around and waits for the server
           if (!active) {
+            log.info("not active");
             return; // ignore all data from this call, it is no longer active or relevant
           }
 
           if (shutdown || inboundEvent == null) { // connection has been closed or is shutdown
+            log.info("shutdown?");
             break;
           }
+
+          log.info("notifying of {}", inboundEvent.getName());
 
           final SSEResultState state = SSEResultState.fromValue(inboundEvent.getName());
           featureRepository.notify(state, inboundEvent.readData());
@@ -181,6 +186,7 @@ public class JerseyClient implements EdgeService {
   }
 
   private void restartRequest() {
+    log.info("starting new request");
     if (request != null) {
       request.active = false;
     }
@@ -201,6 +207,7 @@ public class JerseyClient implements EdgeService {
    * Tell the client to shutdown when we next fall off.
    */
   public void shutdown() {
+    log.info("starting shutdown of jersey edge client");
     this.shutdown = true;
 
     if (request != null) {
@@ -210,6 +217,8 @@ public class JerseyClient implements EdgeService {
     if (executor instanceof ExecutorService) {
       ((ExecutorService)executor).shutdownNow();
     }
+
+    log.info("exiting shutdown of jersey edge client");
   }
 
   public boolean isShutdownOnServerFailure() {
@@ -228,22 +237,17 @@ public class JerseyClient implements EdgeService {
     this.shutdownOnEdgeFailureConnection = shutdownOnEdgeFailureConnection;
   }
 
-  // the x-featurehub header has changed, so store it and trigger another run at the server
-  @Override
-  public void contextChange(Map<String, List<String>> attributes) {
-    if (fhConfig.isServerEvaluation() && attributes != null) {
-      String header = FeatureStateUtils.generateXFeatureHubHeaderFromMap(attributes);
-
-      if (!header.equals(xFeaturehubHeader)) {
-        xFeaturehubHeader = header;
-
-        executor.execute(this::restartRequest);
-      }
-    }
-  }
-
   public String getFeaturehubContextHeader() {
     return xFeaturehubHeader;
+  }
+
+  @Override
+  public void contextChange(String header) {
+    if (!header.equals(xFeaturehubHeader) || !initialized) {
+      xFeaturehubHeader = header;
+
+      executor.execute(this::restartRequest);
+    }
   }
 
   @Override
@@ -254,5 +258,20 @@ public class JerseyClient implements EdgeService {
   @Override
   public void close() {
     shutdown();
+  }
+
+  @Override
+  public FeatureHubConfig getConfig() {
+    return fhConfig;
+  }
+
+  @Override
+  public boolean isRequiresReplacementOnHeaderChange() {
+    return true;
+  }
+
+  @Override
+  public void poll() {
+    // do nothing, its SSE
   }
 }

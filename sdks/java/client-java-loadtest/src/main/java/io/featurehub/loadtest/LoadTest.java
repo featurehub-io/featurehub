@@ -138,6 +138,11 @@ class InternetFeatureTrackerRepository extends AbstractFeatureRepository impleme
   }
 
   @Override
+  public void notReady() {
+
+  }
+
+  @Override
   public FeatureRepository addReadynessListener(ReadynessListener readynessListener) {
     return null;
   }
@@ -189,6 +194,10 @@ class InternetFeatureTrackerRepository extends AbstractFeatureRepository impleme
   @Override
   public boolean isEnabled(String name) {
     return false;
+  }
+
+  @Override
+  public void close() {
   }
 }
 

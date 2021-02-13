@@ -26,5 +26,10 @@ namespace FeatureHubSDK
     bool IsEnabled(string name);
 
     IClientContext Build();
+
+    IEdgeService EdgeService { get; }
+    IFeatureHubRepository Repository { get; }
+
+    void Close();
   }
 }

@@ -17,14 +17,23 @@ namespace FeatureHubTestProject
     }
   }
 
-  class TestClientContext : BaseClientContext
+  public class TestClientContext : BaseClientContext
   {
-    public TestClientContext() : base(null)
+    public TestClientContext() : base(null, null)
     {}
+
+    public override IFeature this[string name] => throw new System.NotImplementedException();
 
     public override IClientContext Build()
     {
       return this;
+    }
+
+    public override IEdgeService EdgeService { get; }
+
+    public override void Close()
+    {
+      throw new System.NotImplementedException();
     }
   }
 

@@ -4,13 +4,11 @@ import io.featurehub.client.ClientContext;
 import io.featurehub.client.ClientFeatureRepository;
 import io.featurehub.client.EdgeFeatureHubConfig;
 import io.featurehub.client.Feature;
-import io.featurehub.client.FeatureContext;
+import io.featurehub.client.FeatureHubConfig;
 import io.featurehub.client.FeatureRepository;
-import io.featurehub.client.Readyness;
 import io.featurehub.sse.model.FeatureStateUpdate;
 import io.featurehub.sse.model.StrategyAttributeDeviceName;
 import io.featurehub.sse.model.StrategyAttributePlatformName;
-import org.junit.Test;
 
 import java.util.function.Supplier;
 
@@ -20,8 +18,10 @@ enum Features implements Feature {
 
 public class JerseyClientSample {
   public static void main(String[] args) throws Exception {
-    final FeatureContext ctx = new FeatureContext(new EdgeFeatureHubConfig("http://localhost:8064/",
-      "default/82afd7ae-e7de-4567-817b-dd684315adf7/SJXBRyGCe1dZwnL7OQYUiJ5J8VcoMrrHP3iKCrkpYovhNIuwuIPNYGy7iOFeKE4Kaqp5sT7g5X2qETsW"));
+    final FeatureHubConfig config = new EdgeFeatureHubConfig("http://localhost:8064/",
+      "default/82afd7ae-e7de-4567-817b-dd684315adf7/SJXBRyGCe1dZwnL7OQYUiJ5J8VcoMrrHP3iKCrkpYovhNIuwuIPNYGy7iOFeKE4Kaqp5sT7g5X2qETsW");
+
+    final ClientContext ctx = config.newContext();
 
     final Supplier<Boolean> val = () -> ctx.feature("FEATURE_TITLE_TO_UPPERCASE").getBoolean();
 
@@ -44,7 +44,7 @@ public class JerseyClientSample {
 
     System.out.println("Istanbul2 is " + val.get());
 
-    ctx.userKey("jimbob")
+    ctx.userKey("supine")
       .attr("city", "london").build();
 
     System.out.println("london1 is " + val.get());

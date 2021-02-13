@@ -1,5 +1,7 @@
 package io.featurehub.client;
 
+import java.util.function.Supplier;
+
 public interface FeatureHubClientFactory {
   /**
    * allows the creation of a new edge service without knowing about the underlying implementation.
@@ -8,5 +10,5 @@ public interface FeatureHubClientFactory {
    * @param url - the full edge url
    * @return
    */
-  EdgeService createEdgeService(FeatureHubConfig url, FeatureStore repository);
+  Supplier<EdgeService> createEdgeService(FeatureHubConfig url, FeatureStore repository);
 }

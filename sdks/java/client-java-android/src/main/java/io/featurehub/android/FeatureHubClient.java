@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.featurehub.client.EdgeService;
 import io.featurehub.client.FeatureHubConfig;
-import io.featurehub.client.FeatureStateUtils;
 import io.featurehub.client.FeatureStore;
 import io.featurehub.sse.model.Environment;
 import io.featurehub.sse.model.FeatureState;
@@ -22,7 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class FeatureHubClient implements EdgeService {
@@ -34,11 +32,13 @@ public class FeatureHubClient implements EdgeService {
   private final ObjectMapper mapper = new ObjectMapper();
   private String xFeaturehubHeader;
   private final boolean clientSideEvaluation;
+  private final FeatureHubConfig config;
 
   public FeatureHubClient(String host, Collection<String> sdkUrls, FeatureStore repository,
-                          Call.Factory client) {
+                          Call.Factory client, FeatureHubConfig config) {
     this.repository = repository;
     this.client = client;
+    this.config = config;
 
     if (host != null && sdkUrls != null && !sdkUrls.isEmpty()) {
       this.clientSideEvaluation = sdkUrls.stream().anyMatch(FeatureHubConfig::sdkKeyIsClientSideEvaluated);
@@ -53,8 +53,8 @@ public class FeatureHubClient implements EdgeService {
     }
   }
 
-  public FeatureHubClient(String host, Collection<String> sdkUrls, FeatureStore repository) {
-    this(host, sdkUrls, repository, new OkHttpClient());
+  public FeatureHubClient(String host, Collection<String> sdkUrls, FeatureStore repository, FeatureHubConfig config) {
+    this(host, sdkUrls, repository, new OkHttpClient(), config);
   }
 
   private final static TypeReference<List<Environment>> ref = new TypeReference<List<Environment>>(){};
@@ -72,7 +72,7 @@ public class FeatureHubClient implements EdgeService {
 
       Request request = reqBuilder.build();
 
-      final Call call = client.newCall(request);
+      Call call = client.newCall(request);
       call.enqueue(new Callback() {
         @Override
         public void onFailure(Call call,  IOException e) {
@@ -121,14 +121,10 @@ public class FeatureHubClient implements EdgeService {
   }
 
   @Override
-  public void contextChange(Map<String, List<String>> attributes) {
-    if (attributes != null) {
-      String header = FeatureStateUtils.generateXFeatureHubHeaderFromMap(attributes);
-
-      if (!header.equals(xFeaturehubHeader)) {
-        xFeaturehubHeader = header;
-        checkForUpdates();
-      }
+  public void contextChange(String newHeader) {
+    if (!newHeader.equals(xFeaturehubHeader)) {
+      xFeaturehubHeader = newHeader;
+      checkForUpdates();
     }
   }
 
@@ -139,6 +135,27 @@ public class FeatureHubClient implements EdgeService {
 
   @Override
   public void close() {
+    log.info("featurehub client closed.");
+
     makeRequests = false;
+
+    if (client instanceof OkHttpClient) {
+      ((OkHttpClient)client).dispatcher().executorService().shutdownNow();
+    }
+  }
+
+  @Override
+  public FeatureHubConfig getConfig() {
+    return config;
+  }
+
+  @Override
+  public boolean isRequiresReplacementOnHeaderChange() {
+    return false;
+  }
+
+  @Override
+  public void poll() {
+    checkForUpdates();
   }
 }

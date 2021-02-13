@@ -1,10 +1,12 @@
 package io.featurehub.client;
 
+import java.util.function.Supplier;
+
 public interface FeatureHubConfig {
   /**
    * What is the fully deconstructed URL for the server?
    */
-  String getUrl();
+  String getRealtimeUrl();
 
   String sdkKey();
 
@@ -14,6 +16,9 @@ public interface FeatureHubConfig {
    * The SDK URL indicates this is going to be server based evaluation
    */
   boolean isServerEvaluation();
+
+  ClientContext newContext();
+  ClientContext newContext(FeatureRepositoryContext repository, Supplier<EdgeService> edgeService);
 
   static boolean sdkKeyIsClientSideEvaluated(String sdkKey) {
     return sdkKey.contains("*");

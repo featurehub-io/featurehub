@@ -153,6 +153,9 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
       hasReceivedInitialState = true;
       readyness = Readyness.Ready;
       broadcastReadyness();
+    } else if (readyness != Readyness.Ready) {
+      readyness = Readyness.Ready;
+      broadcastReadyness();
     }
   }
 
@@ -182,7 +185,14 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
   }
 
   @Override
+  public void notReady() {
+    readyness = Readyness.NotReady;
+    broadcastReadyness();
+  }
+
+  @Override
   public void close() {
+    log.info("featurehub repository closing");
     features.clear();
 
     readyness = Readyness.NotReady;
@@ -191,6 +201,7 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
     if (executor instanceof ExecutorService) {
       ((ExecutorService)executor).shutdownNow();
     }
+    log.info("featurehub repository closed");
   }
 
   @Override

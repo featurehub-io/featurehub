@@ -1,20 +1,13 @@
 package io.featurehub.client
 
 class TestContext extends BaseClientContext {
-  private final FeatureRepository repository
-
-  TestContext(FeatureRepository repo) {
-    this.repository = repo
+  TestContext(FeatureRepositoryContext repo) {
+    super(repo, null)
   }
 
   @Override
   ClientContext build() {
     return this
-  }
-
-  @Override
-  FeatureRepository getRepository() {
-    return repository
   }
 
   @Override

@@ -1,1 +1,1 @@
-io.featurehub.client.jersey.JerseyFeatureHubClientFactory
+io.featurehub.android.AndroidFeatureHubClientFactory

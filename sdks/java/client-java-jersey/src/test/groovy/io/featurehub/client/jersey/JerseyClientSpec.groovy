@@ -1,23 +1,17 @@
 package io.featurehub.client.jersey
 
 import cd.connect.openapi.support.ApiClient
-import io.featurehub.client.ClientContext
 import io.featurehub.client.ClientFeatureRepository
 import io.featurehub.client.EdgeFeatureHubConfig
 import io.featurehub.client.FeatureHubConfig
 import io.featurehub.sse.api.FeatureService
 import io.featurehub.sse.model.FeatureStateUpdate
-import io.featurehub.sse.model.SSEResultState
-import org.glassfish.jersey.media.sse.EventInput
-import org.glassfish.jersey.media.sse.InboundEvent
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import spock.lang.Specification
 
 import javax.ws.rs.client.Client
-import javax.ws.rs.client.Invocation
 import javax.ws.rs.client.WebTarget
-import java.util.concurrent.Executor
 
 class JerseyClientSpec extends Specification {
   private static final Logger log = LoggerFactory.getLogger(JerseyClientSpec.class)
@@ -47,7 +41,7 @@ class JerseyClientSpec extends Specification {
         }
       }
     then: "the urls are correctly initialize"
-      targetUrl == url.url
+      targetUrl == url.realtimeUrl
       basePath == 'http://localhost:80'
       sdkPartialUrl.sdkKey() == 'sdk-url'
   }

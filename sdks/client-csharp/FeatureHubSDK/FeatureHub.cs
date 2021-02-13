@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Transactions;
+using System.Web;
 using IO.FeatureHub.SSE.Model;
 using Newtonsoft.Json;
 using Common.Logging; // because dependent library does
@@ -89,12 +90,15 @@ namespace FeatureHubSDK
     private static readonly ILog Log = LogManager.GetLogger<BaseClientContext>();
     protected readonly Dictionary<string, List<string>> _attributes = new Dictionary<string,List<string>>();
     protected readonly IFeatureRepositoryContext _repository;
+    protected readonly IFeatureHubConfig _config;
 
     public IFeatureHubRepository Repository => _repository;
+    public abstract void Close();
 
-    public BaseClientContext(IFeatureRepositoryContext repository)
+    public BaseClientContext(IFeatureRepositoryContext repository, IFeatureHubConfig config)
     {
-      this._repository = repository;
+      _repository = repository;
+      _config = config;
     }
 
     public IClientContext UserKey(string key)
@@ -173,10 +177,7 @@ namespace FeatureHubSDK
 
 
     public string DefaultPercentageKey => _attributes.ContainsKey("session") ? _attributes["session"][0] : (_attributes.ContainsKey("userkey") ? _attributes["userkey"][0] : null);
-
-    public IFeature this[string name] =>
-      _repository.ServerSideEvaluation ?
-        _repository.GetFeature(name) : _repository.GetFeature(name).WithContext(this);
+    public abstract IFeature this[string name] { get; }
 
 
     public bool IsEnabled(string name)
@@ -184,6 +185,7 @@ namespace FeatureHubSDK
       return this[name].BooleanValue == true;
     }
     public abstract IClientContext Build();
+    public abstract IEdgeService EdgeService { get; }
 
     public override string ToString()
     {
@@ -204,46 +206,107 @@ namespace FeatureHubSDK
 
 
   public interface IFeatureRepositoryContext: IFeatureHubRepository, IFeatureHubNotify
-  {}
-
-  public class FeatureContext : BaseClientContext
   {
-    private IEdgeService _edgeService;
-    private IFeatureHubConfig _config;
 
-    public FeatureContext(IFeatureHubConfig url) : base(new FeatureHubRepository())
+  }
+
+  public class ServerEvalFeatureContext : BaseClientContext
+  {
+    private readonly EdgeServiceSource _edgeServiceSource;
+    private IEdgeService _currentEdgeService;
+    private string _xHeader;
+    private readonly bool _weCreatedSources;
+
+    public ServerEvalFeatureContext(IFeatureHubConfig config) : base(new FeatureHubRepository(), config)
     {
-      _config = url;
-
-      var edge = new EventServiceListener(_repository, _config);
-
-      _edgeService = edge;
-
-      edge.Init(); // start it up
+      _weCreatedSources = true;
+      _edgeServiceSource = () => new EventServiceListener(_repository, config);
     }
 
-    public FeatureContext(IFeatureRepositoryContext repository, IEdgeService edgeService) : base(repository)
+    public ServerEvalFeatureContext(IFeatureRepositoryContext repository, IFeatureHubConfig config, EdgeServiceSource edgeServiceSource) : base(repository, config)
     {
-      _edgeService = edgeService;
+      _edgeServiceSource = edgeServiceSource;
+      _weCreatedSources = false;
     }
 
+    public override IFeature this[string name] => _repository.GetFeature(name);
 
     public override IClientContext Build()
     {
-      _edgeService?.ContextChange(_attributes);
+      var newHeader = string.Join(",",
+        _attributes.Select((e) => e.Key + "=" +
+                                 HttpUtility.UrlEncode(string.Join(",", e.Value))).OrderBy(u => u));
+
+      if (!newHeader.Equals(_xHeader))
+      {
+        _xHeader = newHeader;
+        _repository.NotReady();
+
+        if (_currentEdgeService != null && _currentEdgeService.IsRequiresReplacementOnHeaderChange)
+        {
+          _currentEdgeService.Close();
+          _currentEdgeService = _edgeServiceSource();
+        }
+      }
+
+      if (_currentEdgeService == null)
+      {
+        _currentEdgeService = _edgeServiceSource();
+      }
+
+      _currentEdgeService.ContextChange(_xHeader);
 
       return this;
     }
 
-    public void Close()
+    public override IEdgeService EdgeService => _currentEdgeService;
+    public override void Close()
     {
-      _edgeService?.Close();
+      if (_weCreatedSources)
+      {
+        _currentEdgeService?.Close();
+      }
+    }
+  }
+
+  public class ClientEvalFeatureContext : BaseClientContext
+  {
+    private readonly IEdgeService _edgeService;
+    private readonly bool _weCreatedSources;
+
+    public ClientEvalFeatureContext(IFeatureHubConfig config) : base(new FeatureHubRepository(), config)
+    {
+      _edgeService = new EventServiceListener(_repository, config);
+      _weCreatedSources = true;
+    }
+
+    public ClientEvalFeatureContext(IFeatureRepositoryContext repository, IFeatureHubConfig config, EdgeServiceSource edgeServiceSource) : base(repository, config)
+    {
+      _edgeService = edgeServiceSource();
+      _weCreatedSources = false;
+    }
+
+    public override IFeature this[string name] => _repository.GetFeature(name).WithContext(this);
+
+    public override IClientContext Build()
+    {
+      return this;
+    }
+
+    public override IEdgeService EdgeService => _edgeService;
+
+    public override void Close()
+    {
+      if (_weCreatedSources)
+      {
+        _edgeService?.Close();
+      }
     }
   }
 
   internal class FeatureStateBaseHolder : IFeature
   {
-    private static readonly ILog log = LogManager.GetLogger<FeatureStateBaseHolder>();
+    private static readonly ILog Log = LogManager.GetLogger<FeatureStateBaseHolder>();
     private FeatureState _feature;
     private readonly ApplyFeature _applyFeature;
 
@@ -274,11 +337,7 @@ namespace FeatureHubSDK
 
     public IFeature Copy()
     {
-      var fs = new FeatureStateBaseHolder(null, _applyFeature);
-
-      fs.FeatureState = this._feature;
-
-      return fs;
+      return new FeatureStateBaseHolder(null, _applyFeature) {FeatureState = this._feature};
     }
 
     public bool Exists => _feature != null;
@@ -365,7 +424,7 @@ namespace FeatureHubSDK
           }
           catch (Exception e)
           {
-            log.Error($"Failed to process update for feature {Key}", e);
+            Log.Error($"Failed to process update for feature {Key}", e);
           }
         }
       }
@@ -394,6 +453,7 @@ namespace FeatureHubSDK
   {
     bool ServerSideEvaluation { set; get; }
     void Notify(SSEResultState state, string data);
+    void NotReady();
   }
 
   public abstract class AbstractFeatureHubRepository : IFeatureHubRepository
@@ -533,6 +593,12 @@ namespace FeatureHubSDK
         default:
           throw new ArgumentOutOfRangeException(nameof(state), state, null);
       }
+    }
+
+    public void NotReady()
+    {
+      _readyness = Readyness.NotReady;
+      TriggerReadyness();
     }
 
     private void DeleteFeature(FeatureState fs)

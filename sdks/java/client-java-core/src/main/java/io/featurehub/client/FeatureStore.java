@@ -47,5 +47,10 @@ public interface FeatureStore {
 
   void setServerEvaluation(boolean val);
 
+  /**
+   * Tell the repository that its features are not in a valid state.
+   */
+  void notReady();
+
   void close();
 }
