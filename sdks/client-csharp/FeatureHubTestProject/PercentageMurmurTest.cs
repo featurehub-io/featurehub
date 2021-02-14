@@ -1,6 +1,7 @@
 
 
 using System;
+using FeatureHubSDK;
 using NUnit.Framework;
 
 namespace FeatureHubTestProject

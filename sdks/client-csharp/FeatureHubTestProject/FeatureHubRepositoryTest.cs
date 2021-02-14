@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace FeatureHubTestProject
 {
-  public class Tests
+  public class RepositoryTest
   {
     FeatureHubRepository _repository;
 
@@ -17,13 +17,13 @@ namespace FeatureHubTestProject
       _repository = new FeatureHubRepository();
     }
 
-    private string EncodeFeatures(object value, int version = 1, FeatureValueType type = FeatureValueType.BOOLEAN)
+    public static string EncodeFeatures(object value, int version = 1, FeatureValueType type = FeatureValueType.BOOLEAN)
     {
       var feature = new FeatureState(id: "1", key: "1", version: version, value: value, type: type);
       return JsonConvert.SerializeObject(new List<FeatureState>(new FeatureState[] {feature}));
     }
 
-    private string EncodeFeatures(int version = 1, FeatureValueType type = FeatureValueType.BOOLEAN)
+    public static string EncodeFeatures(int version = 1, FeatureValueType type = FeatureValueType.BOOLEAN)
     {
       return EncodeFeatures(false, version, type);
     }
@@ -252,61 +252,7 @@ namespace FeatureHubTestProject
       Assert.IsNull(_repository.FeatureState("1").Version);
     }
 
-    internal class EdgeServiceStub : IEdgeService
-    {
-      public string header;
 
-      public void ContextChange(string header)
-      {
-        this.header = header;
-      }
-
-      public bool ClientEvaluation => true;
-      public bool IsRequiresReplacementOnHeaderChange => false;
-
-      public void Close()
-      {
-      }
-
-      public void Poll()
-      {
-      }
-    }
-
-    [Test]
-    public void ChangeInContextFiresRequestToEdgeService()
-    {
-      var edgeStub = new EdgeServiceStub();
-      var ctx = new ServerEvalFeatureContext(_repository, null, () => edgeStub)
-        .Attr("city", "Istanbul City")
-        .Attrs("family", new List<String> {"Bambam", "DJ Elif"})
-        .Country(StrategyAttributeCountryName.Turkey)
-        .Platform(StrategyAttributePlatformName.Ios)
-        .Device(StrategyAttributeDeviceName.Mobile)
-        .UserKey("tv-show")
-        .Version("6.2.3")
-        .SessionKey("session-key")
-        .Build();
-
-      Assert.AreEqual(
-      "city=Istanbul+City,country=turkey,device=mobile,family=Bambam%2cDJ+Elif,platform=ios,session=session-key,userkey=tv-show,version=6.2.3", edgeStub.header);
-
-      Assert.NotNull(ctx.ToString());
-
-      ctx.Clear().Build();
-      Assert.AreEqual("", edgeStub.header);
-    }
-
-    [Test]
-    public void EnabledFlagWorksIsTrueOnlyOnTrue()
-    {
-      var ctx = new ClientEvalFeatureContext(_repository, null, () => null);
-      Assert.AreEqual(false, ctx.IsEnabled("1"));
-      _repository.Notify(SSEResultState.Features, EncodeFeatures(true, 2, FeatureValueType.BOOLEAN));
-      Assert.AreEqual(true, ctx.IsEnabled("1"));
-      _repository.Notify(SSEResultState.Features, EncodeFeatures(false, 3, FeatureValueType.BOOLEAN));
-      Assert.AreEqual(false, ctx.IsEnabled("1"));
-    }
 
     [Test]
     public void AnalyticsCollectorsAreCalled()

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using FeatureHubSDK;
 using IO.FeatureHub.SSE.Model;
 using NUnit.Framework;
 
@@ -16,7 +17,7 @@ namespace FeatureHubTestProject
     }
 
     [Test, TestCaseSource("StringMatcherProvider")]
-    public void StringMatcher(RolloutStrategyAttributeConditional conditional, List<string> vals, string suppliedVal,
+    public void StringMatcher(RolloutStrategyAttributeConditional conditional, List<object> vals, string suppliedVal,
       bool matches)
     {
       var rsa = new RolloutStrategyAttribute();
@@ -29,33 +30,41 @@ namespace FeatureHubTestProject
 
     public static IEnumerable<TestCaseData> StringMatcherProvider()
     {
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<string> {"a", "b"}, "a", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS, new List<string> {"a", "b"}, "a",
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object> {"a", "b"}, "a", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS, new List<object> {"a", "b"}, "a",
         false);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.INCLUDES, new List<string> {"a", "b"}, "a",
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.INCLUDES, new List<object> {"a", "b"}, "a",
         true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.INCLUDES, new List<string> {"a", "b"}, "c",
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.INCLUDES, new List<object> {"a", "b"}, "c",
         false);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.EXCLUDES, new List<string> {"a", "b"}, "a",
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EXCLUDES, new List<object> {"a", "b"}, "a",
         false);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.EXCLUDES, new List<string> {"a", "b"}, "c",
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EXCLUDES, new List<object> {"a", "b"}, "c",
         true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATER, new List<string> {"a", "b"}, "a",
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATER, new List<object> {"a", "b"}, "a",
         false);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATEREQUALS, new List<string> {"a", "b"}, "a",
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATEREQUALS, new List<object> {"a", "b"}, "a",
         true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESS, new List<string> {"a", "b"}, "a", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESS, new List<string> {"a", "b"}, "b", false);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESS, new List<string> {"a", "b"}, "c", false);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESSEQUALS, new List<string> {"a", "b"}, "a",
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESS, new List<object> {"a", "b"}, "a", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESS, new List<object> {"a", "b"}, "b", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESS, new List<object> {"a", "b"}, "c", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESSEQUALS, new List<object> {"a", "b"}, "a",
         true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESSEQUALS, new List<string> {"a", "b"}, "b",
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESSEQUALS, new List<object> {"a", "b"}, "b",
         true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESSEQUALS, new List<string> {"a", "b"}, "1",
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESSEQUALS, new List<object> {"a", "b"}, "1",
         false);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.REGEX, new List<string> {"(.*)gold(.*)"},
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.STARTSWITH, new List<object> {"fr"}, "fred",
+      true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.STARTSWITH, new List<object> {"fred"}, "mar",
+        false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.ENDSWITH, new List<object> {"ed"}, "fred",
+        true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.ENDSWITH, new List<object> {"fred"}, "mar",
+        false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.REGEX, new List<object> {"(.*)gold(.*)"},
         "actapus (gold)", true);
-      yield return new TestCaseData(RolloutStrategyAttributeConditional.REGEX, new List<string> {"(.*)gold(.*)"},
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.REGEX, new List<object> {"(.*)gold(.*)"},
         "(.*)purple(.*)", false);
     }
 
@@ -68,7 +77,7 @@ namespace FeatureHubTestProject
       rsa.Type = RolloutStrategyFieldType.BOOLEAN;
       rsa.Values = vals.Select(v => v as object).ToList();
 
-      Assert.AreEqual(registry.FindMatcher(rsa).Match(suppliedVal, rsa), matches);
+      Assert.AreEqual(registry.FindMatcher(rsa).Match(suppliedVal?.ToString(), rsa), matches);
     }
 
     public static IEnumerable<TestCaseData> BooleanMatcherProvider()
@@ -101,8 +110,8 @@ namespace FeatureHubTestProject
     {
       var rsa = new RolloutStrategyAttribute();
       rsa.Conditional = conditional;
-      rsa.Type = RolloutStrategyFieldType.SEMANTICVERSION;
       rsa.Values = vals.Select(v => v as object).ToList();
+      rsa.Type = RolloutStrategyFieldType.SEMANTICVERSION;
 
       Assert.AreEqual(registry.FindMatcher(rsa).Match(suppliedVal, rsa), matches);
     }
@@ -150,8 +159,8 @@ namespace FeatureHubTestProject
     {
       var rsa = new RolloutStrategyAttribute();
       rsa.Conditional = conditional;
-      rsa.Type = RolloutStrategyFieldType.IPADDRESS;
       rsa.Values = vals.Select(v => v as object).ToList();
+      rsa.Type = RolloutStrategyFieldType.IPADDRESS;
 
       Assert.AreEqual(matches, registry.FindMatcher(rsa).Match(suppliedVal, rsa));
     }
@@ -195,8 +204,8 @@ namespace FeatureHubTestProject
     {
       var rsa = new RolloutStrategyAttribute();
       rsa.Conditional = conditional;
-      rsa.Type = RolloutStrategyFieldType.NUMBER;
       rsa.Values = vals.Select(v => v as object).ToList();
+      rsa.Type = RolloutStrategyFieldType.NUMBER;
 
       Assert.AreEqual(matches, registry.FindMatcher(rsa).Match(suppliedVal, rsa));
     }
@@ -228,5 +237,92 @@ namespace FeatureHubTestProject
       yield return new TestCaseData(RolloutStrategyAttributeConditional.LESS, new List<object> {1, -1}, "5", false);
     }
 
+    [Test, TestCaseSource("DateMatcherProvider")]
+    public void DateMatcher(RolloutStrategyAttributeConditional conditional, List<object> vals, string suppliedVal,
+      bool matches)
+    {
+      var rsa = new RolloutStrategyAttribute();
+      rsa.Conditional = conditional;
+      rsa.Values = vals.Select(v => v as object).ToList();
+      rsa.Type = RolloutStrategyFieldType.DATE;
+
+      Assert.AreEqual(matches, registry.FindMatcher(rsa).Match(suppliedVal, rsa));
+    }
+
+    public static IEnumerable<TestCaseData> DateMatcherProvider()
+    {
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS,
+        new List<object> {"2019-01-01", "2019-02-01"}, "2019-02-01", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.INCLUDES,
+        new List<object> {"2019-01-01", "2019-02-01"}, "2019-02-01", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS,
+        new List<object> {"2019-01-01", "2019-02-01"}, "2019-02-01", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EXCLUDES,
+        new List<object> {"2019-01-01", "2019-02-01"}, "2019-02-01", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS,
+        new List<object> {"2019-01-01", "2019-02-01"}, "2019-02-07", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.INCLUDES,
+        new List<object> {"2019-01-01", "2019-02-01"}, "2019-02-07", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS,
+        new List<object> {"2019-01-01", "2019-02-01"}, "2019-02-07", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EXCLUDES,
+        new List<object> {"2019-01-01", "2019-02-01"}, "2019-02-07", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATER,
+        new List<object> {"2019-01-01", "2019-02-01"}, "2019-02-07", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATEREQUALS,
+        new List<object> {"2019-01-01", "2019-02-01"}, "2019-02-07", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATEREQUALS,
+        new List<object> {"2019-01-01", "2019-02-01"}, "2019-02-01", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESS,
+        new List<object> {"2019-01-01", "2019-02-01"}, "2019-02-07", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESS,
+        new List<object> {"2019-01-01", "2019-02-01"}, "2018-02-07", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESSEQUALS,
+        new List<object> {"2019-01-01", "2019-02-01"}, "2019-02-07", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESSEQUALS,
+        new List<object> {"2019-01-01", "2019-02-01"}, "2019-02-01", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.REGEX,
+        new List<object> {"2019-.*"}, "2019-07-06", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.REGEX,
+        new List<object> {"2019-.*"}, "2017-07-06", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.REGEX,
+        new List<object> {"2019-.*", "(.*)-03-(.*)"}, "2017-03-06", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.STARTSWITH,
+        new List<object> {"2019", "2017"}, "2017-02-01", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.STARTSWITH,
+        new List<object> {"2019"}, "2017-02-01", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.ENDSWITH,
+        new List<object> {"01"}, "2017-02-01", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.ENDSWITH,
+        new List<object> {"03", "02", "2017"}, "2017-02-01", false);
+/*
+ * "2019-02-01"  | RolloutStrategyAttributeConditional.EQUALS         | ["2019-01-01", "2019-02-01"] || true
+      "2019-02-01"  | RolloutStrategyAttributeConditional.INCLUDES       | ["2019-01-01", "2019-02-01"] || true
+      "2019-02-01"  | RolloutStrategyAttributeConditional.NOT_EQUALS     | ["2019-01-01", "2019-02-01"] || false
+      "2019-02-01"  | RolloutStrategyAttributeConditional.EXCLUDES       | ["2019-01-01", "2019-02-01"] || false
+      "2019-02-07"  | RolloutStrategyAttributeConditional.EQUALS         | ["2019-01-01", "2019-02-01"] || false
+      "2019-02-07"  | RolloutStrategyAttributeConditional.INCLUDES       | ["2019-01-01", "2019-02-01"] || false
+      "2019-02-07"  | RolloutStrategyAttributeConditional.NOT_EQUALS     | ["2019-01-01", "2019-02-01"] || true
+      "2019-02-07"  | RolloutStrategyAttributeConditional.EXCLUDES       | ["2019-01-01", "2019-02-01"] || true
+
+      "2019-02-07"  | RolloutStrategyAttributeConditional.GREATER        | ["2019-01-01", "2019-02-01"] || true
+      "2019-02-07"  | RolloutStrategyAttributeConditional.GREATER_EQUALS | ["2019-01-01", "2019-02-01"] || true
+      "2019-02-01"  | RolloutStrategyAttributeConditional.GREATER_EQUALS | ["2019-01-01", "2019-02-01"] || true
+      "2013-02-07"  | RolloutStrategyAttributeConditional.GREATER        | ["2019-01-01", "2019-02-01"] || false
+      "2019-01-01"  | RolloutStrategyAttributeConditional.GREATER_EQUALS | ["2019-01-02", "2019-02-01"] || false
+      "2014-02-01"  | RolloutStrategyAttributeConditional.GREATER_EQUALS | ["2019-01-01", "2019-02-01"] || false
+      "2019-02-07"  | RolloutStrategyAttributeConditional.LESS           | ["2019-01-01", "2019-02-01"] || false
+      "2018-02-07"  | RolloutStrategyAttributeConditional.LESS           | ["2019-01-01", "2019-02-01"] || true
+      "2019-02-07"  | RolloutStrategyAttributeConditional.LESS_EQUALS    | ["2019-01-01", "2019-02-01"] || false
+      "2019-02-01"  | RolloutStrategyAttributeConditional.LESS_EQUALS    | ["2019-01-01", "2019-02-01"] || true
+      "2019-07-06"  | RolloutStrategyAttributeConditional.REGEX          | ["2019-.*"]                   | true
+      "2017-07-06"  | RolloutStrategyAttributeConditional.REGEX          | ["2019-.*"]                   | false
+      "2017-03-06"  | RolloutStrategyAttributeConditional.REGEX          | ["2019-.*", "(.*)-03-(.*)"]   | true
+      "2017-03-06"  | RolloutStrategyAttributeConditional.STARTS_WITH    | ["2019", "2017"]              | true
+      "2017-03-06"  | RolloutStrategyAttributeConditional.STARTS_WITH    | ["2019"]                      | false
+      "2017-03-06"  | RolloutStrategyAttributeConditional.ENDS_WITH      | ["06"]                        | true
+      "2017-03-06"  | RolloutStrategyAttributeConditional.ENDS_WITH      | ["03", "2017"]                | false
+ */
+    }
   }
 }
