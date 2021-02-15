@@ -295,34 +295,81 @@ namespace FeatureHubTestProject
         new List<object> {"01"}, "2017-02-01", true);
       yield return new TestCaseData(RolloutStrategyAttributeConditional.ENDSWITH,
         new List<object> {"03", "02", "2017"}, "2017-02-01", false);
-/*
- * "2019-02-01"  | RolloutStrategyAttributeConditional.EQUALS         | ["2019-01-01", "2019-02-01"] || true
-      "2019-02-01"  | RolloutStrategyAttributeConditional.INCLUDES       | ["2019-01-01", "2019-02-01"] || true
-      "2019-02-01"  | RolloutStrategyAttributeConditional.NOT_EQUALS     | ["2019-01-01", "2019-02-01"] || false
-      "2019-02-01"  | RolloutStrategyAttributeConditional.EXCLUDES       | ["2019-01-01", "2019-02-01"] || false
-      "2019-02-07"  | RolloutStrategyAttributeConditional.EQUALS         | ["2019-01-01", "2019-02-01"] || false
-      "2019-02-07"  | RolloutStrategyAttributeConditional.INCLUDES       | ["2019-01-01", "2019-02-01"] || false
-      "2019-02-07"  | RolloutStrategyAttributeConditional.NOT_EQUALS     | ["2019-01-01", "2019-02-01"] || true
-      "2019-02-07"  | RolloutStrategyAttributeConditional.EXCLUDES       | ["2019-01-01", "2019-02-01"] || true
-
-      "2019-02-07"  | RolloutStrategyAttributeConditional.GREATER        | ["2019-01-01", "2019-02-01"] || true
-      "2019-02-07"  | RolloutStrategyAttributeConditional.GREATER_EQUALS | ["2019-01-01", "2019-02-01"] || true
-      "2019-02-01"  | RolloutStrategyAttributeConditional.GREATER_EQUALS | ["2019-01-01", "2019-02-01"] || true
-      "2013-02-07"  | RolloutStrategyAttributeConditional.GREATER        | ["2019-01-01", "2019-02-01"] || false
-      "2019-01-01"  | RolloutStrategyAttributeConditional.GREATER_EQUALS | ["2019-01-02", "2019-02-01"] || false
-      "2014-02-01"  | RolloutStrategyAttributeConditional.GREATER_EQUALS | ["2019-01-01", "2019-02-01"] || false
-      "2019-02-07"  | RolloutStrategyAttributeConditional.LESS           | ["2019-01-01", "2019-02-01"] || false
-      "2018-02-07"  | RolloutStrategyAttributeConditional.LESS           | ["2019-01-01", "2019-02-01"] || true
-      "2019-02-07"  | RolloutStrategyAttributeConditional.LESS_EQUALS    | ["2019-01-01", "2019-02-01"] || false
-      "2019-02-01"  | RolloutStrategyAttributeConditional.LESS_EQUALS    | ["2019-01-01", "2019-02-01"] || true
-      "2019-07-06"  | RolloutStrategyAttributeConditional.REGEX          | ["2019-.*"]                   | true
-      "2017-07-06"  | RolloutStrategyAttributeConditional.REGEX          | ["2019-.*"]                   | false
-      "2017-03-06"  | RolloutStrategyAttributeConditional.REGEX          | ["2019-.*", "(.*)-03-(.*)"]   | true
-      "2017-03-06"  | RolloutStrategyAttributeConditional.STARTS_WITH    | ["2019", "2017"]              | true
-      "2017-03-06"  | RolloutStrategyAttributeConditional.STARTS_WITH    | ["2019"]                      | false
-      "2017-03-06"  | RolloutStrategyAttributeConditional.ENDS_WITH      | ["06"]                        | true
-      "2017-03-06"  | RolloutStrategyAttributeConditional.ENDS_WITH      | ["03", "2017"]                | false
- */
     }
+
+    [Test, TestCaseSource("DateTimeMatcherProvider")]
+    public void DateTimeMatcher(RolloutStrategyAttributeConditional conditional, List<object> vals, string suppliedVal,
+      bool matches)
+    {
+      var rsa = new RolloutStrategyAttribute();
+      rsa.Conditional = conditional;
+      rsa.Values = vals.Select(v => v as object).ToList();
+      rsa.Type = RolloutStrategyFieldType.DATETIME;
+
+      Assert.AreEqual(matches, registry.FindMatcher(rsa).Match(suppliedVal, rsa));
+    }
+
+    public static IEnumerable<TestCaseData> DateTimeMatcherProvider()
+    {
+      // test equals
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS,
+        new List<object> {"2019-01-01T01:01:01Z", "2019-02-01T01:01:01Z"},"2019-02-01T01:01:01Z", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.INCLUDES,
+        new List<object> {"2019-01-01T01:01:01Z", "2019-02-01T01:01:01Z"},"2019-02-01T01:01:01Z", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS,
+        new List<object> {"2019-01-01T01:01:01Z", "2019-02-01T01:01:01Z"},"2019-02-01T01:01:01Z", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EXCLUDES,
+        new List<object> {"2019-01-01T01:01:01Z", "2019-02-01T01:01:01Z"},"2019-02-01T01:01:01Z", false);
+
+      // test not equals
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS,
+        new List<object> {"2019-01-01T01:01:01Z", "2019-02-01T01:01:01Z"},"2017-02-01T01:01:01Z", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.INCLUDES,
+        new List<object> {"2019-01-01T01:01:01Z", "2019-02-01T01:01:01Z"},"2017-02-01T01:01:01Z", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS,
+        new List<object> {"2019-01-01T01:01:01Z", "2019-02-01T01:01:01Z"},"2017-02-01T01:01:01Z", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EXCLUDES,
+        new List<object> {"2019-01-01T01:01:01Z", "2019-02-01T01:01:01Z"},"2017-02-01T01:01:01Z", true);
+
+      // test  less & less =
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESS,
+        new List<object> {"2019-01-01T01:01:01Z", "2019-02-01T01:01:01Z"},"2016-02-01T01:01:01Z", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESS,
+        new List<object> {"2019-01-01T01:01:01Z", "2019-02-01T01:01:01Z"},"2020-02-01T01:01:01Z", false);
+
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESSEQUALS,
+        new List<object> {"2019-01-01T01:01:01Z", "2019-02-01T01:01:01Z"},"2019-02-01T01:01:01Z", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESSEQUALS,
+        new List<object> {"2019-01-01T01:01:01Z", "2019-02-01T01:01:01Z"},"2019-02-02T01:01:01Z", false);
+
+      // regex
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.REGEX,
+        new List<object> {"2019-.*"}, "2019-07-06T01:01:01Z", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.REGEX,
+        new List<object> {"2019-.*"}, "2016-07-06T01:01:01Z", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.REGEX,
+        new List<object> {"2019-.*", "(.*)-03-(.*)"}, "2019-07-06T01:01:01Z", true);
+
+      // starts with / ends with
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.STARTSWITH,
+        new List<object> {"2019", "2017"}, "2017-03-06T01:01:01Z", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.STARTSWITH,
+        new List<object> {"2019"}, "2017-03-06T01:01:01Z", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.ENDSWITH,
+        new List<object> {":01Z"}, "2017-03-06T01:01:01Z", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.ENDSWITH,
+        new List<object> {"03", "2017", "01:01"}, "2017-03-06T01:01:01Z", false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.ENDSWITH,
+        new List<object> {"rubbish"}, "2017-03-06T01:01:01Z", false);
+    }
+
+    /*
+      "2017-03-06T01:01:01Z"      | RolloutStrategyAttributeConditional.STARTS_WITH    | ["2019", "2017"]                                       | true
+      "2017-03-06T01:01:01Z"      | RolloutStrategyAttributeConditional.STARTS_WITH    | ["2019"]                                               | false
+      "2017-03-06T01:01:01Z"      | RolloutStrategyAttributeConditional.ENDS_WITH      | [":01Z"]                                               | true
+      "2017-03-06T01:01:01Z"      | RolloutStrategyAttributeConditional.ENDS_WITH      | ["03", "2017", "01:01"]                                | false
+      "2017-03-06T01:01:01Z"      | RolloutStrategyAttributeConditional.ENDS_WITH      | ["rubbish"]                                            | false
+     */
+
   }
 }

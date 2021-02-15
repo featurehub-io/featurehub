@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using IO.FeatureHub.SSE.Model;
 using LaunchDarkly.EventSource;
 
@@ -7,7 +8,7 @@ namespace FeatureHubSDK
 {
   public interface IEdgeService
   {
-    void ContextChange(string header);
+    Task ContextChange(string header);
     bool ClientEvaluation { get; }
 
     bool IsRequiresReplacementOnHeaderChange { get;  }
@@ -32,7 +33,7 @@ namespace FeatureHubSDK
       _repository.ServerSideEvaluation = config.ServerEvaluation;
     }
 
-    public void ContextChange(string newHeader)
+    public async Task ContextChange(string newHeader)
     {
       if (_featureHost.ServerEvaluation)
       {
@@ -40,10 +41,24 @@ namespace FeatureHubSDK
         {
           _xFeatureHubHeader = newHeader;
 
-          if (_eventSource.ReadyState == ReadyState.Open || _eventSource.ReadyState == ReadyState.Connecting)
+          if (_eventSource == null || _eventSource.ReadyState == ReadyState.Open || _eventSource.ReadyState == ReadyState.Connecting)
           {
-            _eventSource.Close();
+            _eventSource?.Close();
+
+            var promise = new TaskCompletionSource<Readyness>();
+
+            EventHandler<Readyness> handler = (sender, r) =>
+            {
+              promise.TrySetResult(r);
+            };
+
+            _repository.ReadynessHandler += handler;
+
             Init();
+
+            await promise.Task;
+
+            _repository.ReadynessHandler -= handler;
           }
         }
       }

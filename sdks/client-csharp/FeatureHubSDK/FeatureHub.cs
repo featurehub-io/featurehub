@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using System.Transactions;
 using System.Web;
 using IO.FeatureHub.SSE.Model;
@@ -184,7 +185,7 @@ namespace FeatureHubSDK
     {
       return this[name].BooleanValue == true;
     }
-    public abstract IClientContext Build();
+    public abstract Task<IClientContext> Build();
     public abstract IEdgeService EdgeService { get; }
 
     public override string ToString()
@@ -231,7 +232,7 @@ namespace FeatureHubSDK
 
     public override IFeature this[string name] => _repository.GetFeature(name);
 
-    public override IClientContext Build()
+    public override async Task<IClientContext> Build()
     {
       var newHeader = string.Join(",",
         _attributes.Select((e) => e.Key + "=" +
@@ -254,7 +255,7 @@ namespace FeatureHubSDK
         _currentEdgeService = _edgeServiceSource();
       }
 
-      _currentEdgeService.ContextChange(_xHeader);
+      await _currentEdgeService.ContextChange(_xHeader);
 
       return this;
     }
@@ -288,7 +289,7 @@ namespace FeatureHubSDK
 
     public override IFeature this[string name] => _repository.GetFeature(name).WithContext(this);
 
-    public override IClientContext Build()
+    public override async Task<IClientContext> Build()
     {
       return this;
     }
@@ -452,6 +453,7 @@ namespace FeatureHubSDK
   public interface IFeatureHubNotify
   {
     bool ServerSideEvaluation { set; get; }
+    event EventHandler<Readyness> ReadynessHandler;
     void Notify(SSEResultState state, string data);
     void NotReady();
   }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using FeatureHubSDK;
 using IO.FeatureHub.SSE.Model;
 
@@ -10,14 +11,22 @@ namespace ConsoleApp1
     {
       Console.WriteLine($"Received type {holder.Key}: {holder.StringValue}");
     }
+
     static void Main(string[] args)
+    {
+      MainApp().Wait();
+    }
+
+    async static Task MainApp()
     {
       Console.WriteLine("Hello World!");
 
       var featureHubEdgeUrl = new FeatureHubConfig("http://localhost:8064",
         "default/82afd7ae-e7de-4567-817b-dd684315adf7/SJXBRyGCe1dZwnL7OQYUiJ5J8VcoMrrHP3iKCrkpYovhNIuwuIPNYGy7iOFeKE4Kaqp5sT7g5X2qETsW");
+      var context = featureHubEdgeUrl.NewContext();
+
       Console.WriteLine($"Server evaluated {featureHubEdgeUrl.ServerEvaluation}");
-      var context = new FeatureContext(featureHubEdgeUrl);
+
 
       var fh = context.Repository;
       if (featureHubEdgeUrl.ServerEvaluation)
@@ -53,7 +62,9 @@ namespace ConsoleApp1
 
 
       Console.Write("Context initialized, waiting for readyness - Press a key when readyness appears");
-      Console.ReadKey();
+      // Console.ReadKey();
+
+      await context.Build();
 
       if (fh.Readyness == Readyness.Ready)
       {
@@ -61,21 +72,21 @@ namespace ConsoleApp1
 
         Func<bool?> val = () => context["FEATURE_TITLE_TO_UPPERCASE"].BooleanValue;
 
-        context.UserKey("DJElif").Country(StrategyAttributeCountryName.Turkey).Attr("city", "istanbul").Build();
+        await context.UserKey("DJElif").Country(StrategyAttributeCountryName.Turkey).Attr("city", "istanbul").Build();
 
         Console.WriteLine($"Istanbul 1 is {val()}");
-        Console.ReadKey();
+        // Console.ReadKey();
         Console.WriteLine($"Istanbul 2 is {val()}");
 
         Console.Write("Press a key (change context2)");
-        Console.ReadKey();
+        // Console.ReadKey();
 
-        context.UserKey("AmyWiles").Country(StrategyAttributeCountryName.Unitedkingdom).Attr("city", "london").Build();
+        await context.UserKey("AmyWiles").Country(StrategyAttributeCountryName.Unitedkingdom).Attr("city", "london").Build();
         Console.WriteLine($"london 1 is {val()}");
-        Console.ReadKey();
+        // Console.ReadKey();
         Console.WriteLine($"london 1 is {val()}");
         Console.WriteLine("Ready to close");
-        Console.ReadKey();
+        // Console.ReadKey();
       }
       else
       {

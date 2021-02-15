@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using FeatureHubSDK;
 using IO.FeatureHub.SSE.Model;
 using NUnit.Framework;
@@ -24,7 +25,7 @@ namespace FeatureHubTestProject
       public int closeCalled = 0;
       public bool replace = false;
 
-      public void ContextChange(string header)
+      public async Task ContextChange(string header)
       {
         this.header = header;
       }
@@ -43,10 +44,10 @@ namespace FeatureHubTestProject
     }
 
     [Test]
-    public void ChangeInContextFiresRequestToEdgeService()
+    async public Task ChangeInContextFiresRequestToEdgeService()
     {
       var edgeStub = new EdgeServiceStub();
-      var ctx = new ServerEvalFeatureContext(_repository, null, () => edgeStub)
+      var ctx = await new ServerEvalFeatureContext(_repository, null, () => edgeStub)
         .Attr("city", "Istanbul City")
         .Attrs("family", new List<String> {"Bambam", "DJ Elif"})
         .Country(StrategyAttributeCountryName.Turkey)
@@ -69,24 +70,24 @@ namespace FeatureHubTestProject
       Assert.NotNull(ctx["fred"]);
       Assert.AreEqual(edgeStub, ctx.EdgeService);
 
-      ctx.Clear().Build();
+      await ctx.Clear().Build();
       Assert.AreEqual("", edgeStub.header);
     }
 
     [Test]
-    public void EnsureStubIsReplacedOnBuildForServerEval()
+    async public Task EnsureStubIsReplacedOnBuildForServerEval()
     {
       var edgeStub = new EdgeServiceStub();
       edgeStub.replace = true;
-      var ctx = new ServerEvalFeatureContext(_repository, null, () => edgeStub).Build();
+      var ctx = await new ServerEvalFeatureContext(_repository, null, () => edgeStub).Build();
       Assert.AreEqual(0, edgeStub.closeCalled);
       ctx.Attr("replaceme", "now");
-      ctx.Build();
+      await ctx.Build();
       Assert.AreEqual(1, edgeStub.closeCalled);
     }
 
     [Test]
-    public void EnabledFlagWorksIsTrueOnlyOnTrue()
+    async public Task EnabledFlagWorksIsTrueOnlyOnTrue()
     {
       var ctx = new ClientEvalFeatureContext(_repository, null, () => null);
       Assert.AreEqual(false, ctx.IsEnabled("1"));
@@ -94,6 +95,9 @@ namespace FeatureHubTestProject
       Assert.AreEqual(true, ctx.IsEnabled("1"));
       _repository.Notify(SSEResultState.Features, RepositoryTest.EncodeFeatures(false, 3, FeatureValueType.BOOLEAN));
       Assert.AreEqual(false, ctx.IsEnabled("1"));
+      Assert.IsNull(ctx.EdgeService);
+      await ctx.Build();
+      ctx.Close();
     }
 
   }

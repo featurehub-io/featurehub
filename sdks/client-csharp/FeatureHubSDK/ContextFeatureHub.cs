@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using IO.FeatureHub.SSE.Model;
 
 namespace FeatureHubSDK
@@ -25,7 +26,7 @@ namespace FeatureHubSDK
 
     bool IsEnabled(string name);
 
-    IClientContext Build();
+    Task<IClientContext> Build();
 
     IEdgeService EdgeService { get; }
     IFeatureHubRepository Repository { get; }

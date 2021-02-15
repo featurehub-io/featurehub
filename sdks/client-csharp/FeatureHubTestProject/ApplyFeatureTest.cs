@@ -1,6 +1,7 @@
 
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using FeatureHubSDK;
 using IO.FeatureHub.SSE.Model;
 using NUnit.Framework;
@@ -24,7 +25,7 @@ namespace FeatureHubTestProject
 
     public override IFeature this[string name] => throw new System.NotImplementedException();
 
-    public override IClientContext Build()
+    public override async Task<IClientContext> Build()
     {
       return this;
     }
