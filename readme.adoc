@@ -7,7 +7,9 @@ issues, contribute a new SDK or just get a deeper understanding of how it works,
 
 https://demo.featurehub.io[Try FeatureHub demo now]
 
-image::docs/images/fh-feature-console-flags.png[FeatureHub console demo,800]
+**New in version 1.2 - Dark Mode! **
+
+image::docs/images/fh-features-console-dark.png[FeatureHub console demo,800]
 
 == Why FeatureHub?
 
