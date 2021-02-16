@@ -10,20 +10,22 @@ import io.featurehub.sse.model.StrategyAttributePlatformName
 import spock.lang.Specification
 
 import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
 
 
 enum Fruit implements Feature { banana, peach, peach_quantity, peach_config, dragonfruit }
 
 class RepositorySpec extends Specification {
   ClientFeatureRepository repo
+  ExecutorService exec
 
   def setup() {
-    repo = new ClientFeatureRepository(new Executor() {
-      @Override
-      void execute(Runnable command) {
-        command.run();
-      }
-    })
+    exec = [
+      execute: { Runnable cmd -> cmd.run() },
+      shutdownNow: { -> }
+    ] as ExecutorService
+
+    repo = new ClientFeatureRepository(exec)
   }
 
   def "an empty repository is not ready"() {
@@ -150,9 +152,10 @@ class RepositorySpec extends Specification {
       ]
     and: "i redefine the executor in the repository so i can prevent the event logging and update first"
       List<Runnable> commands = []
-      Executor mockExecutor = {
-        commands.add(it)
-      } as Executor
+      ExecutorService mockExecutor = [
+        execute: { Runnable cmd -> commands.add(cmd) },
+        shutdownNow: { -> }
+      ] as ExecutorService
       def newRepo = new ClientFeatureRepository(mockExecutor)
       newRepo.notify(features)
       commands.each {it.run() } // process
@@ -294,7 +297,7 @@ class RepositorySpec extends Specification {
         .device(StrategyAttributeDeviceName.DESKTOP)
         .platform(StrategyAttributePlatformName.ANDROID)
         .version("2.3.7")
-        .sessionKey("anjunadeep").build()
+        .sessionKey("anjunadeep").build().get()
 
     and: "i do the same thing again to ensure i can reset everything"
       tc.userKey("DJElif")
@@ -304,7 +307,7 @@ class RepositorySpec extends Specification {
         .device(StrategyAttributeDeviceName.DESKTOP)
         .platform(StrategyAttributePlatformName.ANDROID)
         .version("2.3.7")
-        .sessionKey("anjunadeep").build()
+        .sessionKey("anjunadeep").build().get()
     then:
       FeatureStateUtils.generateXFeatureHubHeaderFromMap(tc.context()) ==
         'city=Istanbul,country=turkey,device=desktop,musical styles=psychedelic%2Cdeep,platform=android,session=anjunadeep,userkey=DJElif,version=2.3.7'

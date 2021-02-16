@@ -10,7 +10,7 @@ class TestContext extends BaseClientContext {
 
   @Override
   Future<ClientContext> build() {
-    CompletableFuture<ClientContext> x = CompletableFuture<ClientContext>()
+    CompletableFuture<ClientContext> x = new CompletableFuture<ClientContext>()
     x.complete(this)
     return x
   }

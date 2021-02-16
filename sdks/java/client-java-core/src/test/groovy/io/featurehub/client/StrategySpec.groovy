@@ -12,17 +12,17 @@ import io.featurehub.sse.model.StrategyAttributeWellKnownNames
 import spock.lang.Specification
 
 import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
 
 class StrategySpec extends Specification {
   ClientFeatureRepository repo
 
   def setup() {
-    repo = new ClientFeatureRepository(new Executor() {
-      @Override
-      void execute(Runnable command) {
-        command.run();
-      }
-    })
+    def exec = [
+      execute: { Runnable cmd -> cmd.run() },
+      shutdownNow: { -> }
+    ] as ExecutorService
+    repo = new ClientFeatureRepository(exec)
   }
 
   def "basic boolean strategy"() {
