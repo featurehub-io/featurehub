@@ -1,8 +1,14 @@
 package io.featurehub.client;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
 public class ServerEvalFeatureContext extends BaseClientContext {
+  private static final Logger log = LoggerFactory.getLogger(ServerEvalFeatureContext.class);
   private final Supplier<EdgeService> edgeService;
   private EdgeService currentEdgeService;
   private String xHeader;
@@ -24,7 +30,7 @@ public class ServerEvalFeatureContext extends BaseClientContext {
   }
 
   @Override
-  public ClientContext build() {
+  public Future<ClientContext> build() {
     String newHeader = FeatureStateUtils.generateXFeatureHubHeaderFromMap(clientContext);
 
     if (!newHeader.equals(xHeader)) {
@@ -42,11 +48,21 @@ public class ServerEvalFeatureContext extends BaseClientContext {
       currentEdgeService = edgeService.get();
     }
 
-    currentEdgeService.contextChange(newHeader);
+    Future<?> change = currentEdgeService.contextChange(newHeader);
 
     xHeader = newHeader;
 
-    return this;
+    CompletableFuture<ClientContext> future = new CompletableFuture<>();
+
+    try {
+      change.get();
+    } catch (Exception e) {
+      log.error("Failed to update", e);
+    }
+
+    future.complete(this);
+
+    return future;
   }
 
   @Override

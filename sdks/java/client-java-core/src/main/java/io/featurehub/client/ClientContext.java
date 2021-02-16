@@ -6,6 +6,7 @@ import io.featurehub.sse.model.StrategyAttributePlatformName;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 public interface ClientContext {
   String get(String key, String defaultValue);
@@ -26,7 +27,7 @@ public interface ClientContext {
    *
    * @return this
    */
-  ClientContext build();
+  Future<ClientContext> build();
 
   Map<String, List<String>> context();
   String defaultPercentageKey();

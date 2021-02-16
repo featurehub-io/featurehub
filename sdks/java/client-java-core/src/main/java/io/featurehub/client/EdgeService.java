@@ -1,15 +1,15 @@
 package io.featurehub.client;
 
-import java.util.List;
-import java.util.Map;
+import java.util.concurrent.Future;
 
 public interface EdgeService {
   /**
    * called only when the new attribute header has changed
    *
    * @param newHeader
+   * @return
    */
-  void contextChange(String newHeader);
+  Future<?> contextChange(String newHeader);
 
   /**
    * are we doing client side evaluation?

@@ -19,7 +19,7 @@ enum Features implements Feature {
 public class JerseyClientSample {
   public static void main(String[] args) throws Exception {
     final FeatureHubConfig config = new EdgeFeatureHubConfig("http://localhost:8064/",
-      "default/82afd7ae-e7de-4567-817b-dd684315adf7/SJXBRyGCe1dZwnL7OQYUiJ5J8VcoMrrHP3iKCrkpYovhNIuwuIPNYGy7iOFeKE4Kaqp5sT7g5X2qETsW");
+      "default/82afd7ae-e7de-4567-817b-dd684315adf7/SHxmTA83AJupii4TsIciWvhaQYBIq2*JxIKxiUoswZPmLQAIIWN");
 
     final ClientContext ctx = config.newContext();
 
@@ -36,7 +36,7 @@ public class JerseyClientSample {
     ctx.userKey("jimbob")
       .platform(StrategyAttributePlatformName.MACOS)
       .device(StrategyAttributeDeviceName.DESKTOP)
-      .attr("city", "istanbul").build();
+      .attr("city", "istanbul").build().get();
 
     System.out.println("Istanbul1 is " + val.get());
 
@@ -45,7 +45,7 @@ public class JerseyClientSample {
     System.out.println("Istanbul2 is " + val.get());
 
     ctx.userKey("supine")
-      .attr("city", "london").build();
+      .attr("city", "london").build().get();
 
     System.out.println("london1 is " + val.get());
 

@@ -25,7 +25,7 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
   private static final Logger log = LoggerFactory.getLogger(ClientFeatureRepository.class);
   // feature-key, feature-state
   private final Map<String, FeatureStateBase> features = new ConcurrentHashMap<>();
-  private final Executor executor;
+  private final ExecutorService executor;
   private final ObjectMapper mapper;
   private boolean hasReceivedInitialState = false;
   private final List<AnalyticsCollector> analyticsCollectors = new ArrayList<>();
@@ -39,7 +39,7 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
   private final TypeReference<List<io.featurehub.sse.model.FeatureState>> FEATURE_LIST_TYPEDEF
     = new TypeReference<List<io.featurehub.sse.model.FeatureState>>() {};
 
-  public ClientFeatureRepository(Executor executor, ApplyFeature applyFeature) {
+  public ClientFeatureRepository(ExecutorService executor, ApplyFeature applyFeature) {
     mapper = initializeMapper();
 
     jsonConfigObjectMapper = mapper;
@@ -58,7 +58,7 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
     this(1);
   }
 
-  public ClientFeatureRepository(Executor executor) {
+  public ClientFeatureRepository(ExecutorService executor) {
     this(executor == null ? getExecutor(1) : executor, null);
   }
 
@@ -72,7 +72,7 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
     return mapper;
   }
 
-  static protected Executor getExecutor(int threadPoolSize) {
+  static protected ExecutorService getExecutor(int threadPoolSize) {
     return Executors.newFixedThreadPool(threadPoolSize);
   }
 
@@ -198,9 +198,8 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
     readyness = Readyness.NotReady;
     readynessListeners.stream().forEach(rl -> rl.notify(readyness));
 
-    if (executor instanceof ExecutorService) {
-      ((ExecutorService)executor).shutdownNow();
-    }
+    executor.shutdownNow();
+
     log.info("featurehub repository closed");
   }
 

@@ -91,7 +91,7 @@ class JerseyClientSpec extends Specification {
         def client = new JerseyClient(new EdgeFeatureHubConfig("http://localhost:80/", "sdk*url2"),
           false, new ClientFeatureRepository(1), null)
     when: "i set attributes"
-        client.contextChange(["fred": ["mary", "susan"]])
+        client.contextChange("fred=mary,susan")
     then:
         client.featurehubContextHeader == null
   }
@@ -101,7 +101,7 @@ class JerseyClientSpec extends Specification {
         def client = new JerseyClient(new EdgeFeatureHubConfig("http://localhost:80/", "sdk-url2"),
           false, new ClientFeatureRepository(1), null)
     when: "i set attributes"
-        client.contextChange(["fred": ["mary", "susan"]])
+        client.contextChange("fred=mary,susan")
     then:
         client.featurehubContextHeader != null
   }

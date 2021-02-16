@@ -19,7 +19,7 @@ class FeatureHubClientSpec extends Specification {
     and: "check for updates"
       fhc.checkForUpdates()
     then:
-      0 * client.newCall(_)
+      thrown RuntimeException
   }
 
   def "a valid host and url will trigger a call when asked"() {
@@ -37,7 +37,7 @@ class FeatureHubClientSpec extends Specification {
       }
       fhc = new FeatureHubClient("http://localhost", ["1234"], repo, client, Mock(FeatureHubConfig))
     and: "i specify a header"
-      fhc.contextChange(["fred":["mary"]])
+      fhc.contextChange("fred=mary")
     when: "i check for updates"
       fhc.checkForUpdates()
     then:

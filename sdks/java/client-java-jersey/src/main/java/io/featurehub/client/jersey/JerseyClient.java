@@ -4,8 +4,8 @@ import cd.connect.openapi.support.ApiClient;
 import io.featurehub.client.EdgeService;
 import io.featurehub.client.Feature;
 import io.featurehub.client.FeatureHubConfig;
-import io.featurehub.client.FeatureStateUtils;
 import io.featurehub.client.FeatureStore;
+import io.featurehub.client.Readyness;
 import io.featurehub.sse.api.FeatureService;
 import io.featurehub.sse.model.FeatureStateUpdate;
 import io.featurehub.sse.model.SSEResultState;
@@ -21,11 +21,13 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 @Singleton
 public class JerseyClient implements EdgeService {
@@ -33,7 +35,7 @@ public class JerseyClient implements EdgeService {
   private final WebTarget target;
   private boolean initialized;
   private final Executor executor;
-  private final FeatureStore featureRepository;
+  private final FeatureStore repository;
   private final FeatureService featuresService;
   private boolean shutdown = false;
   private boolean shutdownOnServerFailure = true;
@@ -41,19 +43,20 @@ public class JerseyClient implements EdgeService {
   private EventInput eventInput;
   private String xFeaturehubHeader;
   protected final FeatureHubConfig fhConfig;
+  private List<CompletableFuture<Readyness>> waitingClients = new ArrayList<>();
 
   public JerseyClient(FeatureHubConfig config, FeatureStore repository) {
     this(config, !config.isServerEvaluation(), repository, null);
   }
 
   public JerseyClient(FeatureHubConfig config, boolean initializeOnConstruction,
-                      FeatureStore featureRepository, ApiClient apiClient) {
-    this.featureRepository = featureRepository;
+                      FeatureStore repository, ApiClient apiClient) {
+    this.repository = repository;
     this.fhConfig = config;
 
-    log.info("new jersey client created");
+    log.trace("new jersey client created");
 
-    featureRepository.setServerEvaluation(config.isServerEvaluation());
+    repository.setServerEvaluation(config.isServerEvaluation());
 
     Client client = ClientBuilder.newBuilder()
       .register(JacksonFeature.class)
@@ -135,19 +138,21 @@ public class JerseyClient implements EdgeService {
 
           // we cannot force close the client input, it hangs around and waits for the server
           if (!active) {
-            log.info("not active");
             return; // ignore all data from this call, it is no longer active or relevant
           }
 
           if (shutdown || inboundEvent == null) { // connection has been closed or is shutdown
-            log.info("shutdown?");
             break;
           }
 
-          log.info("notifying of {}", inboundEvent.getName());
+          log.trace("notifying of {}", inboundEvent.getName());
 
           final SSEResultState state = SSEResultState.fromValue(inboundEvent.getName());
-          featureRepository.notify(state, inboundEvent.readData());
+          repository.notify(state, inboundEvent.readData());
+
+          if (state == SSEResultState.FAILURE || state == SSEResultState.FEATURES) {
+            completeReadyness();
+          }
 
           if (state == SSEResultState.FAILURE && shutdownOnServerFailure) {
             log.warn("Failed to connect to FeatureHub Edge, shutting down.");
@@ -157,7 +162,7 @@ public class JerseyClient implements EdgeService {
       } catch (Exception e) {
         if (shutdownOnEdgeFailureConnection) {
           log.warn("Edge connection failed, shutting down");
-          featureRepository.notify(SSEResultState.FAILURE, null);
+          repository.notify(SSEResultState.FAILURE, null);
           shutdown();
         }
       }
@@ -167,7 +172,7 @@ public class JerseyClient implements EdgeService {
       initialized = false;
 
       if (!shutdown) {
-        log.debug("connection closed, reconnecting");
+        log.trace("connection closed, reconnecting");
         // timeout should be configurable
         if (System.currentTimeMillis() - start < 2000) {
           executor.execute(JerseyClient.this::avoidServerDdos);
@@ -176,7 +181,9 @@ public class JerseyClient implements EdgeService {
           executor.execute(this::listenUntilDead);
         }
       } else {
-        log.info("featurehub client shut down");
+        completeReadyness(); // ensure we clear everyone out who is waiting
+
+        log.trace("featurehub client shut down");
       }
     }
   }
@@ -186,7 +193,7 @@ public class JerseyClient implements EdgeService {
   }
 
   private void restartRequest() {
-    log.info("starting new request");
+    log.trace("starting new request");
     if (request != null) {
       request.active = false;
     }
@@ -207,7 +214,7 @@ public class JerseyClient implements EdgeService {
    * Tell the client to shutdown when we next fall off.
    */
   public void shutdown() {
-    log.info("starting shutdown of jersey edge client");
+    log.trace("starting shutdown of jersey edge client");
     this.shutdown = true;
 
     if (request != null) {
@@ -218,7 +225,7 @@ public class JerseyClient implements EdgeService {
       ((ExecutorService)executor).shutdownNow();
     }
 
-    log.info("exiting shutdown of jersey edge client");
+    log.trace("exiting shutdown of jersey edge client");
   }
 
   public boolean isShutdownOnServerFailure() {
@@ -242,12 +249,31 @@ public class JerseyClient implements EdgeService {
   }
 
   @Override
-  public void contextChange(String header) {
-    if (!header.equals(xFeaturehubHeader) || !initialized) {
-      xFeaturehubHeader = header;
+  public Future<?> contextChange(String newHeader) {
+    final CompletableFuture<Readyness> change = new CompletableFuture<>();
 
+    if (fhConfig.isServerEvaluation() && (!newHeader.equals(xFeaturehubHeader) || !initialized)) {
+      xFeaturehubHeader = newHeader;
+
+      waitingClients.add(change);
       executor.execute(this::restartRequest);
+    } else {
+      change.complete(repository.getReadyness());
     }
+
+    return change;
+  }
+
+  private void completeReadyness() {
+    List<CompletableFuture<Readyness>> current = waitingClients;
+    waitingClients = new ArrayList<>();
+    current.forEach(c -> {
+      try {
+        c.complete(repository.getReadyness());
+      } catch (Exception e) {
+        log.error("Unable to complete future", e);
+      }
+    });
   }
 
   @Override

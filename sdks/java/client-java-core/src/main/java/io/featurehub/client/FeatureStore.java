@@ -53,4 +53,6 @@ public interface FeatureStore {
   void notReady();
 
   void close();
+
+  Readyness getReadyness();
 }

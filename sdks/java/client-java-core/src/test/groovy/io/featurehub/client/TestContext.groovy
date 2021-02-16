@@ -1,13 +1,18 @@
 package io.featurehub.client
 
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Future
+
 class TestContext extends BaseClientContext {
   TestContext(FeatureRepositoryContext repo) {
     super(repo, null)
   }
 
   @Override
-  ClientContext build() {
-    return this
+  Future<ClientContext> build() {
+    CompletableFuture<ClientContext> x = CompletableFuture<ClientContext>()
+    x.complete(this)
+    return x
   }
 
   @Override

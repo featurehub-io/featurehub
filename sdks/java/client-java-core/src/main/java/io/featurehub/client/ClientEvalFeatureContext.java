@@ -1,5 +1,8 @@
 package io.featurehub.client;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+
 /**
  * This class is ONLY used when we are doing client side evaluation. So the edge service stays the same.
  */
@@ -24,8 +27,12 @@ class ClientEvalFeatureContext extends BaseClientContext {
 
   // this doesn't matter for client eval
   @Override
-  public ClientContext build() {
-    return this;
+  public Future<ClientContext> build() {
+    final CompletableFuture<ClientContext> build = new CompletableFuture<>();
+
+    build.complete(this);
+
+    return build;
   }
 
   @Override
