@@ -40,6 +40,8 @@ namespace FeatureHubTestProject
     {
       _repository.Notify(SSEResultState.Features, EncodeFeatures(16.3, 1, FeatureValueType.NUMBER));
       Assert.AreEqual(16.3, _repository.GetFeature("1").NumberValue);
+      Assert.AreEqual(false, _repository.IsEnabled("1"));
+      Assert.AreEqual(false, _repository.GetFeature("1").IsEnabled);
     }
 
     [Test]
@@ -50,6 +52,8 @@ namespace FeatureHubTestProject
       Assert.IsNull(_repository.GetFeature("1").NumberValue);
       Assert.IsNull(_repository.GetFeature("1").JsonValue);
       Assert.IsNull(_repository.GetFeature("1").BooleanValue);
+      Assert.AreEqual(false, _repository.IsEnabled("1"));
+      Assert.AreEqual(false, _repository.GetFeature("1").IsEnabled);
     }
 
     [Test]
@@ -155,6 +159,7 @@ namespace FeatureHubTestProject
       Assert.AreEqual(true, holder.Exists);
       Assert.AreEqual(1, holder.Version);
       Assert.AreEqual(false, holder.BooleanValue);
+      Assert.AreEqual(false, holder.IsEnabled);
     }
 
     [Test]

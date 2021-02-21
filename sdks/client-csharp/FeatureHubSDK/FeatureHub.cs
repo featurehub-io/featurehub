@@ -75,7 +75,7 @@ namespace FeatureHubSDK
     /// <summary>
     /// Determines if the feature actually has a value
     /// </summary>
-    bool IsSet { get; }
+    bool IsEnabled { get; }
 
     IFeature WithContext(IClientContext context);
 
@@ -289,7 +289,9 @@ namespace FeatureHubSDK
 
     public override IFeature this[string name] => _repository.GetFeature(name).WithContext(this);
 
+#pragma warning disable 1998
     public override async Task<IClientContext> Build()
+#pragma warning restore 1998
     {
       return this;
     }
@@ -402,8 +404,7 @@ namespace FeatureHubSDK
     public FeatureValueType? Type => _feature?.Type;
     public object Value => _feature == null ? null : GetValue(_feature.Type);
 
-
-    public bool IsSet => GetValue(_feature?.Type) != null;
+    public bool IsEnabled => BooleanValue == true;
 
     public long? Version => _feature?.Version;
 
@@ -441,6 +442,9 @@ namespace FeatureHubSDK
   {
     IFeature GetFeature(string key);
 
+    IFeature this[string name] { get; }
+    bool IsEnabled(string name);
+
     event EventHandler<Readyness> ReadynessHandler;
     event EventHandler<FeatureHubRepository> NewFeatureHandler;
     Readyness Readyness { get; }
@@ -461,6 +465,14 @@ namespace FeatureHubSDK
   public abstract class AbstractFeatureHubRepository : IFeatureHubRepository
   {
     public abstract IFeature GetFeature(string key);
+
+    public IFeature this[string name] => GetFeature(name);
+
+    public bool IsEnabled(string name)
+    {
+      return GetFeature(name).IsEnabled;
+    }
+
     public abstract event EventHandler<Readyness> ReadynessHandler;
     public abstract event EventHandler<FeatureHubRepository> NewFeatureHandler;
     public abstract Readyness Readyness { get; }
@@ -699,7 +711,7 @@ namespace FeatureHubSDK
 
     public bool IsSet(string key)
     {
-      return FeatureState(key).IsSet;
+      return FeatureState(key).IsEnabled;
     }
   }
 }

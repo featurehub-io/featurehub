@@ -117,7 +117,7 @@ namespace FeatureHubTestProject
     {
       get => 1;
     }
-    public bool IsSet
+    public bool IsEnabled
     {
       get => _data != null;
     }

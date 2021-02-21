@@ -76,7 +76,7 @@ namespace FeatureHubSDK
 
       foreach (var fsh in featureStates)
       {
-        if (fsh.IsSet)
+        if (fsh.IsEnabled)
         {
           string line = null;
           switch (fsh.Type)
