@@ -24,6 +24,10 @@ public interface FeatureRepository {
   FeatureState getFeatureState(String key);
   FeatureState getFeatureState(Feature feature);
 
+  // replaces getFlag and its myriad combinations with a pure boolean response, true if set and is true, otherwise false
+  boolean isEnabled(String name);
+  boolean isEnabled(Feature key);
+
   /**
    * Log an analytics event against the analytics collectors.
    *
@@ -32,6 +36,9 @@ public interface FeatureRepository {
    * @return - this
    */
   FeatureRepository logAnalyticsEvent(String action, Map<String, String> other);
+  FeatureRepository logAnalyticsEvent(String action);
+  FeatureRepository logAnalyticsEvent(String action, Map<String, String> other, ClientContext ctx);
+  FeatureRepository logAnalyticsEvent(String action, ClientContext ctx);
 
   /**
    * Register an analytics collector
@@ -71,8 +78,6 @@ public interface FeatureRepository {
 
   boolean isServerEvaluation();
 
-  boolean isEnabled(String name);
-  boolean isEnabled(Feature key);
 
   void close();
 }

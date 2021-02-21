@@ -16,12 +16,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-public class ClientFeatureRepository extends AbstractFeatureRepository implements FeatureRepositoryContext {
+public class ClientFeatureRepository extends AbstractFeatureRepository
+    implements FeatureRepositoryContext {
   private static final Logger log = LoggerFactory.getLogger(ClientFeatureRepository.class);
   // feature-key, feature-state
   private final Map<String, FeatureStateBase> features = new ConcurrentHashMap<>();
@@ -36,8 +36,8 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
   private final ApplyFeature applyFeature;
   private boolean serverEvaluation = false; // the client tells us, we pass it out to others
 
-  private final TypeReference<List<io.featurehub.sse.model.FeatureState>> FEATURE_LIST_TYPEDEF
-    = new TypeReference<List<io.featurehub.sse.model.FeatureState>>() {};
+  private final TypeReference<List<io.featurehub.sse.model.FeatureState>> FEATURE_LIST_TYPEDEF =
+      new TypeReference<List<io.featurehub.sse.model.FeatureState>>() {};
 
   public ClientFeatureRepository(ExecutorService executor, ApplyFeature applyFeature) {
     mapper = initializeMapper();
@@ -46,8 +46,10 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
 
     this.executor = executor;
 
-    this.applyFeature = applyFeature == null ? new ApplyFeature(new PercentageMumurCalculator(),
-      new MatcherRegistry()) : applyFeature;
+    this.applyFeature =
+        applyFeature == null
+            ? new ApplyFeature(new PercentageMumurCalculator(), new MatcherRegistry())
+            : applyFeature;
   }
 
   public ClientFeatureRepository(int threadPoolSize) {
@@ -72,7 +74,7 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
     return mapper;
   }
 
-  static protected ExecutorService getExecutor(int threadPoolSize) {
+  protected static ExecutorService getExecutor(int threadPoolSize) {
     return Executors.newFixedThreadPool(threadPoolSize);
   }
 
@@ -90,11 +92,6 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
     return serverEvaluation;
   }
 
-  @Override
-  public boolean isEnabled(String name) {
-    return getFeatureState(name).getBoolean() == Boolean.TRUE;
-  }
-
   public Readyness getReadyness() {
     return readyness;
   }
@@ -106,8 +103,10 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
   }
 
   @Override
-  public FeatureRepository registerValueInterceptor(boolean allowFeatureOverride, FeatureValueInterceptor interceptor) {
-    featureValueInterceptors.add(new FeatureValueInterceptorHolder(allowFeatureOverride, interceptor));
+  public FeatureRepository registerValueInterceptor(
+      boolean allowFeatureOverride, FeatureValueInterceptor interceptor) {
+    featureValueInterceptors.add(
+        new FeatureValueInterceptorHolder(allowFeatureOverride, interceptor));
 
     return this;
   }
@@ -130,7 +129,8 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
             featureUpdate(mapper.readValue(data, io.featurehub.sse.model.FeatureState.class));
             break;
           case FEATURES:
-            List<io.featurehub.sse.model.FeatureState> features = mapper.readValue(data, FEATURE_LIST_TYPEDEF);
+            List<io.featurehub.sse.model.FeatureState> features =
+                mapper.readValue(data, FEATURE_LIST_TYPEDEF);
             notify(features);
             break;
           case FAILURE:
@@ -165,7 +165,8 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
   }
 
   @Override
-  public Applied applyFeature(List<RolloutStrategy> strategies, String key, String featureValueId, ClientContext cac) {
+  public Applied applyFeature(
+      List<RolloutStrategy> strategies, String key, String featureValueId, ClientContext cac) {
     return applyFeature.applyFeature(strategies, key, featureValueId, cac);
   }
 
@@ -208,7 +209,6 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
     notify(states, false);
   }
 
-
   @Override
   public FeatureRepository addReadynessListener(ReadynessListener rl) {
     this.readynessListeners.add(rl);
@@ -223,7 +223,6 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
     readynessListeners.forEach((rl) -> executor.execute(() -> rl.notify(readyness)));
   }
 
-
   private void deleteFeature(io.featurehub.sse.model.FeatureState readValue) {
     readValue.setValue(null);
     featureUpdate(readValue);
@@ -231,8 +230,10 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
 
   private void checkForInvalidFeatures() {
     String invalidKeys =
-      features.values().stream().filter(v -> v.getKey() == null)
-        .map(FeatureState::getKey).collect(Collectors.joining(", "));
+        features.values().stream()
+            .filter(v -> v.getKey() == null)
+            .map(FeatureState::getKey)
+            .collect(Collectors.joining(", "));
     if (invalidKeys.length() > 0) {
       log.error("FeatureHub error: application is requesting use of invalid keys: {}", invalidKeys);
     }
@@ -240,24 +241,33 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
 
   @Override
   public FeatureState getFeatureState(String key) {
-    return features.computeIfAbsent(key, key1 -> {
-      if (hasReceivedInitialState) {
-        log.error("FeatureHub error: application requesting use of invalid key after initialization: `{}`", key1);
-      }
+    return features.computeIfAbsent(
+        key,
+        key1 -> {
+          if (hasReceivedInitialState) {
+            log.error(
+                "FeatureHub error: application requesting use of invalid key after initialization: `{}`",
+                key1);
+          }
 
-      return new FeatureStateBase(null, this, key);
-    });
+          return new FeatureStateBase(null, this, key);
+        });
   }
 
   @Override
-  public FeatureRepository logAnalyticsEvent(String action, Map<String, String> other) {
+  public FeatureRepository logAnalyticsEvent(
+      String action, Map<String, String> other, ClientContext ctx) {
     // take a snapshot of the current state of the features
-    List<FeatureState> featureStateAtCurrentTime = features.values().stream()
-      .filter(FeatureStateBase::isSet)
-      .map(FeatureStateBase::copy)
-      .collect(Collectors.toList());
+    List<FeatureState> featureStateAtCurrentTime =
+        features.values().stream()
+            .filter(f -> ctx == null ? f.isEnabled() : f.withContext(ctx).isEnabled())
+            .map(FeatureStateBase::copy)
+            .collect(Collectors.toList());
 
-    executor.execute(() -> analyticsCollectors.forEach((c) -> c.logEvent(action, other, featureStateAtCurrentTime)));
+    executor.execute(
+        () ->
+            analyticsCollectors.forEach(
+                (c) -> c.logEvent(action, other, featureStateAtCurrentTime)));
 
     return this;
   }
@@ -273,18 +283,16 @@ public class ClientFeatureRepository extends AbstractFeatureRepository implement
 
       features.put(featureState.getKey(), holder);
     } else if (!force && holder.featureState != null) {
-      if (holder.featureState.getVersion() > featureState.getVersion() ||
-        (
-        holder.featureState.getVersion().equals(featureState.getVersion()) &&
-        !FeatureStateUtils.changed(holder.featureState.getValue(), featureState.getValue()))) {
+      if (holder.featureState.getVersion() > featureState.getVersion()
+          || (holder.featureState.getVersion().equals(featureState.getVersion())
+              && !FeatureStateUtils.changed(
+                  holder.featureState.getValue(), featureState.getValue()))) {
         // if the old version is newer, or they are the same version and the value hasn't changed.
         // it can change with server side evaluation based on user data
         return;
       }
     }
 
-
     holder.setFeatureState(featureState);
   }
-
 }

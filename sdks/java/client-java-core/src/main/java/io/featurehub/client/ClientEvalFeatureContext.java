@@ -1,5 +1,6 @@
 package io.featurehub.client;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
@@ -54,5 +55,17 @@ class ClientEvalFeatureContext extends BaseClientContext {
       repository.close();
       edgeService.close();
     }
+  }
+
+  @Override
+  public ClientContext logAnalyticsEvent(String action, Map<String, String> other) {
+    repository.logAnalyticsEvent(action, other, this);
+    return this;
+  }
+
+  @Override
+  public ClientContext logAnalyticsEvent(String action) {
+    repository.logAnalyticsEvent(action, null, this);
+    return this;
   }
 }

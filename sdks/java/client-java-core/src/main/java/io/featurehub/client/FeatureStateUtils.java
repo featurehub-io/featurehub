@@ -36,7 +36,7 @@ public class FeatureStateUtils {
   }
 
   static boolean isSet(FeatureRepository repository, Feature feature) {
-    return repository.getFeatureState(feature.name()).isSet();
+    return repository.getFeatureState(feature.name()).isEnabled();
   }
 
   static void addListener(FeatureRepository repository, Feature feature, FeatureListener featureListener) {

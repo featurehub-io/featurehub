@@ -3,6 +3,7 @@ package io.featurehub.client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
@@ -67,7 +68,19 @@ public class ServerEvalFeatureContext extends BaseClientContext {
 
   @Override
   public EdgeService getEdgeService() {
-    return null;
+    return currentEdgeService;
+  }
+
+  @Override
+  public ClientContext logAnalyticsEvent(String action, Map<String, String> other) {
+    repository.logAnalyticsEvent(action, other, this);
+    return this;
+  }
+
+  @Override
+  public ClientContext logAnalyticsEvent(String action) {
+    repository.logAnalyticsEvent(action, null, this);
+    return this;
   }
 
   @Override

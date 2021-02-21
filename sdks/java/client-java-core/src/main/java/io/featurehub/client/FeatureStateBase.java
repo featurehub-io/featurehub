@@ -158,7 +158,7 @@ public class FeatureStateBase implements FeatureState {
   }
 
   @Override
-  public boolean isSet() {
+  public boolean isEnabled() {
     return value != null;
   }
 

@@ -158,11 +158,6 @@ class InternetFeatureTrackerRepository extends AbstractFeatureRepository impleme
   }
 
   @Override
-  public FeatureRepository logAnalyticsEvent(String action, Map<String, String> other) {
-    return null;
-  }
-
-  @Override
   public FeatureRepository addAnalyticCollector(AnalyticsCollector collector) {
     return null;
   }
@@ -194,6 +189,11 @@ class InternetFeatureTrackerRepository extends AbstractFeatureRepository impleme
   @Override
   public boolean isEnabled(String name) {
     return false;
+  }
+
+  @Override
+  public FeatureRepository logAnalyticsEvent(String action, Map<String, String> other, ClientContext ctx) {
+    return this;
   }
 
   @Override

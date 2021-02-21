@@ -38,6 +38,9 @@ public interface ClientContext {
   FeatureRepository getRepository();
   EdgeService getEdgeService();
 
+  ClientContext logAnalyticsEvent(String action, Map<String, String> other);
+  ClientContext logAnalyticsEvent(String action);
+
   /**
    * true if it is a boolean feature and is true within this context.
    *

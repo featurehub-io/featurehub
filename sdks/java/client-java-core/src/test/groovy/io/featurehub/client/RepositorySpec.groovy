@@ -9,7 +9,6 @@ import io.featurehub.sse.model.StrategyAttributeDeviceName
 import io.featurehub.sse.model.StrategyAttributePlatformName
 import spock.lang.Specification
 
-import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
 
 
@@ -60,7 +59,7 @@ class RepositorySpec extends Specification {
       repo.getFeatureState('banana').string == null
       repo.getFeatureState('banana').number == null
       repo.getFeatureState('banana').number == null
-      repo.getFeatureState('banana').set
+      repo.getFeatureState('banana').enabled
       repo.getFeatureState('peach').string == 'orange'
       repo.exists('peach')
       repo.exists(Fruit.peach)
@@ -114,7 +113,7 @@ class RepositorySpec extends Specification {
     when: "we ask for a feature that doesn't exist"
       def feature = repo.getFeatureState('fred')
     then:
-      !feature.set
+      !feature.enabled
   }
 
   def "a feature is deleted that doesn't exist and thats ok"() {
@@ -123,7 +122,7 @@ class RepositorySpec extends Specification {
     and: "i delete a non existent feature"
       repo.notify(SSEResultState.DELETE_FEATURE, new ObjectMapper().writeValueAsString(feature))
     then:
-      !repo.getFeatureState('banana').set
+      !repo.getFeatureState('banana').enabled
   }
 
   def "A feature is deleted and it is now not set"() {
@@ -138,7 +137,7 @@ class RepositorySpec extends Specification {
       repo.notify(SSEResultState.DELETE_FEATURE, new ObjectMapper().writeValueAsString(featureDel))
     then:
       f.boolean
-      !repo.getFeatureState('banana').set
+      !repo.getFeatureState('banana').enabled
   }
 
 
@@ -255,7 +254,7 @@ class RepositorySpec extends Specification {
       }
       emptyFeatures.each {f ->
         f.key != null
-        !f.set
+        !f.enabled
         f.string == null
         f.boolean == null
         f.rawJson == null
@@ -263,7 +262,7 @@ class RepositorySpec extends Specification {
       }
     features.each { it ->
       repo.getFeatureState(it.key).key == it.key
-      repo.getFeatureState(it.key).set
+      repo.getFeatureState(it.key).enabled
 
       if (it.type == FeatureValueType.BOOLEAN)
         repo.getFeatureState(it.key).boolean == it.value

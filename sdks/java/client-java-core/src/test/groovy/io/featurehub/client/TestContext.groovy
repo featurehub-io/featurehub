@@ -21,6 +21,16 @@ class TestContext extends BaseClientContext {
   }
 
   @Override
+  ClientContext logAnalyticsEvent(String action, Map<String, String> other) {
+    return this
+  }
+
+  @Override
+  ClientContext logAnalyticsEvent(String action) {
+    return this
+  }
+
+  @Override
   void close() {
   }
 
