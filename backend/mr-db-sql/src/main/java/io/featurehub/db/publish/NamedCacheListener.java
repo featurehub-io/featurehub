@@ -112,6 +112,7 @@ public class NamedCacheListener implements MessageHandler, CacheBroadcast {
   @Override
   public void publishFeature(FeatureValueCacheItem feature) {
     try {
+      log.trace("publishing feature {}", feature);
       connection.publish(featureSubject, CacheJsonMapper.mapper.writeValueAsBytes(feature));
     } catch (JsonProcessingException e) {
       log.error("Could not encode feature");

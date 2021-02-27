@@ -7,6 +7,8 @@ namespace FeatureHubSDK
   {
     string Url { get; }
     bool ServerEvaluation { get; }
+    IFeatureRepositoryContext Repository { get; set; }
+    IEdgeService EdgeService { get; set; }
 
     IClientContext NewContext();
 
@@ -37,11 +39,25 @@ namespace FeatureHubSDK
 
     public bool ServerEvaluation => _serverEvaluation;
 
+    public IEdgeService EdgeService { get; set; }
+
+    public IFeatureRepositoryContext Repository { get; set; }
+
     public IClientContext NewContext()
     {
       if (_serverEvaluation)
       {
+        if (Repository != null && EdgeService != null)
+        {
+          return new ServerEvalFeatureContext(Repository, this, () => EdgeService);
+        }
+
         return new ServerEvalFeatureContext(this);
+      }
+
+      if (Repository != null && EdgeService != null)
+      {
+        return new ClientEvalFeatureContext(Repository, this, () => EdgeService);
       }
 
       return new ClientEvalFeatureContext(this);

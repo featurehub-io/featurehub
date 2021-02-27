@@ -1,5 +1,8 @@
 package io.featurehub.edge.rest;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.featurehub.edge.FeatureTransformer;
 import io.featurehub.edge.FeatureTransformerUtils;
 import io.featurehub.edge.ServerConfig;
@@ -40,12 +43,15 @@ public class EventStreamResource {
   private final EventOutputBucketService bucketService;
   private final ServerConfig serverConfig;
   private final FeatureTransformer featureTransformer;
+  private final ObjectMapper mapper = new ObjectMapper();
 
   @Inject
   public EventStreamResource(EventOutputBucketService bucketService, ServerConfig serverConfig) {
     this.bucketService = bucketService;
     this.serverConfig = serverConfig;
     featureTransformer = new FeatureTransformerUtils();
+
+    mapper.enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
   }
 
   @GET
@@ -102,116 +108,129 @@ public class EventStreamResource {
                          @PathParam("featureKey") String featureKey,
                          FeatureStateUpdate featureStateUpdate) {
 
-    final EdgeInitPermissionResponse perms = serverConfig.requestPermission(namedCache, apiKey, envId, featureKey);
+    try {
+      final EdgeInitPermissionResponse perms = serverConfig.requestPermission(namedCache, apiKey, envId, featureKey);
 
-    if (perms == null || Boolean.FALSE.equals(perms.getSuccess())) {
-      return Response.status(Response.Status.NOT_FOUND).build();
-    }
+      if (perms == null || Boolean.FALSE.equals(perms.getSuccess())) {
+        return Response.status(Response.Status.NOT_FOUND).build();
+      }
 
-    if (perms.getRoles().isEmpty() || (perms.getRoles().size() == 1 && perms.getRoles().get(0) == RoleType.READ)) {
-      return Response.status(Response.Status.FORBIDDEN).build();
-    }
-
-    if (Boolean.TRUE.equals(featureStateUpdate.getLock())) {
-      if (!perms.getRoles().contains(RoleType.LOCK)) {
+      if (perms.getRoles().isEmpty() || (perms.getRoles().size() == 1 && perms.getRoles().get(0) == RoleType.READ)) {
         return Response.status(Response.Status.FORBIDDEN).build();
       }
-    } else if (Boolean.FALSE.equals(featureStateUpdate.getLock())) {
-      if (!perms.getRoles().contains(RoleType.UNLOCK)) {
-        return Response.status(Response.Status.FORBIDDEN).build();
+
+      if (Boolean.TRUE.equals(featureStateUpdate.getLock())) {
+        if (!perms.getRoles().contains(RoleType.LOCK)) {
+          return Response.status(Response.Status.FORBIDDEN).build();
+        }
+      } else if (Boolean.FALSE.equals(featureStateUpdate.getLock())) {
+        if (!perms.getRoles().contains(RoleType.UNLOCK)) {
+          return Response.status(Response.Status.FORBIDDEN).build();
+        }
       }
-    }
-
-    if (featureStateUpdate.getValue() != null) {
-      featureStateUpdate.setUpdateValue(Boolean.TRUE);
-    }
-
-    // nothing to do?
-    if (featureStateUpdate.getLock() == null && (featureStateUpdate.getUpdateValue() == null || Boolean.FALSE.equals(featureStateUpdate.getUpdateValue()) )) {
-      return Response.status(Response.Status.BAD_REQUEST).build();
-    }
-
-    if (Boolean.TRUE.equals(featureStateUpdate.getUpdateValue())) {
-      if (!perms.getRoles().contains(RoleType.CHANGE_VALUE)) {
-        return Response.status(Response.Status.FORBIDDEN).build();
-      } else if (Boolean.TRUE.equals(perms.getFeature().getValue().getLocked()) && !Boolean.FALSE.equals(featureStateUpdate.getLock())) {
-        // its locked and you are trying to change its value and not unlocking it at the same time, that makes no sense
-        return Response.status(Response.Status.PRECONDITION_FAILED).build();
-      }
-    }
-
-    final StreamedFeatureUpdate upd = new StreamedFeatureUpdate()
-      .apiKey(apiKey)
-      .environmentId(envId)
-      .updatingValue(featureStateUpdate.getUpdateValue())
-      .lock(featureStateUpdate.getLock())
-      .featureKey(featureKey);
-
-    // now update our internal value we will be sending, and also check
-    // if aren't actually changing anything
-    final FeatureValue value = perms.getFeature().getValue();
-    boolean lockChanging = upd.getLock() != null && !upd.getLock().equals(value.getLocked());
-    boolean valueNotActuallyChanging = false;
-    if (Boolean.TRUE.equals(featureStateUpdate.getUpdateValue())) {
 
       if (featureStateUpdate.getValue() != null) {
-        final String val = featureStateUpdate.getValue().toString();
+        featureStateUpdate.setUpdateValue(Boolean.TRUE);
+      }
 
-        switch (perms.getFeature().getFeature().getValueType()) {
-          case BOOLEAN:
-            // if it is true, TRUE, t its true.
-            upd.valueBoolean(val.toLowerCase().startsWith("t"));
-            valueNotActuallyChanging = upd.getValueBoolean().equals(value.getValueBoolean());
-            break;
-          case STRING:
-            upd.valueString(val);
-            valueNotActuallyChanging = upd.getValueString().equals(value.getValueString());
-            break;
-          case JSON:
-            // TODO: implement JSON Schema for JSON data and validate it here
-            valueNotActuallyChanging = upd.getValueString().equals(value.getValueJson());
-            break;
-          case NUMBER:
-            try {
-              upd.valueNumber(new BigDecimal(val));
-              valueNotActuallyChanging = upd.getValueNumber().equals(value.getValueNumber());
-            } catch (Exception e) {
-              return Response.status(Response.Status.BAD_REQUEST).build();
-            }
-            break;
-        }
-      } else {
-        switch (perms.getFeature().getFeature().getValueType()) {
-          case BOOLEAN:
-            // a null boolean is not valid
-            return Response.status(Response.Status.PRECONDITION_FAILED).build();
-          case STRING:
-            valueNotActuallyChanging = (value.getValueString() == null);
-            break;
-          case NUMBER:
-            valueNotActuallyChanging = (value.getValueNumber() == null);
-            break;
-          case JSON:
-            valueNotActuallyChanging = (value.getValueJson() == null);
-            break;
+      // nothing to do?
+      if (featureStateUpdate.getLock() == null && (featureStateUpdate.getUpdateValue() == null || Boolean.FALSE.equals(featureStateUpdate.getUpdateValue()) )) {
+        return Response.status(Response.Status.BAD_REQUEST).build();
+      }
+
+      if (Boolean.TRUE.equals(featureStateUpdate.getUpdateValue())) {
+        if (!perms.getRoles().contains(RoleType.CHANGE_VALUE)) {
+          return Response.status(Response.Status.FORBIDDEN).build();
+        } else if (Boolean.TRUE.equals(perms.getFeature().getValue().getLocked()) && !Boolean.FALSE.equals(featureStateUpdate.getLock())) {
+          // its locked and you are trying to change its value and not unlocking it at the same time, that makes no sense
+          return Response.status(Response.Status.PRECONDITION_FAILED).build();
         }
       }
+
+      final StreamedFeatureUpdate upd = new StreamedFeatureUpdate()
+        .apiKey(apiKey)
+        .environmentId(envId)
+        .updatingValue(featureStateUpdate.getUpdateValue())
+        .lock(featureStateUpdate.getLock())
+        .featureKey(featureKey);
+
+      // now update our internal value we will be sending, and also check
+      // if aren't actually changing anything
+      final FeatureValue value = perms.getFeature().getValue();
+      boolean lockChanging = upd.getLock() != null && !upd.getLock().equals(value.getLocked());
+      boolean valueNotActuallyChanging = false;
+      if (Boolean.TRUE.equals(featureStateUpdate.getUpdateValue())) {
+
+        if (featureStateUpdate.getValue() != null) {
+          final String val = featureStateUpdate.getValue().toString();
+
+          switch (perms.getFeature().getFeature().getValueType()) {
+            case BOOLEAN:
+              // if it is true, TRUE, t its true.
+              upd.valueBoolean(val.toLowerCase().startsWith("t"));
+              valueNotActuallyChanging = upd.getValueBoolean().equals(value.getValueBoolean());
+              break;
+            case STRING:
+              upd.valueString(val);
+              valueNotActuallyChanging = upd.getValueString().equals(value.getValueString());
+              break;
+            case JSON:
+              try {
+                mapper.readTree(val);
+              } catch (JsonProcessingException jpe) {
+                return Response.status(Response.Status.BAD_REQUEST).build();
+              }
+
+              upd.valueString(val);
+              valueNotActuallyChanging = upd.getValueString().equals(value.getValueJson());
+              break;
+            case NUMBER:
+              try {
+                upd.valueNumber(new BigDecimal(val));
+                valueNotActuallyChanging = upd.getValueNumber().equals(value.getValueNumber());
+              } catch (Exception e) {
+                return Response.status(Response.Status.BAD_REQUEST).build();
+              }
+              break;
+          }
+        } else {
+          switch (perms.getFeature().getFeature().getValueType()) {
+            case BOOLEAN:
+              // a null boolean is not valid
+              return Response.status(Response.Status.PRECONDITION_FAILED).build();
+            case STRING:
+              valueNotActuallyChanging = (value.getValueString() == null);
+              break;
+            case NUMBER:
+              valueNotActuallyChanging = (value.getValueNumber() == null);
+              break;
+            case JSON:
+              valueNotActuallyChanging = (value.getValueJson() == null);
+              break;
+          }
+        }
+      }
+
+      if (valueNotActuallyChanging && !lockChanging) {
+        return Response.status(Response.Status.ACCEPTED).build();
+      }
+
+      if (valueNotActuallyChanging) {
+        upd.updatingValue(null);
+        upd.valueBoolean(null);
+        upd.valueNumber(null);
+        upd.valueString(null);
+      }
+
+      log.debug("publishing update on {} for {}", namedCache, upd);
+      serverConfig.publishFeatureChangeRequest(upd, namedCache);
+
+      return Response.ok().build();
+    } catch (Exception e) {
+      log.error("Failed to process request: {}/{}/{}/{} : {}", namedCache, envId, apiKey, featureKey,
+        featureStateUpdate, e);
+
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
     }
-
-    if (valueNotActuallyChanging && !lockChanging) {
-      return Response.status(Response.Status.ACCEPTED).build();
-    }
-
-    if (valueNotActuallyChanging) {
-      upd.updatingValue(null);
-      upd.valueBoolean(null);
-      upd.valueNumber(null);
-      upd.valueString(null);
-    }
-
-    log.debug("publishing update on {} for {}", namedCache, upd);
-    serverConfig.publishFeatureChangeRequest(upd, namedCache);
-
-    return Response.ok().build();
   }
 }
