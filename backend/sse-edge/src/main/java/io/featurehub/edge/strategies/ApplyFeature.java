@@ -108,11 +108,7 @@ public class ApplyFeature {
 
       // either of them are null, check against not equals as we can't do anything else
       if (val == null || suppliedValue == null) {
-        if (attr.getConditional() != RolloutStrategyAttributeConditional.NOT_EQUALS) {
-          return false;
-        }
-
-        continue; // can't compare with null and the only thing we can check is not equals
+        return false;
       }
 
       // find the appropriate matcher based on type and match against the supplied value
