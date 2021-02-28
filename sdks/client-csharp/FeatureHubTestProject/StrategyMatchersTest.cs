@@ -16,6 +16,18 @@ namespace FeatureHubTestProject
       registry = new MatcherRegistry();
     }
 
+    // need to include mocking library
+    // public void MatcherTest()
+    // {
+    //   var rsa = new RolloutStrategyAttribute();
+    //   rsa.Conditional = RolloutStrategyAttributeConditional.LESS;
+    //   rsa.Type = RolloutStrategyFieldType.STRING;
+    //   rsa.Values = new List<object> {"a", "b"};
+    //
+    //
+    //
+    // }
+
     [Test, TestCaseSource("StringMatcherProvider")]
     public void StringMatcher(RolloutStrategyAttributeConditional conditional, List<object> vals, string suppliedVal,
       bool matches)
@@ -30,6 +42,7 @@ namespace FeatureHubTestProject
 
     public static IEnumerable<TestCaseData> StringMatcherProvider()
     {
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object> {"a", "b"}, null, false);
       yield return new TestCaseData(RolloutStrategyAttributeConditional.EQUALS, new List<object> {"a", "b"}, "a", true);
       yield return new TestCaseData(RolloutStrategyAttributeConditional.NOTEQUALS, new List<object> {"a", "b"}, "a",
         false);

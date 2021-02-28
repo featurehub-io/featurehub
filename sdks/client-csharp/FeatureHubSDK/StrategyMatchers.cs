@@ -78,7 +78,6 @@ namespace FeatureHubSDK
     {
       if (context != null && strategies != null && strategies.Count != 0)
       {
-        Console.WriteLine($"Context is {context}");
         int? percentage = null;
         string percentageKey = null;
         var basePercentage = new Dictionary<string, int>();
@@ -144,7 +143,7 @@ namespace FeatureHubSDK
       return new Applied(false, null);
     }
 
-    private bool MatchAttributes(IClientContext context, RolloutStrategy rsi)
+    protected bool MatchAttributes(IClientContext context, RolloutStrategy rsi)
     {
       foreach (var attr in rsi.Attributes)
       {
@@ -177,12 +176,7 @@ namespace FeatureHubSDK
 
         if (val == null || suppliedValue == null)
         {
-          if (attr.Conditional == RolloutStrategyAttributeConditional.NOTEQUALS)
-          {
-            return false;
-          }
-
-          continue; // skip
+          return false;
         }
 
         if (!_matcherRepository.FindMatcher(attr).Match(suppliedValue, attr))

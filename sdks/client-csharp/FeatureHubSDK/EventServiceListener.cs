@@ -88,6 +88,11 @@ namespace FeatureHubSDK
 
       _eventSource = new EventSource(config);
 
+      // _eventSource.Closed += (sender, args) =>
+      // {
+      //   Console.WriteLine("source closed\n");
+      // };
+
       _eventSource.MessageReceived += (sender, args) =>
       {
         SSEResultState? state;
@@ -109,6 +114,8 @@ namespace FeatureHubSDK
             state = null;
             break;
         }
+
+        // Console.WriteLine($"The state was {state} with value {args.Message.Data}\n");
 
         if (state == null) return;
 

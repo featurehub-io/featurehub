@@ -104,7 +104,7 @@ namespace FeatureHubSDK
 
       if (batchData.Length > 0)
       {
-        Console.WriteLine(batchData);
+        // Console.WriteLine(batchData);
         _client.PostBatchUpdate(batchData);
       }
     }

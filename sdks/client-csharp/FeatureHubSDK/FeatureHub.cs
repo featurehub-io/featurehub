@@ -92,8 +92,35 @@ namespace FeatureHubSDK
     protected readonly Dictionary<string, List<string>> _attributes = new Dictionary<string,List<string>>();
     protected readonly IFeatureRepositoryContext _repository;
     protected readonly IFeatureHubConfig _config;
+    private const string KeyUserKey = "userkey";
+    private const string KeySession = "session";
 
     public IFeatureHubRepository Repository => _repository;
+
+    public IFeatureHubRepository LogAnalyticEvent(string action, string user = null, Dictionary<string, string> other = null)
+    {
+      if (user == null)
+      {
+        user = SessionKey();
+
+        if (user == null)
+        {
+          user = UserKey();
+        }
+      }
+
+      if (other == null && user != null)
+      {
+        other = new Dictionary<string, string>();
+        other[GoogleConstants.Cid] = user;
+      } else if (user != null && !other.ContainsKey(GoogleConstants.Cid))
+      {
+        other[GoogleConstants.Cid] = user;
+      }
+
+      return _repository;
+    }
+
     public abstract void Close();
 
     public BaseClientContext(IFeatureRepositoryContext repository, IFeatureHubConfig config)
@@ -104,8 +131,18 @@ namespace FeatureHubSDK
 
     public IClientContext UserKey(string key)
     {
-      _attributes["userkey"] = new List<string>{key};
+      _attributes[KeyUserKey] = new List<string>{key};
       return this;
+    }
+
+    private string Key(string name)
+    {
+      return _attributes.ContainsKey(name) ? _attributes[name][0] : null;
+    }
+
+    private string UserKey()
+    {
+      return Key(KeyUserKey);
     }
 
     private static string GetEnumMemberValue(Enum enumValue)
@@ -119,9 +156,15 @@ namespace FeatureHubSDK
 
     public IClientContext SessionKey(string key)
     {
-      _attributes["session"] = new List<string>{key};
+      _attributes[KeySession] = new List<string>{key};
       return this;
     }
+
+    private string SessionKey()
+    {
+      return Key(KeySession);
+    }
+
 
     public IClientContext Device(StrategyAttributeDeviceName device)
     {

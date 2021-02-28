@@ -31,6 +31,8 @@ namespace FeatureHubSDK
     IEdgeService EdgeService { get; }
     IFeatureHubRepository Repository { get; }
 
+    IFeatureHubRepository LogAnalyticEvent(string action, string user = null, Dictionary<string, string> other = null);
+
     void Close();
   }
 }
