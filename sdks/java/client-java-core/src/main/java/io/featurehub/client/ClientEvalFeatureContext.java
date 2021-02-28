@@ -56,16 +56,4 @@ class ClientEvalFeatureContext extends BaseClientContext {
       edgeService.close();
     }
   }
-
-  @Override
-  public ClientContext logAnalyticsEvent(String action, Map<String, String> other) {
-    repository.logAnalyticsEvent(action, other, this);
-    return this;
-  }
-
-  @Override
-  public ClientContext logAnalyticsEvent(String action) {
-    repository.logAnalyticsEvent(action, null, this);
-    return this;
-  }
 }

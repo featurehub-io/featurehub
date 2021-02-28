@@ -7,6 +7,8 @@ public class EdgeFeatureHubConfig implements FeatureHubConfig {
   private final boolean serverEvaluation;
   private final String edgeUrl;
   private final String sdkKey;
+  private FeatureRepositoryContext repository;
+  private EdgeService edgeService;
 
   public EdgeFeatureHubConfig(String edgeUrl, String sdkKey) {
 
@@ -53,7 +55,15 @@ public class EdgeFeatureHubConfig implements FeatureHubConfig {
   @Override
   public ClientContext newContext() {
     if (isServerEvaluation()) {
+      if (repository != null && edgeService != null) {
+        return new ServerEvalFeatureContext(this, repository, () -> edgeService);
+      }
+
       return new ServerEvalFeatureContext(this);
+    }
+
+    if (repository != null && edgeService != null) {
+      return new ClientEvalFeatureContext(this, repository, edgeService);
     }
 
     return new ClientEvalFeatureContext(this);
@@ -66,5 +76,25 @@ public class EdgeFeatureHubConfig implements FeatureHubConfig {
     }
 
     return new ClientEvalFeatureContext(this, repository, edgeService.get());
+  }
+
+  @Override
+  public void setRepository(FeatureRepositoryContext repository) {
+    this.repository = repository;
+  }
+
+  @Override
+  public FeatureRepositoryContext getRepository() {
+    return repository;
+  }
+
+  @Override
+  public void setEdgeService(EdgeService edgeService) {
+    this.edgeService = edgeService;
+  }
+
+  @Override
+  public EdgeService getEdgeService() {
+    return edgeService;
   }
 }

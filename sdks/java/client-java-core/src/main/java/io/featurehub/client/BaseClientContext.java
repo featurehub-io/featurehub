@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -162,4 +163,37 @@ public abstract class BaseClientContext implements ClientContext {
 
     throw new RuntimeException("Unable to find an edge service for featurehub, please include one on classpath.");
   }
+
+  private String key(String k) {
+    return clientContext.containsKey(k) ? clientContext.get(k).get(0) : null;
+  }
+
+  @Override
+  public ClientContext logAnalyticsEvent(String action, Map<String, String> other) {
+    String user = key("sessionkey");
+
+    if (user == null) {
+      user = key("userkey");
+    }
+
+    if (user != null) {
+      if (other == null) {
+        other = new HashMap<>();
+      }
+
+      if (!other.containsKey("cid")) {
+        other.put("cid", user);
+      }
+    }
+
+    repository.logAnalyticsEvent(action, other, this);
+
+    return this;
+  }
+
+  @Override
+  public ClientContext logAnalyticsEvent(String action) {
+    return logAnalyticsEvent(action, null);
+  }
+
 }

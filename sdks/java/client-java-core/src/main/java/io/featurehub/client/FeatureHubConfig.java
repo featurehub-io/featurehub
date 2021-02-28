@@ -23,4 +23,11 @@ public interface FeatureHubConfig {
   static boolean sdkKeyIsClientSideEvaluated(String sdkKey) {
     return sdkKey.contains("*");
   }
+
+  void setRepository(FeatureRepositoryContext repository);
+  FeatureRepositoryContext getRepository();
+
+  void setEdgeService(EdgeService edgeService);
+  EdgeService getEdgeService();
+
 }

@@ -72,18 +72,6 @@ public class ServerEvalFeatureContext extends BaseClientContext {
   }
 
   @Override
-  public ClientContext logAnalyticsEvent(String action, Map<String, String> other) {
-    repository.logAnalyticsEvent(action, other, this);
-    return this;
-  }
-
-  @Override
-  public ClientContext logAnalyticsEvent(String action) {
-    repository.logAnalyticsEvent(action, null, this);
-    return this;
-  }
-
-  @Override
   public boolean exists(String key) {
     return false;
   }
