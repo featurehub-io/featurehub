@@ -13,7 +13,7 @@ class BrowserFeaturePostUpdater implements FeatureUpdatePostManager{
       req.send(JSON.stringify(ObjectSerializer.serialize(update, 'FeatureStateUpdate')));
       req.onreadystatechange  = function() {
         if (req.readyState === 4) {
-          resolve(req.status === 200 || req.status === 201);
+          resolve(req.status >= 200 && req.status < 300);
         }
       };
     });
@@ -24,7 +24,7 @@ class NodejsFeaturePostUpdater implements FeatureUpdatePostManager {
   post(url: string, update: FeatureStateUpdate): Promise<boolean> {
     const loc = new URL(url);
     const cra = {protocol: loc.protocol, path: loc.pathname,
-      host: loc.host, method: 'PUT', port: loc.port, timeout: 3000,
+      host: loc.hostname, method: 'PUT', port: loc.port, timeout: 3000,
       headers: {
         'content-type': 'application/json'
       }
@@ -33,7 +33,7 @@ class NodejsFeaturePostUpdater implements FeatureUpdatePostManager {
     return new Promise<boolean>((resolve, reject) => {
       try {
         const req = http.request(cra, (res) => {
-          if (res.statusCode === 200 || res.statusCode === 201) {
+          if (res.statusCode >= 200 && req.statusCode < 300) {
             resolve(true);
           } else {
             resolve(false);

@@ -1,5 +1,5 @@
 import { FeatureStateHolder } from './feature_state';
-import { FeatureStateBooleanHolder, FeatureStateNumberHolder, FeatureStateStringHolder } from './feature_state_holders';
+import { FeatureValueType } from './models/models';
 
 export interface AnalyticsCollector {
   logEvent(action: string, other: Map<string, string>, featureStateAtCurrentTime: Array<FeatureStateHolder>);
@@ -81,11 +81,11 @@ export class GoogleAnalyticsCollector implements AnalyticsCollector {
     let postString = '';
     featureStateAtCurrentTime.forEach((f) => {
       let line = null;
-      if (f instanceof FeatureStateBooleanHolder) {
+      if (f.getType() === FeatureValueType.Boolean) {
         line = f.getBoolean() === true ? 'on' : 'off';
-      } else if (f instanceof FeatureStateStringHolder) {
+      } else if (f.getType() === FeatureValueType.String) {
         line = f.getString();
-      } else if (f instanceof FeatureStateNumberHolder) {
+      } else if (f.getType() === FeatureValueType.Number) {
         line = f.getNumber().toString();
       }
 

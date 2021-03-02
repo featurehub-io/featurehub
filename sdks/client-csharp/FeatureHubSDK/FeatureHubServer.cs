@@ -10,9 +10,7 @@ namespace FeatureHubSDK
     IFeatureRepositoryContext Repository { get; set; }
     IEdgeService EdgeService { get; set; }
 
-    IClientContext NewContext();
-
-    IClientContext NewContext(IFeatureRepositoryContext repository, EdgeServiceSource edgeServiceSource);
+    IClientContext NewContext(IFeatureRepositoryContext repository = null, EdgeServiceSource edgeServiceSource = null);
   }
 
   public class FeatureHubConfig : IFeatureHubConfig
@@ -42,11 +40,16 @@ namespace FeatureHubSDK
     public IEdgeService EdgeService { get; set; }
 
     public IFeatureRepositoryContext Repository { get; set; }
-
-    public IClientContext NewContext()
+    
+    public IClientContext NewContext(IFeatureRepositoryContext repository = null, EdgeServiceSource edgeServiceSource = null)
     {
       if (_serverEvaluation)
       {
+        if (repository != null && edgeServiceSource != null)
+        {
+          return new ServerEvalFeatureContext(repository, this, edgeServiceSource);
+        }
+
         if (Repository != null && EdgeService != null)
         {
           return new ServerEvalFeatureContext(Repository, this, () => EdgeService);
@@ -55,22 +58,17 @@ namespace FeatureHubSDK
         return new ServerEvalFeatureContext(this);
       }
 
+      if (repository != null && edgeServiceSource != null)
+      {
+        return new ClientEvalFeatureContext(repository, this, edgeServiceSource);
+      }
+
       if (Repository != null && EdgeService != null)
       {
         return new ClientEvalFeatureContext(Repository, this, () => EdgeService);
       }
 
       return new ClientEvalFeatureContext(this);
-    }
-
-    public IClientContext NewContext(IFeatureRepositoryContext repository, EdgeServiceSource edgeServiceSource)
-    {
-      if (_serverEvaluation)
-      {
-        return new ServerEvalFeatureContext(repository, this, edgeServiceSource);
-      }
-
-      return new ClientEvalFeatureContext(repository, this, edgeServiceSource);
     }
 
     public string Url => _url;

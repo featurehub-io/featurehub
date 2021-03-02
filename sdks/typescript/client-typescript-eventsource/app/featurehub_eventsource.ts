@@ -10,17 +10,6 @@ export class FeatureHubEventSourceClient {
   constructor(sdkUrl: string, repository?: ClientFeatureRepository) {
     this.sdkUrl = sdkUrl;
     this._repository = repository || featureHubRepository;
-
-    if (this._repository.clientContext) {
-      this._repository.clientContext.registerChangeListener(() => {
-        this._header = this._repository.clientContext.generateHeader();
-
-        if (this.eventSource != null) {
-          this.close();
-          this.init();
-        }
-      });
-    }
   }
 
   init() {

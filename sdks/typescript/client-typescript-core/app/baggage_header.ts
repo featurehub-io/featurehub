@@ -1,5 +1,4 @@
 import { FeatureHubRepository } from './client_feature_repository';
-import { featureHubRepository } from './feature_context';
 
 function createBaseBaggageHeader(header?: string) {
   let newHeader = '';
@@ -33,10 +32,6 @@ export interface BaggageHeader {
 
 // allows for consistency between client and server
 export function w3cBaggageHeader({repo, values, header}: BaggageHeader): string|undefined {
-  if (repo === undefined && values === undefined) {
-    repo = featureHubRepository;
-  }
-
   const newHeader = createBaseBaggageHeader(header);
 
   let features: string;

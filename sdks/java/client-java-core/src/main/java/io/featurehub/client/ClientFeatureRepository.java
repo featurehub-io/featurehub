@@ -260,8 +260,9 @@ public class ClientFeatureRepository extends AbstractFeatureRepository
     // take a snapshot of the current state of the features
     List<FeatureState> featureStateAtCurrentTime =
         features.values().stream()
-            .filter(f -> ctx == null ? f.isEnabled() : f.withContext(ctx).isEnabled())
-            .map(FeatureStateBase::copy)
+            .map(f -> ctx == null ? f : f.withContext(ctx))
+            .filter(FeatureState::isEnabled)
+            .map(f -> ((FeatureStateBase)f).copy())
             .collect(Collectors.toList());
 
     executor.execute(

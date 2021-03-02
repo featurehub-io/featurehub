@@ -1,6 +1,7 @@
 import { FeatureListener, FeatureStateHolder } from './feature_state';
 import { FeatureState, FeatureValueType } from './models/models';
 import { FeatureHubRepository } from './client_feature_repository';
+import { ClientContext } from './client_context';
 
 export class InterceptorValueMatch {
   public value: string | undefined;
@@ -17,26 +18,36 @@ export interface FeatureStateValueInterceptor {
 
 export class FeatureStateBaseHolder implements FeatureStateHolder {
   protected featureState: FeatureState;
+  protected _key: string;
   protected listeners: Array<FeatureListener> = [];
-  protected matchers: Array<FeatureStateValueInterceptor> = [];
+  protected _repo: FeatureHubRepository;
+  protected ctx: ClientContext;
 
-  constructor(existingHolder?: FeatureStateBaseHolder) {
+  constructor(repository: FeatureHubRepository, key: string, existingHolder?: FeatureStateBaseHolder) {
     if (existingHolder !== null && existingHolder !== undefined) {
-      this.matchers = existingHolder.matchers;
       this.listeners = existingHolder.listeners;
     }
+
+    this._repo = repository;
+    this._key = key;
+  }
+
+  public withContext(param: ClientContext): FeatureStateHolder {
+    const fsh = this._copy();
+    fsh.ctx = param;
+    return fsh;
+  }
+
+  isEnabled(): boolean {
+    return this.getBoolean() === true;
   }
 
   addListener(listener: FeatureListener): void {
     this.listeners.push(listener);
   }
 
-  addValueInterceptor(matcher: FeatureStateValueInterceptor): void {
-    this.matchers.push(matcher);
-  }
-
   getBoolean(): boolean | undefined {
-    return undefined;
+    return this._getValue(FeatureValueType.Boolean) as boolean | undefined;
   }
 
   getFlag(): boolean | undefined {
@@ -44,23 +55,23 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
   }
 
   getKey(): string | undefined {
-    return this.featureState === undefined ? undefined : this.featureState.key;
+    return this._key;
   }
 
   getNumber(): number | undefined {
-    return undefined;
+    return this._getValue(FeatureValueType.Number) as number | undefined;
   }
 
   getRawJson(): string | undefined {
-    return undefined;
+    return this._getValue(FeatureValueType.Json) as string | undefined;
   }
 
   getString(): string | undefined {
-    return undefined;
+    return this._getValue(FeatureValueType.String) as string | undefined;
   }
 
   isSet(): boolean {
-    return false;
+    return this._getValue();
   }
 
   getFeatureState(): FeatureState {
@@ -69,12 +80,22 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
 
   /// returns true if the value changed
   setFeatureState(fs: FeatureState): boolean {
-    // always overridden
-    return false;
+    const existingValue = this._getValue();
+    const existingLocked = this.featureState?.l;
+
+    this.featureState = fs;
+
+    const changed = existingLocked !== this.featureState?.l || existingValue !== this._getValue();
+
+    if (changed) {
+      this.notifyListeners();
+    }
+
+    return changed;
   }
 
   copy(): FeatureStateHolder {
-    return null;
+    return this._copy();
   }
 
   getType(): FeatureValueType | undefined {
@@ -103,219 +124,39 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
     });
   }
 
-  protected match(): InterceptorValueMatch | undefined {
-    for (let match of this.matchers) {
-      const val = match.matched(this.getKey());
-      if (val) {
-        return val;
-      }
-    }
-
-    return undefined;
-  }
-}
-
-export class FeatureStateBooleanHolder extends FeatureStateBaseHolder {
-  private value: boolean | undefined;
-
-  constructor(existingHolder: FeatureStateBaseHolder, featureState?: FeatureState) {
-    super(existingHolder);
-
-    if (featureState) {
-      this.setFeatureState(featureState);
-    }
+  private _copy(): FeatureStateBaseHolder {
+    return new FeatureStateBaseHolder(this._repo, this._key, this);
   }
 
-  setFeatureState(fs: FeatureState): boolean {
-    const oldLocked = this.featureState?.l;
-    this.featureState = fs;
-    const oldValue = this.value;
-    this.value = fs.value !== undefined ? fs.value as unknown as boolean : undefined;
-    if (oldValue !== this.getBoolean() || (oldLocked !== fs.l && this.match())) {
-      this.notifyListeners();
-      return true;
-    }
-
-    return false;
-  }
-
-  getBoolean(): boolean | undefined {
+  private _getValue(type?: FeatureValueType): any {
     if (!this.isLocked()) {
-      const matched = this.match();
+      const intercept = this._repo.valueInterceptorMatched(this._key);
 
-      if (matched) {
-        return matched.value === 'true';
-      }
-    }
+      if (intercept?.value) {
+        if (type === FeatureValueType.Boolean) {
+          return 'true' === intercept.value;
+        } else if (type === FeatureValueType.String) {
+          return intercept.value;
+        } else if (type === FeatureValueType.Number) {
+          if (intercept.value.includes('.')) {
+            return parseFloat(intercept.value);
+          }
 
-    return this.value;
-  }
-
-  isSet(): boolean {
-    return this.value !== undefined;
-  }
-
-  copy(): FeatureStateHolder {
-    return new FeatureStateBooleanHolder(null, this.featureState);
-  }
-
-  getType(): FeatureValueType | undefined {
-    return FeatureValueType.Boolean;
-  }
-}
-
-export class FeatureStateStringHolder extends FeatureStateBaseHolder {
-  private value: string | undefined;
-
-  constructor(existingHolder: FeatureStateBaseHolder, featureState?: FeatureState) {
-    super(existingHolder);
-
-    if (featureState) {
-      this.setFeatureState(featureState);
-    }
-  }
-
-  setFeatureState(fs: FeatureState): boolean {
-    const oldLocked = this.featureState?.l;
-    this.featureState = fs;
-    const oldValue = this.value;
-    this.value = fs.value !== undefined ? fs.value.toString() : undefined;
-    if (oldValue !== this.getString() || (oldLocked !== fs.l && this.match())) {
-      this.notifyListeners();
-      return true;
-    }
-    return false;
-  }
-
-  getString(): string | undefined {
-    if (!this.isLocked()) {
-      const matched = this.match();
-
-      if (matched) {
-        return matched.value;
-      }
-    }
-
-    return this.value;
-  }
-
-  isSet(): boolean {
-    return this.value !== undefined;
-  }
-
-  copy(): FeatureStateHolder {
-    return new FeatureStateStringHolder(null, this.featureState);
-  }
-
-  getType(): FeatureValueType | undefined {
-    return FeatureValueType.String;
-  }
-}
-
-export class FeatureStateNumberHolder extends FeatureStateBaseHolder {
-  private value: number | undefined;
-
-  constructor(existingHolder: FeatureStateBaseHolder, featureState?: FeatureState) {
-    super(existingHolder);
-
-    if (featureState) {
-      this.setFeatureState(featureState);
-    }
-  }
-
-  setFeatureState(fs: FeatureState): boolean {
-    const oldLocked = this.featureState?.l;
-    this.featureState = fs;
-    const oldValue = this.value;
-    this.value = fs.value !== undefined ? fs.value as unknown as number : undefined;
-    if (oldValue !== this.getNumber() || (oldLocked !== fs.l && this.match())) {
-      this.notifyListeners();
-      return true;
-    }
-
-    return false;
-  }
-
-  getNumber(): number | undefined {
-    if (!this.isLocked()) {
-      const matched = this.match();
-
-      if (matched) {
-        if (matched.value === undefined) {
-          return undefined;
+          // tslint:disable-next-line:radix
+          return parseInt(intercept.value);
+        } else if (type === FeatureValueType.Json) {
+          return intercept.value;
+        } else {
+          return intercept.value;
         }
 
-        if (matched.value.includes('.')) {
-          return parseFloat(matched.value);
-        }
-
-        // tslint:disable-next-line:radix
-        return parseInt(matched.value);
       }
     }
 
-    return this.value;
-  }
-
-  isSet(): boolean {
-    return this.value !== undefined;
-  }
-
-  copy(): FeatureStateHolder {
-    return new FeatureStateNumberHolder(null, this.featureState);
-  }
-
-  getType(): FeatureValueType | undefined {
-    return FeatureValueType.Number;
-  }
-}
-
-export class FeatureStateJsonHolder extends FeatureStateBaseHolder {
-  private value: string | undefined;
-
-  constructor(existingHolder: FeatureStateBaseHolder, featureState?: FeatureState) {
-    super(existingHolder);
-
-    if (featureState) {
-      this.setFeatureState(featureState);
-    }
-  }
-
-  setFeatureState(fs: FeatureState): boolean {
-    const oldLocked = this.featureState?.l;
-    this.featureState = fs;
-    const oldValue = this.value;
-    this.value = fs.value !== undefined ? fs.value.toString() : undefined;
-    if (oldValue !== this.getRawJson() || (oldLocked !== fs.l && this.match()) ) {
-      this.notifyListeners();
-      return true;
+    if (this.featureState == null || (type != null && this.featureState.type !== type)) {
+      return null;
     }
 
-    return false;
-  }
-
-  getRawJson(): string | undefined {
-    if (!this.isLocked()) {
-
-      const matched = this.match();
-
-      if (matched) {
-        return matched.value;
-      }
-    }
-
-    return this.value;
-  }
-
-  isSet(): boolean {
-    return this.value !== undefined;
-  }
-
-  copy(): FeatureStateHolder {
-    return new FeatureStateJsonHolder(null, this.featureState);
-  }
-
-  getType(): FeatureValueType | undefined {
-    return FeatureValueType.Json;
+    return this.featureState?.value;
   }
 }

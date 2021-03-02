@@ -164,17 +164,9 @@ public abstract class BaseClientContext implements ClientContext {
     throw new RuntimeException("Unable to find an edge service for featurehub, please include one on classpath.");
   }
 
-  private String key(String k) {
-    return clientContext.containsKey(k) ? clientContext.get(k).get(0) : null;
-  }
-
   @Override
   public ClientContext logAnalyticsEvent(String action, Map<String, String> other) {
-    String user = key("sessionkey");
-
-    if (user == null) {
-      user = key("userkey");
-    }
+    String user = get("userkey", null);
 
     if (user != null) {
       if (other == null) {

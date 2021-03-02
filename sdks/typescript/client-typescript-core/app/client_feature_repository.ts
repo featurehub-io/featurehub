@@ -1,10 +1,6 @@
 import {
   FeatureStateBaseHolder,
-  FeatureStateBooleanHolder,
-  FeatureStateJsonHolder,
-  FeatureStateNumberHolder,
-  FeatureStateStringHolder,
-  FeatureStateValueInterceptor,
+  FeatureStateValueInterceptor, InterceptorValueMatch,
 } from './feature_state_holders';
 
 import { FeatureStateHolder } from './feature_state';
@@ -24,39 +20,7 @@ export interface ReadynessListener {
   (state: Readyness): void;
 }
 
-export interface PostLoadNewFeatureStateAvailableListener {
-  (repo: ClientFeatureRepository): void;
-}
-
-export interface FeatureHubRepository {
-  // determines if the repository is ready
-  readyness: Readyness;
-
-  // allows us to log an analytics event with this set of features
-  logAnalyticsEvent(action: string, other?: Map<string, string>);
-
-  // returns undefined if the feature does not exist
-  hasFeature(key: string): FeatureStateHolder;
-
-  // synonym for getFeatureState
-  feature(key: string): FeatureStateHolder;
-
-  // primary used to pass down the line in headers
-  simpleFeatures(): Map<string, string | undefined>;
-
-  getFlag(key: string): boolean | undefined;
-
-  getString(key: string): string | undefined;
-
-  getJson(key: string): string | undefined;
-
-  getNumber(key: string): number | undefined;
-
-  isSet(key: string): boolean;
-}
-
 export class ClientFeatureRepository implements FeatureHubRepository {
-
   private hasReceivedInitialState: boolean;
   // indexed by key as that what the user cares about
   private features = new Map<string, FeatureStateBaseHolder>();
@@ -67,7 +31,6 @@ export class ClientFeatureRepository implements FeatureHubRepository {
   // indexed by id
   private _catchReleaseStates = new Map<string, FeatureState>();
   private _newFeatureStateAvailableListeners: Array<PostLoadNewFeatureStateAvailableListener> = [];
-  private _clientContext = new ClientContext();
   private _matchers: Array<FeatureStateValueInterceptor> = [];
 
   public get readyness(): Readyness {
@@ -134,9 +97,17 @@ export class ClientFeatureRepository implements FeatureHubRepository {
     this._matchers.push(matcher);
 
     matcher.repository(this);
+  }
 
-    // add this one to the existing ones
-    Array.from(this.features).forEach((e) => e[1].addValueInterceptor(matcher));
+  public valueInterceptorMatched(key: string): InterceptorValueMatch {
+    for (let matcher of this._matchers) {
+      const m = matcher.matched(key);
+      if (m.value) {
+        return m;
+      }
+    }
+
+    return null;
   }
 
   public addPostLoadNewFeatureStateAvailableListener(listener: PostLoadNewFeatureStateAvailableListener) {
@@ -154,6 +125,11 @@ export class ClientFeatureRepository implements FeatureHubRepository {
     listener(this.readynessState);
   }
 
+  notReady(): void {
+    this.readynessState = Readyness.NotReady;
+    this.broadcastReadynessState();
+  }
+
   public async broadcastReadynessState() {
     this.readynessListeners.forEach((l) => l(this.readynessState));
   }
@@ -162,8 +138,8 @@ export class ClientFeatureRepository implements FeatureHubRepository {
     this.analyticsCollectors.push(collector);
   }
 
-  public simpleFeatures(): Map<string, string|undefined> {
-    const vals = new Map<string, string|undefined>();
+  public simpleFeatures(): Map<string, string | undefined> {
+    const vals = new Map<string, string | undefined>();
 
     this.features.forEach((value, key) => {
       if (value.getKey()) { // only include value features
@@ -191,12 +167,12 @@ export class ClientFeatureRepository implements FeatureHubRepository {
     return vals;
   }
 
-  public async logAnalyticsEvent(action: string, other?: Map<string, string>) {
+  public async logAnalyticsEvent(action: string, other?: Map<string, string>, ctx?: ClientContext) {
     const featureStateAtCurrentTime = [];
 
     for (let fs of this.features.values()) {
       if (fs.isSet()) {
-        featureStateAtCurrentTime.push(fs.copy());
+        featureStateAtCurrentTime.push(ctx == null ? fs.copy() : fs.withContext(ctx));
       }
     }
 
@@ -211,9 +187,7 @@ export class ClientFeatureRepository implements FeatureHubRepository {
     let holder = this.features.get(key);
 
     if (holder === undefined) {
-      holder = new FeatureStateBaseHolder();
-
-      this.addMatchers(holder);
+      holder = new FeatureStateBaseHolder(this, key);
       this.features.set(key, holder);
     }
 
@@ -223,10 +197,6 @@ export class ClientFeatureRepository implements FeatureHubRepository {
   // deprecated
   public getFeatureState(key: string): FeatureStateHolder {
     return this.feature(key);
-  }
-
-  get clientContext(): ClientContext {
-    return this._clientContext;
   }
 
   get catchAndReleaseMode(): boolean {
@@ -314,10 +284,6 @@ export class ClientFeatureRepository implements FeatureHubRepository {
     }
   }
 
-  private addMatchers(fs: FeatureStateHolder) {
-    this._matchers.forEach((m) => fs.addValueInterceptor(m));
-  }
-
   private featureUpdate(fs: FeatureState): boolean {
     if (fs === undefined || fs.key === undefined) {
       return false;
@@ -325,30 +291,10 @@ export class ClientFeatureRepository implements FeatureHubRepository {
 
     let holder = this.features.get(fs.key);
     if (holder === undefined || holder.getKey() === undefined) {
-      let newFeature: FeatureStateBaseHolder;
-
-      switch (fs.type) {
-        case FeatureValueType.Boolean:
-          newFeature = new FeatureStateBooleanHolder(holder);
-          break;
-        case FeatureValueType.Json:
-          newFeature = new FeatureStateJsonHolder(holder);
-          break;
-        case FeatureValueType.Number:
-          newFeature = new FeatureStateNumberHolder(holder);
-          break;
-        case FeatureValueType.String:
-          newFeature = new FeatureStateStringHolder(holder);
-          break;
-        default:
-          return false;
-      }
+      const newFeature = new FeatureStateBaseHolder(this, fs.key);
+      newFeature.setFeatureState(fs);
 
       this.features.set(fs.key, newFeature);
-
-      if (holder === undefined) { // if we aren't replacing a fake base, we have to add the matchers
-        this.addMatchers(newFeature);
-      }
 
       holder = newFeature;
     } else if (fs.version < holder.getFeatureState().version) {
@@ -369,4 +315,43 @@ export class ClientFeatureRepository implements FeatureHubRepository {
       holder.setFeatureState(featureState);
     }
   }
+}
+
+export interface PostLoadNewFeatureStateAvailableListener {
+  (repo: ClientFeatureRepository): void;
+}
+
+export interface FeatureHubRepository {
+  // determines if the repository is ready
+  readyness: Readyness;
+
+  // allows us to log an analytics event with this set of features
+  logAnalyticsEvent(action: string, other?: Map<string, string>, ctx?: ClientContext);
+
+  // returns undefined if the feature does not exist
+  hasFeature(key: string): FeatureStateHolder;
+
+  // synonym for getFeatureState
+  feature(key: string): FeatureStateHolder;
+
+  // primary used to pass down the line in headers
+  simpleFeatures(): Map<string, string | undefined>;
+
+  getFlag(key: string): boolean | undefined;
+
+  getString(key: string): string | undefined;
+
+  getJson(key: string): string | undefined;
+
+  getNumber(key: string): number | undefined;
+
+  isSet(key: string): boolean;
+
+  notReady(): void;
+
+  notify(state: SSEResultState, data: any): void;
+
+  addValueInterceptor(interceptor: FeatureStateValueInterceptor);
+
+  valueInterceptorMatched(key: string): InterceptorValueMatch;
 }

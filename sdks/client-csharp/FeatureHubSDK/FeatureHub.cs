@@ -92,8 +92,6 @@ namespace FeatureHubSDK
     protected readonly Dictionary<string, List<string>> _attributes = new Dictionary<string,List<string>>();
     protected readonly IFeatureRepositoryContext _repository;
     protected readonly IFeatureHubConfig _config;
-    private const string KeyUserKey = "userkey";
-    private const string KeySession = "session";
 
     public IFeatureHubRepository Repository => _repository;
 
@@ -101,22 +99,20 @@ namespace FeatureHubSDK
     {
       if (user == null)
       {
-        user = SessionKey();
+        user = GetAttr("userkey", null);
+      }
 
-        if (user == null)
+      if (user != null)
+      {
+        if (other == null)
         {
-          user = UserKey();
+          other = new Dictionary<string, string>();
         }
+
+        other[GoogleConstants.Cid] = user;
       }
 
-      if (other == null && user != null)
-      {
-        other = new Dictionary<string, string>();
-        other[GoogleConstants.Cid] = user;
-      } else if (user != null && !other.ContainsKey(GoogleConstants.Cid))
-      {
-        other[GoogleConstants.Cid] = user;
-      }
+      _repository.LogAnalyticEvent(action, other);
 
       return _repository;
     }
@@ -131,18 +127,8 @@ namespace FeatureHubSDK
 
     public IClientContext UserKey(string key)
     {
-      _attributes[KeyUserKey] = new List<string>{key};
+      _attributes["userkey"] = new List<string>{key};
       return this;
-    }
-
-    private string Key(string name)
-    {
-      return _attributes.ContainsKey(name) ? _attributes[name][0] : null;
-    }
-
-    private string UserKey()
-    {
-      return Key(KeyUserKey);
     }
 
     private static string GetEnumMemberValue(Enum enumValue)
@@ -156,15 +142,9 @@ namespace FeatureHubSDK
 
     public IClientContext SessionKey(string key)
     {
-      _attributes[KeySession] = new List<string>{key};
+      _attributes["session"] = new List<string>{key};
       return this;
     }
-
-    private string SessionKey()
-    {
-      return Key(KeySession);
-    }
-
 
     public IClientContext Device(StrategyAttributeDeviceName device)
     {
@@ -491,8 +471,7 @@ namespace FeatureHubSDK
     event EventHandler<Readyness> ReadynessHandler;
     event EventHandler<FeatureHubRepository> NewFeatureHandler;
     Readyness Readyness { get; }
-    FeatureHubRepository LogAnalyticEvent(string action);
-    FeatureHubRepository LogAnalyticEvent(string action, Dictionary<string, string> other);
+    FeatureHubRepository LogAnalyticEvent(string action, Dictionary<string, string> other = null, IClientContext ctx = null);
     FeatureHubRepository AddAnalyticCollector(IAnalyticsCollector collector);
     bool Exists(string key);
   }
@@ -519,8 +498,7 @@ namespace FeatureHubSDK
     public abstract event EventHandler<Readyness> ReadynessHandler;
     public abstract event EventHandler<FeatureHubRepository> NewFeatureHandler;
     public abstract Readyness Readyness { get; }
-    public abstract FeatureHubRepository LogAnalyticEvent(string action);
-    public abstract FeatureHubRepository LogAnalyticEvent(string action, Dictionary<string, string> other);
+    public abstract FeatureHubRepository LogAnalyticEvent(string action, Dictionary<string, string> other = null, IClientContext ctx = null);
     public abstract FeatureHubRepository AddAnalyticCollector(IAnalyticsCollector collector);
     public abstract bool Exists(string key);
   }
@@ -666,16 +644,14 @@ namespace FeatureHubSDK
       }
     }
 
-    public override FeatureHubRepository LogAnalyticEvent(string action)
-    {
-      return LogAnalyticEvent(action, new Dictionary<string, string>());
-    }
-
-    public override FeatureHubRepository LogAnalyticEvent(string action, Dictionary<string, string> other)
+    public override FeatureHubRepository LogAnalyticEvent(string action, Dictionary<string, string> other = null, IClientContext ctx = null)
     {
       // take a snapshot copy
       var featureCopies =
-         _features.Values.Where((f) => f.Exists).Select(f => f.Copy()).ToList();
+         _features.Values
+           .Where((f) => f.Exists)
+           .Select(f => ctx != null ? f.WithContext(ctx) : f)
+           .Select(f => ((FeatureStateBaseHolder)f).Copy()).ToList();
 
       foreach (var analyticsCollector in _analyticsCollectors)
       {

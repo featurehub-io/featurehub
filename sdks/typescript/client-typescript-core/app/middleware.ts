@@ -3,10 +3,11 @@
 ///
 /// For this we are using the W3C Baggage standard for future supportability
 
-import { ClientFeatureRepository, FeatureHubRepository, Readyness } from './client_feature_repository';
+import { FeatureHubRepository, Readyness } from './client_feature_repository';
 import { FeatureListener, FeatureStateHolder } from './feature_state';
-import { FeatureValueType } from './models/models';
-import { FeatureStateValueInterceptor } from './feature_state_holders';
+import { FeatureValueType, SSEResultState } from './models/models';
+import { FeatureStateValueInterceptor, InterceptorValueMatch } from './feature_state_holders';
+import { ClientContext } from './client_context';
 
 class BaggageHolder implements FeatureStateHolder {
   protected readonly existing: FeatureStateHolder;
@@ -15,6 +16,14 @@ class BaggageHolder implements FeatureStateHolder {
   constructor(existing: FeatureStateHolder, value: string) {
     this.existing = existing;
     this.value = value;
+  }
+
+  isEnabled(): boolean {
+    return this.getBoolean() === true;
+  }
+
+  withContext(param: ClientContext): FeatureStateHolder {
+    return new BaggageHolder(this.existing.withContext(param), this.value);
   }
 
 // tslint:disable-next-line:no-empty
@@ -89,15 +98,11 @@ class BaggageHolder implements FeatureStateHolder {
   triggerListeners(feature: FeatureStateHolder): void {
     this.existing.triggerListeners(feature);
   }
-
-  addValueInterceptor(matcher: FeatureStateValueInterceptor): void {
-    this.existing.addValueInterceptor(matcher);
-  }
 }
 
 class BaggageRepository implements FeatureHubRepository {
   private readonly repo: FeatureHubRepository;
-  private baggage: Map<string, string|undefined>;
+  private baggage: Map<string, string | undefined>;
   private mappedBaggage = new Map<string, FeatureStateHolder>();
 
   constructor(repo: FeatureHubRepository, baggage: Map<string, string>) {
@@ -137,7 +142,7 @@ class BaggageRepository implements FeatureHubRepository {
     const realFeature = this.repo.hasFeature(key);
 
     if (realFeature !== undefined && realFeature.getType() !== undefined) {
-      if ( this.baggage.has(key)) {
+      if (this.baggage.has(key)) {
         let fh = this.mappedBaggage.get(key);
 
         // we don't map json types, create it if it isn't there
@@ -174,6 +179,22 @@ class BaggageRepository implements FeatureHubRepository {
 
     return features;
   }
+
+  notReady(): void {
+    this.repo.notReady();
+  }
+
+  notify(state: SSEResultState, data: any): void {
+    this.repo.notify(state, data);
+  }
+
+  addValueInterceptor(interceptor: FeatureStateValueInterceptor) {
+    this.repo.addValueInterceptor(interceptor);
+  }
+
+  valueInterceptorMatched(key: string): InterceptorValueMatch {
+    return this.repo.valueInterceptorMatched(key);
+  }
 }
 
 export function featurehubMiddleware(repo: FeatureHubRepository) {
@@ -185,7 +206,7 @@ export function featurehubMiddleware(repo: FeatureHubRepository) {
       const baggage = req.header('baggage');
 
       if (baggage != null) {
-        const baggageMap = new Map<string, string|undefined>();
+        const baggageMap = new Map<string, string | undefined>();
 
         // we are expecting a single key/value pair, fhub=
         baggage.split(',')

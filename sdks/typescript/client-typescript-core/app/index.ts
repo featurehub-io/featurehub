@@ -1,5 +1,6 @@
-export * from './feature_context';
 export * from './feature_state';
+export * from './feature_hub_config';
+export * from './edge_service';
 export * from './client_feature_repository';
 export * from './models/models';
 export * from './analytics';
