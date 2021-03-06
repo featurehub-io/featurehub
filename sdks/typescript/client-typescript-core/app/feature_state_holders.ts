@@ -71,7 +71,8 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
   }
 
   isSet(): boolean {
-    return this._getValue();
+    const val = this._getValue();
+    return val !== undefined && val != null;
   }
 
   getFeatureState(): FeatureState {
@@ -99,7 +100,7 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
   }
 
   getType(): FeatureValueType | undefined {
-    return undefined;
+    return this.featureState?.type;
   }
 
   getVersion(): number | undefined {
@@ -125,22 +126,14 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
   }
 
   private _copy(): FeatureStateBaseHolder {
-    return new FeatureStateBaseHolder(this._repo, this._key, this);
+    const bh = new FeatureStateBaseHolder(this._repo, this._key); // don't copy listeners
+    bh.setFeatureState(this.featureState);
+    return bh;
   }
 
-  private _getValue(type?: FeatureValueType): any {
+  private _getValue(type?: FeatureValueType): any | undefined {
     if (!this.isLocked()) {
       const intercept = this._repo.valueInterceptorMatched(this._key);
-
-      // if (_context != null)
-      //       {
-      //         Applied matched = _applyFeature.Apply(_feature.Strategies, Key, _feature.Id, _context);
-      //
-      //         if (matched.Matched)
-      //         {
-      //           return matched.Value;
-      //         }
-      //       }
 
       if (intercept?.value) {
         return this._castType(type, intercept.value);
@@ -155,16 +148,16 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
       }
     }
 
-    if (this.featureState == null || (type != null && this.featureState.type !== type)) {
-      return null;
+    if (!this.featureState || (type != null && this.featureState.type !== type)) {
+      return undefined;
     }
 
     return this.featureState?.value;
   }
 
-  private _castType(type: FeatureValueType, value: any): any {
+  private _castType(type: FeatureValueType, value: any): any | undefined {
     if (value == null) {
-      return null;
+      return undefined;
     }
 
     if (type === FeatureValueType.Boolean) {

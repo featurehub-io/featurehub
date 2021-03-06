@@ -6,11 +6,13 @@ import {
   GoogleAnalyticsCollector, SSEResultState
 } from '../app';
 import { expect } from 'chai';
+import { Substitute, Arg, SubstituteOf } from '@fluffy-spoon/substitute';
 
-describe('Googe analytics collector should output correct info', () => {
-  it('we should provide all different types of features and the analytics should log all except JSON', () => {
+describe('Google analytics collector should output correct info', () => {
+  it('we should provide all different types of features and the analytics should log all except JSON', async () => {
     const cid = 'cid';
     let postedData: string = undefined;
+
     const apiClient = {
       cid: function(other: Map<string, string>) {
         return other.get('cid');
@@ -35,7 +37,7 @@ describe('Googe analytics collector should output correct info', () => {
 
     repo.notify(SSEResultState.Features, features);
 
-    repo.logAnalyticsEvent('action');
+    await repo.logAnalyticsEvent('action');
 
     expect(postedData).to.eq(`v=1&tid=UA-123&cid=cid&t=event&ec=FeatureHub%20Event&ea=action&el=banana%20:%20on
 v=1&tid=UA-123&cid=cid&t=event&ec=FeatureHub%20Event&ea=action&el=pear%20:%2012.3

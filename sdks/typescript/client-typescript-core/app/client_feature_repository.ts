@@ -114,7 +114,7 @@ export class ClientFeatureRepository implements FeatureHubRepository, InternalFe
   public valueInterceptorMatched(key: string): InterceptorValueMatch {
     for (let matcher of this._matchers) {
       const m = matcher.matched(key);
-      if (m.value) {
+      if (m?.value) {
         return m;
       }
     }
@@ -302,8 +302,8 @@ export class ClientFeatureRepository implements FeatureHubRepository, InternalFe
     }
 
     let holder = this.features.get(fs.key);
-    if (holder === undefined || holder.getKey() === undefined) {
-      const newFeature = new FeatureStateBaseHolder(this, fs.key);
+    if (holder === undefined || holder.getFeatureState() === undefined) {
+      const newFeature = new FeatureStateBaseHolder(this, fs.key, holder);
       newFeature.setFeatureState(fs);
 
       this.features.set(fs.key, newFeature);

@@ -4,7 +4,6 @@ import {
   StrategyAttributeDeviceName,
   StrategyAttributePlatformName
 } from '../app';
-import { expect } from 'chai';
 import { Substitute, Arg, SubstituteOf } from '@fluffy-spoon/substitute';
 import { InternalFeatureRepository } from '../app/internal_feature_repository';
 import { ClientEvalFeatureContext, ServerEvalFeatureContext } from '../app/client_context';

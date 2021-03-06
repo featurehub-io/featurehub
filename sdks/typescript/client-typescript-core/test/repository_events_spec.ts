@@ -53,6 +53,8 @@ describe('Feature repository reacts to incoming event lists as expected', () => 
     // tslint:disable-next-line:no-unused-expression
     expect(repo.getFeatureState('banana').getBoolean()).to.be.undefined;
     // tslint:disable-next-line:no-unused-expression
+    expect(repo.getFeatureState('banana').isSet()).to.be.false;
+    // tslint:disable-next-line:no-unused-expression
     expect(repo.getFeatureState('pear').getBoolean()).to.be.undefined;
     // tslint:disable-next-line:no-unused-expression
     expect(repo.getFeatureState('peach').getBoolean()).to.be.undefined;
