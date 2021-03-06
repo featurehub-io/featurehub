@@ -7,8 +7,10 @@ import { FeatureStateHolder } from './feature_state';
 
 import { AnalyticsCollector } from './analytics';
 
-import { FeatureState, FeatureStateTypeTransformer, FeatureValueType, SSEResultState } from './models';
+import { FeatureState, FeatureStateTypeTransformer, FeatureValueType, RolloutStrategy, SSEResultState } from './models';
 import { ClientContext } from './client_context';
+import { ApplyFeature, Applied } from './strategy_matcher';
+import { InternalFeatureRepository } from './internal_feature_repository';
 
 export enum Readyness {
   NotReady = 'NotReady',
@@ -20,7 +22,7 @@ export interface ReadynessListener {
   (state: Readyness): void;
 }
 
-export class ClientFeatureRepository implements FeatureHubRepository {
+export class ClientFeatureRepository implements FeatureHubRepository, InternalFeatureRepository {
   private hasReceivedInitialState: boolean;
   // indexed by key as that what the user cares about
   private features = new Map<string, FeatureStateBaseHolder>();
@@ -32,6 +34,16 @@ export class ClientFeatureRepository implements FeatureHubRepository {
   private _catchReleaseStates = new Map<string, FeatureState>();
   private _newFeatureStateAvailableListeners: Array<PostLoadNewFeatureStateAvailableListener> = [];
   private _matchers: Array<FeatureStateValueInterceptor> = [];
+  private readonly _applyFeature: ApplyFeature;
+
+  constructor(applyFeature?: ApplyFeature) {
+    this._applyFeature = applyFeature || new ApplyFeature();
+  }
+
+  public apply(strategies: Array<RolloutStrategy>, key: string, featureValueId: string,
+               context: ClientContext): Applied {
+    return this._applyFeature.apply(strategies, key, featureValueId, context);
+  }
 
   public get readyness(): Readyness {
     return this.readynessState;
@@ -347,11 +359,5 @@ export interface FeatureHubRepository {
 
   isSet(key: string): boolean;
 
-  notReady(): void;
-
-  notify(state: SSEResultState, data: any): void;
-
   addValueInterceptor(interceptor: FeatureStateValueInterceptor);
-
-  valueInterceptorMatched(key: string): InterceptorValueMatch;
 }

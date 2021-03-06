@@ -3,11 +3,13 @@
 ///
 /// For this we are using the W3C Baggage standard for future supportability
 
-import { FeatureHubRepository, Readyness } from './client_feature_repository';
+import { Readyness } from './client_feature_repository';
 import { FeatureListener, FeatureStateHolder } from './feature_state';
-import { FeatureValueType, SSEResultState } from './models/models';
+import { FeatureValueType, RolloutStrategy, SSEResultState } from './models/models';
 import { FeatureStateValueInterceptor, InterceptorValueMatch } from './feature_state_holders';
 import { ClientContext } from './client_context';
+import { InternalFeatureRepository } from './internal_feature_repository';
+import { Applied } from './strategy_matcher';
 
 class BaggageHolder implements FeatureStateHolder {
   protected readonly existing: FeatureStateHolder;
@@ -100,14 +102,18 @@ class BaggageHolder implements FeatureStateHolder {
   }
 }
 
-class BaggageRepository implements FeatureHubRepository {
-  private readonly repo: FeatureHubRepository;
+class BaggageRepository implements InternalFeatureRepository {
+  private readonly repo: InternalFeatureRepository;
   private baggage: Map<string, string | undefined>;
   private mappedBaggage = new Map<string, FeatureStateHolder>();
 
-  constructor(repo: FeatureHubRepository, baggage: Map<string, string>) {
+  constructor(repo: InternalFeatureRepository, baggage: Map<string, string>) {
     this.repo = repo;
     this.baggage = baggage;
+  }
+
+  public apply(strategies: RolloutStrategy[], key: string, featureValueId: string, context: ClientContext): Applied {
+    return this.repo.apply(strategies, key, featureValueId, context);
   }
 
   public getFlag(key: string): boolean | undefined {
@@ -197,10 +203,10 @@ class BaggageRepository implements FeatureHubRepository {
   }
 }
 
-export function featurehubMiddleware(repo: FeatureHubRepository) {
+export function featurehubMiddleware(repo: InternalFeatureRepository) {
 
   return (req: any, res: any, next: any) => {
-    let reqRepo: FeatureHubRepository = repo;
+    let reqRepo: InternalFeatureRepository = repo;
 
     if (process.env.FEATUREHUB_ACCEPT_BAGGAGE !== undefined) {
       const baggage = req.header('baggage');

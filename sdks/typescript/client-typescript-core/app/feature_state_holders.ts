@@ -1,7 +1,7 @@
 import { FeatureListener, FeatureStateHolder } from './feature_state';
 import { FeatureState, FeatureValueType } from './models/models';
-import { FeatureHubRepository } from './client_feature_repository';
 import { ClientContext } from './client_context';
+import { InternalFeatureRepository } from './internal_feature_repository';
 
 export class InterceptorValueMatch {
   public value: string | undefined;
@@ -13,17 +13,17 @@ export class InterceptorValueMatch {
 
 export interface FeatureStateValueInterceptor {
   matched(key: string): InterceptorValueMatch;
-  repository(repo: FeatureHubRepository): void;
+  repository(repo: InternalFeatureRepository): void;
 }
 
 export class FeatureStateBaseHolder implements FeatureStateHolder {
   protected featureState: FeatureState;
   protected _key: string;
   protected listeners: Array<FeatureListener> = [];
-  protected _repo: FeatureHubRepository;
-  protected ctx: ClientContext;
+  protected _repo: InternalFeatureRepository;
+  protected _ctx: ClientContext;
 
-  constructor(repository: FeatureHubRepository, key: string, existingHolder?: FeatureStateBaseHolder) {
+  constructor(repository: InternalFeatureRepository, key: string, existingHolder?: FeatureStateBaseHolder) {
     if (existingHolder !== null && existingHolder !== undefined) {
       this.listeners = existingHolder.listeners;
     }
@@ -34,7 +34,7 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
 
   public withContext(param: ClientContext): FeatureStateHolder {
     const fsh = this._copy();
-    fsh.ctx = param;
+    fsh._ctx = param;
     return fsh;
   }
 
@@ -132,24 +132,26 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
     if (!this.isLocked()) {
       const intercept = this._repo.valueInterceptorMatched(this._key);
 
+      // if (_context != null)
+      //       {
+      //         Applied matched = _applyFeature.Apply(_feature.Strategies, Key, _feature.Id, _context);
+      //
+      //         if (matched.Matched)
+      //         {
+      //           return matched.Value;
+      //         }
+      //       }
+
       if (intercept?.value) {
-        if (type === FeatureValueType.Boolean) {
-          return 'true' === intercept.value;
-        } else if (type === FeatureValueType.String) {
-          return intercept.value;
-        } else if (type === FeatureValueType.Number) {
-          if (intercept.value.includes('.')) {
-            return parseFloat(intercept.value);
-          }
+        return this._castType(type, intercept.value);
+      }
 
-          // tslint:disable-next-line:radix
-          return parseInt(intercept.value);
-        } else if (type === FeatureValueType.Json) {
-          return intercept.value;
-        } else {
-          return intercept.value;
+      if (this._ctx != null) {
+        const matched = this._repo.apply(this.featureState.strategies, this._key, this.featureState.id, this._ctx);
+
+        if (matched.matched) {
+          return this._castType(type, matched.value);
         }
-
       }
     }
 
@@ -158,5 +160,31 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
     }
 
     return this.featureState?.value;
+  }
+
+  private _castType(type: FeatureValueType, value: any): any {
+    if (value == null) {
+      return null;
+    }
+
+    if (type === FeatureValueType.Boolean) {
+      return typeof value === 'boolean' ? value : ('true' === value.toString());
+    } else if (type === FeatureValueType.String) {
+      return value.toString();
+    } else if (type === FeatureValueType.Number) {
+      if (typeof value === 'number') {
+        return value;
+      }
+      if (value.includes('.')) {
+        return parseFloat(value);
+      }
+
+      // tslint:disable-next-line:radix
+      return parseInt(value);
+    } else if (type === FeatureValueType.Json) {
+      return value.toString();
+    } else {
+      return value.toString();
+    }
   }
 }

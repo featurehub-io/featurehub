@@ -7,13 +7,10 @@ import { FeatureStateHolder } from './feature_state';
 import { FeatureHubRepository } from './client_feature_repository';
 import { EdgeServiceSupplier, FeatureHubConfig } from './feature_hub_config';
 import { EdgeService } from './edge_service';
+import { InternalFeatureRepository } from './internal_feature_repository';
 
 export interface ConfigChangedListener {
   (config: ClientContext);
-}
-
-export interface ConfigChangedListenerRemove {
-  ();
 }
 
 export interface ClientContext {
@@ -42,12 +39,11 @@ export interface ClientContext {
 }
 
 export abstract class BaseClientContext implements ClientContext {
-  protected readonly _repository: FeatureHubRepository;
+  protected readonly _repository: InternalFeatureRepository;
   protected _attributes = new Map<string, Array<string>>();
-  private _listeners: Array<ConfigChangedListener> = [];
   protected readonly _config: FeatureHubConfig;
 
-  constructor(repository: FeatureHubRepository, config: FeatureHubConfig) {
+  constructor(repository: InternalFeatureRepository, config: FeatureHubConfig) {
     this._repository = repository;
     this._config = config;
   }
@@ -97,20 +93,6 @@ export abstract class BaseClientContext implements ClientContext {
     return this;
   }
 
-  // async build(): Promise<ClientContext> {
-  //   for (let l of this._listeners) {
-  //     (async () => {
-  //       try {
-  //         l(this);
-  //         // tslint:disable-next-line:no-empty
-  //       } catch (e) {
-  //       }
-  //     })();
-  //   }
-  //
-  //   return this;
-  // }
-
   getAttr(key: string, defaultValue?: string): string {
     if (this._attributes.has(key)) {
       return this._attributes.get(key)[0];
@@ -159,18 +141,6 @@ export abstract class BaseClientContext implements ClientContext {
 
     this._repository.logAnalyticsEvent(action, other);
   }
-
-  // we follow the W3C Baggage spec style for encoding
-  // generateHeader(): string {
-  //   if (this._attributes.size === 0) {
-  //     return undefined;
-  //   }
-  //
-  //   return Array.from(this._attributes.entries()).map((key,
-  //   ) =>
-  //     key[0] + '=' + encodeURIComponent(key[1].join(','))).sort().join(',');
-  //
-  // }
 }
 
 export class ServerEvalFeatureContext extends BaseClientContext {
@@ -178,7 +148,8 @@ export class ServerEvalFeatureContext extends BaseClientContext {
   private _currentEdge: EdgeService;
   private _xHeader: string;
 
-  constructor(repository: FeatureHubRepository, config: FeatureHubConfig, edgeServiceSupplier: EdgeServiceSupplier) {
+  constructor(repository: InternalFeatureRepository, config: FeatureHubConfig,
+              edgeServiceSupplier: EdgeServiceSupplier) {
     super(repository, config);
 
     this._edgeServiceSupplier = edgeServiceSupplier;
@@ -226,7 +197,7 @@ export class ServerEvalFeatureContext extends BaseClientContext {
 export class ClientEvalFeatureContext extends BaseClientContext {
   private readonly _edgeService: EdgeService;
 
-  constructor(repository: FeatureHubRepository, config: FeatureHubConfig, edgeService: EdgeService) {
+  constructor(repository: InternalFeatureRepository, config: FeatureHubConfig, edgeService: EdgeService) {
     super(repository, config);
 
     this._edgeService = edgeService;

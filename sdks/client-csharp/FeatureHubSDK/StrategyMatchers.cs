@@ -123,7 +123,7 @@ namespace FeatureHubSDK
               }
             }
 
-            // this was only a percentage and had no other attributes
+              // this was only a percentage and had no other attributes
             if (rsi.Attributes == null || rsi.Attributes.Count == 0)
             {
               basePercentage[percentageKey] = basePercentage[percentageKey] + rsi.Percentage;
@@ -496,7 +496,7 @@ namespace FeatureHubSDK
     private IPNetwork _network;
     private bool _isAddress;
 
-    public IPNetworkProxy(String addr)
+    public IPNetworkProxy(string addr)
     {
       if (addr.Contains("/"))
       {
@@ -515,12 +515,12 @@ namespace FeatureHubSDK
     {
       if (proxy._isAddress && _isAddress)
       {
-        return proxy._address.Equals(_address);
+        return  _address.Equals(proxy._address);
       }
 
       if (!proxy._isAddress && !_isAddress)
       {
-        return _network.Contains(proxy._network);
+        return _network.Equals(this._network);
       }
 
       // they are an address and we are a network

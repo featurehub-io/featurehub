@@ -2,6 +2,7 @@ import { Environment, FeatureState, ObjectSerializer, SSEResultState } from './m
 import { EdgeService } from './edge_service';
 import { FeatureHubConfig } from './feature_hub_config';
 import { FeatureHubRepository } from './client_feature_repository';
+import { InternalFeatureRepository } from './internal_feature_repository';
 
 interface PollingService {
 
@@ -173,14 +174,14 @@ export interface NodejsOptions {
 export class FeatureHubPollingClient implements EdgeService {
   private _frequency: number;
   private _url: string;
-  private _repository: FeatureHubRepository;
+  private _repository: InternalFeatureRepository;
   private _pollingService: PollingService | undefined;
   private _options: BrowserOptions | NodejsOptions;
   private _startable: boolean;
   private readonly _config: FeatureHubConfig;
   private _xHeader: string;
 
-  constructor(repository: FeatureHubRepository,
+  constructor(repository: InternalFeatureRepository,
               config: FeatureHubConfig,
               frequency: number,
               options: BrowserOptions | NodejsOptions = {}) {

@@ -2,6 +2,7 @@ import { ClientFeatureRepository, FeatureHubRepository } from './client_feature_
 import { EdgeService } from './edge_service';
 import { ClientContext, ClientEvalFeatureContext, ServerEvalFeatureContext } from './client_context';
 import { FeatureHubPollingClient } from './polling_sdk';
+import { InternalFeatureRepository } from './internal_feature_repository';
 
 export type EdgeServiceSupplier = () => EdgeService;
 
@@ -22,7 +23,7 @@ export class EdgeFeatureHubConfig implements FeatureHubConfig {
   private _apiKeys: Array<string>;
   private _clientEval: boolean;
   private _url: string;
-  private _repository: FeatureHubRepository;
+  private _repository: InternalFeatureRepository;
   private _edgeService: EdgeServiceSupplier;
 
   public EdgeFeatureHubConfig(host: string, apiKey: string) {
@@ -65,7 +66,7 @@ export class EdgeFeatureHubConfig implements FeatureHubConfig {
     return this._host;
   }
 
-  newContext(repository?: FeatureHubRepository, edgeService?: EdgeServiceSupplier): ClientContext {
+  newContext(repository?: InternalFeatureRepository, edgeService?: EdgeServiceSupplier): ClientContext {
     if (repository != null && edgeService != null) {
       return this._clientEval ?
         new ClientEvalFeatureContext(repository, this, edgeService()) :
@@ -88,7 +89,7 @@ export class EdgeFeatureHubConfig implements FeatureHubConfig {
     return this._edgeService;
   }
 
-  repository(repository?: FeatureHubRepository): FeatureHubRepository {
+  repository(repository?: InternalFeatureRepository): FeatureHubRepository {
     if (repository != null) {
       this._repository = repository;
     }
