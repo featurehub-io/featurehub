@@ -6,14 +6,14 @@ import "event.dart";
 
 //TODO use more efficient data structure than List
 class EventCache {
-  final int cacheCapacity;
+  final int? cacheCapacity;
   final bool comparableIds;
   Map<String, List<Event>> _caches = new Map<String, List<Event>>();
 
   EventCache({this.cacheCapacity, this.comparableIds: true});
 
   void replay(Sink<Event> sink, String lastEventId, [String channel = ""]) {
-    List<Event> cache = _caches[channel];
+    List<Event>? cache = _caches[channel];
     if (cache == null || cache.isEmpty) {
       // nothing to replay
       return;
@@ -41,8 +41,8 @@ class EventCache {
   /// [Event.id].
   void add(Event event, [Iterable<String> channels = const [""]]) {
     for (String channel in channels) {
-      List<Event> cache = _caches.putIfAbsent(channel, () => new List());
-      if (cacheCapacity != null && cache.length >= cacheCapacity) {
+      List<Event> cache = _caches.putIfAbsent(channel, () => []);
+      if (cacheCapacity != null && cache.length >= cacheCapacity!) {
         cache.removeAt(0);
       }
       cache.add(event);

@@ -4,18 +4,18 @@ class Event implements Comparable<Event> {
   /// An identifier that can be used to allow a client to replay
   /// missed Events by returning the Last-Event-Id header.
   /// Return empty string if not required.
-  String id;
+  String? id;
 
   /// The name of the event. Return empty string if not required.
-  String event;
+  String? event;
 
   /// The payload of the event.
-  String data;
+  String? data;
 
   Event({this.id, this.event, this.data});
 
   Event.message({this.id, this.data}) : event = "message";
 
   @override
-  int compareTo(Event other) => id.compareTo(other.id);
+  int compareTo(Event other) => id!.compareTo(other.id!);
 }
