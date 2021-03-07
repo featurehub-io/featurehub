@@ -56,6 +56,8 @@ namespace FeatureHubTestProject
         true);
       yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATER, new List<object> {"a", "b"}, "a",
         false);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATER, new List<object> {"a", "b"}, "c",
+        true);
       yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATEREQUALS, new List<object> {"a", "b"}, "a",
         true);
       yield return new TestCaseData(RolloutStrategyAttributeConditional.LESS, new List<object> {"a", "b"}, "a", true);
@@ -66,6 +68,8 @@ namespace FeatureHubTestProject
       yield return new TestCaseData(RolloutStrategyAttributeConditional.LESSEQUALS, new List<object> {"a", "b"}, "b",
         true);
       yield return new TestCaseData(RolloutStrategyAttributeConditional.LESSEQUALS, new List<object> {"a", "b"}, "1",
+        true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.LESSEQUALS, new List<object> {"a", "b"}, "c",
         false);
       yield return new TestCaseData(RolloutStrategyAttributeConditional.STARTSWITH, new List<object> {"fr"}, "fred",
       true);

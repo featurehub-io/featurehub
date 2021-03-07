@@ -215,11 +215,11 @@ class StringMatcher implements StrategyMatcher {
       case RolloutStrategyAttributeConditional.LessEquals:
         return vals.findIndex((v) => suppliedValue <= v ) >= 0;
       case RolloutStrategyAttributeConditional.NotEquals:
-        return vals.findIndex((v) => v === suppliedValue) === 0;
+        return vals.findIndex((v) => v === suppliedValue) === -1;
       case RolloutStrategyAttributeConditional.Includes:
         return vals.findIndex((v) => suppliedValue.includes(v) ) >= 0;
       case RolloutStrategyAttributeConditional.Excludes:
-        return vals.findIndex((v) => suppliedValue.includes(v) ) === 0;
+        return vals.findIndex((v) => suppliedValue.includes(v) ) === -1;
       case RolloutStrategyAttributeConditional.Regex:
         return vals.findIndex((v) => suppliedValue.match(v) ) >= 0;
     }
@@ -286,7 +286,7 @@ class NumberMatcher implements StrategyMatcher {
         case RolloutStrategyAttributeConditional.LessEquals:
           return vals.findIndex((v) => num <= conv(v)) >= 0;
         case RolloutStrategyAttributeConditional.NotEquals:
-          return vals.findIndex((v) => conv(v) !== num) >= 0;
+          return vals.findIndex((v) => conv(v) === num) === -1;
         case RolloutStrategyAttributeConditional.Includes:
           return vals.findIndex((v) => suppliedValue.includes(v)) >= 0;
         case RolloutStrategyAttributeConditional.Excludes:
@@ -346,7 +346,7 @@ class IPNetworkMatcher implements StrategyMatcher {
         return vals.findIndex((v) => v.contains(ip)) >= 0;
       case RolloutStrategyAttributeConditional.NotEquals:
       case RolloutStrategyAttributeConditional.Excludes:
-        return vals.findIndex((v) => !v.contains(ip)) >= 0;
+        return vals.findIndex((v) => v.contains(ip)) === -1;
     }
 
     return false;

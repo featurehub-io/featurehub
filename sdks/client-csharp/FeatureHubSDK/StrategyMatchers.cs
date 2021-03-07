@@ -291,7 +291,7 @@ namespace FeatureHubSDK
         case RolloutStrategyAttributeConditional.LESS:
           return vals.Any(v => string.Compare(suppliedValue, v, StringComparison.Ordinal) < 0);
         case RolloutStrategyAttributeConditional.LESSEQUALS:
-          return vals.Any(v => string.Compare(suppliedValue, v, StringComparison.Ordinal) >= 0);
+          return vals.Any(v => string.Compare(suppliedValue, v, StringComparison.Ordinal) <= 0);
         case RolloutStrategyAttributeConditional.NOTEQUALS:
           return !vals.Any(v => v.Equals(suppliedValue));
         case RolloutStrategyAttributeConditional.INCLUDES:
