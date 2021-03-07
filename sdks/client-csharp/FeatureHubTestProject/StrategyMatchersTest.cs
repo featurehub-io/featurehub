@@ -286,6 +286,8 @@ namespace FeatureHubTestProject
         new List<object> {"2019-01-01", "2019-02-01"}, "2019-02-07", true);
       yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATER,
         new List<object> {"2019-01-01", "2019-02-01"}, "2019-02-07", true);
+      yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATER,
+        new List<object> {"2019-01-01", "2019-02-01"}, "2017-02-07", false);
       yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATEREQUALS,
         new List<object> {"2019-01-01", "2019-02-01"}, "2019-02-07", true);
       yield return new TestCaseData(RolloutStrategyAttributeConditional.GREATEREQUALS,
