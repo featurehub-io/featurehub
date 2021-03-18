@@ -108,9 +108,12 @@ describe('test the strategy matchers', () => {
     equals(RolloutStrategyAttributeConditional.Equals, ['10.0.0.0/24', '192.168.0.0/16'], '172.168.86.72', false);
   });
 
-  it('number matcher', () => {
+  it('date matcher', () => {
     type = RolloutStrategyFieldType.Date;
 
+    equals(RolloutStrategyAttributeConditional.Equals, ['2019-01-01', '2019-02-01'], '2019-02-01', true);
+    equals(RolloutStrategyAttributeConditional.Equals, [new Date('2019-01-01'), new Date('2019-02-01')],
+           '2019-02-01', true);
     equals(RolloutStrategyAttributeConditional.Equals, ['2019-01-01', '2019-02-01'], '2019-02-01', true);
     equals(RolloutStrategyAttributeConditional.Includes, ['2019-01-01', '2019-02-01'], '2019-02-01', true);
     equals(RolloutStrategyAttributeConditional.NotEquals, ['2019-01-01', '2019-02-01'], '2019-02-01', false);
@@ -137,5 +140,71 @@ describe('test the strategy matchers', () => {
 
     equals(RolloutStrategyAttributeConditional.EndsWith, ['01'], '2017-02-01', true);
     equals(RolloutStrategyAttributeConditional.EndsWith, ['03', '02', '2017'], '2017-02-01', false);
+  });
+
+  it ('number matcher', () => {
+    type = RolloutStrategyFieldType.Number;
+    equals(RolloutStrategyAttributeConditional.Equals, [10,5], '5', true);
+    equals(RolloutStrategyAttributeConditional.Equals, [5], '5', true);
+    equals(RolloutStrategyAttributeConditional.Equals, [4], '5', false);
+    equals(RolloutStrategyAttributeConditional.Equals, [4, 7], '5', false);
+    equals(RolloutStrategyAttributeConditional.Includes, [4, 7], '5', false);
+    equals(RolloutStrategyAttributeConditional.NotEquals, [23, 100923], '5', true);
+    equals(RolloutStrategyAttributeConditional.Excludes, [23, 100923], '5', true);
+    equals(RolloutStrategyAttributeConditional.NotEquals, [5], '5', false);
+    equals(RolloutStrategyAttributeConditional.Greater, [2, 4], '5', true);
+    equals(RolloutStrategyAttributeConditional.GreaterEquals, [2, 5], '5', true);
+    equals(RolloutStrategyAttributeConditional.GreaterEquals, [4, 5], '5', true);
+    equals(RolloutStrategyAttributeConditional.LessEquals, [2, 5], '5', true);
+    equals(RolloutStrategyAttributeConditional.Less, [8, 7], '5', true);
+    equals(RolloutStrategyAttributeConditional.Greater, [7, 10], '5', false);
+    equals(RolloutStrategyAttributeConditional.GreaterEquals, [6, 7], '5', false);
+    equals(RolloutStrategyAttributeConditional.LessEquals, [2, 3], '5', false);
+    equals(RolloutStrategyAttributeConditional.Less, [1, -1], '5', false);
+  });
+
+  it('datetime matcher', () => {
+    type = RolloutStrategyFieldType.Datetime;
+    // test equals
+    equals(RolloutStrategyAttributeConditional.Equals, ['2019-01-01T01:01:01Z', '2019-02-01T01:01:01Z'],
+           '2019-02-01T01:01:01Z', true);
+    equals(RolloutStrategyAttributeConditional.Includes, ['2019-01-01T01:01:01Z', '2019-02-01T01:01:01Z'],
+           '2019-02-01T01:01:01Z', true);
+    equals(RolloutStrategyAttributeConditional.NotEquals, ['2019-01-01T01:01:01Z', '2019-02-01T01:01:01Z'],
+           '2019-02-01T01:01:01Z', false);
+    equals(RolloutStrategyAttributeConditional.Excludes, ['2019-01-01T01:01:01Z', '2019-02-01T01:01:01Z'],
+           '2019-02-01T01:01:01Z', false);
+
+    // test not equals
+    equals(RolloutStrategyAttributeConditional.Equals, ['2019-01-01T01:01:01Z', '2019-02-01T01:01:01Z'],
+           '2017-02-01T01:01:01Z', false);
+    equals(RolloutStrategyAttributeConditional.Includes, ['2019-01-01T01:01:01Z', '2019-02-01T01:01:01Z'],
+           '2017-02-01T01:01:01Z', false);
+    equals(RolloutStrategyAttributeConditional.NotEquals, ['2019-01-01T01:01:01Z', '2019-02-01T01:01:01Z'],
+           '2017-02-01T01:01:01Z', true);
+    equals(RolloutStrategyAttributeConditional.Excludes, ['2019-01-01T01:01:01Z', '2019-02-01T01:01:01Z'],
+           '2017-02-01T01:01:01Z', true);
+
+    // test  less & less =
+    equals(RolloutStrategyAttributeConditional.Less, ['2019-01-01T01:01:01Z', '2019-02-01T01:01:01Z'],
+           '2016-02-01T01:01:01Z', true);
+    equals(RolloutStrategyAttributeConditional.Less, ['2019-01-01T01:01:01Z', '2019-02-01T01:01:01Z'],
+           '2020-02-01T01:01:01Z', false);
+
+    equals(RolloutStrategyAttributeConditional.LessEquals, ['2019-01-01T01:01:01Z', '2019-02-01T01:01:01Z'],
+           '2019-02-01T01:01:01Z', true);
+    equals(RolloutStrategyAttributeConditional.LessEquals, ['2019-01-01T01:01:01Z', '2019-02-01T01:01:01Z'],
+           '2020-02-01T01:01:01Z', false);
+
+    equals(RolloutStrategyAttributeConditional.Regex, ['2019-.*'], '2019-07-06T01:01:01Z', true);
+    equals(RolloutStrategyAttributeConditional.Regex, ['2019-.*'], '2016-07-06T01:01:01Z', false);
+    equals(RolloutStrategyAttributeConditional.Regex, ['2019-.*', '(.*)-03-(.*)'], '2019-07-06T01:01:01Z', true);
+    equals(RolloutStrategyAttributeConditional.Regex, ['2019-.*', '(.*)-03-(.*)'], '2014-03-06T01:01:01Z', true);
+
+    equals(RolloutStrategyAttributeConditional.StartsWith, ['2019', '2017'], '2017-03-06T01:01:01Z', true );
+    equals(RolloutStrategyAttributeConditional.StartsWith, ['2019'], '2017-03-06T01:01:01Z', false );
+    equals(RolloutStrategyAttributeConditional.EndsWith, [':01Z'], '2017-03-06T01:01:01Z', true );
+    equals(RolloutStrategyAttributeConditional.EndsWith, ['03', '2017', '01:01'], '2017-03-06T01:01:01Z', false );
+    equals(RolloutStrategyAttributeConditional.EndsWith, ['rubbish'], '2017-03-06T01:01:01Z', false );
   });
 });

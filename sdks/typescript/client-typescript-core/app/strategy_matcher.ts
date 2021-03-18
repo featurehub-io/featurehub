@@ -18,7 +18,7 @@ export class Murmur3PercentageCalculator implements PercentageCalculator {
   private readonly MAX_PERCENTAGE = 1000000;
 
   public determineClientPercentage(percentageText: string, featureId: string): number {
-    const result =  murmur3(percentageText + featureId);
+    const result = murmur3(percentageText + featureId);
     return Math.floor(result / Math.pow(2, 32) * this.MAX_PERCENTAGE);
   }
 }
@@ -43,7 +43,7 @@ export class ApplyFeature {
   }
 
   public apply(strategies: Array<RolloutStrategy>, key: string, featureValueId: string,
-               context: ClientContext): Applied  {
+               context: ClientContext): Applied {
     if (context != null && strategies != null && strategies.length > 0) {
       let percentage: number = null;
       let percentageKey: string = null;
@@ -85,8 +85,11 @@ export class ApplyFeature {
           if (rsi.attributes != null && rsi.attributes.length > 0) {
             basePercentage.set(percentageKey, basePercentage.get(percentageKey) + rsi.percentage);
           }
-        } else if (rsi.attributes != null && rsi.attributes.length > 0 &&
-              this.matchAttribute(context, rsi))  { // nothing to do with a percentage
+        }
+
+        if ((rsi.percentage === 0 || rsi.percentage === undefined) && rsi.attributes != null
+              && rsi.attributes.length > 0 &&
+          this.matchAttribute(context, rsi)) { // nothing to do with a percentage
           return new Applied(true, rsi.value);
         }
       }
@@ -139,7 +142,7 @@ export class ApplyFeature {
   }
 }
 
-interface StrategyMatcher {
+export interface StrategyMatcher {
   match(suppliedValue: string, attr: RolloutStrategyAttribute): boolean;
 }
 
@@ -195,8 +198,9 @@ class BooleanMatcher implements StrategyMatcher {
 }
 
 class StringMatcher implements StrategyMatcher {
+
   match(suppliedValue: string, attr: RolloutStrategyAttribute): boolean {
-    const vals = attr.values.filter((v) => v != null).map((v) => v.toString());
+    const vals = this.attrToStringValues(attr);
 
     // tslint:disable-next-line:switch-default
     switch (attr.conditional) {
@@ -207,24 +211,28 @@ class StringMatcher implements StrategyMatcher {
       case RolloutStrategyAttributeConditional.StartsWith:
         return vals.findIndex((v) => suppliedValue.startsWith(v)) >= 0;
       case RolloutStrategyAttributeConditional.Greater:
-        return vals.findIndex((v) => suppliedValue > v ) >= 0;
+        return vals.findIndex((v) => suppliedValue > v) >= 0;
       case RolloutStrategyAttributeConditional.GreaterEquals:
-        return vals.findIndex((v) => suppliedValue >= v ) >= 0;
+        return vals.findIndex((v) => suppliedValue >= v) >= 0;
       case RolloutStrategyAttributeConditional.Less:
-        return vals.findIndex((v) => suppliedValue < v ) >= 0;
+        return vals.findIndex((v) => suppliedValue < v) >= 0;
       case RolloutStrategyAttributeConditional.LessEquals:
-        return vals.findIndex((v) => suppliedValue <= v ) >= 0;
+        return vals.findIndex((v) => suppliedValue <= v) >= 0;
       case RolloutStrategyAttributeConditional.NotEquals:
         return vals.findIndex((v) => v === suppliedValue) === -1;
       case RolloutStrategyAttributeConditional.Includes:
-        return vals.findIndex((v) => suppliedValue.includes(v) ) >= 0;
+        return vals.findIndex((v) => suppliedValue.includes(v)) >= 0;
       case RolloutStrategyAttributeConditional.Excludes:
-        return vals.findIndex((v) => suppliedValue.includes(v) ) === -1;
+        return vals.findIndex((v) => suppliedValue.includes(v)) === -1;
       case RolloutStrategyAttributeConditional.Regex:
-        return vals.findIndex((v) => suppliedValue.match(v) ) >= 0;
+        return vals.findIndex((v) => suppliedValue.match(v)) >= 0;
     }
 
     return false;
+  }
+
+  protected attrToStringValues(attr: RolloutStrategyAttribute): Array<string> {
+    return attr.values.filter((v) => v != null).map((v) => v.toString());
   }
 }
 
@@ -242,6 +250,11 @@ class DateMatcher extends StringMatcher {
       return false;
     }
   }
+
+  protected attrToStringValues(attr: RolloutStrategyAttribute): Array<string> {
+    return attr.values.filter((v) => v != null)
+      .map((v) => (v instanceof Date) ? v.toISOString().substring(0, 10) : v.toString());
+  }
 }
 
 class DateTimeMatcher extends StringMatcher {
@@ -253,10 +266,15 @@ class DateTimeMatcher extends StringMatcher {
         return false;
       }
 
-      return super.match(parsedDate.toISOString(), attr);
+      return super.match(parsedDate.toISOString().substr(0, 19) + 'Z', attr);
     } catch (e) {
       return false;
     }
+  }
+
+  protected attrToStringValues(attr: RolloutStrategyAttribute): Array<string> {
+    return attr.values.filter((v) => v != null)
+      .map((v) => (v instanceof Date) ? (v.toISOString().substr(0, 19) + 'Z') : v.toString());
   }
 }
 

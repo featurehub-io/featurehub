@@ -21,7 +21,6 @@ export class FeatureHubEventSourceClient {
     }
     this.eventSource = new EventSource(this.sdkUrl, options);
 
-
     [SSEResultState.Features, SSEResultState.Feature, SSEResultState.DeleteFeature,
         SSEResultState.Bye, SSEResultState.Failure, SSEResultState.Ack].forEach((name) => {
           const fName = name.toString();

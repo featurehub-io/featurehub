@@ -68,7 +68,10 @@ public class ApplyFeature {
           if (rsi.getAttributes() == null || rsi.getAttributes().isEmpty()) {
             basePercentage.put(percentageKey, basePercentage.get(percentageKey) + rsi.getPercentage());
           }
-        } else if (rsi.getAttributes() != null && !rsi.getAttributes().isEmpty()) {
+        }
+
+        if ((rsi.getPercentage() == null || rsi.getPercentage() == 0) &&
+          rsi.getAttributes() != null && !rsi.getAttributes().isEmpty()) {
           if (matchAttributes(cac, rsi)) {
             return new Applied(true, rsi.getValue());
           }

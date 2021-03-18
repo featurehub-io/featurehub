@@ -129,7 +129,8 @@ namespace FeatureHubSDK
               basePercentage[percentageKey] = basePercentage[percentageKey] + rsi.Percentage;
             }
           }
-          else if (rsi.Attributes != null && rsi.Attributes.Count > 0)
+
+          if (rsi.Percentage == 0 && rsi.Attributes != null && rsi.Attributes.Count > 0)
           {
             if (MatchAttributes(context, rsi))
             {
