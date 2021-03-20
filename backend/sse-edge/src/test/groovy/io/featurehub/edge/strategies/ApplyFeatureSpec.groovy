@@ -5,7 +5,11 @@ import io.featurehub.mr.model.FeatureValue
 import io.featurehub.mr.model.FeatureValueCacheItem
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.sse.model.RolloutStrategy
+import io.featurehub.sse.model.RolloutStrategyAttribute
+import io.featurehub.sse.model.RolloutStrategyAttributeConditional
+import io.featurehub.sse.model.RolloutStrategyFieldType
 import io.featurehub.strategies.matchers.MatcherRegistry
+import io.featurehub.strategies.matchers.MatcherRepository
 import io.featurehub.strategies.percentage.PercentageCalculator
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -117,6 +121,35 @@ class ApplyFeatureSpec extends Specification {
       def val = applyFeature.applyFeature(rollout, fci.feature.key, fci.value.id, null)
     then:
       !val.matched
+  }
+
+  def "we have a CAC with no percentage data at all but a match via attributes"() {
+    given: "we have a strategy set"
+      def rollout = [
+        new RolloutStrategy().value("sausage")
+          .percentage(0)
+          .attributes([
+            new RolloutStrategyAttribute()
+              .fieldName("warehouseId")
+              .conditional(RolloutStrategyAttributeConditional.EQUALS)
+              .values(['ponsonby'])
+              .type(RolloutStrategyFieldType.STRING)
+          ])
+      ]
+    and:
+        def calc = Mock(PercentageCalculator)
+      def matcherRepo = new MatcherRegistry()
+      def applier = new ApplyFeature(calc, matcherRepo)
+
+    and:
+      def cac = new ClientContext(true)
+      cac.attributes[ClientContext.SESSIONKEY] = ['poorple']
+      cac.attributes['warehouseId'] = ['ponsonby']
+    when:
+      def result = applier.applyFeature(rollout, 'feature', 'id', cac)
+    then:
+        result.matched
+      result.value == 'sausage'
   }
 }
 

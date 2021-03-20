@@ -67,11 +67,11 @@ export class ApplyFeature {
             percentage = this._percentageCalculator.determineClientPercentage(percentageKey, featureValueId);
           }
 
-          let useBasePercentage = (rsi.attributes === null || rsi.attributes.length === 0) ? basePercentageVal : 0;
+          let useBasePercentage = (rsi.attributes === undefined || rsi.attributes.length === 0) ? basePercentageVal : 0;
 
           // if the percentage is lower than the user's key +
           // id of feature value then apply it
-          if (percentage < (useBasePercentage + rsi.percentage)) {
+          if (percentage <= (useBasePercentage + rsi.percentage)) {
             if (rsi.attributes != null && rsi.attributes.length > 0) {
               if (this.matchAttribute(context, rsi)) {
                 return new Applied(true, rsi.value);
@@ -82,12 +82,12 @@ export class ApplyFeature {
           }
 
           // this was only a percentage and had no other attributes
-          if (rsi.attributes != null && rsi.attributes.length > 0) {
+          if (rsi.attributes !== undefined && rsi.attributes.length > 0) {
             basePercentage.set(percentageKey, basePercentage.get(percentageKey) + rsi.percentage);
           }
         }
 
-        if ((rsi.percentage === 0 || rsi.percentage === undefined) && rsi.attributes != null
+        if ((rsi.percentage === 0 || rsi.percentage === undefined) && rsi.attributes != undefined
               && rsi.attributes.length > 0 &&
           this.matchAttribute(context, rsi)) { // nothing to do with a percentage
           return new Applied(true, rsi.value);
