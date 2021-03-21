@@ -65,27 +65,34 @@ of for mobile devices
 
 #### 4. Check FeatureHub Repository readyness and request feature state 
 
-   * Get feature value through "Get" methods (imperative way)
-        - `getFlag('FEATURE_KEY')` returns a boolean feature (by key), or an error if it is unable to assert the value to a boolean
-        - `getNumber('FEATURE_KEY')` / `getString('FEATURE_KEY')` / `getJson('FEATURE_KEY')` as above
 ```typescript
-    let initialized = false;
-    if (featureHubRepository.readyness === Readyness.Ready || this.featureHubEventSourceClient) {
-      return;
-    }
-    featureHubRepository.addReadynessListener((readyness) => {
-      if (!initialized) {
-        console.log('readyness', readyness);
-        if (readyness === Readyness.Ready) {
-          initialized = true;
-          if (featureHubRepository.getFlag('FEATURE_KEY')) {
-            // do something
-          }
-        }
+ let failCounter = 0;
+  let fhInitialized = false;
+  featureHubRepository.addReadynessListener( (readyness: Readyness): void => {
+    if(!fhInitialized && readyness === Readyness.Ready) {
+      logger.event('started_featurehub_event', Level.Info, 'Connected to FeatureHub');
+      startServer();
+      fhInitialized = true;
+      if (featureHubRepository.getFlag('FEATURE_KEY')) {
+        // do something
       }
-    });
-```         
-        
+    } else if(readyness === Readyness.Failed && failCounter > 5) {  
+      logger.event('started_featurehub_failed', Level.Error, 'Failed to connect to FeatureHub');
+      process.exit(1);
+    } else if(readyness === Readyness.Failed) {
+      failCounter++;
+    } else {
+      failCounter = 0;
+    }
+  });
+```
+
+SSE kills your connection regularly to ensure stale connections are removed. For this reason you will see the connection being dropped and then reconnected again every 30-60 seconds. This is expected and in the above snippet you can see how you can potentially deal with the server readyness check. If you would like to change the reconnection interval, you have an option of changing `maxSlots` in the Edge server.
+
+* Get feature value through "Get" methods (imperative way)
+  - `getFlag('FEATURE_KEY')` returns a boolean feature (by key), or an error if it is unable to assert the value to a boolean
+  - `getNumber('FEATURE_KEY')` / `getString('FEATURE_KEY')` / `getJson('FEATURE_KEY')` as above
+
    * To get the feature details
         - `feature('FEATURE_KEY')` returns a whole feature (by key)      
    

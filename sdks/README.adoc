@@ -45,6 +45,8 @@ cachable, allowing you to use clever CDN's like https://www.fastly.com/blog/serv
 SSE also kills your connection regularly to ensure stale connections are removed, but you can control that in 
 FeatureHub and CDNs also used that as a key to refresh their own caches.
 
+Note, for this reason you will see the connection being dropped and then reconnected again every 30-60 seconds. You have an option of setting it longer if you change maxSlots in the Edge server.
+
 What is even better about SSE is that you can simply use `curl`, your normal browser inspection tools, and our
 implementation of it is very easy to use and understand.
 
