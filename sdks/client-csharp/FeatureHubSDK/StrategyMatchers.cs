@@ -108,7 +108,7 @@ namespace FeatureHubSDK
             int useBasePercentage = (rsi.Attributes == null || rsi.Attributes.Count == 0) ? basePercentageVal : 0;
             // if the percentage is lower than the user's key +
             // id of feature value then apply it
-            if (percentage < (useBasePercentage + rsi.Percentage))
+            if (percentage <= (useBasePercentage + rsi.Percentage))
             {
               if (rsi.Attributes != null && rsi.Attributes.Count != 0)
               {

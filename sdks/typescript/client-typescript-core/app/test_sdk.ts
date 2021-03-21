@@ -1,4 +1,5 @@
 import { FeatureStateUpdate, ObjectSerializer } from './models/models';
+import { FeatureHubConfig } from './feature_hub_config';
 
 interface FeatureUpdatePostManager {
   post(url: string, update: FeatureStateUpdate) : Promise<boolean>;
@@ -59,8 +60,8 @@ export class FeatureUpdater {
   private sdkUrl: string;
   private manager: FeatureUpdatePostManager;
 
-  constructor(sdkUrl: string) {
-    this.sdkUrl = sdkUrl;
+  constructor(config: FeatureHubConfig) {
+    this.sdkUrl = config.url();
 
     if (typeof window === 'object') {
       this.manager = new BrowserFeaturePostUpdater();

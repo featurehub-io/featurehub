@@ -1,15 +1,17 @@
-import { ClientFeatureRepository, featureHubRepository, SSEResultState } from 'featurehub-repository/dist';
-import * as EventSource from 'eventsource';
+import { SSEResultState } from 'featurehub-repository/dist';
+import EventSource from 'eventsource';
+import { InternalFeatureRepository } from 'featurehub-repository/dist/internal_feature_repository';
+import { FeatureHubConfig } from 'featurehub-repository/dist';
 
 export class FeatureHubEventSourceClient {
   private eventSource: EventSource;
-  private sdkUrl: string;
-  private _repository: ClientFeatureRepository;
+  private readonly _config: FeatureHubConfig;
+  private readonly _repository: InternalFeatureRepository;
   private _header: string;
 
-  constructor(sdkUrl: string, repository?: ClientFeatureRepository) {
-    this.sdkUrl = sdkUrl;
-    this._repository = repository || featureHubRepository;
+  constructor(config: FeatureHubConfig, repository: InternalFeatureRepository) {
+    this._config = config;
+    this._repository = repository;
   }
 
   init() {
@@ -19,7 +21,7 @@ export class FeatureHubEventSourceClient {
         'x-featurehub': this._header
       };
     }
-    this.eventSource = new EventSource(this.sdkUrl, options);
+    this.eventSource = new EventSource(this._config.url(), options);
 
     [SSEResultState.Features, SSEResultState.Feature, SSEResultState.DeleteFeature,
         SSEResultState.Bye, SSEResultState.Failure, SSEResultState.Ack].forEach((name) => {
