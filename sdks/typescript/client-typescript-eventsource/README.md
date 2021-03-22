@@ -87,7 +87,25 @@ of for mobile devices
   });
 ```
 
-SSE kills your connection regularly to ensure stale connections are removed. For this reason you will see the connection being dropped and then reconnected again every 30-60 seconds. This is expected and in the above snippet you can see how you can potentially deal with the server readyness check. If you would like to change the reconnection interval, you have an option of changing `maxSlots` in the Edge server.
+SSE kills your connection regularly to ensure stale connections are removed. For this reason you will see the connection being dropped and then reconnected again every 30-60 seconds. This is expected and in the above snippet you can see how you can potentially deal with the server readyness check. If you would like to change the reconnection interval, you have an option of changing `maxSlots` in the Edge server. If it is important to your server instances that the connection to the feature server exists as a critical service, then the snippet above will ensure it will try and connect (say five times) and then kill the server process alerting you to a failure. If connection to the feature service is only important for initial starting of your server, then you can simply listen for the first readyness and start your server and ignore all subsequent notifications:
+
+```typescript
+    let initialized = false;
+    if (featureHubRepository.readyness === Readyness.Ready || this.featureHubEventSourceClient) {
+      return;
+    }
+    featureHubRepository.addReadynessListener((readyness) => {
+      if (!initialized) {
+        console.log('readyness', readyness);
+        if (readyness === Readyness.Ready) {
+          initialized = true;
+          if (featureHubRepository.getFlag('FEATURE_KEY')) {
+            // do something
+          }
+        }
+      }
+    });
+``` 
 
 * Get feature value through "Get" methods (imperative way)
   - `getFlag('FEATURE_KEY')` returns a boolean feature (by key), or an error if it is unable to assert the value to a boolean
