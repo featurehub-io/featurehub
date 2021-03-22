@@ -114,7 +114,7 @@ export abstract class BaseClientContext implements ClientContext {
     return  this.feature(name).isSet();
   }
 
-  abstract async build(): Promise<ClientContext>;
+  abstract build(): Promise<ClientContext>;
 
   abstract feature(name: string): FeatureStateHolder;
   // feature(name: string): FeatureStateHolder {

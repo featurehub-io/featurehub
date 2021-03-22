@@ -50,7 +50,7 @@ abstract class PollingBase implements PollingService {
     }
   }
 
-  protected abstract async poll(): Promise<void>;
+  protected abstract poll(): Promise<void>;
 
   protected async delayTimer(): Promise<void> {
     return new Promise(((resolve, reject) => {

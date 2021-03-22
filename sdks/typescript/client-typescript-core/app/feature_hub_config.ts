@@ -26,7 +26,7 @@ export class EdgeFeatureHubConfig implements FeatureHubConfig {
   private _repository: InternalFeatureRepository;
   private _edgeService: EdgeServiceSupplier;
 
-  public EdgeFeatureHubConfig(host: string, apiKey: string) {
+  constructor(host: string, apiKey: string) {
     this._apiKey = apiKey;
     this._host = host;
 
