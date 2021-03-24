@@ -118,7 +118,7 @@
           <dependency>
             <groupId>com.bluetrainsoftware.maven</groupId>
             <artifactId>openapi-dart-generator</artifactId>
-            <version>4.2</version>
+            <version>4.3-SNAPSHOT</version>
           </dependency>
         </dependencies>
         <executions>
@@ -136,6 +136,9 @@
               <additionalProperties>
                 <additionalProperty>
                   pubName=mrapi
+                </additionalProperty>
+                <additionalProperty>
+                  nullSafe=true
                 </additionalProperty>
               </additionalProperties>
             </configuration>

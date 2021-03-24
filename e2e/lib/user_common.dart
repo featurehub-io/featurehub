@@ -1,88 +1,78 @@
-import 'package:app_singleapp/util.dart';
+import 'package:e2e_tests/util.dart';
 import 'package:mrapi/api.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
 /// import this to store and get details about a person between steps
 
 class UserCommon {
-  ApiClient _apiClient;
-  PersonServiceApi _personService;
-  SetupServiceApi _setupService;
-  GroupServiceApi _groupService;
-  AuthServiceApi _authServiceApi;
-  PortfolioServiceApi _portfolioServiceApi;
-  ApplicationServiceApi _applicationServiceApi;
-  EnvironmentServiceApi _environmentServiceApi;
-  FeatureServiceApi _featureServiceApi;
-  ServiceAccountServiceApi _serviceAccountServiceApi;
-  EnvironmentFeatureServiceApi _environmentFeatureServiceApi;
-  UserStateServiceApi _userStateServiceApi;
-  RolloutStrategyServiceApi _rolloutStrategyServiceApi;
+  final PersonServiceApi personService;
+  final SetupServiceApi setupService;
+  final GroupServiceApi groupService;
+  final AuthServiceApi authService;
+  final PortfolioServiceApi portfolioServiceApi;
+  final ApplicationServiceApi applicationServiceApi;
+  final EnvironmentServiceApi environmentServiceApi;
+  final FeatureServiceApi featureServiceApi;
+  final ServiceAccountServiceApi serviceAccountServiceApi;
+  final EnvironmentFeatureServiceApi environmentFeatureServiceApi;
+  final UserStateServiceApi userStateServiceApi;
+  final RolloutStrategyServiceApi rolloutStrategyServiceApi;
+  final ApiClient apiClient;
 
-  UserCommon() {
-    _apiClient = ApiClient(basePath: baseUrl());
+  UserCommon(
+      this.apiClient,
+      this.personService,
+      this.setupService,
+      this.groupService,
+      this.authService,
+      this.portfolioServiceApi,
+      this.applicationServiceApi,
+      this.environmentServiceApi,
+      this.featureServiceApi,
+      this.serviceAccountServiceApi,
+      this.environmentFeatureServiceApi,
+      this.userStateServiceApi,
+      this.rolloutStrategyServiceApi);
 
-    _personService = PersonServiceApi(_apiClient);
-    _setupService = SetupServiceApi(_apiClient);
-    _groupService = GroupServiceApi(_apiClient);
-    _authServiceApi = AuthServiceApi(_apiClient);
-    _portfolioServiceApi = PortfolioServiceApi(_apiClient);
-    _applicationServiceApi = ApplicationServiceApi(_apiClient);
-    _environmentServiceApi = EnvironmentServiceApi(_apiClient);
-    _featureServiceApi = FeatureServiceApi(_apiClient);
-    _serviceAccountServiceApi = ServiceAccountServiceApi(_apiClient);
-    _environmentFeatureServiceApi = EnvironmentFeatureServiceApi(_apiClient);
-    _userStateServiceApi = UserStateServiceApi(_apiClient);
-    _rolloutStrategyServiceApi = RolloutStrategyServiceApi(_apiClient);
+  factory UserCommon.create() {
+    ApiClient apiClient = new ApiClient(basePath: baseUrl());
+
+    return new UserCommon(
+        apiClient,
+        PersonServiceApi(apiClient),
+        SetupServiceApi(apiClient),
+        GroupServiceApi(apiClient),
+        AuthServiceApi(apiClient),
+        PortfolioServiceApi(apiClient),
+        ApplicationServiceApi(apiClient),
+        EnvironmentServiceApi(apiClient),
+        FeatureServiceApi(apiClient),
+        ServiceAccountServiceApi(apiClient),
+        EnvironmentFeatureServiceApi(apiClient),
+        UserStateServiceApi(apiClient),
+        RolloutStrategyServiceApi(apiClient));
   }
 
-  PersonServiceApi get personService => _personService;
+  Person? _person;
+  String? _token;
 
-  SetupServiceApi get setupService => _setupService;
-
-  GroupServiceApi get groupService => _groupService;
-
-  AuthServiceApi get authService => _authServiceApi;
-
-  PortfolioServiceApi get portfolioService => _portfolioServiceApi;
-
-  ApplicationServiceApi get applicationService => _applicationServiceApi;
-
-  EnvironmentServiceApi get environmentService => _environmentServiceApi;
-
-  FeatureServiceApi get featureService => _featureServiceApi;
-
-  UserStateServiceApi get userStateService => _userStateServiceApi;
-
-  RolloutStrategyServiceApi get rolloutStrategyService =>
-      _rolloutStrategyServiceApi;
-
-  EnvironmentFeatureServiceApi get environmentFeatureServiceApi =>
-      _environmentFeatureServiceApi;
-
-  ServiceAccountServiceApi get serviceAccountService =>
-      _serviceAccountServiceApi;
-
-  Person _person;
-  String _token;
-
-  Person get person => _person;
+  Person? get person => _person;
 
   bool get hasToken => _token != null;
 
-  void set person(Person p) => _person = p;
+  void set person(Person? p) => _person = p;
 
   void set tokenized(TokenizedPerson p) {
-    print("logged in as ${p.person.name} with token ${p.accessToken}");
+    print("logged in as ${p.person?.name} with token ${p.accessToken}");
     _person = p.person;
-    _apiClient.setAuthentication(
+    apiClient.setAuthentication(
         'bearerAuth', OAuth(accessToken: p.accessToken));
     _token = p.accessToken;
     print("auth token is now ${p.accessToken}");
   }
 
   void clearAuth() {
-    _apiClient.setAuthentication('bearerAuth', null);
+    apiClient.setAuthentication('bearerAuth', null);
     _token = null;
   }
 
@@ -104,13 +94,13 @@ class UserCommon {
 
     assert(person.email == email.toLowerCase());
 
-    TokenizedPerson tokenizedPerson =
-        await authService.registerPerson(PersonRegistrationDetails()
-          ..email = email
-          ..password = password
-          ..confirmPassword = password
-          ..name = name
-          ..registrationToken = token);
+    TokenizedPerson tokenizedPerson = await authService.registerPerson(
+        PersonRegistrationDetails(
+            email: email,
+            password: password,
+            confirmPassword: password,
+            name: name,
+            registrationToken: token));
 
     assert(tokenizedPerson != null, 'person not registered');
 
@@ -118,66 +108,76 @@ class UserCommon {
   }
 
   // operates in user space
-  Future<Portfolio> findExactPortfolio(String portfolioName,
-      {PortfolioServiceApi portfolioServiceApi}) async {
+  Future<Portfolio?> findExactPortfolio(String? portfolioName,
+      {PortfolioServiceApi? portfolioServiceApi}) async {
     PortfolioServiceApi _pService =
-        portfolioServiceApi ?? this.portfolioService;
-    var portfolios = await _pService.findPortfolios(
+        portfolioServiceApi ?? this.portfolioServiceApi;
+    final portfolios = await _pService.findPortfolios(
         filter: portfolioName, includeGroups: true);
     return portfolios.firstWhere((p) => p.name == portfolioName,
-        orElse: () => null);
+        orElse: () => null as Portfolio);
   }
 
-  Future<Application> findExactApplication(String appName, String portfolioId,
-      {ApplicationServiceApi applicationServiceApi}) async {
+  Future<Application?> findExactApplication(
+      String? appName, String? portfolioId,
+      {ApplicationServiceApi? applicationServiceApi}) async {
     ApplicationServiceApi _aService =
-        applicationServiceApi ?? _applicationServiceApi;
-    var apps = await _aService.findApplications(portfolioId, filter: appName);
-    return apps.firstWhere((a) => a.name == appName, orElse: () => null);
+        applicationServiceApi ?? this.applicationServiceApi;
+    var apps = await _aService.findApplications(portfolioId!, filter: appName);
+    return apps.firstWhere((a) => a.name == appName,
+        orElse: () => null as Application);
   }
 
-  Future<Environment> findExactEnvironment(String envName, String appId,
-      {EnvironmentServiceApi environmentServiceApi}) async {
+  Future<Environment?> findExactEnvironment(String envName, String? appId,
+      {EnvironmentServiceApi? environmentServiceApi}) async {
+    assert(appId != null, 'appId is null');
     EnvironmentServiceApi _eService =
-        environmentServiceApi ?? _environmentServiceApi;
-    var envs = await _eService.findEnvironments(appId, filter: envName);
-    return envs.firstWhere((e) => e.name == envName, orElse: () => null);
+        environmentServiceApi ?? this.environmentServiceApi;
+    var envs = await _eService.findEnvironments(appId!, filter: envName);
+    return envs.firstWhere((e) => e.name == envName,
+        orElse: () => null as Environment);
   }
 
-  Future<Group> findExactGroup(String groupName, String portfolioId,
-      {GroupServiceApi groupServiceApi}) async {
-    GroupServiceApi _gService = groupServiceApi ?? _groupService;
-    var groups = await _gService.findGroups(portfolioId,
+  Future<Group?> findExactGroup(String groupName, String? portfolioId,
+      {GroupServiceApi? groupServiceApi}) async {
+    GroupServiceApi _gService = groupServiceApi ?? this.groupService;
+    assert(portfolioId != null, 'portfolio id is null');
+    var groups = await _gService.findGroups(portfolioId!,
         filter: groupName, includePeople: true);
-    return groups.firstWhere((g) => g.name == groupName, orElse: () => null);
+    return groups.firstWhere((g) => g.name == groupName,
+        orElse: () => null as Group);
   }
 
-  Future<ServiceAccount> findExactServiceAccount(
-      String serviceAccount, String portfolioId,
-      {ServiceAccountServiceApi serviceAccountServiceApi,
-      String applicationId}) async {
+  Future<ServiceAccount?> findExactServiceAccount(
+      String? serviceAccount, String? portfolioId,
+      {ServiceAccountServiceApi? serviceAccountServiceApi,
+      String? applicationId}) async {
+    assert(serviceAccount != null, 'service account is null');
+    assert(portfolioId != null, 'portfolio id is null');
     ServiceAccountServiceApi _saService =
-        serviceAccountService ?? _serviceAccountServiceApi;
+        serviceAccountServiceApi ?? this.serviceAccountServiceApi;
     var serviceAccounts = await _saService.searchServiceAccountsInPortfolio(
-        portfolioId,
+        portfolioId!,
         applicationId: applicationId,
         includePermissions: true);
     return serviceAccounts.firstWhere((sa) => sa.name == serviceAccount,
-        orElse: () => null);
+        orElse: () => null as ServiceAccount);
   }
 
-  Future<Group> findExactGroupWithPerms(String groupName, String portfolioId,
-      {GroupServiceApi groupServiceApi}) async {
-    GroupServiceApi _gService = groupServiceApi ?? _groupService;
+  Future<Group?> findExactGroupWithPerms(String groupName, String portfolioId,
+      {GroupServiceApi? groupServiceApi}) async {
+    GroupServiceApi _gService = groupServiceApi ?? this.groupService;
     var groups = await _gService.findGroups(portfolioId, filter: groupName);
-    Group group =
-        groups.firstWhere((g) => g.name == groupName, orElse: () => null);
-    return await _gService.getGroup(group.id,
-        includeGroupRoles: true, includeMembers: true);
+    Group? group = groups.firstWhere((g) => g.name == groupName,
+        orElse: () => null as Group);
+    return group?.id == null
+        ? null
+        : await _gService.getGroup(group.id!,
+            includeGroupRoles: true, includeMembers: true);
   }
 
-  Future<Person> findExactEmail(String email,
-      {PersonServiceApi personServiceApi}) async {
+  Future<Person?> findExactEmail(String email,
+      {PersonServiceApi? personServiceApi}) async {
     var people = await (personServiceApi ?? this.personService)
         .findPeople(filter: email);
 

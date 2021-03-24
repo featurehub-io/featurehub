@@ -1,5 +1,5 @@
-import 'package:app_singleapp/events_common.dart';
-import 'package:app_singleapp/superuser_common.dart';
+import 'package:e2e_tests/events_common.dart';
+import 'package:e2e_tests/superuser_common.dart';
 import 'package:ogurets/ogurets.dart';
 
 class Hooks {

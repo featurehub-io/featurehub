@@ -1,6 +1,7 @@
-import 'package:app_singleapp/shared.dart';
-import 'package:app_singleapp/superuser_common.dart';
-import 'package:app_singleapp/user_common.dart';
+import 'package:collection/collection.dart' show IterableExtension;
+import 'package:e2e_tests/shared.dart';
+import 'package:e2e_tests/superuser_common.dart';
+import 'package:e2e_tests/user_common.dart';
 import 'package:mrapi/api.dart';
 import 'package:ogurets/ogurets.dart';
 import 'package:openapi_dart_common/openapi.dart';
@@ -21,12 +22,10 @@ class AdminGroupStepdefs {
 
     assert(portfolio != null, 'No portfolio by name $portfolioName');
     List<Group> groups =
-        await common.groupService.findGroups(portfolio.id, filter: groupName);
+        await common.groupService.findGroups(portfolio!.id!, filter: groupName);
 
     assert(
-        null !=
-            groups.firstWhere((g) => g.admin && g.name == groupName,
-                orElse: () => null),
+        null != groups.firstWhereOrNull((g) => g.admin! && g.name == groupName),
         'Cannot find admin group name $groupName');
   }
 
@@ -41,7 +40,7 @@ class AdminGroupStepdefs {
 
     assert(portfolio != null, 'No portfolio by name $portfolioName');
 
-    var group = await userCommon.findExactGroup(groupName, portfolio.id,
+    var group = await userCommon.findExactGroup(groupName, portfolio!.id!,
         groupServiceApi: common.groupService);
     assert(group != null, 'You havent created the group $groupName yet');
 
@@ -50,7 +49,7 @@ class AdminGroupStepdefs {
     assert(person != null, 'Cannot find person by email $email');
 
     try {
-      await common.groupService.addPersonToGroup(group.id, person.id.id);
+      await common.groupService.addPersonToGroup(group!.id!, person!.id!.id);
     } on ApiException catch (e) {
       print("duplicate, which is ok $e");
     }
@@ -58,15 +57,17 @@ class AdminGroupStepdefs {
 
   @And(r'I ensure the following group setup exists:')
   void iEnsureTheFollowingGroupSetupExists(GherkinTable table) async {
-    assert(shared.portfolio != null, 'Portfolio exists');
-    assert(shared.application != null, 'Application exists');
+    assert(shared.portfolio != null, 'Portfolio doesnt exist');
+    assert(shared.application != null, 'Application doesnt exist');
 
     for (var g in table) {
+      final groupName = g["groupName"];
+      assert(groupName != null, 'table column has no group name');
       final group =
-          await userCommon.findExactGroup(g["groupName"], shared.portfolio.id);
+          await userCommon.findExactGroup(groupName, shared.portfolio.id);
       if (group == null) {
         await userCommon.groupService
-            .createGroup(shared.portfolio.id, Group()..name = g["groupName"]);
+            .createGroup(shared.portfolio.id!, Group(name: g["groupName"]));
       }
     }
   }
@@ -86,18 +87,18 @@ class AdminGroupStepdefs {
         await userCommon.findExactEnvironment(envName, shared.application.id);
     assert(env != null, 'env must exist and doesnt $envName');
 
-    var er = group.environmentRoles
-        .firstWhere((er) => er.environmentId == env.id, orElse: () => null);
+    var er = group!.environmentRoles!
+        .firstWhereOrNull((er) => er.environmentId == env!.id!);
     if (er == null) {
-      er = EnvironmentGroupRole()
-        ..environmentId = env.id
-        ..groupId = group.id;
-      group.environmentRoles.add(er);
+      er = EnvironmentGroupRole(
+          environmentId: env!.id!, groupId: group.id!, roles: []);
+
+      group.environmentRoles!.add(er);
     }
     final roleType = RoleTypeExtension.fromJson(perm);
     if (!er.roles.contains(roleType)) {
-      er.roles.add(roleType);
+      er.roles.add(roleType!);
     }
-    await userCommon.groupService.updateGroup(group.id, group);
+    await userCommon.groupService.updateGroup(group!.id!, group);
   }
 }

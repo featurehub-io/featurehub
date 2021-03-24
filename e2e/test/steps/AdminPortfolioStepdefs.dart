@@ -1,6 +1,6 @@
-import 'package:app_singleapp/shared.dart';
-import 'package:app_singleapp/superuser_common.dart';
-import 'package:app_singleapp/user_common.dart';
+import 'package:e2e_tests/shared.dart';
+import 'package:e2e_tests/superuser_common.dart';
+import 'package:e2e_tests/user_common.dart';
 import 'package:mrapi/api.dart';
 import 'package:ogurets/ogurets.dart';
 import 'package:openapi_dart_common/openapi.dart';

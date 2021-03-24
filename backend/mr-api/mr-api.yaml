@@ -1704,6 +1704,9 @@ components:
           items:
             $ref: "#/components/schemas/Feature"
     SearchPersonResult:
+      required:
+        - max
+        - people
       properties:
         max:
           type: integer

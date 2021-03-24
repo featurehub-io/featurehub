@@ -1,5 +1,5 @@
-import 'package:app_singleapp/events_common.dart';
-import 'package:app_singleapp/shared.dart';
+import 'package:e2e_tests/events_common.dart';
+import 'package:e2e_tests/shared.dart';
 import 'package:featurehub_client_sdk/featurehub.dart';
 import 'package:ogurets/ogurets.dart';
 

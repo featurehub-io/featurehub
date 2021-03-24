@@ -1,18 +1,18 @@
-import 'package:app_singleapp/util.dart';
+import 'package:e2e_tests/util.dart';
 import 'package:mrapi/api.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
 class SuperuserCommon {
-  ApiClient _apiClient;
-  PersonServiceApi _personService;
-  SetupServiceApi _setupService;
-  GroupServiceApi _groupService;
-  AuthServiceApi _authServiceApi;
-  PortfolioServiceApi _portfolioServiceApi;
-  ApplicationServiceApi _applicationServiceApi;
-  Person _superuser;
-  String _superuserToken;
-  TokenizedPerson _tokenizedPerson;
+  late ApiClient _apiClient;
+  late PersonServiceApi _personService;
+  late SetupServiceApi _setupService;
+  late GroupServiceApi _groupService;
+  late AuthServiceApi _authServiceApi;
+  late PortfolioServiceApi _portfolioServiceApi;
+  late ApplicationServiceApi _applicationServiceApi;
+  Person? _superuser;
+  String? _superuserToken;
+  TokenizedPerson? _tokenizedPerson;
 
   bool _initialized = false;
 
@@ -36,12 +36,12 @@ class SuperuserCommon {
 
   String get initUser => "superuser@mailinator.com";
   String get initPassword => "password123";
-  String get superuserGroupId => _superuser.groups
-      .firstWhere((g) => g.admin && g.portfolioId == null)
+  String? get superuserGroupId => _superuser?.groups
+      ?.firstWhere((g) => g.admin == true && g.portfolioId == null)
       .id; // explodes if not logged in
 
   // this MUST be called in every method that accesses this class if @superuser is not used
-  void initialize() async {
+  Future<void> initialize() async {
     if (_initialized) {
       return;
     }
@@ -51,32 +51,35 @@ class SuperuserCommon {
     try {
       await _setupService.isInstalled();
 
-      tp = await _authServiceApi.login(UserCredentials()
-        ..password = initPassword
-        ..email = initUser);
+      tp = await _authServiceApi
+          .login(UserCredentials(password: initPassword, email: initUser));
     } catch (e) {
       assert(e is ApiException);
       assert((e as ApiException).code == 404,
           'code is not 404 but ${(e as ApiException).code}');
 
-      tp = await _setupService.setupSiteAdmin(SetupSiteAdmin()
+      tp = await _setupService.setupSiteAdmin(SetupSiteAdmin(
+          portfolio: "Sample Portfolio", organizationName: "Sample Org Name")
         ..emailAddress = initUser
         ..name = "Superuser"
-        ..portfolio = "Sample Portfolio"
-        ..password = initPassword
-        ..organizationName = "Sample Org Name");
+        ..password = initPassword);
     }
 
     _superuser = tp.person;
-    _superuserToken = tp.accessToken;
+
+    final token = tp.accessToken;
+    if (token == null) {
+      throw Exception('access token empty');
+    }
+    _superuserToken = token;
 
     _tokenizedPerson = tp;
     _initialized = true;
 
-    bearerToken = _superuserToken;
+    bearerToken = token;
   }
 
-  TokenizedPerson get tokenizedPerson => _tokenizedPerson;
+  TokenizedPerson? get tokenizedPerson => _tokenizedPerson;
 
   void set bearerToken(String token) =>
       _apiClient.setAuthentication('bearerAuth', OAuth(accessToken: token));

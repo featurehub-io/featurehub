@@ -1,22 +1,22 @@
-name: app_singleapp
+name: e2e_tests
 description: An app built using Flutter for web
 
 environment:
-  # You must be using Flutter >=1.5.0 or Dart >=2.3.0
-  sdk: '>=2.7.0 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
-  rxdart: 0.24.1
-  ogurets: ^3.2.0
-#  ogurets:
-#    path: /Users/richard/projects/dart/ogurets
+  rxdart: ^0.26.0
+#  ogurets: ^3.2.0
+  ogurets:
+    path: /Users/richard/projects/dart/ogurets
   mrapi:
     path: ../admin-frontend/app_mr_layer
-  openapi_dart_common: ^3.1.0
-  collection: ^1.14.11
-  featurehub_client_sdk:
-    path: "../sdks/dart/client-dart-sdk"
+  openapi_dart_common:
+    path: '/Users/richard/projects/dart/openapi_dart_common'
+  collection: ^1.15.0
+#  featurehub_client_sdk:
+#    path: "../sdks/dart/client-dart-sdk"
 dev_dependencies:
-  pedantic: ^1.0.0
-  test: ^1.6.5
+  pedantic: ^1.11.0
+  test: ^1.16.8
 
