@@ -14,8 +14,6 @@ jobs:
       with:
         node-version: '12.x'
         registry-url: 'https://registry.npmjs.org'
-    - run: cd ../../sdks/typescript/client-typescript-eventsource
-    - run: npm install 
-    - run: npm run release 
+    - run: cd ../../sdks/typescript/client-typescript-eventsource && npm install && npm run release 
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
