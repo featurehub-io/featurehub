@@ -34,7 +34,7 @@
     "tsc": "node ./node_modules/typescript/bin/tsc",
     "link": "npm link featurehub-repository",
     "compile": "npm run link && npm run build && npm link",
-    "release": "npm run tsc && npm version patch && npm publish",
+    "release": "npm run tsc && npm publish",
     "lint": "node ./node_modules/tslint/bin/tslint -r ./node_modules/tslint-microsoft-contrib/ \"app/**/*.ts\" \"spec/**/*.ts\" -e \"app/generated-code/**/*\""
   },
   "devDependencies": {
