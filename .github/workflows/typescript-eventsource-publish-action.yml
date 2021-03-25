@@ -12,8 +12,11 @@ jobs:
       with:
         node-version: '12.x'
         registry-url: 'https://registry.npmjs.org'
-    - run: cd sdks/typescript/client-typescript-eventsource    
-    - run: npm install  
-    - run: npm run build
+    - name: Install dependencies    
+      run: npm install
+      working-directory: sdks/typescript/client-typescript-eventsource
+    - name: Build sources
+      run: npm run build
+      working-directory: sdks/typescript/client-typescript-eventsource
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
