@@ -25,7 +25,10 @@ class UserStateStepdefs {
     List<String> envs = filterEnvs(envIds);
 
     await userCommon.userStateService.saveHiddenEnvironments(
-        shared.application.id, HiddenEnvironments()..environmentIds = envs);
+        shared.application.id!,
+        HiddenEnvironments(
+          environmentIds: envs,
+        ));
   }
 
   @Then(r'I get the env ids {string} and they are the same')
@@ -33,7 +36,7 @@ class UserStateStepdefs {
     List<String> envs = filterEnvs(envIds);
 
     final stored = await userCommon.userStateService
-        .getHiddenEnvironments(shared.application.id);
+        .getHiddenEnvironments(shared.application.id!);
 
     assert(stored != null);
     assert(envs
@@ -48,8 +51,10 @@ class UserStateStepdefs {
   void iCannotTryAndStoreHiddenEnvironmentForTheCurrentApplication() async {
     try {
       await userCommon.userStateService.saveHiddenEnvironments(
-          shared.application.id,
-          HiddenEnvironments()..environmentIds = ['1', '2']);
+          shared.application.id!,
+          HiddenEnvironments(
+            environmentIds: ['1', '2'],
+          ));
       assert(false, 'Should not be able to save');
     } catch (e) {
       assert(e is ApiException);

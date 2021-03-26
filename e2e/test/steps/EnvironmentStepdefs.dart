@@ -15,7 +15,7 @@ class EnvironmentStepdefs {
     Portfolio? p = await common.findExactPortfolio(portfolioName);
     assert(p != null, 'Cannot find portfolio $portfolioName');
 
-    Application? a = await common.findExactApplication(appName, p.id);
+    Application? a = await common.findExactApplication(appName, p!.id);
     assert(a != null,
         'Cannot find application $appName inside portfolio $portfolioName');
 
@@ -219,16 +219,19 @@ class EnvironmentStepdefs {
     final updatedGroup = await common.groupService
         .getGroup(shared.group.id!, includeGroupRoles: true);
     final roleType = RoleTypeExtension.fromJson(perm);
-    var eRoles = updatedGroup.environmentRoles.firstWhereOrNull(
-        (er) => er.environmentId == shared.environment.id);
+    var eRoles = updatedGroup.environmentRoles
+        .firstWhereOrNull((er) => er.environmentId == shared.environment.id);
     if (eRoles == null) {
-      eRoles = EnvironmentGroupRole(groupId: shared.group.id!, environmentId: shared.environment.id!, roles: [roleType!]);
+      eRoles = EnvironmentGroupRole(
+          groupId: shared.group.id!,
+          environmentId: shared.environment.id!,
+          roles: [roleType!]);
       updatedGroup.environmentRoles.add(eRoles);
     } else if (!eRoles.roles.contains(roleType)) {
-      eRoles.roles.add(roleType);
+      eRoles.roles.add(roleType!);
     }
 
-    await common.groupService.updateGroup(shared.group.id, updatedGroup,
+    await common.groupService.updateGroup(shared.group.id!, updatedGroup,
         updateEnvironmentGroupRoles: true);
   }
 
@@ -244,11 +247,11 @@ class EnvironmentStepdefs {
           await common.findExactEnvironment(envName, shared.application.id);
       if (foundEnv == null) {
         await common.environmentService.createEnvironment(
-            shared.application.id,
-            Environment()
-              ..name = envName
-              ..description = envDesc
-              ..applicationId = shared.application.id);
+            shared.application.id!,
+            Environment(
+                name: envName,
+                description: envDesc,
+                applicationId: shared.application.id!));
       }
     }
   }
@@ -258,12 +261,13 @@ class EnvironmentStepdefs {
       String envFindName, String envUpdatePriorName) async {
     assert(shared.application != null, 'Application exists');
     final appId = shared.application.id;
-    Environment envFind = await common.findExactEnvironment(envFindName, appId);
-    Environment envUpdatePrior =
+    Environment? envFind =
+        await common.findExactEnvironment(envFindName, appId);
+    Environment? envUpdatePrior =
         await common.findExactEnvironment(envUpdatePriorName, appId);
 
     await common.environmentService.updateEnvironment(
-        envUpdatePrior.id, envUpdatePrior..priorEnvironmentId = envFind.id);
+        envUpdatePrior!.id!, envUpdatePrior!..priorEnvironmentId = envFind!.id);
   }
 
   @And(r'I check to see that the prior environment for {string} is {string}')
@@ -271,12 +275,12 @@ class EnvironmentStepdefs {
       String envThatHasPriorName, String envThatIsPriorName) async {
     assert(shared.application != null, 'Application exists');
     final appId = shared.application.id;
-    Environment envThatHasPrior =
+    Environment? envThatHasPrior =
         await common.findExactEnvironment(envThatHasPriorName, appId);
-    Environment envThatIsPrior =
+    Environment? envThatIsPrior =
         await common.findExactEnvironment(envThatIsPriorName, appId);
 
-    assert(envThatHasPrior.priorEnvironmentId == envThatIsPrior.id,
+    assert(envThatHasPrior!.priorEnvironmentId == envThatIsPrior!.id,
         'Does not match!');
   }
 
@@ -284,10 +288,10 @@ class EnvironmentStepdefs {
   void iCheckToSeeThatThePriorEnvironmentForIsEmpty(String priorEnvName) async {
     assert(shared.application != null, 'Application exists');
     final appId = shared.application.id;
-    Environment env = await common.findExactEnvironment(priorEnvName, appId);
+    Environment? env = await common.findExactEnvironment(priorEnvName, appId);
 
-    assert(env.priorEnvironmentId == null,
-        'Prior environment id is not empty! ${env.priorEnvironmentId}');
+    assert(env!.priorEnvironmentId == null,
+        'Prior environment id is not empty! ${env!.priorEnvironmentId}');
   }
 
   @And(r'I delete all existing environments')
@@ -295,14 +299,14 @@ class EnvironmentStepdefs {
     assert(shared.application != null, 'Application does not exist');
 
     shared.application = await common.applicationService
-        .getApplication(shared.application.id, includeEnvironments: true);
+        .getApplication(shared.application.id!, includeEnvironments: true);
 
     for (var e in shared.application.environments) {
-      await common.environmentService.deleteEnvironment(e.id);
+      await common.environmentService.deleteEnvironment(e.id!);
     }
 
     shared.application = await common.applicationService
-        .getApplication(shared.application.id, includeEnvironments: true);
+        .getApplication(shared.application.id!, includeEnvironments: true);
 
     assert(shared.application.environments.length == 0,
         'did not delete all environments! ${shared.application.environments}');
@@ -313,7 +317,7 @@ class EnvironmentStepdefs {
     assert(shared.application != null, 'Application does not exist');
 
     shared.application = await common.applicationService
-        .getApplication(shared.application.id, includeEnvironments: true);
+        .getApplication(shared.application.id!, includeEnvironments: true);
 
     for (var e in table) {
       final parent = shared.application.environments
@@ -325,14 +329,13 @@ class EnvironmentStepdefs {
 
       if (child == null) {
         assert(
-            shared.application.environments.firstWhere(
-                    (element) => element.priorEnvironmentId == parent.id,
-                    orElse: () => null) ==
+            shared.application.environments.firstWhereOrNull(
+                    (element) => element.priorEnvironmentId == parent.id) ==
                 null,
             'Environment ${e["parent"]} is a parent and should not be');
       } else {
         assert(child.priorEnvironmentId == parent.id,
-            'Environment child ${child.name} has parent ${shared.application.environments.firstWhere((en) => en.id == child.priorEnvironmentId, orElse: () => null)?.name} which is wrong - should be ${parent.name}');
+            'Environment child ${child.name} has parent ${shared.application.environments.firstWhereOrNull((en) => en.id == child.priorEnvironmentId)?.name} which is wrong - should be ${parent.name}');
       }
     }
   }
@@ -342,10 +345,8 @@ class EnvironmentStepdefs {
     assert(shared.application != null, 'must have selected an application!');
 
     shared.environment = await common.environmentService.createEnvironment(
-        shared.application.id,
-        Environment()
-          ..name = envName
-          ..description = envName);
+        shared.application.id!,
+        Environment(name: envName, description: envName));
   }
 
   @Then(r'there should be {int} environments')
@@ -353,7 +354,7 @@ class EnvironmentStepdefs {
     assert(shared.application != null, 'must have selected an application!');
 
     final app = await common.applicationService
-        .getApplication(shared.application.id, includeEnvironments: true);
+        .getApplication(shared.application.id!, includeEnvironments: true);
 
     assert(app.environments.length == count,
         'Not the right number of environments - ${app.environments.length} and should be ${count}');

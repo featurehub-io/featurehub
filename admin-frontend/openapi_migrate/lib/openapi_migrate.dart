@@ -17,7 +17,8 @@ ArgResults _parseArguments(args) {
 main(passed_args) async {
   ArgResults args = _parseArguments(passed_args);
 
-  String openapiFile = args['openapi'] ?? '../app_mr_layer/final.yaml';
+  String openapiFile =
+      args['openapi'] ?? '../admin-frontend/app_mr_layer/final.yaml';
   if (openapiFile == null) {
     print(
         "You must specify the location of the openapi file with --openapi <filename>");
@@ -37,6 +38,13 @@ main(passed_args) async {
   final schema = api['components']['schemas'] as YamlMap;
 
   openapiClasses = schema.keys.map((e) => e.toString()).toList();
-  
-  await runInteractiveCodemod(filePathsFromGlob(Glob('../')), suggestor)
+
+  await runInteractiveCodemod(
+      [
+        'test/steps/StrategiesStepdefs.dart',
+        'test/steps/UserStateStepdefs.dart',
+        'test/steps/UserSystemStepdefs.dart',
+      ],
+      OpenPatchSuggestor(),
+      args: []);
 }

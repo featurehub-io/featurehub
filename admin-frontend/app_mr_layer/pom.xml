@@ -140,6 +140,9 @@
                 <additionalProperty>
                   nullSafe=true
                 </additionalProperty>
+                <additionalProperty>
+                  nullSafe-array-default=true
+                </additionalProperty>
               </additionalProperties>
             </configuration>
           </execution>

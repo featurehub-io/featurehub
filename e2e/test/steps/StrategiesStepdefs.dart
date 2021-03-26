@@ -19,15 +19,17 @@ class StrategiesStepdefs {
     assert(shared.feature != null, 'must know what the feature is');
 
     final existing = await userCommon.rolloutStrategyService
-        .listApplicationRolloutStrategies(shared.application.id);
+        .listApplicationRolloutStrategies(shared.application.id!);
 
     for (var g in table) {
       var strategy = existing
-          .firstWhere((s) => s.rolloutStrategy.name.toLowerCase() == g['name'],
-              orElse: () => null)
+          .firstWhereOrNull(
+              (s) => s.rolloutStrategy.name.toLowerCase() == g['name'])
           ?.rolloutStrategy;
       if (strategy == null) {
-        strategy = RolloutStrategy()..name = g['name'];
+        strategy = RolloutStrategy(
+          name: g['name'],
+        );
       }
       strategy.percentage = g['percentage'] != null
           ? (double.parse(g['percentage']) * 10000).round()
@@ -36,11 +38,11 @@ class StrategiesStepdefs {
       if (strategy.id != null) {
         strategy = (await userCommon.rolloutStrategyService
                 .updateRolloutStrategy(
-                    shared.application.id, strategy.id, strategy))
-            ?.rolloutStrategy;
+                    shared.application.id!, strategy.id!, strategy))
+            .rolloutStrategy;
       } else {
         strategy = (await userCommon.rolloutStrategyService
-                .createRolloutStrategy(shared.application.id, strategy))
+                .createRolloutStrategy(shared.application.id!, strategy))
             .rolloutStrategy;
       }
     }
@@ -58,9 +60,13 @@ class StrategiesStepdefs {
 
     try {
       fv = await userCommon.environmentFeatureServiceApi
-          .getFeatureForEnvironment(shared.environment.id, shared.feature.key);
+          .getFeatureForEnvironment(
+              shared.environment.id!, shared.feature!.key!);
     } catch (e) {
-      fv = FeatureValue()..key = shared.feature.key;
+      fv = FeatureValue(
+        key: shared.feature!.key!,
+        locked: false,
+      );
     }
 
     // now find the shared strategies
@@ -68,13 +74,14 @@ class StrategiesStepdefs {
       String name = g["name"];
 
       final strategy = await userCommon.rolloutStrategyService
-          .getRolloutStrategy(shared.application.id, name);
+          .getRolloutStrategy(shared.application.id!, name);
 
       var rsi = fv.rolloutStrategyInstances.firstWhere(
           (element) => element.strategyId == strategy.rolloutStrategy.id,
           orElse: () {
-        final r = RolloutStrategyInstance()
-          ..strategyId = strategy.rolloutStrategy.id;
+        final r = RolloutStrategyInstance(
+          strategyId: strategy.rolloutStrategy.id,
+        );
         fv.rolloutStrategyInstances.add(r);
         return r;
       });
@@ -84,11 +91,11 @@ class StrategiesStepdefs {
 
     if (fv.id != null) {
       shared.featureValue = (await userCommon.environmentFeatureServiceApi
-          .updateAllFeaturesForEnvironment(shared.environment.id, [fv]))[0];
+          .updateAllFeaturesForEnvironment(shared.environment.id!, [fv]))[0];
     } else {
       shared.featureValue = await userCommon.environmentFeatureServiceApi
           .createFeatureForEnvironment(
-              shared.environment.id, shared.feature.key, fv);
+              shared.environment.id!, shared.feature!.key!, fv);
     }
   }
 
@@ -101,16 +108,16 @@ class StrategiesStepdefs {
 
     final fv =
         await userCommon.environmentFeatureServiceApi.getFeatureForEnvironment(
-      shared.environment.id,
-      shared.feature.key,
+      shared.environment.id!,
+      shared.feature!.key!,
     );
 
     print(
-        "fv is ${fv.rolloutStrategyInstances}\n stored is ${shared.featureValue.rolloutStrategyInstances}");
+        "fv is ${fv.rolloutStrategyInstances}\n stored is ${shared.featureValue!.rolloutStrategyInstances}");
 
     assert(
         ListEquality().equals(fv.rolloutStrategyInstances,
-            shared.featureValue.rolloutStrategyInstances),
+            shared.featureValue!.rolloutStrategyInstances),
         'not equal');
   }
 
@@ -123,15 +130,15 @@ class StrategiesStepdefs {
 
     final fv =
         await userCommon.environmentFeatureServiceApi.getFeatureForEnvironment(
-      shared.environment.id,
-      shared.feature.key,
+      shared.environment.id!,
+      shared.feature!.key!,
     );
 
     fv.rolloutStrategies = [];
     _updateStrategiesFromTable(table, fv.rolloutStrategies);
 
     shared.featureValue = (await userCommon.environmentFeatureServiceApi
-        .updateAllFeaturesForEnvironment(shared.environment.id, [fv]))[0];
+        .updateAllFeaturesForEnvironment(shared.environment.id!, [fv]))[0];
   }
 
   void _updateStrategiesFromTable(
@@ -139,12 +146,16 @@ class StrategiesStepdefs {
     for (var g in table) {
       final rs = rolloutStrategies.firstWhere((rs) => rs.name == g['name'],
           orElse: () {
-        final r = RolloutStrategy()..name = g['name'];
+        final r = RolloutStrategy(
+          name: g['name'],
+        );
         rolloutStrategies.add(r);
         return r;
       });
 
-      switch (shared.feature.valueType) {
+      switch (shared.feature!.valueType) {
+        case null:
+          throw Exception('failed to understand shared feature type');
         case FeatureValueType.BOOLEAN:
           rs.value = 'true' == g['value'];
           break;
@@ -182,15 +193,15 @@ class StrategiesStepdefs {
 
     final fv =
         await userCommon.environmentFeatureServiceApi.getFeatureForEnvironment(
-      shared.environment.id,
-      shared.feature.key,
+      shared.environment.id!,
+      shared.feature!.key!,
     );
 
     print(
-        "fv is ${fv.rolloutStrategies}\n stored is ${shared.featureValue.rolloutStrategies}");
+        "fv is ${fv.rolloutStrategies}\n stored is ${shared.featureValue!.rolloutStrategies}");
 
     final rs1 = fv.rolloutStrategies;
-    final rs2 = shared.featureValue.rolloutStrategies;
+    final rs2 = shared.featureValue!.rolloutStrategies;
     assert(rs1.length == rs2.length);
     for (var count = 0; count < rs2.length; count++) {
       final r1 = rs1[count];

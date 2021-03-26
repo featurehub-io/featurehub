@@ -16,7 +16,7 @@ class UserSystemStepdefs {
 
   @And(r"the current user's password requires resetting")
   void theCurrentUserSPasswordRequiresResetting() async {
-    assert(_userCommon.person.passwordRequiresReset == true,
+    assert(_userCommon.person!.passwordRequiresReset == true,
         'Current person should need to reset their password');
   }
 }

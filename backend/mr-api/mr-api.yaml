@@ -1781,7 +1781,6 @@ components:
     TokenizedPerson:
       required:
         - accessToken
-        - refreshToken
       properties:
         accessToken:
           type: string
