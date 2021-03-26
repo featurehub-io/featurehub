@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart' show IterableExtension;
 import 'package:e2e_tests/shared.dart';
 import 'package:e2e_tests/user_common.dart';
 import 'package:mrapi/api.dart';
@@ -11,29 +12,29 @@ class EnvironmentStepdefs {
 
   Future<Application> _findApplication(
       String portfolioName, String appName) async {
-    Portfolio p = await common.findExactPortfolio(portfolioName);
+    Portfolio? p = await common.findExactPortfolio(portfolioName);
     assert(p != null, 'Cannot find portfolio $portfolioName');
 
-    Application a = await common.findExactApplication(appName, p.id);
+    Application? a = await common.findExactApplication(appName, p.id);
     assert(a != null,
         'Cannot find application $appName inside portfolio $portfolioName');
 
-    return a;
+    return a!;
   }
 
   Future<Group> _findGroup(String portfolioName, String groupName,
       bool includeEnvironmentGroupRoles) async {
-    Portfolio p = await common.findExactPortfolio(portfolioName);
+    Portfolio? p = await common.findExactPortfolio(portfolioName);
     assert(p != null, 'Cannot find portfolio $portfolioName');
 
-    Group g = includeEnvironmentGroupRoles
-        ? await common.findExactGroupWithPerms(groupName, p.id)
-        : await common.findExactGroup(groupName, p.id);
+    Group? g = includeEnvironmentGroupRoles
+        ? await common.findExactGroupWithPerms(groupName, p!.id!)
+        : await common.findExactGroup(groupName, p!.id!);
 
     assert(g != null,
         'Cannot find group $groupName inside portfolio $portfolioName');
 
-    return g;
+    return g!;
   }
 
   @And(
@@ -45,10 +46,7 @@ class EnvironmentStepdefs {
     var exists = await common.findExactEnvironment(name, application.id);
     if (exists == null) {
       exists = await common.environmentService.createEnvironment(
-          application.id,
-          new Environment()
-            ..name = name
-            ..description = desc);
+          application!.id!, new Environment(name: name, description: desc));
     }
 
     assert(exists != null, 'Could not create environment $name');
@@ -92,9 +90,8 @@ class EnvironmentStepdefs {
     Group group = await _findGroup(portfolioName, groupName, true);
     var environment =
         await common.findExactEnvironment(environmentName, application.id);
-    EnvironmentGroupRole egr = EnvironmentGroupRole();
-    egr.groupId = group.id;
-    egr.environmentId = environment.id;
+    EnvironmentGroupRole egr = EnvironmentGroupRole(
+        environmentId: environment!.id!, groupId: group!.id!);
     perm == "READ" ? egr.roles.add(RoleType.READ) : {};
     perm == "EDIT" ? egr.roles.add(RoleType.CHANGE_VALUE) : {};
     perm == "LOCK" ? egr.roles.add(RoleType.LOCK) : {};
@@ -102,7 +99,7 @@ class EnvironmentStepdefs {
 
     group.environmentRoles.add(egr);
 
-    await common.groupService.updateGroup(group.id, group,
+    await common.groupService.updateGroup(group!.id!, group,
         includeGroupRoles: true,
         updateEnvironmentGroupRoles: true,
         updateApplicationGroupRoles: true);
@@ -120,11 +117,11 @@ class EnvironmentStepdefs {
       String portfolioName) async {
     Group group = await _findGroup(portfolioName, groupName, true);
     Application application = await _findApplication(portfolioName, appName);
-    Environment environment =
+    Environment? environment =
         await common.findExactEnvironment(envName, application.id);
     EnvironmentGroupRole egr =
         group.environmentRoles.firstWhere((environmentRole) {
-      return environmentRole.environmentId == environment.id;
+      return environmentRole.environmentId == environment!.id;
     });
     RoleType compareTo = RoleType.READ;
     perm == "EDIT" ? compareTo = RoleType.CHANGE_VALUE : {};
@@ -148,17 +145,16 @@ class EnvironmentStepdefs {
     shared.group = group;
     var environment =
         await common.findExactEnvironment(envName, application.id);
-    shared.environment = environment;
-    EnvironmentGroupRole egr = EnvironmentGroupRole();
-    egr.groupId = group.id;
-    egr.environmentId = environment.id;
+    shared.environment = environment!;
+    EnvironmentGroupRole egr = EnvironmentGroupRole(
+        groupId: group!.id!, environmentId: environment!.id!);
     egr.roles.add(RoleType.READ);
     egr.roles.add(RoleType.CHANGE_VALUE);
     egr.roles.add(RoleType.LOCK);
     egr.roles.add(RoleType.UNLOCK);
 
     group.environmentRoles.add(egr);
-    await common.groupService.updateGroup(group.id, group,
+    await common.groupService.updateGroup(group!.id!, group,
         includeGroupRoles: true, updateEnvironmentGroupRoles: true);
   }
 
@@ -177,20 +173,19 @@ class EnvironmentStepdefs {
     var environment =
         await common.findExactEnvironment(envName, application.id);
     assert(environment != null, 'we cannot find environment $envName');
-    shared.environment = environment;
-    EnvironmentGroupRole egr = EnvironmentGroupRole();
-    egr.groupId = group.id;
-    egr.environmentId = environment.id;
+    shared.environment = environment!;
+    EnvironmentGroupRole egr = EnvironmentGroupRole(
+        groupId: group!.id!, environmentId: environment!.id!);
     perms
         .split(",")
         .map((e) => e.trim())
         .where((element) => element.length > 0 && element != 'NONE')
         .forEach((p) {
-      egr.roles.add(RoleTypeExtension.fromJson(p));
+      egr.roles.add(RoleTypeExtension.fromJson(p)!);
     });
 
     group.environmentRoles.add(egr);
-    await common.groupService.updateGroup(group.id, group,
+    await common.groupService.updateGroup(group.id!, group,
         includeGroupRoles: true, updateEnvironmentGroupRoles: true);
   }
 
@@ -205,10 +200,8 @@ class EnvironmentStepdefs {
         await common.findExactEnvironment(envName, shared.application.id);
     if (exists == null) {
       exists = await common.environmentService.createEnvironment(
-          shared.application.id,
-          new Environment()
-            ..name = envName
-            ..description = envDesc);
+          shared.application.id!,
+          new Environment(name: envName, description: envDesc));
     }
 
     assert(exists != null, 'Could not create environment ${envName}');
@@ -224,16 +217,12 @@ class EnvironmentStepdefs {
     assert(shared.environment != null, 'must have an environment');
 
     final updatedGroup = await common.groupService
-        .getGroup(shared.group.id, includeGroupRoles: true);
+        .getGroup(shared.group.id!, includeGroupRoles: true);
     final roleType = RoleTypeExtension.fromJson(perm);
-    var eRoles = updatedGroup.environmentRoles.firstWhere(
-        (er) => er.environmentId == shared.environment.id,
-        orElse: () => null);
+    var eRoles = updatedGroup.environmentRoles.firstWhereOrNull(
+        (er) => er.environmentId == shared.environment.id);
     if (eRoles == null) {
-      eRoles = EnvironmentGroupRole()
-        ..roles = [roleType]
-        ..environmentId = shared.environment.id
-        ..groupId = shared.group.id;
+      eRoles = EnvironmentGroupRole(groupId: shared.group.id!, environmentId: shared.environment.id!, roles: [roleType!]);
       updatedGroup.environmentRoles.add(eRoles);
     } else if (!eRoles.roles.contains(roleType)) {
       eRoles.roles.add(roleType);

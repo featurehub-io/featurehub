@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart' show IterableExtension;
 import 'package:e2e_tests/shared.dart';
 import 'package:e2e_tests/superuser_common.dart';
 import 'package:e2e_tests/user_common.dart';
@@ -24,17 +25,16 @@ class AdminPortfolioStepdefs {
 
     if (portfolio == null) {
       Portfolio p = await common.portfolioService.createPortfolio(
-          Portfolio()
-            ..name = portfolioName
-            ..description = desc,
+          Portfolio(description: desc, name: portfolioName),
           includeGroups: true);
 
-      assert(p.groups.length == 1);
+      assert(p.groups!.length == 1);
 
       shared.portfolio = p;
-      shared.portfolioAdminGroup = p.groups[0];
+      shared.portfolioAdminGroup = p.groups![0];
     } else {
-      shared.portfolioAdminGroup = portfolio.groups.firstWhere((g) => g.admin);
+      shared.portfolioAdminGroup =
+          portfolio.groups!.firstWhere((g) => g.admin!);
       shared.portfolio = portfolio;
     }
   }
@@ -46,7 +46,7 @@ class AdminPortfolioStepdefs {
     var portfolio = await userCommon.findExactPortfolio(portfolioName,
         portfolioServiceApi: common.portfolioService);
     if (portfolio != null) {
-      await common.portfolioService.deletePortfolio(portfolio.id);
+      await common.portfolioService.deletePortfolio(portfolio.id!);
       portfolio = await userCommon.findExactPortfolio(portfolioName,
           portfolioServiceApi: common.portfolioService);
       assert(portfolio == null, 'failed to delete portfolio');
@@ -64,11 +64,9 @@ class AdminPortfolioStepdefs {
     assert(portfolio != null, 'Cannot find portfolio to update');
     if (portfolio != null) {
       await common.portfolioService.updatePortfolio(
-          portfolio.id,
-          Portfolio()
-            ..version = portfolio.version
-            ..name = newName
-            ..description = newDesc,
+          portfolio.id!,
+          Portfolio(name: newName, description: newDesc)
+            ..version = portfolio.version,
           includeGroups: true);
     }
   }
@@ -80,9 +78,8 @@ class AdminPortfolioStepdefs {
 
     var p = null;
     try {
-      p = await common.portfolioService.createPortfolio(new Portfolio()
-        ..name = portfolioName
-        ..description = description);
+      p = await common.portfolioService.createPortfolio(
+          new Portfolio(name: portfolioName, description: description));
     } catch (e) {
       assert(e is ApiException && e.code == 409,
           'Expecting a conflict but did not receive one.');
@@ -103,11 +100,11 @@ class AdminPortfolioStepdefs {
     var p = null;
     try {
       p = await common.portfolioService.updatePortfolio(
-          existing.id,
-          new Portfolio()
-            ..version = existing.version
-            ..name = newName
-            ..description = "not important");
+          existing!.id!,
+          new Portfolio(
+              name: newName,
+              description: 'not important',
+              version: existing.version));
     } catch (e) {
       assert(e is ApiException && e.code == 409,
           'Expecting a conflict but did not receive one.');
@@ -126,7 +123,7 @@ class AdminPortfolioStepdefs {
         portfolioServiceApi: common.portfolioService);
     assert(portfolio != null, 'No such portfolio $portfolioName');
 
-    var matchedGroup = await userCommon.findExactGroup(groupName, portfolio.id,
+    var matchedGroup = await userCommon.findExactGroup(groupName, portfolio!.id,
         groupServiceApi: common.groupService);
 
     assert(matchedGroup != null, 'Cannot find group $groupName');
@@ -136,8 +133,9 @@ class AdminPortfolioStepdefs {
 
     assert(person != null, 'could not find email/person $email');
 
-    await common.groupService
-        .addPersonToGroup(matchedGroup.id, person.id.id, includeMembers: true);
+    await common.groupService.addPersonToGroup(
+        matchedGroup!.id!, person!.id!.id,
+        includeMembers: true);
 
     shared.portfolio = portfolio;
     shared.group = matchedGroup;
@@ -148,12 +146,10 @@ class AdminPortfolioStepdefs {
   void searchingForUserShouldIncludeTheGroupInThePortfolio() async {
     await common.initialize();
     var person = await common.personService
-        .getPerson(shared.person.id.id, includeGroups: true);
-    assert(person.groups.isNotEmpty, 'Person has no groups');
+        .getPerson(shared.person.id!.id, includeGroups: true);
+    assert(person.groups!.isNotEmpty, 'Person has no groups');
     assert(
-        person.groups.firstWhere((g) => g.id == shared.group.id,
-                orElse: () => null) !=
-            null,
+        person.groups!.firstWhereOrNull((g) => g.id == shared.group.id) != null,
         'Could not find group ${shared.group} in person ${person}');
   }
 
@@ -161,11 +157,11 @@ class AdminPortfolioStepdefs {
   void searchingForTheGroupShouldIncludeTheUser() async {
     await common.initialize();
     var group = await common.groupService
-        .getGroup(shared.group.id, includeMembers: true);
-    assert(group.members.isNotEmpty, 'Group has no members');
+        .getGroup(shared.group.id!, includeMembers: true);
+    assert(group.members!.isNotEmpty, 'Group has no members');
     assert(
-        group.members.firstWhere((p) => p.id.id == shared.person.id.id,
-                orElse: () => null) !=
+        group.members!
+                .firstWhereOrNull((p) => p.id!.id == shared.person.id!.id) !=
             null,
         'Could not find person ${shared.person} in group ${group}');
   }
@@ -176,9 +172,7 @@ class AdminPortfolioStepdefs {
         '_' +
         DateTime.now().millisecondsSinceEpoch.toString();
 
-    shared.portfolio =
-        await common.portfolioService.createPortfolio(new Portfolio()
-          ..name = portfolioName
-          ..description = 'A random portfolio');
+    shared.portfolio = await common.portfolioService.createPortfolio(
+        new Portfolio(name: portfolioName, description: 'A random portfolio'));
   }
 }

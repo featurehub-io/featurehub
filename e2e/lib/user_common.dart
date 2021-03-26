@@ -10,25 +10,25 @@ class UserCommon {
   final GroupServiceApi groupService;
   final AuthServiceApi authService;
   final PortfolioServiceApi portfolioServiceApi;
-  final ApplicationServiceApi applicationServiceApi;
-  final EnvironmentServiceApi environmentServiceApi;
-  final FeatureServiceApi featureServiceApi;
+  final ApplicationServiceApi applicationService;
+  final EnvironmentServiceApi environmentService;
+  final FeatureServiceApi featureService;
   final ServiceAccountServiceApi serviceAccountServiceApi;
   final EnvironmentFeatureServiceApi environmentFeatureServiceApi;
   final UserStateServiceApi userStateServiceApi;
   final RolloutStrategyServiceApi rolloutStrategyServiceApi;
   final ApiClient apiClient;
 
-  UserCommon(
+  UserCommon._(
       this.apiClient,
       this.personService,
       this.setupService,
       this.groupService,
       this.authService,
       this.portfolioServiceApi,
-      this.applicationServiceApi,
-      this.environmentServiceApi,
-      this.featureServiceApi,
+      this.applicationService,
+      this.environmentService,
+      this.featureService,
       this.serviceAccountServiceApi,
       this.environmentFeatureServiceApi,
       this.userStateServiceApi,
@@ -37,7 +37,7 @@ class UserCommon {
   factory UserCommon.create() {
     ApiClient apiClient = new ApiClient(basePath: baseUrl());
 
-    return new UserCommon(
+    return new UserCommon._(
         apiClient,
         PersonServiceApi(apiClient),
         SetupServiceApi(apiClient),
@@ -76,7 +76,7 @@ class UserCommon {
     _token = null;
   }
 
-  void completeRegistration(String name, String password, String email,
+  Future<void> completeRegistration(String name, String password, String email,
       String registrationUrl) async {
     clearAuth();
 
@@ -122,7 +122,7 @@ class UserCommon {
       String? appName, String? portfolioId,
       {ApplicationServiceApi? applicationServiceApi}) async {
     ApplicationServiceApi _aService =
-        applicationServiceApi ?? this.applicationServiceApi;
+        applicationServiceApi ?? this.applicationService;
     var apps = await _aService.findApplications(portfolioId!, filter: appName);
     return apps.firstWhere((a) => a.name == appName,
         orElse: () => null as Application);
@@ -132,7 +132,7 @@ class UserCommon {
       {EnvironmentServiceApi? environmentServiceApi}) async {
     assert(appId != null, 'appId is null');
     EnvironmentServiceApi _eService =
-        environmentServiceApi ?? this.environmentServiceApi;
+        environmentServiceApi ?? this.environmentService;
     var envs = await _eService.findEnvironments(appId!, filter: envName);
     return envs.firstWhere((e) => e.name == envName,
         orElse: () => null as Environment);
