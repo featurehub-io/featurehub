@@ -12,8 +12,6 @@ class StrategiesStepdefs {
 
   @And(r'I create shared rollout strategies')
   void iSetTheRolloutStrategyToPercentage(GherkinTable table) async {
-    assert(shared.application != null, 'please set application first');
-    assert(shared.environment != null, 'please set an environment!');
     assert(shared.environment.applicationId == shared.application.id,
         'environment is not in application');
     assert(shared.feature != null, 'must know what the feature is');
@@ -50,8 +48,6 @@ class StrategiesStepdefs {
 
   @And(r'I apply the rollout strategies to the current feature value')
   void iApplyRolloutStrategiesToFeatureValue(GherkinTable table) async {
-    assert(shared.application != null, 'please set application first');
-    assert(shared.environment != null, 'please set an environment!');
     assert(shared.environment.applicationId == shared.application.id,
         'environment is not in application');
     assert(shared.feature != null, 'must know what the feature is');
@@ -101,7 +97,6 @@ class StrategiesStepdefs {
 
   @And(r'I confirm on getting the feature it has the same data as set')
   void iConfirmOnGettingTheFeatureItHasTheSameDataAsSet() async {
-    assert(shared.environment != null, 'please set an environment!');
     assert(shared.feature != null, 'must know what the feature is');
     assert(shared.featureValue != null,
         'must have a stored feature value to compare against');
@@ -123,7 +118,6 @@ class StrategiesStepdefs {
 
   @And(r'I create custom rollout strategies')
   void iCreateCustomRolloutStrategies(GherkinTable table) async {
-    assert(shared.environment != null, 'please set an environment!');
     assert(shared.feature != null, 'must know what the feature is');
     assert(shared.featureValue != null,
         'must have a stored feature value to compare against');
@@ -186,7 +180,6 @@ class StrategiesStepdefs {
       r'I confirm on getting the feature value has the custom rollout strategies set')
   void
       iConfirmOnGettingTheFeatureValueHasTheCustomRolloutStrategiesSet() async {
-    assert(shared.environment != null, 'please set an environment!');
     assert(shared.feature != null, 'must know what the feature is');
     assert(shared.featureValue != null,
         'must have a stored feature value to compare against');

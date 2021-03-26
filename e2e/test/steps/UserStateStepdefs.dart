@@ -38,7 +38,6 @@ class UserStateStepdefs {
     final stored = await userCommon.userStateService
         .getHiddenEnvironments(shared.application.id!);
 
-    assert(stored != null);
     assert(envs
             .where((envId) => stored.environmentIds.contains(envId))
             .toList()

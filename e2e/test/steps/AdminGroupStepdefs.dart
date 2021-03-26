@@ -57,9 +57,6 @@ class AdminGroupStepdefs {
 
   @And(r'I ensure the following group setup exists:')
   void iEnsureTheFollowingGroupSetupExists(GherkinTable table) async {
-    assert(shared.portfolio != null, 'Portfolio doesnt exist');
-    assert(shared.application != null, 'Application doesnt exist');
-
     for (var g in table) {
       final groupName = g["groupName"];
       assert(groupName != null, 'table column has no group name');
@@ -76,9 +73,6 @@ class AdminGroupStepdefs {
       r'I ensure the permission {string} is added to the group {string} to environment {string}')
   void iEnsureThePermissionIsAddedToTheGroup(
       String perm, String groupName, String envName) async {
-    assert(shared.portfolio != null, 'Portfolio exists');
-    assert(shared.application != null, 'Application exists');
-
     final group =
         await userCommon.findExactGroup(groupName, shared.portfolio.id);
     assert(group != null, 'the group $groupName must exist already');
@@ -87,18 +81,18 @@ class AdminGroupStepdefs {
         await userCommon.findExactEnvironment(envName, shared.application.id);
     assert(env != null, 'env must exist and doesnt $envName');
 
-    var er = group!.environmentRoles!
+    var er = group!.environmentRoles
         .firstWhereOrNull((er) => er.environmentId == env!.id!);
     if (er == null) {
       er = EnvironmentGroupRole(
           environmentId: env!.id!, groupId: group.id!, roles: []);
 
-      group.environmentRoles!.add(er);
+      group.environmentRoles.add(er);
     }
     final roleType = RoleTypeExtension.fromJson(perm);
     if (!er.roles.contains(roleType)) {
       er.roles.add(roleType!);
     }
-    await userCommon.groupService.updateGroup(group!.id!, group);
+    await userCommon.groupService.updateGroup(group.id!, group);
   }
 }

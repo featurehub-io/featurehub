@@ -78,7 +78,6 @@ class AdminPersonStepdefs {
 
   @And(r'The shared person is the authenticated person')
   void sharedPersonIsAuthenticated() {
-    assert(shared.tokenizedPerson != null, 'no logged in shared person!');
     userCommon.tokenized = shared.tokenizedPerson;
   }
 

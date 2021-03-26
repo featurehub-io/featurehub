@@ -37,7 +37,7 @@ class SuperuserCommon {
   String get initUser => "superuser@mailinator.com";
   String get initPassword => "password123";
   String? get superuserGroupId => _superuser?.groups
-      ?.firstWhere((g) => g.admin == true && g.portfolioId == null)
+      .firstWhere((g) => g.admin == true && g.portfolioId == null)
       .id; // explodes if not logged in
 
   // this MUST be called in every method that accesses this class if @superuser is not used
@@ -55,8 +55,7 @@ class SuperuserCommon {
           .login(UserCredentials(password: initPassword, email: initUser));
     } catch (e) {
       assert(e is ApiException);
-      assert((e as ApiException).code == 404,
-          'code is not 404 but ${(e as ApiException).code}');
+      assert((e as ApiException).code == 404, 'code is not 404 but ${e.code}');
 
       tp = await _setupService.setupSiteAdmin(SetupSiteAdmin(
           portfolio: "Sample Portfolio", organizationName: "Sample Org Name")
@@ -68,9 +67,6 @@ class SuperuserCommon {
     _superuser = tp.person;
 
     final token = tp.accessToken;
-    if (token == null) {
-      throw Exception('access token empty');
-    }
     _superuserToken = token;
 
     _tokenizedPerson = tp;

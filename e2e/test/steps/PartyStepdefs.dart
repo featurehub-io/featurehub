@@ -14,8 +14,6 @@ class PartyStepdefs {
   @Then(
       r'We listen for party server edge features from the shared service account')
   void weListenForPartyServerEdgeFeaturesFromTheSharedServiceAccount() async {
-    assert(shared.serviceAccount != null, 'no current service account');
-    assert(shared.environment != null, 'no environment');
     // eventsCommon.setAppSdkUrl([
     //   'default',
     //   shared.environment.id,

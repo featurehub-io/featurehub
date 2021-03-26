@@ -89,7 +89,7 @@ class UserCommon {
         .firstWhere((frag) => frag.startsWith("token="), orElse: () => 'token=')
         .substring('token='.length);
 
-    assert(token != null && token.isNotEmpty, 'token is empty or null $token');
+    assert(token.isNotEmpty, 'token is empty or null $token');
 
     var person = await authService.personByToken(token);
 
@@ -102,8 +102,6 @@ class UserCommon {
             confirmPassword: password,
             name: name,
             registrationToken: token));
-
-    assert(tokenizedPerson != null, 'person not registered');
 
     tokenized = tokenizedPerson;
   }

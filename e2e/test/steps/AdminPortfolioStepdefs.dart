@@ -28,13 +28,12 @@ class AdminPortfolioStepdefs {
           Portfolio(description: desc, name: portfolioName),
           includeGroups: true);
 
-      assert(p.groups!.length == 1);
+      assert(p.groups.length == 1);
 
       shared.portfolio = p;
-      shared.portfolioAdminGroup = p.groups![0];
+      shared.portfolioAdminGroup = p.groups[0];
     } else {
-      shared.portfolioAdminGroup =
-          portfolio.groups!.firstWhere((g) => g.admin!);
+      shared.portfolioAdminGroup = portfolio.groups.firstWhere((g) => g.admin!);
       shared.portfolio = portfolio;
     }
   }
@@ -147,9 +146,9 @@ class AdminPortfolioStepdefs {
     await common.initialize();
     var person = await common.personService
         .getPerson(shared.person.id!.id, includeGroups: true);
-    assert(person.groups!.isNotEmpty, 'Person has no groups');
+    assert(person.groups.isNotEmpty, 'Person has no groups');
     assert(
-        person.groups!.firstWhereOrNull((g) => g.id == shared.group.id) != null,
+        person.groups.firstWhereOrNull((g) => g.id == shared.group.id) != null,
         'Could not find group ${shared.group} in person ${person}');
   }
 
@@ -158,9 +157,9 @@ class AdminPortfolioStepdefs {
     await common.initialize();
     var group = await common.groupService
         .getGroup(shared.group.id!, includeMembers: true);
-    assert(group.members!.isNotEmpty, 'Group has no members');
+    assert(group.members.isNotEmpty, 'Group has no members');
     assert(
-        group.members!
+        group.members
                 .firstWhereOrNull((p) => p.id!.id == shared.person.id!.id) !=
             null,
         'Could not find person ${shared.person} in group ${group}');

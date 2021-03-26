@@ -39,7 +39,7 @@ class FeatureStepdefs {
         .getFeatureForEnvironment(environment!.id!, featureKey);
 
     await userCommon.environmentFeatureServiceApi.updateFeatureForEnvironment(
-        environment!.id!, featureKey, featureValue..valueBoolean = b);
+        environment.id!, featureKey, featureValue..valueBoolean = b);
   }
 
   @And(r'I choose the application {string} in portfolio {string}')
@@ -50,7 +50,7 @@ class FeatureStepdefs {
     final a = await userCommon.findExactApplication(app, p!.id);
     assert(a != null, 'Cannot find application $app');
 
-    shared.portfolio = p!;
+    shared.portfolio = p;
     shared.application = a!;
   }
 
@@ -105,8 +105,6 @@ class FeatureStepdefs {
 
   @And(r'I create a feature flag {string}')
   void iCreateAFeature(String feature1) async {
-    assert(shared.application != null, 'no application set!');
-
     await userCommon.featureService.createFeaturesForApplication(
         shared.application.id!,
         Feature(
@@ -118,8 +116,6 @@ class FeatureStepdefs {
 
   @And(r'all environments should have {int} feature flags')
   void allEnvironmentsShouldHaveFeatureFlags(int count) async {
-    assert(shared.application != null, 'no application set!');
-
     final app = await userCommon.applicationService
         .getApplication(shared.application.id!, includeEnvironments: true);
 
@@ -135,7 +131,6 @@ class FeatureStepdefs {
   void allFeatureFlagsForEnvironmentShouldBe(
       String envName, String flagValueText) async {
     bool flagValue = flagValueText == 'true';
-    assert(shared.application != null, 'no application set!');
     final app = await userCommon.applicationService
         .getApplication(shared.application.id!, includeEnvironments: true);
     final env =
@@ -229,14 +224,10 @@ class FeatureStepdefs {
       r'^I ensure that the (string|number|boolean) feature with the key (.*) exists and has the default value (.*)$')
   void iEnsureThatTheStringFeatureWithTheKeyExistsAndHasTheDefaultValue(
       String type, String featureKey, String defaultValue) async {
-    assert(shared.application != null, 'please set application first');
-    assert(shared.environment != null, 'please set an environment!');
     assert(shared.environment.applicationId == shared.application.id,
         'environment is not in application');
 
     final actualType = textToType(type);
-
-    assert(actualType != null, "${type} is not a valid feature type");
 
     var feature;
 

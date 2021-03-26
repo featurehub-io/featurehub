@@ -19,9 +19,7 @@ class PortfolioStepdefs {
     Portfolio? p = await userCommon.findExactPortfolio(portfolioName);
 
     Group group = new Group(name: groupName);
-    Group g = await userCommon.groupService.createGroup(p!.id!, group);
-
-    assert(g != null);
+    await userCommon.groupService.createGroup(p!.id!, group);
   }
 
   // operates in user space
@@ -92,7 +90,7 @@ class PortfolioStepdefs {
   // this is just an access check
   @And(r'I can list portfolios')
   void iCanListPortfolios() async {
-    assert(await userCommon.portfolioService.findPortfolios() != null,
+    assert((await userCommon.portfolioService.findPortfolios()).length >= 0,
         'I was not able to find any portfolios');
   }
 
@@ -141,13 +139,12 @@ class PortfolioStepdefs {
     var environment;
     if (app == null) {
       app = await userCommon.applicationService.createApplication(
-          p!.id!,
+          p.id!,
           Application(
             name: appName,
             description: appName,
           ));
     }
-    assert(app != null, 'Failed to create application');
     environment = await userCommon.findExactEnvironment(envName, app.id);
     if (environment == null) {
       environment = await userCommon.environmentService
@@ -162,7 +159,7 @@ class PortfolioStepdefs {
         await userCommon.findExactServiceAccount(serviceAccountName, p.id);
     if (sa == null) {
       ServiceAccount serviceAccount =
-          ServiceAccount(portfolioId: p!.id, name: serviceAccountName);
+          ServiceAccount(portfolioId: p.id, name: serviceAccountName);
       sa = await userCommon.serviceAccountService
           .createServiceAccountInPortfolio(p.id!, serviceAccount,
               includePermissions: true);
@@ -201,7 +198,6 @@ class PortfolioStepdefs {
             name: appName,
             description: appName,
           ));
-      assert(app != null, 'Failed to create application');
       var exists = await userCommon.findExactEnvironment(envName, app.id);
       if (exists == null) {
         exists = await userCommon.environmentService.createEnvironment(
@@ -214,10 +210,6 @@ class PortfolioStepdefs {
       r'^We create a service account "(.*)" with the permission (READ|UNLOCK|LOCK|CHANGE_VALUE)$')
   void createServiceAccountWithPermission(
       String saName, String permission) async {
-    assert(shared.portfolio != null, 'no set portfolio');
-    assert(shared.application != null, 'no set application');
-    assert(shared.environment != null, 'no set environment');
-
     RoleType permissionType =
         RoleTypeExtension.fromJson(permission) ?? RoleType.READ;
 

@@ -29,7 +29,6 @@ class PersonStepdefs {
     var person = await userCommon.personService
         .getPerson(userCommon.person!.id!.id, includeGroups: true);
 
-    assert(person != null, 'person is null');
     assert(
         person.groups
                 .firstWhereOrNull((g) => g.admin! && g.portfolioId == null) !=
@@ -46,8 +45,6 @@ class PersonStepdefs {
       email: email,
       password: password,
     ));
-
-    assert(person != null, 'person cannot login with that password');
 
     userCommon.tokenized = person;
   }
@@ -98,7 +95,6 @@ class PersonStepdefs {
   Future<void> iUpdateThePersonsDataFromTheHost() async {
     var person = await userCommon.personService
         .getPerson('self', includeGroups: true, includeAcls: true);
-    assert(person != null, 'could not find self');
     assert(
         person.id!.id == userCommon.person!.id!.id, 'not the same person!!!');
     userCommon.person = person;

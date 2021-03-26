@@ -12,9 +12,6 @@ class GroupStepdefs {
   GroupStepdefs(this.userCommon, this.shared);
 
   Future<Group> findCurrentPortfolioGroup() async {
-    assert(shared.portfolio != null, 'need to set portfolio');
-    assert(shared.person != null, 'need to know person');
-
     final p = await userCommon.portfolioService
         .getPortfolio(shared.portfolio.id!, includeGroups: true);
 
