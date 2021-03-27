@@ -8,14 +8,13 @@ import 'package:featurehub_client_sdk/featurehub.dart';
 // support. https://www.w3.org/TR/trace-context-1/
 
 class W3CTraceContextInterceptor extends InterceptorsWrapper {
-  int? _startTraceId;
-  late int _spanId;
+  int _startTraceId;
+  int _spanId;
 
-  W3CTraceContextInterceptor() {
-    _startTraceId =
-        Random.secure().nextInt(1 << 27); // gives us space to expand
-    _spanId = Random.secure().nextInt(1 << 14);
-  }
+  W3CTraceContextInterceptor() :
+        _startTraceId =
+        Random.secure().nextInt(1 << 27), // gives us space to expand
+        _spanId = Random.secure().nextInt(1 << 14);
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {

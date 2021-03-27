@@ -81,7 +81,7 @@ class EventSourceRepositoryListener {
   Future<Stream<Event>> connect(String url) {
     var sourceHeaders = {'content-type': 'application/json'};
     if (_xFeaturehubHeader != null) {
-      sourceHeaders['x-featurehub'] = _xFeaturehubHeader;
+      sourceHeaders['x-featurehub'] = _xFeaturehubHeader!;
     }
     return EventSource.connect(url,
         closeOnLastListener: true, headers: sourceHeaders);

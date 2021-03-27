@@ -14,6 +14,11 @@ class _MockStreamEvent extends Mock implements Stream<Event> {}
 class _MockRepository extends Mock implements ClientFeatureRepository {
   @override
   final ClientContext clientContext = ClientContext();
+
+  Readyness r = Readyness.Ready;
+
+  @override
+  Readyness get readyness => r;
 }
 
 class SseClientTest extends EventSourceRepositoryListener {
@@ -21,7 +26,7 @@ class SseClientTest extends EventSourceRepositoryListener {
 
   SseClientTest(
       String url, ClientFeatureRepository repository, Stream<Event> eventSource,
-      {bool? doInit})
+      {bool doInit = true})
       : mockedSource = eventSource,
         super(url, repository, doInit: doInit);
 
@@ -52,7 +57,7 @@ void main() {
   });
 
   test('A failure is reported to the repository', () {
-    when(rep.readyness).thenReturn(Readyness.Failed);
+    rep.r = Readyness.Failed;
     es.listen((value) {}, onError: expectAsync1((dynamic _) {
       verify(rep.notify(SSEResultState.bye, any));
     }));
@@ -76,7 +81,7 @@ void main() {
 
     when(stream.listen(any,
             onError: anyNamed('onError'), onDone: anyNamed('onDone')))
-        .thenAnswer((_) => sub);
+        .thenReturn(sub);
 
     final sse = SseClientTest('', rep, stream, doInit: false);
     await sse.init();

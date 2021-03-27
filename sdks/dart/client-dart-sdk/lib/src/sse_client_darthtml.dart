@@ -20,7 +20,7 @@ class EventSourceRepositoryListener {
   EventSourceRepositoryListener(this.url, ClientFeatureRepository repository,
       {bool doInit = true})
       : _repository = repository {
-    if (doInit ?? true) {
+    if (doInit) {
       init();
     }
   }
@@ -51,10 +51,8 @@ class EventSourceRepositoryListener {
 
   void _msg(MessageEvent msg) {
     _log.fine('Event is ${msg.type} value ${msg.data}');
-    if (msg.type != null) {
-      _repository.notify(SSEResultStateExtension.fromJson(msg.type),
-          msg.data == null ? null : jsonDecode(msg.data));
-    }
+    _repository.notify(SSEResultStateExtension.fromJson(msg.type),
+        msg.data == null ? null : jsonDecode(msg.data));
   }
 
   Future<void> _init() async {
