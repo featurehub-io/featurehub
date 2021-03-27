@@ -3,10 +3,10 @@ part of featurehub_client_api.api;
 enum RoleType { READ, LOCK, UNLOCK, CHANGE_VALUE }
 
 extension RoleTypeExtension on RoleType {
-  String get name => toMap[this];
+  String? get name => toMap[this];
 
   // you have to call this extension class to use this as this is not yet supported
-  static RoleType type(String name) => fromMap[name];
+  static RoleType? type(String name) => fromMap[name];
 
   static Map<String, RoleType> fromMap = {
     'READ': RoleType.READ,
@@ -21,20 +21,21 @@ extension RoleTypeExtension on RoleType {
     RoleType.CHANGE_VALUE: 'CHANGE_VALUE'
   };
 
-  static RoleType fromJson(dynamic data) => data == null ? null : fromMap[data];
+  static RoleType? fromJson(dynamic? data) =>
+      data == null ? null : fromMap[data];
 
   dynamic toJson() => toMap[this];
 
-  static List<RoleType> listFromJson(List<dynamic> json) => json == null
+  static List<RoleType> listFromJson(List<dynamic>? json) => json == null
       ? <RoleType>[]
-      : json.map((value) => fromJson(value)).toList();
+      : json.map((value) => fromJson(value)).toList().fromNull();
 
   static RoleType copyWith(RoleType instance) => instance;
 
-  static Map<String, RoleType> mapFromJson(Map<String, dynamic> json) {
+  static Map<String, RoleType> mapFromJson(Map<String, dynamic?>? json) {
     final map = <String, RoleType>{};
     if (json != null && json.isNotEmpty) {
-      json.forEach((String key, dynamic value) {
+      json.forEach((String key, dynamic? value) {
         final val = fromJson(value);
         if (val != null) {
           map[key] = val;

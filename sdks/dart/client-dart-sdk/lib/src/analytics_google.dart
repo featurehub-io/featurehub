@@ -16,12 +16,12 @@ void insertGoogleAnalyticsEvValue(Map<String, Object> other, String gaValue) {
 class GoogleAnalyticsListener {
   final ClientFeatureRepository _repository;
   final String ua;
-  String _cid;
-  StreamSubscription<AnalyticsEvent> _analyticsListener;
+  String? _cid;
+  StreamSubscription<AnalyticsEvent>? _analyticsListener;
   final GoogleAnalyticsApiClient _apiClient;
 
   GoogleAnalyticsListener(ClientFeatureRepository repository, this.ua,
-      {String cid, GoogleAnalyticsApiClient apiClient})
+      {String? cid, GoogleAnalyticsApiClient? apiClient})
       : _repository = repository,
         _cid = cid,
         _apiClient = apiClient ?? GoogleAnalyticsDioApiClient(),
@@ -30,20 +30,20 @@ class GoogleAnalyticsListener {
     _analyticsListener = _repository.analyticsEvent.listen(_analyticsPublisher);
   }
 
-  String get cid => _cid;
+  String? get cid => _cid;
 
-  set cid(String value) {
+  set cid(String? value) {
     _cid = value;
   }
 
   void dispose() {
-    _analyticsListener.cancel();
+    _analyticsListener!.cancel();
     _analyticsListener = null;
   }
 
   void _analyticsPublisher(AnalyticsEvent event) {
     final finalCid =
-        (event.other != null) ? (event.other['cid']?.toString() ?? _cid) : _cid;
+        (event.other != null) ? (event.other!['cid']?.toString() ?? _cid) : _cid;
 
     if (finalCid == null) {
       _log.severe('Unable to log GA event as no CID provided.');
@@ -51,7 +51,7 @@ class GoogleAnalyticsListener {
     }
 
     final ev = (event.other?.containsKey(_GA_KEY) ?? false)
-        ? '&ev=' + Uri.encodeQueryComponent(event.other[_GA_KEY] ?? '')
+        ? '&ev=' + Uri.encodeQueryComponent(event.other![_GA_KEY] as String? ?? '')
         : '';
 
     var batchData = '';
@@ -66,10 +66,10 @@ class GoogleAnalyticsListener {
         '&el=';
 
     event.features.forEach((f) {
-      String line;
+      String? line;
       switch (f.type) {
         case FeatureValueType.BOOLEAN:
-          line = f.booleanValue ? 'on' : 'off';
+          line = f.booleanValue! ? 'on' : 'off';
           break;
         case FeatureValueType.STRING:
           line = f.stringValue;

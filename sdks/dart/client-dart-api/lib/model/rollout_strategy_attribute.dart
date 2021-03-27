@@ -3,48 +3,41 @@ part of featurehub_client_api.api;
 // RolloutStrategyAttribute
 class RolloutStrategyAttribute {
   /* A temporary id used only when validating. Saving strips these out as they are not otherwise necessary */
-  String id;
+  String? id;
 
-  RolloutStrategyAttributeConditional conditional;
+  RolloutStrategyAttributeConditional? conditional;
 
-  String fieldName;
+  String? fieldName;
   /* the value(s) associated with this rule */
   List<dynamic> values = [];
 
-  RolloutStrategyFieldType type;
+  RolloutStrategyFieldType? type;
   RolloutStrategyAttribute({
     this.id,
     this.conditional,
     this.fieldName,
-    this.values,
+    List<dynamic>? values,
     this.type,
-  });
+  }) : this.values = values ?? [];
 
   @override
   String toString() {
     return 'RolloutStrategyAttribute[id=$id, conditional=$conditional, fieldName=$fieldName, values=$values, type=$type, ]';
   }
 
-  fromJson(Map<String, dynamic> json) {
+  fromJson(Map<String, dynamic>? json) {
     if (json == null) return;
 
-    id = (json[r'id'] == null)
-        ? null
-        : id = (json[r'id'] == null) ? null : (json[r'id'] as String);
-    ;
+    id = (json[r'id'] == null) ? null : (json[r'id'] as String);
+
     conditional = (json[r'conditional'] == null)
         ? null
-        : conditional = (json[r'conditional'] == null)
-            ? null
-            : RolloutStrategyAttributeConditionalExtension.fromJson(
-                json[r'conditional']);
-    ;
-    fieldName = (json[r'fieldName'] == null)
-        ? null
-        : fieldName = (json[r'fieldName'] == null)
-            ? null
-            : (json[r'fieldName'] as String);
-    ;
+        : RolloutStrategyAttributeConditionalExtension.fromJson(
+            json[r'conditional']);
+
+    fieldName =
+        (json[r'fieldName'] == null) ? null : (json[r'fieldName'] as String);
+
     {
       final _jsonData = json[r'values'];
       values = (_jsonData == null)
@@ -56,13 +49,10 @@ class RolloutStrategyAttribute {
 
     type = (json[r'type'] == null)
         ? null
-        : type = (json[r'type'] == null)
-            ? null
-            : RolloutStrategyFieldTypeExtension.fromJson(json[r'type']);
-    ;
+        : RolloutStrategyFieldTypeExtension.fromJson(json[r'type']);
   }
 
-  RolloutStrategyAttribute.fromJson(Map<String, dynamic> json) {
+  RolloutStrategyAttribute.fromJson(Map<String, dynamic>? json) {
     fromJson(json); // allows child classes to call
   }
 
@@ -77,9 +67,8 @@ class RolloutStrategyAttribute {
     if (fieldName != null) {
       json[r'fieldName'] = fieldName;
     }
-    if (values != null) {
-      json[r'values'] =
-          values?.map((v) => LocalApiClient.serialize(v))?.toList();
+    if (values.isNotEmpty) {
+      json[r'values'] = values.map((v) => LocalApiClient.serialize(v)).toList();
     }
     if (type != null) {
       json[r'type'] = type?.toJson();
@@ -87,7 +76,7 @@ class RolloutStrategyAttribute {
     return json;
   }
 
-  static List<RolloutStrategyAttribute> listFromJson(List<dynamic> json) {
+  static List<RolloutStrategyAttribute> listFromJson(List<dynamic>? json) {
     return json == null
         ? <RolloutStrategyAttribute>[]
         : json
@@ -96,7 +85,7 @@ class RolloutStrategyAttribute {
   }
 
   static Map<String, RolloutStrategyAttribute> mapFromJson(
-      Map<String, dynamic> json) {
+      Map<String, dynamic>? json) {
     final map = <String, RolloutStrategyAttribute>{};
     if (json != null && json.isNotEmpty) {
       json.forEach((String key, dynamic value) =>
@@ -106,7 +95,7 @@ class RolloutStrategyAttribute {
   }
 
   @override
-  bool operator ==(Object other) {
+  bool operator ==(Object? other) {
     if (identical(this, other)) {
       return true;
     }
@@ -127,25 +116,35 @@ class RolloutStrategyAttribute {
   int get hashCode {
     var hashCode = runtimeType.hashCode;
 
-    hashCode = hashCode * 31 + id.hashCode;
+    if (id != null) {
+      hashCode = hashCode * 31 + id.hashCode;
+    }
 
-    hashCode = hashCode * 31 + conditional.hashCode;
+    if (conditional != null) {
+      hashCode = hashCode * 31 + conditional.hashCode;
+    }
 
-    hashCode = hashCode * 31 + fieldName.hashCode;
+    if (fieldName != null) {
+      hashCode = hashCode * 31 + fieldName.hashCode;
+    }
 
-    hashCode = hashCode * 31 + const ListEquality().hash(values);
+    if (values.isNotEmpty) {
+      hashCode = hashCode * 31 + const ListEquality().hash(values);
+    }
 
-    hashCode = hashCode * 31 + type.hashCode;
+    if (type != null) {
+      hashCode = hashCode * 31 + type.hashCode;
+    }
 
     return hashCode;
   }
 
   RolloutStrategyAttribute copyWith({
-    String id,
-    RolloutStrategyAttributeConditional conditional,
-    String fieldName,
-    List<dynamic> values,
-    RolloutStrategyFieldType type,
+    String? id,
+    RolloutStrategyAttributeConditional? conditional,
+    String? fieldName,
+    List<dynamic>? values,
+    RolloutStrategyFieldType? type,
   }) {
     id ??= this.id;
     conditional ??= this.conditional;
@@ -156,11 +155,9 @@ class RolloutStrategyAttribute {
     final _copy_id = id;
     final _copy_conditional = conditional;
     final _copy_fieldName = fieldName;
-    final _copy_values = (values == null)
-        ? [] as List<dynamic>
-        : ((data) {
-            return (data as List<dynamic>)?.toList();
-          }(values));
+    final _copy_values = ((data) {
+      return (data as List<dynamic>).toList();
+    }(values));
 
     final _copy_type = type;
 

@@ -2,26 +2,24 @@ part of featurehub_client_api.api;
 
 // Environment
 class Environment {
-  String id;
+  String? id;
 
   List<FeatureState> features = [];
   Environment({
     this.id,
-    this.features,
-  });
+    List<FeatureState>? features,
+  }) : this.features = features ?? [];
 
   @override
   String toString() {
     return 'Environment[id=$id, features=$features, ]';
   }
 
-  fromJson(Map<String, dynamic> json) {
+  fromJson(Map<String, dynamic>? json) {
     if (json == null) return;
 
-    id = (json[r'id'] == null)
-        ? null
-        : id = (json[r'id'] == null) ? null : (json[r'id'] as String);
-    ;
+    id = (json[r'id'] == null) ? null : (json[r'id'] as String);
+
     {
       final _jsonData = json[r'features'];
       features = (_jsonData == null)
@@ -32,7 +30,7 @@ class Environment {
     } // _jsonFieldName
   }
 
-  Environment.fromJson(Map<String, dynamic> json) {
+  Environment.fromJson(Map<String, dynamic>? json) {
     fromJson(json); // allows child classes to call
   }
 
@@ -41,20 +39,20 @@ class Environment {
     if (id != null) {
       json[r'id'] = id;
     }
-    if (features != null) {
+    if (features.isNotEmpty) {
       json[r'features'] =
-          features?.map((v) => LocalApiClient.serialize(v))?.toList();
+          features.map((v) => LocalApiClient.serialize(v)).toList();
     }
     return json;
   }
 
-  static List<Environment> listFromJson(List<dynamic> json) {
+  static List<Environment> listFromJson(List<dynamic>? json) {
     return json == null
         ? <Environment>[]
         : json.map((value) => Environment.fromJson(value)).toList();
   }
 
-  static Map<String, Environment> mapFromJson(Map<String, dynamic> json) {
+  static Map<String, Environment> mapFromJson(Map<String, dynamic>? json) {
     final map = <String, Environment>{};
     if (json != null && json.isNotEmpty) {
       json.forEach((String key, dynamic value) =>
@@ -64,7 +62,7 @@ class Environment {
   }
 
   @override
-  bool operator ==(Object other) {
+  bool operator ==(Object? other) {
     if (identical(this, other)) {
       return true;
     }
@@ -81,28 +79,30 @@ class Environment {
   int get hashCode {
     var hashCode = runtimeType.hashCode;
 
-    hashCode = hashCode * 31 + id.hashCode;
+    if (id != null) {
+      hashCode = hashCode * 31 + id.hashCode;
+    }
 
-    hashCode = hashCode * 31 + const ListEquality().hash(features);
+    if (features.isNotEmpty) {
+      hashCode = hashCode * 31 + const ListEquality().hash(features);
+    }
 
     return hashCode;
   }
 
   Environment copyWith({
-    String id,
-    List<FeatureState> features,
+    String? id,
+    List<FeatureState>? features,
   }) {
     id ??= this.id;
     features ??= this.features;
 
     final _copy_id = id;
-    final _copy_features = (features == null)
-        ? [] as List<FeatureState>
-        : ((data) {
-            return (data as List<FeatureState>)
-                ?.map((data) => data.copyWith())
-                .toList();
-          }(features));
+    final _copy_features = ((data) {
+      return (data as List<FeatureState>)
+          .map((data) => data.copyWith())
+          .toList();
+    }(features));
 
     return Environment(
       id: _copy_id,

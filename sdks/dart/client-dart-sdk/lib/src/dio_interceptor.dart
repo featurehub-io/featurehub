@@ -8,8 +8,8 @@ import 'package:featurehub_client_sdk/featurehub.dart';
 // support. https://www.w3.org/TR/trace-context-1/
 
 class W3CTraceContextInterceptor extends InterceptorsWrapper {
-  int _startTraceId;
-  int _spanId;
+  int? _startTraceId;
+  late int _spanId;
 
   W3CTraceContextInterceptor() {
     _startTraceId =
@@ -18,8 +18,8 @@ class W3CTraceContextInterceptor extends InterceptorsWrapper {
   }
 
   @override
-  Future onRequest(RequestOptions options) {
-    final traceId = _startTraceId.toRadixString(16).padLeft(16, '0');
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    final traceId = _startTraceId!.toRadixString(16).padLeft(16, '0');
 
     _startTraceId++;
 
@@ -28,7 +28,7 @@ class W3CTraceContextInterceptor extends InterceptorsWrapper {
 
     options.headers['traceparent'] = '00-${traceId}-${spanId}-${flags}';
 
-    return super.onRequest(options);
+    super.onRequest(options, handler);
   }
 }
 
@@ -41,16 +41,16 @@ class JaegerDioInterceptor extends W3CTraceContextInterceptor {
   JaegerDioInterceptor(this.repository);
 
   @override
-  Future onRequest(RequestOptions options) {
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     repository.availableFeatures.forEach((key) {
       final fs = repository.feature(key);
       if (fs.type != FeatureValueType.JSON && fs.value != null) {
         options.headers[
-                'uberctx-fhub.${key.toLowerCase().replaceAll(':', '_')}'] =
+                'uberctx-fhub.${key!.toLowerCase().replaceAll(':', '_')}'] =
             Uri.encodeQueryComponent(fs.value);
       }
     });
 
-    return super.onRequest(options);
+    super.onRequest(options, handler);
   }
 }

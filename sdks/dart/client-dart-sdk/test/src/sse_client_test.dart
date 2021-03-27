@@ -21,7 +21,7 @@ class SseClientTest extends EventSourceRepositoryListener {
 
   SseClientTest(
       String url, ClientFeatureRepository repository, Stream<Event> eventSource,
-      {bool doInit})
+      {bool? doInit})
       : mockedSource = eventSource,
         super(url, repository, doInit: doInit);
 
@@ -32,8 +32,8 @@ class SseClientTest extends EventSourceRepositoryListener {
 }
 
 void main() {
-  PublishSubject<Event> es;
-  _MockRepository rep;
+  late PublishSubject<Event> es;
+  late _MockRepository rep;
   // SseClientTest sse;
 
   setUp(() {
@@ -53,7 +53,7 @@ void main() {
 
   test('A failure is reported to the repository', () {
     when(rep.readyness).thenReturn(Readyness.Failed);
-    es.listen((value) {}, onError: expectAsync1((_) {
+    es.listen((value) {}, onError: expectAsync1((dynamic _) {
       verify(rep.notify(SSEResultState.bye, any));
     }));
     es.addError('blah');

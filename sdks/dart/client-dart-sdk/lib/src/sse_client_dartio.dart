@@ -12,14 +12,14 @@ final _log = Logger('featurehub_io_eventsource');
 /// This listener will stop if we receive a failed message.
 class EventSourceRepositoryListener {
   final ClientFeatureRepository _repository;
-  StreamSubscription<Event> _subscription;
+  StreamSubscription<Event>? _subscription;
   final String url;
   bool _initialized = false;
   bool _closed = false;
-  String _xFeaturehubHeader;
+  String? _xFeaturehubHeader;
 
   EventSourceRepositoryListener(this.url, ClientFeatureRepository repository,
-      {bool doInit = true})
+      {bool? doInit = true})
       : _repository = repository {
     if (doInit ?? true) {
       init();
@@ -46,7 +46,7 @@ class EventSourceRepositoryListener {
 
   void retry() {
     if (_subscription != null) {
-      _subscription.cancel();
+      _subscription!.cancel();
       _subscription = null;
 
       _init();
@@ -63,7 +63,7 @@ class EventSourceRepositoryListener {
       final readyness = _repository.readyness;
       if (event.event != null) {
         _repository.notify(SSEResultStateExtension.fromJson(event.event),
-            event.data == null ? null : jsonDecode(event.data));
+            event.data == null ? null : jsonDecode(event.data!));
       }
       if (event.event == 'bye' && readyness != Readyness.Failed && !_closed) {
         retry();
@@ -90,7 +90,7 @@ class EventSourceRepositoryListener {
   void close() {
     _closed = true;
     if (_subscription != null) {
-      _subscription.cancel();
+      _subscription!.cancel();
       _subscription = null;
     }
   }

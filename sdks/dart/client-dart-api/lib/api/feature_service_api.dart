@@ -3,14 +3,13 @@ part of featurehub_client_api.api;
 class FeatureServiceApi {
   final FeatureServiceApiDelegate apiDelegate;
   FeatureServiceApi(ApiClient apiClient)
-      : assert(apiClient != null),
-        apiDelegate = FeatureServiceApiDelegate(apiClient);
+      : apiDelegate = FeatureServiceApiDelegate(apiClient);
 
   ///
   ///
   /// Requests all features for this sdkurl and disconnects
   Future<List<Environment>> getFeatureStates(List<String> sdkUrl,
-      {Options options}) async {
+      {Options? options}) async {
     final response = await apiDelegate.getFeatureStates(
       sdkUrl,
       options: options,
@@ -24,14 +23,14 @@ class FeatureServiceApi {
     final body = response.body;
     if (response.statusCode >= 400) {
       throw ApiException(response.statusCode,
-          body == null ? null : await decodeBodyBytes(response));
+          body == null ? null : await decodeBodyBytes(body));
     }
 
     if (body == null) {
       throw ApiException(500, 'Received an empty body');
     }
 
-    return await apiDelegate.getFeatureStates_decode(response);
+    return await apiDelegate.getFeatureStates_decode(body);
   }
 
   ///
@@ -42,7 +41,7 @@ class FeatureServiceApi {
   /// Updates the feature state if allowed.
   Future<dynamic> setFeatureState(
       String sdkUrl, String featureKey, FeatureStateUpdate featureStateUpdate,
-      {Options options}) async {
+      {Options? options}) async {
     final response = await apiDelegate.setFeatureState(
       sdkUrl,
       featureKey,
@@ -58,14 +57,14 @@ class FeatureServiceApi {
     final body = response.body;
     if (response.statusCode >= 400) {
       throw ApiException(response.statusCode,
-          body == null ? null : await decodeBodyBytes(response));
+          body == null ? null : await decodeBodyBytes(body));
     }
 
     if (body == null) {
       throw ApiException(500, 'Received an empty body');
     }
 
-    return await apiDelegate.setFeatureState_decode(response);
+    return await apiDelegate.setFeatureState_decode(body);
   }
 
   ///
@@ -76,16 +75,11 @@ class FeatureServiceApi {
 class FeatureServiceApiDelegate {
   final ApiClient apiClient;
 
-  FeatureServiceApiDelegate(this.apiClient) : assert(apiClient != null);
+  FeatureServiceApiDelegate(this.apiClient);
 
   Future<ApiResponse> getFeatureStates(List<String> sdkUrl,
-      {Options options}) async {
-    Object postBody;
-
-    // verify required params are set
-    if (sdkUrl == null) {
-      throw ApiException(400, 'Missing required param: sdkUrl');
-    }
+      {Options? options}) async {
+    Object? postBody;
 
     // create path and map variables
     final __path = '/features/';
@@ -110,9 +104,7 @@ class FeatureServiceApiDelegate {
     if (contentTypes.isNotEmpty && headerParams['Content-Type'] == null) {
       headerParams['Content-Type'] = contentTypes[0];
     }
-    if (postBody != null) {
-      postBody = LocalApiClient.serialize(postBody);
-    }
+    postBody = LocalApiClient.serialize(postBody);
 
     opt.headers = headerParams;
     opt.method = 'GET';
@@ -122,28 +114,17 @@ class FeatureServiceApiDelegate {
   }
 
   Future<List<Environment>> getFeatureStates_decode(
-      ApiResponse response) async {
+      Stream<List<int>> body) async {
     return (LocalApiClient.deserializeFromString(
-            await decodeBodyBytes(response), 'List<Environment>') as List)
+            await decodeBodyBytes(body), 'List<Environment>') as List)
         .map((item) => item as Environment)
         .toList();
   }
 
   Future<ApiResponse> setFeatureState(
       String sdkUrl, String featureKey, FeatureStateUpdate featureStateUpdate,
-      {Options options}) async {
+      {Options? options}) async {
     Object postBody = featureStateUpdate;
-
-    // verify required params are set
-    if (sdkUrl == null) {
-      throw ApiException(400, 'Missing required param: sdkUrl');
-    }
-    if (featureKey == null) {
-      throw ApiException(400, 'Missing required param: featureKey');
-    }
-    if (featureStateUpdate == null) {
-      throw ApiException(400, 'Missing required param: featureStateUpdate');
-    }
 
     // create path and map variables
     final __path = '/features/{sdkUrl}/{featureKey}'
@@ -167,9 +148,7 @@ class FeatureServiceApiDelegate {
     if (contentTypes.isNotEmpty && headerParams['Content-Type'] == null) {
       headerParams['Content-Type'] = contentTypes[0];
     }
-    if (postBody != null) {
-      postBody = LocalApiClient.serialize(postBody);
-    }
+    postBody = LocalApiClient.serialize(postBody);
 
     opt.headers = headerParams;
     opt.method = 'PUT';
@@ -178,8 +157,8 @@ class FeatureServiceApiDelegate {
         __path, queryParams, postBody, authNames, opt);
   }
 
-  Future<dynamic> setFeatureState_decode(ApiResponse response) async {
+  Future<dynamic> setFeatureState_decode(Stream<List<int>> body) async {
     return LocalApiClient.deserializeFromString(
-        await decodeBodyBytes(response), 'dynamic') as dynamic;
+        await decodeBodyBytes(body), 'dynamic') as dynamic;
   }
 }

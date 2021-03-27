@@ -10,10 +10,10 @@ enum StrategyAttributeDeviceName {
 }
 
 extension StrategyAttributeDeviceNameExtension on StrategyAttributeDeviceName {
-  String get name => toMap[this];
+  String? get name => toMap[this];
 
   // you have to call this extension class to use this as this is not yet supported
-  static StrategyAttributeDeviceName type(String name) => fromMap[name];
+  static StrategyAttributeDeviceName? type(String name) => fromMap[name];
 
   static Map<String, StrategyAttributeDeviceName> fromMap = {
     'browser': StrategyAttributeDeviceName.browser,
@@ -32,25 +32,25 @@ extension StrategyAttributeDeviceNameExtension on StrategyAttributeDeviceName {
     StrategyAttributeDeviceName.embedded: 'embedded'
   };
 
-  static StrategyAttributeDeviceName fromJson(dynamic data) =>
+  static StrategyAttributeDeviceName? fromJson(dynamic? data) =>
       data == null ? null : fromMap[data];
 
   dynamic toJson() => toMap[this];
 
-  static List<StrategyAttributeDeviceName> listFromJson(List<dynamic> json) =>
+  static List<StrategyAttributeDeviceName> listFromJson(List<dynamic>? json) =>
       json == null
           ? <StrategyAttributeDeviceName>[]
-          : json.map((value) => fromJson(value)).toList();
+          : json.map((value) => fromJson(value)).toList().fromNull();
 
   static StrategyAttributeDeviceName copyWith(
           StrategyAttributeDeviceName instance) =>
       instance;
 
   static Map<String, StrategyAttributeDeviceName> mapFromJson(
-      Map<String, dynamic> json) {
+      Map<String, dynamic?>? json) {
     final map = <String, StrategyAttributeDeviceName>{};
     if (json != null && json.isNotEmpty) {
-      json.forEach((String key, dynamic value) {
+      json.forEach((String key, dynamic? value) {
         final val = fromJson(value);
         if (val != null) {
           map[key] = val;

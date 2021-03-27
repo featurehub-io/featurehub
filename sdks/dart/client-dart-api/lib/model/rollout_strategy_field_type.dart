@@ -11,10 +11,10 @@ enum RolloutStrategyFieldType {
 }
 
 extension RolloutStrategyFieldTypeExtension on RolloutStrategyFieldType {
-  String get name => toMap[this];
+  String? get name => toMap[this];
 
   // you have to call this extension class to use this as this is not yet supported
-  static RolloutStrategyFieldType type(String name) => fromMap[name];
+  static RolloutStrategyFieldType? type(String name) => fromMap[name];
 
   static Map<String, RolloutStrategyFieldType> fromMap = {
     'STRING': RolloutStrategyFieldType.STRING,
@@ -35,24 +35,24 @@ extension RolloutStrategyFieldTypeExtension on RolloutStrategyFieldType {
     RolloutStrategyFieldType.IP_ADDRESS: 'IP_ADDRESS'
   };
 
-  static RolloutStrategyFieldType fromJson(dynamic data) =>
+  static RolloutStrategyFieldType? fromJson(dynamic? data) =>
       data == null ? null : fromMap[data];
 
   dynamic toJson() => toMap[this];
 
-  static List<RolloutStrategyFieldType> listFromJson(List<dynamic> json) =>
+  static List<RolloutStrategyFieldType> listFromJson(List<dynamic>? json) =>
       json == null
           ? <RolloutStrategyFieldType>[]
-          : json.map((value) => fromJson(value)).toList();
+          : json.map((value) => fromJson(value)).toList().fromNull();
 
   static RolloutStrategyFieldType copyWith(RolloutStrategyFieldType instance) =>
       instance;
 
   static Map<String, RolloutStrategyFieldType> mapFromJson(
-      Map<String, dynamic> json) {
+      Map<String, dynamic?>? json) {
     final map = <String, RolloutStrategyFieldType>{};
     if (json != null && json.isNotEmpty) {
-      json.forEach((String key, dynamic value) {
+      json.forEach((String key, dynamic? value) {
         final val = fromJson(value);
         if (val != null) {
           map[key] = val;

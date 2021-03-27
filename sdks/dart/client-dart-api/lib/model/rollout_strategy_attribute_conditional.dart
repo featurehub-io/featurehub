@@ -16,10 +16,11 @@ enum RolloutStrategyAttributeConditional {
 
 extension RolloutStrategyAttributeConditionalExtension
     on RolloutStrategyAttributeConditional {
-  String get name => toMap[this];
+  String? get name => toMap[this];
 
   // you have to call this extension class to use this as this is not yet supported
-  static RolloutStrategyAttributeConditional type(String name) => fromMap[name];
+  static RolloutStrategyAttributeConditional? type(String name) =>
+      fromMap[name];
 
   static Map<String, RolloutStrategyAttributeConditional> fromMap = {
     'EQUALS': RolloutStrategyAttributeConditional.EQUALS,
@@ -48,26 +49,26 @@ extension RolloutStrategyAttributeConditionalExtension
     RolloutStrategyAttributeConditional.REGEX: 'REGEX'
   };
 
-  static RolloutStrategyAttributeConditional fromJson(dynamic data) =>
+  static RolloutStrategyAttributeConditional? fromJson(dynamic? data) =>
       data == null ? null : fromMap[data];
 
   dynamic toJson() => toMap[this];
 
   static List<RolloutStrategyAttributeConditional> listFromJson(
-          List<dynamic> json) =>
+          List<dynamic>? json) =>
       json == null
           ? <RolloutStrategyAttributeConditional>[]
-          : json.map((value) => fromJson(value)).toList();
+          : json.map((value) => fromJson(value)).toList().fromNull();
 
   static RolloutStrategyAttributeConditional copyWith(
           RolloutStrategyAttributeConditional instance) =>
       instance;
 
   static Map<String, RolloutStrategyAttributeConditional> mapFromJson(
-      Map<String, dynamic> json) {
+      Map<String, dynamic?>? json) {
     final map = <String, RolloutStrategyAttributeConditional>{};
     if (json != null && json.isNotEmpty) {
-      json.forEach((String key, dynamic value) {
+      json.forEach((String key, dynamic? value) {
         final val = fromJson(value);
         if (val != null) {
           map[key] = val;

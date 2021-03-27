@@ -7,7 +7,7 @@ class FeatureHubSimpleApi {
   final List<String> _environmentIds;
   final FeatureServiceApi _api;
   final ClientFeatureRepository _repository;
-  String xFeaturehubHeader;
+  String? xFeaturehubHeader;
 
   FeatureHubSimpleApi(String host, this._environmentIds, this._repository)
       : assert(host != null),
@@ -24,7 +24,7 @@ class FeatureHubSimpleApi {
         .getFeatureStates(_environmentIds,
             options: xFeaturehubHeader == null
                 ? null
-                : (Options()..headers['x-featurehub'] = xFeaturehubHeader))
+                : (Options()..headers!['x-featurehub'] = xFeaturehubHeader))
         .then((environments) {
       final states = <FeatureState>[];
       environments.forEach((e) {

@@ -13,9 +13,9 @@ class DotEnvOverride {
         allowLockOverride, (key) => _match(key));
   }
 
-  ValueMatch _match(String key) {
+  ValueMatch _match(String? key) {
     if (env.containsKey(key)) {
-      return ValueMatch(true, env[key]);
+      return ValueMatch(true, env[key!]);
     }
 
     return ValueMatch(false, null);

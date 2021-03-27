@@ -11,11 +11,11 @@ final _log = Logger('featurehub_io_eventsource');
 
 class EventSourceRepositoryListener {
   final ClientFeatureRepository _repository;
-  StreamSubscription<Event> _subscription;
+  StreamSubscription<Event>? _subscription;
   final String url;
   bool _initialized = false;
-  String xFeaturehubHeader;
-  EventSource es;
+  String? xFeaturehubHeader;
+  EventSource? es;
 
   EventSourceRepositoryListener(this.url, ClientFeatureRepository repository,
       {bool doInit = true})
@@ -31,7 +31,7 @@ class EventSourceRepositoryListener {
       await _repository.clientContext.registerChangeHandler((header) async {
         xFeaturehubHeader = header;
         if (es != null) {
-          es.close();
+          es!.close();
         }
         // ignore: unawaited_futures
         _init();
@@ -69,7 +69,7 @@ class EventSourceRepositoryListener {
     EventStreamProvider<MessageEvent>('failed').forTarget(es).listen((e) {
       _msg(e);
       _log.fine('Failed connection to server, disconnecting');
-      es.close();
+      es!.close();
     });
     EventStreamProvider<MessageEvent>('ack').forTarget(es).listen(_msg);
     EventStreamProvider<MessageEvent>('delete_feature')
@@ -78,14 +78,14 @@ class EventSourceRepositoryListener {
   }
 
   EventSource connect(String url) {
-    return EventSource(url + xFeaturehubHeader == null
+    return EventSource(url + xFeaturehubHeader! == null
         ? ''
         : '?xfeaturehub=${xFeaturehubHeader}');
   }
 
   void close() {
     if (_subscription != null) {
-      _subscription.cancel();
+      _subscription!.cancel();
       _subscription = null;
     }
   }

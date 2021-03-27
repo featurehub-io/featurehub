@@ -138,6 +138,8 @@
                 <additionalProperty>pubDescription=This is the OpenAPI client for the FeatureHub SDK. It is not likely to be used on its own.</additionalProperty>
                 <additionalProperty>pubRepository=https://github.com/featurehub-io/featurehub/tree/master/sdks/dart/client-dart-api</additionalProperty>
                 <additionalProperty>pubHomepage=https://www.featurehub.io</additionalProperty>
+                <additionalProperty>nullSafe=true</additionalProperty>
+                <additionalProperty>nullSafe-array-default=true</additionalProperty>
               </additionalProperties>
             </configuration>
           </execution>

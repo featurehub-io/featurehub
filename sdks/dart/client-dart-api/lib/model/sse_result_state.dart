@@ -3,10 +3,10 @@ part of featurehub_client_api.api;
 enum SSEResultState { ack, bye, failure, features, feature, deleteFeature }
 
 extension SSEResultStateExtension on SSEResultState {
-  String get name => toMap[this];
+  String? get name => toMap[this];
 
   // you have to call this extension class to use this as this is not yet supported
-  static SSEResultState type(String name) => fromMap[name];
+  static SSEResultState? type(String name) => fromMap[name];
 
   static Map<String, SSEResultState> fromMap = {
     'ack': SSEResultState.ack,
@@ -25,21 +25,21 @@ extension SSEResultStateExtension on SSEResultState {
     SSEResultState.deleteFeature: 'delete_feature'
   };
 
-  static SSEResultState fromJson(dynamic data) =>
+  static SSEResultState? fromJson(dynamic? data) =>
       data == null ? null : fromMap[data];
 
   dynamic toJson() => toMap[this];
 
-  static List<SSEResultState> listFromJson(List<dynamic> json) => json == null
+  static List<SSEResultState> listFromJson(List<dynamic>? json) => json == null
       ? <SSEResultState>[]
-      : json.map((value) => fromJson(value)).toList();
+      : json.map((value) => fromJson(value)).toList().fromNull();
 
   static SSEResultState copyWith(SSEResultState instance) => instance;
 
-  static Map<String, SSEResultState> mapFromJson(Map<String, dynamic> json) {
+  static Map<String, SSEResultState> mapFromJson(Map<String, dynamic?>? json) {
     final map = <String, SSEResultState>{};
     if (json != null && json.isNotEmpty) {
-      json.forEach((String key, dynamic value) {
+      json.forEach((String key, dynamic? value) {
         final val = fromJson(value);
         if (val != null) {
           map[key] = val;

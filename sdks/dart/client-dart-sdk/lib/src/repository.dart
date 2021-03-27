@@ -10,16 +10,16 @@ enum Readyness { NotReady, Ready, Failed }
 
 abstract class FeatureStateHolder {
   bool get exists;
-  bool get booleanValue;
-  String get stringValue;
-  num get numberValue;
-  String get key;
+  bool? get booleanValue;
+  String? get stringValue;
+  num? get numberValue;
+  String? get key;
   dynamic get jsonValue;
-  FeatureValueType get type;
+  FeatureValueType? get type;
 
   dynamic get value;
 
-  int get version;
+  int? get version;
 
   Stream<FeatureStateHolder> get featureUpdateStream;
   FeatureStateHolder copy();
@@ -27,7 +27,7 @@ abstract class FeatureStateHolder {
 
 class ValueMatch {
   final bool matched;
-  final String value;
+  final String? value;
 
   ValueMatch(this.matched, this.value) : assert(matched != null);
 }
@@ -40,11 +40,11 @@ class _InterceptorHolder {
       : assert(allowLockOverride != null);
 }
 
-typedef FeatureValueInterceptor = ValueMatch Function(String key);
+typedef FeatureValueInterceptor = ValueMatch Function(String? key);
 
 class AnalyticsEvent {
   final String action;
-  final Map<String, Object> other;
+  final Map<String, Object>? other;
   final List<FeatureStateHolder> features;
 
   AnalyticsEvent(this.action, this.features, this.other);
@@ -52,17 +52,17 @@ class AnalyticsEvent {
 
 class _FeatureStateBaseHolder implements FeatureStateHolder {
   dynamic _value;
-  FeatureState _featureState;
-  BehaviorSubject<FeatureStateHolder> _listeners;
+  FeatureState? _featureState;
+  BehaviorSubject<FeatureStateHolder>? _listeners;
   final List<_InterceptorHolder> featureValueInterceptors;
 
   @override
-  String get key => _featureState?.key;
+  String? get key => _featureState?.key;
   @override
-  Stream<FeatureStateHolder> get featureUpdateStream => _listeners.stream;
+  Stream<FeatureStateHolder> get featureUpdateStream => _listeners!.stream;
 
   _FeatureStateBaseHolder(
-      _FeatureStateBaseHolder fs, this.featureValueInterceptors) {
+      _FeatureStateBaseHolder? fs, this.featureValueInterceptors) {
     _listeners = fs?._listeners ?? BehaviorSubject<FeatureStateHolder>();
   }
 
@@ -74,52 +74,52 @@ class _FeatureStateBaseHolder implements FeatureStateHolder {
     final oldValue = _value;
     _value = fs.value;
     if (oldValue != _value) {
-      _listeners.add(this);
+      _listeners!.add(this);
     }
   }
 
   @override
-  int get version => _featureState?.version;
+  int? get version => _featureState?.version;
 
   @override
   bool get exists => _findIntercept(() => _value) != null;
 
   @override
-  bool get booleanValue => _findIntercept(
+  bool? get booleanValue => _findIntercept(
           () => _featureState?.type == FeatureValueType.BOOLEAN ? _value : null)
-      as bool;
+      as bool?;
 
   @override
-  String get stringValue =>
+  String? get stringValue =>
       _findIntercept(() => (_featureState?.type == FeatureValueType.STRING ||
               _featureState?.type == FeatureValueType.JSON)
           ? _value
-          : null) as String;
+          : null) as String?;
 
   @override
-  num get numberValue => _findIntercept(
+  num? get numberValue => _findIntercept(
           () => _featureState?.type == FeatureValueType.NUMBER ? _value : null)
-      as num;
+      as num?;
 
   @override
   dynamic get jsonValue {
-    String body = _findIntercept(
+    String? body = _findIntercept(
         () => _featureState?.type == FeatureValueType.JSON ? _value : null);
 
     return body == null ? null : jsonDecode(body);
   }
 
   @override
-  FeatureValueType get type => _featureState.type;
+  FeatureValueType? get type => _featureState!.type;
 
   @override
   FeatureStateHolder copy() {
     return _FeatureStateBaseHolder(null, featureValueInterceptors)
-      ..featureState = _featureState;
+      ..featureState = _featureState!;
   }
 
   dynamic _findIntercept(Function determineDefault) {
-    final locked = _featureState != null && true == _featureState.l;
+    final locked = _featureState != null && true == _featureState!.l;
 
     final found = featureValueInterceptors
         .where((vi) => !locked || vi.allowLockOverride)
@@ -132,7 +132,7 @@ class _FeatureStateBaseHolder implements FeatureStateHolder {
   }
 
   void shutdown() {
-    _listeners.close();
+    _listeners!.close();
   }
 }
 
@@ -141,7 +141,7 @@ final _log = Logger('FeatureHub');
 class ClientFeatureRepository {
   bool _hasReceivedInitialState = false;
   // indexed by key
-  final Map<String, _FeatureStateBaseHolder> _features = {};
+  final Map<String?, _FeatureStateBaseHolder> _features = {};
   final _analyticsCollectors = PublishSubject<AnalyticsEvent>();
   Readyness _readynessState = Readyness.NotReady;
   final _readynessListeners =
@@ -150,7 +150,7 @@ class ClientFeatureRepository {
       PublishSubject<ClientFeatureRepository>();
   bool _catchAndReleaseMode = false;
   // indexed by id (not key)
-  final Map<String, FeatureState> _catchReleaseStates = {};
+  final Map<String?, FeatureState> _catchReleaseStates = {};
   final List<_InterceptorHolder> _featureValueInterceptors = [];
   final ClientContext clientContext = ClientContext();
 
@@ -159,9 +159,9 @@ class ClientFeatureRepository {
       _newFeatureStateAvailableListeners.stream;
   Stream<AnalyticsEvent> get analyticsEvent => _analyticsCollectors.stream;
 
-  Iterable<String> get availableFeatures => _features.keys;
+  Iterable<String?> get availableFeatures => _features.keys;
 
-  void notify(SSEResultState state, dynamic data) {
+  void notify(SSEResultState? state, dynamic data) {
     _log.fine('Data is $state -> $data');
     if (state != null) {
       switch (state) {
@@ -227,7 +227,7 @@ class ClientFeatureRepository {
         _catchReleaseStates[f.id] = f;
         updatedValues = true;
       } else {
-        if (fs.version == null || f.version > fs.version) {
+        if (fs.version == null || f.version! > fs.version!) {
           _catchReleaseStates[f.id] = f;
           updatedValues = true;
         }
@@ -241,7 +241,7 @@ class ClientFeatureRepository {
 
   void _checkForInvalidFeatures() {
     final missingKeys = _features.keys
-        .where((k) => _features[k].key == null)
+        .where((k) => _features[k]!.key == null)
         .toList()
         .join(',');
     if (missingKeys.isNotEmpty) {
@@ -257,7 +257,7 @@ class ClientFeatureRepository {
     }
   }
 
-  void logAnalyticsEvent(String action, {Map<String, Object> other}) {
+  void logAnalyticsEvent(String action, {Map<String, Object>? other}) {
     final featureStateAtCurrentTime =
         _features.values.where((f) => f.exists).map((f) => f.copy()).toList();
 
@@ -265,24 +265,24 @@ class ClientFeatureRepository {
         .add(AnalyticsEvent(action, featureStateAtCurrentTime, other));
   }
 
-  FeatureStateHolder getFeatureState(String key) {
+  FeatureStateHolder getFeatureState(String? key) {
     return _features.putIfAbsent(
         key, () => _FeatureStateBaseHolder(null, _featureValueInterceptors));
   }
 
-  FeatureStateHolder feature(String key) {
+  FeatureStateHolder feature(String? key) {
     return getFeatureState(key);
   }
 
-  bool getFlag(String key) {
+  bool? getFlag(String key) {
     return feature(key).booleanValue;
   }
 
-  num getNumber(String key) {
+  num? getNumber(String key) {
     return feature(key).numberValue;
   }
 
-  String getString(String key) {
+  String? getString(String key) {
     return feature(key).stringValue;
   }
 
@@ -326,7 +326,7 @@ class ClientFeatureRepository {
       holder = _FeatureStateBaseHolder(holder, _featureValueInterceptors);
     } else {
       if (holder.version != null) {
-        if (holder.version > feature.version ||
+        if (holder.version! > feature.version! ||
             (holder.version == feature.version &&
                 holder.value == feature.value)) {
           return false;

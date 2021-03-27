@@ -11,10 +11,10 @@ enum StrategyAttributeWellKnownNames {
 
 extension StrategyAttributeWellKnownNamesExtension
     on StrategyAttributeWellKnownNames {
-  String get name => toMap[this];
+  String? get name => toMap[this];
 
   // you have to call this extension class to use this as this is not yet supported
-  static StrategyAttributeWellKnownNames type(String name) => fromMap[name];
+  static StrategyAttributeWellKnownNames? type(String name) => fromMap[name];
 
   static Map<String, StrategyAttributeWellKnownNames> fromMap = {
     'device': StrategyAttributeWellKnownNames.device,
@@ -33,26 +33,26 @@ extension StrategyAttributeWellKnownNamesExtension
     StrategyAttributeWellKnownNames.version: 'version'
   };
 
-  static StrategyAttributeWellKnownNames fromJson(dynamic data) =>
+  static StrategyAttributeWellKnownNames? fromJson(dynamic? data) =>
       data == null ? null : fromMap[data];
 
   dynamic toJson() => toMap[this];
 
   static List<StrategyAttributeWellKnownNames> listFromJson(
-          List<dynamic> json) =>
+          List<dynamic>? json) =>
       json == null
           ? <StrategyAttributeWellKnownNames>[]
-          : json.map((value) => fromJson(value)).toList();
+          : json.map((value) => fromJson(value)).toList().fromNull();
 
   static StrategyAttributeWellKnownNames copyWith(
           StrategyAttributeWellKnownNames instance) =>
       instance;
 
   static Map<String, StrategyAttributeWellKnownNames> mapFromJson(
-      Map<String, dynamic> json) {
+      Map<String, dynamic?>? json) {
     final map = <String, StrategyAttributeWellKnownNames>{};
     if (json != null && json.isNotEmpty) {
-      json.forEach((String key, dynamic value) {
+      json.forEach((String key, dynamic? value) {
         final val = fromJson(value);
         if (val != null) {
           map[key] = val;

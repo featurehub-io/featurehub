@@ -3,11 +3,11 @@ part of featurehub_client_api.api;
 // FeatureStateUpdate
 class FeatureStateUpdate {
   /* the new value */
-  dynamic value;
+  dynamic? value;
   /* indicates whether you are trying to update the value, as value can be null */
-  bool updateValue;
+  bool? updateValue;
   /* set only if you wish to lock or unlock, otherwise null */
-  bool lock;
+  bool? lock;
   FeatureStateUpdate({
     this.value,
     this.updateValue,
@@ -19,26 +19,18 @@ class FeatureStateUpdate {
     return 'FeatureStateUpdate[value=$value, updateValue=$updateValue, lock=$lock, ]';
   }
 
-  fromJson(Map<String, dynamic> json) {
+  fromJson(Map<String, dynamic>? json) {
     if (json == null) return;
 
-    value = (json[r'value'] == null)
-        ? null
-        : value = (json[r'value'] == null) ? null : (json[r'value'] as dynamic);
-    ;
-    updateValue = (json[r'updateValue'] == null)
-        ? null
-        : updateValue = (json[r'updateValue'] == null)
-            ? null
-            : (json[r'updateValue'] as bool);
-    ;
-    lock = (json[r'lock'] == null)
-        ? null
-        : lock = (json[r'lock'] == null) ? null : (json[r'lock'] as bool);
-    ;
+    value = (json[r'value'] == null) ? null : (json[r'value'] as dynamic);
+
+    updateValue =
+        (json[r'updateValue'] == null) ? null : (json[r'updateValue'] as bool);
+
+    lock = (json[r'lock'] == null) ? null : (json[r'lock'] as bool);
   }
 
-  FeatureStateUpdate.fromJson(Map<String, dynamic> json) {
+  FeatureStateUpdate.fromJson(Map<String, dynamic>? json) {
     fromJson(json); // allows child classes to call
   }
 
@@ -56,14 +48,14 @@ class FeatureStateUpdate {
     return json;
   }
 
-  static List<FeatureStateUpdate> listFromJson(List<dynamic> json) {
+  static List<FeatureStateUpdate> listFromJson(List<dynamic>? json) {
     return json == null
         ? <FeatureStateUpdate>[]
         : json.map((value) => FeatureStateUpdate.fromJson(value)).toList();
   }
 
   static Map<String, FeatureStateUpdate> mapFromJson(
-      Map<String, dynamic> json) {
+      Map<String, dynamic>? json) {
     final map = <String, FeatureStateUpdate>{};
     if (json != null && json.isNotEmpty) {
       json.forEach((String key, dynamic value) =>
@@ -73,7 +65,7 @@ class FeatureStateUpdate {
   }
 
   @override
-  bool operator ==(Object other) {
+  bool operator ==(Object? other) {
     if (identical(this, other)) {
       return true;
     }
@@ -91,19 +83,25 @@ class FeatureStateUpdate {
   int get hashCode {
     var hashCode = runtimeType.hashCode;
 
-    hashCode = hashCode * 31 + value.hashCode;
+    if (value != null) {
+      hashCode = hashCode * 31 + value.hashCode;
+    }
 
-    hashCode = hashCode * 31 + updateValue.hashCode;
+    if (updateValue != null) {
+      hashCode = hashCode * 31 + updateValue.hashCode;
+    }
 
-    hashCode = hashCode * 31 + lock.hashCode;
+    if (lock != null) {
+      hashCode = hashCode * 31 + lock.hashCode;
+    }
 
     return hashCode;
   }
 
   FeatureStateUpdate copyWith({
-    dynamic value,
-    bool updateValue,
-    bool lock,
+    dynamic? value,
+    bool? updateValue,
+    bool? lock,
   }) {
     value ??= this.value;
     updateValue ??= this.updateValue;

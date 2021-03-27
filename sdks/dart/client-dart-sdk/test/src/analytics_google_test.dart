@@ -5,8 +5,8 @@ import 'package:rxdart/rxdart.dart';
 import 'package:test/test.dart';
 
 void main() {
-  _MockFeatureRepository repo;
-  GoogleAnalyticsApiClient poster;
+  late _MockFeatureRepository repo;
+  late GoogleAnalyticsApiClient poster;
 
   setUp(() {
     repo = _MockFeatureRepository();
@@ -33,7 +33,7 @@ void main() {
     repo.analyticsCollectors.add(ae);
     await Future.value();
 
-    verifyNever(poster.postAnalyticBatch(any));
+    verifyNever(poster.postAnalyticBatch(any!));
   });
 }
 
