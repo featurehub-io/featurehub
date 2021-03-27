@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -15,8 +15,8 @@ jobs:
     - name: Install dependencies    
       run: npm install
       working-directory: sdks/typescript/client-typescript-eventsource
-    - name: Build sources
-      run: npm run build
+    - name: Compile sources and Publish to NPM
+      run: npm run release
       working-directory: sdks/typescript/client-typescript-eventsource
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
