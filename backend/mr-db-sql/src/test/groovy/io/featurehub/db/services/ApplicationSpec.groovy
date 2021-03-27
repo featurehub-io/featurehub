@@ -71,6 +71,18 @@ class ApplicationSpec extends BaseSpec {
       afterDeleteWithArchives.size() == 1
   }
 
+
+  def "I should be able to have two portfolios with the same application name"() {
+    when: "i have and application in each portfolio with different names"
+        Application p1App =  appApi.createApplication(portfolio1.id.toString(), new Application().name("dupe-name1").description("some desc"), superPerson)
+        Application p2App =  appApi.createApplication(portfolio2.id.toString(), new Application().name("dupe-name2").description("some desc"), superPerson)
+    and: "i rename the second to the same as the first"
+      def app2 = appApi.updateApplication(p2App.id, p2App.name("dupe-name1"), Opts.empty())
+    then:
+        app2.name == 'dupe-name1'
+  }
+
+
   def "a person who is a member of an environment can see applications in an environment"() {
     when: "i create two applications"
       def app1 = appApi.createApplication(portfolio1.id.toString(), new Application().name("envtest-app1").description("some desc"), superPerson)

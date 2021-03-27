@@ -234,8 +234,6 @@ class FeatureStepdefs {
     try {
       feature = await userCommon.featureService
           .getFeatureByKey(shared.application.id!, featureKey);
-      assert(feature.valueType == actualType,
-          'feature is not null and of the wrong type, please use another name');
     } catch (e) {
       final features = await userCommon.featureService
           .createFeaturesForApplication(
@@ -245,6 +243,9 @@ class FeatureStepdefs {
 
       feature = features.firstWhere((element) => element.key == featureKey);
     }
+
+    assert(feature.valueType == actualType,
+        'feature is not null and of the wrong type, please use another name');
 
     shared.feature = feature;
 

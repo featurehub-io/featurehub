@@ -7,6 +7,7 @@ import cd.connect.jersey.common.LoggingConfiguration;
 import cd.connect.jersey.common.TracingConfiguration;
 import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
+import cd.connect.openapi.support.ReturnStatusContainerResponseFilter;
 import io.featurehub.edge.EdgeFeature;
 import io.featurehub.jersey.config.CommonConfiguration;
 import io.featurehub.mr.ManagementRepositoryFeature;
@@ -43,6 +44,7 @@ public class Application {
       CommonConfiguration.class,
       LoggingConfiguration.class,
       TracingConfiguration.class,
+      ReturnStatusContainerResponseFilter.class,
       InfrastructureConfiguration.class)
       .register(CorsFilter.class)
       .register(ManagementRepositoryFeature.class)

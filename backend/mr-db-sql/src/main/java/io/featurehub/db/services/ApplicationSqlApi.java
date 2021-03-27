@@ -188,7 +188,7 @@ public class ApplicationSqlApi implements ApplicationApi {
         }
 
         if (!app.getName().equals(application.getName())) {
-          if (new QDbApplication().name.eq(application.getName()).whenArchived.isNull().findCount() > 0) {
+          if (new QDbApplication().portfolio.eq(app.getPortfolio()).name.eq(application.getName()).whenArchived.isNull().findCount() > 0) {
             throw new DuplicateApplicationException();
           }
         }
@@ -219,7 +219,7 @@ public class ApplicationSqlApi implements ApplicationApi {
         .parentApplication(app)
         .alias(feature.getAlias())
         .link(feature.getLink())
-        .secret(feature.getSecret() == null ? false : feature.getSecret())
+        .secret(feature.getSecret() != null && feature.getSecret())
         .valueType(feature.getValueType())
         .build();
 
@@ -291,7 +291,7 @@ public class ApplicationSqlApi implements ApplicationApi {
       appFeature.setKey(feature.getKey());
       appFeature.setLink(feature.getLink());
       appFeature.setValueType(feature.getValueType());
-      appFeature.setSecret(feature.getSecret() == null ? false : feature.getSecret());
+      appFeature.setSecret(feature.getSecret() != null && feature.getSecret());
 
       updateApplicationFeature(appFeature);
 

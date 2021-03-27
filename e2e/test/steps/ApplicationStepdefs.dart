@@ -40,6 +40,14 @@ class ApplicationStepdefs {
         'could not find app $name');
   }
 
+  @Then(r'I am able to find application called {string}')
+  void iAmAbleToFindApplicationCalled(String name) async {
+    var apps = await userCommon.applicationService
+        .findApplications(shared.portfolio.id!, filter: name);
+    assert(apps.firstWhereOrNull((a) => a.name == name) != null,
+        'could not find app $name');
+  }
+
   @And(
       r'I am able to update the application with the name {string} to the name {string} with the description {string} in the portfolio {string}')
   void
@@ -49,6 +57,19 @@ class ApplicationStepdefs {
     assert(p != null, 'Could not find portfolio');
 
     var app = await userCommon.findExactApplication(name, p!.id);
+    assert(app != null, 'Unable to find app $name');
+
+    await userCommon.applicationService.updateApplication(
+        app!.id!,
+        api.Application(
+            name: newName, description: newDesc, version: app.version));
+  }
+
+  @And(
+      r'I am able to update the application with the name {string} to the name {string} with the description {string}')
+  void iAmAbleToUpdateTheApplicationWithTheNameToTheNameWithTheDescription(
+      String name, String newName, String newDesc) async {
+    var app = await userCommon.findExactApplication(name, shared.portfolio.id);
     assert(app != null, 'Unable to find app $name');
 
     await userCommon.applicationService.updateApplication(
@@ -70,6 +91,15 @@ class ApplicationStepdefs {
         'Unable to delete app $name');
   }
 
+  @And(r'I delete the application called {string}')
+  void iDeleteTheApplicationCalled(String name) async {
+    var app = await userCommon.findExactApplication(name, shared.portfolio.id);
+    assert(app != null, 'Unable to find app $name');
+
+    assert(await userCommon.applicationService.deleteApplication(app!.id!),
+        'Unable to delete app $name');
+  }
+
   @Then(
       r'I am not able to find application called {string} in the portfolio {string}')
   void iAmNotAbleToFindApplicationCalledInThePortfolio(
@@ -78,6 +108,12 @@ class ApplicationStepdefs {
     assert(p != null, 'Could not find portfolio');
 
     var app = await userCommon.findExactApplication(name, p!.id);
+    assert(app == null, 'Still able to find app $name');
+  }
+
+  @Then(r'I am not able to find application called {string}')
+  void iAmNotAbleToFindApplicationCalled(String name) async {
+    var app = await userCommon.findExactApplication(name, shared.portfolio.id);
     assert(app == null, 'Still able to find app $name');
   }
 

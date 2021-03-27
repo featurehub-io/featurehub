@@ -493,7 +493,7 @@ paths:
       description: "Get person by token"
       operationId: logout
       responses:
-        "200":
+        "204":
           description: "Token deactivated"
   /mr-api/authentication/{id}/replaceTempPassword:
     parameters:

@@ -19,21 +19,23 @@ Feature: Here we explore the capabilities around Applications inside a portfolio
       | пирожок    | Mince Brioche   | Biscuit Makers |
 
   Scenario Outline: I can update and delete an application in the portfolio
-    When I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
-    Then I am able to find application called "<appName>" in the portfolio "<portfolio>"
-    And I am able to update the application with the name "<appName>" to the name "<appName2>" with the description "<appDesc2>" in the portfolio "<portfolio>"
-    Then I am able to find application called "<appName2>" in the portfolio "<portfolio>"
-    And I delete the application called "<appName2>" in the portfolio "<portfolio>"
-    Then I am not able to find application called "<appName2>" in the portfolio "<portfolio>"
+    Given the first superuser is used for authentication
+    And I have a randomly named portfolio with the prefix "<portfolio>"
+    When I create an application with the name "<appName>"
+    And I am able to update the application with the name "<appName>" to the name "<appName2>" with the description "<appDesc2>"
+    Then I am able to find application called "<appName2>"
+    And I delete the application called "<appName2>"
+    Then I am not able to find application called "<appName2>"
 
     Examples:
-      | appName     | appDesc         | appName2 | appDesc2    | portfolio      |
-      | World7      | World Desc      | World2   | Desc2       | Biscuit Makers |
-      | Conquering9 | Conquering Desc | Pirozhki | Mince Dough | Biscuit Makers |
+      | appName     | appName2 | appDesc2    | portfolio      |
+      | World7      | World2   | Desc2       | Biscuit Makers |
+      | Conquering9 | Pirozhki | Mince Dough | Biscuit Makers |
 
   Scenario Outline: I can create and update features in an application in a portfolio
     Given I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
     And I ensure that the feature with the key "<featureKey>" has been removed
+    And I ensure that the feature with the key "<featureKey2>" has been removed
     When I create the feature with a key "<featureKey>" and alias "<alias>" and name "<featureName>" and link "<link>" and type "boolean"
     And I can find the feature with a key "<featureKey>"
     And I rename the feature with the key "<featureKey>" to "<featureKey2>"
