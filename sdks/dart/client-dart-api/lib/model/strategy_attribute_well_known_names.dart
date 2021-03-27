@@ -52,7 +52,12 @@ extension StrategyAttributeWellKnownNamesExtension
       Map<String, dynamic> json) {
     final map = <String, StrategyAttributeWellKnownNames>{};
     if (json != null && json.isNotEmpty) {
-      json.forEach((String key, dynamic value) => map[key] = fromJson(value));
+      json.forEach((String key, dynamic value) {
+        final val = fromJson(value);
+        if (val != null) {
+          map[key] = val;
+        }
+      });
     }
     return map;
   }

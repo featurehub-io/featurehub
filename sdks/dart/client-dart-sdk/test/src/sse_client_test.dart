@@ -48,9 +48,7 @@ void main() {
       verify(rep.notify(SSEResultState.failure, any));
     }));
 
-    es.add(Event(
-        event: SSEResultStateTypeTransformer.toJson(SSEResultState.failure),
-        data: '{}'));
+    es.add(Event(event: SSEResultState.failure.name, data: '{}'));
   });
 
   test('A failure is reported to the repository', () {

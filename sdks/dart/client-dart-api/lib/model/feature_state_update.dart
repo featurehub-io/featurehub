@@ -8,7 +8,11 @@ class FeatureStateUpdate {
   bool updateValue;
   /* set only if you wish to lock or unlock, otherwise null */
   bool lock;
-  FeatureStateUpdate();
+  FeatureStateUpdate({
+    this.value,
+    this.updateValue,
+    this.lock,
+  });
 
   @override
   String toString() {
@@ -18,10 +22,20 @@ class FeatureStateUpdate {
   fromJson(Map<String, dynamic> json) {
     if (json == null) return;
 
-    value = (json[r'value'] == null) ? null : (json[r'value'] as dynamic);
-    updateValue =
-        (json[r'updateValue'] == null) ? null : (json[r'updateValue'] as bool);
-    lock = (json[r'lock'] == null) ? null : (json[r'lock'] as bool);
+    value = (json[r'value'] == null)
+        ? null
+        : value = (json[r'value'] == null) ? null : (json[r'value'] as dynamic);
+    ;
+    updateValue = (json[r'updateValue'] == null)
+        ? null
+        : updateValue = (json[r'updateValue'] == null)
+            ? null
+            : (json[r'updateValue'] as bool);
+    ;
+    lock = (json[r'lock'] == null)
+        ? null
+        : lock = (json[r'lock'] == null) ? null : (json[r'lock'] as bool);
+    ;
   }
 
   FeatureStateUpdate.fromJson(Map<String, dynamic> json) {
@@ -30,7 +44,9 @@ class FeatureStateUpdate {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    json[r'value'] = value;
+    if (value != null) {
+      json[r'value'] = value;
+    }
     if (updateValue != null) {
       json[r'updateValue'] = updateValue;
     }
@@ -75,17 +91,11 @@ class FeatureStateUpdate {
   int get hashCode {
     var hashCode = runtimeType.hashCode;
 
-    if (value != null) {
-      hashCode = hashCode * 31 + value.hashCode;
-    }
+    hashCode = hashCode * 31 + value.hashCode;
 
-    if (updateValue != null) {
-      hashCode = hashCode * 31 + updateValue.hashCode;
-    }
+    hashCode = hashCode * 31 + updateValue.hashCode;
 
-    if (lock != null) {
-      hashCode = hashCode * 31 + lock.hashCode;
-    }
+    hashCode = hashCode * 31 + lock.hashCode;
 
     return hashCode;
   }
@@ -95,15 +105,18 @@ class FeatureStateUpdate {
     bool updateValue,
     bool lock,
   }) {
-    FeatureStateUpdate copy = FeatureStateUpdate();
     value ??= this.value;
     updateValue ??= this.updateValue;
     lock ??= this.lock;
 
-    copy.value = value;
-    copy.updateValue = updateValue;
-    copy.lock = lock;
+    final _copy_value = value;
+    final _copy_updateValue = updateValue;
+    final _copy_lock = lock;
 
-    return copy;
+    return FeatureStateUpdate(
+      value: _copy_value,
+      updateValue: _copy_updateValue,
+      lock: _copy_lock,
+    );
   }
 }

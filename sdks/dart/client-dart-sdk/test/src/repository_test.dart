@@ -298,7 +298,7 @@ void main() {
       ..key = '1'
       ..value = true
       ..type = FeatureValueType.BOOLEAN;
-    repo.notify(SSEResultState.delete_feature, data.toJson());
+    repo.notify(SSEResultState.deleteFeature, data.toJson());
     expect(repo.getFeatureState('1').exists, isFalse);
   });
 

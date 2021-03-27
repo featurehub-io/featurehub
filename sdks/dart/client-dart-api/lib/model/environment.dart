@@ -5,7 +5,10 @@ class Environment {
   String id;
 
   List<FeatureState> features = [];
-  Environment();
+  Environment({
+    this.id,
+    this.features,
+  });
 
   @override
   String toString() {
@@ -15,11 +18,14 @@ class Environment {
   fromJson(Map<String, dynamic> json) {
     if (json == null) return;
 
-    id = (json[r'id'] == null) ? null : (json[r'id'] as String);
+    id = (json[r'id'] == null)
+        ? null
+        : id = (json[r'id'] == null) ? null : (json[r'id'] as String);
+    ;
     {
       final _jsonData = json[r'features'];
       features = (_jsonData == null)
-          ? null
+          ? []
           : ((dynamic data) {
               return FeatureState.listFromJson(data);
             }(_jsonData));
@@ -37,7 +43,7 @@ class Environment {
     }
     if (features != null) {
       json[r'features'] =
-          features.map((v) => LocalApiClient.serialize(v)).toList();
+          features?.map((v) => LocalApiClient.serialize(v))?.toList();
     }
     return json;
   }
@@ -75,13 +81,9 @@ class Environment {
   int get hashCode {
     var hashCode = runtimeType.hashCode;
 
-    if (id != null) {
-      hashCode = hashCode * 31 + id.hashCode;
-    }
+    hashCode = hashCode * 31 + id.hashCode;
 
-    if (features != null) {
-      hashCode = hashCode * 31 + const ListEquality().hash(features);
-    }
+    hashCode = hashCode * 31 + const ListEquality().hash(features);
 
     return hashCode;
   }
@@ -90,19 +92,21 @@ class Environment {
     String id,
     List<FeatureState> features,
   }) {
-    Environment copy = Environment();
     id ??= this.id;
     features ??= this.features;
 
-    copy.id = id;
-    copy.features = (features == null)
-        ? null
+    final _copy_id = id;
+    final _copy_features = (features == null)
+        ? [] as List<FeatureState>
         : ((data) {
             return (data as List<FeatureState>)
-                .map((data) => data.copyWith())
+                ?.map((data) => data.copyWith())
                 .toList();
           }(features));
 
-    return copy;
+    return Environment(
+      id: _copy_id,
+      features: _copy_features,
+    );
   }
 }

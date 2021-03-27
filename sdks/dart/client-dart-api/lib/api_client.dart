@@ -3,7 +3,6 @@ part of featurehub_client_api.api;
 class LocalApiClient {
   static final _regList = RegExp(r'^List<(.*)>$');
   static final _regMap = RegExp(r'^Map<String,(.*)>$');
-
   static dynamic serialize(Object value) {
     try {
       if (value == null) {
@@ -83,7 +82,7 @@ class LocalApiClient {
 
     if (targetType == 'String') return json;
 
-    var decodedJson = jsonDecode(json);
+    final decodedJson = jsonDecode(json);
     return deserialize(decodedJson, targetType);
   }
 
@@ -146,8 +145,6 @@ class LocalApiClient {
       throw ApiException.withInner(
           500, 'Exception during deserialization.', e, stack);
     }
-    throw ApiException(
-        500, 'Could not find a suitable class for deserialization');
   }
 
   /// Format the given parameter object into string.

@@ -17,7 +17,16 @@ class FeatureState {
   String environmentId;
 
   List<RolloutStrategy> strategies = [];
-  FeatureState();
+  FeatureState({
+    this.id,
+    this.key,
+    this.l,
+    this.version,
+    this.type,
+    this.value,
+    this.environmentId,
+    this.strategies,
+  });
 
   @override
   String toString() {
@@ -27,21 +36,43 @@ class FeatureState {
   fromJson(Map<String, dynamic> json) {
     if (json == null) return;
 
-    id = (json[r'id'] == null) ? null : (json[r'id'] as String);
-    key = (json[r'key'] == null) ? null : (json[r'key'] as String);
-    l = (json[r'l'] == null) ? null : (json[r'l'] as bool);
-    version = (json[r'version'] == null) ? null : (json[r'version'] as int);
+    id = (json[r'id'] == null)
+        ? null
+        : id = (json[r'id'] == null) ? null : (json[r'id'] as String);
+    ;
+    key = (json[r'key'] == null)
+        ? null
+        : key = (json[r'key'] == null) ? null : (json[r'key'] as String);
+    ;
+    l = (json[r'l'] == null)
+        ? null
+        : l = (json[r'l'] == null) ? null : (json[r'l'] as bool);
+    ;
+    version = (json[r'version'] == null)
+        ? null
+        : version =
+            (json[r'version'] == null) ? null : (json[r'version'] as int);
+    ;
     type = (json[r'type'] == null)
         ? null
-        : FeatureValueTypeExtension.fromJson(json[r'type']);
-    value = (json[r'value'] == null) ? null : (json[r'value'] as dynamic);
+        : type = (json[r'type'] == null)
+            ? null
+            : FeatureValueTypeExtension.fromJson(json[r'type']);
+    ;
+    value = (json[r'value'] == null)
+        ? null
+        : value = (json[r'value'] == null) ? null : (json[r'value'] as dynamic);
+    ;
     environmentId = (json[r'environmentId'] == null)
         ? null
-        : (json[r'environmentId'] as String);
+        : environmentId = (json[r'environmentId'] == null)
+            ? null
+            : (json[r'environmentId'] as String);
+    ;
     {
       final _jsonData = json[r'strategies'];
       strategies = (_jsonData == null)
-          ? null
+          ? []
           : ((dynamic data) {
               return RolloutStrategy.listFromJson(data);
             }(_jsonData));
@@ -67,15 +98,17 @@ class FeatureState {
       json[r'version'] = version;
     }
     if (type != null) {
-      json[r'type'] = type.toJson();
+      json[r'type'] = type?.toJson();
     }
-    json[r'value'] = value;
+    if (value != null) {
+      json[r'value'] = value;
+    }
     if (environmentId != null) {
       json[r'environmentId'] = environmentId;
     }
     if (strategies != null) {
       json[r'strategies'] =
-          strategies.map((v) => LocalApiClient.serialize(v)).toList();
+          strategies?.map((v) => LocalApiClient.serialize(v))?.toList();
     }
     return json;
   }
@@ -120,37 +153,21 @@ class FeatureState {
   int get hashCode {
     var hashCode = runtimeType.hashCode;
 
-    if (id != null) {
-      hashCode = hashCode * 31 + id.hashCode;
-    }
+    hashCode = hashCode * 31 + id.hashCode;
 
-    if (key != null) {
-      hashCode = hashCode * 31 + key.hashCode;
-    }
+    hashCode = hashCode * 31 + key.hashCode;
 
-    if (l != null) {
-      hashCode = hashCode * 31 + l.hashCode;
-    }
+    hashCode = hashCode * 31 + l.hashCode;
 
-    if (version != null) {
-      hashCode = hashCode * 31 + version.hashCode;
-    }
+    hashCode = hashCode * 31 + version.hashCode;
 
-    if (type != null) {
-      hashCode = hashCode * 31 + type.hashCode;
-    }
+    hashCode = hashCode * 31 + type.hashCode;
 
-    if (value != null) {
-      hashCode = hashCode * 31 + value.hashCode;
-    }
+    hashCode = hashCode * 31 + value.hashCode;
 
-    if (environmentId != null) {
-      hashCode = hashCode * 31 + environmentId.hashCode;
-    }
+    hashCode = hashCode * 31 + environmentId.hashCode;
 
-    if (strategies != null) {
-      hashCode = hashCode * 31 + const ListEquality().hash(strategies);
-    }
+    hashCode = hashCode * 31 + const ListEquality().hash(strategies);
 
     return hashCode;
   }
@@ -165,7 +182,6 @@ class FeatureState {
     String environmentId,
     List<RolloutStrategy> strategies,
   }) {
-    FeatureState copy = FeatureState();
     id ??= this.id;
     key ??= this.key;
     l ??= this.l;
@@ -175,21 +191,30 @@ class FeatureState {
     environmentId ??= this.environmentId;
     strategies ??= this.strategies;
 
-    copy.id = id;
-    copy.key = key;
-    copy.l = l;
-    copy.version = version;
-    copy.type = type;
-    copy.value = value;
-    copy.environmentId = environmentId;
-    copy.strategies = (strategies == null)
-        ? null
+    final _copy_id = id;
+    final _copy_key = key;
+    final _copy_l = l;
+    final _copy_version = version;
+    final _copy_type = type;
+    final _copy_value = value;
+    final _copy_environmentId = environmentId;
+    final _copy_strategies = (strategies == null)
+        ? [] as List<RolloutStrategy>
         : ((data) {
             return (data as List<RolloutStrategy>)
-                .map((data) => data.copyWith())
+                ?.map((data) => data.copyWith())
                 .toList();
           }(strategies));
 
-    return copy;
+    return FeatureState(
+      id: _copy_id,
+      key: _copy_key,
+      l: _copy_l,
+      version: _copy_version,
+      type: _copy_type,
+      value: _copy_value,
+      environmentId: _copy_environmentId,
+      strategies: _copy_strategies,
+    );
   }
 }

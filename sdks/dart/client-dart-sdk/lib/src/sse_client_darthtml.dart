@@ -52,7 +52,7 @@ class EventSourceRepositoryListener {
   void _msg(MessageEvent msg) {
     _log.fine('Event is ${msg.type} value ${msg.data}');
     if (msg.type != null) {
-      _repository.notify(SSEResultStateTypeTransformer.fromJson(msg.type),
+      _repository.notify(SSEResultStateExtension.fromJson(msg.type),
           msg.data == null ? null : jsonDecode(msg.data));
     }
   }

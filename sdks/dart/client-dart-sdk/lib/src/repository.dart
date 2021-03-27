@@ -208,7 +208,7 @@ class ClientFeatureRepository {
             }
           }
           break;
-        case SSEResultState.delete_feature:
+        case SSEResultState.deleteFeature:
           _deleteFeature(FeatureState.fromJson(data));
           break;
       }

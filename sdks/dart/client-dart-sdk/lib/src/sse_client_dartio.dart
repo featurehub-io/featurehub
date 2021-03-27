@@ -62,7 +62,7 @@ class EventSourceRepositoryListener {
       _log.fine('Event is ${event.event} value ${event.data}');
       final readyness = _repository.readyness;
       if (event.event != null) {
-        _repository.notify(SSEResultStateTypeTransformer.fromJson(event.event),
+        _repository.notify(SSEResultStateExtension.fromJson(event.event),
             event.data == null ? null : jsonDecode(event.data));
       }
       if (event.event == 'bye' && readyness != Readyness.Failed && !_closed) {

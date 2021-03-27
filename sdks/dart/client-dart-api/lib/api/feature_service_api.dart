@@ -16,11 +16,22 @@ class FeatureServiceApi {
       options: options,
     );
 
-    if (response.statusCode >= 400) {
-      throw ApiException(response.statusCode, await decodeBodyBytes(response));
-    } else {
-      return await apiDelegate.getFeatureStates_decode(response);
+    if (![200, 400].contains(response.statusCode)) {
+      throw ApiException(500,
+          'Invalid response code ${response.statusCode} returned from API');
     }
+
+    final body = response.body;
+    if (response.statusCode >= 400) {
+      throw ApiException(response.statusCode,
+          body == null ? null : await decodeBodyBytes(response));
+    }
+
+    if (body == null) {
+      throw ApiException(500, 'Received an empty body');
+    }
+
+    return await apiDelegate.getFeatureStates_decode(response);
   }
 
   ///
@@ -39,11 +50,22 @@ class FeatureServiceApi {
       options: options,
     );
 
-    if (response.statusCode >= 400) {
-      throw ApiException(response.statusCode, await decodeBodyBytes(response));
-    } else {
-      return await apiDelegate.setFeatureState_decode(response);
+    if (![200, 201, 400, 403, 404, 412].contains(response.statusCode)) {
+      throw ApiException(500,
+          'Invalid response code ${response.statusCode} returned from API');
     }
+
+    final body = response.body;
+    if (response.statusCode >= 400) {
+      throw ApiException(response.statusCode,
+          body == null ? null : await decodeBodyBytes(response));
+    }
+
+    if (body == null) {
+      throw ApiException(500, 'Received an empty body');
+    }
+
+    return await apiDelegate.setFeatureState_decode(response);
   }
 
   ///
@@ -101,14 +123,10 @@ class FeatureServiceApiDelegate {
 
   Future<List<Environment>> getFeatureStates_decode(
       ApiResponse response) async {
-    if (response.body != null) {
-      return (LocalApiClient.deserializeFromString(
-              await decodeBodyBytes(response), 'List<Environment>') as List)
-          .map((item) => item as Environment)
-          .toList();
-    }
-
-    return null;
+    return (LocalApiClient.deserializeFromString(
+            await decodeBodyBytes(response), 'List<Environment>') as List)
+        .map((item) => item as Environment)
+        .toList();
   }
 
   Future<ApiResponse> setFeatureState(
@@ -161,11 +179,7 @@ class FeatureServiceApiDelegate {
   }
 
   Future<dynamic> setFeatureState_decode(ApiResponse response) async {
-    if (response.body != null) {
-      return LocalApiClient.deserializeFromString(
-          await decodeBodyBytes(response), 'dynamic') as dynamic;
-    }
-
-    return null;
+    return LocalApiClient.deserializeFromString(
+        await decodeBodyBytes(response), 'dynamic') as dynamic;
   }
 }

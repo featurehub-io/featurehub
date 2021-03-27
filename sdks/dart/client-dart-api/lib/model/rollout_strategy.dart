@@ -17,7 +17,16 @@ class RolloutStrategy {
   dynamic value;
 
   List<RolloutStrategyAttribute> attributes = [];
-  RolloutStrategy();
+  RolloutStrategy({
+    this.id,
+    this.name,
+    this.percentage,
+    this.percentageAttributes,
+    this.colouring,
+    this.avatar,
+    this.value,
+    this.attributes,
+  });
 
   @override
   String toString() {
@@ -27,27 +36,46 @@ class RolloutStrategy {
   fromJson(Map<String, dynamic> json) {
     if (json == null) return;
 
-    id = (json[r'id'] == null) ? null : (json[r'id'] as String);
-    name = (json[r'name'] == null) ? null : (json[r'name'] as String);
-    percentage =
-        (json[r'percentage'] == null) ? null : (json[r'percentage'] as int);
+    id = (json[r'id'] == null)
+        ? null
+        : id = (json[r'id'] == null) ? null : (json[r'id'] as String);
+    ;
+    name = (json[r'name'] == null)
+        ? null
+        : name = (json[r'name'] == null) ? null : (json[r'name'] as String);
+    ;
+    percentage = (json[r'percentage'] == null)
+        ? null
+        : percentage =
+            (json[r'percentage'] == null) ? null : (json[r'percentage'] as int);
+    ;
     {
       final _jsonData = json[r'percentageAttributes'];
       percentageAttributes = (_jsonData == null)
-          ? null
+          ? []
           : ((dynamic data) {
               return data?.cast<String>();
             }(_jsonData));
     } // _jsonFieldName
 
-    colouring =
-        (json[r'colouring'] == null) ? null : (json[r'colouring'] as int);
-    avatar = (json[r'avatar'] == null) ? null : (json[r'avatar'] as String);
-    value = (json[r'value'] == null) ? null : (json[r'value'] as dynamic);
+    colouring = (json[r'colouring'] == null)
+        ? null
+        : colouring =
+            (json[r'colouring'] == null) ? null : (json[r'colouring'] as int);
+    ;
+    avatar = (json[r'avatar'] == null)
+        ? null
+        : avatar =
+            (json[r'avatar'] == null) ? null : (json[r'avatar'] as String);
+    ;
+    value = (json[r'value'] == null)
+        ? null
+        : value = (json[r'value'] == null) ? null : (json[r'value'] as dynamic);
+    ;
     {
       final _jsonData = json[r'attributes'];
       attributes = (_jsonData == null)
-          ? null
+          ? []
           : ((dynamic data) {
               return RolloutStrategyAttribute.listFromJson(data);
             }(_jsonData));
@@ -63,15 +91,14 @@ class RolloutStrategy {
     if (id != null) {
       json[r'id'] = id;
     }
-    if (name != null) {
-      json[r'name'] = name;
-    }
+    json[r'name'] = name;
     if (percentage != null) {
       json[r'percentage'] = percentage;
     }
     if (percentageAttributes != null) {
-      json[r'percentageAttributes'] =
-          percentageAttributes.map((v) => LocalApiClient.serialize(v)).toList();
+      json[r'percentageAttributes'] = percentageAttributes
+          ?.map((v) => LocalApiClient.serialize(v))
+          ?.toList();
     }
     if (colouring != null) {
       json[r'colouring'] = colouring;
@@ -79,10 +106,12 @@ class RolloutStrategy {
     if (avatar != null) {
       json[r'avatar'] = avatar;
     }
-    json[r'value'] = value;
+    if (value != null) {
+      json[r'value'] = value;
+    }
     if (attributes != null) {
       json[r'attributes'] =
-          attributes.map((v) => LocalApiClient.serialize(v)).toList();
+          attributes?.map((v) => LocalApiClient.serialize(v))?.toList();
     }
     return json;
   }
@@ -127,38 +156,21 @@ class RolloutStrategy {
   int get hashCode {
     var hashCode = runtimeType.hashCode;
 
-    if (id != null) {
-      hashCode = hashCode * 31 + id.hashCode;
-    }
+    hashCode = hashCode * 31 + id.hashCode;
 
-    if (name != null) {
-      hashCode = hashCode * 31 + name.hashCode;
-    }
+    hashCode = hashCode * 31 + name.hashCode;
 
-    if (percentage != null) {
-      hashCode = hashCode * 31 + percentage.hashCode;
-    }
+    hashCode = hashCode * 31 + percentage.hashCode;
 
-    if (percentageAttributes != null) {
-      hashCode =
-          hashCode * 31 + const ListEquality().hash(percentageAttributes);
-    }
+    hashCode = hashCode * 31 + const ListEquality().hash(percentageAttributes);
 
-    if (colouring != null) {
-      hashCode = hashCode * 31 + colouring.hashCode;
-    }
+    hashCode = hashCode * 31 + colouring.hashCode;
 
-    if (avatar != null) {
-      hashCode = hashCode * 31 + avatar.hashCode;
-    }
+    hashCode = hashCode * 31 + avatar.hashCode;
 
-    if (value != null) {
-      hashCode = hashCode * 31 + value.hashCode;
-    }
+    hashCode = hashCode * 31 + value.hashCode;
 
-    if (attributes != null) {
-      hashCode = hashCode * 31 + const ListEquality().hash(attributes);
-    }
+    hashCode = hashCode * 31 + const ListEquality().hash(attributes);
 
     return hashCode;
   }
@@ -173,7 +185,6 @@ class RolloutStrategy {
     dynamic value,
     List<RolloutStrategyAttribute> attributes,
   }) {
-    RolloutStrategy copy = RolloutStrategy();
     id ??= this.id;
     name ??= this.name;
     percentage ??= this.percentage;
@@ -183,26 +194,35 @@ class RolloutStrategy {
     value ??= this.value;
     attributes ??= this.attributes;
 
-    copy.id = id;
-    copy.name = name;
-    copy.percentage = percentage;
-    copy.percentageAttributes = (percentageAttributes == null)
-        ? null
+    final _copy_id = id;
+    final _copy_name = name;
+    final _copy_percentage = percentage;
+    final _copy_percentageAttributes = (percentageAttributes == null)
+        ? [] as List<String>
         : ((data) {
-            return (data as List<String>).toList();
+            return (data as List<String>)?.toList();
           }(percentageAttributes));
 
-    copy.colouring = colouring;
-    copy.avatar = avatar;
-    copy.value = value;
-    copy.attributes = (attributes == null)
-        ? null
+    final _copy_colouring = colouring;
+    final _copy_avatar = avatar;
+    final _copy_value = value;
+    final _copy_attributes = (attributes == null)
+        ? [] as List<RolloutStrategyAttribute>
         : ((data) {
             return (data as List<RolloutStrategyAttribute>)
-                .map((data) => data.copyWith())
+                ?.map((data) => data.copyWith())
                 .toList();
           }(attributes));
 
-    return copy;
+    return RolloutStrategy(
+      id: _copy_id,
+      name: _copy_name,
+      percentage: _copy_percentage,
+      percentageAttributes: _copy_percentageAttributes,
+      colouring: _copy_colouring,
+      avatar: _copy_avatar,
+      value: _copy_value,
+      attributes: _copy_attributes,
+    );
   }
 }

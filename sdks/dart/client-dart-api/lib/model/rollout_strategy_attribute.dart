@@ -12,7 +12,13 @@ class RolloutStrategyAttribute {
   List<dynamic> values = [];
 
   RolloutStrategyFieldType type;
-  RolloutStrategyAttribute();
+  RolloutStrategyAttribute({
+    this.id,
+    this.conditional,
+    this.fieldName,
+    this.values,
+    this.type,
+  });
 
   @override
   String toString() {
@@ -22,17 +28,27 @@ class RolloutStrategyAttribute {
   fromJson(Map<String, dynamic> json) {
     if (json == null) return;
 
-    id = (json[r'id'] == null) ? null : (json[r'id'] as String);
+    id = (json[r'id'] == null)
+        ? null
+        : id = (json[r'id'] == null) ? null : (json[r'id'] as String);
+    ;
     conditional = (json[r'conditional'] == null)
         ? null
-        : RolloutStrategyAttributeConditionalExtension.fromJson(
-            json[r'conditional']);
-    fieldName =
-        (json[r'fieldName'] == null) ? null : (json[r'fieldName'] as String);
+        : conditional = (json[r'conditional'] == null)
+            ? null
+            : RolloutStrategyAttributeConditionalExtension.fromJson(
+                json[r'conditional']);
+    ;
+    fieldName = (json[r'fieldName'] == null)
+        ? null
+        : fieldName = (json[r'fieldName'] == null)
+            ? null
+            : (json[r'fieldName'] as String);
+    ;
     {
       final _jsonData = json[r'values'];
       values = (_jsonData == null)
-          ? null
+          ? []
           : ((dynamic data) {
               return data?.cast<dynamic>();
             }(_jsonData));
@@ -40,7 +56,10 @@ class RolloutStrategyAttribute {
 
     type = (json[r'type'] == null)
         ? null
-        : RolloutStrategyFieldTypeExtension.fromJson(json[r'type']);
+        : type = (json[r'type'] == null)
+            ? null
+            : RolloutStrategyFieldTypeExtension.fromJson(json[r'type']);
+    ;
   }
 
   RolloutStrategyAttribute.fromJson(Map<String, dynamic> json) {
@@ -53,16 +72,17 @@ class RolloutStrategyAttribute {
       json[r'id'] = id;
     }
     if (conditional != null) {
-      json[r'conditional'] = conditional.toJson();
+      json[r'conditional'] = conditional?.toJson();
     }
     if (fieldName != null) {
       json[r'fieldName'] = fieldName;
     }
     if (values != null) {
-      json[r'values'] = values.map((v) => LocalApiClient.serialize(v)).toList();
+      json[r'values'] =
+          values?.map((v) => LocalApiClient.serialize(v))?.toList();
     }
     if (type != null) {
-      json[r'type'] = type.toJson();
+      json[r'type'] = type?.toJson();
     }
     return json;
   }
@@ -107,25 +127,15 @@ class RolloutStrategyAttribute {
   int get hashCode {
     var hashCode = runtimeType.hashCode;
 
-    if (id != null) {
-      hashCode = hashCode * 31 + id.hashCode;
-    }
+    hashCode = hashCode * 31 + id.hashCode;
 
-    if (conditional != null) {
-      hashCode = hashCode * 31 + conditional.hashCode;
-    }
+    hashCode = hashCode * 31 + conditional.hashCode;
 
-    if (fieldName != null) {
-      hashCode = hashCode * 31 + fieldName.hashCode;
-    }
+    hashCode = hashCode * 31 + fieldName.hashCode;
 
-    if (values != null) {
-      hashCode = hashCode * 31 + const ListEquality().hash(values);
-    }
+    hashCode = hashCode * 31 + const ListEquality().hash(values);
 
-    if (type != null) {
-      hashCode = hashCode * 31 + type.hashCode;
-    }
+    hashCode = hashCode * 31 + type.hashCode;
 
     return hashCode;
   }
@@ -137,24 +147,29 @@ class RolloutStrategyAttribute {
     List<dynamic> values,
     RolloutStrategyFieldType type,
   }) {
-    RolloutStrategyAttribute copy = RolloutStrategyAttribute();
     id ??= this.id;
     conditional ??= this.conditional;
     fieldName ??= this.fieldName;
     values ??= this.values;
     type ??= this.type;
 
-    copy.id = id;
-    copy.conditional = conditional;
-    copy.fieldName = fieldName;
-    copy.values = (values == null)
-        ? null
+    final _copy_id = id;
+    final _copy_conditional = conditional;
+    final _copy_fieldName = fieldName;
+    final _copy_values = (values == null)
+        ? [] as List<dynamic>
         : ((data) {
-            return (data as List<dynamic>).toList();
+            return (data as List<dynamic>)?.toList();
           }(values));
 
-    copy.type = type;
+    final _copy_type = type;
 
-    return copy;
+    return RolloutStrategyAttribute(
+      id: _copy_id,
+      conditional: _copy_conditional,
+      fieldName: _copy_fieldName,
+      values: _copy_values,
+      type: _copy_type,
+    );
   }
 }
