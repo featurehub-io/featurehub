@@ -1,11 +1,9 @@
-# This is a basic workflow to help you get started with Actions
-
 name: Publish TypeScript-EventSource SDK package to NPM registry
 on:
   workflow_dispatch:
-    types: [created]
+    
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -14,6 +12,11 @@ jobs:
       with:
         node-version: '12.x'
         registry-url: 'https://registry.npmjs.org'
-    - run: cd ../../sdks/typescript/client-typescript-eventsource && npm install && npm run build 
+    - name: Install dependencies    
+      run: npm install
+      working-directory: sdks/typescript/client-typescript-eventsource
+    - name: Compile sources and Publish to NPM
+      run: npm run release
+      working-directory: sdks/typescript/client-typescript-eventsource
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
