@@ -76,9 +76,8 @@ class EventSourceRepositoryListener {
   }
 
   EventSource connect(String url) {
-    return EventSource(url + xFeaturehubHeader! == null
-        ? ''
-        : '?xfeaturehub=${xFeaturehubHeader}');
+    return EventSource(url +
+        (xFeaturehubHeader == null ? '' : '?xfeaturehub=$xFeaturehubHeader'));
   }
 
   void close() {

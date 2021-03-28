@@ -24,9 +24,7 @@ class GoogleAnalyticsListener {
       {String? cid, GoogleAnalyticsApiClient? apiClient})
       : _repository = repository,
         _cid = cid,
-        _apiClient = apiClient ?? GoogleAnalyticsDioApiClient(),
-        assert(ua != null),
-        assert(repository != null) {
+        _apiClient = apiClient ?? GoogleAnalyticsDioApiClient() {
     _analyticsListener = _repository.analyticsEvent.listen(_analyticsPublisher);
   }
 
@@ -42,8 +40,9 @@ class GoogleAnalyticsListener {
   }
 
   void _analyticsPublisher(AnalyticsEvent event) {
-    final finalCid =
-        (event.other != null) ? (event.other!['cid']?.toString() ?? _cid) : _cid;
+    final finalCid = (event.other != null)
+        ? (event.other!['cid']?.toString() ?? _cid)
+        : _cid;
 
     if (finalCid == null) {
       _log.severe('Unable to log GA event as no CID provided.');
@@ -51,7 +50,8 @@ class GoogleAnalyticsListener {
     }
 
     final ev = (event.other?.containsKey(_GA_KEY) ?? false)
-        ? '&ev=' + Uri.encodeQueryComponent(event.other![_GA_KEY] as String? ?? '')
+        ? '&ev=' +
+            Uri.encodeQueryComponent(event.other![_GA_KEY] as String? ?? '')
         : '';
 
     var batchData = '';
@@ -68,6 +68,8 @@ class GoogleAnalyticsListener {
     event.features.forEach((f) {
       String? line;
       switch (f.type) {
+        case null:
+          break;
         case FeatureValueType.BOOLEAN:
           line = f.booleanValue! ? 'on' : 'off';
           break;
@@ -110,6 +112,8 @@ class GoogleAnalyticsDioApiClient implements GoogleAnalyticsApiClient {
         .post('https://www.google-analytics.com/batch',
             data: data,
             options: Options(contentType: 'application/x-www-form-urlencoded'))
-        .catchError((e, s) => _log.severe('Failed to update GA', e, s));
+        .catchError((e, s) {
+      _log.severe('Failed to update GA', e, s);
+    });
   }
 }

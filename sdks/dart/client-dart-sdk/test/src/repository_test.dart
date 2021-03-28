@@ -246,9 +246,10 @@ void main() {
     repo.notify(SSEResultState.features, _initialFeatures());
     expect(repo.readyness, equals(Readyness.Ready));
     repo.catchAndReleaseMode = true;
+    // ignore: unawaited_futures
     expectLater(repo.catchAndReleaseMode, true);
     expect(repo.getFeatureState('1').booleanValue, equals(false));
-    expectLater(sub, emits(repo));
+    expectLater(sub, emits(repo)); // ignore: unawaited_futures
     repo.notify(
         SSEResultState.features, _initialFeatures(version: 2, value: true));
     // now update just the feature

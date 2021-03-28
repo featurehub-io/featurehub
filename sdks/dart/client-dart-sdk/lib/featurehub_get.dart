@@ -10,9 +10,7 @@ class FeatureHubSimpleApi {
   String? xFeaturehubHeader;
 
   FeatureHubSimpleApi(String host, this._environmentIds, this._repository)
-      : assert(host != null),
-        assert(_environmentIds != null && _environmentIds.isNotEmpty),
-        assert(_repository != null),
+      : assert(_environmentIds.isNotEmpty),
         _api = FeatureServiceApi(ApiClient(basePath: host)) {
     _repository.clientContext.registerChangeHandler((header) async {
       xFeaturehubHeader = header;

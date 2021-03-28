@@ -5,7 +5,7 @@ import 'package:featurehub_client_sdk/featurehub.dart'
     hide EventSourceRepositoryListener;
 import 'package:featurehub_client_sdk/featurehub_io.dart';
 import 'package:featurehub_sse_client/featurehub_sse_client.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:test/test.dart';
 
@@ -50,7 +50,7 @@ void main() {
 
   test('A proper message is delivered to the repository', () {
     es.listen(expectAsync1((_) {
-      verify(rep.notify(SSEResultState.failure, any));
+      verify(() => rep.notify(SSEResultState.failure, any())).called(1);
     }));
 
     es.add(Event(event: SSEResultState.failure.name, data: '{}'));
@@ -59,7 +59,7 @@ void main() {
   test('A failure is reported to the repository', () {
     rep.r = Readyness.Failed;
     es.listen((value) {}, onError: expectAsync1((dynamic _) {
-      verify(rep.notify(SSEResultState.bye, any));
+      verify(() => rep.notify(SSEResultState.bye, any()));
     }));
     es.addError('blah');
   });
@@ -79,16 +79,21 @@ void main() {
     final sub = _MockSubscription();
     rep = _MockRepository();
 
-    when(stream.listen(any,
-            onError: anyNamed('onError'), onDone: anyNamed('onDone')))
-        .thenReturn(sub);
+    when(() => stream.listen(any(),
+        onError: any(named: 'onError'),
+        onDone: any(named: 'onDone'))).thenReturn(sub);
+
+    // cancel is called, it has to return a future void
+    final c = Completer<void>();
+    when(() => sub.cancel()).thenAnswer((_) => c.future);
+    c.complete();
 
     final sse = SseClientTest('', rep, stream, doInit: false);
     await sse.init();
 
     sse.close();
 
-    verify(sub.cancel());
+    verify(() => sub.cancel()).called(1);
   });
 }
 

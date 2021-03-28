@@ -29,15 +29,14 @@ class ValueMatch {
   final bool matched;
   final String? value;
 
-  ValueMatch(this.matched, this.value) : assert(matched != null);
+  ValueMatch(this.matched, this.value);
 }
 
 class _InterceptorHolder {
   final bool allowLockOverride;
   final FeatureValueInterceptor interceptor;
 
-  _InterceptorHolder(this.allowLockOverride, this.interceptor)
-      : assert(allowLockOverride != null);
+  _InterceptorHolder(this.allowLockOverride, this.interceptor);
 }
 
 typedef FeatureValueInterceptor = ValueMatch Function(String? key);
@@ -125,7 +124,7 @@ class _FeatureStateBaseHolder implements FeatureStateHolder {
         .where((vi) => !locked || vi.allowLockOverride)
         .map((vi) {
       final vm = vi.interceptor(key);
-      return (vm != null && vm.matched) ? vm : null;
+      return vm.matched ? vm : null;
     }).where((vm) => vm != null);
 
     return found.isNotEmpty ? found.first : determineDefault();
@@ -245,7 +244,7 @@ class ClientFeatureRepository {
         .toList()
         .join(',');
     if (missingKeys.isNotEmpty) {
-      _log.info('We have requests for keys that are missing: ${missingKeys}');
+      _log.info('We have requests for keys that are missing: $missingKeys');
     }
   }
 
@@ -318,8 +317,6 @@ class ClientFeatureRepository {
   }
 
   bool _featureUpdate(FeatureState feature) {
-    if (feature == null) return false;
-
     var holder = _features[feature.key];
 
     if (holder == null || holder.key == null) {
