@@ -96,14 +96,14 @@ class _HostingPageState extends State<HostingPage> {
           actions: [
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: RaisedButton(
+              child: ElevatedButton(
                 onPressed: () => bloc.changeEnvironments(),
                 child: Text('Swap Env'),
               ),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: RaisedButton(
+              child: ElevatedButton(
                   onPressed: () => bloc.repositoryLoaderBloc.reset(),
                   child: Text('Reset')),
             )
@@ -212,7 +212,7 @@ class _RequestUrlPageState extends State<RequestUrlPage> {
               return null;
             },
           ),
-          FlatButton(
+          ElevatedButton(
               onPressed: () {
                 if (formKey.currentState.validate()) {
                   bloc.sdkUrl = _url.text.trim();

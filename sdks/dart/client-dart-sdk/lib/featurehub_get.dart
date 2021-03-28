@@ -18,11 +18,12 @@ class FeatureHubSimpleApi {
   }
 
   Future<ClientFeatureRepository> request() async {
+    final options = xFeaturehubHeader == null
+        ? null
+        : (Options()..headers = {'x-featurehub': xFeaturehubHeader});
+
     return _api
-        .getFeatureStates(_environmentIds,
-            options: xFeaturehubHeader == null
-                ? null
-                : (Options()..headers!['x-featurehub'] = xFeaturehubHeader))
+        .getFeatureStates(_environmentIds, options: options)
         .then((environments) {
       final states = <FeatureState>[];
       environments.forEach((e) {
