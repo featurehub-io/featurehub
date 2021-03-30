@@ -98,7 +98,6 @@ For more details please refer to https://github.com/featurehub-io/featurehub/iss
 FeatureHub is an open source project, and we love to receive contributions from our community!
 There are many ways to contribute, from writing tutorials or blog posts, improving the documentation, submitting bug reports and feature requests or writing code which can be incorporated into FeatureHub itself.
 
-Our main contribution repository is located https://github.com/featurehub-io/featurehub[here].
 
 === Further information for contributors
 
@@ -135,6 +134,8 @@ functionality for a new language.
 == Where to get help? 
 
 If you cannot find an answer in our documentation please join our Slack community link:https://join.slack.com/t/anyways-labs/shared_invite/zt-frxdx34x-ODs_XmLh6BCvqiNeBRx0hA[Anyways Labs]
+
+You can also start a discussion in GitHub Discussions link:https://github.com/featurehub-io/featurehub/discussions[here]
 
 Or email our community supporters at info@featurehub.io
 
