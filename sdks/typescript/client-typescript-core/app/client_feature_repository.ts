@@ -304,7 +304,6 @@ export class ClientFeatureRepository implements FeatureHubRepository, InternalFe
     let holder = this.features.get(fs.key);
     if (holder === undefined || holder.getFeatureState() === undefined) {
       const newFeature = new FeatureStateBaseHolder(this, fs.key, holder);
-      newFeature.setFeatureState(fs);
 
       this.features.set(fs.key, newFeature);
 
@@ -360,4 +359,6 @@ export interface FeatureHubRepository {
   isSet(key: string): boolean;
 
   addValueInterceptor(interceptor: FeatureStateValueInterceptor);
+
+  addReadynessListener(listener: ReadynessListener);
 }

@@ -2,10 +2,10 @@ import {
   StrategyAttributeCountryName,
   StrategyAttributeDeviceName,
   StrategyAttributePlatformName
-} from './models/models';
+} from './models';
 import { FeatureStateHolder } from './feature_state';
 import { FeatureHubRepository } from './client_feature_repository';
-import { EdgeServiceSupplier, FeatureHubConfig } from './feature_hub_config';
+import { FeatureHubConfig, EdgeServiceSupplier } from './feature_hub_config';
 import { EdgeService } from './edge_service';
 import { InternalFeatureRepository } from './internal_feature_repository';
 
@@ -26,6 +26,12 @@ export interface ClientContext {
   build(): Promise<ClientContext>;
 
   getAttr(key: string, defaultValue: string): string;
+  getNumber(name: string): number | undefined;
+  getString(name: string): string | undefined;
+  getJson(name: string): string | undefined;
+  getFlag(name: string): boolean | undefined;
+  getBoolean(name: string): boolean | undefined;
+
   defaultPercentageKey(): string;
 
   feature(name: string): FeatureStateHolder;
@@ -33,7 +39,7 @@ export interface ClientContext {
   isSet(name: string): boolean;
   edgeService(): EdgeService;
   repository(): FeatureHubRepository;
-  logAnalyticsEvent(action: string, user?: string, other?: Map<string, string>);
+  logAnalyticsEvent(action: string, other?: Map<string, string>, user?: string);
 
   close();
 }
@@ -43,7 +49,7 @@ export abstract class BaseClientContext implements ClientContext {
   protected _attributes = new Map<string, Array<string>>();
   protected readonly _config: FeatureHubConfig;
 
-  constructor(repository: InternalFeatureRepository, config: FeatureHubConfig) {
+  protected constructor(repository: InternalFeatureRepository, config: FeatureHubConfig) {
     this._repository = repository;
     this._config = config;
   }
@@ -114,6 +120,26 @@ export abstract class BaseClientContext implements ClientContext {
     return  this.feature(name).isSet();
   }
 
+  getNumber(name: string): number | undefined {
+    return this.feature(name).getNumber();
+  }
+
+  getString(name: string): string | undefined {
+    return this.feature(name).getString();
+  }
+
+  getJson(name: string): string | undefined {
+    return this.feature(name).getRawJson();
+  }
+
+  getFlag(name: string): boolean | undefined {
+    return this.feature(name).getFlag();
+  }
+
+  getBoolean(name: string): boolean | undefined {
+    return this.feature(name).getBoolean();
+  }
+
   abstract build(): Promise<ClientContext>;
 
   abstract feature(name: string): FeatureStateHolder;
@@ -127,7 +153,7 @@ export abstract class BaseClientContext implements ClientContext {
     return this._repository;
   }
 
-  logAnalyticsEvent(action: string, user?: string, other?: Map<string, string>) {
+  logAnalyticsEvent(action: string, other?: Map<string, string>, user?: string) {
     if (user == null) {
       user = this.getAttr('userkey');
     }
@@ -144,7 +170,7 @@ export abstract class BaseClientContext implements ClientContext {
 }
 
 export class ServerEvalFeatureContext extends BaseClientContext {
-  private  _edgeServiceSupplier: EdgeServiceSupplier;
+  private readonly _edgeServiceSupplier: EdgeServiceSupplier;
   private _currentEdge: EdgeService;
   private _xHeader: string;
 

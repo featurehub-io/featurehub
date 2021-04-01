@@ -9,3 +9,4 @@ export * from './polling_sdk';
 export * from './middleware';
 export * from './baggage_header';
 export * from './local_session_interceptor';
+export * from './client_context';

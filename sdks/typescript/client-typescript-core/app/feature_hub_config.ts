@@ -4,17 +4,35 @@ import { ClientContext, ClientEvalFeatureContext, ServerEvalFeatureContext } fro
 import { FeatureHubPollingClient } from './polling_sdk';
 import { InternalFeatureRepository } from './internal_feature_repository';
 
+export type EdgeServiceProvider = (repository: InternalFeatureRepository, config: FeatureHubConfig) => EdgeService;
 export type EdgeServiceSupplier = () => EdgeService;
 
 export interface FeatureHubConfig {
   url(): string;
+
+  // enable you to override the repository
   repository(repository?: FeatureHubRepository): FeatureHubRepository;
-  edgeService(edgeService?: EdgeServiceSupplier): EdgeServiceSupplier;
-  newContext(repository?: FeatureHubRepository, edgeService?: EdgeServiceSupplier): ClientContext;
+
+  // allow you to override the edge service provider
+  edgeServiceProvider(edgeService?: EdgeServiceProvider): EdgeServiceProvider;
+
+  // create a new context and allow you to pass in a repository and edge service
+  newContext(repository?: FeatureHubRepository, edgeService?: EdgeServiceProvider): ClientContext;
+
+  // is the repository client-side evaluated?
   clientEvaluated(): boolean;
+
+  // add another API key
   apiKey(apiKey: string): FeatureHubConfig;
+
+  // what are the API keys?
   getApiKeys(): Array<string>;
+
+  // what is the host?
   getHost(): string;
+
+  // initialize the connection outside of the creation of a context
+  init(): FeatureHubConfig;
 }
 
 export class EdgeFeatureHubConfig implements FeatureHubConfig {
@@ -24,7 +42,11 @@ export class EdgeFeatureHubConfig implements FeatureHubConfig {
   private _clientEval: boolean;
   private _url: string;
   private _repository: InternalFeatureRepository;
-  private _edgeService: EdgeServiceSupplier;
+  private _edgeService: EdgeServiceProvider;
+  private _edgeServices: Array<EdgeService> = [];
+
+  static defaultEdgeServiceSupplier: EdgeServiceProvider = (repository, config) =>
+    new FeatureHubPollingClient(repository, config, 60);
 
   constructor(host: string, apiKey: string) {
     this._apiKey = apiKey;
@@ -66,32 +88,58 @@ export class EdgeFeatureHubConfig implements FeatureHubConfig {
     return this._host;
   }
 
-  newContext(repository?: InternalFeatureRepository, edgeService?: EdgeServiceSupplier): ClientContext {
+  newContext(repository?: InternalFeatureRepository, edgeService?: EdgeServiceProvider): ClientContext {
     if (repository != null && edgeService != null) {
       return this._clientEval ?
-        new ClientEvalFeatureContext(repository, this, edgeService()) :
-        new ServerEvalFeatureContext(repository, this, edgeService);
+        new ClientEvalFeatureContext(repository, this, edgeService(this._repository, this)) :
+        new ServerEvalFeatureContext(repository, this, () => this._createEdgeService(this._edgeService));
     }
 
     this._repository = this._repository || new ClientFeatureRepository();
-    this._edgeService = this._edgeService || (() => new FeatureHubPollingClient(this._repository, this, 60));
+    this._edgeService = this._edgeService || EdgeFeatureHubConfig.defaultEdgeServiceSupplier;
 
     return this._clientEval ?
-      new ClientEvalFeatureContext(this._repository, this, this._edgeService()) :
-      new ServerEvalFeatureContext(this._repository, this, this._edgeService);
+      new ClientEvalFeatureContext(this._repository, this, this._edgeService(this._repository, this)) :
+      new ServerEvalFeatureContext(this._repository, this, () => this._createEdgeService(this._edgeService));
   }
 
-  edgeService(edgeServ?: EdgeServiceSupplier): EdgeServiceSupplier {
+  _createEdgeService(edgeServSupplier: EdgeServiceProvider) : EdgeService {
+    const es = edgeServSupplier(this._repository, this);
+    this._edgeServices.push(es);
+    return es;
+  }
+
+  close() {
+    this._edgeServices.forEach((es) => {
+      es.close();
+    })
+  }
+
+  init(): FeatureHubConfig {
+    // ensure the repository exists
+    this.repository();
+
+    // ensure the edge service provider exists
+    this._createEdgeService(this.edgeServiceProvider()).poll();
+
+    return this;
+  }
+
+  edgeServiceProvider(edgeServ?: EdgeServiceProvider): EdgeServiceProvider {
     if (edgeServ != null) {
       this._edgeService = edgeServ;
+    } else if (this._edgeService == null) {
+      this._edgeService = EdgeFeatureHubConfig.defaultEdgeServiceSupplier;
     }
 
     return this._edgeService;
   }
 
-  repository(repository?: InternalFeatureRepository): FeatureHubRepository {
+  repository(repository?: InternalFeatureRepository): InternalFeatureRepository {
     if (repository != null) {
       this._repository = repository;
+    } else if (this._repository == null) {
+      this._repository = new ClientFeatureRepository();
     }
 
     return this._repository;

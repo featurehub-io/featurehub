@@ -1,11 +1,23 @@
-import { ClientFeatureRepository, FeatureState, FeatureValueType, SSEResultState } from '../app';
+import { ClientContext, ClientFeatureRepository, FeatureState, FeatureValueType, SSEResultState } from '../app';
 import { expect } from 'chai';
+import { Arg, Substitute, SubstituteOf } from '@fluffy-spoon/substitute';
 
 describe('repository reacts to single feature changes as expected', () => {
   let repo: ClientFeatureRepository;
 
   beforeEach(() => {
     repo = new ClientFeatureRepository();
+  });
+
+  it('should specify undefined for unknown feature values', () => {
+    expect(repo.getFeatureState('bool').getBoolean()).to.be.undefined;
+    expect(repo.getFeatureState('num').getNumber()).to.be.undefined;
+    expect(repo.getFeatureState('str').getString()).to.be.undefined;
+    expect(repo.getFeatureState('str').getRawJson()).to.be.undefined;
+
+    const ctx = Substitute.for<ClientContext>();
+    const feat = repo.getFeatureState('bool').withContext(ctx);
+    expect(feat.getBoolean()).to.be.undefined;
   });
 
   it('should react to a single feature changing', () => {

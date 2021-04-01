@@ -139,6 +139,10 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
         return this._castType(type, intercept.value);
       }
 
+      if (!this.featureState || (type != null && this.featureState.type !== type)) {
+        return undefined;
+      }
+
       if (this._ctx != null) {
         const matched = this._repo.apply(this.featureState.strategies, this._key, this.featureState.id, this._ctx);
 
@@ -148,9 +152,6 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
       }
     }
 
-    if (!this.featureState || (type != null && this.featureState.type !== type)) {
-      return undefined;
-    }
 
     return this.featureState?.value;
   }

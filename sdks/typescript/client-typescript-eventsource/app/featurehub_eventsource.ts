@@ -1,9 +1,9 @@
 import { SSEResultState } from 'featurehub-repository/dist';
 import EventSource from 'eventsource';
 import { InternalFeatureRepository } from 'featurehub-repository/dist/internal_feature_repository';
-import { FeatureHubConfig } from 'featurehub-repository/dist';
+import { EdgeService, FeatureHubConfig } from 'featurehub-repository';
 
-export class FeatureHubEventSourceClient {
+export class FeatureHubEventSourceClient implements EdgeService {
   private eventSource: EventSource;
   private readonly _config: FeatureHubConfig;
   private readonly _repository: InternalFeatureRepository;
@@ -21,6 +21,7 @@ export class FeatureHubEventSourceClient {
         'x-featurehub': this._header
       };
     }
+    console.log('listening at ', this._config.url());
     this.eventSource = new EventSource(this._config.url(), options);
 
     [SSEResultState.Features, SSEResultState.Feature, SSEResultState.DeleteFeature,
@@ -29,15 +30,15 @@ export class FeatureHubEventSourceClient {
           this.eventSource.addEventListener(fName,
                                             e => {
         try {
-          // console.log("received ", fName, JSON.stringify(e));
+          console.log("received ", fName, JSON.stringify(e));
           this._repository.notify(name, JSON.parse((e as any).data));
         } catch (e) { console.error(JSON.stringify(e)); }
                                         });
     });
 
     this.eventSource.onerror = (e) => {
-      // console.error("got error", e);
-      this._repository.notify(SSEResultState.Failure, null);
+      console.error("got error", e);
+      this._repository.notify (SSEResultState.Failure, null);
     };
   }
 
@@ -46,5 +47,21 @@ export class FeatureHubEventSourceClient {
       this.eventSource.close();
       this.eventSource = null;
     }
+  }
+
+  clientEvaluated(): boolean {
+    return this._config.clientEvaluated();
+  }
+
+  contextChange(header: string): Promise<void> {
+    return Promise.resolve(undefined);
+  }
+
+  poll(): void {
+    this.init();
+  }
+
+  requiresReplacementOnHeaderChange(): boolean {
+    return true;
   }
 }

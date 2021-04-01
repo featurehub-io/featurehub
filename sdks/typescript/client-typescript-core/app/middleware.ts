@@ -3,9 +3,9 @@
 ///
 /// For this we are using the W3C Baggage standard for future supportability
 
-import { Readyness } from './client_feature_repository';
+import { Readyness, ReadynessListener } from './client_feature_repository';
 import { FeatureListener, FeatureStateHolder } from './feature_state';
-import { FeatureValueType, RolloutStrategy, SSEResultState } from './models/models';
+import { FeatureValueType, RolloutStrategy, SSEResultState } from './models';
 import { FeatureStateValueInterceptor, InterceptorValueMatch } from './feature_state_holders';
 import { ClientContext } from './client_context';
 import { InternalFeatureRepository } from './internal_feature_repository';
@@ -200,6 +200,10 @@ class BaggageRepository implements InternalFeatureRepository {
 
   valueInterceptorMatched(key: string): InterceptorValueMatch {
     return this.repo.valueInterceptorMatched(key);
+  }
+
+  addReadynessListener(listener: ReadynessListener) {
+    this.repo.addReadynessListener(listener);
   }
 }
 
