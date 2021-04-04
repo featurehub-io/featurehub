@@ -54,10 +54,10 @@ export class GoogleAnalyticsCollector implements AnalyticsCollector {
     if (apiClient) {
       this.apiClient = apiClient;
     } else {
-      if (typeof window === 'object') {
-        this.apiClient = new BrowserGoogleAnalyticsApiClient();
-      } else {
+      if (Object.prototype.toString.call(global.process) !== '[object process]') {
         this.apiClient = new NodejsGoogleAnalyticsApiClient();
+      } else {
+        this.apiClient = new BrowserGoogleAnalyticsApiClient();
       }
     }
   }

@@ -5,7 +5,7 @@ import {
 } from './models';
 import { FeatureStateHolder } from './feature_state';
 import { FeatureHubRepository } from './client_feature_repository';
-import { FeatureHubConfig, EdgeServiceSupplier } from './feature_hub_config';
+import { FeatureHubConfig, EdgeServiceSupplier, fhLog } from './feature_hub_config';
 import { EdgeService } from './edge_service';
 import { InternalFeatureRepository } from './internal_feature_repository';
 
@@ -200,7 +200,7 @@ export class ServerEvalFeatureContext extends BaseClientContext {
       this._currentEdge = this._edgeServiceSupplier();
     }
 
-    await this._currentEdge.contextChange(this._xHeader);
+    await this._currentEdge.contextChange(this._xHeader).catch((e) => fhLog.error(`Failed to connect to FeatureHub Edge to refresh context ${e}`));
 
     return this;
   }

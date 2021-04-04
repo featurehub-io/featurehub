@@ -17,7 +17,8 @@ Run the following command:
 `npm install featurehub-eventsource-sdk`
 
 When you install the SDK it will also install the dependency [featurehub-repository](https://www.npmjs.com/package/featurehub-repository)
-which is a core library that holds feature flags and creates events. 
+which is a core library that holds feature flags and creates events. If you are only using the polling API (as you might
+in a browser), then that is the only library you need to use.
 
 It is designed this way, so we can separate core functionality and add different implementations in the future.   
 
@@ -34,14 +35,47 @@ There are 4 steps to connecting:
 #### 1. Copy SDK Url from the FeatureHub Admin Console
 Find and copy your SDK Url from the FeatureHub Admin Console (you can find it also in our Demo version on Service Accounts page) - 
 you will use this in your code to configure feature updates for your environments. 
-It should look similar to this: ```/default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE```
+It should look similar to this: ```/default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE```.
+There are two options now - a Server Evaluated API Key and a Client Evaluated API Key. 
+
+- **Server Evaluated API Keys** = If your client is insecure (such as a mobile
+or browser based client), you should generally use a Server Evaluated API Key - because this means none of the strategies of your
+API keys leak to the client - which can include user ids, email addresses, warehouse ids and so forth. These cannot realistically be used however
+  when you are doing server side software where every request can come from a different use with different details, they simply don't scale.
+- **Client Evaluated API Keys** - If your client is secure (such as one of your own services, run in your Cloud) then you should use this key
+and you can identify it because it has a `*` in it. It ensures all of the features are able to be evaluated on the client side and thus 
+  you can set a client context for each request and evaluate those keys within it. We will see more detail on this in the Quick Start.
+  
 
 #### 2. Make a client:
+
+The client needs to be told what API key is being used and what is the URL of the end-point you will be connecting to
+(the Edge URL). In Node you may use environment variables, in a browser you would use something else.
+
+At this point you will create an instance of `EdgeFeatureHubConfig` which holds those two pieces of information and initialise
+it. If you are in a single client instance (such as a Browser or Mobile client) then you will generally want to do things like
+setting the analytics client before doing this.
+
 ```typescript
-const featureHubEventSourceClient  = new FeatureHubEventSourceClient(`${config.fhServerBaseUrl}/features/${config.sdkUrl}`);
+const fhConfig = new EdgeFeatureHubConfig(process.env.FEATUREHUB_EDGE_URL, process.env.FEATUREHUB_API_KEY);
 ```
 
-or for mobile devices, e.g React Native, Ionic 
+If you wish to override which client is used for talking to the FeatureHub Edge server, this is where you will need to do it. You have two
+options:
+
+- EventSource - this uses Server Sent Events and is near-realtime. If you include this library (`featurehub-eventsource-sdk`) then you will 
+automatically get the EventSource based _near-realtime_ client. Browsers have issues with this client when certain Anti-Virus clients are installed, 
+so its best to avoid the EventSource client unless you really need it, or know your client install base. 
+- Polling Client - If you use the `featurehub-repository` library directly, you will get the
+`FeatureHubPollingClient` that is configured for requesting an update every 6 seconds. You can configure the client you use by telling the
+  config that it needs to use another method to create it.
+
+```typescript
+const FREQUENCY = 30000; // 30 seconds
+fhConfig.edgeServiceProvider((repo, config) => new FeatureHubPollingClient(repo, config, FREQUENCY));
+```
+
+You can get the repository via `fhConfig.repository()` 
 
 ```typescript
 const featureHubPollingClient = new FeatureHubPollingClient(featureHubRepository, // repository f
@@ -53,42 +87,16 @@ const featureHubPollingClient = new FeatureHubPollingClient(featureHubRepository
 
 #### 3. Start handling data
 ```typescript
-   featureHubEventSourceClient.init();
+fhConfig.init();
 ```
-
-of for mobile devices 
-
-```typescript
-   featureHubPollingClient.start(); //This will change to a GET request that triggers every 300 seconds as specified above. 
-
-```
+As soon as `init` is called, the client will attempt to connect to the server and start feeding features into the repository. This is also true if a new
+context is created and `.build()` is called (see below under Client Context).
 
 #### 4. Check FeatureHub Repository readyness and request feature state 
 
-```typescript
- let failCounter = 0;
-  let fhInitialized = false;
-  featureHubRepository.addReadynessListener( (readyness: Readyness): void => {
-    if(!fhInitialized && readyness === Readyness.Ready) {
-      logger.event('started_featurehub_event', Level.Info, 'Connected to FeatureHub');
-      startServer();
-      fhInitialized = true;
-      if (featureHubRepository.getFlag('FEATURE_KEY')) {
-        // do something
-      }
-    } else if(readyness === Readyness.Failed && failCounter > 5) {  
-      logger.event('started_featurehub_failed', Level.Error, 'Failed to connect to FeatureHub');
-      process.exit(1);
-    } else if(readyness === Readyness.Failed) {
-      failCounter++;
-    } else {
-      failCounter = 0;
-    }
-  });
-```
-
-SSE kills your connection regularly to ensure stale connections are removed. For this reason you will see the connection being dropped and then reconnected again every 30-60 seconds. This is expected and in the above snippet you can see how you can potentially deal with the server readyness check. If you would like to change the reconnection interval, you have an option of changing `maxSlots` in the Edge server. If it is important to your server instances that the connection to the feature server exists as a critical service, then the snippet above will ensure it will try and connect (say five times) and then kill the server process alerting you to a failure. If connection to the feature service is only important for initial starting of your server, then you can simply listen for the first readyness and start your server and ignore all subsequent notifications:
-
+   * Get feature value through "Get" methods (imperative way)
+        - `getFlag('FEATURE_KEY')` returns a boolean feature (by key), or an error if it is unable to assert the value to a boolean
+        - `getNumber('FEATURE_KEY')` / `getString('FEATURE_KEY')` / `getJson('FEATURE_KEY')` as above
 ```typescript
     let initialized = false;
     if (featureHubRepository.readyness === Readyness.Ready || this.featureHubEventSourceClient) {
@@ -105,19 +113,29 @@ SSE kills your connection regularly to ensure stale connections are removed. For
         }
       }
     });
-``` 
+```         
 
-* Get feature value through "Get" methods (imperative way)
-  - `getFlag('FEATURE_KEY')` returns a boolean feature (by key), or an error if it is unable to assert the value to a boolean
-  - `getNumber('FEATURE_KEY')` / `getString('FEATURE_KEY')` / `getJson('FEATURE_KEY')` as above
+#### Client Context          
+New in the Version 2 of this API is the focus on requesting your features via a Client Context. This is where you
+as the configuration for a new context, tell it about your user and then "build" it. Building it is always asynchronous.
+We go into this in more detail in the section below (Rollout Strategies), but this is the "quick start".
+
+```typescript
+const ctx = await fhConfig.newContext().userKey('user.email@host.com').country(StrategyAttributeCountryName.NewZealand)
+ 	.device(StrategyAttributeDeviceName.Server)
+ 	.platform(StrategyAttributePlatformName.Macos)
+  .attribute_value('warehouseId', '56')
+ 	.build();
+```
+
+For Client Evaluated API Keys, at this point you know that the repository is ready. 
 
    * To get the feature details
         - `feature('FEATURE_KEY')` returns a whole feature (by key)      
    
    * Check if a feature is set 
-        - `isSet('FEATURE_KEY')` - returns true if a feature is set, otherwise false. If a feature doesn't exist returns false;  
-
-
+        - `isSet('FEATURE_KEY')` - returns true if a feature is set, otherwise false. If a feature doesn't exist returns false, if the feature exists and holds any value, it returns true.  
+  
    * Get feature value through attached listeners (real-time event-driven feature updates)
 
 This is when, if the feature changes (either from nothing to something, which happens when we first get the features,
@@ -128,6 +146,20 @@ featureHubRepository.feature('FEATURE_KEY').addListener((fs: FeatureStateHolder)
   console.log(fs.getKey(), 'is', fs.getFlag());
 });
 ```
+   
+### Logging
+
+This client exposes a class called `FHLog` which has two methods, i.e.:
+
+```typescript
+export type FHLogMethod = (...args: any[]) => void;
+export class FHLog {
+  public log: FHLogMethod = (...args: any[]) => { console.log(args); };
+  public error: FHLogMethod = (...args: any[]) => { console.error(args); };
+}
+```
+
+You can replace these methods with whatever logger you use to ensure you get the right format logs (e.g. Winston, Bunyan, Log4js).
 
 ### Connecting to Google Analytics 
 
@@ -145,8 +177,6 @@ To log an event in Google Analytics:
 FeatureContext.logAnalyticsEvent('todo-add', new Map([['gaValue', '10']]));  //indicate value of the event through gaValue   
 ```
 
-
-
 ### NodeJS server usage
 
 For the full example refer to the FeatureHub examples repo [here](https://github.com/featurehub-io/featurehub-examples/tree/master/todo-backend-typescript)
@@ -163,22 +193,21 @@ The FeatureHub repository is a single class that holds and tracks features in yo
 to it to process, tracks changes, and allows you to find and act on features in a useful way. 
 It also sends events out in certain circumstances.
 
-### Creating the FeatureHub repository
 
-Although one exists and is exported for your use (`featureHubRepository`), you can create others if you wish. The class is simply 
-`new ClientFeatureRepository()`. 
+### Using the FeatureHub SDK
 
-### Using the FeatureHub repository
-
-There are two ways to use this repository - an imperative way and an event driven way. You can use the two together,
+There are two ways to use this SDK - an imperative way and an event driven way. You can use the two together,
 or just one. 
+You can ask the repository directly if you wish however.
 
 #### Imperative requests
 
-This is when you ask the repository for a specific feature and for its state. Something like:
+This is when you ask the SDK for a specific feature and for its state. You should always use the ClientContext to 
+directly access the features, then you are sure the features are set according to the user. 
+Something like:
 
 ```typescript
-if (featureHubRepository.getFlag('FEATURE_KEY')) {
+if (ctx.isEnabled('FEATURE_KEY')) {
   // do something
 }
 ``` 
@@ -187,13 +216,15 @@ if (featureHubRepository.getFlag('FEATURE_KEY')) {
 
 This is when, if the feature changes (either from nothing to something, which happens when we first get the features,
 or an update comes through), a callback is made into your provided function. You can have as many of these listeners 
-as you like.
+as you like. You should always add listeners directly on the repository, but query the context to get the actual value. 
+This is because the repository is being updated with changes to the feature, but the context knows how to interpret them
+based on your user.
 
 This would look something like:
 
 ```typescript
-featureHubRepository.feature('FEATURE_KEY').addListener((fs: FeatureStateHolder) => {
-  console.log(fs.getKey(), 'is', fs.getFlag());
+fhConfig.repository().feature('FEATURE_KEY').addListener((fs: FeatureStateHolder) => {
+  console.log(fs.getKey(), 'is', ctx.isEnabled(fs.getKey()));
 });
 ```
 
@@ -340,15 +371,16 @@ export enum Readyness {
   Failed = 'Failed'
 }
 ```
-## Rollout Strategies
+## Rollout Strategies and Client Context
 
-Starting from version 1.1.0 FeatureHub supports _server side_ evaluation of complex rollout strategies
+Starting from version 2.0.0 FeatureHub supports client and server side evaluation of complex rollout strategies
 that are applied to individual feature values in a specific environment. This includes support of preset rules, e.g. per **_user key_**, **_country_**, **_device type_**, **_platform type_** as well as **_percentage splits_** rules and custom rules that you can create according to your application needs. 
 
-For more details on rollout strategies, targeting rules and feature experiments see the [core documentation](https://docs.featurehub.io/#_rollout_strategies_and_targeting_rules).
+The different is simply where these get evaluated. As explained above, you would use Server Side evaluation (a Server Eval API Key)
+when you are using an _insecure client_. Typically this also means one user per client. Client Side evaluation is intended for use
+in secure environments (such as microservices) and is intended for rapid client side evaluation, per request for example. 
 
-We are actively working on supporting client side evaluation of
-strategies in the future releases as this scales better when you have 10000+ consumers. 
+For more details on rollout strategies, targeting rules and feature experiments see the [core documentation](https://docs.featurehub.io/#_rollout_strategies_and_targeting_rules).
 
 #### Coding for rollout strategies 
 There are several preset strategies rules we track specifically: `user key`, `country`, `device` and `platform`. However, if those do not satisfy your requirements you also have an ability to attach a custom rule. Custom rules can be created as following types: `string`, `number`, `boolean`, `date`, `date-time`, `semantic-version`, `ip-address` 
@@ -360,37 +392,37 @@ FeatureHub SDK will match your users according to those rules, so you need to pr
 Provide the following attribute to support `userKey` rule: 
 
 ```typescript
-    featureHubRepository.clientContext.userKey('ideally-unique-id').build(); 
+    await fhConfig.newContext().userKey('ideally-unique-id').build(); 
 ```
 
 to support `country` rule:
 
 ```typescript
-    featureHubRepository.clientContext.country(StrategyAttributeCountryName.NewZealand).build(); 
+    await fhConfig.newContext().country(StrategyAttributeCountryName.NewZealand).build(); 
 ```
 
 to support `device` rule:
 
 ```typescript
-    featureHubRepository.clientContext.device(StrategyAttributeDeviceName.Browser).build(); 
+    await fhConfig.newContext().device(StrategyAttributeDeviceName.Browser).build(); 
 ```
 
 to support `platform` rule:
 
 ```typescript
-    featureHubRepository.clientContext.platform(StrategyAttributePlatformName.Android).build(); 
+    await fhConfig.newContext().platform(StrategyAttributePlatformName.Android).build(); 
 ```
 
 to support `semantic-version` rule:
 
 ```typescript
-    featureHubRepository.clientContext.version('1.2.0').build(); 
+    await fhConfig.newContext().version('1.2.0').build(); 
 ```
 
 or if you are using multiple rules, you can combine attributes as follows: 
 
 ```typescript
-    featureHubRepository.clientContext.userKey('ideally-unique-id')
+    await fhConfig.newContext().userKey('ideally-unique-id')
       .country(StrategyAttributeCountryName.NewZealand)
       .device(StrategyAttributeDeviceName.Browser)
       .platform(StrategyAttributePlatformName.Android)
@@ -407,13 +439,13 @@ and your polling interval is set to 0).
 To add a custom key/value pair, use `attribute_value(key, value)`
 
 ```typescript
-    featureHubRepository.clientContext.attribute_value('first-language', 'russian').build();
+    await fhConfig.newContext().attribute_value('first-language', 'russian').build();
 ```
 
 Or with array of values (only applicable to custom rules):
 
 ```typescript
-   featureHubRepository.clientContext.attribute_value('languages', ['russian', 'english', 'german']).build();
+   await fhConfig.newContext().attribute_value('languages', ['russian', 'english', 'german']).build();
 ```
 
 You can also use `featureHubRepository.clientContext.clear()` to empty your context.
@@ -425,12 +457,12 @@ In all cases, you need to call `build()` to re-trigger passing of the new attrib
 For percentage rollout you are only required to provide the `userKey` or `sessionKey`. 
 
 ```typescript
-    featureHubRepository.clientContext.userKey('ideally-unique-id').build();
+    await fhConfig.newContext().userKey('ideally-unique-id').build();
 ```
 or
 
 ```typescript
-    featureHubRepository.clientContext.sessionKey('session-id').build();
+    await fhConfig.newContext().sessionKey('session-id').build();
 ```
 
 For more details on percentage splits and feature experiments see [Percentage Split Rule](https://docs.featurehub.io/#_percentage_split_rule).
@@ -441,10 +473,15 @@ For more details on percentage splits and feature experiments see [Percentage Sp
 Allows you to connect your application and see your features performing in Google Analytics.
 
 When you log an event on the repository,
-it will capture the value of all of the feature flags and featutre values (in case they change),
+it will capture the value of all of the feature flags and feature values (in case they change),
 and log that event against your Google Analytics, once for each feature. This allows you to
 slice and dice your events by state each of the features were in. We send them as a batch, so it
 is only one request.
+
+Note that if you log the analytics event _on the client context_ (`ctx.logAnalyticsEvent`) it captures that user's features. If you log
+them on the repository itself (`fhConfig.repository().logAnalyticsEvent...`) then it logs the features as they are
+handed back from the server. If you are using a Server Evaluated Key, these will be the same, but you should try
+and always use the Client Context to log analytics events.
 
 There are two different implementations, one for when you are in the browser and one for when you
 are in the server, like nodejs. You don't need to worry about this, the code detects which one it is in and 
@@ -476,7 +513,7 @@ collector.cid = 'some-value'; // you can set it here
 const data = new Map<string, string>();
 data.set('cid', 'some-cid');
 
-featureHubRepository.logAnalyticsEvent('event-name', other: data);
+ctx.logAnalyticsEvent('event-name', data);
 ```
 
 4) For a NODE server, you can set as an environment variable named `GA_CID`.

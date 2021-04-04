@@ -7,6 +7,14 @@ import { InternalFeatureRepository } from './internal_feature_repository';
 export type EdgeServiceProvider = (repository: InternalFeatureRepository, config: FeatureHubConfig) => EdgeService;
 export type EdgeServiceSupplier = () => EdgeService;
 
+export type FHLogMethod = (...args: any[]) => void;
+export class FHLog {
+  public log: FHLogMethod = (...args: any[]) => { console.log(args); };
+  public error: FHLogMethod = (...args: any[]) => { console.error(args); };
+}
+
+export const fhLog = new FHLog();
+
 export interface FeatureHubConfig {
   url(): string;
 
@@ -120,7 +128,7 @@ export class EdgeFeatureHubConfig implements FeatureHubConfig {
     this.repository();
 
     // ensure the edge service provider exists
-    this._createEdgeService(this.edgeServiceProvider()).poll().catch((e) => console.error(e));
+    this._createEdgeService(this.edgeServiceProvider()).poll().catch((e) => fhLog.error(`Failed to connect to FeatureHub Edge ${e}`));
 
     return this;
   }
