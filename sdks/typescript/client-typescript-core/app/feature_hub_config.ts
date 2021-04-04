@@ -46,7 +46,7 @@ export class EdgeFeatureHubConfig implements FeatureHubConfig {
   private _edgeServices: Array<EdgeService> = [];
 
   static defaultEdgeServiceSupplier: EdgeServiceProvider = (repository, config) =>
-    new FeatureHubPollingClient(repository, config, 60);
+    new FeatureHubPollingClient(repository, config, 6000);
 
   constructor(host: string, apiKey: string) {
     this._apiKey = apiKey;
@@ -64,11 +64,11 @@ export class EdgeFeatureHubConfig implements FeatureHubConfig {
       this._host += '/';
     }
 
-    if (!this._host.endsWith('/features/')) {
-      this._host += 'features/';
+    if (this._host.endsWith('/features/')) {
+      this._host = this._host.substring(0, this._host.length - '/features/'.length);
     }
 
-    this._url = this._host + this._apiKey;
+    this._url = this._host + 'features/' + this._apiKey;
   }
 
   public apiKey(apiKey: string): FeatureHubConfig {
@@ -120,7 +120,7 @@ export class EdgeFeatureHubConfig implements FeatureHubConfig {
     this.repository();
 
     // ensure the edge service provider exists
-    this._createEdgeService(this.edgeServiceProvider()).poll();
+    this._createEdgeService(this.edgeServiceProvider()).poll().catch((e) => console.error(e));
 
     return this;
   }

@@ -8,5 +8,5 @@ export interface EdgeService {
 
   close(): void;
 
-  poll(): void;
+  poll(): Promise<void>;
 }

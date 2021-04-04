@@ -1,12 +1,11 @@
 import { Environment, FeatureState, ObjectSerializer, SSEResultState } from './models/models';
 import { EdgeService } from './edge_service';
 import { FeatureHubConfig } from './feature_hub_config';
-import { FeatureHubRepository } from './client_feature_repository';
 import { InternalFeatureRepository } from './internal_feature_repository';
 
 interface PollingService {
 
-  start(): void;
+  poll(): Promise<void>;
 
   stop(): void;
 
@@ -36,26 +35,22 @@ abstract class PollingBase implements PollingService {
     await this.forcePoll();
   }
 
-  start(): void {
-    this.poll();
-  }
-
   public stop(): void {
     this.stopped = true;
   }
 
   public async forcePoll(): Promise<void> {
     if (!this._polling) {
-      await this.poll();
+      return await this.poll();
     }
   }
 
-  protected abstract poll(): Promise<void>;
+  public abstract poll(): Promise<void>;
 
   protected async delayTimer(): Promise<void> {
     return new Promise(((resolve, reject) => {
       if (!this.stopped && this.frequency > 0) {
-        window.setTimeout(() => this.poll().then(resolve).catch(reject), this.frequency);
+        setTimeout(() => this.poll().then(resolve).catch(reject), this.frequency);
       } else {
         resolve();
       }
@@ -72,7 +67,7 @@ class BrowserPollingService extends PollingBase implements PollingService {
     this._options = options;
   }
 
-  protected async poll(): Promise<void> {
+  public async poll(): Promise<void> {
     return new Promise((resolve, reject) => {
       if (this._polling) {
         this.delayTimer();
@@ -96,10 +91,10 @@ class BrowserPollingService extends PollingBase implements PollingService {
           if (req.status === 200) {
             this._callback(ObjectSerializer.deserialize(JSON.parse(req.responseText), 'Array<Environment>'));
             resolve();
-          } else if (req.status !== 400) {
-            this.delayTimer().then(resolve).catch(reject);
+          } else if (req.status >= 400 && req.status < 500) {
+            reject(`Failed to connect to ${this.url} with ${req.status}`);
           } else {
-            reject();
+            this.delayTimer().then(resolve).catch(reject);
           }
         }
       };
@@ -118,7 +113,7 @@ class NodejsPollingService extends PollingBase implements PollingService {
     this.uri = new URL(this.url);
   }
 
-  protected async poll(): Promise<void> {
+  public async poll(): Promise<void> {
     return new Promise(((resolve, reject) => {
       if (this._polling) {
         this.delayTimer();
@@ -131,13 +126,14 @@ class NodejsPollingService extends PollingBase implements PollingService {
       let headers = this._header === undefined ? {} : {
         'x-featurehub': this._header
       };
+      // we are not specifying the type as it forces us to bring in one of http or https
       const reqOptions = {
         protocol: this.uri.protocol,
         host: this.uri.host,
         hostname: this.uri.hostname,
         port: this.uri.port,
         method: 'GET',
-        path: this.uri.pathname,
+        path: this.uri.pathname + this.uri.search,
         headers: headers,
         timeout: this._options.timeout || 8000
       };
@@ -149,10 +145,10 @@ class NodejsPollingService extends PollingBase implements PollingService {
           if (res.statusCode === 200) {
             this._callback(ObjectSerializer.deserialize(JSON.parse(data), 'Array<Environment>'));
             resolve();
-          } else if (res.statusCode !== 400) {
-            this.delayTimer().then(resolve).catch(reject);
+          } else if (res.statusCode >= 400 && res.statusCode < 500) {
+            reject(`Failed to connect to ${this.url} with ${res.statusCode}`);
           } else {
-            reject();
+            this.delayTimer().then(resolve).catch(reject);
           }
         });
       });
@@ -189,7 +185,7 @@ export class FeatureHubPollingClient implements EdgeService {
     this._repository = repository;
     this._options = options;
     this._config = config;
-    this._url = config.getHost() + '/features?' + config.getApiKeys().map(e => 'sdkUrl=' + encodeURIComponent(e)).join('&');
+    this._url = config.getHost() + 'features?' + config.getApiKeys().map(e => 'sdkUrl=' + encodeURIComponent(e)).join('&');
   }
 
   async contextChange(header: string): Promise<void> {
@@ -218,13 +214,9 @@ export class FeatureHubPollingClient implements EdgeService {
     }
   }
 
-  poll(): void {
-    this.start();
-  }
-
-  private start() {
+  poll(): Promise<void> {
     if (this._pollingService === undefined) {
-      if (typeof window === 'object') {
+      if (Object.prototype.toString.call(global.process) !== '[object process]') {
         this._pollingService = new BrowserPollingService(this._options, this._url, this._frequency,
                                                          (e) => this.response(e));
       } else {
@@ -233,12 +225,20 @@ export class FeatureHubPollingClient implements EdgeService {
       }
     }
 
-    this._pollingService.start();
+    return this._pollingService.poll();
   }
 
   private stop() {
     this._pollingService.stop();
     this._pollingService = undefined;
+  }
+
+  private _restartTimer() {
+    setTimeout(() => this._pollingService.poll().catch((e) => {
+      // we only get here if we failed once, so lets assume it is transient and keep going
+      // console.error(e);
+      this._repository.notify(SSEResultState.Failure,  null);
+    }).finally(() => this._restartTimer()), this._frequency);
   }
 
   private response(environments: Array<Environment>): void {
@@ -260,6 +260,7 @@ export class FeatureHubPollingClient implements EdgeService {
       });
 
       this._repository.notify(SSEResultState.Features, features);
+      this._restartTimer();
     }
   }
 

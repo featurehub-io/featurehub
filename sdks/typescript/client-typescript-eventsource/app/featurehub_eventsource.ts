@@ -57,8 +57,10 @@ export class FeatureHubEventSourceClient implements EdgeService {
     return Promise.resolve(undefined);
   }
 
-  poll(): void {
+  poll(): Promise<void> {
     this.init();
+
+    return;
   }
 
   requiresReplacementOnHeaderChange(): boolean {
