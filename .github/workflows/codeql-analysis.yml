@@ -37,14 +37,14 @@ jobs:
 
     # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
     # If this step fails, then you should remove it and run the build manually (see below)
-    - if: matrix.language == 'javascript' || matrix.language == 'csharp' || matrix.language == 'go' || matrix.language == 'java'
+    - if: matrix.language == 'javascript' || matrix.language == 'csharp' || matrix.language == 'go'
       name: Autobuild
       uses: github/codeql-action/autobuild@v1
       
-#     - if: matrix.language == 'java' 
-#       name: Build Java
-#       run: mvn -f pom-first.xml clean install -Dfindbugs.skip -Dcheckstyle.skip -Dpmd.skip=true -Denforcer.skip -Dmaven.javadoc.skip -DskipTests -Dmaven.test.skip.exec -Dlicense.skip=true -Drat.skip=true   
-#       working-directory: backend   
+    - if: matrix.language == 'java' 
+      name: Build Java
+      run: mvn -f pom-first.xml clean package -Dfindbugs.skip -Dcheckstyle.skip -Dpmd.skip=true -Denforcer.skip -Dmaven.javadoc.skip -DskipTests -Dmaven.test.skip.exec -Dlicense.skip=true -Drat.skip=true   
+      working-directory: backend   
 
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 https://git.io/JvXDl
