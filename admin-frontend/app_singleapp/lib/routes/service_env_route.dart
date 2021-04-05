@@ -10,6 +10,7 @@ import 'package:app_singleapp/widgets/service-accounts/service_accounts_env_bloc
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
 
 class ServiceAccountEnvRoute extends StatelessWidget {
@@ -19,84 +20,87 @@ class ServiceAccountEnvRoute extends StatelessWidget {
     return Container(
         padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            StreamBuilder<List<Application>>(
-                stream: bloc
-                    .mrClient.streamValley.currentPortfolioApplicationsStream,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData && snapshot.data.isNotEmpty) {
-                    return Container(
-                        padding: EdgeInsets.only(left: 8, bottom: 8),
-                        child: ApplicationDropDown(
-                            applications: snapshot.data, bloc: bloc));
-                  } else {
-                    bloc.setApplicationId(bloc.mrClient.currentAid);
-                    return SizedBox.shrink();
-                  }
-                }),
-           Container(
-        padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Wrap(
-              children: [
-                Container(
-                  padding: EdgeInsets.only(bottom: 10),
-                  child: FHHeader(
-                    title: 'Service Accounts',
-                  ),
-                ),
-                StreamBuilder<ReleasedPortfolio>(
-                    stream: bloc
-                        .mrClient.personState.isCurrentPortfolioOrSuperAdmin,
-                    builder: (context, snapshot) {
-                      if (snapshot.data != null &&
-                          (snapshot.data.currentPortfolioOrSuperAdmin ==
-                              true)) {
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Container(
-                              child: FHFlatButtonTransparent(
-                            keepCase: true,
-                            title: 'Create new service account',
-                            onPressed: () => {
-                              ManagementRepositoryClientBloc.router
-                                                .navigateTo(
-                                                context, '/manage-service-accounts',
-                                                transition: TransitionType.material)
-                                                }
-                        
-                          )),
-                        );
-                      } else {
-                        return SizedBox.shrink();
-                      }
-                    }),
-              ],
-            ),
-            FHPageDivider(),
-            SizedBox(
-              height: 16.0,
-            ),
-            StreamBuilder<ServiceAccountEnvironments>(
-                stream: bloc.serviceAccountStream,
-                builder: (context, envSnapshot) {
-                  if (!envSnapshot.hasData) {
-                    return SizedBox.shrink();
-                  }
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              StreamBuilder<List<Application>>(
+                  stream: bloc
+                      .mrClient.streamValley.currentPortfolioApplicationsStream,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData && snapshot.data.isNotEmpty) {
+                      return Container(
+                          padding: EdgeInsets.only(left: 8, bottom: 8),
+                          child: ApplicationDropDown(
+                              applications: snapshot.data, bloc: bloc));
+                    } else {
+                      bloc.setApplicationId(bloc.mrClient.currentAid);
+                      return SizedBox.shrink();
+                    }
+                  }),
+              Container(
+                  padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Wrap(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.only(bottom: 10),
+                            child: FHHeader(
+                              title: 'Service Accounts',
+                            ),
+                          ),
+                          StreamBuilder<ReleasedPortfolio>(
+                              stream: bloc.mrClient.personState
+                                  .isCurrentPortfolioOrSuperAdmin,
+                              builder: (context, snapshot) {
+                                if (snapshot.data != null &&
+                                    (snapshot.data
+                                            .currentPortfolioOrSuperAdmin ==
+                                        true)) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(top: 8.0),
+                                    child: Container(
+                                        child: FHFlatButtonTransparent(
+                                            keepCase: true,
+                                            title: 'Create new service account',
+                                            onPressed: () => {
+                                                  ManagementRepositoryClientBloc
+                                                      .router
+                                                      .navigateTo(context,
+                                                          '/manage-service-accounts',
+                                                          transition:
+                                                              TransitionType
+                                                                  .material)
+                                                })),
+                                  );
+                                } else {
+                                  return SizedBox.shrink();
+                                }
+                              }),
+                        ],
+                      ),
+                      FHPageDivider(),
+                      SizedBox(
+                        height: 16.0,
+                      ),
+                      StreamBuilder<ServiceAccountEnvironments>(
+                          stream: bloc.serviceAccountStream,
+                          builder: (context, envSnapshot) {
+                            if (!envSnapshot.hasData) {
+                              return SizedBox.shrink();
+                            }
 
-                  if (envSnapshot.data.serviceAccounts.isEmpty) {
-                    return Text('No service accounts available',
-                        style: Theme.of(context).textTheme.caption);
-                  }
+                            if (envSnapshot.data.serviceAccounts.isEmpty) {
+                              return Text('No service accounts available',
+                                  style: Theme.of(context).textTheme.caption);
+                            }
 
-                  return _ServiceAccountDisplayWidget(
-                      serviceAccountEnvs: envSnapshot.data);
-                }),
-          ],
-        ))]));
+                            return _ServiceAccountDisplayWidget(
+                                serviceAccountEnvs: envSnapshot.data);
+                          }),
+                    ],
+                  ))
+            ]));
   }
 }
 
@@ -164,6 +168,10 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
                                                 _ServiceAccountPermissionWidget(
                                                     env: env,
                                                     sa: serviceAccount)),
+                                        Expanded(
+                                            flex: 4,
+                                            child: _ServiceAccountCopyWidget(
+                                                env: env, sa: serviceAccount))
 
 //
                                       ],
@@ -172,9 +180,6 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
                             ],
                           ),
                         )),
-                    Expanded(
-                        flex: 4,
-                        child: _ServiceAccountCopyWidget(sa: serviceAccount)),
                   ],
                 ),
               ),
@@ -226,17 +231,20 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
 
 class _ServiceAccountCopyWidget extends StatelessWidget {
   final ServiceAccount sa;
-  
+  final Environment env;
 
-  const _ServiceAccountCopyWidget({Key key, @required this.sa})
+  const _ServiceAccountCopyWidget(
+      {Key key, @required this.sa, @required this.env})
       : super(key: key);
-
 
   @override
   Widget build(BuildContext context) {
-    var perms = sa.permissions[0]; // is it safe to assume this to get sdk keys?
+    final account = sa.permissions.firstWhere((p) => p.environmentId == env.id,
+        orElse: () => ServiceAccountPermission()..permissions = <RoleType>[]);
+    final perms = account.permissions;
+
     return Row(children: [
-      if (perms.sdkUrlClientEval != null)
+      if (account.sdkUrlClientEval != null)
         Row(
           children: [
             Text(
@@ -244,11 +252,11 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
               style: Theme.of(context).textTheme.caption,
             ),
             FHCopyToClipboard(
-                copyString: perms.sdkUrlClientEval,
-                tooltipMessage: perms.sdkUrlClientEval),
+                copyString: account.sdkUrlClientEval,
+                tooltipMessage: account.sdkUrlClientEval),
           ],
         ),
-      if (perms.sdkUrlServerEval != null)
+      if (account.sdkUrlServerEval != null)
         Row(
           children: [
             Text(
@@ -256,10 +264,30 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
               style: Theme.of(context).textTheme.caption,
             ),
             FHCopyToClipboard(
-                copyString: perms.sdkUrlServerEval,
-                tooltipMessage: perms.sdkUrlServerEval),
+                copyString: account.sdkUrlServerEval,
+                tooltipMessage: account.sdkUrlServerEval),
           ],
         ),
+      if (account.sdkUrlClientEval == null)
+        Tooltip(
+          message:
+              'SDK URL is unavailable because your current permissions for this environment are lower level',
+          child: Icon(
+            Feather.alert_circle,
+            size: 24.0,
+            color: Colors.red,
+          ),
+        ),
+      if (account.sdkUrlServerEval == null)
+        Tooltip(
+          message:
+              'SDK URL is unavailable because your current permissions for this environment are lower level',
+          child: Icon(
+            Feather.alert_circle,
+            size: 24.0,
+            color: Colors.red,
+          ),
+        )
     ]);
   }
 }
