@@ -1,12 +1,15 @@
+import 'package:app_singleapp/api/client_api.dart';
+import 'package:app_singleapp/api/router.dart';
+import 'package:app_singleapp/common/stream_valley.dart';
 import 'package:app_singleapp/widgets/common/application_drop_down.dart';
 import 'package:app_singleapp/widgets/common/copy_to_clipboard_html.dart';
 import 'package:app_singleapp/widgets/common/decorations/fh_page_divider.dart';
+import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/common/fh_header.dart';
 import 'package:app_singleapp/widgets/service-accounts/service_accounts_env_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
 
 class ServiceAccountEnvRoute extends StatelessWidget {
@@ -32,11 +35,46 @@ class ServiceAccountEnvRoute extends StatelessWidget {
                     return SizedBox.shrink();
                   }
                 }),
-            Container(
-              padding: EdgeInsets.only(bottom: 10),
-              child: FHHeader(
-                title: 'Service Accounts',
-              ),
+           Container(
+        padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Wrap(
+              children: [
+                Container(
+                  padding: EdgeInsets.only(bottom: 10),
+                  child: FHHeader(
+                    title: 'Service Accounts',
+                  ),
+                ),
+                StreamBuilder<ReleasedPortfolio>(
+                    stream: bloc
+                        .mrClient.personState.isCurrentPortfolioOrSuperAdmin,
+                    builder: (context, snapshot) {
+                      if (snapshot.data != null &&
+                          (snapshot.data.currentPortfolioOrSuperAdmin ==
+                              true)) {
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Container(
+                              child: FHFlatButtonTransparent(
+                            keepCase: true,
+                            title: 'Create new service account',
+                            onPressed: () => {
+                              ManagementRepositoryClientBloc.router
+                                                .navigateTo(
+                                                context, '/manage-service-accounts',
+                                                transition: TransitionType.material)
+                                                }
+                        
+                          )),
+                        );
+                      } else {
+                        return SizedBox.shrink();
+                      }
+                    }),
+              ],
             ),
             FHPageDivider(),
             SizedBox(
@@ -55,75 +93,95 @@ class ServiceAccountEnvRoute extends StatelessWidget {
                   }
 
                   return _ServiceAccountDisplayWidget(
-                      serviceAccounts: envSnapshot.data);
+                      serviceAccountEnvs: envSnapshot.data);
                 }),
           ],
-        ));
+        ))]));
   }
 }
 
 class _ServiceAccountDisplayWidget extends StatelessWidget {
-  final ServiceAccountEnvironments serviceAccounts;
+  final ServiceAccountEnvironments serviceAccountEnvs;
 
-  const _ServiceAccountDisplayWidget({Key key, this.serviceAccounts})
+  const _ServiceAccountDisplayWidget({Key key, this.serviceAccountEnvs})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    // filter out SA that don't have any permissions
+
     return ListView.builder(
         shrinkWrap: true,
-        itemCount: serviceAccounts.environments.length,
+        itemCount: serviceAccountEnvs.serviceAccounts.length,
         itemBuilder: (context, index) {
-          final env = serviceAccounts.environments[index];
-          return Card(
-            color: Theme.of(context).cardColor,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: Text(env.name,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.subtitle1.copyWith(
-                            color:
-                                Theme.of(context).brightness == Brightness.light
-                                    ? Theme.of(context).buttonColor
-                                    : Theme.of(context).accentColor)),
-                  ),
-                  Expanded(
-                      flex: 5,
-                      child: Container(
-//                      color: Colors.red,
-                        child: Column(
-                          children: [
-                            for (var sa in serviceAccounts.serviceAccounts)
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      flex: 1,
-                                      child: Text(sa.name,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyText2),
-                                    ),
-                                    Expanded(
-                                        flex: 4,
-                                        child: _ServiceAccountPermissionWidget(
-                                            env: env, sa: sa)),
+          final serviceAccount = serviceAccountEnvs.serviceAccounts[index];
+
+          if (!serviceAccount.permissions
+              .every((element) => element.permissions.isEmpty)) {
+            return Card(
+              color: Theme.of(context).cardColor,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: Text(serviceAccount.name,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.subtitle1.copyWith(
+                              color: Theme.of(context).brightness ==
+                                      Brightness.light
+                                  ? Theme.of(context).buttonColor
+                                  : Theme.of(context).accentColor)),
+                    ),
+                    Expanded(
+                        flex: 6,
+                        child: Container(
+                          child: Column(
+                            children: [
+                              for (var env in serviceAccountEnvs.environments)
+                                if (serviceAccount.permissions
+                                    .firstWhere(
+                                        (p) => p.environmentId == env.id,
+                                        orElse: () => ServiceAccountPermission()
+                                          ..permissions = <RoleType>[])
+                                    .permissions
+                                    .isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          flex: 3,
+                                          child: Text(env.name,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyText2),
+                                        ),
+                                        Expanded(
+                                            flex: 3,
+                                            child:
+                                                _ServiceAccountPermissionWidget(
+                                                    env: env,
+                                                    sa: serviceAccount)),
+
 //
-                                  ],
-                                ),
-                              )
-                          ],
-                        ),
-                      ))
-                ],
+                                      ],
+                                    ),
+                                  )
+                            ],
+                          ),
+                        )),
+                    Expanded(
+                        flex: 4,
+                        child: _ServiceAccountCopyWidget(sa: serviceAccount)),
+                  ],
+                ),
               ),
-            ),
-          );
+            );
+          } else {
+            return Container();
+          }
         });
   }
 }
@@ -132,7 +190,8 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
   final Environment env;
   final ServiceAccount sa;
 
-  const _ServiceAccountPermissionWidget({Key key, this.env, this.sa})
+  const _ServiceAccountPermissionWidget(
+      {Key key, @required this.env, @required this.sa})
       : super(key: key);
 
   @override
@@ -154,24 +213,6 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
                   SizedBox(
                     width: 16.0,
                   ),
-                  if (account.sdkUrlClientEval != null)
-                    FHCopyToClipboard(
-                        copyString: account.sdkUrlClientEval,
-                        tooltipMessage: 'Client Eval SDK Url'),
-                  if (account.sdkUrlServerEval != null)
-                    FHCopyToClipboard(
-                        copyString: account.sdkUrlServerEval,
-                        tooltipMessage: 'Server Eval SDK Url'),
-                  if (account.sdkUrlClientEval == null)
-                    Tooltip(
-                      message:
-                          'SDK URL is unavailable because your current permissions for this environment are lower level',
-                      child: Icon(
-                        Feather.alert_circle,
-                        size: 24.0,
-                        color: Colors.red,
-                      ),
-                    )
                 ],
               )
             : Row(
@@ -180,5 +221,45 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
                       style: Theme.of(context).textTheme.caption),
                 ],
               ));
+  }
+}
+
+class _ServiceAccountCopyWidget extends StatelessWidget {
+  final ServiceAccount sa;
+  
+
+  const _ServiceAccountCopyWidget({Key key, @required this.sa})
+      : super(key: key);
+
+
+  @override
+  Widget build(BuildContext context) {
+    var perms = sa.permissions[0]; // is it safe to assume this to get sdk keys?
+    return Row(children: [
+      if (perms.sdkUrlClientEval != null)
+        Row(
+          children: [
+            Text(
+              'Client-side SDK URL',
+              style: Theme.of(context).textTheme.caption,
+            ),
+            FHCopyToClipboard(
+                copyString: perms.sdkUrlClientEval,
+                tooltipMessage: perms.sdkUrlClientEval),
+          ],
+        ),
+      if (perms.sdkUrlServerEval != null)
+        Row(
+          children: [
+            Text(
+              'Server-side SDK URL',
+              style: Theme.of(context).textTheme.caption,
+            ),
+            FHCopyToClipboard(
+                copyString: perms.sdkUrlServerEval,
+                tooltipMessage: perms.sdkUrlServerEval),
+          ],
+        ),
+    ]);
   }
 }
