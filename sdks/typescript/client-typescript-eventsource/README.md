@@ -67,7 +67,7 @@ const FREQUENCY = 5000; // 5 seconds
 fhConfig.edgeServiceProvider((repo, config) => new FeatureHubPollingClient(repo, config, FREQUENCY));
 ```
 
-`FeatureHubPollingClient` in this case is configured for requesting an update every 5 seconds.
+in this case is configured for requesting an update every 5 seconds.
 
 
 #### 3. Start handling features
@@ -82,60 +82,59 @@ You can get the repository via `fhConfig.repository()`
 
 #### 4. Check FeatureHub Repository readyness and request feature state 
 
-   * Get feature value through "Get" methods (imperative way)
-        - `getFlag('FEATURE_KEY')` returns a boolean feature (by key), or an error if it is unable to assert the value to a boolean
-        - `getNumber('FEATURE_KEY')` / `getString('FEATURE_KEY')` / `getJson('FEATURE_KEY')` as above
+   * Get a raw feature value through "Get" methods (imperative way)
+        - `getFlag('FEATURE_KEY') | getBoolean('FEATURE_KEY')` returns a boolean feature (by key) or undefined if the feature does not exist
+        - `getNumber('FEATURE_KEY')` | `getString('FEATURE_KEY')` | `getJson('FEATURE_KEY')` provides the value or undefined if the feature is empty or does not exist
+  * Use a convenience function
+    - `isEnabled('FEATURE_KEY')` - always a true or false, true
+    only if the feature is a boolean and is true, otherwise false
+    - `isSet('FEATURE_KEY')` - is there a value for this feature?
+
+  And there are several other useful methods on the API.
+
 ```typescript
-    let initialized = false;
-    if (featureHubRepository.readyness === Readyness.Ready || this.featureHubEventSourceClient) {
-      return;
-    }
-    featureHubRepository.addReadynessListener((readyness) => {
-      if (!initialized) {
-        console.log('readyness', readyness);
-        if (readyness === Readyness.Ready) {
-          initialized = true;
-          if (featureHubRepository.getFlag('FEATURE_KEY')) {
-            // do something
-          }
-        }
+import { ClientContext } from './client_context';
+
+let initialized = false;
+let clientContext: ClientContext = undefined;
+fhConfig.repository().addReadynessListener(async (readyness) => {
+  if (!initialized) {
+    console.log('readyness', readyness);
+    if (readyness === Readyness.Ready) {
+      initialized = true;
+      clientContext = await fhConfig.newContext().builld(); 
+      if (clientContext.isEnabled('FEATURE_KEY')) {
+        // do something
       }
-    });
-```
-
-For Client Evaluated API Keys, at this point you know that the repository is ready. (todo - what does it mean for server?)
-
-   * To get the feature details
-        - `feature('FEATURE_KEY')` returns a whole feature (by key)      
-   
-   * Check if a feature is set 
-        - `isSet('FEATURE_KEY')` - returns true if a feature is set, otherwise false. If a feature doesn't exist returns false, if the feature exists and holds any value, it returns true.  
-  
-   * Get feature value through attached listeners (real-time event-driven feature updates)
-
-This is when, if the feature changes (either from nothing to something, which happens when we first get the features,
-or an update comes through), a callback is made into your provided function. You can have multiple listeners attached.
-
-```typescript
-featureHubRepository.feature('FEATURE_KEY').addListener((fs: FeatureStateHolder) => {
-  console.log(fs.getKey(), 'is', fs.getFlag());
+    }
+  }
 });
 ```
 
-  * Get feature value when using rollout strategies, including percentage rollout
+#### 5. Reacting to feature updates
 
-    
-Starting from Version 2.0 of this API features can be requested via a Client Context. This is where you can configure information about your user and then "build" it. Building context is always asynchronous.
+If the SDK detects a new version of a feature comes from the server, you can attach listeners
+to these updates. The feature value may not change, but you will be able to evaluate the feature
+again and determine if it has changed for your _Context_.
+
+Unlike the normal use of features, you should attach callbacks to the repository, so
 
 ```typescript
-const ctx = await fhConfig.newContext().userKey('user.email@host.com').country(StrategyAttributeCountryName.NewZealand)
- 	.build();
-
-    if(ctx.getFlag('FEATURE_KEY')) {
-        //do something
-    };
+const context = await fhConfig.newContext().build();
+fhConfig.repository().feature('FEATURE_KEY').addListener((fs) => {
+  console.log(fs.getKey(), 'is', context.isEnabled(fs.getKey()));
+});
 ```
-   
+
+What you are passed is the _raw_ feature without any enhancements (including context), so ideally
+you would not use this directly, use it from the _Context_.
+
+Note, how fast you get these updates depends on the client you use. If you are using the EventSource
+client, it will be close to immediately after they have been updated. If you are using the Polling
+client, it will be when the next update happens.
+
+You can attach as many callbacks for each feature as you like.
+
 ### Logging
 
 This client exposes a class called `FHLog` which has two methods, i.e.:
@@ -194,7 +193,7 @@ UI application this would indicate that you had all the state necessary to show 
 this would indicate when you could start serving requests.
 
 ````typescript
-featureHubRepository.addReadynessListener((readyness) => {
+fhConfig.repository().addReadynessListener((readyness) => {
   if (readyness === Readyness.Ready) {
        console.log("Features are available, starting server...");
    
@@ -292,6 +291,15 @@ when you are using an _insecure client_. Typically this also means one user per 
 in secure environments (such as microservices) and is intended for rapid client side evaluation, per request for example. 
 
 For more details on rollout strategies, targeting rules and feature experiments see the [core documentation](https://docs.featurehub.io/#_rollout_strategies_and_targeting_rules).
+
+```typescript
+const ctx = await fhConfig.newContext().userKey('user.email@host.com').country(StrategyAttributeCountryName.NewZealand)
+ 	.build();
+
+    if (ctx.isEnabled('FEATURE_KEY')) {
+        //do something
+    };
+```
 
 #### Coding for rollout strategies 
 There are several preset strategies rules we track specifically: `user key`, `country`, `device` and `platform`. However, if those do not satisfy your requirements you also have an ability to attach a custom rule. Custom rules can be created as following types: `string`, `number`, `boolean`, `date`, `date-time`, `semantic-version`, `ip-address` 
@@ -430,7 +438,7 @@ ctx.logAnalyticsEvent('event-name', data);
 4) For a NODE server, you can set as an environment variable named `GA_CID`.
 
 ```typescript
-featureHubRepository.addAnalyticCollector(collector);
+fhConfig.repository().addAnalyticCollector(collector);
 ```
 
 As you can see from above (in option 3), to log an event, you simply tell the repository to
@@ -485,12 +493,11 @@ an example using Axios:
 //TODO
 ```typescript 
 import {
-  featureHubRepository,
   w3cBaggageHeader
 } from 'featurehub-repository/dist';
 
 globalAxios.interceptors.request.use(function (config: AxiosRequestConfig) {
-  const baggage = w3cBaggageHeader({repo: featureHubRepository, header: config.headers.baggage});
+  const baggage = w3cBaggageHeader({repo: fhConfig.repository(), header: config.headers.baggage});
   if (baggage) {
     config.headers.baggage = baggage;
   }
@@ -535,10 +542,6 @@ it will honour the values you have set and pass them using the Baggage headers.
 
 TODO: example after writing it
 
-### Features in a Web 1.0 application (form post)  
-
-
-
 ### Using on the server (nodejs)
 
 Both express and restify use the concept of middleware - where you can give it a function that will be passed the
@@ -550,9 +553,9 @@ values (unless they are locked) and puts this overlay repository into the reques
 To use it in either express or restify, you need to `use` it.
 
 ```typescript
-import {featureHubRepository, featurehubMiddleware} from 'featurehub-repository/dist';
+import {featurehubMiddleware} from 'featurehub-repository';
 
-api.use(featurehubMiddleware(featureHubRepository));
+api.use(featurehubMiddleware(fhConfig.repository()));
 ```
 
 this means when you are processing your request you will be able to do things like:
@@ -561,8 +564,14 @@ this means when you are processing your request you will be able to do things li
 if (req.repo.feature('FEATURE_TITLE_TO_UPPERCASE').getBoolean()) {
 }
 ```
+                      
+However it is recommended that you wrap your own user authentication middleware and create a user context and
+stash that in your request. `newContext` allows you  to pass in the repository so you will be able to put in:
 
-Note the global `featureHubRepository` will always be the main repository and will not be contextual per request. 
+```typescript
+req.context = await fhConfig.newContext(req.repo, null).userKey('user.name@email').build();
+```
+
 
 If you log an event against the analytics provider, we will preserve your per-request overrides as well so they will
 get logged correctly. e.g.
@@ -573,7 +582,7 @@ req.repo.logAnalyticsEvent('todo-add', new Map([['gaValue', '10']]));
 
 Will use the overlay values by preference over the ones in the repository.
 
-### Node-Node
+### Node -> Node
 
 If you are making a call from one node server to another FeatureHub integrated server (in any supported language)
 where Baggage is wired in, you can use the per request repository to pass to the `w3BaggageContext` method.
@@ -585,10 +594,6 @@ const baggage = w3cBaggageHeader({repo: req.repo, header: req.header('baggage')}
 ```
 
 And if defined, add the baggage header to your outgoing request.
-
-### The file repository
-
-
 
 ## FeatureHub Test API
 
@@ -636,5 +641,5 @@ result was true
 
 ### Errors
 
-If a 400 error is returned, then it will stop. Otherwise it will keep polling even if there is no data on the assumption
+If a 4xx error is returned, then it will stop. Otherwise it will keep polling even if there is no data on the assumption
 it simply hasn't been granted access. The API does not leak information on valid vs invalid environments.
