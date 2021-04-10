@@ -6,19 +6,29 @@ Welcome to the Javascript/Typescript SDK implementation for [FeatureHub.io](http
 Below explains how you can use the FeatureHub SDK in Javascript or Typescript for applications like Node.js
 backend server, Web front-end (e.g. React) or Mobile apps (React Native, Ionic, etc.). 
 
-The SDK is based on SSE (Server Sent Events) realtime updates mechanism.
-
 To control the feature flags from the FeatureHub Admin console, either use our [demo](https://demo.featurehub.io) version for evaluation or install the app using our guide [here](http://docs.featurehub.io/#_installation)
 
-## Installation
+There are 2 ways to request for feature updates via this SDK:
+
+- **SSE (Server Sent Events) realtime updates mechanism** 
+  
+  In this mode, you will make a connection to the FeatureHub Edge server using the EventSource library which this SDK is based on, and any updates to any features will come through to you in near realtime, automatically updating the feature values in the repository.
+Note, there is a known issues in the browsers with Kaspersky antivirus potentially blocking SSE events. [GitHub issue](https://github.com/featurehub-io/featurehub/issues/296) 
+
+- **FeatureHub polling client (GET request updates)** 
+  
+In this mode, you make a GET request, which you can choose to either do once, when specific things happen in your application,
+  (such as navigation change) or on a regular basis (say every 5 minutes) and the changes will be passed into the FeatureHub repository for processing.
+
+
+## SDK installation
 
 Run the following command: 
 
 `npm install featurehub-eventsource-sdk`
 
 When you install the SDK it will also install the dependency [featurehub-repository](https://www.npmjs.com/package/featurehub-repository)
-which is a core library that holds feature flags and creates events. If you are only using the polling API (as you might
-in a browser), then that is the only library you need to use.
+which is a core library that holds feature flags and creates events. 
 
 It is designed this way, so we can separate core functionality and add different implementations in the future.   
 
@@ -27,70 +37,48 @@ It is designed this way, so we can separate core functionality and add different
 
 ### Connecting to FeatureHub
 There are 4 steps to connecting:
-1) Copy SDK Url from the FeatureHub Admin Console
-2) Use the SDK Url to make a client
+1) Copy FeatureHub API Key from the FeatureHub Admin Console
+2) Use the API Key to make a client
 3) Tell the client to start handling features
 4) Check FeatureHub Repository readyness and get the state of the feature values
 
-#### 1. Copy SDK Url from the FeatureHub Admin Console
-Find and copy your SDK Url from the FeatureHub Admin Console (you can find it also in our Demo version on Service Accounts page) - 
+#### 1. Copy SDK API Key from the FeatureHub Admin Console
+Find and copy your SDK API Key from the FeatureHub Admin Console on the Service Accounts menu option - 
 you will use this in your code to configure feature updates for your environments. 
 It should look similar to this: ```/default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE```.
-There are two options now - a Server Evaluated API Key and a Client Evaluated API Key. 
+There are two options - a Server Evaluated API Key and a Client Evaluated API Key. More on this [here](//link-to-general-docs) 
 
-- **Server Evaluated API Keys** = If your client is insecure (such as a mobile
-or browser based client), you should generally use a Server Evaluated API Key - because this means none of the strategies of your
-API keys leak to the client - which can include user ids, email addresses, warehouse ids and so forth. These cannot realistically be used however
-  when you are doing server side software where every request can come from a different use with different details, they simply don't scale.
-- **Client Evaluated API Keys** - If your client is secure (such as one of your own services, run in your Cloud) then you should use this key
-and you can identify it because it has a `*` in it. It ensures all of the features are able to be evaluated on the client side and thus 
-  you can set a client context for each request and evaluate those keys within it. We will see more detail on this in the Quick Start.
-  
 
 #### 2. Make a client:
 
-The client needs to be told what API key is being used and what is the URL of the end-point you will be connecting to
-(the Edge URL). In Node you may use environment variables, in a browser you would use something else.
-
-At this point you will create an instance of `EdgeFeatureHubConfig` which holds those two pieces of information and initialise
-it. If you are in a single client instance (such as a Browser or Mobile client) then you will generally want to do things like
-setting the analytics client before doing this.
+Create an instance of `EdgeFeatureHubConfig`. You need to provide the API Key and the URL of the end-point you will be connecting to (the Edge server URL).
 
 ```typescript
-const fhConfig = new EdgeFeatureHubConfig(process.env.FEATUREHUB_EDGE_URL, process.env.FEATUREHUB_API_KEY);
+const edgeUrl = 'http://localhost:8085/';
+const apiKey = '/default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE';
+
+const fhConfig = new EdgeFeatureHubConfig(edgeUrl, apiKey);
 ```
 
-If you wish to override which client is used for talking to the FeatureHub Edge server, this is where you will need to do it. You have two
-options:
-
-- EventSource - this uses Server Sent Events and is near-realtime. If you include this library (`featurehub-eventsource-sdk`) then you will 
-automatically get the EventSource based _near-realtime_ client. Browsers have issues with this client when certain Anti-Virus clients are installed, 
-so its best to avoid the EventSource client unless you really need it, or know your client install base. 
-- Polling Client - If you use the `featurehub-repository` library directly, you will get the
-`FeatureHubPollingClient` that is configured for requesting an update every 6 seconds. You can configure the client you use by telling the
-  config that it needs to use another method to create it.
+By default, this SDK will use SSE client. If you decide to use FeatureHub polling client, you can override it here:
 
 ```typescript
-const FREQUENCY = 30000; // 30 seconds
+const FREQUENCY = 5000; // 5 seconds
 fhConfig.edgeServiceProvider((repo, config) => new FeatureHubPollingClient(repo, config, FREQUENCY));
 ```
 
-You can get the repository via `fhConfig.repository()` 
+`FeatureHubPollingClient` in this case is configured for requesting an update every 5 seconds.
 
-```typescript
-const featureHubPollingClient = new FeatureHubPollingClient(featureHubRepository, // repository f
-  config.fhServerBaseUrl,  // host
-  300000,    // every 300 seconds, 0 if only fire once
-  [config.sdkUrl] 
-);
-```
 
-#### 3. Start handling data
+#### 3. Start handling features
 ```typescript
 fhConfig.init();
 ```
+
 As soon as `init` is called, the client will attempt to connect to the server and start feeding features into the repository. This is also true if a new
-context is created and `.build()` is called (see below under Client Context).
+ClientContext is created and `.build()` is called.
+
+You can get the repository via `fhConfig.repository()`
 
 #### 4. Check FeatureHub Repository readyness and request feature state 
 
@@ -113,22 +101,9 @@ context is created and `.build()` is called (see below under Client Context).
         }
       }
     });
-```         
-
-#### Client Context          
-New in the Version 2 of this API is the focus on requesting your features via a Client Context. This is where you
-as the configuration for a new context, tell it about your user and then "build" it. Building it is always asynchronous.
-We go into this in more detail in the section below (Rollout Strategies), but this is the "quick start".
-
-```typescript
-const ctx = await fhConfig.newContext().userKey('user.email@host.com').country(StrategyAttributeCountryName.NewZealand)
- 	.device(StrategyAttributeDeviceName.Server)
- 	.platform(StrategyAttributePlatformName.Macos)
-  .attribute_value('warehouseId', '56')
- 	.build();
 ```
 
-For Client Evaluated API Keys, at this point you know that the repository is ready. 
+For Client Evaluated API Keys, at this point you know that the repository is ready. (todo - what does it mean for server?)
 
    * To get the feature details
         - `feature('FEATURE_KEY')` returns a whole feature (by key)      
@@ -146,6 +121,20 @@ featureHubRepository.feature('FEATURE_KEY').addListener((fs: FeatureStateHolder)
   console.log(fs.getKey(), 'is', fs.getFlag());
 });
 ```
+
+  * Get feature value when using rollout strategies, including percentage rollout
+
+    
+Starting from Version 2.0 of this API features can be requested via a Client Context. This is where you can configure information about your user and then "build" it. Building context is always asynchronous.
+
+```typescript
+const ctx = await fhConfig.newContext().userKey('user.email@host.com').country(StrategyAttributeCountryName.NewZealand)
+ 	.build();
+
+    if(ctx.getFlag('FEATURE_KEY')) {
+        //do something
+    };
+```
    
 ### Logging
 
@@ -161,7 +150,7 @@ export class FHLog {
 
 You can replace these methods with whatever logger you use to ensure you get the right format logs (e.g. Winston, Bunyan, Log4js).
 
-### Connecting to Google Analytics 
+### Connecting to Google Analytics
 
 To see feature analytics (events) fire in your Google Analytics, you will require to have valid GA Tracking ID, e.g. 'UA-XXXXXXXXX-X'.
 You also need to specify a CID - a customer id this is associate with GA.
@@ -193,40 +182,6 @@ The FeatureHub repository is a single class that holds and tracks features in yo
 to it to process, tracks changes, and allows you to find and act on features in a useful way. 
 It also sends events out in certain circumstances.
 
-
-### Using the FeatureHub SDK
-
-There are two ways to use this SDK - an imperative way and an event driven way. You can use the two together,
-or just one. 
-You can ask the repository directly if you wish however.
-
-#### Imperative requests
-
-This is when you ask the SDK for a specific feature and for its state. You should always use the ClientContext to 
-directly access the features, then you are sure the features are set according to the user. 
-Something like:
-
-```typescript
-if (ctx.isEnabled('FEATURE_KEY')) {
-  // do something
-}
-``` 
-
-#### Event driven feature updates
-
-This is when, if the feature changes (either from nothing to something, which happens when we first get the features,
-or an update comes through), a callback is made into your provided function. You can have as many of these listeners 
-as you like. You should always add listeners directly on the repository, but query the context to get the actual value. 
-This is because the repository is being updated with changes to the feature, but the context knows how to interpret them
-based on your user.
-
-This would look something like:
-
-```typescript
-fhConfig.repository().feature('FEATURE_KEY').addListener((fs: FeatureStateHolder) => {
-  console.log(fs.getKey(), 'is', ctx.isEnabled(fs.getKey()));
-});
-```
 
 ### Meta-Events from the repository
 
@@ -278,51 +233,7 @@ featureHubRepository
 });  
 ```
 
-## Updating your repository
 
-### Real-time updates
-
-In this mode, you will make a connection to the FeatureHub Edge server using the EventSource library, and any updates 
-to any events will come through to you in near realtime, automatically updating the feature values in the repository. 
-
-```javascript 
-//paste your Service Account SDK URL here
-
-this.eventSource = new FeatureHubEventSourceClient('[host]/features/<sdkUrl>'); 
-this.eventSource.init();
-```
-
-Your host will depend on where the SSE Edge is. For example, when running inside the basic Docker examples it is
-at http://localhost:8050/. 
-
-In any situation where a continual connection to the Internet is fine, or when you don't want fine controlled updates
-of features (i.e. you want updates immediately), this is your ideal choice. All server side applications and most
-Web applications will use this choice of connection. 
-
-### GET-based updates
-
-In this mode, you make a GET request, which you can choose to either do once, when specific things happen in your application,
-(such as navigation change) or on a regular basis (say every 5 minutes) and the changes will be passed into the 
-FeatureHub repository for processing. 
-
-```typescript
-const fp = new FeatureHubPollingClient(
-  featureHubRepository, // repository 
-  'http://localhost:8553',  // host
-  10000,    // every 10 seconds, 0 if only fire once
-  ['default/ce6b5f90-2a8a-4b29-b10f-7f1c98d878fe/VNftuX5LV6PoazPZsEEIBujM4OBqA1Iv9f9cBGho2LJylvxXMXKGxwD14xt2d7Ma3GHTsdsSO8DTvAYF'] 
-);
-
-fp.start(); 
-``` 
-
-There are a few things to note:
-
-- you only need to specify the host, not the full URL (including `/feature`)
-- you can request the features for multiple environments
-- you can specify a poll interval (in milliseconds). If 0 then it fires only once (immediately) and stops.
-
-It will automatically update the repository.
 
 ## Reacting to feature changes
 
@@ -333,7 +244,7 @@ Unlike the server focused APIs, Typescript/Javascript has two modes of operation
 In this mode, as changes occur to features coming from the server, the states of the features will immediately change.
 Events are fired. This kind of operation is normally best for servers, as they want to react to what has been asked for.
 
-You do not have to write any code to get this mode. It is the default.
+You do not have to write any code to get this mode as it is the default behaviour.
 
 ### Catch and Release (recommended for Web and Mobile)
 
@@ -571,6 +482,7 @@ server.
 In a browser, we expect that you will want to make sure that the server knows what features you are using. This is 
 an example using Axios:
 
+//TODO
 ```typescript 
 import {
   featureHubRepository,

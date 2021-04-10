@@ -154,6 +154,21 @@ When you add a feature flag, this will also automatically create a feature value
 
 NOTE: See <<Feature Permissions>> for details on the various permission states a feature can have.
 
+=== Service Accounts
+
+==== Server Evaluated API Keys
+//TODO
+If your client is insecure (such as a mobile
+or browser based client), you should generally use a Server Evaluated API Key - because this means none of the strategies of your
+API keys leak to the client - which can include user ids, email addresses, warehouse ids and so forth. These cannot realistically be used however
+when you are doing server side software where every request can come from a different use with different details, they simply don't scale.
+
+==== Client Evaluated API Keys
+//TODO
+If your client is secure (such as one of your own services, run in your Cloud) then you should use this key
+and you can identify it because it has a `*` in it. It ensures all the features are able to be evaluated on the client side and thus
+you can set a client context for each request and evaluate those keys within it.
+
 == Rollout strategies and targeting rules
 
 === Rollout strategies
