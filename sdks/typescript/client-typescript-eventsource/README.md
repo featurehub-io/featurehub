@@ -39,8 +39,7 @@ It is designed this way, so we can separate core functionality and add different
 There are 4 steps to connecting:
 1) Copy FeatureHub API Key from the FeatureHub Admin Console
 2) Use the API Key to make a client
-3) Tell the client to start handling features
-4) Check FeatureHub Repository readyness and get the state of the feature values
+3) Check FeatureHub Repository readyness and request feature state
 
 #### 1. Copy SDK API Key from the FeatureHub Admin Console
 Find and copy your SDK API Key from the FeatureHub Admin Console on the Service Accounts menu option - 
@@ -54,6 +53,12 @@ There are two options - a Server Evaluated API Key and a Client Evaluated API Ke
 Create an instance of `EdgeFeatureHubConfig`. You need to provide the API Key and the URL of the end-point you will be connecting to (the Edge server URL).
 
 ```typescript
+import {
+  EdgeFeatureHubConfig,
+  ClientContext,
+  Readyness,
+} from 'featurehub-eventsource-sdk';
+
 const edgeUrl = 'http://localhost:8085/';
 const apiKey = '/default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE';
 
@@ -70,7 +75,7 @@ fhConfig.edgeServiceProvider((repo, config) => new FeatureHubPollingClient(repo,
 in this case is configured for requesting an update every 5 seconds.
 
 
-#### 3. Start handling features
+#### 3. Check FeatureHub Repository readyness and request feature state
 
 If you are using client-side API key (e.g. Node JS)  
 ```typescript
@@ -83,17 +88,13 @@ fhConfig.repository().addReadynessListener(async (ready) => {
     if (ready == Readyness.Ready) {
       console.log("Features are available, starting server...");
       initialized = true;
-      const defaultContext = await fhConfig.newContext().build();
-      
-      initializeDatabase(JSON.parse(defaultContext.getJson('database-config')) as DatabaseSettings);
-      // you can also listen for changes and update the settings if you wish
-      
-      api.listen(port, function () {
-        console.log('server is listening on port', port);
-      });
+      const fhDefaultContext = await fhConfig.newContext().build();
+      if(fhDefaultContext.getFlag('FLAG_KEY')) { 
+          // do something
+      };
+      }
     }
-  }
-});
+  });
 ```
 
 
@@ -107,15 +108,17 @@ fhConfig.repository().addReadynessListener((readyness) => {
   if (!initialized) {
     if (readyness === Readyness.Ready) {
       initialized = true;
-      const color = fhContext.getString('SUBMIT_COLOR_BUTTON');
-      this.setState({todos: this.state.todos.changeColor(color)});
+      const color = fhContext.getString('BUTTON_COLOR_FEATURE');
+      this.setState({todos: this.state.myapp.changeButtonColor(color)});
     }
   }
 });
 ```
-The client will attempt to connect to the server and start feeding features into the repository. 
+The client will attempt to connect to the server and start feeding features into the repository.
+You can get the repository via `fhConfig.repository()`
 
-#### 4. Check FeatureHub Repository readyness and request feature state 
+
+#### Supported feature state requests
 
    * Get a raw feature value through "Get" methods (imperative way)
         - `getFlag('FEATURE_KEY') | getBoolean('FEATURE_KEY')` returns a boolean feature (by key) or _undefined_ if the feature does not exist
@@ -126,22 +129,8 @@ The client will attempt to connect to the server and start feeding features into
     - `isSet('FEATURE_KEY')` - in case a feature value is not set (_null_) (this can only happen for strings, numbers and json types), this check returns _false_.
   If a feature doesn't exist - returns _false_. Otherwise, returns _true_. 
 
-  And there are several other useful methods on the API.
 
-```typescript
-
-let initialized = false;
-fhConfig.repository().addReadynessListener(async (readyness) => {
-  if (!initialized) {
-    console.log('readyness', readyness);
-    if (readyness === Readyness.Ready) {
-      initialized = true;
-    }
-  }
-});
-```
-You can get the repository via `fhConfig.repository()`
-
+      
 #### Feature updates listener
 
 If the SDK detects a feature update, you also have an option to attach listeners
