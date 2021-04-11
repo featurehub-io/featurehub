@@ -54,6 +54,8 @@ The Typescript, Javascript and Dart libraries all have examples of this.
 If you use catch and release, it is worthwhile considering enabling OpenTracing feature overrides in production.
 You can configure feature interceptors to not be allowed to override locked features.
 
+=== Client and server SDKs //todo
+
 === Test automation support 
 
 Test Client / Feature Updater is designed to allow tests to change the values of features in their environments while they are running.

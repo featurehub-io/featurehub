@@ -17,17 +17,17 @@ Note, there is a known issues in the browsers with Kaspersky antivirus potential
 
 - **FeatureHub polling client (GET request updates)** 
   
-In this mode, you make a GET request, which you can choose to either do once, when specific things happen in your application,
+  In this mode, you make a GET request, which you can choose to either do once, when specific things happen in your application,
   (such as navigation change) or on a regular basis (say every 5 minutes) and the changes will be passed into the FeatureHub repository for processing.
 
 
 ## SDK installation
 
-Run the following command: 
+Run to install the dependency: 
 
 `npm install featurehub-eventsource-sdk`
 
-When you install the SDK it will also install the dependency [featurehub-repository](https://www.npmjs.com/package/featurehub-repository)
+When you install the SDK it will also pull the dependency [featurehub-repository](https://www.npmjs.com/package/featurehub-repository)
 which is a core library that holds feature flags and creates events. 
 
 It is designed this way, so we can separate core functionality and add different implementations in the future.   
@@ -71,24 +71,28 @@ in this case is configured for requesting an update every 5 seconds.
 
 
 #### 3. Start handling features
+
+If you are using client-side API key (e.g. Node JS)  
 ```typescript
 fhConfig.init();
 ```
 
-As soon as `init` is called, the client will attempt to connect to the server and start feeding features into the repository. This is also true if a new
-ClientContext is created and `.build()` is called.
-
-You can get the repository via `fhConfig.repository()`
+If you are using server-side API key and evaluating a single user (e.g. Browser or Mobile)
+```typescript
+const fhContext = await fhConfig.newContext().build();
+```
+The client will attempt to connect to the server and start feeding features into the repository. 
 
 #### 4. Check FeatureHub Repository readyness and request feature state 
 
    * Get a raw feature value through "Get" methods (imperative way)
-        - `getFlag('FEATURE_KEY') | getBoolean('FEATURE_KEY')` returns a boolean feature (by key) or undefined if the feature does not exist
-        - `getNumber('FEATURE_KEY')` | `getString('FEATURE_KEY')` | `getJson('FEATURE_KEY')` provides the value or undefined if the feature is empty or does not exist
+        - `getFlag('FEATURE_KEY') | getBoolean('FEATURE_KEY')` returns a boolean feature (by key) or _undefined_ if the feature does not exist
+        - `getNumber('FEATURE_KEY')` | `getString('FEATURE_KEY')` | `getJson('FEATURE_KEY')` returns the value or _undefined_ if the feature is empty or does not exist
   * Use a convenience function
-    - `isEnabled('FEATURE_KEY')` - always a true or false, true
-    only if the feature is a boolean and is true, otherwise false
-    - `isSet('FEATURE_KEY')` - is there a value for this feature?
+    - `isEnabled('FEATURE_KEY')` - always returns a _true_ or _false_, _true_
+    only if the feature is a boolean and is _true_, otherwise _false_.
+    - `isSet('FEATURE_KEY')` - in case a feature value is not set (_null_) (this can only happen for strings, numbers and json types), this check returns _false_.
+  If a feature doesn't exist - returns _false_. Otherwise, returns _true_. 
 
   And there are several other useful methods on the API.
 
@@ -102,7 +106,7 @@ fhConfig.repository().addReadynessListener(async (readyness) => {
     console.log('readyness', readyness);
     if (readyness === Readyness.Ready) {
       initialized = true;
-      clientContext = await fhConfig.newContext().builld(); 
+      clientContext = await fhConfig.newContext().build(); 
       if (clientContext.isEnabled('FEATURE_KEY')) {
         // do something
       }
@@ -110,14 +114,13 @@ fhConfig.repository().addReadynessListener(async (readyness) => {
   }
 });
 ```
+You can get the repository via `fhConfig.repository()`
 
-#### 5. Reacting to feature updates
+#### Feature updates listener
 
-If the SDK detects a new version of a feature comes from the server, you can attach listeners
+If the SDK detects a feature update, you also have an option to attach listeners
 to these updates. The feature value may not change, but you will be able to evaluate the feature
-again and determine if it has changed for your _Context_.
-
-Unlike the normal use of features, you should attach callbacks to the repository, so
+again and determine if it has changed for your _Context_:
 
 ```typescript
 const context = await fhConfig.newContext().build();
