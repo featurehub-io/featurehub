@@ -75,11 +75,38 @@ in this case is configured for requesting an update every 5 seconds.
 If you are using client-side API key (e.g. Node JS)  
 ```typescript
 fhConfig.init();
+
+let initialized = false;
+console.log("Waiting for features...");
+fhConfig.repository().addReadynessListener(async (ready) => {
+  if (!initialized) {
+    if (ready == Readyness.Ready) {
+      console.log("Features are available, starting server...");
+      initialized = true;
+      api.listen(port, function () {
+        console.log('server is listening on port', port);
+      });
+    }
+  }
+});
 ```
+
 
 If you are using server-side API key and evaluating a single user (e.g. Browser or Mobile)
 ```typescript
 const fhContext = await fhConfig.newContext().build();
+let initialized = false;
+
+// taken from the React example
+fhConfig.repository().addReadynessListener((readyness) => {
+  if (!initialized) {
+    if (readyness === Readyness.Ready) {
+      initialized = true;
+      const color = fhContext.getString('SUBMIT_COLOR_BUTTON');
+      this.setState({todos: this.state.todos.changeColor(color)});
+    }
+  }
+});
 ```
 The client will attempt to connect to the server and start feeding features into the repository. 
 
@@ -97,19 +124,13 @@ The client will attempt to connect to the server and start feeding features into
   And there are several other useful methods on the API.
 
 ```typescript
-import { ClientContext } from './client_context';
 
 let initialized = false;
-let clientContext: ClientContext = undefined;
 fhConfig.repository().addReadynessListener(async (readyness) => {
   if (!initialized) {
     console.log('readyness', readyness);
     if (readyness === Readyness.Ready) {
       initialized = true;
-      clientContext = await fhConfig.newContext().build(); 
-      if (clientContext.isEnabled('FEATURE_KEY')) {
-        // do something
-      }
     }
   }
 });
