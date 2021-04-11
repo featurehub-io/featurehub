@@ -83,6 +83,11 @@ fhConfig.repository().addReadynessListener(async (ready) => {
     if (ready == Readyness.Ready) {
       console.log("Features are available, starting server...");
       initialized = true;
+      const defaultContext = await fhConfig.newContext().build();
+      
+      initializeDatabase(JSON.parse(defaultContext.getJson('database-config')) as DatabaseSettings);
+      // you can also listen for changes and update the settings if you wish
+      
       api.listen(port, function () {
         console.log('server is listening on port', port);
       });
