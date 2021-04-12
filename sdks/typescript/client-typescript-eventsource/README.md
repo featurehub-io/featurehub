@@ -39,7 +39,8 @@ It is designed this way, so we can separate core functionality and add different
 There are 4 steps to connecting:
 1) Copy FeatureHub API Key from the FeatureHub Admin Console
 2) Use the API Key to make a client
-3) Check FeatureHub Repository readyness and request feature state
+3) Tell the client to start handling features
+4) Check FeatureHub Repository readyness and get the state of the feature values
 
 #### 1. Copy SDK API Key from the FeatureHub Admin Console
 Find and copy your SDK API Key from the FeatureHub Admin Console on the Service Accounts menu option - 
@@ -53,12 +54,6 @@ There are two options - a Server Evaluated API Key and a Client Evaluated API Ke
 Create an instance of `EdgeFeatureHubConfig`. You need to provide the API Key and the URL of the end-point you will be connecting to (the Edge server URL).
 
 ```typescript
-import {
-  EdgeFeatureHubConfig,
-  ClientContext,
-  Readyness,
-} from 'featurehub-eventsource-sdk';
-
 const edgeUrl = 'http://localhost:8085/';
 const apiKey = '/default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE';
 
@@ -75,7 +70,7 @@ fhConfig.edgeServiceProvider((repo, config) => new FeatureHubPollingClient(repo,
 in this case is configured for requesting an update every 5 seconds.
 
 
-#### 3. Check FeatureHub Repository readyness and request feature state
+#### 3. Request features and start using them when the repository is ready
 
 If you are using client-side API key (e.g. Node JS)  
 ```typescript
@@ -88,13 +83,17 @@ fhConfig.repository().addReadynessListener(async (ready) => {
     if (ready == Readyness.Ready) {
       console.log("Features are available, starting server...");
       initialized = true;
-      const fhDefaultContext = await fhConfig.newContext().build();
-      if(fhDefaultContext.getFlag('FLAG_KEY')) { 
-          // do something
-      };
-      }
+      const defaultContext = await fhConfig.newContext().build();
+      
+      initializeDatabase(JSON.parse(defaultContext.getJson('database-config')) as DatabaseSettings);
+      // you can also listen for changes and update the settings if you wish
+      
+      api.listen(port, function () {
+        console.log('server is listening on port', port);
+      });
     }
-  });
+  }
+});
 ```
 
 
@@ -108,17 +107,15 @@ fhConfig.repository().addReadynessListener((readyness) => {
   if (!initialized) {
     if (readyness === Readyness.Ready) {
       initialized = true;
-      const color = fhContext.getString('BUTTON_COLOR_FEATURE');
-      this.setState({todos: this.state.myapp.changeButtonColor(color)});
+      const color = fhContext.getString('SUBMIT_COLOR_BUTTON');
+      this.setState({todos: this.state.todos.changeColor(color)});
     }
   }
 });
 ```
-The client will attempt to connect to the server and start feeding features into the repository.
-You can get the repository via `fhConfig.repository()`
+The client will attempt to connect to the server and start feeding features into the repository. 
 
-
-#### Supported feature state requests
+#### 4. Integrate them into your code 
 
    * Get a raw feature value through "Get" methods (imperative way)
         - `getFlag('FEATURE_KEY') | getBoolean('FEATURE_KEY')` returns a boolean feature (by key) or _undefined_ if the feature does not exist
@@ -129,8 +126,67 @@ You can get the repository via `fhConfig.repository()`
     - `isSet('FEATURE_KEY')` - in case a feature value is not set (_null_) (this can only happen for strings, numbers and json types), this check returns _false_.
   If a feature doesn't exist - returns _false_. Otherwise, returns _true_. 
 
+  And there are several other useful methods on the API.
 
-      
+`nodejs`
+
+Frameworks like express and restify work by implementing a middleware concept that allows wraparound logic for
+each request. In a nodejs server, we would typically add to the part that finds the user something that is able
+to create a new context, configure it for the detected user and stashes it in the request ready for the actual
+method that processes this request to use.
+
+```typescript
+import { FeatureHubConfig } from './feature_hub_config';
+
+export function userMiddleware(fhConfig: FeatureHubConfig) {
+  return (req: any, res: any, next: any) => {
+    const user = detectUser(req); // function to analyse the Bearer token and determine who the user is
+    
+    let ctx = fhConfig.newContext();
+    
+    if (user) {
+    	ctx = ctx.userKey(user.email);
+    	// add anything else relevant to the context
+    }
+    
+    ctx = ctx.build().then(() => {
+    	req.featureContext = ctx;
+    	
+      next();
+    });
+  };
+}
+```
+
+A simple GET method on / for example could now determine based on the user if they should send one message or
+another:
+
+```typescript
+app.get('/', function (req, res) {
+	if (req.featureContext.isEnabled('FEATURE_KEY')) {
+		req.send('The feature is enabled');
+  } else {
+    res.send('The feature is disabled.');
+  }
+})
+```
+
+`browser`
+
+In a Single Page Application (SPA) situation, you will typically load and configure your featurehub configuration, 
+but not discover information about a user until later. This would mean that you could progressively add extra information
+to the context over time, once the user logs in, etc. There are all sorts of different ways that Web applications find and
+provide information. In our React example [(in the featurehub-examples)](https://github.com/featurehub-io/featurehub-examples/blob/master/todo-frontend-react-typescript-catch-and-release/src/App.tsx) we show
+how once you have your connection you are able to start querying the repository immediately. 
+                        
+In section 3 above, we should this code being used:
+
+```typescript
+  const color = fhContext.getString('SUBMIT_COLOR_BUTTON');
+  this.setState({todos: this.state.todos.changeColor(color)});
+```
+
+
 #### Feature updates listener
 
 If the SDK detects a feature update, you also have an option to attach listeners
