@@ -1,7 +1,7 @@
 import {
-  FeatureStateBaseHolder,
-  FeatureStateValueInterceptor, InterceptorValueMatch,
+  FeatureStateBaseHolder
 } from './feature_state_holders';
+import { FeatureStateValueInterceptor, InterceptorValueMatch } from './interceptors';
 
 import { FeatureStateHolder } from './feature_state';
 

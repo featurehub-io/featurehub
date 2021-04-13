@@ -26,12 +26,9 @@ dependencies:
 
   pedantic: ^1.9.0
   rxdart: ^0.24.1
-  bloc_provider: ^0.6.2
+  bloc_provider: ^0.7.0+3
   logging: ^0.11.4
-  featurehub_client_sdk:
-    path: ../../../dart/client-dart-sdk
-  featurehub_client_api:
-    path: ../../../dart/client-dart-api
+  featurehub_client_sdk: ^1.1.4
 
 dev_dependencies:
   flutter_test:

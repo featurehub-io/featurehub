@@ -1,5 +1,11 @@
-import { ClientFeatureRepository, FeatureHubRepository, FeatureState, FeatureValueType, SSEResultState } from '../app';
-import { FeatureStateValueInterceptor, InterceptorValueMatch } from '../app/feature_state_holders';
+import {
+  ClientFeatureRepository,
+  FeatureHubRepository,
+  FeatureState,
+  FeatureStateValueInterceptor,
+  FeatureValueType, InterceptorValueMatch,
+  SSEResultState
+} from '../app';
 import { expect } from 'chai';
 
 class KeyValueInterceptor implements FeatureStateValueInterceptor {

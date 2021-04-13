@@ -6,7 +6,7 @@
 import { Readyness, ReadynessListener } from './client_feature_repository';
 import { FeatureListener, FeatureStateHolder } from './feature_state';
 import { FeatureValueType, RolloutStrategy, SSEResultState } from './models';
-import { FeatureStateValueInterceptor, InterceptorValueMatch } from './feature_state_holders';
+import { FeatureStateValueInterceptor, InterceptorValueMatch } from './interceptors';
 import { ClientContext } from './client_context';
 import { InternalFeatureRepository } from './internal_feature_repository';
 import { Applied } from './strategy_matcher';

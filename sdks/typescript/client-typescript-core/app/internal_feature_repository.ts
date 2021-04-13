@@ -1,6 +1,6 @@
 import { FeatureHubRepository } from './client_feature_repository';
 import { RolloutStrategy, SSEResultState } from './models/models';
-import { InterceptorValueMatch } from './feature_state_holders';
+import { InterceptorValueMatch } from './interceptors';
 import { ClientContext } from './client_context';
 import { Applied } from './strategy_matcher';
 

@@ -1,5 +1,5 @@
 import { FeatureValueType } from './models/models';
-import { FeatureStateValueInterceptor } from './feature_state_holders';
+import { FeatureStateValueInterceptor } from './interceptors';
 import { ClientContext } from './client_context';
 
 export interface FeatureListener {
