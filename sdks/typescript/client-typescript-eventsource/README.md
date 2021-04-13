@@ -47,6 +47,9 @@ you will use this in your code to configure feature updates for your environment
 It should look similar to this: ```/default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE```.
 There are two options - a Server Evaluated API Key and a Client Evaluated API Key. More on this [here](//link-to-general-docs) 
 
+Client Side evaluation is intended for use in secure environments (such as microservices, e.g Node JS) and is intended for rapid client side evaluation, per request for example.
+
+Server Side evaluation is more suitable when you are using an _insecure client_. (e.g. Browser or Mobile). This also means you evaluate one user per client.
 
 #### 2. Make a client:
 
@@ -77,7 +80,10 @@ in this case is configured for requesting an update every 5 seconds.
 
 #### 3. Check FeatureHub Repository readyness and request feature state
 
-If you are using client evaluated API key (e.g. Node JS)  
+Feature flag rollout strategies and user targeting are all determined by the active user - context. If you are not intended to use rollout strategies, you can pass empty context to the SDK.
+
+**Client Side evaluation** 
+
 ```typescript
 fhConfig.init();
 
@@ -91,50 +97,18 @@ fhConfig.repository().addReadynessListener(async (ready) => {
       const fhDefaultContext = await fhConfig.newContext().build();
       if(fhDefaultContext.getFlag('FLAG_KEY')) { 
           // do something
-      };
+      }
+      else {
+          //do something else
+      }
     }
   }
 });
 ```
 
+This is a simple scenario where you request for default context without passing information for each user. In production, you would normally create new context per each user and pass information about strategies (if you are applying any). If you are using percentage rollout, for example, you also need to pass a userId or some other identifier. 
 
-If you are using server evaluated API key and evaluating a single user (e.g. Browser or Mobile)
-```typescript
-const fhContext = await fhConfig.newContext().build();
-let initialized = false;
-
-// taken from the React example
-fhConfig.repository().addReadynessListener((readyness) => {
-  if (!initialized) {
-    if (readyness === Readyness.Ready) {
-      initialized = true;
-      const color = fhContext.getString('FEATURE_BUTTON_COLOR');
-      this.setState({todos: this.state.myapp.changeButtonColor(color)});
-    }
-  }
-});
-```
-The client will attempt to connect to the server and start feeding features into the repository.
-You can get the repository via `fhConfig.repository()`
-
-
-#### Supported feature state requests
-
-   * Get a raw feature value through "Get" methods (imperative way)
-        - `getFlag('FEATURE_KEY') | getBoolean('FEATURE_KEY')` returns a boolean feature (by key) or _undefined_ if the feature does not exist
-        - `getNumber('FEATURE_KEY')` | `getString('FEATURE_KEY')` | `getJson('FEATURE_KEY')` returns the value or _undefined_ if the feature is empty or does not exist
-  * Use a convenience function
-    - `isEnabled('FEATURE_KEY')` - always returns a _true_ or _false_, _true_
-    only if the feature is a boolean and is _true_, otherwise _false_.
-    - `isSet('FEATURE_KEY')` - in case a feature value is not set (_null_) (this can only happen for strings, numbers and json types), this check returns _false_.
-  If a feature doesn't exist - returns _false_. Otherwise, returns _true_. 
-
-
-`nodejs`
-
-Frameworks like express and restify work by implementing a middleware concept that allows wraparound logic for
-each request. In a nodejs server, we would typically add to the part that finds the user something that is able
-to create a new context, configure it for the detected user and stashes it in the request ready for the actual
+Frameworks like express and restify work by implementing a middleware concept that allows wraparound logic for each request. In a Node JS server, we would typically add to the part that finds the user something that is able to create a new context, configure it for the detected user and stash it in the request ready for the actual
 method that processes this request to use.
 
 ```typescript
@@ -173,20 +147,146 @@ app.get('/', function (req, res) {
 })
 ```
 
-`browser`
 
-In a Single Page Application (SPA) situation, you will typically load and configure your featurehub configuration, 
-but not discover information about a user until later. This would mean that you could progressively add extra information
-to the context over time, once the user logs in, etc. There are all sorts of different ways that Web applications find and
-provide information. In our React example [(in the featurehub-examples)](https://github.com/featurehub-io/featurehub-examples/blob/master/todo-frontend-react-typescript-catch-and-release/src/App.tsx) we show
-how once you have your connection you are able to start querying the repository immediately. 
-                        
-In section 3 above, we should this code being used:
+**Server side evaluation**
+
+In the server side evaluation (e.g. browser app) the context is created once as you evaluate one user per client. 
 
 ```typescript
-  const color = fhContext.getString('SUBMIT_COLOR_BUTTON');
-  this.setState({todos: this.state.todos.changeColor(color)});
+const fhContext = await fhConfig.newContext().build();
+let initialized = false;
+
+// taken from the React example
+fhConfig.repository().addReadynessListener((readyness) => {
+  if (!initialized) {
+    if (readyness === Readyness.Ready) {
+      initialized = true;
+      const color = fhContext.getString('FEATURE_BUTTON_COLOR');
+      this.setState({todos: this.state.myapp.changeButtonColor(color)});
+    }
+  }
+});
 ```
+
+  Note, in a Single Page Application (SPA) situation, you will typically load and configure your FeatureHub configuration, but not discover information about a user until later. This would mean that you could progressively add extra information to the context over time, once the user logs in, etc. There are all sorts of different ways that Web applications find and
+  provide information. In our [React example](https://github.com/featurehub-io/featurehub-examples/blob/master/todo-frontend-react-typescript-catch-and-release/src/App.tsx) we show how once you have your connection you are able to start querying the repository immediately.
+
+
+#### Supported feature state requests
+
+   * Get a raw feature value through "Get" methods (imperative way)
+        - `getFlag('FEATURE_KEY') | getBoolean('FEATURE_KEY')` returns a boolean feature (by key) or _undefined_ if the feature does not exist
+        - `getNumber('FEATURE_KEY')` | `getString('FEATURE_KEY')` | `getJson('FEATURE_KEY')` returns the value or _undefined_ if the feature is empty or does not exist
+  * Use a convenience function
+    - `isEnabled('FEATURE_KEY')` - always returns a _true_ or _false_, _true_
+    only if the feature is a boolean and is _true_, otherwise _false_.
+    - `isSet('FEATURE_KEY')` - in case a feature value is not set (_null_) (this can only happen for strings, numbers and json types), this check returns _false_.
+  If a feature doesn't exist - returns _false_. Otherwise, returns _true_. 
+
+      
+
+## Rollout Strategies and Client Context
+
+Starting from version 2.0.0 FeatureHub supports client and server side evaluation of complex rollout strategies
+that are applied to individual feature values in a specific environment. This includes support of preset rules, e.g. per **_user key_**, **_country_**, **_device type_**, **_platform type_** as well as **_percentage splits_** rules and custom rules that you can create according to your application needs.
+
+
+For more details on rollout strategies, targeting rules and feature experiments see the [core documentation](https://docs.featurehub.io/#_rollout_strategies_and_targeting_rules).
+
+```typescript
+const ctx = await fhConfig.newContext().userKey('user.email@host.com').country(StrategyAttributeCountryName.NewZealand)
+ 	.build();
+
+    if (ctx.isEnabled('FEATURE_KEY')) {
+        //do something
+    };
+```
+
+#### Coding for rollout strategies
+There are several preset strategies rules we track specifically: `user key`, `country`, `device` and `platform`. However, if those do not satisfy your requirements you also have an ability to attach a custom rule. Custom rules can be created as following types: `string`, `number`, `boolean`, `date`, `date-time`, `semantic-version`, `ip-address`
+
+FeatureHub SDK will match your users according to those rules, so you need to provide attributes to match on in the SDK:
+
+**Sending preset attributes:**
+
+Provide the following attribute to support `userKey` rule:
+
+```typescript
+    await fhConfig.newContext().userKey('ideally-unique-id').build(); 
+```
+
+to support `country` rule:
+
+```typescript
+    await fhConfig.newContext().country(StrategyAttributeCountryName.NewZealand).build(); 
+```
+
+to support `device` rule:
+
+```typescript
+    await fhConfig.newContext().device(StrategyAttributeDeviceName.Browser).build(); 
+```
+
+to support `platform` rule:
+
+```typescript
+    await fhConfig.newContext().platform(StrategyAttributePlatformName.Android).build(); 
+```
+
+to support `semantic-version` rule:
+
+```typescript
+    await fhConfig.newContext().version('1.2.0').build(); 
+```
+
+or if you are using multiple rules, you can combine attributes as follows:
+
+```typescript
+    await fhConfig.newContext().userKey('ideally-unique-id')
+      .country(StrategyAttributeCountryName.NewZealand)
+      .device(StrategyAttributeDeviceName.Browser)
+      .platform(StrategyAttributePlatformName.Android)
+      .version('1.2.0')
+      .build(); 
+```
+
+The `build()` method will trigger the regeneration of a special header (`x-featurehub`) or parameter (in NodeJS is it is a header, in the Browser it is a parameter as the SSE spec doesn’t allow for extra headers). This in turn
+will automatically retrigger a refresh of your events if you have already connected (unless you are using polling
+and your polling interval is set to 0).
+
+**Sending custom attributes:**
+
+To add a custom key/value pair, use `attribute_value(key, value)`
+
+```typescript
+    await fhConfig.newContext().attribute_value('first-language', 'russian').build();
+```
+
+Or with array of values (only applicable to custom rules):
+
+```typescript
+   await fhConfig.newContext().attribute_value('languages', ['russian', 'english', 'german']).build();
+```
+
+You can also use `featureHubRepository.clientContext.clear()` to empty your context.
+
+In all cases, you need to call `build()` to re-trigger passing of the new attributes to the server for recalculation.
+
+
+**Coding for percentage splits:**
+For percentage rollout you are only required to provide the `userKey` or `sessionKey`.
+
+```typescript
+    await fhConfig.newContext().userKey('ideally-unique-id').build();
+```
+or
+
+```typescript
+    await fhConfig.newContext().sessionKey('session-id').build();
+```
+
+For more details on percentage splits and feature experiments see [Percentage Split Rule](https://docs.featurehub.io/#_percentage_split_rule).
+
 
 
 #### Feature updates listener
@@ -357,110 +457,7 @@ export enum Readyness {
   Failed = 'Failed'
 }
 ```
-## Rollout Strategies and Client Context
 
-Starting from version 2.0.0 FeatureHub supports client and server side evaluation of complex rollout strategies
-that are applied to individual feature values in a specific environment. This includes support of preset rules, e.g. per **_user key_**, **_country_**, **_device type_**, **_platform type_** as well as **_percentage splits_** rules and custom rules that you can create according to your application needs. 
-
-The different is simply where these get evaluated. As explained above, you would use Server Side evaluation (a Server Eval API Key)
-when you are using an _insecure client_. Typically this also means one user per client. Client Side evaluation is intended for use
-in secure environments (such as microservices) and is intended for rapid client side evaluation, per request for example. 
-
-For more details on rollout strategies, targeting rules and feature experiments see the [core documentation](https://docs.featurehub.io/#_rollout_strategies_and_targeting_rules).
-
-```typescript
-const ctx = await fhConfig.newContext().userKey('user.email@host.com').country(StrategyAttributeCountryName.NewZealand)
- 	.build();
-
-    if (ctx.isEnabled('FEATURE_KEY')) {
-        //do something
-    };
-```
-
-#### Coding for rollout strategies 
-There are several preset strategies rules we track specifically: `user key`, `country`, `device` and `platform`. However, if those do not satisfy your requirements you also have an ability to attach a custom rule. Custom rules can be created as following types: `string`, `number`, `boolean`, `date`, `date-time`, `semantic-version`, `ip-address` 
-
-FeatureHub SDK will match your users according to those rules, so you need to provide attributes to match on in the SDK:
-
-**Sending preset attributes:** 
-
-Provide the following attribute to support `userKey` rule: 
-
-```typescript
-    await fhConfig.newContext().userKey('ideally-unique-id').build(); 
-```
-
-to support `country` rule:
-
-```typescript
-    await fhConfig.newContext().country(StrategyAttributeCountryName.NewZealand).build(); 
-```
-
-to support `device` rule:
-
-```typescript
-    await fhConfig.newContext().device(StrategyAttributeDeviceName.Browser).build(); 
-```
-
-to support `platform` rule:
-
-```typescript
-    await fhConfig.newContext().platform(StrategyAttributePlatformName.Android).build(); 
-```
-
-to support `semantic-version` rule:
-
-```typescript
-    await fhConfig.newContext().version('1.2.0').build(); 
-```
-
-or if you are using multiple rules, you can combine attributes as follows: 
-
-```typescript
-    await fhConfig.newContext().userKey('ideally-unique-id')
-      .country(StrategyAttributeCountryName.NewZealand)
-      .device(StrategyAttributeDeviceName.Browser)
-      .platform(StrategyAttributePlatformName.Android)
-      .version('1.2.0')
-      .build(); 
-```
-
-The `build()` method will trigger the regeneration of a special header (`x-featurehub`) or parameter (in NodeJS is it is a header, in the Browser it is a parameter as the SSE spec doesn’t allow for extra headers). This in turn
-will automatically retrigger a refresh of your events if you have already connected (unless you are using polling
-and your polling interval is set to 0).
-
-**Sending custom attributes:**
-
-To add a custom key/value pair, use `attribute_value(key, value)`
-
-```typescript
-    await fhConfig.newContext().attribute_value('first-language', 'russian').build();
-```
-
-Or with array of values (only applicable to custom rules):
-
-```typescript
-   await fhConfig.newContext().attribute_value('languages', ['russian', 'english', 'german']).build();
-```
-
-You can also use `featureHubRepository.clientContext.clear()` to empty your context.
-
-In all cases, you need to call `build()` to re-trigger passing of the new attributes to the server for recalculation.
-
-
-**Coding for percentage splits:**
-For percentage rollout you are only required to provide the `userKey` or `sessionKey`. 
-
-```typescript
-    await fhConfig.newContext().userKey('ideally-unique-id').build();
-```
-or
-
-```typescript
-    await fhConfig.newContext().sessionKey('session-id').build();
-```
-
-For more details on percentage splits and feature experiments see [Percentage Split Rule](https://docs.featurehub.io/#_percentage_split_rule).
 
 
 ## Analytics
