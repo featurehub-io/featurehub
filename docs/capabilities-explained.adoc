@@ -54,7 +54,51 @@ The Typescript, Javascript and Dart libraries all have examples of this.
 If you use catch and release, it is worthwhile considering enabling OpenTracing feature overrides in production.
 You can configure feature interceptors to not be allowed to override locked features.
 
-=== Client and server SDKs //todo
+=== Client and server API Keys
+
+FeatureHub supports two different kinds of keys and they have a direct impact on your application. The version 2.0 of
+the SDKs introduce a _Context first API_. This means you define information about who is using the features (even if they
+are completely anonymous), and then the SDK will evaluate the feature values based on that information. 
+
+You can see what kind of data is being sent back for a given key by typing:
+
+----
+curl -v http://YOUR-HOST/features/YOUR-API-KEY
+----
+
+==== Client Evaluated Keys
+Client Evaluated Keys tell the Edge server to send you _all_ of the data associated with the environment you are asking for. 
+This means all features, their default values and their rollout strategies. This could potentially be
+sensitive information, and as such you should restrict what kinds of applications use Client Evaluated Keys.
+
+Client Evaluated Keys are recommended for _services_ - Microservices, Serverless methods, Monolith web apps, batch processes and so forth - where there is no user who can just grab the key, call the Edge API themselves and get the data.
+
+The benefit of a client evaluated key is that you always have all of the information you need to make a decision about the state
+of a feature. You can swap between different _Contexts_ (which are usually in APIs a user's request) as often as you like and 
+always evaluate the features appropriate to that _Context_ is already local. 
+
+This is what you want for server evaluation, it is extremely scalable. The version 2 SDKs add all of the logic required to
+evaluate everything locally to your own application.
+
+For Client Evaluated Keys, going through the Context to get your features means all features are always evaluated
+as they pertain to the current context, locally.
+
+==== Server Evaluated Keys
+Server Evaluated Keys tell the Edge server to send you only the values of the features. If no contextual information is 
+provided about a user, they will provide the _default value_ (with one exception). If no information is provided, the 
+rollout strategies generally don't apply. For rollout strategies to apply, they have to be sent to the Edge server, and
+this is done either as a header or as a query parameter. 
+
+For this reason, each individual client (and they are usually insecure clients like Browsers or Mobile devices) needs
+to send their _Context_ information to the Edge server every time it changes. This usually means a slight delay each time
+the _Context_ changes, it also means a lot of connections to your Edge servers, and it impacts their scaling.
+
+Server Evaluated Keys are where you have to balance how fast you want your clients to get updates (so do you use
+polling or near-realtime eventsourcing) vs how much you need in terms of resources. 
+
+For Server Evaluated Keys, going through the Context to get your features means if you change the Context, the
+request can hold on until the update has occured and then present you with an updated set of features. 
+
 
 === Test automation support 
 
