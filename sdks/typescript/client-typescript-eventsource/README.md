@@ -44,8 +44,8 @@ There are 4 steps to connecting:
 #### 1. Copy SDK API Key from the FeatureHub Admin Console
 Find and copy your SDK API Key from the FeatureHub Admin Console on the Service Accounts menu option - 
 you will use this in your code to configure feature updates for your environments. 
-It should look similar to this: ```/default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE```.
-There are two options - a Server Evaluated API Key and a Client Evaluated API Key. More on this [here](//link-to-general-docs) 
+It should look similar to this: ```default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE```.
+There are two options - a Server Evaluated API Key and a Client Evaluated API Key. More on this https://docs.featurehub.io/#_client_and_server_api_keys[here] 
 
 Client Side evaluation is intended for use in secure environments (such as microservices, e.g Node JS) and is intended for rapid client side evaluation, per request for example.
 
@@ -80,7 +80,7 @@ in this case is configured for requesting an update every 5 seconds.
 
 #### 3. Check FeatureHub Repository readyness and request feature state
 
-Feature flag rollout strategies and user targeting are all determined by the active user - context. If you are not intended to use rollout strategies, you can pass empty context to the SDK.
+Feature flag rollout strategies and user targeting are all determined by the active user - context. If you are not intending to use rollout strategies, you can pass empty context to the SDK.
 
 **Client Side evaluation** 
 
@@ -212,37 +212,37 @@ FeatureHub SDK will match your users according to those rules, so you need to pr
 Provide the following attribute to support `userKey` rule:
 
 ```typescript
-    await fhConfig.newContext().userKey('ideally-unique-id').build(); 
+    const ctx = await fhConfig.newContext().userKey('ideally-unique-id').build(); 
 ```
 
 to support `country` rule:
 
 ```typescript
-    await fhConfig.newContext().country(StrategyAttributeCountryName.NewZealand).build(); 
+    const ctx = await fhConfig.newContext().country(StrategyAttributeCountryName.NewZealand).build(); 
 ```
 
 to support `device` rule:
 
 ```typescript
-    await fhConfig.newContext().device(StrategyAttributeDeviceName.Browser).build(); 
+    const ctx = await fhConfig.newContext().device(StrategyAttributeDeviceName.Browser).build(); 
 ```
 
 to support `platform` rule:
 
 ```typescript
-    await fhConfig.newContext().platform(StrategyAttributePlatformName.Android).build(); 
+    const ctx = await fhConfig.newContext().platform(StrategyAttributePlatformName.Android).build(); 
 ```
 
 to support `semantic-version` rule:
 
 ```typescript
-    await fhConfig.newContext().version('1.2.0').build(); 
+    const ctx = await fhConfig.newContext().version('1.2.0').build(); 
 ```
 
 or if you are using multiple rules, you can combine attributes as follows:
 
 ```typescript
-    await fhConfig.newContext().userKey('ideally-unique-id')
+    const ctx = await fhConfig.newContext().userKey('ideally-unique-id')
       .country(StrategyAttributeCountryName.NewZealand)
       .device(StrategyAttributeDeviceName.Browser)
       .platform(StrategyAttributePlatformName.Android)
@@ -259,16 +259,16 @@ and your polling interval is set to 0).
 To add a custom key/value pair, use `attribute_value(key, value)`
 
 ```typescript
-    await fhConfig.newContext().attribute_value('first-language', 'russian').build();
+    const ctx = await fhConfig.newContext().attribute_value('first-language', 'russian').build();
 ```
 
 Or with array of values (only applicable to custom rules):
 
 ```typescript
-   await fhConfig.newContext().attribute_value('languages', ['russian', 'english', 'german']).build();
+   const ctx = await fhConfig.newContext().attribute_value('languages', ['russian', 'english', 'german']).build();
 ```
 
-You can also use `featureHubRepository.clientContext.clear()` to empty your context.
+You can also use `ctx.clear()` to empty your context.
 
 In all cases, you need to call `build()` to re-trigger passing of the new attributes to the server for recalculation.
 
@@ -333,7 +333,7 @@ Read more about CID [here](https://stackoverflow.com/questions/14227331/what-is-
 
 ```typescript
 // add an analytics adapter with a random or known CID
-  featureHubRepository.addAnalyticCollector(new GoogleAnalyticsCollector('UA-1234', '1234-5678-abcd-1234'));   
+  fhConfig.repository().addAnalyticCollector(new GoogleAnalyticsCollector('UA-1234', '1234-5678-abcd-1234'));   
 ```
 
 To log an event in Google Analytics: 
@@ -402,7 +402,7 @@ changes, then the event will fire.
 Attaching a listener for this hook is done like this:
 
 ```typescript
-featureHubRepository
+fhConfig.repository()
   .addPostLoadNewFeatureStateAvailableListener((_) => {
     // e.g. tell user to page is going to update and re-render page
 });  
@@ -433,13 +433,13 @@ This strategy is recommended for Web and Mobile applications as controlled visib
 
 ```javascript
 // don't allow feature updates to come through
-featureHubRepository.catchAndReleaseMode = true; 
+fhConfig.repository().catchAndReleaseMode = true; 
 ```
 
 If you choose to not have listeners, when you call: 
 
 ```javascript
-featureHubRepository.release();
+fhConfig.repository().release();
 ```
 
 then you should follow it with code to update your UI with the appropriate changes in features. You
@@ -631,10 +631,18 @@ import {featurehubMiddleware} from 'featurehub-repository';
 api.use(featurehubMiddleware(fhConfig.repository()));
 ```
 
-this means when you are processing your request you will be able to do things like:
+In your own middleware where you create a context, you need to make sure you pass the repository when
+creating a new context. So do this:
 
 ```typescript
-if (req.repo.feature('FEATURE_TITLE_TO_UPPERCASE').getBoolean()) {
+  req.ctx = await fhConfig.newContext(req.featureHub, null).build();
+```
+
+this means when you are processing your request it will attempt to use the baggage override first and then
+fall back onto the rules in your featurehub repository. Your code still looks the same inside your nodejs code. 
+
+```typescript
+if (req.ctx.feature('FEATURE_TITLE_TO_UPPERCASE').getBoolean()) {
 }
 ```
                       
@@ -644,7 +652,6 @@ stash that in your request. `newContext` allows you  to pass in the repository s
 ```typescript
 req.context = await fhConfig.newContext(req.repo, null).userKey('user.name@email').build();
 ```
-
 
 If you log an event against the analytics provider, we will preserve your per-request overrides as well so they will
 get logged correctly. e.g.
