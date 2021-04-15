@@ -1,9 +1,10 @@
 {
   "digital-featureflag": {
-    "featureFlags": [{
-      "name": "XYZ.enabled.countries",
-      "value": "US,CA,AU"
-    },
+    "featureFlags": [
+      {
+        "name": "XYZ.enabled.countries",
+        "value": "US,CA,AU"
+      },
       {
         "name": "ABC.disabled.channels",
         "value": "IPH"

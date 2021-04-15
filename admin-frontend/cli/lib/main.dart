@@ -51,7 +51,7 @@ main(List<String> passedArgs) async {
     }
 
     final features =
-        FeaturesWu(host, jsonDecode(await featureFile.readAsString()));
+        FeaturesWuCommand(host, jsonDecode(await featureFile.readAsString()));
 
     final portfolioName = args['portfolio'];
     final applicationName = args['application'];
