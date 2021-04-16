@@ -36,7 +36,7 @@
   </licenses>
 
   <properties>
-    <ebean.version>12.2.1</ebean.version>
+    <ebean.version>12.8.2</ebean.version>
   </properties>
 
   <dependencies>
@@ -49,6 +49,12 @@
       <groupId>io.featurehub.composites</groupId>
       <artifactId>composite-ebean</artifactId>
       <version>1.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>io.ebean</groupId>
+      <artifactId>querybean-generator</artifactId>
+      <version>${ebean.version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.h2database</groupId>
@@ -68,6 +74,13 @@
       <version>42.2.12</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>io.ebean</groupId>
+      <artifactId>ebean-ddl-generator</artifactId>
+      <version>${ebean.version}</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <build>
@@ -81,7 +94,7 @@
           <filtering>false</filtering>
           <tiles>
             <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
-            <tile>org.avaje.tile:java-compile:1.1</tile>
+            <tile>org.avaje.tile:java-compile:11</tile>
             <tile>io.ebean.tile:enhancement:${ebean.version}</tile>
           </tiles>
         </configuration>

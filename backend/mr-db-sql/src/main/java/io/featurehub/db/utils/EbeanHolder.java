@@ -1,19 +1,30 @@
 package io.featurehub.db.utils;
 
 import io.ebean.Database;
-import io.ebean.annotation.Platform;
-import io.ebean.config.DbMigrationConfig;
-import io.ebean.config.ServerConfig;
+import io.ebean.config.DatabaseConfig;
 import io.ebean.datasource.DataSourceConfig;
+import io.ebean.datasource.DataSourceFactory;
+import io.ebean.datasource.DataSourcePool;
+import io.ebean.migration.DbPlatformNames;
+import io.ebean.migration.MigrationConfig;
+import io.ebean.migration.MigrationRunner;
 
 import javax.sql.DataSource;
+import java.util.Properties;
 
 public class EbeanHolder implements EbeanSource {
   private final Database ebeanServer;
-  private final ServerConfig config;
+  private final DatabaseConfig config;
 
   public EbeanHolder(String dbUrl, String dbUsername, String dbPassword, int maxConnections, String dbDriver) {
-    this.config = new ServerConfig();
+    this.config = new DatabaseConfig();
+
+    Properties p = new Properties();
+    System.getProperties().forEach((k, v) -> {
+      if (k instanceof String && ((String)k).startsWith("db.")) {
+        p.put(k, v);
+      }
+    });
 
     DataSourceConfig dsConfig = new DataSourceConfig();
 
@@ -21,24 +32,28 @@ public class EbeanHolder implements EbeanSource {
     dsConfig.setUsername(dbUsername);
     dsConfig.setPassword(dbPassword);
     dsConfig.setMaxConnections(maxConnections);
+    dsConfig.loadSettings(p, "db");
 
     String defaultDriver;
-    DbMigrationConfig migrationConfig = new DbMigrationConfig();
-    if (dbUrl.contains("mysql")) {
-      migrationConfig.setMigrationPath("/dbmigration/mysql");
-      migrationConfig.setPlatform(Platform.MYSQL);
+    MigrationConfig migrationConfig = new MigrationConfig();
+
+    migrationConfig.load(p);
+
+    if (dbUrl.contains("mysql") || dbUrl.contains("mariadb")) {
+      migrationConfig.setMigrationPath("classpath:/dbmigration/mysql");
+      migrationConfig.setPlatformName(DbPlatformNames.MYSQL);
       defaultDriver = "com.mysql.jdbc.Driver";
     } else if (dbUrl.contains("sqlserver")) {
-      migrationConfig.setMigrationPath("/dbmigration/mssql");
-      migrationConfig.setPlatform(Platform.SQLSERVER17);
+      migrationConfig.setMigrationPath("classpath:/dbmigration/mssql");
+      migrationConfig.setPlatformName(DbPlatformNames.SQLSERVER);
       defaultDriver = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
     } else if (dbUrl.contains("postgres")) {
-      migrationConfig.setMigrationPath("/dbmigration/postgres");
-      migrationConfig.setPlatform(Platform.POSTGRES);
+      migrationConfig.setMigrationPath("classpath:/dbmigration/postgres");
+      migrationConfig.setPlatformName(DbPlatformNames.POSTGRES);
       defaultDriver = "org.postgresql.Driver";
     } else {
-      migrationConfig.setMigrationPath("/dbmigration/h2");
-      migrationConfig.setPlatform(Platform.H2);
+      migrationConfig.setMigrationPath("classpath:/dbmigration/h2");
+      migrationConfig.setPlatformName(DbPlatformNames.H2);
       defaultDriver = "org.h2.Driver";
     }
 
@@ -48,13 +63,17 @@ public class EbeanHolder implements EbeanSource {
       dsConfig.setDriver(dbDriver);
     }
 
-    config.setMigrationConfig(migrationConfig);
+    config.setDatabasePlatformName(migrationConfig.getPlatformName());
+    final DataSourcePool pool = DataSourceFactory.create("generic", dsConfig);
+    MigrationRunner runner = new MigrationRunner(migrationConfig);
 
-    config.setDataSourceConfig(dsConfig);
+    runner.run(pool);
+    config.setDataSource(pool);
     config.add(new UUIDIdGenerator());
-    config.setRunMigration(true);
+    config.setRunMigration(false);
 
-    this.ebeanServer = io.ebean.EbeanServerFactory.create(config);
+
+    this.ebeanServer = io.ebean.DatabaseFactory.create(config);
   }
 
   @Override
