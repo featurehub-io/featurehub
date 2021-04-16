@@ -1,2 +1,2 @@
 #!/bin/sh
-docker build $DOCKER_OPTS -t featurehub/base_mr:1.4 .
+docker build $DOCKER_OPTS --no-cache -t featurehub/base_mr:1.5 .
