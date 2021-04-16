@@ -42,24 +42,20 @@
   </licenses>
 
   <properties>
-    <ebean.version>12.2.1</ebean.version>
+    <ebean.version>12.8.2</ebean.version>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>io.ebean</groupId>
-      <artifactId>ebean-annotation</artifactId>
-      <version>6.11</version>
+      <artifactId>ebean-datasource</artifactId>
+      <version>7.0</version>
     </dependency>
+
     <dependency>
       <groupId>io.ebean</groupId>
-      <artifactId>persistence-api</artifactId>
-      <version>2.2.2</version>
-    </dependency>
-    <dependency>
-      <groupId>org.flywaydb</groupId>
-      <artifactId>flyway-core</artifactId>
-      <version>5.0.7</version>
+      <artifactId>ebean-migration</artifactId>
+      <version>12.2.0</version>
     </dependency>
     <dependency>
       <groupId>io.ebean</groupId>
