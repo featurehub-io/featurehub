@@ -1,7 +1,6 @@
-import { SSEResultState } from 'featurehub-repository/dist';
+import {EdgeService, FeatureHubConfig, SSEResultState} from 'featurehub-repository';
 import EventSource from 'eventsource';
-import { InternalFeatureRepository } from 'featurehub-repository/dist/internal_feature_repository';
-import { EdgeService, FeatureHubConfig } from 'featurehub-repository';
+import {InternalFeatureRepository} from 'featurehub-repository/dist/internal_feature_repository';
 
 export class FeatureHubEventSourceClient implements EdgeService {
   private eventSource: EventSource;
