@@ -110,10 +110,10 @@ class _EditAttributeStrategyWidgetState
     if (_wellKnown != null) {
       return Text(
         _nameFieldMap[_wellKnown],
-        style: Theme.of(context)
-            .textTheme
-            .subtitle2
-            .copyWith(color: Theme.of(context).brightness == Brightness.light ? Theme.of(context).buttonColor : Theme.of(context).accentColor),
+        style: Theme.of(context).textTheme.subtitle2.copyWith(
+            color: Theme.of(context).brightness == Brightness.light
+                ? Theme.of(context).buttonColor
+                : Theme.of(context).accentColor),
       );
     } else {
       return TextFormField(
@@ -142,7 +142,9 @@ class _EditAttributeStrategyWidgetState
       margin: EdgeInsets.symmetric(vertical: 8.0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.all(Radius.circular(6.0)),
-        color: Theme.of(context).brightness == Brightness.light ? Theme.of(context).selectedRowColor : Theme.of(context).primaryColorLight.withOpacity(0.1),
+        color: Theme.of(context).brightness == Brightness.light
+            ? Theme.of(context).selectedRowColor
+            : Theme.of(context).primaryColorLight.withOpacity(0.1),
       ),
       child: Row(
         children: [
@@ -357,11 +359,11 @@ class _EditAttributeStrategyWidgetState
         ];
         break;
       case RolloutStrategyFieldType.DATE:
-        labelText = 'Date(s) - YYYY/MM/DD';
-        helperText = '2017/04/16';
+        labelText = 'Date(s) - YYYY-MM-DD';
+        helperText = '2017-04-16';
         break;
       case RolloutStrategyFieldType.DATETIME:
-        labelText = 'Date/Time(s) - ISO8601 format';
+        labelText = 'Date/Time(s) - UTC/ISO8601 format';
         helperText = 'e.g. 2007-03-01T13:00:00Z';
         break;
       case RolloutStrategyFieldType.BOOLEAN:
