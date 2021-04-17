@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/args.dart';
@@ -41,7 +40,7 @@ main(List<String> passedArgs) async {
 
   await identity.login();
 
-  final featureFilename = args['features'];
+  final featureFilename = args['features-wu'];
   if (featureFilename != null) {
     final featureFile = await File.fromUri(Uri.file(featureFilename));
 
@@ -50,8 +49,7 @@ main(List<String> passedArgs) async {
       exit(-1);
     }
 
-    final features =
-        FeaturesWuCommand(host, jsonDecode(await featureFile.readAsString()));
+    final features = FeaturesWuCommand(host, await featureFile.readAsString());
 
     final portfolioName = args['portfolio'];
     final applicationName = args['application'];

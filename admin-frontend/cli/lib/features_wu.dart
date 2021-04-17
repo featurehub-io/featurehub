@@ -8,8 +8,9 @@ class StrategyWu {
   final String name;
   final List<String> values;
   final String defaultValue;
+  final RolloutStrategyAttributeConditional conditional;
 
-  StrategyWu(this.name, this.values, this.defaultValue);
+  StrategyWu(this.name, this.values, this.defaultValue, this.conditional);
 }
 
 class FeatureWu {
@@ -72,19 +73,25 @@ class FeatureWuParser {
               // strategy is fully enabled
               feature.sValue = 'enabled';
             } else if (parts.length == 3 && value != null) {
-              feature.strategies.add(
-                  StrategyWu(parts[2], value.toString().split(","), 'enabled'));
+              feature.strategies.add(StrategyWu(
+                  parts[2],
+                  value.toString().split(","),
+                  'enabled',
+                  RolloutStrategyAttributeConditional.INCLUDES));
               feature.sValue = 'disabled';
             }
           } else if (parts[1] == 'disabled') {
             if (parts.length == 2 && value == 'ALL') {
               feature.sValue = 'disabled';
               // strategy is fully disabled
-              feature.strategies
-                  .add(StrategyWu('disable', ['matching'], 'enabled'));
+              feature.strategies.add(StrategyWu('disable', ['matching'],
+                  'enabled', RolloutStrategyAttributeConditional.EXCLUDES));
             } else if (parts.length == 3 && value != null) {
               feature.strategies.add(StrategyWu(
-                  parts[2], value.toString().split(","), 'disabled'));
+                  parts[2],
+                  value.toString().split(","),
+                  'disabled',
+                  RolloutStrategyAttributeConditional.INCLUDES));
               feature.sValue = 'enabled';
             }
           } else {
@@ -97,14 +104,96 @@ class FeatureWuParser {
 }
 
 class FeaturesWuCommand {
-  final dynamic json;
+  final String json;
   final Host host;
   final FeatureServiceApi api;
+  final EnvironmentFeatureServiceApi envFeatApi;
+  final EnvironmentServiceApi envApi;
 
   FeaturesWuCommand(this.host, this.json)
-      : api = FeatureServiceApi(host.apiClient);
+      : api = FeatureServiceApi(host.apiClient),
+        envApi = EnvironmentServiceApi(host.apiClient),
+        envFeatApi = EnvironmentFeatureServiceApi(host.apiClient);
 
-  Future<void> process(Portfolio portfolio, Application application) async {}
+  Future<void> process(Portfolio portfolio, Application application) async {
+    final parser = FeatureWuParser.raw(this.json);
+
+    parser.parse();
+
+    if (parser.features.length == 0) {
+      print("There were no features to parse");
+      return;
+    }
+
+    print("checking features for ${application.name}");
+    // make sure all of the feature types exist first
+    for (final feat in parser.features.values) {
+      var feature = await findFeature(application, feat.name);
+
+      if (feature == null) {
+        print("--> new feature for ${application.name} -> ${feat.name}");
+        feature = await createFeature(application, feat.name, feat.type);
+      }
+    }
+
+    // now find all the environments and start pushing the values of the features
+    final envs =
+        await envApi.findEnvironments(application.id, includeFeatures: true);
+
+    for (final env in envs) {
+      final featureVals = (await envFeatApi.getFeaturesForEnvironment(env.id))
+          .featureValues
+          .toList();
+
+      for (final feat in parser.features.values) {
+        final fv = featureVals.firstWhere((f) => f.key == feat.name,
+            orElse: () => FeatureValue()
+              ..locked = false
+              ..rolloutStrategies = []
+              ..key = feat.name);
+
+        if (fv.id == null) {
+          featureVals.add(fv);
+        }
+
+        if (feat.type == FeatureValueType.BOOLEAN) {
+          fv.valueBoolean = feat.value;
+        } else {
+          fv.valueString = feat.sValue;
+        }
+
+        if (feat.strategies.isNotEmpty) {
+          feat.strategies.forEach((readStrategy) {
+            RolloutStrategy existingRS = fv.rolloutStrategies.firstWhere(
+                (rs) =>
+                    rs.attributes.length == 1 &&
+                    rs.attributes[0].fieldName == readStrategy.name,
+                orElse: () => null);
+
+            var updatingRS = existingRS ?? RolloutStrategy()
+              ..name = readStrategy.name;
+
+            if (existingRS == null) {
+              fv.rolloutStrategies.add(updatingRS);
+            }
+
+            updatingRS.value = readStrategy.defaultValue;
+            updatingRS.attributes = [
+              new RolloutStrategyAttribute()
+                ..fieldName = readStrategy.name
+                ..type = RolloutStrategyFieldType.STRING
+                ..values = readStrategy.values
+                ..conditional = readStrategy.conditional
+            ];
+          });
+        }
+      }
+
+      print(
+          "updating features for environment ${env.name} in application ${application.name}");
+      await envFeatApi.updateAllFeaturesForEnvironment(env.id, featureVals);
+    }
+  }
 
   Future<Feature> createFeature(
       Application app, String featureName, FeatureValueType type) async {
