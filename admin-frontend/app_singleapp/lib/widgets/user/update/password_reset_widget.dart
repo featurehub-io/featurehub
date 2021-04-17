@@ -84,7 +84,7 @@ class _ResetPasswordState extends State<ResetPasswordWidget> {
                             try {
                               await bloc.replaceTempPassword(_password.text);
                             } catch (e, s) {
-                              bloc.dialogError(e, s);
+                              await bloc.dialogError(e, s);
                             }
                           }
                         })

@@ -214,10 +214,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                         child: Center(
                           child: Text(
                               'Set the group access to features for each environment',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .caption
-                                  ),
+                              style: Theme.of(context).textTheme.caption),
                         )),
                     Table(children: rows),
                     FHButtonBar(children: [
@@ -248,7 +245,9 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                                 .then((group) => widget.bloc.mrClient
                                     .addSnackbar(
                                         Text("Group '${group.name}' updated!")))
-                                .catchError(widget.bloc.mrClient.dialogError);
+                                .catchError((e, s) {
+                              widget.bloc.mrClient.dialogError(e, s);
+                            });
                           },
                           title: 'Update'),
                     ])

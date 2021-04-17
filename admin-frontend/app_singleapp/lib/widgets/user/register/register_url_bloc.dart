@@ -55,12 +55,7 @@ class RegisterBloc implements Bloc {
   Future<void> completeRegistration(String token, String email, String name,
       String password, String confirmPassword) async {
     await mrClient.authServiceApi
-        .registerPerson(PersonRegistrationDetails()
-          ..email = email
-          ..password = password
-          ..confirmPassword = confirmPassword
-          ..name = name
-          ..registrationToken = token)
+        .registerPerson(PersonRegistrationDetails(email: email, password: password, confirmPassword: confirmPassword, name: name, registrationToken: token, ))
         .then((data) async {
       await mrClient.hasToken(data);
       _formStateStream.add(RegisterUrlForm.successState);

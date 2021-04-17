@@ -89,7 +89,7 @@ class _GroupUpdateDialogWidgetState extends State<GroupUpdateDialogWidget> {
           widget.bloc.mrClient.customError(
               messageTitle: "Group '${_groupName.text}' already exists");
         } else {
-          widget.bloc.mrClient.dialogError(e, s);
+          await widget.bloc.mrClient.dialogError(e, s);
         }
       });
     }
@@ -132,7 +132,7 @@ class GroupDeleteDialogWidget extends StatelessWidget {
             bloc.mrClient.customError(
                 messageTitle: 'Could not delete group ${group.name}');
           } else {
-            bloc.mrClient.dialogError(e, s);
+            await bloc.mrClient.dialogError(e, s);
           }
           return false;
         }

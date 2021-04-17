@@ -417,8 +417,10 @@ class ManagementRepositoryClientBloc implements Bloc {
         errorMessage: messageBody));
   }
 
-  void dialogError(e, StackTrace s,
-      {String messageTitle, bool showDetails = true, String messageBody = ''}) {
+  Future<void> dialogError(e, StackTrace s,
+      {String messageTitle,
+      bool showDetails = true,
+      String messageBody = ''}) async {
     _log.warning(messageBody ?? 'failure', e, s);
     if (messageTitle != null) {
       addError(FHError(messageTitle,
@@ -437,9 +439,10 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   Future<void> login(String email, String password) async {
     await authServiceApi
-        .login(UserCredentials()
-          ..email = email
-          ..password = password)
+        .login(UserCredentials(
+      email: email,
+      password: password,
+    ))
         .then((tp) {
       hasToken(tp);
     });
@@ -468,7 +471,11 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   Future<void> replaceTempPassword(String password) {
     return authServiceApi
-        .replaceTempPassword(person.id.id, PasswordReset()..password = password)
+        .replaceTempPassword(
+            person.id.id,
+            PasswordReset(
+              password: password,
+            ))
         .then((tp) {
       setBearerToken(tp.accessToken);
       _initializedSource.add(InitializedCheckState.zombie);
@@ -503,6 +510,7 @@ class ManagementRepositoryClientBloc implements Bloc {
         setCurrentAid(null);
       }
     } catch (e, s) {
+      // ignore: unawaited_futures
       dialogError(e, s);
     }
   }

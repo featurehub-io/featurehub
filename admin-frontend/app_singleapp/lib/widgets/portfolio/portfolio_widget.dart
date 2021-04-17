@@ -60,7 +60,8 @@ class _PortfolioWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(30, 5, 30, 5),
       decoration: BoxDecoration(
-          color: Theme.of(context).cardColor, border: Border(bottom: bs, left: bs, right: bs)),
+          color: Theme.of(context).cardColor,
+          border: Border(bottom: bs, left: bs, right: bs)),
       child: Row(
         children: <Widget>[
           Expanded(
@@ -128,7 +129,7 @@ class PortfolioDeleteDialogWidget extends StatelessWidget {
               .addSnackbar(Text("Portfolio '${portfolio.name}' deleted!"));
           return true;
         } catch (e, s) {
-          bloc.mrClient.dialogError(e, s);
+          await bloc.mrClient.dialogError(e, s);
           return false;
         }
       },
@@ -228,7 +229,7 @@ class _PortfolioUpdateDialogWidgetState
                                 "Portfolio '${_portfolioName.text}' already exists",
                           );
                         } else {
-                          widget.bloc.mrClient.dialogError(e, s);
+                          await widget.bloc.mrClient.dialogError(e, s);
                         }
                       }
                     }

@@ -235,10 +235,7 @@ class _ServiceAccountPermissionDetailState
                         child: Center(
                           child: Text(
                               'Set the service account access to features for each environment',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .caption
-                          ),
+                              style: Theme.of(context).textTheme.caption),
                         )),
                     table,
                     FHButtonBar(children: [
@@ -264,7 +261,9 @@ class _ServiceAccountPermissionDetailState
                                 .then((serviceAccount) => widget.bloc.mrClient
                                     .addSnackbar(Text(
                                         "Service account '${serviceAccount?.name}' updated!")))
-                                .catchError(widget.bloc.mrClient.dialogError);
+                                .catchError((e, s) {
+                              widget.bloc.mrClient.dialogError(e, s);
+                            });
                           },
                           title: 'Update'),
                     ]),
@@ -334,9 +333,10 @@ class _ServiceAccountPermissionDetailState
     environments.forEach((environment) {
       final sap = serviceAccount.permissions
           .firstWhere((item) => item.environmentId == environment.id,
-              orElse: () => ServiceAccountPermission()
-                ..environmentId = environment.id
-                ..permissions = <RoleType>[]);
+              orElse: () => ServiceAccountPermission(
+                    environmentId: environment.id,
+                    permissions: <RoleType>[],
+                  ));
 
       retMap[environment.id] = sap;
     });

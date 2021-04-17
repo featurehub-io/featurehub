@@ -32,7 +32,9 @@ class ManageServiceAccountsBloc implements Bloc {
       final serviceAccounts = await _serviceAccountServiceApi
           .searchServiceAccountsInPortfolio(portfolioId,
               includePermissions: true)
-          .catchError(mrClient.dialogError);
+          .catchError((e, s) {
+        mrClient.dialogError(e, s);
+      });
       if (!_serviceAccountSearchResultSource.isClosed) {
         _serviceAccountSearchResultSource.add(serviceAccounts);
       }
@@ -50,9 +52,10 @@ class ManageServiceAccountsBloc implements Bloc {
   }
 
   Future<bool> deleteServiceAccount(String sid) async {
-    final result = await _serviceAccountServiceApi
-        .delete(sid)
-        .catchError(mrClient.dialogError);
+    final result =
+        await _serviceAccountServiceApi.delete(sid).catchError((e, s) {
+      mrClient.dialogError(e, s);
+    });
     await addServiceAccountsToStream(portfolioId);
     await mrClient.streamValley.getCurrentPortfolioServiceAccounts(force: true);
     return result;
@@ -66,7 +69,9 @@ class ManageServiceAccountsBloc implements Bloc {
         .update(serviceAccount.id, serviceAccount)
         .then((onSuccess) {
       addServiceAccountsToStream(portfolioId);
-    }).catchError(mrClient.dialogError);
+    }).catchError((e, s) {
+      mrClient.dialogError(e, s);
+    });
   }
 
   Future<void> createServiceAccount(
@@ -78,7 +83,9 @@ class ManageServiceAccountsBloc implements Bloc {
         .createServiceAccountInPortfolio(portfolioId, serviceAccount)
         .then((onSuccess) {
       addServiceAccountsToStream(mrClient.getCurrentPid());
-    }).catchError(mrClient.dialogError);
+    }).catchError((e, s) {
+      mrClient.dialogError(e, s);
+    });
     await mrClient.streamValley.getCurrentPortfolioServiceAccounts(force: true);
   }
 

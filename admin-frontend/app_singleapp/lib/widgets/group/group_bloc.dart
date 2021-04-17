@@ -57,7 +57,9 @@ class GroupBloc implements Bloc {
     if (groupId != null && groupId.length > 1) {
       final fetchedGroup = await _groupServiceApi
           .getGroup(groupId, includeMembers: true)
-          .catchError(mrClient.dialogError);
+          .catchError((e, s) {
+        mrClient.dialogError(e, s);
+      });
       // publish it out...
       if (fetchedGroup != null) {
         group = fetchedGroup;
@@ -69,7 +71,9 @@ class GroupBloc implements Bloc {
   Future<void> deleteGroup(String groupId, bool includeMembers) async {
     await _groupServiceApi
         .deleteGroup(groupId, includeMembers: includeMembers)
-        .catchError(mrClient.dialogError);
+        .catchError((e, s) {
+      mrClient.dialogError(e, s);
+    });
     group = null;
     this.groupId = null;
     _groupSource.add(null);
@@ -93,7 +97,7 @@ class GroupBloc implements Bloc {
       groupId = groupToUpdate.id;
       return true;
     } catch (e, s) {
-      mrClient.dialogError(e, s,
+      await mrClient.dialogError(e, s,
           messageTitle: 'Failed to update group',
           messageBody:
               'Failed to update group because of a duplicate or other conflict.');
@@ -104,7 +108,9 @@ class GroupBloc implements Bloc {
   Future<void> createGroup(Group newGroup) async {
     final createdGroup = await _groupServiceApi
         .createGroup(mrClient.currentPid, newGroup)
-        .catchError(mrClient.dialogError);
+        .catchError((e, s) {
+      mrClient.dialogError(e, s);
+    });
     await getGroups(focusGroup: createdGroup);
     groupId = createdGroup.id;
     group = createdGroup;

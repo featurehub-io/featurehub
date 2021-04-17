@@ -27,7 +27,9 @@ class EditUserBloc implements Bloc {
   }
 
   Future<void> resetUserPassword(String password) {
-    final passwordReset = PasswordReset()..password = password;
+    final passwordReset = PasswordReset(
+      password: password,
+    );
     return mrClient.authServiceApi.resetPassword(personId, passwordReset);
   }
 
@@ -44,7 +46,7 @@ class EditUserBloc implements Bloc {
           .getPerson(queryParameter, includeGroups: true);
       _formStateStream.add(EditUserForm.initialState);
     } catch (e, s) {
-      mrClient.dialogError(e, s);
+      await mrClient.dialogError(e, s);
     }
   }
 
@@ -64,7 +66,7 @@ class EditUserBloc implements Bloc {
       portfolios = await mrClient.portfolioServiceApi
           .findPortfolios(includeGroups: true);
     } catch (e, s) {
-      mrClient.dialogError(e, s);
+      await mrClient.dialogError(e, s);
     }
     ;
     return portfolios;
@@ -87,6 +89,8 @@ class EditUserBloc implements Bloc {
   }
 
   Portfolio isSuperAdminPortfolio() {
-    return Portfolio()..name = 'Super-Admin';
+    return Portfolio(
+      name: 'Super-Admin',
+    );
   }
 }

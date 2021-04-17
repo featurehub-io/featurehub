@@ -261,11 +261,11 @@ class CreateUserFormButtons extends StatelessWidget {
                     await bloc.createUser(bloc.email);
                   } catch (e, s) {
                     if (e is ApiException && e.code == 409) {
-                      bloc.client.dialogError(e, s,
+                      await bloc.client.dialogError(e, s,
                           messageTitle:
                               "User with email '${bloc.email}' already exists");
                     } else {
-                      bloc.client.dialogError(e, s);
+                      await bloc.client.dialogError(e, s);
                     }
                   }
                 }

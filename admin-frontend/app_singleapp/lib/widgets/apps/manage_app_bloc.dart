@@ -93,14 +93,18 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
   void _fetchEnvironments() async {
     application = await _appServiceApi
         .getApplication(applicationId, includeEnvironments: true)
-        .catchError(_mrClient.dialogError);
+        .catchError((e, s) {
+      _mrClient.dialogError(e, s);
+    });
     environmentsList = application.environments;
     if (!_environmentBS.isClosed) {
       _environmentBS.add(environmentsList);
     }
     portfolio = await _portfolioServiceApi
         .getPortfolio(application.portfolioId)
-        .catchError(_mrClient.dialogError);
+        .catchError((e, s) {
+      _mrClient.dialogError(e, s);
+    });
     if (!_pageStateBS.isClosed) {
       _pageStateBS.add(ManageAppPageState.initialState);
     }
@@ -113,13 +117,16 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
   }
 
   Future<void> _fetchGroups() async {
-    application = await _appServiceApi
-        .getApplication(applicationId)
-        .catchError(_mrClient.dialogError);
+    application =
+        await _appServiceApi.getApplication(applicationId).catchError((e, s) {
+      _mrClient.dialogError(e, s);
+    });
 
     portfolio = await _portfolioServiceApi
         .getPortfolio(application.portfolioId, includeGroups: true)
-        .catchError(_mrClient.dialogError);
+        .catchError((e, s) {
+      _mrClient.dialogError(e, s);
+    });
     if (!_groupsBS.isClosed) {
       _groupsBS.add(portfolio.groups);
 
@@ -136,16 +143,19 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
   }
 
   void _fetchServiceAccounts() async {
-    application = await _appServiceApi
-        .getApplication(applicationId)
-        .catchError(_mrClient.dialogError);
+    application =
+        await _appServiceApi.getApplication(applicationId).catchError((e, s) {
+      _mrClient.dialogError(e, s);
+    });
 
     if (_mrClient.userIsCurrentPortfolioAdmin) {
       final serviceAccounts = await _serviceAccountServiceApi
           .searchServiceAccountsInPortfolio(
               application.portfolioId ?? _mrClient.currentPortfolio.id,
               includePermissions: true)
-          .catchError(_mrClient.dialogError);
+          .catchError((e, s) {
+        _mrClient.dialogError(e, s);
+      });
       if (!_serviceAccountsBS.isClosed) {
         if (serviceAccounts.isNotEmpty) {
           _currentServiceAccountIdSource.add(null);
@@ -181,7 +191,9 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
         if (!_serviceAccountPS.isClosed) {
           _serviceAccountPS.add(sa);
         }
-      }).catchError(_mrClient.dialogError);
+      }).catchError((e, s) {
+        _mrClient.dialogError(e, s);
+      });
     }
   }
 
@@ -195,7 +207,9 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
             updateMembers: false,
             updateApplicationGroupRoles: true,
             updateEnvironmentGroupRoles: true)
-        .catchError(_mrClient.dialogError);
+        .catchError((e, s) {
+      _mrClient.dialogError(e, s);
+    });
     _refreshEnvironments();
     return updatedGroup;
   }
@@ -209,11 +223,13 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
       String sid, ServiceAccount serviceAccount) async {
     final updatedServiceAccount = await _serviceAccountServiceApi
         .update(
-          sid,
-          serviceAccount,
-          includePermissions: true,
-        )
-        .catchError(_mrClient.dialogError);
+      sid,
+      serviceAccount,
+      includePermissions: true,
+    )
+        .catchError((e, s) {
+      _mrClient.dialogError(e, s);
+    });
     unawaited(_mrClient.streamValley.getEnvironmentServiceAccountPermissions());
     return updatedServiceAccount;
   }
@@ -228,7 +244,9 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     }
     final success = await _environmentServiceApi
         .deleteEnvironment(eid, includeAcls: true, includeFeatures: true)
-        .catchError(_mrClient.dialogError);
+        .catchError((e, s) {
+      _mrClient.dialogError(e, s);
+    });
     if (success) {
       environmentsList.remove(toRemove);
       // await updateEnvs(applicationId, environmentsList);
@@ -241,7 +259,9 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
   void updateEnvs(String appId, List<Environment> envs) async {
     environmentsList = await _environmentServiceApi
         .environmentOrdering(appId, envs)
-        .catchError(_mrClient.dialogError);
+        .catchError((e, s) {
+      _mrClient.dialogError(e, s);
+    });
     _environmentBS.add(environmentsList);
   }
 
@@ -249,7 +269,9 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     env.name = name;
     await _environmentServiceApi
         .updateEnvironment(env.id, env)
-        .catchError(_mrClient.dialogError);
+        .catchError((e, s) {
+      _mrClient.dialogError(e, s);
+    });
     _fetchEnvironments();
   }
 
@@ -259,9 +281,10 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
         orElse: () => null);
     final env = await _environmentServiceApi.createEnvironment(
         applicationId,
-        Environment()
-          ..name = name
-          ..production = _isProduction);
+        Environment(
+          name: name,
+          production: _isProduction,
+        ));
     if (toUpdate != null) {
       toUpdate.priorEnvironmentId = env.id;
     }

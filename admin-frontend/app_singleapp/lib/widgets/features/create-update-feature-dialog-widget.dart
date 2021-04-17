@@ -218,7 +218,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                             messageTitle:
                                 "Feature with key '${_featureKey.text}' already exists");
                       } else {
-                        widget.bloc.mrClient.dialogError(e, s);
+                        await widget.bloc.mrClient.dialogError(e, s);
                       }
                     }
                   }

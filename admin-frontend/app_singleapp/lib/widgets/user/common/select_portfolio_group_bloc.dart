@@ -39,7 +39,7 @@ class SelectPortfolioGroupBloc implements Bloc {
       _currentPortfoliosStream.add(data);
       portfoliosList = data;
     } catch (e, s) {
-      mrClient.dialogError(e, s);
+      await mrClient.dialogError(e, s);
     }
   }
 

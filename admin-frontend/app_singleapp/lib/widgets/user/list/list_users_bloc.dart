@@ -67,7 +67,7 @@ class ListUsersBloc implements Bloc {
     final results = <SearchPersonEntry>[];
 
     final hasLocal = mrClient.identityProviders.hasLocal;
-    final emptyReg = OutstandingRegistration()..expired = false;
+    final emptyReg = OutstandingRegistration(expired: false, );
 
     data.people.forEach((person) {
       final spr = SearchPersonEntry(

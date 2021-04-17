@@ -333,10 +333,7 @@ class _ListUserInfo extends StatelessWidget {
                   flex: 1,
                   child: Text(
                     'Groups',
-                    style: Theme
-                        .of(context)
-                        .textTheme
-                        .caption,
+                    style: Theme.of(context).textTheme.caption,
                   ),
                 ),
                 Expanded(
@@ -346,14 +343,11 @@ class _ListUserInfo extends StatelessWidget {
                         children: [
                           if (entry.person.groups.isNotEmpty)
                             ...entry.person.groups
-                                .map((e) =>
-                                Text(
-                                  e.name,
-                                  style: Theme
-                                      .of(context)
-                                      .textTheme
-                                      .bodyText2,
-                                ))
+                                .map((e) => Text(
+                                      e.name,
+                                      style:
+                                          Theme.of(context).textTheme.bodyText2,
+                                    ))
                                 .toList(),
                         ]))
               ],
@@ -378,10 +372,7 @@ class _ListUserRow extends StatelessWidget {
           flex: 1,
           child: Text(
             title,
-            style: Theme
-                .of(context)
-                .textTheme
-                .caption,
+            style: Theme.of(context).textTheme.caption,
           ),
         ),
         Expanded(flex: 5, child: child)
@@ -414,7 +405,7 @@ class DeleteDialogWidget extends StatelessWidget {
           bloc.mrClient.addSnackbar(Text("User '${person.name}' deleted!"));
           return true;
         } catch (e, s) {
-          bloc.mrClient.dialogError(e, s);
+          await bloc.mrClient.dialogError(e, s);
           return false;
         }
       },

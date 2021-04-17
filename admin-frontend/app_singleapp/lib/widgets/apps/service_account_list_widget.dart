@@ -103,7 +103,6 @@ class _ServiceAccountWidget extends StatelessWidget {
 
   Widget _adminFunctions(BuildContext context) {
     return Row(children: [
-
       FHIconButton(
           icon: Icon(Icons.edit),
           onPressed: () => bloc.mrClient.addOverlay((BuildContext context) =>
@@ -232,10 +231,10 @@ class _ServiceAccountDescription extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(serviceAccount.name,
-            style: Theme.of(context)
-                .textTheme
-                .subtitle1
-                .copyWith(color: light ? Theme.of(context).primaryColor : Theme.of(context).accentColor)),
+            style: Theme.of(context).textTheme.subtitle1.copyWith(
+                color: light
+                    ? Theme.of(context).primaryColor
+                    : Theme.of(context).accentColor)),
         Text(
           serviceAccount.description != null
               ? '${serviceAccount.description}'
@@ -267,9 +266,11 @@ class ServiceAccountDeleteDialogWidget extends StatelessWidget {
       deleteSelected: () async {
         final success = await bloc
             .deleteServiceAccount(serviceAccount.id)
-            .catchError((e, s) => bloc.mrClient.dialogError(e, s,
-                messageTitle:
-                    "Couldn't delete service account ${serviceAccount.name}"));
+            .catchError((e, s) {
+          bloc.mrClient.dialogError(e, s,
+              messageTitle:
+                  "Couldn't delete service account ${serviceAccount.name}");
+        });
         if (success) {
           bloc.mrClient.removeOverlay();
           bloc.mrClient.addSnackbar(
@@ -395,7 +396,7 @@ class _ServiceAccountUpdateDialogWidgetState
                           messageTitle:
                               "Service account '${_name.text}' already exists");
                     } else {
-                      widget.bloc.mrClient.dialogError(e, s);
+                      await widget.bloc.mrClient.dialogError(e, s);
                     }
                   }
                 }

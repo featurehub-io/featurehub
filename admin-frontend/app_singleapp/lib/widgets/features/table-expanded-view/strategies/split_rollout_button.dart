@@ -30,7 +30,7 @@ class AddStrategyButton extends StatelessWidget {
                       return BlocProvider(
                         creator: (_c, _b) => IndividualStrategyBloc(
                             bloc.environmentFeatureValue,
-                            RolloutStrategy()..id = 'created'),
+                            RolloutStrategy(id: 'created', )),
                         child: StrategyEditingWidget(
                           bloc: bloc,
                           editable: editable,

@@ -100,16 +100,19 @@ class PerApplicationFeaturesBloc
 
     return _rolloutStrategyServiceApi.validate(
         applicationId,
-        RolloutStrategyValidationRequest()
-          ..customStrategies = customStrategies
-          ..sharedStrategies = sharedStrategies);
+        RolloutStrategyValidationRequest(
+          customStrategies: customStrategies,
+          sharedStrategies: sharedStrategies,
+        ));
   }
 
   Future<Environment> getEnvironment(String envId) async {
     return _environmentServiceApi
         .getEnvironment(envId,
             includeServiceAccounts: true, includeSdkUrl: true)
-        .catchError(mrClient.dialogError);
+        .catchError((e, s) {
+      mrClient.dialogError(e, s);
+    });
   }
 
   void _sortApplicationFeatureValues(
@@ -143,14 +146,17 @@ class PerApplicationFeaturesBloc
           _appFeatureValuesBS.add(FeatureStatusFeatures(appFeatureValues));
         }
       } catch (e, s) {
-        mrClient.dialogError(e, s);
+        await mrClient.dialogError(e, s);
       }
     }
   }
 
   void _updateShownEnvironments(List<String> environmentIds) async {
     final envs = await _userStateServiceApi.saveHiddenEnvironments(
-        applicationId, HiddenEnvironments()..environmentIds = environmentIds);
+        applicationId,
+        HiddenEnvironments(
+          environmentIds: environmentIds,
+        ));
     _shownEnvironmentsSource.add(envs.environmentIds);
   }
 
@@ -205,7 +211,7 @@ class PerApplicationFeaturesBloc
           _appSearchResultSource.add(appList);
         }
       } catch (e, s) {
-        mrClient.dialogError(e, s);
+        await mrClient.dialogError(e, s);
       }
       if (appList != null && applicationId != null) {
         checkApplicationIdIsLegit(appList);
@@ -228,12 +234,13 @@ class PerApplicationFeaturesBloc
       FeatureValueType featureValueType,
       String featureAlias,
       String featureLink) async {
-    final feature = Feature()
-      ..name = name
-      ..valueType = featureValueType
-      ..key = key
-      ..alias = featureAlias
-      ..link = featureLink;
+    final feature = Feature(
+      name: name,
+      valueType: featureValueType,
+      key: key,
+      alias: featureAlias,
+      link: featureLink,
+    );
     await _featureServiceApi.createFeaturesForApplication(
         applicationId, feature);
     unawaited(mrClient.streamValley.getCurrentApplicationFeatures());

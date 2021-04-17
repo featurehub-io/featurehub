@@ -124,7 +124,7 @@ class _AppUpdateDialogWidgetState extends State<AppUpdateDialogWidget> {
           widget.bloc.mrClient.customError(
               messageTitle: "Application '${_appName.text}' already exists");
         } else {
-          widget.bloc.mrClient.dialogError(e, s);
+          await widget.bloc.mrClient.dialogError(e, s);
         }
       } finally {
         setState(() {

@@ -197,15 +197,18 @@ class StreamValley {
     List<Application> appList;
     if (currentPortfolioId != null) {
       if (findApp != null) {
-        appList =
-            await findApp(currentPortfolioId).catchError(mrClient.dialogError);
+        appList = await findApp(currentPortfolioId).catchError((e, s) {
+          mrClient.dialogError(e, s);
+        });
       } else {
         appList = await applicationServiceApi
             .findApplications(currentPortfolioId,
                 order: SortOrder.DESC,
                 includeEnvironments: true,
                 includeFeatures: _includeEnvironmentsInApplicationRequest)
-            .catchError(mrClient.dialogError);
+            .catchError((e, s) {
+          mrClient.dialogError(e, s);
+        });
       }
 
       currentPortfolioApplications = appList;
@@ -234,7 +237,9 @@ class StreamValley {
         await portfolioServiceApi
             .getPortfolio(currentPortfolioId, includeGroups: true)
             .then((portfolio) => currentPortfolioGroups = portfolio.groups)
-            .catchError(mrClient.dialogError);
+            .catchError((e, s) {
+          mrClient.dialogError(e, s);
+        });
       } else {
         currentPortfolioGroups = [];
       }
@@ -254,7 +259,9 @@ class StreamValley {
         await serviceAccountServiceApi
             .searchServiceAccountsInPortfolio(currentPortfolioId)
             .then((accounts) => currentPortfolioServiceAccounts = accounts)
-            .catchError(mrClient.dialogError);
+            .catchError((e, s) {
+          mrClient.dialogError(e, s);
+        });
       } else {
         currentPortfolioServiceAccounts = [];
       }
@@ -267,7 +274,9 @@ class StreamValley {
     if (_currentAppIdSource.value != null) {
       envList = await environmentServiceApi
           .findEnvironments(_currentAppIdSource.value, includeAcls: true)
-          .catchError(mrClient.dialogError);
+          .catchError((e, s) {
+        mrClient.dialogError(e, s);
+      });
     }
 
     currentApplicationEnvironments = envList;
@@ -278,7 +287,9 @@ class StreamValley {
     if (_currentAppIdSource.value != null) {
       final featureList = await featureServiceApi
           .getAllFeaturesForApplication(_currentAppIdSource.value)
-          .catchError(mrClient.dialogError);
+          .catchError((e, s) {
+        mrClient.dialogError(e, s);
+      });
       currentApplicationFeatures = featureList;
     } else {
       currentApplicationFeatures = [];
@@ -291,7 +302,9 @@ class StreamValley {
           .searchServiceAccountsInPortfolio(currentPortfolioId,
               includePermissions: true,
               applicationId: _currentAppIdSource.value)
-          .catchError(mrClient.dialogError);
+          .catchError((e, s) {
+        mrClient.dialogError(e, s);
+      });
       currentEnvironmentServiceAccount = saList;
     } else {
       currentEnvironmentServiceAccount = [];

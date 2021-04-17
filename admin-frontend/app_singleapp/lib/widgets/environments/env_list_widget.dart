@@ -193,7 +193,8 @@ class _ProductionEnvironmentIndicatorWidget extends StatelessWidget {
         decoration: BoxDecoration(color: Colors.red, shape: BoxShape.circle),
         child: Center(
             child: Text('P',
-                style: TextStyle(color: Theme.of(context).cardColor, fontSize: 18.0))),
+                style: TextStyle(
+                    color: Theme.of(context).cardColor, fontSize: 18.0))),
       ),
     );
   }
@@ -300,7 +301,8 @@ class _EnvUpdateDialogWidgetState extends State<EnvUpdateDialogWidget> {
                     return null;
                   })),
               CheckboxListTile(
-                title: Text('Mark as production environment', style: Theme.of(context).textTheme.caption),
+                title: Text('Mark as production environment',
+                    style: Theme.of(context).textTheme.caption),
                 value: _isProduction,
                 onChanged: (bool val) {
                   setState(() {
@@ -343,7 +345,7 @@ class _EnvUpdateDialogWidgetState extends State<EnvUpdateDialogWidget> {
                           messageTitle:
                               'Environment with name ${_envName.text} already exists');
                     } else {
-                      widget.bloc.mrClient.dialogError(e, s);
+                      await widget.bloc.mrClient.dialogError(e, s);
                     }
                   }
                 }

@@ -68,7 +68,7 @@ class AppsBloc implements Bloc {
       success = await _applicationServiceApi.deleteApplication(appId);
       await _refreshApplications();
     } catch (e, s) {
-      mrClient.dialogError(e, s);
+      await mrClient.dialogError(e, s);
     }
 
     return success;

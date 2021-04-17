@@ -235,7 +235,7 @@ class _UserPasswordUpdateDialogWidgetState
                     await widget.bloc.resetUserPassword(_password.text);
                     widget.bloc.mrClient.removeOverlay();
                   } catch (e, s) {
-                    widget.bloc.mrClient.dialogError(e, s);
+                    await widget.bloc.mrClient.dialogError(e, s);
                   }
                 }
               }))

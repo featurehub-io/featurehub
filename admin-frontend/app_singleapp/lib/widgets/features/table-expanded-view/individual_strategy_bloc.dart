@@ -41,9 +41,7 @@ class IndividualStrategyBloc extends Bloc {
       (rolloutStrategy.id == null || rolloutStrategy.id == 'created');
 
   void createAttribute({StrategyAttributeWellKnownNames type}) {
-    final rs = RolloutStrategyAttribute()
-      ..id = DateTime.now().millisecond.toRadixString(16) // hex, just because
-      ..fieldName = type?.name;
+    final rs = RolloutStrategyAttribute(id: DateTime.now().millisecond.toRadixString(16), fieldName: type?.name, );
 
     if (type != null) {
       switch (type) {

@@ -33,6 +33,8 @@ class IdentityProviders {
     _authServiceApi
         .getLoginUrlForProvider(provider)
         .then((value) => window.location.href = value.redirectUrl)
-        .catchError(_bloc.dialogError);
+        .catchError((e, s) {
+      _bloc.dialogError(e, s);
+    });
   }
 }

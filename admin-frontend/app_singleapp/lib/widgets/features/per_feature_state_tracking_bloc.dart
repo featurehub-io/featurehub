@@ -68,10 +68,11 @@ class PerFeatureStateTrackingBloc implements Bloc {
     return _fvUpdates.putIfAbsent(envId, () {
       final fv = _newFeatureValues.putIfAbsent(
           envId,
-          () => FeatureValue()
-            ..environmentId = envId
-            ..locked = false
-            ..key = feature.key);
+          () => FeatureValue(
+                environmentId: envId,
+                locked: false,
+                key: feature.key,
+              ));
 
       return fv;
     });
@@ -218,7 +219,9 @@ class PerFeatureStateTrackingBloc implements Bloc {
     return _environmentServiceApi
         .getEnvironment(envId,
             includeServiceAccounts: true, includeSdkUrl: true)
-        .catchError(mrClient.dialogError);
+        .catchError((e, s) {
+      mrClient.dialogError(e, s);
+    });
   }
 
   void reset() {

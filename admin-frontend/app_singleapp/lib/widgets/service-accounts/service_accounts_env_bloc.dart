@@ -48,7 +48,9 @@ class ServiceAccountEnvBloc implements Bloc, ManagementRepositoryAwareBloc {
               applicationId: envs[0].applicationId,
               includePermissions: true,
               includeSdkUrls: true)
-          .catchError(_mrClient.dialogError);
+          .catchError((e, s) {
+        _mrClient.dialogError(e, s);
+      });
 
       _serviceAccountSource
           .add(ServiceAccountEnvironments(envs, serviceAccounts));

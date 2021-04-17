@@ -211,7 +211,7 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final account = sa.permissions.firstWhere((p) => p.environmentId == env.id,
-        orElse: () => ServiceAccountPermission()..permissions = <RoleType>[]);
+        orElse: () => ServiceAccountPermission(permissions: <RoleType>[], ));
     final perms = account.permissions;
 
     return Container(

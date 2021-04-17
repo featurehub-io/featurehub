@@ -80,7 +80,7 @@ class PortfolioBloc implements Bloc {
 
   void savePortfolio(String portfolioName) async {
     await _portfolioServiceApi
-        .createPortfolio(Portfolio()..name = portfolioName);
+        .createPortfolio(Portfolio(name: portfolioName, ));
   }
 
   @override

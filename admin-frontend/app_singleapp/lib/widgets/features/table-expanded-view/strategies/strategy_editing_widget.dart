@@ -271,10 +271,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
             ? false
             : null;
 
-    final newStrategy = RolloutStrategy()
-      ..name = _strategyName.text
-      ..attributes = individualStrategyBloc.currentAttributes
-      ..value = defaultValue;
+    final newStrategy = RolloutStrategy(name: _strategyName.text, attributes: individualStrategyBloc.currentAttributes, value: defaultValue, );
 
     if (_strategyPercentage.text.isNotEmpty) {
       newStrategy.percentageFromText = _strategyPercentage.text;
