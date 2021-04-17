@@ -298,7 +298,7 @@ NOTE: Groups can also separately be assigned the permission to create, edit and 
 
 === Service Accounts
 
-Service accounts are used for programmatic access to the features for an application.
+Service accounts are used for programmatic access to the features for an application through FeatureHub SDKs.
 A service account will need a minimum of `READ` access to an environment in order to access a feature value. You can set permissions for a service account from the FeatureHub Admin Console. 
 
 When service account is created for an environment, it automatically creates two types of API keys that you can choose from *Client Evaluated API Key* and *Server Evaluated API Key*
