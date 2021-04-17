@@ -19,6 +19,6 @@ docker run --rm -v $PWD:/imports  docker.io/featurehub/cli:0.0.1 --username irin
 lib/main.dart: Warning: Interpreting this as package URI, 'package:fh_cli/main.dart'.
 checking features for app1
 updating features for environment production in application app1
-updating features for environment test in application app1
+    updating features for environment test in application app1
 updating features for environment dev in application app1
 ----
