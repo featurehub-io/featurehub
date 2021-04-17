@@ -163,7 +163,7 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
                                                   .bodyText2),
                                         ),
                                         Expanded(
-                                            flex: 3,
+                                            flex: 4,
                                             child:
                                                 _ServiceAccountPermissionWidget(
                                                     env: env,
@@ -207,25 +207,13 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
 
     return Container(
         child: perms.isNotEmpty
-            ? Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(perms.map((p) => p.name).join(', '),
-                      style: TextStyle(
-                          fontFamily: 'Source',
-                          fontSize: 12,
-                          letterSpacing: 1.0)),
-                  SizedBox(
-                    width: 16.0,
-                  ),
-                ],
-              )
-            : Row(
-                children: [
-                  Text('No permissions defined',
-                      style: Theme.of(context).textTheme.caption),
-                ],
-              ));
+            ? Text(perms.map((p) => p.name).join(', '),
+                style: TextStyle(
+                    fontFamily: 'Source',
+                    fontSize: 12,
+                    letterSpacing: 1.0))
+            : Text('No permissions defined',
+                style: Theme.of(context).textTheme.caption));
   }
 }
 
@@ -242,31 +230,38 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
     final account = sa.permissions.firstWhere((p) => p.environmentId == env.id,
         orElse: () => ServiceAccountPermission()..permissions = <RoleType>[]);
     final perms = account.permissions;
+    var isScreenWide = MediaQuery.of(context).size.width >= 1350;
 
-    return Row(children: [
+    return Flex(
+        direction: isScreenWide ? Axis.horizontal : Axis.vertical,
+        children: [
       if (account.sdkUrlClientEval != null)
-        Row(
-          children: [
-            Text(
-              'Client-side SDK URL',
-              style: Theme.of(context).textTheme.caption,
-            ),
-            FHCopyToClipboard(
-                copyString: account.sdkUrlClientEval,
-                tooltipMessage: account.sdkUrlClientEval),
-          ],
+        FittedBox(
+          child: Row(
+            children: [
+              Text(
+                'Client eval API Key',
+                style: Theme.of(context).textTheme.caption,
+              ),
+              FHCopyToClipboard(
+                  copyString: account.sdkUrlClientEval,
+                  tooltipMessage: account.sdkUrlClientEval),
+            ],
+          ),
         ),
       if (account.sdkUrlServerEval != null)
-        Row(
-          children: [
-            Text(
-              'Server-side SDK URL',
-              style: Theme.of(context).textTheme.caption,
-            ),
-            FHCopyToClipboard(
-                copyString: account.sdkUrlServerEval,
-                tooltipMessage: account.sdkUrlServerEval),
-          ],
+        FittedBox(
+          child: Row(
+            children: [
+              Text(
+                'Server eval API Key',
+                style: Theme.of(context).textTheme.caption,
+              ),
+              FHCopyToClipboard(
+                  copyString: account.sdkUrlServerEval,
+                  tooltipMessage: account.sdkUrlServerEval),
+            ],
+          ),
         ),
       if (account.sdkUrlClientEval == null)
         Tooltip(
