@@ -563,11 +563,10 @@ server.
 In a browser, we expect that you will want to make sure that the server knows what features you are using. This is 
 an example using Axios:
 
-//TODO
 ```typescript 
 import {
   w3cBaggageHeader
-} from 'featurehub-repository/dist';
+} from 'featurehub-repository';
 
 globalAxios.interceptors.request.use(function (config: AxiosRequestConfig) {
   const baggage = w3cBaggageHeader({repo: fhConfig.repository(), header: config.headers.baggage});
