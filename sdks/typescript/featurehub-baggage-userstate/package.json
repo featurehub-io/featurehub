@@ -1,5 +1,5 @@
 {
-  "name": "featurehub-browser-userstate",
+  "name": "featurehub-baggage-userstate",
   "version": "2.0.0",
   "description": "This library allows feature state to be overridden and stored in local storage. It includes an embedded UI written in Flutter that allows the local config of these features.",
   "author": "info@featurehub.io",
