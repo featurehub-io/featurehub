@@ -80,7 +80,7 @@ in this case is configured for requesting an update every 5 seconds.
 
 #### 3. Check FeatureHub Repository readyness and request feature state
 
-Feature flag rollout strategies and user targeting are all determined by the active user - context. If you are not intending to use rollout strategies, you can pass empty context to the SDK.
+Feature flag rollout strategies and user targeting are all determined by the active _user context_. If you are not intending to use rollout strategies, you can pass empty context to the SDK.
 
 **Client Side evaluation** 
 
@@ -106,7 +106,7 @@ fhConfig.repository().addReadynessListener(async (ready) => {
 });
 ```
 
-This is a simple scenario where you request for default context without passing information for each user. In production, you would normally create new context per each user and pass information about strategies (if you are applying any). If you are using percentage rollout, for example, you also need to pass a userId or some other identifier. 
+This is a simple scenario where you request for default context without passing information for each user. In production, you would normally create new context per each user and pass information about strategies (if you are applying any). If you are using percentage rollout, for example, you also need to set a `sessionId`, or some other identifier that you can set through `userKey`). 
 
 Frameworks like express and restify work by implementing a middleware concept that allows wraparound logic for each request. In a Node JS server, we would typically add to the part that finds the user something that is able to create a new context, configure it for the detected user and stash it in the request ready for the actual
 method that processes this request to use.

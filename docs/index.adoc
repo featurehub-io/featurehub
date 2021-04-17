@@ -154,42 +154,26 @@ When you add a feature flag, this will also automatically create a feature value
 
 NOTE: See <<Feature Permissions>> for details on the various permission states a feature can have.
 
-=== Service Accounts
-
-==== Server Evaluated API Keys
-//TODO
-If your client is insecure (such as a mobile
-or browser based client), you should generally use a Server Evaluated API Key - because this means none of the strategies of your
-API keys leak to the client - which can include user ids, email addresses, warehouse ids and so forth. These cannot realistically be used however
-when you are doing server side software where every request can come from a different use with different details, they simply don't scale.
-
-==== Client Evaluated API Keys
-//TODO
-If your client is secure (such as one of your own services, run in your Cloud) then you should use this key
-and you can identify it because it has a `*` in it. It ensures all the features are able to be evaluated on the client side and thus
-you can set a client context for each request and evaluate those keys within it.
-
 == Rollout strategies and targeting rules
 
 === Rollout strategies
 
-Rollout strategies provide an ability to rollout features to a limited audience based on targeting rules, for example imagine you have a feature flag of type string which controls a "submit button color" that can be in multiple states,
+Rollout strategies provide an ability to rollout features to a limited audience based on targeting rules, for example imagine you have a feature flag of type string which controls a _"button color"_ that can be in multiple states,
 e.g green, blue, red etc. With rollout strategies, you can serve a `green` value to users on `iOS` devices,
 `blue` value to users whose emails ending with `gmail.com` and `red` value to users whose location is
 `New Zealand or United States or United Kingdom`. You can also use percentage based rollouts and for example, turn your feature "on" only to 50% of the audience.
 
-Rollout strategies are created and added per <<Feature value>>. Once you add a strategy you will be able to set a feature value for this strategy, for example "on" or "off" value. A feature will always have "default value", which will be applied for any of your users that do not match rollout strategies rules. You can change the default strategy value at any time (given you have permissions). 
+Rollout strategies are created and added per <<Feature value>>. Once you add a strategy you can set a feature value to serve to users that will match this strategy, for example "on" or "off". In case a user doesn't match any of the provided strategies, they will be served a "default value". You can change the default strategy and rollout strategy feature values at any time (given you have permissions). 
 
 You can apply zero or more rollout strategies to a feature. Each rollout strategy can be assigned a different feature value.
 
 === Targeting rules
-A rollout strategy consists of one or more rules. That rule can consist of any combination of matching criteria, so we refer to them
-often as targeting rules. 
+A rollout strategy consists of one or more targeting rules. The rule can consist of any combination of matching criteria. 
 
 Each additional rule is always applied as an `AND` condition - the user is using a mobile device that is iOS `AND`
 their country is Australia.
 
-Each rule is essentially a key, a condition (equals, includes, etc) and zero or more values. Whereas each targeting rule
+Each rule is essentially a key, a condition (equals, includes, etc) and zero or more values. Whereas each rule
 is an `AND` condition, each _value_ is an `OR` condition. For example, if the `country` is `New Zealand` `OR` `Indonesia`
 `AND` the custom field `payment_method` is equal to `credit_card` `OR` `direct_debit`.
 
@@ -244,33 +228,30 @@ If you cannot find a suitable rule from those listed above, you can create your 
 `ip-address` - CIDR or specific IP addresses are supported.
 
 
-If you do not set the value in the client context in the SDK, and the rule indicates to match `blank` value then this rule will evaluate to true.
+Note, if you do not set the value in the _user context_ in the SDK, and the rule indicates to match `blank` value then this rule will evaluate to true.
 
 === Percentage split rule
 
-As well as setting up targeting rules you can also setup percentage split rule. Percentage rules lets you rollout a feature value to an approximate percentage of your user base.
+As well as setting up targeting rules you can also setup a special rule type - percentage split. Percentage rules lets you rollout a feature value to an approximate percentage of your user base.
 
 A typical scenario for a flag for example would be a "soft launch". The "default value" of your flag would be `off` and you set some arbitrary percentage
 to `on` (e.g. 20%). Then you would analyse how your feature is performing for those 20%, collect any user feedback, monitor your logging for any issues and if you are happy you will start
 increasing the rollout to more and more people in your user base, eventually setting it to 100%, changing the default to
 "on" and removing the strategy. (This is set _per environment_).
 
-As you can specify one or more split targeting strategies for a feature flag, in case of percentages, the sum of all of them cannot be over 100%.
-A typical scenario for multiple strategies would be when you operate with non-binary Feature Flag (e.g. string). If you add percentage based rollout strategies that do not add to 100%, then the remainder continues to use the
+In case of multiple rollout strategies assigned to a feature that contain percentage split rules, the sum of all of them cannot be over 100%.
+ If you add percentage based rollout strategies that do not add to 100%, then the remainder continues to use the
 default value.
 
-You can also use percentage rules to perform *_A-B testing_* or *_run experiments_*, using the on/off of feature flags,
-or feature values where you can set on numbers or strings. Given FeatureHub provides a GoogleAnalytics connector - you can see the result of your experimentation in the Google Analytics Events dashboard in real time.
+You can also use percentage rules to perform *_A-B testing_* or *_run experiments_*. Given FeatureHub provides a GoogleAnalytics connector - you can see the result of your experimentation in the Google Analytics Events dashboard in real time.
 
 Percentage rules can be mixed with other rules, for example a strategy can have a country rule and a percentage rule, e.g. turn on the feature flag to 25% of the audience in New Zealand.
 
-Percentage rule is by default implemented against
-a single field value provided by the client. By default this is `sessionId`, if that isn't provided `userKey` is used.
-Otherwise you can provide your own field to base your percentage rollouts on.
+For Percentage rule to work you need to set a `Context` with `sessionId` or `userKey` when implementing feature flags through our SDKs. `userKey` can be anything that identifies your user, e.g `userId`, `email` etc..
 
 
-NOTE: It is important to note that the percentages are an approximation, the algorithm works by taking contextual data you provide
-in SDK in the client side (either a `sessionId` or a `userKey` or your own field, ideally consistent for the user across platforms) and it uses
+NOTE: It is important to note that the percentages are an approximation, the algorithm works by taking user _Context_ data you provide
+in SDK in the client side (either a `sessionId` or a `userKey`, ideally consistent for the user across platforms) and it uses
 an algorithm to spread that across a range giving you control down to four decimal points, but the algorithm is more accurate
 the greater the number of clients you have. i.e. you can rollout to 0.0001% of your usage base if you wish.
 If you only have five users, this probably won't turn it on for anyone, if you have a million it will
@@ -279,7 +260,10 @@ be more accurate.
 
 == Security
 
+FeatureHub was designed to ensure that security was built into the platform from the ground up. If we split this into authentication vs authorization FeatureHub provides two primary methods for authentication: a login, by which someone is able to get a bearer token and then uses the FeatureHub Admin Console, or a Service account, by which SDKs are able to read (and potentially) update states of features. 
+
 === Key Security concepts
+
 ==== Administrators
 There are two types of administrators, *Site Administrators* and *Portfolio Administrators*.
 
@@ -298,11 +282,6 @@ There are two types of administrators, *Site Administrators* and *Portfolio Admi
 NOTE: Every Portfolio automatically gets a group called "Administrators", Simply adding people to this group 
 will make them administrators for this portfolio.
 
-==== Service Accounts
-
-Service accounts are used for programmatic access to the features for an application.
-A service account will need a minimum of `READ` access to an environment in order to access a feature value.
-
 
 ==== Feature Permissions
 For each application environment, there are permissions you can assign to portfolio groups or service accounts.
@@ -316,6 +295,15 @@ safety net when deploying incomplete code into production.
  
 
 NOTE: Groups can also separately be assigned the permission to create, edit and delete entire features.
+
+=== Service Accounts
+
+Service accounts are used for programmatic access to the features for an application.
+A service account will need a minimum of `READ` access to an environment in order to access a feature value. You can set permissions for a service account from the FeatureHub Admin Console. 
+
+When service account is created for an environment, it automatically creates two types of API keys that you can choose from *Client Evaluated API Key* and *Server Evaluated API Key*
+
+Read more info on API Keys https://docs.featurehub.io/#_client_and_server_api_keys[here]
 
 == External Identity
 
