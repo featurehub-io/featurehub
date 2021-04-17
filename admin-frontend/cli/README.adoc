@@ -1,0 +1,24 @@
+== Command Line Interface
+
+This is a beginning of a command line interface. It is mostly bespoke at the moment dealing with particular
+evaluation requirements.
+
+use (imports features in a specific format):
+
+----
+docker run --rm -v $PWD:/imports docker.io/featurehub/cli:0.0.1 --username EMAIL --password PASSWORD --mr-host=BASE-Admin-URL
+       --features-wu=/imports/test/sample-features.json "--portfolio=portfolio name" "--application=application name"
+----
+
+e.g.
+
+----
+docker run --rm -v $PWD:/imports  docker.io/featurehub/cli:0.0.1 --username irina@i.com --password password123 
+--mr-host=http://192.168.86.36:8085 --features-wu=/imports/test/sample-features.json --portfolio=portfo1 --application=app1
+
+lib/main.dart: Warning: Interpreting this as package URI, 'package:fh_cli/main.dart'.
+checking features for app1
+updating features for environment production in application app1
+    updating features for environment test in application app1
+updating features for environment dev in application app1
+----
