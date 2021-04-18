@@ -10,6 +10,7 @@ import { FeatureStateValueInterceptor, InterceptorValueMatch } from './intercept
 import { ClientContext } from './client_context';
 import { InternalFeatureRepository } from './internal_feature_repository';
 import { Applied } from './strategy_matcher';
+import { AnalyticsCollector } from './analytics';
 
 class BaggageHolder implements FeatureStateHolder {
   protected readonly existing: FeatureStateHolder;
@@ -204,6 +205,10 @@ class BaggageRepository implements InternalFeatureRepository {
 
   addReadynessListener(listener: ReadynessListener) {
     this.repo.addReadynessListener(listener);
+  }
+
+  addAnalyticCollector(collector: AnalyticsCollector): void {
+    this.repo.addAnalyticCollector(collector);
   }
 }
 

@@ -1,4 +1,4 @@
-import {EdgeService, FeatureHubConfig, SSEResultState} from 'featurehub-repository';
+import { EdgeService, FeatureHubConfig, fhLog, SSEResultState } from 'featurehub-repository';
 import EventSource from 'eventsource';
 import {InternalFeatureRepository} from 'featurehub-repository/dist/internal_feature_repository';
 
@@ -20,7 +20,7 @@ export class FeatureHubEventSourceClient implements EdgeService {
         'x-featurehub': this._header
       };
     }
-    console.log('listening at ', this._config.url());
+    fhLog.log('listening at ', this._config.url());
     this.eventSource = new EventSource(this._config.url(), options);
 
     [SSEResultState.Features, SSEResultState.Feature, SSEResultState.DeleteFeature,
@@ -29,14 +29,14 @@ export class FeatureHubEventSourceClient implements EdgeService {
           this.eventSource.addEventListener(fName,
                                             e => {
         try {
-          console.log("received ", fName, JSON.stringify(e));
+          fhLog.log("received ", fName, JSON.stringify(e));
           this._repository.notify(name, JSON.parse((e as any).data));
-        } catch (e) { console.error(JSON.stringify(e)); }
+        } catch (e) { fhLog.error(JSON.stringify(e)); }
                                         });
     });
 
     this.eventSource.onerror = (e) => {
-      console.error("got error", e);
+      fhLog.error("got error", e);
       this._repository.notify (SSEResultState.Failure, null);
     };
   }
