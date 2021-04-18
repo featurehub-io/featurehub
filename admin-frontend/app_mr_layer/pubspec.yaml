@@ -2,7 +2,6 @@ name: mrapi
 version: 1.0.0
 description: OpenAPI API client
 homepage: homepage
-
 environment:
   sdk: '>=2.12.0 <3.0.0'
 dependencies:

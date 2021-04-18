@@ -8,15 +8,18 @@ typedef HandlerFunc = Widget Function(
 
 class RouteChange {
   Map<String, List<String>> params;
-  TransitionType transition;
   String route;
+
+  RouteChange(this.route, {this.params = const {}});
 
   static RouteChange fromJson(String json) {
     final j = jsonDecode(json);
-    return RouteChange()
-      ..params = Map<String, List<String>>.from(j['params'].map((k, v) =>
-          MapEntry<String, List<String>>(k.toString(), List<String>.from(v))))
-      ..route = j['route'].toString();
+
+    return RouteChange(
+      j['route'].toString(),
+      params: Map<String, List<String>>.from(j['params'].map((k, v) =>
+          MapEntry<String, List<String>>(k.toString(), List<String>.from(v)))),
+    );
   }
 
   String toJson() {
@@ -32,32 +35,31 @@ class RouteChange {
 class Handler {
   HandlerFunc handlerFunc;
 
-  Handler({@required this.handlerFunc}) : assert(handlerFunc != null);
+  Handler({required this.handlerFunc});
 }
 
 enum TransitionType { fadeIn, material }
 enum PermissionType { superadmin, portfolioadmin, regular }
 
-FHRouter router = FHRouter();
-
 class RouterRoute {
   Handler handler;
-  TransitionType transitionType;
-  PermissionType permissionType = PermissionType.regular;
+  PermissionType permissionType;
+
+  RouterRoute(this.handler, {this.permissionType = PermissionType.regular});
 }
 
 class FHRouter {
-  Handler notFoundHandler;
-  ManagementRepositoryClientBloc mrBloc;
-  Map<String, RouterRoute> handlers = {};
+  final Handler notFoundHandler;
+  final ManagementRepositoryClientBloc mrBloc;
+  final Map<String, RouterRoute> handlers = {};
+
+  FHRouter({required this.mrBloc, required this.notFoundHandler});
 
   void define(String route,
-      {Handler handler,
+      {required Handler handler,
       TransitionType transitionType = TransitionType.material,
       PermissionType permissionType = PermissionType.regular}) {
-    handlers[route] = RouterRoute()
-      ..handler = handler
-      ..permissionType = permissionType;
+    handlers[route] = RouterRoute(handler, permissionType: permissionType);
   }
 
   HandlerFunc getRoute(String route) {
@@ -92,11 +94,8 @@ class FHRouter {
   }
 
   void navigateTo(BuildContext context, String route,
-      {TransitionType transition, Map<String, List<String>> params}) {
-    final rc = RouteChange()
-      ..route = route
-      ..params = params ?? {}
-      ..transition = transition;
+      {Map<String, List<String>>? params}) {
+    final rc = RouteChange(route, params: params ?? const {});
 
     if (hasRoutePermissions(
         rc, mrBloc.userIsSuperAdmin, mrBloc.userIsCurrentPortfolioAdmin)) {
@@ -107,8 +106,6 @@ class FHRouter {
   }
 
   RouteChange defaultRoute() {
-    return RouteChange()
-      ..route = '/feature-status'
-      ..params = {};
+    return RouteChange('/feature-status', params: {});
   }
 }

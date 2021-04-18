@@ -10,39 +10,31 @@ final _log = Logger('Routes');
 
 class Routes {
   static final List<String> PUBLIC_URLS = ['/forgot-password', '/register-url'];
-  static void configureRoutes(FHRouter router) {
-    router.notFoundHandler = Handler(
-        handlerFunc: (BuildContext context, Map<String, List<String>> params) {
-      _log.severe('request for route not found');
-      var mrBloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
-      mrBloc.customError(messageTitle: 'Oops, page not found');
-      return Container();
-    });
+  static FHRouter configureRoutes(ManagementRepositoryClientBloc mrBloc) {
+    final router = FHRouter(
+        mrBloc: mrBloc,
+        notFoundHandler: Handler(handlerFunc: (context, params) {
+          _log.severe('request for route not found');
+          final mrBloc =
+              BlocProvider.of<ManagementRepositoryClientBloc>(context);
+          mrBloc.customError(messageTitle: 'Oops, page not found');
+          return Container();
+        }));
 
     // Public routes (public URL's also need ot be added to array above)
     router.define('/forgot-password',
-        handler: handleRouteChangeRequest(forgotPassword),
-        transitionType: TransitionType.fadeIn);
+        handler: handleRouteChangeRequest(forgotPassword));
     router.define('/register-url',
-        handler: handleRouteChangeRequest(registerUrl),
-        transitionType: TransitionType.fadeIn);
+        handler: handleRouteChangeRequest(registerUrl));
 
     // main app routes
-    router.define('/',
-        handler: handleRouteChangeRequest(root),
-        transitionType: TransitionType.fadeIn);
-    router.define('',
-        handler: handleRouteChangeRequest(root),
-        transitionType: TransitionType.fadeIn);
-    router.define('/applications',
-        handler: handleRouteChangeRequest(apps),
-        transitionType: TransitionType.fadeIn);
+    router.define('/', handler: handleRouteChangeRequest(root));
+    router.define('', handler: handleRouteChangeRequest(root));
+    router.define('/applications', handler: handleRouteChangeRequest(apps));
     router.define('/feature-status',
-        handler: handleRouteChangeRequest(featureStatus),
-        transitionType: TransitionType.fadeIn);
+        handler: handleRouteChangeRequest(featureStatus));
     router.define('/feature-values',
-        handler: handleRouteChangeRequest(featureValues),
-        transitionType: TransitionType.fadeIn);
+        handler: handleRouteChangeRequest(featureValues));
 
     router.define('/service-envs',
         handler: handleRouteChangeRequest(serviceEnvsHandler));
@@ -50,30 +42,24 @@ class Routes {
     //Admin routes
     router.define('/create-user',
         handler: handleRouteChangeRequest(createUser),
-        permissionType: PermissionType.portfolioadmin,
-        transitionType: TransitionType.fadeIn);
-    router.define('/portfolios',
-        handler: handleRouteChangeRequest(portfolios),
-        transitionType: TransitionType.material);
+        permissionType: PermissionType.portfolioadmin);
+    router.define('/portfolios', handler: handleRouteChangeRequest(portfolios));
     router.define('/manage-app',
         handler: handleRouteChangeRequest(manageApp),
-        permissionType: PermissionType.portfolioadmin,
-        transitionType: TransitionType.fadeIn);
+        permissionType: PermissionType.portfolioadmin);
     router.define('/manage-group',
         handler: handleRouteChangeRequest(group),
-        permissionType: PermissionType.portfolioadmin,
-        transitionType: TransitionType.fadeIn);
+        permissionType: PermissionType.portfolioadmin);
     router.define('/manage-service-accounts',
         handler: handleRouteChangeRequest(serviceAccount),
-        permissionType: PermissionType.portfolioadmin,
-        transitionType: TransitionType.fadeIn);
+        permissionType: PermissionType.portfolioadmin);
     router.define('/manage-user',
         handler: handleRouteChangeRequest(manageUser),
-        permissionType: PermissionType.portfolioadmin,
-        transitionType: TransitionType.fadeIn);
+        permissionType: PermissionType.portfolioadmin);
     router.define('/manage-users',
         handler: handleRouteChangeRequest(users),
-        permissionType: PermissionType.portfolioadmin,
-        transitionType: TransitionType.fadeIn);
+        permissionType: PermissionType.portfolioadmin);
+
+    return this;
   }
 }

@@ -21,13 +21,14 @@ class IdentityProviders {
         'assets/signup_3rdparty/btn_google_signin_dark_normal_web.png'
   };
 
-  ManagementRepositoryClientBloc _bloc;
+  final ManagementRepositoryClientBloc _bloc;
+  final AuthServiceApi _authServiceApi;
 
-  IdentityProviders(this._bloc);
+  IdentityProviders(this._bloc, this._authServiceApi);
 
   set bloc(ManagementRepositoryClientBloc bloc) => _bloc = bloc;
 
-  AuthServiceApi? _authServiceApi;
+
 
   set authServiceApi(AuthServiceApi val) => _authServiceApi = val;
 
