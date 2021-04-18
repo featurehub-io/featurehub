@@ -3,7 +3,6 @@ package io.featurehub.client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
@@ -14,13 +13,6 @@ public class ServerEvalFeatureContext extends BaseClientContext {
   private EdgeService currentEdgeService;
   private String xHeader;
   private final boolean weOwnRepositoryAndEdge;
-
-  public ServerEvalFeatureContext(FeatureHubConfig config) {
-    super(new ClientFeatureRepository(), config);
-
-    this.edgeService = loadEdgeService(config, repository);
-    this.weOwnRepositoryAndEdge = true;
-  }
 
   public ServerEvalFeatureContext(FeatureHubConfig config, FeatureRepositoryContext repository,
                                   Supplier<EdgeService> edgeService) {

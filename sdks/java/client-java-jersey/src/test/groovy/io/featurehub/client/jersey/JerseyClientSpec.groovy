@@ -43,7 +43,7 @@ class JerseyClientSpec extends Specification {
     then: "the urls are correctly initialize"
       targetUrl == url.realtimeUrl
       basePath == 'http://localhost:80'
-      sdkPartialUrl.sdkKey() == 'sdk-url'
+      sdkPartialUrl.apiKey() == 'sdk-url'
   }
 
   def "test the set feature sdk call"() {

@@ -8,9 +8,12 @@ public interface FeatureHubConfig {
    */
   String getRealtimeUrl();
 
-  String sdkKey();
+  String apiKey();
 
   String baseUrl();
+
+  // start the service
+  void init();
 
   /**
    * The SDK URL indicates this is going to be server based evaluation
@@ -27,7 +30,7 @@ public interface FeatureHubConfig {
   void setRepository(FeatureRepositoryContext repository);
   FeatureRepositoryContext getRepository();
 
-  void setEdgeService(EdgeService edgeService);
-  EdgeService getEdgeService();
+  void setEdgeService(Supplier<EdgeService> edgeService);
+  Supplier<EdgeService> getEdgeService();
 
 }

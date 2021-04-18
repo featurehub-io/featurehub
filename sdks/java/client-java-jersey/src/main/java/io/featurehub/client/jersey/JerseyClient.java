@@ -91,7 +91,7 @@ public class JerseyClient implements EdgeService {
   }
 
   public void setFeatureState(String key, FeatureStateUpdate update) {
-    featuresService.setFeatureState(fhConfig.sdkKey(), key, update);
+    featuresService.setFeatureState(fhConfig.apiKey(), key, update);
   }
 
   public void setFeatureState(Feature feature, FeatureStateUpdate update) {

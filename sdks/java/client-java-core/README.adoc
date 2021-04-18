@@ -1,8 +1,157 @@
 = Java Client SDK for FeatureHub
 ifdef::env-github,env-browser[:outfilesuffix: .adoc]
 
+Welcome to the Java SDK implementation for https://featurehub.io[FeatureHub.io] - Open source Feature flags management, A/B testing and remote configuration platform.
+
+Below explains how you can use the FeatureHub SDK in Java for Java backend applications or Android mobile
+applications.
+
+To control the feature flags from the FeatureHub Admin console, either use our [demo](https://demo.featurehub.io) version for evaluation or install the app using our guide [here](http://docs.featurehub.io/#_installation)
+
+There are 2 ways to request for feature updates via this SDK:
+
+- **SSE (Server Sent Events) realtime updates mechanism**
+
+In this mode, you will make a connection to the FeatureHub Edge server using an EventSource library which this SDK is based on, and any updates to any features will come through to you in near realtime, automatically updating the feature values in the repository. This is always the recommended method for backend applications, and
+we have an implementation in Jersey. 
+
+- **FeatureHub GET client (GET request updates)**
+
+In this mode, you make a GET request, which you control how often it runs. The SDK provides no timer based
+repeat functionality to keep making this request. There is an implementation using OKHttp. We have
+deliberately left the timer choice to you as there are many different timer functions, including one built into
+the JDK (`java.util.Timer`).
+
+== SDK Installation
+
+To install the SDK, choose your method of connection. The Core library will be included transitively. The
+Core library uses Java Service Loaders to automatically discover what client library you have chosen, so please
+ensure you include only one.
+
+- **SSE (Server Sent Events) realtime updates mechanism**
+
+[source,xml]
+----
+    <dependency>
+      <groupId>io.featurehub.sdk</groupId>
+      <artifactId>java-client-jersey</artifactId>
+      <version>[2.1,3)</version>
+    </dependency>
+----
+
+If you do not already use Jersey in your code base, you should also include our runtime dependencies for Jersey
+and Jackson.
+
+[source,xml]
+----
+    <dependency>
+      <groupId>io.featurehub.composites</groupId>
+      <artifactId>composite-jersey</artifactId>
+      <version>[1.1, 2)</version>
+    </dependency>
+----
+
+- **FeatureHub polling client (GET request updates)**
+
+[source,xml]
+----
+    <dependency>
+      <groupId>io.featurehub.sdk</groupId>
+      <artifactId>java-client-jersey</artifactId>
+      <version>[2.1,3)</version>
+    </dependency>
+----
+
+
+## Quick start
+
+### Connecting to FeatureHub
+There are 4 steps to connecting:
+1) Copy FeatureHub API Key from the FeatureHub Admin Console
+2) Use the API Key to make a client
+3) Check FeatureHub Repository readyness and request feature state
+
+#### 1. Copy SDK API Key from the FeatureHub Admin Console
+Find and copy your SDK API Key from the FeatureHub Admin Console on the Service Accounts Keys page -
+you will use this in your code to configure feature updates for your environments.
+It should look similar to this: `default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE`.
+
+There are two options - a Server Evaluated API Key and a Client Evaluated API Key. More on this https://docs.featurehub.io/#_client_and_server_api_keys[here]
+
+Client Side evaluation is intended for use in secure environments (such as microservices) 
+and is intended for rapid client side evaluation, per request for example.
+
+Server Side evaluation is more suitable when you are using an _insecure client_. (e.g. Browser or Mobile). 
+This also means you evaluate one user per client.
+
+#### 2. Make a client:
+
+Create an instance of `EdgeFeatureHubConfig`. You need to provide the API Key and the URL of the end-point you will be connecting to (the Edge server URL).
+
+[source,java]
+----
+import io.featurehub.client.EdgeFeatureHubConfig;
+
+String edgeUrl = "http://localhost:8085/";
+String apiKey = "/default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE";
+
+FeatureHubConfig fhConfig = new EdgeFeatureHubConfig(edgeUrl, apiKey);
+----
+
+#### 3. Check FeatureHub Repository readyness and request feature state
+
+Feature flag rollout strategies and user targeting are all determined by the active _user context_. If you are not intending to use rollout strategies, you can pass empty context to the SDK.
+
+**Client Side evaluation**
+
+What you do next depends on your framework. In many modern frameworks, you don't get to choose when
+the server starts, it starts and you just have deal with it. It is recommended that you ensure that your heartbeat
+or readyness check is dependent on whether the feature service is connected.
+
+You would typically have a dependency injection system (like Spring or CDI) looking after you, to inject the
+FeatureHubConfig you created above. In this case, we recommend you simply add into your liveness or heartbeat
+check:
+
+[source,java]
+----
+if (fhConfig.repository().getReadyness() != Readyness.Ready) {
+  throw new <insert exception here>();
+}
+----
+
+This will prevent most services like Application Load Balancers or Kubernetes from routing traffic to your
+server before it has connected to the feature service and is ready.
+
+There are other ways to do this, but this is the most strongly recommended because it ensures that
+a system in a properly structured Java service will behave as expected.
+
+The next thing you would normally do is to ensure that the `ClientContext` is ready and set up for downstream
+systems to get a hold of and use. In Java this is normally done by using a `filter` and providing some 
+kind of _request level scope_ - a Request Level injectable object. 
+
+
+**Server side evaluation**
+
+In the server side evaluation (e.g. browser app) the context is created once as you evaluate one user per client.
+
+----
+const fhContext = await fhConfig.newContext().build();
+let initialized = false;
+
+// taken from the React example
+fhConfig.repository().addReadynessListener((readyness) => {
+  if (!initialized) {
+    if (readyness === Readyness.Ready) {
+      initialized = true;
+      const color = fhContext.getString('FEATURE_BUTTON_COLOR');
+      this.setState({todos: this.state.myapp.changeButtonColor(color)});
+    }
+  }
+});
+----
+
+
 Welcome to the Java implementation for FeatureHub.
-It is the supported version, but it does not mean you cannot write your own, the functionality is quite straightforward.
 
 Visit our official web page for more information about the platform https://www.featurehub.io/[here]
 
@@ -10,8 +159,13 @@ Visit our official web page for more information about the platform https://www.
 
 This is the core library for Java.
 
-It provides the core functionality of the repository which holds features and creates events.
-It does not connect to the backend server.
+It provides the core functionality of the `ClientContext` through which you will interact with features 
+and log analytical events.
+
+This library does not hold any code that connects to the Edge Server for FeatureHub. Because of thee wide
+world of Java, there are many different libraries that can do that in a number of different ways. We provide
+two - one using okhttp and another that uses Server Sent Events using  
+
 As that will depend on whatever HTTP client java library you use, we have provided one for Jersey.
 We expect to provide future libraries for various other popular HTTP libraries.
 
@@ -85,37 +239,6 @@ NOTE: You will only get a Failed later if your connection drops out. You can cho
 if you already have your features and deal with it by instantiating a new client. It won't generate a failure
 if the server has simply booted you off due to a timeout, only because of connection failure.
 
-==== Static Feature Context
-
-The static feature context is a simple and easy way to allow you to use the repository.
-
-It allows you to determine if flags are on or off, if features exist or are set, and it allows you to do this from a
-_enum_ basis. You need to have your enum implement `Feature` which just has a name function - which all enums do.
-
-You can if you wish add a convenience function to your enums to determine if they are active and people often do.
-
-[source,java]
-----
-public enum Features implements Feature {
-
-  FEATURE_TITLE_TO_UPPERCASE;
-
-  Features() {
-  }
-
-  public boolean isActive() {
-    return StaticFeatureContext.getInstance().isActive(this);
-  }
-}
-----
-
-this means you can do something like this:
-
-[source,java]
-----
-if (Features.FEATURE_TITLE_TO_UPPERCASE.isActive()) {
-}
-----
 
 ==== Local Feature Overrides
 

@@ -144,26 +144,6 @@ public abstract class BaseClientContext implements ClientContext {
     return repository.exists(key);
   }
 
-  /**
-   * dynamically load an edge service implementation
-   */
-  protected static Supplier<EdgeService> loadEdgeService(FeatureHubConfig url, FeatureRepositoryContext repository) {
-    ServiceLoader<FeatureHubClientFactory> loader = ServiceLoader.load(FeatureHubClientFactory.class);
-
-    if (repository == null) {
-      repository = new ClientFeatureRepository();
-    }
-
-    for(FeatureHubClientFactory f : loader) {
-      Supplier<EdgeService> edgeService = f.createEdgeService(url, repository);
-      if (edgeService != null) {
-        return edgeService;
-      }
-    }
-
-    throw new RuntimeException("Unable to find an edge service for featurehub, please include one on classpath.");
-  }
-
   @Override
   public ClientContext logAnalyticsEvent(String action, Map<String, String> other) {
     String user = get("userkey", null);

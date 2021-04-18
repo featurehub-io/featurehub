@@ -11,13 +11,6 @@ class ClientEvalFeatureContext extends BaseClientContext {
   private final EdgeService edgeService;
   private final boolean weOwnRepositoryAndEdge;
 
-  public ClientEvalFeatureContext(FeatureHubConfig config) {
-    super(new ClientFeatureRepository(), config);
-
-    this.edgeService = loadEdgeService(config, repository).get();
-    this.weOwnRepositoryAndEdge = true;
-  }
-
   public ClientEvalFeatureContext(FeatureHubConfig config, FeatureRepositoryContext repository,
                                   EdgeService edgeService) {
     super(repository, config);

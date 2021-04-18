@@ -11,6 +11,6 @@ import java.util.function.Supplier;
 public class AndroidFeatureHubClientFactory implements FeatureHubClientFactory {
   @Override
   public Supplier<EdgeService> createEdgeService(final FeatureHubConfig config, final FeatureStore repository) {
-    return () -> new FeatureHubClient(config.baseUrl(), Arrays.asList(config.sdkKey()), repository, config);
+    return () -> new FeatureHubClient(config.baseUrl(), Arrays.asList(config.apiKey()), repository, config);
   }
 }
