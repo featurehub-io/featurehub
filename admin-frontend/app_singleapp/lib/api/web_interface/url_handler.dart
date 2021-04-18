@@ -1,5 +1,5 @@
 abstract class AbstractWebInterface {
-  Uri originUri;
+  Uri? originUri;
 
   String homeUrl(bool overrideOrigin);
 
@@ -9,7 +9,7 @@ abstract class AbstractWebInterface {
 
   static final bearerToken = 'bearer-token';
 
-  String getStoredAuthToken();
+  String? getStoredAuthToken();
 
   void setStoredAuthToken(String token);
 

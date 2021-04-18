@@ -23,18 +23,23 @@ class IdentityProviders {
 
   ManagementRepositoryClientBloc _bloc;
 
+  IdentityProviders(this._bloc);
+
   set bloc(ManagementRepositoryClientBloc bloc) => _bloc = bloc;
 
-  AuthServiceApi _authServiceApi;
+  AuthServiceApi? _authServiceApi;
 
   set authServiceApi(AuthServiceApi val) => _authServiceApi = val;
 
   void authenticateViaProvider(String provider) {
-    _authServiceApi
-        .getLoginUrlForProvider(provider)
-        .then((value) => window.location.href = value.redirectUrl)
-        .catchError((e, s) {
-      _bloc.dialogError(e, s);
-    });
+    if (_authServiceApi != null) {
+      _authServiceApi!.getLoginUrlForProvider(provider).then((value) {
+        if (value != null) {
+          return window.location.href = value.redirectUrl!;
+        }
+      }).catchError((e, s) {
+        _bloc.dialogError(e, s);
+      });
+    }
   }
 }

@@ -66,11 +66,11 @@ class ManagementRepositoryClientBloc implements Bloc {
   EnvironmentServiceApi environmentServiceApi;
   FeatureServiceApi featureServiceApi;
   ApplicationServiceApi applicationServiceApi;
-  static FHRouter router;
+  static FHRouter router = FHRouter();
 
   // this reflects actual requests to change the route driven externally, so a user clicks on
   // something that should cause the page to change to this route.
-  final _routerSource = BehaviorSubject<RouteChange>();
+  final _routerSource = BehaviorSubject<RouteChange?>();
 
   // this is when route change events are being notified of downstream systems but don't cause
   // an actual change in route (usually because this has already happened such as on tab changes
@@ -86,7 +86,7 @@ class ManagementRepositoryClientBloc implements Bloc {
   final _stepperOpened = BehaviorSubject<bool>.seeded(false);
   Uri _basePath;
   StreamSubscription<Portfolio> _personPermissionInPortfolioChanged;
-  IdentityProviders identityProviders = IdentityProviders();
+  IdentityProviders? identityProviders;
 
   BehaviorSubject<bool> get stepperOpened => _stepperOpened;
 
@@ -103,17 +103,17 @@ class ManagementRepositoryClientBloc implements Bloc {
   }
 
   Stream<RouteChange> get routeCurrentStream => _routerCollectedSource.stream;
-  Stream<RouteChange> get routeChangedStream => _routerSource.stream;
+  Stream<RouteChange?> get routeChangedStream => _routerSource.stream;
   Stream<RouteChange> get redrawChangedStream =>
       _routerRedrawRouteSource.stream;
 
-  RouteChange get currentRoute => _routerSource.value;
+  RouteChange? get currentRoute => _routerSource.value;
 
   void swapRoutes(RouteChange route) {
     // this is for gross route changes, and causes the widget to redraw
     // for multi-tabbed routes, we don't want this to happen, so we separate the two
     if (_routerRedrawRouteSource.value == null ||
-        _routerRedrawRouteSource.value.route != route.route) {
+        _routerRedrawRouteSource.value?.route != route.route) {
       _routerRedrawRouteSource.add(route);
     }
 
@@ -148,11 +148,11 @@ class ManagementRepositoryClientBloc implements Bloc {
   void _checkRouteForPermission(Portfolio p) {
     if (_routerSource.hasValue) {
       if (!router.hasRoutePermissions(
-          _routerSource.value,
+          _routerSource.value!,
           userIsSuperAdmin,
           p == null
               ? false
-              : personState.userIsPortfolioAdmin(p.id, person.groups))) {
+              : personState.userIsPortfolioAdmin(p.id!, person.groups))) {
         swapRoutes(router.defaultRoute());
       }
     }
@@ -181,8 +181,8 @@ class ManagementRepositoryClientBloc implements Bloc {
     _initializedSource.add(ics);
   }
 
-  Stream<FHError> get errorStream => _errorSource.stream;
-  final _errorSource = PublishSubject<FHError>();
+  Stream<FHError?> get errorStream => _errorSource.stream;
+  final _errorSource = PublishSubject<FHError?>();
 
   Stream<WidgetBuilder> get overlayStream => _overlaySource.stream;
   final _overlaySource = PublishSubject<WidgetBuilder>();
@@ -202,8 +202,9 @@ class ManagementRepositoryClientBloc implements Bloc {
     final currentAid = getCurrentAid();
 
     return person.groups?.any((g) => g.applicationRoles.any((ar) =>
-        ar.applicationId == currentAid &&
-        ar.roles.contains(ApplicationRoleType.FEATURE_EDIT)));
+            ar.applicationId == currentAid &&
+            ar.roles.contains(ApplicationRoleType.FEATURE_EDIT))) ==
+        true;
   }
 
   bool get userIsCurrentPortfolioAdmin =>
@@ -232,9 +233,12 @@ class ManagementRepositoryClientBloc implements Bloc {
     return webInterface.homeUrl(overrideOrigin);
   }
 
-  ManagementRepositoryClientBloc({String basePathUrl})
+  ManagementRepositoryClientBloc({String? basePathUrl})
       : _client = ApiClient(basePath: basePathUrl ?? homeUrl()) {
     _basePath = Uri.parse(_client.basePath);
+
+    identityProviders = IdentityProviders(this);
+
     webInterface.setOrigin();
     setupApi = SetupServiceApi(_client);
     personServiceApi = PersonServiceApi(_client);
@@ -253,11 +257,11 @@ class ManagementRepositoryClientBloc implements Bloc {
     streamValley = StreamValley(this, personState);
 
     _personPermissionInPortfolioChanged = streamValley.routeCheckPortfolioStream
-        .listen((portfolio) => _checkRouteForPermission(portfolio));
+        .listen((portfolio) =>
+            {if (portfolio != null) _checkRouteForPermission(portfolio)});
 
     _initializeRouteStreams();
 
-    router = FHRouter();
     router.mrBloc = this;
     Routes.configureRoutes(router);
 
