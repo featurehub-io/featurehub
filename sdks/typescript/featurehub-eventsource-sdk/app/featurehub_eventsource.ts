@@ -53,11 +53,17 @@ export class FeatureHubEventSourceClient implements EdgeService {
   }
 
   contextChange(header: string): Promise<void> {
+    if (this.eventSource == undefined) {
+      this.init();
+    }
+
     return Promise.resolve(undefined);
   }
 
   poll(): Promise<void> {
-    this.init();
+    if (this.eventSource == undefined) {
+      this.init();
+    }
 
     return new Promise<void>((resolve) => resolve());
   }

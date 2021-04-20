@@ -230,6 +230,8 @@ export class ClientEvalFeatureContext extends BaseClientContext {
   }
 
   async build(): Promise<ClientContext> {
+    this._edgeService.poll(); // in case it hasn't already been initialized
+
     return this;
   }
 
