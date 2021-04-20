@@ -155,7 +155,7 @@ public class JerseyClient implements EdgeService {
           }
 
           if (state == SSEResultState.FAILURE && shutdownOnServerFailure) {
-            log.warn("Failed to connect to FeatureHub Edge, shutting down.");
+            log.warn("Failed to connect to FeatureHub Edge on {}, shutting down.", fhConfig.getRealtimeUrl());
             shutdown();
           }
         }

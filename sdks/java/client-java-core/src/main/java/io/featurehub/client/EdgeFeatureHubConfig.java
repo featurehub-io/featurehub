@@ -86,6 +86,8 @@ public class EdgeFeatureHubConfig implements FeatureHubConfig {
       if (this.edgeService == null) {
         this.edgeService = loadEdgeService(repository);
       }
+
+      edgeService = this.edgeService;
     }
 
     if (isServerEvaluation()) {
