@@ -51,7 +51,7 @@ export class ApplyFeature {
       const defaultPercentageKey = context.defaultPercentageKey();
 
       for (let rsi of strategies) {
-        if (rsi.percentage !== 0 && (defaultPercentageKey != null || rsi.percentageAttributes.length > 0)) {
+        if (rsi.percentage !== 0 && (defaultPercentageKey != null || (rsi.percentageAttributes !== undefined && rsi.percentageAttributes.length > 0))) {
           let newPercentageKey = this.determinePercentageKey(context, rsi.percentageAttributes);
 
           if (!basePercentage.has(newPercentageKey)) {
