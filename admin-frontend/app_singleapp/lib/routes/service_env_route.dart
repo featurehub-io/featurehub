@@ -10,6 +10,7 @@ import 'package:app_singleapp/widgets/service-accounts/service_accounts_env_bloc
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
 
@@ -22,20 +23,6 @@ class ServiceAccountEnvRoute extends StatelessWidget {
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              StreamBuilder<List<Application>>(
-                  stream: bloc
-                      .mrClient.streamValley.currentPortfolioApplicationsStream,
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData && snapshot.data.isNotEmpty) {
-                      return Container(
-                          padding: EdgeInsets.only(left: 8, bottom: 8),
-                          child: ApplicationDropDown(
-                              applications: snapshot.data, bloc: bloc));
-                    } else {
-                      bloc.setApplicationId(bloc.mrClient.currentAid);
-                      return SizedBox.shrink();
-                    }
-                  }),
               Container(
                   padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
                   child: Column(
@@ -46,32 +33,53 @@ class ServiceAccountEnvRoute extends StatelessWidget {
                           Container(
                             padding: EdgeInsets.only(bottom: 10),
                             child: FHHeader(
-                              title: 'Service Accounts',
+                              title: 'API Keys',
                             ),
                           ),
+
+
+
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          StreamBuilder<List<Application>>(
+                              stream: bloc
+                                  .mrClient.streamValley.currentPortfolioApplicationsStream,
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData && snapshot.data.isNotEmpty) {
+                                  return Container(
+                                      padding: EdgeInsets.only(bottom: 8),
+                                      child: ApplicationDropDown(
+                                          applications: snapshot.data, bloc: bloc));
+                                } else {
+                                  bloc.setApplicationId(bloc.mrClient.currentAid);
+                                  return SizedBox.shrink();
+                                }
+                              }),
                           StreamBuilder<ReleasedPortfolio>(
                               stream: bloc.mrClient.personState
                                   .isCurrentPortfolioOrSuperAdmin,
                               builder: (context, snapshot) {
                                 if (snapshot.data != null &&
                                     (snapshot.data
-                                            .currentPortfolioOrSuperAdmin ==
+                                        .currentPortfolioOrSuperAdmin ==
                                         true)) {
                                   return Padding(
-                                    padding: const EdgeInsets.only(top: 8.0),
+                                    padding: const EdgeInsets.only(left: 16.0, bottom: 8.0),
                                     child: Container(
                                         child: FHFlatButtonTransparent(
                                             keepCase: true,
-                                            title: 'Create new service account',
+                                            title: 'Manage service accounts',
                                             onPressed: () => {
-                                                  ManagementRepositoryClientBloc
-                                                      .router
-                                                      .navigateTo(context,
-                                                          '/manage-service-accounts',
-                                                          transition:
-                                                              TransitionType
-                                                                  .material)
-                                                })),
+                                              ManagementRepositoryClientBloc
+                                                  .router
+                                                  .navigateTo(context,
+                                                  '/manage-service-accounts',
+                                                  transition:
+                                                  TransitionType
+                                                      .material)
+                                            })),
                                   );
                                 } else {
                                   return SizedBox.shrink();
@@ -99,7 +107,8 @@ class ServiceAccountEnvRoute extends StatelessWidget {
                                 serviceAccountEnvs: envSnapshot.data);
                           }),
                     ],
-                  ))
+                  )),
+
             ]));
   }
 }
