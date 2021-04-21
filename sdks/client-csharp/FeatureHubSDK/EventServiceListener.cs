@@ -62,6 +62,10 @@ namespace FeatureHubSDK
           }
         }
       }
+      else if (_eventSource == null)
+      {
+        Init();
+      }
     }
 
     public bool ClientEvaluation => !_featureHost.ServerEvaluation;
@@ -136,7 +140,11 @@ namespace FeatureHubSDK
     }
 
     public void Poll()
-    { // do nothing, is SSE
+    {
+      if (_eventSource == null)
+      {
+        Init();
+      }
     }
   }
 }

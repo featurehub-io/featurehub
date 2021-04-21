@@ -47,7 +47,7 @@ namespace FeatureHubTestProject
     async public Task ChangeInContextFiresRequestToEdgeService()
     {
       var edgeStub = new EdgeServiceStub();
-      var ctx = await new ServerEvalFeatureContext(_repository, null, () => edgeStub)
+      var ctx = await new ServerEvalFeatureContext(_repository, null, (repo, config) => edgeStub)
         .Attr("city", "Istanbul City")
         .Attrs("family", new List<String> {"Bambam", "DJ Elif"})
         .Country(StrategyAttributeCountryName.Turkey)
@@ -79,7 +79,7 @@ namespace FeatureHubTestProject
     {
       var edgeStub = new EdgeServiceStub();
       edgeStub.replace = true;
-      var ctx = await new ServerEvalFeatureContext(_repository, null, () => edgeStub).Build();
+      var ctx = await new ServerEvalFeatureContext(_repository, null, (repo, config) => edgeStub).Build();
       Assert.AreEqual(0, edgeStub.closeCalled);
       ctx.Attr("replaceme", "now");
       await ctx.Build();
@@ -89,7 +89,7 @@ namespace FeatureHubTestProject
     [Test]
     async public Task EnabledFlagWorksIsTrueOnlyOnTrue()
     {
-      var ctx = new ClientEvalFeatureContext(_repository, null, () => null);
+      var ctx = new ClientEvalFeatureContext(_repository, null, (repo, config) => null);
       Assert.AreEqual(false, ctx.IsEnabled("1"));
       _repository.Notify(SSEResultState.Features, RepositoryTest.EncodeFeatures(true, 2, FeatureValueType.BOOLEAN));
       Assert.AreEqual(true, ctx.IsEnabled("1"));

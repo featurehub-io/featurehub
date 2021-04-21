@@ -1,20 +1,19 @@
 # FeatureHubSDK
 
 This library is the client SDK for the [https://featurehub.io](FeatureHub) open source project,
-which brings you Cloud Native Feature Flag management, A/B experiments and remote configuration. 
+which brings you Cloud Native Feature Flag management, A/B experiments and remote configuration.
 
-This package includes the client SDK for event source, which gives you realtime updates, the
-core repository, and the API required for allowing you to change the state of features using
-your Service Account URL. 
-
-The repository is isolated from the EventSource mechanism, so you can alternatively fill it
-from a file or a database if you wish - and it is likely what you would do in integration tests.
+It is specifically targeted at server-side applications, REST servers, web applications and so forth. As such
+it focuses on providing near-realtime updates to features rather than surfacing polling functionality that
+would be normally used in Browsers and Mobile. We recommend that you always request *Client-Evaluated API Keys* when
+requesting your API key via the `API Keys` section in FeatureHub's Management Repository console.
 
 ## SDK features 
 Details about what general features are available in SDKs from FeatureHub are [available here](https://docs.featurehub.io/#sdks).
 
 ## Changelog
 
+2.0.0 - client side evaluation support
 1.1.0 - analytics support
 1.0.0 - initial functionality with near-realtime event updates, full feature repository, server side rollout strategies.
 
@@ -24,12 +23,26 @@ There is a sample application included in the [solution as a console application
 You could implement it in the following way:
 
 ```c#
-var fh = new FeatureHubRepository(); // create a new repository
+// start by creating a IFeatureHubConfig object and telling it where your host server is and your
+// client-evaluated API Key 
+var config = new FeatureHubConfig("http://localhost:8903",
+  "default/82afd7ae-e7de-4567-817b-dd684315adf7/SJXBRyGCe1dZ*PNYGy7iOFeKE");
+  
+config.Init(); // tell it to asynchronously connect and start listening
+
+// this will set up a ClientContext - which is a bucket of information about this user
+// and then attempt to connect to the repository and retrieve your data. It will return once it
+// has received your data.  
+var context = await config.NewContext().UserKey("ideally-unique-id")
+        .Country(StrategyAttributeCountryName.Australia)
+        .Device(StrategyAttributeDeviceName.Desktop)
+        .Build();
+
 
 // listen for changes to the feature FLUTTER_COLOUR and let me know what they are
-fh.FeatureState("FLUTTER_COLOUR").FeatureUpdateHandler += (object sender, IFeatureStateHolder holder) =>
+config.Repository.FeatureState("FLUTTER_COLOUR").FeatureUpdateHandler += (object sender, IFeatureStateHolder holder) =>
 {
-  Console.WriteLine($"Received type {holder.Key}: {holder.StringValue}");        
+  Console.WriteLine($"Received type {holder.Key}: {context.Feature(holder.Key).StringValue}");        
 };
 
 // you can also query the fh.FeatureState("FLUTTER_COLOUR") directly to see what its current state is
@@ -47,19 +60,25 @@ fh.NewFeatureHandler += (sender, repository) =>
   Console.WriteLine($"New features");
 };
 
-// create an event service listener and give it the Service Account URL from the Admin-UI
-var esl = new EventServiceListener();
-esl.Init("http://192.168.86.49:8553/features/default/ce6b5f90-2a8a-4b29-b10f-7f1c98d878fe/VNftuX5LV6PoazPZsEEIBujM4OBqA1Iv9f9cBGho2LJylvxXMXKGxwD14xt2d7Ma3GHTsdsSO8DTvAYF", fh);
-
-// it will now keep listening and updating the repository when changes come in. The server will kick it
-// off periodically to ensure the connection does not become stale, but it will automatically reconnect
-// and update itself and the repository again
-
-fh.ClientContext().UserKey('ideally-unique-id')
-  .Country(StrategyAttributeCountryName.Australia)
-  .Device(StrategyAttributeDeviceName.Desktop)
-  .Build();
 ``` 
+
+### ASP.NET 
+
+Wiring them into a ASP.NET application should also be fairly simple and it surfaces as an injectable service. Some example
+code from our C# TodoServer in the `featurehub-examples` folder.
+
+```c#
+  private void AddFeatureHubConfiguration(IServiceCollection services)
+  {
+      IFeatureHubConfig config = new EdgeFeatureHubConfig(Configuration["FeatureHub:Host"], Configuration["FeatureHub:ApiKey"]);
+
+      services.Add(ServiceDescriptor.Singleton(typeof(IFeatureHubConfig), config));
+
+      config.Init();
+  }
+```
+
+It is then available to be injected into your Controllers or Filters. 
 
 ### Rollout Strategies
 Starting from version 1.1.0 FeatureHub supports _server side_ evaluation of complex rollout strategies
@@ -80,32 +99,32 @@ FeatureHub SDK will match your users according to those rules, so you need to pr
 Provide the following attribute to support `userKey` rule:
 
 ```c#
-    featureHubRepository.ClientContext().UserKey("ideally-unique-id").Build(); 
+    await context.UserKey("ideally-unique-id").Build(); 
 ```
 
 to support `country` rule:
 ```c#
-    featureHubRepository.ClientContext().Country(StrategyAttributeCountryName.Australia).Build(); 
+    await context.Country(StrategyAttributeCountryName.Australia).Build(); 
 ```
 
 to support `device` rule:
 ```c#
-    featureHubRepository.ClientContext().Device(StrategyAttributeDeviceName.Desktop).Build(); 
+    await context.Device(StrategyAttributeDeviceName.Desktop).Build(); 
 ```
 
 to support `platform` rule:
 ```c#
-    featureHubRepository.ClientContext().Platform(StrategyAttributePlatformName.Android).Build(); 
+    await context.Platform(StrategyAttributePlatformName.Android).Build(); 
 ```
 
 to support `semantic-version` rule:
 ```c#
-    featureHubRepository.ClientContext().Version("1.2.0").Build(); 
+    await context.Version("1.2.0").Build(); 
 ```
 or if you are using multiple rules, you can combine attributes as follows:
 
 ```c#
-    featureHubRepository.ClientContext.UserKey("ideally-unique-id")
+    await context.UserKey("ideally-unique-id")
       .Country(StrategyAttributeCountryName.NewZealand)
       .Device(StrategyAttributeDeviceName.Browser)
       .Platform(StrategyAttributePlatformName.Android)
@@ -113,23 +132,25 @@ or if you are using multiple rules, you can combine attributes as follows:
       .Build(); 
 ```
 
+For *Server Evaluated keys*, which we do _not_ recommend, the  `Build()` method will trigger the regeneration of a 
+special header (`x-featurehub`). This in turn will automatically retrigger a refresh of your events if 
+you have already connected.
 
-The `Build()` method will trigger the regeneration of a special header (`x-featurehub`). This in turn
-will automatically retrigger a refresh of your events if you have already connected (unless you are using polling
-and your polling interval is set to 0).
+For *Client Evaluated API keys*, which we do recommend for server side code, the `Build()` method does nothing, as all
+the necessary decision making information is already available.
 
 **Sending custom attributes:**
 
 To add a custom key/value pair, use `Attr(key, value)`
 
 ```C#
-    featureHubRepository.ClientContext.Attr("first-language", "russian").Build();
+    await context.Attr("first-language", "russian").Build();
 ```
 
 Or with array of values (only applicable to custom rules):
 
 ```C#
-   featureHubRepository.ClientContext.Attrs("languages", new List<String> {"Russian", "English", "German"}).Build();
+   await context.Attrs("languages", new List<String> {"Russian", "English", "German"}).Build();
 ```
 
 You can also use `featureHubRepository.ClientContext.Clear()` to empty your context.
@@ -173,7 +194,7 @@ _collector.Cid = "some-value"; // you can set it here
 var _data = new Dictionary<string, string>();
 _data[GoogleConstants.Cid] = "some-cid";
 
-_repo.LogAnalyticsEvent("event-name", _data);
+context.LogAnalyticsEvent("event-name", _data);
 ```
 
 Read more on how to interpret events in Google Analytics [here](https://docs.featurehub.io/analytics.html) 
@@ -221,50 +242,6 @@ using IO.FeatureHub.SSE.Client;
 using IO.FeatureHub.SSE.Model;
 ```
 <a name="getting-started"></a>
-#### REST Endpoint for GET
-
-You should only use this if you do not want realtime updates. In a normal C# application this would 
-unusual.
-
-```csharp
-using System.Collections.Generic;
-using System.Diagnostics;
-using IO.FeatureHub.SSE.Api;
-using IO.FeatureHub.SSE.Client;
-using IO.FeatureHub.SSE.Model;
-
-namespace Example
-{
-    public class Example
-    {
-        public static void Main()
-        {
-
-            Configuration config = new Configuration();
-            config.BasePath = "http://localhost";
-            var apiInstance = new FeatureServiceApi(config);
-            var sdkUrl = new List<string>(); // List<string> | The SDK urls
-
-            try
-            {
-                List<Environment> result = apiInstance.GetFeatureStates(sdkUrl);
-                Debug.WriteLine(result);
-            }
-            catch (ApiException e)
-            {
-                Debug.Print("Exception when calling FeatureServiceApi.GetFeatureStates: " + e.Message );
-                Debug.Print("Status Code: "+ e.ErrorCode);
-                Debug.Print(e.StackTrace);
-            }
-
-        }
-    }
-}
-```
-
-<a name="documentation-for-api-endpoints"></a>
-
-#### Documentation for API Endpoints
 
 All URIs are relative to *http://localhost*
 

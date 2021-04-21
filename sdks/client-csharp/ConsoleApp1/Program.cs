@@ -21,15 +21,14 @@ namespace ConsoleApp1
     {
       Console.WriteLine("Hello World!");
 
-      var featureHubEdgeUrl = new FeatureHubConfig("http://localhost:8064",
-        "default/82afd7ae-e7de-4567-817b-dd684315adf7/SJXBRyGCe1dZwnL7OQYUiJ5J8VcoMrrHP3iKCrkpYovhNIuwuIPNYGy7iOFeKE4Kaqp5sT7g5X2qETsW");
-      var context = featureHubEdgeUrl.NewContext();
+      var config = new EdgeFeatureHubConfig("http://localhost:8903",
+        "default/82afd7ae-e7de-4567-817b-dd684315adf7/SJXBRyGCe1dZ*PNYGy7iOFeKE");
 
-      Console.WriteLine($"Server evaluated {featureHubEdgeUrl.ServerEvaluation}");
+      Console.WriteLine($"Server evaluated {config.ServerEvaluation}");
 
 
-      var fh = context.Repository;
-      if (featureHubEdgeUrl.ServerEvaluation)
+      var fh = config.Repository;
+      if (config.ServerEvaluation)
       {
         fh.GetFeature("FLUTTER_COLOUR").FeatureUpdateHandler += (object sender, IFeature holder) =>
         {
@@ -64,7 +63,14 @@ namespace ConsoleApp1
       Console.Write("Context initialized, waiting for readyness - Press a key when readyness appears");
       // Console.ReadKey();
 
-      await context.Build();
+      // this will set up a ClientContext - which is a bucket of information about this user
+// and then attempt to connect to the repository and retrieve your data. It will return once it
+// has received your data.
+      var context = await config.NewContext().UserKey("ideally-unique-id")
+        .Country(StrategyAttributeCountryName.Australia)
+        .Device(StrategyAttributeDeviceName.Desktop)
+        .Build();
+
 
       if (fh.Readyness == Readyness.Ready)
       {
