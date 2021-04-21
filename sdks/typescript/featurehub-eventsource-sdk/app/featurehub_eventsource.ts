@@ -44,7 +44,7 @@ export class FeatureHubEventSourceClient implements EdgeService {
   close() {
     if (this.eventSource != null) {
       const es = this.eventSource;
-      this.eventSource = null;
+      this.eventSource = undefined;
       es.close();
     }
   }
@@ -54,11 +54,13 @@ export class FeatureHubEventSourceClient implements EdgeService {
   }
 
   contextChange(header: string): Promise<void> {
-    if (this.eventSource == undefined) {
-      this._header = header;
+    this._header = header;
+
+    if (this.eventSource !== undefined) {
       this.close();
-      this.init();
     }
+
+    this.init();
 
     return Promise.resolve(undefined);
   }
