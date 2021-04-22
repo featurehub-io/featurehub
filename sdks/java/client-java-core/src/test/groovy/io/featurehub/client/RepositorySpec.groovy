@@ -59,7 +59,8 @@ class RepositorySpec extends Specification {
       repo.getFeatureState('banana').string == null
       repo.getFeatureState('banana').number == null
       repo.getFeatureState('banana').number == null
-      repo.getFeatureState('banana').enabled
+      repo.getFeatureState('banana').set
+      !repo.getFeatureState('banana').enabled
       repo.getFeatureState('peach').string == 'orange'
       repo.exists('peach')
       repo.exists(Fruit.peach)

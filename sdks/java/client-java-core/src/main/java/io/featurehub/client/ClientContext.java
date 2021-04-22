@@ -50,6 +50,9 @@ public interface ClientContext {
   boolean isEnabled(String name);
   boolean isEnabled(Feature name);
 
+  boolean isSet(String name);
+  boolean isSet(Feature name);
+
   boolean exists(String key);
   boolean exists(Feature key);
 

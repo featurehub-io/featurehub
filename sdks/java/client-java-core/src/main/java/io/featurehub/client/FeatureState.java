@@ -16,9 +16,11 @@ public interface FeatureState {
   <T> T getJson(Class<T> type);
 
   /**
-   * true if the flag is true, false if null or false
+   * true if the flag is boolean and is true
   */
   boolean isEnabled();
+
+  boolean isSet();
 
   void addListener(FeatureListener listener);
 

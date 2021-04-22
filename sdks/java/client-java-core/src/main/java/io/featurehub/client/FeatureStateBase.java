@@ -159,7 +159,12 @@ public class FeatureStateBase implements FeatureState {
 
   @Override
   public boolean isEnabled() {
-    return value != null;
+    return getBoolean() == Boolean.TRUE;
+  }
+
+  @Override
+  public boolean isSet() {
+    return featureState != null && getAsString(featureState.getType()) != null;
   }
 
   protected FeatureValueInterceptor.ValueMatch findIntercept() {

@@ -166,8 +166,13 @@ public class EventStreamResource {
 
           switch (perms.getFeature().getFeature().getValueType()) {
             case BOOLEAN:
-              // if it is true, TRUE, t its true.
-              upd.valueBoolean(val.toLowerCase().startsWith("t"));
+              // must be true or false in some case
+              if (!val.equalsIgnoreCase("true") && !val.equalsIgnoreCase("false")) {
+                return Response.status(Response.Status.BAD_REQUEST).build();
+              }
+
+              upd.valueBoolean(Boolean.parseBoolean(val));
+
               valueNotActuallyChanging = upd.getValueBoolean().equals(value.getValueBoolean());
               break;
             case STRING:

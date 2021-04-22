@@ -41,6 +41,9 @@ export interface FeatureHubConfig {
 
   // initialize the connection outside of the creation of a context
   init(): FeatureHubConfig;
+
+  // close any server connections
+  close();
 }
 
 export class EdgeFeatureHubConfig implements FeatureHubConfig {

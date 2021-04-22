@@ -125,7 +125,18 @@ public abstract class BaseClientContext implements ClientContext {
   @Override
   public boolean isEnabled(String name) {
     // we use this mechanism as it will return the state within the context (vs repository which might be different)
-    return feature(name).getBoolean() == Boolean.TRUE;
+    return feature(name).isEnabled();
+  }
+
+  @Override
+  public boolean isSet(Feature name) {
+    return isSet(name.name());
+  }
+
+  @Override
+  public boolean isSet(String name) {
+    // we use this mechanism as it will return the state within the context (vs repository which might be different)
+    return feature(name).isSet();
   }
 
   @Override
