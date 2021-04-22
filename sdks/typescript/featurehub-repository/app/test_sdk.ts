@@ -34,7 +34,7 @@ class NodejsFeaturePostUpdater implements FeatureUpdatePostManager {
     return new Promise<boolean>((resolve, reject) => {
       try {
         const req = http.request(cra, (res) => {
-          if (res.statusCode >= 200 && req.statusCode < 300) {
+          if (res.statusCode >= 200 && res.statusCode < 300) {
             resolve(true);
           } else {
             resolve(false);
