@@ -70,9 +70,9 @@ namespace FeatureHubTestProject
 
   internal class FakeFeatureHolder : IFeature
   {
-    private object _data;
-    private FeatureValueType _type;
-    private string _key;
+    private readonly object _data;
+    private readonly FeatureValueType _type;
+    private readonly string _key;
 
     public FakeFeatureHolder(string key, FeatureValueType type, object data)
     {
@@ -81,46 +81,22 @@ namespace FeatureHubTestProject
       _type = type;
     }
 
-    public bool Exists
-    {
-      get => _data != null;
-    }
-    public bool? BooleanValue
-    {
-      get => ((bool)_data);
-    }
-    public string StringValue
-    {
-      get => _data.ToString();
-    }
-    public double? NumberValue
-    {
-      get => (double) _data;
-    }
-    public string JsonValue
-    {
-      get => _data.ToString();
-    }
-    public string Key
-    {
-      get => _key;
-    }
-    public FeatureValueType? Type
-    {
-      get => _type;
-    }
-    public object Value
-    {
-      get => _data;
-    }
-    public long? Version
-    {
-      get => 1;
-    }
+    public bool Exists => _data != null;
+    public bool? BooleanValue => ((bool)_data);
+    public string StringValue => _data.ToString();
+    public double? NumberValue => (double) _data;
+    public string JsonValue => _data.ToString();
+    public string Key => _key;
+    public FeatureValueType? Type => _type;
+    public object Value => _data;
+    public long? Version => 1;
+
     public bool IsEnabled
     {
-      get => _data != null;
+      get => _type == FeatureValueType.BOOLEAN && BooleanValue == true;
     }
+
+    public bool IsSet => _data != null;
 
     public IFeature WithContext(IClientContext context)
     {

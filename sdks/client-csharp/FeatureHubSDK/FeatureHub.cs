@@ -77,6 +77,8 @@ namespace FeatureHubSDK
     /// </summary>
     bool IsEnabled { get; }
 
+    bool IsSet { get; }
+
     IFeature WithContext(IClientContext context);
 
     /// <summary>
@@ -191,7 +193,9 @@ namespace FeatureHubSDK
     public FeatureValueType? Type => _feature?.Type;
     public object Value => _feature == null ? null : GetValue(_feature.Type);
 
-    public bool IsEnabled => BooleanValue == true;
+    public bool IsEnabled =>  BooleanValue == true;
+
+    public bool IsSet => GetValue(_feature?.Type) != null;
 
     public long? Version => _feature?.Version;
 
@@ -413,7 +417,7 @@ namespace FeatureHubSDK
       // take a snapshot copy
       var featureCopies =
          _features.Values
-           .Where((f) => f.Exists)
+           .Where((f) => f.IsSet)
            .Select(f => ctx != null ? f.WithContext(ctx) : f)
            .Select(f => ((FeatureStateBaseHolder)f).Copy()).ToList();
 
@@ -494,7 +498,7 @@ namespace FeatureHubSDK
 
     public bool IsSet(string key)
     {
-      return FeatureState(key).IsEnabled;
+      return FeatureState(key).IsSet;
     }
   }
 }

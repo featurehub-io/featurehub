@@ -90,11 +90,14 @@ namespace FeatureHubTestProject
     async public Task EnabledFlagWorksIsTrueOnlyOnTrue()
     {
       var ctx = new ClientEvalFeatureContext(_repository, null, (repo, config) => null);
+      Assert.AreEqual(false, ctx.IsSet("1"));
       Assert.AreEqual(false, ctx.IsEnabled("1"));
       _repository.Notify(SSEResultState.Features, RepositoryTest.EncodeFeatures(true, 2, FeatureValueType.BOOLEAN));
       Assert.AreEqual(true, ctx.IsEnabled("1"));
       _repository.Notify(SSEResultState.Features, RepositoryTest.EncodeFeatures(false, 3, FeatureValueType.BOOLEAN));
       Assert.AreEqual(false, ctx.IsEnabled("1"));
+      Assert.AreEqual(true, ctx.IsSet("1"));
+
       Assert.IsNull(ctx.EdgeService);
       await ctx.Build();
       ctx.Close();

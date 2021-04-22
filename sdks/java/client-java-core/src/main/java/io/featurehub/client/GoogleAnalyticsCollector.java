@@ -58,7 +58,7 @@ public class GoogleAnalyticsCollector implements AnalyticsCollector {
         String line = null;
         FeatureStateBase fs = (FeatureStateBase)fsh;
 
-        if (fs.isEnabled()) {
+        if (fs.isSet()) {
           if (fs.type() == FeatureValueType.BOOLEAN) {
             line = fsh.getBoolean().equals(Boolean.TRUE) ? "on" : "off";
           } else if (fs.type() == FeatureValueType.STRING) {

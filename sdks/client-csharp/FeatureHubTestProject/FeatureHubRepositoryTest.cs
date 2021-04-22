@@ -41,6 +41,7 @@ namespace FeatureHubTestProject
       _repository.Notify(SSEResultState.Features, EncodeFeatures(16.3, 1, FeatureValueType.NUMBER));
       Assert.AreEqual(16.3, _repository.GetFeature("1").NumberValue);
       Assert.AreEqual(false, _repository.IsEnabled("1"));
+      Assert.AreEqual(true, _repository.IsSet("1"));
       Assert.AreEqual(false, _repository.GetFeature("1").IsEnabled);
     }
 

@@ -31,6 +31,8 @@ namespace FeatureHubSDK
 
     bool IsEnabled(string name);
 
+    bool IsSet(string name);
+
     Task<IClientContext> Build();
 
     IEdgeService EdgeService { get; }
@@ -161,8 +163,14 @@ namespace FeatureHubSDK
 
     public bool IsEnabled(string name)
     {
-      return this[name].BooleanValue == true;
+      return this[name].IsEnabled;
     }
+
+    public bool IsSet(string name)
+    {
+      return this[name].IsSet;
+    }
+
     public abstract Task<IClientContext> Build();
     public abstract IEdgeService EdgeService { get; }
 
