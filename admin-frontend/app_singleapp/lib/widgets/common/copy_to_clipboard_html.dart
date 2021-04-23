@@ -12,7 +12,7 @@ class FHCopyToClipboardFlatButton extends StatelessWidget {
   final CopyToClipboardTextProvider textProvider;
 
   const FHCopyToClipboardFlatButton(
-      {Key key,
+      {Key? key,
       this.text,
       this.textProvider,
       this.caption,
@@ -63,9 +63,9 @@ class FHCopyToClipboardFlatButton extends StatelessWidget {
 
 class FHCopyToClipboard extends StatelessWidget {
   const FHCopyToClipboard({
-    Key key,
-    @required this.tooltipMessage,
-    @required this.copyString,
+    Key? key,
+    required this.tooltipMessage,
+    required this.copyString,
   }) : super(key: key);
 
   final String tooltipMessage;

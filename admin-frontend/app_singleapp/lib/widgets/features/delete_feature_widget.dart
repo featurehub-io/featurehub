@@ -10,7 +10,7 @@ class FeatureDeleteDialogWidget extends StatelessWidget {
   final PerApplicationFeaturesBloc bloc;
 
   const FeatureDeleteDialogWidget(
-      {Key key, @required this.bloc, @required this.feature})
+      {Key? key, required this.bloc, required this.feature})
       : assert(feature != null),
         assert(bloc != null),
         super(key: key);

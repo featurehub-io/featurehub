@@ -10,17 +10,17 @@ class StepperContainer extends StatelessWidget {
   final ManagementRepositoryClientBloc mrBloc;
 
   const StepperContainer({
-    Key key,
+    Key? key,
     this.mrBloc,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<bool>(
-      initialData: false,
-      stream: mrBloc.stepperOpened,
-      builder: (context, snapshot) {
-        if (snapshot.hasData && snapshot.data == true) {
+        initialData: false,
+        stream: mrBloc.stepperOpened,
+        builder: (context, snapshot) {
+          if (snapshot.hasData && snapshot.data == true) {
             return BlocProvider(
                 creator: (_context, _bag) => StepperBloc(mrBloc),
                 child: FHSetupProgressStepper());
@@ -36,9 +36,9 @@ class StepperRocketButton extends StatelessWidget {
   final ManagementRepositoryClientBloc mrBloc;
 
   const StepperRocketButton({
-    Key key,
+    Key? key,
     this.headerPadding,
-    @required this.mrBloc,
+    required this.mrBloc,
   }) : super(key: key);
 
   @override

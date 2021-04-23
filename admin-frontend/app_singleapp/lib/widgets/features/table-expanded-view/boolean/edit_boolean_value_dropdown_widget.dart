@@ -4,8 +4,8 @@ import 'package:mrapi/api.dart';
 
 class EditBooleanValueDropDownWidget extends StatefulWidget {
   const EditBooleanValueDropDownWidget({
-    Key key,
-    @required this.editable,
+    Key? key,
+    required this.editable,
     this.rolloutStrategy,
     this.strBloc,
   }) : super(key: key);

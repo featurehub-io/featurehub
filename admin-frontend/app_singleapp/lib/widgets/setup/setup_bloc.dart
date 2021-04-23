@@ -8,7 +8,7 @@ import 'package:rxdart/rxdart.dart' as rxdart;
 
 /// this stores the state for the setup screen
 class SetupContext extends InheritedWidget {
-  SetupContext({Key key, @required Widget child})
+  SetupContext({Key? key, required Widget child})
       : assert(child != null),
         super(key: key, child: child);
 

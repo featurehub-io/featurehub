@@ -20,10 +20,10 @@ class EditAttributeStrategyWidget extends StatefulWidget {
   final IndividualStrategyBloc bloc;
 
   const EditAttributeStrategyWidget({
-    Key key,
-    @required this.attribute,
-    @required this.attributeIsFirst,
-    @required this.bloc,
+    Key? key,
+    required this.attribute,
+    required this.attributeIsFirst,
+    required this.bloc,
   }) : super(key: key);
 
   @override

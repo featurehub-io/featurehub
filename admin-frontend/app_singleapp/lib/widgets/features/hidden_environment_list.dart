@@ -50,7 +50,7 @@ class HideEnvironmentContainer extends StatefulWidget {
   final String envId;
   final EnvironmentFeatureValues efv;
 
-  const HideEnvironmentContainer({Key key, this.envId, this.efv})
+  const HideEnvironmentContainer({Key? key, this.envId, this.efv})
       : super(key: key);
 
   @override

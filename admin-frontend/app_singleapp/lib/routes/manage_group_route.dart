@@ -127,8 +127,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
             if (snapshot.hasData) {
               return Row(children: <Widget>[
                 FHIconButton(
-                    icon:
-                        Icon(Icons.edit),
+                    icon: Icon(Icons.edit),
                     onPressed: () => bloc.mrClient.addOverlay(
                         (BuildContext context) => GroupUpdateDialogWidget(
                               bloc: bloc,
@@ -243,7 +242,7 @@ class MemberWidget extends StatelessWidget {
   final GroupBloc bloc;
 
   const MemberWidget(
-      {Key key, @required this.group, @required this.bloc, this.member})
+      {Key? key, required this.group, required this.bloc, this.member})
       : assert(group != null),
         assert(bloc != null),
         super(key: key);
@@ -255,7 +254,8 @@ class MemberWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(30, 5, 30, 5),
       decoration: BoxDecoration(
-          color: Theme.of(context).cardColor, border: Border(bottom: bs, left: bs, right: bs)),
+          color: Theme.of(context).cardColor,
+          border: Border(bottom: bs, left: bs, right: bs)),
       child: Row(
         children: <Widget>[
           Expanded(
@@ -290,7 +290,7 @@ class AddMembersDialogWidget extends StatefulWidget {
   final GroupBloc bloc;
 
   const AddMembersDialogWidget(
-      {Key key, @required this.bloc, @required this.group})
+      {Key? key, required this.bloc, required this.group})
       : super(key: key);
 
   @override

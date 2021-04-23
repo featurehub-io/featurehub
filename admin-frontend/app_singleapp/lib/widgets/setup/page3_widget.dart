@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 class SetupPage3Widget extends StatelessWidget {
   final SetupBloc bloc;
 
-  const SetupPage3Widget({Key key, @required this.bloc}) : assert(bloc!=null), super(key: key);
+  const SetupPage3Widget({Key? key, required this.bloc})
+      : assert(bloc != null),
+        super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +16,7 @@ class SetupPage3Widget extends StatelessWidget {
       stream: bloc.setupState,
       builder: (BuildContext context, AsyncSnapshot<bool> snap) {
         if (snap.hasError) {
-          bloc.mrClient.dialogError(snap.error,null);
+          bloc.mrClient.dialogError(snap.error, null);
         } else if (snap.hasData && snap.data) {
           return allRegistered(context);
         }
@@ -63,5 +65,4 @@ class SetupPage3Widget extends StatelessWidget {
       ),
     );
   }
-
 }

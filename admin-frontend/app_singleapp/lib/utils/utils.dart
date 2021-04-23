@@ -14,7 +14,7 @@ bool validateFeatureKey(key) {
   return RegExp(r'^[A-Za-z0-9_]+$').hasMatch(key);
 }
 
-String validateJson(String jsonToCheck) {
+String? validateJson(String jsonToCheck) {
   if (jsonToCheck.isEmpty) {
     return null;
   }
@@ -26,7 +26,7 @@ String validateJson(String jsonToCheck) {
   return null;
 }
 
-String validateNumber(String numberToCheck) {
+String? validateNumber(String numberToCheck) {
   if (numberToCheck.isEmpty) {
     return null;
   }
@@ -38,7 +38,7 @@ String validateNumber(String numberToCheck) {
   return null;
 }
 
-String condenseJson(initialJson) {
+String condenseJson(String initialJson) {
   return initialJson
       .replaceAll('\n', '')
       .replaceAll('  ', '')
@@ -58,8 +58,6 @@ extension RoleTypeExtensions on RoleType {
       case RoleType.READ:
         return 'Read';
     }
-
-    return '';
   }
 }
 
@@ -76,19 +74,18 @@ String parsePermissions(json) {
 
 class FHError {
   final String humanErrorMessage;
-  final String errorMessage;
+  final String? errorMessage;
 
   //keep exception as dynamic variable since there could be various types of errors: e.g. Exception, ApiException, StateError
-  final exception;
-  final StackTrace stackTrace;
+  final dynamic? exception;
+  final StackTrace? stackTrace;
   final bool showDetails;
 
   const FHError(this.humanErrorMessage,
       {this.exception,
       this.errorMessage,
       this.stackTrace,
-      this.showDetails = true})
-      : assert(humanErrorMessage != null);
+      this.showDetails = true});
 
   static bool _is5XX(e) {
     if (e is ApiException && e.code > 499 && e.code < 600) {
@@ -104,7 +101,8 @@ class FHError {
     return false;
   }
 
-  factory FHError.createError(e, StackTrace s, {bool showDetails = true}) {
+  factory FHError.createError(dynamic e, StackTrace? s,
+      {bool showDetails = true}) {
     var message = 'An unexpected error occured!';
     var errorMessage = 'Contact your FeatureHub administrator';
 

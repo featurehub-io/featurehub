@@ -5,7 +5,7 @@ import 'package:mrapi/api.dart';
 
 class AdminCheckboxWidget extends StatefulWidget {
   final Person person;
-  const AdminCheckboxWidget({Key key, this.person}) : super(key: key);
+  const AdminCheckboxWidget({Key? key, this.person}) : super(key: key);
 
   @override
   AdminCheckboxWidgetState createState() {

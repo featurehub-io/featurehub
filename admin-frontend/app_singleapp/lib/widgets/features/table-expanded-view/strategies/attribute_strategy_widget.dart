@@ -11,7 +11,7 @@ class AttributeStrategyWidget extends StatelessWidget {
   final bool attributeIsFirst;
 
   const AttributeStrategyWidget(
-      {Key key, this.attribute, this.attributeIsFirst})
+      {Key? key, this.attribute, this.attributeIsFirst})
       : super(key: key);
 
   @override

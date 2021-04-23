@@ -18,8 +18,8 @@ class FHScaffoldWidget extends StatefulWidget {
   final MainAxisAlignment bodyMainAxisAlignment;
 
   const FHScaffoldWidget(
-      {Key key,
-      @required this.body,
+      {Key? key,
+      required this.body,
       this.scrollAtWidth = 320,
       this.bodyMainAxisAlignment})
       : super(key: key);
@@ -50,7 +50,7 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
   final MainAxisAlignment bodyMainAxisAlignment;
 
   const _InternalFHScaffoldWidgetWidgetState(
-      {Key key, this.child, this.scrollAtWidth, this.bodyMainAxisAlignment})
+      {Key? key, this.child, this.scrollAtWidth, this.bodyMainAxisAlignment})
       : super(key: key);
 
   @override
@@ -78,8 +78,10 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
                     content: snapshot.data,
                   );
                   // make async as calls another build
-                  Timer(Duration(milliseconds: 1),
-                      () =>  ScaffoldMessenger.of(context).showSnackBar(snackBar));
+                  Timer(
+                      Duration(milliseconds: 1),
+                      () =>
+                          ScaffoldMessenger.of(context).showSnackBar(snackBar));
                   //after snackbar message shows up - need to make sure it doesn't show up again
                   mrBloc.addSnackbar(null);
                 }
@@ -108,7 +110,7 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
   Widget _mainContent(BuildContext context) {
     var mrBloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
     return Expanded(
-        child: Row(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: bodyMainAxisAlignment ?? MainAxisAlignment.start,
         children: <Widget>[
@@ -122,7 +124,8 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
               }),
           Expanded(
             child: LayoutBuilder(builder: (context, constraints) {
-              if (constraints.maxWidth > scrollAtWidth) { //parent that constraints this widget is the page width (without a menu)
+              if (constraints.maxWidth > scrollAtWidth) {
+                //parent that constraints this widget is the page width (without a menu)
                 return Container(
                     height: MediaQuery.of(context).size.height - kToolbarHeight,
                     padding: EdgeInsets.fromLTRB(16, 0, 16, 0),
@@ -130,7 +133,8 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
                       Expanded(
                           child: SingleChildScrollView(
                               child: Column(
-                        children: <Widget>[child,
+                        children: <Widget>[
+                          child,
                         ],
                       ))),
                     ]));
@@ -144,7 +148,8 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
                       width: scrollAtWidth.toDouble(),
                       child: ListView(
                         shrinkWrap: true,
-                        children: <Widget>[child,
+                        children: <Widget>[
+                          child,
                         ],
                       )));
             }),

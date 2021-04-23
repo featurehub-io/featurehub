@@ -17,7 +17,7 @@ class FeatureNamesLeftPanel extends StatelessWidget {
   final Feature feature;
 
   const FeatureNamesLeftPanel(
-      {Key key, @required this.tabsBloc, @required this.feature})
+      {Key? key, required this.tabsBloc, required this.feature})
       : super(key: key);
 
   @override
@@ -37,9 +37,27 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                 decoration: BoxDecoration(
                     color: Theme.of(context).cardColor,
                     border: Border(
-                      bottom: BorderSide(color: Theme.of(context).buttonTheme.colorScheme.onSurface.withOpacity(0.12), width: 1.0),
-                      right: BorderSide(color: Theme.of(context).buttonTheme.colorScheme.onSurface.withOpacity(0.12), width: 1.0),
-                      left: BorderSide(color: Theme.of(context).buttonTheme.colorScheme.onSurface.withOpacity(0.12), width: 1.0),
+                      bottom: BorderSide(
+                          color: Theme.of(context)
+                              .buttonTheme
+                              .colorScheme
+                              .onSurface
+                              .withOpacity(0.12),
+                          width: 1.0),
+                      right: BorderSide(
+                          color: Theme.of(context)
+                              .buttonTheme
+                              .colorScheme
+                              .onSurface
+                              .withOpacity(0.12),
+                          width: 1.0),
+                      left: BorderSide(
+                          color: Theme.of(context)
+                              .buttonTheme
+                              .colorScheme
+                              .onSurface
+                              .withOpacity(0.12),
+                          width: 1.0),
                     ),
                     boxShadow: [
 //                  BoxShadow(
@@ -90,8 +108,13 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                                   minFontSize: 8.0,
                                                   style: Theme.of(context)
                                                       .textTheme
-                                                      .bodyText1.copyWith(fontWeight: FontWeight.bold)),
-                                              SizedBox(height: 4.0,),
+                                                      .bodyText1
+                                                      .copyWith(
+                                                          fontWeight:
+                                                              FontWeight.bold)),
+                                              SizedBox(
+                                                height: 4.0,
+                                              ),
                                               Text(
                                                   '${feature.valueType.toString().split('.').last}',
                                                   overflow:
@@ -173,7 +196,7 @@ class _FeatureListenForUpdatedFeatureValues extends StatelessWidget {
   final FeaturesOnThisTabTrackerBloc bloc;
 
   const _FeatureListenForUpdatedFeatureValues(
-      {Key key, this.feature, this.bloc})
+      {Key? key, this.feature, this.bloc})
       : super(key: key);
 
   @override

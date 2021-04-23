@@ -1,5 +1,4 @@
 import 'package:app_singleapp/api/client_api.dart';
-import 'package:app_singleapp/api/router.dart';
 import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/fh_alert_dialog.dart';
 import 'package:app_singleapp/widgets/common/fh_card.dart';
@@ -35,7 +34,7 @@ class EditUserRoute extends StatelessWidget {
 class EditUserFormWidget extends StatefulWidget {
   final Person person;
 
-  const EditUserFormWidget({Key key, this.person}) : super(key: key);
+  const EditUserFormWidget({Key? key, required this.person}) : super(key: key);
 
   @override
   _EditUserFormState createState() => _EditUserFormState();
@@ -54,10 +53,10 @@ class _EditUserFormState extends State<EditUserFormWidget> {
   void initState() {
     super.initState();
     if (_email.text == '') {
-      _email.text = widget.person.email;
+      _email.text = widget.person.email!;
     }
     if (_name.text == '') {
-      _name.text = widget.person.name;
+      _name.text = widget.person.name!;
     }
   }
 
@@ -98,7 +97,8 @@ class _EditUserFormState extends State<EditUserFormWidget> {
                   controller: _email,
                   decoration: FHFilledInputDecoration(labelText: 'Email'),
                   //initialValue: bloc.person != null ? bloc.person.email : '',
-                  validator: (v) => v.isEmpty ? 'Edit email address' : null,
+                  validator: (v) =>
+                      (v?.isEmpty == true) ? 'Edit email address' : null,
                 ),
                 Padding(
                   padding: EdgeInsets.only(top: 30),
@@ -106,7 +106,8 @@ class _EditUserFormState extends State<EditUserFormWidget> {
                     controller: _name,
                     decoration: FHFilledInputDecoration(labelText: 'Name'),
                     //  initialValue: bloc.person !=null ? bloc.person.name : '',
-                    validator: (v) => v.isEmpty ? 'Edit names' : null,
+                    validator: (v) =>
+                        (v?.isEmpty == true) ? 'Edit names' : null,
                   ),
                 ),
                 Padding(
@@ -125,11 +126,10 @@ class _EditUserFormState extends State<EditUserFormWidget> {
             FHFlatButtonTransparent(
                 onPressed: () {
                   if (_formKey != null) {
-                    _formKey.currentState.reset;
+                    _formKey.currentState!.reset;
                   }
-                  ManagementRepositoryClientBloc.router.navigateTo(
-                      context, '/manage-users',
-                      transition: TransitionType.material);
+                  ManagementRepositoryClientBloc.router
+                      .navigateTo(context, '/manage-users');
                 },
                 title: 'Cancel',
                 keepCase: true),
@@ -137,15 +137,14 @@ class _EditUserFormState extends State<EditUserFormWidget> {
                 padding: const EdgeInsets.only(left: 8.0),
                 child: FHFlatButton(
                     onPressed: () {
-                      if (_formKey.currentState.validate()) {
-                        _formKey.currentState.save();
+                      if (_formKey.currentState!.validate()) {
+                        _formKey.currentState!.save();
                         try {
                           bloc.updatePersonDetails(_email.text, _name.text);
                           bloc.mrClient.addSnackbar(Text(
                               'User ${bloc.person.name} has been updated'));
-                          ManagementRepositoryClientBloc.router.navigateTo(
-                              context, '/manage-users',
-                              transition: TransitionType.material);
+                          ManagementRepositoryClientBloc.router
+                              .navigateTo(context, '/manage-users');
                         } catch (e, s) {
                           bloc.mrClient.dialogError(e, s);
                         }
@@ -162,7 +161,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
 
 class UserPasswordUpdateDialogWidget extends StatefulWidget {
   final EditUserBloc bloc;
-  const UserPasswordUpdateDialogWidget({Key key, @required this.bloc})
+  const UserPasswordUpdateDialogWidget({Key? key, required this.bloc})
       : super(key: key);
 
   @override
@@ -198,7 +197,7 @@ class _UserPasswordUpdateDialogWidgetState
                   controller: _password,
                   decoration: InputDecoration(labelText: 'New password'),
                   validator: ((v) {
-                    if (v.isEmpty) {
+                    if (v?.isEmpty == true) {
                       return 'Please enter new password';
                     }
                     return null;
@@ -208,7 +207,7 @@ class _UserPasswordUpdateDialogWidgetState
                   decoration:
                       InputDecoration(labelText: 'Confirm new password'),
                   validator: ((v) {
-                    if (v.isEmpty) {
+                    if (v?.isEmpty == true) {
                       return 'Please confirm new password';
                     }
                     if (v != _password.text) {
@@ -230,7 +229,7 @@ class _UserPasswordUpdateDialogWidgetState
           FHFlatButton(
               title: 'Save',
               onPressed: (() async {
-                if (_formKey.currentState.validate()) {
+                if (_formKey!.currentState!.validate()) {
                   try {
                     await widget.bloc.resetUserPassword(_password.text);
                     widget.bloc.mrClient.removeOverlay();

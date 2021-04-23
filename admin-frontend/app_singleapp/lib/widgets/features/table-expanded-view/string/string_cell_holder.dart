@@ -10,7 +10,7 @@ class StringCellHolder extends StatelessWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
   final PerFeatureStateTrackingBloc fvBloc;
 
-  const StringCellHolder({Key key, this.environmentFeatureValue, this.fvBloc})
+  const StringCellHolder({Key? key, this.environmentFeatureValue, this.fvBloc})
       : super(key: key);
 
   @override

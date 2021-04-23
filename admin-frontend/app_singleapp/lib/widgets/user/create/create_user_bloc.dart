@@ -1,6 +1,7 @@
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/widgets/user/common/select_portfolio_group_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart' as rxdart;
@@ -8,10 +9,10 @@ import 'package:rxdart/rxdart.dart' as rxdart;
 enum CreateUserForm { defaultState, successState }
 
 class CreateUserBloc implements Bloc {
-  RegistrationUrl registrationUrl;
-  String email;
-  String name;
-  GlobalKey<FormState> formKey;
+  RegistrationUrl? registrationUrl;
+  String? email;
+  String? name;
+  GlobalKey<FormState>? formKey;
 
   final ManagementRepositoryClientBloc client;
 
@@ -27,23 +28,34 @@ class CreateUserBloc implements Bloc {
     _formStateStream.close();
   }
 
-  CreateUserBloc(this.client, {this.selectGroupBloc}) : assert(client != null) {
+  CreateUserBloc(this.client, {required this.selectGroupBloc}) {
     _formStateStream.add(CreateUserForm.defaultState);
   }
 
   Future<void> createUser(String email) {
     final listOfAddedPortfolioGroups =
         selectGroupBloc.listOfAddedPortfolioGroups;
-    final cpd = CreatePersonDetails(email: email, name: name, groupIds: listOfAddedPortfolioGroups.where((pg) => pg.group != null).map((pg) => pg.group.id).toList(), );
+    final cpd = CreatePersonDetails(
+      email: email,
+      name: name,
+      groupIds: listOfAddedPortfolioGroups
+          .where((pg) => pg.group != null)
+          .map((pg) => pg.group.id)
+          .whereNotNull()
+          .toList(),
+    );
 
     return client.personServiceApi.createPerson(cpd).then((data) {
       registrationUrl = data;
-      registrationUrl.registrationUrl =
-          client.rewriteUrl(registrationUrl.registrationUrl);
 
-      _formStateStream.add(CreateUserForm.successState);
+      if (registrationUrl != null) {
+        registrationUrl!.registrationUrl =
+            client.rewriteUrl(registrationUrl!.registrationUrl);
 
-      selectGroupBloc.clearAddedPortfoliosAndGroups();
+        _formStateStream.add(CreateUserForm.successState);
+
+        selectGroupBloc.clearAddedPortfoliosAndGroups();
+      }
     });
   }
 

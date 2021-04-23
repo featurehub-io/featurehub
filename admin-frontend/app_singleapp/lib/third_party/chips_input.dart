@@ -10,14 +10,14 @@ typedef ChipsBuilder<T> = Widget Function(
 
 class ChipsInput<T> extends StatefulWidget {
   ChipsInput({
-    Key key,
+    Key? key,
     this.initialValue = const [],
     this.decoration = const InputDecoration(),
     this.enabled = true,
-    @required this.chipBuilder,
-    @required this.suggestionBuilder,
-    @required this.findSuggestions,
-    @required this.onChanged,
+    required this.chipBuilder,
+    required this.suggestionBuilder,
+    required this.findSuggestions,
+    required this.onChanged,
     this.onChipTapped,
     this.maxChips,
     this.textStyle,
@@ -349,7 +349,7 @@ class AlwaysDisabledFocusNode extends FocusNode {
 
 class _TextCaret extends StatefulWidget {
   const _TextCaret({
-    Key key,
+    Key? key,
     this.duration = const Duration(milliseconds: 500),
     this.resumed = false,
   }) : super(key: key);

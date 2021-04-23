@@ -10,7 +10,7 @@ class AddStrategyButton extends StatelessWidget {
   final CustomStrategyBloc bloc;
   final bool editable;
 
-  const AddStrategyButton({Key key, @required this.bloc, this.editable})
+  const AddStrategyButton({Key? key, required this.bloc, this.editable})
       : super(key: key);
 
   @override
@@ -30,7 +30,9 @@ class AddStrategyButton extends StatelessWidget {
                       return BlocProvider(
                         creator: (_c, _b) => IndividualStrategyBloc(
                             bloc.environmentFeatureValue,
-                            RolloutStrategy(id: 'created', )),
+                            RolloutStrategy(
+                              id: 'created',
+                            )),
                         child: StrategyEditingWidget(
                           bloc: bloc,
                           editable: editable,

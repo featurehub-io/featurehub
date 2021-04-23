@@ -5,7 +5,7 @@ import 'package:mrapi/api.dart';
 class PersonAvatar extends StatelessWidget {
   final ManagementRepositoryClientBloc mrBloc;
 
-  const PersonAvatar({Key key, this.mrBloc}) : super(key: key);
+  const PersonAvatar({Key? key, this.mrBloc}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +21,7 @@ class PersonAvatar extends StatelessWidget {
                     CircleAvatar(
                       backgroundColor: Color(0xffA6F2DE),
                       child: Text(
-                        //here the name should be returned from a current user
+                          //here the name should be returned from a current user
                           '${person.name.substring(0, 1)}',
                           style: Theme.of(context)
                               .textTheme
@@ -30,7 +30,7 @@ class PersonAvatar extends StatelessWidget {
                     ),
                     SizedBox(height: 4.0),
                     Text(
-                      //here the name should be returned from a current user
+                        //here the name should be returned from a current user
                         '${person.name}',
                         style: Theme.of(context).textTheme.bodyText2),
                   ],

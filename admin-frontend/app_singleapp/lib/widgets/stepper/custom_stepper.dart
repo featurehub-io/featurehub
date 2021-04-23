@@ -72,9 +72,9 @@ class CustomStep {
   ///
   /// The [title], [content], and [state] arguments must not be null.
   const CustomStep({
-    @required this.title,
+    required this.title,
     this.subtitle2,
-    @required this.content,
+    required this.content,
     this.state = CustomStepState.indexed,
     this.isActive = false,
   })  : assert(title != null),
@@ -125,8 +125,8 @@ class CustomStepper extends StatefulWidget {
   ///
   /// The [steps], [type], and [currentStep] arguments must not be null.
   const CustomStepper({
-    Key key,
-    @required this.steps,
+    Key? key,
+    required this.steps,
     this.physics,
     this.type = StepperType.vertical,
     this.currentStep = 0,

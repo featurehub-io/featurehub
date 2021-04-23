@@ -10,7 +10,7 @@ import 'package:xcvbnm/xcvbnm.dart';
 class RegisterURLRoute extends StatefulWidget {
   final String token;
 
-  RegisterURLRoute(this.token, {Key key}) : super(key: key);
+  RegisterURLRoute(this.token, {Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -149,8 +149,12 @@ class RegisterURLState extends State<RegisterURLRoute> {
                 child: FHFlatButton(
                     onPressed: () {
                       if (_formKey.currentState.validate()) {
-                        bloc.completeRegistration(widget.token, bloc.person.email,
-                            _name.text, _pw1.text, _pw2.text);
+                        bloc.completeRegistration(
+                            widget.token,
+                            bloc.person.email,
+                            _name.text,
+                            _pw1.text,
+                            _pw2.text);
                         ManagementRepositoryClientBloc.router
                             .navigateTo(context, '/');
                       }

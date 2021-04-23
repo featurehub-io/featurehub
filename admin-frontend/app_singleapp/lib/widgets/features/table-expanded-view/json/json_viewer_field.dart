@@ -5,8 +5,8 @@ class ConfigurationViewerField extends StatelessWidget {
   final bool canEdit;
 
   const ConfigurationViewerField({
-    Key key,
-    @required this.text,
+    Key? key,
+    required this.text,
     this.canEdit,
   }) : super(key: key);
 

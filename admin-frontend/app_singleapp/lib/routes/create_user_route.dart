@@ -1,5 +1,4 @@
 import 'package:app_singleapp/api/client_api.dart';
-import 'package:app_singleapp/api/router.dart';
 import 'package:app_singleapp/utils/utils.dart';
 import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/copy_to_clipboard_html.dart';
@@ -18,7 +17,7 @@ import 'package:openapi_dart_common/openapi.dart';
 class CreateUserRoute extends StatelessWidget {
   final String title;
 
-  CreateUserRoute({Key key, @required this.title})
+  CreateUserRoute({Key? key, required this.title})
       : assert(title != null),
         super(key: key);
 
@@ -105,7 +104,7 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
                         labelText: 'Name',
                       ),
                       validator: (v) {
-                        if (v.isEmpty) {
+                        if (v?.isEmpty == true) {
                           return "Please enter user's name";
                         }
                         return null;
@@ -119,7 +118,7 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
                         labelText: 'Email',
                       ),
                       validator: (v) {
-                        if (v.isEmpty) {
+                        if (v?.isEmpty == true) {
                           return 'Please enter email address';
                         }
                         if (!validateEmail(v)) {
@@ -149,7 +148,8 @@ class TopWidgetSuccess extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<CreateUserBloc>(context);
-    final hasLocal = bloc.client.identityProviders.hasLocal;
+    final hasLocal =
+        bloc.client.identityProviders.hasLocal && bloc.registrationUrl != null;
 
     return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -159,7 +159,8 @@ class TopWidgetSuccess extends StatelessWidget {
             children: <Widget>[
               Text('User created! \n',
                   style: Theme.of(context).textTheme.headline6),
-              Text(bloc.email, style: Theme.of(context).textTheme.bodyText1),
+              Text(bloc.email ?? '',
+                  style: Theme.of(context).textTheme.bodyText1),
             ],
           ),
           if (hasLocal)
@@ -171,7 +172,7 @@ class TopWidgetSuccess extends StatelessWidget {
                   Text('Registration Url',
                       style: Theme.of(context).textTheme.subtitle2),
                   Text(
-                    bloc.registrationUrl.registrationUrl,
+                    bloc.registrationUrl!.registrationUrl,
                     style: Theme.of(context).textTheme.caption,
                   ),
                 ],
@@ -181,7 +182,7 @@ class TopWidgetSuccess extends StatelessWidget {
             Row(
               children: <Widget>[
                 FHCopyToClipboardFlatButton(
-                  text: bloc.registrationUrl.registrationUrl,
+                  text: bloc.registrationUrl!.registrationUrl,
                   caption: ' Copy URL to clipboard',
                 ),
               ],
@@ -200,9 +201,8 @@ class TopWidgetSuccess extends StatelessWidget {
             FHFlatButtonTransparent(
                 onPressed: () {
                   bloc.backToDefault();
-                  ManagementRepositoryClientBloc.router.navigateTo(
-                      context, '/manage-users',
-                      transition: TransitionType.material);
+                  ManagementRepositoryClientBloc.router
+                      .navigateTo(context, '/manage-users');
                 },
                 title: 'Close'),
             FHFlatButton(
@@ -242,11 +242,10 @@ class CreateUserFormButtons extends StatelessWidget {
       FHFlatButtonTransparent(
         onPressed: () {
           if (bloc.formKey != null) {
-            bloc.formKey.currentState.reset;
+            bloc.formKey!.currentState!.reset;
           }
-          ManagementRepositoryClientBloc.router.navigateTo(
-              context, '/manage-users',
-              transition: TransitionType.material);
+          ManagementRepositoryClientBloc.router
+              .navigateTo(context, '/manage-users');
         },
         title: 'Cancel',
         keepCase: true,
@@ -255,10 +254,10 @@ class CreateUserFormButtons extends StatelessWidget {
           padding: const EdgeInsets.only(left: 8.0),
           child: FHFlatButton(
               onPressed: () async {
-                if (bloc.formKey.currentState.validate()) {
-                  bloc.formKey.currentState.save();
+                if (bloc.formKey!.currentState!.validate()) {
+                  bloc.formKey!.currentState!.save();
                   try {
-                    await bloc.createUser(bloc.email);
+                    await bloc.createUser(bloc.email!);
                   } catch (e, s) {
                     if (e is ApiException && e.code == 409) {
                       await bloc.client.dialogError(e, s,

@@ -41,7 +41,7 @@ class _DrawerViewWidgetState extends State<DrawerViewWidget> {
 class _MenuContainer extends StatelessWidget {
   final ManagementRepositoryClientBloc mrBloc;
 
-  const _MenuContainer({Key key, this.mrBloc}) : super(key: key);
+  const _MenuContainer({Key? key, this.mrBloc}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -221,7 +221,7 @@ class _ApplicationSettings extends StatelessWidget {
 class _MenuFeaturesOptionsWidget extends StatelessWidget {
   final RouteChange currentRoute;
 
-  const _MenuFeaturesOptionsWidget({Key key, this.currentRoute})
+  const _MenuFeaturesOptionsWidget({Key? key, this.currentRoute})
       : super(key: key);
 
   @override
@@ -263,7 +263,7 @@ class _MenuItem extends StatelessWidget {
   final PermissionType permissionType;
 
   const _MenuItem(
-      {Key key,
+      {Key? key,
       this.name,
       this.iconData,
       this.path,

@@ -230,7 +230,7 @@ class _ListUserInfo extends StatelessWidget {
   final ListUsersBloc bloc;
   final SearchPersonEntry entry;
 
-  const _ListUserInfo({Key key, @required this.bloc, @required this.entry})
+  const _ListUserInfo({Key? key, required this.bloc, required this.entry})
       : super(key: key);
 
   @override
@@ -362,7 +362,7 @@ class _ListUserRow extends StatelessWidget {
   final String title;
   final Widget child;
 
-  const _ListUserRow({Key key, this.title, this.child}) : super(key: key);
+  const _ListUserRow({Key? key, this.title, this.child}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -385,8 +385,7 @@ class DeleteDialogWidget extends StatelessWidget {
   final Person person;
   final ListUsersBloc bloc;
 
-  const DeleteDialogWidget(
-      {Key key, @required this.person, @required this.bloc})
+  const DeleteDialogWidget({Key? key, required this.person, required this.bloc})
       : assert(person != null),
         assert(bloc != null),
         super(key: key);

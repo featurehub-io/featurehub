@@ -20,9 +20,9 @@ class StrategyEditingWidget extends StatefulWidget {
   final bool editable;
 
   StrategyEditingWidget({
-    Key key,
-    @required this.bloc,
-    @required this.editable,
+    Key? key,
+    required this.bloc,
+    required this.editable,
   }) : super(key: key);
 
   @override
@@ -116,7 +116,11 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                   padding: EdgeInsets.symmetric(horizontal: 8.0),
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.all(Radius.circular(6.0)),
-                      color: Theme.of(context).brightness == Brightness.light ? Theme.of(context).selectedRowColor : Theme.of(context).primaryColorLight.withOpacity(0.1)),
+                      color: Theme.of(context).brightness == Brightness.light
+                          ? Theme.of(context).selectedRowColor
+                          : Theme.of(context)
+                              .primaryColorLight
+                              .withOpacity(0.1)),
                   child: Column(children: [
                     if ((individualStrategyBloc.rolloutStrategy?.percentage !=
                             null) ||
@@ -271,7 +275,11 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
             ? false
             : null;
 
-    final newStrategy = RolloutStrategy(name: _strategyName.text, attributes: individualStrategyBloc.currentAttributes, value: defaultValue, );
+    final newStrategy = RolloutStrategy(
+      name: _strategyName.text,
+      attributes: individualStrategyBloc.currentAttributes,
+      value: defaultValue,
+    );
 
     if (_strategyPercentage.text.isNotEmpty) {
       newStrategy.percentageFromText = _strategyPercentage.text;
@@ -305,7 +313,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
 class _NaughtyDataEntryWidget extends StatelessWidget {
   final IndividualStrategyBloc bloc;
 
-  const _NaughtyDataEntryWidget({Key key, @required this.bloc})
+  const _NaughtyDataEntryWidget({Key? key, required this.bloc})
       : super(key: key);
 
   @override

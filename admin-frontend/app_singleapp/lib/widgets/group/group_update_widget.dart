@@ -12,7 +12,7 @@ class GroupUpdateDialogWidget extends StatefulWidget {
   final Group group;
   final GroupBloc bloc;
 
-  const GroupUpdateDialogWidget({Key key, @required this.bloc, this.group})
+  const GroupUpdateDialogWidget({Key? key, required this.bloc, this.group})
       : super(key: key);
 
   @override
@@ -110,7 +110,7 @@ class GroupDeleteDialogWidget extends StatelessWidget {
   final GroupBloc bloc;
 
   const GroupDeleteDialogWidget(
-      {Key key, @required this.group, @required this.bloc})
+      {Key? key, required this.group, required this.bloc})
       : assert(group != null),
         assert(bloc != null),
         super(key: key);

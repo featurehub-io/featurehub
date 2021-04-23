@@ -38,24 +38,28 @@ class FeatureHubApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return DynamicTheme(
         defaultBrightness: Brightness.light,
-        data: (brightness) => brightness == Brightness.light ? myTheme : darkTheme
-    ,
-    themedWidgetBuilder: (context, theme) {
-      return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'FeatureHub',
-        theme: theme,
-        home: LandingRoute(title: 'FeatureHub'),
-        onGenerateRoute: (RouteSettings settings) {
-          final uri = Uri.parse(settings.name);
-          final params = uri.queryParametersAll;
-          ManagementRepositoryClientBloc.router
-              .navigateTo(context, uri.path, params: params);
-          BlocProvider.of<ManagementRepositoryClientBloc>(context)
-              .resetInitialized();
-          return null;
-        },
-      );
-    });
+        data: (brightness) =>
+            brightness == Brightness.light ? myTheme : darkTheme,
+        themedWidgetBuilder: (context, theme) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: 'FeatureHub',
+            theme: theme,
+            home: LandingRoute(title: 'FeatureHub'),
+            onGenerateRoute: (RouteSettings settings) {
+              if (settings.name == null) {
+                return null;
+              }
+
+              final uri = Uri.parse(settings.name!);
+              final params = uri.queryParametersAll;
+              ManagementRepositoryClientBloc.router
+                  .navigateTo(context, uri.path, params: params);
+              BlocProvider.of<ManagementRepositoryClientBloc>(context)
+                  .resetInitialized();
+              return null;
+            },
+          );
+        });
   }
 }

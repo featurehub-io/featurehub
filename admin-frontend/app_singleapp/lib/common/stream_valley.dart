@@ -330,7 +330,8 @@ class StreamValley {
     return portfolios;
   }
 
-  bool containsPid(String pid) {
+  bool containsPid(String? pid) {
+    if (pid == null) return false;
     return _portfoliosSource.value?.any((p) => p.id == pid) ?? false;
   }
 }

@@ -4,11 +4,11 @@ import 'package:mrapi/api.dart';
 
 class EditStringValueContainer extends StatefulWidget {
   const EditStringValueContainer({
-    Key key,
-    @required this.enabled,
-    @required this.canEdit,
-    @required this.rolloutStrategy,
-    @required this.strBloc,
+    Key? key,
+    required this.enabled,
+    required this.canEdit,
+    required this.rolloutStrategy,
+    required this.strBloc,
   }) : super(key: key);
 
   final bool enabled;
@@ -44,7 +44,8 @@ class _EditStringValueContainerState extends State<EditStringValueContainer> {
           enabled: widget.enabled,
           controller: tec,
           decoration: InputDecoration(
-              contentPadding: EdgeInsets.only(left: 4.0, right: 4.0, bottom: 8.0),
+              contentPadding:
+                  EdgeInsets.only(left: 4.0, right: 4.0, bottom: 8.0),
               enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(
                 color: Theme.of(context).buttonColor,

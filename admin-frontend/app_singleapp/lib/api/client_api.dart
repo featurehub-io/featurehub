@@ -407,14 +407,11 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   void customError({String messageTitle = '', String messageBody = ''}) {
     addError(FHError(messageTitle,
-        exception: null,
-        stackTrace: null,
-        showDetails: false,
-        errorMessage: messageBody));
+        exception: null, showDetails: false, errorMessage: messageBody));
   }
 
-  Future<void> dialogError(e, StackTrace s,
-      {String messageTitle,
+  Future<void> dialogError(e, StackTrace? s,
+      {String? messageTitle,
       bool showDetails = true,
       String messageBody = ''}) async {
     _log.warning(messageBody ?? 'failure', e, s);
@@ -445,30 +442,36 @@ class ManagementRepositoryClientBloc implements Bloc {
   }
 
   Future hasToken(TokenizedPerson tp) async {
+    final person = tp.person;
+
+    if (person == null) {
+      return;
+    }
+
     setBearerToken(tp.accessToken);
 
     final previousPerson = await lastUsername();
 
     // if we are swapping users, remove all shared preferences (including last portfolio, route, etc)
-    if (tp.person.email != previousPerson) {
+    if (person.email != previousPerson) {
       await _sharedPreferences.clear();
     }
 
-    setLastUsername(tp.person.email);
+    setLastUsername(person.email!);
 
-    setPerson(tp.person);
+    setPerson(person);
 
-    if (!tp.person.passwordRequiresReset) {
-      _initializedSource.add(InitializedCheckState.zombie);
-    } else {
+    if (person.passwordRequiresReset == true) {
       _initializedSource.add(InitializedCheckState.requires_password_reset);
+    } else {
+      _initializedSource.add(InitializedCheckState.zombie);
     }
   }
 
   Future<void> replaceTempPassword(String password) {
     return authServiceApi
         .replaceTempPassword(
-            person.id.id,
+            person.id!.id,
             PasswordReset(
               password: password,
             ))
@@ -538,7 +541,7 @@ class ManagementRepositoryClientBloc implements Bloc {
     }
   }
 
-  Future<String> lastUsername() async {
+  Future<String?> lastUsername() async {
     return await _sharedPreferences.getString('lastUsername');
   }
 

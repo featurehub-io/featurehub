@@ -7,7 +7,7 @@ import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
 
 class FHappBar extends StatelessWidget {
-  const FHappBar({Key key}) : super(key: key);
+  const FHappBar({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

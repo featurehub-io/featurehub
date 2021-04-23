@@ -8,7 +8,7 @@ class StringStrategyCard extends StatelessWidget {
   final RolloutStrategy rolloutStrategy;
   final CustomStrategyBloc strBloc;
 
-  StringStrategyCard({Key key, this.rolloutStrategy, @required this.strBloc})
+  StringStrategyCard({Key? key, this.rolloutStrategy, required this.strBloc})
       : super(key: key);
 
   @override

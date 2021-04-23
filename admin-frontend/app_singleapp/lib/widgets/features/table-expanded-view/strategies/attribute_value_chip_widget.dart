@@ -7,7 +7,7 @@ class AttributeValueChipWidget extends StatelessWidget {
   final ValueChanged<dynamic> onSelected;
 
   const AttributeValueChipWidget(
-      {Key key, @required this.label, @required this.value, this.onSelected})
+      {Key? key, required this.label, required this.value, this.onSelected})
       : super(key: key);
 
   @override
@@ -16,8 +16,10 @@ class AttributeValueChipWidget extends StatelessWidget {
       children: [
         Chip(
             onDeleted: () => onSelected(value),
-            label: Text(label, style: Theme.of(context).textTheme.bodyText1,)
-        ),
+            label: Text(
+              label,
+              style: Theme.of(context).textTheme.bodyText1,
+            )),
         FHLabelContainer(text: 'OR')
       ],
     );

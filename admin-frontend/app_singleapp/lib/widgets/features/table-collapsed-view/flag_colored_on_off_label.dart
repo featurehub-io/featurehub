@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 class FlagOnOffColoredIndicator extends StatelessWidget {
   final bool on;
 
-  const FlagOnOffColoredIndicator({Key key, this.on}) : super(key: key);
+  const FlagOnOffColoredIndicator({Key? key, this.on}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

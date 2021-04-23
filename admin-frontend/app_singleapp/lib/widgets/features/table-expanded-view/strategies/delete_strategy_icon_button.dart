@@ -5,10 +5,10 @@ import 'package:mrapi/api.dart';
 
 class DeleteStrategyIconButton extends StatelessWidget {
   const DeleteStrategyIconButton({
-    Key key,
-    @required this.editable,
-    @required this.rolloutStrategy,
-    @required this.strBloc,
+    Key? key,
+    required this.editable,
+    required this.rolloutStrategy,
+    required this.strBloc,
   }) : super(key: key);
 
   final bool editable;
@@ -22,14 +22,10 @@ class DeleteStrategyIconButton extends StatelessWidget {
         type: MaterialType.transparency,
         child: IconButton(
           splashRadius: 20,
-          mouseCursor: editable
-              ? SystemMouseCursors.click
-              : null,
+          mouseCursor: editable ? SystemMouseCursors.click : null,
           icon: Icon(Icons.delete, size: 16),
-          onPressed: editable
-              ? () => strBloc.removeStrategy(
-              rolloutStrategy)
-              : null,
+          onPressed:
+              editable ? () => strBloc.removeStrategy(rolloutStrategy) : null,
         ),
       ),
     );

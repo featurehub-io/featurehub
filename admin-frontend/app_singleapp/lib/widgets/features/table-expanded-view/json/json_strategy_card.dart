@@ -8,7 +8,7 @@ class JsonStrategyCard extends StatelessWidget {
   final RolloutStrategy rolloutStrategy;
   final CustomStrategyBloc strBloc;
 
-  JsonStrategyCard({Key key, this.rolloutStrategy, @required this.strBloc})
+  JsonStrategyCard({Key? key, this.rolloutStrategy, required this.strBloc})
       : super(key: key);
 
   @override

@@ -116,7 +116,7 @@ class ServiceAccountEnvRoute extends StatelessWidget {
 class _ServiceAccountDisplayWidget extends StatelessWidget {
   final ServiceAccountEnvironments serviceAccountEnvs;
 
-  const _ServiceAccountDisplayWidget({Key key, this.serviceAccountEnvs})
+  const _ServiceAccountDisplayWidget({Key? key, this.serviceAccountEnvs})
       : super(key: key);
 
   @override
@@ -141,7 +141,7 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
                       flex: 2,
                       child: Text(serviceAccount.name,
                           overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.subtitle1.copyWith(
+                          style: Theme.of(context).textTheme.subtitle1!.copyWith(
                               color: Theme.of(context).brightness ==
                                       Brightness.light
                                   ? Theme.of(context).buttonColor
@@ -204,14 +204,15 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
   final Environment env;
   final ServiceAccount sa;
 
-  const _ServiceAccountPermissionWidget(
-      {Key key, @required this.env, @required this.sa})
+  const _ServiceAccountPermissionWidget({Key? key, this.env, this.sa})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final account = sa.permissions.firstWhere((p) => p.environmentId == env.id,
-        orElse: () => ServiceAccountPermission(permissions: <RoleType>[], ));
+        orElse: () => ServiceAccountPermission(
+              permissions: <RoleType>[],
+            ));
     final perms = account.permissions;
 
     return Container(

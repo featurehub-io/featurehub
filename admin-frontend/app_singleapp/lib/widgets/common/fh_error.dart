@@ -10,7 +10,7 @@ import 'fh_alert_dialog.dart';
 class FHErrorWidget extends StatefulWidget {
   final FHError error;
 
-  const FHErrorWidget({Key key, this.error}) : super(key: key);
+  const FHErrorWidget({Key? key, this.error}) : super(key: key);
 
   @override
   _FHErrorState createState() => _FHErrorState();

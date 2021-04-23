@@ -5,7 +5,7 @@ class FHCardWidget extends StatelessWidget {
   final Widget child;
   final double width;
 
-  const FHCardWidget({Key key, @required this.child, this.width = 800})
+  const FHCardWidget({Key? key, required this.child, this.width = 800})
       : super(key: key);
 
   @override

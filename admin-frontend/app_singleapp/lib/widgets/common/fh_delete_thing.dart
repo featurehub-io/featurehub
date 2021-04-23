@@ -18,12 +18,12 @@ class FHDeleteThingWarningWidget extends StatelessWidget {
   final String content;
 
   const FHDeleteThingWarningWidget(
-      {Key key,
-      @required this.deleteSelected,
+      {Key? key,
+      required this.deleteSelected,
       this.thing,
       this.wholeWarning,
       bool extraWarning,
-      @required this.bloc,
+      required this.bloc,
       this.content})
       : extraWarning = extraWarning ?? false,
         assert(bloc !=
@@ -76,7 +76,7 @@ class FHDeleteThingWarningWidget extends StatelessWidget {
 class _WarningWidget extends StatelessWidget {
   final bool extra;
 
-  const _WarningWidget({Key key, bool extra})
+  const _WarningWidget({Key? key, bool extra})
       : extra = extra ?? false,
         super(key: key);
 

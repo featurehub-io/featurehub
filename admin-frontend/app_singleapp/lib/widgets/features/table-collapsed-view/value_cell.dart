@@ -13,7 +13,7 @@ class CollapsedViewValueCellHolder extends StatelessWidget {
   final Feature feature;
 
   const CollapsedViewValueCellHolder(
-      {Key key, @required this.fv, @required this.efv, @required this.feature})
+      {Key? key, required this.fv, required this.efv, required this.feature})
       : assert(efv != null),
         assert(feature != null),
         super(key: key);
@@ -34,7 +34,7 @@ class _ValueContainer extends StatelessWidget {
   final Feature feature;
   final FeatureValue fv;
 
-  _ValueContainer({@required this.feature, @required this.fv});
+  _ValueContainer({required this.feature, required this.fv});
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +59,7 @@ class _ValueContainer extends StatelessWidget {
 
 class LockedIndicator extends StatelessWidget {
   const LockedIndicator({
-    Key key,
+    Key? key,
   }) : super(key: key);
 
   @override
@@ -82,7 +82,7 @@ class _StrategiesList extends StatelessWidget {
   final Feature feature;
   final FeatureValue fv;
 
-  const _StrategiesList({Key key, @required this.feature, @required this.fv})
+  const _StrategiesList({Key? key, required this.feature, required this.fv})
       : super(key: key);
 
   @override
@@ -103,9 +103,9 @@ class _ValueCard extends StatelessWidget {
   final RolloutStrategy rolloutStrategy;
 
   const _ValueCard({
-    Key key,
-    @required this.fv,
-    @required this.feature,
+    Key? key,
+    required this.fv,
+    required this.feature,
     this.rolloutStrategy,
   }) : super(key: key);
 
@@ -122,15 +122,20 @@ class _ValueCard extends StatelessWidget {
             width: 150,
             padding: EdgeInsets.symmetric(horizontal: 8.0),
             decoration: BoxDecoration(
-              color: rolloutStrategy == null ? (Theme.of(context).brightness == Brightness.light ?
-                   defaultValueColor : Colors.transparent)
-                  : (Theme.of(context).brightness == Brightness.light ? strategyValueColor : Colors.transparent),
-             borderRadius: BorderRadius.all(Radius.circular(16.0)),
-              border: Theme.of(context).brightness == Brightness.light ? null : Border.all(
-                  color: Theme.of(context).disabledColor,
-                  width: 1.0,
-              ),
-
+              color: rolloutStrategy == null
+                  ? (Theme.of(context).brightness == Brightness.light
+                      ? defaultValueColor
+                      : Colors.transparent)
+                  : (Theme.of(context).brightness == Brightness.light
+                      ? strategyValueColor
+                      : Colors.transparent),
+              borderRadius: BorderRadius.all(Radius.circular(16.0)),
+              border: Theme.of(context).brightness == Brightness.light
+                  ? null
+                  : Border.all(
+                      color: Theme.of(context).disabledColor,
+                      width: 1.0,
+                    ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,

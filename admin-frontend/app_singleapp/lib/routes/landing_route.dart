@@ -16,7 +16,7 @@ import 'package:flutter/material.dart';
 class LandingRoute extends StatefulWidget {
   final String title;
 
-  LandingRoute({Key key, this.title}) : super(key: key);
+  LandingRoute({Key? key, required this.title}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -25,7 +25,7 @@ class LandingRoute extends StatefulWidget {
 }
 
 class LandingRouteState extends State<LandingRoute> {
-  Timer redirectTimer;
+  Timer? redirectTimer;
 
   @override
   Widget build(BuildContext context) {
@@ -46,8 +46,8 @@ class LandingRouteState extends State<LandingRoute> {
             widget = Text('Error!');
           } else if (snapshot.data == InitializedCheckState.initialized) {
             if (client.currentRoute != null &&
-                client.currentRoute.route == '/register-url') {
-              widget = registerUrl(client, params: client.currentRoute.params);
+                client.currentRoute!.route == '/register-url') {
+              widget = registerUrl(client, params: client.currentRoute!.params);
             } else {
               widget = Center(
                   child: MediaQuery.of(context).size.width > 400
@@ -104,8 +104,6 @@ class LandingRouteState extends State<LandingRoute> {
   @override
   void dispose() {
     super.dispose();
-    if (redirectTimer != null) {
-      redirectTimer.cancel();
-    }
+    redirectTimer?.cancel();
   }
 }

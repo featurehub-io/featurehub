@@ -1,11 +1,9 @@
-
-
 import 'package:flutter/material.dart';
 
 class SimpleWidget extends StatelessWidget {
   final String message;
 
-  const SimpleWidget({Key key, this.message}) : super(key: key);
+  const SimpleWidget({Key? key, this.message}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -36,5 +34,4 @@ class SimpleWidget extends StatelessWidget {
       ),
     );
   }
-
 }

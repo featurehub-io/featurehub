@@ -10,7 +10,7 @@ class JsonCellHolder extends StatelessWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
   final PerFeatureStateTrackingBloc fvBloc;
 
-  const JsonCellHolder({Key key, this.environmentFeatureValue, this.fvBloc})
+  const JsonCellHolder({Key? key, this.environmentFeatureValue, this.fvBloc})
       : super(key: key);
 
   @override

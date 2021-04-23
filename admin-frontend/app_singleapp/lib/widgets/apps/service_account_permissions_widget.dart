@@ -17,7 +17,7 @@ import 'manage_app_bloc.dart';
 final _log = Logger('ServiceAccountPermissionsWidget');
 
 class ServiceAccountPermissionsWidget extends StatefulWidget {
-  const ServiceAccountPermissionsWidget({Key key}) : super(key: key);
+  const ServiceAccountPermissionsWidget({Key? key}) : super(key: key);
 
   @override
   _ServiceAccountPermissionState createState() =>
@@ -155,10 +155,10 @@ class _ServiceAccountPermissionDetailWidget extends StatefulWidget {
   final ManageAppBloc bloc;
 
   const _ServiceAccountPermissionDetailWidget({
-    Key key,
-    @required this.mr,
-    @required this.bloc,
-  })  : assert(mr != null),
+    Key? key,
+    required this.mr,
+    required this.bloc,
+  })   : assert(mr != null),
         assert(bloc != null),
         super(key: key);
 

@@ -17,10 +17,10 @@ class FeatureValueCell extends StatelessWidget {
   final Feature feature;
 
   FeatureValueCell(
-      {Key key,
-      @required this.tabsBloc,
-      @required this.value,
-      @required this.efv,
+      {Key? key,
+      required this.tabsBloc,
+      required this.value,
+      required this.efv,
       this.feature})
       : super(key: key);
 

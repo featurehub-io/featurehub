@@ -60,6 +60,6 @@ class Routes {
         handler: handleRouteChangeRequest(users),
         permissionType: PermissionType.portfolioadmin);
 
-    return this;
+    return router;
   }
 }

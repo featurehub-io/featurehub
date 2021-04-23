@@ -8,7 +8,7 @@ class LockUnlockSwitch extends StatefulWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
   final PerFeatureStateTrackingBloc fvBloc;
 
-  const LockUnlockSwitch({Key key, this.environmentFeatureValue, this.fvBloc})
+  const LockUnlockSwitch({Key? key, this.environmentFeatureValue, this.fvBloc})
       : super(key: key);
 
   @override
@@ -62,7 +62,7 @@ class _LockUnlockSwitchState extends State<LockUnlockSwitch> {
 
 class _LockUnlockIconButton extends StatelessWidget {
   const _LockUnlockIconButton({
-    Key key,
+    Key? key,
     this.lock,
     this.onPressed,
   }) : super(key: key);
@@ -79,15 +79,20 @@ class _LockUnlockIconButton extends StatelessWidget {
           height: 36,
           child: IconButton(
               splashRadius: 20,
-            mouseCursor: onPressed != null
-                ? SystemMouseCursors.click
-                : null,
-            tooltip: onPressed != null ? (lock ? 'Unlock to edit feature value' : 'Lock feature value'): null,
+              mouseCursor: onPressed != null ? SystemMouseCursors.click : null,
+              tooltip: onPressed != null
+                  ? (lock
+                      ? 'Unlock to edit feature value'
+                      : 'Lock feature value')
+                  : null,
               icon: Icon(lock ? Icons.lock_outline : Icons.lock_open,
                   size: 20, color: lock ? Colors.red : Colors.green),
               onPressed: onPressed),
         ),
-        Text(lock ? 'Locked' : 'Unlocked', style: Theme.of(context).textTheme.caption,)
+        Text(
+          lock ? 'Locked' : 'Unlocked',
+          style: Theme.of(context).textTheme.caption,
+        )
       ],
     );
   }

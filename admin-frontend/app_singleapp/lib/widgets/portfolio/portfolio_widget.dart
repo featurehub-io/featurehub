@@ -44,10 +44,7 @@ class _PortfolioWidget extends StatelessWidget {
   final PortfolioBloc bloc;
 
   const _PortfolioWidget(
-      {Key key,
-      @required this.portfolio,
-      @required this.mr,
-      @required this.bloc})
+      {Key? key, required this.portfolio, required this.mr, required this.bloc})
       : assert(portfolio != null),
         assert(mr != null),
         assert(bloc != null),
@@ -109,7 +106,7 @@ class PortfolioDeleteDialogWidget extends StatelessWidget {
   final PortfolioBloc bloc;
 
   const PortfolioDeleteDialogWidget(
-      {Key key, @required this.portfolio, @required this.bloc})
+      {Key? key, required this.portfolio, required this.bloc})
       : assert(portfolio != null),
         assert(bloc != null),
         super(key: key);
@@ -142,7 +139,7 @@ class PortfolioUpdateDialogWidget extends StatefulWidget {
   final PortfolioBloc bloc;
 
   const PortfolioUpdateDialogWidget(
-      {Key key, @required this.bloc, this.portfolio})
+      {Key? key, required this.bloc, this.portfolio})
       : super(key: key);
 
   @override

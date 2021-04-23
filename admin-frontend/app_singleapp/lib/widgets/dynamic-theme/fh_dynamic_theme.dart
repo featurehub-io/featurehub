@@ -11,7 +11,7 @@ typedef ThemeDataWithBrightnessBuilder = ThemeData Function(
 
 class DynamicTheme extends StatefulWidget {
   const DynamicTheme(
-      {Key key, this.data, this.themedWidgetBuilder, this.defaultBrightness})
+      {Key? key, this.data, this.themedWidgetBuilder, this.defaultBrightness})
       : super(key: key);
 
   final ThemedWidgetBuilder themedWidgetBuilder;

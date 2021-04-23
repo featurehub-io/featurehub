@@ -66,10 +66,10 @@ class TabsView extends StatelessWidget {
   final PerApplicationFeaturesBloc bloc;
 
   const TabsView(
-      {Key key,
-      @required this.featureStatus,
-      @required this.applicationId,
-      @required this.bloc})
+      {Key? key,
+      required this.featureStatus,
+      required this.applicationId,
+      required this.bloc})
       : super(key: key);
 
   @override
@@ -118,15 +118,16 @@ class _FeatureTabsBodyHolder extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if(bloc.features.isNotEmpty) Container(
-                            color: Theme.of(context).highlightColor,
-                            height: headerHeight,
-                            width: MediaQuery.of(context).size.width > 600
-                                ? 260.0
-                                : 130,
-                            padding: EdgeInsets.only(left: 8.0),
-                            child: Text('',
-                                style: Theme.of(context).textTheme.caption)),
+                        if (bloc.features.isNotEmpty)
+                          Container(
+                              color: Theme.of(context).highlightColor,
+                              height: headerHeight,
+                              width: MediaQuery.of(context).size.width > 600
+                                  ? 260.0
+                                  : 130,
+                              padding: EdgeInsets.only(left: 8.0),
+                              child: Text('',
+                                  style: Theme.of(context).textTheme.caption)),
                         ...bloc.features.map(
                           (f) {
                             return FeatureNamesLeftPanel(
@@ -183,11 +184,11 @@ class _FeatureTab extends StatelessWidget {
   final color;
 
   const _FeatureTab(
-      {Key key,
-      @required this.text,
-      @required this.icon,
-      @required this.state,
-      @required this.color})
+      {Key? key,
+      required this.text,
+      required this.icon,
+      required this.state,
+      required this.color})
       : super(key: key);
 
   @override
@@ -207,8 +208,8 @@ class _FeatureTab extends StatelessWidget {
                     bloc.swapTab(state);
                   },
                   child: Container(
-                      padding: EdgeInsets.symmetric(
-                          vertical: 6.0, horizontal: 12.0),
+                      padding:
+                          EdgeInsets.symmetric(vertical: 6.0, horizontal: 12.0),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.all(Radius.circular(16.0)),
                         color: state == snapshot.data
@@ -227,7 +228,7 @@ class _FeatureTab extends StatelessWidget {
 
 class NoEnvironmentMessage extends StatelessWidget {
   const NoEnvironmentMessage({
-    Key key,
+    Key? key,
   }) : super(key: key);
 
   @override
@@ -268,7 +269,7 @@ class NoEnvironmentMessage extends StatelessWidget {
 
 class NoFeaturesMessage extends StatelessWidget {
   const NoFeaturesMessage({
-    Key key,
+    Key? key,
   }) : super(key: key);
 
   @override

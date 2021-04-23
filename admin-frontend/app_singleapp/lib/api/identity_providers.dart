@@ -26,12 +26,6 @@ class IdentityProviders {
 
   IdentityProviders(this._bloc, this._authServiceApi);
 
-  set bloc(ManagementRepositoryClientBloc bloc) => _bloc = bloc;
-
-
-
-  set authServiceApi(AuthServiceApi val) => _authServiceApi = val;
-
   void authenticateViaProvider(String provider) {
     if (_authServiceApi != null) {
       _authServiceApi!.getLoginUrlForProvider(provider).then((value) {

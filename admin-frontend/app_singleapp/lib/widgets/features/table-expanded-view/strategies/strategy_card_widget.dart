@@ -12,11 +12,11 @@ class StrategyCardWidget extends StatelessWidget {
   final CustomStrategyBloc strBloc;
 
   const StrategyCardWidget(
-      {Key key,
-      @required this.editable,
-      @required this.editableHolderWidget,
-      @required this.rolloutStrategy,
-      @required this.strBloc})
+      {Key? key,
+      required this.editable,
+      required this.editableHolderWidget,
+      required this.rolloutStrategy,
+      required this.strBloc})
       : super(key: key);
 
   @override
@@ -25,7 +25,9 @@ class StrategyCardWidget extends StatelessWidget {
     return SizedBox(
       height: 50,
       child: Card(
-        color: rolloutStrategy == null ? (light ? defaultValueColor : defaultValueColorDark) : (light ? strategyValueColor : strategyValueColorDark),
+        color: rolloutStrategy == null
+            ? (light ? defaultValueColor : defaultValueColorDark)
+            : (light ? strategyValueColor : strategyValueColorDark),
         child: Padding(
           padding: const EdgeInsets.only(left: 8.0, right: 2.0),
           child: Row(

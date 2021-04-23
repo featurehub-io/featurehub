@@ -10,9 +10,9 @@ class FHLinkWidget extends StatelessWidget {
   final String text;
 
   const FHLinkWidget({
-    Key key,
-    @required this.text,
-    @required this.href,
+    Key? key,
+    required this.text,
+    required this.href,
   }) : super(key: key);
 
   @override
@@ -43,10 +43,10 @@ class FHLink extends StatelessWidget {
   final Widget child;
 
   FHLink(
-      {Key key,
-      @required this.href,
+      {Key? key,
+      required this.href,
       this.tooltip,
-      @required this.child,
+      required this.child,
       this.params})
       : assert(child != null),
         assert(href != null),

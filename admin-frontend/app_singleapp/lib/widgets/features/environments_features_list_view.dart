@@ -7,8 +7,8 @@ import 'tabs_bloc.dart';
 
 class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
   const EnvironmentsAndFeatureValuesListView({
-    Key key,
-    @required this.bloc,
+    Key? key,
+    required this.bloc,
   }) : super(key: key);
 
   final FeaturesOnThisTabTrackerBloc bloc;
@@ -53,7 +53,11 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                                                 .textTheme
                                                 .overline
                                                 .copyWith(
-                                                    color: Theme.of(context).brightness == Brightness.light ? Colors.black87 : null,
+                                                    color: Theme.of(context)
+                                                                .brightness ==
+                                                            Brightness.light
+                                                        ? Colors.black87
+                                                        : null,
                                                     fontSize: 14)),
                                       ],
                                     ),
@@ -63,9 +67,19 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                                       decoration: BoxDecoration(
                                           border: Border(
                                         bottom: BorderSide(
-                                            color: Theme.of(context).buttonTheme.colorScheme.onSurface.withOpacity(0.12), width: 1.0),
+                                            color: Theme.of(context)
+                                                .buttonTheme
+                                                .colorScheme
+                                                .onSurface
+                                                .withOpacity(0.12),
+                                            width: 1.0),
                                         right: BorderSide(
-                                            color: Theme.of(context).buttonTheme.colorScheme.onSurface.withOpacity(0.12), width: 1.0),
+                                            color: Theme.of(context)
+                                                .buttonTheme
+                                                .colorScheme
+                                                .onSurface
+                                                .withOpacity(0.12),
+                                            width: 1.0),
                                       )),
                                       child: FeatureValueCell(
                                           tabsBloc: bloc,

@@ -22,9 +22,9 @@ class FHExpansionTile extends StatefulWidget {
   /// the tile to reveal or hide the [children]. The [initiallyExpanded] property must
   /// be non-null.
   const FHExpansionTile({
-    Key key,
+    Key? key,
     this.leading,
-    @required this.title,
+    required this.title,
     this.backgroundColor,
     this.onExpansionChanged,
     this.children = const <Widget>[],

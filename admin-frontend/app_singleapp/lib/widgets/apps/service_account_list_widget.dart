@@ -47,10 +47,10 @@ class _ServiceAccountWidget extends StatelessWidget {
   final ManageServiceAccountsBloc bloc;
 
   const _ServiceAccountWidget(
-      {Key key,
-      @required this.serviceAccount,
-      @required this.mr,
-      @required this.bloc})
+      {Key? key,
+      required this.serviceAccount,
+      required this.mr,
+      required this.bloc})
       : assert(serviceAccount != null),
         assert(mr != null),
         assert(bloc != null),
@@ -125,9 +125,9 @@ class ServiceAccountEnvironments extends StatelessWidget {
   final ManageServiceAccountsBloc serviceAccountBloc;
 
   const ServiceAccountEnvironments(
-      {Key key,
-      @required this.serviceAccount,
-      @required this.serviceAccountBloc})
+      {Key? key,
+      required this.serviceAccount,
+      required this.serviceAccountBloc})
       : assert(serviceAccount != null),
         assert(serviceAccountBloc != null),
         super(key: key);
@@ -160,7 +160,7 @@ class _ServiceAccountEnvironment extends StatelessWidget {
   final Application application;
 
   const _ServiceAccountEnvironment(
-      {Key key, this.serviceAccount, this.application})
+      {Key? key, this.serviceAccount, this.application})
       : super(key: key);
 
   @override
@@ -218,8 +218,8 @@ class _ServiceAccountEnvironment extends StatelessWidget {
 
 class _ServiceAccountDescription extends StatelessWidget {
   const _ServiceAccountDescription({
-    Key key,
-    @required this.serviceAccount,
+    Key? key,
+    required this.serviceAccount,
   }) : super(key: key);
 
   final ServiceAccount serviceAccount;
@@ -251,7 +251,7 @@ class ServiceAccountDeleteDialogWidget extends StatelessWidget {
   final ManageServiceAccountsBloc bloc;
 
   const ServiceAccountDeleteDialogWidget(
-      {Key key, @required this.bloc, @required this.serviceAccount})
+      {Key? key, required this.bloc, required this.serviceAccount})
       : assert(serviceAccount != null),
         assert(bloc != null),
         super(key: key);
@@ -287,8 +287,8 @@ class ServiceAccountUpdateDialogWidget extends StatefulWidget {
   final ManageServiceAccountsBloc bloc;
 
   const ServiceAccountUpdateDialogWidget({
-    Key key,
-    @required this.bloc,
+    Key? key,
+    required this.bloc,
     this.serviceAccount,
   }) : super(key: key);
 

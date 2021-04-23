@@ -50,10 +50,10 @@ typedef ReorderCallback = void Function(int oldIndex, int newIndex);
 class FHReorderableListView extends StatefulWidget {
   /// Creates a reorderable list.
   FHReorderableListView({
-    Key key,
+    Key? key,
     this.header,
-    @required this.children,
-    @required this.onReorder,
+    required this.children,
+    required this.onReorder,
     this.scrollDirection = Axis.vertical,
     this.padding,
     this.reverse = false,
@@ -154,12 +154,12 @@ class _ReorderableListViewState extends State<FHReorderableListView> {
 // ReorderableListView.
 class _ReorderableListContent extends StatefulWidget {
   const _ReorderableListContent({
-    @required this.header,
-    @required this.children,
-    @required this.scrollDirection,
-    @required this.padding,
-    @required this.onReorder,
-    @required this.reverse,
+    required this.header,
+    required this.children,
+    required this.scrollDirection,
+    required this.padding,
+    required this.onReorder,
+    required this.reverse,
   });
 
   final Widget header;

@@ -33,22 +33,22 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
                 stream: bloc
                     .mrClient.streamValley.currentPortfolioApplicationsStream,
                 builder: (context, snapshot) {
-                  if (snapshot.hasData && snapshot.data.isNotEmpty) {
+                  if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                     return Container(
                         padding: EdgeInsets.only(left: 8, bottom: 8),
                         child: ApplicationDropDown(
-                            applications: snapshot.data, bloc: bloc));
+                            applications: snapshot.data!, bloc: bloc));
                   } else {
                     bloc.setApplicationId(bloc.mrClient.currentAid);
                     return Container(
                         padding: EdgeInsets.only(left: 8, top: 15),
                         child: Row(
                           children: [
-                            Text('There are no applications in this portfolio', style: Theme.of(context).textTheme.caption),
+                            Text('There are no applications in this portfolio',
+                                style: Theme.of(context).textTheme.caption),
                             LinkToApplicationsPage(),
                           ],
                         ));
-
                   }
                 }),
             Container(

@@ -118,7 +118,7 @@ class _EnvWidget extends StatelessWidget {
   final Environment env;
   final ManageAppBloc bloc;
 
-  const _EnvWidget({Key key, @required this.env, @required this.bloc})
+  const _EnvWidget({Key? key, required this.env, required this.bloc})
       : assert(env != null),
         assert(bloc != null),
         super(key: key);
@@ -214,8 +214,7 @@ class EnvDeleteDialogWidget extends StatelessWidget {
   final Environment env;
   final ManageAppBloc bloc;
 
-  const EnvDeleteDialogWidget(
-      {Key key, @required this.bloc, @required this.env})
+  const EnvDeleteDialogWidget({Key? key, required this.bloc, required this.env})
       : assert(env != null),
         assert(bloc != null),
         super(key: key);
@@ -249,8 +248,8 @@ class EnvUpdateDialogWidget extends StatefulWidget {
   final ManageAppBloc bloc;
 
   const EnvUpdateDialogWidget({
-    Key key,
-    @required this.bloc,
+    Key? key,
+    required this.bloc,
     this.env,
   }) : super(key: key);
 

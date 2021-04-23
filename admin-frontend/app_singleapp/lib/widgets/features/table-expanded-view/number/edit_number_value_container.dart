@@ -6,11 +6,11 @@ import 'package:mrapi/api.dart';
 
 class EditNumberValueContainer extends StatefulWidget {
   const EditNumberValueContainer({
-    Key key,
-    @required this.enabled,
-    @required this.canEdit,
-    @required this.rolloutStrategy,
-    @required this.strBloc,
+    Key? key,
+    required this.enabled,
+    required this.canEdit,
+    required this.rolloutStrategy,
+    required this.strBloc,
   }) : super(key: key);
 
   final bool enabled;

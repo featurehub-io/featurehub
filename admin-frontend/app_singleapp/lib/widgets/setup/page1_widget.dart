@@ -9,7 +9,7 @@ import 'package:xcvbnm/xcvbnm.dart';
 class SetupPage1Widget extends StatefulWidget {
   final SetupBloc bloc;
 
-  const SetupPage1Widget({Key key, @required this.bloc})
+  const SetupPage1Widget({Key? key, required this.bloc})
       : assert(bloc != null),
         super(key: key);
 
@@ -102,22 +102,18 @@ class _SetupPage1State extends State<SetupPage1Widget> {
                 selectedExternalProviderFunc: _handleSelectedExternal,
               ),
             if (local)
-              Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    TextFormField(
-                      controller: _name,
-                      autofocus: true,
-                      decoration: InputDecoration(labelText: 'Name'),
-                      textInputAction: TextInputAction.next,
-                      onFieldSubmitted: (_) => _handleSubmitted(),
-                      validator: (v) =>
-                      v.isEmpty
-                          ? 'Please enter your name'
-                          : null,
-                    ),
-                    TextFormField(
-                        controller: _email,
+              Column(mainAxisAlignment: MainAxisAlignment.start, children: <
+                  Widget>[
+                TextFormField(
+                  controller: _name,
+                  autofocus: true,
+                  decoration: InputDecoration(labelText: 'Name'),
+                  textInputAction: TextInputAction.next,
+                  onFieldSubmitted: (_) => _handleSubmitted(),
+                  validator: (v) => v.isEmpty ? 'Please enter your name' : null,
+                ),
+                TextFormField(
+                    controller: _email,
                     decoration: InputDecoration(labelText: 'Email address'),
                     textInputAction: TextInputAction.next,
                     onFieldSubmitted: (_) => _handleSubmitted(),
@@ -150,23 +146,22 @@ class _SetupPage1State extends State<SetupPage1Widget> {
 //                    }
                       return null;
                     }),
-                    Align(
-                      alignment: Alignment.topLeft,
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
-                        child: _passwordStrength,
-                      ),
-                    ),
-                    TextFormField(
-                        controller: _pw2,
-                        obscureText: true,
-                        onFieldSubmitted: (_) => _handleSubmitted(),
-                        decoration: InputDecoration(
-                            labelText: 'Confirm Password'),
-                        validator: (v) {
-                          if (v != _pw1.text) {
-                            return "Passwords don't match";
-                          }
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
+                    child: _passwordStrength,
+                  ),
+                ),
+                TextFormField(
+                    controller: _pw2,
+                    obscureText: true,
+                    onFieldSubmitted: (_) => _handleSubmitted(),
+                    decoration: InputDecoration(labelText: 'Confirm Password'),
+                    validator: (v) {
+                      if (v != _pw1.text) {
+                        return "Passwords don't match";
+                      }
                       return null;
                     }),
               ]),
@@ -232,9 +227,9 @@ class _SetupPage1ThirdPartyProviders extends StatelessWidget {
   final _SelectedExternalFunction selectedExternalProviderFunc;
 
   const _SetupPage1ThirdPartyProviders(
-      {Key key,
-      @required this.bloc,
-      @required this.selectedExternalProviderFunc})
+      {Key? key,
+      required this.bloc,
+      required this.selectedExternalProviderFunc})
       : assert(bloc != null),
         assert(selectedExternalProviderFunc != null),
         super(key: key);
@@ -257,10 +252,7 @@ class _SetupPage1ThirdPartyProviders extends StatelessWidget {
         children.add(Padding(
           padding: const EdgeInsets.fromLTRB(0, 16, 0, 10),
           child: Text('or enter your details to register',
-              style: Theme
-                  .of(context)
-                  .textTheme
-                  .caption),
+              style: Theme.of(context).textTheme.caption),
         ));
       });
     }

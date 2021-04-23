@@ -39,7 +39,7 @@ class _AppsRouteState extends State<AppsRoute> {
                         .mrClient.personState.isCurrentPortfolioOrSuperAdmin,
                     builder: (context, snapshot) {
                       if (snapshot.data != null &&
-                          (snapshot.data.currentPortfolioOrSuperAdmin ==
+                          (snapshot.data!.currentPortfolioOrSuperAdmin ==
                               true)) {
                         return Padding(
                           padding: const EdgeInsets.only(top: 8.0),
@@ -48,8 +48,8 @@ class _AppsRouteState extends State<AppsRoute> {
                             iconData: Icons.add,
                             keepCase: true,
                             label: 'Create new application',
-                            onPressed: () =>
-                                bloc.mrClient.addOverlay((BuildContext context) {
+                            onPressed: () => bloc.mrClient
+                                .addOverlay((BuildContext context) {
                               return AppUpdateDialogWidget(
                                 bloc: bloc,
                               );
@@ -75,9 +75,8 @@ class _AppsRouteState extends State<AppsRoute> {
 class _ApplicationsCardsList extends StatelessWidget {
   final AppsBloc bloc;
 
-  const _ApplicationsCardsList({Key key, @required this.bloc})
-      : assert(bloc != null),
-        super(key: key);
+  const _ApplicationsCardsList({Key? key, required this.bloc})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -91,7 +90,7 @@ class _ApplicationsCardsList extends StatelessWidget {
           return Wrap(
             direction: Axis.horizontal,
             crossAxisAlignment: WrapCrossAlignment.start,
-            children: snapshot.data
+            children: snapshot.data!
                 .map((app) => _ApplicationCard(application: app, bloc: bloc))
                 .toList(),
           );
@@ -104,7 +103,7 @@ class _ApplicationCard extends StatelessWidget {
   final AppsBloc bloc;
 
   const _ApplicationCard(
-      {Key key, @required this.application, @required this.bloc})
+      {Key? key, required this.application, required this.bloc})
       : super(key: key);
 
   @override
@@ -122,12 +121,11 @@ class _ApplicationCard extends StatelessWidget {
           onTap: () {
             bloc.mrClient
                 .setCurrentAid(application.id); //is it the right function?
-            return {
-              ManagementRepositoryClientBloc.router.navigateTo(
-                context,
-                '/feature-status',
-              )
-            };
+
+            ManagementRepositoryClientBloc.router.navigateTo(
+              context,
+              '/feature-status',
+            );
           },
           child: Container(
             color: Theme.of(context).backgroundColor,
@@ -153,11 +151,14 @@ class _ApplicationCard extends StatelessWidget {
                                 maxLines: 2,
                                 style: Theme.of(context)
                                     .textTheme
-                                    .bodyText2
+                                    .bodyText2!
                                     .copyWith(
-                                        color: Theme.of(context).brightness == Brightness.light ? Theme.of(context).primaryColor : null)),
+                                        color: Theme.of(context).brightness ==
+                                                Brightness.light
+                                            ? Theme.of(context).primaryColor
+                                            : null)),
                             SizedBox(height: 4.0),
-                            Text(application.description,
+                            Text(application.description!,
                                 maxLines: 2,
 //                              overflow: TextOverflow.ellipsis,
                                 style: Theme.of(context).textTheme.caption),
@@ -169,7 +170,7 @@ class _ApplicationCard extends StatelessWidget {
                               .isCurrentPortfolioOrSuperAdmin,
                           builder: (context, snapshot) {
                             if (snapshot.data != null &&
-                                (snapshot.data.currentPortfolioOrSuperAdmin ==
+                                (snapshot.data!.currentPortfolioOrSuperAdmin ==
                                     true)) {
                               return _PopUpAdminMenu(
                                 bloc: bloc,
@@ -199,8 +200,8 @@ class _ApplicationCard extends StatelessWidget {
 
 class _AppTotals extends StatelessWidget {
   const _AppTotals({
-    Key key,
-    @required this.application,
+    Key? key,
+    required this.application,
   }) : super(key: key);
 
   final Application application;
@@ -212,9 +213,7 @@ class _AppTotals extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          if (application.environments.length
-              .toString()
-              .isNotEmpty)
+          if (application.environments.length.toString().isNotEmpty)
             _NumberAndIcon(
               tooltipText: 'Environments',
               text: application.environments.length.toString(),
@@ -228,19 +227,18 @@ class _AppTotals extends StatelessWidget {
             _NumberAndIcon(
               tooltipText: 'Feature flags',
               text: application.features
-                  .where(
-                      (element) =>
-                  element.valueType == FeatureValueType.BOOLEAN)
+                  .where((element) =>
+                      element.valueType == FeatureValueType.BOOLEAN)
                   .toList()
                   .length
                   .toString(),
               icon: Icon(Icons.flag, size: 16.0, color: Colors.green),
             ),
           if ((application.features
-              .where(
-                  (element) => element.valueType == FeatureValueType.STRING)
-              .toList()
-              .isNotEmpty) ||
+                  .where(
+                      (element) => element.valueType == FeatureValueType.STRING)
+                  .toList()
+                  .isNotEmpty) ||
               (application.features
                   .where(
                       (element) => element.valueType == FeatureValueType.NUMBER)
@@ -250,15 +248,15 @@ class _AppTotals extends StatelessWidget {
               tooltipText: 'Feature values',
               icon: Icon(Icons.code, size: 16.0, color: Colors.blue),
               text: (((application.features
-                  .where((element) =>
-              element.valueType == FeatureValueType.STRING)
-                  .toList()
-                  .length) +
-                  (application.features
-                      .where((element) =>
-                  element.valueType == FeatureValueType.NUMBER)
-                      .toList()
-                      .length))
+                          .where((element) =>
+                              element.valueType == FeatureValueType.STRING)
+                          .toList()
+                          .length) +
+                      (application.features
+                          .where((element) =>
+                              element.valueType == FeatureValueType.NUMBER)
+                          .toList()
+                          .length))
                   .toString()),
             ),
           if (application.features
@@ -267,8 +265,8 @@ class _AppTotals extends StatelessWidget {
               .isNotEmpty)
             _NumberAndIcon(
               text: application.features
-                  .where((element) =>
-              element.valueType == FeatureValueType.JSON)
+                  .where(
+                      (element) => element.valueType == FeatureValueType.JSON)
                   .toList()
                   .length
                   .toString(),
@@ -287,10 +285,10 @@ class _NumberAndIcon extends StatelessWidget {
   final Icon icon;
 
   const _NumberAndIcon({
-    Key key,
-    this.text,
-    this.tooltipText,
-    this.icon,
+    Key? key,
+    required this.text,
+    required this.tooltipText,
+    required this.icon,
   }) : super(key: key);
 
   @override
@@ -313,7 +311,7 @@ class _NumberAndIcon extends StatelessWidget {
 class _NumberContainer extends StatelessWidget {
   final Widget child;
 
-  const _NumberContainer({Key key, this.child}) : super(key: key);
+  const _NumberContainer({Key? key, required this.child}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -331,7 +329,8 @@ class _PopUpAdminMenu extends StatelessWidget {
   final AppsBloc bloc;
   final Application application;
 
-  const _PopUpAdminMenu({Key key, this.bloc, this.application})
+  const _PopUpAdminMenu(
+      {Key? key, required this.bloc, required this.application})
       : super(key: key);
 
   @override
@@ -351,10 +350,9 @@ class _PopUpAdminMenu extends StatelessWidget {
           onSelected: (value) {
             if (value == 'edit') {
               bloc.mrClient
-                  .addOverlay((BuildContext context) =>
-                  AppUpdateDialogWidget(
-                    bloc: bloc,
-                    application: application,
+                  .addOverlay((BuildContext context) => AppUpdateDialogWidget(
+                        bloc: bloc,
+                        application: application,
                       ));
             }
             if (value == 'delete') {
@@ -367,37 +365,26 @@ class _PopUpAdminMenu extends StatelessWidget {
             }
             if (value == 'features') {
               bloc.mrClient.setCurrentAid(application.id);
-              return {
-                ManagementRepositoryClientBloc.router.navigateTo(
-                  context,
-                  '/feature-status',
-                )
-              };
+              ManagementRepositoryClientBloc.router.navigateTo(
+                context,
+                '/feature-status',
+              );
             }
           },
           itemBuilder: (BuildContext context) {
             return [
               PopupMenuItem(
                   value: 'features',
-                  child:
-                  Text('Features', style: Theme
-                      .of(context)
-                      .textTheme
-                      .bodyText2)),
+                  child: Text('Features',
+                      style: Theme.of(context).textTheme.bodyText2)),
               PopupMenuItem(
                   value: 'edit',
-                  child:
-                  Text('Edit', style: Theme
-                      .of(context)
-                      .textTheme
-                      .bodyText2)),
+                  child: Text('Edit',
+                      style: Theme.of(context).textTheme.bodyText2)),
               PopupMenuItem(
                   value: 'delete',
                   child: Text('Delete',
-                      style: Theme
-                          .of(context)
-                          .textTheme
-                          .bodyText2))
+                      style: Theme.of(context).textTheme.bodyText2))
             ];
           },
         ),

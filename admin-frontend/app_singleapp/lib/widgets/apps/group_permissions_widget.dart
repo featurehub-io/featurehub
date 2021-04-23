@@ -72,7 +72,7 @@ class _GroupsDropdown extends StatefulWidget {
   final List<Group> groups;
   final ManageAppBloc bloc;
 
-  const _GroupsDropdown({Key key, this.groups, this.bloc}) : super(key: key);
+  const _GroupsDropdown({Key? key, this.groups, this.bloc}) : super(key: key);
 
   @override
   __GroupsDropdownState createState() => __GroupsDropdownState();
@@ -122,10 +122,10 @@ class _GroupPermissionDetailWidget extends StatefulWidget {
   final ManageAppBloc bloc;
 
   const _GroupPermissionDetailWidget({
-    Key key,
-    @required this.mr,
-    @required this.bloc,
-  })  : assert(mr != null),
+    Key? key,
+    required this.mr,
+    required this.bloc,
+  })   : assert(mr != null),
         assert(bloc != null),
         super(key: key);
 

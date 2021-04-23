@@ -185,9 +185,9 @@ class _SetupPage1ThirdPartyProviders extends StatelessWidget {
   final _SelectedExternalFunction selectedExternalProviderFunc;
 
   const _SetupPage1ThirdPartyProviders(
-      {Key key,
-      @required this.bloc,
-      @required this.selectedExternalProviderFunc})
+      {Key? key,
+      required this.bloc,
+      required this.selectedExternalProviderFunc})
       : assert(bloc != null),
         assert(selectedExternalProviderFunc != null),
         super(key: key);

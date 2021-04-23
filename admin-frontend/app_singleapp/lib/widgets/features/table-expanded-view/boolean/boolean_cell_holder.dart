@@ -13,7 +13,7 @@ class BooleanCellHolder extends StatelessWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
   final PerFeatureStateTrackingBloc fvBloc;
 
-  const BooleanCellHolder({Key key, this.environmentFeatureValue, this.fvBloc})
+  const BooleanCellHolder({Key? key, this.environmentFeatureValue, this.fvBloc})
       : super(key: key);
 
   @override

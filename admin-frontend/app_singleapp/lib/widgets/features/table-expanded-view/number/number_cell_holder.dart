@@ -10,7 +10,7 @@ class NumberCellHolder extends StatelessWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
   final PerFeatureStateTrackingBloc fvBloc;
 
-  const NumberCellHolder({Key key, this.environmentFeatureValue, this.fvBloc})
+  const NumberCellHolder({Key? key, this.environmentFeatureValue, this.fvBloc})
       : super(key: key);
 
   @override

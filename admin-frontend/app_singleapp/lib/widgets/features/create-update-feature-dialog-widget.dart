@@ -14,8 +14,8 @@ class CreateFeatureDialogWidget extends StatefulWidget {
   final PerApplicationFeaturesBloc bloc;
 
   const CreateFeatureDialogWidget({
-    Key key,
-    @required this.bloc,
+    Key? key,
+    required this.bloc,
     this.feature,
   }) : super(key: key);
 

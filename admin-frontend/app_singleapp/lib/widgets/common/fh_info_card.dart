@@ -4,7 +4,7 @@ import 'package:flutter/rendering.dart';
 class FHInfoCardWidget extends StatelessWidget {
   final String message;
 
-  const FHInfoCardWidget({Key key, @required this.message}) : super(key: key);
+  const FHInfoCardWidget({Key? key, required this.message}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

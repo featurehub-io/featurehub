@@ -8,10 +8,14 @@ class FHUnderlineButton extends StatelessWidget {
   final bool enabled;
   final Color color;
 
-  const FHUnderlineButton({
-    Key key,
-    this.onPressed, this.title, this.keepCase=true, this.enabled=true, this.color
-  }) : super(key: key);
+  const FHUnderlineButton(
+      {Key? key,
+      this.onPressed,
+      this.title,
+      this.keepCase = true,
+      this.enabled = true,
+      this.color})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +25,8 @@ class FHUnderlineButton extends StatelessWidget {
         child: Text(keepCase ? title : title.toUpperCase(),
             style: Theme.of(context).textTheme.bodyText1.copyWith(
                 decoration: TextDecoration.underline,
-                color: enabled ? Theme.of(context).buttonColor : color ?? Colors.black54)));
+                color: enabled
+                    ? Theme.of(context).buttonColor
+                    : color ?? Colors.black54)));
   }
 }
