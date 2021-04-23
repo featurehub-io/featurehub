@@ -36,13 +36,13 @@ It is designed this way, so we can separate core functionality and add different
 ## Quick start
 
 ### Connecting to FeatureHub
-There are 4 steps to connecting:
+There are 3 steps to connecting:
 1) Copy FeatureHub API Key from the FeatureHub Admin Console
-2) Use the API Key to make a client
+2) Create FeatureHub config
 3) Check FeatureHub Repository readyness and request feature state
 
 #### 1. Copy SDK API Key from the FeatureHub Admin Console
-Find and copy your SDK API Key from the FeatureHub Admin Console on the Service Accounts Keys page - 
+Find and copy your SDK API Key from the FeatureHub Admin Console on the API Keys page - 
 you will use this in your code to configure feature updates for your environments. 
 It should look similar to this: ```default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE```.
 There are two options - a Server Evaluated API Key and a Client Evaluated API Key. More on this https://docs.featurehub.io/#_client_and_server_api_keys[here] 
@@ -51,9 +51,9 @@ Client Side evaluation is intended for use in secure environments (such as micro
 
 Server Side evaluation is more suitable when you are using an _insecure client_. (e.g. Browser or Mobile). This also means you evaluate one user per client.
 
-#### 2. Make a client:
+#### 2. Create FeatureHub config:
 
-Create an instance of `EdgeFeatureHubConfig`. You need to provide the API Key and the URL of the end-point you will be connecting to (the Edge server URL).
+Create an instance of `EdgeFeatureHubConfig`. You need to provide the API Key and the URL of the FeatureHub Edge server.
 
 ```typescript
 import {
@@ -71,11 +71,12 @@ const fhConfig = new EdgeFeatureHubConfig(edgeUrl, apiKey);
 By default, this SDK will use SSE client. If you decide to use FeatureHub polling client, you can override it here:
 
 ```typescript
+import { FeatureHubPollingClient } from 'featurehub-eventsource-sdk';
 const FREQUENCY = 5000; // 5 seconds
 fhConfig.edgeServiceProvider((repo, config) => new FeatureHubPollingClient(repo, config, FREQUENCY));
 ```
 
-in this case is configured for requesting an update every 5 seconds.
+in this case it is configured for requesting an update every 5 seconds.
 
 
 #### 3. Check FeatureHub Repository readyness and request feature state
@@ -106,7 +107,7 @@ fhConfig.repository().addReadynessListener(async (ready) => {
 });
 ```
 
-This is a simple scenario where you request for default context without passing information for each user. In production, you would normally create new context per each user and pass information about strategies (if you are applying any). If you are using percentage rollout, for example, you also need to set a `sessionId`, or some other identifier that you can set through `userKey`). 
+This is a simple scenario where you request for default context without passing information for each user. In production, you would normally create new context per each user and if you are applying flag variations, you would pass information about user context. If you are using percentage rollout, for example, you would set a `sessionId`, or some other identifier that you can set through `userKey`). 
 
 Frameworks like express and restify work by implementing a middleware concept that allows wraparound logic for each request. In a Node JS server, we would typically add to the part that finds the user something that is able to create a new context, configure it for the detected user and stash it in the request ready for the actual
 method that processes this request to use.
@@ -153,23 +154,38 @@ app.get('/', function (req, res) {
 In the server side evaluation (e.g. browser app) the context is created once as you evaluate one user per client. 
 
 ```typescript
-const fhContext = await fhConfig.newContext().build();
 let initialized = false;
+let fhContext: ClientContext;
+const fhConfig = new EdgeFeatureHubConfig(edgeUrl, apiKey);
 
-// taken from the React example
-fhConfig.repository().addReadynessListener((readyness) => {
-  if (!initialized) {
-    if (readyness === Readyness.Ready) {
-      initialized = true;
-      const color = fhContext.getString('FEATURE_BUTTON_COLOR');
-      this.setState({todos: this.state.myapp.changeButtonColor(color)});
+async initializeFeatureHub() {
+  fhContext = await fhConfig.newContext().build();
+  fhConfig.repository().addReadynessListener((readyness) => {
+    if (!initialized) {
+      if (readyness === Readyness.Ready) {
+        initialized = true;
+        const color = fhContext.getString('SOME_STRING_FEATURE');
+        this.setState({todos: this.state.todos.changeColor(color)});
+      }
     }
-  }
-});
+  });
+
+  // if using flag variations and setting rollout strategies,.e.g with a country rule
+  fhContext
+      .country(StrategyAttributeCountryName.Australia)
+      .build();
+
+  // react to incoming feature changes in real-time
+  fhConfig.repository().feature('SOME_STRING_FEATURE').addListener(fs => {
+    console.log(fs.getKey(), 'is', context.isEnabled(fs.getKey()));
+  });
+}
+ 
+this.initializeFeatureHub();
 ```
 
   Note, in a Single Page Application (SPA) situation, you will typically load and configure your FeatureHub configuration, but not discover information about a user until later. This would mean that you could progressively add extra information to the context over time, once the user logs in, etc. There are all sorts of different ways that Web applications find and
-  provide information. In our [React example](https://github.com/featurehub-io/featurehub-examples/blob/master/todo-frontend-react-typescript-catch-and-release/src/App.tsx) we show how once you have your connection you are able to start querying the repository immediately.
+  provide information. In our [React example](https://github.com/featurehub-io/featurehub-examples/tree/master/todo-frontend-react-typescript) we show how once you have your connection you are able to start querying the repository immediately.
 
 
 #### Supported feature state requests
@@ -187,7 +203,7 @@ fhConfig.repository().addReadynessListener((readyness) => {
 
 ## Rollout Strategies and Client Context
 
-Starting from version 2.0.0 FeatureHub supports client and server side evaluation of complex rollout strategies
+FeatureHub supports client and server side evaluation of complex rollout strategies
 that are applied to individual feature values in a specific environment. This includes support of preset rules, e.g. per **_user key_**, **_country_**, **_device type_**, **_platform type_** as well as **_percentage splits_** rules and custom rules that you can create according to your application needs.
 
 
@@ -611,8 +627,6 @@ for an environment is wrapped and any overridden values are stored in local stor
 to page (if using page based or a Single-Page-App), as long as the repository you use is the User Repository, 
 it will honour the values you have set and pass them using the Baggage headers.
 
-
-TODO: example after writing it
 
 ### Using on the server (nodejs)
 
