@@ -97,7 +97,7 @@ class ManagementRepositoryClientBloc implements Bloc {
   BehaviorSubject<bool> get menuOpened => _menuOpened;
 
   set menuOpened(value) {
-    if (person != null && value || !value) {
+    if (personState.isLoggedIn && value || !value) {
       _menuOpened.add(value);
     }
   }
@@ -269,7 +269,7 @@ class ManagementRepositoryClientBloc implements Bloc {
   }
 
   Future isInitialized() async {
-    if (person != null) {
+    if (personState.isLoggedIn) {
       _initializedSource.add(InitializedCheckState.zombie);
       return;
     }

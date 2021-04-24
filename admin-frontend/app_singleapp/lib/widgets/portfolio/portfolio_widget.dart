@@ -158,7 +158,7 @@ class _PortfolioUpdateDialogWidgetState
   Widget build(BuildContext context) {
     if (widget.portfolio != null) {
       _portfolioName.text = widget.portfolio!.name;
-      _portfolioDescription.text = widget.portfolio!.description;
+      _portfolioDescription.text = widget.portfolio!.description ?? '';
     }
     return Form(
         key: _formKey,

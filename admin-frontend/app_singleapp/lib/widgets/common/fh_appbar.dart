@@ -54,7 +54,7 @@ class FHappBar extends StatelessWidget {
             builder: (BuildContext context, AsyncSnapshot<Person> snapshot) {
 //            if (snapshot.hasData &&
 //                snapshot.data == InitializedCheckState.logged_in) {
-              if (snapshot.hasData) {
+              if (snapshot.hasData && mrBloc.isLoggedIn) {
                 final person = snapshot.data!;
                 var light = Theme.of(context).brightness == Brightness.light;
                 return Padding(

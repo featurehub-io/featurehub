@@ -12,7 +12,7 @@ class PersonAvatar extends StatelessWidget {
     return StreamBuilder<Person>(
         stream: mrBloc.personStream,
         builder: (BuildContext context, AsyncSnapshot<Person> snapshot) {
-          if (snapshot.hasData) {
+          if (snapshot.hasData && mrBloc.isLoggedIn) {
             final person = snapshot.data!;
             return Padding(
                 padding: const EdgeInsets.all(8.0),

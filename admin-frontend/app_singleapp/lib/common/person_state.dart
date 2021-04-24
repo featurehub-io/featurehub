@@ -8,7 +8,7 @@ typedef SetPersonHook = void Function(PersonState personState, Person person);
 List<SetPersonHook> setPersonHooks = <SetPersonHook>[];
 
 // avoids a null person, this is a person with no permission to anything
-Person unauthenticatedPerson =
+Person _unauthenticatedPerson =
     Person(id: PersonId(id: ''), name: '', email: '');
 
 class PersonState {
@@ -18,12 +18,12 @@ class PersonState {
       BehaviorSubject<ReleasedPortfolio>();
 
   final BehaviorSubject<Person> _personSource =
-      BehaviorSubject.seeded(unauthenticatedPerson);
+      BehaviorSubject.seeded(_unauthenticatedPerson);
 
   Stream<Person> get personStream => _personSource.stream;
 
   Person get person => _personSource.value!;
-  bool get isLoggedIn => _personSource.hasValue;
+  bool get isLoggedIn => _personSource.value != _unauthenticatedPerson;
 
   bool _isUserIsSuperAdmin = false;
 
@@ -34,7 +34,7 @@ class PersonState {
   bool get userIsAnyPortfolioOrSuperAdmin => _userIsAnyPortfolioOrSuperAdmin;
 
   set person(Person person) {
-    if (person != unauthenticatedPerson) {
+    if (person != _unauthenticatedPerson) {
       setPersonHooks.forEach((callback) => callback(this, person));
     }
 
@@ -99,7 +99,7 @@ class PersonState {
       false;
 
   void currentPortfolioOrSuperAdminUpdateState(Portfolio p) {
-    final isAdmin = person != unauthenticatedPerson &&
+    final isAdmin = person != _unauthenticatedPerson &&
         (isSuperAdminGroupFound(person.groups) ||
             userIsPortfolioAdmin(p.id, person.groups));
     if (p != null) {
@@ -109,7 +109,7 @@ class PersonState {
   }
 
   void logout() {
-    person = unauthenticatedPerson;
+    person = _unauthenticatedPerson;
   }
 
   void dispose() {
