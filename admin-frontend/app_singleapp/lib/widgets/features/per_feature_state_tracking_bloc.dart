@@ -52,8 +52,7 @@ class PerFeatureStateTrackingBloc implements Bloc {
   }
 
   int get maxLines => _dirtyValues.values
-      .map((e) =>
-          (e.customStrategies.length ?? 0) + (e.sharedStrategies.length ?? 0))
+      .map((e) => (e.customStrategies.length) + (e.sharedStrategies.length))
       .reduce(max);
 
   // if any of the values are updated, this stream shows true, it can flick on and off during its lifetime

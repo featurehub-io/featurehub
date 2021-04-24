@@ -28,7 +28,7 @@ class IdentityProviders {
 
   void authenticateViaProvider(String provider) {
     if (_authServiceApi != null) {
-      _authServiceApi!.getLoginUrlForProvider(provider).then((value) {
+      _authServiceApi.getLoginUrlForProvider(provider).then((value) {
         if (value != null) {
           return window.location.href = value.redirectUrl!;
         }

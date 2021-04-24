@@ -63,9 +63,8 @@ class _EditNumberValueContainerState extends State<EditNumberValueContainer> {
                 validateNumber(tec.text) != null ? 'Not a valid number' : null,
           ),
           onChanged: (value) {
-            final replacementValue = value.trim().isEmpty
-                ? null
-                : double.parse((tec.text ?? '0.0').trim());
+            final replacementValue =
+                value.trim().isEmpty ? null : double.parse(tec.text.trim());
             if (widget.rolloutStrategy != null) {
               widget.rolloutStrategy!.value = replacementValue;
               widget.strBloc.markDirty();

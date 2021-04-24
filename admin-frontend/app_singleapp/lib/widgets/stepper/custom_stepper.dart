@@ -282,7 +282,7 @@ class _CustomStepperState extends State<CustomStepper>
     final state = oldState ? _oldStates[index] : widget.steps[index].state;
     final isDarkActive = _isDark() && widget.steps[index].isActive;
     if (state != null) {
-      switch (state!) {
+      switch (state) {
         case CustomStepState.indexed:
         case CustomStepState.disabled:
           return Text(

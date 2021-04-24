@@ -116,7 +116,7 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
     return Expanded(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: bodyMainAxisAlignment ?? MainAxisAlignment.start,
+        mainAxisAlignment: bodyMainAxisAlignment,
         children: <Widget>[
           StreamBuilder<Person>(
               stream: mrBloc.personStream,

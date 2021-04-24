@@ -121,7 +121,7 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
   }
 
   void _valueChanged() {
-    final replacementValue = tec.text.isEmpty ? null : tec.text?.trim();
+    final replacementValue = tec.text.isEmpty ? null : tec.text.trim();
     if (widget.rolloutStrategy != null) {
       widget.rolloutStrategy!.value = replacementValue;
       widget.strBloc.updateStrategy();

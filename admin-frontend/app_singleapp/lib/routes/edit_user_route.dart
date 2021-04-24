@@ -229,7 +229,7 @@ class _UserPasswordUpdateDialogWidgetState
           FHFlatButton(
               title: 'Save',
               onPressed: (() async {
-                if (_formKey!.currentState!.validate()) {
+                if (_formKey.currentState!.validate()) {
                   try {
                     await widget.bloc.resetUserPassword(_password.text);
                     widget.bloc.mrClient.removeOverlay();

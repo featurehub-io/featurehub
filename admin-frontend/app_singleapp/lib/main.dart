@@ -21,10 +21,15 @@ void main() async {
       print('stackTrace:${record.stackTrace}');
     }
   });
-  mainApp();
+  try {
+    await mainApp();
+  } catch (e, s) {
+    print(e);
+    print(s);
+  }
 }
 
-void mainApp() async {
+Future<void> mainApp() async {
   runApp(BlocProvider(
       creator: (_context, _bag) {
         return ManagementRepositoryClientBloc();

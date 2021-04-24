@@ -14,7 +14,7 @@ class FeatureStatusFeatures {
   Map<String, EnvironmentFeatureValues> applicationEnvironments = {};
 
   FeatureStatusFeatures(this.applicationFeatureValues) {
-    sortedByNameEnvironmentIds = applicationFeatureValues.environments!
+    sortedByNameEnvironmentIds = applicationFeatureValues.environments
         .map((e) => e.environmentId!)
         .toList();
 

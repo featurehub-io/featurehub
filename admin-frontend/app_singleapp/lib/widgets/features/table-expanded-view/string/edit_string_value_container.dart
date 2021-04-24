@@ -59,7 +59,7 @@ class _EditStringValueContainerState extends State<EditStringValueContainer> {
                   : 'No editing permissions',
               hintStyle: Theme.of(context).textTheme.caption),
           onChanged: (value) {
-            final replacementValue = value.isEmpty ? null : tec.text?.trim();
+            final replacementValue = value.isEmpty ? null : tec.text.trim();
             if (widget.rolloutStrategy != null) {
               widget.rolloutStrategy!.value = replacementValue;
               widget.strBloc.markDirty();

@@ -349,7 +349,6 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
       } else {
         egr.environmentId = environment.id!;
         egr.groupId = group.id!;
-        egr.roles ??= [];
       }
 
       retMap[environment.id!] = egr;

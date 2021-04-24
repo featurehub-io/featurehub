@@ -19,7 +19,7 @@ String _getFeatureValue(FeatureValue fv) {
 
 extension FeatureValueSet on FeatureValue {
   bool isSet(Feature feature) {
-    switch (feature.valueType) {
+    switch (feature.valueType!) {
       case FeatureValueType.STRING:
         return valueString != null;
       case FeatureValueType.NUMBER:
@@ -29,8 +29,6 @@ extension FeatureValueSet on FeatureValue {
       case FeatureValueType.JSON:
         return valueJson != null;
     }
-
-    return false;
   }
 }
 

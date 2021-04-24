@@ -74,7 +74,7 @@ class _EnvListState extends State<EnvListWidget> {
 
     setState(() {
       // These two lines are workarounds for ReorderableListView problems
-      if (newIndex > _environments!.length) newIndex = _environments.length;
+      if (newIndex > _environments.length) newIndex = _environments.length;
       if (oldIndex < newIndex) newIndex--;
 
       final item = _environments[oldIndex];

@@ -261,7 +261,7 @@ class _ServiceAccountPermissionDetailState
                                     newSa.id!, saSnapshot.data!)
                                 .then((serviceAccount) => widget.bloc.mrClient
                                     .addSnackbar(Text(
-                                        "Service account '${serviceAccount?.name}' updated!")))
+                                        "Service account '${serviceAccount.name}' updated!")))
                                 .catchError((e, s) {
                               widget.bloc.mrClient.dialogError(e, s);
                             });
