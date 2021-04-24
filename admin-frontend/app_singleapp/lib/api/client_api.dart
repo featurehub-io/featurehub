@@ -384,6 +384,10 @@ class ManagementRepositoryClientBloc implements Bloc {
     _addPortfoliosToStream();
   }
 
+  bool isPortfolioOrSuperAdminForCurrentPid() {
+    return currentPid == null ? false : isPortfolioOrSuperAdmin(currentPid!);
+  }
+
   bool isPortfolioOrSuperAdmin(String pid) {
     return personState.userIsSuperAdmin ||
         personState.userIsPortfolioAdmin(pid);

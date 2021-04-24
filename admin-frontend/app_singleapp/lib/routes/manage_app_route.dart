@@ -88,9 +88,9 @@ class ManageAppWidget extends StatefulWidget {
 
 class _ManageAppWidgetState extends State<ManageAppWidget>
     with SingleTickerProviderStateMixin {
-  StreamSubscription<RouteChange> _routeChange;
-  TabController _controller;
-  ManagementRepositoryClientBloc bloc;
+  StreamSubscription<RouteChange>? _routeChange;
+  TabController? _controller;
+  ManagementRepositoryClientBloc? bloc;
 
   @override
   void initState() {
@@ -133,7 +133,7 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
 
   @override
   Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<ManageAppBloc>(context);
+    bloc = BlocProvider.of<ManageAppBloc>(context);
 
     // maybe should be a Column?
     return Column(
