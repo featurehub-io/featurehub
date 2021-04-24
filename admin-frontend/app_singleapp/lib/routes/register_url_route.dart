@@ -5,7 +5,7 @@ import 'package:app_singleapp/widgets/user/register/register_url_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:openapi_dart_common/openapi.dart';
-import 'package:xcvbnm/xcvbnm.dart';
+import 'package:zxcvbn/zxcvbn.dart';
 
 class RegisterURLRoute extends StatefulWidget {
   final String token;
@@ -103,7 +103,8 @@ class RegisterURLState extends State<RegisterURLRoute> {
             autofocus: true,
             decoration: InputDecoration(labelText: 'Name'),
             textInputAction: TextInputAction.next,
-            validator: (v) => v.isEmpty ? 'Please enter your name' : null,
+            validator: (v) =>
+                v?.isEmpty == false ? null : 'Please enter your name',
           ),
           TextFormField(
               controller: _pw1,
@@ -111,6 +112,9 @@ class RegisterURLState extends State<RegisterURLRoute> {
               textInputAction: TextInputAction.next,
               decoration: InputDecoration(labelText: 'Password'),
               validator: (v) {
+                if (v == null) {
+                  return 'Please enter your password';
+                }
                 if (v.isEmpty) {
                   return 'Please enter your password';
                 }
@@ -133,7 +137,7 @@ class RegisterURLState extends State<RegisterURLRoute> {
               textInputAction: TextInputAction.next,
               decoration: InputDecoration(labelText: 'Confirm Password'),
               validator: (v) {
-                if (v.isEmpty) {
+                if (v == null || v.isEmpty) {
                   return 'Please confirm your password';
                 }
                 if (v != _pw1.text) {
@@ -148,10 +152,10 @@ class RegisterURLState extends State<RegisterURLRoute> {
                 padding: const EdgeInsets.only(top: 16.0),
                 child: FHFlatButton(
                     onPressed: () {
-                      if (_formKey.currentState.validate()) {
+                      if (_formKey.currentState!.validate()) {
                         bloc.completeRegistration(
                             widget.token,
-                            bloc.person.email,
+                            bloc.person.email!,
                             _name.text,
                             _pw1.text,
                             _pw2.text);
@@ -169,7 +173,7 @@ class RegisterURLState extends State<RegisterURLRoute> {
   }
 
   void setPasswordStrength() {
-    final result = Xcvbnm().estimate(_pw1.text);
+    final result = Zxcvbn().evaluate(_pw1.text);
     var state = 'Weak';
     if (result.score == 1) {
       state = 'Below average';
@@ -179,10 +183,14 @@ class RegisterURLState extends State<RegisterURLRoute> {
       state = 'Strong';
     }
     Color stateColor =
-        result.score < _PASSWORD_SCORE_THRESHOLD ? Colors.red : Colors.green;
+        (result.score == null || result.score! < _PASSWORD_SCORE_THRESHOLD)
+            ? Colors.red
+            : Colors.green;
+
     if (result.score == 1) {
       stateColor = Colors.orange;
     }
+
     final stateText = Text(state, style: TextStyle(color: stateColor));
     setState(() {
       _passwordStrength = stateText;

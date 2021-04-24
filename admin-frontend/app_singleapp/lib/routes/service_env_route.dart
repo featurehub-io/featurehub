@@ -47,13 +47,12 @@ class ServiceAccountEnvRoute extends StatelessWidget {
                               stream: bloc
                                   .mrClient.streamValley.currentPortfolioApplicationsStream,
                               builder: (context, snapshot) {
-                                if (snapshot.hasData && snapshot.data.isNotEmpty) {
+                  if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                                   return Container(
                                       padding: EdgeInsets.only(bottom: 8),
                                       child: ApplicationDropDown(
-                                          applications: snapshot.data, bloc: bloc));
+                            applications: snapshot.data!, bloc: bloc));
                                 } else {
-                                  bloc.setApplicationId(bloc.mrClient.currentAid);
                                   return SizedBox.shrink();
                                 }
                               }),
@@ -98,13 +97,13 @@ class ServiceAccountEnvRoute extends StatelessWidget {
                               return SizedBox.shrink();
                             }
 
-                            if (envSnapshot.data.serviceAccounts.isEmpty) {
+                  if (envSnapshot.data!.serviceAccounts.isEmpty) {
                               return Text('No service accounts available',
                                   style: Theme.of(context).textTheme.caption);
                             }
 
                             return _ServiceAccountDisplayWidget(
-                                serviceAccountEnvs: envSnapshot.data);
+                                serviceAccountEnvs: envSnapshot.data!);
                           }),
                     ],
                   )),
@@ -116,7 +115,7 @@ class ServiceAccountEnvRoute extends StatelessWidget {
 class _ServiceAccountDisplayWidget extends StatelessWidget {
   final ServiceAccountEnvironments serviceAccountEnvs;
 
-  const _ServiceAccountDisplayWidget({Key? key, this.serviceAccountEnvs})
+  const _ServiceAccountDisplayWidget({Key? key, required this.serviceAccountEnvs})
       : super(key: key);
 
   @override
@@ -204,13 +203,15 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
   final Environment env;
   final ServiceAccount sa;
 
-  const _ServiceAccountPermissionWidget({Key? key, this.env, this.sa})
+  const _ServiceAccountPermissionWidget(
+      {Key? key, required this.env, required this.sa})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final account = sa.permissions.firstWhere((p) => p.environmentId == env.id,
         orElse: () => ServiceAccountPermission(
+              environmentId: env.id!,
               permissions: <RoleType>[],
             ));
     final perms = account.permissions;

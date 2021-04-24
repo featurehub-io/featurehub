@@ -67,6 +67,4 @@ class ServiceAccountEnvBloc implements Bloc, ManagementRepositoryAwareBloc {
   void dispose() {
     envListener.cancel();
   }
-
-  void setApplicationId(String appId) {}
 }

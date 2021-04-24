@@ -21,7 +21,7 @@ class _ServiceAccountSearchWidget extends StatefulWidget {
 }
 
 class _ServiceAccountSearchState extends State<_ServiceAccountSearchWidget> {
-  String selectedPortfolio;
+  String? selectedPortfolio;
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +58,7 @@ class _ServiceAccountSearchState extends State<_ServiceAccountSearchWidget> {
               stream: bloc.mrClient.personState.isCurrentPortfolioOrSuperAdmin,
               builder: (context, snapshot) {
                 if (snapshot.hasData &&
-                    snapshot.data.currentPortfolioOrSuperAdmin) {
+                    snapshot.data!.currentPortfolioOrSuperAdmin) {
                   return Row(
                     children: <Widget>[
                       FHIconTextButton(
