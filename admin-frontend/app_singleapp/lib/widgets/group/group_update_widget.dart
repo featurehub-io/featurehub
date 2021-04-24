@@ -9,7 +9,7 @@ import 'package:openapi_dart_common/openapi.dart';
 import 'group_bloc.dart';
 
 class GroupUpdateDialogWidget extends StatefulWidget {
-  final Group group;
+  final Group? group;
   final GroupBloc bloc;
 
   const GroupUpdateDialogWidget({Key? key, required this.bloc, this.group})
@@ -29,7 +29,7 @@ class _GroupUpdateDialogWidgetState extends State<GroupUpdateDialogWidget> {
   void initState() {
     super.initState();
     if (widget.group != null) {
-      _groupName.text = widget.group.name;
+      _groupName.text = widget.group!.name;
     }
   }
 
@@ -49,7 +49,7 @@ class _GroupUpdateDialogWidgetState extends State<GroupUpdateDialogWidget> {
                   controller: _groupName,
                   decoration: InputDecoration(labelText: 'Group name'),
                   validator: ((v) {
-                    if (v.isEmpty) {
+                    if (v == null || v.isEmpty) {
                       return 'Please enter a group name';
                     }
                     if (v.length < 4) {
@@ -77,7 +77,7 @@ class _GroupUpdateDialogWidgetState extends State<GroupUpdateDialogWidget> {
   }
 
   void _handleSubmitted() {
-    if (_formKey.currentState.validate()) {
+    if (_formKey.currentState!.validate()) {
       _callUpdateGroup(_groupName.text).then((onValue) {
         // force list update
         widget.bloc.mrClient.removeOverlay();
@@ -96,8 +96,7 @@ class _GroupUpdateDialogWidgetState extends State<GroupUpdateDialogWidget> {
   }
 
   Future<void> _callUpdateGroup(String name) {
-    Group group;
-    widget.group != null ? group = widget.group : group = Group();
+    final group = widget.group ?? Group(name: '');
     group.name = name.trim();
     return widget.group == null
         ? widget.bloc.createGroup(group)
@@ -124,7 +123,7 @@ class GroupDeleteDialogWidget extends StatelessWidget {
           'All permissions belonging to this group will be deleted \n\nThis cannot be undone!',
       deleteSelected: () async {
         try {
-          await bloc.deleteGroup(group.id, true);
+          await bloc.deleteGroup(group.id!, true);
           bloc.mrClient.addSnackbar(Text("Group '${group.name}' deleted!"));
           return true;
         } catch (e, s) {

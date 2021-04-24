@@ -19,10 +19,11 @@ class ListUsersBloc implements Bloc {
 
   Stream<List<SearchPersonEntry>> get personSearch =>
       _personSearchResultSource.stream;
-  final _personSearchResultSource = BehaviorSubject<List<SearchPersonEntry>>();
+  final _personSearchResultSource =
+      BehaviorSubject<List<SearchPersonEntry>>.seeded([]);
 
-  ListUsersBloc(this.search, this.mrClient) : assert(mrClient != null) {
-    _personServiceApi = PersonServiceApi(mrClient.apiClient);
+  ListUsersBloc(this.search, this.mrClient)
+      : _personServiceApi = PersonServiceApi(mrClient.apiClient) {
     triggerSearch(search);
   }
 
@@ -67,14 +68,14 @@ class ListUsersBloc implements Bloc {
     final results = <SearchPersonEntry>[];
 
     final hasLocal = mrClient.identityProviders.hasLocal;
-    final emptyReg = OutstandingRegistration(expired: false, );
+    final emptyReg = OutstandingRegistration(expired: false, id: '', token: '');
 
     data.people.forEach((person) {
       final spr = SearchPersonEntry(
           person,
           hasLocal
               ? data.outstandingRegistrations.firstWhere(
-                  (element) => element.id == person.id.id,
+                  (element) => element.id == person.id!.id,
                   orElse: () => emptyReg)
               : emptyReg);
 

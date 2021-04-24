@@ -409,7 +409,7 @@ class ManagementRepositoryClientBloc implements Bloc {
     _snackbarSource.add(content);
   }
 
-  void customError({String messageTitle = '', String messageBody = ''}) {
+  void customError({String messageTitle = 'failure', String messageBody = ''}) {
     addError(FHError(messageTitle,
         exception: null, showDetails: false, errorMessage: messageBody));
   }
@@ -418,7 +418,7 @@ class ManagementRepositoryClientBloc implements Bloc {
       {String? messageTitle,
       bool showDetails = true,
       String messageBody = ''}) async {
-    _log.warning(messageBody ?? 'failure', e, s);
+    _log.warning(messageBody, e, s);
     if (messageTitle != null) {
       addError(FHError(messageTitle,
           exception: e,
@@ -508,7 +508,7 @@ class ManagementRepositoryClientBloc implements Bloc {
         }
       }
 
-      if (!foundValidStoredPortfolio && _portfolios?.isNotEmpty == true) {
+      if (!foundValidStoredPortfolio && _portfolios.isNotEmpty == true) {
         setCurrentPid(_portfolios.first.id.toString());
         setCurrentAid(null);
       }

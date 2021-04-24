@@ -10,9 +10,9 @@ class SetupPageWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final setupBloc = BlocProvider.of<SetupBloc>(context);
 
-    return StreamBuilder<SetupPage>(
+    return StreamBuilder<SetupPage?>(
         stream: setupBloc.pageState,
-        builder: (BuildContext context, AsyncSnapshot<SetupPage> snapshot) {
+        builder: (BuildContext context, AsyncSnapshot<SetupPage?> snapshot) {
           Widget child;
 
           if (snapshot.hasError) {

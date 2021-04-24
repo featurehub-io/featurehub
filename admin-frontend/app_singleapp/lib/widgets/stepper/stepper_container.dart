@@ -11,7 +11,7 @@ class StepperContainer extends StatelessWidget {
 
   const StepperContainer({
     Key? key,
-    this.mrBloc,
+    required this.mrBloc,
   }) : super(key: key);
 
   @override
@@ -32,12 +32,10 @@ class StepperContainer extends StatelessWidget {
 }
 
 class StepperRocketButton extends StatelessWidget {
-  final int headerPadding;
   final ManagementRepositoryClientBloc mrBloc;
 
   const StepperRocketButton({
     Key? key,
-    this.headerPadding,
     required this.mrBloc,
   }) : super(key: key);
 

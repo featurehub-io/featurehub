@@ -7,7 +7,10 @@ class AttributeValueChipWidget extends StatelessWidget {
   final ValueChanged<dynamic> onSelected;
 
   const AttributeValueChipWidget(
-      {Key? key, required this.label, required this.value, this.onSelected})
+      {Key? key,
+      required this.label,
+      required this.value,
+      required this.onSelected})
       : super(key: key);
 
   @override

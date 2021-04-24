@@ -96,7 +96,7 @@ class RegisterURLState extends State<RegisterURLRoute> {
           TextFormField(
             enabled: false,
             decoration: InputDecoration(labelText: 'Email'),
-            initialValue: bloc.person.email,
+            initialValue: bloc.person!.email,
           ),
           TextFormField(
             controller: _name,
@@ -155,7 +155,7 @@ class RegisterURLState extends State<RegisterURLRoute> {
                       if (_formKey.currentState!.validate()) {
                         bloc.completeRegistration(
                             widget.token,
-                            bloc.person.email!,
+                            bloc.person!.email!,
                             _name.text,
                             _pw1.text,
                             _pw2.text);

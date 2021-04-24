@@ -7,11 +7,11 @@ class EditBooleanValueDropDownWidget extends StatefulWidget {
     Key? key,
     required this.editable,
     this.rolloutStrategy,
-    this.strBloc,
+    required this.strBloc,
   }) : super(key: key);
 
   final bool editable;
-  final RolloutStrategy rolloutStrategy;
+  final RolloutStrategy? rolloutStrategy;
   final CustomStrategyBloc strBloc;
 
   @override
@@ -21,7 +21,8 @@ class EditBooleanValueDropDownWidget extends StatefulWidget {
 
 class _EditBooleanValueDropDownWidgetState
     extends State<EditBooleanValueDropDownWidget> {
-  String featureOn;
+  String featureOn = 'Off';
+
   @override
   Widget build(BuildContext context) {
     return DropdownButtonHideUnderline(
@@ -46,7 +47,7 @@ class _EditBooleanValueDropDownWidgetState
                 _notifyDirty(replacementBoolean);
 
                 setState(() {
-                  featureOn = value;
+                  featureOn = replacementBoolean ? 'On' : 'Off';
                 });
               }
             : null,
@@ -59,10 +60,10 @@ class _EditBooleanValueDropDownWidgetState
   void _notifyDirty(bool replacementBoolean) {
     if (widget.rolloutStrategy == null) {
       widget.strBloc.fvBloc.dirty(
-          widget.strBloc.environmentFeatureValue.environmentId,
+          widget.strBloc.environmentFeatureValue.environmentId!,
           (current) => current.value = replacementBoolean);
     } else {
-      widget.rolloutStrategy.value = replacementBoolean;
+      widget.rolloutStrategy!.value = replacementBoolean;
       widget.strBloc.markDirty();
     }
   }
@@ -76,7 +77,7 @@ class _EditBooleanValueDropDownWidgetState
       newOn =
           (widget.strBloc.featureValue.valueBoolean ?? false) ? 'On' : 'Off';
     } else {
-      newOn = widget.rolloutStrategy.value ? 'On' : 'Off';
+      newOn = widget.rolloutStrategy!.value ? 'On' : 'Off';
     }
 
     if (newOn != featureOn) {

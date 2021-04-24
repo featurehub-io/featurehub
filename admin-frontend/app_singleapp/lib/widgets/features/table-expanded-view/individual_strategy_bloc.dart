@@ -1,4 +1,5 @@
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:collection/collection.dart';
 import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -17,13 +18,10 @@ class IndividualStrategyBloc extends Bloc {
       _rolloutStartegyAttributeSource.stream;
 
   List<RolloutStrategyAttribute> get currentAttributes =>
-      _rolloutStartegyAttributeSource.value;
+      _rolloutStartegyAttributeSource.value!;
 
   IndividualStrategyBloc(this.environmentFeatureValue, this.rolloutStrategy)
-      : assert(environmentFeatureValue != null),
-        assert(rolloutStrategy != null),
-        assert(rolloutStrategy.attributes != null),
-        _violationSource =
+      : _violationSource =
             BehaviorSubject<List<RolloutStrategyViolation>>.seeded([]),
         _rolloutStartegyAttributeSource =
             BehaviorSubject<List<RolloutStrategyAttribute>>.seeded(
@@ -33,15 +31,16 @@ class IndividualStrategyBloc extends Bloc {
     rolloutStrategy.attributes.forEach((a) {
       a.id = (counter++).toString();
     });
-
-    // print('Attributes are ${rolloutStrategy.attributes}');
   }
 
   bool get isUnsavedStrategy =>
       (rolloutStrategy.id == null || rolloutStrategy.id == 'created');
 
-  void createAttribute({StrategyAttributeWellKnownNames type}) {
-    final rs = RolloutStrategyAttribute(id: DateTime.now().millisecond.toRadixString(16), fieldName: type?.name, );
+  void createAttribute({StrategyAttributeWellKnownNames? type}) {
+    final rs = RolloutStrategyAttribute(
+      id: DateTime.now().millisecond.toRadixString(16),
+      fieldName: type?.name,
+    );
 
     if (type != null) {
       switch (type) {
@@ -85,9 +84,9 @@ class IndividualStrategyBloc extends Bloc {
       RolloutStrategyValidationResponse validationCheck) {
     var _violations = <RolloutStrategyViolation>[];
 
-    final customViolations = validationCheck.customStategyViolations.firstWhere(
-        (rs) => rs.strategy.id == rolloutStrategy.id,
-        orElse: () => null);
+    final customViolations = validationCheck.customStategyViolations
+        .firstWhereOrNull((rs) =>
+            rs.strategy != null && rs.strategy!.id == rolloutStrategy.id);
 
     if (customViolations != null && customViolations.violations.isNotEmpty) {
       _violations.addAll(customViolations.violations);

@@ -2,6 +2,7 @@ import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/widgets/user/common/portfolio_group.dart';
 import 'package:app_singleapp/widgets/user/common/select_portfolio_group_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:collection/collection.dart';
 import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart' as rxdart;
 
@@ -10,13 +11,13 @@ enum EditUserForm { loadingState, initialState, errorState, successState }
 class EditUserBloc implements Bloc {
   final ManagementRepositoryClientBloc mrClient;
   final SelectPortfolioGroupBloc selectGroupBloc;
-  final String personId;
-  Person person;
+  final String? personId;
+  Person? person;
 
-  final _formStateStream = rxdart.BehaviorSubject<EditUserForm>();
-  Stream<EditUserForm> get formState => _formStateStream.stream;
+  final _formStateStream = rxdart.BehaviorSubject<EditUserForm?>();
+  Stream<EditUserForm?> get formState => _formStateStream.stream;
 
-  EditUserBloc(this.mrClient, this.personId, {this.selectGroupBloc})
+  EditUserBloc(this.mrClient, this.personId, {required this.selectGroupBloc})
       : assert(mrClient != null) {
     _loadInitialPersonData();
   }
@@ -26,21 +27,26 @@ class EditUserBloc implements Bloc {
     _formStateStream.close();
   }
 
-  Future<void> resetUserPassword(String password) {
-    final passwordReset = PasswordReset(
-      password: password,
-    );
-    return mrClient.authServiceApi.resetPassword(personId, passwordReset);
-  }
+  Future<void> resetUserPassword(String password) async {
+    if (personId != null) {
+      final passwordReset = PasswordReset(
+        password: password,
+      );
 
-  void _loadInitialPersonData() async {
-    await _findPersonAndTriggerInitialState(personId);
-    if (person != null) {
-      _findPersonsGroupsAndPushToStream();
+      await mrClient.authServiceApi.resetPassword(personId!, passwordReset);
     }
   }
 
-  void _findPersonAndTriggerInitialState(String queryParameter) async {
+  void _loadInitialPersonData() async {
+    if (personId != null) {
+      await _findPersonAndTriggerInitialState(personId!);
+      if (person != null) {
+        _findPersonsGroupsAndPushToStream();
+      }
+    }
+  }
+
+  Future<void> _findPersonAndTriggerInitialState(String queryParameter) async {
     try {
       person = await mrClient.personServiceApi
           .getPerson(queryParameter, includeGroups: true);
@@ -51,13 +57,16 @@ class EditUserBloc implements Bloc {
   }
 
   Future<void> updatePersonDetails(String email, String name) async {
-    person.groups = selectGroupBloc.listOfAddedPortfolioGroups
-        .map((pg) => pg.group)
-        .toList();
-    person.name = name;
-    person.email = email;
-    await mrClient.personServiceApi
-        .updatePerson(personId, person, includeGroups: true);
+    if (this.person != null) {
+      final person = this.person!;
+      person.groups = selectGroupBloc.listOfAddedPortfolioGroups
+          .map((pg) => pg.group)
+          .toList();
+      person.name = name;
+      person.email = email;
+      await mrClient.personServiceApi
+          .updatePerson(personId!, person, includeGroups: true);
+    }
   }
 
   Future<List<Portfolio>> _findPortfolios() async {
@@ -73,15 +82,16 @@ class EditUserBloc implements Bloc {
   }
 
   void _findPersonsGroupsAndPushToStream() async {
-    if (person.groups != null) {
+    if (person != null && person!.groups != null) {
       final portfoliosList = await _findPortfolios();
 
       final listOfExistingGroups = <PortfolioGroup>[];
-      person.groups.forEach((group) => {
+      person!.groups.forEach((group) => {
             listOfExistingGroups.add(PortfolioGroup(
-                portfoliosList.firstWhere((p) => p.id == group.portfolioId,
-                    orElse: () =>
-                        null), // null is set for Portfolio for super admin group which doesn't belong to any portfolio
+                portfoliosList.firstWhereOrNull((p) =>
+                    p.id ==
+                    group
+                        .portfolioId), // null is set for Portfolio for super admin group which doesn't belong to any portfolio
                 group))
           });
       selectGroupBloc.pushExistingGroupToStream(listOfExistingGroups);
@@ -89,8 +99,6 @@ class EditUserBloc implements Bloc {
   }
 
   Portfolio isSuperAdminPortfolio() {
-    return Portfolio(
-      name: 'Super-Admin',
-    );
+    return Portfolio(name: 'Super-Admin', description: 'Super-Admin Portfolio');
   }
 }

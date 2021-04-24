@@ -13,8 +13,8 @@ class PortfolioGroupSelector extends StatefulWidget {
 }
 
 class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
-  var selectedPortfolio;
-  var selectedGroupID;
+  String? selectedPortfolio;
+  String? selectedGroupID;
 
   @override
   Widget build(BuildContext context) {
@@ -61,8 +61,7 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
                   runSpacing: 4.0,
                   children:
                       //check if portfolio is null - it is site admin group that we don't display as a chip
-                      snapshot.data
-                          .where((i) => i.portfolio != null)
+                      snapshot.data!
                           .map((item) => Padding(
                               padding: const EdgeInsets.all(6.0),
                               child: InputChip(
@@ -74,7 +73,7 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
                                     )),
                                 key: ObjectKey(item),
                                 label: Text(
-                                    '${item.portfolio.name}: ${item.group.name}'),
+                                    '${item.portfolio!.name}: ${item.group.name}'),
                                 onDeleted: () =>
                                     bloc.removeGroupFromStream(item),
                                 materialTapTargetSize:
@@ -119,11 +118,13 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
                         : null,
                     hint: Text('Select group',
                         style: Theme.of(context).textTheme.bodyText1),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedGroupID = value;
-                        bloc.pushAddedGroupToStream(selectedGroupID);
-                      });
+                    onChanged: (String? value) {
+                      if (value != null) {
+                        setState(() {
+                          selectedGroupID = value;
+                          bloc.pushAddedGroupToStream(value);
+                        });
+                      }
                     },
                     value: snapshot.data != null ? selectedGroupID : null,
                   ),
@@ -150,7 +151,7 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
                   decoration: FHFilledInputDecoration(labelText: 'Portfolio'),
                   child: InkWell(
                     mouseCursor: SystemMouseCursors.click,
-                    child: DropdownButton(
+                    child: DropdownButton<String?>(
                       icon: Padding(
                         padding: EdgeInsets.only(left: 8.0),
                         child: Icon(
@@ -168,12 +169,14 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
                       }).toList(),
                       hint: Text('Select portfolio',
                           style: Theme.of(context).textTheme.bodyText1),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedPortfolio = value;
-                          selectedGroupID = null;
-                        });
-                        bloc.setCurrentPortfolioAndGroups(value);
+                      onChanged: (String? value) {
+                        if (value != null) {
+                          setState(() {
+                            selectedPortfolio = value;
+                            selectedGroupID = null;
+                          });
+                          bloc.setCurrentPortfolioAndGroups(value);
+                        }
                       },
                       value: selectedPortfolio,
                     ),

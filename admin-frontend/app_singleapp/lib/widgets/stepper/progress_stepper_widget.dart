@@ -169,7 +169,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                               context,
                                               '/manage-app',
                                               params: {
-                                                'id': [bloc.applicationId],
+                                                'id': [bloc.applicationId!],
                                                 'tab-name': ['environments']
                                               },
                                             )
@@ -203,7 +203,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                               context,
                                               '/manage-app',
                                               params: {
-                                                'id': [bloc.applicationId],
+                                                'id': [bloc.applicationId!],
                                                 'tab-name': [
                                                   'group-permissions'
                                                 ]
@@ -243,7 +243,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                               context,
                                               '/manage-app',
                                               params: {
-                                                'id': [bloc.applicationId],
+                                                'id': [bloc.applicationId!],
                                                 'tab-name': ['service-accounts']
                                               },
                                             )
@@ -282,8 +282,8 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                     )),
                               ],
                               controlsBuilder: (BuildContext context,
-                                      {VoidCallback onStepContinue,
-                                      VoidCallback onStepCancel}) =>
+                                      {VoidCallback? onStepContinue,
+                                      VoidCallback? onStepCancel}) =>
                                   Container(),
                               currentStep: _index,
                               onStepTapped: (index) {
@@ -316,7 +316,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                           style: Theme.of(context).textTheme.caption)),
                   Container(
                       constraints: BoxConstraints(maxWidth: 200),
-                      child: applicationsDropdown(snapshot.data, bloc))
+                      child: applicationsDropdown(snapshot.data!, bloc))
                 ]);
           }
           return Container();
@@ -345,7 +345,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
         }).toList(),
         hint: Text('Select application',
             style: Theme.of(context).textTheme.subtitle2),
-        onChanged: (value) {
+        onChanged: (String? value) {
           setState(() {
             bloc.mrClient.setCurrentAid(value);
           });

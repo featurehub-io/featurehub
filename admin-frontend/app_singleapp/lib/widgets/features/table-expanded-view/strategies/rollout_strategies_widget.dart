@@ -18,7 +18,7 @@ class RolloutStrategiesWidget extends StatelessWidget {
           builder: (context, snapshot) {
             if (snapshot.hasData && snapshot.data!.isNotEmpty) {
               return Column(children: [
-                for (var rolloutStrategyAttribute in snapshot.data)
+                for (var rolloutStrategyAttribute in snapshot.data!)
                   AttributeStrategyWidget(
                     attribute: rolloutStrategyAttribute,
                     attributeIsFirst:

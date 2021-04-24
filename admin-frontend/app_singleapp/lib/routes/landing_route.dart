@@ -53,9 +53,9 @@ class LandingRouteState extends State<LandingRoute> {
                   child: MediaQuery.of(context).size.width > 400
                       ? Container(
                           width: 500,
-                          child: SigninWidget(),
+                          child: SigninWidget(client),
                         )
-                      : SigninWidget());
+                      : SigninWidget(client));
             }
           } else if (snapshot.data ==
               InitializedCheckState.requires_password_reset) {

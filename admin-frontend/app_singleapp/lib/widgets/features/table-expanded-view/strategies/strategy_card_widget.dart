@@ -8,14 +8,14 @@ import 'package:mrapi/api.dart';
 class StrategyCardWidget extends StatelessWidget {
   final bool editable;
   final Widget editableHolderWidget;
-  final RolloutStrategy rolloutStrategy;
+  final RolloutStrategy? rolloutStrategy;
   final CustomStrategyBloc strBloc;
 
   const StrategyCardWidget(
       {Key? key,
       required this.editable,
       required this.editableHolderWidget,
-      required this.rolloutStrategy,
+      this.rolloutStrategy,
       required this.strBloc})
       : super(key: key);
 
@@ -41,11 +41,11 @@ class StrategyCardWidget extends StatelessWidget {
                         ? Text('default',
                             style: Theme.of(context)
                                 .textTheme
-                                .caption
+                                .caption!
                                 .copyWith(color: defaultTextColor))
                         : EditValueStrategyLinkButton(
                             editable: editable,
-                            rolloutStrategy: rolloutStrategy,
+                            rolloutStrategy: rolloutStrategy!,
                             fvBloc: strBloc.fvBloc,
                             strBloc: strBloc,
                           )),
@@ -55,7 +55,7 @@ class StrategyCardWidget extends StatelessWidget {
                   child: rolloutStrategy != null
                       ? DeleteStrategyIconButton(
                           editable: editable,
-                          rolloutStrategy: rolloutStrategy,
+                          rolloutStrategy: rolloutStrategy!,
                           strBloc: strBloc,
                         )
                       : SizedBox.shrink(),

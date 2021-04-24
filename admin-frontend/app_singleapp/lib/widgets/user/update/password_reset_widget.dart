@@ -55,15 +55,17 @@ class _ResetPasswordState extends State<ResetPasswordWidget> {
                       obscureText: true,
                       autofocus: true,
                       textInputAction: TextInputAction.next,
-                      validator: (v) =>
-                          v.isEmpty ? 'Please enter your new password' : null,
+                      validator: (v) => v == null || v.isEmpty
+                          ? 'Please enter your new password'
+                          : null,
                       decoration: InputDecoration(labelText: 'Password')),
                   TextFormField(
                       controller: _confirmPassword,
                       obscureText: true,
                       textInputAction: TextInputAction.next,
-                      validator: (v) =>
-                          v.isEmpty ? 'Please confirm your password' : null,
+                      validator: (v) => v == null || v.isEmpty
+                          ? 'Please confirm your password'
+                          : null,
                       decoration:
                           InputDecoration(labelText: 'Confirm password')),
                 ],
@@ -80,7 +82,7 @@ class _ResetPasswordState extends State<ResetPasswordWidget> {
                     FHFlatButton(
                         title: 'Save',
                         onPressed: () async {
-                          if (_formKey.currentState.validate()) {
+                          if (_formKey.currentState!.validate()) {
                             try {
                               await bloc.replaceTempPassword(_password.text);
                             } catch (e, s) {

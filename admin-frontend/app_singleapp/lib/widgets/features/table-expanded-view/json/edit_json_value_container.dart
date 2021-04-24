@@ -14,13 +14,13 @@ class EditJsonValueContainer extends StatefulWidget {
     Key? key,
     required this.enabled,
     required this.canEdit,
-    required this.rolloutStrategy,
+    this.rolloutStrategy,
     required this.strBloc,
   }) : super(key: key);
 
   final bool enabled;
   final bool canEdit;
-  final RolloutStrategy rolloutStrategy;
+  final RolloutStrategy? rolloutStrategy;
   final CustomStrategyBloc strBloc;
 
   @override
@@ -35,7 +35,7 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
     super.didChangeDependencies();
 
     final valueSource = widget.rolloutStrategy != null
-        ? widget.rolloutStrategy.value
+        ? widget.rolloutStrategy!.value
         : widget.strBloc.featureValue.valueJson;
     tec.text = (valueSource ?? '').toString();
   }
@@ -61,6 +61,7 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
           borderRadius: BorderRadius.all(Radius.circular(6.0)),
         ),
         hoverColor: Colors.black12,
+        onTap: () => _viewJsonEditor(context, widget.enabled),
         child: Container(
             padding: const EdgeInsets.all(4.0),
             decoration: myBoxDecoration(),
@@ -69,7 +70,6 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
               child: ConfigurationViewerField(
                   text: tec.text, canEdit: widget.canEdit),
             )),
-        onTap: () => _viewJsonEditor(context, widget.enabled),
       ),
     );
   }
@@ -123,11 +123,11 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
   void _valueChanged() {
     final replacementValue = tec.text.isEmpty ? null : tec.text?.trim();
     if (widget.rolloutStrategy != null) {
-      widget.rolloutStrategy.value = replacementValue;
+      widget.rolloutStrategy!.value = replacementValue;
       widget.strBloc.updateStrategy();
     } else {
       widget.strBloc.fvBloc.dirty(
-          widget.strBloc.environmentFeatureValue.environmentId,
+          widget.strBloc.environmentFeatureValue.environmentId!,
           (current) => current.value = replacementValue);
     }
 

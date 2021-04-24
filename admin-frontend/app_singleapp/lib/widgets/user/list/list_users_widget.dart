@@ -1,5 +1,4 @@
 import 'package:app_singleapp/api/client_api.dart';
-import 'package:app_singleapp/api/router.dart';
 import 'package:app_singleapp/utils/utils.dart';
 import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/copy_to_clipboard_html.dart';
@@ -52,7 +51,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                     DataColumn(
                         label: Text('Name'),
                         onSort: (columnIndex, ascending) {
-                          onSortColumn(snapshot.data, columnIndex, ascending);
+                          onSortColumn(snapshot.data!, columnIndex, ascending);
                         }),
                     DataColumn(
                       label: Text('Email'),
@@ -95,9 +94,8 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                                       ManagementRepositoryClientBloc.router
                                           .navigateTo(context, '/manage-user',
                                               params: {
-                                                'id': [p.person.id.id]
-                                              },
-                                              transition: TransitionType.fadeIn)
+                                            'id': [p.person.id!.id]
+                                          })
                                     }),
                             SizedBox(
                               width: 20.0,
@@ -106,8 +104,8 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                               icon: Icon(Icons.delete),
                               onPressed: () => bloc.mrClient
                                   .addOverlay((BuildContext context) {
-                                return bloc.mrClient.person.id.id ==
-                                        p.person.id.id
+                                return bloc.mrClient.person.id!.id ==
+                                        p.person.id!.id
                                     ? CantDeleteDialog(bloc)
                                     : DeleteDialogWidget(
                                         person: p.person,
@@ -133,14 +131,14 @@ class _PersonListWidgetState extends State<PersonListWidget> {
         if (ascending) {
           people.sort((a, b) {
             if (a.person.name != null && b.person.name != null) {
-              return a.person.name.compareTo(b.person.name);
+              return a.person.name!.compareTo(b.person.name!);
             }
             return ascending ? 1 : -1;
           });
         } else {
           people.sort((a, b) {
             if (a.person.name != null && b.person.name != null) {
-              return b.person.name.compareTo(a.person.name);
+              return b.person.name!.compareTo(a.person.name!);
             }
             return ascending ? -1 : 1;
           });
@@ -148,9 +146,9 @@ class _PersonListWidgetState extends State<PersonListWidget> {
       }
       if (columnIndex == 1) {
         if (ascending) {
-          people.sort((a, b) => a.person.email.compareTo(b.person.email));
+          people.sort((a, b) => a.person.email!.compareTo(b.person.email!));
         } else {
-          people.sort((a, b) => b.person.email.compareTo(a.person.email));
+          people.sort((a, b) => b.person.email!.compareTo(a.person.email!));
         }
       }
       if (columnIndex == 2) {
@@ -244,13 +242,13 @@ class _ListUserInfo extends StatelessWidget {
         children: [
           _ListUserRow(
             title: 'Name',
-            child: Text(entry.person.name,
+            child: Text(entry.person.name!,
                 style: Theme.of(context).textTheme.bodyText1),
           ),
           SizedBox(height: 8),
           _ListUserRow(
             title: 'Email',
-            child: Text(entry.person.email,
+            child: Text(entry.person.email!,
                 style: Theme.of(context).textTheme.bodyText1),
           ),
           if (allowedLocalIdentity &&
@@ -305,7 +303,7 @@ class _ListUserInfo extends StatelessWidget {
               textProvider: () async {
                 try {
                   final token = await bloc.mrClient.authServiceApi
-                      .resetExpiredToken(entry.person.email);
+                      .resetExpiredToken(entry.person.email!);
                   if (token.registrationUrl == null) {
                     bloc.mrClient
                         .addSnackbar(Text('Unable to renew registration'));
@@ -362,7 +360,8 @@ class _ListUserRow extends StatelessWidget {
   final String title;
   final Widget child;
 
-  const _ListUserRow({Key? key, this.title, this.child}) : super(key: key);
+  const _ListUserRow({Key? key, required this.title, required this.child})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -399,7 +398,7 @@ class DeleteDialogWidget extends StatelessWidget {
       bloc: bloc.mrClient,
       deleteSelected: () async {
         try {
-          await bloc.deletePerson(person.id.id, true);
+          await bloc.deletePerson(person.id!.id, true);
           bloc.triggerSearch('');
           bloc.mrClient.addSnackbar(Text("User '${person.name}' deleted!"));
           return true;

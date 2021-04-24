@@ -1,7 +1,7 @@
 import 'package:mrapi/api.dart';
 
 class PortfolioGroup {
-  Portfolio portfolio;
+  Portfolio? portfolio;
   Group group;
 
   PortfolioGroup(this.portfolio, this.group);

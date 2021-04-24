@@ -10,7 +10,8 @@ class StringCellHolder extends StatelessWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
   final PerFeatureStateTrackingBloc fvBloc;
 
-  const StringCellHolder({Key? key, this.environmentFeatureValue, this.fvBloc})
+  const StringCellHolder(
+      {Key? key, required this.environmentFeatureValue, required this.fvBloc})
       : super(key: key);
 
   @override
@@ -31,19 +32,19 @@ class StringCellHolder extends StatelessWidget {
                 strBloc: strategyBloc,
               ),
               if (snapshot.hasData)
-                for (RolloutStrategy strategy in snapshot.data)
+                for (RolloutStrategy strategy in snapshot.data!)
                   StringStrategyCard(
                     strBloc: strategyBloc,
                     rolloutStrategy: strategy,
                   ),
               StreamBuilder<bool>(
                   stream: fvBloc.environmentIsLocked(
-                      environmentFeatureValue.environmentId),
+                      environmentFeatureValue.environmentId!),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       final canChangeValue = environmentFeatureValue.roles
                           .contains(RoleType.CHANGE_VALUE);
-                      var editable = !snapshot.data && canChangeValue;
+                      var editable = !snapshot.data! && canChangeValue;
                       return AddStrategyButton(
                           bloc: strategyBloc, editable: editable);
                     } else {

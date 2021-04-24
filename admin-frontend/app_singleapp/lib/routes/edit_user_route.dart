@@ -24,7 +24,7 @@ class EditUserRoute extends StatelessWidget {
             stream: bloc.formState,
             builder: (context, snapshot) {
               if (snapshot.data == EditUserForm.initialState) {
-                return EditUserFormWidget(person: bloc.person);
+                return EditUserFormWidget(person: bloc.person!);
               }
               return Container();
             }));
@@ -142,7 +142,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
                         try {
                           bloc.updatePersonDetails(_email.text, _name.text);
                           bloc.mrClient.addSnackbar(Text(
-                              'User ${bloc.person.name} has been updated'));
+                              'User ${bloc.person!.name!} has been updated'));
                           ManagementRepositoryClientBloc.router
                               .navigateTo(context, '/manage-users');
                         } catch (e, s) {

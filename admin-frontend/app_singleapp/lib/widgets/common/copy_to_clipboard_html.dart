@@ -2,7 +2,7 @@ import 'package:app_singleapp/widgets/common/fh_icon_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-typedef CopyToClipboardTextProvider = Future<String> Function();
+typedef CopyToClipboardTextProvider = Future<String?> Function();
 
 class FHCopyToClipboardFlatButton extends StatelessWidget {
   final String? text;

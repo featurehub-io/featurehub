@@ -7,7 +7,7 @@ class ConfigurationViewerField extends StatelessWidget {
   const ConfigurationViewerField({
     Key? key,
     required this.text,
-    this.canEdit,
+    required this.canEdit,
   }) : super(key: key);
 
   @override

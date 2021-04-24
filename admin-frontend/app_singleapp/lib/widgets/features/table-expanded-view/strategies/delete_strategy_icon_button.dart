@@ -22,7 +22,8 @@ class DeleteStrategyIconButton extends StatelessWidget {
         type: MaterialType.transparency,
         child: IconButton(
           splashRadius: 20,
-          mouseCursor: editable ? SystemMouseCursors.click : null,
+          mouseCursor:
+              editable ? SystemMouseCursors.click : SystemMouseCursors.basic,
           icon: Icon(Icons.delete, size: 16),
           onPressed:
               editable ? () => strBloc.removeStrategy(rolloutStrategy) : null,

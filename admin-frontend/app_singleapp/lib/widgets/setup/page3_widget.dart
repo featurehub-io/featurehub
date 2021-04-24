@@ -12,12 +12,12 @@ class SetupPage3Widget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
+    return StreamBuilder<bool>(
       stream: bloc.setupState,
       builder: (BuildContext context, AsyncSnapshot<bool> snap) {
         if (snap.hasError) {
           bloc.mrClient.dialogError(snap.error, null);
-        } else if (snap.hasData && snap.data) {
+        } else if (snap.hasData && snap.data!) {
           return allRegistered(context);
         }
         return Container();

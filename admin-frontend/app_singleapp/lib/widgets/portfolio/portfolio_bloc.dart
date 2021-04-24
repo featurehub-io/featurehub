@@ -10,7 +10,7 @@ enum PortfolioState { list, create, edit }
 class PortfolioBloc implements Bloc {
   String search;
   final ManagementRepositoryClientBloc mrClient;
-  PortfolioServiceApi _portfolioServiceApi;
+  late PortfolioServiceApi _portfolioServiceApi;
 
   Stream<List<Portfolio>> get portfolioSearch =>
       _portfolioSearchResultSource.stream;
@@ -75,12 +75,12 @@ class PortfolioBloc implements Bloc {
   }
 
   Future updatePortfolio(Portfolio portfolio) {
-    return _portfolioServiceApi.updatePortfolio(portfolio.id, portfolio);
+    return _portfolioServiceApi.updatePortfolio(portfolio.id!, portfolio);
   }
 
   void savePortfolio(String portfolioName) async {
     await _portfolioServiceApi
-        .createPortfolio(Portfolio(name: portfolioName, ));
+        .createPortfolio(Portfolio(name: portfolioName, description: ''));
   }
 
   @override
