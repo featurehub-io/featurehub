@@ -1,7 +1,7 @@
 import 'package:app_singleapp/widgets/features/percentage_utils.dart';
 import 'package:mrapi/api.dart';
 
-String generateTooltipMessage(RolloutStrategy rolloutStrategy) {
+String generateTooltipMessage(RolloutStrategy? rolloutStrategy) {
   if (rolloutStrategy == null) {
     return '';
   }

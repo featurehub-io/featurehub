@@ -63,7 +63,7 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
       children: <Widget>[
         Container(
           padding: const EdgeInsets.fromLTRB(12, 16, 16, 16),
-          child: StreamBuilder<List<Application>>(
+          child: StreamBuilder<List<Application>?>(
               stream: bloc.applications,
               builder: (context, snapshot) {
                 if (snapshot.hasData && snapshot.data!.isNotEmpty) {

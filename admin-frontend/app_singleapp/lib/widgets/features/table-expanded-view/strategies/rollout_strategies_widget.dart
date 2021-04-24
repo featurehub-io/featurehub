@@ -16,13 +16,13 @@ class RolloutStrategiesWidget extends StatelessWidget {
       StreamBuilder<List<RolloutStrategyAttribute>>(
           stream: bloc.attributes,
           builder: (context, snapshot) {
-            if (snapshot.hasData && snapshot.data.isNotEmpty) {
+            if (snapshot.hasData && snapshot.data!.isNotEmpty) {
               return Column(children: [
                 for (var rolloutStrategyAttribute in snapshot.data)
                   AttributeStrategyWidget(
                     attribute: rolloutStrategyAttribute,
                     attributeIsFirst:
-                        rolloutStrategyAttribute == snapshot.data.first,
+                        rolloutStrategyAttribute == snapshot.data!.first,
                   )
               ]);
             } else {
@@ -44,7 +44,7 @@ class RolloutStrategiesWidget extends StatelessWidget {
                 Text('Add rule', style: Theme.of(context).textTheme.caption),
                 for (var e in StrategyAttributeWellKnownNames.values)
                   if (e != StrategyAttributeWellKnownNames.session &&
-                      !snapshot.data.any((rsa) =>
+                      !snapshot.data!.any((rsa) =>
                           StrategyAttributeWellKnownNamesExtension.fromJson(
                               rsa.fieldName) ==
                           e))
@@ -57,7 +57,9 @@ class RolloutStrategiesWidget extends StatelessWidget {
               ],
             );
           }),
-      SizedBox(height: 8.0,),
+      SizedBox(
+        height: 8.0,
+      ),
       Row(
         children: [
           Text('Add custom rule', style: Theme.of(context).textTheme.caption),

@@ -32,11 +32,11 @@ class _EnvListState extends State<EnvListWidget> {
           if (!snapshot.hasData || snapshot.data == null) {
             return Container();
           }
-          //_environments = snapshot.data.reversed.toList();
+          //_environments = snapshot.data!.reversed.toList();
           _environments = _sortEnvironments(snapshot.data!);
 
           return Container(
-            //height:(snapshot.data.length*50).toDouble(),
+            //height:(snapshot.data!.length*50).toDouble(),
             height: 500.0,
             child: FHReorderableListView(
               onReorder: (int oldIndex, int newIndex) {

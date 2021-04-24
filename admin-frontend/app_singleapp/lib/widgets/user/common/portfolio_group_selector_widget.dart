@@ -111,17 +111,14 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
                     isDense: true,
                     underline: Container(),
                     items: snapshot.data != null
-                        ? snapshot.data.map((Group dropDownStringItem) {
-                      return DropdownMenuItem<String>(
-                          value: dropDownStringItem.id,
-                          child: Text(dropDownStringItem.name));
-                    }).toList()
+                        ? snapshot.data!.map((Group dropDownStringItem) {
+                            return DropdownMenuItem<String>(
+                                value: dropDownStringItem.id,
+                                child: Text(dropDownStringItem.name));
+                          }).toList()
                         : null,
                     hint: Text('Select group',
-                        style: Theme
-                            .of(context)
-                            .textTheme
-                            .bodyText1),
+                        style: Theme.of(context).textTheme.bodyText1),
                     onChanged: (value) {
                       setState(() {
                         selectedGroupID = value;
@@ -164,16 +161,13 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
                       isExpanded: true,
                       isDense: true,
                       underline: Container(),
-                      items: snapshot.data.map((Portfolio dropDownStringItem) {
+                      items: snapshot.data!.map((Portfolio dropDownStringItem) {
                         return DropdownMenuItem<String>(
                             value: dropDownStringItem.id,
                             child: Text(dropDownStringItem.name));
                       }).toList(),
                       hint: Text('Select portfolio',
-                          style: Theme
-                              .of(context)
-                              .textTheme
-                              .bodyText1),
+                          style: Theme.of(context).textTheme.bodyText1),
                       onChanged: (value) {
                         setState(() {
                           selectedPortfolio = value;

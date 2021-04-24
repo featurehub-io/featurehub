@@ -100,7 +100,7 @@ class _StrategiesList extends StatelessWidget {
 class _ValueCard extends StatelessWidget {
   final FeatureValue fv;
   final Feature feature;
-  final RolloutStrategy rolloutStrategy;
+  final RolloutStrategy? rolloutStrategy;
 
   const _ValueCard({
     Key? key,
@@ -149,16 +149,16 @@ class _ValueCard extends StatelessWidget {
                             message: generateTooltipMessage(rolloutStrategy),
                             child: rolloutStrategy == null
                                 ? SizedBox.shrink()
-                                : Text(rolloutStrategy.name,
+                                : Text(rolloutStrategy!.name,
                                     style: Theme.of(context)
                                         .textTheme
-                                        .caption
+                                        .caption!
                                         .copyWith(color: strategyTextColor)),
                           )
                         : Text('default',
                             style: Theme.of(context)
                                 .textTheme
-                                .caption
+                                .caption!
                                 .copyWith(color: defaultTextColor)),
                   ),
                 if (fv.rolloutStrategies != null &&
@@ -175,7 +175,7 @@ class _ValueCard extends StatelessWidget {
                       child: feature.valueType == FeatureValueType.BOOLEAN
                           ? FlagOnOffColoredIndicator(
                               on: rolloutStrategy != null
-                                  ? rolloutStrategy.value
+                                  ? rolloutStrategy!.value
                                   : fv.valueBoolean)
                           : Text(
                               displayValue.isEmpty ? 'not set' : displayValue,
@@ -197,8 +197,8 @@ class _ValueCard extends StatelessWidget {
 
   String _findDisplayValue() {
     if (rolloutStrategy != null) {
-      if (rolloutStrategy.value != null) {
-        return rolloutStrategy.value.toString();
+      if (rolloutStrategy!.value != null) {
+        return rolloutStrategy!.value.toString();
       } else {
         return '';
       }
@@ -208,7 +208,7 @@ class _ValueCard extends StatelessWidget {
   }
 
   String _getFeatureValue() {
-    switch (feature.valueType) {
+    switch (feature.valueType!) {
       case FeatureValueType.STRING:
         return fv.valueString ?? '';
       case FeatureValueType.NUMBER:
@@ -218,13 +218,5 @@ class _ValueCard extends StatelessWidget {
       case FeatureValueType.JSON:
         return fv.valueJson?.replaceAll('\n', '') ?? '';
     }
-
-    return '';
   }
 }
-
-//      if (fv.locked)
-//        Padding(
-//          padding: const EdgeInsets.only(top: 4.0),
-//          child: Icon(Icons.lock_outline, size: 16, color: Colors.black26,),
-//        ),

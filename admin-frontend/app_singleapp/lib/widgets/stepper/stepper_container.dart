@@ -47,7 +47,7 @@ class StepperRocketButton extends StatelessWidget {
         stream: mrBloc.personState.isCurrentPortfolioOrSuperAdmin,
         builder: (context, snapshot) {
           if (snapshot.data != null &&
-              (snapshot.data.currentPortfolioOrSuperAdmin == true)) {
+              (snapshot.data!.currentPortfolioOrSuperAdmin == true)) {
             return IconButton(
               tooltip: 'Open setup helper',
               icon: Icon(

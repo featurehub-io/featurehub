@@ -30,7 +30,7 @@ class PerFeatureStateTrackingBloc implements Bloc {
   final Feature feature;
   final String applicationId;
   final ManagementRepositoryClientBloc mrClient;
-  EnvironmentServiceApi _environmentServiceApi;
+  late EnvironmentServiceApi _environmentServiceApi;
   // environment id, FeatureValue - there may be values in here that are not used, we honour `_dirty` to determine if we use them
   final _newFeatureValues = <String, FeatureValue>{};
   final _originalFeatureValues = <String, FeatureValue>{};
@@ -53,7 +53,7 @@ class PerFeatureStateTrackingBloc implements Bloc {
 
   int get maxLines => _dirtyValues.values
       .map((e) =>
-          (e.customStrategies?.length ?? 0) + (e.sharedStrategies?.length ?? 0))
+          (e.customStrategies.length ?? 0) + (e.sharedStrategies.length ?? 0))
       .reduce(max);
 
   // if any of the values are updated, this stream shows true, it can flick on and off during its lifetime
@@ -71,7 +71,7 @@ class PerFeatureStateTrackingBloc implements Bloc {
           () => FeatureValue(
                 environmentId: envId,
                 locked: false,
-                key: feature.key,
+                key: feature.key!,
               ));
 
       return fv;
@@ -146,12 +146,12 @@ class PerFeatureStateTrackingBloc implements Bloc {
 
     _dirtyCheck();
 
-    return _dirty[envId];
+    return _dirty[envId]!;
   }
 
-  dynamic _originalValue(FeatureValue original) {
+  dynamic _originalValue(FeatureValue? original) {
     if (original != null) {
-      switch (feature.valueType) {
+      switch (feature.valueType!) {
         case FeatureValueType.BOOLEAN:
           return original.valueBoolean;
         case FeatureValueType.STRING:
@@ -183,8 +183,8 @@ class PerFeatureStateTrackingBloc implements Bloc {
 
     featureValuesThisFeature.forEach((fv) {
       // make a copy so our changes don't leak back into the main list
-      _newFeatureValues[fv.environmentId] = fv.copyWith();
-      _originalFeatureValues[fv.environmentId] = fv.copyWith();
+      _newFeatureValues[fv.environmentId!] = fv.copyWith();
+      _originalFeatureValues[fv.environmentId!] = fv.copyWith();
       _dirtyValues[fv.key] = FeatureValueDirtyHolder()
         ..value = fv
         ..customStrategies = fv.rolloutStrategies
@@ -202,17 +202,17 @@ class PerFeatureStateTrackingBloc implements Bloc {
   }
 
   bool hasValue(FeatureEnvironment fe) {
-    return _newFeatureValues[fe.environment.id]?.valueBoolean != null ||
-        _newFeatureValues[fe.environment.id]?.valueString != null ||
-        _newFeatureValues[fe.environment.id]?.valueJson != null ||
-        _newFeatureValues[fe.environment.id]?.valueNumber != null;
+    return _newFeatureValues[fe.environment!.id]?.valueBoolean != null ||
+        _newFeatureValues[fe.environment!.id]?.valueString != null ||
+        _newFeatureValues[fe.environment!.id]?.valueJson != null ||
+        _newFeatureValues[fe.environment!.id]?.valueNumber != null;
   }
 
   void resetValue(FeatureEnvironment fe) {
-    _newFeatureValues[fe.environment.id]?.valueBoolean = null;
-    _newFeatureValues[fe.environment.id]?.valueString = null;
-    _newFeatureValues[fe.environment.id]?.valueJson = null;
-    _newFeatureValues[fe.environment.id]?.valueNumber = null;
+    _newFeatureValues[fe.environment!.id]?.valueBoolean = null;
+    _newFeatureValues[fe.environment!.id]?.valueString = null;
+    _newFeatureValues[fe.environment!.id]?.valueJson = null;
+    _newFeatureValues[fe.environment!.id]?.valueNumber = null;
   }
 
   Future<Environment> getEnvironment(String envId) async {
@@ -228,7 +228,7 @@ class PerFeatureStateTrackingBloc implements Bloc {
     _originalFeatureValues.forEach((key, value) {
       final original = value.copyWith();
       _newFeatureValues[key] = original;
-      _fvLockedUpdates[key].add(original.locked);
+      _fvLockedUpdates[key]!.add(original.locked);
     });
 
     _dirty.clear();
@@ -238,15 +238,15 @@ class PerFeatureStateTrackingBloc implements Bloc {
   }
 
   void _updateNewFeature(
-      FeatureValue newValue, FeatureValue value, String envId) {
+      FeatureValue newValue, FeatureValue? value, String envId) {
     if (_dirtyLock[envId] == true) {
       newValue.locked = !(value?.locked ?? false);
     }
 
     if (_dirty[envId] == true) {
-      final fvDirty = _dirtyValues[envId];
+      final fvDirty = _dirtyValues[envId]!;
 
-      switch (feature.valueType) {
+      switch (feature.valueType!) {
         case FeatureValueType.BOOLEAN:
           newValue.valueBoolean = fvDirty.value;
           break;
@@ -276,7 +276,7 @@ class PerFeatureStateTrackingBloc implements Bloc {
 
     _originalFeatureValues.forEach((envId, value) {
       final newValue = featureValuesWeAreCheckingForUpdates
-          .remove(envId); // we have no access, ignore it
+          .remove(envId)!; // we have no access, ignore it
 
       // this causes equals not to work
       newValue.whoUpdated = null;
@@ -308,7 +308,7 @@ class PerFeatureStateTrackingBloc implements Bloc {
         // only add the ones where we set locked away from its default (false) or set a value
         if (_dirty[newFv.environmentId] == true ||
             _dirtyLock[newFv.environmentId] == true) {
-          _updateNewFeature(newFv, null, newFv.environmentId);
+          _updateNewFeature(newFv, null, newFv.environmentId!);
           updates.add(newFv);
         }
       }

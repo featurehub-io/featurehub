@@ -21,7 +21,7 @@ class FeaturesOverviewTableWidget extends StatelessWidget {
     final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
 
     try {
-      return StreamBuilder<FeatureStatusFeatures>(
+      return StreamBuilder<FeatureStatusFeatures?>(
           stream: bloc.appFeatureValues,
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
@@ -45,7 +45,7 @@ class FeaturesOverviewTableWidget extends StatelessWidget {
             if (snapshot.hasData) {
               return TabsView(
                 featureStatus: snapshot.data!,
-                applicationId: bloc.applicationId,
+                applicationId: bloc.applicationId!,
                 bloc: bloc,
               );
             } else {
@@ -251,7 +251,7 @@ class NoEnvironmentMessage extends StatelessWidget {
                       keepCase: true,
                       onPressed: () => ManagementRepositoryClientBloc.router
                               .navigateTo(context, '/manage-app', params: {
-                            'id': [bloc.applicationId],
+                            'id': [bloc.applicationId!],
                             'tab-name': ['environments']
                           }));
                 } else {

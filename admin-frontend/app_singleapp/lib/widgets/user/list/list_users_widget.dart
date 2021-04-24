@@ -57,19 +57,19 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                     DataColumn(
                       label: Text('Email'),
                       onSort: (columnIndex, ascending) {
-                        onSortColumn(snapshot.data, columnIndex, ascending);
+                        onSortColumn(snapshot.data!, columnIndex, ascending);
                       },
                     ),
                     DataColumn(
                       label: Text('Groups'),
                       onSort: (columnIndex, ascending) {
-                        onSortColumn(snapshot.data, columnIndex, ascending);
+                        onSortColumn(snapshot.data!, columnIndex, ascending);
                       },
                     ),
                     DataColumn(label: Text(''), onSort: (i, a) => {}),
                   ],
                   rows: [
-                    for (SearchPersonEntry p in snapshot.data)
+                    for (SearchPersonEntry p in snapshot.data!)
                       DataRow(
                         cells: [
                           DataCell(p.person.name == null

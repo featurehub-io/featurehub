@@ -322,8 +322,8 @@ class _NaughtyDataEntryWidget extends StatelessWidget {
         stream: bloc.violationStream,
         builder: (context, snapshot) {
           if (!snapshot.hasData ||
-              snapshot.data.isEmpty ||
-              snapshot.data.where((element) => element.id == null).isEmpty) {
+              snapshot.data!.isEmpty ||
+              snapshot.data!.where((element) => element.id == null).isEmpty) {
             return SizedBox.shrink();
           }
 
