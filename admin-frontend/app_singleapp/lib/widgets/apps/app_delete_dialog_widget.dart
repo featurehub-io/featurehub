@@ -20,7 +20,7 @@ class AppDeleteDialogWidget extends StatelessWidget {
       bloc: bloc.mrClient,
       thing: "application '${application.name}'",
       deleteSelected: () async {
-        final success = await bloc.deleteApp(application.id);
+        final success = await bloc.deleteApp(application.id!);
         if (success) {
           bloc.mrClient
               .addSnackbar(Text("Application '${application.name}' deleted!"));

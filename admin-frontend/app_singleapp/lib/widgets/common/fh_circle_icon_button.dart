@@ -5,7 +5,8 @@ class CircleIconButton extends StatelessWidget {
   final VoidCallback onTap;
   final Icon icon;
 
-  const CircleIconButton({Key? key, this.onTap, this.icon}) : super(key: key);
+  const CircleIconButton({Key? key, required this.onTap, required this.icon})
+      : super(key: key);
   @override
   Widget build(BuildContext context) {
     return ClipOval(

@@ -1,5 +1,4 @@
 import 'package:app_singleapp/api/client_api.dart';
-import 'package:app_singleapp/api/router.dart';
 import 'package:app_singleapp/common/stream_valley.dart';
 import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/fh_alert_dialog.dart';
@@ -29,7 +28,7 @@ class ServiceAccountsListWidget extends StatelessWidget {
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              for (ServiceAccount sa in snapshot.data)
+              for (ServiceAccount sa in snapshot.data!)
                 _ServiceAccountWidget(
                   serviceAccount: sa,
                   mr: mrBloc,
@@ -51,10 +50,7 @@ class _ServiceAccountWidget extends StatelessWidget {
       required this.serviceAccount,
       required this.mr,
       required this.bloc})
-      : assert(serviceAccount != null),
-        assert(mr != null),
-        assert(bloc != null),
-        super(key: key);
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +78,7 @@ class _ServiceAccountWidget extends StatelessWidget {
                         .mrClient.personState.isCurrentPortfolioOrSuperAdmin,
                     builder: (context, snapshot) {
                       if (snapshot.hasData &&
-                          snapshot.data.currentPortfolioOrSuperAdmin) {
+                          snapshot.data!.currentPortfolioOrSuperAdmin) {
                         return _adminFunctions(context);
                       } else {
                         return Container();
@@ -128,9 +124,7 @@ class ServiceAccountEnvironments extends StatelessWidget {
       {Key? key,
       required this.serviceAccount,
       required this.serviceAccountBloc})
-      : assert(serviceAccount != null),
-        assert(serviceAccountBloc != null),
-        super(key: key);
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -144,7 +138,7 @@ class ServiceAccountEnvironments extends StatelessWidget {
           return Wrap(
             direction: Axis.horizontal,
             crossAxisAlignment: WrapCrossAlignment.start,
-            children: snapshot.data.applications
+            children: snapshot.data!.applications
                 .map((app) => _ServiceAccountEnvironment(
                       serviceAccount: serviceAccount,
                       application: app,
@@ -160,7 +154,7 @@ class _ServiceAccountEnvironment extends StatelessWidget {
   final Application application;
 
   const _ServiceAccountEnvironment(
-      {Key? key, this.serviceAccount, this.application})
+      {Key? key, required this.serviceAccount, required this.application})
       : super(key: key);
 
   @override
@@ -198,12 +192,10 @@ class _ServiceAccountEnvironment extends StatelessWidget {
                           .currentAid = application.id;
 
                       ManagementRepositoryClientBloc.router
-                          .navigateTo(context, '/manage-app',
-                              params: {
-                                'service-account': [serviceAccount.id],
-                                'tab-name': ['service-accounts']
-                              },
-                              transition: TransitionType.material);
+                          .navigateTo(context, '/manage-app', params: {
+                        'service-account': [serviceAccount.id!],
+                        'tab-name': ['service-accounts']
+                      });
                     },
                   )
                 ],
@@ -231,7 +223,7 @@ class _ServiceAccountDescription extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(serviceAccount.name,
-            style: Theme.of(context).textTheme.subtitle1.copyWith(
+            style: Theme.of(context).textTheme.subtitle1!.copyWith(
                 color: light
                     ? Theme.of(context).primaryColor
                     : Theme.of(context).accentColor)),
@@ -252,9 +244,7 @@ class ServiceAccountDeleteDialogWidget extends StatelessWidget {
 
   const ServiceAccountDeleteDialogWidget(
       {Key? key, required this.bloc, required this.serviceAccount})
-      : assert(serviceAccount != null),
-        assert(bloc != null),
-        super(key: key);
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -265,7 +255,7 @@ class ServiceAccountDeleteDialogWidget extends StatelessWidget {
       bloc: bloc.mrClient,
       deleteSelected: () async {
         final success = await bloc
-            .deleteServiceAccount(serviceAccount.id)
+            .deleteServiceAccount(serviceAccount.id!)
             .catchError((e, s) {
           bloc.mrClient.dialogError(e, s,
               messageTitle:
@@ -283,7 +273,7 @@ class ServiceAccountDeleteDialogWidget extends StatelessWidget {
 }
 
 class ServiceAccountUpdateDialogWidget extends StatefulWidget {
-  final ServiceAccount serviceAccount;
+  final ServiceAccount? serviceAccount;
   final ManageServiceAccountsBloc bloc;
 
   const ServiceAccountUpdateDialogWidget({
@@ -309,8 +299,8 @@ class _ServiceAccountUpdateDialogWidgetState
   void initState() {
     super.initState();
     if (widget.serviceAccount != null) {
-      _name.text = widget.serviceAccount.name;
-      _description.text = widget.serviceAccount.description;
+      _name.text = widget.serviceAccount!.name;
+      _description.text = widget.serviceAccount!.description!;
       isUpdate = true;
     }
   }
@@ -340,7 +330,7 @@ class _ServiceAccountUpdateDialogWidgetState
                       decoration:
                           InputDecoration(labelText: 'Service account name'),
                       validator: ((v) {
-                        if (v.isEmpty) {
+                        if (v == null || v.isEmpty) {
                           return 'Please enter a service account name';
                         }
                         if (v.length < 4) {
@@ -353,7 +343,7 @@ class _ServiceAccountUpdateDialogWidgetState
                   decoration:
                       InputDecoration(labelText: 'Service account description'),
                   validator: ((v) {
-                    if (v.isEmpty) {
+                    if (v == null || v.isEmpty) {
                       return 'Please enter service account description';
                     }
                     if (v.length < 4) {
@@ -375,11 +365,13 @@ class _ServiceAccountUpdateDialogWidgetState
           FHFlatButton(
               title: isUpdate ? 'Update' : 'Create',
               onPressed: (() async {
-                if (_formKey.currentState.validate()) {
+                if (_formKey.currentState!.validate()) {
                   try {
                     if (isUpdate) {
                       await widget.bloc.updateServiceAccount(
-                          widget.serviceAccount, _name.text, _description.text);
+                          widget.serviceAccount!,
+                          _name.text,
+                          _description.text);
                       widget.bloc.mrClient.removeOverlay();
                       widget.bloc.mrClient.addSnackbar(
                           Text("Service account '${_name.text}' updated!"));

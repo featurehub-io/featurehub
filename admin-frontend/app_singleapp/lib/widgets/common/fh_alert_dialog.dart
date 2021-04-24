@@ -5,7 +5,11 @@ class FHAlertDialog extends StatelessWidget {
   final Widget content;
   final List<Widget> actions;
 
-  const FHAlertDialog({Key? key, this.title, this.content, this.actions})
+  const FHAlertDialog(
+      {Key? key,
+      required this.title,
+      required this.content,
+      required this.actions})
       : super(key: key);
 
   @override

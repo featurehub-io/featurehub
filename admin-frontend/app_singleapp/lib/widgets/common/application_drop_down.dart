@@ -1,4 +1,5 @@
 import 'package:app_singleapp/api/mr_client_aware.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
@@ -7,7 +8,8 @@ class ApplicationDropDown extends StatefulWidget {
   final List<Application> applications;
   final ManagementRepositoryAwareBloc bloc;
 
-  const ApplicationDropDown({Key? key, this.applications, this.bloc})
+  const ApplicationDropDown(
+      {Key? key, required this.applications, required this.bloc})
       : super(key: key);
 
   @override
@@ -22,7 +24,7 @@ class _ApplicationDropDownState extends State<ApplicationDropDown> {
       child: Container(
         padding: EdgeInsets.all(4.0),
         constraints: BoxConstraints(maxWidth: 200),
-        child: StreamBuilder<String>(
+        child: StreamBuilder<String?>(
             stream: widget.bloc.mrClient.streamValley.currentAppIdStream,
             builder: (context, snapshot) {
               return DropdownButtonHideUnderline(
@@ -50,14 +52,13 @@ class _ApplicationDropDownState extends State<ApplicationDropDown> {
                       : null,
                   hint: Text('Select application',
                       style: Theme.of(context).textTheme.subtitle2),
-                  onChanged: (value) {
+                  onChanged: (String? value) {
                     setState(() {
                       widget.bloc.mrClient.setCurrentAid(value);
                     });
                   },
                   value: widget.applications
-                      .firstWhere((a) => a.id == snapshot.data,
-                          orElse: () => null)
+                      .firstWhereOrNull((a) => a.id == snapshot.data)
                       ?.id,
                 ),
               );

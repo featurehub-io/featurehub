@@ -8,10 +8,10 @@ import 'package:openapi_dart_common/openapi.dart';
 import 'apps_bloc.dart';
 
 class AppUpdateDialogWidget extends StatefulWidget {
-  final Application application;
+  Application? application;
   final AppsBloc bloc;
 
-  const AppUpdateDialogWidget({
+  AppUpdateDialogWidget({
     Key? key,
     required this.bloc,
     this.application,
@@ -34,8 +34,8 @@ class _AppUpdateDialogWidgetState extends State<AppUpdateDialogWidget> {
   void initState() {
     super.initState();
     if (widget.application != null) {
-      _appName.text = widget.application.name;
-      _appDescription.text = widget.application.description;
+      _appName.text = widget.application!.name;
+      _appDescription.text = widget.application!.description!;
       isUpdate = true;
     }
   }
@@ -59,7 +59,7 @@ class _AppUpdateDialogWidgetState extends State<AppUpdateDialogWidget> {
                     textInputAction: TextInputAction.next,
                     decoration: InputDecoration(labelText: 'Application name'),
                     validator: ((v) {
-                      if (v.isEmpty) {
+                      if (v == null || v.isEmpty) {
                         return 'Please enter an application name';
                       }
                       if (v.length < 4) {
@@ -73,7 +73,7 @@ class _AppUpdateDialogWidgetState extends State<AppUpdateDialogWidget> {
                     decoration:
                         InputDecoration(labelText: 'Application description'),
                     validator: ((v) {
-                      if (v.isEmpty) {
+                      if (v == null || v.isEmpty) {
                         return 'Please enter app description';
                       }
                       if (v.length < 4) {
@@ -101,14 +101,14 @@ class _AppUpdateDialogWidgetState extends State<AppUpdateDialogWidget> {
   }
 
   void _handleValidation() async {
-    if (_formKey.currentState.validate()) {
+    if (_formKey.currentState!.validate()) {
       try {
         setState(() {
           _busy = true;
         });
         if (isUpdate) {
           await widget.bloc.updateApplication(
-              widget.application, _appName.text, _appDescription.text);
+              widget.application!, _appName.text, _appDescription.text);
           widget.bloc.mrClient.removeOverlay();
           widget.bloc.mrClient
               .addSnackbar(Text('Application ${_appName.text} updated!'));

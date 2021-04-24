@@ -12,24 +12,20 @@ typedef DeleteThingFunction = Future<bool> Function();
 class FHDeleteThingWarningWidget extends StatelessWidget {
   final ManagementRepositoryClientBloc bloc;
   final DeleteThingFunction deleteSelected;
-  final String thing;
-  final String wholeWarning;
+  final String? thing;
+  final String? wholeWarning;
   final bool extraWarning;
-  final String content;
+  final String? content;
 
   const FHDeleteThingWarningWidget(
       {Key? key,
       required this.deleteSelected,
       this.thing,
       this.wholeWarning,
-      bool extraWarning,
+      this.extraWarning = false,
       required this.bloc,
       this.content})
-      : extraWarning = extraWarning ?? false,
-        assert(bloc !=
-            null), // must be passed because alert dialogs are passed in overlays which no longer have access to the bloc
-        assert(deleteSelected != null),
-        assert(thing != null || wholeWarning != null),
+      : assert(thing != null || wholeWarning != null),
         super(key: key);
 
   @override
@@ -76,9 +72,7 @@ class FHDeleteThingWarningWidget extends StatelessWidget {
 class _WarningWidget extends StatelessWidget {
   final bool extra;
 
-  const _WarningWidget({Key? key, bool extra})
-      : extra = extra ?? false,
-        super(key: key);
+  _WarningWidget({Key? key, this.extra = false}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

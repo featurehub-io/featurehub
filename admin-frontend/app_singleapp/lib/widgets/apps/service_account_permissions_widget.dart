@@ -33,11 +33,11 @@ class _ServiceAccountPermissionState
     final route =
         BlocProvider.of<ManagementRepositoryClientBloc>(context).currentRoute;
 
-    if (route.params['service-account'] != null) {
+    if (route != null && route.params['service-account'] != null) {
       _log.fine(
           'Got route request for params ${route.params} so swapping service account');
       final bloc = BlocProvider.of<ManageAppBloc>(context);
-      bloc.selectServiceAccount(route.params['service-account'][0]);
+      bloc.selectServiceAccount(route.params['service-account']![0]);
     }
   }
 
@@ -48,7 +48,7 @@ class _ServiceAccountPermissionState
     return StreamBuilder<List<ServiceAccount>>(
         stream: bloc.serviceAccountsStream,
         builder: (context, snapshot) {
-          if (!snapshot.hasData || snapshot.data.isEmpty) {
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
@@ -57,7 +57,7 @@ class _ServiceAccountPermissionState
                     child: Column(
                       children: <Widget>[
                         Text(
-                            "There are no 'service accounts' in the '${bloc.portfolio.name}' portfolio."),
+                            "There are no 'service accounts' in the '${bloc.portfolio!.name}' portfolio."),
                         Container(
                           padding: EdgeInsets.only(top: 20, bottom: 20),
                           child: FHLinkWidget(
@@ -85,7 +85,7 @@ class _ServiceAccountPermissionState
                           'Service account',
                           style: Theme.of(context).textTheme.caption,
                         ),
-                        serviceAccountDropdown(snapshot.data, bloc),
+                        serviceAccountDropdown(snapshot.data!, bloc),
                       ],
                     ),
                     Padding(
@@ -109,7 +109,7 @@ with only 'Read' permission for service accounts.'''),
       List<ServiceAccount> serviceAccounts, ManageAppBloc bloc) {
     return Container(
       constraints: BoxConstraints(maxWidth: 250),
-      child: StreamBuilder<String>(
+      child: StreamBuilder<String?>(
           stream: bloc.currentServiceAccountIdStream,
           builder: (context, snapshot) {
             return InkWell(
@@ -137,10 +137,12 @@ with only 'Read' permission for service accounts.'''),
                   'Select service account',
                   textAlign: TextAlign.end,
                 ),
-                onChanged: (value) {
-                  setState(() {
-                    bloc.selectServiceAccount(value);
-                  });
+                onChanged: (String? value) {
+                  if (value != null) {
+                    setState(() {
+                      bloc.selectServiceAccount(value);
+                    });
+                  }
                 },
                 value: snapshot.data,
               ),
@@ -158,9 +160,7 @@ class _ServiceAccountPermissionDetailWidget extends StatefulWidget {
     Key? key,
     required this.mr,
     required this.bloc,
-  })   : assert(mr != null),
-        assert(bloc != null),
-        super(key: key);
+  }) : super(key: key);
 
   @override
   _ServiceAccountPermissionDetailState createState() =>
@@ -170,7 +170,7 @@ class _ServiceAccountPermissionDetailWidget extends StatefulWidget {
 class _ServiceAccountPermissionDetailState
     extends State<_ServiceAccountPermissionDetailWidget> {
   Map<String, ServiceAccountPermission> newServiceAccountPermission = {};
-  ServiceAccount currentServiceAccount;
+  ServiceAccount? currentServiceAccount;
 
   @override
   Widget build(BuildContext context) {
@@ -187,7 +187,7 @@ class _ServiceAccountPermissionDetailState
                 if (!envSnapshot.hasData) {
                   return Container();
                 }
-                if (envSnapshot.data.isEmpty) {
+                if (envSnapshot.data!.isEmpty) {
                   return Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
@@ -200,15 +200,15 @@ class _ServiceAccountPermissionDetailState
                 }
 
                 if (currentServiceAccount == null ||
-                    currentServiceAccount.id != saSnapshot.data.id) {
+                    currentServiceAccount!.id != saSnapshot.data!.id) {
                   newServiceAccountPermission =
-                      createMap(envSnapshot.data, saSnapshot.data);
+                      createMap(envSnapshot.data!, saSnapshot.data!);
                   currentServiceAccount = saSnapshot.data;
                 }
 
                 final rows = <TableRow>[];
                 rows.add(getHeader());
-                for (var env in envSnapshot.data) {
+                for (var env in envSnapshot.data!) {
                   rows.add(TableRow(
                       decoration: BoxDecoration(
                           border: Border(
@@ -218,10 +218,10 @@ class _ServiceAccountPermissionDetailState
                         Container(
                             padding: EdgeInsets.fromLTRB(5, 15, 0, 0),
                             child: Text(env.name)),
-                        getPermissionCheckbox(env.id, RoleType.READ),
-                        getPermissionCheckbox(env.id, RoleType.LOCK),
-                        getPermissionCheckbox(env.id, RoleType.UNLOCK),
-                        getPermissionCheckbox(env.id, RoleType.CHANGE_VALUE),
+                        getPermissionCheckbox(env.id!, RoleType.READ),
+                        getPermissionCheckbox(env.id!, RoleType.LOCK),
+                        getPermissionCheckbox(env.id!, RoleType.UNLOCK),
+                        getPermissionCheckbox(env.id!, RoleType.CHANGE_VALUE),
                       ]));
                 }
 
@@ -242,7 +242,8 @@ class _ServiceAccountPermissionDetailState
                       FHFlatButtonTransparent(
                         onPressed: () {
                           currentServiceAccount = null;
-                          widget.bloc.selectServiceAccount(saSnapshot.data.id);
+                          widget.bloc
+                              .selectServiceAccount(saSnapshot.data!.id!);
                         },
                         title: 'Cancel',
                         keepCase: true,
@@ -253,11 +254,11 @@ class _ServiceAccountPermissionDetailState
                             newServiceAccountPermission.forEach((key, value) {
                               newList.add(value);
                             });
-                            final newSa = saSnapshot.data;
+                            final newSa = saSnapshot.data!;
                             newSa.permissions = newList;
                             widget.bloc
                                 .updateServiceAccountPermissions(
-                                    newSa.id, saSnapshot.data)
+                                    newSa.id!, saSnapshot.data!)
                                 .then((serviceAccount) => widget.bloc.mrClient
                                     .addSnackbar(Text(
                                         "Service account '${serviceAccount?.name}' updated!")))
@@ -310,15 +311,15 @@ class _ServiceAccountPermissionDetailState
 
   Checkbox getPermissionCheckbox(String envId, RoleType permissionType) {
     return Checkbox(
-      value: newServiceAccountPermission[envId]
+      value: newServiceAccountPermission[envId]!
           .permissions
           .contains(permissionType),
-      onChanged: (value) {
+      onChanged: (bool? value) {
         setState(() {
-          if (value) {
-            newServiceAccountPermission[envId].permissions.add(permissionType);
+          if (value == true) {
+            newServiceAccountPermission[envId]!.permissions.add(permissionType);
           } else {
-            newServiceAccountPermission[envId]
+            newServiceAccountPermission[envId]!
                 .permissions
                 .remove(permissionType);
           }
@@ -334,11 +335,11 @@ class _ServiceAccountPermissionDetailState
       final sap = serviceAccount.permissions
           .firstWhere((item) => item.environmentId == environment.id,
               orElse: () => ServiceAccountPermission(
-                    environmentId: environment.id,
+                    environmentId: environment.id!,
                     permissions: <RoleType>[],
                   ));
 
-      retMap[environment.id] = sap;
+      retMap[environment.id!] = sap;
     });
     return retMap;
   }
