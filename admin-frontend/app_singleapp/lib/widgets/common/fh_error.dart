@@ -10,7 +10,7 @@ import 'fh_alert_dialog.dart';
 class FHErrorWidget extends StatefulWidget {
   final FHError error;
 
-  const FHErrorWidget({Key? key, this.error}) : super(key: key);
+  const FHErrorWidget({Key? key, required this.error}) : super(key: key);
 
   @override
   _FHErrorState createState() => _FHErrorState();
@@ -45,9 +45,10 @@ class _FHErrorState extends State<FHErrorWidget> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Visibility(
-                  visible: error.errorMessage != '',
-                  child: Text(error.errorMessage)),
+              if (error.errorMessage != null)
+                Visibility(
+                    visible: error.errorMessage != '',
+                    child: Text(error.errorMessage!)),
               Visibility(
                   visible: error.showDetails,
                   child: Column(children: [
@@ -59,7 +60,7 @@ class _FHErrorState extends State<FHErrorWidget> {
                               child: Text(showDetailsButton,
                                   style: Theme.of(context)
                                       .textTheme
-                                      .button
+                                      .button!
                                       .merge(TextStyle(
                                           color:
                                               Theme.of(context).buttonColor))),

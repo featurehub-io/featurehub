@@ -11,7 +11,7 @@ class FHInfoCardWidget extends StatelessWidget {
     return Tooltip(
       textStyle: Theme.of(context)
           .textTheme
-          .bodyText2
+          .bodyText2!
           .copyWith(color: Theme.of(context).primaryColor),
       child: InkWell(
         mouseCursor: SystemMouseCursors.click,

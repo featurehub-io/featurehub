@@ -1,5 +1,4 @@
 import 'package:app_singleapp/api/client_api.dart';
-import 'package:app_singleapp/api/router.dart';
 import 'package:app_singleapp/common/stream_valley.dart';
 import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/features/environments_features_list_view.dart';
@@ -30,7 +29,7 @@ class FeaturesOverviewTableWidget extends StatelessWidget {
             }
 
             if (snapshot.hasData &&
-                snapshot.data.sortedByNameEnvironmentIds.isEmpty) {
+                snapshot.data!.sortedByNameEnvironmentIds.isEmpty) {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
@@ -39,13 +38,13 @@ class FeaturesOverviewTableWidget extends StatelessWidget {
               );
             }
             if (snapshot.hasData &&
-                snapshot.data.applicationFeatureValues.features.isEmpty) {
+                snapshot.data!.applicationFeatureValues.features.isEmpty) {
               return NoFeaturesMessage();
             }
 
             if (snapshot.hasData) {
               return TabsView(
-                featureStatus: snapshot.data,
+                featureStatus: snapshot.data!,
                 applicationId: bloc.applicationId,
                 bloc: bloc,
               );
@@ -246,17 +245,15 @@ class NoEnvironmentMessage extends StatelessWidget {
               stream: bloc.mrClient.personState.isCurrentPortfolioOrSuperAdmin,
               builder: (context, snapshot) {
                 if (snapshot.hasData &&
-                    snapshot.data.currentPortfolioOrSuperAdmin) {
+                    snapshot.data!.currentPortfolioOrSuperAdmin) {
                   return FHFlatButtonTransparent(
                       title: 'Environments',
                       keepCase: true,
                       onPressed: () => ManagementRepositoryClientBloc.router
-                              .navigateTo(context, '/manage-app',
-                                  transition: TransitionType.material,
-                                  params: {
-                                'id': [bloc.applicationId],
-                                'tab-name': ['environments']
-                              }));
+                              .navigateTo(context, '/manage-app', params: {
+                            'id': [bloc.applicationId],
+                            'tab-name': ['environments']
+                          }));
                 } else {
                   return Container();
                 }

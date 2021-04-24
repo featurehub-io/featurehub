@@ -5,7 +5,7 @@ import 'package:rxdart/rxdart.dart';
 
 class FeaturesLatestBloc implements Bloc {
   final ManagementRepositoryClientBloc mrClient;
-  List<Portfolio> portfolios;
+  List<Portfolio> portfolios = [];
 
   EnvironmentFeatureServiceApi _environmentFeatureServiceApi;
   PortfolioServiceApi _portfolioServiceApi;
@@ -14,10 +14,10 @@ class FeaturesLatestBloc implements Bloc {
   Stream<EnvironmentFeaturesResult> get featuresListStream =>
       _featuresListBS.stream;
 
-  FeaturesLatestBloc(this.mrClient) : assert(mrClient != null) {
-    _environmentFeatureServiceApi =
-        EnvironmentFeatureServiceApi(mrClient.apiClient);
-    _portfolioServiceApi = PortfolioServiceApi(mrClient.apiClient);
+  FeaturesLatestBloc(this.mrClient)
+      : _environmentFeatureServiceApi =
+            EnvironmentFeatureServiceApi(mrClient.apiClient),
+        _portfolioServiceApi = PortfolioServiceApi(mrClient.apiClient) {
     initialise();
   }
 

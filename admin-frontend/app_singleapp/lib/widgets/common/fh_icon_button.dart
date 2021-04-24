@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class FHIconButton extends StatelessWidget {
   final Icon icon;
   final VoidCallback onPressed;
-  final String tooltip;
+  final String? tooltip;
 
   const FHIconButton({
     Key? key,

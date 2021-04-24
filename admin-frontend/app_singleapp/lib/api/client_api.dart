@@ -183,8 +183,8 @@ class ManagementRepositoryClientBloc implements Bloc {
   Stream<WidgetBuilder?> get overlayStream => _overlaySource.stream;
   final _overlaySource = PublishSubject<WidgetBuilder?>();
 
-  Stream<Widget> get snackbarStream => _snackbarSource.stream;
-  final _snackbarSource = PublishSubject<Widget>();
+  Stream<Widget?> get snackbarStream => _snackbarSource.stream;
+  final _snackbarSource = PublishSubject<Widget?>();
 
   Stream<Person> get personStream => personState.personStream;
 
@@ -401,11 +401,11 @@ class ManagementRepositoryClientBloc implements Bloc {
     _overlaySource.add(null);
   }
 
-  void addError(FHError error) {
+  void addError(FHError? error) {
     _errorSource.add(error);
   }
 
-  void addSnackbar(Widget content) {
+  void addSnackbar(Widget? content) {
     _snackbarSource.add(content);
   }
 

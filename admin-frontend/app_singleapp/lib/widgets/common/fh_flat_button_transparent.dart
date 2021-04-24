@@ -6,7 +6,10 @@ class FHFlatButtonTransparent extends StatelessWidget {
   final bool keepCase;
 
   const FHFlatButtonTransparent(
-      {Key? key, this.onPressed, this.title, this.keepCase = false})
+      {Key? key,
+      required this.onPressed,
+      required this.title,
+      this.keepCase = false})
       : super(key: key);
 
   @override

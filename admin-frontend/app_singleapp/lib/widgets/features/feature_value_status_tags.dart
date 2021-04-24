@@ -55,7 +55,7 @@ Widget activeTag(Feature feature, FeatureValue fv, TextStyle textStyle) {
       style: textStyle);
 }
 
-Widget noAccessTag(TextStyle textStyle) {
+Widget noAccessTag(TextStyle? textStyle) {
   return FHTagWidget(
       text: 'NO ACCESS', state: TagStatus.disabled, style: textStyle);
 }

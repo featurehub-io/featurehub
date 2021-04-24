@@ -280,7 +280,7 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     return false;
   }
 
-  void updateEnvs(String appId, List<Environment> envs) async {
+  Future<void> updateEnvs(String appId, List<Environment> envs) async {
     environmentsList = await _environmentServiceApi
         .environmentOrdering(appId, envs)
         .catchError((e, s) {
@@ -289,7 +289,7 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     _environmentBS.add(environmentsList);
   }
 
-  void updateEnv(Environment env, String name) async {
+  Future<void> updateEnv(Environment env, String name) async {
     env.name = name;
     await _environmentServiceApi
         .updateEnvironment(env.id!, env)

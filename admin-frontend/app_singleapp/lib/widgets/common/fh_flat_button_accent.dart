@@ -16,7 +16,7 @@ class FHFlatButtonAccent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextButton(
-      onPressed: onPressed,
+      onPressed: () => onPressed.call(),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Text(

@@ -5,15 +5,15 @@ class FHIconTextButton extends StatelessWidget {
   final String label;
   final bool keepCase;
   final IconData iconData;
-  final double size;
-  final Color color;
+  final double? size;
+  final Color? color;
 
   const FHIconTextButton(
       {Key? key,
-      this.onPressed,
-      @required this.label,
+      required this.onPressed,
+      required this.label,
       this.keepCase = false,
-      @required this.iconData,
+      required this.iconData,
       this.size,
       this.color})
       : super(key: key);
@@ -26,7 +26,6 @@ class FHIconTextButton extends StatelessWidget {
           color: color ?? Theme.of(context).buttonColor,
           size: size,
         ),
-        // textColor: Theme.of(context).buttonColor,
         onPressed: onPressed,
         label: Padding(
           padding: const EdgeInsets.fromLTRB(0.0, 8.0, 8.0, 8.0),

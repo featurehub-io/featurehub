@@ -6,9 +6,10 @@ enum TagStatus { active, inactive, disabled }
 class FHTagWidget extends StatelessWidget {
   final TagStatus state;
   final String text;
-  final TextStyle style;
+  final TextStyle? style;
 
-  const FHTagWidget({Key? key, required this.text, this.state, this.style})
+  const FHTagWidget(
+      {Key? key, required this.text, required this.state, this.style})
       : super(key: key);
 
   @override
@@ -36,7 +37,7 @@ class FHTagWidget extends StatelessWidget {
         child: Text(
           text,
           style: style ??
-              Theme.of(context).textTheme.bodyText2.copyWith(
+              Theme.of(context).textTheme.bodyText2!.copyWith(
                     color: Theme.of(context).colorScheme.onPrimary,
                     fontSize: 13,
                   ),

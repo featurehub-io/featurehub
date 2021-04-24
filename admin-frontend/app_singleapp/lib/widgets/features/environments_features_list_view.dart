@@ -1,5 +1,5 @@
 import 'package:app_singleapp/widgets/features/feature_value_cell.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
 import 'feature_dashboard_constants.dart';
@@ -47,11 +47,11 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
-                                        Text(efv.environmentName.toUpperCase(),
+                                        Text(efv.environmentName!.toUpperCase(),
                                             overflow: TextOverflow.ellipsis,
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .overline
+                                                .overline!
                                                 .copyWith(
                                                     color: Theme.of(context)
                                                                 .brightness ==
@@ -69,14 +69,14 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                                         bottom: BorderSide(
                                             color: Theme.of(context)
                                                 .buttonTheme
-                                                .colorScheme
+                                                .colorScheme!
                                                 .onSurface
                                                 .withOpacity(0.12),
                                             width: 1.0),
                                         right: BorderSide(
                                             color: Theme.of(context)
                                                 .buttonTheme
-                                                .colorScheme
+                                                .colorScheme!
                                                 .onSurface
                                                 .withOpacity(0.12),
                                             width: 1.0),
@@ -84,9 +84,8 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                                       child: FeatureValueCell(
                                           tabsBloc: bloc,
                                           feature: f,
-                                          value: efv.features.firstWhere(
-                                              (fv) => fv.key == f.key,
-                                              orElse: () => null),
+                                          value: efv.features.firstWhereOrNull(
+                                              (fv) => fv.key == f.key),
                                           efv: efv),
                                     );
                                   }).toList(),

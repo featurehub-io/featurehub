@@ -11,7 +11,10 @@ typedef ThemeDataWithBrightnessBuilder = ThemeData Function(
 
 class DynamicTheme extends StatefulWidget {
   const DynamicTheme(
-      {Key? key, this.data, this.themedWidgetBuilder, this.defaultBrightness})
+      {Key? key,
+      required this.data,
+      required this.themedWidgetBuilder,
+      required this.defaultBrightness})
       : super(key: key);
 
   final ThemedWidgetBuilder themedWidgetBuilder;
@@ -22,30 +25,30 @@ class DynamicTheme extends StatefulWidget {
   DynamicThemeState createState() => DynamicThemeState();
 
   static DynamicThemeState of(BuildContext context) {
-    return context.findAncestorStateOfType();
+    return context.findAncestorStateOfType()!;
   }
 }
 
 class DynamicThemeState extends State<DynamicTheme> {
-  ThemeData _data;
+  ThemeData? _data;
 
-  Brightness _brightness;
+  Brightness? _brightness;
 
   static const String _sharedPreferencesKey = 'isDark';
 
-  ThemeData get data => _data;
+  ThemeData? get data => _data;
 
-  Brightness get brightness => _brightness;
+  Brightness? get brightness => _brightness;
 
   @override
   void initState() {
     super.initState();
     _brightness = widget.defaultBrightness;
-    _data = widget.data(_brightness);
+    _data = widget.data(_brightness!);
 
     loadBrightness().then((bool dark) {
       _brightness = dark ? Brightness.dark : Brightness.light;
-      _data = widget.data(_brightness);
+      _data = widget.data(_brightness!);
       if (mounted) {
         setState(() {});
       }
@@ -55,13 +58,13 @@ class DynamicThemeState extends State<DynamicTheme> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _data = widget.data(_brightness);
+    _data = widget.data(_brightness!);
   }
 
   @override
   void didUpdateWidget(DynamicTheme oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _data = widget.data(_brightness);
+    _data = widget.data(_brightness!);
   }
 
   Future<void> setBrightness(Brightness brightness) async {
@@ -88,6 +91,6 @@ class DynamicThemeState extends State<DynamicTheme> {
 
   @override
   Widget build(BuildContext context) {
-    return widget.themedWidgetBuilder(context, _data);
+    return widget.themedWidgetBuilder(context, _data!);
   }
 }

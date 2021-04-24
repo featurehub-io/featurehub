@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'package:mrapi/api.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
-bool validateEmail(email) {
+bool validateEmail(String? email) {
+  if (email == null || email.isEmpty) return false;
+
   return RegExp(r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|'
           r'(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|'
           r'(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$')
@@ -14,8 +16,8 @@ bool validateFeatureKey(key) {
   return RegExp(r'^[A-Za-z0-9_]+$').hasMatch(key);
 }
 
-String? validateJson(String jsonToCheck) {
-  if (jsonToCheck.isEmpty) {
+String? validateJson(String? jsonToCheck) {
+  if (jsonToCheck == null || jsonToCheck.isEmpty) {
     return null;
   }
   try {
@@ -26,8 +28,8 @@ String? validateJson(String jsonToCheck) {
   return null;
 }
 
-String? validateNumber(String numberToCheck) {
-  if (numberToCheck.isEmpty) {
+String? validateNumber(String? numberToCheck) {
+  if (numberToCheck == null || numberToCheck.isEmpty) {
     return null;
   }
   try {
