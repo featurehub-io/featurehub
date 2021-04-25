@@ -20,6 +20,9 @@ Note, there is a known issues in the browsers with Kaspersky antivirus potential
   In this mode, you make a GET request, which you can choose to either do once, when specific things happen in your application,
   (such as navigation change) or on a regular basis (say every 5 minutes) and the changes will be passed into the FeatureHub repository for processing.
 
+## Changelog
+
+- 2.0.0 - client side evaluation support
 
 ## SDK installation
 
