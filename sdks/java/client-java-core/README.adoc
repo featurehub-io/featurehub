@@ -30,6 +30,15 @@ To install the SDK, choose your method of connection. The Core library will be i
 Core library uses Java Service Loaders to automatically discover what client library you have chosen, so please
 ensure you include only one.
 
+If you want to specify and deliberately configure it, you can use:
+
+[source,java]
+----
+fhConfig.setEdgeService(() => new EdgeProvider...());
+----
+
+Where EdgeProvider is the name of your class that knows how to connect to the Edge and pull feature details.
+
 - **SSE (Server Sent Events) realtime updates mechanism**
 
 [source,xml]

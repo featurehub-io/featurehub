@@ -1,78 +1,14 @@
 = Jersey FeatureHub Client
 
-This is the Jersey client for talking to FeatureHub's API. It is separate from the core API because each different http library will implement the event sourcing and calling in a different fashion.
+This is the Jersey client for talking to FeatureHub's API. It is separate from the core API because each different 
+http library will implement the event sourcing and calling in a different fashion.
+
 The version of Jersey used must be at least 2.28.
 
 Visit our official web page for more information https://www.featurehub.io/[here]
 
-== Features
+This library provides a EventSource implementation for Java using Jersey 2.x. It includes the Java Core library
+as a transitive dependency, so simply including this library will make everything in Core available. 
 
-A full setup of the JerseyClient, with analytics looks something like this:
-
-----
-    ClientFeatureRepository cfr = new ClientFeatureRepository(5); // 5 threads in pool for activities
-    cfr.addAnalyticCollector(new GoogleAnalyticsCollector(analyticsKey, analyticsCid, new GoogleAnalyticsJerseyApiClient()));
-
-    StaticFeatureContext.repository = cfr;
-    new JerseyClient(featureHubUrl, true, cfr);
-----
-
-The Jersey specific classes are the `JerseyClient` and the `GoogleAnalyticsJerseyApiClient`.
-
-This includes three features.
-
-=== Feature listener
-
-The JerseyClient comes with the event source listener, the `JerseyClient` class. It expects the following
-parameters:
-
-----
-JerseyClient(String sdkUrl, boolean initializeOnConstruction,
-                      ClientFeatureRepository clientFeatureRepository, ApiClient apiClient)
-----
-
-- `sdkUrl` - this is the full http or https url of your server, it might look like this for example: `http://localhost:8553/features/default/0cff6cf3-e03b-41ba-a3fa-683df70bd6d5/y6r4a8GZ1FGEZsCbr2PwVdPJq3bQhMEIrwfz13kKN0pILexHgXPrEZKVw2SwPHDPWMNfWjyzchd5NAiU`
-- `initializeOnConstruction` - this indicates it should immediately attempt to connect and start listening for
-features. Set this to `false` if you are using it in test-update mode, otherwise set it to true for normal usage. It
-runs in the background and doesn't block.
-- `clientFeatureRepository` - this is your feature repository instance that you expect to be updated.
-- `apiClient` - this is an optional parameter.There is another constructor missing this parameter, but if you wish
-to override the ApiClient library for some reason, you can replace it here. It expects you to have configured it with
-the base url of your host, e.g. `http://localhost:8553`.
-
-There are a couple of extra settings which may be useful:
-
-- `shutdownOnServerFailure` (true) - if this is true, then when it receives a FAILURE status (and passes this to the repository),
-it will then stop listening to the stream and shut the connection down.
-- `shutdownOnEdgeFailureConnection` (false) - if true, an an Edge failure occurs for some reason, it will shut down the server. This
-is an unusual thing to set to true but it is there for completeness.
-
-If you are simply using it in feature listening mode, you can create this instance and not hold a reference.
-
-If your server has a lifecycle manager, and you wish to do an orderly shutdown. You can
-do an orderly shutdown, you can call `shutdown()` and it will cancel the outstanding request and not schedule any
-further requests.If you need to start it again, just call `init()`.
-
-=== Feature Updater
-
-This feature is primarily intended to allow for tests to make requests to change the state of the feature. See the main
-SDK document for details on this.
-
-=== Google Analytics
-
-This includes the Jersey implementation of the Google Analytics. It requires no configuration, it can just be
-added as a new instance of an `GoogleAnalyticsApiClient` to your `GoogleAnalyticsCollector`.
-
-== Using the library
-
-If you are using Jersey, this will work for you directly. It makes no attempt to dictate your Jersey dependencies however. 
-In Maven-speak this is:
-
-[source,xml]
-----
-<dependency>
-  <groupId>io.featurehub.sdk</groupId>
-  <artifactId>java-client-jersey</artifactId>
-  <version>1.1</version>
-</dependency>
-----
+Core uses Java's ServiceLoader capability to automatically discover the JerseyClient implementation. Please
+simply follow the instructions in the https://github.com/featurehub-io/featurehub/tree/master/sdks/java/client-java-core[Java Core library].
