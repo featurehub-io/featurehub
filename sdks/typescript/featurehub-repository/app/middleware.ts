@@ -3,7 +3,7 @@
 ///
 /// For this we are using the W3C Baggage standard for future supportability
 
-import { Readyness, ReadynessListener } from './client_feature_repository';
+import { PostLoadNewFeatureStateAvailableListener, Readyness, ReadynessListener } from './client_feature_repository';
 import { FeatureListener, FeatureStateHolder } from './feature_state';
 import { FeatureValueType, RolloutStrategy, SSEResultState } from './models';
 import { FeatureStateValueInterceptor, InterceptorValueMatch } from './interceptors';
@@ -209,6 +209,26 @@ class BaggageRepository implements InternalFeatureRepository {
 
   addAnalyticCollector(collector: AnalyticsCollector): void {
     this.repo.addAnalyticCollector(collector);
+  }
+
+  get catchAndReleaseMode(): boolean {
+    return this.repo.catchAndReleaseMode;
+  }
+
+  set catchAndReleaseMode(value: boolean) {
+    this.repo.catchAndReleaseMode = value;
+  }
+
+  addPostLoadNewFeatureStateAvailableListener(listener: PostLoadNewFeatureStateAvailableListener) {
+    this.repo.addPostLoadNewFeatureStateAvailableListener(listener);
+  }
+
+  getFeatureState(key: string): FeatureStateHolder {
+    return this.feature(key);
+  }
+
+  release(disableCatchAndRelease?: boolean): Promise<void> {
+    return this.repo.release(disableCatchAndRelease);
   }
 }
 
