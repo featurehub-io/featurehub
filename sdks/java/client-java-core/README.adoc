@@ -70,9 +70,9 @@ This is recommended for Mobile as it will only request updates when you ask for 
 ## Quick start
 
 ### Connecting to FeatureHub
-There are 4 steps to connecting:
+There are 3 steps to connecting:
 1) Copy FeatureHub API Key from the FeatureHub Admin Console
-2) Use the API Key to make a client
+2) Create FeatureHub config
 3) Check FeatureHub Repository readyness and request feature state
 
 #### 1. Copy SDK API Key from the FeatureHub Admin Console

@@ -63,7 +63,7 @@ import {
 } from 'featurehub-eventsource-sdk';
 
 const edgeUrl = 'http://localhost:8085/';
-const apiKey = '/default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE';
+const apiKey = 'default/3f7a1a34-642b-4054-a82f-1ca2d14633ed/aH0l9TDXzauYq6rKQzVUPwbzmzGRqe*oPqyYqhUlVC50RxAzSmx';
 
 const fhConfig = new EdgeFeatureHubConfig(edgeUrl, apiKey);
 ```
