@@ -16,7 +16,8 @@ public interface FeatureRepository {
   FeatureRepository addReadynessListener(ReadynessListener readynessListener);
 
   /**
-   * Get a feature state isolated from the API.
+   * @deprecated
+   * Get a feature state isolated from the API. Always try and use the context.
    *
    * @param key - the key of the feature
    * @return - the FeatureStateHolder referring to this key, can exist but not refer to an actual feature
@@ -25,17 +26,23 @@ public interface FeatureRepository {
   FeatureState getFeatureState(Feature feature);
 
   // replaces getFlag and its myriad combinations with a pure boolean response, true if set and is true, otherwise false
+
+  /**
+   * @deprecated - please migrate to using the ClientContext
+   */
   boolean isEnabled(String name);
+  /**
+   * @deprecated - please migrate to using the ClientContext
+   */
   boolean isEnabled(Feature key);
 
   /**
-   * Log an analytics event against the analytics collectors.
-   *
-   * @param action - the action you wish to log with your analytics provider
-   * @param other - any other data
-   * @return - this
+   * @deprecated - please migrate to using the ClientContext
    */
   FeatureRepository logAnalyticsEvent(String action, Map<String, String> other);
+  /**
+   * @deprecated - please migrate to using the ClientContext
+   */
   FeatureRepository logAnalyticsEvent(String action);
   FeatureRepository logAnalyticsEvent(String action, Map<String, String> other, ClientContext ctx);
   FeatureRepository logAnalyticsEvent(String action, ClientContext ctx);
@@ -73,11 +80,16 @@ public interface FeatureRepository {
    */
   void setJsonConfigObjectMapper(ObjectMapper jsonConfigObjectMapper);
 
+  /**
+   * @deprecated - please migrate to using the ClientContext
+   */
   boolean exists(String key);
+  /**
+   * @deprecated - please migrate to using the ClientContext
+   */
   boolean exists(Feature key);
 
   boolean isServerEvaluation();
-
 
   void close();
 }
