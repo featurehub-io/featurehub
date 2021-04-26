@@ -335,9 +335,13 @@ components:
         version:
           type: integer
           format: int64
-        apiKey:
+        apiKeyClientSide:
           type: string
-          description: "this is a read only field"
+          description: "this is a read only field, it denotes an api key where the eval is done client side"
+          maxLength: 400
+        apiKeyServerSide:
+          type: string
+          description: "this is a read only field, it denotes an api key where the eval is done server side"
           maxLength: 400
         permissions:
           type: array
@@ -362,7 +366,10 @@ components:
           $ref: "#/components/schemas/ServiceAccount"
         environmentId:
           type: string
-        sdkUrl:
+        sdkUrlClientEval:
+          description: "Optional if they have chosen includeSdkUrl"
+          type: string
+        sdkUrlServerEval:
           description: "Optional if they have chosen includeSdkUrl"
           type: string
     Group:

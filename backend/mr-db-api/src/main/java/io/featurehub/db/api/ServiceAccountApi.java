@@ -24,4 +24,6 @@ public interface ServiceAccountApi {
   ServiceAccount create(String portfolioId, Person creator, ServiceAccount serviceAccount, Opts opts) throws DuplicateServiceAccountException;
 
   Boolean delete(Person deleter, String serviceAccountId);
+
+  void cleanupServiceAccountApiKeys();
 }

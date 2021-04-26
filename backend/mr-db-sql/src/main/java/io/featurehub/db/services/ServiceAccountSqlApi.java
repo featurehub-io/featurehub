@@ -209,13 +209,43 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
     if (id != null) {
       DbServiceAccount sa = new QDbServiceAccount().id.eq(id).whenArchived.isNull().findOne();
       if (sa != null) {
-        sa.setApiKey(RandomStringUtils.random(80));
+        sa.setApiKeyServerEval(newServerEvalKey());
+        sa.setApiKeyClientEval(newClientEvalKey());
         update(sa, null);
         return convertUtils.toServiceAccount(sa, Opts.empty());
       }
     }
 
     return null;
+  }
+
+  @Transactional
+  public void cleanupServiceAccountApiKeys() {
+    if (new QDbServiceAccount().or().apiKeyClientEval.isNull().apiKeyServerEval.isNull().endOr().findCount() > 0) {
+      log.info("Updating service account keys as incomplete.");
+      new QDbServiceAccount().or().apiKeyClientEval.isNull().apiKeyServerEval.isNull().endOr().findEach(sa -> {
+        boolean updated = false;
+        if (sa.getApiKeyClientEval() == null) {
+          updated = true;
+          sa.setApiKeyClientEval(newClientEvalKey());
+        }
+        if (sa.getApiKeyServerEval() == null) {
+          updated = true;
+          sa.setApiKeyServerEval(newServerEvalKey());
+        }
+        if (updated) {
+          database.update(sa);
+        }
+      });
+    }
+  }
+
+  private String newServerEvalKey() {
+    return RandomStringUtils.randomAlphanumeric(40);
+  }
+
+  private String newClientEvalKey() {
+    return RandomStringUtils.randomAlphanumeric(30) + "*" + RandomStringUtils.randomAlphanumeric(20);
   }
 
   @Override
@@ -249,7 +279,8 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
         .name(serviceAccount.getName())
         .description(serviceAccount.getDescription())
         .whoChanged(who)
-        .apiKey(RandomStringUtils.randomAlphanumeric(80))
+        .apiKeyServerEval(newServerEvalKey())
+        .apiKeyClientEval(newClientEvalKey())
         .serviceAccountEnvironments(perms)
         .portfolio(portfolio)
         .build();

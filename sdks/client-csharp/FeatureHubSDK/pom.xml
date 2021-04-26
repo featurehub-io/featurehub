@@ -37,15 +37,6 @@
     </license>
   </licenses>
 
-  <dependencies>
-    <!-- ensure we get the right order and the final.yaml exists before building this one -->
-    <dependency>
-      <groupId>io.featurehub.edge</groupId>
-      <artifactId>sse-edge-api</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-  </dependencies>
-
   <build>
     <plugins>
       <plugin>
@@ -76,7 +67,7 @@
         <configuration>
           <filesets>
             <fileset>
-              <directory>src</directory>
+              <directory>src/IO</directory>
               <includes>
                 <include>**/**</include>
               </includes>

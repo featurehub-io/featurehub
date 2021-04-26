@@ -1,9 +1,11 @@
 package io.featurehub.client.jersey;
 
 import cd.connect.openapi.support.ApiClient;
-import io.featurehub.client.ClientContext;
-import io.featurehub.client.FeatureRepository;
+import io.featurehub.client.EdgeService;
 import io.featurehub.client.Feature;
+import io.featurehub.client.FeatureHubConfig;
+import io.featurehub.client.FeatureStore;
+import io.featurehub.client.Readyness;
 import io.featurehub.sse.api.FeatureService;
 import io.featurehub.sse.model.FeatureStateUpdate;
 import io.featurehub.sse.model.SSEResultState;
@@ -14,56 +16,60 @@ import org.glassfish.jersey.media.sse.SseFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Singleton;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 @Singleton
-public class JerseyClient implements ClientContext.ClientContextChanged {
+public class JerseyClient implements EdgeService {
   private static final Logger log = LoggerFactory.getLogger(JerseyClient.class);
-  protected final String sdkUrl;
   private final WebTarget target;
   private boolean initialized;
   private final Executor executor;
-  private final FeatureRepository featureRepository;
+  private final FeatureStore repository;
   private final FeatureService featuresService;
   private boolean shutdown = false;
   private boolean shutdownOnServerFailure = true;
   private boolean shutdownOnEdgeFailureConnection = false;
   private EventInput eventInput;
   private String xFeaturehubHeader;
-  private boolean closedBecauseHeaderChanged = false;
+  protected final FeatureHubConfig fhConfig;
+  private List<CompletableFuture<Readyness>> waitingClients = new ArrayList<>();
 
-  public JerseyClient(String sdkUrl, boolean initializeOnConstruction, FeatureRepository featureRepository) {
-    this(sdkUrl, initializeOnConstruction, featureRepository, null);
+  public JerseyClient(FeatureHubConfig config, FeatureStore repository) {
+    this(config, !config.isServerEvaluation(), repository, null);
   }
 
-  public JerseyClient(String sdkUrl, boolean initializeOnConstruction,
-                      FeatureRepository featureRepository, ApiClient apiClient) {
-    this.featureRepository = featureRepository;
+  public JerseyClient(FeatureHubConfig config, boolean initializeOnConstruction,
+                      FeatureStore repository, ApiClient apiClient) {
+    this.repository = repository;
+    this.fhConfig = config;
+
+    log.trace("new jersey client created");
+
+    repository.setServerEvaluation(config.isServerEvaluation());
 
     Client client = ClientBuilder.newBuilder()
       .register(JacksonFeature.class)
       .register(SseFeature.class).build();
 
-    target = makeEventSourceTarget(client, sdkUrl);
+    target = makeEventSourceTarget(client, config.getRealtimeUrl());
     executor = makeExecutor();
 
     if (apiClient == null) {
-      String basePath = sdkUrl.substring(0, sdkUrl.indexOf("/features"));
-      apiClient = new ApiClient(client, basePath);
+      apiClient = new ApiClient(client, config.baseUrl());
     }
 
-    this.sdkUrl = sdkUrl.substring(sdkUrl.indexOf("/features/") + 1);
-
     featuresService = makeFeatureServiceClient(apiClient);
-
-    this.featureRepository.clientContext().registerChangeListener(this);
 
     if (initializeOnConstruction) {
       init();
@@ -71,7 +77,9 @@ public class JerseyClient implements ClientContext.ClientContextChanged {
   }
 
   protected Executor makeExecutor() {
-    return Executors.newSingleThreadExecutor();
+    // in case they keep changing the context, it will ask the server and cancel and ask and cancel
+    // if they are in client mode
+    return Executors.newFixedThreadPool(4);
   }
 
   protected WebTarget makeEventSourceTarget(Client client, String sdkUrl) {
@@ -83,7 +91,7 @@ public class JerseyClient implements ClientContext.ClientContextChanged {
   }
 
   public void setFeatureState(String key, FeatureStateUpdate update) {
-    featuresService.setFeatureState(sdkUrl, key, update);
+    featuresService.setFeatureState(fhConfig.apiKey(), key, update);
   }
 
   public void setFeatureState(Feature feature, FeatureStateUpdate update) {
@@ -92,64 +100,90 @@ public class JerseyClient implements ClientContext.ClientContextChanged {
 
   // backoff algorithm should be configurable
   private void avoidServerDdos() {
+    if (request != null) {
+      request.active = false;
+      request = null;
+    }
+
     try {
       Thread.sleep(10000); // wait 10 seconds
     } catch (InterruptedException e) {
     }
-    executor.execute(this::listenUntilDead);
+
+    if (!shutdown) {
+      executor.execute(this::restartRequest);
+    }
   }
 
-  private void listenUntilDead() {
-    long start = System.currentTimeMillis();
-    try {
-      Invocation.Builder request = target.request();
+  private CurrentRequest request;
 
-      if (xFeaturehubHeader != null) {
-        request = request.header("x-featurehub", xFeaturehubHeader);
-      }
+  class CurrentRequest {
+    public boolean active = true;
 
-      eventInput = request
-            .get(EventInput.class);
+    public void listenUntilDead() {
+      long start = System.currentTimeMillis();
+      try {
+        Invocation.Builder request = target.request();
 
-      while (!eventInput.isClosed()) {
-        final InboundEvent inboundEvent = eventInput.read();
-        initialized = true;
-        if (inboundEvent == null) { // connection has been closed
-          break;
+        if (xFeaturehubHeader != null) {
+          request = request.header("x-featurehub", xFeaturehubHeader);
         }
 
-        final SSEResultState state = SSEResultState.fromValue(inboundEvent.getName());
-        featureRepository.notify(state, inboundEvent.readData());
+        eventInput = request
+          .get(EventInput.class);
 
-        if (state == SSEResultState.FAILURE && shutdownOnServerFailure) {
-          log.warn("Failed to connect to FeatureHub Edge, shutting down.");
+        while (!eventInput.isClosed()) {
+          final InboundEvent inboundEvent = eventInput.read();
+          initialized = true;
+
+          // we cannot force close the client input, it hangs around and waits for the server
+          if (!active) {
+            return; // ignore all data from this call, it is no longer active or relevant
+          }
+
+          if (shutdown || inboundEvent == null) { // connection has been closed or is shutdown
+            break;
+          }
+
+          log.trace("notifying of {}", inboundEvent.getName());
+
+          final SSEResultState state = SSEResultState.fromValue(inboundEvent.getName());
+          repository.notify(state, inboundEvent.readData());
+
+          if (state == SSEResultState.FAILURE || state == SSEResultState.FEATURES) {
+            completeReadyness();
+          }
+
+          if (state == SSEResultState.FAILURE && shutdownOnServerFailure) {
+            log.warn("Failed to connect to FeatureHub Edge on {}, shutting down.", fhConfig.getRealtimeUrl());
+            shutdown();
+          }
+        }
+      } catch (Exception e) {
+        if (shutdownOnEdgeFailureConnection) {
+          log.warn("Edge connection failed, shutting down");
+          repository.notify(SSEResultState.FAILURE, null);
           shutdown();
         }
       }
-    } catch (Exception e) {
-      if (!closedBecauseHeaderChanged) {
-        log.warn("Failed to connect to {}", sdkUrl, e);
-      }
-      if (shutdownOnEdgeFailureConnection) {
-        log.warn("Edge connection failed, shutting down");
-        featureRepository.notify(SSEResultState.FAILURE, null);
-        shutdown();
-      }
-    }
 
-    closedBecauseHeaderChanged = false;
-    eventInput = null; // so shutdown doesn't get confused
+      eventInput = null; // so shutdown doesn't get confused
 
-    log.debug("connection closed, reconnecting");
-    initialized = false;
+      initialized = false;
 
-    if (!shutdown) {
-      // timeout should be configurable
-      if (System.currentTimeMillis() - start < 2000) {
-        executor.execute(this::avoidServerDdos);
+      if (!shutdown) {
+        log.trace("connection closed, reconnecting");
+        // timeout should be configurable
+        if (System.currentTimeMillis() - start < 2000) {
+          executor.execute(JerseyClient.this::avoidServerDdos);
+        } else {
+          // if we have fallen out, try again
+          executor.execute(this::listenUntilDead);
+        }
       } else {
-        // if we have fallen out, try again
-        executor.execute(this::listenUntilDead);
+        completeReadyness(); // ensure we clear everyone out who is waiting
+
+        log.trace("featurehub client shut down");
       }
     }
   }
@@ -158,10 +192,21 @@ public class JerseyClient implements ClientContext.ClientContextChanged {
     return initialized;
   }
 
-  @PostConstruct
+  private void restartRequest() {
+    log.trace("starting new request");
+    if (request != null) {
+      request.active = false;
+    }
+
+    initialized = false;
+
+    request = new CurrentRequest();
+    request.listenUntilDead();
+  }
+
   void init() {
     if (!initialized) {
-      executor.execute(this::listenUntilDead);
+      executor.execute(this::restartRequest);
     }
   }
 
@@ -169,12 +214,18 @@ public class JerseyClient implements ClientContext.ClientContextChanged {
    * Tell the client to shutdown when we next fall off.
    */
   public void shutdown() {
+    log.trace("starting shutdown of jersey edge client");
     this.shutdown = true;
-    if (eventInput != null) {
-      try {
-        eventInput.close();
-      } catch (Exception e) {} // ignore
+
+    if (request != null) {
+      request.active = false;
     }
+
+    if (executor instanceof ExecutorService) {
+      ((ExecutorService)executor).shutdownNow();
+    }
+
+    log.trace("exiting shutdown of jersey edge client");
   }
 
   public boolean isShutdownOnServerFailure() {
@@ -193,16 +244,60 @@ public class JerseyClient implements ClientContext.ClientContextChanged {
     this.shutdownOnEdgeFailureConnection = shutdownOnEdgeFailureConnection;
   }
 
-  // the x-featurehub header has changed, so store it and trigger another run at the server
-  @Override
-  public void notify(String header) {
-    xFeaturehubHeader = header;
+  public String getFeaturehubContextHeader() {
+    return xFeaturehubHeader;
+  }
 
-    if (initialized) {
-      try {
-        closedBecauseHeaderChanged = true;
-        eventInput.close();
-      } catch (Exception ignored) {}
+  @Override
+  public Future<?> contextChange(String newHeader) {
+    final CompletableFuture<Readyness> change = new CompletableFuture<>();
+
+    if (fhConfig.isServerEvaluation() && (!newHeader.equals(xFeaturehubHeader) || !initialized)) {
+      xFeaturehubHeader = newHeader;
+
+      waitingClients.add(change);
+      executor.execute(this::restartRequest);
+    } else {
+      change.complete(repository.getReadyness());
     }
+
+    return change;
+  }
+
+  private void completeReadyness() {
+    List<CompletableFuture<Readyness>> current = waitingClients;
+    waitingClients = new ArrayList<>();
+    current.forEach(c -> {
+      try {
+        c.complete(repository.getReadyness());
+      } catch (Exception e) {
+        log.error("Unable to complete future", e);
+      }
+    });
+  }
+
+  @Override
+  public boolean isClientEvaluation() {
+    return !fhConfig.isServerEvaluation();
+  }
+
+  @Override
+  public void close() {
+    shutdown();
+  }
+
+  @Override
+  public FeatureHubConfig getConfig() {
+    return fhConfig;
+  }
+
+  @Override
+  public boolean isRequiresReplacementOnHeaderChange() {
+    return true;
+  }
+
+  @Override
+  public void poll() {
+    // do nothing, its SSE
   }
 }

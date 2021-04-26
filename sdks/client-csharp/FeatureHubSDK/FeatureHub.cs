@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
+using System.Transactions;
 using System.Web;
 using IO.FeatureHub.SSE.Model;
 using Newtonsoft.Json;
@@ -27,10 +29,10 @@ namespace FeatureHubSDK
 
   public interface IAnalyticsCollector
   {
-    void LogEvent(string action, Dictionary<string, string> other, List<IFeatureStateHolder> featureStates);
+    void LogEvent(string action, Dictionary<string, string> other, List<IFeature> featureStates);
   }
 
-  public interface IFeatureStateHolder
+  public interface IFeature
   {
     /// <summary>
     /// if the value is not null, exists returns true
@@ -73,190 +75,140 @@ namespace FeatureHubSDK
     /// <summary>
     /// Determines if the feature actually has a value
     /// </summary>
+    bool IsEnabled { get; }
+
     bool IsSet { get; }
+
+    IFeature WithContext(IClientContext context);
 
     /// <summary>
     /// Triggered when the value changes
     /// </summary>
-    event EventHandler<IFeatureStateHolder> FeatureUpdateHandler;
+    event EventHandler<IFeature> FeatureUpdateHandler;
     //IFeatureStateHolder Copy();
   }
 
-  public interface IClientContext
-  {
-    event EventHandler<string> ContextUpdateHandler;
 
-    IClientContext UserKey(string key);
-    IClientContext SessionKey(string key);
-    IClientContext Device(StrategyAttributeDeviceName device);
-    IClientContext Platform(StrategyAttributePlatformName platform);
-    IClientContext Country(StrategyAttributeCountryName country);
-    /// expects semantic version
-    IClientContext Version(string version);
-    IClientContext Attr(string key, string value);
-    IClientContext Attrs(string key, List<string> values);
-    IClientContext Clear();
-    void Build();
-    string GenerateHeader();
+
+
+  public interface IFeatureRepositoryContext: IFeatureHubRepository, IFeatureHubNotify
+  {
+
   }
 
-  internal class ClientContext : IClientContext
+  internal class FeatureStateBaseHolder : IFeature
   {
-    private static readonly ILog Log = LogManager.GetLogger<ClientContext>();
-    private readonly Dictionary<string, List<string>> _attributes = new Dictionary<string,List<string>>();
-    public event EventHandler<string> ContextUpdateHandler;
-    public IClientContext UserKey(string key)
-    {
-      _attributes["userkey"] = new List<string>{key};
-      return this;
-    }
-
-    private static string GetEnumMemberValue(Enum enumValue)
-    {
-      var type = enumValue.GetType();
-      var info = type.GetField(enumValue.ToString());
-      var da = (EnumMemberAttribute[])(info.GetCustomAttributes(typeof(EnumMemberAttribute), false));
-
-      if (da.Length > 0)
-        return da[0].Value;
-      else
-        return string.Empty;
-    }
-
-    public IClientContext SessionKey(string key)
-    {
-      _attributes["session"] = new List<string>{key};
-      return this;
-    }
-
-    public IClientContext Device(StrategyAttributeDeviceName device)
-    {
-      _attributes["device"] = new List<string>{GetEnumMemberValue(device)};
-      return this;
-    }
-
-    public IClientContext Platform(StrategyAttributePlatformName platform)
-    {
-      _attributes["platform"] = new List<string>{GetEnumMemberValue(platform)};
-      return this;
-    }
-
-    public IClientContext Country(StrategyAttributeCountryName country)
-    {
-      _attributes["country"] = new List<string>{GetEnumMemberValue(country)};
-      return this;
-    }
-
-    public IClientContext Version(string version)
-    {
-      _attributes["version"] = new List<string> {version};
-
-      return this;
-    }
-
-    public IClientContext Attr(string key, string value)
-    {
-      _attributes[key] = new List<string>{value};
-      return this;
-    }
-
-    public IClientContext Attrs(string key, List<string> values)
-    {
-      _attributes[key] = values;
-      return this;
-    }
-
-    public IClientContext Clear()
-    {
-      _attributes.Clear();
-      return this;
-    }
-
-    public void Build()
-    {
-      var header = GenerateHeader();
-
-      var handler = ContextUpdateHandler;
-      try
-      {
-        handler?.Invoke(this, header);
-      }
-      catch (Exception e)
-      {
-        Log.Error($"Failed to process client context update", e);
-      }
-    }
-
-    public string GenerateHeader()
-    {
-      if (_attributes.Count == 0)
-      {
-        return null;
-      }
-
-      return string.Join(",",
-        _attributes.Select((e) => e.Key + "=" +
-                                  HttpUtility.UrlEncode(string.Join(",", e.Value))).OrderBy(u => u));
-    }
-  }
-
-  internal class FeatureStateBaseHolder : IFeatureStateHolder
-  {
-    private static readonly ILog log = LogManager.GetLogger<FeatureStateBaseHolder>();
-    private object _value;
+    private static readonly ILog Log = LogManager.GetLogger<FeatureStateBaseHolder>();
     private FeatureState _feature;
-    public event EventHandler<IFeatureStateHolder> FeatureUpdateHandler;
+    private readonly ApplyFeature _applyFeature;
 
-    public FeatureStateBaseHolder(FeatureStateBaseHolder fs)
+    public IFeature WithContext(IClientContext context)
     {
+      var fsh = Copy() as FeatureStateBaseHolder;
+      fsh.SetContext( context );
+      return fsh;
+    }
+
+    public event EventHandler<IFeature> FeatureUpdateHandler;
+    private IClientContext _context;
+
+    internal void SetContext(IClientContext context)
+    {
+      _context = context;
+    }
+
+    public FeatureStateBaseHolder(FeatureStateBaseHolder fs, ApplyFeature applyFeature)
+    {
+      _applyFeature = applyFeature;
+
       if (fs != null)
       {
         FeatureUpdateHandler = fs.FeatureUpdateHandler;
       }
     }
 
-    public IFeatureStateHolder Copy()
+    public IFeature Copy()
     {
-      var fs = new FeatureStateBaseHolder(null);
-
-      fs.FeatureState = this._feature;
-
-      return fs;
+      return new FeatureStateBaseHolder(null, _applyFeature) {FeatureState = this._feature};
     }
 
-    public bool Exists => _value != null;
+    public bool Exists => _feature != null;
 
-    public bool? BooleanValue => _feature?.Type == FeatureValueType.BOOLEAN ? (bool?) Convert.ToBoolean(_value) : null;
+    private object GetValue(FeatureValueType? type)
+    {
+      if (type == null || _feature?.Type != type)
+      {
+        return null;
+      }
 
-    public string StringValue => _feature?.Type == FeatureValueType.STRING ? Convert.ToString(_value) : null;
+      if (_context != null)
+      {
+        Applied matched = _applyFeature.Apply(_feature.Strategies, Key, _feature.Id, _context);
 
-    public double? NumberValue => _feature?.Type == FeatureValueType.NUMBER ? (double?) Convert.ToDouble(_value) : null;
+        if (matched.Matched)
+        {
+          return matched.Value;
+        }
+      }
 
-    public string JsonValue => _feature?.Type == FeatureValueType.JSON ? Convert.ToString(_value) : null;
+      return _feature.Value;
+    }
+
+    public bool? BooleanValue
+    {
+      get
+      {
+        var val = GetValue(FeatureValueType.BOOLEAN);
+        return val == null ? (bool?)null : Convert.ToBoolean(val);
+      }
+    }
+
+    public string StringValue
+    {
+      get
+      {
+        var val = GetValue(FeatureValueType.STRING);
+        return val == null ? null : Convert.ToString(val);
+      }
+    }
+
+    public double? NumberValue
+    {
+      get
+      {
+        var val = GetValue(FeatureValueType.NUMBER);
+        return val == null ? (double?)null : Convert.ToDouble(val);
+      }
+    }
+
+    public string JsonValue
+    {
+      get
+      {
+        var val = GetValue(FeatureValueType.JSON);
+        return val == null ? null : Convert.ToString(val);
+      }
+    }
     public string Key => _feature?.Key;
     public FeatureValueType? Type => _feature?.Type;
-    public object Value => _value;
+    public object Value => _feature == null ? null : GetValue(_feature.Type);
 
-    public bool IsSet => _value != null;
+    public bool IsEnabled =>  BooleanValue == true;
+
+    public bool IsSet => GetValue(_feature?.Type) != null;
 
     public long? Version => _feature?.Version;
-
-    // public EventHandler<IFeatureStateHolder> FeatureUpdateHandler => _featureUpdateHandler;
-    // public IFeatureStateHolder Copy()
-    // {
-    //   throw new NotImplementedException();
-    // }
 
     public FeatureState FeatureState
     {
       set
       {
+        var oldVal = GetValue(_feature?.Type);
         _feature = value;
-        var oldVal = _value;
-        _value = value.Value;
+        var val = GetValue(_feature?.Type);
 
         // did the value change? if so, tell everyone listening via event handler
-        if (ValueChanged(oldVal, _value))
+        if (ValueChanged(oldVal, val))
         {
           var handler = FeatureUpdateHandler;
           try
@@ -265,7 +217,7 @@ namespace FeatureHubSDK
           }
           catch (Exception e)
           {
-            log.Error($"Failed to process update for feature {Key}", e);
+            Log.Error($"Failed to process update for feature {Key}", e);
           }
         }
       }
@@ -279,34 +231,71 @@ namespace FeatureHubSDK
 
   public interface IFeatureHubRepository
   {
-    bool GetFlag(string key);
+    IFeature GetFeature(string key);
 
-    double? GetNumber(string key);
+    IFeature this[string name] { get; }
+    bool IsEnabled(string name);
 
-    string GetString(string key);
-
-    string GetJson(string key);
-
+    event EventHandler<Readyness> ReadynessHandler;
+    event EventHandler<FeatureHubRepository> NewFeatureHandler;
+    Readyness Readyness { get; }
+    FeatureHubRepository LogAnalyticEvent(string action, Dictionary<string, string> other = null, IClientContext ctx = null);
+    FeatureHubRepository AddAnalyticCollector(IAnalyticsCollector collector);
     bool Exists(string key);
-
-    bool IsSet(string key);
   }
 
-  public class FeatureHubRepository : IFeatureHubRepository
+  public interface IFeatureHubNotify
+  {
+    bool ServerSideEvaluation { set; get; }
+    event EventHandler<Readyness> ReadynessHandler;
+    void Notify(SSEResultState state, string data);
+    void NotReady();
+  }
+
+  public abstract class AbstractFeatureHubRepository : IFeatureHubRepository
+  {
+    public abstract IFeature GetFeature(string key);
+
+    public IFeature this[string name] => GetFeature(name);
+
+    public bool IsEnabled(string name)
+    {
+      return GetFeature(name).IsEnabled;
+    }
+
+    public abstract event EventHandler<Readyness> ReadynessHandler;
+    public abstract event EventHandler<FeatureHubRepository> NewFeatureHandler;
+    public abstract Readyness Readyness { get; }
+    public abstract FeatureHubRepository LogAnalyticEvent(string action, Dictionary<string, string> other = null, IClientContext ctx = null);
+    public abstract FeatureHubRepository AddAnalyticCollector(IAnalyticsCollector collector);
+    public abstract bool Exists(string key);
+  }
+
+
+  public class FeatureHubRepository : AbstractFeatureHubRepository, IFeatureRepositoryContext
   {
     private static readonly ILog log = LogManager.GetLogger<FeatureHubRepository>();
     private readonly Dictionary<string, FeatureStateBaseHolder> _features =
       new Dictionary<string, FeatureStateBaseHolder>();
-    private readonly IClientContext _clientContext = new ClientContext();
 
     private Readyness _readyness = Readyness.NotReady;
-    public event EventHandler<Readyness> ReadynessHandler;
-    public event EventHandler<FeatureHubRepository> NewFeatureHandler;
+    public override event EventHandler<Readyness> ReadynessHandler;
+    public override event EventHandler<FeatureHubRepository> NewFeatureHandler;
     private IList<IAnalyticsCollector> _analyticsCollectors = new List<IAnalyticsCollector>();
+    private readonly ApplyFeature _applyFeature;
+    private bool _serverSideEvaluation;
 
-    public Readyness Readyness => _readyness;
+    public override Readyness Readyness => _readyness;
 
-    public IClientContext ClientContext => _clientContext;
+    public FeatureHubRepository()
+    {
+      _applyFeature = new ApplyFeature(new PercentageMurmur3Calculator(), new MatcherRegistry());
+    }
+
+    public FeatureHubRepository(ApplyFeature applyFeature)
+    {
+      _applyFeature = applyFeature;
+    }
 
     private void TriggerReadyness()
     {
@@ -334,7 +323,35 @@ namespace FeatureHubSDK
       }
     }
 
+    public void Notify(IEnumerable<FeatureState> features)
+    {
+      var updated = false;
+      foreach (var featureState in features)
+      {
+        updated = FeatureUpdate(featureState) || updated;
+      }
+
+      if (_readyness != Readyness.Ready)
+      {
+        // are we newly ready?
+        _readyness = Readyness.Ready;
+        TriggerReadyness();
+      }
+
+      // we updated something, so let the folks know
+      if (updated)
+      {
+        TriggerNewUpdate();
+      }
+    }
+
     // Notify
+    public bool ServerSideEvaluation
+    {
+      get => _serverSideEvaluation;
+      set => _serverSideEvaluation = value;
+    }
+
     public void Notify(SSEResultState state, string data)
     {
       // Console.WriteLine($"received {state} with object {data}");
@@ -355,25 +372,7 @@ namespace FeatureHubSDK
         case SSEResultState.Features:
           if (data != null)
           {
-            List<FeatureState> features = JsonConvert.DeserializeObject<List<FeatureState>>(data);
-            var updated = false;
-            foreach (var featureState in features)
-            {
-              updated = FeatureUpdate(featureState) || updated;
-            }
-
-            if (_readyness != Readyness.Ready)
-            {
-              // are we newly ready?
-              _readyness = Readyness.Ready;
-              TriggerReadyness();
-            }
-
-            // we updated something, so let the folks know
-            if (updated)
-            {
-              TriggerNewUpdate();
-            }
+            Notify(JsonConvert.DeserializeObject<List<FeatureState>>(data));
           }
 
           break;
@@ -399,6 +398,12 @@ namespace FeatureHubSDK
       }
     }
 
+    public void NotReady()
+    {
+      _readyness = Readyness.NotReady;
+      TriggerReadyness();
+    }
+
     private void DeleteFeature(FeatureState fs)
     {
       if (_features.Remove(fs.Key))
@@ -407,16 +412,14 @@ namespace FeatureHubSDK
       }
     }
 
-    public FeatureHubRepository LogAnalyticEvent(string action)
-    {
-      return LogAnalyticEvent(action, new Dictionary<string, string>());
-    }
-
-    public FeatureHubRepository LogAnalyticEvent(string action, Dictionary<string, string> other)
+    public override FeatureHubRepository LogAnalyticEvent(string action, Dictionary<string, string> other = null, IClientContext ctx = null)
     {
       // take a snapshot copy
       var featureCopies =
-         _features.Values.Where((f) => f.Exists).Select(f => f.Copy()).ToList();
+         _features.Values
+           .Where((f) => f.IsSet)
+           .Select(f => ctx != null ? f.WithContext(ctx) : f)
+           .Select(f => ((FeatureStateBaseHolder)f).Copy()).ToList();
 
       foreach (var analyticsCollector in _analyticsCollectors)
       {
@@ -433,7 +436,7 @@ namespace FeatureHubSDK
       return this;
     }
 
-    public FeatureHubRepository AddAnalyticCollector(IAnalyticsCollector collector)
+    public override FeatureHubRepository AddAnalyticCollector(IAnalyticsCollector collector)
     {
       _analyticsCollectors.Add(collector);
       return this;
@@ -446,7 +449,7 @@ namespace FeatureHubSDK
       FeatureStateBaseHolder holder = keyExists ? _features[fs.Key] : null;
       if (holder?.Key == null)
       {
-        holder = new FeatureStateBaseHolder(holder);
+        holder = new FeatureStateBaseHolder(holder, _applyFeature);
       }
       else if (holder.Version != null)
       {
@@ -468,37 +471,17 @@ namespace FeatureHubSDK
       return true;
     }
 
-    public IFeatureStateHolder FeatureState(string key)
+    public IFeature FeatureState(string key)
     {
       if (!_features.ContainsKey(key))
       {
-        _features.Add(key, new FeatureStateBaseHolder(null));
+        _features.Add(key, new FeatureStateBaseHolder(null, _applyFeature));
       }
 
       return _features[key];
     }
 
-    public bool GetFlag(string key)
-    {
-      return FeatureState(key).BooleanValue == true;
-    }
-
-    public double? GetNumber(string key)
-    {
-      return FeatureState(key).NumberValue;
-    }
-
-    public string GetString(string key)
-    {
-      return FeatureState(key).StringValue;
-    }
-
-    public string GetJson(string key)
-    {
-      return FeatureState(key).JsonValue;
-    }
-
-    public bool Exists(string key)
+    public override bool Exists(string key)
     {
       if (_features.ContainsKey(key))
       {
@@ -506,6 +489,11 @@ namespace FeatureHubSDK
       }
 
       return false;
+    }
+
+    public override IFeature GetFeature(string key)
+    {
+      return FeatureState(key);
     }
 
     public bool IsSet(string key)

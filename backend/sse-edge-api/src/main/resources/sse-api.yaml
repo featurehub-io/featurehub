@@ -72,6 +72,12 @@ paths:
             application/json:
               schema:
                 {}
+        "202":
+          description: Neither lock or value was changing
+          content:
+            application/json:
+              schema:
+                {}
         "400":
           description: you have made a request that doesn't make sense. e.g. it has no data
           content:

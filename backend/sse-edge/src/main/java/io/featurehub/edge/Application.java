@@ -59,7 +59,7 @@ public class Application {
     try {
       new Application().run();
     } catch (Exception e) {
-      log.error("Failed to start.");
+      log.error("Failed to start.", e);
       System.exit(-1);
     }
   }

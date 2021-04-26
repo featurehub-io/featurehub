@@ -1,6 +1,6 @@
 package io.featurehub.client;
 
-class FeatureValueInterceptorHolder {
+public class FeatureValueInterceptorHolder {
   public final boolean allowLockOverride;
   public final FeatureValueInterceptor interceptor;
 

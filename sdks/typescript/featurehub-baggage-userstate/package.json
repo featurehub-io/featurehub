@@ -1,0 +1,55 @@
+{
+  "name": "featurehub-baggage-userstate",
+  "version": "2.0.0",
+  "description": "This library allows feature state to be overridden and stored in local storage. It includes an embedded UI written in Flutter that allows the local config of these features.",
+  "author": "info@featurehub.io",
+  "main": "dist/index.js",
+  "module": "lib/index.js",
+  "files": [
+    "lib/**/*",
+    "dist/**/*",
+    "fh_userstate/build/web/**/*"
+  ],
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "homepage": "https://featurehub.io",
+  "keywords": [
+    "feature-flag-api",
+    "feature-flag-sdk",
+    "feature-experimentation",
+    "feature-flag",
+    "flag",
+    "toggle",
+    "feature-toggle",
+    "feature-toggle-api",
+    "remote-configuration",
+    "gradual-rollout",
+    "ab-testing",
+    "feature-flag-react",
+    "featurehub"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "build": "npm run clean && npm run tsc tsconfig.json && npm run tsc tsconfig-es.json",
+    "flutter": "cd fh_userstate && flutter clean && flutter pub get && flutter build web",
+    "clean": "rm -rf dist lib",
+    "build:watch": "npm run build -- -- -w",
+    "link": "npm link featurehub-repository && npm run build && npm link",
+    "compile": "npm run link && npm run build && npm link",
+    "tsc": "node ./node_modules/typescript/bin/tsc -p",
+    "release": "npm run tsc && npm run flutter && npm version patch && npm publish",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.35",
+    "ts-node": "9.1.1",
+    "typescript": "4.2.3"
+  },
+  "dependencies": {
+  },
+  "engines": {
+    "node": ">=12.12.0"
+  }
+}

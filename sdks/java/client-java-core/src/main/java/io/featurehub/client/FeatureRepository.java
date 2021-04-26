@@ -1,39 +1,11 @@
 package io.featurehub.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.featurehub.sse.model.FeatureState;
-import io.featurehub.sse.model.SSEResultState;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Map;
 
 public interface FeatureRepository {
-
-  /*
-   * Any incoming state changes from a multi-varied set of possible data. This comes
-   * from SSE.
-   */
-  void notify(SSEResultState state, String data);
-
-  /**
-   * Indicate the feature states have updated and if their versions have
-   * updated or no versions exist, update the repository.
-   *
-   * @param states - the features
-   */
-  void notify(List<FeatureState> states);
-
-
-  /**
-   * Update the feature states and force them to be updated, ignoring their version numbers.
-   * This still may not cause events to be triggered as event triggers are done on actual value changes.
-   *
-   * @param states - the list of feature states
-   * @param force  - whether we should force the states to change
-   */
-  void notify(List<FeatureState> states, boolean force);
-
   /**
    * Changes in readyness for the repository. It can become ready and then fail if subsequent
    * calls fail.
@@ -44,91 +16,36 @@ public interface FeatureRepository {
   FeatureRepository addReadynessListener(ReadynessListener readynessListener);
 
   /**
-   * Get a feature state isolated from the API.
+   * @deprecated
+   * Get a feature state isolated from the API. Always try and use the context.
    *
    * @param key - the key of the feature
    * @return - the FeatureStateHolder referring to this key, can exist but not refer to an actual feature
    */
-  FeatureStateHolder getFeatureState(String key);
-  FeatureStateHolder getFeatureState(Feature feature);
+  FeatureState getFeatureState(String key);
+  FeatureState getFeatureState(Feature feature);
+
+  // replaces getFlag and its myriad combinations with a pure boolean response, true if set and is true, otherwise false
 
   /**
-   * The value of the flag/boolean feature.
-   *
-   * @param key - the feature key
-   * @return - true or false depending on the flag. If the feature doesn't exist, it will return false.
+   * @deprecated - please migrate to using the ClientContext
    */
-  boolean getFlag(String key);
-  boolean getFlag(Feature feature);
-
+  boolean isEnabled(String name);
   /**
-   * The value of the string feature.
-   *
-   * @param key - the feature key
-   * @return - the value of the string feature or null if it is unset or doesn't exist.
+   * @deprecated - please migrate to using the ClientContext
    */
-  String getString(String key);
-  String getString(Feature feature);
-
-
+  boolean isEnabled(Feature key);
 
   /**
-   * The value of the number feature.
-   *
-   * @param key - the feature key
-   * @return - the value of the number feature or null if it is unset or doesn't exist.
-   */
-  BigDecimal getNumber(String key);
-  BigDecimal getNumber(Feature feature);
-
-  /**
-   * The value of the json feature decoded into the correct class (if possible).
-   *
-   * @param key - the feature key
-   * @param type - the class type - as an Class.class
-   * @param <T> - the type of the class you want back
-   * @return - the value of the json feature or null if it is unset or doesn't exist. If it cannot be decoded then it
-   * may throw an exception.
-   */
-  <T> T getJson(String key, Class<T> type);
-  <T> T getJson(Feature feature, Class<T> type);
-
-  /**
-   * The value of the json feature in string form.
-   *
-   * @param key - the feature key
-   * @return - the value of the json feature or null if it is unset or doesn't exist.
-   */
-  String getRawJson(String key);
-  String getRawJson(Feature feature);
-
-  /**
-   * Returns whether there is a value associated with this feature. Boolean features only return false if there
-   * is in fact no feature.
-   *
-   * @param key - the feature key
-   * @return - true or false
-   */
-  boolean isSet(String key);
-  boolean isSet(Feature feature);
-
-  /**
-   * Returns whether this feature does in fact not exist.
-   *
-   * @param key - the feature key
-   * @return - true or false
-   */
-  boolean exists(String key);
-  boolean exists(Feature feature);
-
-  /**
-   * Log an analytics event against the analytics collectors.
-   *
-   * @param action - the action you wish to log with your analytics provider
-   * @param other - any other data
-   * @return - this
+   * @deprecated - please migrate to using the ClientContext
    */
   FeatureRepository logAnalyticsEvent(String action, Map<String, String> other);
+  /**
+   * @deprecated - please migrate to using the ClientContext
+   */
+  FeatureRepository logAnalyticsEvent(String action);
+  FeatureRepository logAnalyticsEvent(String action, Map<String, String> other, ClientContext ctx);
+  FeatureRepository logAnalyticsEvent(String action, ClientContext ctx);
 
   /**
    * Register an analytics collector
@@ -163,5 +80,16 @@ public interface FeatureRepository {
    */
   void setJsonConfigObjectMapper(ObjectMapper jsonConfigObjectMapper);
 
-  ClientContext clientContext();
+  /**
+   * @deprecated - please migrate to using the ClientContext
+   */
+  boolean exists(String key);
+  /**
+   * @deprecated - please migrate to using the ClientContext
+   */
+  boolean exists(Feature key);
+
+  boolean isServerEvaluation();
+
+  void close();
 }

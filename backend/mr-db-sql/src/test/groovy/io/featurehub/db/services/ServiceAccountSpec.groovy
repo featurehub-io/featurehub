@@ -78,7 +78,10 @@ class ServiceAccountSpec extends BaseSpec {
     when: "i save it"
       sapi.create(portfolio1Id, superPerson, sa, Opts.empty())
     then:
-      sapi.search(portfolio1Id, "sa-2", null, superPerson, Opts.empty()).find({it.name == 'sa-2' && sa.description == 'sa-1 test'})?.apiKey != null
+      sapi.search(portfolio1Id, "sa-2", null, superPerson,
+        Opts.empty()).find({it.name == 'sa-2' && sa.description == 'sa-1 test'})?.apiKeyClientSide != null
+      sapi.search(portfolio1Id, "sa-2", null, superPerson,
+        Opts.empty()).find({it.name == 'sa-2' && sa.description == 'sa-1 test'})?.apiKeyServerSide != null
   }
 
   def "i can reset the key for a service account"() {
@@ -99,12 +102,15 @@ class ServiceAccountSpec extends BaseSpec {
     print("search is $search")
       def resetSa = search.find({it.name == 'sa-reset' && sa.description == 'sa-1 test'})
     then:
-      created.apiKey != null
+      created.apiKeyClientSide != null
+      created.apiKeyServerSide != null
       search != null
       resetSa != null
-      resetSa?.apiKey != created.apiKey
+      resetSa?.apiKeyClientSide != created.apiKeyClientSide
+      resetSa?.apiKeyServerSide != created.apiKeyServerSide
       !resetSa.permissions.isEmpty()
-      resetSa.permissions.count(p -> p.sdkUrl.contains(resetSa.apiKey)) == resetSa.permissions.size()
+      resetSa.permissions.count(p -> p.sdkUrlClientEval.contains(resetSa.apiKeyClientSide)) == resetSa.permissions.size()
+      resetSa.permissions.count(p -> p.sdkUrlServerEval.contains(resetSa.apiKeyServerSide)) == resetSa.permissions.size()
   }
 
   def "i can create then delete a service account"() {
@@ -156,7 +162,8 @@ class ServiceAccountSpec extends BaseSpec {
     and: "i re-get the two environments with extra data"
       def newEnv1 = environmentApi.get(environment1.id.toString(), Opts.opts(FillOpts.ServiceAccounts, FillOpts.SdkURL), superPerson)
       def newEnv2 = environmentApi.get(environment2.id.toString(), Opts.opts(FillOpts.ServiceAccounts, FillOpts.SdkURL), superPerson)
-      log.info("env 1 sdk url is {}", newEnv1.serviceAccountPermission.first().sdkUrl)
+      log.info("env 1 sdk url is {}", newEnv1.serviceAccountPermission.first().sdkUrlServerEval)
+      log.info("env 1 sdk url is {}", newEnv1.serviceAccountPermission.first().sdkUrlClientEval)
     and: "i check the result for the two environments"
       def permE1 = result.permissions.find({it.environmentId == environment1.id.toString()})
       def permE2 = result.permissions.find({it.environmentId == environment2.id.toString()})
@@ -192,7 +199,8 @@ class ServiceAccountSpec extends BaseSpec {
       newEnv2.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'})
       newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).permissions.containsAll([RoleType.READ, RoleType.CHANGE_VALUE])
       newEnv2.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).permissions.containsAll([RoleType.LOCK, RoleType.UNLOCK, RoleType.READ])
-      newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).sdkUrl.contains("/" + newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).serviceAccount.apiKey)
+      newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).sdkUrlClientEval.contains("/" + newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).serviceAccount.apiKeyClientSide)
+      newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).sdkUrlServerEval.contains("/" + newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'}).serviceAccount.apiKeyServerSide)
   }
 
   def "I cannot request or update an unknown service account"() {

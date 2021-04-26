@@ -1,8 +1,7 @@
 package io.featurehub.android
 
-
-import io.featurehub.client.ClientContext
-import io.featurehub.client.FeatureRepository
+import io.featurehub.client.FeatureHubConfig
+import io.featurehub.client.FeatureStore
 import okhttp3.Call
 import okhttp3.Request
 import spock.lang.Specification
@@ -10,17 +9,17 @@ import spock.lang.Specification
 class FeatureHubClientSpec extends Specification {
   Call.Factory client
   Call call;
-  FeatureRepository repo
+  FeatureStore repo
   FeatureHubClient fhc
 
   def "a null sdk url will never trigger a call"() {
     when: "i initialize the client"
       call = Mock(Call)
-      def fhc = new FeatureHubClient(null, null, null, client)
+      def fhc = new FeatureHubClient(null, null, null, client, Mock(FeatureHubConfig))
     and: "check for updates"
       fhc.checkForUpdates()
     then:
-      0 * client.newCall(_)
+      thrown RuntimeException
   }
 
   def "a valid host and url will trigger a call when asked"() {
@@ -29,16 +28,16 @@ class FeatureHubClientSpec extends Specification {
 
       client = Mock {
         1 * newCall({ Request r ->
-          r.header('x-featurehub') == 'this is a header'
+          r.header('x-featurehub') == 'fred=mary'
         }) >> call
       }
 
+
       repo = Mock {
-        1 * clientContext() >> Mock(ClientContext)
       }
-      fhc = new FeatureHubClient("http://localhost", ["1234"], repo, client)
+      fhc = new FeatureHubClient("http://localhost", ["1234"], repo, client, Mock(FeatureHubConfig))
     and: "i specify a header"
-      fhc.notify("this is a header")
+      fhc.contextChange("fred=mary")
     when: "i check for updates"
       fhc.checkForUpdates()
     then:

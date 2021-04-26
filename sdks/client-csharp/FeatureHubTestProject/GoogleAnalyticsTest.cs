@@ -22,13 +22,13 @@ namespace FeatureHubTestProject
     [Test]
     public void WithNoFeaturesBatcherGeneratesNothing()
     {
-      _gac.LogEvent("action", null, new List<IFeatureStateHolder>());
+      _gac.LogEvent("action", null, new List<IFeature>());
       Assert.AreEqual(_client.CalledCount, 0);
     }
 
-    private List<IFeatureStateHolder> Features(FakeFeatureHolder[] items)
+    private List<IFeature> Features(FakeFeatureHolder[] items)
     {
-      List<IFeatureStateHolder> l = new List<IFeatureStateHolder>();
+      List<IFeature> l = new List<IFeature>();
       foreach (var fakeFeatureHolder in items)
       {
         l.Add(fakeFeatureHolder);
@@ -68,11 +68,11 @@ namespace FeatureHubTestProject
     }
   }
 
-  internal class FakeFeatureHolder : IFeatureStateHolder
+  internal class FakeFeatureHolder : IFeature
   {
-    private object _data;
-    private FeatureValueType _type;
-    private string _key;
+    private readonly object _data;
+    private readonly FeatureValueType _type;
+    private readonly string _key;
 
     public FakeFeatureHolder(string key, FeatureValueType type, object data)
     {
@@ -81,48 +81,29 @@ namespace FeatureHubTestProject
       _type = type;
     }
 
-    public bool Exists
+    public bool Exists => _data != null;
+    public bool? BooleanValue => ((bool)_data);
+    public string StringValue => _data.ToString();
+    public double? NumberValue => (double) _data;
+    public string JsonValue => _data.ToString();
+    public string Key => _key;
+    public FeatureValueType? Type => _type;
+    public object Value => _data;
+    public long? Version => 1;
+
+    public bool IsEnabled
     {
-      get => _data != null;
-    }
-    public bool? BooleanValue
-    {
-      get => ((bool)_data);
-    }
-    public string StringValue
-    {
-      get => _data.ToString();
-    }
-    public double? NumberValue
-    {
-      get => (double) _data;
-    }
-    public string JsonValue
-    {
-      get => _data.ToString();
-    }
-    public string Key
-    {
-      get => _key;
-    }
-    public FeatureValueType? Type
-    {
-      get => _type;
-    }
-    public object Value
-    {
-      get => _data;
-    }
-    public long? Version
-    {
-      get => 1;
-    }
-    public bool IsSet
-    {
-      get => _data != null;
+      get => _type == FeatureValueType.BOOLEAN && BooleanValue == true;
     }
 
-    public event EventHandler<IFeatureStateHolder> FeatureUpdateHandler;
+    public bool IsSet => _data != null;
+
+    public IFeature WithContext(IClientContext context)
+    {
+      throw new NotImplementedException();
+    }
+
+    public event EventHandler<IFeature> FeatureUpdateHandler;
   }
 
   internal class FakeClient : IGoogleAnalyticsClient

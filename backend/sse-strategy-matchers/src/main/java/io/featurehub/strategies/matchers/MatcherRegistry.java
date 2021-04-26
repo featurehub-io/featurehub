@@ -4,7 +4,7 @@ import io.featurehub.sse.model.RolloutStrategyAttribute;
 
 public class MatcherRegistry implements MatcherRepository {
   @Override
-  public StrategyMatcher findMatcher(String suppliedValue, RolloutStrategyAttribute attr) {
+  public StrategyMatcher findMatcher(RolloutStrategyAttribute attr) {
     switch (attr.getType()) {
       case STRING:
         return new StringArrayMatcher();

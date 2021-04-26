@@ -7,6 +7,20 @@ issues, contribute a new SDK or just get a deeper understanding of how it works,
 
 https://demo.featurehub.io[Try FeatureHub demo now]
 
+**New in version 1.3 - Client evaluated rollout strategies support. Make you flags more secure! **
+
+Avoid leaking information about your users to the clients when evaluating flags with rollout strategies that contain user context. 
+
+You can now choose from two types of keys: Client eval API Key and Server eval API Key
+
+image::docs/images/api-keys.png[FeatureHub API Keys,800]
+
+To use new SDKs (starting from version 2.0), please follow this guide:
+
+https://github.com/featurehub-io/featurehub/wiki/Migration-notes-for-SDK's-from-version-1.x.x-to-version-2.x.x[SDKs migration notes (-> v 2.0)]
+
+API Keys (former SDK URLs) explained https://docs.featurehub.io/#_client_and_server_api_keys[here]  
+
 **New in version 1.2 - Dark Mode! **
 
 image::docs/images/fh-features-console-dark.png[FeatureHub console demo,800]

@@ -243,7 +243,7 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
           params: {},
         ),
         _MenuItem(
-          name: 'Service Accounts',
+          name: 'API Keys',
           iconData: AntDesign.key,
           iconSize: 24,
           path: '/service-envs',

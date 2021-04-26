@@ -1,120 +1,368 @@
 = Java Client SDK for FeatureHub
 ifdef::env-github,env-browser[:outfilesuffix: .adoc]
 
-Welcome to the Java implementation for FeatureHub.
-It is the supported version, but it does not mean you cannot write your own, the functionality is quite straightforward.
+Welcome to the Java SDK implementation for https://featurehub.io[FeatureHub.io] - Open source Feature flags management, 
+A/B testing and remote configuration platform.
 
-Visit our official web page for more information about the platform https://www.featurehub.io/[here]
+Below explains how you can use the FeatureHub SDK in Java for Java backend applications or Android mobile
+applications.
 
-== Overview
+To control the feature flags from the FeatureHub Admin console, either use our [demo](https://demo.featurehub.io) 
+version for evaluation or install the app using our guide [here](http://docs.featurehub.io/#_installation)
 
-This is the core library for Java.
+There are 2 ways to request for feature updates via this SDK:
 
-It provides the core functionality of the repository which holds features and creates events.
-It does not connect to the backend server.
-As that will depend on whatever HTTP client java library you use, we have provided one for Jersey.
-We expect to provide future libraries for various other popular HTTP libraries.
+- **SSE (Server Sent Events) realtime updates mechanism**
 
-This library only provides one recommended type of operation, which is that the server will update all the features
-all of the time.
+In this mode, you will make a connection to the FeatureHub Edge server using an EventSource library which this SDK is based on, and any updates to any features will come through to you in near realtime, automatically updating the feature values in the repository. This is always the recommended method for backend applications, and
+we have an implementation in Jersey. 
 
-NOTE: This readme does not deal with the SDK capability of updating features while running your tests. That
-capability is API client specific, and the sample we have is for Jersey. link:../client-java-jersey/README{outfilesuffix}[It is documented here.]
+- **FeatureHub GET client (GET request updates)**
 
-== Using the Java Feature SDK
+In this mode, you make a GET request, which you control how often it runs. The SDK provides no timer based
+repeat functionality to keep making this request. There is an implementation using OKHttp. We have
+deliberately left the timer choice to you as there are many different timer functions, including one built into
+the JDK (`java.util.Timer`).
 
-Because this is the Java SDK, and it can be used in a back-end service or Android, there are two ways of
-interacting with this service. Only one is currently supported and is not recommended for Android as
-it keeps the radio on. This will come in later in our roadmap.
+== SDK Installation
 
-=== 1. All the Features, All the Time
+To install the SDK, choose your method of connection. The Core library will be included transitively. The
+Core library uses Java Service Loaders to automatically discover what client library you have chosen, so please
+ensure you include only one.
 
-In this mode, you will make a connection to the FeatureHub Edge server, and any updates to any events will come
-through to you, updating the feature values in the repository. You can choose to listen for these updates and update
-some UI immediate, but every `if` statement will indicate the updated value, so listening is usually a better choice.
-
-A typical strategy will be:
-
-. create a feature hub repository, wire it into your application stack as appropriate.
-. set up and wire up your application. initialize your server, but don't start it.
-. set up a readyness listener so you know when the features have loaded and you have an initial state for them. When
-you get a `Ready` state, start the server listening. If you get a `Failed` then shut your server down or continue
-without a set of features.
-. [optional] set up your per feature listeners so you can react to their changes in state. You can operate
-in a imperative (is this feature on?) and/or reactive (callback) way with the repository.
-
-This kind of operation is perfect for servers.It can lead to instant change which could confuse users in a UI and
-isn't something our team recommends.
-
-An example using our Jersey client.
+If you want to specify and deliberately configure it, you can use:
 
 [source,java]
 ----
-ClientFeatureRepository cfr = new ClientFeatureRepository(5);
+fhConfig.setEdgeService(() => new EdgeProvider...());
+----
 
-// the static feature context is a convenience interface 
-StaticFeatureContext.repository = cfr;
+Where EdgeProvider is the name of your class that knows how to connect to the Edge and pull feature details.
 
-// configure and immediately connect and attempt to listen
-new JerseyClient(featureHubUrl, true, cfr);
+- **SSE (Server Sent Events) realtime updates mechanism**
 
-// ... 
+[source,xml]
+----
+    <dependency>
+      <groupId>io.featurehub.sdk</groupId>
+      <artifactId>java-client-jersey</artifactId>
+      <version>[2.1,3)</version>
+    </dependency>
+----
 
-final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, config, false);
+If you do not already use Jersey in your code base, you should also include our runtime dependencies for Jersey
+and Jackson.
 
-cfr.addReadynessListener((ready) -> {
-  if (ready == Readyness.Ready) {
-    try {
-      server.start();
-    } catch (IOException e) {
-      log.error("Failed to start", e);
-      throw new RuntimeException(e);
+[source,xml]
+----
+    <dependency>
+      <groupId>io.featurehub.composites</groupId>
+      <artifactId>composite-jersey</artifactId>
+      <version>[1.1, 2)</version>
+    </dependency>
+----
+
+- **FeatureHub polling client (GET request updates)**
+
+This is recommended for Mobile as it will only request updates when you ask for them and not keep the radio on.
+
+[source,xml]
+----
+    <dependency>
+      <groupId>io.featurehub.sdk</groupId>
+      <artifactId>java-client-android</artifactId>
+      <version>[2.1,3)</version>
+    </dependency>
+----
+
+
+## Quick start
+
+### Connecting to FeatureHub
+There are 3 steps to connecting:
+1) Copy FeatureHub API Key from the FeatureHub Admin Console
+2) Create FeatureHub config
+3) Check FeatureHub Repository readyness and request feature state
+
+#### 1. Copy SDK API Key from the FeatureHub Admin Console
+Find and copy your SDK API Key from the FeatureHub Admin Console on the Service Accounts Keys page -
+you will use this in your code to configure feature updates for your environments.
+It should look similar to this: `default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE`.
+
+There are two options - a Server Evaluated API Key and a Client Evaluated API Key. More on this https://docs.featurehub.io/#_client_and_server_api_keys[here]
+
+Client Side evaluation is intended for use in secure environments (such as microservices) 
+and is intended for rapid client side evaluation, per request for example.
+
+Server Side evaluation is more suitable when you are using an _insecure client_. (e.g. Browser or Mobile). 
+This also means you evaluate one user per client.
+
+#### 2. Make a client:
+
+Create an instance of `EdgeFeatureHubConfig`. You need to provide the API Key and the URL of the end-point you will be connecting to (the Edge server URL).
+
+[source,java]
+----
+import io.featurehub.client.EdgeFeatureHubConfig;
+
+String edgeUrl = "http://localhost:8085/";
+String apiKey = "/default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE";
+
+FeatureHubConfig fhConfig = new EdgeFeatureHubConfig(edgeUrl, apiKey);
+----
+
+#### 3. Check FeatureHub Repository readyness and request feature state
+
+Feature flag rollout strategies and user targeting are all determined by the active _user context_. If you are not intending to use rollout strategies, you can pass empty context to the SDK.
+
+**Client Side evaluation**
+
+What you do next depends on your framework. In many modern frameworks, you don't get to choose when
+the server starts, it starts and you just have deal with it. It is recommended that you ensure that your heartbeat
+or readyness check is dependent on whether the feature service is connected.
+
+Remember client side evaluation is used for services, those processing requests (from users or via eventing systems) 
+or batch processing for example. As such, they are typically wired up using Dependency Injection (DI) frameworks and
+we show that approach here as it is what people are most likely to use.
+
+As you would typically have a dependency injection system (like Spring or CDI) looking after you, you need to inject the
+FeatureHubConfig you created above. Our SpringBoot, pure Jersey and Quarkus examples can be found in our 
+https://github.com/featurehub-io/featurehub-examples[featurehub-examples] repository.
+
+.SpringBoot - wiring the FeatureHubConfig
+[source,java]
+----
+  @Bean // using environment variables
+  public FeatureHubConfig featureHubConfig() {
+    String host = System.getenv("FEATUREHUB_EDGE_URL");
+    String apiKey = System.getenv("FEATUREHUB_API_KEY");
+    FeatureHubConfig config = new EdgeFeatureHubConfig(host, apiKey);
+    config.init();
+
+    return config;
+  }
+----
+
+.Quarkus/CDI - wiring the FeatureHubConfig
+[source,java]
+----
+/**
+ * We do this at the top level because we need a Produces for the FeatureHub config as we
+ * specifically want this bean and not have to delegate through, and we need the external config.
+ */
+@Startup
+@ApplicationScoped
+public class FeatureSource {
+  private static final Logger log = LoggerFactory.getLogger(FeatureSource.class);
+
+  @ConfigProperty(name = "feature-hub.url")
+  String url;
+
+  @ConfigProperty(name = "feature-hub.api-key")
+  String apiKey;
+
+  /**
+   * We need a FeatureHubConfig bean available for all sundry uses, the health check and any other
+   * incoming calls. So we create it at startup and seed it into the CDI Context.
+   *
+   * @return FeatureHubConfig - the config ready for use.
+   */
+  @Startup
+  @Produces
+  @ApplicationScoped
+  public FeatureHubConfig fhConfig() {
+    final EdgeFeatureHubConfig config = new EdgeFeatureHubConfig(url, apiKey);
+    config.init();
+    log.info("FeatureHub started");
+    return config;
+  }
+}
+----
+
+We then recommend you consider adding FeatureHub to your heartbeat or liveness check. 
+
+.SpringBoot - liveness
+[source,java]
+----
+@RestController
+@RequestMapping("/health")
+public class HealthResource {
+  private final FeatureHubConfig featureHubConfig;
+  private static final Logger log = LoggerFactory.getLogger(HealthResource.class);
+
+  @Inject
+  public HealthResource(FeatureHubConfig featureHubConfig) {
+    this.featureHubConfig = featureHubConfig;
+  }
+
+  @RequestMapping("/liveness")
+  public String liveness() {
+    if (featureHubConfig.getRepository().getReadyness() == Readyness.Ready) {
+      return "yes";
     }
 
-    log.info("Application started. (HTTP/2 enabled!) -> {}", BASE_URI);
-  } else if (ready == Readyness.Failed) {
-    server.shutdownNow(); // probably should wait in case we have inflight connections
-    log.error("Connect to feature server failed, shutting down server.");
-    System.exit(-1);
-  }
-});
-----
-
-
-NOTE: You will only get a Failed later if your connection drops out. You can choose to ignore the Failure
-if you already have your features and deal with it by instantiating a new client. It won't generate a failure
-if the server has simply booted you off due to a timeout, only because of connection failure.
-
-==== Static Feature Context
-
-The static feature context is a simple and easy way to allow you to use the repository.
-
-It allows you to determine if flags are on or off, if features exist or are set, and it allows you to do this from a
-_enum_ basis. You need to have your enum implement `Feature` which just has a name function - which all enums do.
-
-You can if you wish add a convenience function to your enums to determine if they are active and people often do.
-
-[source,java]
-----
-public enum Features implements Feature {
-
-  FEATURE_TITLE_TO_UPPERCASE;
-
-  Features() {
-  }
-
-  public boolean isActive() {
-    return StaticFeatureContext.getInstance().isActive(this);
+    log.warn("FeatureHub connection not yet available, reporting not live.");
+    throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE);
   }
 }
 ----
 
-this means you can do something like this:
-
+.Quarkus/CDI - liveness
 [source,java]
 ----
-if (Features.FEATURE_TITLE_TO_UPPERCASE.isActive()) {
+@Path("/health/liveness")
+public class HealthResource {
+  private final FeatureHubConfig config;
+
+  @Inject
+  public HealthResource(FeatureHubConfig config) {
+    this.config = config;
+  }
+
+  @GET
+  public Response liveness() {
+    if (config.getRepository().getReadyness() == Readyness.Ready) {
+      return Response.ok().build();
+    }
+
+    return Response.status(503).build();
+  }
 }
+----
+
+This will prevent most services like Application Load Balancers or Kubernetes from routing traffic to your
+server before it has connected to the feature service and is ready.
+
+There are other ways to do this - for example not starting your server until you have a readyness success, 
+but this is the most strongly recommended because it ensures that a system in a properly structured Java service will behave as expected.
+
+The next thing you would normally do is to ensure that the `ClientContext` is ready and set up for downstream
+systems to get a hold of and use. In Java this is normally done by using a `filter` and providing some 
+kind of _request level scope_ - a Request Level injectable object. 
+
+In our examples, we simply put the Authorization header into the UserKey of the context, allowing you to just pass the
+name of the user to keep it simple.
+
+.SpringBoot - creating and using the context
+[source,java]
+----
+@Configuration
+public class UserConfiguration {
+  @Bean
+  @Scope("request")
+  ClientContext featureHubContext(FeatureHubConfig fhConfig, HttpServletRequest request) {
+    ClientContext ctx = fhConfig.newContext();
+
+    if (request.getHeader("Authorization") != null) {
+      // you would always authenticate some other way, this is just an example
+      ctx.userKey(request.getHeader("Authorization"));
+    }
+
+    return ctx;
+  }
+}
+
+@RestController
+public class HelloResource {
+  private final Provider<ClientContext> ctxProvider;
+
+  @Inject
+  public HelloResource(Provider<ClientContext> ctxProvider) {
+    this.ctxProvider = ctxProvider;
+  }
+
+  @RequestMapping("/")
+  public String index() {
+    ClientContext ctx = ctxProvider.get();
+    return "Hello World " + ctx.feature("SUBMIT_COLOR_BUTTON").getString();
+  }
+}
+----
+
+.Quarkus/CDI - creating and using the context
+[source,java]
+----
+  /**
+   * This lets us create the ClientContext, which will always be empty, or the AuthFilter will add the user if it
+   * discovers it. (This is part of the FeatureSource class from above)
+   *
+   * @param config - the FeatureHub Config
+   * @return - a blank context usable by any resource.
+   */
+  @Produces
+  @RequestScoped
+  public ClientContext ctx(FeatureHubConfig config) {
+    try {
+      return config.newContext().build().get();
+    } catch (Exception e) {
+      log.error("Cannot create context!", e);
+      throw new RuntimeException(e);
+    }
+  }
+  
+/**
+ * This filter checks if there is an Authorization header and if so, will add it to the user context
+ * (which is mutable) allowing downstream resources to correctly calculate their features.
+ *
+ */
+@Provider
+@PreMatching
+public class AuthFilter implements ContainerRequestFilter {
+  private static final Logger log = LoggerFactory.getLogger(AuthFilter.class);
+
+  @Inject
+  javax.inject.Provider<ClientContext> contextProvider;
+  
+  @Override
+  public void filter(ContainerRequestContext req) {
+    if (req.getHeaders().containsKey("Authorization")) {
+      String user = req.getHeaderString("Authorization");
+
+      try {
+        contextProvider.get().userKey(user).build().get();
+      } catch (Exception e) {
+        log.error("Unable to set user key on user");
+      }
+    }
+  }
+}  
+  
+@Path("/")
+public class HelloResource {
+  private final Provider<ClientContext> contextProvider;
+
+  @Inject
+  public HelloResource(Provider<ClientContext> contextProvider) {
+    this.contextProvider = contextProvider;
+  }
+
+
+  @GET
+  @Produces(MediaType.TEXT_PLAIN)
+  public String hello() {
+    return "hello world! " + contextProvider.get().feature("SUBMIT_COLOR_BUTTON").getString();
+  }
+}  
+----
+
+These examples show us how we can wire the FeatureHub functionality into our system in two different cases, the standard CDI
+(with extensions) way that Quarkus (and to a degree Jersey) works, and the way that Spring/SpringBoot works. 
+
+**Server side evaluation**
+
+In the server side evaluation (e.g. an Android Mobile app), the context is created once as you evaluate one user per client.
+This config is likely loaded into resources that are baked into your Mobile image and once you load them, you can progress
+from there.
+
+You should not use Server Sent Events for Mobile as they attempt to keep the radio on and will drain battery. Use the
+`java-client-android` artifact and this will be automatically used for you. 
+
+As such, it is recommended that you create your `ClientContext` as early as sensible and build it. This will trigger
+a poll to the server and it will get the feature statuses and you will be ready to go. Each time you need an update,
+you can simply .build() your context again and it will force a poll. 
+
+----
+ClientContext ctx = fhConfig.newContext().build().get();
 ----
 
 ==== Local Feature Overrides
@@ -146,45 +394,6 @@ When you wish to lodge an event, simply call `logAnalyticsEvent` on the featureh
 simply pass the event, or you can pass the event plus some extra data, including the overridden CID and a `gaValue`
 for the value field in Google Analytics.
 
-== Using the library
-
-This is just a repository, it needs something to fill it and currently we support Jersey. If you wish to write your
-own or fill it with properties or such, you can use the artifact as is. In Maven-speak this is:
-
-[source,xml]
-----
-    <dependency>
-      <groupId>io.featurehub.sdk</groupId>
-      <artifactId>java-client-core</artifactId>
-      <version>1.2</version>
-    </dependency>
-----
-
-Alternatively we recommend version ranges:
-
-
-[source,xml]
-----
-    <dependency>
-      <groupId>io.featurehub.sdk</groupId>
-      <artifactId>java-client-core</artifactId>
-      <version>[1.1,2)</version>
-    </dependency>
-----
-
-
-Note that we indicate jackson as a provided dependency because most clients will have it already and we do not
-wish to dictate our own. However, if you do not have a jackson dependency, please also include:
-
-[source,xml]
-----
-    <dependency>
-      <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-jackson</artifactId>
-      <version>[1.1, 2)</version>
-    </dependency>
-----
-
 == Rollout Strategies
 
 Starting from version 1.1.0 FeatureHub supports _server side_ evaluation of complex rollout strategies
@@ -206,7 +415,7 @@ Provide the following attribute to support `userKey` rule:
 
 [source,java]
 ----
-cfr.clientContext().userKey("ideally-unique-id").build(); 
+ctx.userKey("ideally-unique-id"); 
 ----
 
 
@@ -214,28 +423,28 @@ to support `country` rule:
 
 [source,java]
 ----
-cfr.clientContext().country(StrategyAttributeCountryName.NewZealand).build();
+ctx.country(StrategyAttributeCountryName.NewZealand);
 ----
 
 to support `device` rule:
 
 [source,java]
 ----
-cfr.clientContext().device(StrategyAttributeDeviceName.Browser).build();
+ctx.device(StrategyAttributeDeviceName.Browser);
 ----
 
 to support `platform` rule:
 
 [source,java]
 ----
-cfr.clientContext().platform(StrategyAttributePlatformName.Android).build();
+ctx.platform(StrategyAttributePlatformName.Android);
 ----
 
 to support `semantic-version` rule:
 
 [source,java]
 ----
-cfr.clientContext().version("1.2.0").build(); 
+ctx.version("1.2.0"); 
 ----
 
 or if you are using multiple rules, you can combine attributes as follows:
@@ -246,13 +455,20 @@ cfr.clientContext().userKey("ideally-unique-id")
       .country(StrategyAttributeCountryName.NewZealand)
       .device(StrategyAttributeDeviceName.Browser)
       .platform(StrategyAttributePlatformName.Android)
-      .version("1.2.0")
-      .build();  
+      .version("1.2.0");  
 ----
 
-The `build()` method will trigger the regeneration of a special header (`x-featurehub`). This in turn
-will automatically retrigger a refresh of your events if you have already connected (unless you are using polling
-client that is not set up to do this (such as the OkHttp Android client)).
+If you are using *Server Evaluated API Keys* then you should always run `.build()` which will execute a background
+poll. If you wish to ensure the next line of code has the upated statuses, wait for the future to complete with `.get()`
+
+.Server Evaluated API Key - ensuring the repository is updated
+[source,java]
+----
+  ClientContext ctx = fhConfig.newContext().userKey("user@mailinator.com").build.get();
+----
+
+You do not have to do the build().get()  (but you can) for client evaluated keys as the context is mutable and changes are immediate. 
+As the context is evaluated locally, it will always be ready the very next line of code. 
 
 **Sending custom attributes:**
 
@@ -260,34 +476,33 @@ To add a custom key/value pair, use `attr(key, value)`
 
 [source,java]
 ----
-    cfr.clientContext.attr("first-language", "russian").build();
+    ctx.attr("first-language", "russian");
 ----
 
 Or with array of values (only applicable to custom rules):
 
 [source,java]
 ----
-cfr.clientContext.attrs(“languages”, Arrays.asList(“russian”, “english”, “german”)).build();
+ctx.attrs(“languages”, Arrays.asList(“russian”, “english”, “german”));
 ----
 
+You can also use `ctx.clear()` to empty your context.
 
-You can also use `cfr.clientContext.clear()` to empty your context.
-
-In all cases, you need to call `build()` to re-trigger passing of the new attributes to the server for recalculation.
-
+Remember, for *Server Evaluated Keys* you must always call `.build()` to trigger a request to update the feature values
+based on the context changes.
 
 **Coding for percentage splits:**
 For percentage rollout you are only required to provide the `userKey` or `sessionKey`.
 
 [source,java]
 ----
-cfr.clientContext().userKey("ideally-unique-id").build(); 
+ctx.userKey("ideally-unique-id"); 
 ----
 or
 
 [source,java]
 ----
-cfr.clientContext().sessionKey("session-id").build(); 
+ctx.sessionKey("session-id"); 
 ----
 
 For more details on percentage splits and feature experiments see https://docs.featurehub.io/#_percentage_split_rule[Percentage Split Rule].

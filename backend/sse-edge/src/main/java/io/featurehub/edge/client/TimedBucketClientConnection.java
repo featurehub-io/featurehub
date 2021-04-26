@@ -2,7 +2,7 @@ package io.featurehub.edge.client;
 
 import io.featurehub.dacha.api.CacheJsonMapper;
 import io.featurehub.edge.FeatureTransformer;
-import io.featurehub.edge.strategies.ClientAttributeCollection;
+import io.featurehub.edge.strategies.ClientContext;
 import io.featurehub.mr.model.EdgeInitResponse;
 import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.mr.model.PublishAction;
@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class TimedBucketClientConnection implements ClientConnection {
@@ -26,7 +28,7 @@ public class TimedBucketClientConnection implements ClientConnection {
   private List<EjectHandler> handlers = new ArrayList<>();
   private List<FeatureValueCacheItem> heldFeatureUpdates = new ArrayList<>();
   private FeatureTransformer featureTransformer;
-  private ClientAttributeCollection attributesForStrategy;
+  private ClientContext attributesForStrategy;
 
   private TimedBucketClientConnection(Builder builder) {
     output = builder.output;
@@ -35,7 +37,7 @@ public class TimedBucketClientConnection implements ClientConnection {
     namedCache = builder.namedCache;
     featureTransformer = builder.featureTransformer;
 
-    attributesForStrategy = ClientAttributeCollection.decode(builder.featureHubAttributes);
+    attributesForStrategy = ClientContext.decode(builder.featureHubAttributes, Collections.singletonList(apiKey));
   }
 
   @Override

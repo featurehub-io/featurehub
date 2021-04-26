@@ -1,5 +1,5 @@
 [#_sdks]
-== Client SDKs for Feature Hub
+== FeatureHub SDKs
 
 The client SDKs for FeatureHub are designed to allow various supported languages to connect to the Edge server and receive updates on the features.
 Each different SDK is designed to be idiomatic to that language, but also each different SDK is expected to be used for a different purpose, and so capability varies.
@@ -11,7 +11,7 @@ Choose from your development language / framework and follow the links for the i
 [options="header"]
 |===================================
 ||Java|JavaScript|C#|Dart|Go
-|Documentation| link:https://github.com/featurehub-io/featurehub/tree/master/sdks/java/client-java-jersey[Java-Jersey]|link:https://github.com/featurehub-io/featurehub/tree/master/sdks/typescript/client-typescript-eventsource[Javascript, Typescript, Node, React, Angular]|https://github.com/featurehub-io/featurehub/tree/master/sdks/client-csharp/FeatureHubSDK[C#]|link:https://github.com/featurehub-io/featurehub/tree/master/sdks/dart/client-dart-sdk[Dart]|https://github.com/featurehub-io/featurehub/tree/master/sdks/client-go[Go]
+|Documentation| link:https://github.com/featurehub-io/featurehub/tree/master/sdks/java/client-java-jersey[Java-Jersey]|link:https://github.com/featurehub-io/featurehub/tree/master/sdks/typescript/featurehub-eventsource-sdk[Javascript, Typescript, Node, React, Angular]|https://github.com/featurehub-io/featurehub/tree/master/sdks/client-csharp/FeatureHubSDK[C#]|link:https://github.com/featurehub-io/featurehub/tree/master/sdks/dart/client-dart-sdk[Dart]|https://github.com/featurehub-io/featurehub/tree/master/sdks/client-go[Go]
 |Examples|link:https://github.com/featurehub-io/featurehub-examples/tree/master/todo-backend-java[Java-Jersey example] | link:https://github.com/featurehub-io/featurehub-examples/tree/master/todo-backend-typescript[Node server example] , link:https://github.com/featurehub-io/featurehub-examples/tree/master/examples/todo-frontend-react-typescript/[React app example] |https://github.com/featurehub-io/featurehub/tree/master/sdks/client-csharp/ConsoleApp1[C# Console]|https://github.com/featurehub-io/featurehub/blob/master/sdks/dart/client-dart-sdk/other_examples/dart_cli/[Dart Server], https://github.com/featurehub-io/featurehub/tree/master/sdks/dart/client-dart-sdk/example[Flutter example]|https://github.com/featurehub-io/featurehub-examples/tree/master/golang-service[Go server ]
 |===================================
 

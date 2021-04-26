@@ -29,7 +29,7 @@ public class ApplyFeature {
   }
 
   public Applied applyFeature(List<RolloutStrategy> strategies, String key, String featureValueId,
-                             ClientAttributeCollection cac) {
+                             ClientContext cac) {
     if (cac != null & strategies != null && !strategies.isEmpty()) {
       Integer percentage = null;
       String percentageKey = null;
@@ -70,7 +70,10 @@ public class ApplyFeature {
           if (rsi.getAttributes() == null || rsi.getAttributes().isEmpty()) {
             basePercentage.put(percentageKey, basePercentage.get(percentageKey) + rsi.getPercentage());
           }
-        } else if (rsi.getAttributes() != null && !rsi.getAttributes().isEmpty()) {
+        }
+
+        if ((rsi.getPercentage() == null || rsi.getPercentage() == 0) &&
+          rsi.getAttributes() != null && !rsi.getAttributes().isEmpty()) {
           if (matchAttributes(cac, rsi)) {
             return new Applied(true, rsi.getValue());
           }
@@ -82,7 +85,7 @@ public class ApplyFeature {
   }
 
   // This applies the rules as an AND. If at any point it fails it jumps out.
-  private boolean matchAttributes(ClientAttributeCollection cac, RolloutStrategy rsi) {
+  private boolean matchAttributes(ClientContext cac, RolloutStrategy rsi) {
     for(RolloutStrategyAttribute attr : rsi.getAttributes()) {
       String suppliedValue = cac.get(attr.getFieldName(), null);
 
@@ -108,15 +111,11 @@ public class ApplyFeature {
 
       // either of them are null, check against not equals as we can't do anything else
       if (val == null || suppliedValue == null) {
-        if (attr.getConditional() != RolloutStrategyAttributeConditional.NOT_EQUALS) {
-          return false;
-        }
-
-        continue; // can't compare with null and the only thing we can check is not equals
+        return false;
       }
 
       // find the appropriate matcher based on type and match against the supplied value
-      if (!matcherRepository.findMatcher(suppliedValue, attr).match(suppliedValue, attr)) {
+      if (!matcherRepository.findMatcher(attr).match(suppliedValue, attr)) {
         return false;
       }
     }
@@ -124,7 +123,7 @@ public class ApplyFeature {
     return true;
   }
 
-  private String determinePercentageKey(ClientAttributeCollection cac, List<String> percentageAttributes) {
+  private String determinePercentageKey(ClientContext cac, List<String> percentageAttributes) {
     if (percentageAttributes.isEmpty()) {
       return cac.defaultPercentageKey();
     }

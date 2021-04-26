@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <addColumn tableName="fh_service_account">
+            <column name="api_key_client_eval" type="varchar(100)" unique="uq_fh_service_account_api_key_client_eval"/>
+        </addColumn>
+    </changeSet>
+</migration>

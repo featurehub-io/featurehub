@@ -685,8 +685,7 @@ New in Milestone 1.0 is the support for Rollout Strategies, and each of the SDKs
 to support this. 
 
 Essentially the `ClientContext` is information provided to the Repository about the client that is using it. It is
-designed to support rollout strategies both in their initial server side only implementation, and subsequently in their
-client side implementation. 
+designed to support rollout strategies. 
 
 The `ClientContext` is essentially a key/value pair repository with some keys having a special meaning. The keys 
 themselves are case sensitive, but how they appear in your language and what case they use is up to you. All keys
@@ -711,44 +710,21 @@ We encourage a fluid style API for developers to use for this context.
 
 === Supporting server side evaluation
 
-Milestone 1.0 support is designed for server side only evaluation. To support this, if a user puts data into the
+We started with server side evaluation in Milestone 1.0. To support this, if a user puts data into the
 `ClientContext` then there needs to be a mechanism by which the user has indicated they have _finished_ putting this
 data into the `ClientContext` (`build` is used in the other SDKs), which then triggers whichever client the user
 is using to refresh its connection by passing a special header - `x-featurehub`. 
 
-At the moment, the other SDKs expose methods for these keys, a method for clients to register when the context is
-rebuilt by the code and a method to generate the necessary header. Pseudo-code where the repository is passed to
-the eventsource or polling client:
+==== Supporting client side evaluation
 
-----
-new EventSourceClient('url', repository)
-----
+In client side evaluation, they API keys have an `*` in them to indicate they are client side. The Edge Server knows
+which keys are which, and won't let strategy details out for Server Evaluated keys like it did prior to 1.3. All
+client side evaluation is done in the SDK, and is intended to compare a set of rollout strategies to the `ClientContext`
+entries.
 
-which will allow the client to register a callback for when the context changes
-
-----
-repository.client_context.registerCallback((header) => {
-  // store new header for use. It could be null/nil if there is no data in the context
-  // trigger refresh, making sure it uses the header or removes header if it is now null/nil
-})
-----
-
-----
-repository
-    .client_context
-    .user_key('email'.to_guid)
-    .version('6.0.3')
-    .attrs('stores', ['302', '765', '667'])
-    .platform(StrategyAttributePlatformName.linux)
-    .country(StrategyAttributeCountryName.turkey)
-    .build() // triggers header rebuild and tells client
-----
-
-A client needs to expect that as of `build` they should have this context applied.
-
-A client also needs to have a way to clear the context if they wish to have it removed, so a `clear` method which
-removes this data should exist. On build, if the context is empty, it should pass some indication to the
-client there is no header to be sent.
+In the Typescript, C# and Java SDKs, this is done by creating a special Server or Client eval Context that is hidden
+from the user behind the `ClientContext` interface. When the `build` happens, each one knows either to make an updated
+request to the server (server side eval, needs to reset a new `x-featurehub` header) or to do nothing (client side eval).
 
 === Encoding the header
 
@@ -763,7 +739,7 @@ to support this, the values are joined by commas and then url encoded, and then 
 An example from the C# APi is as follows:
 
 ----
-     _repository.ClientContext
+     await _fhConfig.NewContext()
         .Attr("city", "Istanbul City")
         .Attrs("family", new List<String> {"Bambam", "DJ Elif"})
         .Country(StrategyAttributeCountryName.Turkey)
@@ -771,7 +747,7 @@ An example from the C# APi is as follows:
         .Device(StrategyAttributeDeviceName.Mobile)
         .UserKey("tv-show")
         .Version("6.2.3")
-        .SessionKey("session-key");
+        .SessionKey("session-key").Build();
 
 ----
 
@@ -801,13 +777,6 @@ We do support the ability to indicate that the percentage rollout could or shoul
 for example you wanted percentage rollout over a `company` or `store` field, you will be able to do this in the future.
 The API and server side evaluation supports this, the most complex part is the UI to allow users to manage this data,
 so this will appear over time. It will only become important for SDKs when we start supporting client side evaluation.
-
-=== Client side evaluation?
-
-Writing the same client side libraries for each language and ensuring they consistently work is a lot of work and
-given FeatureHub, yet it is critically important for scalability. EventSourcing and GETs are able to be cached in CDNs
-for massive scale deployments, but because we are designed around a self-deployment it makes more sense to centralize
-it right now and slowly roll out client side evaluation.
 
 == Special thanks
 

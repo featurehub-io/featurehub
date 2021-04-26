@@ -2,8 +2,10 @@ package io.featurehub.android;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.featurehub.client.ClientContext;
-import io.featurehub.client.FeatureRepository;
+import io.featurehub.client.EdgeService;
+import io.featurehub.client.FeatureHubConfig;
+import io.featurehub.client.FeatureStore;
+import io.featurehub.client.Readyness;
 import io.featurehub.sse.model.Environment;
 import io.featurehub.sse.model.FeatureState;
 import io.featurehub.sse.model.SSEResultState;
@@ -20,44 +22,65 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
-public class FeatureHubClient implements ClientContext.ClientContextChanged {
+public class FeatureHubClient implements EdgeService {
   private static final Logger log = LoggerFactory.getLogger(FeatureHubClient.class);
-  private final FeatureRepository repository;
+  private final FeatureStore repository;
   private final Call.Factory client;
   private boolean makeRequests;
   private final String url;
   private final ObjectMapper mapper = new ObjectMapper();
   private String xFeaturehubHeader;
+  private final boolean clientSideEvaluation;
+  private final FeatureHubConfig config;
+  private final ExecutorService executorService;
 
-  public FeatureHubClient(String host, Collection<String> sdkUrls, FeatureRepository repository,
-                          Call.Factory client) {
+  public FeatureHubClient(String host, Collection<String> sdkUrls, FeatureStore repository,
+                          Call.Factory client, FeatureHubConfig config) {
     this.repository = repository;
     this.client = client;
+    this.config = config;
 
     if (host != null && sdkUrls != null && !sdkUrls.isEmpty()) {
-      // makeRequests is false, so this will give us the header (if any) and then not make a call
-      repository.clientContext().registerChangeListener(this);
+      this.clientSideEvaluation = sdkUrls.stream().anyMatch(FeatureHubConfig::sdkKeyIsClientSideEvaluated);
 
       this.makeRequests = true;
 
+      executorService = makeExecutorService();
+
       url = host + "/features?" + sdkUrls.stream().map(u -> "sdkUrl=" + u).collect(Collectors.joining("&"));
+
+
+      if (clientSideEvaluation) {
+        checkForUpdates();
+      }
     } else {
-      log.error("FeatureHubClient initialized without any sdkUrls");
-      url = null;
+      throw new RuntimeException("FeatureHubClient initialized without any sdkUrls");
     }
   }
 
-  public FeatureHubClient(String host, Collection<String> sdkUrls, FeatureRepository repository) {
-    this(host, sdkUrls, repository, new OkHttpClient());
+  protected ExecutorService makeExecutorService() {
+    return Executors.newWorkStealingPool();
+  }
+
+  public FeatureHubClient(String host, Collection<String> sdkUrls, FeatureStore repository, FeatureHubConfig config) {
+    this(host, sdkUrls, repository, new OkHttpClient(), config);
   }
 
   private final static TypeReference<List<Environment>> ref = new TypeReference<List<Environment>>(){};
   private boolean busy = false;
+  private List<CompletableFuture<Readyness>> waitingClients = new ArrayList<>();
 
-  public void checkForUpdates() {
-    if (makeRequests && !busy) {
+  public boolean checkForUpdates() {
+    final boolean ask = makeRequests && !busy;
+
+    if (ask) {
       busy = true;
 
       Request.Builder reqBuilder = new Request.Builder().url(this.url);
@@ -68,7 +91,7 @@ public class FeatureHubClient implements ClientContext.ClientContextChanged {
 
       Request request = reqBuilder.build();
 
-      final Call call = client.newCall(request);
+      Call call = client.newCall(request);
       call.enqueue(new Callback() {
         @Override
         public void onFailure(Call call,  IOException e) {
@@ -81,12 +104,15 @@ public class FeatureHubClient implements ClientContext.ClientContextChanged {
         }
       });
     }
+
+    return ask;
   }
 
   protected void processFailure(IOException e) {
     log.error("Unable to call for features", e);
     repository.notify(SSEResultState.FAILURE, null);
     busy = false;
+    completeReadyness();
   }
 
   protected void processResponse(Response response) throws IOException {
@@ -104,6 +130,7 @@ public class FeatureHubClient implements ClientContext.ClientContextChanged {
         });
 
         repository.notify(states);
+        completeReadyness();
       } else if (response.code() == 400) {
         makeRequests = false;
         log.error("Server indicated an error with our requests making future ones pointless.");
@@ -116,9 +143,66 @@ public class FeatureHubClient implements ClientContext.ClientContextChanged {
     return makeRequests;
   }
 
+  private void completeReadyness() {
+    List<CompletableFuture<Readyness>> current = waitingClients;
+    waitingClients = new ArrayList<>();
+    current.forEach(c -> {
+      try {
+        c.complete(repository.getReadyness());
+      } catch (Exception e) {
+        log.error("Unable to complete future", e);
+      }
+    });
+  }
+
   @Override
-  public void notify(String header) {
-    this.xFeaturehubHeader = header;
+  public Future<?> contextChange(String newHeader) {
+    final CompletableFuture<Readyness> change = new CompletableFuture<>();
+
+    if (!newHeader.equals(xFeaturehubHeader)) {
+      xFeaturehubHeader = newHeader;
+      if (checkForUpdates() || busy) {
+        waitingClients.add(change);
+      } else {
+        change.complete(repository.getReadyness());
+      }
+    } else {
+      change.complete(repository.getReadyness());
+    }
+
+    return change;
+  }
+
+  @Override
+  public boolean isClientEvaluation() {
+    return clientSideEvaluation;
+  }
+
+  @Override
+  public void close() {
+    log.info("featurehub client closed.");
+
+    makeRequests = false;
+
+    if (client instanceof OkHttpClient) {
+      ((OkHttpClient)client).dispatcher().executorService().shutdownNow();
+    }
+
+    executorService.shutdownNow();
+  }
+
+  @Override
+  public FeatureHubConfig getConfig() {
+    return config;
+  }
+
+  @Override
+  public boolean isRequiresReplacementOnHeaderChange() {
+    return false;
+  }
+
+  @Override
+  public void poll() {
     checkForUpdates();
   }
 }

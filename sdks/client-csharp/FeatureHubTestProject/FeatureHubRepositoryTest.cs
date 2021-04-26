@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace FeatureHubTestProject
 {
-  public class Tests
+  public class RepositoryTest
   {
     FeatureHubRepository _repository;
 
@@ -17,13 +17,13 @@ namespace FeatureHubTestProject
       _repository = new FeatureHubRepository();
     }
 
-    private string EncodeFeatures(object value, int version = 1, FeatureValueType type = FeatureValueType.BOOLEAN)
+    public static string EncodeFeatures(object value, int version = 1, FeatureValueType type = FeatureValueType.BOOLEAN)
     {
       var feature = new FeatureState(id: "1", key: "1", version: version, value: value, type: type);
       return JsonConvert.SerializeObject(new List<FeatureState>(new FeatureState[] {feature}));
     }
 
-    private string EncodeFeatures(int version = 1, FeatureValueType type = FeatureValueType.BOOLEAN)
+    public static string EncodeFeatures(int version = 1, FeatureValueType type = FeatureValueType.BOOLEAN)
     {
       return EncodeFeatures(false, version, type);
     }
@@ -32,31 +32,36 @@ namespace FeatureHubTestProject
     public void ABooleanIsStoredCorrectly()
     {
       _repository.Notify(SSEResultState.Features, EncodeFeatures(true, 1, FeatureValueType.BOOLEAN));
-      Assert.AreEqual(true, _repository.GetFlag("1"));
+      Assert.AreEqual(true, _repository.GetFeature("1").BooleanValue);
     }
 
     [Test]
     public void ANumberIsStoredCorrectly()
     {
       _repository.Notify(SSEResultState.Features, EncodeFeatures(16.3, 1, FeatureValueType.NUMBER));
-      Assert.AreEqual(16.3, _repository.GetNumber("1"));
+      Assert.AreEqual(16.3, _repository.GetFeature("1").NumberValue);
+      Assert.AreEqual(false, _repository.IsEnabled("1"));
+      Assert.AreEqual(true, _repository.IsSet("1"));
+      Assert.AreEqual(false, _repository.GetFeature("1").IsEnabled);
     }
 
     [Test]
     public void AStringIsStoredCorrectly()
     {
       _repository.Notify(SSEResultState.Features, EncodeFeatures("some duck", 1, FeatureValueType.STRING));
-      Assert.AreEqual("some duck", _repository.GetString("1"));
-      Assert.IsNull(_repository.GetNumber("1"));
-      Assert.IsNull(_repository.GetJson("1"));
-      Assert.IsFalse(_repository.GetFlag("1"));
+      Assert.AreEqual("some duck", _repository.GetFeature("1").StringValue);
+      Assert.IsNull(_repository.GetFeature("1").NumberValue);
+      Assert.IsNull(_repository.GetFeature("1").JsonValue);
+      Assert.IsNull(_repository.GetFeature("1").BooleanValue);
+      Assert.AreEqual(false, _repository.IsEnabled("1"));
+      Assert.AreEqual(false, _repository.GetFeature("1").IsEnabled);
     }
 
     [Test]
     public void JsonIsStoredCorrectly()
     {
       _repository.Notify(SSEResultState.Features, EncodeFeatures("{}", 1, FeatureValueType.JSON));
-      Assert.AreEqual("{}", _repository.GetJson("1"));
+      Assert.AreEqual("{}", _repository.GetFeature("1").JsonValue);
     }
 
     [Test]
@@ -141,7 +146,7 @@ namespace FeatureHubTestProject
     [Test]
     public void ListeningForAFeatureThatDoesntExistAndThenTriggeringItTriggersHandler()
     {
-      IFeatureStateHolder holder = null;
+      IFeature holder = null;
       var hCount = 0;
       _repository.FeatureState("1").FeatureUpdateHandler += (sender, fs) =>
       {
@@ -155,12 +160,13 @@ namespace FeatureHubTestProject
       Assert.AreEqual(true, holder.Exists);
       Assert.AreEqual(1, holder.Version);
       Assert.AreEqual(false, holder.BooleanValue);
+      Assert.AreEqual(false, holder.IsEnabled);
     }
 
     [Test]
     public void ListeningForAStringValueWorksAsExpected()
     {
-      IFeatureStateHolder holder = null;
+      IFeature holder = null;
       _repository.FeatureState("1").FeatureUpdateHandler += (sender, fs) => { holder = fs; };
       _repository.Notify(SSEResultState.Features, EncodeFeatures("fred", version: 2, type: FeatureValueType.STRING));
       Assert.AreEqual(FeatureValueType.STRING, holder.Type);
@@ -171,7 +177,7 @@ namespace FeatureHubTestProject
     [Test]
     public void ListeningForNumberValueWorksAsExpected()
     {
-      IFeatureStateHolder holder = null;
+      IFeature holder = null;
       _repository.FeatureState("1").FeatureUpdateHandler += (sender, fs) => { holder = fs; };
       _repository.Notify(SSEResultState.Features, EncodeFeatures(78.3, version: 2, type: FeatureValueType.NUMBER));
       Assert.AreEqual(FeatureValueType.NUMBER, holder.Type);
@@ -181,7 +187,7 @@ namespace FeatureHubTestProject
     [Test]
     public void ListeningForAJsonValueWorksAsExpected()
     {
-      IFeatureStateHolder holder = null;
+      IFeature holder = null;
       _repository.FeatureState("1").FeatureUpdateHandler += (sender, fs) => { holder = fs; };
       _repository.Notify(SSEResultState.Features, EncodeFeatures("fred", version: 2, type: FeatureValueType.JSON));
       Assert.AreEqual(FeatureValueType.JSON, holder.Type);
@@ -194,7 +200,7 @@ namespace FeatureHubTestProject
     [Test]
     public void ChangingFeatureValueFromOriginalTriggersEventHandler()
     {
-      IFeatureStateHolder holder = null;
+      IFeature holder = null;
       var hCount = 0;
       _repository.FeatureState("1").FeatureUpdateHandler += (sender, fs) =>
       {
@@ -218,7 +224,7 @@ namespace FeatureHubTestProject
     [Test]
     public void ChangingFeatureValueWithSameVersionButDifferentValueTriggersEventHandler()
     {
-      IFeatureStateHolder holder = null;
+      IFeature holder = null;
       var hCount = 0;
       _repository.FeatureState("1").FeatureUpdateHandler += (sender, fs) =>
       {
@@ -239,7 +245,7 @@ namespace FeatureHubTestProject
     {
       _repository.Notify(SSEResultState.Features, EncodeFeatures(1L, version: 1, type: FeatureValueType.NUMBER));
       Assert.AreEqual(1, _repository.FeatureState("1").NumberValue);
-      Assert.AreEqual(1, _repository.GetNumber("1"));
+      Assert.AreEqual(1, _repository.GetFeature("1").NumberValue);
     }
 
     [Test]
@@ -252,35 +258,7 @@ namespace FeatureHubTestProject
       Assert.IsNull(_repository.FeatureState("1").Version);
     }
 
-    [Test]
-    public void ContextEncodesAsExpected()
-    {
-      _repository.ClientContext
-        .Attr("city", "Istanbul City")
-        .Attrs("family", new List<String> {"Bambam", "DJ Elif"})
-        .Country(StrategyAttributeCountryName.Turkey)
-        .Platform(StrategyAttributePlatformName.Ios)
-        .Device(StrategyAttributeDeviceName.Mobile)
-        .UserKey("tv-show")
-        .Version("6.2.3")
-        .SessionKey("session-key");
 
-      string header = null;
-      _repository.ClientContext.ContextUpdateHandler += (sender, h) => header = h;
-      _repository.ClientContext.Build();
-      Assert.AreEqual(header,
-        "city=Istanbul+City,country=turkey,device=mobile,family=Bambam%2cDJ+Elif,platform=ios,session=session-key,userkey=tv-show,version=6.2.3");
-
-      // i should be able to do the same thing again
-      _repository.ClientContext
-        .Attr("city", "Istanbul City")
-        .Attrs("family", new List<String> {"Bambam", "DJ Elif"})
-        .Country(StrategyAttributeCountryName.Turkey)
-        .Platform(StrategyAttributePlatformName.Ios)
-        .Device(StrategyAttributeDeviceName.Mobile)
-        .UserKey("tv-show")
-        .SessionKey("session-key");
-    }
 
     [Test]
     public void AnalyticsCollectorsAreCalled()
@@ -305,7 +283,7 @@ namespace FeatureHubTestProject
   {
     public int Counter = 0;
 
-    public void LogEvent(string action, Dictionary<string, string> other, List<IFeatureStateHolder> featureStates)
+    public void LogEvent(string action, Dictionary<string, string> other, List<IFeature> featureStates)
     {
       Counter++;
     }

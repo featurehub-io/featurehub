@@ -9,27 +9,22 @@ import io.featurehub.sse.model.StrategyAttributeDeviceName
 import io.featurehub.sse.model.StrategyAttributePlatformName
 import spock.lang.Specification
 
-import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
 
 
 enum Fruit implements Feature { banana, peach, peach_quantity, peach_config, dragonfruit }
 
 class RepositorySpec extends Specification {
-  FeatureRepository repo
+  ClientFeatureRepository repo
+  ExecutorService exec
 
   def setup() {
-    repo = new ClientFeatureRepository(1) {
-      @Override
-      protected Executor getExecutor(int threadPoolSize) {
-        return new Executor() {
-          @Override
-          void execute(Runnable command) {
-            // make it synchronous
-            command.run()
-          }
-        }
-      }
-    }
+    exec = [
+      execute: { Runnable cmd -> cmd.run() },
+      shutdownNow: { -> }
+    ] as ExecutorService
+
+    repo = new ClientFeatureRepository(exec)
   }
 
   def "an empty repository is not ready"() {
@@ -56,10 +51,6 @@ class RepositorySpec extends Specification {
       1 * readynessListener.notify(Readyness.Ready)
       !repo.getFeatureState('banana').boolean
       repo.getFeatureState('banana').key == 'banana'
-      !repo.getFlag('banana')
-      !repo.getFlag(Fruit.banana)
-      repo.isSet('banana')
-      repo.isSet(Fruit.banana)
       repo.exists('banana')
       repo.exists(Fruit.banana)
       !repo.exists('dragonfruit')
@@ -69,26 +60,19 @@ class RepositorySpec extends Specification {
       repo.getFeatureState('banana').number == null
       repo.getFeatureState('banana').number == null
       repo.getFeatureState('banana').set
+      !repo.getFeatureState('banana').enabled
       repo.getFeatureState('peach').string == 'orange'
-      repo.getString('peach') == 'orange'
-      repo.isSet('peach')
       repo.exists('peach')
-      repo.getString(Fruit.peach) == 'orange'
-      repo.isSet(Fruit.peach)
       repo.exists(Fruit.peach)
       repo.getFeatureState('peach').key == 'peach'
       repo.getFeatureState('peach').number == null
       repo.getFeatureState('peach').rawJson == null
       repo.getFeatureState('peach').boolean == null
       repo.getFeatureState('peach_quantity').number == 17
-      repo.getNumber('peach_quantity') == 17
-      repo.getNumber(Fruit.peach_quantity) == 17
       repo.getFeatureState('peach_quantity').rawJson == null
       repo.getFeatureState('peach_quantity').boolean == null
       repo.getFeatureState('peach_quantity').string == null
       repo.getFeatureState('peach_quantity').key == 'peach_quantity'
-      repo.getRawJson('peach_config') == '{}'
-      repo.getRawJson(Fruit.peach_config) == '{}'
       repo.getFeatureState('peach_config').rawJson == '{}'
       repo.getFeatureState('peach_config').string == null
       repo.getFeatureState('peach_config').number == null
@@ -130,7 +114,7 @@ class RepositorySpec extends Specification {
     when: "we ask for a feature that doesn't exist"
       def feature = repo.getFeatureState('fred')
     then:
-      !feature.set
+      !feature.enabled
   }
 
   def "a feature is deleted that doesn't exist and thats ok"() {
@@ -139,7 +123,7 @@ class RepositorySpec extends Specification {
     and: "i delete a non existent feature"
       repo.notify(SSEResultState.DELETE_FEATURE, new ObjectMapper().writeValueAsString(feature))
     then:
-      !repo.getFeatureState('banana').set
+      !repo.getFeatureState('banana').enabled
   }
 
   def "A feature is deleted and it is now not set"() {
@@ -154,8 +138,7 @@ class RepositorySpec extends Specification {
       repo.notify(SSEResultState.DELETE_FEATURE, new ObjectMapper().writeValueAsString(featureDel))
     then:
       f.boolean
-      !repo.getFeatureState('banana').set
-      !repo.isSet('banana')
+      !repo.getFeatureState('banana').enabled
   }
 
 
@@ -169,9 +152,10 @@ class RepositorySpec extends Specification {
       ]
     and: "i redefine the executor in the repository so i can prevent the event logging and update first"
       List<Runnable> commands = []
-      Executor mockExecutor = {
-        commands.add(it)
-      } as Executor
+      ExecutorService mockExecutor = [
+        execute: { Runnable cmd -> commands.add(cmd) },
+        shutdownNow: { -> }
+      ] as ExecutorService
       def newRepo = new ClientFeatureRepository(mockExecutor)
       newRepo.notify(features)
       commands.each {it.run() } // process
@@ -190,7 +174,7 @@ class RepositorySpec extends Specification {
       heldNotificationCalls.each {it.run() } // process
     then:
       newRepo.getFeatureState('banana').boolean
-      1 * mockAnalytics.logEvent('action', ['a': 'b'], { List<FeatureStateHolder> f ->
+      1 * mockAnalytics.logEvent('action', ['a': 'b'], { List<io.featurehub.client.FeatureState> f ->
         f.size() == 4
         f.find({return it.key == 'banana'}) != null
         !f.find({return it.key == 'banana'}).boolean
@@ -208,9 +192,9 @@ class RepositorySpec extends Specification {
       repo.notify(features)
     then: 'the json object is there and deserialises'
       repo.getFeatureState('banana').getJson(BananaSample) instanceof BananaSample
+      repo.getFeatureState(Fruit.banana).getJson(BananaSample) instanceof BananaSample
       repo.getFeatureState('banana').getJson(BananaSample).sample == 12
-      repo.getJson('banana', BananaSample).sample == 12
-      repo.getJson(Fruit.banana, BananaSample).sample == 12
+      repo.getFeatureState(Fruit.banana).getJson(BananaSample).sample == 12
   }
 
   def "failure changes readyness to failure"() {
@@ -255,7 +239,7 @@ class RepositorySpec extends Specification {
       ]
     and: "I listen for updates for those features"
       def updateListener = []
-      List<FeatureStateHolder> emptyFeatures = []
+      List<io.featurehub.client.FeatureState> emptyFeatures = []
       features.each {f ->
         def feature = repo.getFeatureState(f.key)
         def listener = Mock(FeatureListener)
@@ -271,7 +255,7 @@ class RepositorySpec extends Specification {
       }
       emptyFeatures.each {f ->
         f.key != null
-        !f.set
+        !f.enabled
         f.string == null
         f.boolean == null
         f.rawJson == null
@@ -279,7 +263,7 @@ class RepositorySpec extends Specification {
       }
     features.each { it ->
       repo.getFeatureState(it.key).key == it.key
-      repo.getFeatureState(it.key).set
+      repo.getFeatureState(it.key).enabled
 
       if (it.type == FeatureValueType.BOOLEAN)
         repo.getFeatureState(it.key).boolean == it.value
@@ -304,31 +288,28 @@ class RepositorySpec extends Specification {
 
   }
 
-  String header;
-
   def "the client context encodes as expected"() {
-    given: "i register a trigger"
-      repo.clientContext().registerChangeListener((h) -> header = h);
     when: "i encode the context"
-      repo.clientContext().userKey("DJElif")
+      def tc = new TestContext().userKey("DJElif")
         .country(StrategyAttributeCountryName.TURKEY)
         .attr("city", "Istanbul")
         .attrs("musical styles", Arrays.asList("psychedelic", "deep"))
         .device(StrategyAttributeDeviceName.DESKTOP)
         .platform(StrategyAttributePlatformName.ANDROID)
         .version("2.3.7")
-        .sessionKey("anjunadeep").build();
+        .sessionKey("anjunadeep").build().get()
 
     and: "i do the same thing again to ensure i can reset everything"
-      repo.clientContext().userKey("DJElif")
+      tc.userKey("DJElif")
         .country(StrategyAttributeCountryName.TURKEY)
         .attr("city", "Istanbul")
         .attrs("musical styles", Arrays.asList("psychedelic", "deep"))
         .device(StrategyAttributeDeviceName.DESKTOP)
         .platform(StrategyAttributePlatformName.ANDROID)
         .version("2.3.7")
-        .sessionKey("anjunadeep").build();
+        .sessionKey("anjunadeep").build().get()
     then:
-      header == 'city=Istanbul,country=turkey,device=desktop,musical styles=psychedelic%2Cdeep,platform=android,session=anjunadeep,userkey=DJElif,version=2.3.7'
+      FeatureStateUtils.generateXFeatureHubHeaderFromMap(tc.context()) ==
+        'city=Istanbul,country=turkey,device=desktop,musical styles=psychedelic%2Cdeep,platform=android,session=anjunadeep,userkey=DJElif,version=2.3.7'
   }
 }

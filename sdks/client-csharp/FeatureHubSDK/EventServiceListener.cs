@@ -6,41 +6,97 @@ using LaunchDarkly.EventSource;
 
 namespace FeatureHubSDK
 {
-  public class EventServiceListener
+  public interface IEdgeService
+  {
+    Task ContextChange(string header);
+    bool ClientEvaluation { get; }
+
+    bool IsRequiresReplacementOnHeaderChange { get;  }
+    void Close();
+    void Poll();
+  }
+
+  public class EventServiceListener : IEdgeService
   {
     private EventSource _eventSource;
-    private string _url;
-    private FeatureHubRepository _repository;
-    private bool _initialized = false;
-    private string xFeatureHubHeader = null;
+    private readonly IFeatureHubConfig _featureHost;
+    private readonly IFeatureHubNotify _repository;
+    private string _xFeatureHubHeader = null;
 
-    public void Init(string url, FeatureHubRepository repository)
+    public EventServiceListener(IFeatureHubNotify repository, IFeatureHubConfig config)
     {
-      if (!_initialized)
+      _repository = repository;
+      _featureHost = config;
+
+      // tell the repository about how evaluation works
+      // this means features don't need to know about the IEdgeService
+      _repository.ServerSideEvaluation = config.ServerEvaluation;
+    }
+
+    public async Task ContextChange(string newHeader)
+    {
+      if (_featureHost.ServerEvaluation)
       {
-        _initialized = true;
-        _url = url;
-        _repository = repository;
-
-        xFeatureHubHeader = _repository.ClientContext.GenerateHeader();
-
-        _repository.ClientContext.ContextUpdateHandler += (sender, header) =>
+        if (newHeader != _xFeatureHubHeader)
         {
-          if (header == xFeatureHubHeader || (_eventSource.ReadyState != ReadyState.Open && _eventSource.ReadyState != ReadyState.Connecting)) return;
+          _xFeatureHubHeader = newHeader;
 
-          xFeatureHubHeader = header;
-          _eventSource.Close();
-          Init(_url, _repository);
-        };
+          if (_eventSource == null || _eventSource.ReadyState == ReadyState.Open || _eventSource.ReadyState == ReadyState.Connecting)
+          {
+            _eventSource?.Close();
+
+            var promise = new TaskCompletionSource<Readyness>();
+
+            EventHandler<Readyness> handler = (sender, r) =>
+            {
+              promise.TrySetResult(r);
+            };
+
+            _repository.ReadynessHandler += handler;
+
+            Init();
+
+            await promise.Task;
+
+            _repository.ReadynessHandler -= handler;
+          }
+        }
       }
-
-      var headers = new Dictionary<string, string>();
-      if (xFeatureHubHeader != null)
+      else if (_eventSource == null)
       {
-        headers.Add("x-featurehub", xFeatureHubHeader);
+        Init();
       }
-      var config = new Configuration(uri: new UriBuilder(url).Uri, requestHeaders: headers);
+    }
+
+    public bool ClientEvaluation => !_featureHost.ServerEvaluation;
+
+    // "close" works on this events source and doesn't hang
+    public bool IsRequiresReplacementOnHeaderChange => false;
+
+    private Dictionary<string, string> BuildContextHeader()
+    {
+      var headers = new Dictionary<string, string>();
+
+      if (_featureHost.ServerEvaluation && _xFeatureHubHeader != null)
+      {
+        headers.Add("x-featurehub", _xFeatureHubHeader);
+      }
+
+      return headers;
+    }
+
+    public void Init()
+    {
+      var config = new Configuration(uri: new UriBuilder(_featureHost.Url).Uri,
+        requestHeaders: _featureHost.ServerEvaluation ? BuildContextHeader() : null);
+
       _eventSource = new EventSource(config);
+
+      // _eventSource.Closed += (sender, args) =>
+      // {
+      //   Console.WriteLine("source closed\n");
+      // };
+
       _eventSource.MessageReceived += (sender, args) =>
       {
         SSEResultState? state;
@@ -63,9 +119,11 @@ namespace FeatureHubSDK
             break;
         }
 
+        // Console.WriteLine($"The state was {state} with value {args.Message.Data}\n");
+
         if (state == null) return;
 
-        repository.Notify(state.Value, args.Message.Data);
+        _repository.Notify(state.Value, args.Message.Data);
 
         if (state == SSEResultState.Failure)
         {
@@ -79,6 +137,14 @@ namespace FeatureHubSDK
     public void Close()
     {
       _eventSource.Close();
+    }
+
+    public void Poll()
+    {
+      if (_eventSource == null)
+      {
+        Init();
+      }
     }
   }
 }

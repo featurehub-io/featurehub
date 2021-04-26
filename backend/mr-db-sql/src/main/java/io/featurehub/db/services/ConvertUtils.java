@@ -40,7 +40,6 @@ import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.PersonId;
 import io.featurehub.mr.model.Portfolio;
 import io.featurehub.mr.model.RoleType;
-import io.featurehub.mr.model.RolloutStrategy;
 import io.featurehub.mr.model.RolloutStrategyInfo;
 import io.featurehub.mr.model.RolloutStrategyInstance;
 import io.featurehub.mr.model.ServiceAccount;
@@ -186,9 +185,7 @@ public class ConvertUtils implements Conversions {
 
     // collect all of the ACls for all of the groups for this environment?
     if (opts.contains(FillOpts.Acls)) {
-      new QDbAcl().environment.eq(env).findEach(acl -> {
-        environment.addGroupRolesItem(environmentGroupRoleFromAcl(acl));
-      });
+      new QDbAcl().environment.eq(env).findEach(acl -> environment.addGroupRolesItem(environmentGroupRoleFromAcl(acl)));
     }
 
     return environment;
@@ -228,7 +225,10 @@ public class ConvertUtils implements Conversions {
       // if role perms is null (i.e we don't care) or the roles that a person has is a super-set of the roles of the service account
       if (!mustHaveRolePerms || (rolePerms != null && rolePerms.containsAll(sap.getPermissions()))) {
         String cacheName = getCacheNameByEnvironment(sae.getEnvironment());
-        sap.sdkUrl(String.format("%s/%s/%s", cacheName, sap.getEnvironmentId(), sap.getServiceAccount().getApiKey()));
+        sap.sdkUrlClientEval(String.format("%s/%s/%s", cacheName, sap.getEnvironmentId(),
+          sap.getServiceAccount().getApiKeyClientSide()));
+        sap.sdkUrlServerEval(String.format("%s/%s/%s", cacheName, sap.getEnvironmentId(),
+          sap.getServiceAccount().getApiKeyServerSide()));
       }
     }
 
@@ -470,17 +470,16 @@ public class ConvertUtils implements Conversions {
       .id(fs.getId().toString())
       .version(fs.getVersion());
 
-    final DbApplicationFeature feature = appFeature;
-    if (feature.getValueType() == FeatureValueType.BOOLEAN) {
+    if (appFeature.getValueType() == FeatureValueType.BOOLEAN) {
       featureValue.valueBoolean(fs.getDefaultValue() == null ? Boolean.FALSE : Boolean.parseBoolean(fs.getDefaultValue()));
     }
-    if (feature.getValueType() == FeatureValueType.JSON) {
+    if (appFeature.getValueType() == FeatureValueType.JSON) {
       featureValue.valueJson(fs.getDefaultValue());
     }
-    if (feature.getValueType() == FeatureValueType.STRING) {
+    if (appFeature.getValueType() == FeatureValueType.STRING) {
       featureValue.valueString(fs.getDefaultValue());
     }
-    if (feature.getValueType() == FeatureValueType.NUMBER) {
+    if (appFeature.getValueType() == FeatureValueType.NUMBER) {
       featureValue.valueNumber(fs.getDefaultValue() == null ? null : new BigDecimal(fs.getDefaultValue()));
     }
 
@@ -661,7 +660,6 @@ public class ConvertUtils implements Conversions {
    */
   @Override
   public boolean isPersonApplicationAdmin(DbPerson dbPerson, DbApplication app) {
-    DbOrganization org = app.getPortfolio().getOrganization();
     // if a person is in a null portfolio group or portfolio group
     return new QDbGroup()
       .peopleInGroup.eq(dbPerson)
@@ -693,7 +691,8 @@ public class ConvertUtils implements Conversions {
       .name(sa.getName()).description(sa.getDescription());
 
     if (opts != null) {
-      account.apiKey(sa.getApiKey());
+      account.apiKeyServerSide(sa.getApiKeyServerEval());
+      account.apiKeyClientSide(sa.getApiKeyClientEval());
 
       if (opts.contains(FillOpts.Permissions) || opts.contains(FillOpts.SdkURL)) {
         // envId, acl
