@@ -17,7 +17,7 @@ image::docs/images/api-keys.png[FeatureHub API Keys,800]
 
 To use new SDKs (starting from version 2.0), please follow this guide:
 
-https://github.com/featurehub-io/featurehub/wiki/Migration-notes-for-SDK's-from-version-1.x.x-to-version-2.x.x[SDKs migration notes (-> v 2.0)]
+https://github.com/featurehub-io/featurehub/wiki/Migration-notes[SDKs migration notes (-> v 2.0)]
 
 API Keys (former SDK URLs) explained https://docs.featurehub.io/#_client_and_server_api_keys[here]  
 
