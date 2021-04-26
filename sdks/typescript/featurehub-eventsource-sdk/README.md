@@ -376,6 +376,62 @@ The FeatureHub repository is a single class that holds and tracks features in yo
 to it to process, tracks changes, and allows you to find and act on features in a useful way. 
 It also sends events out in certain circumstances.
 
+### SSE connectivity 
+
+SSE kills your connection regularly to ensure stale connections are removed. For this reason you will see the connection being dropped and then reconnected again every 30-60 seconds. This is expected and in the below snippet you can see how you can potentially deal with the server readyness check. If you would like to change the reconnection interval, you have an option of changing maxSlots in the Edge server.
+
+Check FeatureHub Repository readyness and request feature state:
+
+```typescript
+fhConfig.init();
+let failCounter = 0;
+let fhInitialized = false;
+
+fhConfig.repository().addReadynessListener(async (readyness: Readyness): void => {
+  if (!fhInitialized && readyness === Readyness.Ready) {
+    logger.event('started_featurehub_event', Level.Info, 'Connected to FeatureHub');
+    startServer();
+    fhInitialized = true;
+    const fhDefaultContext = await fhConfig.newContext().build();
+    if (fhDefaultContext.getFlag('FEATURE_KEY')) {
+      // do something
+    }
+  } else if (readyness === Readyness.Failed && failCounter > 5) {
+    logger.event('featurehub_readyness_failed', Level.Error, 'Failed to connect to FeatureHub');
+    process.exit(1);
+  } else if (readyness === Readyness.Failed) {
+    failCounter++;
+  } else {
+    failCounter = 0;
+  }
+});
+```
+
+ If it is important to your server instances that the connection to the feature server exists as a critical service, then the snippet above will ensure it will try and connect (say five times) and then kill the server process alerting you to a failure. If connection to the feature service is only important for initial starting of your server, then you can simply listen for the first readyness and start your server and ignore all subsequent notifications:
+
+
+```typescript
+fhConfig.init();
+
+let initialized = false;
+console.log("Waiting for features...");
+fhConfig.repository().addReadynessListener(async (ready) => {
+  if (!initialized) {
+    if (ready == Readyness.Ready) {
+      console.log("Features are available, starting server...");
+      initialized = true;
+      const fhDefaultContext = await fhConfig.newContext().build();
+      if(fhDefaultContext.getFlag('FEATURE_KEY')) { 
+          // do something
+      }
+      else {
+          //do something else
+      }
+    }
+  }
+});
+```
+
 
 ### Meta-Events from the repository
 
