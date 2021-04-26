@@ -58,5 +58,5 @@ It is expected that you will normally run at least two of these in any kind of e
 The SDKs are provided to create an idiomatic method to connection to the server-side event source of feature data from the Edge server.
 You are welcome to write your own, they are not particularly complicated to write, and we welcome them as contributions!
 
-View documentation and read more about SDK's <<index.adoc#sdks,here>>
+View documentation and read more about SDK's <<index.adoc#_sdks,here>>
 
