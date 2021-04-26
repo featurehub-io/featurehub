@@ -14,9 +14,9 @@ jobs:
         registry-url: 'https://registry.npmjs.org'
     - name: Install dependencies
       run: npm install
-      working-directory: sdks/typescript/client-typescript-core
+      working-directory: sdks/typescript/featurehub-repository
     - name: Compile sources and Publish to NPM
       run: npm run release
-      working-directory: sdks/typescript/client-typescript-core
+      working-directory: sdks/typescript/featurehub-repository
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
