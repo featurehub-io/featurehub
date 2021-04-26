@@ -81,6 +81,7 @@ namespace FeatureHubTestProject
       _type = type;
     }
 
+    public bool IsLocked => false;
     public bool Exists => _data != null;
     public bool? BooleanValue => ((bool)_data);
     public string StringValue => _data.ToString();

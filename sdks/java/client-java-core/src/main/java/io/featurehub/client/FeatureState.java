@@ -22,6 +22,8 @@ public interface FeatureState {
 
   boolean isSet();
 
+  boolean isLocked();
+
   void addListener(FeatureListener listener);
 
   FeatureState withContext(ClientContext ctx);

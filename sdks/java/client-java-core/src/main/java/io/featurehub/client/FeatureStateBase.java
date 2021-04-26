@@ -57,15 +57,22 @@ public class FeatureStateBase implements FeatureState {
   }
 
   @Override
+  public boolean isLocked() {
+    return this.featureState != null && this.featureState.getL() == Boolean.TRUE;
+  }
+
+  @Override
   public String getString() {
     return getAsString(FeatureValueType.STRING);
   }
 
   private String getAsString(FeatureValueType type) {
-    FeatureValueInterceptor.ValueMatch vm = findIntercept();
+    if (!isLocked()) {
+      FeatureValueInterceptor.ValueMatch vm = findIntercept();
 
-    if (vm != null) {
-      return vm.value;
+      if (vm != null) {
+        return vm.value;
+      }
     }
 
     if (featureState == null || featureState.getType() != type) {
@@ -87,10 +94,12 @@ public class FeatureStateBase implements FeatureState {
 
   @Override
   public Boolean getBoolean() {
-    FeatureValueInterceptor.ValueMatch vm = findIntercept();
+    if (!isLocked()) {
+      FeatureValueInterceptor.ValueMatch vm = findIntercept();
 
-    if (vm != null) {
-      return Boolean.parseBoolean(vm.value);
+      if (vm != null) {
+        return Boolean.parseBoolean(vm.value);
+      }
     }
 
     if (featureState == null || featureState.getType() != FeatureValueType.BOOLEAN) {
@@ -112,14 +121,16 @@ public class FeatureStateBase implements FeatureState {
 
   @Override
   public BigDecimal getNumber() {
-    FeatureValueInterceptor.ValueMatch vm = findIntercept();
+    if (!isLocked()) {
+      FeatureValueInterceptor.ValueMatch vm = findIntercept();
 
-    if (vm != null) {
-      try {
-        return (vm.value == null) ? null : new BigDecimal(vm.value);
-      } catch (Exception e) {
-        log.warn("Attempting to convert {} to BigDecimal fails as is not a number", vm.value);
-        return null; // ignore conversion failures
+      if (vm != null) {
+        try {
+          return (vm.value == null) ? null : new BigDecimal(vm.value);
+        } catch (Exception e) {
+          log.warn("Attempting to convert {} to BigDecimal fails as is not a number", vm.value);
+          return null; // ignore conversion failures
+        }
       }
     }
 
