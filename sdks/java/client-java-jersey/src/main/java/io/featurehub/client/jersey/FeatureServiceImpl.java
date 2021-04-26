@@ -62,7 +62,7 @@ public class FeatureServiceImpl implements FeatureService {
 
     String[] localVarAuthNames = new String[]{};
 
-    GenericType<Object> localVarReturnType = new GenericType<>() {};
+    GenericType<Object> localVarReturnType = new GenericType<Object>() {};
 
     return apiClient.invokeAPI(localVarPath, "PUT", localVarQueryParams, featureStateUpdate, localVarHeaderParams,
       localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localVarReturnType).getData();
