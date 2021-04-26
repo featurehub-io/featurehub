@@ -89,13 +89,6 @@ namespace FeatureHubSDK
   }
 
 
-
-
-  public interface IFeatureRepositoryContext: IFeatureHubRepository, IFeatureHubNotify
-  {
-
-  }
-
   internal class FeatureStateBaseHolder : IFeature
   {
     private static readonly ILog Log = LogManager.GetLogger<FeatureStateBaseHolder>();
@@ -244,10 +237,9 @@ namespace FeatureHubSDK
     bool Exists(string key);
   }
 
-  public interface IFeatureHubNotify
+  public interface IFeatureRepositoryContext: IFeatureHubRepository
   {
     bool ServerSideEvaluation { set; get; }
-    event EventHandler<Readyness> ReadynessHandler;
     void Notify(SSEResultState state, string data);
     void NotReady();
   }

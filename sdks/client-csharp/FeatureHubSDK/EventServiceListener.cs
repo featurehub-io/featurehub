@@ -20,10 +20,10 @@ namespace FeatureHubSDK
   {
     private EventSource _eventSource;
     private readonly IFeatureHubConfig _featureHost;
-    private readonly IFeatureHubNotify _repository;
+    private readonly IFeatureRepositoryContext _repository;
     private string _xFeatureHubHeader = null;
 
-    public EventServiceListener(IFeatureHubNotify repository, IFeatureHubConfig config)
+    public EventServiceListener(IFeatureRepositoryContext repository, IFeatureHubConfig config)
     {
       _repository = repository;
       _featureHost = config;
