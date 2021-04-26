@@ -99,7 +99,7 @@ fhConfig.repository().addReadynessListener(async (ready) => {
       console.log("Features are available, starting server...");
       initialized = true;
       const fhDefaultContext = await fhConfig.newContext().build();
-      if(fhDefaultContext.getFlag('FLAG_KEY')) { 
+      if(fhDefaultContext.getFlag('FEATURE_KEY')) { 
           // do something
       }
       else {
@@ -167,8 +167,8 @@ async initializeFeatureHub() {
     if (!initialized) {
       if (readyness === Readyness.Ready) {
         initialized = true;
-        const color = fhContext.getString('SOME_STRING_FEATURE');
-        this.setState({todos: this.state.todos.changeColor(color)});
+        const value = fhContext.getString('FEATURE_KEY');
+        console.log('Value is ', value);
       }
     }
   });
@@ -179,8 +179,8 @@ async initializeFeatureHub() {
       .build();
 
   // react to incoming feature changes in real-time
-  fhConfig.repository().feature('SOME_STRING_FEATURE').addListener(fs => {
-    console.log(fs.getKey(), 'is', context.isEnabled(fs.getKey()));
+  fhConfig.repository().feature('FEATURE_KEY').addListener(fs => {
+    console.log('Value is ', fs.getString());
   });
 }
  
