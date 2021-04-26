@@ -29,6 +29,9 @@ jobs:
       - name: Install dependencies
         run: npm install
         working-directory: sdks/typescript/featurehub-repository
+      - name: Build (tests build of commonjs and es6 modules)
+        run: npm run build
+        working-directory: sdks/typescript/featurehub-repository
       - name: Build and test
         run: npm run test
         working-directory: sdks/typescript/featurehub-repository

@@ -40,7 +40,7 @@
     "link": "npm link featurehub-repository",
     "compile": "npm run link && npm run build && npm link",
     "tsc": "node ./node_modules/typescript/bin/tsc -p",
-    "release": "npm run tsc && npm version patch && npm publish",
+    "release": "npm run build && npm publish",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {

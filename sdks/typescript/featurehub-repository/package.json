@@ -1,6 +1,6 @@
 {
   "name": "featurehub-repository",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Core package of API that exposes FeatureHub feature flags, values and configuration to client applications written in Typescript or Javascript.",
   "author": "info@featurehub.io",
   "main": "dist/index.js",
@@ -30,16 +30,18 @@
   ],
   "license": "MIT",
   "scripts": {
-    "build": "npm run tsc",
+    "build": "npm run clean && npm run tsc tsconfig.json && npm run tsc tsconfig-es.json",
+    "clean": "rm -rf dist lib && rm -rf app/*.js app/*.d.ts app/*.map",
     "build:watch": "npm run build -- -- -w",
-    "test": "npm run build && TS_NODE_COMPILER_OPTIONS='-T' && mocha --config mocharc.yml",
+    "mocha": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' node ./node_modules/mocha/bin/mocha --config mocharc.yml",
+    "test": "npm run clean && npm run tsc tsconfig.json && npm run mocha",
     "coverage": "nyc npm run test",
     "test:watch": "npm run mocha --opts mocha.opts --watch",
-    "mocha": "node ./node_modules/mocha/bin/mocha",
-    "tsc": "node ./node_modules/typescript/bin/tsc",
+    "tsc": "node ./node_modules/typescript/bin/tsc -p",
     "link": "npm link",
     "compile": "npm run build && npm link",
-    "release": "npm run tsc && npm publish",
+    "release": "npm run build && npm publish",
+    "prepublishOnly": "npm run build",
     "lint": "node ./node_modules/tslint/bin/tslint -r ./node_modules/tslint-microsoft-contrib/ \"app/**/*.ts\" \"spec/**/*.ts\" -e \"app/generated-code/**/*\""
   },
   "devDependencies": {
