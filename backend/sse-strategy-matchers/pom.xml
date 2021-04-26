@@ -4,7 +4,7 @@
 
   <groupId>io.featurehub.strategies</groupId>
   <artifactId>strategy-matcher</artifactId>
-  <version>1.1</version>
+  <version>1.2-SNAPSHOT</version>
   <name>strategy-matcher</name>
 
   <description>
@@ -34,7 +34,7 @@
     <connection>scm:git:git@github.com:featurehub-io/featurehub.git</connection>
     <developerConnection>scm:git:git@github.com:featurehub-io/featurehub.git</developerConnection>
     <url>git@github.com:featurehub-io/featurehub.git</url>
-    <tag>strategy-matcher-1.1</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <licenses>
