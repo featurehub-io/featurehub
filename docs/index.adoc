@@ -72,9 +72,13 @@ The example will need to know the SDK URL of your environment (which you can fin
 If you know how to use docker networks, you should be able to find this easily, otherwise find your en0 ip address (you can type: `ifconfig en0` - choose the inet address, Windows will be slightly different) or similar, do not use localhost as that will not work.
 
 ----
-export SDK_URL=default/d8ba747d-7d3c-4454-9c58-130390848412/5EE3vua1NqY0ez6Zd4TXU7XnsZdAPHtR96XaDmhfegitKGiQ9aCdmtmeNUNPubkRZLJLUUpaC7b05ELk
+# this is the "client_eval" key used by the example server
+export FEATUREHUB_CLIENT_API_KEY="default/82afd7ae-e7de-4567-817b-dd684315adf7/SHxmTA83AJupii4TsIciWvhaQYBIq2*JxIKxiUoswZPmLQAIIWN"
+# this is the "server eval" key used by the React front-end
+export FEATUREHUB_SERVER_API_KEY="default/d8ba747d-7d3c-4454-9c58-130390848412/5EE3vua1NqY0ez6Zd4TXU7XnsZdAPHtR96XaDmhfegitKGiQ9aCdmtmeNUNPubkRZLJLUUpaC7b05ELk"
 export MY_IP=192.168.XX.XX
-docker run -e FEATUREHUB_APP_ENV_URL=http://$MY_IP:8085/features/$SDK_URL -p 5000:5000  featurehub/example_node:0.0.1
+export FEATUREHUB_EDGE_URL=http://$MY_IP:8903/
+docker run --rm -e  FEATUREHUB_EDGE_URL=$FEATUREHUB_EDGE_URL -e FEATUREHUB_CLIENT_API_KEY=$FEATUREHUB_CLIENT_API_KEY -e FEATUREHUB_SERVER_API_KEY=$FEATUREHUB_SERVER_API_KEY -p 5000:5000  featurehub/example_node:1.3.0
 ----
 
 This will cause the example to start and you can access it on port 5000. Add a few todo's in mixed case.
