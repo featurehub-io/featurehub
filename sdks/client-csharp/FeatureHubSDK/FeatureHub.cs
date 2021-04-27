@@ -73,11 +73,19 @@ namespace FeatureHubSDK
     long? Version { get; }
 
     /// <summary>
-    /// Determines if the feature actually has a value
+    /// Determines if the feature is boolean and is true
     /// </summary>
     bool IsEnabled { get; }
 
+    /// <summary>
+    /// Determines if the feature has a value (not null)
+    /// </summary>
     bool IsSet { get; }
+
+    /// <summary>
+    /// Determines if the feature is locked and can't be overridden or updated
+    /// </summary>
+    bool IsLocked { get; }
 
     IFeature WithContext(IClientContext context);
 
@@ -119,6 +127,8 @@ namespace FeatureHubSDK
         FeatureUpdateHandler = fs.FeatureUpdateHandler;
       }
     }
+
+    public bool IsLocked => _feature?.L == true;
 
     public IFeature Copy()
     {
