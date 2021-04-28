@@ -22,7 +22,54 @@ export interface ReadynessListener {
   (state: Readyness): void;
 }
 
-export class ClientFeatureRepository implements FeatureHubRepository, InternalFeatureRepository {
+export interface PostLoadNewFeatureStateAvailableListener {
+  (repo: ClientFeatureRepository): void;
+}
+
+export interface FeatureHubRepository {
+  // determines if the repository is ready
+  readyness: Readyness;
+  catchAndReleaseMode: boolean;
+
+  // allows us to log an analytics event with this set of features
+  logAnalyticsEvent(action: string, other?: Map<string, string>, ctx?: ClientContext);
+
+  // returns undefined if the feature does not exist
+  hasFeature(key: string): FeatureStateHolder;
+
+  // synonym for getFeatureState
+  feature(key: string): FeatureStateHolder;
+
+  // deprecated
+  getFeatureState(key: string): FeatureStateHolder;
+
+  // release changes
+  release(disableCatchAndRelease?: boolean): Promise<void>;
+
+  // primary used to pass down the line in headers
+  simpleFeatures(): Map<string, string | undefined>;
+
+  getFlag(key: string): boolean | undefined;
+
+  getString(key: string): string | undefined;
+
+  getJson(key: string): string | undefined;
+
+  getNumber(key: string): number | undefined;
+
+  isSet(key: string): boolean;
+
+  addValueInterceptor(interceptor: FeatureStateValueInterceptor);
+
+  addReadynessListener(listener: ReadynessListener);
+
+  addAnalyticCollector(collector: AnalyticsCollector): void;
+
+  addPostLoadNewFeatureStateAvailableListener(listener: PostLoadNewFeatureStateAvailableListener);
+
+}
+
+export class ClientFeatureRepository implements InternalFeatureRepository {
   private hasReceivedInitialState: boolean;
   // indexed by key as that what the user cares about
   private features = new Map<string, FeatureStateBaseHolder>();
@@ -328,50 +375,4 @@ export class ClientFeatureRepository implements FeatureHubRepository, InternalFe
   }
 }
 
-export interface PostLoadNewFeatureStateAvailableListener {
-  (repo: ClientFeatureRepository): void;
-}
 
-export interface FeatureHubRepository {
-  // determines if the repository is ready
-  readyness: Readyness;
-
-  // allows us to log an analytics event with this set of features
-  logAnalyticsEvent(action: string, other?: Map<string, string>, ctx?: ClientContext);
-
-  // returns undefined if the feature does not exist
-  hasFeature(key: string): FeatureStateHolder;
-
-  // synonym for getFeatureState
-  feature(key: string): FeatureStateHolder;
-
-  // deprecated
-  getFeatureState(key: string): FeatureStateHolder;
-
-  catchAndReleaseMode: boolean;
-
-  // release changes
-  release(disableCatchAndRelease?: boolean): Promise<void>;
-
-  // primary used to pass down the line in headers
-  simpleFeatures(): Map<string, string | undefined>;
-
-  getFlag(key: string): boolean | undefined;
-
-  getString(key: string): string | undefined;
-
-  getJson(key: string): string | undefined;
-
-  getNumber(key: string): number | undefined;
-
-  isSet(key: string): boolean;
-
-  addValueInterceptor(interceptor: FeatureStateValueInterceptor);
-
-  addReadynessListener(listener: ReadynessListener);
-
-  addAnalyticCollector(collector: AnalyticsCollector): void;
-
-  addPostLoadNewFeatureStateAvailableListener(listener: PostLoadNewFeatureStateAvailableListener);
-
-}
