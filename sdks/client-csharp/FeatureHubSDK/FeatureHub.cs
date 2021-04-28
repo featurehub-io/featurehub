@@ -240,10 +240,10 @@ namespace FeatureHubSDK
     bool IsEnabled(string name);
 
     event EventHandler<Readyness> ReadynessHandler;
-    event EventHandler<FeatureHubRepository> NewFeatureHandler;
+    event EventHandler<IFeatureHubRepository> NewFeatureHandler;
     Readyness Readyness { get; }
-    FeatureHubRepository LogAnalyticEvent(string action, Dictionary<string, string> other = null, IClientContext ctx = null);
-    FeatureHubRepository AddAnalyticCollector(IAnalyticsCollector collector);
+    IFeatureHubRepository LogAnalyticEvent(string action, Dictionary<string, string> other = null, IClientContext ctx = null);
+    IFeatureHubRepository AddAnalyticCollector(IAnalyticsCollector collector);
     bool Exists(string key);
   }
 
@@ -266,10 +266,10 @@ namespace FeatureHubSDK
     }
 
     public abstract event EventHandler<Readyness> ReadynessHandler;
-    public abstract event EventHandler<FeatureHubRepository> NewFeatureHandler;
+    public abstract event EventHandler<IFeatureHubRepository> NewFeatureHandler;
     public abstract Readyness Readyness { get; }
-    public abstract FeatureHubRepository LogAnalyticEvent(string action, Dictionary<string, string> other = null, IClientContext ctx = null);
-    public abstract FeatureHubRepository AddAnalyticCollector(IAnalyticsCollector collector);
+    public abstract IFeatureHubRepository LogAnalyticEvent(string action, Dictionary<string, string> other = null, IClientContext ctx = null);
+    public abstract IFeatureHubRepository AddAnalyticCollector(IAnalyticsCollector collector);
     public abstract bool Exists(string key);
   }
 
@@ -282,7 +282,7 @@ namespace FeatureHubSDK
 
     private Readyness _readyness = Readyness.NotReady;
     public override event EventHandler<Readyness> ReadynessHandler;
-    public override event EventHandler<FeatureHubRepository> NewFeatureHandler;
+    public override event EventHandler<IFeatureHubRepository> NewFeatureHandler;
     private IList<IAnalyticsCollector> _analyticsCollectors = new List<IAnalyticsCollector>();
     private readonly ApplyFeature _applyFeature;
     private bool _serverSideEvaluation;
@@ -414,7 +414,7 @@ namespace FeatureHubSDK
       }
     }
 
-    public override FeatureHubRepository LogAnalyticEvent(string action, Dictionary<string, string> other = null, IClientContext ctx = null)
+    public override IFeatureHubRepository LogAnalyticEvent(string action, Dictionary<string, string> other = null, IClientContext ctx = null)
     {
       // take a snapshot copy
       var featureCopies =
@@ -438,7 +438,7 @@ namespace FeatureHubSDK
       return this;
     }
 
-    public override FeatureHubRepository AddAnalyticCollector(IAnalyticsCollector collector)
+    public override IFeatureHubRepository AddAnalyticCollector(IAnalyticsCollector collector)
     {
       _analyticsCollectors.Add(collector);
       return this;

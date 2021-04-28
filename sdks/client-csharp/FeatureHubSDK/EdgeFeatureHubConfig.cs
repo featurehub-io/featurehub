@@ -1,5 +1,8 @@
 
 
+using System;
+using System.Collections.Generic;
+
 namespace FeatureHubSDK
 {
   public delegate IEdgeService EdgeServiceSource(IFeatureRepositoryContext repository, IFeatureHubConfig config);
@@ -28,6 +31,11 @@ namespace FeatureHubSDK
     IEdgeService EdgeService { get; set; }
 
     IClientContext NewContext(IFeatureRepositoryContext repository = null, EdgeServiceSource edgeServiceSource = null);
+
+    // is the system ready? use this in your liveness/health check
+    Readyness Readyness { get; }
+
+    void AddAnalyticCollector(IAnalyticsCollector collector);
   }
 
   public class EdgeFeatureHubConfig : IFeatureHubConfig
@@ -115,6 +123,13 @@ namespace FeatureHubSDK
       }
 
       return new ClientEvalFeatureContext(repository, this, edgeServiceSource);
+    }
+
+    public Readyness Readyness => Repository.Readyness;
+
+    public void AddAnalyticCollector(IAnalyticsCollector collector)
+    {
+      Repository.AddAnalyticCollector(collector);
     }
 
     public string Url => _url;

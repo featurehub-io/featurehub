@@ -29,8 +29,18 @@ namespace FeatureHubSDK
 
     IFeature this[string name] { get; }
 
+    /// <summary>
+    /// Is this feature enabled - it has to be a boolean and true. The same as context[name].IsEnabled
+    /// </summary>
+    /// <param name="name">the name of the feature.</param>
+    /// <returns></returns>
     bool IsEnabled(string name);
 
+    /// <summary>
+    /// Does this feature have a value? The same as context[name].IsSet
+    /// </summary>
+    /// <param name="name">feature name</param>
+    /// <returns></returns>
     bool IsSet(string name);
 
     Task<IClientContext> Build();

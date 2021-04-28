@@ -30,6 +30,8 @@ var config = new FeatureHubConfig("http://localhost:8903",
   
 config.Init(); // tell it to asynchronously connect and start listening
 
+You can optionally set an analytics provider on the config (see below).
+
 // this will set up a ClientContext - which is a bucket of information about this user
 // and then attempt to connect to the repository and retrieve your data. It will return once it
 // has received your data.  
@@ -40,25 +42,16 @@ var context = await config.NewContext().UserKey("ideally-unique-id")
 
 
 // listen for changes to the feature FLUTTER_COLOUR and let me know what they are
-config.Repository.FeatureState("FLUTTER_COLOUR").FeatureUpdateHandler += (object sender, IFeatureStateHolder holder) =>
+context["FLUTTER_COLOUR"].FeatureUpdateHandler += (object sender, IFeatureStateHolder holder) =>
 {
-  Console.WriteLine($"Received type {holder.Key}: {context.Feature(holder.Key).StringValue}");        
+  Console.WriteLine($"Received type {holder.Key}: {context[holder.Key].StringValue}");        
 };
 
-// you can also query the fh.FeatureState("FLUTTER_COLOUR") directly to see what its current state is
-// and use it in IF statements or their equivalent
+There are many more convenience methods on the `IClientContext`, including:
 
-// tell me when the features have appeared and we are ready to start
-fh.ReadynessHandler += (sender, readyness) =>
-{
-  Console.WriteLine($"Readyness is {readyness}");
-};
-
-// tell me when any new features or changes come in
-fh.NewFeatureHandler += (sender, repository) =>
-{
-  Console.WriteLine($"New features");
-};
+    - IsEnabled - is this feature enabled?
+    - IsSet - does this feature have a value?
+    - LogAnalyticEvent - logs an analytics event if you have set up an analytics provider.
 
 ``` 
 
@@ -178,7 +171,7 @@ provide it with each call, or you can set it later.
 1) You can set it in the constructor:
 
 ```c#
-fh.AddAnalyticCollector(new GoogleAnalyticsCollector("UA-example", "1234-5678-abcd-abcd",
+fhConfig.AddAnalyticCollector(new GoogleAnalyticsCollector("UA-example", "1234-5678-abcd-abcd",
 new GoogleAnalyticsHttpClient()));
 ```
 
