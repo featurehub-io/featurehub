@@ -27,11 +27,11 @@ public class FeatureServiceImpl implements FeatureService {
   }
 
   @Override
-  public Object setFeatureState(String sdkUrl, String featureKey,
+  public Object setFeatureState(String apiKey, String featureKey,
                                             FeatureStateUpdate featureStateUpdate) {
-    // verify the required parameter 'sdkUrl' is set
-    if (sdkUrl == null) {
-      throw new BadRequestException("Missing the required parameter 'sdkUrl' when calling setFeatureState");
+    // verify the required parameter 'apiKey' is set
+    if (apiKey == null) {
+      throw new BadRequestException("Missing the required parameter 'apiKey' when calling setFeatureState");
     }
 
     // verify the required parameter 'featureKey' is set
@@ -39,9 +39,9 @@ public class FeatureServiceImpl implements FeatureService {
       throw new BadRequestException("Missing the required parameter 'featureKey' when calling setFeatureState");
     }
 
-    // create path and map variables /{sdkUrl}/{featureKey}
-    String localVarPath = "/{sdkUrl}/{featureKey}"
-      .replaceAll("\\{" + "sdkUrl" + "\\}", sdkUrl.toString())
+    // create path and map variables /{apiKey}/{featureKey}
+    String localVarPath = "/features/{apiKey}/{featureKey}"
+      .replaceAll("\\{" + "apiKey" + "\\}", apiKey.toString())
       .replaceAll("\\{" + "featureKey" + "\\}", featureKey.toString());
 
     // query params

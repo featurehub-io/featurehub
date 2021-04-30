@@ -26,14 +26,16 @@ public class ServerEvalFeatureContext extends BaseClientContext {
   public Future<ClientContext> build() {
     String newHeader = FeatureStateUtils.generateXFeatureHubHeaderFromMap(clientContext);
 
-    if (!newHeader.equals(xHeader)) {
-      xHeader = newHeader;
+    if (newHeader != null || xHeader != null) {
+      if ((newHeader != null && xHeader == null) || newHeader == null || !newHeader.equals(xHeader)) {
+        xHeader = newHeader;
 
-      repository.notReady();
+        repository.notReady();
 
-      if (currentEdgeService != null && currentEdgeService.isRequiresReplacementOnHeaderChange()) {
-        currentEdgeService.close();
-        currentEdgeService = edgeService.get();
+        if (currentEdgeService != null && currentEdgeService.isRequiresReplacementOnHeaderChange()) {
+          currentEdgeService.close();
+          currentEdgeService = edgeService.get();
+        }
       }
     }
 
