@@ -4,7 +4,7 @@
 
   <groupId>io.featurehub.sdk</groupId>
   <artifactId>java-client-core</artifactId>
-  <version>2.2-SNAPSHOT</version>
+  <version>2.2</version>
   <name>java-client-core</name>
 
   <description>
@@ -40,7 +40,7 @@
     <connection>scm:git:git@github.com:featurehub-io/featurehub.git</connection>
     <developerConnection>scm:git:git@github.com:featurehub-io/featurehub.git</developerConnection>
     <url>git@github.com:featurehub-io/featurehub.git</url>
-    <tag>HEAD</tag>
+    <tag>java-client-core-2.2</tag>
   </scm>
 
 
