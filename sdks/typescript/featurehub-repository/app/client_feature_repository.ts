@@ -349,16 +349,18 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
     }
 
     let holder = this.features.get(fs.key);
-    if (holder === undefined || holder.getFeatureState() === undefined) {
+    if (holder === undefined) {
       const newFeature = new FeatureStateBaseHolder(this, fs.key, holder);
 
       this.features.set(fs.key, newFeature);
 
       holder = newFeature;
-    } else if (fs.version < holder.getFeatureState().version) {
-      return false;
-    } else if (fs.version === holder.getFeatureState().version && fs.value === holder.getFeatureState().value) {
-      return false;
+    } else if (holder.getFeatureState() !== undefined) {
+      if (fs.version < holder.getFeatureState().version) {
+        return false;
+      } else if (fs.version === holder.getFeatureState().version && fs.value === holder.getFeatureState().value) {
+        return false;
+      }
     }
 
     return holder.setFeatureState(fs);
