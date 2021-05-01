@@ -197,7 +197,7 @@ public class HealthResource {
 
   @RequestMapping("/liveness")
   public String liveness() {
-    if (featureHubConfig.getRepository().getReadyness() == Readyness.Ready) {
+    if (featureHubConfig.getReadyness() == Readyness.Ready) {
       return "yes";
     }
 
@@ -221,7 +221,7 @@ public class HealthResource {
 
   @GET
   public Response liveness() {
-    if (config.getRepository().getReadyness() == Readyness.Ready) {
+    if (config.getReadyness() == Readyness.Ready) {
       return Response.ok().build();
     }
 
@@ -387,7 +387,7 @@ and override it if you know what you are tracking against for the individual req
 
 [source,java]
 ----
-cfr.addAnalyticCollector(new GoogleAnalyticsCollector(analyticsKey, analyticsCid, new GoogleAnalyticsJerseyApiClient()));
+fhConfig.addAnalyticCollector(new GoogleAnalyticsCollector(analyticsKey, analyticsCid, new GoogleAnalyticsJerseyApiClient()));
 ----
 
 When you wish to lodge an event, simply call `logAnalyticsEvent` on the featurehub repository instance. You can
@@ -451,7 +451,7 @@ or if you are using multiple rules, you can combine attributes as follows:
 
 [source,java]
 ----
-cfr.clientContext().userKey("ideally-unique-id")
+ctx.userKey("ideally-unique-id")
       .country(StrategyAttributeCountryName.NewZealand)
       .device(StrategyAttributeDeviceName.Browser)
       .platform(StrategyAttributePlatformName.Android)

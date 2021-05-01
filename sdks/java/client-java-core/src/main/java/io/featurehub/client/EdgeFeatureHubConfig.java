@@ -1,5 +1,6 @@
 package io.featurehub.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -139,5 +140,30 @@ public class EdgeFeatureHubConfig implements FeatureHubConfig {
     }
 
     return edgeService;
+  }
+
+  @Override
+  public void addReadynessListener(ReadynessListener readynessListener) {
+    getRepository().addReadynessListener(readynessListener);
+  }
+
+  @Override
+  public void addAnalyticCollector(AnalyticsCollector collector) {
+    getRepository().addAnalyticCollector(collector);
+  }
+
+  @Override
+  public void registerValueInterceptor(boolean allowLockOverride, FeatureValueInterceptor interceptor) {
+    getRepository().registerValueInterceptor(allowLockOverride, interceptor);
+  }
+
+  @Override
+  public Readyness getReadyness() {
+    return getRepository().getReadyness();
+  }
+
+  @Override
+  public void setJsonConfigObjectMapper(ObjectMapper jsonConfigObjectMapper) {
+
   }
 }

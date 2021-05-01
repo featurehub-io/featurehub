@@ -24,6 +24,11 @@ public interface FeatureState {
 
   boolean isLocked();
 
+  /**
+   * Adds a listener to a feature. Do *not* add a listener to a context in server mode, where you are creating
+   * lots of contexts as this will lead to a memory leak.
+   * @param listener
+   */
   void addListener(FeatureListener listener);
 
   FeatureState withContext(ClientContext ctx);
