@@ -92,6 +92,13 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
     return this._copy();
   }
 
+  // we need the internal feature state set to be consistent
+  analyticsCopy(): FeatureStateBaseHolder {
+    const c = this._copy();
+    c.internalFeatureState = this.internalFeatureState;
+    return c;
+  }
+
   getType(): FeatureValueType | undefined {
     return this.featureState()?.type;
   }
@@ -125,7 +132,11 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
   }
 
   private featureState(): FeatureState {
-    if (this.parentHolder != null) {
+    if (this.internalFeatureState !== undefined) {
+      return this.internalFeatureState;
+    }
+
+    if (this.parentHolder !== undefined) {
       return this.parentHolder.featureState();
     }
 
@@ -141,19 +152,20 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
       }
     }
 
-    if (!this.featureState() || (type != null && this.featureState().type !== type)) {
+    const featureState = this.featureState();
+    if (!featureState || (type != null && featureState.type !== type)) {
       return undefined;
     }
 
     if (this._ctx != null) {
-      const matched = this._repo.apply(this.featureState().strategies, this._key, this.featureState().id, this._ctx);
+      const matched = this._repo.apply(featureState.strategies, this._key, featureState.id, this._ctx);
 
       if (matched.matched) {
         return this._castType(type, matched.value);
       }
     }
 
-    return this.featureState()?.value;
+    return featureState?.value;
   }
 
   private _castType(type: FeatureValueType, value: any): any | undefined {

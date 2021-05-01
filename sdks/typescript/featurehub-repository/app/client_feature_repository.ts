@@ -11,6 +11,7 @@ import { FeatureState, FeatureStateTypeTransformer, FeatureValueType, RolloutStr
 import { ClientContext } from './client_context';
 import { ApplyFeature, Applied } from './strategy_matcher';
 import { InternalFeatureRepository } from './internal_feature_repository';
+import { fhLog } from './feature_hub_config';
 
 export enum Readyness {
   NotReady = 'NotReady',
@@ -231,7 +232,8 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
 
     for (let fs of this.features.values()) {
       if (fs.isSet()) {
-        featureStateAtCurrentTime.push(ctx == null ? fs.copy() : fs.withContext(ctx));
+        const fsVal: FeatureStateBaseHolder = ctx == null ? fs : fs.withContext(ctx) as FeatureStateBaseHolder;
+        featureStateAtCurrentTime.push( fsVal.analyticsCopy() );
       }
     }
 
@@ -334,7 +336,7 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
           try {
             l(this);
           } catch (e) {
-            console.log('failed', e);
+            fhLog.log('failed', e);
           }
         });
       }
