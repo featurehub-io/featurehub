@@ -68,8 +68,8 @@ The example project consists of a back-end service (node) and a front-end sample
 
 ==== Running the example
 
-The example will need to know the SDK URL of your environment (which you can find in the FeatureHub Admin Console), and it will need an IP address that the second docker can get access to.
-If you know how to use docker networks, you should be able to find this easily, otherwise find your en0 ip address (you can type: `ifconfig en0` - choose the inet address, Windows will be slightly different) or similar, do not use localhost as that will not work.
+The example will need to know the SDK API Key of your application/environment (which you can find in the FeatureHub Admin Console), and it will need an IP address that the example docker image can get access to.
+If you know how to use docker networks, you should be able to find this easily, otherwise find your en0 ip address (you can type: `ifconfig en0` - choose the inet address, Windows will be slightly different) or similar. (Do not use localhost as that will not work)
 
 ----
 # this is the "client_eval" key used by the example server
@@ -81,15 +81,10 @@ export FEATUREHUB_EDGE_URL=http://$MY_IP:8903/
 docker run --rm -e  FEATUREHUB_EDGE_URL=$FEATUREHUB_EDGE_URL -e FEATUREHUB_CLIENT_API_KEY=$FEATUREHUB_CLIENT_API_KEY -e FEATUREHUB_SERVER_API_KEY=$FEATUREHUB_SERVER_API_KEY -p 5000:5000  featurehub/example_node:1.3.0
 ----
 
-This will cause the example to start and you can access it on port 5000. Add a few todo's in mixed case.
-If you create a feature flag in the FeatureHub Admin Console called `FEATURE_TITLE_TO_UPPERCASE`, unlock it and set it to true.
-Now check your sample front-end app, you will see a "refresh" message appear.
-If you refresh, it will upper case everything.
-Experiment!This flag is affecting the backend service as this is where we implemented the feature using one of the SDKs.
+This will kick off the example app that can be accessed on port 5000. Experiment with the sample app - add a few todo's using "lower case".
+If you create a feature flag in the FeatureHub Admin Console called `FEATURE_TITLE_TO_UPPERCASE`, unlock it and set it to true. Add another "to-do" and see how items now being served in "upper case". This flag is affecting the backend service as this is where the feature is implemented using Typescript FeatureHub SDK.
 
-Now in the FeatureHub Admin Console, if you create a feature value - a String value called `SUBMIT_COLOR_BUTTON` and set its value to (say) `cyan`, you will again see a refresh indicator in the sample front-end app and on refresh the "Add" button will swap to cyan colour.
-Each time you change the colour, it will recommend you to refresh.
-It is doing this because it is set in "catch and release" mode, and we recommend you read up on the SDKs for further information on this.
+Now in the FeatureHub Admin Console, if you create a feature of type "String" called `SUBMIT_COLOR_BUTTON` and set its value to  `cyan`, you will see the "Add" button will swap to cyan colour in near real-time.
 
 include::sdks.adoc[]
 
