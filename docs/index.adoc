@@ -81,8 +81,8 @@ export FEATUREHUB_EDGE_URL=http://$MY_IP:8903/
 docker run --rm -e  FEATUREHUB_EDGE_URL=$FEATUREHUB_EDGE_URL -e FEATUREHUB_CLIENT_API_KEY=$FEATUREHUB_CLIENT_API_KEY -e FEATUREHUB_SERVER_API_KEY=$FEATUREHUB_SERVER_API_KEY -p 5000:5000  featurehub/example_node:1.3.0
 ----
 
-This will kick off the example app that can be accessed on port 5000. Experiment with the sample app - add a few todo's using "lower case".
-If you create a feature flag in the FeatureHub Admin Console called `FEATURE_TITLE_TO_UPPERCASE`, unlock it and set it to true. Add another "to-do" and see how items now being served in "upper case". This flag is affecting the backend service as this is where the feature is implemented using Typescript FeatureHub SDK.
+This will kick off the example React app that can be accessed on port 5000 (React app). It also kicks off the "back-end" Node server that runs inside the container on 8099. Experiment with the sample app - add a few todo's using "lower case".
+If you create a feature flag in the FeatureHub Admin Console called `FEATURE_TITLE_TO_UPPERCASE`, unlock it and set it to true. Add another "to-do" and see how items now being served in "upper case". This flag is affecting the Node backend service as this is where the feature is implemented using Typescript FeatureHub SDK.
 
 Now in the FeatureHub Admin Console, if you create a feature of type "String" called `SUBMIT_COLOR_BUTTON` and set its value to  `cyan`, you will see the "Add" button will swap to cyan colour in near real-time.
 
