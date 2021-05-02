@@ -445,7 +445,7 @@ UI application this would indicate that you had all the state necessary to show 
 this would indicate when you could start serving requests.
 
 ````typescript
-fhConfig.repository().addReadynessListener((readyness) => {
+fhConfig.addReadynessListener((readyness) => {
   if (readyness === Readyness.Ready) {
        console.log("Features are available, starting server...");
    
