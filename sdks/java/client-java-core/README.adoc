@@ -106,7 +106,7 @@ Create an instance of `EdgeFeatureHubConfig`. You need to provide the API Key an
 import io.featurehub.client.EdgeFeatureHubConfig;
 
 String edgeUrl = "http://localhost:8085/";
-String apiKey = "/default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE";
+String apiKey = "default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE";
 
 FeatureHubConfig fhConfig = new EdgeFeatureHubConfig(edgeUrl, apiKey);
 ----
@@ -243,14 +243,14 @@ kind of _request level scope_ - a Request Level injectable object.
 In our examples, we simply put the Authorization header into the UserKey of the context, allowing you to just pass the
 name of the user to keep it simple.
 
-.SpringBoot - creating and using the context
+.SpringBoot - creating and using the fhClient
 [source,java]
 ----
 @Configuration
 public class UserConfiguration {
   @Bean
   @Scope("request")
-  ClientContext featureHubContext(FeatureHubConfig fhConfig, HttpServletRequest request) {
+  ClientContext createClient(FeatureHubConfig fhConfig, HttpServletRequest request) {
     ClientContext fhClient = fhConfig.newContext();
 
     if (request.getHeader("Authorization") != null) {
@@ -279,7 +279,7 @@ public class HelloResource {
 }
 ----
 
-.Quarkus/CDI - creating and using the context
+.Quarkus/CDI - creating and using the fhClient
 [source,java]
 ----
   /**
@@ -291,7 +291,7 @@ public class HelloResource {
    */
   @Produces
   @RequestScoped
-  public ClientContext fhClient(FeatureHubConfig config) {
+  public ClientContext createClient(FeatureHubConfig config) {
     try {
       return config.newContext().build().get();
     } catch (Exception e) {
