@@ -93,7 +93,7 @@ fhConfig.init();
 
 let initialized = false;
 console.log("Waiting for features...");
-fhConfig.repository().addReadynessListener(async (ready) => {
+fhConfig.addReadynessListener(async (ready) => {
   if (!initialized) {
     if (ready == Readyness.Ready) {
       console.log("Features are available, starting server...");
@@ -163,7 +163,7 @@ const fhConfig = new EdgeFeatureHubConfig(edgeUrl, apiKey);
 
 async initializeFeatureHub() {
   fhContext = await fhConfig.newContext().build();
-  fhConfig.repository().addReadynessListener((readyness) => {
+  fhConfig.addReadynessListener((readyness) => {
     if (!initialized) {
       if (readyness === Readyness.Ready) {
         initialized = true;
@@ -178,8 +178,9 @@ async initializeFeatureHub() {
       .country(StrategyAttributeCountryName.Australia)
       .build();
 
-  // react to incoming feature changes in real-time
-  fhConfig.repository().feature('FEATURE_KEY').addListener(fs => {
+  // react to incoming feature changes in real-time. Don't use this in nodejs as it will
+  // cause a memory leak unless you use it on a global context you are using and keeping around.
+  fhContext.feature('FEATURE_KEY').addListener(fs => {
     console.log('Value is ', fs.getString());
   });
 }
@@ -352,12 +353,12 @@ Read more about CID [here](https://stackoverflow.com/questions/14227331/what-is-
 
 ```typescript
 // add an analytics adapter with a random or known CID
-  fhConfig.repository().addAnalyticCollector(new GoogleAnalyticsCollector('UA-1234', '1234-5678-abcd-1234'));   
+  fhConfig.addAnalyticCollector(new GoogleAnalyticsCollector('UA-1234', '1234-5678-abcd-1234'));   
 ```
 
 To log an event in Google Analytics: 
  ```typescript
-FeatureContext.logAnalyticsEvent('todo-add', new Map([['gaValue', '10']]));  //indicate value of the event through gaValue   
+featureContext.logAnalyticsEvent('todo-add', new Map([['gaValue', '10']]));  //indicate value of the event through gaValue   
 ```
 
 ### NodeJS server usage
@@ -387,7 +388,7 @@ fhConfig.init();
 let failCounter = 0;
 let fhInitialized = false;
 
-fhConfig.repository().addReadynessListener(async (readyness: Readyness): void => {
+fhConfig.addReadynessListener(async (readyness: Readyness): void => {
   if (!fhInitialized && readyness === Readyness.Ready) {
     logger.event('started_featurehub_event', Level.Info, 'Connected to FeatureHub');
     startServer();
@@ -415,7 +416,7 @@ fhConfig.init();
 
 let initialized = false;
 console.log("Waiting for features...");
-fhConfig.repository().addReadynessListener(async (ready) => {
+fhConfig.addReadynessListener(async (ready) => {
   if (!initialized) {
     if (ready == Readyness.Ready) {
       console.log("Features are available, starting server...");
@@ -508,13 +509,13 @@ This strategy is recommended for Web and Mobile applications as controlled visib
 
 ```javascript
 // don't allow feature updates to come through
-fhConfig.repository().catchAndReleaseMode = true; 
+fhConfig.catchAndReleaseMode = true; 
 ```
 
 If you choose to not have listeners, when you call: 
 
 ```javascript
-fhConfig.repository().release();
+fhConfig.release();
 ```
 
 then you should follow it with code to update your UI with the appropriate changes in features. You
@@ -586,7 +587,7 @@ ctx.logAnalyticsEvent('event-name', data);
 4) For a NODE server, you can set as an environment variable named `GA_CID`.
 
 ```typescript
-fhConfig.repository().addAnalyticCollector(collector);
+fhConfig.addAnalyticCollector(collector);
 ```
 
 As you can see from above (in option 3), to log an event, you simply tell the repository to
@@ -729,7 +730,7 @@ If you log an event against the analytics provider, we will preserve your per-re
 get logged correctly. e.g.
 
 ```typescript
-req.repo.logAnalyticsEvent('todo-add', new Map([['gaValue', '10']]));
+req.context.logAnalyticsEvent('todo-add', new Map([['gaValue', '10']]));
 ``` 
 
 Will use the overlay values by preference over the ones in the repository.
