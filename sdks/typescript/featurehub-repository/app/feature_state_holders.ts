@@ -4,11 +4,12 @@ import { ClientContext } from './client_context';
 import { InternalFeatureRepository } from './internal_feature_repository';
 
 export class FeatureStateBaseHolder implements FeatureStateHolder {
-  protected featureState: FeatureState;
+  protected internalFeatureState: FeatureState;
   protected _key: string;
   protected listeners: Array<FeatureListener> = [];
   protected _repo: InternalFeatureRepository;
   protected _ctx: ClientContext;
+  protected parentHolder: FeatureStateBaseHolder;
 
   constructor(repository: InternalFeatureRepository, key: string, existingHolder?: FeatureStateBaseHolder) {
     if (existingHolder !== null && existingHolder !== undefined) {
@@ -25,23 +26,27 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
     return fsh;
   }
 
-  isEnabled(): boolean {
+  public isEnabled(): boolean {
     return this.getBoolean() === true;
   }
 
-  addListener(listener: FeatureListener): void {
-    this.listeners.push(listener);
+  public addListener(listener: FeatureListener): void {
+    if (this._ctx !== undefined) {
+      this.listeners.push((fs) => listener(this));
+    } else {
+      this.listeners.push(listener);
+    }
   }
 
-  getBoolean(): boolean | undefined {
+  public getBoolean(): boolean | undefined {
     return this._getValue(FeatureValueType.Boolean) as boolean | undefined;
   }
 
-  getFlag(): boolean | undefined {
+  public getFlag(): boolean | undefined {
     return this.getBoolean();
   }
 
-  getKey(): string | undefined {
+  public getKey(): string | undefined {
     return this._key;
   }
 
@@ -63,17 +68,18 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
   }
 
   getFeatureState(): FeatureState {
-    return this.featureState;
+    return this.featureState();
   }
 
-  /// returns true if the value changed
+  /// returns true if the value changed, _only_ the repository should call this
+  /// as it is dereferenced via the parentHolder
   setFeatureState(fs: FeatureState): boolean {
     const existingValue = this._getValue();
-    const existingLocked = this.featureState?.l;
+    const existingLocked = this.featureState()?.l;
 
-    this.featureState = fs;
+    this.internalFeatureState = fs;
 
-    const changed = existingLocked !== this.featureState?.l || existingValue !== this._getValue();
+    const changed = existingLocked !== this.featureState()?.l || existingValue !== this._getValue();
 
     if (changed) {
       this.notifyListeners();
@@ -86,16 +92,23 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
     return this._copy();
   }
 
+  // we need the internal feature state set to be consistent
+  analyticsCopy(): FeatureStateBaseHolder {
+    const c = this._copy();
+    c.internalFeatureState = this.internalFeatureState;
+    return c;
+  }
+
   getType(): FeatureValueType | undefined {
-    return this.featureState?.type;
+    return this.featureState()?.type;
   }
 
   getVersion(): number | undefined {
-    return this.featureState === undefined ? undefined : this.featureState.version;
+    return this.featureState() === undefined ? undefined : this.featureState().version;
   }
 
   isLocked(): boolean {
-    return this.featureState === undefined ? undefined : this.featureState.l;
+    return this.featureState() === undefined ? undefined : this.featureState().l;
   }
 
   triggerListeners(feature: FeatureStateHolder): void {
@@ -113,9 +126,21 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
   }
 
   private _copy(): FeatureStateBaseHolder {
-    const bh = new FeatureStateBaseHolder(this._repo, this._key); // don't copy listeners
-    bh.setFeatureState(this.featureState);
+    const bh = new FeatureStateBaseHolder(this._repo, this._key, this);
+    bh.parentHolder = this;
     return bh;
+  }
+
+  private featureState(): FeatureState {
+    if (this.internalFeatureState !== undefined) {
+      return this.internalFeatureState;
+    }
+
+    if (this.parentHolder !== undefined) {
+      return this.parentHolder.featureState();
+    }
+
+    return this.internalFeatureState;
   }
 
   private _getValue(type?: FeatureValueType): any | undefined {
@@ -127,19 +152,20 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
       }
     }
 
-    if (!this.featureState || (type != null && this.featureState.type !== type)) {
+    const featureState = this.featureState();
+    if (!featureState || (type != null && featureState.type !== type)) {
       return undefined;
     }
 
     if (this._ctx != null) {
-      const matched = this._repo.apply(this.featureState.strategies, this._key, this.featureState.id, this._ctx);
+      const matched = this._repo.apply(featureState.strategies, this._key, featureState.id, this._ctx);
 
       if (matched.matched) {
         return this._castType(type, matched.value);
       }
     }
 
-    return this.featureState?.value;
+    return featureState?.value;
   }
 
   private _castType(type: FeatureValueType, value: any): any | undefined {

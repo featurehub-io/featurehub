@@ -28,7 +28,8 @@ export interface ClientContext {
   getAttr(key: string, defaultValue: string): string;
   getNumber(name: string): number | undefined;
   getString(name: string): string | undefined;
-  getJson(name: string): string | undefined;
+  getJson(name: string): any | undefined;
+  getRawJson(name: string): string | undefined;
   getFlag(name: string): boolean | undefined;
   getBoolean(name: string): boolean | undefined;
 
@@ -128,7 +129,12 @@ export abstract class BaseClientContext implements ClientContext {
     return this.feature(name).getString();
   }
 
-  getJson(name: string): string | undefined {
+  getJson(name: string): any | undefined {
+    const val = this.feature(name).getRawJson();
+    return val === undefined ? undefined : JSON.parse(val);
+  }
+
+  getRawJson(name: string): string | undefined {
     return this.feature(name).getRawJson();
   }
 

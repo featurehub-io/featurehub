@@ -22,7 +22,12 @@ Note, there is a known issues in the browsers with Kaspersky antivirus potential
 
 ## Changelog
 
-- 2.0.0 - client side evaluation support
+### 2.0.1
+- Expose analytic collector, readyness listener, readyness state, and value interceptor properties on the FeatureHubConfig
+- Respect context when using feature listeners
+
+### 2.0.0 
+- Client side evaluation support
 
 ## SDK installation
 
@@ -93,13 +98,13 @@ fhConfig.init();
 
 let initialized = false;
 console.log("Waiting for features...");
-fhConfig.repository().addReadynessListener(async (ready) => {
+fhConfig.addReadynessListener(async (ready) => {
   if (!initialized) {
     if (ready == Readyness.Ready) {
       console.log("Features are available, starting server...");
       initialized = true;
-      const fhDefaultContext = await fhConfig.newContext().build();
-      if(fhDefaultContext.getFlag('FEATURE_KEY')) { 
+      const fhClient = await fhConfig.newContext().build();
+      if(fhClient.getFlag('FEATURE_KEY')) { 
           // do something
       }
       else {
@@ -122,15 +127,15 @@ export function userMiddleware(fhConfig: FeatureHubConfig) {
   return (req: any, res: any, next: any) => {
     const user = detectUser(req); // function to analyse the Bearer token and determine who the user is
     
-    let ctx = fhConfig.newContext();
+    let fhClient = fhConfig.newContext();
     
     if (user) {
-    	ctx = ctx.userKey(user.email);
+    	fhClient = fhClient.userKey(user.email);
     	// add anything else relevant to the context
     }
     
-    ctx = ctx.build().then(() => {
-    	req.featureContext = ctx;
+    fhClient = fhClient.build().then(() => {
+    	req.featureContext = fhClient;
     	
       next();
     });
@@ -158,12 +163,12 @@ In the server side evaluation (e.g. browser app) the context is created once as 
 
 ```typescript
 let initialized = false;
-let fhContext: ClientContext;
+let fhClient: ClientContext;
 const fhConfig = new EdgeFeatureHubConfig(edgeUrl, apiKey);
 
 async initializeFeatureHub() {
-  fhContext = await fhConfig.newContext().build();
-  fhConfig.repository().addReadynessListener((readyness) => {
+  fhClient = await fhConfig.newContext().build();
+  fhConfig.addReadynessListener((readyness) => {
     if (!initialized) {
       if (readyness === Readyness.Ready) {
         initialized = true;
@@ -174,12 +179,13 @@ async initializeFeatureHub() {
   });
 
   // if using flag variations and setting rollout strategies,.e.g with a country rule
-  fhContext
+  fhClient
       .country(StrategyAttributeCountryName.Australia)
       .build();
 
-  // react to incoming feature changes in real-time
-  fhConfig.repository().feature('FEATURE_KEY').addListener(fs => {
+  // react to incoming feature changes in real-time. Don't use this in nodejs as it will
+  // cause a memory leak unless you use it on a global context you are using and keeping around.
+  fhClient.feature('FEATURE_KEY').addListener(fs => {
     console.log('Value is ', fs.getString());
   });
 }
@@ -213,10 +219,10 @@ that are applied to individual feature values in a specific environment. This in
 For more details on rollout strategies, targeting rules and feature experiments see the [core documentation](https://docs.featurehub.io/#_rollout_strategies_and_targeting_rules).
 
 ```typescript
-const ctx = await fhConfig.newContext().userKey('user.email@host.com').country(StrategyAttributeCountryName.NewZealand)
+const fhClient = await fhConfig.newContext().userKey('user.email@host.com').country(StrategyAttributeCountryName.NewZealand)
  	.build();
 
-    if (ctx.isEnabled('FEATURE_KEY')) {
+    if (fhClient.isEnabled('FEATURE_KEY')) {
         //do something
     };
 ```
@@ -231,37 +237,37 @@ FeatureHub SDK will match your users according to those rules, so you need to pr
 Provide the following attribute to support `userKey` rule:
 
 ```typescript
-    const ctx = await fhConfig.newContext().userKey('ideally-unique-id').build(); 
+    const fhClient = await fhConfig.newContext().userKey('ideally-unique-id').build(); 
 ```
 
 to support `country` rule:
 
 ```typescript
-    const ctx = await fhConfig.newContext().country(StrategyAttributeCountryName.NewZealand).build(); 
+    const fhClient = await fhConfig.newContext().country(StrategyAttributeCountryName.NewZealand).build(); 
 ```
 
 to support `device` rule:
 
 ```typescript
-    const ctx = await fhConfig.newContext().device(StrategyAttributeDeviceName.Browser).build(); 
+    const fhClient = await fhConfig.newContext().device(StrategyAttributeDeviceName.Browser).build(); 
 ```
 
 to support `platform` rule:
 
 ```typescript
-    const ctx = await fhConfig.newContext().platform(StrategyAttributePlatformName.Android).build(); 
+    const fhClient = await fhConfig.newContext().platform(StrategyAttributePlatformName.Android).build(); 
 ```
 
 to support `semantic-version` rule:
 
 ```typescript
-    const ctx = await fhConfig.newContext().version('1.2.0').build(); 
+    const fhClient = await fhConfig.newContext().version('1.2.0').build(); 
 ```
 
 or if you are using multiple rules, you can combine attributes as follows:
 
 ```typescript
-    const ctx = await fhConfig.newContext().userKey('ideally-unique-id')
+    const fhClient = await fhConfig.newContext().userKey('ideally-unique-id')
       .country(StrategyAttributeCountryName.NewZealand)
       .device(StrategyAttributeDeviceName.Browser)
       .platform(StrategyAttributePlatformName.Android)
@@ -278,16 +284,16 @@ and your polling interval is set to 0).
 To add a custom key/value pair, use `attribute_value(key, value)`
 
 ```typescript
-    const ctx = await fhConfig.newContext().attribute_value('first-language', 'russian').build();
+    const fhClient = await fhConfig.newContext().attribute_value('first-language', 'russian').build();
 ```
 
 Or with array of values (only applicable to custom rules):
 
 ```typescript
-   const ctx = await fhConfig.newContext().attribute_value('languages', ['russian', 'english', 'german']).build();
+   const fhClient = await fhConfig.newContext().attribute_value('languages', ['russian', 'english', 'german']).build();
 ```
 
-You can also use `ctx.clear()` to empty your context.
+You can also use `fhClient.clear()` to empty your context.
 
 In all cases, you need to call `build()` to re-trigger passing of the new attributes to the server for recalculation.
 
@@ -315,9 +321,9 @@ to these updates. The feature value may not change, but you will be able to eval
 again and determine if it has changed for your _Context_:
 
 ```typescript
-const context = await fhConfig.newContext().build();
+const fhClient = await fhConfig.newContext().build();
 fhConfig.repository().feature('FEATURE_KEY').addListener((fs) => {
-  console.log(fs.getKey(), 'is', context.isEnabled(fs.getKey()));
+  console.log(fs.getKey(), 'is', fhClient.isEnabled(fs.getKey()));
 });
 ```
 
@@ -352,12 +358,12 @@ Read more about CID [here](https://stackoverflow.com/questions/14227331/what-is-
 
 ```typescript
 // add an analytics adapter with a random or known CID
-  fhConfig.repository().addAnalyticCollector(new GoogleAnalyticsCollector('UA-1234', '1234-5678-abcd-1234'));   
+  fhConfig.addAnalyticCollector(new GoogleAnalyticsCollector('UA-1234', '1234-5678-abcd-1234'));   
 ```
 
 To log an event in Google Analytics: 
  ```typescript
-FeatureContext.logAnalyticsEvent('todo-add', new Map([['gaValue', '10']]));  //indicate value of the event through gaValue   
+fhClient.logAnalyticsEvent('todo-add', new Map([['gaValue', '10']]));  //indicate value of the event through gaValue   
 ```
 
 ### NodeJS server usage
@@ -387,13 +393,13 @@ fhConfig.init();
 let failCounter = 0;
 let fhInitialized = false;
 
-fhConfig.repository().addReadynessListener(async (readyness: Readyness): void => {
+fhConfig.addReadynessListener(async (readyness: Readyness): void => {
   if (!fhInitialized && readyness === Readyness.Ready) {
     logger.event('started_featurehub_event', Level.Info, 'Connected to FeatureHub');
     startServer();
     fhInitialized = true;
-    const fhDefaultContext = await fhConfig.newContext().build();
-    if (fhDefaultContext.getFlag('FEATURE_KEY')) {
+    const fhClient = await fhConfig.newContext().build();
+    if (fhClient.getFlag('FEATURE_KEY')) {
       // do something
     }
   } else if (readyness === Readyness.Failed && failCounter > 5) {
@@ -415,13 +421,13 @@ fhConfig.init();
 
 let initialized = false;
 console.log("Waiting for features...");
-fhConfig.repository().addReadynessListener(async (ready) => {
+fhConfig.addReadynessListener(async (ready) => {
   if (!initialized) {
     if (ready == Readyness.Ready) {
       console.log("Features are available, starting server...");
       initialized = true;
-      const fhDefaultContext = await fhConfig.newContext().build();
-      if(fhDefaultContext.getFlag('FEATURE_KEY')) { 
+      const fhClient = await fhConfig.newContext().build();
+      if(fhClient.getFlag('FEATURE_KEY')) { 
           // do something
       }
       else {
@@ -444,7 +450,7 @@ UI application this would indicate that you had all the state necessary to show 
 this would indicate when you could start serving requests.
 
 ````typescript
-fhConfig.repository().addReadynessListener((readyness) => {
+fhConfig.addReadynessListener((readyness) => {
   if (readyness === Readyness.Ready) {
        console.log("Features are available, starting server...");
    
@@ -508,13 +514,13 @@ This strategy is recommended for Web and Mobile applications as controlled visib
 
 ```javascript
 // don't allow feature updates to come through
-fhConfig.repository().catchAndReleaseMode = true; 
+fhConfig.catchAndReleaseMode = true; 
 ```
 
 If you choose to not have listeners, when you call: 
 
 ```javascript
-fhConfig.repository().release();
+fhConfig.release();
 ```
 
 then you should follow it with code to update your UI with the appropriate changes in features. You
@@ -586,7 +592,7 @@ ctx.logAnalyticsEvent('event-name', data);
 4) For a NODE server, you can set as an environment variable named `GA_CID`.
 
 ```typescript
-fhConfig.repository().addAnalyticCollector(collector);
+fhConfig.addAnalyticCollector(collector);
 ```
 
 As you can see from above (in option 3), to log an event, you simply tell the repository to
@@ -729,7 +735,7 @@ If you log an event against the analytics provider, we will preserve your per-re
 get logged correctly. e.g.
 
 ```typescript
-req.repo.logAnalyticsEvent('todo-add', new Map([['gaValue', '10']]));
+req.context.logAnalyticsEvent('todo-add', new Map([['gaValue', '10']]));
 ``` 
 
 Will use the overlay values by preference over the ones in the repository.
@@ -769,7 +775,7 @@ between not setting a value, and setting it to null.
 Sample code might look like this:
 
 ```typescript 
-const fu = new FeatureUpdater('https://vrtfs.demo.featurehub.io/features/default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE');
+const fu = new FeatureUpdater(fhConfig);
 
 // this would work presuming the correct access rights
 fu.updateKey('FEATURE_TITLE_TO_UPPERCASE', new FeatureStateUpdate({lock: false, value: true})).then((r) => console.log('result is', r));
@@ -782,7 +788,7 @@ You can do this in the browser and in the sample React application in the exampl
 class to the `Window` object so you can run up the sample and play around with it. For example:
 
 ```javascript 
-x = new window.FeatureUpdater('http://localhost:8553/features/default/ce6b5f90-2a8a-4b29-b10f-7f1c98d878fe/VNftuX5LV6PoazPZsEEIBujM4OBqA1Iv9f9cBGho2LJylvxXMXKGxwD14xt2d7Ma3GHTsdsSO8DTvAYF');
+const x = new window.FeatureUpdater(fhConfig);
 
 x.updateKey('meep', {lock: true}).then((r) => console.log('result was', r));
 result was false

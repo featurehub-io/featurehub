@@ -1,8 +1,15 @@
-import { ClientFeatureRepository, FeatureHubRepository } from './client_feature_repository';
+import {
+  ClientFeatureRepository,
+  FeatureHubRepository,
+  Readyness,
+  ReadynessListener
+} from './client_feature_repository';
 import { EdgeService } from './edge_service';
 import { ClientContext, ClientEvalFeatureContext, ServerEvalFeatureContext } from './client_context';
 import { FeatureHubPollingClient } from './polling_sdk';
 import { InternalFeatureRepository } from './internal_feature_repository';
+import { AnalyticsCollector } from './analytics';
+import { FeatureStateValueInterceptor } from './interceptors';
 
 export type EdgeServiceProvider = (repository: InternalFeatureRepository, config: FeatureHubConfig) => EdgeService;
 export type EdgeServiceSupplier = () => EdgeService;
@@ -16,6 +23,8 @@ export class FHLog {
 export const fhLog = new FHLog();
 
 export interface FeatureHubConfig {
+  readyness: Readyness;
+
   url(): string;
 
   // enable you to override the repository
@@ -44,6 +53,15 @@ export interface FeatureHubConfig {
 
   // close any server connections
   close();
+
+  // add a callback for when the system is ready
+  addReadynessListener(listener: ReadynessListener): void;
+
+  // add an analytics collector
+  addAnalyticCollector(collector: AnalyticsCollector): void;
+
+  // add a value interceptor (e.g. baggage handler)
+  addValueInterceptor(interceptor: FeatureStateValueInterceptor): void;
 }
 
 export class EdgeFeatureHubConfig implements FeatureHubConfig {
@@ -82,6 +100,22 @@ export class EdgeFeatureHubConfig implements FeatureHubConfig {
     this._url = this._host + 'features/' + this._apiKey;
   }
 
+  public addReadynessListener(listener: ReadynessListener): void {
+    this.repository().addReadynessListener(listener);
+  }
+
+  public addAnalyticCollector(collector: AnalyticsCollector): void {
+    this.repository().addAnalyticCollector(collector);
+  }
+
+  public addValueInterceptor(interceptor: FeatureStateValueInterceptor): void {
+    this.repository().addValueInterceptor(interceptor);
+  }
+
+  public get readyness(): Readyness {
+    return this.repository().readyness;
+  }
+
   public apiKey(apiKey: string): FeatureHubConfig {
     this._apiKeys.push(apiKey);
     return this;
@@ -100,21 +134,15 @@ export class EdgeFeatureHubConfig implements FeatureHubConfig {
   }
 
   newContext(repository?: InternalFeatureRepository, edgeService?: EdgeServiceProvider): ClientContext {
-    if (repository != null && edgeService != null) {
-      return this._clientEval ?
-        new ClientEvalFeatureContext(repository, this, edgeService(this._repository, this)) :
-        new ServerEvalFeatureContext(repository, this, () => this._createEdgeService(this._edgeService));
-    }
-
-    this._repository = this._repository || new ClientFeatureRepository();
-    this._edgeService = this._edgeService || EdgeFeatureHubConfig.defaultEdgeServiceSupplier;
+    repository = repository || this.repository();
+    edgeService = edgeService || this.edgeServiceProvider();
 
     return this._clientEval ?
-      new ClientEvalFeatureContext(this._repository, this, this._edgeService(this._repository, this)) :
-      new ServerEvalFeatureContext(this._repository, this, () => this._createEdgeService(this._edgeService));
+      new ClientEvalFeatureContext(repository, this, edgeService(this._repository, this)) :
+      new ServerEvalFeatureContext(repository, this, () => this._createEdgeService(edgeService));
   }
 
-  _createEdgeService(edgeServSupplier: EdgeServiceProvider) : EdgeService {
+  _createEdgeService(edgeServSupplier: EdgeServiceProvider): EdgeService {
     const es = edgeServSupplier(this._repository, this);
     this._edgeServices.push(es);
     return es;
@@ -123,7 +151,7 @@ export class EdgeFeatureHubConfig implements FeatureHubConfig {
   close() {
     this._edgeServices.forEach((es) => {
       es.close();
-    })
+    });
   }
 
   init(): FeatureHubConfig {

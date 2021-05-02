@@ -1,5 +1,5 @@
 import {
-  ClientFeatureRepository,
+  ClientFeatureRepository, EdgeFeatureHubConfig,
   FeatureState,
   FeatureStateHolder,
   FeatureValueType,
@@ -27,6 +27,25 @@ describe( 'We should be able to log an analytics event', () => {
         firedFeatures = featureStateAtCurrentTime;
       }
     });
+  });
+
+  it('should allow us to fire analytics events via the config into the repo', () => {
+    repo = new ClientFeatureRepository();
+    const fhConfig = new EdgeFeatureHubConfig('http://localhost:8080', '123*123');
+    fhConfig.repository(repo);
+    fhConfig.addAnalyticCollector({
+      logEvent: function(action: string, other: Map<string, string>,
+                         featureStateAtCurrentTime: Array<FeatureStateHolder>) {
+        firedAction = action;
+        firedOther = other;
+        firedFeatures = featureStateAtCurrentTime;
+      }
+    });
+    repo.logAnalyticsEvent('name');
+    expect(firedFeatures.length).to.eq(0);
+    expect(firedAction).to.eq('name');
+    // tslint:disable-next-line:no-unused-expression
+    expect(firedOther).to.be.undefined;
   });
 
   it('Should enable us to log an event with no other and no features', () => {

@@ -11,8 +11,16 @@ Please refer to Readme for [eventsource SDK](https://www.npmjs.com/package/featu
 for more details on how to implement FeatureHub Javascript/Typescript SDK.   
 
 ## Changelog
+            
+### 2.0.3 
 
-- 2.0.0 - client side evaluation support
-- 1.2.1 - allow the release process for catch & release to turn the catch flag off once released. Ensure turning
-release off also releases caught flags.
+- Expose analytic collector, readyness listener, readyness state, and value interceptor properties on the FeatureHubConfig
+- Respect context when using feature listeners
+
+### 2.0.1
+- Client side evaluation support
+
+### 1.2.1 
+- Allow the release process for "catch & release" mode to turn the "catch" flag off once released. Ensure turning
+"release" off also releases caught flags.
   

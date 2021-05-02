@@ -1,5 +1,5 @@
 import {
-  ClientFeatureRepository,
+  ClientFeatureRepository, EdgeFeatureHubConfig, EdgeService,
   FeatureHubRepository,
   FeatureState,
   FeatureStateValueInterceptor,
@@ -7,6 +7,7 @@ import {
   SSEResultState
 } from '../app';
 import { expect } from 'chai';
+import { Arg, Substitute, SubstituteOf } from '@fluffy-spoon/substitute';
 
 class KeyValueInterceptor implements FeatureStateValueInterceptor {
   private key: string;
@@ -57,7 +58,12 @@ describe('Interceptor functionality works as expected', () => {
     expect(repo.feature('peach').getRawJson()).to.eq('{}');
   });
 
-  it('should not allow us to override locked values', () => {
+  it('should not allow us to override locked values', async () => {
+    const fhConfig = new EdgeFeatureHubConfig('http://localhost:8080', '123*123');
+    fhConfig.repository(repo);
+    const edgeService = Substitute.for<EdgeService>();
+    fhConfig.edgeServiceProvider((repository, config) => edgeService);
+
     const features = [
       new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.Boolean, l: true, value: false}),
       new FeatureState({id: '1', key: 'apricot', version: 1, type: FeatureValueType.Number, l: true, value: 16.2}),
@@ -70,14 +76,20 @@ describe('Interceptor functionality works as expected', () => {
 
     repo.notify(SSEResultState.Features, features);
 
-    repo.addValueInterceptor(new KeyValueInterceptor('banana', 'true'));
-    repo.addValueInterceptor(new KeyValueInterceptor('apricot', '17.3'));
-    repo.addValueInterceptor(new KeyValueInterceptor('nashi', 'wombat'));
-    repo.addValueInterceptor(new KeyValueInterceptor('peach', '{}'));
+    fhConfig.addValueInterceptor(new KeyValueInterceptor('banana', 'true'));
+    fhConfig.addValueInterceptor(new KeyValueInterceptor('apricot', '17.3'));
+    fhConfig.addValueInterceptor(new KeyValueInterceptor('nashi', 'wombat'));
+    fhConfig.addValueInterceptor(new KeyValueInterceptor('peach', '{}'));
 
-    expect(repo.feature('banana').getBoolean()).to.eq(false);
-    expect(repo.feature('apricot').getNumber()).to.eq(16.2);
-    expect(repo.feature('nashi').getString()).to.eq('oook');
-    expect(repo.feature('peach').getRawJson()).to.eq('{"variety": "golden queen"}');
+    const client = await fhConfig.newContext().build();
+
+    expect(client.feature('banana').getBoolean()).to.eq(false);
+    expect(client.getBoolean('banana')).to.eq(false);
+    expect(client.feature('apricot').getNumber()).to.eq(16.2);
+    expect(client.getNumber('apricot')).to.eq(16.2);
+    expect(client.feature('nashi').getString()).to.eq('oook');
+    expect(client.getString('nashi')).to.eq('oook');
+    expect(client.feature('peach').getRawJson()).to.eq('{"variety": "golden queen"}');
+    expect(client.getJson('peach')).to.deep.eq({variety: 'golden queen'});
   });
 });
