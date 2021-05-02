@@ -80,8 +80,11 @@ This is recommended for Mobile as it will only request updates when you ask for 
 
 ### Connecting to FeatureHub
 There are 3 steps to connecting:
+
 1) Copy FeatureHub API Key from the FeatureHub Admin Console
+
 2) Create FeatureHub config
+
 3) Check FeatureHub Repository readyness and request feature state
 
 #### 1. Copy SDK API Key from the FeatureHub Admin Console
@@ -97,7 +100,7 @@ and is intended for rapid client side evaluation, per request for example.
 Server Side evaluation is more suitable when you are using an _insecure client_. (e.g. Browser or Mobile). 
 This also means you evaluate one user per client.
 
-#### 2. Make a client:
+#### 2. Create FeatureHub config:
 
 Create an instance of `EdgeFeatureHubConfig`. You need to provide the API Key and the URL of the end-point you will be connecting to (the Edge server URL).
 
