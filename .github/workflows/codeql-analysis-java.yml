@@ -19,11 +19,14 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
+      
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        languages: java  
 
     # Initializes the CodeQL tools for scanning.
-    - name: Initialize CodeQL
-      with:
-        languages: java
+    - name: Build dependencies
       run: cd backend && mvn -f pom-first.xml clean install -Dfindbugs.skip -Dcheckstyle.skip -Dpmd.skip=true -Denforcer.skip -Dmaven.javadoc.skip -DskipTests -Dmaven.test.skip.exec -Dlicense.skip=true -Drat.skip=true && cd .. &&  mvn  clean install -Dfindbugs.skip -Dcheckstyle.skip -Dpmd.skip=true -Denforcer.skip -Dmaven.javadoc.skip -DskipTests -Dmaven.test.skip.exec -Dlicense.skip=true -Drat.skip=true
 
     - name: Perform CodeQL Analysis
