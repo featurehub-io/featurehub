@@ -80,8 +80,11 @@ This is recommended for Mobile as it will only request updates when you ask for 
 
 ### Connecting to FeatureHub
 There are 3 steps to connecting:
+
 1) Copy FeatureHub API Key from the FeatureHub Admin Console
+
 2) Create FeatureHub config
+
 3) Check FeatureHub Repository readyness and request feature state
 
 #### 1. Copy SDK API Key from the FeatureHub Admin Console
@@ -97,7 +100,7 @@ and is intended for rapid client side evaluation, per request for example.
 Server Side evaluation is more suitable when you are using an _insecure client_. (e.g. Browser or Mobile). 
 This also means you evaluate one user per client.
 
-#### 2. Make a client:
+#### 2. Create FeatureHub config:
 
 Create an instance of `EdgeFeatureHubConfig`. You need to provide the API Key and the URL of the end-point you will be connecting to (the Edge server URL).
 
@@ -106,7 +109,7 @@ Create an instance of `EdgeFeatureHubConfig`. You need to provide the API Key an
 import io.featurehub.client.EdgeFeatureHubConfig;
 
 String edgeUrl = "http://localhost:8085/";
-String apiKey = "/default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE";
+String apiKey = "default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE";
 
 FeatureHubConfig fhConfig = new EdgeFeatureHubConfig(edgeUrl, apiKey);
 ----
@@ -197,7 +200,7 @@ public class HealthResource {
 
   @RequestMapping("/liveness")
   public String liveness() {
-    if (featureHubConfig.getRepository().getReadyness() == Readyness.Ready) {
+    if (featureHubConfig.getReadyness() == Readyness.Ready) {
       return "yes";
     }
 
@@ -221,7 +224,7 @@ public class HealthResource {
 
   @GET
   public Response liveness() {
-    if (config.getRepository().getReadyness() == Readyness.Ready) {
+    if (config.getReadyness() == Readyness.Ready) {
       return Response.ok().build();
     }
 
@@ -243,43 +246,43 @@ kind of _request level scope_ - a Request Level injectable object.
 In our examples, we simply put the Authorization header into the UserKey of the context, allowing you to just pass the
 name of the user to keep it simple.
 
-.SpringBoot - creating and using the context
+.SpringBoot - creating and using the fhClient
 [source,java]
 ----
 @Configuration
 public class UserConfiguration {
   @Bean
   @Scope("request")
-  ClientContext featureHubContext(FeatureHubConfig fhConfig, HttpServletRequest request) {
-    ClientContext ctx = fhConfig.newContext();
+  ClientContext createClient(FeatureHubConfig fhConfig, HttpServletRequest request) {
+    ClientContext fhClient = fhConfig.newContext();
 
     if (request.getHeader("Authorization") != null) {
       // you would always authenticate some other way, this is just an example
-      ctx.userKey(request.getHeader("Authorization"));
+      fhClient.userKey(request.getHeader("Authorization"));
     }
 
-    return ctx;
+    return fhClient;
   }
 }
 
 @RestController
 public class HelloResource {
-  private final Provider<ClientContext> ctxProvider;
+  private final Provider<ClientContext> clientProvider;
 
   @Inject
-  public HelloResource(Provider<ClientContext> ctxProvider) {
-    this.ctxProvider = ctxProvider;
+  public HelloResource(Provider<ClientContext> clientProvider) {
+    this.clientProvider = clientProvider;
   }
 
   @RequestMapping("/")
   public String index() {
-    ClientContext ctx = ctxProvider.get();
-    return "Hello World " + ctx.feature("SUBMIT_COLOR_BUTTON").getString();
+    ClientContext fhClient = clientProvider.get();
+    return "Hello World " + fhClient.feature("SUBMIT_COLOR_BUTTON").getString();
   }
 }
 ----
 
-.Quarkus/CDI - creating and using the context
+.Quarkus/CDI - creating and using the fhClient
 [source,java]
 ----
   /**
@@ -287,11 +290,11 @@ public class HelloResource {
    * discovers it. (This is part of the FeatureSource class from above)
    *
    * @param config - the FeatureHub Config
-   * @return - a blank context usable by any resource.
+   * @return - a blank client context usable by any resource.
    */
   @Produces
   @RequestScoped
-  public ClientContext ctx(FeatureHubConfig config) {
+  public ClientContext createClient(FeatureHubConfig config) {
     try {
       return config.newContext().build().get();
     } catch (Exception e) {
@@ -311,7 +314,7 @@ public class AuthFilter implements ContainerRequestFilter {
   private static final Logger log = LoggerFactory.getLogger(AuthFilter.class);
 
   @Inject
-  javax.inject.Provider<ClientContext> contextProvider;
+  javax.inject.Provider<ClientContext> clientProvider;
   
   @Override
   public void filter(ContainerRequestContext req) {
@@ -319,7 +322,7 @@ public class AuthFilter implements ContainerRequestFilter {
       String user = req.getHeaderString("Authorization");
 
       try {
-        contextProvider.get().userKey(user).build().get();
+        clientProvider.get().userKey(user).build().get();
       } catch (Exception e) {
         log.error("Unable to set user key on user");
       }
@@ -329,11 +332,11 @@ public class AuthFilter implements ContainerRequestFilter {
   
 @Path("/")
 public class HelloResource {
-  private final Provider<ClientContext> contextProvider;
+  private final Provider<ClientContext> clientProvider;
 
   @Inject
-  public HelloResource(Provider<ClientContext> contextProvider) {
-    this.contextProvider = contextProvider;
+  public HelloResource(Provider<ClientContext> clientProvider) {
+    this.clientProvider = clientProvider;
   }
 
 
@@ -362,7 +365,7 @@ a poll to the server and it will get the feature statuses and you will be ready 
 you can simply .build() your context again and it will force a poll. 
 
 ----
-ClientContext ctx = fhConfig.newContext().build().get();
+ClientContext fhClient = fhConfig.newContext().build().get();
 ----
 
 ==== Local Feature Overrides
@@ -387,7 +390,7 @@ and override it if you know what you are tracking against for the individual req
 
 [source,java]
 ----
-cfr.addAnalyticCollector(new GoogleAnalyticsCollector(analyticsKey, analyticsCid, new GoogleAnalyticsJerseyApiClient()));
+fhConfig.addAnalyticCollector(new GoogleAnalyticsCollector(analyticsKey, analyticsCid, new GoogleAnalyticsJerseyApiClient()));
 ----
 
 When you wish to lodge an event, simply call `logAnalyticsEvent` on the featurehub repository instance. You can
@@ -415,7 +418,7 @@ Provide the following attribute to support `userKey` rule:
 
 [source,java]
 ----
-ctx.userKey("ideally-unique-id"); 
+fhClient.userKey("ideally-unique-id"); 
 ----
 
 
@@ -423,35 +426,35 @@ to support `country` rule:
 
 [source,java]
 ----
-ctx.country(StrategyAttributeCountryName.NewZealand);
+fhClient.country(StrategyAttributeCountryName.NewZealand);
 ----
 
 to support `device` rule:
 
 [source,java]
 ----
-ctx.device(StrategyAttributeDeviceName.Browser);
+fhClient.device(StrategyAttributeDeviceName.Browser);
 ----
 
 to support `platform` rule:
 
 [source,java]
 ----
-ctx.platform(StrategyAttributePlatformName.Android);
+fhClient.platform(StrategyAttributePlatformName.Android);
 ----
 
 to support `semantic-version` rule:
 
 [source,java]
 ----
-ctx.version("1.2.0"); 
+fhClient.version("1.2.0"); 
 ----
 
 or if you are using multiple rules, you can combine attributes as follows:
 
 [source,java]
 ----
-cfr.clientContext().userKey("ideally-unique-id")
+fhClient.userKey("ideally-unique-id")
       .country(StrategyAttributeCountryName.NewZealand)
       .device(StrategyAttributeDeviceName.Browser)
       .platform(StrategyAttributePlatformName.Android)
@@ -464,7 +467,7 @@ poll. If you wish to ensure the next line of code has the upated statuses, wait 
 .Server Evaluated API Key - ensuring the repository is updated
 [source,java]
 ----
-  ClientContext ctx = fhConfig.newContext().userKey("user@mailinator.com").build.get();
+  ClientContext fhClient = fhConfig.newContext().userKey("user@mailinator.com").build.get();
 ----
 
 You do not have to do the build().get()  (but you can) for client evaluated keys as the context is mutable and changes are immediate. 
@@ -476,17 +479,17 @@ To add a custom key/value pair, use `attr(key, value)`
 
 [source,java]
 ----
-    ctx.attr("first-language", "russian");
+    fhClient.attr("first-language", "russian");
 ----
 
 Or with array of values (only applicable to custom rules):
 
 [source,java]
 ----
-ctx.attrs(“languages”, Arrays.asList(“russian”, “english”, “german”));
+fhClient.attrs(“languages”, Arrays.asList(“russian”, “english”, “german”));
 ----
 
-You can also use `ctx.clear()` to empty your context.
+You can also use `fhClient.clear()` to empty your context.
 
 Remember, for *Server Evaluated Keys* you must always call `.build()` to trigger a request to update the feature values
 based on the context changes.
@@ -496,13 +499,13 @@ For percentage rollout you are only required to provide the `userKey` or `sessio
 
 [source,java]
 ----
-ctx.userKey("ideally-unique-id"); 
+fhClient.userKey("ideally-unique-id"); 
 ----
 or
 
 [source,java]
 ----
-ctx.sessionKey("session-id"); 
+fhClient.sessionKey("session-id"); 
 ----
 
 For more details on percentage splits and feature experiments see https://docs.featurehub.io/#_percentage_split_rule[Percentage Split Rule].

@@ -87,27 +87,27 @@ class RepositorySpec extends Specification {
       ]
     when:
       repo.notify(features, false)
-      def feature = repo.getFeatureState('banana').copy()
+      def feature = repo.getFeatureState('banana').boolean
     and: "i make a change to the state but keep the version the same (ok because this is what rollout strategies do)"
       repo.notify([
         new FeatureState().id('1').key('banana').version(1L).value(true).type(FeatureValueType.BOOLEAN),
       ])
-      def feature2 = repo.getFeatureState('banana').copy()
+      def feature2 = repo.getFeatureState('banana').boolean
     and: "then i make the change but up the version"
       repo.notify([
         new FeatureState().id('1').key('banana').version(2L).value(true).type(FeatureValueType.BOOLEAN),
       ])
-      def feature3 = repo.getFeatureState('banana').copy()
+      def feature3 = repo.getFeatureState('banana').boolean
     and: "then i make a change but force it even if the version is the same"
       repo.notify([
         new FeatureState().id('1').key('banana').version(1L).value(false).type(FeatureValueType.BOOLEAN),
       ], true)
-      def feature4 = repo.getFeatureState('banana').copy()
+      def feature4 = repo.getFeatureState('banana').boolean
     then:
-      feature.boolean == false
-      feature2.boolean == true
-      feature3.boolean == true
-      feature4.boolean == false
+      !feature
+      feature2
+      feature3
+      !feature4
   }
 
   def "a non existent feature is not set"() {
@@ -132,12 +132,12 @@ class RepositorySpec extends Specification {
     and: "i notify repo"
       repo.notify([feature])
     when: "i check the feature state"
-      def f = repo.getFeatureState('banana').copy()
+      def f = repo.getFeatureState('banana').boolean
     and: "i delete the feature"
       def featureDel = new FeatureState().id('1').key('banana').version(2L).value(true).type(FeatureValueType.BOOLEAN)
       repo.notify(SSEResultState.DELETE_FEATURE, new ObjectMapper().writeValueAsString(featureDel))
     then:
-      f.boolean
+      f
       !repo.getFeatureState('banana').enabled
   }
 
@@ -159,7 +159,7 @@ class RepositorySpec extends Specification {
       def newRepo = new ClientFeatureRepository(mockExecutor)
       newRepo.notify(features)
       commands.each {it.run() } // process
-    and: "i register a mock analyics collector"
+    and: "i register a mock analytics collector"
       def mockAnalytics = Mock(AnalyticsCollector)
       newRepo.addAnalyticCollector(mockAnalytics)
     when: "i log an event"
@@ -245,7 +245,7 @@ class RepositorySpec extends Specification {
         def listener = Mock(FeatureListener)
         updateListener.add(listener)
         feature.addListener(listener)
-        emptyFeatures.add(feature.copy())
+        emptyFeatures.add(feature.analyticsCopy())
       }
     when: "i fill in the repo"
       repo.notify(features)

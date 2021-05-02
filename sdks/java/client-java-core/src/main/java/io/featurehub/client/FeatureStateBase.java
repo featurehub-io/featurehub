@@ -17,11 +17,11 @@ import java.util.Objects;
 public class FeatureStateBase implements FeatureState {
   private static final Logger log = LoggerFactory.getLogger(FeatureStateBase.class);
   protected final String key;
-  protected io.featurehub.sse.model.FeatureState featureState;
+  protected io.featurehub.sse.model.FeatureState _featureState;
   List<FeatureListener> listeners = new ArrayList<>();
   protected ClientContext context;
   protected FeatureStore featureStore;
-  protected Object value;
+  protected FeatureStateBase parentHolder;
 
   public FeatureStateBase(
     FeatureStateBase oldHolder, FeatureStore featureStore, String key) {
@@ -38,12 +38,24 @@ public class FeatureStateBase implements FeatureState {
   }
 
   public FeatureState withContext(ClientContext context) {
-    return ((FeatureStateBase) copy()).setContext(context);
+    final FeatureStateBase copy = _copy();
+    copy.context = context;
+    return copy;
   }
 
-  protected FeatureState setContext(ClientContext ctx) {
-    this.context = ctx;
-    return this;
+  protected io.featurehub.sse.model.FeatureState featureState() {
+    // clones for analytics will set the feature state
+    if (_featureState != null) {
+      return _featureState;
+    }
+
+    // child objects for contexts will use this
+    if (parentHolder != null) {
+      return parentHolder.featureState();
+    }
+
+    // otherwise it isn't set
+    return null;
   }
 
   protected void notifyListeners() {
@@ -58,7 +70,7 @@ public class FeatureStateBase implements FeatureState {
 
   @Override
   public boolean isLocked() {
-    return this.featureState != null && this.featureState.getL() == Boolean.TRUE;
+    return this.featureState() != null && this.featureState().getL() == Boolean.TRUE;
   }
 
   @Override
@@ -66,15 +78,30 @@ public class FeatureStateBase implements FeatureState {
     return getAsString(FeatureValueType.STRING);
   }
 
-  private String getAsString(FeatureValueType type) {
-    if (!isLocked()) {
-      FeatureValueInterceptor.ValueMatch vm = findIntercept();
+  @Override
+  public Boolean getBoolean() {
+    Object val = getValue(FeatureValueType.BOOLEAN);
 
-      if (vm != null) {
-        return vm.value;
-      }
+    if (val == null) {
+      return null;
     }
 
+    if (val instanceof String) {
+      return Boolean.TRUE.equals("true".equalsIgnoreCase(val.toString()));
+    }
+
+    return Boolean.TRUE.equals(val);
+  }
+
+  private Object getValue(FeatureValueType type) {
+    // unlike js, locking is registered on a per interceptor basis
+    FeatureValueInterceptor.ValueMatch vm = findIntercept();
+
+    if (vm != null) {
+      return vm.value;
+    }
+
+    final io.featurehub.sse.model.FeatureState featureState = featureState();
     if (featureState == null || featureState.getType() != type) {
       return null;
     }
@@ -85,70 +112,28 @@ public class FeatureStateBase implements FeatureState {
           featureState.getStrategies(), key, featureState.getId(), context);
 
       if (applied.isMatched()) {
-        return applied.getValue() == null ? null : applied.getValue().toString();
+        return applied.getValue() == null ? null : applied.getValue();
       }
     }
 
+    return featureState.getValue();
+  }
+
+  private String getAsString(FeatureValueType type) {
+    Object value = getValue(type);
     return value == null ? null : value.toString();
   }
 
   @Override
-  public Boolean getBoolean() {
-    if (!isLocked()) {
-      FeatureValueInterceptor.ValueMatch vm = findIntercept();
-
-      if (vm != null) {
-        return Boolean.parseBoolean(vm.value);
-      }
-    }
-
-    if (featureState == null || featureState.getType() != FeatureValueType.BOOLEAN) {
-      return null;
-    }
-
-    if (context != null) {
-      final Applied applied =
-          featureStore.applyFeature(
-              featureState.getStrategies(), key, featureState.getId(), context);
-
-      if (applied.isMatched()) {
-        return Boolean.TRUE.equals(applied.getValue());
-      }
-    }
-
-    return Boolean.TRUE.equals(value);
-  }
-
-  @Override
   public BigDecimal getNumber() {
-    if (!isLocked()) {
-      FeatureValueInterceptor.ValueMatch vm = findIntercept();
+    Object val = getValue(FeatureValueType.NUMBER);
 
-      if (vm != null) {
-        try {
-          return (vm.value == null) ? null : new BigDecimal(vm.value);
-        } catch (Exception e) {
-          log.warn("Attempting to convert {} to BigDecimal fails as is not a number", vm.value);
-          return null; // ignore conversion failures
-        }
-      }
+    try {
+      return (val == null) ? null : (val instanceof BigDecimal ? ((BigDecimal)val) : new BigDecimal(val.toString()));
+    } catch (Exception e) {
+      log.warn("Attempting to convert {} to BigDecimal fails as is not a number", val);
+      return null; // ignore conversion failures
     }
-
-    if (featureState == null || featureState.getType() != FeatureValueType.NUMBER) {
-      return null;
-    }
-
-    if (context != null) {
-      final Applied applied =
-        featureStore.applyFeature(
-          featureState.getStrategies(), key, featureState.getId(), context);
-
-      if (applied.isMatched()) {
-        return applied.getValue() == null ? null : new BigDecimal(applied.getValue().toString());
-      }
-    }
-
-    return (BigDecimal)value;
   }
 
   @Override
@@ -175,11 +160,11 @@ public class FeatureStateBase implements FeatureState {
 
   @Override
   public boolean isSet() {
-    return featureState != null && getAsString(featureState.getType()) != null;
+    return featureState() != null && getAsString(featureState().getType()) != null;
   }
 
   protected FeatureValueInterceptor.ValueMatch findIntercept() {
-    boolean locked = featureState != null && Boolean.TRUE.equals(featureState.getL());
+    boolean locked = featureState() != null && Boolean.TRUE.equals(featureState().getL());
     return featureStore.getFeatureValueInterceptors().stream()
         .filter(vi -> !locked || vi.allowLockOverride)
         .map(
@@ -197,19 +182,25 @@ public class FeatureStateBase implements FeatureState {
   }
 
   @Override
-  public void addListener(FeatureListener listener) {
-    listeners.add(listener);
+  public void addListener(final FeatureListener listener) {
+    if (context != null) {
+      listeners.add((fs) -> listener.notify(this));
+    } else {
+      listeners.add(listener);
+    }
   }
 
+  // stores the feature state and triggers notifyListeners if anything changed
+  // should the notify actually be inside the listener code? given contexts?
   public FeatureState setFeatureState(io.featurehub.sse.model.FeatureState featureState) {
     if (featureState != null) {
-      this.featureState = featureState;
+      Object oldValue = getValue(type());
 
-      Object oldValue = value;
+      this._featureState = featureState;
 
-      if (featureState.getValue() == null) {
-        value = null;
-      } else {
+      Object value = null;
+
+      if (featureState.getValue() != null) {
         try {
           switch (featureState.getType()) {
             case BOOLEAN:
@@ -225,8 +216,7 @@ public class FeatureStateBase implements FeatureState {
               value = featureState.getValue().toString();
               break;
           }
-        } catch (Exception e) {
-          value = null;
+        } catch (Exception ignored) {
         }
       }
 
@@ -239,19 +229,33 @@ public class FeatureStateBase implements FeatureState {
   }
 
   protected FeatureState copy() {
-    return new FeatureStateBase(this, featureStore, key).setFeatureState(featureState);
+    return _copy();
+  }
+
+  protected FeatureState analyticsCopy() {
+    final FeatureStateBase aCopy = _copy();
+    aCopy._featureState = featureState();
+    return aCopy;
+  }
+
+  protected FeatureStateBase _copy() {
+    final FeatureStateBase copy = new FeatureStateBase(this, featureStore, key);
+    copy.parentHolder = this;
+    return copy;
   }
 
   protected boolean exists() {
-    return featureState != null;
+    return featureState() != null;
   }
 
   protected FeatureValueType type() {
+    final io.featurehub.sse.model.FeatureState featureState = featureState();
     return featureState == null ? null : featureState.getType();
   }
 
   @Override
   public String toString() {
+    Object value = getValue(type());
     return value == null ? null : value.toString();
   }
 }

@@ -262,7 +262,7 @@ public class ClientFeatureRepository extends AbstractFeatureRepository
         features.values().stream()
             .map(f -> ctx == null ? f : f.withContext(ctx))
             .filter(FeatureState::isSet)
-            .map(f -> ((FeatureStateBase)f).copy())
+            .map(f -> ((FeatureStateBase)f).analyticsCopy())
             .collect(Collectors.toList());
 
     executor.execute(
@@ -283,11 +283,11 @@ public class ClientFeatureRepository extends AbstractFeatureRepository
       holder = new FeatureStateBase(holder, this, featureState.getKey());
 
       features.put(featureState.getKey(), holder);
-    } else if (!force && holder.featureState != null) {
-      if (holder.featureState.getVersion() > featureState.getVersion()
-          || (holder.featureState.getVersion().equals(featureState.getVersion())
+    } else if (!force && holder._featureState != null) {
+      if (holder._featureState.getVersion() > featureState.getVersion()
+          || (holder._featureState.getVersion().equals(featureState.getVersion())
               && !FeatureStateUtils.changed(
-                  holder.featureState.getValue(), featureState.getValue()))) {
+                  holder._featureState.getValue(), featureState.getValue()))) {
         // if the old version is newer, or they are the same version and the value hasn't changed.
         // it can change with server side evaluation based on user data
         return;
