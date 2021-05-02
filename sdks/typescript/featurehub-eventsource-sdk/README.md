@@ -775,7 +775,7 @@ between not setting a value, and setting it to null.
 Sample code might look like this:
 
 ```typescript 
-const fu = new FeatureUpdater('https://vrtfs.demo.featurehub.io/features/default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE');
+const fu = new FeatureUpdater(fhConfig);
 
 // this would work presuming the correct access rights
 fu.updateKey('FEATURE_TITLE_TO_UPPERCASE', new FeatureStateUpdate({lock: false, value: true})).then((r) => console.log('result is', r));
@@ -788,7 +788,7 @@ You can do this in the browser and in the sample React application in the exampl
 class to the `Window` object so you can run up the sample and play around with it. For example:
 
 ```javascript 
-x = new window.FeatureUpdater('http://localhost:8553/features/default/ce6b5f90-2a8a-4b29-b10f-7f1c98d878fe/VNftuX5LV6PoazPZsEEIBujM4OBqA1Iv9f9cBGho2LJylvxXMXKGxwD14xt2d7Ma3GHTsdsSO8DTvAYF');
+const x = new window.FeatureUpdater(fhConfig);
 
 x.updateKey('meep', {lock: true}).then((r) => console.log('result was', r));
 result was false
