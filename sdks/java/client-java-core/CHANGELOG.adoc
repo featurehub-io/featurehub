@@ -1,7 +1,8 @@
 === Changes
 
-2.3 - expose analytic collector, readyness listener, readyness state, and value interceptor capability on the FeatureHubConfig so no requirement to get the repository.
-Also added functionality to ensure that when adding a feature listener to the context that the feature that appears in the listener is the one with the context
-associated (i.e. as if you went context.getNumber('fred')). Make the creation of a new context more consistent so you can not pass one of the two parameters and it
-would still do the right thing. added new tests to cover this functionality.
-2.2 - fixed issue where no header for server eval context was causing NPE at times.
+=== 2.3  
+- Expose analytic collector, readyness listener, readyness state, and value interceptor properties on the FeatureHubConfig
+- Respect context when using feature listeners
+
+=== 2.2 
+- fixed issue where no header for server eval context was causing NPE at times.
