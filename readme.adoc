@@ -1,3 +1,7 @@
+[link=https://github.com/featurehub-io/featurehub/actions/workflows/codeql-analysis-java.yml]
+image::https://github.com/featurehub-io/featurehub/actions/workflows/codeql-analysis-java.yml/badge.svg[Build backend]
+
+
 :icons: font
 image::docs/images/fh_primary_navy.png[Feature Hub,500]
 
