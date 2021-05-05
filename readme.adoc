@@ -11,9 +11,9 @@ issues, contribute a new SDK or just get a deeper understanding of how it works,
 
 https://demo.featurehub.io[Try FeatureHub demo now]
 
-**New in version 1.3 - Client evaluated rollout strategies support. Make you flags more secure! **
+**New in version 1.3 - Client evaluated rollout strategies support for better performance! **
 
-Avoid leaking information about your users to the clients when evaluating flags with rollout strategies that contain user context. 
+Improvements to server evaluated flags - avoid leaking information about your users to the clients when evaluating flags with rollout strategies that contain user context. 
 
 You can now choose from two types of keys: Client eval API Key and Server eval API Key
 
