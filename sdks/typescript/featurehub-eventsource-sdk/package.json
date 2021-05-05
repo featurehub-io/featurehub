@@ -1,6 +1,6 @@
 {
   "name": "featurehub-eventsource-sdk",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "FeatureHub SDK. Supports near real-time feature flag updates via eventsource (SSE) or on-demand updates via REST requests.",
   "author": "info@featurehub.io",
   "main": "dist/index.js",
@@ -55,7 +55,7 @@
   "dependencies": {
     "@types/eventsource": "^1.1.5",
     "eventsource": "^1.1.0",
-    "featurehub-repository": "^2.0.0"
+    "featurehub-repository": "^2.0.3"
   },
   "engines": {
     "node": ">=12.12.0"
