@@ -1,4 +1,4 @@
-FROM adoptopenjdk:11-jre-hotspot-bionic
+FROM adoptopenjdk:11-jre-hotspot-focal
 
 RUN apt-get update && apt-get install -y nginx
 RUN mkdir /db && mkdir /target && mkdir /etc/app-config && mkdir /etc/common-config
