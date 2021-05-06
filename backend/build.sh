@@ -5,4 +5,4 @@ if [ $# -eq 0 ]
     exit -1
 fi
 mvn -f pom-packages.xml -Ddocker-cloud-build=true -Dbuild.version=$1 clean install
---
+

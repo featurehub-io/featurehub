@@ -60,6 +60,7 @@ public class Application {
       new Application().run();
     } catch (Exception e) {
       log.error("Failed to start.", e);
+      ApplicationLifecycleManager.updateStatus(LifecycleStatus.TERMINATED);
       System.exit(-1);
     }
   }

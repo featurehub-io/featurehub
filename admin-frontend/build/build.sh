@@ -11,7 +11,7 @@ rm -rf build
 flutter clean
 flutter pub get
 echo FLUTTER: building deploy_main
-flutter analyze
+#flutter analyze
 if test "$?" != "0"; then
   echo "failed"
   exit 1

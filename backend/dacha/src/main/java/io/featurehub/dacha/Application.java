@@ -55,7 +55,9 @@ public class Application {
 
       Thread.currentThread().join();
     } catch (Exception e) {
-      log.error("Failed to start");
+      log.error("Failed to start", e);
+      ApplicationLifecycleManager.updateStatus(LifecycleStatus.TERMINATED);
+      System.exit(-1);
     }
   }
 }
