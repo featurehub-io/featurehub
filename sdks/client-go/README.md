@@ -144,7 +144,7 @@ Some rollout strategies need to be calculated per-request, which means that we c
 		Userkey:  "12345",
 		Device:   "server",
 		Platform: "linux",
-		Country:  "russia",
+		Country:  "New Zealand",
 		Version:  "1.0.5",
 	}
 
