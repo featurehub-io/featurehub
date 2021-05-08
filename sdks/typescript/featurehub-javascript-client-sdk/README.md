@@ -23,6 +23,7 @@ Note, there is a known issues in the browsers with Kaspersky antivirus potential
 ### **Important Note**
 
 If you are using nodejs, this documentation is the same, but your library is [featurehub-javascript-node-sdk](https://www.npmjs.com/packages/featurehub-javascript-node-sdk) instead. If you are transitioning from the older libraries, the API is identical, simply replace the imported package.
+If you are using the browser, the documentation is the same, but your library is [featurehub-javascript-client-sdk](https://www.npmjs.com/featurehub-javascript-client-sdk). 
 
 ## Changelog
 
