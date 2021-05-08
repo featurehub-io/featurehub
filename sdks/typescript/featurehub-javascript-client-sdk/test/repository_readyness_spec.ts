@@ -67,7 +67,7 @@ describe('Readyness listeners should fire on appropriate events', () => {
     expect(readynessTrigger).to.eq(3);
   });
 
-  it('we should be able to be ready and then be not ready on a bye', () => {
+  it('we should be able to be ready and then be still ready on a bye', () => {
     let readynessTrigger = 0;
     let lastReadyness: Readyness = undefined;
     repo.addReadynessListener((state) => {
@@ -80,9 +80,9 @@ describe('Readyness listeners should fire on appropriate events', () => {
 
     repo.notify(SSEResultState.Features, features);
     repo.notify(SSEResultState.Bye, undefined);
-    expect(repo.readyness).to.eq(Readyness.NotReady);
-    expect(lastReadyness).to.eq(Readyness.NotReady);
-    expect(readynessTrigger).to.eq(3);
+    expect(repo.readyness).to.eq(Readyness.Ready);
+    expect(lastReadyness).to.eq(Readyness.Ready);
+    expect(readynessTrigger).to.eq(2);
 
   });
 });
