@@ -1,0 +1,4 @@
+name: "My CodeQL config"
+
+paths:
+  - sdks/typescript/featurehub-eventsource-sdk

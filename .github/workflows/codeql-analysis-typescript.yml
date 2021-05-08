@@ -30,9 +30,10 @@ jobs:
       uses: github/codeql-action/init@v1
       with:
         languages: javascript
+        config-file: ./.github/configs/typescript-codeql-config.yml
 
-    - name: Build
-      run: cd sdks/typescript/featurehub-eventsource-sdk && npm install && npm run build
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v1
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
