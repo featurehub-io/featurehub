@@ -42,7 +42,7 @@
     "tsc": "node ./node_modules/typescript/bin/tsc -p",
     "link": "npm link featurehub-repository && npm link featurehub-eventsource-sdk",
     "compile": "npm run build && npm link",
-    "release": "cp ../featurehub-javascript-client-sdk/README.md . && npm run build && npm publish",
+    "release": "rm README.md && cp ../featurehub-javascript-client-sdk/README.md . && npm run build && npm publish",
     "prepublishOnly": "npm run build",
     "lint": "node ./node_modules/tslint/bin/tslint -r ./node_modules/tslint-microsoft-contrib/ \"app/**/*.ts\" \"spec/**/*.ts\" -e \"app/generated-code/**/*\""
   },
