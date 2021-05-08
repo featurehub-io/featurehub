@@ -1,6 +1,6 @@
 {
-  "name": "featurehub-repository",
-  "version": "2.0.5",
+  "name": "@featurehub/javascript-client-sdk",
+  "version": "1.0.0",
   "description": "Core package of API that exposes FeatureHub feature flags, values and configuration to client applications written in Typescript or Javascript.",
   "author": "info@featurehub.io",
   "main": "dist/index.js",
@@ -47,12 +47,12 @@
     "lint": "node ./node_modules/tslint/bin/tslint -r ./node_modules/tslint-microsoft-contrib/ \"app/**/*.ts\" \"spec/**/*.ts\" -e \"app/generated-code/**/*\""
   },
   "devDependencies": {
-    "@fluffy-spoon/substitute": "^1.194.0",
-    "@types/chai": "^4.2.12",
+    "@fluffy-spoon/substitute": "^1.208.0",
+    "@types/chai": "^4.2.18",
     "@types/mocha": "^8.0.2",
-    "@types/node": "^12.12.54",
+    "@types/node": "^12.20.12",
     "chai": "^4.2.0",
-    "mocha": "^8.1.1",
+    "mocha": "^8.4.0",
     "nyc": "^15.1.0",
     "ts-node": "8.10.2",
     "tslint": "6.1.1",
@@ -60,12 +60,10 @@
     "typescript": "3.9.7"
   },
   "dependencies": {
-    "@types/ip6addr": "^0.2.1",
     "@types/murmurhash": "^2.0.0",
-    "@types/semver": "^7.3.4",
-    "ip6addr": "^0.2.3",
+    "@types/semver": "^7.3.5",
     "murmurhash": "^2.0.0",
-    "semver": "^7.3.4"
+    "semver": "^7.3.5"
   },
   "engines": {
     "node": ">=12.12.0"

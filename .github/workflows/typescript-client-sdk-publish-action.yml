@@ -1,0 +1,25 @@
+name: Publish TypeScript Client SDK package to NPM registry
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      # Setup .npmrc file to publish to npm
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '12.x'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Install dependencies
+        run: npm install
+        working-directory: sdks/typescript/featurehub-javascript-client-sdk
+      - name: Ensure tests are working
+        run: npm run test
+        working-directory: sdks/typescript/featurehub-javascript-client-sdk
+      - name: Compile sources and Publish to NPM
+        run: npm run release
+        working-directory: sdks/typescript/featurehub-javascript-client-sdk
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

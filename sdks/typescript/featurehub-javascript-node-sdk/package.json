@@ -1,18 +1,19 @@
 {
-  "name": "featurehub-eventsource-sdk",
-  "version": "2.0.4",
-  "description": "FeatureHub SDK. Supports near real-time feature flag updates via eventsource (SSE) or on-demand updates via REST requests.",
+  "name": "@featurehub/javascript-node-sdk",
+  "version": "1.0.0",
+  "description": "featurehub intended for use by nodejs.",
   "author": "info@featurehub.io",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "module": "lib/index.js",
-  "files": [
-    "lib/**/*",
-    "dist/**/*"
-  ],
   "repository": {
     "type": "git",
     "url": ""
   },
+  "files": [
+    "dist/**/*",
+    "lib/**/*"
+  ],
   "homepage": "https://featurehub.io",
   "keywords": [
     "feature-flag-api",
@@ -32,30 +33,35 @@
   "license": "MIT",
   "scripts": {
     "build": "npm run clean && npm run tsc tsconfig.json && npm run tsc tsconfig-es.json",
-    "clean": "rm -rf dist lib",
+    "clean": "rm -rf dist lib && rm -rf app/*.js app/*.d.ts app/*.map",
     "build:watch": "npm run build -- -- -w",
     "mocha": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' node ./node_modules/mocha/bin/mocha --config mocharc.yml",
-    "test": "npm run clean && npm run tsc tsconfig-es.json && npm run mocha",
+    "test": "npm run clean && npm run tsc tsconfig.json && npm run mocha",
+    "coverage": "nyc npm run test",
     "test:watch": "npm run mocha --opts mocha.opts --watch",
-    "link": "npm link featurehub-repository",
-    "compile": "npm run link && npm run build && npm link",
     "tsc": "node ./node_modules/typescript/bin/tsc -p",
+    "link": "npm link featurehub-repository && npm link featurehub-eventsource-sdk",
+    "compile": "npm run build && npm link",
     "release": "npm run build && npm publish",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "lint": "node ./node_modules/tslint/bin/tslint -r ./node_modules/tslint-microsoft-contrib/ \"app/**/*.ts\" \"spec/**/*.ts\" -e \"app/generated-code/**/*\""
   },
   "devDependencies": {
-    "@types/chai": "4.2.15",
-    "@types/mocha": "8.2.2",
-    "@types/node": "^14.14.35",
-    "chai": "4.3.4",
-    "mocha": "8.3.2",
-    "ts-node": "9.1.1",
-    "typescript": "4.2.3"
+    "@fluffy-spoon/substitute": "^1.194.0",
+    "@types/chai": "^4.2.12",
+    "@types/mocha": "^8.0.2",
+    "@types/node": "^12.12.54",
+    "chai": "^4.2.0",
+    "mocha": "^8.1.1",
+    "nyc": "^15.1.0",
+    "ts-node": "8.10.2",
+    "tslint": "6.1.1",
+    "tslint-microsoft-contrib": "6.2.0",
+    "typescript": "3.9.7"
   },
   "dependencies": {
-    "@types/eventsource": "^1.1.5",
     "eventsource": "^1.1.0",
-    "featurehub-repository": "^2.0.3"
+    "@featurehub/javascript-client-sdk": "^1.0.0"
   },
   "engines": {
     "node": ">=12.12.0"

@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -13,7 +14,7 @@ import java.util.List;
  */
 public class TimedBucket {
   private static final Logger log = LoggerFactory.getLogger(TimedBucket.class);
-  private List<ClientConnection> timedConnections = new ArrayList<>();
+  private List<ClientConnection> timedConnections = Collections.synchronizedList(new ArrayList<>());
   private boolean expiring = false;
   private final int timerSlice;
 
@@ -45,7 +46,15 @@ public class TimedBucket {
 
       expiring = true;
 
-      conns.parallelStream().forEach(ClientConnection::close);
+      conns.parallelStream().forEach((c) -> {
+//        if (c != null) {
+          try {
+            c.close();
+          } catch (Exception e) {
+            log.error("Failed to kick out connections", e);
+          }
+//        }
+      });
 
       expiring = false;
     }
