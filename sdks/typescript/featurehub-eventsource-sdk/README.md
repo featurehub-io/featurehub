@@ -384,7 +384,7 @@ It also sends events out in certain circumstances.
 
 ### SSE connectivity 
 
-SSE kills your connection regularly to ensure stale connections are removed. The reason is to clear "ghost" TCP connections to free resources on Edge server. Your app will still remember the latest received state as all features are cached in the memory of the running SDK. Once reconnected, you will receive the latest feature states. You will see the connection being dropped and then reconnected again every 30-60 seconds. In the below snippet you can see how you can potentially deal with the server readyness check. If you would like to change the reconnection interval, you have an option of changing maxSlots in the Edge server.
+SSE kills your connection regularly to ensure stale connections are removed. The reason is to clear "_ghost_" TCP connections to free resources on Edge server. Your app will still remember the latest received state as all features are cached in the memory of the running SDK. Once reconnected, you will receive the latest feature states. You will see the connection being dropped and then reconnected again every 30-60 seconds. In the below snippet you can see how you can potentially deal with the server readyness check. If you would like to change the reconnection interval, you have an option of changing maxSlots in the Edge server.
 
 Check FeatureHub Repository readyness and request feature state:
 
