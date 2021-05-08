@@ -22,7 +22,7 @@ Note, there is a known issues in the browsers with Kaspersky antivirus potential
 
 ### **Important Note**
 
-If you are using nodejs, this documentation is the same, but your library is [@featurehub/javascript-node-sdk](https://www.npmjs.com/packages/@featurehub/javascript-node-sdk) instead. If you are transitioning from the older libraries, the API is identical, simply replace the imported package.
+If you are using nodejs, this documentation is the same, but your library is [featurehub-javascript-node-sdk](https://www.npmjs.com/packages/featurehub-javascript-node-sdk) instead. If you are transitioning from the older libraries, the API is identical, simply replace the imported package.
 
 ## Changelog
 
@@ -34,11 +34,11 @@ Angular & Vue to use this library.
 
 Run to install the dependency: 
 
-`npm install @featurehub/javascript-client-sdk`
+`npm install featurehub-javascript-client-sdk`
            
 if you are using *nodejs* use
 
-`npm install @featurehub/javascript-node-sdk`
+`npm install featurehub-javascript-node-sdk`
 
 (and further imports you see below should refer to this node library instead of the client library)
 
@@ -69,7 +69,7 @@ import {
   EdgeFeatureHubConfig,
   ClientContext,
   Readyness,
-} from '@featurehub/javascript-client-sdk';
+} from 'featurehub-javascript-client-sdk';
 
 const edgeUrl = 'http://localhost:8085/';
 const apiKey = 'default/3f7a1a34-642b-4054-a82f-1ca2d14633ed/aH0l9TDXzauYq6rKQzVUPwbzmzGRqe*oPqyYqhUlVC50RxAzSmx';
@@ -80,7 +80,7 @@ const fhConfig = new EdgeFeatureHubConfig(edgeUrl, apiKey);
 By default, this SDK will use SSE client. If you decide to use FeatureHub polling client, you can override it here:
 
 ```typescript
-import { FeatureHubPollingClient } from '@featurehub/javascript-client-sdk';
+import { FeatureHubPollingClient } from 'featurehub-javascript-client-sdk';
 const FREQUENCY = 5000; // 5 seconds
 fhConfig.edgeServiceProvider((repo, config) => new FeatureHubPollingClient(repo, config, FREQUENCY));
 ```

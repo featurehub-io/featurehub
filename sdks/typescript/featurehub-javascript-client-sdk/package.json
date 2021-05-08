@@ -1,5 +1,5 @@
 {
-  "name": "@featurehub/javascript-client-sdk",
+  "name": "featurehub-javascript-client-sdk",
   "version": "1.0.0",
   "description": "Core package of API that exposes FeatureHub feature flags, values and configuration to client applications written in Typescript or Javascript.",
   "author": "info@featurehub.io",

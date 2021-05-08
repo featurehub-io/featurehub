@@ -6,11 +6,11 @@ import {
   PollingBase,
   FeatureHubEventSourceClient,
   PollingService, FeaturesFunction
-} from '@featurehub/javascript-client-sdk';
+} from 'featurehub-javascript-client-sdk';
 
 const ES = require('eventsource');
 
-export * from '@featurehub/javascript-client-sdk';
+export * from 'featurehub-javascript-client-sdk';
 
 FeatureHubEventSourceClient.eventSourceProvider = (url, dict) => {
   return new ES(url, dict);

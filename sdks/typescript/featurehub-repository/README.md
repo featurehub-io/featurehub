@@ -1,11 +1,11 @@
                                     
 # NOTE: This library is deprecated
 
-Please use the [Browser](https://www.npmjs.com/package/@featurehub/javascript-client-sdk) SDK for React/Angular/Vue applications,
-or [node](https://www.npmjs.com/package/@featurehub/javascript-node-sdk) SDK for nodejs applications.
+Please use the [Browser](https://www.npmjs.com/package/featurehub-javascript-client-sdk) SDK for React/Angular/Vue applications,
+or [Node](https://www.npmjs.com/package/featurehub-javascript-node-sdk) SDK for nodejs applications.
 
 The documentation is the same for
-both and is in the [Browser](https://www.npmjs.com/package/@featurehub/javascript-client-sdk) SDK, just the implementations of http/https
+both and is in the [Browser](https://www.npmjs.com/package/featurehub-javascript-client-sdk) SDK, just the implementations of http/https
 related functionality differ.
 
 ### Overview
