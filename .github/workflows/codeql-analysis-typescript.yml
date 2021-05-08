@@ -32,7 +32,7 @@ jobs:
         languages: javascript
 
     - name: Build
-      run: cd sdks/typescript/featurehub-eventsource-sdk && npm run build
+      run: cd sdks/typescript/featurehub-eventsource-sdk && npm install && npm run build
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
