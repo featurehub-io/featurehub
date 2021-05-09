@@ -51,8 +51,8 @@ There are 3 steps to connecting:
 2) Create FeatureHub config
 3) Check FeatureHub Repository readyness and request feature state
 
-#### 1. Copy SDK API Key from the FeatureHub Admin Console
-Find and copy your SDK API Key from the FeatureHub Admin Console on the API Keys page - 
+#### 1. API Key from the FeatureHub Admin Console
+Find and copy your API Key from the FeatureHub Admin Console on the API Keys page - 
 you will use this in your code to configure feature updates for your environments. 
 It should look similar to this: ```default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE```.
 There are two options - a Server Evaluated API Key and a Client Evaluated API Key. More on this [here](https://docs.featurehub.io/#_client_and_server_api_keys) 

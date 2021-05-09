@@ -18,7 +18,7 @@ public interface FeatureHubConfig {
   void init();
 
   /**
-   * The SDK URL indicates this is going to be server based evaluation
+   * The API Key indicates this is going to be server based evaluation
    */
   boolean isServerEvaluation();
 

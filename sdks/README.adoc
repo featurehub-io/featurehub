@@ -1,5 +1,17 @@
 = Developer SDK Documentation
 
+++++
+<!-- google -->
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-173153929-1', 'auto');
+ga('send', 'pageview');
+</script>
+++++
+
 NOTE: This repository is _only_ if you wish to continue to developing SDKs, all the information
 you need to know about _using_ the SDKs is in the http://docs.featurehub.io/#sdks[docs]
 
@@ -86,7 +98,7 @@ paths:
       parameters:
         - name: sdkUrl
           in: query
-          description: "The SDK urls"
+          description: "The API keys requested"
           required: true
           schema:
             type: array
@@ -116,7 +128,7 @@ paths:
       parameters:
         - name: sdkUrl
           in: path
-          description: "The SDK key for the environment and service account"
+          description: "The API key for the environment and service account"
           required: true
           schema:
             type: string
@@ -777,6 +789,53 @@ We do support the ability to indicate that the percentage rollout could or shoul
 for example you wanted percentage rollout over a `company` or `store` field, you will be able to do this in the future.
 The API and server side evaluation supports this, the most complex part is the UI to allow users to manage this data,
 so this will appear over time. It will only become important for SDKs when we start supporting client side evaluation.
+
+== Client Side Evaluation
+
+Client side evaluation currently follows the same basic pattern in all SDKs. A rollout strategy basically consists of
+a bucket of data from the user, against which you need to map a rollout strategy's attributes and potentially its percentage
+criteria (if it has any). Writing client side evaluation can be quite time consuming.
+
+* A "context" in the following discussion is simply a map, or dictionary of key / value pairs.
+
+* Each feature can always have zero or more rollout strategies attached to it. 
+
+The process for each feature is normally thus:
+
+1. if you are supporting value interceptors, check those first - generally the rule is if the feature is not locked and you have
+an interceptor value, return that value. Value interceptors can come from the incoming request trying to override the value
+(so the lock status is important) or from the local developer's machine who is trying to operate within a specific context regardless of
+what the server is trying to tell her. 
+
+2. now you check the rollout strategies and determine if any of them match. Each rollout strategy comes with a value (if matched),
+a percentage rollout strategy (which may be null) and zero or more attributes. The _caveat_ is that if there is _no context_ or there are _no strategies_
+this step can be skipped, nothing can match.
+
+3. if neither of these match, then you fall back to the default value of the feature.
+
+=== Evaluating the rollout strategies
+
+Remember we have to follow the percentage rules from above when applying strategies as well, so we start our iterating over
+the strategies by setting the _cumulative_ percentage to 0. And then this is the way we  cycle for 
+each strategy and say:
+
+1. if there is a percentage on this strategy, figure out which keys we are using for the percentage determine based on
+the above rules if we are inside that percentage range. If we aren't, skip this strategy, If we are and there are attributes,
+check the attributes as well (see below). If we match return the associated value, if not, skip ahead.
+2. if there is no percentage on this strategy, check the attributes. If we match return the associated value, if not, skip ahead.
+
+==== Checking the attributes
+
+There are a collection of attributes associated with each rollout strategy. Each one of them has a set of key data:
+
+- *fieldName* - which field name in the Context to compare against
+- *type* - string, number, date, datetime, semver, ip/cidr, boolean. Dates and Date/Times are always UTC. You will need to
+write a matcher for each of these types, although once formatted correctly, the date/datetimes can usually reuse the string matcher.
+- *condition* - what is the condition to apply, different types have different collections they will compare against,
+those conditions are equals, not equals, includes, excludes, greater, lesser, greater-equals, lesser-equals
+- *values* - the value(s) you are comparing against as a match
+
+The Typescript strategy matcher is here https://github.com/featurehub-io/featurehub/blob/master/sdks/typescript/featurehub-javascript-client-sdk/app/strategy_matcher.ts[for instance]
 
 == Special thanks
 
