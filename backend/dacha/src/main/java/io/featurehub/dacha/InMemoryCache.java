@@ -179,12 +179,12 @@ public class InMemoryCache implements InternalCache {
 
         // ones that are left we have to delete
         existing.keySet().forEach(k -> {
-          log.debug("Environment update, SDK/Env keys removed from acceptable map {}", k);
+          log.debug("Environment update, API keys removed from acceptable map {}", k);
           serviceAccountPlusEnvIdToEnvIdMap.remove(k);
         });
       } else {
         oldCacheItem.getServiceAccounts().forEach(s -> {
-          log.debug("Environment update, SDK/Env keys removed from acceptable map {}:{}", s.getApiKeyClientSide(), envId);
+          log.debug("Environment update, API keys removed from acceptable map {}:{}", s.getApiKeyClientSide(), envId);
           serviceAccountPlusEnvIdToEnvIdMap.remove(sdkKeyEnvId(s.getApiKeyServerSide(), envId));
           serviceAccountPlusEnvIdToEnvIdMap.remove(sdkKeyEnvId(s.getApiKeyClientSide(), envId));
         });

@@ -7,33 +7,10 @@
   <version>1.1.1</version>
   <packaging>pom</packaging>
 
-  <repositories>
-    <repository>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-      <id>bintray-puravida-software-repo</id>
-      <name>bintray</name>
-      <url>https://dl.bintray.com/puravida-software/repo</url>
-    </repository>
-  </repositories>
-
-  <pluginRepositories>
-    <pluginRepository>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-      <id>bintray-puravida-software-repo</id>
-      <name>bintray-plugins</name>
-      <url>https://dl.bintray.com/puravida-software/repo</url>
-    </pluginRepository>
-  </pluginRepositories>
-
   <properties>
     <asciidoctor.maven.plugin.version>2.1.0</asciidoctor.maven.plugin.version>
     <jruby.version>9.2.13.0</jruby.version>
     <asciidoctorj.version>2.4.1</asciidoctorj.version>
-    <puravida.asciidoctor.version>2.3.0</puravida.asciidoctor.version>
   </properties>
 
   <build>
@@ -56,16 +33,7 @@
             <artifactId>asciidoctorj</artifactId>
             <version>${asciidoctorj.version}</version>
           </dependency>
-
-          <!-- Add PuraVida Asciidoctor Extension -->
-          <!-- https://puravida-asciidoctor.gitlab.io/asciidoctor-extensions/ -->
-
-          <dependency>
-            <groupId>com.puravida.asciidoctor</groupId>
-            <artifactId>asciidoctor-extensions</artifactId>
-            <version>${puravida.asciidoctor.version}</version>
-          </dependency>
-
+          
         </dependencies>
         <configuration>
           <sourceDirectory>${project.basedir}/../docs</sourceDirectory>

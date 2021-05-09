@@ -11,7 +11,7 @@ paths:
       parameters:
         - name: sdkUrl
           in: query
-          description: "The SDK urls"
+          description: "A list of API keys to retrieve information about"
           required: true
           schema:
             type: array
@@ -41,7 +41,7 @@ paths:
       parameters:
         - name: sdkUrl
           in: path
-          description: "The SDK key for the environment and service account"
+          description: "The API Key for the environment and service account"
           required: true
           schema:
             type: string
