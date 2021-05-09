@@ -74,7 +74,7 @@ export class FeatureHubEventSourceClient implements EdgeService {
                                             e => {
         try {
           const data = JSON.parse((e as any).data);
-          fhLog.trace(`received $fName`, data);
+          fhLog.trace(`received ${fName}`, data);
           this._repository.notify(name, data);
         } catch (e) { fhLog.error(JSON.stringify(e)); }
                                         });
