@@ -80,8 +80,8 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   // this represents the current route state. When _routerSource changes it should push to here
   // and when _routerExternalSource changes, it should push to here
-  final _routerCollectedSource = BehaviorSubject<RouteChange>();
-  final _routerRedrawRouteSource = BehaviorSubject<RouteChange>();
+  final _routerCollectedSource = BehaviorSubject<RouteChange?>();
+  final _routerRedrawRouteSource = BehaviorSubject<RouteChange?>();
   final _menuOpened = BehaviorSubject<bool>.seeded(true);
   final _stepperOpened = BehaviorSubject<bool>.seeded(false);
   late Uri _basePath;
@@ -102,9 +102,9 @@ class ManagementRepositoryClientBloc implements Bloc {
     }
   }
 
-  Stream<RouteChange> get routeCurrentStream => _routerCollectedSource.stream;
+  Stream<RouteChange?> get routeCurrentStream => _routerCollectedSource.stream;
   Stream<RouteChange?> get routeChangedStream => _routerSource.stream;
-  Stream<RouteChange> get redrawChangedStream =>
+  Stream<RouteChange?> get redrawChangedStream =>
       _routerRedrawRouteSource.stream;
 
   RouteChange? get currentRoute => _routerSource.value;

@@ -18,7 +18,7 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
     return StreamBuilder<TabsState>(
         stream: bloc.currentTab,
         builder: (context, currentTabSnapshot) {
-          return StreamBuilder<Set<String>>(
+          return StreamBuilder<Set<String>?>(
               stream: bloc.featureCurrentlyEditingStream,
               builder: (context, snapshot) {
                 final unselHeight = bloc.unselectedFeatureCountForHeight;

@@ -23,7 +23,7 @@ class FeatureNamesLeftPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
-    return StreamBuilder<Set<String>>(
+    return StreamBuilder<Set<String>?>(
         stream: tabsBloc.featureCurrentlyEditingStream,
         builder: (context, snapshot) {
           final amSelected =

@@ -26,7 +26,7 @@ class FeatureValueCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<Set<String>>(
+    return StreamBuilder<Set<String>?>(
         stream: tabsBloc.featureCurrentlyEditingStream,
         builder: (context, snapshot) {
           final amSelected =
@@ -35,7 +35,7 @@ class FeatureValueCell extends StatelessWidget {
           Widget cellWidget;
           if (!amSelected) {
             cellWidget = CollapsedViewValueCellHolder(
-              fv: value!,
+              fv: value,
               efv: efv,
               feature: feature,
             );
@@ -54,8 +54,6 @@ class FeatureValueCell extends StatelessWidget {
                     cellWidget,
                   ],
                 ));
-          } else if (feature == null) {
-            cellWidget = Text('');
           } else if ((value == null || value!.id == null) &&
               efv.roles.isEmpty) {
             cellWidget = noAccessTag(null);

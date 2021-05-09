@@ -297,7 +297,7 @@ class _MenuItem extends StatelessWidget {
               .navigateTo(context, path, params: params);
         }
       },
-      child: StreamBuilder<RouteChange>(
+      child: StreamBuilder<RouteChange?>(
           stream: BlocProvider.of<ManagementRepositoryClientBloc>(context)
               .routeCurrentStream,
           builder: (context, snapshot) {

@@ -8,22 +8,20 @@ import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 
 class CollapsedViewValueCellHolder extends StatelessWidget {
-  final FeatureValue fv;
+  final FeatureValue? fv;
   final EnvironmentFeatureValues efv;
   final Feature feature;
 
   const CollapsedViewValueCellHolder(
-      {Key? key, required this.fv, required this.efv, required this.feature})
-      : assert(efv != null),
-        assert(feature != null),
-        super(key: key);
+      {Key? key, this.fv, required this.efv, required this.feature})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     if (efv.roles.isNotEmpty) {
       return _ValueContainer(feature: feature, fv: fv);
     }
-    if ((fv == null || fv.id == null) && efv.roles.isEmpty) {
+    if ((fv?.id == null) && efv.roles.isEmpty) {
       return noAccessTag(null);
     }
     return SizedBox.shrink();
@@ -32,9 +30,9 @@ class CollapsedViewValueCellHolder extends StatelessWidget {
 
 class _ValueContainer extends StatelessWidget {
   final Feature feature;
-  final FeatureValue fv;
+  final FeatureValue? fv;
 
-  _ValueContainer({required this.feature, required this.fv});
+  _ValueContainer({required this.feature, this.fv});
 
   @override
   Widget build(BuildContext context) {
@@ -45,13 +43,13 @@ class _ValueContainer extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            if (fv != null) _ValueCard(feature: feature, fv: fv),
+            if (fv != null) _ValueCard(feature: feature, fv: fv!),
             if (fv == null) NotSetContainer(),
-            if (fv != null && fv.rolloutStrategies != null)
-              _StrategiesList(feature: feature, fv: fv)
+            if (fv != null && fv!.rolloutStrategies != null)
+              _StrategiesList(feature: feature, fv: fv!)
           ],
         ),
-        if (fv != null && fv.locked) LockedIndicator()
+        if (fv != null && fv!.locked) LockedIndicator()
       ],
     );
   }

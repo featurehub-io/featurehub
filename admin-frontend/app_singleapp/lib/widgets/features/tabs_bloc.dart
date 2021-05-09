@@ -33,14 +33,14 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
   final _stateSource = BehaviorSubject<TabsState>.seeded(TabsState.FLAGS);
   List<Feature> _featuresForTabs = [];
   final _currentlyEditingFeatureKeys = Set<String>();
-  final _featureCurrentlyEditingSource = BehaviorSubject<Set<String>>();
+  final _featureCurrentlyEditingSource = BehaviorSubject<Set<String>?>();
   final ManagementRepositoryClientBloc mrClient;
   final _allFeaturesByKey = <String, Feature>{};
 
   // determine which tab they have selected
   Stream<TabsState> get currentTab => _stateSource.stream;
 
-  Stream<Set<String>> get featureCurrentlyEditingStream =>
+  Stream<Set<String>?> get featureCurrentlyEditingStream =>
       _featureCurrentlyEditingSource.stream;
 
   // when editing, the base count we have doesn't match what is actually being used
