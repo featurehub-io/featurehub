@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "noImplicitAny": false,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "sourceMap": true,
+    "module": "CommonJS",
+    "outDir": "dist",
+    "newLine": "lf",
+    "noEmitOnError": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "declaration": true,
+    "moduleResolution": "node"
+  },
+  "include": [
+    "app/**/*",
+    "spec/**/*"
+  ],
+  "types": [
+    "node",
+    "mocha"
+  ],
+  "exclude": [
+    "node_modules",
+    "target/dist"
+  ]
+
+}

@@ -1,7 +1,7 @@
 {
-  "name": "featurehub-repository",
-  "version": "2.0.6",
-  "description": "Core package of API that exposes FeatureHub feature flags, values and configuration to client applications written in Typescript or Javascript.",
+  "name": "featurehub-javascript-node-sdk",
+  "version": "1.0.1",
+  "description": "featurehub sdk intended for use by nodejs.",
   "author": "info@featurehub.io",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -40,9 +40,9 @@
     "coverage": "nyc npm run test",
     "test:watch": "npm run mocha --opts mocha.opts --watch",
     "tsc": "node ./node_modules/typescript/bin/tsc -p",
-    "link": "npm link",
+    "link": "npm link featurehub-repository && npm link featurehub-eventsource-sdk",
     "compile": "npm run build && npm link",
-    "release": "npm run build && npm publish",
+    "release": "rm README.md && cp ../featurehub-javascript-client-sdk/README.md . && npm run build && npm publish",
     "prepublishOnly": "npm run build",
     "lint": "node ./node_modules/tslint/bin/tslint -r ./node_modules/tslint-microsoft-contrib/ \"app/**/*.ts\" \"spec/**/*.ts\" -e \"app/generated-code/**/*\""
   },
@@ -60,12 +60,8 @@
     "typescript": "3.9.7"
   },
   "dependencies": {
-    "@types/ip6addr": "^0.2.1",
-    "@types/murmurhash": "^2.0.0",
-    "@types/semver": "^7.3.4",
-    "ip6addr": "^0.2.3",
-    "murmurhash": "^2.0.0",
-    "semver": "^7.3.4"
+    "eventsource": "^1.1.0",
+    "featurehub-javascript-client-sdk": "^1.0.0"
   },
   "engines": {
     "node": ">=12.12.0"

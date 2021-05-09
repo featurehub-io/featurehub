@@ -2,7 +2,7 @@
 
 The SDK and core library are available on https://www.npmjs.com/org/featurehub[the npm repository].
 
-- https://www.npmjs.com/package/featurehub-repository[featurehub_repository] - the core repository and model code
-- https://www.npmjs.com/package/featurehub-eventsource-sdk[featurehub_eventsource-sdk] - the eventsource SDK
+- https://www.npmjs.com/package/featurehub-javascript-client-sdk[featurehub-javascript-client-sdk] - the main codebase, used by Browser based code and relied on by nodejs code.
+- https://www.npmjs.com/package/featurehub-javascript-node-sdk[featurehub-javascript-node-sdk] - the codebase to use when using Node. It replaces browser specific functionality (http calls, eventsource) with NodeJS specific versions.
 
 
