@@ -11,14 +11,14 @@ class SelectPortfolioGroupBloc implements Bloc {
   Portfolio? currentPortfolio;
   Set<PortfolioGroup> listOfAddedPortfolioGroups = <PortfolioGroup>{};
 
-  final _currentPortfoliosStream = rxdart.BehaviorSubject<List<Portfolio>>();
-  Stream<List<Portfolio>> get portfolios => _currentPortfoliosStream.stream;
+  final _currentPortfoliosStream = rxdart.BehaviorSubject<List<Portfolio>?>();
+  Stream<List<Portfolio>?> get portfolios => _currentPortfoliosStream.stream;
 
-  final _currentGroupsStream = rxdart.BehaviorSubject<List<Group>>();
-  Stream<List<Group>> get groups => _currentGroupsStream.stream;
+  final _currentGroupsStream = rxdart.BehaviorSubject<List<Group>?>();
+  Stream<List<Group>?> get groups => _currentGroupsStream.stream;
 
-  final _addedGroupsStream = rxdart.BehaviorSubject<Set<PortfolioGroup>>();
-  Stream<Set<PortfolioGroup>> get addedGroupsStream =>
+  final _addedGroupsStream = rxdart.BehaviorSubject<Set<PortfolioGroup>?>();
+  Stream<Set<PortfolioGroup>?> get addedGroupsStream =>
       _addedGroupsStream.stream;
 
   SelectPortfolioGroupBloc(this.mrClient) : assert(mrClient != null) {

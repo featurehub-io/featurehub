@@ -52,9 +52,9 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
   Widget buildPortfolioGroupChips(SelectPortfolioGroupBloc bloc) {
     return Padding(
       padding: const EdgeInsets.only(top: 16.0),
-      child: StreamBuilder<Set<PortfolioGroup>>(
+      child: StreamBuilder<Set<PortfolioGroup>?>(
           stream: bloc.addedGroupsStream,
-          builder: (context, AsyncSnapshot<Set<PortfolioGroup>> snapshot) {
+          builder: (context, AsyncSnapshot<Set<PortfolioGroup>?> snapshot) {
             if (snapshot.hasData) {
               return Wrap(
                   spacing: 8.0,
@@ -72,8 +72,10 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
                                       size: 18.0,
                                     )),
                                 key: ObjectKey(item),
-                                label: Text(
-                                    '${item.portfolio!.name}: ${item.group.name}'),
+                                label: item.portfolio == null
+                                    ? Text('FeatureHub Administrators')
+                                    : Text(
+                                        '${item.portfolio?.name}: ${item.group.name}'),
                                 onDeleted: () =>
                                     bloc.removeGroupFromStream(item),
                                 materialTapTargetSize:
@@ -87,9 +89,9 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
   }
 
   Widget buildGroupDropDown(SelectPortfolioGroupBloc bloc) {
-    return StreamBuilder<List<Group>>(
+    return StreamBuilder<List<Group>?>(
         stream: bloc.groups,
-        builder: (context, AsyncSnapshot<List<Group>> snapshot) {
+        builder: (context, AsyncSnapshot<List<Group>?> snapshot) {
           return Theme(
             data: Theme.of(context).copyWith(brightness: Brightness.light),
             child: Container(
@@ -135,11 +137,11 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
         });
   }
 
-  StreamBuilder<List<Portfolio>> buildPortfolioDropDown(
+  StreamBuilder<List<Portfolio>?> buildPortfolioDropDown(
       SelectPortfolioGroupBloc bloc) {
-    return StreamBuilder<List<Portfolio>>(
+    return StreamBuilder<List<Portfolio>?>(
         stream: bloc.portfolios,
-        builder: (context, AsyncSnapshot<List<Portfolio>> snapshot) {
+        builder: (context, AsyncSnapshot<List<Portfolio>?> snapshot) {
           if (snapshot.hasData) {
             return Theme(
               data: Theme.of(context).copyWith(
