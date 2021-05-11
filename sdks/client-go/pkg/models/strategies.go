@@ -3,7 +3,6 @@ package models
 import (
 	"math"
 
-	"github.com/mcuadros/go-version"
 	"github.com/spaolacci/murmur3"
 )
 
@@ -166,95 +165,23 @@ func (sa *StrategyAttribute) matchConditional(slice []string, contains string) b
 	// Handle the different conditionals available to us:
 	switch {
 
-	// If our value is found in the slice then we match:
 	case sa.Conditional == strategyConditionalEquals:
-		for _, value := range slice {
-			if value == contains {
-				return true
-			}
-		}
-		return false
+		return ConditionalEquals(sa.Type, slice, contains)
 
-	// If our value is found in the slice then we do NOT match:
 	case sa.Conditional == strategyConditionalNotEquals:
-		for _, value := range slice {
-			if value == contains {
-				return false
-			}
-		}
-		return true
+		return ConditionalNotEquals(sa.Type, slice, contains)
 
-	// If our value <= any value in the slice then we do NOT match:
-	case sa.Conditional == strategyConditionalGreater && sa.Type == strategyTypeSemanticVersion:
-		for _, value := range slice {
-			if version.Compare(contains, value, "<=") {
-				return false
-			}
-		}
-		return true
+	case sa.Conditional == strategyConditionalGreater:
+		return ConditionalGreater(sa.Type, slice, contains)
 
-	// // If our value <= any value in the slice then we do NOT match:
-	// case sa.Conditional == strategyConditionalGreater && sa.Type != strategyTypeSemanticVersion:
-	// 	for _, value := range slice {
-	// 		if contains <= value {
-	// 			return false
-	// 		}
-	// 	}
-	// 	return true
+	case sa.Conditional == strategyConditionalGreaterEquals:
+		return ConditionalGreaterEquals(sa.Type, slice, contains)
 
-	// If our value < any value in the slice then we do NOT match:
-	case sa.Conditional == strategyConditionalGreaterEquals && sa.Type == strategyTypeSemanticVersion:
-		for _, value := range slice {
-			if version.Compare(contains, value, "<") {
-				return false
-			}
-		}
-		return true
+	case sa.Conditional == strategyConditionalLess:
+		return ConditionalLess(sa.Type, slice, contains)
 
-	// // If our value < any value in the slice then we do NOT match:
-	// case sa.Conditional == strategyConditionalGreaterEquals && sa.Type != strategyTypeSemanticVersion:
-	// 	for _, value := range slice {
-	// 		if contains < value {
-	// 			return false
-	// 		}
-	// 	}
-	// 	return true
-
-	// If our value >= any value in the slice then we do NOT match:
-	case sa.Conditional == strategyConditionalLess && sa.Type == strategyTypeSemanticVersion:
-		for _, value := range slice {
-			if version.Compare(contains, value, ">=") {
-				return false
-			}
-		}
-		return true
-
-	// // If our value >= any value in the slice then we do NOT match:
-	// case sa.Conditional == strategyConditionalLess && sa.Type != strategyTypeSemanticVersion:
-	// 	for _, value := range slice {
-	// 		if contains >= value {
-	// 			return false
-	// 		}
-	// 	}
-	// 	return true
-
-	// If our value > any value in the slice then we do NOT match:
-	case sa.Conditional == strategyConditionalLessEquals && sa.Type == strategyTypeSemanticVersion:
-		for _, value := range slice {
-			if version.Compare(contains, value, ">") {
-				return false
-			}
-		}
-		return true
-
-		// // If our value > any value in the slice then we do NOT match:
-		// case sa.Conditional == strategyConditionalLessEquals && sa.Type != strategyTypeSemanticVersion:
-		// 	for _, value := range slice {
-		// 		if contains > value {
-		// 			return false
-		// 		}
-		// 	}
-		// 	return true
+	case sa.Conditional == strategyConditionalLessEquals:
+		return ConditionalLessEquals(sa.Type, slice, contains)
 	}
 
 	// We didn't find it:
