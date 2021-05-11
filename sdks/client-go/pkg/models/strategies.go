@@ -118,7 +118,7 @@ func (s Strategy) proceedWithAttributes(clientContext *Context) bool {
 
 		// Match by country name:
 		case strategyFieldNameCountry:
-			if len(clientContext.Country) > 0 && sa.matchConditional(sa.Values, string(clientContext.Country)) {
+			if sa.matchConditional(sa.Values, string(clientContext.Country)) {
 				continue
 			}
 			logger.Tracef("Didn't match attribute strategy (%s:%s = %v) for country: %v\n", sa.ID, sa.FieldName, sa.Values, clientContext.Country)
@@ -126,7 +126,7 @@ func (s Strategy) proceedWithAttributes(clientContext *Context) bool {
 
 		// Match by device type:
 		case strategyFieldNameDevice:
-			if len(clientContext.Device) > 0 && sa.matchConditional(sa.Values, string(clientContext.Device)) {
+			if sa.matchConditional(sa.Values, string(clientContext.Device)) {
 				continue
 			}
 			logger.Tracef("Didn't match attribute strategy (%s:%s = %v) for device: %v\n", sa.ID, sa.FieldName, sa.Values, clientContext.Device)
@@ -134,7 +134,7 @@ func (s Strategy) proceedWithAttributes(clientContext *Context) bool {
 
 		// Match by platform:
 		case strategyFieldNamePlatform:
-			if len(clientContext.Platform) > 0 && sa.matchConditional(sa.Values, string(clientContext.Platform)) {
+			if sa.matchConditional(sa.Values, string(clientContext.Platform)) {
 				continue
 			}
 			logger.Tracef("Didn't match attribute strategy (%s:%s = %v) for platform: %v\n", sa.ID, sa.FieldName, sa.Values, clientContext.Platform)
@@ -143,7 +143,7 @@ func (s Strategy) proceedWithAttributes(clientContext *Context) bool {
 		// Match by version:
 		case strategyFieldNameVersion:
 			logger.Trace("Trying version")
-			if len(clientContext.Version) > 0 && sa.matchConditional(sa.Values, string(clientContext.Version)) {
+			if sa.matchConditional(sa.Values, string(clientContext.Version)) {
 				continue
 			}
 			logger.Tracef("Didn't match attribute strategy (%s:%s = %v) for version: %v\n", sa.ID, sa.FieldName, sa.Values, clientContext.Version)
@@ -162,25 +162,30 @@ func (s Strategy) proceedWithAttributes(clientContext *Context) bool {
 // matchConditional checks the given string against the given slice of strings with the attribute's conditional logic:
 func (sa *StrategyAttribute) matchConditional(slice []string, contains string) bool {
 
-	// Handle the different conditionals available to us:
-	switch {
+	// Make sure we have a value to check for:
+	if len(contains) == 0 {
+		return false
+	}
 
-	case sa.Conditional == strategyConditionalEquals:
+	// Handle the different conditionals available to us:
+	switch sa.Conditional {
+
+	case strategyConditionalEquals:
 		return ConditionalEquals(sa.Type, slice, contains)
 
-	case sa.Conditional == strategyConditionalNotEquals:
+	case strategyConditionalNotEquals:
 		return ConditionalNotEquals(sa.Type, slice, contains)
 
-	case sa.Conditional == strategyConditionalGreater:
+	case strategyConditionalGreater:
 		return ConditionalGreater(sa.Type, slice, contains)
 
-	case sa.Conditional == strategyConditionalGreaterEquals:
+	case strategyConditionalGreaterEquals:
 		return ConditionalGreaterEquals(sa.Type, slice, contains)
 
-	case sa.Conditional == strategyConditionalLess:
+	case strategyConditionalLess:
 		return ConditionalLess(sa.Type, slice, contains)
 
-	case sa.Conditional == strategyConditionalLessEquals:
+	case strategyConditionalLessEquals:
 		return ConditionalLessEquals(sa.Type, slice, contains)
 	}
 
