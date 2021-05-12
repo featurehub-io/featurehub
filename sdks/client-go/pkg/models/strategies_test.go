@@ -3,6 +3,7 @@ package models
 import (
 	"testing"
 
+	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/strategies"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -71,10 +72,10 @@ func TestStrategiesByAttribute(t *testing.T) {
 				Attributes: []*StrategyAttribute{
 					{
 						ID:          "a1",
-						Conditional: strategyConditionalEquals,
-						FieldName:   strategyFieldNameCountry,
+						Conditional: strategies.ConditionalEquals,
+						FieldName:   strategies.FieldNameCountry,
 						Values:      []interface{}{"russia"},
-						Type:        strategyTypeString,
+						Type:        strategies.TypeString,
 					},
 				},
 			},
@@ -85,10 +86,10 @@ func TestStrategiesByAttribute(t *testing.T) {
 				Attributes: []*StrategyAttribute{
 					{
 						ID:          "a2",
-						Conditional: strategyConditionalEquals,
-						FieldName:   strategyFieldNamePlatform,
+						Conditional: strategies.ConditionalEquals,
+						FieldName:   strategies.FieldNamePlatform,
 						Values:      []interface{}{string(ContextPlatformLinux), string(ContextPlatformMacos)},
-						Type:        strategyTypeString,
+						Type:        strategies.TypeString,
 					},
 				},
 			},
@@ -99,10 +100,10 @@ func TestStrategiesByAttribute(t *testing.T) {
 				Attributes: []*StrategyAttribute{
 					{
 						ID:          "a3",
-						Conditional: strategyConditionalNotEquals,
-						FieldName:   strategyFieldNameDevice,
+						Conditional: strategies.ConditionalNotEquals,
+						FieldName:   strategies.FieldNameDevice,
 						Values:      []interface{}{string(ContextDeviceMobile), string(ContextDeviceWatch)},
-						Type:        strategyTypeString,
+						Type:        strategies.TypeString,
 					},
 				},
 			},
@@ -113,10 +114,10 @@ func TestStrategiesByAttribute(t *testing.T) {
 				Attributes: []*StrategyAttribute{
 					{
 						ID:          "a4",
-						Conditional: strategyConditionalLess,
-						FieldName:   strategyFieldNameVersion,
+						Conditional: strategies.ConditionalLess,
+						FieldName:   strategies.FieldNameVersion,
 						Values:      []interface{}{"15.23.4"},
-						Type:        strategyTypeSemanticVersion,
+						Type:        strategies.TypeSemanticVersion,
 					},
 				},
 			},
@@ -127,10 +128,10 @@ func TestStrategiesByAttribute(t *testing.T) {
 				Attributes: []*StrategyAttribute{
 					{
 						ID:          "a5",
-						Conditional: strategyConditionalLessEquals,
-						FieldName:   strategyFieldNameVersion,
+						Conditional: strategies.ConditionalLessEquals,
+						FieldName:   strategies.FieldNameVersion,
 						Values:      []interface{}{"15.23.4"},
-						Type:        strategyTypeSemanticVersion,
+						Type:        strategies.TypeSemanticVersion,
 					},
 				},
 			},
@@ -141,10 +142,10 @@ func TestStrategiesByAttribute(t *testing.T) {
 				Attributes: []*StrategyAttribute{
 					{
 						ID:          "a6",
-						Conditional: strategyConditionalGreater,
-						FieldName:   strategyFieldNameVersion,
+						Conditional: strategies.ConditionalGreater,
+						FieldName:   strategies.FieldNameVersion,
 						Values:      []interface{}{"16.0.0"},
-						Type:        strategyTypeSemanticVersion,
+						Type:        strategies.TypeSemanticVersion,
 					},
 				},
 			},
@@ -155,10 +156,10 @@ func TestStrategiesByAttribute(t *testing.T) {
 				Attributes: []*StrategyAttribute{
 					{
 						ID:          "a7",
-						Conditional: strategyConditionalGreaterEquals,
-						FieldName:   strategyFieldNameVersion,
+						Conditional: strategies.ConditionalGreaterEquals,
+						FieldName:   strategies.FieldNameVersion,
 						Values:      []interface{}{"16.0.0"},
-						Type:        strategyTypeSemanticVersion,
+						Type:        strategies.TypeSemanticVersion,
 					},
 				},
 			},

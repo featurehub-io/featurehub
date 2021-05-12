@@ -4,27 +4,12 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/strategies"
 	"github.com/spaolacci/murmur3"
 )
 
 var (
 	maxMurmur32Hash = math.Pow(2, 32)
-)
-
-const (
-	strategyConditionalEquals        = "EQUALS"
-	strategyConditionalGreater       = "GREATER"
-	strategyConditionalGreaterEquals = "GREATER_EQUALS"
-	strategyConditionalLess          = "LESS"
-	strategyConditionalLessEquals    = "LESS_EQUALS"
-	strategyConditionalNotEquals     = "NOT_EQUALS"
-	strategyFieldNameCountry         = "country"
-	strategyFieldNameDevice          = "device"
-	strategyFieldNamePlatform        = "platform"
-	strategyFieldNameVersion         = "version"
-	strategyTypeBoolean              = "BOOLEAN"
-	strategyTypeSemanticVersion      = "SEMANTIC_VERSION"
-	strategyTypeString               = "STRING"
 )
 
 // Strategies so we can attach methods:
@@ -120,33 +105,33 @@ func (s Strategy) proceedWithAttributes(clientContext *Context) bool {
 		switch sa.FieldName {
 
 		// Match by country name:
-		case strategyFieldNameCountry:
-			if len(clientContext.Country) > 0 && sa.matchConditional(sa.Values, fmt.Sprintf("%s", clientContext.Country)) {
+		case strategies.FieldNameCountry:
+			if len(clientContext.Country) > 0 && sa.matchType(sa.Values, fmt.Sprintf("%s", clientContext.Country)) {
 				continue
 			}
 			logger.Tracef("Didn't match attribute strategy (%s:%s = %v) for country: %v\n", sa.ID, sa.FieldName, sa.Values, clientContext.Country)
 			return false
 
 		// Match by device type:
-		case strategyFieldNameDevice:
-			if len(clientContext.Device) > 0 && sa.matchConditional(sa.Values, fmt.Sprintf("%s", clientContext.Device)) {
+		case strategies.FieldNameDevice:
+			if len(clientContext.Device) > 0 && sa.matchType(sa.Values, fmt.Sprintf("%s", clientContext.Device)) {
 				continue
 			}
 			logger.Tracef("Didn't match attribute strategy (%s:%s = %v) for device: %v\n", sa.ID, sa.FieldName, sa.Values, clientContext.Device)
 			return false
 
 		// Match by platform:
-		case strategyFieldNamePlatform:
-			if len(clientContext.Platform) > 0 && sa.matchConditional(sa.Values, fmt.Sprintf("%s", clientContext.Platform)) {
+		case strategies.FieldNamePlatform:
+			if len(clientContext.Platform) > 0 && sa.matchType(sa.Values, fmt.Sprintf("%s", clientContext.Platform)) {
 				continue
 			}
 			logger.Tracef("Didn't match attribute strategy (%s:%s = %v) for platform: %v\n", sa.ID, sa.FieldName, sa.Values, clientContext.Platform)
 			return false
 
 		// Match by version:
-		case strategyFieldNameVersion:
+		case strategies.FieldNameVersion:
 			logger.Trace("Trying version")
-			if len(clientContext.Version) > 0 && sa.matchConditional(sa.Values, fmt.Sprintf("%s", clientContext.Version)) {
+			if len(clientContext.Version) > 0 && sa.matchType(sa.Values, fmt.Sprintf("%s", clientContext.Version)) {
 				continue
 			}
 			logger.Tracef("Didn't match attribute strategy (%s:%s = %v) for version: %v\n", sa.ID, sa.FieldName, sa.Values, clientContext.Version)
@@ -154,8 +139,10 @@ func (s Strategy) proceedWithAttributes(clientContext *Context) bool {
 
 		// Custom field:
 		default:
+
+			// Look up the field by name in the clientContext.Custom attribute:
 			if customContextValue, ok := clientContext.Custom[sa.FieldName]; ok {
-				if sa.matchConditional(sa.Values, customContextValue) {
+				if sa.matchType(sa.Values, customContextValue) {
 					continue
 				}
 				logger.Tracef("Didn't match custom strategy (%s:%s = %v) for version: %v\n", sa.ID, sa.FieldName, sa.Values, clientContext.Version)
@@ -168,31 +155,52 @@ func (s Strategy) proceedWithAttributes(clientContext *Context) bool {
 	return true
 }
 
-// matchConditional checks the given string against the given slice of strings with the attribute's conditional logic:
-func (sa *StrategyAttribute) matchConditional(slice []interface{}, contains interface{}) bool {
+// // matchConditional checks the given value against the given slice of options with the attribute's conditional logic:
+// func (sa *StrategyAttribute) matchConditional(options []interface{}, value interface{}) bool {
 
-	logger.Tracef("Looking for %v within %v", contains, slice)
+// 	logger.Tracef("Looking for %v within %v", value, options)
+
+// 	// Handle the different conditionals available to us:
+// 	switch sa.Conditional {
+
+// 	case strategyConditionalEquals:
+// 		return ConditionalEquals(sa.Type, options, value)
+
+// 	case strategyConditionalNotEquals:
+// 		return ConditionalNotEquals(sa.Type, options, value)
+
+// 	case strategyConditionalGreater:
+// 		return ConditionalGreater(sa.Type, options, value)
+
+// 	case strategyConditionalGreaterEquals:
+// 		return ConditionalGreaterEquals(sa.Type, options, value)
+
+// 	case strategyConditionalLess:
+// 		return ConditionalLess(sa.Type, options, value)
+
+// 	case strategyConditionalLessEquals:
+// 		return ConditionalLessEquals(sa.Type, options, value)
+// 	}
+
+// 	// We didn't find it:
+// 	return false
+// }
+
+// matchType checks the given value against the given slice of options with the attribute's conditional logic:
+func (sa *StrategyAttribute) matchType(options []interface{}, value interface{}) bool {
 
 	// Handle the different conditionals available to us:
-	switch sa.Conditional {
+	logger.Tracef("Looking for %v within %v", value, options)
+	switch sa.Type {
 
-	case strategyConditionalEquals:
-		return ConditionalEquals(sa.Type, slice, contains)
+	case strategies.TypeBoolean:
+		return strategies.Boolean(sa.Conditional, options, value)
 
-	case strategyConditionalNotEquals:
-		return ConditionalNotEquals(sa.Type, slice, contains)
+	case strategies.TypeSemanticVersion:
+		return strategies.SemanticVersion(sa.Conditional, options, value)
 
-	case strategyConditionalGreater:
-		return ConditionalGreater(sa.Type, slice, contains)
-
-	case strategyConditionalGreaterEquals:
-		return ConditionalGreaterEquals(sa.Type, slice, contains)
-
-	case strategyConditionalLess:
-		return ConditionalLess(sa.Type, slice, contains)
-
-	case strategyConditionalLessEquals:
-		return ConditionalLessEquals(sa.Type, slice, contains)
+	case strategies.TypeString:
+		return strategies.String(sa.Conditional, options, value)
 	}
 
 	// We didn't find it:
