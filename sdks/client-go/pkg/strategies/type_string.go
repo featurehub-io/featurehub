@@ -1,17 +1,44 @@
 package strategies
 
+import "fmt"
+
 // TypeString is for string values (eg "something"):
 const TypeString = "STRING"
 
-// String makes evaluations for STRING values:
-func String(conditional string, options []interface{}, value interface{}) bool {
+// String asserts the given parameters then passes on for evaluation:
+func String(conditional string, options []interface{}, value interface{}) (bool, error) {
+
+	assertedValue, ok := value.(string)
+	if !ok {
+		return false, fmt.Errorf("Unable to assert value (%v) as string", value)
+	}
+
+	var assertedOptions []string
+	for _, option := range options {
+		assertedOption, ok := option.(string)
+		if !ok {
+			return false, fmt.Errorf("Unable to assert value (%v) as string", option)
+		}
+		assertedOptions = append(assertedOptions, assertedOption)
+	}
+
+	return evaluateString(conditional, assertedOptions, assertedValue), nil
+}
+
+// evaluateString makes evaluations for STRING values:
+func evaluateString(conditional string, options []string, value string) bool {
+
+	// Make sure we have a value:
+	if len(value) == 0 {
+		return false
+	}
 
 	switch conditional {
 
 	case ConditionalEquals:
 		// Return true if the value is equal to any of the options:
 		for _, option := range options {
-			if value.(string) == option.(string) {
+			if value == option {
 				return true
 			}
 		}
@@ -20,7 +47,7 @@ func String(conditional string, options []interface{}, value interface{}) bool {
 	case ConditionalGreater:
 		// Return false if the value is less than or equal to any of the options
 		for _, option := range options {
-			if value.(string) <= option.(string) {
+			if value <= option {
 				return false
 			}
 		}
@@ -29,7 +56,7 @@ func String(conditional string, options []interface{}, value interface{}) bool {
 	case ConditionalGreaterEquals:
 		// Return false if the value is less than any of the options:
 		for _, option := range options {
-			if value.(string) < option.(string) {
+			if value < option {
 				return false
 			}
 		}
@@ -38,7 +65,7 @@ func String(conditional string, options []interface{}, value interface{}) bool {
 	case ConditionalLess:
 		// Return false if the value is greater than or equal to any of the options:
 		for _, option := range options {
-			if value.(string) >= option.(string) {
+			if value >= option {
 				return false
 			}
 		}
@@ -47,7 +74,7 @@ func String(conditional string, options []interface{}, value interface{}) bool {
 	case ConditionalLessEquals:
 		// Return false if the value is greater than any of the options:
 		for _, option := range options {
-			if value.(string) > option.(string) {
+			if value > option {
 				return false
 			}
 		}
@@ -56,7 +83,7 @@ func String(conditional string, options []interface{}, value interface{}) bool {
 	case ConditionalNotEquals:
 		// Return false if the value is equal to any of the options
 		for _, option := range options {
-			if value.(string) == option.(string) {
+			if value == option {
 				return false
 			}
 		}

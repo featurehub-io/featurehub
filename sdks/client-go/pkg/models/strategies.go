@@ -106,7 +106,11 @@ func (s Strategy) proceedWithAttributes(clientContext *Context) bool {
 
 		// Match by country name:
 		case strategies.FieldNameCountry:
-			if len(clientContext.Country) > 0 && sa.matchType(sa.Values, fmt.Sprintf("%s", clientContext.Country)) {
+			matched, err := sa.matchType(sa.Values, fmt.Sprintf("%s", clientContext.Country))
+			if err != nil {
+				logger.WithError(err).Error("Unable to match type")
+			}
+			if matched {
 				continue
 			}
 			logger.Tracef("Didn't match attribute strategy (%s:%s = %v) for country: %v\n", sa.ID, sa.FieldName, sa.Values, clientContext.Country)
@@ -114,7 +118,11 @@ func (s Strategy) proceedWithAttributes(clientContext *Context) bool {
 
 		// Match by device type:
 		case strategies.FieldNameDevice:
-			if len(clientContext.Device) > 0 && sa.matchType(sa.Values, fmt.Sprintf("%s", clientContext.Device)) {
+			matched, err := sa.matchType(sa.Values, fmt.Sprintf("%s", clientContext.Device))
+			if err != nil {
+				logger.WithError(err).Error("Unable to match type")
+			}
+			if matched {
 				continue
 			}
 			logger.Tracef("Didn't match attribute strategy (%s:%s = %v) for device: %v\n", sa.ID, sa.FieldName, sa.Values, clientContext.Device)
@@ -122,7 +130,11 @@ func (s Strategy) proceedWithAttributes(clientContext *Context) bool {
 
 		// Match by platform:
 		case strategies.FieldNamePlatform:
-			if len(clientContext.Platform) > 0 && sa.matchType(sa.Values, fmt.Sprintf("%s", clientContext.Platform)) {
+			matched, err := sa.matchType(sa.Values, fmt.Sprintf("%s", clientContext.Platform))
+			if err != nil {
+				logger.WithError(err).Error("Unable to match type")
+			}
+			if matched {
 				continue
 			}
 			logger.Tracef("Didn't match attribute strategy (%s:%s = %v) for platform: %v\n", sa.ID, sa.FieldName, sa.Values, clientContext.Platform)
@@ -131,7 +143,11 @@ func (s Strategy) proceedWithAttributes(clientContext *Context) bool {
 		// Match by version:
 		case strategies.FieldNameVersion:
 			logger.Trace("Trying version")
-			if len(clientContext.Version) > 0 && sa.matchType(sa.Values, fmt.Sprintf("%s", clientContext.Version)) {
+			matched, err := sa.matchType(sa.Values, fmt.Sprintf("%s", clientContext.Version))
+			if err != nil {
+				logger.WithError(err).Error("Unable to match type")
+			}
+			if matched {
 				continue
 			}
 			logger.Tracef("Didn't match attribute strategy (%s:%s = %v) for version: %v\n", sa.ID, sa.FieldName, sa.Values, clientContext.Version)
@@ -142,7 +158,11 @@ func (s Strategy) proceedWithAttributes(clientContext *Context) bool {
 
 			// Look up the field by name in the clientContext.Custom attribute:
 			if customContextValue, ok := clientContext.Custom[sa.FieldName]; ok {
-				if sa.matchType(sa.Values, customContextValue) {
+				matched, err := sa.matchType(sa.Values, customContextValue)
+				if err != nil {
+					logger.WithError(err).Error("Unable to match type")
+				}
+				if matched {
 					continue
 				}
 				logger.Tracef("Didn't match custom strategy (%s:%s = %v) for version: %v\n", sa.ID, sa.FieldName, sa.Values, clientContext.Version)
@@ -156,7 +176,7 @@ func (s Strategy) proceedWithAttributes(clientContext *Context) bool {
 }
 
 // matchType checks the given value against the given slice of options with the attribute's conditional logic:
-func (sa *StrategyAttribute) matchType(options []interface{}, value interface{}) bool {
+func (sa *StrategyAttribute) matchType(options []interface{}, value interface{}) (bool, error) {
 
 	// Handle the different conditionals available to us:
 	logger.Tracef("Looking for %v within %v", value, options)
@@ -173,5 +193,5 @@ func (sa *StrategyAttribute) matchType(options []interface{}, value interface{})
 	}
 
 	// We didn't find it:
-	return false
+	return false, nil
 }
