@@ -19,9 +19,9 @@ You can now choose from two types of keys: Client eval API Key and Server eval A
 
 image::docs/images/api-keys.png[FeatureHub API Keys,800]
 
-To use new SDKs (starting from version 2.0), please follow this guide:
+If you are already using FeatureHub SDKs, please follow this guide to migrate to version 2.0 SDKs, 
 
-https://github.com/featurehub-io/featurehub/wiki/Migration-notes[SDKs migration notes (-> v 2.0)]
+https://github.com/featurehub-io/featurehub/wiki/Migration-notes[SDKs migration notes (v 1.0 -> v 2.0)]
 
 API Keys (former SDK URLs) explained https://docs.featurehub.io/#_client_and_server_api_keys[here]  
 
