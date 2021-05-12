@@ -1,7 +1,9 @@
 package strategies
 
+// TypeBoolean is for true/false values:
 const TypeBoolean = "BOOLEAN"
 
+// Boolean makes evaluations for BOOLEAN values:
 func Boolean(conditional string, options []interface{}, value interface{}) bool {
 
 	switch conditional {

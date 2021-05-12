@@ -2,8 +2,10 @@ package strategies
 
 import "github.com/mcuadros/go-version"
 
+// TypeSemanticVersion is for semver values (eg 2.1.3):
 const TypeSemanticVersion = "SEMANTIC_VERSION"
 
+// SemanticVersion makes evaluations for SEMANTIC_VERSION values:
 func SemanticVersion(conditional string, options []interface{}, value interface{}) bool {
 
 	switch conditional {

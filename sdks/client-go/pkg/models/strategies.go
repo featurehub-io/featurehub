@@ -155,37 +155,6 @@ func (s Strategy) proceedWithAttributes(clientContext *Context) bool {
 	return true
 }
 
-// // matchConditional checks the given value against the given slice of options with the attribute's conditional logic:
-// func (sa *StrategyAttribute) matchConditional(options []interface{}, value interface{}) bool {
-
-// 	logger.Tracef("Looking for %v within %v", value, options)
-
-// 	// Handle the different conditionals available to us:
-// 	switch sa.Conditional {
-
-// 	case strategyConditionalEquals:
-// 		return ConditionalEquals(sa.Type, options, value)
-
-// 	case strategyConditionalNotEquals:
-// 		return ConditionalNotEquals(sa.Type, options, value)
-
-// 	case strategyConditionalGreater:
-// 		return ConditionalGreater(sa.Type, options, value)
-
-// 	case strategyConditionalGreaterEquals:
-// 		return ConditionalGreaterEquals(sa.Type, options, value)
-
-// 	case strategyConditionalLess:
-// 		return ConditionalLess(sa.Type, options, value)
-
-// 	case strategyConditionalLessEquals:
-// 		return ConditionalLessEquals(sa.Type, options, value)
-// 	}
-
-// 	// We didn't find it:
-// 	return false
-// }
-
 // matchType checks the given value against the given slice of options with the attribute's conditional logic:
 func (sa *StrategyAttribute) matchType(options []interface{}, value interface{}) bool {
 

@@ -1,7 +1,9 @@
 package strategies
 
+// TypeString is for string values (eg "something"):
 const TypeString = "STRING"
 
+// String makes evaluations for STRING values:
 func String(conditional string, options []interface{}, value interface{}) bool {
 
 	switch conditional {
