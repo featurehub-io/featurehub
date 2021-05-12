@@ -2,6 +2,7 @@ package strategies
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/mcuadros/go-version"
 )
@@ -50,23 +51,32 @@ func evaluateSemanticVersion(conditional string, options []string, value string)
 		}
 		return false
 
-	case ConditionalGreater:
-		// Return false if the value is less than or equal to any of the options
+	case ConditionalNotEquals:
+		// Return false if the value is equal to any of the options:
 		for _, option := range options {
-			if version.Compare(value, option, "<=") {
+			if value == option {
 				return false
 			}
 		}
 		return true
 
-	case ConditionalGreaterEquals:
-		// Return false if the value is less than any of the options:
+	case ConditionalEndsWith:
+		// Return true if the value ends with any of the options:
 		for _, option := range options {
-			if version.Compare(value, option, "<") {
-				return false
+			if strings.HasSuffix(value, option) {
+				return true
 			}
 		}
-		return true
+		return false
+
+	case ConditionalStartsWith:
+		// Return true if the value starts with any of the options:
+		for _, option := range options {
+			if strings.HasPrefix(value, option) {
+				return true
+			}
+		}
+		return false
 
 	case ConditionalLess:
 		// Return false if the value is greater than or equal to any of the options:
@@ -86,14 +96,44 @@ func evaluateSemanticVersion(conditional string, options []string, value string)
 		}
 		return true
 
-	case ConditionalNotEquals:
-		// Return false if the value is equal to any of the options
+	case ConditionalGreater:
+		// Return false if the value is less than or equal to any of the options:
 		for _, option := range options {
-			if value == option {
+			if version.Compare(value, option, "<=") {
 				return false
 			}
 		}
 		return true
+
+	case ConditionalGreaterEquals:
+		// Return false if the value is less than any of the options:
+		for _, option := range options {
+			if version.Compare(value, option, "<") {
+				return false
+			}
+		}
+		return true
+
+	case ConditionalExcludes:
+		// Return false if the value contains any of the options:
+		for _, option := range options {
+			if strings.Contains(value, option) {
+				return false
+			}
+		}
+		return true
+
+	case ConditionalIncludes:
+		// Return true if the value contains any of the options:
+		for _, option := range options {
+			if strings.Contains(value, option) {
+				return true
+			}
+		}
+		return false
+
+	case ConditionalRegex:
+		return false
 
 	default:
 		return false

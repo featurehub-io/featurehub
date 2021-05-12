@@ -1,6 +1,9 @@
 package strategies
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // TypeString is for string values (eg "something"):
 const TypeString = "STRING"
@@ -47,7 +50,7 @@ func evaluateString(conditional string, options []string, value string) bool {
 		return false
 
 	case ConditionalNotEquals:
-		// Return false if the value is equal to any of the options
+		// Return false if the value is equal to any of the options:
 		for _, option := range options {
 			if value == option {
 				return false
@@ -56,9 +59,21 @@ func evaluateString(conditional string, options []string, value string) bool {
 		return true
 
 	case ConditionalEndsWith:
+		// Return true if the value ends with any of the options:
+		for _, option := range options {
+			if strings.HasSuffix(value, option) {
+				return true
+			}
+		}
 		return false
 
 	case ConditionalStartsWith:
+		// Return true if the value starts with any of the options:
+		for _, option := range options {
+			if strings.HasPrefix(value, option) {
+				return true
+			}
+		}
 		return false
 
 	case ConditionalLess:
@@ -80,7 +95,7 @@ func evaluateString(conditional string, options []string, value string) bool {
 		return true
 
 	case ConditionalGreater:
-		// Return false if the value is less than or equal to any of the options
+		// Return false if the value is less than or equal to any of the options:
 		for _, option := range options {
 			if value <= option {
 				return false
@@ -98,9 +113,21 @@ func evaluateString(conditional string, options []string, value string) bool {
 		return true
 
 	case ConditionalExcludes:
-		return false
+		// Return false if the value contains any of the options:
+		for _, option := range options {
+			if strings.Contains(value, option) {
+				return false
+			}
+		}
+		return true
 
 	case ConditionalIncludes:
+		// Return true if the value contains any of the options:
+		for _, option := range options {
+			if strings.Contains(value, option) {
+				return true
+			}
+		}
 		return false
 
 	case ConditionalRegex:

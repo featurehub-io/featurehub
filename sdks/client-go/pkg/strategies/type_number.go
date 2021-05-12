@@ -1,6 +1,9 @@
 package strategies
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // TypeNumber is for numerical values:
 const TypeNumber = "NUMBER"
@@ -42,7 +45,7 @@ func evaluateNumber(conditional string, options []float64, value float64) bool {
 		return false
 
 	case ConditionalNotEquals:
-		// Return false if the value is equal to any of the options
+		// Return false if the value is equal to any of the options:
 		for _, option := range options {
 			if value == option {
 				return false
@@ -51,9 +54,21 @@ func evaluateNumber(conditional string, options []float64, value float64) bool {
 		return true
 
 	case ConditionalEndsWith:
+		// Return true if the value ends with any of the options:
+		for _, option := range options {
+			if strings.HasSuffix(fmt.Sprintf("%f", value), fmt.Sprintf("%f", option)) {
+				return true
+			}
+		}
 		return false
 
 	case ConditionalStartsWith:
+		// Return true if the value starts with any of the options:
+		for _, option := range options {
+			if strings.HasPrefix(fmt.Sprintf("%f", value), fmt.Sprintf("%f", option)) {
+				return true
+			}
+		}
 		return false
 
 	case ConditionalLess:
@@ -75,7 +90,7 @@ func evaluateNumber(conditional string, options []float64, value float64) bool {
 		return true
 
 	case ConditionalGreater:
-		// Return false if the value is less than or equal to any of the options
+		// Return false if the value is less than or equal to any of the options:
 		for _, option := range options {
 			if value <= option {
 				return false
@@ -93,9 +108,21 @@ func evaluateNumber(conditional string, options []float64, value float64) bool {
 		return true
 
 	case ConditionalExcludes:
-		return false
+		// Return false if the value contains any of the options:
+		for _, option := range options {
+			if strings.Contains(fmt.Sprintf("%f", value), fmt.Sprintf("%f", option)) {
+				return false
+			}
+		}
+		return true
 
 	case ConditionalIncludes:
+		// Return true if the value contains any of the options:
+		for _, option := range options {
+			if strings.Contains(fmt.Sprintf("%f", value), fmt.Sprintf("%f", option)) {
+				return true
+			}
+		}
 		return false
 
 	default:

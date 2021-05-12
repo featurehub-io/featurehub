@@ -42,7 +42,7 @@ func evaluateBoolean(conditional string, options []bool, value bool) bool {
 		return false
 
 	case ConditionalNotEquals:
-		// Return false if the value is equal to any of the options
+		// Return false if the value is equal to any of the options:
 		for _, option := range options {
 			if value == option {
 				return false
