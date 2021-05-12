@@ -56,9 +56,6 @@ func (ss Strategies) calculate(clientContext *Context) interface{} {
 
 	// Go through the available strategies:
 	for _, strategy := range ss {
-
-		// spew.Dump(strategy)
-
 		logger.Tracef("Checking strategy (%s)", strategy.ID)
 
 		// Check if we match any percentage-based rule:
@@ -155,8 +152,15 @@ func (s Strategy) proceedWithAttributes(clientContext *Context) bool {
 			logger.Tracef("Didn't match attribute strategy (%s:%s = %v) for version: %v\n", sa.ID, sa.FieldName, sa.Values, clientContext.Version)
 			return false
 
-		// Some other (unsupported) field:
+		// Custom field:
 		default:
+			if customContextValue, ok := clientContext.Custom[sa.FieldName]; ok {
+				if sa.matchConditional(sa.Values, customContextValue) {
+					continue
+				}
+				logger.Tracef("Didn't match custom strategy (%s:%s = %v) for version: %v\n", sa.ID, sa.FieldName, sa.Values, clientContext.Version)
+				return false
+			}
 			logger.Infof("Unsupported strategy field (%s), will now try custom strategies", sa.FieldName)
 		}
 	}
@@ -166,6 +170,8 @@ func (s Strategy) proceedWithAttributes(clientContext *Context) bool {
 
 // matchConditional checks the given string against the given slice of strings with the attribute's conditional logic:
 func (sa *StrategyAttribute) matchConditional(slice []interface{}, contains interface{}) bool {
+
+	logger.Tracef("Looking for %v within %v", contains, slice)
 
 	// Handle the different conditionals available to us:
 	switch sa.Conditional {

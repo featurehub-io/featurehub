@@ -4,6 +4,14 @@ package models
 func ConditionalEquals(strategyType string, slice []interface{}, contains interface{}) bool {
 
 	switch strategyType {
+	case strategyTypeBoolean:
+		for _, value := range slice {
+			if value.(bool) == contains.(bool) {
+				return true
+			}
+		}
+		return false
+
 	case strategyTypeString, strategyTypeSemanticVersion:
 		for _, value := range slice {
 			if value.(string) == contains.(string) {
