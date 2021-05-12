@@ -8,11 +8,13 @@ const TypeBoolean = "BOOLEAN"
 // Boolean asserts the given parameters then passes on for evaluation:
 func Boolean(conditional string, options []interface{}, value interface{}) (bool, error) {
 
+	// Type assert the value:
 	assertedValue, ok := value.(bool)
 	if !ok {
 		return false, fmt.Errorf("Unable to assert value (%v) as bool", value)
 	}
 
+	// Type assert all of the options:
 	var assertedOptions []bool
 	for _, option := range options {
 		assertedOption, ok := option.(bool)

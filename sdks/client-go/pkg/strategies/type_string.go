@@ -8,11 +8,13 @@ const TypeString = "STRING"
 // String asserts the given parameters then passes on for evaluation:
 func String(conditional string, options []interface{}, value interface{}) (bool, error) {
 
+	// Type assert the value:
 	assertedValue, ok := value.(string)
 	if !ok {
 		return false, fmt.Errorf("Unable to assert value (%v) as string", value)
 	}
 
+	// Type assert all of the options:
 	var assertedOptions []string
 	for _, option := range options {
 		assertedOption, ok := option.(string)

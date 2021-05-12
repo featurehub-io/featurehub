@@ -11,6 +11,7 @@ const TypeDate = "DATE"
 // Date asserts the given parameters then passes on for evaluation:
 func Date(conditional string, options []interface{}, value interface{}) (bool, error) {
 
+	// Type assert the value:
 	assertedValue, ok := value.(string)
 	if !ok {
 		return false, fmt.Errorf("Unable to assert value (%v) as string", value)
@@ -21,6 +22,7 @@ func Date(conditional string, options []interface{}, value interface{}) (bool, e
 		assertedValue = time.Now().Format("2006-01-02")
 	}
 
+	// Type assert all of the options:
 	var assertedOptions []string
 	for _, option := range options {
 		assertedOption, ok := option.(string)
