@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/spaolacci/murmur3"
@@ -21,7 +22,9 @@ const (
 	strategyFieldNameDevice          = "device"
 	strategyFieldNamePlatform        = "platform"
 	strategyFieldNameVersion         = "version"
+	strategyTypeBoolean              = "BOOLEAN"
 	strategyTypeSemanticVersion      = "SEMANTIC_VERSION"
+	strategyTypeString               = "STRING"
 )
 
 // Strategies so we can attach methods:
@@ -38,11 +41,11 @@ type Strategy struct {
 
 // StrategyAttribute defines a more complex strategy than simple percentages:
 type StrategyAttribute struct {
-	ID          string   `json:"id"`
-	Conditional string   `json:"conditional"`
-	FieldName   string   `json:"fieldName"`
-	Values      []string `json:"values"`
-	Type        string   `json:"type"`
+	ID          string        `json:"id"`
+	Conditional string        `json:"conditional"`
+	FieldName   string        `json:"fieldName"`
+	Values      []interface{} `json:"values"`
+	Type        string        `json:"type"`
 }
 
 // calculate contains the logic to check each strategy and decide which one applies (if any):
@@ -53,6 +56,9 @@ func (ss Strategies) calculate(clientContext *Context) interface{} {
 
 	// Go through the available strategies:
 	for _, strategy := range ss {
+
+		// spew.Dump(strategy)
+
 		logger.Tracef("Checking strategy (%s)", strategy.ID)
 
 		// Check if we match any percentage-based rule:
@@ -118,7 +124,7 @@ func (s Strategy) proceedWithAttributes(clientContext *Context) bool {
 
 		// Match by country name:
 		case strategyFieldNameCountry:
-			if sa.matchConditional(sa.Values, string(clientContext.Country)) {
+			if len(clientContext.Country) > 0 && sa.matchConditional(sa.Values, fmt.Sprintf("%s", clientContext.Country)) {
 				continue
 			}
 			logger.Tracef("Didn't match attribute strategy (%s:%s = %v) for country: %v\n", sa.ID, sa.FieldName, sa.Values, clientContext.Country)
@@ -126,7 +132,7 @@ func (s Strategy) proceedWithAttributes(clientContext *Context) bool {
 
 		// Match by device type:
 		case strategyFieldNameDevice:
-			if sa.matchConditional(sa.Values, string(clientContext.Device)) {
+			if len(clientContext.Device) > 0 && sa.matchConditional(sa.Values, fmt.Sprintf("%s", clientContext.Device)) {
 				continue
 			}
 			logger.Tracef("Didn't match attribute strategy (%s:%s = %v) for device: %v\n", sa.ID, sa.FieldName, sa.Values, clientContext.Device)
@@ -134,7 +140,7 @@ func (s Strategy) proceedWithAttributes(clientContext *Context) bool {
 
 		// Match by platform:
 		case strategyFieldNamePlatform:
-			if sa.matchConditional(sa.Values, string(clientContext.Platform)) {
+			if len(clientContext.Platform) > 0 && sa.matchConditional(sa.Values, fmt.Sprintf("%s", clientContext.Platform)) {
 				continue
 			}
 			logger.Tracef("Didn't match attribute strategy (%s:%s = %v) for platform: %v\n", sa.ID, sa.FieldName, sa.Values, clientContext.Platform)
@@ -143,7 +149,7 @@ func (s Strategy) proceedWithAttributes(clientContext *Context) bool {
 		// Match by version:
 		case strategyFieldNameVersion:
 			logger.Trace("Trying version")
-			if sa.matchConditional(sa.Values, string(clientContext.Version)) {
+			if len(clientContext.Version) > 0 && sa.matchConditional(sa.Values, fmt.Sprintf("%s", clientContext.Version)) {
 				continue
 			}
 			logger.Tracef("Didn't match attribute strategy (%s:%s = %v) for version: %v\n", sa.ID, sa.FieldName, sa.Values, clientContext.Version)
@@ -151,8 +157,7 @@ func (s Strategy) proceedWithAttributes(clientContext *Context) bool {
 
 		// Some other (unsupported) field:
 		default:
-			logger.Infof("Unsupported strategy field (%s)", sa.FieldName)
-			return false
+			logger.Infof("Unsupported strategy field (%s), will now try custom strategies", sa.FieldName)
 		}
 	}
 
@@ -160,12 +165,7 @@ func (s Strategy) proceedWithAttributes(clientContext *Context) bool {
 }
 
 // matchConditional checks the given string against the given slice of strings with the attribute's conditional logic:
-func (sa *StrategyAttribute) matchConditional(slice []string, contains string) bool {
-
-	// Make sure we have a value to check for:
-	if len(contains) == 0 {
-		return false
-	}
+func (sa *StrategyAttribute) matchConditional(slice []interface{}, contains interface{}) bool {
 
 	// Handle the different conditionals available to us:
 	switch sa.Conditional {
