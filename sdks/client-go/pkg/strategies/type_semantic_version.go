@@ -29,7 +29,7 @@ func SemanticVersion(conditional string, options []interface{}, value interface{
 	return evaluateSemanticVersion(conditional, assertedOptions, assertedValue), nil
 }
 
-// evaluateSemanticVersion makes evaluations for SEMANTIC_VERSION values:
+// evaluateSemanticVersion makes evaluations for TypeSemanticVersion values:
 func evaluateSemanticVersion(conditional string, options []string, value string) bool {
 
 	// Make sure we have a value:

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/strategies"
 	"github.com/spaolacci/murmur3"
 )
@@ -101,6 +102,8 @@ func (s Strategy) proceedWithAttributes(clientContext *Context) bool {
 
 	for _, sa := range s.Attributes {
 
+		spew.Dump(sa)
+
 		// Handle each different client-context attribute:
 		switch sa.FieldName {
 
@@ -184,6 +187,18 @@ func (sa *StrategyAttribute) matchType(options []interface{}, value interface{})
 
 	case strategies.TypeBoolean:
 		return strategies.Boolean(sa.Conditional, options, value)
+
+	case strategies.TypeDate:
+		return strategies.Date(sa.Conditional, options, value)
+
+	case strategies.TypeDateTime:
+		return strategies.DateTime(sa.Conditional, options, value)
+
+	case strategies.TypeIPAddress:
+		return strategies.IPAddress(sa.Conditional, options, value)
+
+	case strategies.TypeNumber:
+		return strategies.Number(sa.Conditional, options, value)
 
 	case strategies.TypeSemanticVersion:
 		return strategies.SemanticVersion(sa.Conditional, options, value)

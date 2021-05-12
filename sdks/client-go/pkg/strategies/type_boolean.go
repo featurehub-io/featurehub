@@ -25,7 +25,7 @@ func Boolean(conditional string, options []interface{}, value interface{}) (bool
 	return evaluateBoolean(conditional, assertedOptions, assertedValue), nil
 }
 
-// evaluateBoolean makes evaluations for BOOLEAN values:
+// evaluateBoolean makes evaluations for TypeBoolean values:
 func evaluateBoolean(conditional string, options []bool, value bool) bool {
 
 	switch conditional {

@@ -2,36 +2,31 @@ package strategies
 
 import "fmt"
 
-// TypeString is for string values (eg "something"):
-const TypeString = "STRING"
+// TypeNumber is for numerical values:
+const TypeNumber = "NUMBER"
 
-// String asserts the given parameters then passes on for evaluation:
-func String(conditional string, options []interface{}, value interface{}) (bool, error) {
+// Number asserts the given parameters then passes on for evaluation:
+func Number(conditional string, options []interface{}, value interface{}) (bool, error) {
 
-	assertedValue, ok := value.(string)
+	assertedValue, ok := value.(float64)
 	if !ok {
-		return false, fmt.Errorf("Unable to assert value (%v) as string", value)
+		return false, fmt.Errorf("Unable to assert value (%v) as float64", value)
 	}
 
-	var assertedOptions []string
+	var assertedOptions []float64
 	for _, option := range options {
-		assertedOption, ok := option.(string)
+		assertedOption, ok := option.(float64)
 		if !ok {
-			return false, fmt.Errorf("Unable to assert value (%v) as string", option)
+			return false, fmt.Errorf("Unable to assert value (%v) as float64", option)
 		}
 		assertedOptions = append(assertedOptions, assertedOption)
 	}
 
-	return evaluateString(conditional, assertedOptions, assertedValue), nil
+	return evaluateNumber(conditional, assertedOptions, assertedValue), nil
 }
 
-// evaluateString makes evaluations for TypeString values:
-func evaluateString(conditional string, options []string, value string) bool {
-
-	// Make sure we have a value:
-	if len(value) == 0 {
-		return false
-	}
+// evaluateNumber makes evaluations for TypeNumber values:
+func evaluateNumber(conditional string, options []float64, value float64) bool {
 
 	switch conditional {
 
@@ -99,9 +94,6 @@ func evaluateString(conditional string, options []string, value string) bool {
 		return false
 
 	case ConditionalIncludes:
-		return false
-
-	case ConditionalRegex:
 		return false
 
 	default:
