@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/strategies"
 	"github.com/spaolacci/murmur3"
 )
@@ -101,8 +100,6 @@ func (s Strategy) proceedWithAttributes(clientContext *Context) bool {
 	}
 
 	for _, sa := range s.Attributes {
-
-		spew.Dump(sa)
 
 		// Handle each different client-context attribute:
 		switch sa.FieldName {
