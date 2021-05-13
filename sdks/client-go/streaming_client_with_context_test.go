@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"testing"
+	"time"
 
 	"github.com/donovanhide/eventsource"
 	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/models"
@@ -139,6 +140,30 @@ var TestFeature1States = []*models.FeatureState{
 			},
 		},
 	},
+	{
+		ID:    "TestFeature3",
+		Key:   "TestBoolean",
+		Type:  models.TypeBoolean,
+		Value: true,
+	},
+	{
+		ID:    "TestFeature4",
+		Key:   "TestJSON",
+		Type:  models.TypeJSON,
+		Value: `{"test": "something"}`,
+	},
+	{
+		ID:    "TestFeature5",
+		Key:   "TestNumber",
+		Type:  models.TypeNumber,
+		Value: float64(54321),
+	},
+	{
+		ID:    "TestFeature6",
+		Key:   "TestString",
+		Type:  models.TypeString,
+		Value: "this is another string",
+	},
 }
 
 func TestStreamingClientWithContext(t *testing.T) {
@@ -258,4 +283,32 @@ func TestStreamingClientWithContext(t *testing.T) {
 		GetString("TestFeature2")
 	assert.Equal(t, "this is for the 66 percent", stringValue)
 	assert.NoError(t, err)
+
+	// Get a default boolean value:
+	booleanValue, err := testClient.
+		WithContext(&models.Context{Userkey: time.Now().String()}).
+		GetBoolean("TestBoolean")
+	assert.NoError(t, err)
+	assert.Equal(t, true, booleanValue)
+
+	// Get a default json value:
+	jsonValue, err := testClient.
+		WithContext(&models.Context{Userkey: time.Now().String()}).
+		GetRawJSON("TestJSON")
+	assert.NoError(t, err)
+	assert.Equal(t, `{"test": "something"}`, jsonValue)
+
+	// Get a default number value:
+	numberValue, err := testClient.
+		WithContext(&models.Context{Userkey: time.Now().String()}).
+		GetNumber("TestNumber")
+	assert.NoError(t, err)
+	assert.Equal(t, float64(54321), numberValue)
+
+	// Get a default number value:
+	stringValue, err = testClient.
+		WithContext(&models.Context{Userkey: time.Now().String()}).
+		GetString("TestString")
+	assert.NoError(t, err)
+	assert.Equal(t, "this is another string", stringValue)
 }

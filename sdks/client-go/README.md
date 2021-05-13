@@ -153,11 +153,11 @@ Some rollout strategies need to be calculated per-request, which means that we c
 		},
 	}
 
-	// First retrieve the value as a feature:
-	featureValue, _ := fhClient.GetFeature("feature-key")
-
-	// Then you can apply a client context and read your value as its specific type, with rollout strategies applied:
-	numberValue, _ := featureValue.WithContext(clientContext).AsNumber()
+	// Use client.WithContext() to retrieve a string-value with client-side evaluation:
+	stringValue, err := fhClient.WithContext(clientContext).GetString("feature-key")
+	if err != nil {
+		logrus.Fatalf("Error retrieving a STRING feature: %s", err)
+	}
 ```
 
 If the featureValue has rollout strategies defined then they will be applied according to the client context you provide.
