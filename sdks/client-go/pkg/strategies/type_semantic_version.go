@@ -2,6 +2,7 @@ package strategies
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/mcuadros/go-version"
@@ -133,6 +134,12 @@ func evaluateSemanticVersion(conditional string, options []string, value string)
 		return false
 
 	case ConditionalRegex:
+		// Return true if the value matches any of the regex options:
+		for _, option := range options {
+			if matched, _ := regexp.MatchString(option, value); matched {
+				return true
+			}
+		}
 		return false
 
 	default:

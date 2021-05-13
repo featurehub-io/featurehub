@@ -72,3 +72,8 @@ func TestStringIncludes(t *testing.T) {
 	assert.True(t, evaluateString(ConditionalIncludes, []string{"blue", "green"}, "something green in colour"))
 	assert.False(t, evaluateString(ConditionalIncludes, []string{"blue", "green"}, "yellow"))
 }
+
+func TestStringRegex(t *testing.T) {
+	assert.True(t, evaluateString(ConditionalRegex, []string{"fo."}, "a quick brown fox jumped over the lazy dog"))
+	assert.False(t, evaluateString(ConditionalRegex, []string{"bear."}, "something green in colour"))
+}

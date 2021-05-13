@@ -66,11 +66,16 @@ func TestSemanticVersionGreaterEquals(t *testing.T) {
 }
 
 func TestSemanticVersionExcludes(t *testing.T) {
-	assert.True(t, evaluateString(ConditionalExcludes, []string{"3.0.0", "2.0.0"}, "10.0.0"))
-	assert.False(t, evaluateString(ConditionalExcludes, []string{"3.0.0", "2.3"}, "10.2.35"))
+	assert.True(t, evaluateSemanticVersion(ConditionalExcludes, []string{"3.0.0", "2.0.0"}, "10.0.0"))
+	assert.False(t, evaluateSemanticVersion(ConditionalExcludes, []string{"3.0.0", "2.3"}, "10.2.35"))
 }
 
 func TestSemanticVersionIncludes(t *testing.T) {
-	assert.False(t, evaluateString(ConditionalIncludes, []string{"3.0.0", "2.0.0"}, "10.0.0"))
-	assert.True(t, evaluateString(ConditionalIncludes, []string{"3.0.0", "2.3"}, "10.2.35"))
+	assert.False(t, evaluateSemanticVersion(ConditionalIncludes, []string{"3.0.0", "2.0.0"}, "10.0.0"))
+	assert.True(t, evaluateSemanticVersion(ConditionalIncludes, []string{"3.0.0", "2.3"}, "10.2.35"))
+}
+
+func TestSemanticVersionRegex(t *testing.T) {
+	assert.True(t, evaluateSemanticVersion(ConditionalRegex, []string{"fo."}, "a quick brown fox jumped over the lazy dog"))
+	assert.False(t, evaluateSemanticVersion(ConditionalRegex, []string{"bear."}, "something green in colour"))
 }
