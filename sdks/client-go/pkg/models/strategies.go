@@ -33,8 +33,8 @@ type StrategyAttribute struct {
 	Type        string        `json:"type"`
 }
 
-// calculate contains the logic to check each strategy and decide which one applies (if any):
-func (ss Strategies) calculate(clientContext *Context) interface{} {
+// Calculate contains the logic to check each strategy and decide which one applies (if any):
+func (ss Strategies) Calculate(clientContext *Context) interface{} {
 
 	// Pre-calculate our hashKey:
 	hashKey, _ := clientContext.UniqueKey()

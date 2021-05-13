@@ -101,6 +101,14 @@ func (c *StreamingClient) Start() {
 	}
 }
 
+// WithContext returns a StreamingClientWithContext:
+func (c *StreamingClient) WithContext(context *models.Context) *StreamingClientWithContext {
+	return &StreamingClientWithContext{
+		client:  c,
+		context: context,
+	}
+}
+
 // isReady triggers various notifications that the client is ready to serve data:
 func (c *StreamingClient) isReady() {
 

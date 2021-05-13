@@ -36,7 +36,7 @@ func (fs *FeatureState) AsBoolean() (bool, error) {
 	}
 
 	// Figure out which value to use:
-	if calculatedValue := fs.Strategies.calculate(fs.clientContext); calculatedValue != nil {
+	if calculatedValue := fs.Strategies.Calculate(fs.clientContext); calculatedValue != nil {
 
 		// Assert the value:
 		if strategyValue, ok := calculatedValue.(bool); ok {
@@ -63,7 +63,7 @@ func (fs *FeatureState) AsNumber() (float64, error) {
 	}
 
 	// Figure out which value to use:
-	if calculatedValue := fs.Strategies.calculate(fs.clientContext); calculatedValue != nil {
+	if calculatedValue := fs.Strategies.Calculate(fs.clientContext); calculatedValue != nil {
 
 		// Assert the value:
 		if strategyValue, ok := calculatedValue.(float64); ok {
@@ -90,7 +90,7 @@ func (fs *FeatureState) AsRawJSON() (string, error) {
 	}
 
 	// Figure out which value to use:
-	if calculatedValue := fs.Strategies.calculate(fs.clientContext); calculatedValue != nil {
+	if calculatedValue := fs.Strategies.Calculate(fs.clientContext); calculatedValue != nil {
 
 		// Assert the value:
 		if strategyValue, ok := calculatedValue.(string); ok {
@@ -117,7 +117,7 @@ func (fs *FeatureState) AsString() (string, error) {
 	}
 
 	// Figure out which value to use:
-	if calculatedValue := fs.Strategies.calculate(fs.clientContext); calculatedValue != nil {
+	if calculatedValue := fs.Strategies.Calculate(fs.clientContext); calculatedValue != nil {
 
 		// Assert the value:
 		if strategyValue, ok := calculatedValue.(string); ok {
