@@ -146,6 +146,11 @@ Some rollout strategies need to be calculated per-request, which means that we c
 		Platform: "linux",
 		Country:  "New Zealand",
 		Version:  "1.0.5",
+		Custom: map[string]interface{}{
+			"startDate": "now",
+			"username":  "prawn",
+			"iteration", float64(5),
+		},
 	}
 
 	// First retrieve the value as a feature:
@@ -154,8 +159,10 @@ Some rollout strategies need to be calculated per-request, which means that we c
 	// Then you can apply a client context and read your value as its specific type, with rollout strategies applied:
 	numberValue, _ := featureValue.WithContext(clientContext).AsNumber()
 ```
+
 If the featureValue has rollout strategies defined then they will be applied according to the client context you provide.
 
+Note the map of `Custom` values, which are evaluated against your custom features according to their field names (keys).
 
 
 Todo
@@ -178,14 +185,14 @@ Todo
 	- [x] Device [==, !=]
 	- [x] Platform [==, !=]
 	- [x] Version [==, !=, >, >=, <, <=]
-	- [ ] Custom
-		- [ ] string
-		- [ ] semver
-		- [ ] number
-		- [ ] date
-		- [ ] date-time
-		- [ ] boolean
-		- [ ] ip-address
+	- [x] Custom
+		- [x] string [==, !=, startsWith, endsWith, <, <=, >, >=, excludes, includes, regex]
+		- [x] semver [==, !=, startsWith, endsWith, <, <=, >, >=, excludes, includes, regex]
+		- [x] number [==, !=, <, <=, >, >=, excludes, includes]
+		- [x] date [==, !=, startsWith, endsWith, <, <=, >, >=, excludes, includes, regex]
+		- [x] date-time [==, !=, startsWith, endsWith, <, <=, >, >=, excludes, includes, regex]
+		- [x] boolean [==, !=]
+		- [x] ip-address [==, !=, excludes, includes]
 
 Strategy matching logic:
 - If strategy has a percentage then hash on userkey or session and decide
