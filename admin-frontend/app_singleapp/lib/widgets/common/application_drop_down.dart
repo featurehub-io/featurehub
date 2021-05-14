@@ -38,8 +38,7 @@ class _ApplicationDropDownState extends State<ApplicationDropDown> {
                   ),
                   isExpanded: true,
                   isDense: true,
-                  items: widget.applications != null &&
-                          widget.applications.isNotEmpty
+                  items: widget.applications.isNotEmpty
                       ? widget.applications.map((Application application) {
                           return DropdownMenuItem<String>(
                               value: application.id,
@@ -53,9 +52,11 @@ class _ApplicationDropDownState extends State<ApplicationDropDown> {
                   hint: Text('Select application',
                       style: Theme.of(context).textTheme.subtitle2),
                   onChanged: (String? value) {
-                    setState(() {
-                      widget.bloc.mrClient.setCurrentAid(value);
-                    });
+                    if (value != null) {
+                      setState(() {
+                        widget.bloc.mrClient.setCurrentAid(value);
+                      });
+                    }
                   },
                   value: widget.applications
                       .firstWhereOrNull((a) => a.id == snapshot.data)

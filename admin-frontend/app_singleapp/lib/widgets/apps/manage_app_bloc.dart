@@ -17,7 +17,7 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
   late PortfolioServiceApi _portfolioServiceApi;
   late GroupServiceApi _groupServiceApi;
   late ServiceAccountServiceApi _serviceAccountServiceApi;
-  late StreamSubscription<String?> _currentAppId;
+  late StreamSubscription<String?> _currentAppIdSubscription;
 
   // operational fields
   String? applicationId;
@@ -33,7 +33,7 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     _groupServiceApi = GroupServiceApi(_mrClient.apiClient);
     _serviceAccountServiceApi = ServiceAccountServiceApi(_mrClient.apiClient);
     _pageStateBS.add(ManageAppPageState.loadingState);
-    _currentAppId =
+    _currentAppIdSubscription =
         _mrClient.streamValley.currentAppIdStream.listen(setApplicationId);
   }
 
@@ -48,7 +48,7 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     _groupsBS.close();
     _serviceAccountsBS.close();
     _serviceAccountPS.close();
-    _currentAppId.cancel();
+    _currentAppIdSubscription.cancel();
   }
 
   final _environmentBS = BehaviorSubject<List<Environment>>();
@@ -93,16 +93,38 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     }
   }
 
-  void _fetchEnvironments() async {
-    if (applicationId == null || application == null) {
-      return;
+  Future<void> applicationIdChanged() async {
+    if (await refreshApplication()) {
+      // ignore: unawaited_futures
+      _fetchGroups(existingApp: true);
+      _fetchEnvironments(existingApp: true);
+      _fetchEnvironments(existingApp: true);
+    }
+  }
+
+  Future<bool> refreshApplication() async {
+    if (applicationId == null) {
+      return false;
     }
 
-    application = await _appServiceApi
+    return await _appServiceApi
         .getApplication(applicationId!, includeEnvironments: true)
-        .catchError((e, s) {
+        .then((value) {
+      application = value;
+      return true;
+    }).catchError((e, s) {
       _mrClient.dialogError(e, s);
+      return false;
     });
+  }
+
+  void _fetchEnvironments({existingApp = false}) async {
+    if (!existingApp || application == null) {
+      if (!(await refreshApplication())) {
+        return;
+      }
+    }
+
     environmentsList = application!.environments;
     if (!_environmentBS.isClosed) {
       _environmentBS.add(application!.environments);
@@ -123,15 +145,12 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     getGroupRoles(_selectedGroupId);
   }
 
-  Future<void> _fetchGroups() async {
-    if (applicationId == null || application == null) {
-      return;
+  Future<void> _fetchGroups({existingApp = false}) async {
+    if (!existingApp || application == null) {
+      if (!(await refreshApplication())) {
+        return;
+      }
     }
-
-    application =
-        await _appServiceApi.getApplication(applicationId!).catchError((e, s) {
-      _mrClient.dialogError(e, s);
-    });
 
     portfolio = await _portfolioServiceApi
         .getPortfolio(application!.portfolioId!, includeGroups: true)
@@ -174,17 +193,15 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     }
   }
 
-  void _fetchServiceAccounts() async {
-    if (applicationId == null) {
-      return;
+  void _fetchServiceAccounts({existingApp = false}) async {
+    if (!existingApp || application == null) {
+      if (!(await refreshApplication())) {
+        return;
+      }
     }
 
     try {
-      final app = await _appServiceApi.getApplication(applicationId!);
-
-      application = app;
-
-      await _fetchServiceAccountsFromApplication(app);
+      await _fetchServiceAccountsFromApplication(application!);
     } catch (e, s) {
       _mrClient.dialogError(e, s);
     }
