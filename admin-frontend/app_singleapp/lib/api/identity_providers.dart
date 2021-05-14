@@ -18,7 +18,8 @@ class IdentityProviders {
 
   Map<String, String> externalProviderAssets = <String, String>{
     'oauth2-google':
-        'assets/signup_3rdparty/btn_google_signin_dark_normal_web.png'
+        'assets/signup_3rdparty/btn_google_signin_dark_normal_web.png',
+    'oauth2-azure': 'assets/signup_3rdparty/azure.png'
   };
 
   final ManagementRepositoryClientBloc _bloc;

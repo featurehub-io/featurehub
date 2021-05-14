@@ -32,6 +32,10 @@ Further, you can configure the system to disallow attempts at logging in to your
 hasn't already been created. This allows you to expose FeatureHub to your organisation's IDP, but not let everyone
 from that IDP in.
 
+NOTE: it is important to note that FeatureHub does not use the Access Token it receives from the OAuth provider to call
+back, it simply follows the standard OAuth2 Authorization Code Flow nad requests an openid style token. This contains
+the email address and username and FeatureHub will then drop the token. No further callbacks are made.
+
 === Generalised Config
 
 ----
@@ -45,20 +49,20 @@ auth provider. The default is false.
 
 == OAuth2
 
-FeatureHub currently supports OAuth2 as a protocol, and currently only one provider (Google). It is built in such
+FeatureHub currently supports OAuth2 as a protocol, and currently two providers (Google, Azure). It is built in such
 a way that you can easily support others.
 
 === Generalised OAuth Config
 
 ----
 oauth2.providers=[comma seperated list of providers]
-oauth2.redirectUrl=http://localhost:8903/oauth/auth
-oauth2.adminUiUrlSuccess=http://localhost:53000/#
-oauth2.adminUiUrlFailure=http://localhost:53000/#oauth2-failure
+oauth2.redirectUrl=http://localhost:8085/oauth/auth
+oauth2.adminUiUrlSuccess=http://localhost:8085/#
+oauth2.adminUiUrlFailure=http://localhost:8085/#oauth2-failure
 ----
 
-- `oauth2.redirectUrl` - In this case, this needs to be registered with Google. The actual url will depend on where you
-have installed it, and it only has to be visible to browsers in your organisation.
+- `oauth2.redirectUrl` - In this case, this needs to be registered with your OAuth provider as a web callback url. 
+The actual url will depend on where you have installed it, and it only has to be visible to browsers in your organisation.
 - `adminUiUrlSuccess` and `adminUiUrlFailure` - are links back to your running FeatureHub system and indicate where
 to go. FeatureHub will set a cookie with the necessary information to authenticate the user on success. 
 
@@ -70,6 +74,7 @@ located in Google's help documentation. It needs to be allowed access to the `pr
 
 For FeatureHub, your properties file needs to add a few configuration items:
 
+[source,properties]
 ----
 oauth2.providers=oauth2-google
 oauth2.providers.google.id=[CLIENT-ID]
@@ -77,3 +82,33 @@ oauth2.providers.google.secret=[CLIENT-SECRET]
 ----
 
 FeatureHub knows all of the URLs necessary to ask Google for the negotiation phase.
+
+=== Azure Config
+
+Basic details of setting up Azure config are included here as they are a little difficult to find online. At the
+moment we are requesting `openid`, `email`, and `profile` scopes as only this combination provides us with the email
+address and name of the person. FeatureHub does not attempt to modify any data on any Azure account.
+
+The fields we need for Azure are:
+
+[source,properties]
+----
+oauth2.providers=oauth2-azure
+oauth2.providers.azure.tenant=[tenant-id]
+# the azure ones expire after 24 months (from may 2021)
+oauth2.providers.azure.id=[client-id]
+oauth2.providers.azure.secret=[client-secret - what Azure calls a "value"]
+----
+
+1. Open your Azure account, login and go https://go.microsoft.com/fwlink/?linkid=2083908[here].
+2. Add a New Registration
+3. Choose the name - FeatureHub for instance and choose Single Tenant (the first option)
+4. Click Register and in the details you will find "Application (client) id" - this is your `[client-id]` for your configuration.
+5. Next in the details find "Display (tenant) ID" - this is your `[tenant-id]` from above.
+6. On the right side, find "Client credentials" and click the blue link that says "Add a certificate or secret".
+7. At the bottom of the page, choose "+ New client secret". Give it a name and choose a period of time to issue it for and Add it.
+8. At the bottom will now be listed your new secret, choose the _Values_ column. Click the "copy" button to the right of it and paste that
+into the config under "[client-secret]". This is the last tiem you will see it as soon as you navigate away from that page, Azure
+will hide it from you.
+
+You are now done.

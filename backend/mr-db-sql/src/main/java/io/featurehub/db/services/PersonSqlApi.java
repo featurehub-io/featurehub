@@ -246,7 +246,8 @@ public class PersonSqlApi implements PersonApi {
     }
 
     PersonToken personToken;
-    if (new QDbPerson().email.eq(email.toLowerCase()).findOne() == null) {
+    final DbPerson onePerson = new QDbPerson().email.eq(email.toLowerCase()).findOne();
+    if (onePerson == null) {
 
       String token = UUID.randomUUID().toString();
       DbPerson.Builder builder = new DbPerson.Builder()
@@ -263,6 +264,15 @@ public class PersonSqlApi implements PersonApi {
       updatePerson(person);
 
       personToken = new PersonToken(person.getToken(), person.getId().toString());
+    } else if (onePerson.getWhenArchived() != null) {
+      onePerson.setWhenArchived(null);
+      onePerson.setToken(UUID.randomUUID().toString()); // ensures it gets past registration again
+      onePerson.setName(name);
+      if (created != null) {
+        onePerson.setWhoCreated(created);
+      }
+      updatePerson(onePerson);
+      return null;
     } else {
       throw new DuplicatePersonException();
     }

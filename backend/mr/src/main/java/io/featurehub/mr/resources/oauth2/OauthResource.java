@@ -3,6 +3,7 @@ package io.featurehub.mr.resources.oauth2;
 import cd.connect.app.config.ConfigKey;
 import cd.connect.app.config.DeclaredConfigResolver;
 import io.featurehub.db.api.AuthenticationApi;
+import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.GroupApi;
 import io.featurehub.db.api.Opts;
 import io.featurehub.db.api.OrganizationApi;
