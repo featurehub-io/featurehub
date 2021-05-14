@@ -124,6 +124,7 @@ class _EditAttributeStrategyWidgetState
                   fontSize: 12.0, color: Theme.of(context).buttonColor)),
           style: TextStyle(fontSize: 14.0),
           autofocus: true,
+          textInputAction: TextInputAction.next,
           onChanged: (v) => _updateAttributeFieldName(),
           onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
           validator: ((v) {
@@ -437,6 +438,7 @@ class _EditAttributeStrategyWidgetState
                 constraints: BoxConstraints(maxWidth: 250),
                 child: TextFormField(
                   controller: _value,
+                  textInputAction: TextInputAction.next,
                   decoration: InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: labelText,

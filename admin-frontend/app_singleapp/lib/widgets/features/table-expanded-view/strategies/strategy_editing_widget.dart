@@ -70,6 +70,8 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final focusNode = FocusScope.of(context);
+
     return FHAlertDialog(
       title: Text(individualStrategyBloc!.rolloutStrategy == null
           ? 'Add split targeting'
@@ -97,9 +99,9 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                           labelText: 'Split strategy name',
                           helperText: 'E.g. 20% rollout'),
                       readOnly: !widget.editable,
+                      textInputAction: TextInputAction.next,
                       autofocus: true,
-                      onFieldSubmitted: (_) =>
-                          FocusScope.of(context).nextFocus(),
+                      onFieldSubmitted: (_) => focusNode.nextFocus(),
                       validator: ((v) {
                         if (v == null || v.isEmpty) {
                           return 'Strategy name required';
@@ -136,8 +138,11 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                                       'You can enter a value with up to 4 decimal points, e.g. 0.0005 %'),
                               readOnly: !widget.editable,
                               autofocus: true,
-                              onFieldSubmitted: (_) =>
-                                  FocusScope.of(context).nextFocus(),
+                              onFieldSubmitted: (_) {
+                                // do nothing, we don't want to move to the next field
+                                // as thats "delete" and it triggers it immediately which
+                                // deletes the percentage
+                              },
                               inputFormatters: [
                                 DecimalTextInputFormatter(
                                     decimalRange: 4,
