@@ -3,6 +3,7 @@ package io.featurehub.edge;
 import io.featurehub.edge.bucket.EventOutputBucketService;
 import io.featurehub.edge.rest.EventStreamResource;
 import io.featurehub.edge.rest.SSEHeaderFilter;
+import io.featurehub.publish.NATSSource;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.spi.Container;
@@ -22,7 +23,7 @@ public class EdgeFeature implements Feature {
 
         @Override
         protected void configure() {
-          bind(ServerConfig.class).to(ServerConfig.class).in(Singleton.class);
+          bind(ServerConfig.class).to(ServerConfig.class).to(NATSSource.class).named("edge-source").in(Singleton.class);
           bind(EventOutputBucketService.class).to(EventOutputBucketService.class).in(Singleton.class);
           bind(FeatureTransformerUtils.class).to(FeatureTransformer.class).in(Singleton.class);
         }

@@ -6,6 +6,7 @@ import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
 import io.featurehub.dacha.api.CacheAction;
 import io.featurehub.dacha.api.CacheJsonMapper;
+import io.featurehub.health.HealthSource;
 import io.featurehub.mr.model.CacheManagementMessage;
 import io.featurehub.mr.model.CacheRequestType;
 import io.featurehub.mr.model.CacheState;
@@ -13,6 +14,7 @@ import io.featurehub.publish.ChannelNames;
 import io.nats.client.Dispatcher;
 import io.nats.client.Message;
 import io.nats.client.MessageHandler;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +25,7 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class CacheManager implements MessageHandler {
+public class CacheManager implements MessageHandler, HealthSource {
   private static final Logger log = LoggerFactory.getLogger(CacheManager.class);
   private Long mit;
   private Dispatcher cacheManagerDispatcher;
@@ -408,5 +410,16 @@ public class CacheManager implements MessageHandler {
 
   public String getId() {
     return id;
+  }
+
+  @Override
+  public boolean getHealthy() {
+    return getCurrentAction() == CacheAction.AT_REST;
+  }
+
+  @NotNull
+  @Override
+  public String getSourceName() {
+    return "Dacha Cache (healthy = ready)";
   }
 }

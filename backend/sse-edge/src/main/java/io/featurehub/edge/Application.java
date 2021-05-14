@@ -10,9 +10,16 @@ import cd.connect.jersey.common.LoggingConfiguration;
 import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
 import io.featurehub.edge.rest.SSEHeaderFilter;
+import io.featurehub.health.HealthFeature;
+import io.featurehub.health.HealthSource;
+import io.featurehub.jersey.config.EndpointLoggingListener;
+import io.featurehub.publish.NATSHealthSource;
+import io.featurehub.publish.NATSSource;
 import io.prometheus.client.hotspot.DefaultExports;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 
+import javax.inject.Singleton;
 import javax.ws.rs.container.ContainerResponseFilter;
 import java.net.URI;
 
@@ -37,8 +44,15 @@ public class Application {
 
     log.info("starting on port {}", BASE_URI.toASCIIString());
 
-    ResourceConfig config = new ResourceConfig()
-      .register(InfrastructureConfiguration.class)
+    ResourceConfig config = new ResourceConfig(
+      EndpointLoggingListener.class,
+      HealthFeature.class)
+      .register(new AbstractBinder() {
+        @Override
+        protected void configure() {
+          bind(NATSHealthSource.class).to(HealthSource.class).in(Singleton.class);
+        }
+      })
       .register(CommonConfiguration.class)
       .register(CorsFilter.class)
       .register(LoggingConfiguration.class)

@@ -16,12 +16,14 @@ import io.featurehub.mr.model.EdgeInitResponse;
 import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.publish.ChannelConstants;
 import io.featurehub.publish.ChannelNames;
+import io.featurehub.publish.NATSSource;
 import io.featurehub.sse.model.Environment;
 import io.nats.client.Connection;
 import io.nats.client.Dispatcher;
 import io.nats.client.Message;
 import io.nats.client.Nats;
 import io.nats.client.Options;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +79,7 @@ class NamedCacheListener {
   }
 }
 
-public class ServerConfig implements ServerController {
+public class ServerConfig implements ServerController, NATSSource {
   private static final Logger log = LoggerFactory.getLogger(ServerConfig.class);
   @ConfigKey("nats.urls")
   public String natsServer = "nats://localhost:4222";
@@ -328,5 +330,11 @@ public class ServerConfig implements ServerController {
     }
 
     return new ArrayList<>();
+  }
+
+  @NotNull
+  @Override
+  public Connection getConnection() {
+    return connection;
   }
 }

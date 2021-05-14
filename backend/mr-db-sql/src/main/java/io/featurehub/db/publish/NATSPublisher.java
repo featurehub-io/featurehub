@@ -4,15 +4,16 @@ import cd.connect.app.config.ConfigKey;
 import cd.connect.app.config.DeclaredConfigResolver;
 import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
-import io.ebean.Database;
 import io.featurehub.db.listener.EdgeUpdateListener;
 import io.featurehub.db.listener.FeatureUpdateBySDKApi;
 import io.featurehub.db.listener.FeatureUpdateListener;
 import io.featurehub.db.model.query.QDbNamedCache;
 import io.featurehub.publish.ChannelConstants;
+import io.featurehub.publish.NATSSource;
 import io.nats.client.Connection;
 import io.nats.client.Nats;
 import io.nats.client.Options;
+import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -26,22 +27,20 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 
 @Singleton
-public class NATSPublisher implements PublishManager {
+public class NATSPublisher implements PublishManager, NATSSource {
   @ConfigKey("nats.urls")
   public String natsServer;
-  private Connection connection;
-  private final Database database;
+  private final Connection connection;
   private final CacheSource cacheSource;
   private final FeatureUpdateBySDKApi featureUpdateBySDKApi;
-  private String id;
-  private Map<String, NamedCacheListener> namedCaches = new ConcurrentHashMap<>();
-  private Map<String, EdgeUpdateListener> edgeFeatureUpdateListeners = new ConcurrentHashMap<>();
+  private final String id;
+  private final Map<String, NamedCacheListener> namedCaches = new ConcurrentHashMap<>();
+  private final Map<String, EdgeUpdateListener> edgeFeatureUpdateListeners = new ConcurrentHashMap<>();
   @ConfigKey("feature-update.listener.enable")
   public Boolean enableListener = Boolean.TRUE;
 
   @Inject
-  public NATSPublisher(Database database, CacheSource cacheSource, FeatureUpdateBySDKApi featureUpdateBySDKApi) {
-    this.database = database;
+  public NATSPublisher(CacheSource cacheSource, FeatureUpdateBySDKApi featureUpdateBySDKApi) {
     this.cacheSource = cacheSource;
     this.featureUpdateBySDKApi = featureUpdateBySDKApi;
     DeclaredConfigResolver.resolve(this);
@@ -79,5 +78,11 @@ public class NATSPublisher implements PublishManager {
   private void shutdown() {
     namedCaches.values().parallelStream().forEach(NamedCacheListener::close);
     edgeFeatureUpdateListeners.values().parallelStream().forEach(EdgeUpdateListener::close);
+  }
+
+  @NotNull
+  @Override
+  public Connection getConnection() {
+    return connection;
   }
 }
