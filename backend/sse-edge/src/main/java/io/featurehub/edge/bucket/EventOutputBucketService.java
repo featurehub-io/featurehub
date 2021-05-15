@@ -25,11 +25,22 @@ public class EventOutputBucketService {
 
   @ConfigKey("maxSlots")
   protected Integer maxSlots = 30;
+  @ConfigKey("edge.dacha.response-timeout")
+  protected Integer namedCacheTimeout = 2000; // milliseconds to wait for dacha to responsd
 
   public EventOutputBucketService() {
     DeclaredConfigResolver.resolve(this);
 
+    if (namedCacheTimeout / 1000 > maxSlots) {
+      throw new RuntimeException("You cannot wait for longer than the connection will be open. Please increase your " +
+        "maxSlots or decrease your Dacha timeout.");
+    }
+
     timerSlice = maxSlots - 1;
+    startTimer();
+  }
+
+  protected void startTimer() {
     Timer secondTimer = new Timer("countdown-to-kickoff");
     secondTimer.scheduleAtFixedRate(new TimerTask() {
       @Override
@@ -37,7 +48,6 @@ public class EventOutputBucketService {
         kickout();
       }
     }, 0, 1000);
-
   }
 
   // every second, we clear out the buckets going down the list

@@ -22,6 +22,8 @@ MR server. It defaults to 10. This means an update coming in from NATs will spli
 at a time.
 * `listen.pool-size` - this indicates the pool size of the executor used to process incoming client requests from the
 web. It is not shared with PUT updates for features.
+*  `edge.dacha.response-timeout` - this indicates how long Edge will wait for a response from Dacha - it defaults to `2000ms`,
+and any figure provided should be in milliseconds.
 
 == GET Features
 

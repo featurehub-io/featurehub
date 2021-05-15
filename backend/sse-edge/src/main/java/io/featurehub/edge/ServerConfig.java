@@ -89,6 +89,8 @@ public class ServerConfig implements ServerController, NATSSource {
   Integer updatePoolSize = 10;
   @ConfigKey("listen.pool-size")
   Integer listenPoolSize = 10;
+  @ConfigKey("edge.dacha.response-timeout")
+  Integer namedCacheTimeout = 2000; // milliseconds to wait for dacha to responsd
   private Connection connection;
   // environmentId, list of connections for that environment
   private Map<String, Collection<ClientConnection>> clientBuckets = new ConcurrentHashMap<>();
@@ -220,7 +222,7 @@ public class ServerConfig implements ServerController, NATSSource {
 
           listenForFeatureUpdates(client.getNamedCache());
 
-          Message response = connection.request(subject, CacheJsonMapper.mapper.writeValueAsBytes(request), Duration.ofMillis(2000));
+          Message response = connection.request(subject, CacheJsonMapper.mapper.writeValueAsBytes(request), Duration.ofMillis(namedCacheTimeout));
 
           if (response != null) {
             EdgeInitResponse edgeResponse = CacheJsonMapper.mapper.readValue(response.getData(), EdgeInitResponse.class);
@@ -244,7 +246,7 @@ public class ServerConfig implements ServerController, NATSSource {
     try {
       Message response = connection.request(subject,
         CacheJsonMapper.mapper.writeValueAsBytes(new EdgeInitRequest().command(EdgeInitRequestCommand.PERMISSION).apiKey(apiKey).environmentId(environmentId).featureKey(featureKey)),
-        Duration.ofMillis(2000)
+        Duration.ofMillis(namedCacheTimeout)
       );
 
       if (response != null) {
@@ -288,7 +290,7 @@ public class ServerConfig implements ServerController, NATSSource {
       String subject = namedCache + "/" + ChannelConstants.EDGE_CACHE_CHANNEL;
 
       Message response = connection.request(subject, CacheJsonMapper.mapper.writeValueAsBytes(request),
-        Duration.ofMillis(2000));
+        Duration.ofMillis(namedCacheTimeout));
 
       if (response != null) {
         EdgeInitResponse edgeResponse = CacheJsonMapper.mapper.readValue(response.getData(),
