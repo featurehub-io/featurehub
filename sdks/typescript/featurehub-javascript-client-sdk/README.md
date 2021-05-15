@@ -27,6 +27,9 @@ If you are using the browser, the documentation is the same, but your library is
 
 ## Changelog
 
+### 1.0.1
+- Fix regression bug with strategies not being passed correctly and thus not serving the expected feature values 
+
 ### 1.0.0 
 - Move from featurehub-eventsource-sdk + featurehub-repository, split out nodejs into its own repository to allow
 Angular & Vue to use this library. 
