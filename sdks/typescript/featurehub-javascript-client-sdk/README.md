@@ -1,12 +1,57 @@
-# Javascript/Typescript Client SDK for FeatureHub
+# Javascript/Typescript SDK for FeatureHub
 
 ## Overview
 Welcome to the Javascript/Typescript SDK implementation for [FeatureHub.io](https://featurehub.io) - Open source Feature flags management, A/B testing and remote configuration platform.
 
-Below explains how you can use the FeatureHub SDK in Javascript or Typescript for applications like Node.js
+This documentation covers both [featurehub-javascript-node-sdk](https://www.npmjs.com/packages/featurehub-javascript-node-sdk) and [featurehub-javascript-client-sdk](https://www.npmjs.com/featurehub-javascript-client-sdk) and explains how you can use the FeatureHub SDK in Javascript or Typescript for applications like Node.js
 backend server, Web front-end (e.g. React) or Mobile apps (React Native, Ionic, etc.). 
 
+
 To control the feature flags from the FeatureHub Admin console, either use our [demo](https://demo.featurehub.io) version for evaluation or install the app using our guide [here](http://docs.featurehub.io/#_installation)
+
+
+### **Important Note**
+
+We have deprecated [FeatureHub Eventsource Javascript SDK](https://www.npmjs.com/package/featurehub-eventsource-sdk) which covers both client (browser) and server (node) applications in favor of splitting it into two separate NPM modules to enable support for additional browser frameworks like Angular and Vue. To transition to one of the new NPM modules, follow installation instructions below and change the imports in your code. The FeatureHub SDK API hasn't changed so you don't have to reimplement your SDK code.
+
+
+## Changelog
+
+### featurehub-javascript-client-sdk
+#### 1.0.2
+- Documentation updates
+#### 1.0.1
+- Fix regression bug with strategies not being passed correctly and thus not serving the expected feature values 
+#### 1.0.0 
+- Move from featurehub-eventsource-sdk + featurehub-repository, split out nodejs into its own repository to allow
+Angular & Vue to use this library. 
+
+### featurehub-javascript-node-sdk
+#### 1.0.2
+- Documentation updates
+#### 1.0.1
+- Symlink readme file from featurehub-javascript-client-sdk
+
+#### 1.0.0 
+- Move from featurehub-eventsource-sdk + featurehub-repository, split out nodejs into its own repository to allow
+Angular & Vue to use this library. 
+
+## SDK installation
+
+Run to install the dependency: 
+
+if you are intending to use this SDK with React, Angular and other browser frameworks:
+
+`npm install featurehub-javascript-client-sdk`
+           
+if you are using NodeJS use
+
+`npm install featurehub-javascript-node-sdk`
+
+(and further imports you see below should refer to this node library instead of the client library)
+
+
+## Options to get feature updates  
 
 There are 2 ways to request for feature updates via this SDK:
 
@@ -18,33 +63,7 @@ Note, there is a known issues in the browsers with Kaspersky antivirus potential
 - **FeatureHub polling client (GET request updates)** 
   
   In this mode, you make a GET request, which you can choose to either do once, when specific things happen in your application,
-  (such as navigation change) or on a regular basis (say every 5 minutes) and the changes will be passed into the FeatureHub repository for processing.
-
-### **Important Note**
-
-If you are using nodejs, this documentation is the same, but your library is [featurehub-javascript-node-sdk](https://www.npmjs.com/packages/featurehub-javascript-node-sdk) instead. If you are transitioning from the older libraries, the API is identical, simply replace the imported package.
-If you are using the browser, the documentation is the same, but your library is [featurehub-javascript-client-sdk](https://www.npmjs.com/featurehub-javascript-client-sdk). 
-
-## Changelog
-
-### 1.0.1
-- Fix regression bug with strategies not being passed correctly and thus not serving the expected feature values 
-
-### 1.0.0 
-- Move from featurehub-eventsource-sdk + featurehub-repository, split out nodejs into its own repository to allow
-Angular & Vue to use this library. 
-
-## SDK installation
-
-Run to install the dependency: 
-
-`npm install featurehub-javascript-client-sdk`
-           
-if you are using *nodejs* use
-
-`npm install featurehub-javascript-node-sdk`
-
-(and further imports you see below should refer to this node library instead of the client library)
+  (such as navigation change) or on a regular basis (say every 5 minutes) and the changes will be passed into the FeatureHub repository for processing.  
 
 ## Quick start
 
