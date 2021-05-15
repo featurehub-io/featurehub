@@ -1,6 +1,6 @@
 {
   "name": "featurehub-javascript-node-sdk",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "featurehub sdk intended for use by nodejs.",
   "author": "info@featurehub.io",
   "main": "dist/index.js",
