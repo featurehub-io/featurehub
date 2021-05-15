@@ -48,7 +48,11 @@ export class FeatureHubEventSourceClient implements EdgeService {
   private readonly _repository: InternalFeatureRepository;
   private _header: string;
 
-  public static eventSourceProvider: EventSourceProvider = (url, dict) => new EventSource(url, dict);
+  public static eventSourceProvider: EventSourceProvider = (url, dict) => {
+    const realUrl = dict.headers && dict.headers['x-featurehub'] ?
+      url + '?xfeaturehub=' + encodeURI(dict.headers['x-featurehub']) : url;
+    return new EventSource(realUrl, dict);
+  }
 
   constructor(config: FeatureHubConfig, repository: InternalFeatureRepository) {
     this._config = config;
