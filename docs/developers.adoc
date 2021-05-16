@@ -54,18 +54,17 @@ Type `java -version` to confirm it has changed.
 
 === Building from the command line
 
-Type `mvn clean install` and it should build everything, including the Docker ready
+This application stack uses Java 11+.
+
+To install FeatureHub run:
+
+`cd backend && mvn -f pom-first.xml clean install && cd .. && mvn -T4C clean install`
+
+Build should include the Docker ready
 tar file (see below).
 
 TIP: If you get an error like `--release` not known, you are using Java 8.
 
-==== Technology stack
-
-This application stack uses Java 11+.
-
-Ensure you do a:
-
-`mvn -f pom-first.xml clean install` before opening in IDE and before opening the main pom.xml file.
 
 ==== Just the APIs
 
