@@ -9,6 +9,7 @@ import cd.connect.jersey.common.TracingConfiguration;
 import cd.connect.jersey.prometheus.PrometheusDynamicFeature;
 import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
+import cd.connect.openapi.support.ReturnStatusContainerResponseFilter;
 import io.featurehub.health.HealthFeature;
 import io.featurehub.jersey.config.CommonConfiguration;
 import io.featurehub.jersey.config.EndpointLoggingListener;
@@ -47,6 +48,7 @@ public class Application {
       ClientTracingFeature.class,
       CommonConfiguration.class,
       LoggingConfiguration.class,
+      ReturnStatusContainerResponseFilter.class,
       TracingConfiguration.class
       )
       .register(EndpointLoggingListener.class)
