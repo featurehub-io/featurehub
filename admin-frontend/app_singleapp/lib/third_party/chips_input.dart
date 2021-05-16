@@ -44,7 +44,8 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
   static const kObjectReplacementChar = 0xFFFC;
   Set<T> _chips = <T>{};
   List<dynamic>? _suggestions;
-  StreamController<List<dynamic>?>? _suggestionsStreamController;
+  final StreamController<List<dynamic>?> _suggestionsStreamController =
+      StreamController<List<dynamic>?>.broadcast();
   int _searchId = 0;
   FocusNode? _focusNode;
   TextEditingValue _value = TextEditingValue();
@@ -68,7 +69,6 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
     _updateTextInputState();
 
     _suggestionsBoxController = _SuggestionsBoxController(context);
-    _suggestionsStreamController ??= StreamController<List<T>>.broadcast();
 
     _initFocusNode();
   }
@@ -112,11 +112,11 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
   }
 
   Future<void> _initOverlayEntry() async {
-    if (_suggestionsStreamController == null || !mounted) {
+    if (!mounted) {
       return;
     }
 
-    RenderObject? renderBox = context.findRenderObject();
+    var renderBox = context.findRenderObject();
     // TODO: See if after_layout mixin (https://pub.dartlang.org/packages/after_layout) works instead of keep checking if rendered
 
     while (renderBox == null && !(renderBox is RenderBox)) {
@@ -125,7 +125,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
       renderBox = context.findRenderObject();
     }
 
-    RenderBox box = renderBox as RenderBox;
+    var box = renderBox as RenderBox;
 
     while (!box.hasSize) {
       await Future.delayed(Duration(milliseconds: 10));
@@ -137,7 +137,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
       _suggestionsBoxController!._overlayEntry = OverlayEntry(
         builder: (context) {
           return StreamBuilder(
-            stream: _suggestionsStreamController!.stream,
+            stream: _suggestionsStreamController.stream,
             builder:
                 (BuildContext context, AsyncSnapshot<List<dynamic>?> snapshot) {
               if (snapshot.data != null && snapshot.data!.isNotEmpty) {
@@ -173,11 +173,16 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
 
   @override
   void dispose() {
-    //TODO upgrade to latest when fixed
-    //_focusNode?.dispose();  https://github.com/danvick/flutter_chips_input/issues/26
-    _closeInputConnectionIfNeeded();
-    _suggestionsBoxController?.dispose();
-    _suggestionsBoxController = null;
+    try {
+      //TODO upgrade to latest when fixed
+      //_focusNode?.dispose();  https://github.com/danvick/flutter_chips_input/issues/26
+      _closeInputConnectionIfNeeded();
+      _suggestionsBoxController?.dispose();
+      _suggestionsBoxController = null;
+    } catch (e, s) {
+      print(e);
+      print(s);
+    }
     super.dispose();
   }
 
@@ -195,7 +200,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
       if (widget.maxChips != null) _initFocusNode();
       _updateTextInputState();
       _suggestions = null;
-      _suggestionsStreamController?.add(_suggestions);
+      _suggestionsStreamController.add(_suggestions);
     });
     widget.onChanged(_chips.toList(growable: false));
   }
@@ -264,9 +269,9 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
           isFocused: _focusNode?.hasFocus == true,
           isEmpty: _value.text.isEmpty && _chips.isEmpty,
           child: Wrap(
-            children: chipsChildren,
             spacing: 4.0,
             runSpacing: 4.0,
+            children: chipsChildren,
           ),
         ),
       ),
@@ -320,7 +325,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
           .where((profile) => !_chips.contains(profile))
           .toList(growable: false));
     }
-    _suggestionsStreamController?.add(_suggestions);
+    _suggestionsStreamController.add(_suggestions);
   }
 
   @override
@@ -423,6 +428,7 @@ class _SuggestionsBoxController {
     if (!_isOpened) return;
     if (_overlayEntry != null) {
       _overlayEntry?.remove();
+      _overlayEntry = null;
       _isOpened = false;
     }
   }
@@ -430,6 +436,7 @@ class _SuggestionsBoxController {
   void dispose() {
     if (_overlayEntry != null) {
       _overlayEntry?.remove();
+      _overlayEntry = null;
     }
     _isOpened = false;
   }
