@@ -81,8 +81,11 @@ This will install all the necessary components including FeatureHub Admin Consol
 This option is best if you want to run FeatureHub at scale. Running separate instances of Edge, Cache, NATS and
 FeatureHub Server, means you can deploy these components independently for scalability and redundancy.
 
-NOTE: Inorder to scale FeatureHub Server, you need to have first configured a separate database
+Helm chart is available for production Kubernetes deployment. Please follow documentation link:https://github.com/featurehub-io/featurehub-install/tree/master/helm[here]
+
+NOTE: In order to scale FeatureHub Server, you need to have first configured a separate database
 (see <<Option 2 - Low Volume Deployment>> above).
+
 
 == Configuration
 
@@ -177,8 +180,7 @@ when called from Maven with a cloud image profile.
 Make sure the developer build has been completed with:
 
 ----
-mvn -f pom-first.xml clean install
-mvn -T4C clean install
+cd backend && mvn -f pom-first.xml clean install && cd .. &&  mvn -T4C clean install
 ----
 
 If you wish to do individual builds, which we recommend if you are overriding base images and so forth, cd into
