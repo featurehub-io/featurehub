@@ -81,7 +81,9 @@ public class RolloutStrategySqlApi implements RolloutStrategyApi {
 
     if (strategy != null && app != null && p != null) {
       if (strategy.getApplication().getId().equals(app.getId())) {
-        if (!rolloutStrategy.getName().equalsIgnoreCase(strategy.getName())) {
+
+        // check if we are renaming it and if so, are we using a duplicate name
+        if (!strategy.getName().equalsIgnoreCase(rolloutStrategy.getName())) {
           // is there something using the existing name?
           final int existing =
             new QDbRolloutStrategy()
@@ -91,20 +93,20 @@ public class RolloutStrategySqlApi implements RolloutStrategyApi {
           if (existing > 0)  {
             throw new RolloutStrategyApi.DuplicateNameException();
           }
+        }
 
-          strategy.setStrategy(rolloutStrategy);
-          strategy.setName(rolloutStrategy.getName());
-          strategy.setWhoChanged(p);
+        strategy.setStrategy(rolloutStrategy);
+        strategy.setName(rolloutStrategy.getName());
+        strategy.setWhoChanged(p);
 
-          try {
-            save(strategy);
+        try {
+          save(strategy);
 
-            cacheSource.publishRolloutStrategyChange(strategy);
+          cacheSource.publishRolloutStrategyChange(strategy);
 
-            return conversions.toRolloutStrategy(strategy, opts);
-          } catch (Exception e) {
-            throw new RolloutStrategyApi.DuplicateNameException();
-          }
+          return conversions.toRolloutStrategy(strategy, opts);
+        } catch (Exception e) {
+          throw new RolloutStrategyApi.DuplicateNameException();
         }
       } else {
         log.warn("Attempted violation of strategy update by {}", person.getId());

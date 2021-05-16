@@ -7,9 +7,7 @@ import 'package:flutter/material.dart';
 class SetupPage2Widget extends StatefulWidget {
   final SetupBloc bloc;
 
-  const SetupPage2Widget({Key key, @required this.bloc})
-      : assert(bloc != null),
-        super(key: key);
+  const SetupPage2Widget({Key? key, required this.bloc}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -72,8 +70,9 @@ class _SetupPage2State extends State<SetupPage2Widget> {
                   hintText: 'The name of your organization',
                   hintStyle: Theme.of(context).textTheme.caption,
                   labelText: 'Organization Name'),
-              validator: (v) =>
-                  v.isEmpty ? "Please enter your organization's name" : null,
+              validator: (v) => v == null || v.isEmpty
+                  ? "Please enter your organization's name"
+                  : null,
             ),
             TextFormField(
               controller: _portfolio,
@@ -83,7 +82,7 @@ class _SetupPage2State extends State<SetupPage2Widget> {
                   hintStyle: Theme.of(context).textTheme.caption,
                   labelText: 'Portfolio'),
               textInputAction: TextInputAction.done,
-              validator: (v) => v.isEmpty
+              validator: (v) => v == null || v.isEmpty
                   ? 'Please enter the name of your first portfolio'
                   : null,
             ),
@@ -114,7 +113,7 @@ class _SetupPage2State extends State<SetupPage2Widget> {
   }
 
   void _handleSubmitted() {
-    if (_formKey.currentState.validate()) {
+    if (_formKey.currentState!.validate()) {
       copyState();
       widget.bloc.nextPage();
     }

@@ -3,9 +3,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 abstract class FHSharedPrefsContract {
   Future<void> saveString(String key, String value);
   Future<void> saveInt(String key, int value);
-  Future<String> getString(String key);
-  Future<int> getInt(String key);
-  Future<bool> getBool(String key);
+  Future<String?> getString(String key);
+  Future<int?> getInt(String key);
+  Future<bool?> getBool(String key);
   Future<void> saveBool(String key, bool value);
   Future<void> delete(String key);
   Future<void> deleteAll();
@@ -19,7 +19,7 @@ class FHSharedPrefs extends FHSharedPrefsContract {
   final SharedPreferences _prefs;
 
   static Future<FHSharedPrefs> getSharedInstance(
-      {SharedPreferences prefs}) async {
+      {SharedPreferences? prefs}) async {
     final sharedPrefs = prefs ?? await SharedPreferences.getInstance();
     return Future.value(FHSharedPrefs._internal(sharedPrefs));
   }
@@ -36,7 +36,7 @@ class FHSharedPrefs extends FHSharedPrefsContract {
   }
 
   @override
-  Future<String> getString(String key) async {
+  Future<String?> getString(String key) async {
     return _prefs.getString(key);
   }
 
@@ -51,7 +51,7 @@ class FHSharedPrefs extends FHSharedPrefsContract {
   }
 
   @override
-  Future<int> getInt(String key) async {
+  Future<int?> getInt(String key) async {
     return _prefs.getInt(key);
   }
 
@@ -61,7 +61,7 @@ class FHSharedPrefs extends FHSharedPrefsContract {
   }
 
   @override
-  Future<bool> getBool(String key) async {
+  Future<bool?> getBool(String key) async {
     return _prefs.getBool(key);
   }
 

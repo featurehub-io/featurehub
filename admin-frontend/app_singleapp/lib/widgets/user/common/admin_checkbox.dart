@@ -4,18 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 
 class AdminCheckboxWidget extends StatefulWidget {
-  final Person person;
-  const AdminCheckboxWidget({Key key, this.person}) : super(key: key);
+  final Person? person;
+  const AdminCheckboxWidget({Key? key, this.person}) : super(key: key);
 
   @override
   AdminCheckboxWidgetState createState() {
-    return AdminCheckboxWidgetState(person);
+    return AdminCheckboxWidgetState();
   }
 }
 
 class AdminCheckboxWidgetState extends State<AdminCheckboxWidget> {
   bool createUser = true;
-  final Person person;
   bool isAdmin = false;
 
   @override
@@ -24,11 +23,11 @@ class AdminCheckboxWidgetState extends State<AdminCheckboxWidget> {
     super.initState();
     if (widget.person != null) {
       createUser = false;
-      isAdmin = bloc.mrClient.personState.isSuperAdminGroupFound(person.groups);
+      isAdmin = bloc.mrClient.personState
+          .isSuperAdminGroupFound(widget.person!.groups);
     }
   }
 
-  AdminCheckboxWidgetState(this.person);
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<SelectPortfolioGroupBloc>(context);
@@ -42,10 +41,10 @@ class AdminCheckboxWidgetState extends State<AdminCheckboxWidget> {
                   style: Theme.of(context).textTheme.caption,
                 ),
                 value: isAdmin,
-                onChanged: (bool value) {
+                onChanged: (bool? value) {
                   setState(() {
-                    isAdmin = value;
-                    if (value) {
+                    isAdmin = value == true;
+                    if (value == true) {
                       bloc.pushAdminGroupToStream();
                     } else {
                       bloc.removeAdminGroupFromStream();

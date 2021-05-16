@@ -1,6 +1,7 @@
 import 'package:app_singleapp/widgets/features/table-expanded-view/individual_strategy_bloc.dart';
 import 'package:app_singleapp/widgets/features/table-expanded-view/strategies/strategy_utils.dart';
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 
@@ -11,7 +12,7 @@ class AttributeStrategyWidget extends StatelessWidget {
   final bool attributeIsFirst;
 
   const AttributeStrategyWidget(
-      {Key key, this.attribute, this.attributeIsFirst})
+      {Key? key, required this.attribute, required this.attributeIsFirst})
       : super(key: key);
 
   @override
@@ -25,8 +26,8 @@ class AttributeStrategyWidget extends StatelessWidget {
             return SizedBox.shrink();
           }
 
-          final violation = snapshot.data
-              .firstWhere((vio) => vio.id == attribute.id, orElse: () => null);
+          final violation =
+              snapshot.data!.firstWhereOrNull((vio) => vio.id == attribute.id);
 
           try {
             return Column(children: [
@@ -50,7 +51,7 @@ class AttributeStrategyWidget extends StatelessWidget {
                 Text(violation.violation.toDescription(),
                     style: Theme.of(context)
                         .textTheme
-                        .bodyText2
+                        .bodyText2!
                         .copyWith(color: Theme.of(context).errorColor))
             ]);
           } catch (e) {

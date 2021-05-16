@@ -1,5 +1,4 @@
-
-import 'package:app_singleapp/user_common.dart';
+import 'package:e2e_tests/user_common.dart';
 import 'package:ogurets/ogurets.dart';
 
 /// all system level functions for a person should go in here, things that require no
@@ -17,6 +16,7 @@ class UserSystemStepdefs {
 
   @And(r"the current user's password requires resetting")
   void theCurrentUserSPasswordRequiresResetting() async {
-    assert(_userCommon.person.passwordRequiresReset == true, 'Current person should need to reset their password');
+    assert(_userCommon.person!.passwordRequiresReset == true,
+        'Current person should need to reset their password');
   }
 }

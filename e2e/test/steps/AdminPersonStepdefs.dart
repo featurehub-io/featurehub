@@ -1,6 +1,6 @@
-import 'package:app_singleapp/shared.dart';
-import 'package:app_singleapp/superuser_common.dart';
-import 'package:app_singleapp/user_common.dart';
+import 'package:e2e_tests/shared.dart';
+import 'package:e2e_tests/superuser_common.dart';
+import 'package:e2e_tests/user_common.dart';
 import 'package:mrapi/api.dart';
 import 'package:ogurets/ogurets.dart';
 
@@ -14,35 +14,31 @@ class AdminPersonStepdefs {
 
   /// this must be run by a superuser
   @When(r'I register a new user with email {string}')
-  void registerNewUser(String email) async {
+  Future<void> registerNewUser(String email) async {
     await common.initialize();
-    shared.registrationUrl =
-        await common.personService.createPerson(CreatePersonDetails()
-          ..email = email
+    shared.registrationUrl = await common.personService
+        .createPerson(CreatePersonDetails(email: email)
           ..name = email
           ..groupIds = []);
   }
 
   // must be run by supervisor
   @When(r'I register a new superuser with email {string}')
-  void registerNewSuperuser(String email) async {
+  Future<void> registerNewSuperuser(String email) async {
     await common.initialize();
 
-    shared.registrationUrl =
-        await common.personService.createPerson(CreatePersonDetails()
-          ..email = email
+    shared.registrationUrl = await common.personService
+        .createPerson(CreatePersonDetails(email: email)
           ..name = email
-          ..groupIds = [common.superuserGroupId]);
+          ..groupIds = [common.superuserGroupId!]);
   }
 
   @When(r'I register a new user with email {string}')
   void iRegisterANewUserWithEmail(String email) async {
     await common.initialize();
 
-    shared.registrationUrl =
-        await common.personService.createPerson(CreatePersonDetails()
-          ..email = email
-          ..name = email);
+    shared.registrationUrl = await common.personService
+        .createPerson(CreatePersonDetails(email: email)..name = email);
   }
 
   @When(r'the first superuser is used for authentication')
@@ -50,7 +46,7 @@ class AdminPersonStepdefs {
     await common.initialize();
 
     userCommon.tokenized =
-        common.tokenizedPerson; // make the userCommon the super user
+        common.tokenizedPerson!; // make the userCommon the super user
   }
 
   @Given(
@@ -71,11 +67,10 @@ class AdminPersonStepdefs {
     }
 
     await userCommon.completeRegistration(
-        name, password, email, shared.registrationUrl.registrationUrl);
+        name, password, email, shared.registrationUrl!.registrationUrl);
 
-    shared.tokenizedPerson = await common.authService.login(UserCredentials()
-      ..email = email
-      ..password = password);
+    shared.tokenizedPerson = await common.authService
+        .login(UserCredentials(password: password, email: email));
 
     shared.person =
         await common.personService.getPerson(email, includeGroups: true);
@@ -83,7 +78,6 @@ class AdminPersonStepdefs {
 
   @And(r'The shared person is the authenticated person')
   void sharedPersonIsAuthenticated() {
-    assert(shared.tokenizedPerson != null, 'no logged in shared person!');
     userCommon.tokenized = shared.tokenizedPerson;
   }
 
@@ -106,23 +100,16 @@ class AdminPersonStepdefs {
       }
 
       await userCommon.completeRegistration(
-          name, password, email, shared.registrationUrl.registrationUrl);
+          name, password, email, shared.registrationUrl!.registrationUrl);
     } else {
       final person = spr.people[0];
-      await common.authService.resetPassword(
-          person.id.id,
-          PasswordReset()
-            ..password = 'password'
-            ..reactivate = true);
-      await common.authService.changePassword(
-          person.id.id,
-          PasswordUpdate()
-            ..oldPassword = 'password'
-            ..newPassword = password);
+      await common.authService.resetPassword(person.id!.id,
+          PasswordReset(password: 'password')..reactivate = true);
+      await common.authService.changePassword(person.id!.id,
+          PasswordUpdate(newPassword: password, oldPassword: 'password'));
 
-      shared.tokenizedPerson = await common.authService.login(UserCredentials()
-        ..email = email
-        ..password = password);
+      shared.tokenizedPerson = await common.authService
+          .login(UserCredentials(email: email, password: password));
       userCommon.tokenized = shared.tokenizedPerson;
     }
 
@@ -155,7 +142,7 @@ class AdminPersonStepdefs {
         personServiceApi: common.personService);
     if (emailGoingTo != null) {
       await common.personService.updatePerson(
-          emailGoingTo.id.id,
+          emailGoingTo.id!.id,
           emailGoingTo.copyWith(
               email: 'nonsense-' +
                   DateTime.now().millisecondsSinceEpoch.toString() +
@@ -163,7 +150,7 @@ class AdminPersonStepdefs {
     }
 
     await common.personService.updatePerson(
-        user.id.id, user.copyWith(name: newname, email: newemail));
+        user!.id!.id, user.copyWith(name: newname, email: newemail));
 //        Person()
 //          ..version = user.version
 //          ..name = newname
@@ -178,6 +165,6 @@ class AdminPersonStepdefs {
         personServiceApi: common.personService);
     assert(user != null, 'Cannot find user to try and update');
     await common.authService
-        .resetPassword(user.id.id, PasswordReset()..password = password);
+        .resetPassword(user!.id!.id, PasswordReset(password: password));
   }
 }

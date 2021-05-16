@@ -10,10 +10,8 @@ class FeatureDeleteDialogWidget extends StatelessWidget {
   final PerApplicationFeaturesBloc bloc;
 
   const FeatureDeleteDialogWidget(
-      {Key key, @required this.bloc, @required this.feature})
-      : assert(feature != null),
-        assert(bloc != null),
-        super(key: key);
+      {Key? key, required this.bloc, required this.feature})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +22,7 @@ class FeatureDeleteDialogWidget extends StatelessWidget {
           'You need to make sure all your code is cleaned up and can deal without this feature!\n\nThis cannot be undone!',
       deleteSelected: () async {
         try {
-          await bloc.deleteFeature(feature.key);
+          await bloc.deleteFeature(feature.key!);
           bloc.mrClient.removeOverlay();
           bloc.mrClient.addSnackbar(Text("Feature '${feature.name}' deleted!"));
           return true;

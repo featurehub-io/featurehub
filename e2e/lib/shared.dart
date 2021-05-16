@@ -3,22 +3,56 @@ import 'package:mrapi/api.dart';
 class Shared {
   Map<String, Object> _data = {};
 
-  RegistrationUrl registrationUrl;
+  RegistrationUrl? registrationUrl;
 
-  Portfolio get portfolio => _data['portfolio'] as Portfolio;
+  Portfolio get portfolio {
+    final o = _data['portfolio'];
+    if (o == null) {
+      throw Exception("portfolio doesn't exist");
+    }
+    return o as Portfolio;
+  }
+
+  set portfolio(Portfolio p) => _data['portfolio'] = p;
 
   set serviceAccount(ServiceAccount serviceAccount) =>
       _data['sa'] = serviceAccount;
-  ServiceAccount get serviceAccount => _data['sa'] as ServiceAccount;
-  set portfolio(Portfolio p) => _data['portfolio'] = p;
+  ServiceAccount get serviceAccount {
+    final sa = _data['sa'];
+    if (sa == null) {
+      throw Exception('service account does not exist');
+    }
+    return sa as ServiceAccount;
+  }
 
-  Person get person => _data['person'] as Person;
+  Person get person {
+    final p = _data['person'];
+    if (p == null) {
+      throw Exception('person does not exist');
+    }
+    return p as Person;
+  }
+
   set person(Person p) => _data['person'] = p;
 
-  Group get group => _data['group'] as Group;
+  Group get group {
+    final g = _data['group'];
+    if (g == null) {
+      throw Exception('group does not exist');
+    }
+    return g as Group;
+  }
+
   set group(Group g) => _data['group'] = g;
 
-  TokenizedPerson get tokenizedPerson => _data['token'] as TokenizedPerson;
+  TokenizedPerson get tokenizedPerson {
+    final t = _data['token'];
+    if (t == null) {
+      throw Exception('Tokenized person is null');
+    }
+    return t as TokenizedPerson;
+  }
+
   set tokenizedPerson(TokenizedPerson p) => _data['token'] = p;
 
   Application get application => _data['application'] as Application;
@@ -27,9 +61,9 @@ class Shared {
   Environment get environment => _data['env'] as Environment;
   set environment(Environment e) => _data['env'] = e;
 
-  FeatureValue featureValue;
+  FeatureValue? featureValue;
 
-  Feature feature;
+  Feature? feature;
 
-  Group portfolioAdminGroup;
+  Group? portfolioAdminGroup;
 }

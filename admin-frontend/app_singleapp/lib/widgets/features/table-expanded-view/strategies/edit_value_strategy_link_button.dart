@@ -9,11 +9,11 @@ import 'package:mrapi/api.dart';
 
 class EditValueStrategyLinkButton extends StatelessWidget {
   const EditValueStrategyLinkButton({
-    Key key,
-    @required this.editable,
-    @required this.fvBloc,
-    @required this.rolloutStrategy,
-    @required this.strBloc,
+    Key? key,
+    required this.editable,
+    required this.fvBloc,
+    required this.rolloutStrategy,
+    required this.strBloc,
   }) : super(key: key);
 
   final bool editable;
@@ -27,8 +27,6 @@ class EditValueStrategyLinkButton extends StatelessWidget {
         title: '${rolloutStrategy.name}',
         onPressed: () => {
               fvBloc.mrClient.addOverlay((BuildContext context) {
-                rolloutStrategy.attributes ??= [];
-
                 return BlocProvider(
                   creator: (_c, _b) => IndividualStrategyBloc(
                       strBloc.environmentFeatureValue, rolloutStrategy),

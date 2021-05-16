@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class TranslateOnHover extends StatefulWidget {
   final Widget child;
-  TranslateOnHover({Key key, this.child}) : super(key: key);
+  TranslateOnHover({Key? key, required this.child}) : super(key: key);
 
   @override
   _TranslateOnHoverState createState() => _TranslateOnHoverState();
@@ -17,22 +17,24 @@ class _TranslateOnHoverState extends State<TranslateOnHover> {
       onEnter: (e) => _mouseEnter(true),
       onExit: (e) => _mouseEnter(false),
       child: Container(
+        decoration: _hovering
+            ? BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: Theme.of(context).buttonColor,
+                    width: 1.0,
+                  ),
+                ),
+              )
+            : BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: Colors.transparent,
+                    width: 1.0,
+                  ),
+                ),
+              ),
         child: widget.child,
-        decoration: _hovering ? BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: Theme.of(context).buttonColor,
-              width: 1.0,
-            ),
-          ),
-        ) : BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: Colors.transparent,
-              width: 1.0,
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -43,5 +45,3 @@ class _TranslateOnHoverState extends State<TranslateOnHover> {
     });
   }
 }
-
-

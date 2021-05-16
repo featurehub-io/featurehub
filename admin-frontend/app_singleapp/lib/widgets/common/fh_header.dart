@@ -5,8 +5,8 @@ class FHHeader extends StatelessWidget {
   final List<Widget> children;
 
   const FHHeader({
-    Key key,
-    @required this.title,
+    Key? key,
+    required this.title,
     this.children = const [],
   }) : super(key: key);
 
@@ -14,15 +14,12 @@ class FHHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     var titleChildren = <Widget>[];
 
-    titleChildren.add(Container(
-      padding: EdgeInsets.only(right: 25),
-      child: Text(
-        title,
-        style: Theme.of(context)
-            .textTheme
-            .headline5
+    titleChildren.add(
+      Container(
+        padding: EdgeInsets.only(right: 25),
+        child: Text(title, style: Theme.of(context).textTheme.headline5
             // .copyWith(color: Theme.of(context).primaryColor
-        ),
+            ),
       ),
     );
 

@@ -2,49 +2,32 @@ import 'dart:html';
 
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart' as rxdart;
-
-/// this stores the state for the setup screen
-class SetupContext extends InheritedWidget {
-  SetupContext({Key key, @required Widget child})
-      : assert(child != null),
-        super(key: key, child: child);
-
-  @override
-  bool updateShouldNotify(InheritedWidget oldWidget) {
-    return true;
-  }
-
-  static SetupContext of(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType(aspect: SetupContext);
-  }
-}
 
 enum SetupPage { page1, page2, page3 }
 
 class SetupBloc implements Bloc {
-  String name;
-  String email;
-  String pw1;
-  String pw2;
-  String orgName;
-  String portfolio;
-  String provider;
+  String? name;
+  String? email;
+  String? pw1;
+  String? pw2;
+  String? orgName;
+  String? portfolio;
+  String? provider;
 
   final ManagementRepositoryClientBloc mrClient;
 
   // main widget should respond to changes in this.
-  final _pageSource = rxdart.BehaviorSubject<SetupPage>();
-  Stream<SetupPage> get pageState => _pageSource.stream;
+  final _pageSource = rxdart.BehaviorSubject<SetupPage?>();
+  Stream<SetupPage?> get pageState => _pageSource.stream;
 
   final _setupSource = rxdart.BehaviorSubject<bool>();
   Stream<bool> get setupState => _setupSource.stream;
 
-  SetupPage current;
+  late SetupPage current;
 
-  bool _canGoToPage1;
+  late bool _canGoToPage1;
 
   // tell UI whether or not the "prev" button is available on page 2
   bool get canGoToPage1 => _canGoToPage1;
@@ -55,7 +38,7 @@ class SetupBloc implements Bloc {
   Map<String, String> get externalProviderAssets =>
       mrClient.identityProviders.externalProviderAssets;
 
-  SetupBloc(this.mrClient) : assert(mrClient != null) {
+  SetupBloc(this.mrClient) {
     // go to page 1 if local or # of providers is > 2
     _canGoToPage1 =
         (hasLocal || mrClient.identityProviders.hasMultiple3rdPartyProviders);
@@ -73,26 +56,27 @@ class SetupBloc implements Bloc {
   void _setup() {
     _setupSource.add(false); // busy
 
-    var s = SetupSiteAdmin();
-
-    s.name = name;
-    s.emailAddress = email;
-    s.password = pw1;
-    s.organizationName = orgName;
-    s.portfolio = portfolio;
-    s.authProvider = provider;
+    var s = SetupSiteAdmin(
+        organizationName: orgName!,
+        name: name,
+        emailAddress: email,
+        password: pw1,
+        portfolio: portfolio!,
+        authProvider: provider);
 
     mrClient.setupApi.setupSiteAdmin(s).then((data) {
       _setupSource.add(true);
 
       if (data.redirectUrl != null) {
-        window.location.href = data.redirectUrl;
+        window.location.href = data.redirectUrl!;
       } else {
         mrClient.setBearerToken(data.accessToken);
-        mrClient.setPerson(data.person);
+        mrClient.setPerson(data.person!);
       }
       //    client.setGroup(data.person.groups);
-    }).catchError((e, s) => _setupSource.addError(e.toString()));
+    }).catchError((e, s) {
+      _setupSource.addError(e.toString());
+    });
   }
 
   void reinitialize() {
@@ -107,8 +91,8 @@ class SetupBloc implements Bloc {
     } else if (current == SetupPage.page2) {
       if (portfolio != null &&
           orgName != null &&
-          portfolio.trim().isNotEmpty &&
-          orgName.trim().isNotEmpty) {
+          portfolio!.trim().isNotEmpty &&
+          orgName!.trim().isNotEmpty) {
         _setup(); // trigger setup and transition to next page
 
         current = SetupPage.page3;

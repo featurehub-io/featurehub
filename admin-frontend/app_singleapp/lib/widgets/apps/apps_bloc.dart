@@ -6,13 +6,12 @@ import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart';
 
 class AppsBloc implements Bloc {
-  ManagementRepositoryClientBloc mrClient;
+  final ManagementRepositoryClientBloc mrClient;
 
-  var _applicationServiceApi;
+  late ApplicationServiceApi _applicationServiceApi;
+  late StreamSubscription<List<Application>> _currentApplicationsListListener;
 
-  StreamSubscription<List<Application>> _currentApplicationsListListener;
-
-  AppsBloc(this.mrClient) : assert(mrClient != null) {
+  AppsBloc(this.mrClient) {
     _applicationServiceApi = ApplicationServiceApi(mrClient.apiClient);
     _currentApplicationsListListener = mrClient
         .streamValley.currentPortfolioApplicationsStream
@@ -37,17 +36,16 @@ class AppsBloc implements Bloc {
 
   Future<void> createApplication(
       String applicationName, String appDescription) async {
-    final application = Application();
-    application.name = applicationName;
-    application.description = appDescription;
+    final application =
+        Application(name: applicationName, description: appDescription);
     final newApp = await _applicationServiceApi.createApplication(
-        mrClient.currentPid, application);
+        mrClient.currentPid!, application);
     await mrClient.requestOwnDetails();
     await _refreshApplications();
     mrClient.setCurrentAid(newApp.id);
   }
 
-  void _refreshApplications() async {
+  Future<void> _refreshApplications() async {
     await mrClient.streamValley.getCurrentPortfolioApplications();
   }
 
@@ -56,7 +54,7 @@ class AppsBloc implements Bloc {
     application.name = updatedAppName;
     application.description = updateDescription;
     return _applicationServiceApi
-        .updateApplication(application.id, application)
+        .updateApplication(application.id!, application)
         .then((onSuccess) async {
       await _refreshApplications();
     });
@@ -68,7 +66,7 @@ class AppsBloc implements Bloc {
       success = await _applicationServiceApi.deleteApplication(appId);
       await _refreshApplications();
     } catch (e, s) {
-      mrClient.dialogError(e, s);
+      await mrClient.dialogError(e, s);
     }
 
     return success;

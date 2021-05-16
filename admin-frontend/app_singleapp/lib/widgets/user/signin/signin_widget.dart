@@ -4,13 +4,14 @@ import 'package:animator/animator.dart';
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/fh_card.dart';
-import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
 class SigninWidget extends StatefulWidget {
-  SigninWidget();
+  SigninWidget(this.bloc);
+
+  final ManagementRepositoryClientBloc bloc;
 
   @override
   State<StatefulWidget> createState() {
@@ -22,7 +23,6 @@ class _SigninState extends State<SigninWidget> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _formKey = GlobalKey<FormState>(debugLabel: 'signin_widget');
-  ManagementRepositoryClientBloc bloc;
   bool displayError = false;
   bool loggingIn = false;
 
@@ -30,11 +30,9 @@ class _SigninState extends State<SigninWidget> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    bloc = BlocProvider.of(context);
-
     // when we are here we know that there are either (a) multiple sign-in providers or (b) at least a local option
 
-    bloc.lastUsername().then((lu) {
+    widget.bloc.lastUsername().then((lu) {
       if (lu != null && _email.text.isEmpty) {
         setState(() {
           _email.text = lu;
@@ -45,21 +43,21 @@ class _SigninState extends State<SigninWidget> {
 
   void _handleSubmitted() {
     if (!loggingIn) {
-      if (_formKey.currentState.validate()) {
+      if (_formKey.currentState!.validate()) {
         _login();
       }
     }
   }
 
   void _loginViaProvider(String provider) {
-    bloc.identityProviders.authenticateViaProvider(provider);
+    widget.bloc.identityProviders.authenticateViaProvider(provider);
   }
 
   void _login() {
     setState(() {
       loggingIn = true;
     });
-    bloc.login(_email.text, _password.text).then((_) {
+    widget.bloc.login(_email.text, _password.text).then((_) {
       setState(() {
         loggingIn = false;
       });
@@ -70,7 +68,7 @@ class _SigninState extends State<SigninWidget> {
           loggingIn = false;
         });
       } else {
-        bloc.dialogError(e, s);
+        widget.bloc.dialogError(e, s);
       }
     });
   }
@@ -92,11 +90,11 @@ class _SigninState extends State<SigninWidget> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    Animator(
+                    Animator<double>(
                         tween: Tween<double>(begin: 0, end: 2 * pi),
                         duration: Duration(seconds: 2),
                         repeats: 0,
-                        builder: (anim) => Transform.rotate(
+                        builder: (context, anim, other) => Transform.rotate(
                               angle: anim.value,
                               child: Image.asset(
                                   'assets/logo/FeatureHub-icon.png',
@@ -110,12 +108,12 @@ class _SigninState extends State<SigninWidget> {
                 'Sign in to FeatureHub\n\n',
                 style: Theme.of(context).textTheme.headline5,
               ),
-              if (bloc.identityProviders.has3rdParty)
+              if (widget.bloc.identityProviders.has3rdParty)
                 _SetupPage1ThirdPartyProviders(
-                  bloc: bloc,
+                  bloc: widget.bloc,
                   selectedExternalProviderFunc: _loginViaProvider,
                 ),
-              if (bloc.identityProviders.hasLocal)
+              if (widget.bloc.identityProviders.hasLocal)
                 Column(
                   children: <Widget>[
                     TextFormField(
@@ -123,8 +121,9 @@ class _SigninState extends State<SigninWidget> {
                         autofocus: true,
                         textInputAction: TextInputAction.next,
                         onFieldSubmitted: (_) => _handleSubmitted,
-                        validator: (v) =>
-                            v.isEmpty ? 'Please enter your email' : null,
+                        validator: (v) => v == null || v.isEmpty
+                            ? 'Please enter your email'
+                            : null,
                         decoration:
                             InputDecoration(labelText: 'Email address')),
                     TextFormField(
@@ -132,8 +131,9 @@ class _SigninState extends State<SigninWidget> {
                         obscureText: true,
                         textInputAction: TextInputAction.next,
                         onFieldSubmitted: (_) => _handleSubmitted(),
-                        validator: (v) =>
-                            v.isEmpty ? 'Please enter your password' : null,
+                        validator: (v) => v == null || v.isEmpty
+                            ? 'Please enter your password'
+                            : null,
                         decoration: InputDecoration(labelText: 'Password')),
                   ],
                 ),
@@ -147,7 +147,7 @@ class _SigninState extends State<SigninWidget> {
                           'Incorrect email address or password',
                           style: Theme.of(context)
                               .textTheme
-                              .bodyText2
+                              .bodyText2!
                               .copyWith(color: Theme.of(context).errorColor),
                         )
                       : Container()),
@@ -185,12 +185,10 @@ class _SetupPage1ThirdPartyProviders extends StatelessWidget {
   final _SelectedExternalFunction selectedExternalProviderFunc;
 
   const _SetupPage1ThirdPartyProviders(
-      {Key key,
-      @required this.bloc,
-      @required this.selectedExternalProviderFunc})
-      : assert(bloc != null),
-        assert(selectedExternalProviderFunc != null),
-        super(key: key);
+      {Key? key,
+      required this.bloc,
+      required this.selectedExternalProviderFunc})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -202,11 +200,11 @@ class _SetupPage1ThirdPartyProviders extends StatelessWidget {
       bloc.identityProviders.externalProviders.forEach((provider) {
         children.add(InkWell(
           mouseCursor: SystemMouseCursors.click,
-          child: Image.asset(
-              bloc.identityProviders.externalProviderAssets[provider]),
           onTap: () {
             selectedExternalProviderFunc(provider);
           },
+          child: Image.asset(
+              bloc.identityProviders.externalProviderAssets[provider]!),
         ));
         children.add(Padding(
           padding: const EdgeInsets.fromLTRB(0, 16, 0, 10),

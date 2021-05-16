@@ -1,5 +1,5 @@
 import 'package:app_singleapp/widgets/features/feature_value_cell.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
 import 'feature_dashboard_constants.dart';
@@ -7,8 +7,8 @@ import 'tabs_bloc.dart';
 
 class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
   const EnvironmentsAndFeatureValuesListView({
-    Key key,
-    @required this.bloc,
+    Key? key,
+    required this.bloc,
   }) : super(key: key);
 
   final FeaturesOnThisTabTrackerBloc bloc;
@@ -18,7 +18,7 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
     return StreamBuilder<TabsState>(
         stream: bloc.currentTab,
         builder: (context, currentTabSnapshot) {
-          return StreamBuilder<Set<String>>(
+          return StreamBuilder<Set<String>?>(
               stream: bloc.featureCurrentlyEditingStream,
               builder: (context, snapshot) {
                 final unselHeight = bloc.unselectedFeatureCountForHeight;
@@ -47,13 +47,17 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
-                                        Text(efv.environmentName.toUpperCase(),
+                                        Text(efv.environmentName!.toUpperCase(),
                                             overflow: TextOverflow.ellipsis,
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .overline
+                                                .overline!
                                                 .copyWith(
-                                                    color: Theme.of(context).brightness == Brightness.light ? Colors.black87 : null,
+                                                    color: Theme.of(context)
+                                                                .brightness ==
+                                                            Brightness.light
+                                                        ? Colors.black87
+                                                        : null,
                                                     fontSize: 14)),
                                       ],
                                     ),
@@ -63,16 +67,25 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                                       decoration: BoxDecoration(
                                           border: Border(
                                         bottom: BorderSide(
-                                            color: Theme.of(context).buttonTheme.colorScheme.onSurface.withOpacity(0.12), width: 1.0),
+                                            color: Theme.of(context)
+                                                .buttonTheme
+                                                .colorScheme!
+                                                .onSurface
+                                                .withOpacity(0.12),
+                                            width: 1.0),
                                         right: BorderSide(
-                                            color: Theme.of(context).buttonTheme.colorScheme.onSurface.withOpacity(0.12), width: 1.0),
+                                            color: Theme.of(context)
+                                                .buttonTheme
+                                                .colorScheme!
+                                                .onSurface
+                                                .withOpacity(0.12),
+                                            width: 1.0),
                                       )),
                                       child: FeatureValueCell(
                                           tabsBloc: bloc,
                                           feature: f,
-                                          value: efv.features.firstWhere(
-                                              (fv) => fv.key == f.key,
-                                              orElse: () => null),
+                                          value: efv.features.firstWhereOrNull(
+                                              (fv) => fv.key == f.key),
                                           efv: efv),
                                     );
                                   }).toList(),

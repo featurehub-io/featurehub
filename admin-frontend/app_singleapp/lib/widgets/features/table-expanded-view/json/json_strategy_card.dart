@@ -5,23 +5,23 @@ import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 
 class JsonStrategyCard extends StatelessWidget {
-  final RolloutStrategy rolloutStrategy;
+  final RolloutStrategy? rolloutStrategy;
   final CustomStrategyBloc strBloc;
 
-  JsonStrategyCard({Key key, this.rolloutStrategy, @required this.strBloc})
+  JsonStrategyCard({Key? key, this.rolloutStrategy, required this.strBloc})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<bool>(
-        stream: strBloc.fvBloc
-            .environmentIsLocked(strBloc.environmentFeatureValue.environmentId),
+        stream: strBloc.fvBloc.environmentIsLocked(
+            strBloc.environmentFeatureValue.environmentId!),
         builder: (ctx, snap) {
           if (snap.hasData) {
             final canChangeValue = strBloc.environmentFeatureValue.roles
                 .contains(RoleType.CHANGE_VALUE);
-            var editable = !snap.data && canChangeValue;
-            final enabled = editable && !snap.data;
+            var editable = !snap.data! && canChangeValue;
+            final enabled = editable && !snap.data!;
             return StrategyCardWidget(
               editable: editable,
               strBloc: strBloc,

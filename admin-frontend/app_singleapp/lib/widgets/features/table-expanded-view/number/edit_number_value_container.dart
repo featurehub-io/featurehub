@@ -6,16 +6,16 @@ import 'package:mrapi/api.dart';
 
 class EditNumberValueContainer extends StatefulWidget {
   const EditNumberValueContainer({
-    Key key,
-    @required this.enabled,
-    @required this.canEdit,
-    @required this.rolloutStrategy,
-    @required this.strBloc,
+    Key? key,
+    required this.enabled,
+    required this.canEdit,
+    this.rolloutStrategy,
+    required this.strBloc,
   }) : super(key: key);
 
   final bool enabled;
   final bool canEdit;
-  final RolloutStrategy rolloutStrategy;
+  final RolloutStrategy? rolloutStrategy;
   final CustomStrategyBloc strBloc;
 
   @override
@@ -31,7 +31,7 @@ class _EditNumberValueContainerState extends State<EditNumberValueContainer> {
     super.didChangeDependencies();
 
     final valueSource = widget.rolloutStrategy != null
-        ? widget.rolloutStrategy.value
+        ? widget.rolloutStrategy!.value
         : widget.strBloc.featureValue.valueNumber;
     tec.text = (valueSource ?? '').toString();
   }
@@ -64,13 +64,13 @@ class _EditNumberValueContainerState extends State<EditNumberValueContainer> {
           ),
           onChanged: (value) {
             final replacementValue =
-                value.trim().isEmpty ? null : double.parse(tec.text?.trim());
+                value.trim().isEmpty ? null : double.parse(tec.text.trim());
             if (widget.rolloutStrategy != null) {
-              widget.rolloutStrategy.value = replacementValue;
+              widget.rolloutStrategy!.value = replacementValue;
               widget.strBloc.markDirty();
             } else {
               widget.strBloc.fvBloc.dirty(
-                  widget.strBloc.environmentFeatureValue.environmentId,
+                  widget.strBloc.environmentFeatureValue.environmentId!,
                   (current) => current.value = replacementValue);
             }
           },

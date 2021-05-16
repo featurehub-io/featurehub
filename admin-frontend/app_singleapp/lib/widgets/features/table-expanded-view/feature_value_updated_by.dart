@@ -6,7 +6,7 @@ import '../custom_strategy_bloc.dart';
 class FeatureValueUpdatedByCell extends StatelessWidget {
   final CustomStrategyBloc strBloc;
 
-  FeatureValueUpdatedByCell({Key key, @required this.strBloc})
+  FeatureValueUpdatedByCell({Key? key, required this.strBloc})
       : super(key: key);
 
   @override
@@ -18,8 +18,8 @@ class FeatureValueUpdatedByCell extends StatelessWidget {
     if (strBloc.featureValue.whenUpdated != null &&
         strBloc.featureValue.whoUpdated != null) {
       updatedBy = 'Updated by: ';
-      whenUpdated = timeago.format(strBloc.featureValue.whenUpdated.toLocal());
-      whoUpdated = strBloc.featureValue.whoUpdated.name;
+      whenUpdated = timeago.format(strBloc.featureValue.whenUpdated!.toLocal());
+      whoUpdated = strBloc.featureValue.whoUpdated!.name!;
     }
 
     return Container(
@@ -32,7 +32,7 @@ class FeatureValueUpdatedByCell extends StatelessWidget {
                 Text(updatedBy,
                     style: Theme.of(context)
                         .textTheme
-                        .caption
+                        .caption!
                         .copyWith(color: Theme.of(context).buttonColor)),
                 Text(whoUpdated, style: Theme.of(context).textTheme.bodyText1),
               ],

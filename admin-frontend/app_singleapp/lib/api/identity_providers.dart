@@ -18,21 +18,20 @@ class IdentityProviders {
 
   Map<String, String> externalProviderAssets = <String, String>{
     'oauth2-google':
-        'assets/signup_3rdparty/btn_google_signin_dark_normal_web.png'
+        'assets/signup_3rdparty/btn_google_signin_dark_normal_web.png',
+    'oauth2-azure': 'assets/signup_3rdparty/azure.png'
   };
 
-  ManagementRepositoryClientBloc _bloc;
+  final ManagementRepositoryClientBloc _bloc;
+  final AuthServiceApi _authServiceApi;
 
-  set bloc(ManagementRepositoryClientBloc bloc) => _bloc = bloc;
-
-  AuthServiceApi _authServiceApi;
-
-  set authServiceApi(AuthServiceApi val) => _authServiceApi = val;
+  IdentityProviders(this._bloc, this._authServiceApi);
 
   void authenticateViaProvider(String provider) {
-    _authServiceApi
-        .getLoginUrlForProvider(provider)
-        .then((value) => window.location.href = value.redirectUrl)
-        .catchError(_bloc.dialogError);
+    _authServiceApi.getLoginUrlForProvider(provider).then((value) {
+      return window.location.href = value.redirectUrl!;
+    }).catchError((e, s) {
+      _bloc.dialogError(e, s);
+    });
   }
 }

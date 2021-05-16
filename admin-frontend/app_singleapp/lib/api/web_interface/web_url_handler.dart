@@ -10,7 +10,7 @@ class WebInterface extends AbstractWebInterface {
     final origin = window.location.origin;
     originUri = Uri.parse(window.location.origin);
     if (overrideOrigin) {
-      return '${originUri.scheme}://${originUri.host}:8903';
+      return '${originUri!.scheme}://${originUri!.host}:8903';
     } else if (overrideOrigin && origin.startsWith('http://[::1]')) {
       return 'http://[::1]:8903';
     } else {
@@ -30,8 +30,8 @@ class WebInterface extends AbstractWebInterface {
   }
 
   @override
-  String getStoredAuthToken() {
-    final cookies = document.cookie.split(';')
+  String? getStoredAuthToken() {
+    final cookies = document.cookie!.split(';')
       ..retainWhere(
           (s) => s.trim().startsWith('${AbstractWebInterface.bearerToken}='));
 

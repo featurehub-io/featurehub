@@ -8,20 +8,20 @@ class SelectPortfolioGroupBloc implements Bloc {
   final ManagementRepositoryClientBloc mrClient;
 
   List<Portfolio> portfoliosList = [];
-  Portfolio currentPortfolio;
+  Portfolio? currentPortfolio;
   Set<PortfolioGroup> listOfAddedPortfolioGroups = <PortfolioGroup>{};
 
-  final _currentPortfoliosStream = rxdart.BehaviorSubject<List<Portfolio>>();
-  Stream<List<Portfolio>> get portfolios => _currentPortfoliosStream.stream;
+  final _currentPortfoliosStream = rxdart.BehaviorSubject<List<Portfolio>?>();
+  Stream<List<Portfolio>?> get portfolios => _currentPortfoliosStream.stream;
 
-  final _currentGroupsStream = rxdart.BehaviorSubject<List<Group>>();
-  Stream<List<Group>> get groups => _currentGroupsStream.stream;
+  final _currentGroupsStream = rxdart.BehaviorSubject<List<Group>?>();
+  Stream<List<Group>?> get groups => _currentGroupsStream.stream;
 
-  final _addedGroupsStream = rxdart.BehaviorSubject<Set<PortfolioGroup>>();
-  Stream<Set<PortfolioGroup>> get addedGroupsStream =>
+  final _addedGroupsStream = rxdart.BehaviorSubject<Set<PortfolioGroup>?>();
+  Stream<Set<PortfolioGroup>?> get addedGroupsStream =>
       _addedGroupsStream.stream;
 
-  SelectPortfolioGroupBloc(this.mrClient) : assert(mrClient != null) {
+  SelectPortfolioGroupBloc(this.mrClient) {
     loadInitialData();
   }
 
@@ -32,14 +32,14 @@ class SelectPortfolioGroupBloc implements Bloc {
     }
   }
 
-  void _findPortfoliosAndAddToTheStream() async {
+  Future<void> _findPortfoliosAndAddToTheStream() async {
     try {
       var data = await mrClient.portfolioServiceApi
           .findPortfolios(includeGroups: true, order: SortOrder.ASC);
       _currentPortfoliosStream.add(data);
       portfoliosList = data;
     } catch (e, s) {
-      mrClient.dialogError(e, s);
+      await mrClient.dialogError(e, s);
     }
   }
 
@@ -49,9 +49,11 @@ class SelectPortfolioGroupBloc implements Bloc {
   }
 
   void _findGroupsAndPushToStream() {
-    final groups =
-        portfoliosList.firstWhere((p) => p.id == currentPortfolio.id).groups;
-    _currentGroupsStream.add(groups);
+    if (currentPortfolio != null) {
+      final groups =
+          portfoliosList.firstWhere((p) => p.id == currentPortfolio!.id).groups;
+      _currentGroupsStream.add(groups);
+    }
   }
 
   void pushExistingGroupToStream(List<PortfolioGroup> groupList) {
@@ -61,24 +63,24 @@ class SelectPortfolioGroupBloc implements Bloc {
 
   void pushAddedGroupToStream(String groupID) {
     //identify group and add to the list along with the portfolio
-    Group foundGroup;
     if (currentPortfolio != null) {
-      foundGroup = currentPortfolio.groups.firstWhere((g) => g.id == groupID);
+      final foundGroup =
+          currentPortfolio!.groups.firstWhere((g) => g.id == groupID);
       listOfAddedPortfolioGroups
-          .add(PortfolioGroup(currentPortfolio, foundGroup));
+          .add(PortfolioGroup(currentPortfolio!, foundGroup));
       //add both current portfolio and group so we can later display selected groups in chips
       _addedGroupsStream.add(listOfAddedPortfolioGroups);
     }
   }
 
   void pushAdminGroupToStream() {
-    final adminGroup = mrClient.organization.orgGroup;
+    final adminGroup = mrClient.organization!.orgGroup!;
     listOfAddedPortfolioGroups.add(PortfolioGroup(null, adminGroup));
     _addedGroupsStream.add(listOfAddedPortfolioGroups);
   }
 
   void removeAdminGroupFromStream() {
-    final adminGroup = mrClient.organization.orgGroup;
+    final adminGroup = mrClient.organization!.orgGroup!;
     removeGroupFromStream(PortfolioGroup(null, adminGroup));
   }
 
@@ -89,9 +91,7 @@ class SelectPortfolioGroupBloc implements Bloc {
 
   void clearAddedPortfoliosAndGroups() {
     // same as in dispose?
-    if (listOfAddedPortfolioGroups != null) {
-      listOfAddedPortfolioGroups.clear();
-    }
+    listOfAddedPortfolioGroups.clear();
   }
 
   @override

@@ -7,7 +7,7 @@ import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
 
 class FHappBar extends StatelessWidget {
-  const FHappBar({Key key}) : super(key: key);
+  const FHappBar({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -54,8 +54,8 @@ class FHappBar extends StatelessWidget {
             builder: (BuildContext context, AsyncSnapshot<Person> snapshot) {
 //            if (snapshot.hasData &&
 //                snapshot.data == InitializedCheckState.logged_in) {
-              if (snapshot.hasData) {
-                final person = snapshot.data;
+              if (snapshot.hasData && mrBloc.isLoggedIn) {
+                final person = snapshot.data!;
                 var light = Theme.of(context).brightness == Brightness.light;
                 return Padding(
                   padding: const EdgeInsets.all(8.0),

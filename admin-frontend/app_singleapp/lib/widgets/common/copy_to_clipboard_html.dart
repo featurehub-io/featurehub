@@ -2,31 +2,31 @@ import 'package:app_singleapp/widgets/common/fh_icon_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-typedef CopyToClipboardTextProvider = Future<String> Function();
+typedef CopyToClipboardTextProvider = Future<String?> Function();
 
 class FHCopyToClipboardFlatButton extends StatelessWidget {
-  final String text;
-  final String caption;
-  final Text captionText;
-  final String tooltip;
-  final CopyToClipboardTextProvider textProvider;
+  final String? text;
+  final String? caption;
+  final Text? captionText;
+  final String? tooltip;
+  final CopyToClipboardTextProvider? textProvider;
 
   const FHCopyToClipboardFlatButton(
-      {Key key,
+      {Key? key,
       this.text,
       this.textProvider,
       this.caption,
       this.captionText,
       this.tooltip})
-      : assert(text != null || textProvider != null),
-        assert(caption != null || captionText != null),
+      : assert(caption != null || captionText != null),
+        assert(text != null || textProvider != null),
         super(key: key);
 
   @override
   Widget build(BuildContext context) {
     Widget fb = TextButton(
       onPressed: () async {
-        final clipboardText = text ?? (await textProvider());
+        final clipboardText = text ?? (await textProvider!());
         if (clipboardText != null) {
           await Clipboard.setData(ClipboardData(text: clipboardText));
         }
@@ -41,10 +41,10 @@ class FHCopyToClipboardFlatButton extends StatelessWidget {
             ),
           ),
           captionText ??
-              Text(caption,
+              Text(caption!,
                   style: Theme.of(context)
                       .textTheme
-                      .subtitle2
+                      .subtitle2!
                       .merge(TextStyle(color: Theme.of(context).buttonColor))),
         ],
       ),
@@ -52,7 +52,7 @@ class FHCopyToClipboardFlatButton extends StatelessWidget {
 
     if (tooltip != null) {
       fb = Tooltip(
-        message: tooltip,
+        message: tooltip!,
         child: fb,
       );
     }
@@ -63,9 +63,9 @@ class FHCopyToClipboardFlatButton extends StatelessWidget {
 
 class FHCopyToClipboard extends StatelessWidget {
   const FHCopyToClipboard({
-    Key key,
-    @required this.tooltipMessage,
-    @required this.copyString,
+    Key? key,
+    required this.tooltipMessage,
+    required this.copyString,
   }) : super(key: key);
 
   final String tooltipMessage;

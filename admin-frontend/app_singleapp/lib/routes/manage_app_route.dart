@@ -33,22 +33,22 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
                 stream: bloc
                     .mrClient.streamValley.currentPortfolioApplicationsStream,
                 builder: (context, snapshot) {
-                  if (snapshot.hasData && snapshot.data.isNotEmpty) {
+                  if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                     return Container(
                         padding: EdgeInsets.only(left: 8, bottom: 8),
                         child: ApplicationDropDown(
-                            applications: snapshot.data, bloc: bloc));
+                            applications: snapshot.data!, bloc: bloc));
                   } else {
                     bloc.setApplicationId(bloc.mrClient.currentAid);
                     return Container(
                         padding: EdgeInsets.only(left: 8, top: 15),
                         child: Row(
                           children: [
-                            Text('There are no applications in this portfolio', style: Theme.of(context).textTheme.caption),
+                            Text('There are no applications in this portfolio',
+                                style: Theme.of(context).textTheme.caption),
                             LinkToApplicationsPage(),
                           ],
                         ));
-
                   }
                 }),
             Container(
@@ -88,45 +88,43 @@ class ManageAppWidget extends StatefulWidget {
 
 class _ManageAppWidgetState extends State<ManageAppWidget>
     with SingleTickerProviderStateMixin {
-  StreamSubscription<RouteChange> _routeChange;
-  TabController _controller;
-  ManagementRepositoryClientBloc bloc;
+  StreamSubscription<RouteChange?>? _routeChange;
+  TabController? _controller;
+  ManagementRepositoryClientBloc? bloc;
 
   @override
   void initState() {
     super.initState();
 
     _controller = TabController(vsync: this, length: 3);
-    _controller.addListener(tabChangeListener);
+    _controller?.addListener(tabChangeListener);
   }
 
   void tabChangeListener() {
     // tab has changed, notify external route
-    final rc = RouteChange()..route = '/manage-app';
-    if (_controller.index == 0) {
+    final rc = RouteChange('/manage-app');
+    if (_controller?.index == 0) {
       rc.params = {
         'tab-name': ['environments']
       };
-    } else if (_controller.index == 1) {
+    } else if (_controller?.index == 1) {
       rc.params = {
         'tab-name': ['group-permissions']
       };
-    } else if (_controller.index == 2) {
+    } else if (_controller?.index == 2) {
       rc.params = {
         'tab-name': ['service-accounts']
       };
     }
-    if (rc.params != null) {
-      bloc.notifyExternalRouteChange(rc);
-    }
+    bloc?.notifyExternalRouteChange(rc);
   }
 
   @override
   void dispose() {
     super.dispose();
-    _controller.dispose();
+    _controller?.dispose();
     if (_routeChange != null) {
-      _routeChange.cancel();
+      _routeChange!.cancel();
       _routeChange = null;
     }
   }
@@ -134,6 +132,7 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<ManageAppBloc>(context);
+    this.bloc = bloc.mrClient;
 
     // maybe should be a Column?
     return Column(
@@ -141,8 +140,8 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
         TabBar(
           controller: _controller,
           labelStyle: Theme.of(context).textTheme.bodyText1,
-          labelColor: Theme.of(context).textTheme.subtitle2.color,
-          unselectedLabelColor: Theme.of(context).textTheme.bodyText2.color,
+          labelColor: Theme.of(context).textTheme.subtitle2!.color,
+          unselectedLabelColor: Theme.of(context).textTheme.bodyText2!.color,
           tabs: [
             Tab(text: 'Environments'),
             Tab(text: 'Group permissions'),
@@ -196,25 +195,25 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
     bloc = BlocProvider.of(context);
 
     if (_routeChange != null) {
-      _routeChange.cancel();
+      _routeChange!.cancel();
     }
 
     _routeChange = BlocProvider.of<ManagementRepositoryClientBloc>(context)
         .routeChangedStream
         .listen((routeChange) {
-      if (routeChange.route == '/manage-app') {
-        switch (routeChange.params['tab-name'][0]) {
+      if (routeChange?.route == '/manage-app') {
+        switch (routeChange!.params['tab-name']![0]) {
           case 'environments':
-            _controller.animateTo(0);
+            _controller!.animateTo(0);
             break;
           case 'group-permissions':
-            _controller.animateTo(1);
+            _controller!.animateTo(1);
             break;
           case 'service-accounts':
-            _controller.animateTo(2);
+            _controller!.animateTo(2);
             break;
           default:
-            _controller.animateTo(0);
+            _controller!.animateTo(0);
             break;
         }
       }

@@ -63,27 +63,26 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
       children: <Widget>[
         Container(
           padding: const EdgeInsets.fromLTRB(12, 16, 16, 16),
-          child: StreamBuilder<List<Application>>(
+          child: StreamBuilder<List<Application>?>(
               stream: bloc.applications,
               builder: (context, snapshot) {
-                if (snapshot.hasData && snapshot.data.isNotEmpty) {
+                if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                   return ApplicationDropDown(
-                      applications: snapshot.data, bloc: bloc);
+                      applications: snapshot.data!, bloc: bloc);
                 }
-                if (snapshot.hasData && snapshot.data.isEmpty) {
+                if (snapshot.hasData && snapshot.data!.isEmpty) {
                   return StreamBuilder<ReleasedPortfolio>(
-                      stream: bloc.mrClient.personState
-                          .isCurrentPortfolioOrSuperAdmin,
+                      stream: bloc
+                          .mrClient.personState.isCurrentPortfolioOrSuperAdmin,
                       builder: (context, snapshot) {
                         if (snapshot.hasData &&
-                            snapshot.data.currentPortfolioOrSuperAdmin) {
+                            snapshot.data!.currentPortfolioOrSuperAdmin) {
                           return Row(
                             children: <Widget>[
                               Text(
                                   'There are no applications in this portfolio',
-                                  style:
-                                      Theme.of(context).textTheme.caption),
-                            LinkToApplicationsPage(),
+                                  style: Theme.of(context).textTheme.caption),
+                              LinkToApplicationsPage(),
                             ],
                           );
                         } else {
@@ -104,7 +103,7 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
 
 class _FeaturesOverviewHeader extends StatelessWidget {
   const _FeaturesOverviewHeader({
-    Key key,
+    Key? key,
   }) : super(key: key);
 
   @override
@@ -119,13 +118,13 @@ class _CreateFeatureButton extends StatelessWidget {
   final PerApplicationFeaturesBloc bloc;
 
   const _CreateFeatureButton({
-    Key key,
-    @required this.bloc,
+    Key? key,
+    required this.bloc,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<String>(
+    return StreamBuilder<String?>(
         stream: bloc.mrClient.streamValley.currentAppIdStream,
         builder: (context, snapshot) {
           if (snapshot.hasData && snapshot.data != null) {
@@ -138,11 +137,11 @@ class _CreateFeatureButton extends StatelessWidget {
                       keepCase: true,
                       title: 'Create new feature',
                       onPressed: () =>
-                      bloc.mrClient.addOverlay((BuildContext context) {
-                    //return null;
-                    return CreateFeatureDialogWidget(
-                      bloc: bloc,
-                    );
+                          bloc.mrClient.addOverlay((BuildContext context) {
+                        //return null;
+                        return CreateFeatureDialogWidget(
+                          bloc: bloc,
+                        );
                       }),
                     );
                   }

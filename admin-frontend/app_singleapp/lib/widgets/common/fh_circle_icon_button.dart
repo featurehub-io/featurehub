@@ -5,7 +5,8 @@ class CircleIconButton extends StatelessWidget {
   final VoidCallback onTap;
   final Icon icon;
 
-  const CircleIconButton({Key key, this.onTap, this.icon}) : super(key: key);
+  const CircleIconButton({Key? key, required this.onTap, required this.icon})
+      : super(key: key);
   @override
   Widget build(BuildContext context) {
     return ClipOval(
@@ -13,9 +14,9 @@ class CircleIconButton extends StatelessWidget {
         color: Theme.of(context).primaryColorLight, // button color
         child: InkWell(
           mouseCursor: SystemMouseCursors.click,
-          splashColor: Theme.of(context).primaryColorDark, // inkwell color
+          splashColor: Theme.of(context).primaryColorDark,
+          onTap: onTap, // inkwell color
           child: SizedBox(width: 32, height: 32, child: icon),
-          onTap: onTap,
         ),
       ),
     );

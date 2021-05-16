@@ -1,5 +1,4 @@
 import 'package:app_singleapp/api/client_api.dart';
-import 'package:app_singleapp/api/router.dart';
 import 'package:app_singleapp/common/stream_valley.dart';
 import 'package:app_singleapp/widgets/common/fh_flat_button_transparent.dart';
 import 'package:app_singleapp/widgets/features/environments_features_list_view.dart';
@@ -22,7 +21,7 @@ class FeaturesOverviewTableWidget extends StatelessWidget {
     final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
 
     try {
-      return StreamBuilder<FeatureStatusFeatures>(
+      return StreamBuilder<FeatureStatusFeatures?>(
           stream: bloc.appFeatureValues,
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
@@ -30,7 +29,7 @@ class FeaturesOverviewTableWidget extends StatelessWidget {
             }
 
             if (snapshot.hasData &&
-                snapshot.data.sortedByNameEnvironmentIds.isEmpty) {
+                snapshot.data!.sortedByNameEnvironmentIds.isEmpty) {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
@@ -39,14 +38,14 @@ class FeaturesOverviewTableWidget extends StatelessWidget {
               );
             }
             if (snapshot.hasData &&
-                snapshot.data.applicationFeatureValues.features.isEmpty) {
+                snapshot.data!.applicationFeatureValues.features.isEmpty) {
               return NoFeaturesMessage();
             }
 
             if (snapshot.hasData) {
               return TabsView(
-                featureStatus: snapshot.data,
-                applicationId: bloc.applicationId,
+                featureStatus: snapshot.data!,
+                applicationId: bloc.applicationId!,
                 bloc: bloc,
               );
             } else {
@@ -66,10 +65,10 @@ class TabsView extends StatelessWidget {
   final PerApplicationFeaturesBloc bloc;
 
   const TabsView(
-      {Key key,
-      @required this.featureStatus,
-      @required this.applicationId,
-      @required this.bloc})
+      {Key? key,
+      required this.featureStatus,
+      required this.applicationId,
+      required this.bloc})
       : super(key: key);
 
   @override
@@ -118,15 +117,16 @@ class _FeatureTabsBodyHolder extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if(bloc.features.isNotEmpty) Container(
-                            color: Theme.of(context).highlightColor,
-                            height: headerHeight,
-                            width: MediaQuery.of(context).size.width > 600
-                                ? 260.0
-                                : 130,
-                            padding: EdgeInsets.only(left: 8.0),
-                            child: Text('',
-                                style: Theme.of(context).textTheme.caption)),
+                        if (bloc.features.isNotEmpty)
+                          Container(
+                              color: Theme.of(context).highlightColor,
+                              height: headerHeight,
+                              width: MediaQuery.of(context).size.width > 600
+                                  ? 260.0
+                                  : 130,
+                              padding: EdgeInsets.only(left: 8.0),
+                              child: Text('',
+                                  style: Theme.of(context).textTheme.caption)),
                         ...bloc.features.map(
                           (f) {
                             return FeatureNamesLeftPanel(
@@ -183,11 +183,11 @@ class _FeatureTab extends StatelessWidget {
   final color;
 
   const _FeatureTab(
-      {Key key,
-      @required this.text,
-      @required this.icon,
-      @required this.state,
-      @required this.color})
+      {Key? key,
+      required this.text,
+      required this.icon,
+      required this.state,
+      required this.color})
       : super(key: key);
 
   @override
@@ -207,8 +207,8 @@ class _FeatureTab extends StatelessWidget {
                     bloc.swapTab(state);
                   },
                   child: Container(
-                      padding: EdgeInsets.symmetric(
-                          vertical: 6.0, horizontal: 12.0),
+                      padding:
+                          EdgeInsets.symmetric(vertical: 6.0, horizontal: 12.0),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.all(Radius.circular(16.0)),
                         color: state == snapshot.data
@@ -227,7 +227,7 @@ class _FeatureTab extends StatelessWidget {
 
 class NoEnvironmentMessage extends StatelessWidget {
   const NoEnvironmentMessage({
-    Key key,
+    Key? key,
   }) : super(key: key);
 
   @override
@@ -245,17 +245,15 @@ class NoEnvironmentMessage extends StatelessWidget {
               stream: bloc.mrClient.personState.isCurrentPortfolioOrSuperAdmin,
               builder: (context, snapshot) {
                 if (snapshot.hasData &&
-                    snapshot.data.currentPortfolioOrSuperAdmin) {
+                    snapshot.data!.currentPortfolioOrSuperAdmin) {
                   return FHFlatButtonTransparent(
                       title: 'Environments',
                       keepCase: true,
                       onPressed: () => ManagementRepositoryClientBloc.router
-                              .navigateTo(context, '/manage-app',
-                                  transition: TransitionType.material,
-                                  params: {
-                                'id': [bloc.applicationId],
-                                'tab-name': ['environments']
-                              }));
+                              .navigateTo(context, '/manage-app', params: {
+                            'id': [bloc.applicationId!],
+                            'tab-name': ['environments']
+                          }));
                 } else {
                   return Container();
                 }
@@ -268,7 +266,7 @@ class NoEnvironmentMessage extends StatelessWidget {
 
 class NoFeaturesMessage extends StatelessWidget {
   const NoFeaturesMessage({
-    Key key,
+    Key? key,
   }) : super(key: key);
 
   @override

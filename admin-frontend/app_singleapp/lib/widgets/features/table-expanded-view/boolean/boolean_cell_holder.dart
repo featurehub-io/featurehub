@@ -13,7 +13,8 @@ class BooleanCellHolder extends StatelessWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
   final PerFeatureStateTrackingBloc fvBloc;
 
-  const BooleanCellHolder({Key key, this.environmentFeatureValue, this.fvBloc})
+  const BooleanCellHolder(
+      {Key? key, required this.environmentFeatureValue, required this.fvBloc})
       : super(key: key);
 
   @override
@@ -35,19 +36,19 @@ class BooleanCellHolder extends StatelessWidget {
                 strBloc: strategyBloc,
               ),
               if (snap.hasData)
-                for (RolloutStrategy strategy in snap.data)
+                for (RolloutStrategy strategy in snap.data!)
                   BooleanStrategyCard(
                     strBloc: strategyBloc,
                     rolloutStrategy: strategy,
                   ),
               StreamBuilder<bool>(
                   stream: fvBloc.environmentIsLocked(
-                      environmentFeatureValue.environmentId),
+                      environmentFeatureValue.environmentId!),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       final canChangeValue = environmentFeatureValue.roles
                           .contains(RoleType.CHANGE_VALUE);
-                      var editable = !snapshot.data && canChangeValue;
+                      var editable = !snapshot.data! && canChangeValue;
                       return AddStrategyButton(
                           bloc: strategyBloc, editable: editable);
                     } else {

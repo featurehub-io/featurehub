@@ -7,7 +7,8 @@ import 'package:flutter/material.dart';
 class FHJsonEditorWidget extends StatefulWidget {
   final TextEditingController controller;
 
-  const FHJsonEditorWidget({Key key, this.controller}) : super(key: key);
+  const FHJsonEditorWidget({Key? key, required this.controller})
+      : super(key: key);
 
   @override
   _FHJsonEditorState createState() => _FHJsonEditorState();
@@ -23,14 +24,16 @@ class _FHJsonEditorState extends State<FHJsonEditorWidget> {
         children: <Widget>[
           Row(mainAxisAlignment: MainAxisAlignment.end, children: [
             FHFlatButtonTransparent(
-                onPressed: () {
-                  setState(() {
-                    var jsonMap = json.decode(widget.controller.text);
-                    var encoder = JsonEncoder.withIndent('  ');
-                    widget.controller.text = encoder.convert(jsonMap);
-                  });
-                },
-                title: 'Format json', keepCase: true,),
+              onPressed: () {
+                setState(() {
+                  var jsonMap = json.decode(widget.controller.text);
+                  var encoder = JsonEncoder.withIndent('  ');
+                  widget.controller.text = encoder.convert(jsonMap);
+                });
+              },
+              title: 'Format json',
+              keepCase: true,
+            ),
           ]),
           Container(
             child: Text(

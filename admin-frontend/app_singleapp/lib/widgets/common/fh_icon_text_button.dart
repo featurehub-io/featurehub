@@ -5,24 +5,32 @@ class FHIconTextButton extends StatelessWidget {
   final String label;
   final bool keepCase;
   final IconData iconData;
-  final double size;
-  final Color color;
+  final double? size;
+  final Color? color;
 
-  const FHIconTextButton({
-    Key key,
-    this.onPressed, @ required this.label, this.keepCase=false, @ required this.iconData, this.size, this.color
-  }) : super(key: key);
+  const FHIconTextButton(
+      {Key? key,
+      required this.onPressed,
+      required this.label,
+      this.keepCase = false,
+      required this.iconData,
+      this.size,
+      this.color})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return TextButton.icon(
-        icon: Icon(iconData, color: color ?? Theme.of(context).buttonColor, size: size,),
-        // textColor: Theme.of(context).buttonColor,
-        onPressed:onPressed,
+        icon: Icon(
+          iconData,
+          color: color ?? Theme.of(context).buttonColor,
+          size: size,
+        ),
+        onPressed: onPressed,
         label: Padding(
           padding: const EdgeInsets.fromLTRB(0.0, 8.0, 8.0, 8.0),
-          child: Text(keepCase ? label : label.toUpperCase(), style: TextStyle(color: color)
-    ),
+          child: Text(keepCase ? label : label.toUpperCase(),
+              style: TextStyle(color: color)),
         ));
   }
 }

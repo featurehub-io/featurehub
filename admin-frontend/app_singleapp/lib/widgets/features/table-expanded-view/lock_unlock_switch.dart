@@ -8,7 +8,8 @@ class LockUnlockSwitch extends StatefulWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
   final PerFeatureStateTrackingBloc fvBloc;
 
-  const LockUnlockSwitch({Key key, this.environmentFeatureValue, this.fvBloc})
+  const LockUnlockSwitch(
+      {Key? key, required this.environmentFeatureValue, required this.fvBloc})
       : super(key: key);
 
   @override
@@ -20,7 +21,7 @@ class _LockUnlockSwitchState extends State<LockUnlockSwitch> {
   Widget build(BuildContext context) {
     return StreamBuilder<bool>(
         stream: widget.fvBloc
-            .environmentIsLocked(widget.environmentFeatureValue.environmentId),
+            .environmentIsLocked(widget.environmentFeatureValue.environmentId!),
         builder: (ctx, snap) {
           if (!snap.hasData) {
             return Container(
@@ -38,10 +39,10 @@ class _LockUnlockSwitchState extends State<LockUnlockSwitch> {
 
           final locked = snap.hasData ? snap.data : true;
 
-          Function pressed;
+          VoidCallback? pressed;
           if (!disabled) {
             pressed = () => widget.fvBloc.dirtyLock(
-                widget.environmentFeatureValue.environmentId, !locked);
+                widget.environmentFeatureValue.environmentId!, locked != true);
           }
 
           return Container(
@@ -49,10 +50,7 @@ class _LockUnlockSwitchState extends State<LockUnlockSwitch> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                _LockUnlockIconButton(
-                  lock: locked,
-                  onPressed: pressed,
-                )
+                _LockUnlockIconButton(lock: locked == true, onPressed: pressed)
               ],
             ),
           );
@@ -62,13 +60,13 @@ class _LockUnlockSwitchState extends State<LockUnlockSwitch> {
 
 class _LockUnlockIconButton extends StatelessWidget {
   const _LockUnlockIconButton({
-    Key key,
-    this.lock,
+    Key? key,
+    required this.lock,
     this.onPressed,
   }) : super(key: key);
 
   final bool lock;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -79,15 +77,22 @@ class _LockUnlockIconButton extends StatelessWidget {
           height: 36,
           child: IconButton(
               splashRadius: 20,
-            mouseCursor: onPressed != null
-                ? SystemMouseCursors.click
-                : null,
-            tooltip: onPressed != null ? (lock ? 'Unlock to edit feature value' : 'Lock feature value'): null,
+              mouseCursor: onPressed != null
+                  ? SystemMouseCursors.click
+                  : SystemMouseCursors.basic,
+              tooltip: onPressed != null
+                  ? (lock
+                      ? 'Unlock to edit feature value'
+                      : 'Lock feature value')
+                  : null,
               icon: Icon(lock ? Icons.lock_outline : Icons.lock_open,
                   size: 20, color: lock ? Colors.red : Colors.green),
               onPressed: onPressed),
         ),
-        Text(lock ? 'Locked' : 'Unlocked', style: Theme.of(context).textTheme.caption,)
+        Text(
+          lock ? 'Locked' : 'Unlocked',
+          style: Theme.of(context).textTheme.caption,
+        )
       ],
     );
   }

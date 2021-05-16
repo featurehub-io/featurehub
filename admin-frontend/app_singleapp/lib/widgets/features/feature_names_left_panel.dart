@@ -17,17 +17,17 @@ class FeatureNamesLeftPanel extends StatelessWidget {
   final Feature feature;
 
   const FeatureNamesLeftPanel(
-      {Key key, @required this.tabsBloc, @required this.feature})
+      {Key? key, required this.tabsBloc, required this.feature})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
-    return StreamBuilder<Set<String>>(
+    return StreamBuilder<Set<String>?>(
         stream: tabsBloc.featureCurrentlyEditingStream,
         builder: (context, snapshot) {
           final amSelected =
-              (snapshot.hasData && snapshot.data.contains(feature.key));
+              (snapshot.hasData && snapshot.data!.contains(feature.key));
           return InkWell(
             canRequestFocus: false,
 //            behavior: HitTestBehavior.opaque,
@@ -37,9 +37,27 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                 decoration: BoxDecoration(
                     color: Theme.of(context).cardColor,
                     border: Border(
-                      bottom: BorderSide(color: Theme.of(context).buttonTheme.colorScheme.onSurface.withOpacity(0.12), width: 1.0),
-                      right: BorderSide(color: Theme.of(context).buttonTheme.colorScheme.onSurface.withOpacity(0.12), width: 1.0),
-                      left: BorderSide(color: Theme.of(context).buttonTheme.colorScheme.onSurface.withOpacity(0.12), width: 1.0),
+                      bottom: BorderSide(
+                          color: Theme.of(context)
+                              .buttonTheme
+                              .colorScheme!
+                              .onSurface
+                              .withOpacity(0.12),
+                          width: 1.0),
+                      right: BorderSide(
+                          color: Theme.of(context)
+                              .buttonTheme
+                              .colorScheme!
+                              .onSurface
+                              .withOpacity(0.12),
+                          width: 1.0),
+                      left: BorderSide(
+                          color: Theme.of(context)
+                              .buttonTheme
+                              .colorScheme!
+                              .onSurface
+                              .withOpacity(0.12),
+                          width: 1.0),
                     ),
                     boxShadow: [
 //                  BoxShadow(
@@ -90,8 +108,13 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                                   minFontSize: 8.0,
                                                   style: Theme.of(context)
                                                       .textTheme
-                                                      .bodyText1.copyWith(fontWeight: FontWeight.bold)),
-                                              SizedBox(height: 4.0,),
+                                                      .bodyText1!
+                                                      .copyWith(
+                                                          fontWeight:
+                                                              FontWeight.bold)),
+                                              SizedBox(
+                                                height: 4.0,
+                                              ),
                                               Text(
                                                   '${feature.valueType.toString().split('.').last}',
                                                   overflow:
@@ -173,12 +196,12 @@ class _FeatureListenForUpdatedFeatureValues extends StatelessWidget {
   final FeaturesOnThisTabTrackerBloc bloc;
 
   const _FeatureListenForUpdatedFeatureValues(
-      {Key key, this.feature, this.bloc})
+      {Key? key, required this.feature, required this.bloc})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final featureBloc = bloc.featureValueBlocs[feature.key];
+    final featureBloc = bloc.featureValueBlocs[feature.key]!;
 
     return StreamBuilder<bool>(
       stream: featureBloc.anyDirty,

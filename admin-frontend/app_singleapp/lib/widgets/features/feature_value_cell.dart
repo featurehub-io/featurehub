@@ -12,25 +12,25 @@ import 'package:mrapi/api.dart';
 
 class FeatureValueCell extends StatelessWidget {
   final FeaturesOnThisTabTrackerBloc tabsBloc;
-  final FeatureValue value;
+  final FeatureValue? value;
   final EnvironmentFeatureValues efv;
   final Feature feature;
 
   FeatureValueCell(
-      {Key key,
-      @required this.tabsBloc,
-      @required this.value,
-      @required this.efv,
-      this.feature})
+      {Key? key,
+      required this.tabsBloc,
+      this.value,
+      required this.efv,
+      required this.feature})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<Set<String>>(
+    return StreamBuilder<Set<String>?>(
         stream: tabsBloc.featureCurrentlyEditingStream,
         builder: (context, snapshot) {
           final amSelected =
-              (snapshot.hasData && snapshot.data.contains(feature.key));
+              (snapshot.hasData && snapshot.data!.contains(feature.key));
 
           Widget cellWidget;
           if (!amSelected) {
@@ -54,13 +54,13 @@ class FeatureValueCell extends StatelessWidget {
                     cellWidget,
                   ],
                 ));
-          } else if (feature == null) {
-            cellWidget = Text('');
-          } else if ((value == null || value.id == null) && efv.roles.isEmpty) {
+          } else if ((value == null || value!.id == null) &&
+              efv.roles.isEmpty) {
             cellWidget = noAccessTag(null);
           } else {
-            final fvBloc = tabsBloc.featureValueBlocs[feature.key];
-            switch (feature.valueType) {
+            final fvBloc = tabsBloc.featureValueBlocs[feature.key]!;
+
+            switch (feature.valueType!) {
               case FeatureValueType.BOOLEAN:
                 cellWidget = BooleanCellHolder(
                     environmentFeatureValue: efv, fvBloc: fvBloc);

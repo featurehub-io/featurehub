@@ -20,10 +20,10 @@ class EditAttributeStrategyWidget extends StatefulWidget {
   final IndividualStrategyBloc bloc;
 
   const EditAttributeStrategyWidget({
-    Key key,
-    @required this.attribute,
-    @required this.attributeIsFirst,
-    @required this.bloc,
+    Key? key,
+    required this.attribute,
+    required this.attributeIsFirst,
+    required this.bloc,
   }) : super(key: key);
 
   @override
@@ -36,12 +36,12 @@ class _EditAttributeStrategyWidgetState
   final TextEditingController _fieldName = TextEditingController();
   final TextEditingController _value = TextEditingController();
 
-  RolloutStrategyAttributeConditional _dropDownCustomAttributeMatchingCriteria;
-  RolloutStrategyAttribute _attribute;
-  StrategyAttributeWellKnownNames _wellKnown;
-  RolloutStrategyFieldType _attributeType;
+  RolloutStrategyAttributeConditional? _dropDownCustomAttributeMatchingCriteria;
+  RolloutStrategyAttribute _attribute = RolloutStrategyAttribute();
+  StrategyAttributeWellKnownNames? _wellKnown;
+  RolloutStrategyFieldType? _attributeType;
 
-  List<RolloutStrategyAttributeConditional> _matchers;
+  List<RolloutStrategyAttributeConditional> _matchers = [];
 
   _EditAttributeStrategyWidgetState();
 
@@ -64,7 +64,7 @@ class _EditAttributeStrategyWidgetState
     _attribute = widget.attribute;
 
     if (_attribute.fieldName != null) {
-      _fieldName.text = _attribute.fieldName;
+      _fieldName.text = _attribute.fieldName!;
     }
 
     _attributeType = _attribute.type; // which could be null
@@ -74,19 +74,17 @@ class _EditAttributeStrategyWidgetState
 
     _value.text = '';
 
-    if (_attribute.values == null) {
-      _attribute.values = [];
+    if (_wellKnown == StrategyAttributeWellKnownNames.platform) {
+      _attribute.values =
+          _attribute.values.map(_platformNameReverseMapper).toList();
+    } else if (_wellKnown == StrategyAttributeWellKnownNames.device) {
+      _attribute.values =
+          _attribute.values.map(_deviceNameReverseMapper).toList();
+    } else if (_wellKnown == StrategyAttributeWellKnownNames.country) {
+      _attribute.values =
+          _attribute.values.map(_countryNameReverseMapper).toList();
     } else {
-      if (_wellKnown == StrategyAttributeWellKnownNames.platform) {
-        _attribute.values =
-            _attribute.values.map(_platformNameReverseMapper).toList();
-      } else if (_wellKnown == StrategyAttributeWellKnownNames.device) {
-        _attribute.values =
-            _attribute.values.map(_deviceNameReverseMapper).toList();
-      } else if (_wellKnown == StrategyAttributeWellKnownNames.country) {
-        _attribute.values =
-            _attribute.values.map(_countryNameReverseMapper).toList();
-      }
+      _attribute.values = [];
     }
 
     _matchers = defineMatchers(_attributeType, _wellKnown);
@@ -109,8 +107,8 @@ class _EditAttributeStrategyWidgetState
   Widget _nameField() {
     if (_wellKnown != null) {
       return Text(
-        _nameFieldMap[_wellKnown],
-        style: Theme.of(context).textTheme.subtitle2.copyWith(
+        _nameFieldMap[_wellKnown!]!,
+        style: Theme.of(context).textTheme.subtitle2!.copyWith(
             color: Theme.of(context).brightness == Brightness.light
                 ? Theme.of(context).buttonColor
                 : Theme.of(context).accentColor),
@@ -120,14 +118,15 @@ class _EditAttributeStrategyWidgetState
           controller: _fieldName,
           decoration: InputDecoration(
               labelText: 'Custom rule name',
-              labelStyle: Theme.of(context).textTheme.bodyText1.copyWith(
+              labelStyle: Theme.of(context).textTheme.bodyText1!.copyWith(
                   fontSize: 12.0, color: Theme.of(context).buttonColor)),
           style: TextStyle(fontSize: 14.0),
           autofocus: true,
+          textInputAction: TextInputAction.next,
           onChanged: (v) => _updateAttributeFieldName(),
           onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
           validator: ((v) {
-            if (v.isEmpty) {
+            if (v == null || v.isEmpty) {
               return 'Rule name required';
             }
             return null;
@@ -200,7 +199,7 @@ class _EditAttributeStrategyWidgetState
                 child: OutlinedButton(
                   onPressed: () => {},
                   child: DropdownButtonHideUnderline(
-                    child: DropdownButton(
+                    child: DropdownButton<RolloutStrategyAttributeConditional>(
                       icon: Icon(
                         Icons.keyboard_arrow_down,
                         size: 24,
@@ -218,7 +217,7 @@ class _EditAttributeStrategyWidgetState
                       }).toList(),
                       hint: Text('Select condition',
                           style: Theme.of(context).textTheme.subtitle2),
-                      onChanged: (value) {
+                      onChanged: (RolloutStrategyAttributeConditional? value) {
                         var readOnly = false; //TODO parametrise this if needed
                         if (!readOnly) {
                           setState(() {
@@ -290,7 +289,7 @@ class _EditAttributeStrategyWidgetState
       child: OutlinedButton(
         onPressed: () => {},
         child: DropdownButtonHideUnderline(
-          child: DropdownButton(
+          child: DropdownButton<RolloutStrategyFieldType>(
             icon: Padding(
               padding: EdgeInsets.only(left: 16.0),
               child: Icon(
@@ -310,7 +309,7 @@ class _EditAttributeStrategyWidgetState
             }).toList(),
             hint: Text('Select value type',
                 style: Theme.of(context).textTheme.subtitle2),
-            onChanged: (value) {
+            onChanged: (RolloutStrategyFieldType? value) {
               setState(() {
                 _attributeType = value;
                 _attribute.type = value;
@@ -437,13 +436,14 @@ class _EditAttributeStrategyWidgetState
                 constraints: BoxConstraints(maxWidth: 250),
                 child: TextFormField(
                   controller: _value,
+                  textInputAction: TextInputAction.next,
                   decoration: InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: labelText,
                       helperText: helperText,
                       labelStyle: Theme.of(context)
                           .textTheme
-                          .bodyText1
+                          .bodyText1!
                           .copyWith(
                               fontSize: 12.0,
                               color: Theme.of(context).buttonColor)),

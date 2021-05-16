@@ -115,7 +115,7 @@ Widget apps(mrBloc, {params}) {
 }
 
 Widget serviceEnvsHandler(ManagementRepositoryClientBloc mrBloc,
-    {Map<String, List<String>> params}) {
+    {Map<String, List<String>>? params}) {
   return BlocProvider<ServiceAccountEnvBloc>(
     creator: (_c, _b) => ServiceAccountEnvBloc(mrBloc),
     child: ServiceAccountEnvRoute(),

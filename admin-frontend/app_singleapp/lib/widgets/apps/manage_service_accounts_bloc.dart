@@ -6,9 +6,9 @@ import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart';
 
 class ManageServiceAccountsBloc implements Bloc {
-  String portfolioId;
+  String? portfolioId;
   final ManagementRepositoryClientBloc mrClient;
-  ServiceAccountServiceApi _serviceAccountServiceApi;
+  late ServiceAccountServiceApi _serviceAccountServiceApi;
 
   final _applicationsSubject = BehaviorSubject<Portfolio>();
   Stream<Portfolio> get applicationsList => _applicationsSubject.stream;
@@ -16,23 +16,24 @@ class ManageServiceAccountsBloc implements Bloc {
       _serviceAccountSearchResultSource.stream;
   final _serviceAccountSearchResultSource =
       BehaviorSubject<List<ServiceAccount>>();
-  StreamSubscription<String> _currentPidSubscription;
+  late StreamSubscription<String?> _currentPidSubscription;
 
-  ManageServiceAccountsBloc(this.portfolioId, this.mrClient)
-      : assert(mrClient != null) {
+  ManageServiceAccountsBloc(this.portfolioId, this.mrClient) {
     _serviceAccountServiceApi = ServiceAccountServiceApi(mrClient.apiClient);
     // lets get this party started
     _currentPidSubscription = mrClient.streamValley.currentPortfolioIdStream
         .listen(addServiceAccountsToStream);
   }
 
-  void addServiceAccountsToStream(String portfolio) async {
+  Future<void> addServiceAccountsToStream(String? portfolio) async {
     portfolioId = portfolio;
     if (portfolioId != null && mrClient.userIsCurrentPortfolioAdmin) {
       final serviceAccounts = await _serviceAccountServiceApi
-          .searchServiceAccountsInPortfolio(portfolioId,
+          .searchServiceAccountsInPortfolio(portfolioId!,
               includePermissions: true)
-          .catchError(mrClient.dialogError);
+          .catchError((e, s) {
+        mrClient.dialogError(e, s);
+      });
       if (!_serviceAccountSearchResultSource.isClosed) {
         _serviceAccountSearchResultSource.add(serviceAccounts);
       }
@@ -40,7 +41,7 @@ class ManageServiceAccountsBloc implements Bloc {
       // we need to fill up a list of applications down to environments
       // ignore: unawaited_futures
       mrClient.portfolioServiceApi
-          .getPortfolio(portfolioId,
+          .getPortfolio(portfolioId!,
               includeApplications: true, includeEnvironments: true)
           .then((portfolio) {
         portfolio.applications.sort((a1, a2) => a1.name.compareTo(a2.name));
@@ -50,9 +51,10 @@ class ManageServiceAccountsBloc implements Bloc {
   }
 
   Future<bool> deleteServiceAccount(String sid) async {
-    final result = await _serviceAccountServiceApi
-        .delete(sid)
-        .catchError(mrClient.dialogError);
+    final result =
+        await _serviceAccountServiceApi.delete(sid).catchError((e, s) {
+      mrClient.dialogError(e, s);
+    });
     await addServiceAccountsToStream(portfolioId);
     await mrClient.streamValley.getCurrentPortfolioServiceAccounts(force: true);
     return result;
@@ -63,23 +65,29 @@ class ManageServiceAccountsBloc implements Bloc {
     serviceAccount.name = updatedServiceAccountName;
     serviceAccount.description = updatedDescription;
     return _serviceAccountServiceApi
-        .update(serviceAccount.id, serviceAccount)
+        .update(serviceAccount.id!, serviceAccount)
         .then((onSuccess) {
       addServiceAccountsToStream(portfolioId);
-    }).catchError(mrClient.dialogError);
+    }).catchError((e, s) {
+      mrClient.dialogError(e, s);
+    });
   }
 
   Future<void> createServiceAccount(
       String serviceAccountName, String description) async {
-    final serviceAccount = ServiceAccount();
-    serviceAccount.name = serviceAccountName;
-    serviceAccount.description = description;
-    await _serviceAccountServiceApi
-        .createServiceAccountInPortfolio(portfolioId, serviceAccount)
-        .then((onSuccess) {
-      addServiceAccountsToStream(mrClient.getCurrentPid());
-    }).catchError(mrClient.dialogError);
-    await mrClient.streamValley.getCurrentPortfolioServiceAccounts(force: true);
+    if (portfolioId != null) {
+      final serviceAccount =
+          ServiceAccount(name: serviceAccountName, description: description);
+      await _serviceAccountServiceApi
+          .createServiceAccountInPortfolio(portfolioId!, serviceAccount)
+          .then((onSuccess) {
+        addServiceAccountsToStream(mrClient.getCurrentPid());
+      }).catchError((e, s) {
+        mrClient.dialogError(e, s);
+      });
+      await mrClient.streamValley
+          .getCurrentPortfolioServiceAccounts(force: true);
+    }
   }
 
   @override

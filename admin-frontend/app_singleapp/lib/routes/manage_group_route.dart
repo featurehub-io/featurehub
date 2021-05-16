@@ -21,7 +21,7 @@ class ManageGroupRoute extends StatefulWidget {
 }
 
 class _ManageGroupRouteState extends State<ManageGroupRoute> {
-  GroupBloc bloc;
+  GroupBloc? bloc;
 
   @override
   void initState() {
@@ -31,6 +31,8 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
 
   @override
   Widget build(BuildContext context) {
+    final bloc = this.bloc!;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -63,8 +65,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
             ),
             Flexible(
               flex: 2,
-              child: bloc.mrClient
-                      .isPortfolioOrSuperAdmin(bloc.mrClient.currentPid)
+              child: bloc.mrClient.isPortfolioOrSuperAdminForCurrentPid()
                   ? Padding(
                       padding: const EdgeInsets.only(top: 24.0, left: 16),
                       child: Row(
@@ -94,17 +95,17 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
         ),
         Padding(
           padding: const EdgeInsets.only(top: 10.0),
-          child: StreamBuilder<Group>(
+          child: StreamBuilder<Group?>(
               stream: bloc.groupLoaded,
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      _filterRow(context, bloc, snapshot.data),
-                      for (Person p in snapshot.data.members)
+                      _filterRow(context, bloc, snapshot.data!),
+                      for (Person p in snapshot.data!.members)
                         MemberWidget(
-                          group: snapshot.data,
+                          group: snapshot.data!,
                           member: p,
                           bloc: bloc,
                         )
@@ -121,21 +122,20 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
 
   Widget _getAdminActions(GroupBloc bloc) {
     return Row(children: <Widget>[
-      StreamBuilder<Group>(
+      StreamBuilder<Group?>(
           stream: bloc.groupLoaded,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               return Row(children: <Widget>[
                 FHIconButton(
-                    icon:
-                        Icon(Icons.edit),
+                    icon: Icon(Icons.edit),
                     onPressed: () => bloc.mrClient.addOverlay(
                         (BuildContext context) => GroupUpdateDialogWidget(
                               bloc: bloc,
-                              group: bloc.group,
+                              group: bloc.group!,
                             ))),
                 //hide the delete button for Admin groups
-                snapshot.data.admin
+                snapshot.data!.admin!
                     ? Container()
                     : FHIconButton(
                         icon: Icon(Icons.delete),
@@ -143,7 +143,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                             bloc.mrClient.addOverlay((BuildContext context) {
                               return GroupDeleteDialogWidget(
                                 bloc: bloc,
-                                group: bloc.group,
+                                group: bloc.group!,
                               );
                             }))
               ]);
@@ -154,7 +154,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
     ]);
   }
 
-  Widget _groupsDropdown(List<Group> groups, GroupBloc bloc) {
+  Widget _groupsDropdown(List<Group>? groups, GroupBloc bloc) {
     return groups == null || groups.isEmpty
         ? Text('No groups found in the portfolio')
         : Container(
@@ -193,8 +193,8 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                       ),
                       onChanged: (value) {
                         setState(() {
-                          bloc.getGroup(value);
-                          bloc.groupId = value;
+                          bloc.getGroup(value?.toString());
+                          bloc.groupId = value?.toString();
                         });
                       },
                       value: bloc.groupId,
@@ -216,7 +216,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
       child: Row(
         children: <Widget>[
           Container(
-            child: bloc.mrClient.isPortfolioOrSuperAdmin(group.portfolioId)
+            child: bloc.mrClient.isPortfolioOrSuperAdmin(group.portfolioId!)
                 ? FHIconTextButton(
                     iconData: Icons.add,
                     label: 'Add members',
@@ -243,10 +243,8 @@ class MemberWidget extends StatelessWidget {
   final GroupBloc bloc;
 
   const MemberWidget(
-      {Key key, @required this.group, @required this.bloc, this.member})
-      : assert(group != null),
-        assert(bloc != null),
-        super(key: key);
+      {Key? key, required this.group, required this.bloc, required this.member})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -255,17 +253,18 @@ class MemberWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(30, 5, 30, 5),
       decoration: BoxDecoration(
-          color: Theme.of(context).cardColor, border: Border(bottom: bs, left: bs, right: bs)),
+          color: Theme.of(context).cardColor,
+          border: Border(bottom: bs, left: bs, right: bs)),
       child: Row(
         children: <Widget>[
           Expanded(
               child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text('${member.name}'),
+              Text("${member.name ?? ''}"),
             ],
           )),
-          if (bloc.mrClient.isPortfolioOrSuperAdmin(group.portfolioId))
+          if (bloc.mrClient.isPortfolioOrSuperAdmin(group.portfolioId!))
             FHFlatButtonTransparent(
               title: 'Remove from group',
               keepCase: true,
@@ -290,7 +289,7 @@ class AddMembersDialogWidget extends StatefulWidget {
   final GroupBloc bloc;
 
   const AddMembersDialogWidget(
-      {Key key, @required this.bloc, @required this.group})
+      {Key? key, required this.bloc, required this.group})
       : super(key: key);
 
   @override
@@ -383,8 +382,8 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
         final person = p as Person;
         return ListTile(
           key: ObjectKey(p),
-          title: Text(person.name),
-          subtitle: Text(person.email),
+          title: Text(person.name ?? ''),
+          subtitle: Text(person.email ?? ''),
           onTap: () => state.selectSuggestion(p),
         );
       },

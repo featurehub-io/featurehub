@@ -11,6 +11,7 @@ import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.mr.model.ServiceAccountCacheItem;
 import io.featurehub.publish.ChannelConstants;
 import io.featurehub.publish.ChannelNames;
+import io.featurehub.publish.NATSSource;
 import io.nats.client.Connection;
 import io.nats.client.Dispatcher;
 import io.nats.client.MessageHandler;
@@ -23,7 +24,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ServerConfig {
+public class ServerConfig implements NATSSource {
   private static final Logger log = LoggerFactory.getLogger(ServerConfig.class);
   private final InternalCache cache;
 

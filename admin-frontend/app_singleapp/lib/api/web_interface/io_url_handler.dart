@@ -16,7 +16,7 @@ class IOWebInterface extends AbstractWebInterface {
   @override
   void authenticateViaProvider(String redirectUrl) {}
   @override
-  String getStoredAuthToken() {
+  String? getStoredAuthToken() {
     return null;
   }
 

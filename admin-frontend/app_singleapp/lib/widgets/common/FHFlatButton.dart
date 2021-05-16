@@ -6,24 +6,22 @@ class FHFlatButton extends StatelessWidget {
   final bool keepCase;
 
   const FHFlatButton(
-      {Key key,
-      @required this.onPressed,
-      @required this.title,
+      {Key? key,
+      required this.onPressed,
+      required this.title,
       this.keepCase = false})
-      : assert(title != null),
-        super(key: key);
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return TextButton(
-      onPressed: onPressed,
+      onPressed: () => onPressed.call(),
+      style:
+          TextButton.styleFrom(backgroundColor: Theme.of(context).buttonColor),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Text(title,
-            style: TextStyle(color: Colors.white)
-                ),
+        child: Text(title, style: TextStyle(color: Colors.white)),
       ),
-      style: TextButton.styleFrom(backgroundColor: Theme.of(context).buttonColor),
     );
   }
 }

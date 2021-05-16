@@ -26,7 +26,7 @@ class PortfolioListWidget extends StatelessWidget {
 
           return Column(
             children: <Widget>[
-              for (Portfolio p in snapshot.data)
+              for (Portfolio p in snapshot.data!)
                 _PortfolioWidget(
                   portfolio: p,
                   mr: mrBloc,
@@ -44,14 +44,8 @@ class _PortfolioWidget extends StatelessWidget {
   final PortfolioBloc bloc;
 
   const _PortfolioWidget(
-      {Key key,
-      @required this.portfolio,
-      @required this.mr,
-      @required this.bloc})
-      : assert(portfolio != null),
-        assert(mr != null),
-        assert(bloc != null),
-        super(key: key);
+      {Key? key, required this.portfolio, required this.mr, required this.bloc})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +54,8 @@ class _PortfolioWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(30, 5, 30, 5),
       decoration: BoxDecoration(
-          color: Theme.of(context).cardColor, border: Border(bottom: bs, left: bs, right: bs)),
+          color: Theme.of(context).cardColor,
+          border: Border(bottom: bs, left: bs, right: bs)),
       child: Row(
         children: <Widget>[
           Expanded(
@@ -108,10 +103,8 @@ class PortfolioDeleteDialogWidget extends StatelessWidget {
   final PortfolioBloc bloc;
 
   const PortfolioDeleteDialogWidget(
-      {Key key, @required this.portfolio, @required this.bloc})
-      : assert(portfolio != null),
-        assert(bloc != null),
-        super(key: key);
+      {Key? key, required this.portfolio, required this.bloc})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -122,13 +115,13 @@ class PortfolioDeleteDialogWidget extends StatelessWidget {
       thing: "portfolio '${portfolio.name}'",
       deleteSelected: () async {
         try {
-          await bloc.deletePortfolio(portfolio.id, true, true);
+          await bloc.deletePortfolio(portfolio.id!, true, true);
           bloc.triggerSearch('');
           bloc.mrClient
               .addSnackbar(Text("Portfolio '${portfolio.name}' deleted!"));
           return true;
         } catch (e, s) {
-          bloc.mrClient.dialogError(e, s);
+          await bloc.mrClient.dialogError(e, s);
           return false;
         }
       },
@@ -137,11 +130,11 @@ class PortfolioDeleteDialogWidget extends StatelessWidget {
 }
 
 class PortfolioUpdateDialogWidget extends StatefulWidget {
-  final Portfolio portfolio;
+  final Portfolio? portfolio;
   final PortfolioBloc bloc;
 
   const PortfolioUpdateDialogWidget(
-      {Key key, @required this.bloc, this.portfolio})
+      {Key? key, required this.bloc, this.portfolio})
       : super(key: key);
 
   @override
@@ -159,8 +152,8 @@ class _PortfolioUpdateDialogWidgetState
   @override
   Widget build(BuildContext context) {
     if (widget.portfolio != null) {
-      _portfolioName.text = widget.portfolio.name;
-      _portfolioDescription.text = widget.portfolio.description;
+      _portfolioName.text = widget.portfolio!.name;
+      _portfolioDescription.text = widget.portfolio!.description ?? '';
     }
     return Form(
         key: _formKey,
@@ -177,7 +170,7 @@ class _PortfolioUpdateDialogWidgetState
                       controller: _portfolioName,
                       decoration: InputDecoration(labelText: 'Portfolio name'),
                       validator: ((v) {
-                        if (v.isEmpty) {
+                        if (v == null || v.isEmpty) {
                           return 'Please enter a portfolio name';
                         }
                         if (v.length < 4) {
@@ -190,7 +183,7 @@ class _PortfolioUpdateDialogWidgetState
                       decoration:
                           InputDecoration(labelText: 'Portfolio description'),
                       validator: ((v) {
-                        if (v.isEmpty) {
+                        if (v == null || v.isEmpty) {
                           return 'Please enter a portfolio description';
                         }
                         if (v.length < 4) {
@@ -212,7 +205,7 @@ class _PortfolioUpdateDialogWidgetState
               FHFlatButton(
                   title: widget.portfolio == null ? 'Create' : 'Update',
                   onPressed: (() async {
-                    if (_formKey.currentState.validate()) {
+                    if (_formKey.currentState!.validate()) {
                       try {
                         await _callUpdatePortfolio(
                             _portfolioName.text, _portfolioDescription.text);
@@ -228,7 +221,7 @@ class _PortfolioUpdateDialogWidgetState
                                 "Portfolio '${_portfolioName.text}' already exists",
                           );
                         } else {
-                          widget.bloc.mrClient.dialogError(e, s);
+                          await widget.bloc.mrClient.dialogError(e, s);
                         }
                       }
                     }
@@ -237,10 +230,7 @@ class _PortfolioUpdateDialogWidgetState
   }
 
   Future _callUpdatePortfolio(String name, String desc) {
-    Portfolio portfolio;
-    widget.portfolio != null
-        ? portfolio = widget.portfolio
-        : portfolio = Portfolio();
+    final portfolio = widget.portfolio ?? Portfolio(name: '', description: '');
     portfolio.name = name.trim();
     portfolio.description = desc.trim();
     return widget.portfolio == null

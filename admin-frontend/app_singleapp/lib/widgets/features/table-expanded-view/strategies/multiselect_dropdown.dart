@@ -46,32 +46,31 @@ class _MultiSelectDropdownState extends State<MultiSelectDropdown> {
           Wrap(
             spacing: 4.0,
             children: [
-                for (dynamic val in widget.values)
-                  AttributeValueChipWidget(
-                    label: widget.mapper(val),
-                    value: val,
-                    onSelected: (e) {
-                      setState(() {
-                        selectableValues.add(e);
-                        widget.values.remove(e);
-                      });
-                    },
-                  )
-              ],
-            ),
-
-          ],
-        ),
+              for (dynamic val in widget.values)
+                AttributeValueChipWidget(
+                  label: widget.mapper(val),
+                  value: val,
+                  onSelected: (e) {
+                    setState(() {
+                      selectableValues.add(e);
+                      widget.values.remove(e);
+                    });
+                  },
+                )
+            ],
+          ),
+        ],
+      ),
     );
   }
 
-   Widget buildDropDown(BuildContext context) {
+  Widget buildDropDown(BuildContext context) {
     return Container(
       height: 32,
       child: OutlinedButton(
         onPressed: () => {},
         child: DropdownButtonHideUnderline(
-          child: DropdownButton(
+          child: DropdownButton<dynamic>(
             icon: Padding(
               padding: EdgeInsets.only(left: 8.0),
               child: Icon(
@@ -86,8 +85,9 @@ class _MultiSelectDropdownState extends State<MultiSelectDropdown> {
                     child: Text(widget.mapper(e),
                         style: Theme.of(context).textTheme.bodyText2)))
                 .toList(),
-            hint: Text(widget.hint, style: Theme.of(context).textTheme.subtitle2),
-            onChanged: (value) {
+            hint:
+                Text(widget.hint, style: Theme.of(context).textTheme.subtitle2),
+            onChanged: (dynamic? value) {
               var readOnly = false; //TODO parametrise this if needed
               if (!readOnly) {
                 setState(() {

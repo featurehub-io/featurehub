@@ -9,5 +9,5 @@ extension RolloutStrategyExtensions on RolloutStrategy {
       : (double.parse(p) * percentageMultiplier).round();
 
   String get percentageText =>
-      percentage == null ? '' : (percentage / percentageMultiplier).toString();
+      percentage == null ? '' : (percentage! / percentageMultiplier).toString();
 }

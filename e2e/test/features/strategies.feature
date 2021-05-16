@@ -2,10 +2,10 @@ Feature: Strategies work as expected
 
 
   Scenario Outline: A feature is able to store shared rollout strategy percentages
-    Given I ensure a portfolio named "<portfolio>" with description "business application" exists
-    And the first superuser is used for authentication
-    Given I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
-    And I ensure that an environment "<envName>" with description "<envDesc>" exists in the app "<appName>" in the portfolio "<portfolio>"
+    Given the first superuser is used for authentication
+    And I have a randomly named portfolio with the prefix "<portfolio>"
+    And I create an application with the name "<appName>"
+    And I ensure that an environment "<envName>" with description "<envDesc>" exists
     And I ensure that the string feature with the key <featureKey> exists and has the default value <defaultValue>
     And I create shared rollout strategies
       | percentage | name          |
@@ -51,5 +51,5 @@ Feature: Strategies work as expected
 
     Examples:
       | appName      | appDesc           | portfolio               | featureKey          | envName | envDesc    | defaultValue |
-      | StrategyTest | StrategyTest Desc | Strategy Test Portfolio | FEATURE_ON | prod    | production | false       |
+      | StrategyTest | StrategyTest Desc | Strategy Test Portfolio | FEATURE_ONOFF | prod    | production | false       |
 

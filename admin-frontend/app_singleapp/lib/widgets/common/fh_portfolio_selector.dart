@@ -18,7 +18,7 @@ class _PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
     return StreamBuilder<List<Portfolio>>(
         stream: bloc.streamValley.portfolioListStream,
         builder: (context, snapshot) {
-          if (snapshot.hasData && snapshot.data.isNotEmpty) {
+          if (snapshot.hasData && snapshot.data!.isNotEmpty) {
             return StreamBuilder<Portfolio>(
                 stream: bloc.streamValley.currentPortfolioStream,
                 builder: (context, currentPortfolioSnap) {
@@ -48,7 +48,8 @@ class _PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
                                   style: Theme.of(context).textTheme.bodyText1,
                                   isDense: true,
                                   isExpanded: true,
-                                  items: snapshot.data.map((Portfolio portfolio) {
+                                  items:
+                                      snapshot.data!.map((Portfolio portfolio) {
                                     return DropdownMenuItem<String>(
                                         value: portfolio.id,
                                         child: Text(
@@ -62,16 +63,17 @@ class _PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
                                         ));
                                   }).toList(),
                                   hint: Text('Select portfolio',
-                                      style:
-                                          Theme.of(context).textTheme.bodyText2),
-                                  onChanged: (value) {
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyText2),
+                                  onChanged: (String? value) {
                                     setState(() {
                                       bloc.setCurrentPid(value);
                                       bloc.setCurrentAid(null);
                                     });
                                   },
                                   value: currentPortfolioSnap.hasData
-                                      ? currentPortfolioSnap.data.id
+                                      ? currentPortfolioSnap.data!.id
                                       : null,
                                 ),
                               ),

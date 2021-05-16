@@ -13,27 +13,28 @@ class SearchPersonEntry {
 }
 
 class ListUsersBloc implements Bloc {
-  String search;
+  String? search;
   final ManagementRepositoryClientBloc mrClient;
-  PersonServiceApi _personServiceApi;
+  final PersonServiceApi _personServiceApi;
 
   Stream<List<SearchPersonEntry>> get personSearch =>
       _personSearchResultSource.stream;
-  final _personSearchResultSource = BehaviorSubject<List<SearchPersonEntry>>();
+  final _personSearchResultSource =
+      BehaviorSubject<List<SearchPersonEntry>>.seeded([]);
 
-  ListUsersBloc(this.search, this.mrClient) : assert(mrClient != null) {
-    _personServiceApi = PersonServiceApi(mrClient.apiClient);
+  ListUsersBloc(this.search, this.mrClient)
+      : _personServiceApi = PersonServiceApi(mrClient.apiClient) {
     triggerSearch(search);
   }
 
-  void triggerSearch(String s) async {
+  void triggerSearch(String? s) async {
     // this should also change the url
 
     // debounce the search (i.e. if they are still typing, wait)
     final newSearch = s;
     search = s;
 
-    await Timer(Duration(milliseconds: 300), () {
+    Timer(Duration(milliseconds: 300), () {
       if (newSearch == search) {
         // hasn't changed
         _requestSearch(); // don't need to await it, async is fine
@@ -48,14 +49,14 @@ class ListUsersBloc implements Bloc {
 
   // this really runs the search after we have debounced it
   void _requestSearch() async {
-    if (search != null && search.length > 1) {
+    if (search != null && search!.length > 1) {
       // wait for global error handling to wrap this in try/catch
       var data = await _personServiceApi.findPeople(
           order: SortOrder.ASC, filter: search, includeGroups: true);
 
       // publish it out...
       _transformPeople(data);
-    } else if (search == null || search.isEmpty) {
+    } else if (search == null || search!.isEmpty) {
       // this should paginate one presumes
       var data = await _personServiceApi.findPeople(
           order: SortOrder.ASC, includeGroups: true);
@@ -67,14 +68,14 @@ class ListUsersBloc implements Bloc {
     final results = <SearchPersonEntry>[];
 
     final hasLocal = mrClient.identityProviders.hasLocal;
-    final emptyReg = OutstandingRegistration()..expired = false;
+    final emptyReg = OutstandingRegistration(expired: false, id: '', token: '');
 
     data.people.forEach((person) {
       final spr = SearchPersonEntry(
           person,
           hasLocal
               ? data.outstandingRegistrations.firstWhere(
-                  (element) => element.id == person.id.id,
+                  (element) => element.id == person.id!.id,
                   orElse: () => emptyReg)
               : emptyReg);
 

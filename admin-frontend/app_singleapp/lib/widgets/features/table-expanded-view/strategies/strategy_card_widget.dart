@@ -8,15 +8,15 @@ import 'package:mrapi/api.dart';
 class StrategyCardWidget extends StatelessWidget {
   final bool editable;
   final Widget editableHolderWidget;
-  final RolloutStrategy rolloutStrategy;
+  final RolloutStrategy? rolloutStrategy;
   final CustomStrategyBloc strBloc;
 
   const StrategyCardWidget(
-      {Key key,
-      @required this.editable,
-      @required this.editableHolderWidget,
-      @required this.rolloutStrategy,
-      @required this.strBloc})
+      {Key? key,
+      required this.editable,
+      required this.editableHolderWidget,
+      this.rolloutStrategy,
+      required this.strBloc})
       : super(key: key);
 
   @override
@@ -25,7 +25,9 @@ class StrategyCardWidget extends StatelessWidget {
     return SizedBox(
       height: 50,
       child: Card(
-        color: rolloutStrategy == null ? (light ? defaultValueColor : defaultValueColorDark) : (light ? strategyValueColor : strategyValueColorDark),
+        color: rolloutStrategy == null
+            ? (light ? defaultValueColor : defaultValueColorDark)
+            : (light ? strategyValueColor : strategyValueColorDark),
         child: Padding(
           padding: const EdgeInsets.only(left: 8.0, right: 2.0),
           child: Row(
@@ -39,11 +41,11 @@ class StrategyCardWidget extends StatelessWidget {
                         ? Text('default',
                             style: Theme.of(context)
                                 .textTheme
-                                .caption
+                                .caption!
                                 .copyWith(color: defaultTextColor))
                         : EditValueStrategyLinkButton(
                             editable: editable,
-                            rolloutStrategy: rolloutStrategy,
+                            rolloutStrategy: rolloutStrategy!,
                             fvBloc: strBloc.fvBloc,
                             strBloc: strBloc,
                           )),
@@ -53,7 +55,7 @@ class StrategyCardWidget extends StatelessWidget {
                   child: rolloutStrategy != null
                       ? DeleteStrategyIconButton(
                           editable: editable,
-                          rolloutStrategy: rolloutStrategy,
+                          rolloutStrategy: rolloutStrategy!,
                           strBloc: strBloc,
                         )
                       : SizedBox.shrink(),

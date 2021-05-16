@@ -10,12 +10,12 @@ import 'package:openapi_dart_common/openapi.dart';
 import 'per_application_features_bloc.dart';
 
 class CreateFeatureDialogWidget extends StatefulWidget {
-  final Feature feature;
+  final Feature? feature;
   final PerApplicationFeaturesBloc bloc;
 
   const CreateFeatureDialogWidget({
-    Key key,
-    @required this.bloc,
+    Key? key,
+    required this.bloc,
     this.feature,
   }) : super(key: key);
 
@@ -34,17 +34,17 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
 
   bool isUpdate = false;
   bool isError = false;
-  FeatureValueType _dropDownFeatureTypeValue;
+  FeatureValueType? _dropDownFeatureTypeValue;
 
   @override
   void initState() {
     super.initState();
     if (widget.feature != null) {
-      _featureName.text = widget.feature.name;
-      _featureKey.text = widget.feature.key;
-      _featureAlias.text = widget.feature.alias;
-      _featureLink.text = widget.feature.link;
-      _dropDownFeatureTypeValue = widget.feature.valueType;
+      _featureName.text = widget.feature!.name;
+      _featureKey.text = widget.feature!.key ?? '';
+      _featureAlias.text = widget.feature!.alias ?? '';
+      _featureLink.text = widget.feature!.link ?? '';
+      _dropDownFeatureTypeValue = widget.feature!.valueType!;
       isUpdate = true;
     }
   }
@@ -72,7 +72,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                   autofocus: true,
                   onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
                   validator: ((v) {
-                    if (v.isEmpty) {
+                    if (v == null || v.isEmpty) {
                       return 'Please enter feature name';
                     }
                     if (v.length < 4) {
@@ -89,7 +89,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                       hintStyle: Theme.of(context).textTheme.caption),
                   onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
                   validator: ((v) {
-                    if (v.isEmpty) {
+                    if (v == null || v.isEmpty) {
                       return 'Please enter feature key';
                     }
                     if (!validateFeatureKey(v)) {
@@ -147,10 +147,11 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                       }).toList(),
                       hint: Text('Select feature type',
                           style: Theme.of(context).textTheme.subtitle2),
-                      onChanged: (value) {
+                      onChanged: (Object? value) {
                         if (!isReadOnly) {
                           setState(() {
-                            _dropDownFeatureTypeValue = value;
+                            _dropDownFeatureTypeValue =
+                                value as FeatureValueType?;
                           });
                         }
                       },
@@ -164,7 +165,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                   'Select feature type',
                   style: Theme.of(context)
                       .textTheme
-                      .bodyText2
+                      .bodyText2!
                       .copyWith(color: Theme.of(context).errorColor),
                 )),
             ],
@@ -183,11 +184,11 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                 title: isUpdate ? 'Update' : 'Create',
                 keepCase: true,
                 onPressed: (() async {
-                  if (_formKey.currentState.validate()) {
+                  if (_formKey.currentState!.validate()) {
                     try {
                       if (isUpdate) {
                         await widget.bloc.updateFeature(
-                            widget.feature,
+                            widget.feature!,
                             _featureName.text,
                             _featureKey.text,
                             _featureAlias.text,
@@ -200,7 +201,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                           await widget.bloc.createFeature(
                               _featureName.text,
                               _featureKey.text,
-                              _dropDownFeatureTypeValue,
+                              _dropDownFeatureTypeValue!,
                               _featureAlias.text,
                               _featureLink.text);
                           widget.bloc.mrClient.removeOverlay();
@@ -218,7 +219,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                             messageTitle:
                                 "Feature with key '${_featureKey.text}' already exists");
                       } else {
-                        widget.bloc.mrClient.dialogError(e, s);
+                        await widget.bloc.mrClient.dialogError(e, s);
                       }
                     }
                   }
@@ -239,7 +240,5 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
       case FeatureValueType.JSON:
         return 'Configuration (JSON)';
     }
-
-    return '';
   }
 }

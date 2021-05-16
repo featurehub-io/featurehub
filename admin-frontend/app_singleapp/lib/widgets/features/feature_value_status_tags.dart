@@ -19,7 +19,7 @@ String _getFeatureValue(FeatureValue fv) {
 
 extension FeatureValueSet on FeatureValue {
   bool isSet(Feature feature) {
-    switch (feature.valueType) {
+    switch (feature.valueType!) {
       case FeatureValueType.STRING:
         return valueString != null;
       case FeatureValueType.NUMBER:
@@ -29,8 +29,6 @@ extension FeatureValueSet on FeatureValue {
       case FeatureValueType.JSON:
         return valueJson != null;
     }
-
-    return false;
   }
 }
 
@@ -55,7 +53,7 @@ Widget activeTag(Feature feature, FeatureValue fv, TextStyle textStyle) {
       style: textStyle);
 }
 
-Widget noAccessTag(TextStyle textStyle) {
+Widget noAccessTag(TextStyle? textStyle) {
   return FHTagWidget(
       text: 'NO ACCESS', state: TagStatus.disabled, style: textStyle);
 }

@@ -1,4 +1,4 @@
-import 'package:app_singleapp/superuser_common.dart';
+import 'package:e2e_tests/superuser_common.dart';
 import 'package:mrapi/api.dart';
 import 'package:ogurets/ogurets.dart';
 
@@ -19,6 +19,4 @@ class SystemStepdefs {
     Person person = await common.personService.getPerson('self');
     assert(person.email == common.initUser);
   }
-
-
 }

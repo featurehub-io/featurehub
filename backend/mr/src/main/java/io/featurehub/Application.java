@@ -1,12 +1,18 @@
 package io.featurehub;
 
 import cd.connect.jersey.JerseyHttp2Server;
+import cd.connect.jersey.common.HealthResource;
 import cd.connect.jersey.common.InfrastructureConfiguration;
+import cd.connect.jersey.common.JerseyPrometheusResource;
 import cd.connect.jersey.common.LoggingConfiguration;
 import cd.connect.jersey.common.TracingConfiguration;
+import cd.connect.jersey.prometheus.PrometheusDynamicFeature;
 import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
+import cd.connect.openapi.support.ReturnStatusContainerResponseFilter;
+import io.featurehub.health.HealthFeature;
 import io.featurehub.jersey.config.CommonConfiguration;
+import io.featurehub.jersey.config.EndpointLoggingListener;
 import io.featurehub.mr.ManagementRepositoryFeature;
 import io.featurehub.mr.resources.oauth2.OAuth2Feature;
 import io.featurehub.mr.utils.NginxUtils;
@@ -42,9 +48,12 @@ public class Application {
       ClientTracingFeature.class,
       CommonConfiguration.class,
       LoggingConfiguration.class,
-      TracingConfiguration.class,
-      InfrastructureConfiguration.class)
+      ReturnStatusContainerResponseFilter.class,
+      TracingConfiguration.class
+      )
+      .register(EndpointLoggingListener.class)
       .register(ManagementRepositoryFeature.class)
+      .register(HealthFeature.class)
       .register(OAuth2Feature.class);
 
     new JerseyHttp2Server().start(config);

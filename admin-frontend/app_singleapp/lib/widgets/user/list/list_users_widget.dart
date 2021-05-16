@@ -1,5 +1,4 @@
 import 'package:app_singleapp/api/client_api.dart';
-import 'package:app_singleapp/api/router.dart';
 import 'package:app_singleapp/utils/utils.dart';
 import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
 import 'package:app_singleapp/widgets/common/copy_to_clipboard_html.dart';
@@ -52,24 +51,24 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                     DataColumn(
                         label: Text('Name'),
                         onSort: (columnIndex, ascending) {
-                          onSortColumn(snapshot.data, columnIndex, ascending);
+                          onSortColumn(snapshot.data!, columnIndex, ascending);
                         }),
                     DataColumn(
                       label: Text('Email'),
                       onSort: (columnIndex, ascending) {
-                        onSortColumn(snapshot.data, columnIndex, ascending);
+                        onSortColumn(snapshot.data!, columnIndex, ascending);
                       },
                     ),
                     DataColumn(
                       label: Text('Groups'),
                       onSort: (columnIndex, ascending) {
-                        onSortColumn(snapshot.data, columnIndex, ascending);
+                        onSortColumn(snapshot.data!, columnIndex, ascending);
                       },
                     ),
                     DataColumn(label: Text(''), onSort: (i, a) => {}),
                   ],
                   rows: [
-                    for (SearchPersonEntry p in snapshot.data)
+                    for (SearchPersonEntry p in snapshot.data!)
                       DataRow(
                         cells: [
                           DataCell(p.person.name == null
@@ -95,9 +94,8 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                                       ManagementRepositoryClientBloc.router
                                           .navigateTo(context, '/manage-user',
                                               params: {
-                                                'id': [p.person.id.id]
-                                              },
-                                              transition: TransitionType.fadeIn)
+                                            'id': [p.person.id!.id]
+                                          })
                                     }),
                             SizedBox(
                               width: 20.0,
@@ -106,8 +104,8 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                               icon: Icon(Icons.delete),
                               onPressed: () => bloc.mrClient
                                   .addOverlay((BuildContext context) {
-                                return bloc.mrClient.person.id.id ==
-                                        p.person.id.id
+                                return bloc.mrClient.person.id!.id ==
+                                        p.person.id!.id
                                     ? CantDeleteDialog(bloc)
                                     : DeleteDialogWidget(
                                         person: p.person,
@@ -133,14 +131,14 @@ class _PersonListWidgetState extends State<PersonListWidget> {
         if (ascending) {
           people.sort((a, b) {
             if (a.person.name != null && b.person.name != null) {
-              return a.person.name.compareTo(b.person.name);
+              return a.person.name!.compareTo(b.person.name!);
             }
             return ascending ? 1 : -1;
           });
         } else {
           people.sort((a, b) {
             if (a.person.name != null && b.person.name != null) {
-              return b.person.name.compareTo(a.person.name);
+              return b.person.name!.compareTo(a.person.name!);
             }
             return ascending ? -1 : 1;
           });
@@ -148,9 +146,9 @@ class _PersonListWidgetState extends State<PersonListWidget> {
       }
       if (columnIndex == 1) {
         if (ascending) {
-          people.sort((a, b) => a.person.email.compareTo(b.person.email));
+          people.sort((a, b) => a.person.email!.compareTo(b.person.email!));
         } else {
-          people.sort((a, b) => b.person.email.compareTo(a.person.email));
+          people.sort((a, b) => b.person.email!.compareTo(a.person.email!));
         }
       }
       if (columnIndex == 2) {
@@ -187,7 +185,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
   }
 
   Color _infoColour(SearchPersonEntry entry, bool allowedLocalLogin) {
-    if (entry.registration.token == null || !allowedLocalLogin) {
+    if (!allowedLocalLogin) {
       return Theme.of(context).buttonColor;
     }
 
@@ -230,7 +228,7 @@ class _ListUserInfo extends StatelessWidget {
   final ListUsersBloc bloc;
   final SearchPersonEntry entry;
 
-  const _ListUserInfo({Key key, @required this.bloc, @required this.entry})
+  const _ListUserInfo({Key? key, required this.bloc, required this.entry})
       : super(key: key);
 
   @override
@@ -244,18 +242,16 @@ class _ListUserInfo extends StatelessWidget {
         children: [
           _ListUserRow(
             title: 'Name',
-            child: Text(entry.person.name,
+            child: Text(entry.person.name!,
                 style: Theme.of(context).textTheme.bodyText1),
           ),
           SizedBox(height: 8),
           _ListUserRow(
             title: 'Email',
-            child: Text(entry.person.email,
+            child: Text(entry.person.email!,
                 style: Theme.of(context).textTheme.bodyText1),
           ),
-          if (allowedLocalIdentity &&
-              entry.registration.token != null &&
-              !entry.registration.expired)
+          if (allowedLocalIdentity && !entry.registration.expired)
             Column(
               children: [
                 SizedBox(height: 16),
@@ -270,9 +266,7 @@ class _ListUserInfo extends StatelessWidget {
                 ),
               ],
             ),
-          if (allowedLocalIdentity &&
-              entry.registration.token != null &&
-              !entry.registration.expired)
+          if (allowedLocalIdentity && !entry.registration.expired)
             Row(
               children: [
                 Expanded(
@@ -287,9 +281,7 @@ class _ListUserInfo extends StatelessWidget {
                 )
               ],
             ),
-          if (allowedLocalIdentity &&
-              entry.registration.token != null &&
-              entry.registration.expired)
+          if (allowedLocalIdentity && entry.registration.expired)
             Padding(
               padding: const EdgeInsets.only(top: 12.0, bottom: 4.0),
               child: Text(
@@ -297,23 +289,16 @@ class _ListUserInfo extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
-          if (allowedLocalIdentity &&
-              entry.registration.token != null &&
-              entry.registration.expired)
+          if (allowedLocalIdentity && entry.registration.expired)
             FHCopyToClipboardFlatButton(
               caption: 'Renew registration and copy to clipboard',
               textProvider: () async {
                 try {
                   final token = await bloc.mrClient.authServiceApi
-                      .resetExpiredToken(entry.person.email);
-                  if (token.registrationUrl == null) {
-                    bloc.mrClient
-                        .addSnackbar(Text('Unable to renew registration'));
-                  } else {
-                    bloc.mrClient.addSnackbar(
-                        Text('Registration renewed and copyied to clipboard'));
-                    return bloc.mrClient.registrationUrl(token.registrationUrl);
-                  }
+                      .resetExpiredToken(entry.person.email!);
+                  bloc.mrClient.addSnackbar(
+                      Text('Registration renewed and copyied to clipboard'));
+                  return bloc.mrClient.registrationUrl(token.registrationUrl);
                 } catch (e, s) {
                   bloc.mrClient.addError(FHError.createError(e, s));
                 }
@@ -333,10 +318,7 @@ class _ListUserInfo extends StatelessWidget {
                   flex: 1,
                   child: Text(
                     'Groups',
-                    style: Theme
-                        .of(context)
-                        .textTheme
-                        .caption,
+                    style: Theme.of(context).textTheme.caption,
                   ),
                 ),
                 Expanded(
@@ -346,14 +328,11 @@ class _ListUserInfo extends StatelessWidget {
                         children: [
                           if (entry.person.groups.isNotEmpty)
                             ...entry.person.groups
-                                .map((e) =>
-                                Text(
-                                  e.name,
-                                  style: Theme
-                                      .of(context)
-                                      .textTheme
-                                      .bodyText2,
-                                ))
+                                .map((e) => Text(
+                                      e.name,
+                                      style:
+                                          Theme.of(context).textTheme.bodyText2,
+                                    ))
                                 .toList(),
                         ]))
               ],
@@ -368,7 +347,8 @@ class _ListUserRow extends StatelessWidget {
   final String title;
   final Widget child;
 
-  const _ListUserRow({Key key, this.title, this.child}) : super(key: key);
+  const _ListUserRow({Key? key, required this.title, required this.child})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -378,10 +358,7 @@ class _ListUserRow extends StatelessWidget {
           flex: 1,
           child: Text(
             title,
-            style: Theme
-                .of(context)
-                .textTheme
-                .caption,
+            style: Theme.of(context).textTheme.caption,
           ),
         ),
         Expanded(flex: 5, child: child)
@@ -394,11 +371,8 @@ class DeleteDialogWidget extends StatelessWidget {
   final Person person;
   final ListUsersBloc bloc;
 
-  const DeleteDialogWidget(
-      {Key key, @required this.person, @required this.bloc})
-      : assert(person != null),
-        assert(bloc != null),
-        super(key: key);
+  const DeleteDialogWidget({Key? key, required this.person, required this.bloc})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -409,12 +383,12 @@ class DeleteDialogWidget extends StatelessWidget {
       bloc: bloc.mrClient,
       deleteSelected: () async {
         try {
-          await bloc.deletePerson(person.id.id, true);
+          await bloc.deletePerson(person.id!.id, true);
           bloc.triggerSearch('');
           bloc.mrClient.addSnackbar(Text("User '${person.name}' deleted!"));
           return true;
         } catch (e, s) {
-          bloc.mrClient.dialogError(e, s);
+          await bloc.mrClient.dialogError(e, s);
           return false;
         }
       },

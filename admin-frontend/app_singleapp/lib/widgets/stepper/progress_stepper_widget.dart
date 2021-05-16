@@ -1,5 +1,4 @@
 import 'package:app_singleapp/api/client_api.dart';
-import 'package:app_singleapp/api/router.dart';
 import 'package:app_singleapp/widgets/common/decorations/fh_page_divider.dart';
 import 'package:app_singleapp/widgets/common/fh_circle_icon_button.dart';
 import 'package:app_singleapp/widgets/stepper/FHStepper.dart';
@@ -32,9 +31,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
         children: [
           Text(
             'Application setup progress',
-            style: Theme.of(context)
-                .textTheme
-                .subtitle1,
+            style: Theme.of(context).textTheme.subtitle1,
           ),
           CircleIconButton(
               icon: Icon(
@@ -66,24 +63,28 @@ class _StepperState extends State<FHSetupProgressStepper> {
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
                           return CustomStepper(
-                            physics: ClampingScrollPhysics(),
+                              physics: ClampingScrollPhysics(),
                               steps: [
                                 CustomStep(
                                     title: Text('Create application'),
-                                    state: snapshot.data.application == true
+                                    state: snapshot.data!.application == true
                                         ? CustomStepState.complete
                                         : CustomStepState.indexed,
                                     content: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: <Widget>[
                                         ApplicationDropDown(bloc),
                                         FHFlatButtonTransparent(
                                           title: 'Create application',
                                           keepCase: true,
                                           onPressed: () => {
-                                            ManagementRepositoryClientBloc.router
-                                                .navigateTo(context, '/applications',
-                                                transition: TransitionType.material)
+                                            ManagementRepositoryClientBloc
+                                                .router
+                                                .navigateTo(
+                                              context,
+                                              '/applications',
+                                            )
                                           },
                                         ),
                                       ],
@@ -91,11 +92,12 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                 CustomStep(
                                     title: Text('Create team group'),
 //                            isActive: _index == 1,
-                                    state: snapshot.data.group == true
+                                    state: snapshot.data!.group == true
                                         ? CustomStepState.complete
                                         : CustomStepState.indexed,
                                     content: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: <Widget>[
                                         Text(
                                           'Although groups are portofolio-wide, we recommend creating application specific groups eg “MyApp developers”',
@@ -105,20 +107,24 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                           title: 'Create group',
                                           keepCase: true,
                                           onPressed: () => {
-                                            ManagementRepositoryClientBloc.router
-                                                .navigateTo(context, '/manage-group',
-                                                transition: TransitionType.material)
+                                            ManagementRepositoryClientBloc
+                                                .router
+                                                .navigateTo(
+                                              context,
+                                              '/manage-group',
+                                            )
                                           },
                                         ),
                                       ],
                                     )),
                                 CustomStep(
                                     title: Text('Create service account'),
-                                    state: snapshot.data.serviceAccount == true
+                                    state: snapshot.data!.serviceAccount == true
                                         ? CustomStepState.complete
                                         : CustomStepState.indexed,
                                     content: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: <Widget>[
                                         Text(
                                           'Service accounts are portfolio-wide, we recommend creating service accounts specific to an application, e.g. “SA-MyApp”',
@@ -128,23 +134,26 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                           title: 'Create service account',
                                           keepCase: true,
                                           onPressed: () => {
-                                            ManagementRepositoryClientBloc.router
+                                            ManagementRepositoryClientBloc
+                                                .router
                                                 .navigateTo(
-                                                context, '/manage-service-accounts',
-                                                transition: TransitionType.material)
+                                              context,
+                                              '/manage-service-accounts',
+                                            )
                                           },
                                         ),
                                       ],
                                     )),
                                 CustomStep(
                                     title: Text('Create environment'),
-                                    state: snapshot.data.application
-                                        ? (snapshot.data.environment == true
-                                        ? CustomStepState.complete
-                                        : CustomStepState.indexed)
+                                    state: snapshot.data!.application
+                                        ? (snapshot.data!.environment == true
+                                            ? CustomStepState.complete
+                                            : CustomStepState.indexed)
                                         : CustomStepState.disabled,
                                     content: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: <Widget>[
                                         Text(
                                           'Create an environment for selected application, e.g. "test", "dev", "prod"',
@@ -154,26 +163,31 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                           title: 'Create environment',
                                           keepCase: true,
                                           onPressed: () => {
-                                            ManagementRepositoryClientBloc.router
-                                                .navigateTo(context, '/manage-app',
-                                                params: {
-                                                  'id': [bloc.applicationId],
-                                                  'tab-name': ['environments']
-                                                },
-                                                transition: TransitionType.material)
+                                            ManagementRepositoryClientBloc
+                                                .router
+                                                .navigateTo(
+                                              context,
+                                              '/manage-app',
+                                              params: {
+                                                'id': [bloc.applicationId!],
+                                                'tab-name': ['environments']
+                                              },
+                                            )
                                           },
                                         ),
                                       ],
                                     )),
                                 CustomStep(
                                     title: Text('Give access to groups'),
-                                    state: snapshot.data.environment
-                                        ? (snapshot.data.groupPermission == true
-                                        ? CustomStepState.complete
-                                        : CustomStepState.indexed)
+                                    state: snapshot.data!.environment
+                                        ? (snapshot.data!.groupPermission ==
+                                                true
+                                            ? CustomStepState.complete
+                                            : CustomStepState.indexed)
                                         : CustomStepState.disabled,
                                     content: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: <Widget>[
                                         Text(
                                           'Assign an application environment level permissions to a group of users',
@@ -183,56 +197,70 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                           title: 'Set permissions',
                                           keepCase: true,
                                           onPressed: () => {
-                                            ManagementRepositoryClientBloc.router
-                                                .navigateTo(context, '/manage-app',
-                                                params: {
-                                                  'id': [bloc.applicationId],
-                                                  'tab-name': ['group-permissions']
-                                                },
-                                                transition: TransitionType.material)
+                                            ManagementRepositoryClientBloc
+                                                .router
+                                                .navigateTo(
+                                              context,
+                                              '/manage-app',
+                                              params: {
+                                                'id': [bloc.applicationId!],
+                                                'tab-name': [
+                                                  'group-permissions'
+                                                ]
+                                              },
+                                            )
                                           },
                                         ),
                                       ],
                                     )),
                                 CustomStep(
-                                    title: Text(' Give access to service\n account'),
-                                    state: snapshot.data.environment &&
-                                        snapshot.data.serviceAccount
-                                        ? (snapshot.data.serviceAccountPermission ==
-                                        true
-                                        ? CustomStepState.complete
-                                        : CustomStepState.indexed)
+                                    title: Text(
+                                        ' Give access to service\n account'),
+                                    state: snapshot.data!.environment &&
+                                            snapshot.data!.serviceAccount
+                                        ? (snapshot.data!
+                                                    .serviceAccountPermission ==
+                                                true
+                                            ? CustomStepState.complete
+                                            : CustomStepState.indexed)
                                         : CustomStepState.disabled,
                                     content: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: <Widget>[
                                         Text(
                                           'Assign an application environment level permissions to a service account',
                                           style: captionStyle,
                                         ),
                                         FHFlatButtonTransparent(
-                                          title: 'Set service account permissions',
+                                          title:
+                                              'Set service account permissions',
                                           keepCase: true,
                                           onPressed: () => {
-                                            ManagementRepositoryClientBloc.router
-                                                .navigateTo(context, '/manage-app',
-                                                params: {
-                                                  'id': [bloc.applicationId],
-                                                  'tab-name': ['service-accounts']
-                                                },
-                                                transition: TransitionType.material)
+                                            ManagementRepositoryClientBloc
+                                                .router
+                                                .navigateTo(
+                                              context,
+                                              '/manage-app',
+                                              params: {
+                                                'id': [bloc.applicationId!],
+                                                'tab-name': ['service-accounts']
+                                              },
+                                            )
                                           },
                                         ),
                                       ],
                                     )),
                                 CustomStep(
                                     title: Text('Create a feature'),
-                                    state: snapshot.data.application
-                                        ? (snapshot.data.feature == true
-                                        ? CustomStepState.complete
-                                        : CustomStepState.indexed)
+                                    state: snapshot.data!.application
+                                        ? (snapshot.data!.feature == true
+                                            ? CustomStepState.complete
+                                            : CustomStepState.indexed)
                                         : CustomStepState.disabled,
                                     content: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: <Widget>[
                                         Text(
                                           'Create a feature for an application',
@@ -242,18 +270,20 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                           title: 'Create feature',
                                           keepCase: true,
                                           onPressed: () => {
-                                            ManagementRepositoryClientBloc.router
-                                                .navigateTo(context, '/feature-status',
-                                                transition: TransitionType.material)
+                                            ManagementRepositoryClientBloc
+                                                .router
+                                                .navigateTo(
+                                              context,
+                                              '/feature-status',
+                                            )
                                           },
                                         ),
                                       ],
-                                      crossAxisAlignment: CrossAxisAlignment.start,
                                     )),
                               ],
                               controlsBuilder: (BuildContext context,
-                                  {VoidCallback onStepContinue,
-                                    VoidCallback onStepCancel}) =>
+                                      {VoidCallback? onStepContinue,
+                                      VoidCallback? onStepCancel}) =>
                                   Container(),
                               currentStep: _index,
                               onStepTapped: (index) {
@@ -276,7 +306,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
     return StreamBuilder<List<Application>>(
         stream: bloc.appsList,
         builder: (context, snapshot) {
-          if (snapshot.hasData && snapshot.data.isNotEmpty) {
+          if (snapshot.hasData && snapshot.data!.isNotEmpty) {
             return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -286,7 +316,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                           style: Theme.of(context).textTheme.caption)),
                   Container(
                       constraints: BoxConstraints(maxWidth: 200),
-                      child: applicationsDropdown(snapshot.data, bloc))
+                      child: applicationsDropdown(snapshot.data!, bloc))
                 ]);
           }
           return Container();
@@ -315,7 +345,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
         }).toList(),
         hint: Text('Select application',
             style: Theme.of(context).textTheme.subtitle2),
-        onChanged: (value) {
+        onChanged: (String? value) {
           setState(() {
             bloc.mrClient.setCurrentAid(value);
           });

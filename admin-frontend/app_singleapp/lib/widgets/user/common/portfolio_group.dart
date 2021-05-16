@@ -1,7 +1,7 @@
 import 'package:mrapi/api.dart';
 
 class PortfolioGroup {
-  Portfolio portfolio;
+  Portfolio? portfolio;
   Group group;
 
   PortfolioGroup(this.portfolio, this.group);
@@ -19,6 +19,6 @@ class PortfolioGroup {
 
   @override
   String toString() {
-    return 'portfolioGroup: (portfolio: ${portfolio?.toString()}, group: ${group?.toString()}';
+    return 'portfolioGroup: (portfolio: ${portfolio?.toString()}, group: ${group.toString()}';
   }
 }

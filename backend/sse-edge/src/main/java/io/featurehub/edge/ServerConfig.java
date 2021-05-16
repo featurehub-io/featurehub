@@ -16,12 +16,14 @@ import io.featurehub.mr.model.EdgeInitResponse;
 import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.publish.ChannelConstants;
 import io.featurehub.publish.ChannelNames;
+import io.featurehub.publish.NATSSource;
 import io.featurehub.sse.model.Environment;
 import io.nats.client.Connection;
 import io.nats.client.Dispatcher;
 import io.nats.client.Message;
 import io.nats.client.Nats;
 import io.nats.client.Options;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +79,7 @@ class NamedCacheListener {
   }
 }
 
-public class ServerConfig implements ServerController {
+public class ServerConfig implements ServerController, NATSSource {
   private static final Logger log = LoggerFactory.getLogger(ServerConfig.class);
   @ConfigKey("nats.urls")
   public String natsServer = "nats://localhost:4222";
@@ -87,6 +89,8 @@ public class ServerConfig implements ServerController {
   Integer updatePoolSize = 10;
   @ConfigKey("listen.pool-size")
   Integer listenPoolSize = 10;
+  @ConfigKey("edge.dacha.response-timeout")
+  Integer namedCacheTimeout = 2000; // milliseconds to wait for dacha to responsd
   private Connection connection;
   // environmentId, list of connections for that environment
   private Map<String, Collection<ClientConnection>> clientBuckets = new ConcurrentHashMap<>();
@@ -218,7 +222,7 @@ public class ServerConfig implements ServerController {
 
           listenForFeatureUpdates(client.getNamedCache());
 
-          Message response = connection.request(subject, CacheJsonMapper.mapper.writeValueAsBytes(request), Duration.ofMillis(2000));
+          Message response = connection.request(subject, CacheJsonMapper.mapper.writeValueAsBytes(request), Duration.ofMillis(namedCacheTimeout));
 
           if (response != null) {
             EdgeInitResponse edgeResponse = CacheJsonMapper.mapper.readValue(response.getData(), EdgeInitResponse.class);
@@ -242,7 +246,7 @@ public class ServerConfig implements ServerController {
     try {
       Message response = connection.request(subject,
         CacheJsonMapper.mapper.writeValueAsBytes(new EdgeInitRequest().command(EdgeInitRequestCommand.PERMISSION).apiKey(apiKey).environmentId(environmentId).featureKey(featureKey)),
-        Duration.ofMillis(2000)
+        Duration.ofMillis(namedCacheTimeout)
       );
 
       if (response != null) {
@@ -286,7 +290,7 @@ public class ServerConfig implements ServerController {
       String subject = namedCache + "/" + ChannelConstants.EDGE_CACHE_CHANNEL;
 
       Message response = connection.request(subject, CacheJsonMapper.mapper.writeValueAsBytes(request),
-        Duration.ofMillis(2000));
+        Duration.ofMillis(namedCacheTimeout));
 
       if (response != null) {
         EdgeInitResponse edgeResponse = CacheJsonMapper.mapper.readValue(response.getData(),
@@ -328,5 +332,11 @@ public class ServerConfig implements ServerController {
     }
 
     return new ArrayList<>();
+  }
+
+  @NotNull
+  @Override
+  public Connection getConnection() {
+    return connection;
   }
 }

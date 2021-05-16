@@ -5,17 +5,19 @@ import 'package:rxdart/rxdart.dart';
 
 class FeaturesLatestBloc implements Bloc {
   final ManagementRepositoryClientBloc mrClient;
-  List<Portfolio> portfolios;
+  List<Portfolio> portfolios = [];
 
-  EnvironmentFeatureServiceApi _environmentFeatureServiceApi;
-  PortfolioServiceApi _portfolioServiceApi;
+  final EnvironmentFeatureServiceApi _environmentFeatureServiceApi;
+  final PortfolioServiceApi _portfolioServiceApi;
 
   final _featuresListBS = BehaviorSubject<EnvironmentFeaturesResult>();
-  Stream<EnvironmentFeaturesResult> get featuresListStream => _featuresListBS.stream;
+  Stream<EnvironmentFeaturesResult> get featuresListStream =>
+      _featuresListBS.stream;
 
-  FeaturesLatestBloc(this.mrClient) : assert(mrClient != null) {
-    _environmentFeatureServiceApi = EnvironmentFeatureServiceApi(mrClient.apiClient);
-    _portfolioServiceApi = PortfolioServiceApi(mrClient.apiClient);
+  FeaturesLatestBloc(this.mrClient)
+      : _environmentFeatureServiceApi =
+            EnvironmentFeatureServiceApi(mrClient.apiClient),
+        _portfolioServiceApi = PortfolioServiceApi(mrClient.apiClient) {
     initialise();
   }
 
@@ -24,16 +26,22 @@ class FeaturesLatestBloc implements Bloc {
     _featuresListBS.close();
   }
 
-  void initialise() async{
+  void initialise() async {
     await _findPortfolios();
     await _getLatestFeatures();
   }
 
   Future<void> _getLatestFeatures() async {
-   _featuresListBS.add(await _environmentFeatureServiceApi.getFeaturesForEnvironment('latest').catchError(mrClient.dialogError));
+    _featuresListBS.add(await _environmentFeatureServiceApi
+        .getFeaturesForEnvironment('latest')
+        .catchError((e, s) {
+      mrClient.dialogError(e, s);
+    }));
   }
 
   Future<void> _findPortfolios() async {
-    portfolios = await _portfolioServiceApi.findPortfolios().catchError(mrClient.dialogError);
+    portfolios = await _portfolioServiceApi.findPortfolios().catchError((e, s) {
+      mrClient.dialogError(e, s);
+    });
   }
 }

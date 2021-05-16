@@ -3,6 +3,7 @@ package io.featurehub.mr.resources.oauth2;
 import cd.connect.app.config.ConfigKey;
 import cd.connect.app.config.DeclaredConfigResolver;
 import io.featurehub.mr.resources.auth.AuthProvider;
+import io.featurehub.mr.resources.oauth2.providers.AzureProvider;
 import io.featurehub.mr.resources.oauth2.providers.GoogleProvider;
 import io.featurehub.mr.resources.oauth2.providers.OAuth2Provider;
 import io.featurehub.mr.resources.oauth2.providers.OAuth2ProviderDiscovery;
@@ -33,6 +34,9 @@ public class OAuth2Feature implements Feature {
       List<Class<? extends OAuth2Provider>> providers = new ArrayList<>();
       if (validProviderSources.contains(GoogleProvider.PROVIDER_NAME)) {
         providers.add(GoogleProvider.class);
+      }
+      if (validProviderSources.contains(AzureProvider.PROVIDER_NAME)) {
+        providers.add(AzureProvider.class);
       }
       if (providers.isEmpty()) {
         throw new RuntimeException("oauth2.providers list is not empty and contains unsupported oauth2 providers.");

@@ -27,7 +27,7 @@ class _DrawerViewWidgetState extends State<DrawerViewWidget> {
         stream: mrBloc.menuOpened,
         initialData: true,
         builder: (context, snapshot) {
-          if (snapshot.data) {
+          if (snapshot.data!) {
             return _MenuContainer(
               mrBloc: mrBloc,
             );
@@ -41,7 +41,7 @@ class _DrawerViewWidgetState extends State<DrawerViewWidget> {
 class _MenuContainer extends StatelessWidget {
   final ManagementRepositoryClientBloc mrBloc;
 
-  const _MenuContainer({Key key, this.mrBloc}) : super(key: key);
+  const _MenuContainer({Key? key, required this.mrBloc}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +61,7 @@ class _MenuContainer extends StatelessWidget {
                   stream: mrBloc.personState.isCurrentPortfolioOrSuperAdmin,
                   builder: (context, snapshot) {
                     if (snapshot.data != null &&
-                        (snapshot.data.currentPortfolioOrSuperAdmin == true)) {
+                        (snapshot.data!.currentPortfolioOrSuperAdmin == true)) {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -123,7 +123,7 @@ class _MenuContainer extends StatelessWidget {
 class _SiteAdminOptionsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<String>(
+    return StreamBuilder<String?>(
         stream: BlocProvider.of<ManagementRepositoryClientBloc>(context)
             .streamValley
             .currentPortfolioIdStream,
@@ -149,7 +149,7 @@ class _SiteAdminOptionsWidget extends StatelessWidget {
 class _MenuPortfolioAdminOptionsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<String>(
+    return StreamBuilder<String?>(
         stream: BlocProvider.of<ManagementRepositoryClientBloc>(context)
             .streamValley
             .currentPortfolioIdStream,
@@ -179,7 +179,7 @@ class _MenuPortfolioAdminOptionsWidget extends StatelessWidget {
 class _ApplicationSettings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<String>(
+    return StreamBuilder<String?>(
         stream: BlocProvider.of<ManagementRepositoryClientBloc>(context)
             .streamValley
             .currentPortfolioIdStream,
@@ -219,10 +219,7 @@ class _ApplicationSettings extends StatelessWidget {
 }
 
 class _MenuFeaturesOptionsWidget extends StatelessWidget {
-  final RouteChange currentRoute;
-
-  const _MenuFeaturesOptionsWidget({Key key, this.currentRoute})
-      : super(key: key);
+  const _MenuFeaturesOptionsWidget({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -263,18 +260,18 @@ class _MenuItem extends StatelessWidget {
   final PermissionType permissionType;
 
   const _MenuItem(
-      {Key key,
-      this.name,
-      this.iconData,
-      this.path,
-      this.params,
+      {Key? key,
+      required this.name,
+      required this.iconData,
+      required this.path,
+      required this.params,
       this.permissionType = PermissionType.regular,
       this.iconSize})
       : super(key: key);
 
   bool equalsParams(Map<String, List<String>> snapParams) {
-    final p1 = snapParams ?? {};
-    final p2 = params ?? {};
+    final p1 = snapParams;
+    final p2 = params;
 
     // the p2 keys are the keys _we_ care about, the other keys in the list like
     // 'id' or 'service-name' can be there and don't impact the match.
@@ -296,17 +293,17 @@ class _MenuItem extends StatelessWidget {
           : Theme.of(context).accentColor.withOpacity(0.2),
       onTap: () {
         if (menuOkForThisUser) {
-          ManagementRepositoryClientBloc.router.navigateTo(context, path,
-              transition: TransitionType.material, params: params);
+          ManagementRepositoryClientBloc.router
+              .navigateTo(context, path, params: params);
         }
       },
-      child: StreamBuilder<RouteChange>(
+      child: StreamBuilder<RouteChange?>(
           stream: BlocProvider.of<ManagementRepositoryClientBloc>(context)
               .routeCurrentStream,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              final selected = snapshot.data.route == path &&
-                  equalsParams(snapshot.data.params);
+              final selected = snapshot.data!.route == path &&
+                  equalsParams(snapshot.data!.params);
               return Container(
                 padding: EdgeInsets.fromLTRB(16, 12, 0, 12),
                 color: selected
@@ -324,16 +321,19 @@ class _MenuItem extends StatelessWidget {
                     Padding(
                       padding:
                           EdgeInsets.only(left: iconSize != null ? 18.0 : 24.0),
-                      child: Text(' ${name}',
-                          style: Theme.of(context).textTheme.bodyText2.copyWith(
-                              fontWeight: selected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                              color: light
-                                  ? null
-                                  : (selected
-                                      ? Theme.of(context).primaryColor
-                                      : null))),
+                      child: Text(' $name',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyText2!
+                              .copyWith(
+                                  fontWeight: selected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                  color: light
+                                      ? null
+                                      : (selected
+                                          ? Theme.of(context).primaryColor
+                                          : null))),
                     )
                   ],
                 ),

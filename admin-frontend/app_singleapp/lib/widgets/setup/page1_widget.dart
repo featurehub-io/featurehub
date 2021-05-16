@@ -4,14 +4,12 @@ import 'package:app_singleapp/widgets/common/fh_card.dart';
 import 'package:app_singleapp/widgets/setup/setup_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:xcvbnm/xcvbnm.dart';
+import 'package:zxcvbn/zxcvbn.dart';
 
 class SetupPage1Widget extends StatefulWidget {
   final SetupBloc bloc;
 
-  const SetupPage1Widget({Key key, @required this.bloc})
-      : assert(bloc != null),
-        super(key: key);
+  const SetupPage1Widget({Key? key, required this.bloc}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -43,7 +41,7 @@ class _SetupPage1State extends State<SetupPage1Widget> {
   }
 
   void setPasswordStrength() {
-    final result = Xcvbnm().estimate(_pw1.text);
+    final result = Zxcvbn().evaluate(_pw1.text);
     var state = 'Weak';
     if (result.score == 1) {
       state = 'Below average';
@@ -53,12 +51,15 @@ class _SetupPage1State extends State<SetupPage1Widget> {
       state = 'Strong';
     }
     Color stateColor =
-        result.score < _PASSWORD_SCORE_THRESHOLD ? Colors.red : Colors.green;
+        (result.score == null || result.score! < _PASSWORD_SCORE_THRESHOLD)
+            ? Colors.red
+            : Colors.green;
     if (result.score == 1) {
       stateColor = Colors.orange;
     }
     final stateText = Text(state,
-        style: Theme.of(context).textTheme.caption.copyWith(color: stateColor));
+        style:
+            Theme.of(context).textTheme.caption!.copyWith(color: stateColor));
     setState(() {
       _passwordStrength = stateText;
     });
@@ -111,45 +112,44 @@ class _SetupPage1State extends State<SetupPage1Widget> {
                       decoration: InputDecoration(labelText: 'Name'),
                       textInputAction: TextInputAction.next,
                       onFieldSubmitted: (_) => _handleSubmitted(),
-                      validator: (v) =>
-                      v.isEmpty
+                      validator: (v) => (v == null || v.isEmpty)
                           ? 'Please enter your name'
                           : null,
                     ),
                     TextFormField(
                         controller: _email,
-                    decoration: InputDecoration(labelText: 'Email address'),
-                    textInputAction: TextInputAction.next,
-                    onFieldSubmitted: (_) => _handleSubmitted(),
-                    validator: (v) {
-                      if (v.isEmpty) {
-                        return 'Please enter your email address';
-                      }
-                      if (!validateEmail(v)) {
-                        return ('Please enter a valid email address');
-                      }
-                      return null;
-                    }),
-                TextFormField(
-                    controller: _pw1,
-                    obscureText: true,
-                    textInputAction: TextInputAction.next,
-                    onFieldSubmitted: (_) => _handleSubmitted(),
-                    decoration: InputDecoration(labelText: 'Password'),
-                    validator: (v) {
-                      if (v.isEmpty) {
-                        return 'Please enter your password';
-                      }
-                      if (v.length < 7) {
-                        return 'Password must be at least 7 characters';
-                      }
-                      //this is quite sensitive and annoying at the moment, commenting out
+                        decoration: InputDecoration(labelText: 'Email address'),
+                        textInputAction: TextInputAction.next,
+                        onFieldSubmitted: (_) => _handleSubmitted(),
+                        validator: (v) {
+                          if (v == null || v.isEmpty) {
+                            return 'Please enter your email address';
+                          }
+                          if (!validateEmail(v)) {
+                            return ('Please enter a valid email address');
+                          }
+                          return null;
+                        }),
+                    TextFormField(
+                        controller: _pw1,
+                        obscureText: true,
+                        textInputAction: TextInputAction.next,
+                        onFieldSubmitted: (_) => _handleSubmitted(),
+                        decoration: InputDecoration(labelText: 'Password'),
+                        validator: (v) {
+                          if (v == null || v.isEmpty) {
+                            return 'Please enter your password';
+                          }
+                          if (v.length < 7) {
+                            return 'Password must be at least 7 characters';
+                          }
+                          //this is quite sensitive and annoying at the moment, commenting out
 //                    Result result = Xcvbnm().estimate(v);
 //                    if (result.score < _PASSWORD_SCORE_THRESHOLD) {
 //                      return 'Password not strong enough, try adding numbers and symbols';
 //                    }
-                      return null;
-                    }),
+                          return null;
+                        }),
                     Align(
                       alignment: Alignment.topLeft,
                       child: Padding(
@@ -161,15 +161,15 @@ class _SetupPage1State extends State<SetupPage1Widget> {
                         controller: _pw2,
                         obscureText: true,
                         onFieldSubmitted: (_) => _handleSubmitted(),
-                        decoration: InputDecoration(
-                            labelText: 'Confirm Password'),
+                        decoration:
+                            InputDecoration(labelText: 'Confirm Password'),
                         validator: (v) {
                           if (v != _pw1.text) {
                             return "Passwords don't match";
                           }
-                      return null;
-                    }),
-              ]),
+                          return null;
+                        }),
+                  ]),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
@@ -195,7 +195,7 @@ class _SetupPage1State extends State<SetupPage1Widget> {
   }
 
   void _handleSubmitted() {
-    if (_formKey.currentState.validate()) {
+    if (_formKey.currentState!.validate()) {
       copyState();
       widget.bloc.nextPage();
     }
@@ -232,12 +232,10 @@ class _SetupPage1ThirdPartyProviders extends StatelessWidget {
   final _SelectedExternalFunction selectedExternalProviderFunc;
 
   const _SetupPage1ThirdPartyProviders(
-      {Key key,
-      @required this.bloc,
-      @required this.selectedExternalProviderFunc})
-      : assert(bloc != null),
-        assert(selectedExternalProviderFunc != null),
-        super(key: key);
+      {Key? key,
+      required this.bloc,
+      required this.selectedExternalProviderFunc})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -249,18 +247,15 @@ class _SetupPage1ThirdPartyProviders extends StatelessWidget {
       bloc.externalProviders.forEach((provider) {
         children.add(InkWell(
           mouseCursor: SystemMouseCursors.click,
-          child: Image.asset(bloc.externalProviderAssets[provider]),
           onTap: () {
             selectedExternalProviderFunc(provider);
           },
+          child: Image.asset(bloc.externalProviderAssets[provider]!),
         ));
         children.add(Padding(
           padding: const EdgeInsets.fromLTRB(0, 16, 0, 10),
           child: Text('or enter your details to register',
-              style: Theme
-                  .of(context)
-                  .textTheme
-                  .caption),
+              style: Theme.of(context).textTheme.caption),
         ));
       });
     }

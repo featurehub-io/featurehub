@@ -2,8 +2,9 @@ import 'dart:async';
 
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:collection/collection.dart';
 import 'package:mrapi/api.dart';
-import 'package:rxdart/rxdart.dart' as rxdart;
+import 'package:rxdart/rxdart.dart';
 
 enum RegisterUrlForm {
   loadingState,
@@ -16,17 +17,16 @@ enum RegisterUrlForm {
 class RegisterBloc implements Bloc {
   final ManagementRepositoryClientBloc mrClient;
 
-  String token;
-  Person person;
-  String name;
-  String password;
+  String? token;
+  Person? person;
+  String? name;
+  String? password;
 
   // main widget should respond to changes in this.
-  final _formStateStream = rxdart.BehaviorSubject<RegisterUrlForm>();
-
+  final _formStateStream = BehaviorSubject<RegisterUrlForm>();
   Stream<RegisterUrlForm> get formState => _formStateStream.stream;
 
-  RegisterBloc(this.mrClient) : assert(mrClient != null) {
+  RegisterBloc(this.mrClient) {
     _formStateStream.add(RegisterUrlForm.loadingState);
   }
 
@@ -34,8 +34,8 @@ class RegisterBloc implements Bloc {
   void getDetails(String token) {
     if (token != this.token) {
       mrClient.authServiceApi.personByToken(token).then((data) {
-        if (data.additional.firstWhere((pi) => pi.key == 'already-logged-in',
-                orElse: () => null) !=
+        if (data.additional
+                .firstWhereOrNull((pi) => pi.key == 'already-logged-in') !=
             null) {
           // we can get into a situation where a person is already "good"
           // but their registration link still works, so lets redirect to login
@@ -55,12 +55,13 @@ class RegisterBloc implements Bloc {
   Future<void> completeRegistration(String token, String email, String name,
       String password, String confirmPassword) async {
     await mrClient.authServiceApi
-        .registerPerson(PersonRegistrationDetails()
-          ..email = email
-          ..password = password
-          ..confirmPassword = confirmPassword
-          ..name = name
-          ..registrationToken = token)
+        .registerPerson(PersonRegistrationDetails(
+      email: email,
+      password: password,
+      confirmPassword: confirmPassword,
+      name: name,
+      registrationToken: token,
+    ))
         .then((data) async {
       await mrClient.hasToken(data);
       _formStateStream.add(RegisterUrlForm.successState);

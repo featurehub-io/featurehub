@@ -1,4 +1,5 @@
 import 'package:app_singleapp/common/stream_valley.dart';
+import 'package:collection/collection.dart';
 import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -6,30 +7,36 @@ typedef SetPersonHook = void Function(PersonState personState, Person person);
 
 List<SetPersonHook> setPersonHooks = <SetPersonHook>[];
 
+// avoids a null person, this is a person with no permission to anything
+Person _unauthenticatedPerson =
+    Person(id: PersonId(id: ''), name: '', email: '');
+
 class PersonState {
-  PersonServiceApi _personServiceApi;
+  final PersonServiceApi _personServiceApi;
   //stream if person user is current portfolio or super admin user
   final BehaviorSubject<ReleasedPortfolio> _isCurrentPortfolioOrSuperAdmin =
       BehaviorSubject<ReleasedPortfolio>();
 
-  final _personSource = BehaviorSubject<Person>();
+  final BehaviorSubject<Person> _personSource =
+      BehaviorSubject.seeded(_unauthenticatedPerson);
 
   Stream<Person> get personStream => _personSource.stream;
 
-  Person get person => _personSource.value;
-  bool get isLoggedIn => _personSource.hasValue;
+  Person get person => _personSource.value!;
+  bool get isLoggedIn => _personSource.value != _unauthenticatedPerson;
 
   bool _isUserIsSuperAdmin = false;
 
   bool get userIsSuperAdmin => _isUserIsSuperAdmin;
-  List<Group> get groupList =>
-      _personSource.hasValue ? _personSource.value?.groups : <Group>[];
+  List<Group> get groupList => _personSource.value!.groups;
 
   bool _userIsAnyPortfolioOrSuperAdmin = false;
   bool get userIsAnyPortfolioOrSuperAdmin => _userIsAnyPortfolioOrSuperAdmin;
 
   set person(Person person) {
-    setPersonHooks.forEach((callback) => callback(this, person));
+    if (person != _unauthenticatedPerson) {
+      setPersonHooks.forEach((callback) => callback(this, person));
+    }
 
     _isUserIsSuperAdmin = isSuperAdminGroupFound(person.groups);
 
@@ -41,9 +48,7 @@ class PersonState {
   Stream<ReleasedPortfolio> get isCurrentPortfolioOrSuperAdmin =>
       _isCurrentPortfolioOrSuperAdmin.stream;
 
-  PersonState(PersonServiceApi personServiceApi) {
-    _personServiceApi = personServiceApi;
-  }
+  PersonState(this._personServiceApi);
 
   Future<Person> _getSelfPersonWithGroups() async {
     final person = await _personServiceApi.getPerson('self',
@@ -51,7 +56,7 @@ class PersonState {
     return person;
   }
 
-  Future<bool> personCanEditFeaturesForCurrentApplication(String appId) async {
+  Future<bool> personCanEditFeaturesForCurrentApplication(String? appId) async {
     if (appId == null) {
       return false;
     }
@@ -64,25 +69,24 @@ class PersonState {
 
   // if they are admin in a group where there is no portfolio id, they are super-admin
   bool isSuperAdminGroupFound(List<Group> groupList) {
-    return groupList?.firstWhere(
-            (group) => group.admin && group.portfolioId == null,
-            orElse: () => null) !=
+    return groupList.firstWhereOrNull(
+            (group) => group.admin == true && group.portfolioId == null) !=
         null;
   }
 
   bool _isAnyPortfolioAdmin(List<Group> groupList) {
-    return groupList?.any((group) => group.admin) ?? false;
+    return groupList.any((group) => group.admin == true);
   }
 
-  bool userIsPortfolioAdmin(String id, [List<Group> groupList]) {
+  bool userIsPortfolioAdmin(String? id, [List<Group>? groupList]) {
     if (id == null) {
       return false;
     }
 
-    final groups = groupList ?? person?.groups;
+    final groups = groupList ?? person.groups;
 
-    return groups?.firstWhere((group) => group.admin && group.portfolioId == id,
-            orElse: () => null) !=
+    return groups.firstWhereOrNull(
+            (group) => group.admin == true && group.portfolioId == id) !=
         null;
   }
 
@@ -91,22 +95,19 @@ class PersonState {
   }
 
   bool get userIsCurrentPortfolioAdmin =>
-      _isCurrentPortfolioOrSuperAdmin?.value?.currentPortfolioOrSuperAdmin ??
+      _isCurrentPortfolioOrSuperAdmin.value?.currentPortfolioOrSuperAdmin ??
       false;
 
   void currentPortfolioOrSuperAdminUpdateState(Portfolio p) {
-    final isAdmin = person != null &&
+    final isAdmin = person != _unauthenticatedPerson &&
         (isSuperAdminGroupFound(person.groups) ||
-            userIsPortfolioAdmin(p?.id, person.groups));
-    if (p != null) {
-      _isCurrentPortfolioOrSuperAdmin.add(ReleasedPortfolio()
-        ..portfolio = p
-        ..currentPortfolioOrSuperAdmin = isAdmin);
-    }
+            userIsPortfolioAdmin(p.id, person.groups));
+    _isCurrentPortfolioOrSuperAdmin.add(
+        ReleasedPortfolio(portfolio: p, currentPortfolioOrSuperAdmin: isAdmin));
   }
 
   void logout() {
-    _personSource.add(null);
+    person = _unauthenticatedPerson;
   }
 
   void dispose() {

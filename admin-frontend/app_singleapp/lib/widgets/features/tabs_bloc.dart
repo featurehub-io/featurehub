@@ -5,6 +5,7 @@ import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/widgets/features/feature_dashboard_constants.dart';
 import 'package:app_singleapp/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:collection/collection.dart';
 import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -30,16 +31,16 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
   final String applicationId;
   FeatureStatusFeatures featureStatus;
   final _stateSource = BehaviorSubject<TabsState>.seeded(TabsState.FLAGS);
-  List<Feature> _featuresForTabs;
+  List<Feature> _featuresForTabs = [];
   final _currentlyEditingFeatureKeys = <String>{};
-  final _featureCurrentlyEditingSource = BehaviorSubject<Set<String>>();
+  final _featureCurrentlyEditingSource = BehaviorSubject<Set<String>?>();
   final ManagementRepositoryClientBloc mrClient;
   final _allFeaturesByKey = <String, Feature>{};
 
   // determine which tab they have selected
   Stream<TabsState> get currentTab => _stateSource.stream;
 
-  Stream<Set<String>> get featureCurrentlyEditingStream =>
+  Stream<Set<String>?> get featureCurrentlyEditingStream =>
       _featureCurrentlyEditingSource.stream;
 
   // when editing, the base count we have doesn't match what is actually being used
@@ -50,28 +51,25 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
   List<Feature> get features => _featuresForTabs;
   final featureValueBlocs = <String, PerFeatureStateTrackingBloc>{};
   final PerApplicationFeaturesBloc featureStatusBloc;
-  StreamSubscription<FeatureStatusFeatures> _featureStream;
-  StreamSubscription<Feature> _newFeatureStream;
-  StreamSubscription<List<String>> _shownEnvironmentsStream;
+  late StreamSubscription<FeatureStatusFeatures?> _featureStream;
+  late StreamSubscription<Feature> _newFeatureStream;
+  late StreamSubscription<List<String>> _shownEnvironmentsStream;
 
   var shownEnvironments = <String>[];
 
   FeaturesOnThisTabTrackerBloc(this.featureStatus, this.applicationId,
-      this.mrClient, this.featureStatusBloc)
-      : assert(featureStatus != null),
-        assert(featureStatusBloc != null),
-        assert(applicationId != null) {
+      this.mrClient, this.featureStatusBloc) {
     _featureCurrentlyEditingSource.add(_currentlyEditingFeatureKeys);
 
     // if they have created a new feature we want to swap to the right tab
-    _fixFeaturesForTabs(_stateSource.value);
+    _fixFeaturesForTabs(_stateSource.value!);
     _refixFeaturesByKey();
 
     _featureStream = featureStatusBloc.appFeatureValues.listen((appFeatures) {
       if (appFeatures != null) {
         featureStatus = appFeatures;
 
-        _fixFeaturesForTabs(_stateSource.value);
+        _fixFeaturesForTabs(_stateSource.value!);
         _refixFeaturesByKey();
 
         _checkForFeaturesWeWereEditingThatHaveNowGone();
@@ -83,32 +81,31 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
 
     _newFeatureStream =
         featureStatusBloc.publishNewFeatureStream.listen((feature) {
-      switch (feature.valueType) {
+      switch (feature.valueType!) {
         case FeatureValueType.BOOLEAN:
-          _stateSource.value = TabsState.FLAGS;
+          _stateSource.add(TabsState.FLAGS);
           break;
         case FeatureValueType.STRING:
-          _stateSource.value = TabsState.VALUES;
+          _stateSource.add(TabsState.VALUES);
           break;
         case FeatureValueType.NUMBER:
-          _stateSource.value = TabsState.VALUES;
+          _stateSource.add(TabsState.VALUES);
           break;
         case FeatureValueType.JSON:
-          _stateSource.value = TabsState.CONFIGURATIONS;
+          _stateSource.add(TabsState.CONFIGURATIONS);
           break;
       }
 
-      _currentlyEditingFeatureKeys.add(feature.key);
+      _currentlyEditingFeatureKeys.add(feature.key!);
     });
   }
 
   void addFeatureEnvironmentStrategyCountOverride(
       FeatureStrategyCountOverride fsco) {
-    final found = _featurePerEnvironmentStrategyCountOverrides.firstWhere(
+    final found = _featurePerEnvironmentStrategyCountOverrides.firstWhereOrNull(
         (e) =>
             e.environmentId == fsco.environmentId &&
-            e.feature.id == fsco.feature.id,
-        orElse: () => null);
+            e.feature.id == fsco.feature.id);
 
     if (found == null || found.strategyCount != fsco.strategyCount) {
       if (found == null) {
@@ -118,7 +115,7 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
       }
 
       // trigger a re-layout
-      _stateSource.add(_stateSource.value);
+      _stateSource.add(_stateSource.value!);
     }
   }
 
@@ -129,7 +126,7 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
 
   void _updatedShownEnvironments(List<String> environments) {
     shownEnvironments = environments;
-    _stateSource.add(_stateSource.value);
+    _stateSource.add(_stateSource.value!);
   }
 
   double featureExtraCellHeight(Feature feature) {
@@ -148,10 +145,10 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
       .where((f) => !_currentlyEditingFeatureKeys.contains(f.key))
       .length;
 
-  int _strategyLines(FeatureValue fv) {
+  int _strategyLines(FeatureValue? fv) {
     if (fv == null) return 0;
-    final rsLen = fv.rolloutStrategies?.length ?? 0;
-    final rsiLen = fv.rolloutStrategyInstances?.length ?? 0;
+    final rsLen = fv.rolloutStrategies.length;
+    final rsiLen = fv.rolloutStrategyInstances.length;
     return rsLen + rsiLen;
   }
 
@@ -182,11 +179,9 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
       // the overrides (if any)
 
       var map = fvKeys.map((key) {
-        final uneditedFeat =
-            e.features.firstWhere((fv) => fv.key == key, orElse: () => null);
-        final editedFeat = overridesForFeatures.firstWhere(
-            (x) => x.environmentId == e.environmentId && x.feature.key == key,
-            orElse: () => null);
+        final uneditedFeat = e.features.firstWhereOrNull((fv) => fv.key == key);
+        final editedFeat = overridesForFeatures.firstWhereOrNull(
+            (x) => x.environmentId == e.environmentId && x.feature.key == key);
         if (editedFeat != null) {
           return editedFeat.strategyCount;
         }
@@ -247,7 +242,7 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
   // turns them into a map for easy access
   void _refixFeaturesByKey() {
     featureStatus.applicationFeatureValues.features.forEach((f) {
-      _allFeaturesByKey[f.key] = f;
+      _allFeaturesByKey[f.key!] = f;
     });
   }
 
@@ -273,6 +268,7 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
     return featureStatus.sortedByNameEnvironmentIds
         .where((id) => shownEnvironments.contains(id))
         .map((id) => featureStatus.applicationEnvironments[id])
+        .whereNotNull()
         .toList();
   }
 
@@ -290,7 +286,7 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
 
     if (!val.contains(feature.key)) {
       _createFeatureValueBlocForFeature(feature);
-      val.add(feature.key);
+      val.add(feature.key!);
     } else {
       final featureValueBloc = featureValueBlocs[feature.key];
       if (featureValueBloc != null) {
@@ -305,12 +301,12 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
 
   void _createFeatureValueBlocForFeature(Feature feature) {
     var values = featureStatus.applicationFeatureValues.environments
-        .map((env) => env.features
-            .firstWhere((fv) => fv.key == feature.key, orElse: () => null))
-        .where((fv) => fv != null)
+        .map((env) =>
+            env.features.firstWhereOrNull((fv) => fv.key == feature.key))
+        .whereNotNull()
         .toList();
 
-    featureValueBlocs[feature.key] = PerFeatureStateTrackingBloc(
+    featureValueBlocs[feature.key!] = PerFeatureStateTrackingBloc(
         applicationId,
         feature,
         mrClient,
@@ -321,7 +317,7 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
   }
 
   Feature findFeature(String key, String environmentId) {
-    return _allFeaturesByKey[key];
+    return _allFeaturesByKey[key]!;
   }
 
   void _checkForFeaturesWeWereEditingThatHaveNowGone() {
@@ -332,9 +328,9 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
       if (remove) {
         // stop tracking any override sizes for this feature
         _cleanFeatureStrategyCountOverridesOnSaveOrCancel(
-            featureValueBlocs[key].feature);
+            featureValueBlocs[key]!.feature);
         // get rid of the block
-        featureValueBlocs[key].dispose();
+        featureValueBlocs[key]!.dispose();
         featureValueBlocs.remove(key);
       }
       return remove;
@@ -344,7 +340,7 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
     // when we create one we can add it to the list and it not have a bloc
     removeMissing.forEach((key) {
       if (featureValueBlocs[key] == null) {
-        _createFeatureValueBlocForFeature(_allFeaturesByKey[key]);
+        _createFeatureValueBlocForFeature(_allFeaturesByKey[key]!);
       }
     });
 

@@ -12,5 +12,5 @@ void main() async {
     print('${record.level.name}: ${record.time}: ${record.message}');
   });
 
-  core.mainApp();
+  await core.mainApp();
 }

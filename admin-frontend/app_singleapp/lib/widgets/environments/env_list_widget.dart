@@ -20,7 +20,7 @@ class EnvListWidget extends StatefulWidget {
 }
 
 class _EnvListState extends State<EnvListWidget> {
-  List<Environment> _environments;
+  List<Environment>? _environments;
 
   @override
   Widget build(BuildContext context) {
@@ -32,19 +32,19 @@ class _EnvListState extends State<EnvListWidget> {
           if (!snapshot.hasData || snapshot.data == null) {
             return Container();
           }
-          //_environments = snapshot.data.reversed.toList();
-          _environments = _sortEnvironments(snapshot.data);
+          //_environments = snapshot.data!.reversed.toList();
+          _environments = _sortEnvironments(snapshot.data!);
 
           return Container(
-            //height:(snapshot.data.length*50).toDouble(),
+            //height:(snapshot.data!.length*50).toDouble(),
             height: 500.0,
             child: FHReorderableListView(
               onReorder: (int oldIndex, int newIndex) {
                 _reorderEnvironments(oldIndex, newIndex, bloc);
               },
               children: <Widget>[
-                for (Environment env in _environments)
-                  _EnvWidget(env: env, bloc: bloc, key: Key(env.id))
+                for (Environment env in _environments!)
+                  _EnvWidget(env: env, bloc: bloc, key: Key(env.id!))
               ],
             ),
           );
@@ -52,17 +52,17 @@ class _EnvListState extends State<EnvListWidget> {
   }
 
   List<Environment> _sortEnvironments(List<Environment> originalList,
-      {String parentId = '', List<Environment> sortedList}) {
-    sortedList ??= <Environment>[];
+      {String parentId = '', List<Environment>? passedSortedList}) {
+    final sortedList = passedSortedList ?? <Environment>[];
     originalList.forEach((env) {
       if (env.priorEnvironmentId == null && parentId == '') {
         sortedList.insert(0, env);
         _sortEnvironments(originalList,
-            parentId: env.id, sortedList: sortedList);
+            parentId: env.id!, passedSortedList: sortedList);
       } else if (env.priorEnvironmentId == parentId) {
         sortedList.add(env);
         _sortEnvironments(originalList,
-            parentId: env.id, sortedList: sortedList);
+            parentId: env.id!, passedSortedList: sortedList);
       }
     });
     return sortedList;
@@ -70,6 +70,8 @@ class _EnvListState extends State<EnvListWidget> {
 
   void _reorderEnvironments(
       int oldIndex, int newIndex, ManageAppBloc bloc) async {
+    final _environments = this._environments!;
+
     setState(() {
       // These two lines are workarounds for ReorderableListView problems
       if (newIndex > _environments.length) newIndex = _environments.length;
@@ -98,13 +100,13 @@ class _EnvListState extends State<EnvListWidget> {
     });
     _environments[0].priorEnvironmentId =
         null; // first environment should never have a parent
-    await bloc.updateEnvs(bloc.applicationId, _environments);
+    await bloc.updateEnvs(bloc.applicationId!, _environments);
     bloc.mrClient.addSnackbar(Text('Environment order updated!'));
   }
 
   List<Environment> swapPreviousIds(oldPid, newPid) {
     final updatedEnvs = <Environment>[];
-    _environments.forEach((env) {
+    _environments!.forEach((env) {
       if (env.priorEnvironmentId == oldPid) {
         env.priorEnvironmentId = newPid;
         updatedEnvs.add(env);
@@ -118,10 +120,8 @@ class _EnvWidget extends StatelessWidget {
   final Environment env;
   final ManageAppBloc bloc;
 
-  const _EnvWidget({Key key, @required this.env, @required this.bloc})
-      : assert(env != null),
-        assert(bloc != null),
-        super(key: key);
+  const _EnvWidget({Key? key, required this.env, required this.bloc})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -147,14 +147,14 @@ class _EnvWidget extends StatelessWidget {
                   Text('${env.name}'),
                   Padding(
                       padding: EdgeInsets.only(left: 8.0),
-                      child: env.production
+                      child: (env.production == true)
                           ? _ProductionEnvironmentIndicatorWidget()
                           : _NonProductionEnvironmentIndicatorWidget()),
                 ],
               ),
               Expanded(child: Container()),
               bloc.mrClient
-                      .isPortfolioOrSuperAdmin(bloc.application.portfolioId)
+                      .isPortfolioOrSuperAdmin(bloc.application!.portfolioId!)
                   ? _adminFunctions(context)
                   : Container()
             ],
@@ -193,7 +193,8 @@ class _ProductionEnvironmentIndicatorWidget extends StatelessWidget {
         decoration: BoxDecoration(color: Colors.red, shape: BoxShape.circle),
         child: Center(
             child: Text('P',
-                style: TextStyle(color: Theme.of(context).cardColor, fontSize: 18.0))),
+                style: TextStyle(
+                    color: Theme.of(context).cardColor, fontSize: 18.0))),
       ),
     );
   }
@@ -213,24 +214,21 @@ class EnvDeleteDialogWidget extends StatelessWidget {
   final Environment env;
   final ManageAppBloc bloc;
 
-  const EnvDeleteDialogWidget(
-      {Key key, @required this.bloc, @required this.env})
-      : assert(env != null),
-        assert(bloc != null),
-        super(key: key);
+  const EnvDeleteDialogWidget({Key? key, required this.bloc, required this.env})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     // is there only one environment or are we the last one in the chain (no other has us as a prior environment)
     return FHDeleteThingWarningWidget(
       bloc: bloc.mrClient,
-      extraWarning: env.production,
-      wholeWarning: env.production
+      extraWarning: env.production == true,
+      wholeWarning: env.production == true
           ? 'The environment `${env.name}` is your production environment, are you sure you wish to remove it?'
           : null,
-      thing: env.production ? null : "environment '${env.name}'",
+      thing: env.production == true ? null : "environment '${env.name}'",
       deleteSelected: () async {
-        final success = await bloc.deleteEnv(env.id);
+        final success = await bloc.deleteEnv(env.id!);
         if (success) {
           bloc.mrClient.addSnackbar(Text("Environment '${env.name}' deleted!"));
         } else {
@@ -244,12 +242,12 @@ class EnvDeleteDialogWidget extends StatelessWidget {
 }
 
 class EnvUpdateDialogWidget extends StatefulWidget {
-  final Environment env;
+  final Environment? env;
   final ManageAppBloc bloc;
 
   const EnvUpdateDialogWidget({
-    Key key,
-    @required this.bloc,
+    Key? key,
+    required this.bloc,
     this.env,
   }) : super(key: key);
 
@@ -269,9 +267,9 @@ class _EnvUpdateDialogWidgetState extends State<EnvUpdateDialogWidget> {
   void initState() {
     super.initState();
     if (widget.env != null) {
-      _envName.text = widget.env.name;
+      _envName.text = widget.env!.name;
       isUpdate = true;
-      _isProduction = widget.env.production;
+      _isProduction = widget.env!.production == true;
     }
   }
 
@@ -291,7 +289,7 @@ class _EnvUpdateDialogWidgetState extends State<EnvUpdateDialogWidget> {
                   controller: _envName,
                   decoration: InputDecoration(labelText: 'Environment name'),
                   validator: ((v) {
-                    if (v.isEmpty) {
+                    if (v == null || v.isEmpty) {
                       return 'Please enter an environment name';
                     }
                     if (v.length < 2) {
@@ -300,11 +298,12 @@ class _EnvUpdateDialogWidgetState extends State<EnvUpdateDialogWidget> {
                     return null;
                   })),
               CheckboxListTile(
-                title: Text('Mark as production environment', style: Theme.of(context).textTheme.caption),
+                title: Text('Mark as production environment',
+                    style: Theme.of(context).textTheme.caption),
                 value: _isProduction,
-                onChanged: (bool val) {
+                onChanged: (bool? val) {
                   setState(() {
-                    _isProduction = val;
+                    _isProduction = val == true;
                   });
                 },
               )
@@ -322,11 +321,11 @@ class _EnvUpdateDialogWidgetState extends State<EnvUpdateDialogWidget> {
           FHFlatButton(
               title: isUpdate ? 'Update' : 'Create',
               onPressed: (() async {
-                if (_formKey.currentState.validate()) {
+                if (_formKey.currentState!.validate()) {
                   try {
                     if (isUpdate) {
                       await widget.bloc.updateEnv(
-                          widget.env..production = _isProduction,
+                          widget.env!..production = _isProduction,
                           _envName.text);
                       widget.bloc.mrClient.removeOverlay();
                       widget.bloc.mrClient.addSnackbar(
@@ -343,7 +342,7 @@ class _EnvUpdateDialogWidgetState extends State<EnvUpdateDialogWidget> {
                           messageTitle:
                               'Environment with name ${_envName.text} already exists');
                     } else {
-                      widget.bloc.mrClient.dialogError(e, s);
+                      await widget.bloc.mrClient.dialogError(e, s);
                     }
                   }
                 }
@@ -363,7 +362,7 @@ Widget AddEnvWidget(BuildContext context, ManageAppBloc bloc) {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             if (bloc.mrClient
-                .isPortfolioOrSuperAdmin(bloc.application.portfolioId))
+                .isPortfolioOrSuperAdmin(bloc.application!.portfolioId!))
               Container(
                   padding: EdgeInsets.only(left: 8),
                   child: FHIconTextButton(

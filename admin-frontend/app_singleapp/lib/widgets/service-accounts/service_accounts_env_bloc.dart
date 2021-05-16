@@ -16,22 +16,20 @@ class ServiceAccountEnvironments {
 class ServiceAccountEnvBloc implements Bloc, ManagementRepositoryAwareBloc {
   final ManagementRepositoryClientBloc _mrClient;
   final _serviceAccountSource = BehaviorSubject<ServiceAccountEnvironments>();
-  ServiceAccountServiceApi _serviceAccountServiceApi;
-  StreamSubscription<List<Environment>> envListener;
+  late ServiceAccountServiceApi _serviceAccountServiceApi;
+  late StreamSubscription<List<Environment>> envListener;
   bool firstCall = true;
 
   ServiceAccountEnvBloc(this._mrClient) {
     _serviceAccountServiceApi = ServiceAccountServiceApi(_mrClient.apiClient);
     envListener = _mrClient.streamValley.currentApplicationEnvironmentsStream
         .listen(_envUpdate);
-//    if (!_mrClient.userIsFeatureAdminOfCurrentApplication) {
     // ignore: unawaited_futures
     _mrClient.streamValley.getCurrentApplicationEnvironments();
-//    }
   }
 
   void _envUpdate(List<Environment> envs) async {
-    if (envs == null || envs.isEmpty) {
+    if (envs.isEmpty) {
       if (firstCall) {
         firstCall = false;
         // if we aren't an admin, we won't have called this, so lets call it now
@@ -44,11 +42,13 @@ class ServiceAccountEnvBloc implements Bloc, ManagementRepositoryAwareBloc {
           .add(ServiceAccountEnvironments(<Environment>[], <ServiceAccount>[]));
     } else {
       final serviceAccounts = await _serviceAccountServiceApi
-          .searchServiceAccountsInPortfolio(_mrClient.currentPortfolio.id,
+          .searchServiceAccountsInPortfolio(_mrClient.currentPortfolio!.id!,
               applicationId: envs[0].applicationId,
               includePermissions: true,
               includeSdkUrls: true)
-          .catchError(_mrClient.dialogError);
+          .catchError((e, s) {
+        _mrClient.dialogError(e, s);
+      });
 
       _serviceAccountSource
           .add(ServiceAccountEnvironments(envs, serviceAccounts));
@@ -65,6 +65,4 @@ class ServiceAccountEnvBloc implements Bloc, ManagementRepositoryAwareBloc {
   void dispose() {
     envListener.cancel();
   }
-
-  void setApplicationId(String appId) {}
 }

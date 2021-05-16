@@ -9,10 +9,10 @@ import 'package:openapi_dart_common/openapi.dart';
 import 'group_bloc.dart';
 
 class GroupUpdateDialogWidget extends StatefulWidget {
-  final Group group;
+  final Group? group;
   final GroupBloc bloc;
 
-  const GroupUpdateDialogWidget({Key key, @required this.bloc, this.group})
+  const GroupUpdateDialogWidget({Key? key, required this.bloc, this.group})
       : super(key: key);
 
   @override
@@ -29,7 +29,7 @@ class _GroupUpdateDialogWidgetState extends State<GroupUpdateDialogWidget> {
   void initState() {
     super.initState();
     if (widget.group != null) {
-      _groupName.text = widget.group.name;
+      _groupName.text = widget.group!.name;
     }
   }
 
@@ -49,7 +49,7 @@ class _GroupUpdateDialogWidgetState extends State<GroupUpdateDialogWidget> {
                   controller: _groupName,
                   decoration: InputDecoration(labelText: 'Group name'),
                   validator: ((v) {
-                    if (v.isEmpty) {
+                    if (v == null || v.isEmpty) {
                       return 'Please enter a group name';
                     }
                     if (v.length < 4) {
@@ -77,7 +77,7 @@ class _GroupUpdateDialogWidgetState extends State<GroupUpdateDialogWidget> {
   }
 
   void _handleSubmitted() {
-    if (_formKey.currentState.validate()) {
+    if (_formKey.currentState!.validate()) {
       _callUpdateGroup(_groupName.text).then((onValue) {
         // force list update
         widget.bloc.mrClient.removeOverlay();
@@ -89,15 +89,14 @@ class _GroupUpdateDialogWidgetState extends State<GroupUpdateDialogWidget> {
           widget.bloc.mrClient.customError(
               messageTitle: "Group '${_groupName.text}' already exists");
         } else {
-          widget.bloc.mrClient.dialogError(e, s);
+          await widget.bloc.mrClient.dialogError(e, s);
         }
       });
     }
   }
 
   Future<void> _callUpdateGroup(String name) {
-    Group group;
-    widget.group != null ? group = widget.group : group = Group();
+    final group = widget.group ?? Group(name: '');
     group.name = name.trim();
     return widget.group == null
         ? widget.bloc.createGroup(group)
@@ -110,10 +109,8 @@ class GroupDeleteDialogWidget extends StatelessWidget {
   final GroupBloc bloc;
 
   const GroupDeleteDialogWidget(
-      {Key key, @required this.group, @required this.bloc})
-      : assert(group != null),
-        assert(bloc != null),
-        super(key: key);
+      {Key? key, required this.group, required this.bloc})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +121,7 @@ class GroupDeleteDialogWidget extends StatelessWidget {
           'All permissions belonging to this group will be deleted \n\nThis cannot be undone!',
       deleteSelected: () async {
         try {
-          await bloc.deleteGroup(group.id, true);
+          await bloc.deleteGroup(group.id!, true);
           bloc.mrClient.addSnackbar(Text("Group '${group.name}' deleted!"));
           return true;
         } catch (e, s) {
@@ -132,7 +129,7 @@ class GroupDeleteDialogWidget extends StatelessWidget {
             bloc.mrClient.customError(
                 messageTitle: 'Could not delete group ${group.name}');
           } else {
-            bloc.mrClient.dialogError(e, s);
+            await bloc.mrClient.dialogError(e, s);
           }
           return false;
         }

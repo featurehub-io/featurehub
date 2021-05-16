@@ -4,6 +4,7 @@ import cd.connect.app.config.ConfigKey;
 import cd.connect.app.config.DeclaredConfigResolver;
 import io.ebean.Database;
 import io.ebeaninternal.server.core.DefaultServer;
+import io.featurehub.health.HealthSource;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +41,6 @@ public class DatabaseBinder extends AbstractBinder {
 
     bind(ebeanHolder).to(EbeanSource.class).in(Singleton.class);
     bind(ebeanHolder.getEbeanServer()).to(Database.class).in(Singleton.class);
-
-
+    bind(DatabaseHealthSource.class).to(HealthSource.class).in(Singleton.class);
   }
 }

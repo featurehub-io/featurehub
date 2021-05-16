@@ -1,12 +1,16 @@
 package io.featurehub.mr;
 
 import cd.connect.jersey.common.CorsFilter;
+import cd.connect.jersey.common.JerseyPrometheusResource;
+import cd.connect.jersey.prometheus.PrometheusDynamicFeature;
 import io.featurehub.db.publish.CacheSource;
 import io.featurehub.db.publish.MRPublishModule;
 import io.featurehub.db.publish.PublishManager;
 import io.featurehub.db.utils.ApiToSqlApiBinder;
 import io.featurehub.db.utils.ComplexUpdateMigrations;
 import io.featurehub.db.utils.DatabaseBinder;
+import io.featurehub.db.utils.DatabaseHealthSource;
+import io.featurehub.health.HealthSource;
 import io.featurehub.mr.api.ApplicationServiceDelegate;
 import io.featurehub.mr.api.ApplicationServiceDelegator;
 import io.featurehub.mr.api.AuthServiceDelegate;
@@ -52,6 +56,7 @@ import io.featurehub.mr.resources.auth.AuthProvider;
 import io.featurehub.mr.resources.auth.BlankProvider;
 import io.featurehub.mr.utils.ApplicationUtils;
 import io.featurehub.mr.utils.PortfolioUtils;
+import io.featurehub.publish.NATSHealthSource;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ServerProperties;
@@ -82,7 +87,9 @@ public class ManagementRepositoryFeature implements Feature {
       RolloutStrategyServiceDelegator.class,
       CorsFilter.class,
 //      ConstraintExceptionHandler.class,
-      AuthApplicationEventListener.class
+      AuthApplicationEventListener.class,
+      JerseyPrometheusResource.class,
+      PrometheusDynamicFeature.class
       ).forEach(o -> context.register(o));
 
     context.register(new DatabaseBinder());
@@ -90,6 +97,14 @@ public class ManagementRepositoryFeature implements Feature {
     context.register(new ComplexUpdateMigrations());
     context.register(new MRPublishModule());
     context.property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
+
+    context.register(new AbstractBinder() {
+      @Override
+      protected void configure() {
+
+      }
+      });
+
     context.register(new AbstractBinder() {
         @Override
         protected void configure() {

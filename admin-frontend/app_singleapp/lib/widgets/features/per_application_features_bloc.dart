@@ -9,17 +9,17 @@ import 'package:rxdart/rxdart.dart' hide Notification;
 
 class FeatureStatusFeatures {
   final ApplicationFeatureValues applicationFeatureValues;
-  List<String> sortedByNameEnvironmentIds;
+  List<String> sortedByNameEnvironmentIds = [];
   // envId, EnvironmentFeatureValues mapping - so it is done only once not once per line in table
   Map<String, EnvironmentFeatureValues> applicationEnvironments = {};
 
   FeatureStatusFeatures(this.applicationFeatureValues) {
     sortedByNameEnvironmentIds = applicationFeatureValues.environments
-        .map((e) => e.environmentId)
+        .map((e) => e.environmentId!)
         .toList();
 
     applicationFeatureValues.environments.forEach((e) {
-      applicationEnvironments[e.environmentId] = e;
+      applicationEnvironments[e.environmentId!] = e;
     });
   }
 }
@@ -30,30 +30,30 @@ class FeatureStatusFeatures {
 ///
 class PerApplicationFeaturesBloc
     implements Bloc, ManagementRepositoryAwareBloc {
-  String portfolioId;
-  String applicationId;
+  String? portfolioId;
+  String? applicationId;
   final ManagementRepositoryClientBloc _mrClient;
-  ApplicationServiceApi _appServiceApi;
-  EnvironmentServiceApi _environmentServiceApi;
-  UserStateServiceApi _userStateServiceApi;
-  RolloutStrategyServiceApi _rolloutStrategyServiceApi;
+  late ApplicationServiceApi _appServiceApi;
+  late EnvironmentServiceApi _environmentServiceApi;
+  late UserStateServiceApi _userStateServiceApi;
+  late RolloutStrategyServiceApi _rolloutStrategyServiceApi;
 
-  FeatureServiceApi _featureServiceApi;
+  late FeatureServiceApi _featureServiceApi;
 
-  final _appSearchResultSource = BehaviorSubject<List<Application>>();
-  Stream<List<Application>> get applications => _appSearchResultSource.stream;
+  final _appSearchResultSource = BehaviorSubject<List<Application>?>();
+  Stream<List<Application>?> get applications => _appSearchResultSource.stream;
 
-  final _shownEnvironmentsSource = BehaviorSubject<List<String>>();
+  final _shownEnvironmentsSource = BehaviorSubject<List<String>>.seeded([]);
   Stream<List<String>> get shownEnvironmentsStream =>
       _shownEnvironmentsSource.stream;
 
-  final _appFeatureValuesBS = BehaviorSubject<FeatureStatusFeatures>();
-  Stream<FeatureStatusFeatures> get appFeatureValues =>
+  final _appFeatureValuesBS = BehaviorSubject<FeatureStatusFeatures?>();
+  Stream<FeatureStatusFeatures?> get appFeatureValues =>
       _appFeatureValuesBS.stream;
   // feature-id, environments for feature
 
-  StreamSubscription<String> _currentPid;
-  StreamSubscription<String> _currentAppId;
+  late StreamSubscription<String?> _currentPid;
+  late StreamSubscription<String?> _currentAppId;
 
   final _publishNewFeatureSource = PublishSubject<Feature>();
 
@@ -62,7 +62,7 @@ class PerApplicationFeaturesBloc
 
   final _getAllAppValuesDebounceStream = BehaviorSubject<bool>();
 
-  PerApplicationFeaturesBloc(this._mrClient) : assert(_mrClient != null) {
+  PerApplicationFeaturesBloc(this._mrClient) {
     _appServiceApi = ApplicationServiceApi(_mrClient.apiClient);
     _featureServiceApi = FeatureServiceApi(_mrClient.apiClient);
     _environmentServiceApi = EnvironmentServiceApi(_mrClient.apiClient);
@@ -83,7 +83,7 @@ class PerApplicationFeaturesBloc
   @override
   ManagementRepositoryClientBloc get mrClient => _mrClient;
 
-  void setAppId(String appId) {
+  void setAppId(String? appId) {
     applicationId = appId;
     if (applicationId != null) {
       addAppFeatureValuesToStream();
@@ -99,17 +99,20 @@ class PerApplicationFeaturesBloc
     // print('validating custom strategies $customStrategies');
 
     return _rolloutStrategyServiceApi.validate(
-        applicationId,
-        RolloutStrategyValidationRequest()
-          ..customStrategies = customStrategies
-          ..sharedStrategies = sharedStrategies);
+        applicationId!,
+        RolloutStrategyValidationRequest(
+          customStrategies: customStrategies,
+          sharedStrategies: sharedStrategies,
+        ));
   }
 
   Future<Environment> getEnvironment(String envId) async {
     return _environmentServiceApi
         .getEnvironment(envId,
             includeServiceAccounts: true, includeSdkUrl: true)
-        .catchError(mrClient.dialogError);
+        .catchError((e, s) {
+      mrClient.dialogError(e, s);
+    });
   }
 
   void _sortApplicationFeatureValues(
@@ -120,19 +123,19 @@ class PerApplicationFeaturesBloc
 
   void _actuallyCallAddAppFeatureValuesToStream() async {
     if (applicationId != null) {
+      final appId = applicationId!;
       try {
         final environments =
-            await _userStateServiceApi.getHiddenEnvironments(applicationId);
+            await _userStateServiceApi.getHiddenEnvironments(appId);
         final appFeatureValues = await _featureServiceApi
-            .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
-                applicationId);
+            .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(appId);
         if (!_appFeatureValuesBS.isClosed) {
           _sortApplicationFeatureValues(appFeatureValues);
 
           if (environments.environmentIds.isEmpty) {
             if (appFeatureValues.environments.isNotEmpty) {
               environments.environmentIds = [
-                appFeatureValues.environments.first.environmentId
+                appFeatureValues.environments.first.environmentId!
               ];
               await _updateShownEnvironments(environments.environmentIds);
             }
@@ -143,33 +146,38 @@ class PerApplicationFeaturesBloc
           _appFeatureValuesBS.add(FeatureStatusFeatures(appFeatureValues));
         }
       } catch (e, s) {
-        mrClient.dialogError(e, s);
+        await mrClient.dialogError(e, s);
       }
     }
   }
 
-  void _updateShownEnvironments(List<String> environmentIds) async {
+  Future<void> _updateShownEnvironments(List<String> environmentIds) async {
     final envs = await _userStateServiceApi.saveHiddenEnvironments(
-        applicationId, HiddenEnvironments()..environmentIds = environmentIds);
+        applicationId!,
+        HiddenEnvironments(
+          environmentIds: environmentIds,
+        ));
     _shownEnvironmentsSource.add(envs.environmentIds);
   }
 
-  void addShownEnvironment(String envId) async {
-    final envs = <String>[..._shownEnvironmentsSource.value];
+  Future<void> addShownEnvironment(String envId) async {
+    final envs = <String>[..._shownEnvironmentsSource.value!];
     envs.add(envId);
+    // ignore: unawaited_futures
     _updateShownEnvironments(envs);
   }
 
-  void removeShownEnvironment(String envId) async {
-    final envs = <String>[..._shownEnvironmentsSource.value];
+  Future<void> removeShownEnvironment(String envId) async {
+    final envs = <String>[..._shownEnvironmentsSource.value!];
 
     if (envs.remove(envId)) {
+      // ignore: unawaited_futures
       _updateShownEnvironments(envs);
     }
   }
 
   bool environmentVisible(String envId) {
-    return _shownEnvironmentsSource.value.contains(envId);
+    return _shownEnvironmentsSource.value!.contains(envId);
   }
 
   void addAppFeatureValuesToStream() async {
@@ -192,20 +200,20 @@ class PerApplicationFeaturesBloc
     }
   }
 
-  Future<void> addApplicationsToStream(String pid) async {
+  Future<void> addApplicationsToStream(String? pid) async {
     portfolioId = pid;
     clearAppFeatureValuesStream();
 
     if (pid != null) {
-      List<Application> appList;
+      List<Application>? appList;
       try {
-        appList = await _appServiceApi.findApplications(portfolioId,
+        appList = await _appServiceApi.findApplications(portfolioId!,
             order: SortOrder.ASC);
         if (!_appSearchResultSource.isClosed) {
           _appSearchResultSource.add(appList);
         }
       } catch (e, s) {
-        mrClient.dialogError(e, s);
+        await mrClient.dialogError(e, s);
       }
       if (appList != null && applicationId != null) {
         checkApplicationIdIsLegit(appList);
@@ -228,14 +236,15 @@ class PerApplicationFeaturesBloc
       FeatureValueType featureValueType,
       String featureAlias,
       String featureLink) async {
-    final feature = Feature()
-      ..name = name
-      ..valueType = featureValueType
-      ..key = key
-      ..alias = featureAlias
-      ..link = featureLink;
+    final feature = Feature(
+      name: name,
+      valueType: featureValueType,
+      key: key,
+      alias: featureAlias,
+      link: featureLink,
+    );
     await _featureServiceApi.createFeaturesForApplication(
-        applicationId, feature);
+        applicationId!, feature);
     unawaited(mrClient.streamValley.getCurrentApplicationFeatures());
     addAppFeatureValuesToStream();
     _publishNewFeatureSource.add(feature);
@@ -244,19 +253,19 @@ class PerApplicationFeaturesBloc
   Future<void> updateFeature(Feature feature, String newName, String newKey,
       String newFeatureAlias, String newFeatureLink) async {
     final currentFeature =
-        await _featureServiceApi.getFeatureByKey(applicationId, feature.key);
+        await _featureServiceApi.getFeatureByKey(applicationId!, feature.key!);
     final newFeature = currentFeature
       ..name = newName
       ..alias = newFeatureAlias
       ..link = newFeatureLink
       ..key = newKey;
     await _featureServiceApi.updateFeatureForApplication(
-        applicationId, feature.key, newFeature);
+        applicationId!, feature.key!, newFeature);
     addAppFeatureValuesToStream();
   }
 
   Future<void> deleteFeature(String key) async {
-    await _featureServiceApi.deleteFeatureForApplication(applicationId, key);
+    await _featureServiceApi.deleteFeatureForApplication(applicationId!, key);
     addAppFeatureValuesToStream();
     unawaited(mrClient.streamValley.getCurrentApplicationFeatures());
   }
@@ -269,10 +278,10 @@ class PerApplicationFeaturesBloc
     _currentAppId.cancel();
   }
 
-  void updateAllFeatureValuesByApplicationForKey(
+  Future<void> updateAllFeatureValuesByApplicationForKey(
       Feature feature, List<FeatureValue> updates) async {
     await _featureServiceApi.updateAllFeatureValuesByApplicationForKey(
-        applicationId, feature.key, updates);
+        applicationId!, feature.key!, updates);
 
     // get the data again
     _getAllAppValuesDebounceStream.add(true);

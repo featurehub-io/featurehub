@@ -11,7 +11,7 @@ class StepperBloc implements Bloc {
   final ManagementRepositoryClientBloc mrClient;
 
   FHStepper fhStepper = FHStepper();
-  String applicationId;
+  String? applicationId;
 
   final _portfoliosBS = BehaviorSubject<List<Portfolio>>();
   Stream<List<Portfolio>> get portfoliosList => _portfoliosBS.stream;
@@ -22,18 +22,19 @@ class StepperBloc implements Bloc {
   final _FHStepperBS = BehaviorSubject<FHStepper>();
   Stream<FHStepper> get stepper => _FHStepperBS.stream;
 
-  StreamSubscription<String> _currentAppIdSubscriber;
-  StreamSubscription<List<Group>> _currentPortfolioGroupsSubscriber;
-  StreamSubscription<List<ServiceAccount>>
+  late StreamSubscription<String?> _currentAppIdSubscriber;
+  late StreamSubscription<List<Group>> _currentPortfolioGroupsSubscriber;
+  late StreamSubscription<List<ServiceAccount>>
       _currentPortfolioServiceAccountsSubscriber;
-  StreamSubscription<List<Environment>>
+  late StreamSubscription<List<Environment>>
       _currentApplicationEnvironmentsSubscriber;
-  StreamSubscription<List<Feature>> _currentApplicationFeaturesSubscriber;
-  StreamSubscription<List<ServiceAccount>>
+  late StreamSubscription<List<Feature>> _currentApplicationFeaturesSubscriber;
+  late StreamSubscription<List<ServiceAccount>>
       _currentEnvironmentServiceAccountsSubscriber;
-  StreamSubscription<List<Application>> _currentPortfolioApplicationsSubscriber;
+  late StreamSubscription<List<Application>>
+      _currentPortfolioApplicationsSubscriber;
 
-  StepperBloc(this.mrClient) : assert(mrClient != null) {
+  StepperBloc(this.mrClient) {
     _setStreamListeners();
   }
 
@@ -61,7 +62,7 @@ class StepperBloc implements Bloc {
   }
 
   //this is called each time current app ID stream from mrBloc emits a value
-  void _getCurrentApplication(id) async {
+  void _getCurrentApplication(String? id) async {
     if (id != null) {
       fhStepper.application = true;
     } else {

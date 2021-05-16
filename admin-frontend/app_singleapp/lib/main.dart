@@ -7,6 +7,8 @@ import 'package:logging/logging.dart';
 import 'api/client_api.dart';
 import 'routes/landing_route.dart';
 
+final _log = Logger('mr_app');
+
 void main() async {
   Logger.root.level = Level.ALL; // defaults to Level.INFO
   Logger.root.onRecord.listen((record) {
@@ -21,10 +23,14 @@ void main() async {
       print('stackTrace:${record.stackTrace}');
     }
   });
-  mainApp();
+  try {
+    await mainApp();
+  } catch (e, s) {
+    _log.severe('Failed', e, s);
+  }
 }
 
-void mainApp() async {
+Future<void> mainApp() async {
   runApp(BlocProvider(
       creator: (_context, _bag) {
         return ManagementRepositoryClientBloc();
@@ -38,24 +44,28 @@ class FeatureHubApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return DynamicTheme(
         defaultBrightness: Brightness.light,
-        data: (brightness) => brightness == Brightness.light ? myTheme : darkTheme
-    ,
-    themedWidgetBuilder: (context, theme) {
-      return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'FeatureHub',
-        theme: theme,
-        home: LandingRoute(title: 'FeatureHub'),
-        onGenerateRoute: (RouteSettings settings) {
-          final uri = Uri.parse(settings.name);
-          final params = uri.queryParametersAll;
-          ManagementRepositoryClientBloc.router
-              .navigateTo(context, uri.path, params: params);
-          BlocProvider.of<ManagementRepositoryClientBloc>(context)
-              .resetInitialized();
-          return null;
-        },
-      );
-    });
+        data: (brightness) =>
+            brightness == Brightness.light ? myTheme : darkTheme,
+        themedWidgetBuilder: (context, theme) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: 'FeatureHub',
+            theme: theme,
+            home: LandingRoute(title: 'FeatureHub'),
+            onGenerateRoute: (RouteSettings settings) {
+              if (settings.name == null) {
+                return null;
+              }
+
+              final uri = Uri.parse(settings.name!);
+              final params = uri.queryParametersAll;
+              ManagementRepositoryClientBloc.router
+                  .navigateTo(context, uri.path, params: params);
+              BlocProvider.of<ManagementRepositoryClientBloc>(context)
+                  .resetInitialized();
+              return null;
+            },
+          );
+        });
   }
 }

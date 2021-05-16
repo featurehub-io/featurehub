@@ -18,10 +18,10 @@ class FHScaffoldWidget extends StatefulWidget {
   final MainAxisAlignment bodyMainAxisAlignment;
 
   const FHScaffoldWidget(
-      {Key key,
-      @required this.body,
+      {Key? key,
+      required this.body,
       this.scrollAtWidth = 320,
-      this.bodyMainAxisAlignment})
+      required this.bodyMainAxisAlignment})
       : super(key: key);
 
   @override
@@ -37,9 +37,9 @@ class _FHScaffoldWidgetState extends State<FHScaffoldWidget> {
   @override
   Widget build(BuildContext context) {
     return _InternalFHScaffoldWidgetWidgetState(
-      child: widget.body,
       scrollAtWidth: widget.scrollAtWidth,
       bodyMainAxisAlignment: widget.bodyMainAxisAlignment,
+      child: widget.body,
     );
   }
 }
@@ -50,7 +50,10 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
   final MainAxisAlignment bodyMainAxisAlignment;
 
   const _InternalFHScaffoldWidgetWidgetState(
-      {Key key, this.child, this.scrollAtWidth, this.bodyMainAxisAlignment})
+      {Key? key,
+      required this.child,
+      required this.scrollAtWidth,
+      required this.bodyMainAxisAlignment})
       : super(key: key);
 
   @override
@@ -69,36 +72,39 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
               children: [
                 _mainContent(context),
               ]),
-          StreamBuilder<Widget>(
+          StreamBuilder<Widget?>(
               stream: mrBloc.snackbarStream,
-              builder: (BuildContext context, AsyncSnapshot<Widget> snapshot) {
+              builder: (BuildContext context, AsyncSnapshot<Widget?> snapshot) {
                 if (snapshot.hasData) {
                   final snackBar = SnackBar(
                     backgroundColor: Colors.orange,
-                    content: snapshot.data,
+                    content: snapshot.data!,
                   );
                   // make async as calls another build
-                  Timer(Duration(milliseconds: 1),
-                      () =>  ScaffoldMessenger.of(context).showSnackBar(snackBar));
+                  Timer(
+                      Duration(milliseconds: 1),
+                      () =>
+                          ScaffoldMessenger.of(context).showSnackBar(snackBar));
                   //after snackbar message shows up - need to make sure it doesn't show up again
                   mrBloc.addSnackbar(null);
                 }
                 return Container();
               }),
-          StreamBuilder<WidgetBuilder>(
+          StreamBuilder<WidgetBuilder?>(
               stream: mrBloc.overlayStream,
               builder: (BuildContext context,
-                  AsyncSnapshot<WidgetBuilder> snapshot) {
+                  AsyncSnapshot<WidgetBuilder?> snapshot) {
                 if (snapshot.hasData) {
-                  return snapshot.data(context);
+                  return snapshot.data!(context);
                 }
                 return Container();
               }),
-          StreamBuilder<FHError>(
+          StreamBuilder<FHError?>(
               stream: mrBloc.errorStream,
-              builder: (BuildContext context, AsyncSnapshot<FHError> snapshot) {
+              builder:
+                  (BuildContext context, AsyncSnapshot<FHError?> snapshot) {
                 if (snapshot.hasData) {
-                  return FHErrorWidget(error: snapshot.data);
+                  return FHErrorWidget(error: snapshot.data!);
                 }
                 return Container();
               }),
@@ -108,21 +114,22 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
   Widget _mainContent(BuildContext context) {
     var mrBloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
     return Expanded(
-        child: Row(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: bodyMainAxisAlignment ?? MainAxisAlignment.start,
+        mainAxisAlignment: bodyMainAxisAlignment,
         children: <Widget>[
           StreamBuilder<Person>(
               stream: mrBloc.personStream,
               builder: (BuildContext context, AsyncSnapshot<Person> snapshot) {
-                if (snapshot.hasData) {
+                if (snapshot.hasData && mrBloc.isLoggedIn) {
                   return Container(child: DrawerViewWidget());
                 }
                 return Container();
               }),
           Expanded(
             child: LayoutBuilder(builder: (context, constraints) {
-              if (constraints.maxWidth > scrollAtWidth) { //parent that constraints this widget is the page width (without a menu)
+              if (constraints.maxWidth > scrollAtWidth) {
+                //parent that constraints this widget is the page width (without a menu)
                 return Container(
                     height: MediaQuery.of(context).size.height - kToolbarHeight,
                     padding: EdgeInsets.fromLTRB(16, 0, 16, 0),
@@ -130,7 +137,8 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
                       Expanded(
                           child: SingleChildScrollView(
                               child: Column(
-                        children: <Widget>[child,
+                        children: <Widget>[
+                          child,
                         ],
                       ))),
                     ]));
@@ -144,7 +152,8 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
                       width: scrollAtWidth.toDouble(),
                       child: ListView(
                         shrinkWrap: true,
-                        children: <Widget>[child,
+                        children: <Widget>[
+                          child,
                         ],
                       )));
             }),
@@ -153,7 +162,7 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
               stream: mrBloc.personState.isCurrentPortfolioOrSuperAdmin,
               builder: (context, snapshot) {
                 if (snapshot.data != null &&
-                    (snapshot.data.currentPortfolioOrSuperAdmin == true)) {
+                    (snapshot.data!.currentPortfolioOrSuperAdmin == true)) {
                   return Container(
                       child: StepperContainer(
                     mrBloc: mrBloc,

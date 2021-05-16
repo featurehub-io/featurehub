@@ -5,14 +5,14 @@ class ConfigurationViewerField extends StatelessWidget {
   final bool canEdit;
 
   const ConfigurationViewerField({
-    Key key,
-    @required this.text,
-    this.canEdit,
+    Key? key,
+    required this.text,
+    required this.canEdit,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    if (text != null && text.isNotEmpty) {
+    if (text.isNotEmpty) {
       return Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[

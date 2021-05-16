@@ -9,31 +9,37 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
 
-  rxdart: ^0.24.1
-  bloc_provider: ^0.7.0+3
-  logging: ^0.11.4
+  rxdart: ^0.26.0
+  bloc_provider: ^0.8.0
+  logging: ^1.0.1
   mrapi:
     path: ../app_mr_layer
-  openapi_dart_common: ^3.1.0
-  xcvbnm: 1.0.0
-  universal_html: ^1.2.3
-  url_launcher: ^5.4.10
-  intl: ^0.16.0
-  timeago: ^2.0.26
-  google_fonts: ^1.0.0
+  openapi_dart_common: ^4.0.0
+  zxcvbn:
+    git:
+      url: https://github.com/lmordell/zxcvbn-dart.git
+  universal_html: ^2.0.8
+  url_launcher: ^6.0.3
+  intl: ^0.17.0
+  timeago: ^3.0.2
+  google_fonts: ^2.0.0
   # do not change this version of animator
-  animator: 1.0.0+5
-  shared_preferences: 0.5.6+3
-  pedantic: ^1.9.0
-  flutter_icons: ^1.1.0
-  auto_size_text: 2.1.0
-  collection: ^1.14.11
+  animator: ^3.0.0
+  shared_preferences: ^2.0.5
+  plugin_platform_interface: ^2.0.0
+  pedantic: ^1.11.0
+  flutter_icons:
+    git:
+      url: https://github.com/adarsh-technocrat/flutter-icons.git
+      branch: null-safety-migration
+  auto_size_text: ^3.0.0-nullsafety.0
+  collection: ^1.15.0
 
 dev_dependencies:
   flutter_test:
@@ -52,6 +58,7 @@ flutter:
     - assets/logo/FeatureHubPrimaryWhite.png
     - assets/logo/FlowerDarkBackground.png
     - assets/signup_3rdparty/btn_google_signin_dark_normal_web.png
+    - assets/signup_3rdparty/azure.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

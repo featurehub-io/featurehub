@@ -8,22 +8,20 @@ import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 
 class CollapsedViewValueCellHolder extends StatelessWidget {
-  final FeatureValue fv;
+  final FeatureValue? fv;
   final EnvironmentFeatureValues efv;
   final Feature feature;
 
   const CollapsedViewValueCellHolder(
-      {Key key, @required this.fv, @required this.efv, @required this.feature})
-      : assert(efv != null),
-        assert(feature != null),
-        super(key: key);
+      {Key? key, this.fv, required this.efv, required this.feature})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     if (efv.roles.isNotEmpty) {
       return _ValueContainer(feature: feature, fv: fv);
     }
-    if ((fv == null || fv.id == null) && efv.roles.isEmpty) {
+    if ((fv?.id == null) && efv.roles.isEmpty) {
       return noAccessTag(null);
     }
     return SizedBox.shrink();
@@ -32,9 +30,9 @@ class CollapsedViewValueCellHolder extends StatelessWidget {
 
 class _ValueContainer extends StatelessWidget {
   final Feature feature;
-  final FeatureValue fv;
+  final FeatureValue? fv;
 
-  _ValueContainer({@required this.feature, @required this.fv});
+  _ValueContainer({required this.feature, this.fv});
 
   @override
   Widget build(BuildContext context) {
@@ -45,13 +43,13 @@ class _ValueContainer extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            if (fv != null) _ValueCard(feature: feature, fv: fv),
+            if (fv != null) _ValueCard(feature: feature, fv: fv!),
             if (fv == null) NotSetContainer(),
-            if (fv != null && fv.rolloutStrategies != null)
-              _StrategiesList(feature: feature, fv: fv)
+            if (fv != null && fv!.rolloutStrategies.isNotEmpty)
+              _StrategiesList(feature: feature, fv: fv!)
           ],
         ),
-        if (fv != null && fv.locked) LockedIndicator()
+        if (fv != null && fv!.locked) LockedIndicator()
       ],
     );
   }
@@ -59,7 +57,7 @@ class _ValueContainer extends StatelessWidget {
 
 class LockedIndicator extends StatelessWidget {
   const LockedIndicator({
-    Key key,
+    Key? key,
   }) : super(key: key);
 
   @override
@@ -82,7 +80,7 @@ class _StrategiesList extends StatelessWidget {
   final Feature feature;
   final FeatureValue fv;
 
-  const _StrategiesList({Key key, @required this.feature, @required this.fv})
+  const _StrategiesList({Key? key, required this.feature, required this.fv})
       : super(key: key);
 
   @override
@@ -100,12 +98,12 @@ class _StrategiesList extends StatelessWidget {
 class _ValueCard extends StatelessWidget {
   final FeatureValue fv;
   final Feature feature;
-  final RolloutStrategy rolloutStrategy;
+  final RolloutStrategy? rolloutStrategy;
 
   const _ValueCard({
-    Key key,
-    @required this.fv,
-    @required this.feature,
+    Key? key,
+    required this.fv,
+    required this.feature,
     this.rolloutStrategy,
   }) : super(key: key);
 
@@ -122,21 +120,25 @@ class _ValueCard extends StatelessWidget {
             width: 150,
             padding: EdgeInsets.symmetric(horizontal: 8.0),
             decoration: BoxDecoration(
-              color: rolloutStrategy == null ? (Theme.of(context).brightness == Brightness.light ?
-                   defaultValueColor : Colors.transparent)
-                  : (Theme.of(context).brightness == Brightness.light ? strategyValueColor : Colors.transparent),
-             borderRadius: BorderRadius.all(Radius.circular(16.0)),
-              border: Theme.of(context).brightness == Brightness.light ? null : Border.all(
-                  color: Theme.of(context).disabledColor,
-                  width: 1.0,
-              ),
-
+              color: rolloutStrategy == null
+                  ? (Theme.of(context).brightness == Brightness.light
+                      ? defaultValueColor
+                      : Colors.transparent)
+                  : (Theme.of(context).brightness == Brightness.light
+                      ? strategyValueColor
+                      : Colors.transparent),
+              borderRadius: BorderRadius.all(Radius.circular(16.0)),
+              border: Theme.of(context).brightness == Brightness.light
+                  ? null
+                  : Border.all(
+                      color: Theme.of(context).disabledColor,
+                      width: 1.0,
+                    ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                if (fv.rolloutStrategies != null &&
-                    fv.rolloutStrategies.isNotEmpty)
+                if (fv.rolloutStrategies.isNotEmpty)
                   Expanded(
                     flex: 4,
                     child: rolloutStrategy != null
@@ -144,20 +146,19 @@ class _ValueCard extends StatelessWidget {
                             message: generateTooltipMessage(rolloutStrategy),
                             child: rolloutStrategy == null
                                 ? SizedBox.shrink()
-                                : Text(rolloutStrategy.name,
+                                : Text(rolloutStrategy!.name,
                                     style: Theme.of(context)
                                         .textTheme
-                                        .caption
+                                        .caption!
                                         .copyWith(color: strategyTextColor)),
                           )
                         : Text('default',
                             style: Theme.of(context)
                                 .textTheme
-                                .caption
+                                .caption!
                                 .copyWith(color: defaultTextColor)),
                   ),
-                if (fv.rolloutStrategies != null &&
-                    fv.rolloutStrategies.isNotEmpty)
+                if (fv.rolloutStrategies.isNotEmpty)
                   VerticalDivider(
                     thickness: 1.0,
                   ),
@@ -170,7 +171,7 @@ class _ValueCard extends StatelessWidget {
                       child: feature.valueType == FeatureValueType.BOOLEAN
                           ? FlagOnOffColoredIndicator(
                               on: rolloutStrategy != null
-                                  ? rolloutStrategy.value
+                                  ? rolloutStrategy!.value
                                   : fv.valueBoolean)
                           : Text(
                               displayValue.isEmpty ? 'not set' : displayValue,
@@ -192,8 +193,8 @@ class _ValueCard extends StatelessWidget {
 
   String _findDisplayValue() {
     if (rolloutStrategy != null) {
-      if (rolloutStrategy.value != null) {
-        return rolloutStrategy.value.toString();
+      if (rolloutStrategy!.value != null) {
+        return rolloutStrategy!.value.toString();
       } else {
         return '';
       }
@@ -203,7 +204,7 @@ class _ValueCard extends StatelessWidget {
   }
 
   String _getFeatureValue() {
-    switch (feature.valueType) {
+    switch (feature.valueType!) {
       case FeatureValueType.STRING:
         return fv.valueString ?? '';
       case FeatureValueType.NUMBER:
@@ -213,13 +214,5 @@ class _ValueCard extends StatelessWidget {
       case FeatureValueType.JSON:
         return fv.valueJson?.replaceAll('\n', '') ?? '';
     }
-
-    return '';
   }
 }
-
-//      if (fv.locked)
-//        Padding(
-//          padding: const EdgeInsets.only(top: 4.0),
-//          child: Icon(Icons.lock_outline, size: 16, color: Colors.black26,),
-//        ),

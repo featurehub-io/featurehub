@@ -8,27 +8,27 @@ import 'package:rxdart/rxdart.dart';
 enum PortfolioState { list, create, edit }
 
 class PortfolioBloc implements Bloc {
-  String search;
+  String? search;
   final ManagementRepositoryClientBloc mrClient;
-  PortfolioServiceApi _portfolioServiceApi;
+  late PortfolioServiceApi _portfolioServiceApi;
 
   Stream<List<Portfolio>> get portfolioSearch =>
       _portfolioSearchResultSource.stream;
   final _portfolioSearchResultSource = BehaviorSubject<List<Portfolio>>();
 
-  PortfolioBloc(this.search, this.mrClient) : assert(mrClient != null) {
+  PortfolioBloc(this.search, this.mrClient) {
     _portfolioServiceApi = PortfolioServiceApi(mrClient.apiClient);
     triggerSearch(search);
   }
 
-  void triggerSearch(String s) async {
+  void triggerSearch(String? s) async {
     // this should also change the url
 
     // debounce the search (i.e. if they are still typing, wait)
     final newSearch = s;
     search = s;
 
-    await Timer(Duration(milliseconds: 300), () {
+    Timer(Duration(milliseconds: 300), () {
       if (newSearch == search) {
         // hasn't changed
         _requestSearch(); // don't need to await it, async is fine
@@ -53,14 +53,14 @@ class PortfolioBloc implements Bloc {
 
   // this really runs the search after we have debounced it
   void _requestSearch() async {
-    if (search != null && search.length > 1) {
+    if (search != null && search!.length > 1) {
       // wait for global error handling to wrap this in try/catch
       var data = await _portfolioServiceApi.findPortfolios(
           order: SortOrder.ASC, filter: search, includeGroups: true);
 
       // publish it out...
       _portfolioSearchResultSource.add(data);
-    } else if (search == null || search.isEmpty) {
+    } else if (search == null || search!.isEmpty) {
       // this should paginate one presumes
       var data = await _portfolioServiceApi.findPortfolios(
           order: SortOrder.ASC, includeGroups: true);
@@ -75,12 +75,12 @@ class PortfolioBloc implements Bloc {
   }
 
   Future updatePortfolio(Portfolio portfolio) {
-    return _portfolioServiceApi.updatePortfolio(portfolio.id, portfolio);
+    return _portfolioServiceApi.updatePortfolio(portfolio.id!, portfolio);
   }
 
   void savePortfolio(String portfolioName) async {
     await _portfolioServiceApi
-        .createPortfolio(Portfolio()..name = portfolioName);
+        .createPortfolio(Portfolio(name: portfolioName, description: ''));
   }
 
   @override

@@ -13,8 +13,8 @@ class PortfolioGroupSelector extends StatefulWidget {
 }
 
 class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
-  var selectedPortfolio;
-  var selectedGroupID;
+  String? selectedPortfolio;
+  String? selectedGroupID;
 
   @override
   Widget build(BuildContext context) {
@@ -52,17 +52,16 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
   Widget buildPortfolioGroupChips(SelectPortfolioGroupBloc bloc) {
     return Padding(
       padding: const EdgeInsets.only(top: 16.0),
-      child: StreamBuilder<Set<PortfolioGroup>>(
+      child: StreamBuilder<Set<PortfolioGroup>?>(
           stream: bloc.addedGroupsStream,
-          builder: (context, AsyncSnapshot<Set<PortfolioGroup>> snapshot) {
+          builder: (context, AsyncSnapshot<Set<PortfolioGroup>?> snapshot) {
             if (snapshot.hasData) {
               return Wrap(
                   spacing: 8.0,
                   runSpacing: 4.0,
                   children:
                       //check if portfolio is null - it is site admin group that we don't display as a chip
-                      snapshot.data
-                          .where((i) => i.portfolio != null)
+                      snapshot.data!
                           .map((item) => Padding(
                               padding: const EdgeInsets.all(6.0),
                               child: InputChip(
@@ -73,8 +72,10 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
                                       size: 18.0,
                                     )),
                                 key: ObjectKey(item),
-                                label: Text(
-                                    '${item.portfolio.name}: ${item.group.name}'),
+                                label: item.portfolio == null
+                                    ? Text('FeatureHub Administrators')
+                                    : Text(
+                                        '${item.portfolio?.name}: ${item.group.name}'),
                                 onDeleted: () =>
                                     bloc.removeGroupFromStream(item),
                                 materialTapTargetSize:
@@ -88,9 +89,9 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
   }
 
   Widget buildGroupDropDown(SelectPortfolioGroupBloc bloc) {
-    return StreamBuilder<List<Group>>(
+    return StreamBuilder<List<Group>?>(
         stream: bloc.groups,
-        builder: (context, AsyncSnapshot<List<Group>> snapshot) {
+        builder: (context, AsyncSnapshot<List<Group>?> snapshot) {
           return Theme(
             data: Theme.of(context).copyWith(brightness: Brightness.light),
             child: Container(
@@ -111,22 +112,21 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
                     isDense: true,
                     underline: Container(),
                     items: snapshot.data != null
-                        ? snapshot.data.map((Group dropDownStringItem) {
-                      return DropdownMenuItem<String>(
-                          value: dropDownStringItem.id,
-                          child: Text(dropDownStringItem.name));
-                    }).toList()
+                        ? snapshot.data!.map((Group dropDownStringItem) {
+                            return DropdownMenuItem<String>(
+                                value: dropDownStringItem.id,
+                                child: Text(dropDownStringItem.name));
+                          }).toList()
                         : null,
                     hint: Text('Select group',
-                        style: Theme
-                            .of(context)
-                            .textTheme
-                            .bodyText1),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedGroupID = value;
-                        bloc.pushAddedGroupToStream(selectedGroupID);
-                      });
+                        style: Theme.of(context).textTheme.bodyText1),
+                    onChanged: (String? value) {
+                      if (value != null) {
+                        setState(() {
+                          selectedGroupID = value;
+                          bloc.pushAddedGroupToStream(value);
+                        });
+                      }
                     },
                     value: snapshot.data != null ? selectedGroupID : null,
                   ),
@@ -137,11 +137,11 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
         });
   }
 
-  StreamBuilder<List<Portfolio>> buildPortfolioDropDown(
+  StreamBuilder<List<Portfolio>?> buildPortfolioDropDown(
       SelectPortfolioGroupBloc bloc) {
-    return StreamBuilder<List<Portfolio>>(
+    return StreamBuilder<List<Portfolio>?>(
         stream: bloc.portfolios,
-        builder: (context, AsyncSnapshot<List<Portfolio>> snapshot) {
+        builder: (context, AsyncSnapshot<List<Portfolio>?> snapshot) {
           if (snapshot.hasData) {
             return Theme(
               data: Theme.of(context).copyWith(
@@ -153,7 +153,7 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
                   decoration: FHFilledInputDecoration(labelText: 'Portfolio'),
                   child: InkWell(
                     mouseCursor: SystemMouseCursors.click,
-                    child: DropdownButton(
+                    child: DropdownButton<String?>(
                       icon: Padding(
                         padding: EdgeInsets.only(left: 8.0),
                         child: Icon(
@@ -164,22 +164,21 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
                       isExpanded: true,
                       isDense: true,
                       underline: Container(),
-                      items: snapshot.data.map((Portfolio dropDownStringItem) {
+                      items: snapshot.data!.map((Portfolio dropDownStringItem) {
                         return DropdownMenuItem<String>(
                             value: dropDownStringItem.id,
                             child: Text(dropDownStringItem.name));
                       }).toList(),
                       hint: Text('Select portfolio',
-                          style: Theme
-                              .of(context)
-                              .textTheme
-                              .bodyText1),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedPortfolio = value;
-                          selectedGroupID = null;
-                        });
-                        bloc.setCurrentPortfolioAndGroups(value);
+                          style: Theme.of(context).textTheme.bodyText1),
+                      onChanged: (String? value) {
+                        if (value != null) {
+                          setState(() {
+                            selectedPortfolio = value;
+                            selectedGroupID = null;
+                          });
+                          bloc.setCurrentPortfolioAndGroups(value);
+                        }
                       },
                       value: selectedPortfolio,
                     ),
