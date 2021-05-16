@@ -83,20 +83,20 @@ public class ServerConfig implements ServerController, NATSSource {
   private static final Logger log = LoggerFactory.getLogger(ServerConfig.class);
   @ConfigKey("nats.urls")
   public String natsServer = "nats://localhost:4222";
-  private ExecutorService updateExecutor;
-  private ExecutorService listenExecutor;
+  private final ExecutorService updateExecutor;
+  private final ExecutorService listenExecutor;
   @ConfigKey("update.pool-size")
   Integer updatePoolSize = 10;
   @ConfigKey("listen.pool-size")
   Integer listenPoolSize = 10;
   @ConfigKey("edge.dacha.response-timeout")
   Integer namedCacheTimeout = 2000; // milliseconds to wait for dacha to responsd
-  private Connection connection;
+  private final Connection connection;
   // environmentId, list of connections for that environment
-  private Map<String, Collection<ClientConnection>> clientBuckets = new ConcurrentHashMap<>();
+  private final Map<String, Collection<ClientConnection>> clientBuckets = new ConcurrentHashMap<>();
   // dispatcher subject based on named-cache, NamedCacheListener
-  private Map<String, NamedCacheListener> cacheListeners = new ConcurrentHashMap<>();
-  private FeatureTransformer featureTransformer = new FeatureTransformerUtils();
+  private final Map<String, NamedCacheListener> cacheListeners = new ConcurrentHashMap<>();
+  private final FeatureTransformer featureTransformer = new FeatureTransformerUtils();
 
   public ServerConfig() {
     DeclaredConfigResolver.resolve(this);
@@ -167,11 +167,9 @@ public class ServerConfig implements ServerController, NATSSource {
 
       final Collection<ClientConnection> tbc = clientBuckets.get(fv.getEnvironmentId());
       if (tbc != null) {
-        tbc.forEach(b -> {
-          updateExecutor.submit(() -> {
-            b.notifyFeature(fv);
-          });
-        });
+        for (ClientConnection b : tbc) {
+          updateExecutor.submit(() -> b.notifyFeature(fv));
+        }
       }
     } catch (IOException e) {
       log.warn("unable process incoming feature change.");
@@ -307,17 +305,13 @@ public class ServerConfig implements ServerController, NATSSource {
     return null;
   }
 
-  public List<Environment> requestFeatures(List<String> sdkUrl, ClientContext clientContext) {
+  public List<Environment> requestFeatures(List<KeyParts> keys, ClientContext clientContext) {
     List<CompletableFuture<Environment>> futures = new ArrayList<>();
 
-    sdkUrl.forEach(url -> {
-      String[] parts = url.split("/");
-      if (parts.length == 3) {
-
-        futures.add(CompletableFuture.supplyAsync(() -> getEnvironmentFeaturesBySdk(parts[0], parts[2], parts[1]
-          , clientContext),
-          listenExecutor));
-      }
+    keys.forEach(url -> {
+      futures.add(CompletableFuture.supplyAsync(() -> getEnvironmentFeaturesBySdk(url.getCacheName(),
+        url.getServiceKey(), url.getEnvironmentId(), clientContext),
+        listenExecutor));
     });
 
     if (!futures.isEmpty()) {

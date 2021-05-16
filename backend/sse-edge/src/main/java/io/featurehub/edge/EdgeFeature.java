@@ -3,6 +3,13 @@ package io.featurehub.edge;
 import io.featurehub.edge.bucket.EventOutputBucketService;
 import io.featurehub.edge.rest.EventStreamResource;
 import io.featurehub.edge.rest.SSEHeaderFilter;
+import io.featurehub.edge.stats.NATSStatPublisher;
+import io.featurehub.edge.stats.StatDisruptor;
+import io.featurehub.edge.stats.StatCollectionSquasher;
+import io.featurehub.edge.stats.StatPublisher;
+import io.featurehub.edge.stats.StatRecorder;
+import io.featurehub.edge.stats.StatTimeTrigger;
+import io.featurehub.edge.stats.StatsSquashAndPublisher;
 import io.featurehub.publish.NATSSource;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
@@ -26,6 +33,10 @@ public class EdgeFeature implements Feature {
           bind(ServerConfig.class).to(ServerConfig.class).to(NATSSource.class).named("edge-source").in(Singleton.class);
           bind(EventOutputBucketService.class).to(EventOutputBucketService.class).in(Singleton.class);
           bind(FeatureTransformerUtils.class).to(FeatureTransformer.class).in(Singleton.class);
+          bind(StatCollectionSquasher.class).to(StatsSquashAndPublisher.class).in(Singleton.class);
+          bind(StatDisruptor.class).to(StatRecorder.class).in(Singleton.class);
+          bind(NATSStatPublisher.class).to(StatPublisher.class).in(Singleton.class);
+          bind(StatTimeTrigger.class).in(Singleton.class);
         }
       }).register(new ContainerLifecycleListener() {
       public void onStartup(Container container) {
@@ -35,6 +46,9 @@ public class EdgeFeature implements Feature {
 
         injector.getService(EventOutputBucketService.class);
         injector.getService(ServerConfig.class);
+
+        // starts the stats time publisher if there are any
+        injector.getService(StatTimeTrigger.class);
       }
 
       public void onReload(Container container) {

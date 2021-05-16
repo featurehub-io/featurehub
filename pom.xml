@@ -48,6 +48,7 @@
     <module>backend/composite-test</module>
     <module>backend/sse-edge-api</module>
     <module>backend/sse-edge</module>
+    <module>backend/sse-edge-stats-api</module>
     <module>backend/mr</module>
     <module>backend/mr-api</module>
     <module>backend/mr-db-api</module>
