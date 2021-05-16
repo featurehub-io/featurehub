@@ -68,9 +68,7 @@ class FHRouter {
     }
     final f = handlers[route];
 
-    return (f == null || f.handler == null)
-        ? notFoundHandler.handlerFunc
-        : f.handler.handlerFunc;
+    return (f == null) ? notFoundHandler.handlerFunc : f.handler.handlerFunc;
   }
 
   // we don't want to store this as it may change, so always ask the route

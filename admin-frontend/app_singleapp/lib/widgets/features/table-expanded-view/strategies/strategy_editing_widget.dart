@@ -73,11 +73,8 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
     final focusNode = FocusScope.of(context);
 
     return FHAlertDialog(
-      title: Text(individualStrategyBloc!.rolloutStrategy == null
-          ? 'Add split targeting'
-          : (widget.editable
-              ? 'Edit split targeting'
-              : 'View split targeting')),
+      title: Text(
+          widget.editable ? 'Edit split targeting' : 'View split targeting'),
       content: SingleChildScrollView(
         child: Container(
           width: 1000,
@@ -172,13 +169,8 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                                     onPressed: () {
                                       setState(() {
                                         _strategyPercentage.text = '';
-                                        if (individualStrategyBloc!
-                                                .rolloutStrategy !=
-                                            null) {
-                                          individualStrategyBloc!
-                                              .rolloutStrategy
-                                              .percentage = null;
-                                        }
+                                        individualStrategyBloc!
+                                            .rolloutStrategy.percentage = null;
                                         showPercentageField = false;
                                         widget.bloc.updateStrategy();
                                       });

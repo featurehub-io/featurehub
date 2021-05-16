@@ -125,9 +125,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
           FHButtonBar(children: <Widget>[
             FHFlatButtonTransparent(
                 onPressed: () {
-                  if (_formKey != null) {
-                    _formKey.currentState!.reset;
-                  }
+                  _formKey.currentState!.reset;
                   ManagementRepositoryClientBloc.router
                       .navigateTo(context, '/manage-users');
                 },

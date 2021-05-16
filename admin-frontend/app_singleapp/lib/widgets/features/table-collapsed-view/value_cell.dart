@@ -45,7 +45,7 @@ class _ValueContainer extends StatelessWidget {
           children: [
             if (fv != null) _ValueCard(feature: feature, fv: fv!),
             if (fv == null) NotSetContainer(),
-            if (fv != null && fv!.rolloutStrategies != null)
+            if (fv != null && fv!.rolloutStrategies.isNotEmpty)
               _StrategiesList(feature: feature, fv: fv!)
           ],
         ),
@@ -138,8 +138,7 @@ class _ValueCard extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                if (fv.rolloutStrategies != null &&
-                    fv.rolloutStrategies.isNotEmpty)
+                if (fv.rolloutStrategies.isNotEmpty)
                   Expanded(
                     flex: 4,
                     child: rolloutStrategy != null
@@ -159,8 +158,7 @@ class _ValueCard extends StatelessWidget {
                                 .caption!
                                 .copyWith(color: defaultTextColor)),
                   ),
-                if (fv.rolloutStrategies != null &&
-                    fv.rolloutStrategies.isNotEmpty)
+                if (fv.rolloutStrategies.isNotEmpty)
                   VerticalDivider(
                     thickness: 1.0,
                   ),

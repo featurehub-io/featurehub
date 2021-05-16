@@ -28,14 +28,10 @@ class IdentityProviders {
   IdentityProviders(this._bloc, this._authServiceApi);
 
   void authenticateViaProvider(String provider) {
-    if (_authServiceApi != null) {
-      _authServiceApi.getLoginUrlForProvider(provider).then((value) {
-        if (value != null) {
-          return window.location.href = value.redirectUrl!;
-        }
-      }).catchError((e, s) {
-        _bloc.dialogError(e, s);
-      });
-    }
+    _authServiceApi.getLoginUrlForProvider(provider).then((value) {
+      return window.location.href = value.redirectUrl!;
+    }).catchError((e, s) {
+      _bloc.dialogError(e, s);
+    });
   }
 }

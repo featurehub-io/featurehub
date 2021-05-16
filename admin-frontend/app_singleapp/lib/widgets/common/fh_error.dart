@@ -53,8 +53,17 @@ class _FHErrorState extends State<FHErrorWidget> {
                   visible: error.showDetails,
                   child: Column(children: [
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: <Widget>[
                         GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                showDetails = !showDetails;
+                                showDetailsButton = showDetails
+                                    ? 'Hide details'
+                                    : 'View details';
+                              });
+                            },
                             child: Container(
                               padding: EdgeInsets.only(top: 20, bottom: 20),
                               child: Text(showDetailsButton,
@@ -64,17 +73,8 @@ class _FHErrorState extends State<FHErrorWidget> {
                                       .merge(TextStyle(
                                           color:
                                               Theme.of(context).buttonColor))),
-                            ),
-                            onTap: () {
-                              setState(() {
-                                showDetails = !showDetails;
-                                showDetailsButton = showDetails
-                                    ? 'Hide details'
-                                    : 'View details';
-                              });
-                            }),
+                            )),
                       ],
-                      mainAxisAlignment: MainAxisAlignment.start,
                     ),
                     Visibility(
                       visible: showDetails,

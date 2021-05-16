@@ -1,5 +1,4 @@
-import 'package:collection/collection.dart'
-    show IterableExtension, IterableNullableExtension;
+import 'package:collection/collection.dart' show IterableNullableExtension;
 import 'package:e2e_tests/shared.dart';
 import 'package:e2e_tests/user_common.dart';
 import 'package:mrapi/api.dart';

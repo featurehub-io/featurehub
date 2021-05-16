@@ -241,7 +241,6 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
     final account = sa.permissions.firstWhere((p) => p.environmentId == env.id,
         orElse: () => ServiceAccountPermission(
             permissions: <RoleType>[], environmentId: env.id!));
-    final perms = account.permissions;
     var isScreenWide = MediaQuery.of(context).size.width >= 1350;
 
     return Flex(

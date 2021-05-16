@@ -16,7 +16,7 @@ class PortfolioBloc implements Bloc {
       _portfolioSearchResultSource.stream;
   final _portfolioSearchResultSource = BehaviorSubject<List<Portfolio>>();
 
-  PortfolioBloc(this.search, this.mrClient) : assert(mrClient != null) {
+  PortfolioBloc(this.search, this.mrClient) {
     _portfolioServiceApi = PortfolioServiceApi(mrClient.apiClient);
     triggerSearch(search);
   }
@@ -28,7 +28,7 @@ class PortfolioBloc implements Bloc {
     final newSearch = s;
     search = s;
 
-    await Timer(Duration(milliseconds: 300), () {
+    Timer(Duration(milliseconds: 300), () {
       if (newSearch == search) {
         // hasn't changed
         _requestSearch(); // don't need to await it, async is fine

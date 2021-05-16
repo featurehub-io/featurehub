@@ -36,7 +36,7 @@ class FHDeleteThingWarningWidget extends StatelessWidget {
           _WarningWidget(
             extra: extraWarning,
           ),
-          Text(wholeWarning ?? 'Are you sure you want to delete the ${thing}?',
+          Text(wholeWarning ?? 'Are you sure you want to delete the $thing?',
               style: TextStyle(color: extraWarning ? Colors.red : null)),
         ],
       ),

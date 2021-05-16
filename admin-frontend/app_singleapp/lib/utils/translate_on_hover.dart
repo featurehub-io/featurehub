@@ -17,7 +17,6 @@ class _TranslateOnHoverState extends State<TranslateOnHover> {
       onEnter: (e) => _mouseEnter(true),
       onExit: (e) => _mouseEnter(false),
       child: Container(
-        child: widget.child,
         decoration: _hovering
             ? BoxDecoration(
                 border: Border(
@@ -35,6 +34,7 @@ class _TranslateOnHoverState extends State<TranslateOnHover> {
                   ),
                 ),
               ),
+        child: widget.child,
       ),
     );
   }

@@ -12,7 +12,7 @@ class ConfigurationViewerField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (text != null && text.isNotEmpty) {
+    if (text.isNotEmpty) {
       return Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[

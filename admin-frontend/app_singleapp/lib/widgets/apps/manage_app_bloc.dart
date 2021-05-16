@@ -188,7 +188,7 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
           _serviceAccountsBS.add(serviceAccounts);
         }
       } catch (e, s) {
-        _mrClient.dialogError(e, s);
+        await _mrClient.dialogError(e, s);
       }
     }
   }
@@ -203,7 +203,7 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     try {
       await _fetchServiceAccountsFromApplication(application!);
     } catch (e, s) {
-      _mrClient.dialogError(e, s);
+      await _mrClient.dialogError(e, s);
     }
   }
 

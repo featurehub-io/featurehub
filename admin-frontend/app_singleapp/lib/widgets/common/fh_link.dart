@@ -17,21 +17,22 @@ class FHLinkWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-        mouseCursor: SystemMouseCursors.click,
-        child: Container(
-          alignment: Alignment.centerLeft,
-          child: TranslateOnHover(
-            child: Text(text,
-                style: Theme.of(context)
-                    .textTheme
-                    .button!
-                    .merge(TextStyle(color: Theme.of(context).buttonColor))),
-          ),
+      mouseCursor: SystemMouseCursors.click,
+      onTap: () {
+        ManagementRepositoryClientBloc.router
+            .navigateTo(context, href, params: {});
+      },
+      child: Container(
+        alignment: Alignment.centerLeft,
+        child: TranslateOnHover(
+          child: Text(text,
+              style: Theme.of(context)
+                  .textTheme
+                  .button!
+                  .merge(TextStyle(color: Theme.of(context).buttonColor))),
         ),
-        onTap: () {
-          ManagementRepositoryClientBloc.router
-              .navigateTo(context, href, params: {});
-        });
+      ),
+    );
   }
 }
 
@@ -52,15 +53,15 @@ class FHLink extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-        child: Container(
-          alignment: Alignment.centerLeft,
-          child: tooltip != null
-              ? Tooltip(message: tooltip!, child: child)
-              : child,
-        ),
-        onTap: () {
-          ManagementRepositoryClientBloc.router
-              .navigateTo(context, href, params: params);
-        });
+      onTap: () {
+        ManagementRepositoryClientBloc.router
+            .navigateTo(context, href, params: params);
+      },
+      child: Container(
+        alignment: Alignment.centerLeft,
+        child:
+            tooltip != null ? Tooltip(message: tooltip!, child: child) : child,
+      ),
+    );
   }
 }

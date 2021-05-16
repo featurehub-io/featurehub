@@ -188,9 +188,7 @@ class _SetupPage1ThirdPartyProviders extends StatelessWidget {
       {Key? key,
       required this.bloc,
       required this.selectedExternalProviderFunc})
-      : assert(bloc != null),
-        assert(selectedExternalProviderFunc != null),
-        super(key: key);
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -202,11 +200,11 @@ class _SetupPage1ThirdPartyProviders extends StatelessWidget {
       bloc.identityProviders.externalProviders.forEach((provider) {
         children.add(InkWell(
           mouseCursor: SystemMouseCursors.click,
-          child: Image.asset(
-              bloc.identityProviders.externalProviderAssets[provider]!),
           onTap: () {
             selectedExternalProviderFunc(provider);
           },
+          child: Image.asset(
+              bloc.identityProviders.externalProviderAssets[provider]!),
         ));
         children.add(Padding(
           padding: const EdgeInsets.fromLTRB(0, 16, 0, 10),

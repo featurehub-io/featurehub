@@ -17,7 +17,7 @@ class GroupBloc implements Bloc {
   Stream<Group?> get groupLoaded => _groupSource.stream;
   final _groupSource = BehaviorSubject<Group?>();
 
-  GroupBloc(this.groupId, this.mrClient) : assert(mrClient != null) {
+  GroupBloc(this.groupId, this.mrClient) {
     _groupServiceApi = GroupServiceApi(mrClient.apiClient);
 
     _groupListener =
@@ -61,10 +61,8 @@ class GroupBloc implements Bloc {
         mrClient.dialogError(e, s);
       });
       // publish it out...
-      if (fetchedGroup != null) {
-        group = fetchedGroup;
-        _groupSource.add(fetchedGroup);
-      }
+      group = fetchedGroup;
+      _groupSource.add(fetchedGroup);
     }
   }
 

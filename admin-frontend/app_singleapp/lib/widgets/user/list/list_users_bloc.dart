@@ -15,7 +15,7 @@ class SearchPersonEntry {
 class ListUsersBloc implements Bloc {
   String? search;
   final ManagementRepositoryClientBloc mrClient;
-  PersonServiceApi _personServiceApi;
+  final PersonServiceApi _personServiceApi;
 
   Stream<List<SearchPersonEntry>> get personSearch =>
       _personSearchResultSource.stream;
@@ -34,7 +34,7 @@ class ListUsersBloc implements Bloc {
     final newSearch = s;
     search = s;
 
-    await Timer(Duration(milliseconds: 300), () {
+    Timer(Duration(milliseconds: 300), () {
       if (newSearch == search) {
         // hasn't changed
         _requestSearch(); // don't need to await it, async is fine

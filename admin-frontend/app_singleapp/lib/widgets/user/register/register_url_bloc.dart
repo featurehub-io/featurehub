@@ -26,7 +26,7 @@ class RegisterBloc implements Bloc {
   final _formStateStream = BehaviorSubject<RegisterUrlForm>();
   Stream<RegisterUrlForm> get formState => _formStateStream.stream;
 
-  RegisterBloc(this.mrClient) : assert(mrClient != null) {
+  RegisterBloc(this.mrClient) {
     _formStateStream.add(RegisterUrlForm.loadingState);
   }
 

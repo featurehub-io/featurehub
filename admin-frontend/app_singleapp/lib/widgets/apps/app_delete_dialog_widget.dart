@@ -10,9 +10,7 @@ class AppDeleteDialogWidget extends StatelessWidget {
 
   const AppDeleteDialogWidget(
       {Key? key, required this.bloc, required this.application})
-      : assert(application != null),
-        assert(bloc != null),
-        super(key: key);
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {

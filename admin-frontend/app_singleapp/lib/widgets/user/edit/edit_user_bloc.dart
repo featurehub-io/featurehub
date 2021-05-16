@@ -17,8 +17,7 @@ class EditUserBloc implements Bloc {
   final _formStateStream = rxdart.BehaviorSubject<EditUserForm?>();
   Stream<EditUserForm?> get formState => _formStateStream.stream;
 
-  EditUserBloc(this.mrClient, this.personId, {required this.selectGroupBloc})
-      : assert(mrClient != null) {
+  EditUserBloc(this.mrClient, this.personId, {required this.selectGroupBloc}) {
     _loadInitialPersonData();
   }
 
@@ -57,15 +56,15 @@ class EditUserBloc implements Bloc {
   }
 
   Future<void> updatePersonDetails(String email, String name) async {
-    if (this.person != null) {
-      final person = this.person!;
-      person.groups = selectGroupBloc.listOfAddedPortfolioGroups
+    if (person != null) {
+      final pers = person!;
+      pers.groups = selectGroupBloc.listOfAddedPortfolioGroups
           .map((pg) => pg.group)
           .toList();
-      person.name = name;
-      person.email = email;
+      pers.name = name;
+      pers.email = email;
       await mrClient.personServiceApi
-          .updatePerson(personId!, person, includeGroups: true);
+          .updatePerson(personId!, pers, includeGroups: true);
     }
   }
 
@@ -82,7 +81,7 @@ class EditUserBloc implements Bloc {
   }
 
   void _findPersonsGroupsAndPushToStream() async {
-    if (person != null && person!.groups != null) {
+    if (person != null) {
       final portfoliosList = await _findPortfolios();
 
       final listOfExistingGroups = <PortfolioGroup>[];

@@ -215,9 +215,7 @@ class EnvDeleteDialogWidget extends StatelessWidget {
   final ManageAppBloc bloc;
 
   const EnvDeleteDialogWidget({Key? key, required this.bloc, required this.env})
-      : assert(env != null),
-        assert(bloc != null),
-        super(key: key);
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {

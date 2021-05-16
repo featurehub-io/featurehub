@@ -119,9 +119,7 @@ class ManagementRepositoryClientBloc implements Bloc {
 
     // this is for fine grained route changes, like tab changes
     _routerSource.add(route);
-    if (_sharedPreferences != null) {
-      _sharedPreferences.saveString('current-route', route.toJson());
-    }
+    _sharedPreferences.saveString('current-route', route.toJson());
   }
 
   void _initializeRouteStreams() {
@@ -130,9 +128,7 @@ class ManagementRepositoryClientBloc implements Bloc {
     });
 
     _routerExternalSource.listen((value) {
-      if (value != null) {
-        _routerCollectedSource.add(value);
-      }
+      _routerCollectedSource.add(value);
     });
   }
 

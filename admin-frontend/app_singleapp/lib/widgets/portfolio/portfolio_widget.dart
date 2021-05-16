@@ -45,10 +45,7 @@ class _PortfolioWidget extends StatelessWidget {
 
   const _PortfolioWidget(
       {Key? key, required this.portfolio, required this.mr, required this.bloc})
-      : assert(portfolio != null),
-        assert(mr != null),
-        assert(bloc != null),
-        super(key: key);
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -107,9 +104,7 @@ class PortfolioDeleteDialogWidget extends StatelessWidget {
 
   const PortfolioDeleteDialogWidget(
       {Key? key, required this.portfolio, required this.bloc})
-      : assert(portfolio != null),
-        assert(bloc != null),
-        super(key: key);
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {

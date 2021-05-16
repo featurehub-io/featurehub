@@ -14,9 +14,9 @@ class CircleIconButton extends StatelessWidget {
         color: Theme.of(context).primaryColorLight, // button color
         child: InkWell(
           mouseCursor: SystemMouseCursors.click,
-          splashColor: Theme.of(context).primaryColorDark, // inkwell color
+          splashColor: Theme.of(context).primaryColorDark,
+          onTap: onTap, // inkwell color
           child: SizedBox(width: 32, height: 32, child: icon),
-          onTap: onTap,
         ),
       ),
     );

@@ -321,7 +321,7 @@ class _MenuItem extends StatelessWidget {
                     Padding(
                       padding:
                           EdgeInsets.only(left: iconSize != null ? 18.0 : 24.0),
-                      child: Text(' ${name}',
+                      child: Text(' $name',
                           style: Theme.of(context)
                               .textTheme
                               .bodyText2!

@@ -259,6 +259,8 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                             : CustomStepState.indexed)
                                         : CustomStepState.disabled,
                                     content: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: <Widget>[
                                         Text(
                                           'Create a feature for an application',
@@ -277,8 +279,6 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                           },
                                         ),
                                       ],
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
                                     )),
                               ],
                               controlsBuilder: (BuildContext context,

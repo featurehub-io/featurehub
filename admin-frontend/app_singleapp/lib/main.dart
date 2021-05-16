@@ -7,6 +7,8 @@ import 'package:logging/logging.dart';
 import 'api/client_api.dart';
 import 'routes/landing_route.dart';
 
+final _log = Logger('mr_app');
+
 void main() async {
   Logger.root.level = Level.ALL; // defaults to Level.INFO
   Logger.root.onRecord.listen((record) {
@@ -24,8 +26,7 @@ void main() async {
   try {
     await mainApp();
   } catch (e, s) {
-    print(e);
-    print(s);
+    _log.severe('Failed', e, s);
   }
 }
 

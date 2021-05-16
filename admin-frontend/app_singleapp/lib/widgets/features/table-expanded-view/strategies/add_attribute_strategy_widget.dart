@@ -74,19 +74,17 @@ class _EditAttributeStrategyWidgetState
 
     _value.text = '';
 
-    if (_attribute.values == null) {
-      _attribute.values = [];
+    if (_wellKnown == StrategyAttributeWellKnownNames.platform) {
+      _attribute.values =
+          _attribute.values.map(_platformNameReverseMapper).toList();
+    } else if (_wellKnown == StrategyAttributeWellKnownNames.device) {
+      _attribute.values =
+          _attribute.values.map(_deviceNameReverseMapper).toList();
+    } else if (_wellKnown == StrategyAttributeWellKnownNames.country) {
+      _attribute.values =
+          _attribute.values.map(_countryNameReverseMapper).toList();
     } else {
-      if (_wellKnown == StrategyAttributeWellKnownNames.platform) {
-        _attribute.values =
-            _attribute.values.map(_platformNameReverseMapper).toList();
-      } else if (_wellKnown == StrategyAttributeWellKnownNames.device) {
-        _attribute.values =
-            _attribute.values.map(_deviceNameReverseMapper).toList();
-      } else if (_wellKnown == StrategyAttributeWellKnownNames.country) {
-        _attribute.values =
-            _attribute.values.map(_countryNameReverseMapper).toList();
-      }
+      _attribute.values = [];
     }
 
     _matchers = defineMatchers(_attributeType, _wellKnown);

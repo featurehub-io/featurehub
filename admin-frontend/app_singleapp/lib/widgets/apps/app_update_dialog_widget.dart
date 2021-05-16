@@ -8,7 +8,7 @@ import 'package:openapi_dart_common/openapi.dart';
 import 'apps_bloc.dart';
 
 class AppUpdateDialogWidget extends StatefulWidget {
-  Application? application;
+  final Application? application;
   final AppsBloc bloc;
 
   AppUpdateDialogWidget({

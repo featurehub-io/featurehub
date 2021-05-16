@@ -65,18 +65,18 @@ class SetupBloc implements Bloc {
         authProvider: provider);
 
     mrClient.setupApi.setupSiteAdmin(s).then((data) {
-      if (data != null) {
-        _setupSource.add(true);
+      _setupSource.add(true);
 
-        if (data.redirectUrl != null) {
-          window.location.href = data.redirectUrl!;
-        } else {
-          mrClient.setBearerToken(data.accessToken);
-          mrClient.setPerson(data.person!);
-        }
+      if (data.redirectUrl != null) {
+        window.location.href = data.redirectUrl!;
+      } else {
+        mrClient.setBearerToken(data.accessToken);
+        mrClient.setPerson(data.person!);
       }
       //    client.setGroup(data.person.groups);
-    }).catchError((e, s) => _setupSource.addError(e.toString()));
+    }).catchError((e, s) {
+      _setupSource.addError(e.toString());
+    });
   }
 
   void reinitialize() {

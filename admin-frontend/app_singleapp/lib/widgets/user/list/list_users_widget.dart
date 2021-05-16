@@ -185,7 +185,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
   }
 
   Color _infoColour(SearchPersonEntry entry, bool allowedLocalLogin) {
-    if (entry.registration.token == null || !allowedLocalLogin) {
+    if (!allowedLocalLogin) {
       return Theme.of(context).buttonColor;
     }
 
@@ -251,9 +251,7 @@ class _ListUserInfo extends StatelessWidget {
             child: Text(entry.person.email!,
                 style: Theme.of(context).textTheme.bodyText1),
           ),
-          if (allowedLocalIdentity &&
-              entry.registration.token != null &&
-              !entry.registration.expired)
+          if (allowedLocalIdentity && !entry.registration.expired)
             Column(
               children: [
                 SizedBox(height: 16),
@@ -268,9 +266,7 @@ class _ListUserInfo extends StatelessWidget {
                 ),
               ],
             ),
-          if (allowedLocalIdentity &&
-              entry.registration.token != null &&
-              !entry.registration.expired)
+          if (allowedLocalIdentity && !entry.registration.expired)
             Row(
               children: [
                 Expanded(
@@ -285,9 +281,7 @@ class _ListUserInfo extends StatelessWidget {
                 )
               ],
             ),
-          if (allowedLocalIdentity &&
-              entry.registration.token != null &&
-              entry.registration.expired)
+          if (allowedLocalIdentity && entry.registration.expired)
             Padding(
               padding: const EdgeInsets.only(top: 12.0, bottom: 4.0),
               child: Text(
@@ -295,23 +289,16 @@ class _ListUserInfo extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
-          if (allowedLocalIdentity &&
-              entry.registration.token != null &&
-              entry.registration.expired)
+          if (allowedLocalIdentity && entry.registration.expired)
             FHCopyToClipboardFlatButton(
               caption: 'Renew registration and copy to clipboard',
               textProvider: () async {
                 try {
                   final token = await bloc.mrClient.authServiceApi
                       .resetExpiredToken(entry.person.email!);
-                  if (token.registrationUrl == null) {
-                    bloc.mrClient
-                        .addSnackbar(Text('Unable to renew registration'));
-                  } else {
-                    bloc.mrClient.addSnackbar(
-                        Text('Registration renewed and copyied to clipboard'));
-                    return bloc.mrClient.registrationUrl(token.registrationUrl);
-                  }
+                  bloc.mrClient.addSnackbar(
+                      Text('Registration renewed and copyied to clipboard'));
+                  return bloc.mrClient.registrationUrl(token.registrationUrl);
                 } catch (e, s) {
                   bloc.mrClient.addError(FHError.createError(e, s));
                 }
@@ -385,9 +372,7 @@ class DeleteDialogWidget extends StatelessWidget {
   final ListUsersBloc bloc;
 
   const DeleteDialogWidget({Key? key, required this.person, required this.bloc})
-      : assert(person != null),
-        assert(bloc != null),
-        super(key: key);
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {

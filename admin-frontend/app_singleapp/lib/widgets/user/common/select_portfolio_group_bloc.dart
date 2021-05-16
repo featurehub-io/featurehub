@@ -21,7 +21,7 @@ class SelectPortfolioGroupBloc implements Bloc {
   Stream<Set<PortfolioGroup>?> get addedGroupsStream =>
       _addedGroupsStream.stream;
 
-  SelectPortfolioGroupBloc(this.mrClient) : assert(mrClient != null) {
+  SelectPortfolioGroupBloc(this.mrClient) {
     loadInitialData();
   }
 
@@ -91,9 +91,7 @@ class SelectPortfolioGroupBloc implements Bloc {
 
   void clearAddedPortfoliosAndGroups() {
     // same as in dispose?
-    if (listOfAddedPortfolioGroups != null) {
-      listOfAddedPortfolioGroups.clear();
-    }
+    listOfAddedPortfolioGroups.clear();
   }
 
   @override

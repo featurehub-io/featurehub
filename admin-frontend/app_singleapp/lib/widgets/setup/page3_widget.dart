@@ -6,9 +6,7 @@ import 'package:flutter/material.dart';
 class SetupPage3Widget extends StatelessWidget {
   final SetupBloc bloc;
 
-  const SetupPage3Widget({Key? key, required this.bloc})
-      : assert(bloc != null),
-        super(key: key);
+  const SetupPage3Widget({Key? key, required this.bloc}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

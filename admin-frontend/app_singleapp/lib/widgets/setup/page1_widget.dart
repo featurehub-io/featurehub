@@ -9,9 +9,7 @@ import 'package:zxcvbn/zxcvbn.dart';
 class SetupPage1Widget extends StatefulWidget {
   final SetupBloc bloc;
 
-  const SetupPage1Widget({Key? key, required this.bloc})
-      : assert(bloc != null),
-        super(key: key);
+  const SetupPage1Widget({Key? key, required this.bloc}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -237,9 +235,7 @@ class _SetupPage1ThirdPartyProviders extends StatelessWidget {
       {Key? key,
       required this.bloc,
       required this.selectedExternalProviderFunc})
-      : assert(bloc != null),
-        assert(selectedExternalProviderFunc != null),
-        super(key: key);
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -251,10 +247,10 @@ class _SetupPage1ThirdPartyProviders extends StatelessWidget {
       bloc.externalProviders.forEach((provider) {
         children.add(InkWell(
           mouseCursor: SystemMouseCursors.click,
-          child: Image.asset(bloc.externalProviderAssets[provider]!),
           onTap: () {
             selectedExternalProviderFunc(provider);
           },
+          child: Image.asset(bloc.externalProviderAssets[provider]!),
         ));
         children.add(Padding(
           padding: const EdgeInsets.fromLTRB(0, 16, 0, 10),

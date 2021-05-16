@@ -39,7 +39,6 @@ class CreateUserBloc implements Bloc {
       email: email,
       name: name,
       groupIds: listOfAddedPortfolioGroups
-          .where((pg) => pg.group != null)
           .map((pg) => pg.group.id)
           .whereNotNull()
           .toList(),

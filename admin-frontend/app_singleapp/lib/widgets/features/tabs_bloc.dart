@@ -32,7 +32,7 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
   FeatureStatusFeatures featureStatus;
   final _stateSource = BehaviorSubject<TabsState>.seeded(TabsState.FLAGS);
   List<Feature> _featuresForTabs = [];
-  final _currentlyEditingFeatureKeys = Set<String>();
+  final _currentlyEditingFeatureKeys = <String>{};
   final _featureCurrentlyEditingSource = BehaviorSubject<Set<String>?>();
   final ManagementRepositoryClientBloc mrClient;
   final _allFeaturesByKey = <String, Feature>{};

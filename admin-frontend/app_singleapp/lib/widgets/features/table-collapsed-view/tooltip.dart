@@ -18,44 +18,38 @@ String generateTooltipMessage(RolloutStrategy? rolloutStrategy) {
     percentageMessage = 'Percentage: ${rolloutStrategy.percentageText}%\n';
   }
 
-  if (rolloutStrategy.attributes != null &&
-      rolloutStrategy.attributes.any((rsa) =>
-          rsa.fieldName == StrategyAttributeWellKnownNames.userkey.name)) {
+  if (rolloutStrategy.attributes.any(
+      (rsa) => rsa.fieldName == StrategyAttributeWellKnownNames.userkey.name)) {
     userKeyMessage = 'User key\n';
   }
 
-  if (rolloutStrategy.attributes != null &&
-      rolloutStrategy.attributes.any((rsa) =>
-          rsa.fieldName == StrategyAttributeWellKnownNames.country.name)) {
+  if (rolloutStrategy.attributes.any(
+      (rsa) => rsa.fieldName == StrategyAttributeWellKnownNames.country.name)) {
     countryNameMessage = 'Country\n';
   }
 
-  if (rolloutStrategy.attributes != null &&
-      rolloutStrategy.attributes.any((rsa) =>
-          rsa.fieldName == StrategyAttributeWellKnownNames.platform.name)) {
+  if (rolloutStrategy.attributes.any((rsa) =>
+      rsa.fieldName == StrategyAttributeWellKnownNames.platform.name)) {
     platformNameMessage = 'Platform\n';
   }
 
-  if (rolloutStrategy.attributes != null &&
-      rolloutStrategy.attributes.any((rsa) =>
-          rsa.fieldName == StrategyAttributeWellKnownNames.device.name)) {
+  if (rolloutStrategy.attributes.any(
+      (rsa) => rsa.fieldName == StrategyAttributeWellKnownNames.device.name)) {
     deviceNameMessage = 'Device\n';
   }
 
-  if (rolloutStrategy.attributes != null &&
-      rolloutStrategy.attributes.any((rsa) =>
-          rsa.fieldName == StrategyAttributeWellKnownNames.version.name)) {
+  if (rolloutStrategy.attributes.any(
+      (rsa) => rsa.fieldName == StrategyAttributeWellKnownNames.version.name)) {
     versionNameMessage = 'Version\n';
   }
 
-  if (rolloutStrategy.attributes != null &&
-      rolloutStrategy.attributes.any((rsa) => StrategyAttributeWellKnownNames
-          .values
-          .every((value) => rsa.fieldName != value.name))) {
+  if (rolloutStrategy.attributes.any((rsa) => StrategyAttributeWellKnownNames
+      .values
+      .every((value) => rsa.fieldName != value.name))) {
     customNameMessage = 'Custom\n';
   }
 
   var finalString =
-      '\n-- Applied rules -- \n\n${percentageMessage}${userKeyMessage}${countryNameMessage}${platformNameMessage}${deviceNameMessage}${versionNameMessage}${customNameMessage}';
+      '\n-- Applied rules -- \n\n$percentageMessage$userKeyMessage$countryNameMessage$platformNameMessage$deviceNameMessage$versionNameMessage$customNameMessage';
   return finalString;
 }

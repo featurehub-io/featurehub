@@ -17,9 +17,7 @@ import 'package:openapi_dart_common/openapi.dart';
 class CreateUserRoute extends StatelessWidget {
   final String title;
 
-  CreateUserRoute({Key? key, required this.title})
-      : assert(title != null),
-        super(key: key);
+  CreateUserRoute({Key? key, required this.title}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

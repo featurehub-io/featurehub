@@ -7,8 +7,8 @@ class FeaturesLatestBloc implements Bloc {
   final ManagementRepositoryClientBloc mrClient;
   List<Portfolio> portfolios = [];
 
-  EnvironmentFeatureServiceApi _environmentFeatureServiceApi;
-  PortfolioServiceApi _portfolioServiceApi;
+  final EnvironmentFeatureServiceApi _environmentFeatureServiceApi;
+  final PortfolioServiceApi _portfolioServiceApi;
 
   final _featuresListBS = BehaviorSubject<EnvironmentFeaturesResult>();
   Stream<EnvironmentFeaturesResult> get featuresListStream =>

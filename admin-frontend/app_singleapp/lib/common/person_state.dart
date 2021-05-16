@@ -102,10 +102,8 @@ class PersonState {
     final isAdmin = person != _unauthenticatedPerson &&
         (isSuperAdminGroupFound(person.groups) ||
             userIsPortfolioAdmin(p.id, person.groups));
-    if (p != null) {
-      _isCurrentPortfolioOrSuperAdmin.add(ReleasedPortfolio(
-          portfolio: p, currentPortfolioOrSuperAdmin: isAdmin));
-    }
+    _isCurrentPortfolioOrSuperAdmin.add(
+        ReleasedPortfolio(portfolio: p, currentPortfolioOrSuperAdmin: isAdmin));
   }
 
   void logout() {

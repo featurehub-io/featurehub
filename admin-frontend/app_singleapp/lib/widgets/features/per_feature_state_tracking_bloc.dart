@@ -173,10 +173,7 @@ class PerFeatureStateTrackingBloc implements Bloc {
       List<FeatureValue> featureValuesThisFeature,
       PerApplicationFeaturesBloc featureStatusBloc,
       this.applicationFeatureValues)
-      : assert(applicationFeatureValues != null),
-        assert(featureStatusBloc != null),
-        _featureStatusBloc = featureStatusBloc,
-        assert(mrClient != null) {
+      : _featureStatusBloc = featureStatusBloc {
     _environmentServiceApi = EnvironmentServiceApi(mrClient.apiClient);
     // lets get this party started
 

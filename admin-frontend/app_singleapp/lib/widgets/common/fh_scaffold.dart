@@ -37,9 +37,9 @@ class _FHScaffoldWidgetState extends State<FHScaffoldWidget> {
   @override
   Widget build(BuildContext context) {
     return _InternalFHScaffoldWidgetWidgetState(
-      child: widget.body,
       scrollAtWidth: widget.scrollAtWidth,
       bodyMainAxisAlignment: widget.bodyMainAxisAlignment,
+      child: widget.body,
     );
   }
 }

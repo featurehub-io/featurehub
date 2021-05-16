@@ -62,7 +62,7 @@ class PerApplicationFeaturesBloc
 
   final _getAllAppValuesDebounceStream = BehaviorSubject<bool>();
 
-  PerApplicationFeaturesBloc(this._mrClient) : assert(_mrClient != null) {
+  PerApplicationFeaturesBloc(this._mrClient) {
     _appServiceApi = ApplicationServiceApi(_mrClient.apiClient);
     _featureServiceApi = FeatureServiceApi(_mrClient.apiClient);
     _environmentServiceApi = EnvironmentServiceApi(_mrClient.apiClient);
@@ -122,14 +122,13 @@ class PerApplicationFeaturesBloc
   }
 
   void _actuallyCallAddAppFeatureValuesToStream() async {
-    if (this.applicationId != null) {
-      final applicationId = this.applicationId!;
+    if (applicationId != null) {
+      final appId = applicationId!;
       try {
         final environments =
-            await _userStateServiceApi.getHiddenEnvironments(applicationId);
+            await _userStateServiceApi.getHiddenEnvironments(appId);
         final appFeatureValues = await _featureServiceApi
-            .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
-                applicationId);
+            .findAllFeatureAndFeatureValuesForEnvironmentsByApplication(appId);
         if (!_appFeatureValuesBS.isClosed) {
           _sortApplicationFeatureValues(appFeatureValues);
 
@@ -164,6 +163,7 @@ class PerApplicationFeaturesBloc
   Future<void> addShownEnvironment(String envId) async {
     final envs = <String>[..._shownEnvironmentsSource.value!];
     envs.add(envId);
+    // ignore: unawaited_futures
     _updateShownEnvironments(envs);
   }
 
@@ -171,6 +171,7 @@ class PerApplicationFeaturesBloc
     final envs = <String>[..._shownEnvironmentsSource.value!];
 
     if (envs.remove(envId)) {
+      // ignore: unawaited_futures
       _updateShownEnvironments(envs);
     }
   }

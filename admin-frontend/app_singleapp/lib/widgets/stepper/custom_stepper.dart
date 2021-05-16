@@ -399,19 +399,6 @@ class _CustomStepperState extends State<CustomStepper>
           onStepCancel: widget.onStepCancel);
     }
 
-    Color cancelColor;
-
-    switch (Theme.of(context).brightness) {
-      case Brightness.light:
-        cancelColor = Colors.black54;
-        break;
-      case Brightness.dark:
-        cancelColor = Colors.white70;
-        break;
-    }
-
-    assert(cancelColor != null);
-
     final localizations = MaterialLocalizations.of(context);
 
     return Container(
@@ -441,44 +428,36 @@ class _CustomStepperState extends State<CustomStepper>
     final themeData = Theme.of(context);
     final textTheme = themeData.textTheme;
 
-    if (widget.steps[index].state != null) {
-      switch (widget.steps[index].state) {
-        case CustomStepState.indexed:
-        case CustomStepState.editing:
-        case CustomStepState.complete:
-          return textTheme.bodyText2!;
-        case CustomStepState.disabled:
-          return textTheme.bodyText2!
-              .copyWith(color: _isDark() ? _kDisabledDark : _kDisabledLight);
-        case CustomStepState.error:
-          return textTheme.bodyText2!
-              .copyWith(color: _isDark() ? _kErrorDark : _kErrorLight);
-      }
+    switch (widget.steps[index].state) {
+      case CustomStepState.indexed:
+      case CustomStepState.editing:
+      case CustomStepState.complete:
+        return textTheme.bodyText2!;
+      case CustomStepState.disabled:
+        return textTheme.bodyText2!
+            .copyWith(color: _isDark() ? _kDisabledDark : _kDisabledLight);
+      case CustomStepState.error:
+        return textTheme.bodyText2!
+            .copyWith(color: _isDark() ? _kErrorDark : _kErrorLight);
     }
-
-    return TextStyle();
   }
 
   TextStyle _subtitle2Style(int index) {
     final themeData = Theme.of(context);
     final textTheme = themeData.textTheme;
 
-    if (widget.steps[index].state != null) {
-      switch (widget.steps[index].state) {
-        case CustomStepState.indexed:
-        case CustomStepState.editing:
-        case CustomStepState.complete:
-          return textTheme.caption!;
-        case CustomStepState.disabled:
-          return textTheme.caption!
-              .copyWith(color: _isDark() ? _kDisabledDark : _kDisabledLight);
-        case CustomStepState.error:
-          return textTheme.caption!
-              .copyWith(color: _isDark() ? _kErrorDark : _kErrorLight);
-      }
+    switch (widget.steps[index].state) {
+      case CustomStepState.indexed:
+      case CustomStepState.editing:
+      case CustomStepState.complete:
+        return textTheme.caption!;
+      case CustomStepState.disabled:
+        return textTheme.caption!
+            .copyWith(color: _isDark() ? _kDisabledDark : _kDisabledLight);
+      case CustomStepState.error:
+        return textTheme.caption!
+            .copyWith(color: _isDark() ? _kErrorDark : _kErrorLight);
     }
-
-    return TextStyle();
   }
 
   Widget _buildHeaderText(int index) {

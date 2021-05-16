@@ -21,9 +21,7 @@ class CustomStrategyBloc extends Bloc {
   CustomStrategyBloc(this.environmentFeatureValue, this.feature, this.fvBloc)
       : featureValue = fvBloc
             .featureValueByEnvironment(environmentFeatureValue.environmentId!) {
-    if (featureValue.rolloutStrategies != null) {
-      _strategySource.add(featureValue.rolloutStrategies);
-    }
+    _strategySource.add(featureValue.rolloutStrategies);
   }
 
   void markDirty() {

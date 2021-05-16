@@ -110,9 +110,7 @@ class GroupDeleteDialogWidget extends StatelessWidget {
 
   const GroupDeleteDialogWidget(
       {Key? key, required this.group, required this.bloc})
-      : assert(group != null),
-        assert(bloc != null),
-        super(key: key);
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {

@@ -25,15 +25,15 @@ class ChipsInput<T> extends StatefulWidget {
         super(key: key);
 
   final InputDecoration decoration;
-  TextStyle? textStyle;
+  final TextStyle? textStyle;
   final bool enabled;
   final ChipsInputSuggestions findSuggestions;
   final ValueChanged<List<T>> onChanged;
-  ValueChanged<T>? onChipTapped;
+  final ValueChanged<T>? onChipTapped;
   final ChipsBuilder<T> chipBuilder;
   final ChipsBuilder<T> suggestionBuilder;
   final List<T> initialValue;
-  int? maxChips;
+  final int? maxChips;
 
   @override
   ChipsInputState<T> createState() => ChipsInputState<T>();
@@ -173,16 +173,11 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
 
   @override
   void dispose() {
-    try {
-      //TODO upgrade to latest when fixed
-      //_focusNode?.dispose();  https://github.com/danvick/flutter_chips_input/issues/26
-      _closeInputConnectionIfNeeded();
-      _suggestionsBoxController?.dispose();
-      _suggestionsBoxController = null;
-    } catch (e, s) {
-      print(e);
-      print(s);
-    }
+    //TODO upgrade to latest when fixed
+    //_focusNode?.dispose();  https://github.com/danvick/flutter_chips_input/issues/26
+    _closeInputConnectionIfNeeded();
+    _suggestionsBoxController?.dispose();
+    _suggestionsBoxController = null;
     super.dispose();
   }
 

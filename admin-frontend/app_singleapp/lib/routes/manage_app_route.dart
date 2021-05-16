@@ -116,9 +116,7 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
         'tab-name': ['service-accounts']
       };
     }
-    if (rc.params != null) {
-      bloc?.notifyExternalRouteChange(rc);
-    }
+    bloc?.notifyExternalRouteChange(rc);
   }
 
   @override

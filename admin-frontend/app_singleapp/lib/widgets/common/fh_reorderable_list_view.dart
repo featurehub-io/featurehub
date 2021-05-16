@@ -129,11 +129,11 @@ class _ReorderableListViewState extends State<FHReorderableListView> {
       builder: (BuildContext context) {
         return _ReorderableListContent(
           header: widget.header ?? SizedBox.shrink(),
-          children: widget.children,
           scrollDirection: widget.scrollDirection,
           onReorder: widget.onReorder,
           padding: widget.padding,
           reverse: widget.reverse,
+          children: widget.children,
         );
       },
     );
@@ -459,7 +459,6 @@ class _ReorderableListContentState extends State<_ReorderableListContent>
             child: toWrapWithSemantics,
           ),
         ),
-        child: _dragging == toWrap.key ? const SizedBox() : toWrapWithSemantics,
         childWhenDragging: const SizedBox(),
         dragAnchor: DragAnchor.child,
         onDragStarted: onDragStarted,
@@ -472,6 +471,7 @@ class _ReorderableListContentState extends State<_ReorderableListContent>
         onDraggableCanceled: (Velocity velocity, Offset offset) {
           onDragEnded();
         },
+        child: _dragging == toWrap.key ? const SizedBox() : toWrapWithSemantics,
       );
 
       // The target for dropping at the end of the list doesn't need to be
@@ -572,7 +572,7 @@ class _ReorderableListContentState extends State<_ReorderableListContent>
           children: <Widget>[
             if (widget.reverse)
               _wrap(finalDropArea, widget.children.length, constraints),
-            if (widget.header != null) widget.header,
+            widget.header,
             for (int i = 0; i < widget.children.length; i += 1)
               _wrap(widget.children[i], i, constraints),
             if (!widget.reverse)

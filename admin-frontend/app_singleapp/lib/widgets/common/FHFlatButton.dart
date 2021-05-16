@@ -10,19 +10,18 @@ class FHFlatButton extends StatelessWidget {
       required this.onPressed,
       required this.title,
       this.keepCase = false})
-      : assert(title != null),
-        super(key: key);
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return TextButton(
       onPressed: () => onPressed.call(),
+      style:
+          TextButton.styleFrom(backgroundColor: Theme.of(context).buttonColor),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Text(title, style: TextStyle(color: Colors.white)),
       ),
-      style:
-          TextButton.styleFrom(backgroundColor: Theme.of(context).buttonColor),
     );
   }
 }
