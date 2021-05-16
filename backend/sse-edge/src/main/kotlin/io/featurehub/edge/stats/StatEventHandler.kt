@@ -11,11 +11,11 @@ class StatEventHandler : EventHandler<Stat>, StatCollector {
   private var stats: MutableMap<KeyParts, StatKeyEventCollection> = Collections.synchronizedMap(WeakHashMap())
 
   companion object Prometheus {
-    val apiKeyCounter = Counter.build("edge-stat-api-key-counter", "Keeps track of how many api keys we have waiting in memory").create()
-    val resultTypeCounters = EdgeHitResultType.values().map { v -> v to Counter.build(String.format("edge-stat-result-%s",  v.name.lowercase()),
+    val apiKeyCounter = Counter.build("edge_stat_api_key_counter", "Keeps track of how many api keys we have waiting in memory").create()
+    val resultTypeCounters = EdgeHitResultType.values().map { v -> v to Counter.build(String.format("edge_stat_result_%s",  v.name.lowercase()),
         String.format("How many results of type %s there are hitting this Edge", v.name)).create() }.toMap()
     val hitTypeCounters = EdgeHitSourceType.values().map { v -> v to Counter.build(
-      String.format("edge-stat-hitsource-%s", v.name.lowercase()),
+      String.format("edge_stat_hitsource_%s", v.name.lowercase()),
       String.format("Where did this traffic come from: %s", v.name)
     ).create() }.toMap()
   }

@@ -56,9 +56,9 @@ public class EventStreamResource {
 
   // we are doing timers here rather than instrumenting Jersey because in this case the names are more interesting and
   // useful in the sea of metrics
-  private static final Histogram pollSpeedHistogram = Histogram.build("edge-conn-length-poll", "The length of " +
+  private static final Histogram pollSpeedHistogram = Histogram.build("edge_conn_length_poll", "The length of " +
     "time that the connection is open for Polling clients").create();
-  private static final Histogram testSpeedHistogram = Histogram.build("edge-conn-length-test", "The length of " +
+  private static final Histogram testSpeedHistogram = Histogram.build("edge_conn_length_test", "The length of " +
     "time that the connection is open for Testing clients").create();
 
   @Inject

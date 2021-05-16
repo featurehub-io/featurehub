@@ -6,6 +6,7 @@ import cd.connect.jersey.JerseyHttp2Server;
 import cd.connect.jersey.common.CommonConfiguration;
 import cd.connect.jersey.common.CorsFilter;
 import cd.connect.jersey.common.InfrastructureConfiguration;
+import cd.connect.jersey.common.JerseyPrometheusResource;
 import cd.connect.jersey.common.LoggingConfiguration;
 import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
@@ -46,6 +47,7 @@ public class Application {
 
     ResourceConfig config = new ResourceConfig(
       EndpointLoggingListener.class,
+      JerseyPrometheusResource.class,
       HealthFeature.class)
       .register(new AbstractBinder() {
         @Override
