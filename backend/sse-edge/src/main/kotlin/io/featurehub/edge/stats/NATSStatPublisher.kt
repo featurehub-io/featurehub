@@ -6,6 +6,7 @@ import io.featurehub.publish.NATSSource
 import io.featurehub.sse.stats.model.EdgeStatsBundle
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.time.OffsetDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -14,6 +15,8 @@ class NATSStatPublisher @Inject constructor(private val nats : NATSSource) : Sta
   private val log: Logger = LoggerFactory.getLogger(NATSStatPublisher::class.java)
 
   override fun publish(cacheName: String, bundle: EdgeStatsBundle) {
+    bundle.timestamp(OffsetDateTime.now())
+
     if (log.isDebugEnabled) {
       log.debug("Publishing {}", CacheJsonMapper.mapper.writeValueAsString(bundle))
     }

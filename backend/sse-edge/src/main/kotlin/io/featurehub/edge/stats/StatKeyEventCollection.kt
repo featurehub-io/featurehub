@@ -26,6 +26,10 @@ class StatKeyEventCollection(val apiKey: KeyParts) {
     found.counter.incrementAndGet()
   }
 
+  fun size(): Int {
+    return counters.size;
+  }
+
   fun squash(): EdgeStatApiKey? {
     return EdgeStatApiKey()
       .svcKey(apiKey.serviceKey)
@@ -40,13 +44,19 @@ class StatKeyEventCollection(val apiKey: KeyParts) {
 
     counters.forEach { c ->
       var found: EdgeApiStat = squashed.find { s -> s.hitType == c.hitSourceType && s.resultType == c.resultType }
-        ?: EdgeApiStat().hitType(c.hitSourceType).resultType(c.resultType)
+        ?: defaultApiStat(c, squashed)
 
-      val starting = found.count ?: 0L;
+      val starting = found.count ?: 0L
 
       found.count(starting + c.counter.get())
     }
 
     return squashed
+  }
+
+  private fun defaultApiStat(c: StatCounter, squashed: java.util.ArrayList<EdgeApiStat>): EdgeApiStat {
+    val stat = EdgeApiStat().hitType(c.hitSourceType).resultType(c.resultType)
+    squashed.add(stat)
+    return stat
   }
 }

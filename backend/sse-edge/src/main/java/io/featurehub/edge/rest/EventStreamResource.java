@@ -127,6 +127,7 @@ public class EventStreamResource {
     try {
       ClientConnection b = new TimedBucketClientConnection.Builder()
         .featureTransformer(featureTransformer)
+        .statRecorder(statRecorder)
         .apiKey(key)
         .featureHubAttributes(browserHubAttrs == null ? featureHubAttrs : Collections.singletonList(browserHubAttrs))
         .output(o)

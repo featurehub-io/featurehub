@@ -2,6 +2,7 @@ package io.featurehub.edge.stats
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
+import io.featurehub.edge.KeyParts
 import io.featurehub.sse.stats.model.EdgeStatsBundle
 import io.prometheus.client.Counter
 import io.prometheus.client.Histogram
@@ -16,13 +17,12 @@ import javax.inject.Inject
  * sizes based on configuration.
  */
 
-class StatCollectionSquasher @Inject constructor(private val statCollector: StatCollector,
-                                                 private val publisher: StatPublisher) : StatsSquashAndPublisher {
-  private val log: Logger = LoggerFactory.getLogger(StatCollectionSquasher::class.java)
+class StatsCollectionOrchestrator @Inject constructor(private val publisher: StatPublisher) : StatsOrchestrator {
+  private val log: Logger = LoggerFactory.getLogger(StatsCollectionOrchestrator::class.java)
 
   // what are the maximum number of apis we will publish per "publish" request
   @ConfigKey("edge.stats.max-apis-per-publish")
-  var maxApiKeysPerPublish: java.lang.Long = java.lang.Long(300L)
+  var maxApiKeysPerPublish: Long? = 300
 
   companion object Prometheus {
     val publishTimeHistogram = Histogram.build("edge_publish_time", "Time taken to publish stats to NATS").create()
@@ -34,9 +34,7 @@ class StatCollectionSquasher @Inject constructor(private val statCollector: Stat
     DeclaredConfigResolver.resolve(this)
   }
 
-  override fun squashAndPublish() {
-    val stats = statCollector.ejectData()
-
+  override fun squashAndPublish(stats: Map<KeyParts, StatKeyEventCollection>) {
     if (stats.isEmpty()) {
       log.debug("stats: no work")
       return
@@ -48,22 +46,22 @@ class StatCollectionSquasher @Inject constructor(private val statCollector: Stat
       val perCachePublish = HashMap<String, EdgeStatsBundle>()
 
       try {
-        for (stat in stats.values) {
-          val bundle = perCachePublish.computeIfAbsent(stat.apiKey.cacheName
+        for (stat in stats) {
+          val bundle = perCachePublish.computeIfAbsent(stat.key.cacheName
           ) { k -> EdgeStatsBundle() }
 
-          bundle.apiKeys.add(stat.squash())
+          bundle.apiKeys.add(stat.value.squash())
 
-          if (bundle.apiKeys.size >= maxApiKeysPerPublish.toLong()) {
-            publisher.publish("", bundle)
-            perCachePublish.remove(stat.apiKey.cacheName)
+          if (bundle.apiKeys.size >= maxApiKeysPerPublish!!) {
+            publisher.publish(stat.key.cacheName, bundle)
+            perCachePublish.remove(stat.key.cacheName)
             successfulPublishing.inc()
           }
         }
 
-        perCachePublish.values.forEach { bundle ->
-          if (bundle.apiKeys.isNotEmpty()) {
-            publisher.publish("", bundle)
+        perCachePublish.forEach { bundle ->
+          if (bundle.value.apiKeys.isNotEmpty()) {
+            publisher.publish(bundle.key, bundle.value)
             successfulPublishing.inc()
           }
         }
