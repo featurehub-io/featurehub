@@ -56,6 +56,32 @@ class StatsCollectionOrchestratorSpec extends Specification {
   }
 
   def "when the threshold is one and we have two items in the bundle, it will publish twice"() {
+    given: "i have overridden the max apis per publish property and set it to 1"
+      System.setProperty('edge.stats.max-apis-per-publish', '1')
+    and:
+      def pub = Mock(StatPublisher)
+      def orch = new StatsCollectionOrchestrator(pub)
+    and:
+      def k1 = new KeyParts("cache1", "1", "2")
+      def col1 = new StatKeyEventCollection(k1)
+      col1.add(EdgeHitResultType.FORBIDDEN, EdgeHitSourceType.EVENTSOURCE)
+    and:
+      def k2 = new KeyParts("cache1", "a", "b")
+      def col2 = new StatKeyEventCollection(k2)
+      col2.add(EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.EVENTSOURCE)
+    and:
+      Map<KeyParts, StatKeyEventCollection> stats = [:]
+      stats[k1] = col1
+      stats[k2] = col2
+    when:
+      orch.squashAndPublish(stats)
+    then:
+      2 * pub.publish('cache1', { EdgeStatsBundle bundle ->
+        bundle.apiKeys.size() == 1
+      })
+  }
 
+  def cleanup() {
+    System.clearProperty('edge.stats.max-apis-per-publish')
   }
 }

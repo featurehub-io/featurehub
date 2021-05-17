@@ -44,17 +44,6 @@ class BasicStatsSpec extends Specification {
       s.apiKey.equals( new KeyParts("a", "b", 'c"'))
   }
 
-  def "the stats counter works as expected"() {
-    when: "i set up  the counter"
-      def sc = new StatCounter(EdgeHitResultType.FORBIDDEN, EdgeHitSourceType.EVENTSOURCE)
-      sc.counter.incrementAndGet()
-      sc.counter.incrementAndGet()
-    then:
-      sc.resultType == EdgeHitResultType.FORBIDDEN
-      sc.hitSourceType == EdgeHitSourceType.EVENTSOURCE
-      sc.counter.longValue() == 2
-  }
-
   // can't really do much more because of the nature of the lmax in terms of stubbing its thread factory
 
   def cleanup() {
