@@ -34,14 +34,15 @@ class StatsCollectionOrchestrator @Inject constructor(private val publisher: Sta
     DeclaredConfigResolver.resolve(this)
   }
 
-  override fun squashAndPublish(stats: Map<KeyParts, StatKeyEventCollection>) {
+  override fun squashAndPublish(stats: Map<KeyParts, StatKeyEventCollection>): Boolean {
     if (stats.isEmpty()) {
-      log.debug("stats: no work")
-      return
+      log.trace("stats: no work")
+      return true
     }
 
+    var returnVal = true;
     publishTimeHistogram?.time {
-      log.debug("stats: {} records to process", stats.size)
+      log.trace("stats: {} records to process", stats.size)
       // split by cache
       val perCachePublish = HashMap<String, EdgeStatsBundle>()
 
@@ -66,8 +67,12 @@ class StatsCollectionOrchestrator @Inject constructor(private val publisher: Sta
           }
         }
       } catch (e: Exception) {
+        log.error("Failed to publish collection", e)
         failedPublishing.inc()
+        returnVal = false
       }
     }
+
+    return returnVal
   }
 }

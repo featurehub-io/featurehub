@@ -12,6 +12,8 @@ class BasicStatsSpec extends Specification {
       System.setProperty("edge.stats.disruptor-buffer-size", "64")
     when: "i create an instance"
       def sd = new StatDisruptor(Mock(EventHandler<Stat>))
+    and: "i can record an event"
+      sd.recordHit(new KeyParts('1', '2', '3'), EdgeHitResultType.SUCCESS_UNTIL_KICKED_OFF, EdgeHitSourceType.TESTSDK)
     then:
       sd != null
   }

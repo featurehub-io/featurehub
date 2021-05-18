@@ -15,6 +15,8 @@ class StatTimeTrigger @Inject constructor(private val statCollector: StatCollect
   @ConfigKey("edge.stats.publish-interval-ms")
   var publishBundleInterval: Long? = 0
 
+  var timer: Timer? = null
+
   init {
     DeclaredConfigResolver.resolve(this)
 
@@ -25,8 +27,8 @@ class StatTimeTrigger @Inject constructor(private val statCollector: StatCollect
     if (publishBundleInterval!! > 0) {
       log.info("stats: publishing every {}ms", publishBundleInterval)
 
-      val secondTimer = Timer("countdown-to-publish-stats")
-      secondTimer.scheduleAtFixedRate(object : TimerTask() {
+      timer = Timer("countdown-to-publish-stats")
+      timer!!.scheduleAtFixedRate(object : TimerTask() {
         override fun run() {
           orchestrator.squashAndPublish(statCollector.ejectData())
         }
@@ -34,4 +36,7 @@ class StatTimeTrigger @Inject constructor(private val statCollector: StatCollect
     }
   }
 
+  public fun shutdownTimer() {
+
+  }
 }

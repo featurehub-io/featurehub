@@ -32,12 +32,8 @@ class StatsCollectionOrchestratorSpec extends Specification {
       def col2 = new StatKeyEventCollection(k2)
       col2.add(EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.EVENTSOURCE)
       col2.add(EdgeHitResultType.SUCCESS_UNTIL_KICKED_OFF, EdgeHitSourceType.EVENTSOURCE)
-    and:
-      Map<KeyParts, StatKeyEventCollection> stats = [:]
-      stats[k1] = col1
-      stats[k2] = col2
     when:
-      orch.squashAndPublish(stats)
+      orch.squashAndPublish([(k1): col1, (k2): col2])
     then:
       1 * pub.publish("cache1", _)
       1 * pub.publish("cache2", { EdgeStatsBundle bundle ->
@@ -69,16 +65,29 @@ class StatsCollectionOrchestratorSpec extends Specification {
       def k2 = new KeyParts("cache1", "a", "b")
       def col2 = new StatKeyEventCollection(k2)
       col2.add(EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.EVENTSOURCE)
-    and:
-      Map<KeyParts, StatKeyEventCollection> stats = [:]
-      stats[k1] = col1
-      stats[k2] = col2
     when:
-      orch.squashAndPublish(stats)
+      def result = orch.squashAndPublish([(k1): col1, (k2): col2])
     then:
       2 * pub.publish('cache1', { EdgeStatsBundle bundle ->
         bundle.apiKeys.size() == 1
       })
+      result
+  }
+
+  def "a failed publish is caught and doesn't bubble up"() {
+    given: "i have a mocked publisher and an orchestrator"
+    and:
+      def pub = Mock(StatPublisher)
+      def orch = new StatsCollectionOrchestrator(pub)
+      pub.publish(_ as String,_ as EdgeStatsBundle) >> { String cn, EdgeStatsBundle bundle -> throw new RuntimeException("bad") }
+    and:
+      def k1 = new KeyParts("cache1", "1", "2")
+      def col1 = new StatKeyEventCollection(k1)
+      col1.add(EdgeHitResultType.FORBIDDEN, EdgeHitSourceType.EVENTSOURCE)
+    when:
+      def result = orch.squashAndPublish([(k1):col1])
+    then:
+      !result
   }
 
   def cleanup() {

@@ -19,4 +19,15 @@ class NATSStatPublisherSpec extends Specification {
     then:
       1 * nConn.publish(ChannelNames.edgeStatsChannel("sausage"), _)
   }
+
+  def "a failed publish doesn't bubble out"() {
+    given: "we have a NATS Source"
+      def nSource = Mock(NATSSource) // connection will cause NPE
+    and: "a publisher"
+      def pub = new NATSStatPublisher(nSource)
+    when: "i publish a bundle"
+      pub.publish("sausage", new EdgeStatsBundle())
+    then:
+      1 == 1
+  }
 }
