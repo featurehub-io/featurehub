@@ -1,5 +1,7 @@
 package io.featurehub.edge.strategies;
 
+import io.featurehub.edge.KeyParts;
+
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -32,8 +34,8 @@ public class ClientContext {
     return (uKey == null || uKey.isEmpty()) ? null : uKey.get(0);
   }
 
-  public static ClientContext decode(List<String> headers, List<String> apiKeys) {
-    ClientContext strategy = new ClientContext(apiKeys.stream().anyMatch((k) -> k.contains("*")));
+  public static ClientContext decode(List<String> headers, List<KeyParts> apiKeys) {
+    ClientContext strategy = new ClientContext(apiKeys.stream().anyMatch((k) -> k.getServiceKey().contains("*")));
 
     if (headers != null) {
       for (String header : headers) {
@@ -71,9 +73,5 @@ public class ClientContext {
     }
 
     return val.get(0);
-  }
-
-  public boolean hasAttributes() {
-    return !attributes.isEmpty();
   }
 }

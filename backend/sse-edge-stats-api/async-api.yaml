@@ -1,0 +1,81 @@
+openapi: 3.0.1
+info:
+  title: FeatureServiceApi,
+  description: This describes the API clients use for accessing features
+  version: 1.1.2
+paths:
+  /fake-get:
+    get:
+      description: "fake get api"
+      responses:
+        "200":
+          description: "fake response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EdgeStatsBundle"
+components:
+  schemas:
+    EdgeStatsBundle:
+      type: object
+      required:
+        - misses
+        - apiKeys
+        - timestamp
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        misses:
+          type: integer
+          format: int64
+        apiKeys:
+          type: array
+          items:
+            $ref: "#/components/schemas/EdgeStatApiKey"
+    EdgeStatApiKey:
+      type: object
+      required:
+        - svcKey
+        - envId
+        - counters
+      properties:
+        envId:
+          type: string
+        svcKey:
+          type: string
+        counters:
+          type: array
+          items:
+            $ref: "#/components/schemas/EdgeApiStat"
+    EdgeApiStat:
+      type: object
+      required:
+        - count
+        - resultType
+        - hitType
+      properties:
+        count:
+          type: integer
+          format: int64
+        resultType:
+          $ref: "#/components/schemas/EdgeHitResultType"
+        hitType:
+          $ref: "#/components/schemas/EdgeHitSourceType"
+    EdgeHitResultType:
+      type: string
+      enum:
+        - success_until_kicked_off
+        - success
+        - missed
+        - failed_to_write_on_init
+        - failed_to_process_request
+        - forbidden
+        - update_nonsense
+        - update_no_change
+    EdgeHitSourceType:
+      type: string
+      enum:
+        - eventsource
+        - poll
+        - testsdk

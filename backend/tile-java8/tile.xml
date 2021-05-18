@@ -41,6 +41,7 @@
                 <sourceDir>${project.basedir}/src/main/kotlin</sourceDir>
                 <sourceDir>${project.basedir}/src/main/java</sourceDir>
               </sourceDirs>
+              <jvmTarget>1.8</jvmTarget>
             </configuration>
           </execution>
           <execution>
@@ -50,6 +51,7 @@
               <sourceDirs>
                 <sourceDir>${project.basedir}/src/test/kotlin</sourceDir>
                 <sourceDir>${project.basedir}/src/test/java</sourceDir>
+                <jvmTarget>1.8</jvmTarget>
               </sourceDirs>
             </configuration>
           </execution>
@@ -68,11 +70,13 @@
           <execution>
             <id>default-compile</id>
             <phase>none</phase>
+            <configuration tiles-keep-id="true" />
           </execution>
           <!-- Replacing default-testCompile as it is treated specially by maven -->
           <execution>
             <id>default-testCompile</id>
             <phase>none</phase>
+            <configuration tiles-keep-id="true" />
           </execution>
           <execution>
             <id>java-compile</id>
@@ -80,6 +84,7 @@
             <goals>
               <goal>compile</goal>
             </goals>
+            <configuration tiles-keep-id="true" />
           </execution>
           <execution>
             <id>java-test-compile</id>
@@ -87,6 +92,7 @@
             <goals>
               <goal>testCompile</goal>
             </goals>
+            <configuration tiles-keep-id="true" />
           </execution>
         </executions>
       </plugin>

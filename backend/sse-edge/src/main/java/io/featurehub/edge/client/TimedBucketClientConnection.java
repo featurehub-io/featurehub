@@ -2,11 +2,16 @@ package io.featurehub.edge.client;
 
 import io.featurehub.dacha.api.CacheJsonMapper;
 import io.featurehub.edge.FeatureTransformer;
+import io.featurehub.edge.KeyParts;
+import io.featurehub.edge.stats.StatRecorder;
 import io.featurehub.edge.strategies.ClientContext;
 import io.featurehub.mr.model.EdgeInitResponse;
 import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.mr.model.PublishAction;
 import io.featurehub.sse.model.SSEResultState;
+import io.featurehub.sse.stats.model.EdgeHitResultType;
+import io.featurehub.sse.stats.model.EdgeHitSourceType;
+import io.prometheus.client.Histogram;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.OutboundEvent;
 import org.slf4j.Logger;
@@ -15,29 +20,34 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 public class TimedBucketClientConnection implements ClientConnection {
   private static final Logger log = LoggerFactory.getLogger(TimedBucketClientConnection.class);
-  private EventOutput output;
-  private String environmentId;
-  private String apiKey;
-  private String namedCache;
-  private List<EjectHandler> handlers = new ArrayList<>();
+  private final EventOutput output;
+  private final KeyParts apiKey;
+  private final List<EjectHandler> handlers = new ArrayList<>();
   private List<FeatureValueCacheItem> heldFeatureUpdates = new ArrayList<>();
-  private FeatureTransformer featureTransformer;
-  private ClientContext attributesForStrategy;
+  private final FeatureTransformer featureTransformer;
+  private final ClientContext attributesForStrategy;
+  private final StatRecorder statRecorder;
+
+  private static final Histogram connectionLengthHistogram = Histogram.build("edge_conn_length_sse", "The length of " +
+    "time that the connection is open for SSE clients").create();
+
+  private final Histogram.Timer timer;
 
   private TimedBucketClientConnection(Builder builder) {
     output = builder.output;
-    environmentId = builder.environmentId;
     apiKey = builder.apiKey;
-    namedCache = builder.namedCache;
+    statRecorder = builder.statRecorder;
     featureTransformer = builder.featureTransformer;
 
-    attributesForStrategy = ClientContext.decode(builder.featureHubAttributes, Collections.singletonList(apiKey));
+    attributesForStrategy =
+        ClientContext.decode(builder.featureHubAttributes, Collections.singletonList(apiKey));
+
+    timer = connectionLengthHistogram.startTimer();
   }
 
   @Override
@@ -53,23 +63,40 @@ public class TimedBucketClientConnection implements ClientConnection {
 
   @Override
   public String getEnvironmentId() {
-    return environmentId;
+    return apiKey.getEnvironmentId();
   }
 
   @Override
   public String getApiKey() {
-    return apiKey;
+    return apiKey.getServiceKey();
   }
 
   @Override
   public void writeMessage(SSEResultState name, String data) throws IOException {
-    final OutboundEvent.Builder eventBuilder = new OutboundEvent.Builder();
-    log.trace("data is : {}", data);
-    eventBuilder.name(name.toString());
-    eventBuilder.mediaType(MediaType.TEXT_PLAIN_TYPE);
-    eventBuilder.data(data);
-    final OutboundEvent event = eventBuilder.build();
-    output.write(event);
+    if (!output.isClosed()) {
+      final OutboundEvent.Builder eventBuilder = new OutboundEvent.Builder();
+      log.trace("data is : {}", data);
+      eventBuilder.name(name.toString());
+      eventBuilder.mediaType(MediaType.TEXT_PLAIN_TYPE);
+      eventBuilder.data(data);
+      final OutboundEvent event = eventBuilder.build();
+      output.write(event);
+    } else {
+      notifyHandlersThatTheConnectionHasClosed();
+    }
+  }
+
+  private boolean notifiedClosed = false;
+
+  private void notifyHandlersThatTheConnectionHasClosed() {
+    // tell them we are shutting down even if they told us to shut them down
+    if (!notifiedClosed) {
+      notifiedClosed = true;
+
+      handlers.parallelStream().forEach(e -> e.eject(this));
+
+      timer.observeDuration();
+    }
   }
 
   @Override
@@ -81,8 +108,6 @@ public class TimedBucketClientConnection implements ClientConnection {
   public void close(boolean sayBye) {
     // could have been closed by a failure earlier, it isn't ejected from the list
     if (!output.isClosed()) {
-      // tell them we are shutting down
-      handlers.parallelStream().forEach(e -> e.eject(this));
       if (sayBye) {
         try {
           writeMessage(SSEResultState.BYE, SSEStatusMessage.status("closed"));
@@ -92,9 +117,11 @@ public class TimedBucketClientConnection implements ClientConnection {
       }
       try {
         output.close();
-      } catch (Exception e) {
+      } catch (Exception ignored) {
       }
     }
+
+    notifyHandlersThatTheConnectionHasClosed();
   }
 
   @Override
@@ -104,13 +131,14 @@ public class TimedBucketClientConnection implements ClientConnection {
 
   @Override
   public String getNamedCache() {
-    return namedCache;
+    return apiKey.getCacheName();
   }
 
   @Override
   public void failed(String reason) {
     try {
       writeMessage(SSEResultState.FAILURE, SSEStatusMessage.status(reason));
+      statRecorder.recordHit(apiKey, EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.EVENTSOURCE);
       close(false);
     } catch (IOException e) {
       log.warn("Failed to fail client connection", e);
@@ -122,10 +150,22 @@ public class TimedBucketClientConnection implements ClientConnection {
   public void initResponse(EdgeInitResponse edgeResponse) {
     if (Boolean.TRUE.equals(edgeResponse.getSuccess())) {
       try {
-        writeMessage(SSEResultState.FEATURES,
-          CacheJsonMapper.mapper.writeValueAsString(featureTransformer.transform(edgeResponse.getFeatures(), attributesForStrategy)));
+        writeMessage(
+            SSEResultState.FEATURES,
+            CacheJsonMapper.mapper.writeValueAsString(
+                featureTransformer.transform(edgeResponse.getFeatures(), attributesForStrategy)));
+
+        if (!output.isClosed()) {
+          statRecorder.recordHit(apiKey, EdgeHitResultType.SUCCESS, EdgeHitSourceType.EVENTSOURCE);
+        } else {
+          statRecorder.recordHit(
+              apiKey, EdgeHitResultType.FAILED_TO_WRITE_ON_INIT, EdgeHitSourceType.EVENTSOURCE);
+        }
+
         List<FeatureValueCacheItem> heldUpdates = heldFeatureUpdates;
+
         heldFeatureUpdates = null;
+
         if (heldUpdates != null) {
           heldUpdates.forEach(this::notifyFeature);
         }
@@ -144,7 +184,9 @@ public class TimedBucketClientConnection implements ClientConnection {
       heldFeatureUpdates.add(rf);
     } else {
       try {
-        String data = CacheJsonMapper.mapper.writeValueAsString(featureTransformer.transform(rf, attributesForStrategy));
+        String data =
+            CacheJsonMapper.mapper.writeValueAsString(
+                featureTransformer.transform(rf, attributesForStrategy));
         if (rf.getAction() == PublishAction.DELETE) {
           writeMessage(SSEResultState.DELETE_FEATURE, data);
         } else {
@@ -157,16 +199,18 @@ public class TimedBucketClientConnection implements ClientConnection {
     }
   }
 
-
   public static final class Builder {
     private EventOutput output;
-    private String environmentId;
-    private String apiKey;
-    private String namedCache;
+    private KeyParts apiKey;
     private List<String> featureHubAttributes;
     private FeatureTransformer featureTransformer;
+    private StatRecorder statRecorder;
 
-    public Builder() {
+    public Builder() {}
+
+    public Builder statRecorder(StatRecorder val) {
+      statRecorder = val;
+      return this;
     }
 
     public Builder output(EventOutput val) {
@@ -174,18 +218,8 @@ public class TimedBucketClientConnection implements ClientConnection {
       return this;
     }
 
-    public Builder environmentId(String val) {
-      environmentId = val;
-      return this;
-    }
-
-    public Builder apiKey(String val) {
+    public Builder apiKey(KeyParts val) {
       apiKey = val;
-      return this;
-    }
-
-    public Builder namedCache(String val) {
-      namedCache = val;
       return this;
     }
 

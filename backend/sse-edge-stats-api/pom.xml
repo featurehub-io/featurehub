@@ -3,12 +3,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.featurehub.edge</groupId>
-  <artifactId>sse-edge-api</artifactId>
-  <version>1.4-SNAPSHOT</version>
-  <name>sse-edge-api</name>
+  <artifactId>sse-edge-stats-api</artifactId>
+  <version>1.1-SNAPSHOT</version>
+  <name>sse-edge-stats-api</name>
 
   <description>
-    tile java contains plugins required for java application creation. It is focused on Java 11.
+    contains API definition for stats publication
   </description>
 
   <url>https://featurehub.io</url>
@@ -39,14 +39,13 @@
     <connection>scm:git:git@github.com:featurehub-io/featurehub.git</connection>
     <developerConnection>scm:git:git@github.com:featurehub-io/featurehub.git</developerConnection>
     <url>git@github.com:featurehub-io/featurehub.git</url>
-    <tag>sse-edge-api-1.1</tag>
   </scm>
 
   <dependencies>
     <dependency>
       <groupId>io.featurehub.composites</groupId>
       <artifactId>composite-jersey</artifactId>
-      <version>1.2</version>
+      <version>[1.1, 2)</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
@@ -61,32 +60,9 @@
         <configuration>
           <filtering>false</filtering>
           <tiles>
-            <tile>io.featurehub.tiles:tile-java8:[1.1,2)</tile>
-            <tile>io.featurehub.tiles:tile-release:[1.1,2)</tile>
+            <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
           </tiles>
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>cd.connect.maven</groupId>
-        <artifactId>merge-yaml-plugin</artifactId>
-        <version>1.1</version>
-        <executions>
-          <execution>
-            <id>combine</id>
-            <goals>
-              <goal>mergeYaml</goal>
-            </goals>
-            <phase>initialize</phase>
-            <configuration>
-              <files>
-                <file>${project.basedir}/../mr-api/end2end-common.yaml</file>
-                <file>${project.basedir}/../mr-api/strategy-enums.yaml</file>
-                <file>${project.basedir}/src/main/resources/sse-api.yaml</file>
-              </files>
-              <finalYaml>${project.basedir}/final.yaml</finalYaml>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <groupId>org.openapitools</groupId>
@@ -108,21 +84,11 @@
             <phase>generate-sources</phase>
             <configuration>
               <output>${project.basedir}/target/generated-sources/api</output>
-              <apiPackage>io.featurehub.sse.api</apiPackage>
-              <modelPackage>io.featurehub.sse.model</modelPackage>
-              <inputSpec>${project.basedir}/final.yaml</inputSpec>
+              <apiPackage>io.featurehub.sse.stats.api</apiPackage>
+              <modelPackage>io.featurehub.sse.stats.model</modelPackage>
+              <inputSpec>${project.basedir}/async-api.yaml</inputSpec>
               <generatorName>jersey2-api</generatorName>
-
-              <additionalProperties>
-                <additionalProperty>server</additionalProperty>
-              </additionalProperties>
-
-              <configOptions>
-                <configOption>
-                  <name>useBeanValidation</name>
-                  <value>true</value>
-                </configOption>
-              </configOptions>
+              <generateApis>false</generateApis>
             </configuration>
           </execution>
         </executions>

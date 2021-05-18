@@ -49,8 +49,8 @@
   </scm>
 
   <properties>
-    <log4j.version>2.13.2</log4j.version>
-    <lmax.disruptor>3.3.6</lmax.disruptor>
+    <log4j.version>2.14.1</log4j.version>
+    <lmax.disruptor>3.4.4</lmax.disruptor>
   </properties>
 
   <dependencies>
