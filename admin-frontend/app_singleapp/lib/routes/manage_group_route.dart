@@ -372,7 +372,10 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
           child: InputChip(
             key: ObjectKey(p),
             label: Text('${person.name} (${person.email})'),
-            onDeleted: () => state.deleteChip(p),
+            onDeleted: () {
+              state.deleteChip(p);
+              membersToAdd.remove(p);
+            },
             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
         );
