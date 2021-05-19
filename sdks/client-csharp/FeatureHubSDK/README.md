@@ -13,6 +13,7 @@ Details about what general features are available in SDKs from FeatureHub are [a
 
 ## Changelog
 
+2.1.3 - logging support (see below) and fixing of the backoff for the eventsource (it was randomly increasing the time, making features go out of date)
 2.0.0 - client side evaluation support
 1.1.0 - analytics support
 1.0.0 - initial functionality with near-realtime event updates, full feature repository, server side rollout strategies.
@@ -190,7 +191,39 @@ _data[GoogleConstants.Cid] = "some-cid";
 context.LogAnalyticsEvent("event-name", _data);
 ```
 
-Read more on how to interpret events in Google Analytics [here](https://docs.featurehub.io/analytics.html) 
+Read more on how to interpret events in Google Analytics [here](https://docs.featurehub.io/analytics.html)
+
+### Logging
+
+This library doesn't "use" any of the various .NET logging systems, it simply exposes a static logger class, and
+if you add events to this, you can see what is going on. This can be especially useful diagnosing connection issues
+if you are having them. 
+
+```c#
+public static class FeatureLogging
+{
+  // Attach event handler to receive Trace level logs
+  public static EventHandler<String> TraceLogger;
+  // Attach event handler to receive Debug level logs
+  public static EventHandler<String> DebugLogger;
+  // Attach event handler to receive Info level logs
+  public static EventHandler<String> InfoLogger;
+  // Attach event handler to receive Error level logs
+  public static EventHandler<String> ErrorLogger;
+}
+```
+
+So a full diagnostic, as we have in our ASP.NET example in the [featurehub-examples](https://github.com/featurehub-io/featurehub-examples) 
+repository looks like this:
+
+```c#
+  FeatureLogging.DebugLogger += (sender, s) => Console.WriteLine("DEBUG: " + s + "\n"); 
+  FeatureLogging.TraceLogger += (sender, s) => Console.WriteLine("TRACE: " + s + "\n"); 
+  FeatureLogging.InfoLogger += (sender, s) => Console.WriteLine("INFO: " + s + "\n"); 
+  FeatureLogging.ErrorLogger += (sender, s) => Console.WriteLine("ERROR: " + s + "\n"); 
+```
+
+You can of course connect it to the logger of your choice.
 
 ### IO.FeatureHub.SSE
 
