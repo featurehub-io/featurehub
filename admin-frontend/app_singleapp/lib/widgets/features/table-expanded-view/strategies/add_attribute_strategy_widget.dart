@@ -83,8 +83,6 @@ class _EditAttributeStrategyWidgetState
     } else if (_wellKnown == StrategyAttributeWellKnownNames.country) {
       _attribute.values =
           _attribute.values.map(_countryNameReverseMapper).toList();
-    } else {
-      _attribute.values = [];
     }
 
     _matchers = defineMatchers(_attributeType, _wellKnown);
