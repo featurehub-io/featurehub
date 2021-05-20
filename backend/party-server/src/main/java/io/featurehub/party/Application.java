@@ -2,7 +2,6 @@ package io.featurehub.party;
 
 import cd.connect.jersey.JerseyHttp2Server;
 import cd.connect.jersey.common.CorsFilter;
-import cd.connect.jersey.common.InfrastructureConfiguration;
 import cd.connect.jersey.common.LoggingConfiguration;
 import cd.connect.jersey.common.TracingConfiguration;
 import cd.connect.lifecycle.ApplicationLifecycleManager;
@@ -10,15 +9,14 @@ import cd.connect.lifecycle.LifecycleStatus;
 import cd.connect.openapi.support.ReturnStatusContainerResponseFilter;
 import io.featurehub.dacha.CacheManager;
 import io.featurehub.edge.EdgeFeature;
-import io.featurehub.health.HealthFeature;
 import io.featurehub.health.HealthSource;
+import io.featurehub.health.MetricsHealthRegistration;
 import io.featurehub.jersey.config.CommonConfiguration;
 import io.featurehub.jersey.config.EndpointLoggingListener;
 import io.featurehub.mr.ManagementRepositoryFeature;
 import io.featurehub.mr.utils.NginxUtils;
 import io.featurehub.publish.NATSHealthSource;
 import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
-import io.prometheus.client.hotspot.DefaultExports;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
@@ -42,10 +40,6 @@ public class Application {
 
 
   private void run() throws Exception {
-
-    // turn on all jvm prometheus metrics
-    DefaultExports.initialize();
-
     // start the dacha layer, it is a health source
     CacheManager dachaCacheManager = io.featurehub.dacha.Application.initializeDacha();
 
@@ -56,8 +50,7 @@ public class Application {
       LoggingConfiguration.class,
       TracingConfiguration.class,
       ReturnStatusContainerResponseFilter.class,
-      EndpointLoggingListener.class,
-      HealthFeature.class)
+      EndpointLoggingListener.class)
       .register(new AbstractBinder() {
         @Override
         protected void configure() {
@@ -68,6 +61,9 @@ public class Application {
       .register(CorsFilter.class)
       .register(ManagementRepositoryFeature.class)
       .register(EdgeFeature.class);
+
+    // check if we should list on a different port
+    MetricsHealthRegistration.Companion.registerMetrics(config);
 
     new JerseyHttp2Server().start(config);
 

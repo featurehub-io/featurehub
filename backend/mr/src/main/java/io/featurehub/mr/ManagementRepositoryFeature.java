@@ -88,9 +88,8 @@ public class ManagementRepositoryFeature implements Feature {
       CorsFilter.class,
 //      ConstraintExceptionHandler.class,
       AuthApplicationEventListener.class,
-      JerseyPrometheusResource.class,
       PrometheusDynamicFeature.class
-      ).forEach(o -> context.register(o));
+      ).forEach(context::register);
 
     context.register(new DatabaseBinder());
     context.register(new ApiToSqlApiBinder());

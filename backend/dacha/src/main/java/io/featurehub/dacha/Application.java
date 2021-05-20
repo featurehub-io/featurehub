@@ -2,18 +2,16 @@ package io.featurehub.dacha;
 
 import cd.connect.jersey.JerseyHttp2Server;
 import cd.connect.jersey.common.CommonConfiguration;
-import cd.connect.jersey.common.InfrastructureConfiguration;
 import cd.connect.jersey.common.LoggingConfiguration;
 import cd.connect.jersey.common.TracingConfiguration;
 import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
-import io.featurehub.health.HealthFeature;
 import io.featurehub.health.HealthSource;
+import io.featurehub.health.MetricsHealthRegistration;
 import io.featurehub.jersey.config.EndpointLoggingListener;
 import io.featurehub.publish.NATSHealthSource;
 import io.featurehub.publish.NATSSource;
 import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
-import io.prometheus.client.hotspot.DefaultExports;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
@@ -39,18 +37,13 @@ public class Application {
   }
 
   private static void initializeCommonJerseyLayer(CacheManager cm) throws Exception {
-
-    // turn on all jvm prometheus metrics
-    DefaultExports.initialize();
-
     // register our resources, try and tag them as singleton as they are instantiated faster
     ResourceConfig config = new ResourceConfig(
       ClientTracingFeature.class,
       CommonConfiguration.class,
       LoggingConfiguration.class,
       TracingConfiguration.class,
-      EndpointLoggingListener.class,
-      HealthFeature.class)
+      EndpointLoggingListener.class)
       .register(new AbstractBinder() {
         @Override
         protected void configure() {
@@ -59,6 +52,9 @@ public class Application {
           bind(NATSHealthSource.class).to(HealthSource.class).in(Singleton.class);
         }
       });
+
+    // check if we should list on a different port
+    MetricsHealthRegistration.Companion.registerMetrics(config);
 
     new JerseyHttp2Server().start(config);
 
