@@ -140,6 +140,20 @@ don't go stale.
 
 The party server honours all values set by the Management Repository, Dacha and the the SSE-Edge.
 
+==== Common to all servers 
+
+All servers expose metrics and health checks. The metrics are for Prometheus and are on `/metrics`,
+liveness is on `/health/liveness` and readyness on `/health/readyness`. Each different server has a collection
+of what things are important to indicate aliveness. The `server.port` setting will expose these endpoints,
+which means they are available to all of your normal API endpoints as well. In a cloud-native environment,
+which FeatureHub is aimed at, this is rarely what you want. So FeatureHub has the ability to list these
+endpoints on a different port.
+
+- `monitor.port` (undefined) - if not defined, it will expose the metrics and health on the server port. 
+If not, it will expose them on this port (and not on the server port).
+
+All servers expose quite extensive metrics for Prometheus.
+
 ==== Common to Party, SSE Edge and Management Repository
 
 - `server.port` (8903) - the server port that the server runs on. it always listens to 0.0.0.0 (all network interfaces)

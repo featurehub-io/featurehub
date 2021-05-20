@@ -5,23 +5,17 @@ import cd.connect.app.config.DeclaredConfigResolver;
 import cd.connect.jersey.JerseyHttp2Server;
 import cd.connect.jersey.common.CommonConfiguration;
 import cd.connect.jersey.common.CorsFilter;
-import cd.connect.jersey.common.InfrastructureConfiguration;
-import cd.connect.jersey.common.JerseyPrometheusResource;
 import cd.connect.jersey.common.LoggingConfiguration;
 import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
-import io.featurehub.edge.rest.SSEHeaderFilter;
-import io.featurehub.health.HealthFeature;
 import io.featurehub.health.HealthSource;
+import io.featurehub.health.MetricsHealthRegistration;
 import io.featurehub.jersey.config.EndpointLoggingListener;
 import io.featurehub.publish.NATSHealthSource;
-import io.featurehub.publish.NATSSource;
-import io.prometheus.client.hotspot.DefaultExports;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import javax.inject.Singleton;
-import javax.ws.rs.container.ContainerResponseFilter;
 import java.net.URI;
 
 public class Application {
@@ -38,17 +32,12 @@ public class Application {
 
     DeclaredConfigResolver.resolve(this);
 
-    // turn on all jvm prometheus metrics
-    DefaultExports.initialize();
-
     URI BASE_URI = URI.create(String.format("http://0.0.0.0:%s/", serverPort));
 
     log.info("starting on port {}", BASE_URI.toASCIIString());
 
     ResourceConfig config = new ResourceConfig(
-      EndpointLoggingListener.class,
-      JerseyPrometheusResource.class,
-      HealthFeature.class)
+      EndpointLoggingListener.class)
       .register(new AbstractBinder() {
         @Override
         protected void configure() {
@@ -60,6 +49,9 @@ public class Application {
       .register(LoggingConfiguration.class)
       .register(EdgeFeature.class)
       ;
+
+    // check if we should list on a different port
+    MetricsHealthRegistration.Companion.registerMetrics(config);
 
     // this has a default grace period of 10 seconds
     JerseyHttp2Server.start(config, BASE_URI);
