@@ -4,7 +4,7 @@ import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/common/stream_valley.dart';
 import 'package:app_singleapp/utils/utils.dart';
 import 'package:app_singleapp/widgets/common/fh_appbar.dart';
-import 'package:app_singleapp/widgets/stepper/stepper_container.dart';
+import 'package:app_singleapp/widgets/widget_creator.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
@@ -163,10 +163,7 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
               builder: (context, snapshot) {
                 if (snapshot.data != null &&
                     (snapshot.data!.currentPortfolioOrSuperAdmin == true)) {
-                  return Container(
-                      child: StepperContainer(
-                    mrBloc: mrBloc,
-                  ));
+                  return Container(child: widgetCreator.createStepper(mrBloc));
                 } else {
                   return SizedBox.shrink();
                 }
