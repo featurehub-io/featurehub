@@ -1,6 +1,5 @@
 package io.featurehub.jersey.config;
 
-import cd.connect.jersey.common.JacksonContextProvider;
 import org.glassfish.jersey.CommonProperties;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;

@@ -59,6 +59,7 @@ flutter:
     - assets/logo/FlowerDarkBackground.png
     - assets/signup_3rdparty/btn_google_signin_dark_normal_web.png
     - assets/signup_3rdparty/azure.png
+    - assets/signup_3rdparty/github.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

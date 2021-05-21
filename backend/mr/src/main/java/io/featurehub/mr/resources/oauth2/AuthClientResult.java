@@ -14,6 +14,17 @@ public class AuthClientResult {
   @JsonProperty("token_type")
   private String tokenType;
 
+  @JsonProperty("scope")
+  private String scope;
+
+  public String getScope() {
+    return scope;
+  }
+
+  public void setScope(String scope) {
+    this.scope = scope;
+  }
+
   public String getAccessToken() {
     return accessToken;
   }
@@ -44,6 +55,7 @@ public class AuthClientResult {
       "accessToken='" + accessToken + '\'' +
       ", idToken='" + idToken + '\'' +
       ", tokenType='" + tokenType + '\'' +
+      ", scope='" + scope + '\'' +
       '}';
   }
 }

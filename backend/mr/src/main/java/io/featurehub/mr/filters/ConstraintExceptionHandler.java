@@ -1,7 +1,7 @@
 package io.featurehub.mr.filters;
 
-import cd.connect.jackson.JacksonObjectProvider;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.featurehub.jersey.config.JacksonObjectProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

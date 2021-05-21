@@ -2,8 +2,11 @@ package io.featurehub.mr.resources.oauth2;
 
 import cd.connect.app.config.ConfigKey;
 import cd.connect.app.config.DeclaredConfigResolver;
+import cd.connect.jersey.common.CommonConfiguration;
+import cd.connect.jersey.common.LoggingConfiguration;
 import io.featurehub.mr.resources.auth.AuthProvider;
 import io.featurehub.mr.resources.oauth2.providers.AzureProvider;
+import io.featurehub.mr.resources.oauth2.providers.GithubProvider;
 import io.featurehub.mr.resources.oauth2.providers.GoogleProvider;
 import io.featurehub.mr.resources.oauth2.providers.OAuth2Provider;
 import io.featurehub.mr.resources.oauth2.providers.OAuth2ProviderDiscovery;
@@ -13,6 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.FeatureContext;
 import java.util.ArrayList;
@@ -38,6 +43,9 @@ public class OAuth2Feature implements Feature {
       if (validProviderSources.contains(AzureProvider.PROVIDER_NAME)) {
         providers.add(AzureProvider.class);
       }
+      if (validProviderSources.contains(GithubProvider.Companion.getPROVIDER_NAME())) {
+        providers.add(GithubProvider.class);
+      }
       if (providers.isEmpty()) {
         throw new RuntimeException("oauth2.providers list is not empty and contains unsupported oauth2 providers.");
       }
@@ -51,6 +59,8 @@ public class OAuth2Feature implements Feature {
           // the class that allows discovery of the providers
           bind(OAuth2ProviderManager.class).to(OAuth2ProviderDiscovery.class).to(AuthProvider.class).in(Singleton.class);
 
+          bind(buildClient()).to(Client.class).in(Singleton.class);
+
           // now the outbound http request to validte authorization flow
           bind(OAuth2JerseyClient.class).to(OAuth2Client.class).in(Singleton.class);
         }
@@ -60,5 +70,11 @@ public class OAuth2Feature implements Feature {
     }
 
     return true;
+  }
+
+  protected Client buildClient() {
+    return ClientBuilder.newClient()
+      .register(CommonConfiguration.class)
+      .register(LoggingConfiguration.class);
   }
 }
