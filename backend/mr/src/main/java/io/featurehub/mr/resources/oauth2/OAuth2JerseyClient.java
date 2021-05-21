@@ -8,6 +8,7 @@ import io.featurehub.mr.resources.oauth2.providers.OAuth2Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -25,8 +26,9 @@ public class OAuth2JerseyClient implements OAuth2Client {
   @ConfigKey("oauth2.redirectUrl")
   protected String redirectUrl;
 
-  public OAuth2JerseyClient() {
-    client = buildClient();
+  @Inject
+  public OAuth2JerseyClient(Client client) {
+    this.client = client;
 
     DeclaredConfigResolver.resolve(this);
   }
@@ -37,21 +39,18 @@ public class OAuth2JerseyClient implements OAuth2Client {
     form.param("client_id", provider.getClientId());
     form.param("client_secret", provider.getClientSecret());
     form.param("redirect_uri", redirectUrl);
-//    form.param("redirect_uri", "http://localhost:53000");
     form.param("code", code);
+
     Entity<Form> entity = Entity.entity(form, MediaType.APPLICATION_FORM_URLENCODED_TYPE);
-    final Response response = client.target(provider.requestTokenUrl()).request().post(entity);
+
+    final Response response = client.target(provider.requestTokenUrl()).request()
+      .accept(MediaType.APPLICATION_JSON)
+      .post(entity);
     if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
       return response.readEntity(AuthClientResult.class);
     } else {
       log.warn("OAuth2 Login attempt failed! {}", response.getStatus());
       return null;
     }
-  }
-
-  protected Client buildClient() {
-    return ClientBuilder.newClient()
-      .register(CommonConfiguration.class)
-      .register(LoggingConfiguration.class);
   }
 }
