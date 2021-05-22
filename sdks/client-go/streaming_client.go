@@ -101,11 +101,11 @@ func (c *StreamingClient) Start() {
 	}
 }
 
-// WithContext returns a StreamingClientWithContext:
-func (c *StreamingClient) WithContext(context *models.Context) *StreamingClientWithContext {
-	return &StreamingClientWithContext{
+// WithContext returns a ClientWithContext:
+func (c *StreamingClient) WithContext(context *models.Context) *ClientWithContext {
+	return &ClientWithContext{
 		client:  c,
-		context: context,
+		Context: context,
 	}
 }
 

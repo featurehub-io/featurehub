@@ -2,35 +2,27 @@ package client
 
 import (
 	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/errors"
+	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/interfaces"
 	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/models"
 )
 
-// StreamingClientWithContext bundles a Context with a client:
-type StreamingClientWithContext struct {
-	client  *StreamingClient
-	context *models.Context
+// ClientWithContext bundles a Context with a client:
+type ClientWithContext struct {
+	*models.Context
+	client interfaces.Client
+	config *Config
 }
 
 // GetFeature searches for a feature by key:
-func (scc *StreamingClientWithContext) GetFeature(key string) (*models.FeatureState, error) {
-	scc.client.featuresMutex.Lock()
-	defer scc.client.featuresMutex.Unlock()
-
-	// Look for the feature:
-	if feature, ok := scc.client.features[key]; ok {
-		scc.client.logger.WithField("key", key).Trace("Found feature")
-		return feature, nil
-	}
-
-	scc.client.logger.WithField("key", key).Trace("Feature not found")
-	return nil, errors.NewErrFeatureNotFound(key)
+func (cc *ClientWithContext) GetFeature(key string) (*models.FeatureState, error) {
+	return cc.client.GetFeature(key)
 }
 
 // GetBoolean searches for a feature by key, returns the value as a boolean:
-func (scc *StreamingClientWithContext) GetBoolean(key string) (bool, error) {
+func (cc *ClientWithContext) GetBoolean(key string) (bool, error) {
 
 	// Use the existing GetFeature method:
-	fs, err := scc.client.GetFeature(key)
+	fs, err := cc.client.GetFeature(key)
 	if err != nil {
 		return false, err
 	}
@@ -47,7 +39,7 @@ func (scc *StreamingClientWithContext) GetBoolean(key string) (bool, error) {
 	}
 
 	// Figure out which value to use:
-	if calculatedValue := fs.Strategies.Calculate(scc.context); calculatedValue != nil {
+	if calculatedValue := fs.Strategies.Calculate(cc.Context); calculatedValue != nil {
 
 		// Assert the value:
 		if strategyValue, ok := calculatedValue.(bool); ok {
@@ -60,10 +52,10 @@ func (scc *StreamingClientWithContext) GetBoolean(key string) (bool, error) {
 }
 
 // GetNumber searches for a feature by key, returns the value as a float64:
-func (scc *StreamingClientWithContext) GetNumber(key string) (float64, error) {
+func (cc *ClientWithContext) GetNumber(key string) (float64, error) {
 
 	// Use the existing GetFeature method:
-	fs, err := scc.client.GetFeature(key)
+	fs, err := cc.client.GetFeature(key)
 	if err != nil {
 		return 0, err
 	}
@@ -80,7 +72,7 @@ func (scc *StreamingClientWithContext) GetNumber(key string) (float64, error) {
 	}
 
 	// Figure out which value to use:
-	if calculatedValue := fs.Strategies.Calculate(scc.context); calculatedValue != nil {
+	if calculatedValue := fs.Strategies.Calculate(cc.Context); calculatedValue != nil {
 
 		// Assert the value:
 		if strategyValue, ok := calculatedValue.(float64); ok {
@@ -93,10 +85,10 @@ func (scc *StreamingClientWithContext) GetNumber(key string) (float64, error) {
 }
 
 // GetRawJSON searches for a feature by key, returns the value as a JSON string:
-func (scc *StreamingClientWithContext) GetRawJSON(key string) (string, error) {
+func (cc *ClientWithContext) GetRawJSON(key string) (string, error) {
 
 	// Use the existing GetFeature method:
-	fs, err := scc.client.GetFeature(key)
+	fs, err := cc.client.GetFeature(key)
 	if err != nil {
 		return "{}", err
 	}
@@ -113,7 +105,7 @@ func (scc *StreamingClientWithContext) GetRawJSON(key string) (string, error) {
 	}
 
 	// Figure out which value to use:
-	if calculatedValue := fs.Strategies.Calculate(scc.context); calculatedValue != nil {
+	if calculatedValue := fs.Strategies.Calculate(cc.Context); calculatedValue != nil {
 
 		// Assert the value:
 		if strategyValue, ok := calculatedValue.(string); ok {
@@ -126,10 +118,10 @@ func (scc *StreamingClientWithContext) GetRawJSON(key string) (string, error) {
 }
 
 // GetString searches for a feature by key, returns the value as a string:
-func (scc *StreamingClientWithContext) GetString(key string) (string, error) {
+func (cc *ClientWithContext) GetString(key string) (string, error) {
 
 	// Use the existing GetFeature method:
-	fs, err := scc.client.GetFeature(key)
+	fs, err := cc.client.GetFeature(key)
 	if err != nil {
 		return "", err
 	}
@@ -146,7 +138,7 @@ func (scc *StreamingClientWithContext) GetString(key string) (string, error) {
 	}
 
 	// Figure out which value to use:
-	if calculatedValue := fs.Strategies.Calculate(scc.context); calculatedValue != nil {
+	if calculatedValue := fs.Strategies.Calculate(cc.Context); calculatedValue != nil {
 
 		// Assert the value:
 		if strategyValue, ok := calculatedValue.(string); ok {

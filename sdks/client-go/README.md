@@ -28,28 +28,17 @@ There are 3 steps to connecting:
 2) Use the config to make a client
 3) Tell the client to start handling features
 
-#### Prepare a configuration:
+#### Prepare a configuration (with a client):
 ```go
-    config := &client.Config{
-        SDKKey:        "default/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee/ajhsgdJHGAFKJAHSGDFKAJHHSDLFKAJLSKJDHFLAJKHlkjahlkjhfsld",
-        ServerAddress: "http://1.2.3.4:8085",
-		WaitForData:   true,
-    }
-```
-
-#### Use it to make a new client:
-```go
-	fhClient, err := client.NewStreamingClient(config)
+	// Start by creating a config with your serverAddress and API-key:
+	config, err := client.NewConfig(serverAddress, apiKey).WithLogLevel(logrus.WarnLevel).WithWaitForData(true).Connect()
 	if err != nil {
-		log.Fatalf("Error connecting to FeatureHub: %s", err)
-    }
-```
+		log.Panicf("Error creating config: %s", err)
+	}
 
-#### Start handling data (will block until some data is received if `config.WaitForData` is set):
-```go
-    fhClient.Start()
+	// Get a context from this config:
+	context := config.NewContext()
 ```
-
 
 ### Requesting Features
 The client SDK offers various `Get` methods to retrieve different types of features:
@@ -60,7 +49,7 @@ The client SDK offers various `Get` methods to retrieve different types of featu
 
 #### Retrieve a BOOLEAN value:
 ```go
-	someBoolean, err := fhClient.GetBoolean("booleanfeature")
+	someBoolean, err := context.GetBoolean("booleanfeature")
 	if err != nil {
 		log.Fatalf("Error retrieving a BOOLEAN feature: %s", err)
 	}
@@ -69,7 +58,7 @@ The client SDK offers various `Get` methods to retrieve different types of featu
 
 #### Retrieve a JSON value:
 ```go
-	someJSON, err := fhClient.GetRawJSON("jsonfeature")
+	someJSON, err := context.GetRawJSON("jsonfeature")
 	if err != nil {
 		log.Fatalf("Error retrieving a JSON feature: %s", err)
 	}
@@ -78,7 +67,7 @@ The client SDK offers various `Get` methods to retrieve different types of featu
 
 #### Retrieve a NUMBER value:
 ```go
-	someNumber, err := fhClient.GetNumber("numberfeature")
+	someNumber, err := context.GetNumber("numberfeature")
 	if err != nil {
 		log.Fatalf("Error retrieving a NUMBER feature: %s", err)
 	}
@@ -87,7 +76,7 @@ The client SDK offers various `Get` methods to retrieve different types of featu
 
 #### Retrieve a STRING value:
 ```go
-	someString, err := fhClient.GetString("stringfeature")
+	someString, err := context.GetString("stringfeature")
 	if err != nil {
 		log.Fatalf("Error retrieving a STRING feature: %s", err)
 	}
@@ -139,7 +128,18 @@ Any subsequent calls to `client.LogAnalyticsEvent()` will result in events being
 Some rollout strategies need to be calculated per-request, which means that we can't rely on the server to do this for us. For this we provide the ability to apply a client context to a feature before using its value:
 
 ```go
-	// Define your client context (rollout strategies will hash by Session, or Userkey if Session is unset):
+	// Add some values to the context:
+	context.Country = "russia"
+	context.Custom["test"] = true
+
+	// Now retrieved feature values will be evaluated against your context:
+	featureValue, err = context.GetString("featureKey")
+```
+
+If you have a complex context then you can define it as a single struct:
+
+```go
+	// You can also define a context as a struct:
 	clientContext := &Context{
 		Userkey:  "12345",
 		Device:   "server",
@@ -153,11 +153,11 @@ Some rollout strategies need to be calculated per-request, which means that we c
 		},
 	}
 
-	// Use client.WithContext() to retrieve a string-value with client-side evaluation:
-	stringValue, err := fhClient.WithContext(clientContext).GetString("feature-key")
-	if err != nil {
-		logrus.Fatalf("Error retrieving a STRING feature: %s", err)
-	}
+	// And get the config to return you a fully-loaded context:
+	context := config.WithContext(clientContext)
+
+	// Now retrieved feature values will be evaluated against your context:
+	featureValue, err = context.GetString("featureKey")
 ```
 
 If the featureValue has rollout strategies defined then they will be applied according to the client context you provide.

@@ -156,8 +156,11 @@ func (s Strategy) proceedWithAttributes(clientContext *Context) bool {
 		// Custom field:
 		default:
 
+			logger.Tracef("Unsupported strategy field (%s), will now try custom strategies", sa.FieldName)
+
 			// Look up the field by name in the clientContext.Custom attribute:
-			if customContextValue, ok := clientContext.Custom[sa.FieldName]; ok {
+			customContextValue, ok := clientContext.Custom[sa.FieldName]
+			if ok {
 				matched, err := sa.matchType(sa.Values, customContextValue)
 				if err != nil {
 					logger.WithError(err).Error("Unable to match type")
@@ -167,8 +170,9 @@ func (s Strategy) proceedWithAttributes(clientContext *Context) bool {
 				}
 				logger.Tracef("Didn't match custom strategy (%s:%s = %v) for version: %v\n", sa.ID, sa.FieldName, sa.Values, clientContext.Version)
 				return false
+			} else {
+				return false
 			}
-			logger.Infof("Unsupported strategy field (%s), will now try custom strategies", sa.FieldName)
 		}
 	}
 

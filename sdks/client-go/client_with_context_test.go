@@ -118,6 +118,34 @@ var TestFeature1States = []*models.FeatureState{
 					},
 				},
 			},
+			{
+				ID:    "s8",
+				Name:  "custom-bool",
+				Value: "you have the custom bool",
+				Attributes: []*models.StrategyAttribute{
+					{
+						ID:          "a8",
+						Conditional: strategies.ConditionalEquals,
+						FieldName:   "custom-bool",
+						Values:      []interface{}{true},
+						Type:        strategies.TypeBoolean,
+					},
+				},
+			},
+			{
+				ID:    "s9",
+				Name:  "custom-string",
+				Value: "you have the custom string",
+				Attributes: []*models.StrategyAttribute{
+					{
+						ID:          "a9",
+						Conditional: strategies.ConditionalEquals,
+						FieldName:   "custom-string",
+						Values:      []interface{}{"this is it"},
+						Type:        strategies.TypeString,
+					},
+				},
+			},
 		},
 	},
 	{
@@ -166,7 +194,7 @@ var TestFeature1States = []*models.FeatureState{
 	},
 }
 
-func TestStreamingClientWithContext(t *testing.T) {
+func TestClientWithContext(t *testing.T) {
 
 	// Make a test config:
 	config := &Config{
@@ -192,13 +220,13 @@ func TestStreamingClientWithContext(t *testing.T) {
 
 	// Make a client context:
 	testContext := &models.Context{
-		Userkey: "TestStreamingClientWithContext",
+		Userkey: "TestClientWithContext",
 	}
 
 	// Make sure our client and context are present:
-	streamingClientWithContext := testClient.WithContext(testContext)
-	assert.Equal(t, testClient, streamingClientWithContext.client)
-	assert.Equal(t, testContext, streamingClientWithContext.context)
+	clientWithContext := testClient.WithContext(testContext)
+	assert.Equal(t, testClient, clientWithContext.client)
+	assert.Equal(t, testContext, clientWithContext.Context)
 
 	// Marshal the TestFeature1States to JSON:
 	TestFeature1StatesJSON, err := json.Marshal(TestFeature1States)
@@ -305,10 +333,24 @@ func TestStreamingClientWithContext(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, float64(54321), numberValue)
 
-	// Get a default number value:
+	// Get a default string value:
 	stringValue, err = testClient.
 		WithContext(&models.Context{Userkey: time.Now().String()}).
 		GetString("TestString")
 	assert.NoError(t, err)
 	assert.Equal(t, "this is another string", stringValue)
+
+	// See if we can match the "custom-bool" attribute:
+	stringValue, err = testClient.
+		WithContext(&models.Context{Custom: map[string]interface{}{"custom-bool": true}}).
+		GetString("TestFeature1")
+	assert.Equal(t, "you have the custom bool", stringValue)
+	assert.NoError(t, err)
+
+	// See if we can match the "custom-string" attribute:
+	stringValue, err = testClient.
+		WithContext(&models.Context{Custom: map[string]interface{}{"custom-string": "this is it"}}).
+		GetString("TestFeature1")
+	assert.Equal(t, "you have the custom string", stringValue)
+	assert.NoError(t, err)
 }
