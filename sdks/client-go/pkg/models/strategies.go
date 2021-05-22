@@ -1,28 +1,15 @@
 package models
 
 import (
+	"fmt"
 	"math"
 
-	"github.com/mcuadros/go-version"
+	"github.com/featurehub-io/featurehub/sdks/client-go/pkg/strategies"
 	"github.com/spaolacci/murmur3"
 )
 
 var (
 	maxMurmur32Hash = math.Pow(2, 32)
-)
-
-const (
-	strategyConditionalEquals        = "EQUALS"
-	strategyConditionalGreater       = "GREATER"
-	strategyConditionalGreaterEquals = "GREATER_EQUALS"
-	strategyConditionalLess          = "LESS"
-	strategyConditionalLessEquals    = "LESS_EQUALS"
-	strategyConditionalNotEquals     = "NOT_EQUALS"
-	strategyFieldNameCountry         = "country"
-	strategyFieldNameDevice          = "device"
-	strategyFieldNamePlatform        = "platform"
-	strategyFieldNameVersion         = "version"
-	strategyTypeSemanticVersion      = "SEMANTIC_VERSION"
 )
 
 // Strategies so we can attach methods:
@@ -39,15 +26,15 @@ type Strategy struct {
 
 // StrategyAttribute defines a more complex strategy than simple percentages:
 type StrategyAttribute struct {
-	ID          string   `json:"id"`
-	Conditional string   `json:"conditional"`
-	FieldName   string   `json:"fieldName"`
-	Values      []string `json:"values"`
-	Type        string   `json:"type"`
+	ID          string        `json:"id"`
+	Conditional string        `json:"conditional"`
+	FieldName   string        `json:"fieldName"`
+	Values      []interface{} `json:"values"`
+	Type        string        `json:"type"`
 }
 
-// calculate contains the logic to check each strategy and decide which one applies (if any):
-func (ss Strategies) calculate(clientContext *Context) interface{} {
+// Calculate contains the logic to check each strategy and decide which one applies (if any):
+func (ss Strategies) Calculate(clientContext *Context) interface{} {
 
 	// Pre-calculate our hashKey:
 	hashKey, _ := clientContext.UniqueKey()
@@ -118,145 +105,109 @@ func (s Strategy) proceedWithAttributes(clientContext *Context) bool {
 		switch sa.FieldName {
 
 		// Match by country name:
-		case strategyFieldNameCountry:
-			if len(clientContext.Country) > 0 && sa.matchConditional(sa.Values, string(clientContext.Country)) {
+		case strategies.FieldNameCountry:
+			matched, err := sa.matchType(sa.Values, fmt.Sprintf("%s", clientContext.Country))
+			if err != nil {
+				logger.WithError(err).Error("Unable to match type")
+			}
+			if matched {
 				continue
 			}
 			logger.Tracef("Didn't match attribute strategy (%s:%s = %v) for country: %v\n", sa.ID, sa.FieldName, sa.Values, clientContext.Country)
 			return false
 
 		// Match by device type:
-		case strategyFieldNameDevice:
-			if len(clientContext.Device) > 0 && sa.matchConditional(sa.Values, string(clientContext.Device)) {
+		case strategies.FieldNameDevice:
+			matched, err := sa.matchType(sa.Values, fmt.Sprintf("%s", clientContext.Device))
+			if err != nil {
+				logger.WithError(err).Error("Unable to match type")
+			}
+			if matched {
 				continue
 			}
 			logger.Tracef("Didn't match attribute strategy (%s:%s = %v) for device: %v\n", sa.ID, sa.FieldName, sa.Values, clientContext.Device)
 			return false
 
 		// Match by platform:
-		case strategyFieldNamePlatform:
-			if len(clientContext.Platform) > 0 && sa.matchConditional(sa.Values, string(clientContext.Platform)) {
+		case strategies.FieldNamePlatform:
+			matched, err := sa.matchType(sa.Values, fmt.Sprintf("%s", clientContext.Platform))
+			if err != nil {
+				logger.WithError(err).Error("Unable to match type")
+			}
+			if matched {
 				continue
 			}
 			logger.Tracef("Didn't match attribute strategy (%s:%s = %v) for platform: %v\n", sa.ID, sa.FieldName, sa.Values, clientContext.Platform)
 			return false
 
 		// Match by version:
-		case strategyFieldNameVersion:
+		case strategies.FieldNameVersion:
 			logger.Trace("Trying version")
-			if len(clientContext.Version) > 0 && sa.matchConditional(sa.Values, string(clientContext.Version)) {
+			matched, err := sa.matchType(sa.Values, fmt.Sprintf("%s", clientContext.Version))
+			if err != nil {
+				logger.WithError(err).Error("Unable to match type")
+			}
+			if matched {
 				continue
 			}
 			logger.Tracef("Didn't match attribute strategy (%s:%s = %v) for version: %v\n", sa.ID, sa.FieldName, sa.Values, clientContext.Version)
 			return false
 
-		// Some other (unsupported) field:
+		// Custom field:
 		default:
-			logger.Infof("Unsupported strategy field (%s)", sa.FieldName)
-			return false
+
+			logger.Tracef("Unsupported strategy field (%s), will now try custom strategies", sa.FieldName)
+
+			// Look up the field by name in the clientContext.Custom attribute:
+			customContextValue, ok := clientContext.Custom[sa.FieldName]
+			if ok {
+				matched, err := sa.matchType(sa.Values, customContextValue)
+				if err != nil {
+					logger.WithError(err).Error("Unable to match type")
+				}
+				if matched {
+					continue
+				}
+				logger.Tracef("Didn't match custom strategy (%s:%s = %v) for version: %v\n", sa.ID, sa.FieldName, sa.Values, clientContext.Version)
+				return false
+			} else {
+				return false
+			}
 		}
 	}
 
 	return true
 }
 
-// matchConditional checks the given string against the given slice of strings with the attribute's conditional logic:
-func (sa *StrategyAttribute) matchConditional(slice []string, contains string) bool {
+// matchType checks the given value against the given slice of options with the attribute's conditional logic:
+func (sa *StrategyAttribute) matchType(options []interface{}, value interface{}) (bool, error) {
 
 	// Handle the different conditionals available to us:
-	switch {
+	logger.Tracef("Looking for %v within %v", value, options)
+	switch sa.Type {
 
-	// If our value is found in the slice then we match:
-	case sa.Conditional == strategyConditionalEquals:
-		for _, value := range slice {
-			if value == contains {
-				return true
-			}
-		}
-		return false
+	case strategies.TypeBoolean:
+		return strategies.Boolean(sa.Conditional, options, value)
 
-	// If our value is found in the slice then we do NOT match:
-	case sa.Conditional == strategyConditionalNotEquals:
-		for _, value := range slice {
-			if value == contains {
-				return false
-			}
-		}
-		return true
+	case strategies.TypeDate:
+		return strategies.Date(sa.Conditional, options, value)
 
-	// If our value <= any value in the slice then we do NOT match:
-	case sa.Conditional == strategyConditionalGreater && sa.Type == strategyTypeSemanticVersion:
-		for _, value := range slice {
-			if version.Compare(contains, value, "<=") {
-				return false
-			}
-		}
-		return true
+	case strategies.TypeDateTime:
+		return strategies.DateTime(sa.Conditional, options, value)
 
-	// // If our value <= any value in the slice then we do NOT match:
-	// case sa.Conditional == strategyConditionalGreater && sa.Type != strategyTypeSemanticVersion:
-	// 	for _, value := range slice {
-	// 		if contains <= value {
-	// 			return false
-	// 		}
-	// 	}
-	// 	return true
+	case strategies.TypeIPAddress:
+		return strategies.IPAddress(sa.Conditional, options, value)
 
-	// If our value < any value in the slice then we do NOT match:
-	case sa.Conditional == strategyConditionalGreaterEquals && sa.Type == strategyTypeSemanticVersion:
-		for _, value := range slice {
-			if version.Compare(contains, value, "<") {
-				return false
-			}
-		}
-		return true
+	case strategies.TypeNumber:
+		return strategies.Number(sa.Conditional, options, value)
 
-	// // If our value < any value in the slice then we do NOT match:
-	// case sa.Conditional == strategyConditionalGreaterEquals && sa.Type != strategyTypeSemanticVersion:
-	// 	for _, value := range slice {
-	// 		if contains < value {
-	// 			return false
-	// 		}
-	// 	}
-	// 	return true
+	case strategies.TypeSemanticVersion:
+		return strategies.SemanticVersion(sa.Conditional, options, value)
 
-	// If our value >= any value in the slice then we do NOT match:
-	case sa.Conditional == strategyConditionalLess && sa.Type == strategyTypeSemanticVersion:
-		for _, value := range slice {
-			if version.Compare(contains, value, ">=") {
-				return false
-			}
-		}
-		return true
-
-	// // If our value >= any value in the slice then we do NOT match:
-	// case sa.Conditional == strategyConditionalLess && sa.Type != strategyTypeSemanticVersion:
-	// 	for _, value := range slice {
-	// 		if contains >= value {
-	// 			return false
-	// 		}
-	// 	}
-	// 	return true
-
-	// If our value > any value in the slice then we do NOT match:
-	case sa.Conditional == strategyConditionalLessEquals && sa.Type == strategyTypeSemanticVersion:
-		for _, value := range slice {
-			if version.Compare(contains, value, ">") {
-				return false
-			}
-		}
-		return true
-
-		// // If our value > any value in the slice then we do NOT match:
-		// case sa.Conditional == strategyConditionalLessEquals && sa.Type != strategyTypeSemanticVersion:
-		// 	for _, value := range slice {
-		// 		if contains > value {
-		// 			return false
-		// 		}
-		// 	}
-		// 	return true
+	case strategies.TypeString:
+		return strategies.String(sa.Conditional, options, value)
 	}
 
 	// We didn't find it:
-	return false
+	return false, nil
 }

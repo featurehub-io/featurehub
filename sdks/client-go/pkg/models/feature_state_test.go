@@ -47,11 +47,4 @@ func TestFeatureStateTest(t *testing.T) {
 	stringValue, err := featureStateString.AsString()
 	assert.NoError(t, err)
 	assert.Equal(t, "hello, i am a string", stringValue)
-
-	// WithContext (make sure we can add client context to a FeatureState):
-	clientContext := &Context{
-		Userkey: "some-key",
-	}
-	featureStateStringWithContext := featureStateString.WithContext(clientContext)
-	assert.Equal(t, clientContext, featureStateStringWithContext.clientContext)
 }

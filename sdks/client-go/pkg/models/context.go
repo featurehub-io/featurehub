@@ -9,12 +9,13 @@ import (
 // This is sent to the FeatureHub server, and powers rollout strategy decisions.
 // It can also be applied each time you use a feature (with the Get* methods).
 type Context struct {
-	Userkey  string          // Unique key which will be hashed to calculate percentage rollouts
-	Session  string          // Session ID key
-	Device   ContextDevice   // [browser, mobile, desktop]
-	Platform ContextPlatform // [linux, windows,	macos, android, ios]
-	Country  ContextCountry  // Country / geographic region: https://www.britannica.com/topic/list-of-countries-1993160
-	Version  string          // Version of the client
+	Userkey  string                 // Unique key which will be hashed to calculate percentage rollouts
+	Session  string                 // Session ID key
+	Device   ContextDevice          // [browser, mobile, desktop]
+	Platform ContextPlatform        // [linux, windows,	macos, android, ios]
+	Country  ContextCountry         // Country / geographic region: https://www.britannica.com/topic/list-of-countries-1993160
+	Version  string                 // Version of the client
+	Custom   map[string]interface{} // Custom attributes
 }
 
 // String concatenates the context and URL encodes it:
