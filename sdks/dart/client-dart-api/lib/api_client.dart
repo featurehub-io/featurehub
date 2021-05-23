@@ -1,10 +1,7 @@
 part of featurehub_client_api.api;
 
 class LocalApiClient {
-  static final _regList = RegExp(r'^List<(.*)>$');
-  static final _regMap = RegExp(r'^Map<String,(.*)>$');
-
-  static dynamic serialize(Object value) {
+  static dynamic serialize(Object? value) {
     try {
       if (value == null) {
         return null;
@@ -72,7 +69,7 @@ class LocalApiClient {
     }
   }
 
-  static dynamic deserializeFromString(String json, String targetType) {
+  static dynamic deserializeFromString(String? json, String targetType) {
     if (json == null) {
       // HTTP Code 204
       return null;
@@ -83,11 +80,11 @@ class LocalApiClient {
 
     if (targetType == 'String') return json;
 
-    var decodedJson = jsonDecode(json);
+    final decodedJson = jsonDecode(json);
     return deserialize(decodedJson, targetType);
   }
 
-  static dynamic deserialize(dynamic value, String targetType) {
+  static dynamic deserialize(dynamic? value, String targetType) {
     if (value == null) return null; // 204
     try {
       switch (targetType) {
@@ -128,30 +125,16 @@ class LocalApiClient {
         case 'StrategyAttributeWellKnownNames':
           return StrategyAttributeWellKnownNamesExtension.fromJson(value);
         default:
-          {
-            Match match;
-            if (value is List &&
-                (match = _regList.firstMatch(targetType)) != null) {
-              var newTargetType = match[1];
-              return value.map((v) => deserialize(v, newTargetType)).toList();
-            } else if (value is Map &&
-                (match = _regMap.firstMatch(targetType)) != null) {
-              var newTargetType = match[1];
-              return Map.fromIterables(value.keys,
-                  value.values.map((v) => deserialize(v, newTargetType)));
-            }
-          }
+          return matchLeftovers(value, targetType, (v, t) => deserialize(v, t));
       }
     } on Exception catch (e, stack) {
       throw ApiException.withInner(
           500, 'Exception during deserialization.', e, stack);
     }
-    throw ApiException(
-        500, 'Could not find a suitable class for deserialization');
   }
 
   /// Format the given parameter object into string.
-  static String parameterToString(dynamic value) {
+  static String parameterToString(dynamic? value) {
     if (value == null) {
       return '';
     } else if (value is DateTime) {

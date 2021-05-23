@@ -5,7 +5,7 @@ import 'package:featurehub_client_sdk/featurehub.dart'
     hide EventSourceRepositoryListener;
 import 'package:featurehub_client_sdk/featurehub_io.dart';
 import 'package:featurehub_sse_client/featurehub_sse_client.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:test/test.dart';
 
@@ -14,16 +14,21 @@ class _MockStreamEvent extends Mock implements Stream<Event> {}
 class _MockRepository extends Mock implements ClientFeatureRepository {
   @override
   final ClientContext clientContext = ClientContext();
+
+  Readyness r = Readyness.Ready;
+
+  @override
+  Readyness get readyness => r;
 }
 
 class SseClientTest extends EventSourceRepositoryListener {
   final Stream<Event> mockedSource;
 
-  SseClientTest(
-      String url, ClientFeatureRepository repository, Stream<Event> eventSource,
-      {bool doInit})
+  SseClientTest(String url, String apiKey, ClientFeatureRepository repository,
+      Stream<Event> eventSource,
+      {bool doInit = true})
       : mockedSource = eventSource,
-        super(url, repository, doInit: doInit);
+        super(url, apiKey, repository, doInit: doInit);
 
   @override
   Future<Stream<Event>> connect(String url) async {
@@ -32,31 +37,29 @@ class SseClientTest extends EventSourceRepositoryListener {
 }
 
 void main() {
-  PublishSubject<Event> es;
-  _MockRepository rep;
+  late PublishSubject<Event> es;
+  late _MockRepository rep;
   // SseClientTest sse;
 
   setUp(() {
     es = PublishSubject<Event>();
     rep = _MockRepository();
 
-    SseClientTest('', rep, es);
+    SseClientTest('', '', rep, es);
   });
 
   test('A proper message is delivered to the repository', () {
     es.listen(expectAsync1((_) {
-      verify(rep.notify(SSEResultState.failure, any));
+      verify(() => rep.notify(SSEResultState.failure, any())).called(1);
     }));
 
-    es.add(Event(
-        event: SSEResultStateTypeTransformer.toJson(SSEResultState.failure),
-        data: '{}'));
+    es.add(Event(event: SSEResultState.failure.name, data: '{}'));
   });
 
   test('A failure is reported to the repository', () {
-    when(rep.readyness).thenReturn(Readyness.Failed);
-    es.listen((value) {}, onError: expectAsync1((_) {
-      verify(rep.notify(SSEResultState.bye, any));
+    rep.r = Readyness.Failed;
+    es.listen((value) {}, onError: expectAsync1((dynamic _) {
+      verify(() => rep.notify(SSEResultState.bye, any()));
     }));
     es.addError('blah');
   });
@@ -76,16 +79,21 @@ void main() {
     final sub = _MockSubscription();
     rep = _MockRepository();
 
-    when(stream.listen(any,
-            onError: anyNamed('onError'), onDone: anyNamed('onDone')))
-        .thenAnswer((_) => sub);
+    when(() => stream.listen(any(),
+        onError: any(named: 'onError'),
+        onDone: any(named: 'onDone'))).thenReturn(sub);
 
-    final sse = SseClientTest('', rep, stream, doInit: false);
+    // cancel is called, it has to return a future void
+    final c = Completer<void>();
+    when(() => sub.cancel()).thenAnswer((_) => c.future);
+    c.complete();
+
+    final sse = SseClientTest('', '', rep, stream, doInit: false);
     await sse.init();
 
     sse.close();
 
-    verify(sub.cancel());
+    verify(() => sub.cancel()).called(1);
   });
 }
 

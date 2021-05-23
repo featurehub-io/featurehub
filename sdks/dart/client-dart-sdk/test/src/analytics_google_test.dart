@@ -1,12 +1,12 @@
 import 'package:featurehub_client_api/api.dart';
 import 'package:featurehub_client_sdk/featurehub.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:test/test.dart';
 
 void main() {
-  _MockFeatureRepository repo;
-  GoogleAnalyticsApiClient poster;
+  late _MockFeatureRepository repo;
+  late GoogleAnalyticsApiClient poster;
 
   setUp(() {
     repo = _MockFeatureRepository();
@@ -21,8 +21,9 @@ void main() {
     repo.analyticsCollectors.add(ae);
     await Future.value();
 
-    verify(poster.postAnalyticBatch(
-        'v=1&tid=1234&cid=123&t=event&ec=FeatureHub%20Event&ea=foo&el=key+%3A+sval\n'));
+    verify(() => poster.postAnalyticBatch(
+            'v=1&tid=1234&cid=123&t=event&ec=FeatureHub%20Event&ea=foo&el=key+%3A+sval\n'))
+        .called(1);
   });
 
   test("when we don't provide a cid, no post happens", () async {
@@ -33,7 +34,7 @@ void main() {
     repo.analyticsCollectors.add(ae);
     await Future.value();
 
-    verifyNever(poster.postAnalyticBatch(any));
+    verifyZeroInteractions(poster);
   });
 }
 

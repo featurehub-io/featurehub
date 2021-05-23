@@ -9,16 +9,15 @@ import 'package:featurehub_client_sdk/featurehub.dart';
 
 class W3CTraceContextInterceptor extends InterceptorsWrapper {
   int _startTraceId;
-  int _spanId;
+  final int _spanId;
 
-  W3CTraceContextInterceptor() {
-    _startTraceId =
-        Random.secure().nextInt(1 << 27); // gives us space to expand
-    _spanId = Random.secure().nextInt(1 << 14);
-  }
+  W3CTraceContextInterceptor()
+      : _startTraceId =
+            Random.secure().nextInt(1 << 27), // gives us space to expand
+        _spanId = Random.secure().nextInt(1 << 14);
 
   @override
-  Future onRequest(RequestOptions options) {
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     final traceId = _startTraceId.toRadixString(16).padLeft(16, '0');
 
     _startTraceId++;
@@ -26,9 +25,9 @@ class W3CTraceContextInterceptor extends InterceptorsWrapper {
     final spanId = _spanId.toRadixString(16).padLeft(8, '0');
     final flags = '01'; // all calls sampled
 
-    options.headers['traceparent'] = '00-${traceId}-${spanId}-${flags}';
+    options.headers['traceparent'] = '00-$traceId-$spanId-$flags';
 
-    return super.onRequest(options);
+    super.onRequest(options, handler);
   }
 }
 
@@ -41,16 +40,16 @@ class JaegerDioInterceptor extends W3CTraceContextInterceptor {
   JaegerDioInterceptor(this.repository);
 
   @override
-  Future onRequest(RequestOptions options) {
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     repository.availableFeatures.forEach((key) {
       final fs = repository.feature(key);
       if (fs.type != FeatureValueType.JSON && fs.value != null) {
         options.headers[
-                'uberctx-fhub.${key.toLowerCase().replaceAll(':', '_')}'] =
+                'uberctx-fhub.${key!.toLowerCase().replaceAll(':', '_')}'] =
             Uri.encodeQueryComponent(fs.value);
       }
     });
 
-    return super.onRequest(options);
+    super.onRequest(options, handler);
   }
 }

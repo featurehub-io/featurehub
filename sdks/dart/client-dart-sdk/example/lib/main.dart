@@ -1,11 +1,9 @@
 import 'package:featurehub_client_api/api.dart';
 import 'package:featurehub_client_sdk/featurehub.dart';
-import 'package:featurehub_client_sdk/featurehub_get.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 
-ClientFeatureRepository featurehub;
-FeatureHubSimpleApi featurehubApi;
+ClientFeatureRepository? featurehub;
 
 void main() {
   Logger.root.level = Level.ALL; // defaults to Level.INFO
@@ -23,20 +21,29 @@ void main() {
   });
 
   featurehub = ClientFeatureRepository();
-  // this next step can be delayed based on environment loading, etc
-  featurehubApi = FeatureHubSimpleApi(
-      'http://127.0.0.1:8553',
-      [
-        'default/ec6a720b-71ac-4cc1-8da1-b5e396fa00ca/Kps0MAqsGt5QhgmwMEoRougAflM2b8Q9e1EFeBPHtuIF0azpcCXeeOw1DabFojYdXXr26fyycqjBt3pa'
-      ],
-      featurehub);
-  featurehub.clientContext
+
+  // if you use this one (GET based, which is geneally preferred in Mobile) then
+  // you should uncomment the refresh down below which causes the GET to happen again.
+// FeatureHubSimpleApi // this next step can be delayed based on environment loading, etc
+//     featurehubApi = FeatureHubSimpleApi(
+//         'https://irina.demo.featurehub.io',
+//         [
+//           'default/6cd999a7-70d4-4d78-821c-68a1ecc40d3e/rmbEKXvu0DsPVyzSuVgmFlrlB05vpwC37Q2Vj7qLcGnbyL0C9oIqwWySEBwXKAmMLKdIiOdwTWzVTNsZ'
+//         ],
+//         featurehub);
+
+  EventSourceRepositoryListener rs = EventSourceRepositoryListener(
+      'https://irina.demo.featurehub.io',
+      'default/6cd999a7-70d4-4d78-821c-68a1ecc40d3e/rmbEKXvu0DsPVyzSuVgmFlrlB05vpwC37Q2Vj7qLcGnbyL0C9oIqwWySEBwXKAmMLKdIiOdwTWzVTNsZ',
+      featurehub!);
+
+  featurehub!.clientContext
       .userKey('susanna')
       .device(StrategyAttributeDeviceName.desktop)
       .platform(StrategyAttributePlatformName.macos)
       .attr('sausage', 'cumberlands')
       .build();
-  featurehubApi.request();
+  // featurehubApi.request();
   runApp(MyApp());
 }
 
@@ -55,8 +62,9 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
   final String title;
+
+  MyHomePage({Key? key, required this.title}) : super(key: key);
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -78,10 +86,13 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: StreamBuilder<FeatureStateHolder>(
-          stream: featurehub.feature('FLUTTER_COLOUR').featureUpdateStream,
+          stream: featurehub!.feature('FLUTTER_COLOUR').featureUpdateStream,
           builder: (context, snapshot) {
             return RefreshIndicator(
-              onRefresh: () => featurehubApi.request(),
+              onRefresh: () {
+                return Future.value();
+                // return featurehubApi.request();
+              },
               child: ListView(
                 children: [
                   Container(
@@ -113,7 +124,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Color determineColour(FeatureStateHolder data) {
+  Color determineColour(FeatureStateHolder? data) {
     // ignore: avoid_print
     print('colour changed? $data');
     if (data == null || !data.exists) {

@@ -20,7 +20,7 @@ void main() {
     test("vectors", () {
       var encoder = new EventSourceEncoder();
       for (Event event in _VECTORS.keys) {
-        var encoded = _VECTORS[event];
+        var encoded = _VECTORS[event]!;
         expect(encoder.convert(event), equals(utf8.encode(encoded)));
       }
     });

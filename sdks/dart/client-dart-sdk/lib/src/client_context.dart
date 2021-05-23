@@ -1,9 +1,9 @@
 import 'package:featurehub_client_api/api.dart';
 
-typedef ClientContextChangedHandler = Future<void> Function(String header);
+typedef ClientContextChangedHandler = Future<void> Function(String? header);
 
 class ClientContext {
-  final _attributes = <String, List<String>>{};
+  final Map<String, List<String>> _attributes = <String, List<String>>{};
   final _handlers = <ClientContextChangedHandler>[];
 
   ClientContext userKey(String userkey) {
@@ -17,23 +17,17 @@ class ClientContext {
   }
 
   ClientContext country(StrategyAttributeCountryName countryName) {
-    _attributes['country'] = [
-      StrategyAttributeCountryNameTypeTransformer.toJson(countryName)
-    ];
+    _attributes['country'] = [countryName.name!];
     return this;
   }
 
   ClientContext device(StrategyAttributeDeviceName device) {
-    _attributes['device'] = [
-      StrategyAttributeDeviceNameTypeTransformer.toJson(device)
-    ];
+    _attributes['device'] = [device.name!];
     return this;
   }
 
   ClientContext platform(StrategyAttributePlatformName platform) {
-    _attributes['platform'] = [
-      StrategyAttributePlatformNameTypeTransformer.toJson(platform)
-    ];
+    _attributes['platform'] = [platform.name!];
     return this;
   }
 
@@ -64,7 +58,7 @@ class ClientContext {
     }
   }
 
-  String generateHeader() {
+  String? generateHeader() {
     if (_attributes.isEmpty) {
       return null;
     }

@@ -12,15 +12,22 @@ final _log = Logger('featurehub_io_eventsource');
 /// This listener will stop if we receive a failed message.
 class EventSourceRepositoryListener {
   final ClientFeatureRepository _repository;
-  StreamSubscription<Event> _subscription;
-  final String url;
+  StreamSubscription<Event>? _subscription;
+  final String _url;
   bool _initialized = false;
   bool _closed = false;
-  String _xFeaturehubHeader;
+  String? _xFeaturehubHeader;
 
-  EventSourceRepositoryListener(this.url, ClientFeatureRepository repository,
-      {bool doInit = true})
-      : _repository = repository {
+  EventSourceRepositoryListener(
+      String url, String apiKey, ClientFeatureRepository repository,
+      {bool? doInit = true})
+      : _repository = repository,
+        _url = url + (url.endsWith('/') ? '' : '/') + 'features/' + apiKey {
+    if (apiKey.contains('*')) {
+      throw Exception(
+          'You are using a client evaluated API Key in Dart and this is not supported.');
+    }
+
     if (doInit ?? true) {
       init();
     }
@@ -46,7 +53,7 @@ class EventSourceRepositoryListener {
 
   void retry() {
     if (_subscription != null) {
-      _subscription.cancel();
+      _subscription!.cancel();
       _subscription = null;
 
       _init();
@@ -55,15 +62,15 @@ class EventSourceRepositoryListener {
 
   Future<void> _init() async {
     _closed = false;
-    _log.fine('Connecting to $url');
-    final es = await connect(url);
+    _log.fine('Connecting to $_url');
+    final es = await connect(_url);
 
     _subscription = es.listen((event) {
       _log.fine('Event is ${event.event} value ${event.data}');
       final readyness = _repository.readyness;
       if (event.event != null) {
-        _repository.notify(SSEResultStateTypeTransformer.fromJson(event.event),
-            event.data == null ? null : jsonDecode(event.data));
+        _repository.notify(SSEResultStateExtension.fromJson(event.event),
+            event.data == null ? null : jsonDecode(event.data!));
       }
       if (event.event == 'bye' && readyness != Readyness.Failed && !_closed) {
         retry();
@@ -81,7 +88,7 @@ class EventSourceRepositoryListener {
   Future<Stream<Event>> connect(String url) {
     var sourceHeaders = {'content-type': 'application/json'};
     if (_xFeaturehubHeader != null) {
-      sourceHeaders['x-featurehub'] = _xFeaturehubHeader;
+      sourceHeaders['x-featurehub'] = _xFeaturehubHeader!;
     }
     return EventSource.connect(url,
         closeOnLastListener: true, headers: sourceHeaders);
@@ -90,7 +97,7 @@ class EventSourceRepositoryListener {
   void close() {
     _closed = true;
     if (_subscription != null) {
-      _subscription.cancel();
+      _subscription!.cancel();
       _subscription = null;
     }
   }

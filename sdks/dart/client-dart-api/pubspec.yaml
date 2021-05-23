@@ -1,13 +1,14 @@
 name: featurehub_client_api
-version: 1.0.1
+version: 2.0.0
 description: This is the OpenAPI client for the FeatureHub SDK. It is not likely to be used on its own.
 repository: https://github.com/featurehub-io/featurehub/tree/master/sdks/dart/client-dart-api
 homepage: https://www.featurehub.io
 environment:
-  sdk: '>=2.7.0 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
 dependencies:
-  dio: '>=3.0.10 <4.0.0'
-  openapi_dart_common: ^3.2.0
-  collection: ^1.14.11
+  dio: '4.0.0'
+  openapi_dart_common: ^4.0.0
+  collection: '^1.15.0'
 dev_dependencies:
   test: ^1.3.0
+# bought to you by the folks from FeatureHub https://featurehub.io

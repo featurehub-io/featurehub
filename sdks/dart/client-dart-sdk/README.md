@@ -60,6 +60,9 @@ to the server port.
 Whether this instant reaction is ideal for your application depends. For mobile and servers, the answer is usually
 yes, for Web the answer is often no as people don't expect that.
 
+Note below the hostUrl is the address of where FeatureHub is running, e.g. `http://locahost:8085` for the Party
+Server. The APIKey is the key from the Service Keys page. Please always ensure you choose a Server Evaluated Key
+(*not* a Client Evaluated key) otherwise your rollout strategies will not work.
 
 ````dart
 final _repository = ClientFeatureRepository();
@@ -72,7 +75,7 @@ _repository.readynessStream.listen((readyness) {
 
 // this will cause the event source listener to immediately start. It has a close()
 // method to allow for shutdown. this is the EventSource listener and will give you immediate updates 
-final _eventSource = EventSourceRepositoryListener(sdkUrl, _repository);
+final _eventSource = EventSourceRepositoryListener(hostUrl, apiKey, _repository);
 
 const featureXUnsubscribe = featureHubRepository.getFeatureState('FEATURE_X')
    .featureUpdateStream.listen((_fs) => do_something());
@@ -169,8 +172,8 @@ that are applied to individual feature values in a specific environment. This in
 
 For more details on rollout strategies, targeting rules and feature experiments see the [core documentation](https://docs.featurehub.io/#_rollout_strategies_and_targeting_rules).
 
-We are actively working on supporting client side evaluation of
-strategies in the future releases as this scales better when you have 10000+ consumers.
+We are not planning on implementing Client Side evaluation for Dart without direct request as it is mostly used client side in Flutter
+and console apps.
 
 #### Coding for Rollout strategies 
 There are several preset strategies rules we track specifically: `user key`, `country`, `device` and `platform`. However, if those do not satisfy your requirements you also have an ability to attach a custom rule. Custom rules can be created as following types: `string`, `number`, `boolean`, `date`, `date-time`, `semantic-version`, `ip-address`

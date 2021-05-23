@@ -111,8 +111,10 @@ class StrategiesStepdefs {
         "fv is ${fv.rolloutStrategyInstances}\n stored is ${shared.featureValue!.rolloutStrategyInstances}");
 
     assert(
-        ListEquality().equals(fv.rolloutStrategyInstances,
-            shared.featureValue!.rolloutStrategyInstances),
+        ListEquality().equals(
+            fv.rolloutStrategyInstances.sortedBy((element) => element.name!),
+            shared.featureValue!.rolloutStrategyInstances
+                .sortedBy((element) => element.name!)),
         'not equal');
   }
 
