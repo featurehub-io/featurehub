@@ -36,6 +36,15 @@ server {
           proxy_set_header Connection "";
         }
 
+        # this is required just for OPTIONS as the above works for GET
+        location /features {
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_pass http://localhost:8903/features;
+          proxy_http_version 1.1;
+          proxy_set_header Connection "";
+        }
+
         # prometheus
         location /metrics {
           proxy_set_header Host $host;
@@ -43,4 +52,9 @@ server {
           proxy_pass http://localhost:8903/metrics;
         }
 
+        location /health {
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_pass http://localhost:8903/health;
+        }
 }
