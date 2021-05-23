@@ -29,7 +29,7 @@ RUN git clone https://github.com/flutter/flutter "${FLUTTER_ROOT}"
 ENV PATH="${FLUTTER_ROOT}/bin:${PATH}"
 
 # reset to known point as docker image is always 0.0, this is a stable version for us. Disable analytics and crash reporting on the builder.
-RUN cd $FLUTTER && git reset --hard d9044a8a61e4d7d0afbd4fe8bad6d40762c289dd
+RUN cd $FLUTTER && flutter channel stable
 RUN flutter config  --no-analytics --enable-web
 
 # Perform an artifact precache so that no extra assets need to be downloaded on demand.

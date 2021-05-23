@@ -131,7 +131,8 @@ class UserCommon {
     EnvironmentServiceApi _eService =
         environmentServiceApi ?? this.environmentService;
     var envs = await _eService.findEnvironments(appId!, filter: envName);
-    return envs.firstWhereOrNull((e) => e.name == envName);
+    return envs
+        .firstWhereOrNull((e) => e.name.toLowerCase() == envName.toLowerCase());
   }
 
   Future<Group?> findExactGroup(String groupName, String? portfolioId,

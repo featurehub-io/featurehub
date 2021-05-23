@@ -34,7 +34,7 @@ class EventSource extends Stream<Event> {
   // interface attributes
 
   final Uri url;
-  final Map headers;
+  final Map? headers;
 
   EventSourceReadyState get readyState => _readyState;
 
@@ -44,30 +44,30 @@ class EventSource extends Stream<Event> {
 
   // internal attributes
 
-  StreamController<Event> _streamController;
-  StreamController<List<int>> _incomingDataController;
+  late StreamController<Event> _streamController;
+  StreamController<List<int>>? _incomingDataController;
 
   EventSourceReadyState _readyState = EventSourceReadyState.CLOSED;
 
   http.Client client;
   Duration _retryDelay = const Duration(milliseconds: 3000);
-  String _lastEventId;
-  EventSourceDecoder _decoder;
+  String? _lastEventId;
+  late EventSourceDecoder _decoder;
   String _body;
   String _method;
   final _openOnlyOnFirstListener;
   final _closeOnLastListener;
-  http.ByteStream responseStream;
+  http.ByteStream? responseStream;
 
   /// Create a new EventSource by connecting to the specified url.
   static Future<EventSource> connect(url,
-      {http.Client client,
-      String lastEventId,
-      Map headers,
-      String body,
-      String method,
-      bool openOnlyOnFirstListener,
-      bool closeOnLastListener}) async {
+      {http.Client? client,
+      String? lastEventId,
+      Map? headers,
+      String? body,
+      String? method,
+      bool? openOnlyOnFirstListener,
+      bool? closeOnLastListener}) async {
     // parameter initialization
     url = url is Uri ? url : Uri.parse(url);
     client = client ?? new http.Client();
@@ -89,8 +89,8 @@ class EventSource extends Stream<Event> {
       this.headers,
       this._body,
       this._method,
-      bool openOnlyOnFirstStream,
-      bool closeOnLastStreamClosing)
+      bool? openOnlyOnFirstStream,
+      bool? closeOnLastStreamClosing)
       : _openOnlyOnFirstListener = openOnlyOnFirstStream ?? false,
         _closeOnLastListener = closeOnLastStreamClosing ?? false {
     // initialize here so we can close the stream
@@ -102,8 +102,8 @@ class EventSource extends Stream<Event> {
 
   // proxy the listen call to the controller's listen call
   @override
-  StreamSubscription<Event> listen(void onData(Event event),
-      {Function onError, void onDone(), bool cancelOnError}) {
+  StreamSubscription<Event> listen(void onData(Event event)?,
+      {Function? onError, void onDone()?, bool? cancelOnError}) {
     if (_readyState == EventSourceReadyState.CLOSED &&
         _openOnlyOnFirstListener) {
       _start();
@@ -118,7 +118,7 @@ class EventSource extends Stream<Event> {
       // delay until next cycle, cannot disconnect while triggering this event
       Future.delayed(Duration(seconds: 0), () async {
         try {
-          await _incomingDataController.close();
+          await _incomingDataController!.close();
         } catch (e) {} // swallow the exception if there is one.
         _incomingDataController = null;
       });
@@ -132,10 +132,10 @@ class EventSource extends Stream<Event> {
     request.headers["Cache-Control"] = "no-cache";
     request.headers["Accept"] = "text/event-stream";
     if (_lastEventId?.isNotEmpty ?? false) {
-      request.headers["Last-Event-ID"] = _lastEventId;
+      request.headers["Last-Event-ID"] = _lastEventId!;
     }
     if (headers != null) {
-      headers.forEach((k, v) {
+      headers!.forEach((k, v) {
         request.headers[k] = v;
       });
     }
@@ -155,13 +155,13 @@ class EventSource extends Stream<Event> {
     _incomingDataController = StreamController<List<int>>();
 
     response.stream.listen((value) {
-      _incomingDataController.add(value);
+      _incomingDataController!.add(value);
     },
         onError: _retry,
         cancelOnError: true,
         onDone: () => _readyState = EventSourceReadyState.CLOSED);
 
-    _incomingDataController.stream.transform(_decoder).listen((Event event) {
+    _incomingDataController!.stream.transform(_decoder).listen((Event event) {
       _streamController.add(event);
       _lastEventId = event.id;
     },

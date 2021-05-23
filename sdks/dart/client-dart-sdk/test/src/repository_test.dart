@@ -6,7 +6,7 @@ import 'package:featurehub_client_sdk/featurehub_io.dart';
 import 'package:test/test.dart';
 
 void main() {
-  ClientFeatureRepository repo;
+  late ClientFeatureRepository repo;
 
   setUp(() {
     repo = ClientFeatureRepository();
@@ -246,9 +246,10 @@ void main() {
     repo.notify(SSEResultState.features, _initialFeatures());
     expect(repo.readyness, equals(Readyness.Ready));
     repo.catchAndReleaseMode = true;
+    // ignore: unawaited_futures
     expectLater(repo.catchAndReleaseMode, true);
     expect(repo.getFeatureState('1').booleanValue, equals(false));
-    expectLater(sub, emits(repo));
+    expectLater(sub, emits(repo)); // ignore: unawaited_futures
     repo.notify(
         SSEResultState.features, _initialFeatures(version: 2, value: true));
     // now update just the feature
@@ -298,7 +299,7 @@ void main() {
       ..key = '1'
       ..value = true
       ..type = FeatureValueType.BOOLEAN;
-    repo.notify(SSEResultState.delete_feature, data.toJson());
+    repo.notify(SSEResultState.deleteFeature, data.toJson());
     expect(repo.getFeatureState('1').exists, isFalse);
   });
 
@@ -308,7 +309,7 @@ void main() {
     repo.notify(SSEResultState.features, _initialFeatures());
     repo.analyticsEvent.listen(expectAsync1((e) {
       expect(e.action, equals('fred'));
-      expect(e.other['half'], equals(1.0));
+      expect(e.other!['half'], equals(1.0));
       expect(e.features.length, equals(1));
       expect(e.features[0].key, equals('1'));
     }));

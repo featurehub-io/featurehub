@@ -51,7 +51,7 @@ void main() async {
     });
   });
 
-  final es = EventSourceRepositoryListener(sdkHost + '/' + sdkUrl, repo);
+  final es = EventSourceRepositoryListener(sdkHost, sdkUrl, repo);
 
   // ignore: avoid_print
   print('hit <enter> to cancel');

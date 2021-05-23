@@ -4,27 +4,30 @@ import 'package:featurehub_client_sdk/featurehub.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
 class FeatureHubSimpleApi {
-  final List<String> _environmentIds;
+  final List<String> _apiKeys;
   final FeatureServiceApi _api;
   final ClientFeatureRepository _repository;
-  String xFeaturehubHeader;
+  String? xFeaturehubHeader;
 
-  FeatureHubSimpleApi(String host, this._environmentIds, this._repository)
-      : assert(host != null),
-        assert(_environmentIds != null && _environmentIds.isNotEmpty),
-        assert(_repository != null),
-        _api = FeatureServiceApi(ApiClient(basePath: host)) {
+  FeatureHubSimpleApi(String host, this._apiKeys, this._repository)
+      : _api = FeatureServiceApi(ApiClient(basePath: host)) {
+    if (this._apiKeys.any((key) => key.contains('*'))) {
+      throw Exception(
+          'You are using a client evaluated API Key in Dart and this is not supported.');
+    }
+
     _repository.clientContext.registerChangeHandler((header) async {
       xFeaturehubHeader = header;
     });
   }
 
   Future<ClientFeatureRepository> request() async {
+    final options = xFeaturehubHeader == null
+        ? null
+        : (Options()..headers = {'x-featurehub': xFeaturehubHeader});
+
     return _api
-        .getFeatureStates(_environmentIds,
-            options: xFeaturehubHeader == null
-                ? null
-                : (Options()..headers['x-featurehub'] = xFeaturehubHeader))
+        .getFeatureStates(_apiKeys, options: options)
         .then((environments) {
       final states = <FeatureState>[];
       environments.forEach((e) {
