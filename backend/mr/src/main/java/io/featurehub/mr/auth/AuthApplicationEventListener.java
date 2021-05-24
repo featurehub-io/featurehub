@@ -73,13 +73,6 @@ public class AuthApplicationEventListener implements ApplicationEventListener {
         .build();
     }
 
-    Response forbidden() {
-      return Response
-        .status(Response.Status.FORBIDDEN)
-        .entity("Access denied.")
-        .build();
-    }
-
     // WARNING: this does NOT deal with more than a single level of class with interfaces, it will not cope with
     // class inheritance
     private void authCheck(RequestEvent event) {

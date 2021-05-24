@@ -56,7 +56,7 @@ public class RolloutStrategyResource implements RolloutStrategyServiceDelegate {
       strategy = rolloutStrategyApi.createStrategy(appId, rolloutStrategy, person,
         new Opts().add(FillOpts.SimplePeople, holder.includeWhoChanged));
     } catch (RolloutStrategyApi.DuplicateNameException e) {
-      throw new WebApplicationException("Duplicate name", 422);
+      throw new WebApplicationException("Duplicate name", 409);
     }
 
     if (strategy == null) {
@@ -121,7 +121,7 @@ public class RolloutStrategyResource implements RolloutStrategyServiceDelegate {
         new Opts().add(FillOpts.SimplePeople, holder.includeWhoChanged));
 
     } catch (RolloutStrategyApi.DuplicateNameException e) {
-      throw new WebApplicationException("Duplicate name", 422);
+      throw new WebApplicationException("Duplicate name", 409);
     }
 
     if (strategy == null) {

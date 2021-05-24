@@ -79,7 +79,7 @@ public class GroupResource implements GroupServiceDelegate {
     if (member) {
       action.accept(adminGroup);
     } else {
-      throw new NotAuthorizedException(error);
+      throw new ForbiddenException(error);
     }
   }
 
@@ -128,7 +128,7 @@ public class GroupResource implements GroupServiceDelegate {
 
     groupCheck(gid, authManager.from(securityContext), group -> {
       if (group.getAdmin()) {
-        throw new NotAuthorizedException("Cannot delete admin group from deleteGroup method.");
+        throw new ForbiddenException("Cannot delete admin group from deleteGroup method.");
       }
 
       isAdminOfGroup(group, securityContext, "Not owner of group, cannot delete", adminGroup -> {
