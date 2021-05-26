@@ -1,12 +1,6 @@
 # FeatureHubSDK
 
-This library is the client SDK for the [https://featurehub.io](FeatureHub) open source project,
-which brings you Cloud Native Feature Flag management, A/B experiments and remote configuration.
-
-It is specifically targeted at server-side applications, REST servers, web applications and so forth. As such
-it focuses on providing near-realtime updates to features rather than surfacing polling functionality that
-would be normally used in Browsers and Mobile. We recommend that you always request *Client-Evaluated API Keys* when
-requesting your API key via the `API Keys` section in FeatureHub's Management Repository console.
+Welcome to the C# SDK implementation for [FeatureHub.io](https://featurehub.io) - Open source Feature flags management, A/B testing and remote configuration platform.
 
 ## SDK features 
 Details about what general features are available in SDKs from FeatureHub are [available here](https://docs.featurehub.io/#sdks).
@@ -14,11 +8,18 @@ Details about what general features are available in SDKs from FeatureHub are [a
 ## Changelog
 
 2.1.3 - logging support (see below) and fixing of the backoff for the eventsource (it was randomly increasing the time, making features go out of date)
-2.0.0 - client side evaluation support
+2.0.0 - client side evaluation support for feature strategies
 1.1.0 - analytics support
 1.0.0 - initial functionality with near-realtime event updates, full feature repository, server side rollout strategies.
 
 ## Using the EventSource SDK
+
+Find and copy your API Key from the FeatureHub Admin Console on the API Keys page -
+you will use this in your code to configure feature updates for your environments.
+It should look similar to this: ```default/71ed3c04-122b-4312-9ea8-06b2b8d6ceac/fsTmCrcZZoGyl56kPHxfKAkbHrJ7xZMKO3dlBiab5IqUXjgKvqpjxYdI8zdXiJqYCpv92Jrki0jY5taE```.
+There are two options - a Server Evaluated API Key and a Client Evaluated API Key. More on this [here](https://docs.featurehub.io/#_client_and_server_api_keys)
+
+In case of single user, desktop or embedded applications, use a server evaluated API key. If you are writing a batch, server or otherwise multi-user application, use a client-evaluated API key. This SDK does not support Xamarin.
 
 There is a sample application included in the [solution as a console application](https://github.com/featurehub-io/featurehub/tree/master/sdks/client-csharp/ConsoleApp1).
 You could implement it in the following way:
@@ -126,11 +127,11 @@ or if you are using multiple rules, you can combine attributes as follows:
       .Build(); 
 ```
 
-For *Server Evaluated keys*, which we do _not_ recommend, the  `Build()` method will trigger the regeneration of a 
+For *Server Evaluated keys*, the  `Build()` method will trigger the regeneration of a 
 special header (`x-featurehub`). This in turn will automatically retrigger a refresh of your events if 
 you have already connected.
 
-For *Client Evaluated API keys*, which we do recommend for server side code, the `Build()` method does nothing, as all
+For *Client Evaluated API keys*, the `Build()` method does nothing, as all
 the necessary decision making information is already available.
 
 **Sending custom attributes:**
