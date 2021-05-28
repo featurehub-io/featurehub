@@ -39,7 +39,7 @@ export class EdgeFeatureHubConfig implements FeatureHubConfig {
     }
 
     if (this._host.endsWith('/features/')) {
-      this._host = this._host.substring(0, this._host.length - '/features/'.length);
+      this._host = this._host.substring(0, this._host.length - ('/features/'.length-1));
     }
 
     this._url = this._host + 'features/' + this._apiKey;
