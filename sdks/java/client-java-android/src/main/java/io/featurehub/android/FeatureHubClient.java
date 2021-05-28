@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -56,7 +55,6 @@ public class FeatureHubClient implements EdgeService {
 
       url = host + "/features?" + sdkUrls.stream().map(u -> "sdkUrl=" + u).collect(Collectors.joining("&"));
 
-
       if (clientSideEvaluation) {
         checkForUpdates();
       }
@@ -70,7 +68,7 @@ public class FeatureHubClient implements EdgeService {
   }
 
   public FeatureHubClient(String host, Collection<String> sdkUrls, FeatureStore repository, FeatureHubConfig config) {
-    this(host, sdkUrls, repository, new OkHttpClient(), config);
+    this(host, sdkUrls, repository, (Call.Factory) new OkHttpClient(), config);
   }
 
   private final static TypeReference<List<Environment>> ref = new TypeReference<List<Environment>>(){};
@@ -156,7 +154,7 @@ public class FeatureHubClient implements EdgeService {
   }
 
   @Override
-  public Future<?> contextChange(String newHeader) {
+  public Future<Readyness> contextChange(String newHeader) {
     final CompletableFuture<Readyness> change = new CompletableFuture<>();
 
     if (!newHeader.equals(xFeaturehubHeader)) {

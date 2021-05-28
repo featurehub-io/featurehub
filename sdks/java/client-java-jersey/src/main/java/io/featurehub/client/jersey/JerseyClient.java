@@ -249,7 +249,7 @@ public class JerseyClient implements EdgeService {
   }
 
   @Override
-  public Future<?> contextChange(String newHeader) {
+  public Future<Readyness> contextChange(String newHeader) {
     final CompletableFuture<Readyness> change = new CompletableFuture<>();
 
     if (fhConfig.isServerEvaluation() && (!newHeader.equals(xFeaturehubHeader) || !initialized)) {

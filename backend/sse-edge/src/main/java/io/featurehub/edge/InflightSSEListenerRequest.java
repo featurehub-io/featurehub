@@ -52,13 +52,14 @@ class InflightSSEListenerRequest {
         client.registerEjection(controller::clientRemoved);
       }));
       sameRequestClients.clear();
+      log.debug("successful response {}", key);
     }
   }
 
   public void removeCheck() {
     synchronized (sameRequestClients) {
       if (sameRequestClients.isEmpty()) {
-        log.info("empty of requests, ejecting {}", key);
+        log.debug("no-one asked for this key {}, ejecting", key);
         controller.removeInflightSSEListenerRequest(key);
       }
     }

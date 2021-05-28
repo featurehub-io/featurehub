@@ -1,6 +1,7 @@
 package io.featurehub.android;
 
 import io.featurehub.client.ClientContext;
+import io.featurehub.client.ClientFeatureRepository;
 import io.featurehub.client.EdgeFeatureHubConfig;
 import io.featurehub.client.FeatureHubConfig;
 import io.featurehub.client.FeatureRepository;
@@ -14,15 +15,16 @@ import java.util.function.Supplier;
 public class FeatureHubClientRunner {
 
   public static void main(String[] args) throws Exception {
-    FeatureHubConfig config = new EdgeFeatureHubConfig("http://localhost:8064",
+    FeatureHubConfig config = new EdgeFeatureHubConfig("http://localhost:8903",
       "default/82afd7ae-e7de-4567-817b-dd684315adf7/SHxmTA83AJupii4TsIciWvhaQYBIq2*JxIKxiUoswZPmLQAIIWN");
 
-    final ClientContext ctx = config.newContext();
+    ClientFeatureRepository cfr = new ClientFeatureRepository();
+
+    final ClientContext ctx = config.newContext(cfr, () -> new SSEClient(cfr, config)).build().get();
     ctx.getRepository().addReadynessListener(rl -> System.out.println("readyness " + rl.toString()));
 
-    final Supplier<Boolean> val = () -> ctx.feature("FEATURE_TITLE_TO_UPPERCASE").getBoolean();
+    final Supplier<Boolean> val = () -> ctx.feature("FEAT1").getBoolean();
 
-    FeatureRepository cfr = ctx.getRepository();
 
     cfr.addReadynessListener((rl) -> System.out.println("Readyness is " + rl));
 
