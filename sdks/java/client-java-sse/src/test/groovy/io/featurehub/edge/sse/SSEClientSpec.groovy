@@ -20,6 +20,7 @@ class SSEClientSpec extends Specification {
   FeatureHubConfig config
   EventSourceListener esListener
   SSEClient client
+  Request request
 
   def setup() {
     mockEventSource = Mock(EventSource)
@@ -30,8 +31,9 @@ class SSEClientSpec extends Specification {
 
     client = new SSEClient(repository, config, retry) {
       @Override
-      protected EventSource makeEventSource(Request request, EventSourceListener listener) {
+      protected EventSource makeEventSource(Request req, EventSourceListener listener) {
         esListener = listener
+        request = req
         return mockEventSource
       }
     }
@@ -107,5 +109,73 @@ class SSEClientSpec extends Specification {
       1 * repository.readyness >> Readyness.Failed
       1 * retry.edgeResult(EdgeConnectionState.SUCCESS, client)
       future.get() == Readyness.Failed
+  }
+
+  def "when i context change with a server side key, it creates a request with the header"() {
+    when: "i change context"
+      def future = client.contextChange("header")
+    then:
+      1 * config.serverEvaluation >> true
+      request.header("x-featurehub") == "header"
+  }
+
+  def "when i change context twice with a server side key, it cancels the existing event source and no incoming data means futures are not ready"() {
+    when: "i change context"
+      def future1 = client.contextChange("header")
+    and: "i change context again"
+      def future2 = client.contextChange("header2")
+    then:
+      2 * config.serverEvaluation >> true
+      1 * mockEventSource.cancel()
+      request.header("x-featurehub") == "header2"
+      !future1.done
+      !future2.done
+  }
+
+  def "when i change context twice with a server side key, and then results come in completes both futures"() {
+    when: "i change context"
+      def future1 = client.contextChange("header")
+    and: "i change context again"
+      def future2 = client.contextChange("header2")
+    and: "i resolve the incoming call"
+      esListener.onEvent(mockEventSource, '1', 'features', 'data')
+    then:
+      2 * config.serverEvaluation >> true
+      2 * repository.readyness >> Readyness.Ready
+      request.header("x-featurehub") == "header2"
+      future1.done
+      future2.done
+      future1.get() == Readyness.Ready
+      future2.get() == Readyness.Ready
+  }
+
+  def "when config says client evaluated code, this will echo"() {
+    when: "i check server vs client"
+      def clientSide = client.clientEvaluation
+    then:
+      1 * config.serverEvaluation >> false
+      clientSide
+  }
+
+  def "when config says server evaluated code, this will echo"() {
+    when: "i check server vs client"
+      def clientSide = client.clientEvaluation
+    then:
+      1 * config.serverEvaluation >> true
+      !clientSide
+  }
+
+  def "config in is config out"() {
+    when: "i get the config"
+      def cfg = client.config
+    then:
+      cfg == config
+  }
+
+  def "replacement is not required for this API, it can handle swapping SSE clients"() {
+    when: "i ask if it can swap headers"
+      def swap = client.requiresReplacementOnHeaderChange
+    then:
+      !swap
   }
 }

@@ -10,25 +10,28 @@ public class EdgeRetryer implements EdgeRetryService {
   private static final Logger log = LoggerFactory.getLogger(EdgeRetryer.class);
   private final ExecutorService executorService;
   public final int serverConnectTimeoutMs;
-  private final int serverDisconnectRetryMs;
-  private final int serverByeReconnectMs;
-  private final int backoffMultiplier;
-  private final int maximumBackoffTimeMs;
+  public final int serverDisconnectRetryMs;
+  public final int serverByeReconnectMs;
+  public final int backoffMultiplier;
+  public final int maximumBackoffTimeMs;
 
   // this will change over the lifetime of reconnect attempts
-  private int currentBackoffMultiplier = 1;
+  private int currentBackoffMultiplier;
 
   // if this is set, then we stop recognizing any further requests from the connection,
   // we can get subsequent disconnect statements. We know we cannot reconnect so we just stop.
   private boolean notFoundState = false;
 
-  private EdgeRetryer(int serverConnectTimeoutMs, int serverDisconnectRetryMs, int serverByeReconnectMs,
+  protected EdgeRetryer(int serverConnectTimeoutMs, int serverDisconnectRetryMs, int serverByeReconnectMs,
                       int backoffMultiplier, int maximumBackoffTimeMs) {
     this.serverConnectTimeoutMs = serverConnectTimeoutMs;
     this.serverDisconnectRetryMs = serverDisconnectRetryMs;
     this.serverByeReconnectMs = serverByeReconnectMs;
     this.backoffMultiplier = backoffMultiplier;
     this.maximumBackoffTimeMs = maximumBackoffTimeMs;
+
+    currentBackoffMultiplier = backoffMultiplier;
+
     executorService = makeExecutorService();
   }
 
@@ -41,7 +44,7 @@ public class EdgeRetryer implements EdgeRetryService {
     log.trace("[featurehub-sdk] retryer triggered {}", state);
     if (!notFoundState && !executorService.isShutdown()) {
       if (state == EdgeConnectionState.SUCCESS) {
-        currentBackoffMultiplier = 1;
+        currentBackoffMultiplier = backoffMultiplier;
       } else if (state == EdgeConnectionState.API_KEY_NOT_FOUND) {
         log.warn("[featurehub-sdk] terminal failure attempting to connect to Edge, API KEY does not exist.");
         notFoundState = true;
@@ -71,9 +74,44 @@ public class EdgeRetryer implements EdgeRetryService {
     executorService.shutdownNow();
   }
 
+  @Override
+  public int getServerConnectTimeoutMs() {
+    return serverConnectTimeoutMs;
+  }
+
+  @Override
+  public int getServerDisconnectRetryMs() {
+    return serverDisconnectRetryMs;
+  }
+
+  @Override
+  public int getServerByeReconnectMs() {
+    return serverByeReconnectMs;
+  }
+
+  @Override
+  public int getMaximumBackoffTimeMs() {
+    return maximumBackoffTimeMs;
+  }
+
+  @Override
+  public int getCurrentBackoffMultiplier() {
+    return currentBackoffMultiplier;
+  }
+
+  @Override
+  public int getBackoffMultiplier() {
+    return backoffMultiplier;
+  }
+
+  @Override
+  public boolean isNotFoundState() {
+    return notFoundState;
+  }
+
   // holds the thread for a specific period of time and then returns
   // while setting the next backoff incase we come back
-  private void backoff(int baseTime, boolean adjustBackoff) {
+  protected void backoff(int baseTime, boolean adjustBackoff) {
     try {
       Thread.sleep(calculateBackoff(baseTime, currentBackoffMultiplier) );
     } catch (InterruptedException ignored) {
@@ -95,7 +133,7 @@ public class EdgeRetryer implements EdgeRetryService {
   }
 
   public int newBackoff(int currentBackoff) {
-    int backoff = (int)((1+Math.random()) * backoffMultiplier * currentBackoff);
+    int backoff = (int)((1+Math.random()) * currentBackoff);
 
     if (backoff < 2) {
       backoff = 3;
@@ -117,7 +155,7 @@ public class EdgeRetryer implements EdgeRetryService {
         "5000");
       serverByeReconnectMs = propertyOrEnv("featurehub.edge.server-by-reconnect-ms",
         "3000");
-      backoffMultiplier = propertyOrEnv("featurehub.edge.backoff-multiplier", "3000");
+      backoffMultiplier = propertyOrEnv("featurehub.edge.backoff-multiplier", "10");
       maximumBackoffTimeMs = propertyOrEnv("featurehub.edge.maximum-backoff-ms", "30000");
     }
 
