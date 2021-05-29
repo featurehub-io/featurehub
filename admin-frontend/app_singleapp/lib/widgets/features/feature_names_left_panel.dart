@@ -132,6 +132,7 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                   Container(
                                     padding: EdgeInsets.only(right: 4.0),
                                     child: Material(
+                                      color: Theme.of(context).cardColor,
                                       shape: CircleBorder(),
                                       child: PopupMenuButton(
                                         tooltip: 'Show more',
