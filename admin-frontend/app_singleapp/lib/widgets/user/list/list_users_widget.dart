@@ -175,7 +175,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
       actions: <Widget>[
         // usually buttons at the bottom of the dialog
         FHFlatButton(
-          title: 'Ok',
+          title: 'OK',
           onPressed: () {
             bloc.mrClient.removeOverlay();
           },
@@ -214,7 +214,7 @@ class ListUserInfoDialog extends StatelessWidget {
       actions: <Widget>[
         // usually buttons at the bottom of the dialog
         FHFlatButton(
-          title: 'Ok',
+          title: 'OK',
           onPressed: () {
             bloc.mrClient.removeOverlay();
           },
