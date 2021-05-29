@@ -45,6 +45,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                   color: Theme.of(context).cardColor,
                 ),
                 child: DataTable(
+                  showCheckboxColumn: false,
                   sortAscending: sortToggle,
                   sortColumnIndex: sortColumnIndex,
                   columns: [
@@ -115,7 +116,13 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                             ),
                           ])),
                         ],
-                      ),
+                        onSelectChanged: (newValue) {
+                          ManagementRepositoryClientBloc.router
+                              .navigateTo(context, '/manage-user',
+                              params: {
+                                'id': [p.person.id!.id]
+                              });
+                        }),
                   ],
                 ),
               ),
