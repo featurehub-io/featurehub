@@ -6,10 +6,10 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class EdgeRetryer {
+public class EdgeRetryer implements EdgeRetryService {
   private static final Logger log = LoggerFactory.getLogger(EdgeRetryer.class);
   private final ExecutorService executorService;
-  private final int serverConnectTimeoutMs;
+  public final int serverConnectTimeoutMs;
   private final int serverDisconnectRetryMs;
   private final int serverByeReconnectMs;
   private final int backoffMultiplier;
@@ -38,7 +38,8 @@ public class EdgeRetryer {
   }
 
   public void edgeResult(EdgeConnectionState state, EdgeReconnector reconnector) {
-    if (!notFoundState) {
+    log.trace("[featurehub-sdk] retryer triggered {}", state);
+    if (!notFoundState && !executorService.isShutdown()) {
       if (state == EdgeConnectionState.SUCCESS) {
         currentBackoffMultiplier = 1;
       } else if (state == EdgeConnectionState.API_KEY_NOT_FOUND) {
@@ -86,7 +87,11 @@ public class EdgeRetryer {
   public long calculateBackoff(int baseTime, int backoff) {
     final long randomBackoff = baseTime + (long) ((1 + Math.random()) * backoff);
 
-    return randomBackoff > maximumBackoffTimeMs ? maximumBackoffTimeMs : randomBackoff;
+    final long finalBackoff = randomBackoff > maximumBackoffTimeMs ? maximumBackoffTimeMs : randomBackoff;
+
+    log.trace("[featurehub-sdk] backing off {}", finalBackoff);
+
+    return finalBackoff;
   }
 
   public int newBackoff(int currentBackoff) {

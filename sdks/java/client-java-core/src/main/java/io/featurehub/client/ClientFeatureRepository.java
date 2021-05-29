@@ -213,14 +213,18 @@ public class ClientFeatureRepository extends AbstractFeatureRepository
   public FeatureRepository addReadynessListener(ReadynessListener rl) {
     this.readynessListeners.add(rl);
 
-    // let it know what the current state is
-    executor.execute(() -> rl.notify(readyness));
+    if (!executor.isShutdown()) {
+      // let it know what the current state is
+      executor.execute(() -> rl.notify(readyness));
+    }
 
     return this;
   }
 
   private void broadcastReadyness() {
-    readynessListeners.forEach((rl) -> executor.execute(() -> rl.notify(readyness)));
+    if (!executor.isShutdown()) {
+      readynessListeners.forEach((rl) -> executor.execute(() -> rl.notify(readyness)));
+    }
   }
 
   private void deleteFeature(io.featurehub.sse.model.FeatureState readValue) {

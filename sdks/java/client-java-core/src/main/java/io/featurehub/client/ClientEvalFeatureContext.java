@@ -50,7 +50,8 @@ class ClientEvalFeatureContext extends BaseClientContext {
   public void close() {
     if (weOwnRepositoryAndEdge) {
       repository.close();
-      edgeService.close();
     }
+
+    edgeService.close();
   }
 }
