@@ -173,10 +173,12 @@ class _SetupPage1State extends State<SetupPage1Widget> {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
-                FHFlatButton(
+                  Padding(
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: FHFlatButton(
                   onPressed: () => _handleSubmitted(),
                   title: 'Next',
-                )
+                  ),)
               ],
             )
           ],

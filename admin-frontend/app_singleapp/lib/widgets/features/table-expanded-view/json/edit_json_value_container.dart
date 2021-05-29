@@ -44,9 +44,9 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
   Widget build(BuildContext context) {
     BoxDecoration myBoxDecoration() {
       return BoxDecoration(
-        border: Border.all(width: 1.0),
+        border: Border.all(width: 1.0, color: Theme.of(context).buttonColor,),
         borderRadius: BorderRadius.all(
-            Radius.circular(6.0) //         <--- border radius here
+            Radius.circular(6.0), //         <--- border radius here
             ),
       );
     }

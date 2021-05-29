@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:html';
 
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/config/route_handlers.dart';

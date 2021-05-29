@@ -33,7 +33,8 @@ class ConfigurationViewerField extends StatelessWidget {
         style: Theme.of(context).textTheme.caption,
       );
     }
-    return Text('No editing permissions',
-        style: Theme.of(context).textTheme.caption);
+    return Text('No editing rights',
+        style: Theme.of(context).textTheme.caption,
+        overflow: TextOverflow.ellipsis);
   }
 }

@@ -56,7 +56,7 @@ class _EditStringValueContainerState extends State<EditStringValueContainer> {
               )),
               hintText: widget.canEdit
                   ? 'Enter string value'
-                  : 'No editing permissions',
+                  : 'No editing rights',
               hintStyle: Theme.of(context).textTheme.caption),
           onChanged: (value) {
             final replacementValue = value.isEmpty ? null : tec.text.trim();
