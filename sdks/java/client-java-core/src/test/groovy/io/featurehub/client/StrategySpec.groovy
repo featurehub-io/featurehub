@@ -20,7 +20,8 @@ class StrategySpec extends Specification {
   def setup() {
     def exec = [
       execute: { Runnable cmd -> cmd.run() },
-      shutdownNow: { -> }
+      shutdownNow: { -> },
+      isShutdown: { false }
     ] as ExecutorService
     repo = new ClientFeatureRepository(exec)
   }

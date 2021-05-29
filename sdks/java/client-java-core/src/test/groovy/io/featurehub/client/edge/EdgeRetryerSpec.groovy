@@ -61,7 +61,7 @@ class EdgeRetryerSpec extends Specification {
     when: "i send a disconnected event"
       retryer.edgeResult(EdgeConnectionState.SERVER_WAS_DISCONNECTED, reconnector )
     then:
-      !backoffAdjustBackoff
+      backoffAdjustBackoff
       backoffBaseTime == retryer.serverDisconnectRetryMs
       1 * reconnector.reconnect()
       1 * mockExecutor.submit({ Runnable task -> task.run()})
@@ -71,7 +71,7 @@ class EdgeRetryerSpec extends Specification {
     when: "i send a connect timeout event"
       retryer.edgeResult(EdgeConnectionState.SERVER_CONNECT_TIMEOUT, reconnector )
     then:
-      !backoffAdjustBackoff
+      backoffAdjustBackoff
       backoffBaseTime == retryer.serverConnectTimeoutMs
       1 * reconnector.reconnect()
       1 * mockExecutor.submit({ Runnable task -> task.run()})
