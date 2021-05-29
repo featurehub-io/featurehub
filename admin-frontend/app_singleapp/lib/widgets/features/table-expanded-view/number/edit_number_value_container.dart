@@ -57,7 +57,7 @@ class _EditNumberValueContainerState extends State<EditNumberValueContainer> {
             )),
             hintText: widget.canEdit
                 ? 'Enter number value'
-                : 'No editing permissions',
+                : 'No editing rights',
             hintStyle: Theme.of(context).textTheme.caption,
             errorText:
                 validateNumber(tec.text) != null ? 'Not a valid number' : null,
