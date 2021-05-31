@@ -6,7 +6,14 @@ describe('We can initialize the config', () => {
 
   it('should construct urls properly', () => {
     const fc = new EdgeFeatureHubConfig('http://localhost:8080', '123*345');
+    expect(fc.getHost()).to.eq('http://localhost:8080/');
     expect(fc.url()).to.eq('http://localhost:8080/features/123*345');
+  });
+
+  it('should strip off /feature/ if a user provided it', () => {
+    const fc = new EdgeFeatureHubConfig('https://feature.featurehub.io/features/', '123*345');
+    expect(fc.getHost()).to.eq('https://feature.featurehub.io/');
+    expect(fc.url()).to.eq('https://feature.featurehub.io/features/123*345');
   });
 
   it('should allow me to specify a config and initialise the config', () => {
