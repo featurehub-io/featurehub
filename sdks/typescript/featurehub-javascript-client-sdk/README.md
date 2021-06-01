@@ -29,6 +29,8 @@ We have deprecated [FeatureHub Eventsource Javascript SDK](https://www.npmjs.com
 Angular & Vue to use this library. 
 
 ### featurehub-javascript-node-sdk
+#### 1.0.3
+- Bugfix: Edge server urls passed to the config that include '/feature' should be processed correctly
 #### 1.0.2
 - Documentation updates
 #### 1.0.1
