@@ -66,3 +66,14 @@ Feature: Here we explore the capabilities around Applications inside a portfolio
     Examples:
       | appName     | appDesc          | portfolio      | featureKey     | alias    | featureName    | link                  | email             | group    | password    | envName | envDesc |
       | PunterTest1 | PunterTest1 Desc | Biscuit Makers | FEATURE_SAMPLE | sssshhhh | Sample feature | http://featurehub.dev | katya@example.com | NPCheque | password123 | KatyEnv | KathEnvDesc |
+
+#    Scenario: I can create two applications in a portfolio and setting group and service permissions is persisted
+#      Given I have a randomly named portfolio with the prefix "perm_check"
+#      And I create a group called "people"
+#      And I create a service account called "sa001"
+#      And I create an application with the name "app1"
+#      And I set the service account "sa001" permissions on application "app1" to "read"
+#      And I create an application with the name "app2"
+#      And I set the service account "sa001" permissions on application "app2" to "read,write"
+#      And I ensure only permissions "read,write" are set on the group "people" for the env "production" for app "app1" for portfolio "<current>"
+

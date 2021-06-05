@@ -101,22 +101,30 @@ public class ConvertUtils implements Conversions {
       return null;
     }
 
-    return Conversions.uuid(id).map(eId -> {
-      final QDbEnvironment eq = new QDbEnvironment().id.eq(eId);
-      if (opts.contains(FillOpts.Applications)) {
-        eq.parentApplication.fetch();
-      }
-      if (opts.contains(FillOpts.Portfolios)) {
-        eq.parentApplication.portfolio.fetch();
-      }
-      if (opts.contains(FillOpts.ApplicationIds)) {
-        eq.parentApplication.fetch(QDbApplication.Alias.id);
-      }
-      if (opts.contains(FillOpts.PortfolioIds)) {
-        eq.parentApplication.portfolio.fetch(QDbPortfolio.Alias.id);
-      }
-      return eq.findOne();
-    }).orElse(null);
+    return Conversions.uuid(id).map(eId -> uuidEnvironment(eId, opts)).orElse(null);
+  }
+
+  public DbEnvironment uuidEnvironment(UUID id, Opts opts) {
+    if (id == null) {
+      return null;
+    }
+
+    final QDbEnvironment eq = new QDbEnvironment().id.eq(id);
+
+    if (opts.contains(FillOpts.Applications)) {
+      eq.parentApplication.fetch();
+    }
+    if (opts.contains(FillOpts.Portfolios)) {
+      eq.parentApplication.portfolio.fetch();
+    }
+    if (opts.contains(FillOpts.ApplicationIds)) {
+      eq.parentApplication.fetch(QDbApplication.Alias.id);
+    }
+    if (opts.contains(FillOpts.PortfolioIds)) {
+      eq.parentApplication.portfolio.fetch(QDbPortfolio.Alias.id);
+    }
+
+    return eq.findOne();
   }
 
 
@@ -185,6 +193,7 @@ public class ConvertUtils implements Conversions {
 
     // collect all of the ACls for all of the groups for this environment?
     if (opts.contains(FillOpts.Acls)) {
+      final List<DbAcl> list = new QDbAcl().environment.eq(env).findList();
       new QDbAcl().environment.eq(env).findEach(acl -> environment.addGroupRolesItem(environmentGroupRoleFromAcl(acl)));
     }
 
@@ -245,10 +254,17 @@ public class ConvertUtils implements Conversions {
 
   @Override
   public EnvironmentGroupRole environmentGroupRoleFromAcl(DbAcl acl) {
-    return new EnvironmentGroupRole()
+    final EnvironmentGroupRole environmentGroupRole = new EnvironmentGroupRole()
       .groupId(acl.getGroup().getId().toString())
       .roles(splitEnvironmentRoles(acl.getRoles()))
       .environmentId(acl.getEnvironment().getId().toString());
+
+    // READ should be implicit if we have any of the other roles
+    if (!environmentGroupRole.getRoles().contains(RoleType.READ) && !environmentGroupRole.getRoles().isEmpty()) {
+      environmentGroupRole.addRolesItem(RoleType.READ);
+    }
+
+    return environmentGroupRole;
   }
 
   @Override

@@ -2,6 +2,7 @@ name: featurehub_cli_example
 version: 1.0.0
 description: Example client for SDK
 homepage: https://featurehub.io
+publish_to: none
 environment:
   sdk: '>=2.7.0 <3.0.0'
 dependencies:

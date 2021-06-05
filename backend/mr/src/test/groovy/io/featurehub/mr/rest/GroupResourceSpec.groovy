@@ -103,7 +103,7 @@ class GroupResourceSpec extends Specification {
     when:
       gr.addPersonToGroup("1", "1", null, sc)
     then: "not allowed to add a person to the group"
-      thrown(NotAuthorizedException)
+      thrown(ForbiddenException)
   }
 
   def "a portfolio admin can change a portfolio group"() {
@@ -153,7 +153,7 @@ class GroupResourceSpec extends Specification {
     when:
       gr.deleteGroup("1", new GroupServiceDelegate.DeleteGroupHolder(), sc)
     then:
-      thrown(NotAuthorizedException)
+      thrown(ForbiddenException)
   }
 
   def "portfolio admin can delete groups in their portfolio"() {
@@ -180,7 +180,7 @@ class GroupResourceSpec extends Specification {
     when:
       gr.deleteGroup("1", new GroupServiceDelegate.DeleteGroupHolder(), sc)
     then:
-      thrown(NotAuthorizedException)
+      thrown(ForbiddenException)
   }
 
   def "cannot delete an unknown group"() {
@@ -203,7 +203,7 @@ class GroupResourceSpec extends Specification {
     when:
       gr.deletePersonFromGroup("1", "7", new GroupServiceDelegate.DeletePersonFromGroupHolder(), sc)
     then:
-      thrown(NotAuthorizedException)
+      thrown(ForbiddenException)
   }
 
   def "can delete a person from a group if you are the portfolio admin"() {

@@ -170,7 +170,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                       createMap(envSnapshot.data!, groupSnapshot.data!);
                   currentGroup = groupSnapshot.data;
                   editAccess = hasEditPermission(
-                      currentGroup!, widget.bloc.application!.id!);
+                      currentGroup!, widget.bloc.applicationId!);
                 }
 
                 final rows = <TableRow>[];
@@ -237,9 +237,9 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                             newGroup.environmentRoles = newList;
                             newGroup = editAccess
                                 ? addEditPermission(
-                                    newGroup, widget.bloc.application!.id!)
+                                    newGroup, widget.bloc.applicationId!)
                                 : removeEditPermission(
-                                    newGroup, widget.bloc.application!.id!);
+                                    newGroup, widget.bloc.applicationId!);
                             widget.bloc
                                 .updateGroupWithEnvironmentRoles(
                                     newGroup.id, newGroup)

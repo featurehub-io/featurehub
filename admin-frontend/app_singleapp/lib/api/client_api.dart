@@ -229,6 +229,8 @@ class ManagementRepositoryClientBloc implements Bloc {
       : _client = ApiClient(basePath: basePathUrl ?? homeUrl()) {
     _basePath = Uri.parse(_client.basePath);
 
+    _client.passErrorsAsApiResponses = true;
+
     router = Routes.configureRoutes(this);
 
     webInterface.setOrigin();
@@ -384,7 +386,7 @@ class ManagementRepositoryClientBloc implements Bloc {
     return currentPid == null ? false : isPortfolioOrSuperAdmin(currentPid!);
   }
 
-  bool isPortfolioOrSuperAdmin(String pid) {
+  bool isPortfolioOrSuperAdmin(String? pid) {
     return personState.userIsSuperAdmin ||
         personState.userIsPortfolioAdmin(pid);
   }

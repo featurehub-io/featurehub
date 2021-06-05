@@ -79,7 +79,7 @@ class FHError {
   final String? errorMessage;
 
   //keep exception as dynamic variable since there could be various types of errors: e.g. Exception, ApiException, StateError
-  final dynamic? exception;
+  final dynamic exception;
   final StackTrace? stackTrace;
   final bool showDetails;
 

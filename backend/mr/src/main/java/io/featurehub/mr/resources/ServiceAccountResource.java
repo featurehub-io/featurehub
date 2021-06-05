@@ -21,6 +21,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -125,6 +126,8 @@ public class ServiceAccountResource implements ServiceAccountServiceDelegate {
     if (serviceAccounts == null) {
       return new ArrayList<>();
     }
+
+    serviceAccounts.sort(Comparator.comparing(ServiceAccount::getName));
 
     return serviceAccounts;
   }

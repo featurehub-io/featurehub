@@ -14,6 +14,7 @@ import io.featurehub.db.model.DbGroup;
 import io.featurehub.db.model.DbOrganization;
 import io.featurehub.db.model.DbPerson;
 import io.featurehub.db.model.DbPortfolio;
+import io.featurehub.db.model.query.QDbAcl;
 import io.featurehub.db.model.query.QDbGroup;
 import io.featurehub.db.model.query.QDbOrganization;
 import io.featurehub.db.model.query.QDbPerson;
@@ -443,8 +444,9 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
         superuserChanges = updateMembersOfGroup(gp, group);
       }
 
+      AclUpdates aclUpdates = null;
       if (gp.getEnvironmentRoles() != null && updateEnvironmentGroupRoles) {
-        updateEnvironmentMembersOfGroup(gp.getEnvironmentRoles(), group);
+        aclUpdates = updateEnvironmentMembersOfGroup(gp.getEnvironmentRoles(), group);
       }
 
       if (gp.getApplicationRoles() != null && updateApplicationGroupRoles) {
@@ -452,7 +454,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
       }
 
       try {
-        updateGroup(group);
+        updateGroup(group, aclUpdates);
       } catch (DuplicateKeyException dke) {
         throw new DuplicateGroupException();
       }
@@ -491,8 +493,22 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
   }
 
   @Transactional
-  private void updateGroup(DbGroup group) {
+  private void updateGroup(DbGroup group, AclUpdates aclUpdates) {
     database.update(group);
+
+    if (aclUpdates != null) {
+      if (!aclUpdates.updates.isEmpty()) {
+        database.updateAll(aclUpdates.updates);
+      }
+
+      if (!aclUpdates.deletes.isEmpty()) {
+        database.deleteAll(aclUpdates.deletes);
+      }
+
+      if (!aclUpdates.creates.isEmpty()) {
+        database.saveAll(aclUpdates.creates);
+      }
+    }
   }
 
   private void updateApplicationMembersOfGroup(List<ApplicationGroupRole> updatedApplicationRoles, DbGroup group) {
@@ -552,61 +568,77 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
     }
   }
 
+  // we do it as a set of acl updates as a group can get a lot of permissions
+  // across a lot of different environments, so its terribly inefficient to get
+  // all of the environment acls for a group, best to get just the ones we are
+  // updating
+  private static class AclUpdates {
+    List<DbAcl> updates = new ArrayList<>();
+    List<DbAcl> deletes = new ArrayList<>();
+    List<DbAcl> creates = new ArrayList<>();
+  }
 
-  private void updateEnvironmentMembersOfGroup(List<EnvironmentGroupRole> environmentRoles, DbGroup group) {
+  private AclUpdates updateEnvironmentMembersOfGroup(List<EnvironmentGroupRole> environmentRoles, DbGroup group) {
     Map<UUID, EnvironmentGroupRole> desiredEnvironments = new HashMap<>();
-    Set<String> addedEnvironments = new HashSet<>();
+    Set<UUID> addedEnvironments = new HashSet<>();
+    AclUpdates aclUpdates = new AclUpdates();
 
     environmentRoles.forEach(role -> {
-      Conversions.uuid(role.getEnvironmentId()).ifPresent(uuid -> desiredEnvironments.put(uuid, role));
-      addedEnvironments.add(role.getEnvironmentId()); // ensure uniqueness
+      Conversions.uuid(role.getEnvironmentId()).ifPresent(uuid -> {
+        desiredEnvironments.put(uuid, role);
+        addedEnvironments.add(uuid); // ensure uniqueness
+      });
+
     });
 
-    List<DbAcl> removedAcls = new ArrayList<>();
-
-    group.getGroupRolesAcl().forEach(acl -> {
+    new QDbAcl().group.eq(group).environment.id.in(desiredEnvironments.keySet()).findEach(acl -> {
       // leave the application acl's alone
       if (acl.getEnvironment() != null) {
         EnvironmentGroupRole egr = desiredEnvironments.get(acl.getEnvironment().getId());
-        if (egr == null) { // we have it but we don't want it
-          removedAcls.add(acl);
+
+        // don't add this one, we already have it, we just need to update it
+        addedEnvironments.remove(acl.getEnvironment().getId());
+
+        // if we have no roles, we need to remove the ACL
+        if (egr.getRoles() == null || egr.getRoles().isEmpty()) {
+          aclUpdates.deletes.add(acl);
         } else {
-          // don't add this one, we already have it
-          addedEnvironments.remove(egr.getEnvironmentId());
           // change the roles if necessary
           resetEnvironmentAcl(acl, egr);
+          aclUpdates.updates.add(acl);
         }
       }
     });
 
-    // delete ones that are no longer valid
-    group.getGroupRolesAcl().removeAll(removedAcls);
+    // add ones the new ones
+    for (UUID ae : addedEnvironments) {
+      final EnvironmentGroupRole egr = desiredEnvironments.get(ae);
+      if (egr.getRoles() != null && !egr.getRoles().isEmpty()) {
+        DbEnvironment env = convertUtils.uuidEnvironment(ae, Opts.opts(FillOpts.ApplicationIds, FillOpts.PortfolioIds));
 
-    // add ones that we want
-    for (String ae : addedEnvironments) {
-      DbEnvironment env = convertUtils.uuidEnvironment(ae, Opts.opts(FillOpts.ApplicationIds, FillOpts.PortfolioIds));
-      if (env != null && env.getParentApplication().getPortfolio().getId().equals(group.getOwningPortfolio().getId())) {
-        DbAcl acl = new DbAcl.Builder()
-          .environment(env)
-          .group(group)
-          .build();
+        if (env != null && env.getParentApplication().getPortfolio().getId().equals(group.getOwningPortfolio().getId())) {
+          DbAcl acl = new DbAcl.Builder()
+            .environment(env)
+            .group(group)
+            .build();
 
-        resetEnvironmentAcl(acl, desiredEnvironments.get(UUID.fromString(ae)));
+          resetEnvironmentAcl(acl, egr);
 
-        group.getGroupRolesAcl().add(acl);
-      } else {
-        log.error("Attempting to add an environment that doesn't exist or doesn't belong to the same portfolio {}", ae);
+          aclUpdates.creates.add(acl);
+        } else {
+          log.error("Attempting to add an environment that doesn't exist or doesn't belong to the same portfolio {}", ae);
+        }
       }
     }
+
+    return aclUpdates;
   }
 
   private void resetEnvironmentAcl(DbAcl acl, EnvironmentGroupRole egr) {
-    if (egr.getRoles() != null) {
-      final String newRoles = egr.getRoles().stream().map(Enum::name).sorted().collect(Collectors.joining(","));
+    final String newRoles = egr.getRoles().stream().map(Enum::name).sorted().collect(Collectors.joining(","));
 
-      if (acl.getRoles() == null || !newRoles.equals(acl.getRoles())) {
-        acl.setRoles(newRoles);
-      }
+    if (acl.getRoles() == null || !newRoles.equals(acl.getRoles())) {
+      acl.setRoles(newRoles);
     }
   }
 

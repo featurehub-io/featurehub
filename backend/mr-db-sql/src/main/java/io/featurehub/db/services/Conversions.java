@@ -93,6 +93,7 @@ public interface Conversions {
   DbEnvironment uuidEnvironment(String id);
 
   DbEnvironment uuidEnvironment(String id, Opts opts);
+  DbEnvironment uuidEnvironment(UUID id, Opts opts);
 
   DbApplication uuidApplication(String id);
 

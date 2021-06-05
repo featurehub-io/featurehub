@@ -7,6 +7,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:mrapi/api.dart';
 
 class DrawerViewWidget extends StatefulWidget {
   @override
@@ -50,70 +51,81 @@ class _MenuContainer extends StatelessWidget {
       height: MediaQuery.of(context).size.height - kToolbarHeight,
       child: Drawer(
         child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              PortfolioSelectorWidget(),
-              SizedBox(height: 16),
-              _MenuFeaturesOptionsWidget(),
-              StreamBuilder<ReleasedPortfolio>(
-                  stream: mrBloc.personState.isCurrentPortfolioOrSuperAdmin,
-                  builder: (context, snapshot) {
-                    if (snapshot.data != null &&
-                        (snapshot.data!.currentPortfolioOrSuperAdmin == true)) {
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(
-                                left: 16.0, top: 32.0, bottom: 8.0),
-                            child: Text(
-                              'Application Settings',
-                              style: Theme.of(context).textTheme.caption,
-                            ),
-                          ),
-                          _ApplicationSettings(),
-                          Column(
+          child: StreamBuilder<Person>(
+              stream: mrBloc.personState.personStream,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData || !mrBloc.personState.isLoggedIn) {
+                  return SizedBox.shrink();
+                }
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    PortfolioSelectorWidget(),
+                    SizedBox(height: 16),
+                    _MenuFeaturesOptionsWidget(),
+                    StreamBuilder<ReleasedPortfolio>(
+                        stream:
+                            mrBloc.personState.isCurrentPortfolioOrSuperAdmin,
+                        builder: (context, snapshot) {
+                          if (snapshot.data != null &&
+                              (snapshot.data!.currentPortfolioOrSuperAdmin ==
+                                  true)) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 16.0, top: 32.0, bottom: 8.0),
+                                  child: Text(
+                                    'Application Settings',
+                                    style: Theme.of(context).textTheme.caption,
+                                  ),
+                                ),
+                                _ApplicationSettings(),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 16.0, top: 32.0, bottom: 8.0),
+                                      child: Text(
+                                        'Portfolio Settings',
+                                        style:
+                                            Theme.of(context).textTheme.caption,
+                                      ),
+                                    ),
+                                    _MenuPortfolioAdminOptionsWidget(),
+                                    _MenuDivider(),
+                                  ],
+                                ),
+                              ],
+                            );
+                          } else {
+                            return Container();
+                          }
+                        }),
+                    mrBloc.userIsSuperAdmin
+                        ? Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
-                              Padding(
-                                padding: const EdgeInsets.only(
+                              Container(
+                                padding: EdgeInsets.only(
                                     left: 16.0, top: 32.0, bottom: 8.0),
                                 child: Text(
-                                  'Portfolio Settings',
+                                  'Global Settings',
                                   style: Theme.of(context).textTheme.caption,
                                 ),
                               ),
-                              _MenuPortfolioAdminOptionsWidget(),
+                              _SiteAdminOptionsWidget(),
                               _MenuDivider(),
                             ],
-                          ),
-                        ],
-                      );
-                    } else {
-                      return Container();
-                    }
-                  }),
-              mrBloc.userIsSuperAdmin
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Container(
-                          padding: EdgeInsets.only(
-                              left: 16.0, top: 32.0, bottom: 8.0),
-                          child: Text(
-                            'Global Settings',
-                            style: Theme.of(context).textTheme.caption,
-                          ),
-                        ),
-                        _SiteAdminOptionsWidget(),
-                        _MenuDivider(),
-                      ],
-                    )
-                  : Container(),
-            ],
-          ),
+                          )
+                        : Container(),
+                  ],
+                );
+              }),
         ),
       ),
     );

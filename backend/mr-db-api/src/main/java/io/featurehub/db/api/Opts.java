@@ -17,12 +17,12 @@ public class Opts {
   public Opts() {
   }
 
-  public Opts add(FillOpts opt) {
+  public Opts add(FillOpts... optList) {
     if (opts == null) {
       opts = new HashSet<>();
     }
 
-    opts.add(opt);
+    opts.addAll(Arrays.asList(optList));
 
     return this;
   }
