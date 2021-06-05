@@ -45,11 +45,17 @@ public class AuthenticationSqlApi implements AuthenticationApi {
   public Person login(String email, String password) {
     if (email == null || password == null) return null;
 
-
     return new QDbPerson().email.eq(email.toLowerCase()).findOneOrEmpty()
       .map(p -> {
-        if (passwordSalter.validatePassword(password, p.getPassword())) {
+        if (passwordSalter.validatePassword(password, p.getPassword(), p.getPasswordAlgorithm())) {
           updateLastAuthenticated(p);
+
+          // update the password algorithm for their password if it is "old" now we know their password
+          if (!p.getPasswordAlgorithm().equals(DbPerson.DEFAULT_PASSWORD_ALGORITHM)) {
+            p.setPassword(passwordSalter.saltAnyPassword(password, DbPerson.DEFAULT_PASSWORD_ALGORITHM));
+            p.setPasswordAlgorithm(DbPerson.DEFAULT_PASSWORD_ALGORITHM);
+            updateUser(p);
+          }
 
           return convertUtils.toPerson(p, Opts.opts(FillOpts.Groups, FillOpts.Acls))
             .passwordRequiresReset(p.isPasswordRequiresReset());
@@ -69,28 +75,33 @@ public class AuthenticationSqlApi implements AuthenticationApi {
   public Person register(String name, String email, String password) {
     if (name == null || email == null) return null;
 
-    return new QDbPerson().email.eq(email.toLowerCase()).findOneOrEmpty()
-      .map(person -> {
-        if (person.getToken() == null) {
-          return null;
-        }
+    return new QDbPerson()
+        .email
+        .eq(email.toLowerCase())
+        .findOneOrEmpty()
+        .map(
+            person -> {
+              if (person.getToken() == null) {
+                return null;
+              }
 
-        String saltedPassword = passwordSalter.saltAnyPassword(password);
+              String saltedPassword =
+                  passwordSalter.saltAnyPassword(password, DbPerson.DEFAULT_PASSWORD_ALGORITHM);
 
-        if (saltedPassword == null && password != null) {
-          return null;
-        }
+              if (saltedPassword == null && password != null) {
+                return null;
+              }
 
-        person.setName(name);
-        person.setPassword(saltedPassword);
-        person.setToken(null);
-        person.setTokenExpiry(null);
-        updateUser(person);
+              person.setName(name);
+              person.setPasswordAlgorithm(DbPerson.DEFAULT_PASSWORD_ALGORITHM);
+              person.setPassword(saltedPassword);
+              person.setToken(null);
+              person.setTokenExpiry(null);
+              updateUser(person);
 
-        return convertUtils.toPerson(person, Opts.opts(FillOpts.Groups,
-          FillOpts.Acls));
-        }
-      ).orElse(null);
+              return convertUtils.toPerson(person, Opts.opts(FillOpts.Groups, FillOpts.Acls));
+            })
+        .orElse(null);
   }
 
   @Override
@@ -102,8 +113,9 @@ public class AuthenticationSqlApi implements AuthenticationApi {
       DbPerson person = convertUtils.uuidPerson(id);
 
       if (person != null) {
-        return passwordSalter.saltPassword(password).map(saltedPassword -> {
+        return passwordSalter.saltPassword(password, DbPerson.DEFAULT_PASSWORD_ALGORITHM).map(saltedPassword -> {
           person.setPassword(saltedPassword);
+          person.setPasswordAlgorithm(DbPerson.DEFAULT_PASSWORD_ALGORITHM);
           person.setPasswordRequiresReset(true);
           person.setWhoChanged(whoChanged);
 
@@ -131,12 +143,12 @@ public class AuthenticationSqlApi implements AuthenticationApi {
   public Person replaceTemporaryPassword(String id, String password) {
     if (id == null || password == null) return null;
 
-    return Conversions.uuid(id).map(
-      pId -> new QDbPerson().id.eq(pId)
+    return Conversions.uuid(id).flatMap(pId -> new QDbPerson().id.eq(pId)
       .findOneOrEmpty().map(p -> {
         if (p.isPasswordRequiresReset()) {
-          return passwordSalter.saltPassword(password).map(saltedPassword -> {
+          return passwordSalter.saltPassword(password, DbPerson.DEFAULT_PASSWORD_ALGORITHM).map(saltedPassword -> {
             p.setPassword(saltedPassword);
+            p.setPasswordAlgorithm(DbPerson.DEFAULT_PASSWORD_ALGORITHM);
             p.setPasswordRequiresReset(false);
             p.setWhoChanged(null);
 
@@ -147,7 +159,7 @@ public class AuthenticationSqlApi implements AuthenticationApi {
         }
 
         return null;
-      }).orElse(null)).orElse(null);
+      })).orElse(null);
 
   }
 
@@ -158,9 +170,10 @@ public class AuthenticationSqlApi implements AuthenticationApi {
     return Conversions.uuid(id)
       .map(pId -> new QDbPerson().id.eq(pId)
       .findOneOrEmpty().map(p -> {
-        if (p.getPassword() != null && passwordSalter.validatePassword(oldPassword, p.getPassword())) {
-          return passwordSalter.saltPassword(newPassword).map(saltedPassword -> {
+        if (p.getPassword() != null && passwordSalter.validatePassword(oldPassword, p.getPassword(), p.getPasswordAlgorithm())) {
+          return passwordSalter.saltPassword(newPassword, DbPerson.DEFAULT_PASSWORD_ALGORITHM).map(saltedPassword -> {
             p.setPassword(saltedPassword);
+            p.setPasswordAlgorithm(DbPerson.DEFAULT_PASSWORD_ALGORITHM);
             p.setPasswordRequiresReset(false);
             p.setWhoChanged(null);
             updateUser(p);

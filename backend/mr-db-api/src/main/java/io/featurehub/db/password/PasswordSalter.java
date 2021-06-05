@@ -16,16 +16,18 @@ public class PasswordSalter {
   private static final Logger log = LoggerFactory.getLogger(PasswordSalter.class);
   @ConfigKey("passwordsalt.iterations")
   Integer iterations = 1000;
+//  @ConfigKey("passwordsalt.hash-algorithm")
+//  String algorithm = "PBKDF2WithHmacSHA1";
 
   public PasswordSalter() {
     DeclaredConfigResolver.resolve(this);
   }
 
-  public Optional<String> saltPassword(String password) {
-    return Optional.ofNullable(saltAnyPassword(password));
+  public Optional<String> saltPassword(String password, String algorithm) {
+    return Optional.ofNullable(saltAnyPassword(password, algorithm));
   }
 
-  public String saltAnyPassword(String password) {
+  public String saltAnyPassword(String password, String algorithm) {
     if (password == null || password.trim().length() == 0) {
       return null;
     }
@@ -37,7 +39,7 @@ public class PasswordSalter {
       byte[] salt = getSalt();
 
       PBEKeySpec spec = new PBEKeySpec(chars, salt, iterations, 64 * 8);
-      SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+      SecretKeyFactory skf = SecretKeyFactory.getInstance(algorithm);
       byte[] hash = skf.generateSecret(spec).getEncoded();
       return iterations + ":" + toHex(salt) + ":" + toHex(hash);
     } catch (Exception e) {
@@ -64,7 +66,7 @@ public class PasswordSalter {
     }
   }
 
-  public boolean validatePassword(String originalPassword, String storedPassword) {
+  public boolean validatePassword(String originalPassword, String storedPassword, String algorithm) {
     String[] parts = storedPassword.split(":");
     int iterations = Integer.parseInt(parts[0]);
 
@@ -73,7 +75,7 @@ public class PasswordSalter {
       byte[] hash = fromHex(parts[2]);
 
       PBEKeySpec spec = new PBEKeySpec(originalPassword.toCharArray(), salt, iterations, hash.length * 8);
-      SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+      SecretKeyFactory skf = SecretKeyFactory.getInstance(algorithm);
       byte[] testHash = skf.generateSecret(spec).getEncoded();
       int diff = hash.length ^ testHash.length;
       for (int i = 0; i < hash.length && i < testHash.length; i++) {

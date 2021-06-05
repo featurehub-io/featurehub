@@ -306,7 +306,7 @@ public class PersonSqlApi implements PersonApi {
       }
 
       DbPerson person = builder.build();
-      passwordSalter.saltPassword(password).ifPresent(person::setPassword);
+      passwordSalter.saltPassword(password, DbPerson.DEFAULT_PASSWORD_ALGORITHM).ifPresent(person::setPassword);
 
       updatePerson(person);
 

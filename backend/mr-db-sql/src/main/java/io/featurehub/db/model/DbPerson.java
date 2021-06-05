@@ -48,6 +48,12 @@ public class DbPerson {
   private String email;
   @Column(name = "password", length = 255)
   private String password;
+
+  public static final String DEFAULT_PASSWORD_ALGORITHM = "PBKDF2WithHmacSHA512";
+
+  @Column(name = "password_alg", length = 60, nullable = false, columnDefinition = "varchar(60) default 'PBKDF2WithHmacSHA1'")
+  private String passwordAlgorithm = DEFAULT_PASSWORD_ALGORITHM;
+
   private boolean passwordRequiresReset;
   private String token;
   private LocalDateTime tokenExpiry;
@@ -96,6 +102,14 @@ public class DbPerson {
 
   public void setWhenLastAuthenticated(LocalDateTime whenLastAuthenticated) {
     this.whenLastAuthenticated = whenLastAuthenticated;
+  }
+
+  public String getPasswordAlgorithm() {
+    return passwordAlgorithm;
+  }
+
+  public void setPasswordAlgorithm(String passwordAlgorithm) {
+    this.passwordAlgorithm = passwordAlgorithm;
   }
 
   public String getName() {
