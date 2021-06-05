@@ -69,42 +69,43 @@ class _MenuContainer extends StatelessWidget {
                         stream:
                             mrBloc.personState.isCurrentPortfolioOrSuperAdmin,
                         builder: (context, snapshot) {
-                          if (snapshot.data != null &&
-                              (snapshot.data!.currentPortfolioOrSuperAdmin ==
-                                  true)) {
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 16.0, top: 32.0, bottom: 8.0),
-                                  child: Text(
-                                    'Application Settings',
-                                    style: Theme.of(context).textTheme.caption,
-                                  ),
-                                ),
-                                _ApplicationSettings(),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                          left: 16.0, top: 32.0, bottom: 8.0),
-                                      child: Text(
-                                        'Portfolio Settings',
-                                        style:
-                                            Theme.of(context).textTheme.caption,
-                                      ),
-                                    ),
-                                    _MenuPortfolioAdminOptionsWidget(),
-                                    _MenuDivider(),
-                                  ],
-                                ),
-                              ],
-                            );
-                          } else {
-                            return Container();
+                          if (snapshot.data == null ||
+                              !snapshot.data!.currentPortfolioOrSuperAdmin) {
+                            return SizedBox.shrink();
                           }
+
+                          print("person is portfolio or super admin");
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 16.0, top: 32.0, bottom: 8.0),
+                                child: Text(
+                                  'Application Settings',
+                                  style: Theme.of(context).textTheme.caption,
+                                ),
+                              ),
+                              _ApplicationSettings(),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 16.0, top: 32.0, bottom: 8.0),
+                                    child: Text(
+                                      'Portfolio Settings',
+                                      style:
+                                          Theme.of(context).textTheme.caption,
+                                    ),
+                                  ),
+                                  _MenuPortfolioAdminOptionsWidget(),
+                                  _MenuDivider(),
+                                ],
+                              ),
+                            ],
+                          );
                         }),
                     mrBloc.userIsSuperAdmin
                         ? Column(

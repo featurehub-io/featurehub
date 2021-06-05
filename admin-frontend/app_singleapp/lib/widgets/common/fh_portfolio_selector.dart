@@ -18,75 +18,74 @@ class _PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
     return StreamBuilder<List<Portfolio>>(
         stream: bloc.streamValley.portfolioListStream,
         builder: (context, snapshot) {
-          if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-            return StreamBuilder<Portfolio>(
-                stream: bloc.streamValley.currentPortfolioStream,
-                builder: (context, currentPortfolioSnap) {
-                  return Flexible(
-                    fit: FlexFit.loose,
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                          left: 16.0, right: 32.0, top: 24.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Your current portfolio',
-                              style: Theme.of(context).textTheme.caption),
-                          InkWell(
-                            mouseCursor: SystemMouseCursors.click,
-                            child: OutlinedButton(
-                              onPressed: () => {},
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton(
-                                  icon: Padding(
-                                    padding: EdgeInsets.only(left: 8.0),
-                                    child: Icon(
-                                      Icons.keyboard_arrow_down,
-                                      size: 24,
-                                    ),
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return SizedBox.shrink();
+          }
+
+          return StreamBuilder<Portfolio>(
+              stream: bloc.streamValley.currentPortfolioStream,
+              builder: (context, currentPortfolioSnap) {
+                return Flexible(
+                  fit: FlexFit.loose,
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                        left: 16.0, right: 32.0, top: 24.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Your current portfolio',
+                            style: Theme.of(context).textTheme.caption),
+                        InkWell(
+                          mouseCursor: SystemMouseCursors.click,
+                          child: OutlinedButton(
+                            onPressed: () => {},
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton(
+                                icon: Padding(
+                                  padding: EdgeInsets.only(left: 8.0),
+                                  child: Icon(
+                                    Icons.keyboard_arrow_down,
+                                    size: 24,
                                   ),
-                                  style: Theme.of(context).textTheme.bodyText1,
-                                  isDense: true,
-                                  isExpanded: true,
-                                  items:
-                                      snapshot.data!.map((Portfolio portfolio) {
-                                    return DropdownMenuItem<String>(
-                                        value: portfolio.id,
-                                        child: Text(
-                                          portfolio.name,
-                                          style: GoogleFonts.poppins(
-                                              textStyle: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyText2,
-                                              fontWeight: FontWeight.w600),
-                                          overflow: TextOverflow.ellipsis,
-                                        ));
-                                  }).toList(),
-                                  hint: Text('Select portfolio',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyText2),
-                                  onChanged: (String? value) {
-                                    setState(() {
-                                      bloc.setCurrentPid(value);
-                                      bloc.setCurrentAid(null);
-                                    });
-                                  },
-                                  value: currentPortfolioSnap.hasData
-                                      ? currentPortfolioSnap.data!.id
-                                      : null,
                                 ),
+                                style: Theme.of(context).textTheme.bodyText1,
+                                isDense: true,
+                                isExpanded: true,
+                                items:
+                                    snapshot.data!.map((Portfolio portfolio) {
+                                  return DropdownMenuItem<String>(
+                                      value: portfolio.id,
+                                      child: Text(
+                                        portfolio.name,
+                                        style: GoogleFonts.poppins(
+                                            textStyle: Theme.of(context)
+                                                .textTheme
+                                                .bodyText2,
+                                            fontWeight: FontWeight.w600),
+                                        overflow: TextOverflow.ellipsis,
+                                      ));
+                                }).toList(),
+                                hint: Text('Select portfolio',
+                                    style:
+                                        Theme.of(context).textTheme.bodyText2),
+                                onChanged: (String? value) {
+                                  setState(() {
+                                    bloc.setCurrentPid(value);
+                                    bloc.setCurrentAid(null);
+                                  });
+                                },
+                                value: currentPortfolioSnap.hasData
+                                    ? currentPortfolioSnap.data!.id
+                                    : null,
                               ),
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  );
-                });
-          } else {
-            return Container();
-          }
+                  ),
+                );
+              });
         });
   }
 }

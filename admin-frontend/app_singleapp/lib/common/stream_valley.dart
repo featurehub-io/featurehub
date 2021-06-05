@@ -129,6 +129,7 @@ class StreamValley {
     } else if (value == null) {
       _log.fine('Portfolio request was null, storing null.');
       _routeCheckPortfolioSource.add(null); // no portfolio
+      _currentPortfolioSource.add(nullPortfolio);
     } else {
       _log.fine('Ignoring portfolio change request');
     }
