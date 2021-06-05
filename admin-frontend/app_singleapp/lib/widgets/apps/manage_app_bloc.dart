@@ -5,6 +5,7 @@ import 'package:app_singleapp/api/mr_client_aware.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:mrapi/api.dart';
+import 'package:openapi_dart_common/openapi.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -150,7 +151,9 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
         _pageStateBS.add(ManageAppPageState.initialState);
       }
     }).catchError((e, s) {
-      _mrClient.dialogError(e, s);
+      if (!(e is ApiException && e.code == 404)) {
+        _mrClient.dialogError(e, s);
+      }
       _applicationWithEnvironmentsBS.add(null);
       _pageStateBS.add(ManageAppPageState.loadingState);
     });

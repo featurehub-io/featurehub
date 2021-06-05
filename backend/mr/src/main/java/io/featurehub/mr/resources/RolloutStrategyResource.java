@@ -71,8 +71,15 @@ public class RolloutStrategyResource implements RolloutStrategyServiceDelegate {
                                                    SecurityContext securityContext) {
     applicationUtils.featureAdminCheck(securityContext, appId);
     Person person = authManager.from(securityContext);
-    return rolloutStrategyApi.archiveStrategy(appId, strategyId, person, new Opts().add(FillOpts.SimplePeople,
+    final RolloutStrategyInfo rolloutStrategyInfo = rolloutStrategyApi.archiveStrategy(appId, strategyId, person,
+      new Opts().add(FillOpts.SimplePeople,
       holder.includeWhoChanged));
+
+    if (rolloutStrategyInfo == null) {
+      throw new NotFoundException();
+    }
+
+    return rolloutStrategyInfo;
   }
 
   @Override

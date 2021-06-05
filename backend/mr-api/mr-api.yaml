@@ -80,8 +80,6 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Portfolio"
-        204:
-          description: "no portfolios, TODO: fix to 404"
         400:
           description: "Bad Request"
         401:
@@ -333,8 +331,6 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Group"
-        204:
-          description: "no groups, ugh, TODO: fix to 404"
         400:
           description: "Bad Request"
         401:
@@ -487,13 +483,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Person"
-        204:
-          description: "not found - TODO: should be 404"
         400:
           description: "Bad Request"
         401:
           description: "no permission"
-
+        404:
+          description: "not found"
     put:
       security:
         - bearerAuth: [ ]
@@ -828,13 +823,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Application"
-        204:
-          description: "no application content, TODO: fix to 404"
         400:
           description: "Bad Request"
         401:
           description: "no permission"
-
+        404:
+          description: "no application"
     put:
       security:
         - bearerAuth: [ ]
@@ -1079,8 +1073,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RolloutStrategyInfo"
-        204:
-          description: "may be an issue here, TODO: check"
         400:
           description: "Bad Request"
         401:
@@ -1088,9 +1080,7 @@ paths:
         403:
           description: "forbidden"
         404:
-          description: "app not found"
-
-
+          description: "strategy not found, could not delete"
   /mr-api/application/{id}/features:
     parameters:
       - name: id
@@ -1305,8 +1295,6 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/FeatureEnvironment"
-        204:
-          description: "No content if no data, TODO: should return 404 or an empty list"
         400:
           description: "Bad Request"
         401:
@@ -1433,8 +1421,6 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Environment"
-        204:
-          description: "no content, TODO: fix"
         400:
           description: "Bad Request"
         401:
@@ -1540,12 +1526,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Environment"
-        204:
-          description: "No environment found to update TODO: fix, should be 404 or 403"
         400:
           description: "Bad Request"
         401:
           description: "no permission"
+        404:
+          description: "No environment found to update TODO: fix, should be 404 or 403"
         409:
           description: "Duplicate environment"
         422:

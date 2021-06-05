@@ -95,7 +95,14 @@ public class ApplicationResource implements ApplicationServiceDelegate {
 
   @Override
   public Application getApplication(String appId, GetApplicationHolder holder, SecurityContext securityContext) {
-    return applicationApi.getApplication(appId, new Opts().add(FillOpts.Environments, holder.includeEnvironments));
+    final Application app = applicationApi.getApplication(appId, new Opts().add(FillOpts.Environments,
+      holder.includeEnvironments));
+
+    if (app == null) {
+      throw new NotFoundException();
+    }
+
+    return app;
   }
 
   @Override

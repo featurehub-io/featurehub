@@ -165,7 +165,14 @@ public class GroupResource implements GroupServiceDelegate {
     final Person from = authManager.from(securityContext);
 
     if (authManager.isOrgAdmin(from) || authManager.isPortfolioGroupMember(id, from)) {
-      return groupApi.findGroups(id, holder.filter, holder.order, new Opts().add(FillOpts.People, holder.includePeople));
+      final List<Group> groups = groupApi.findGroups(id, holder.filter, holder.order, new Opts().add(FillOpts.People,
+        holder.includePeople));
+
+      if (groups == null) {
+        throw new NotFoundException();
+      }
+
+      return groups;
     }
 
     throw new ForbiddenException();

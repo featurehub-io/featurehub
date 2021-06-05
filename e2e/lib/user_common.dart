@@ -139,9 +139,17 @@ class UserCommon {
       {GroupServiceApi? groupServiceApi}) async {
     GroupServiceApi _gService = groupServiceApi ?? this.groupService;
     assert(portfolioId != null, 'portfolio id is null');
-    var groups = await _gService.findGroups(portfolioId!,
-        filter: groupName, includePeople: true);
-    return groups.firstWhereOrNull((g) => g.name == groupName);
+    try {
+      var groups = await _gService.findGroups(portfolioId!,
+          filter: groupName, includePeople: true);
+      return groups.firstWhereOrNull((g) => g.name == groupName);
+    } catch (e) {
+      if (e is ApiException && e.code == 404) {
+        return null;
+      }
+
+      throw e;
+    }
   }
 
   Future<ServiceAccount?> findExactServiceAccount(
