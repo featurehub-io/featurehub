@@ -35,8 +35,6 @@ class SetupBloc implements Bloc {
   bool get has3rdParty => mrClient.identityProviders.has3rdParty;
   List<String> get externalProviders =>
       mrClient.identityProviders.externalProviders;
-  Map<String, String> get externalProviderAssets =>
-      mrClient.identityProviders.externalProviderAssets;
 
   SetupBloc(this.mrClient) {
     // go to page 1 if local or # of providers is > 2

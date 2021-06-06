@@ -87,7 +87,7 @@ class _MultiSelectDropdownState extends State<MultiSelectDropdown> {
                 .toList(),
             hint:
                 Text(widget.hint, style: Theme.of(context).textTheme.subtitle2),
-            onChanged: (dynamic? value) {
+            onChanged: (dynamic value) {
               var readOnly = false; //TODO parametrise this if needed
               if (!readOnly) {
                 setState(() {

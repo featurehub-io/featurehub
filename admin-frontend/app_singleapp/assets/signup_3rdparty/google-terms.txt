@@ -1,5 +1,0 @@
-Go here:
-
-https://developers.google.com/identity/branding-guidelines
-
-The signin buttons have different states for pressed down, etc

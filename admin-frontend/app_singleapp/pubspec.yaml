@@ -34,6 +34,7 @@ dependencies:
   shared_preferences: ^2.0.5
   plugin_platform_interface: ^2.0.0
   pedantic: ^1.11.0
+  flutter_signin_button: ^2.0.0
   flutter_icons:
     git:
       url: https://github.com/adarsh-technocrat/flutter-icons.git
@@ -57,9 +58,6 @@ flutter:
     - assets/logo/FeatureHub-icon.png
     - assets/logo/FeatureHubPrimaryWhite.png
     - assets/logo/FlowerDarkBackground.png
-    - assets/signup_3rdparty/btn_google_signin_dark_normal_web.png
-    - assets/signup_3rdparty/azure.png
-    - assets/signup_3rdparty/github.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
