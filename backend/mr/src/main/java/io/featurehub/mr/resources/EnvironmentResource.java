@@ -125,8 +125,11 @@ public class EnvironmentResource implements EnvironmentServiceDelegate {
 
     if (authManager.isOrgAdmin(current) ||
       authManager.isPortfolioAdmin(environmentApi.findPortfolio(environment.getId()), current)) {
+      Environment update;
+
       try {
-        return environmentApi.update(eid, environment, new Opts().add(FillOpts.Acls, holder.includeAcls).add(FillOpts.Features, holder.includeFeatures));
+         update = environmentApi.update(eid, environment, new Opts().add(FillOpts.Acls,
+          holder.includeAcls).add(FillOpts.Features, holder.includeFeatures));
       } catch (OptimisticLockingException e) {
         throw new WebApplicationException(422);
       } catch (EnvironmentApi.DuplicateEnvironmentException e) {
@@ -134,8 +137,14 @@ public class EnvironmentResource implements EnvironmentServiceDelegate {
       } catch (EnvironmentApi.InvalidEnvironmentChangeException e) {
         throw new BadRequestException();
       }
+
+      if (update == null) {
+        throw new NotFoundException();
+      }
+
+      return update;
     }
 
-    return null;
+    throw new ForbiddenException();
   }
 }

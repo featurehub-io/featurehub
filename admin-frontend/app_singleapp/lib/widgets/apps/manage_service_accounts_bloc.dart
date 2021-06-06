@@ -51,8 +51,9 @@ class ManageServiceAccountsBloc implements Bloc {
   }
 
   Future<bool> deleteServiceAccount(String sid) async {
-    final result =
-        await _serviceAccountServiceApi.delete(sid).catchError((e, s) {
+    final result = await _serviceAccountServiceApi
+        .deleteServiceAccount(sid)
+        .catchError((e, s) {
       mrClient.dialogError(e, s);
     });
     await addServiceAccountsToStream(portfolioId);
@@ -65,7 +66,7 @@ class ManageServiceAccountsBloc implements Bloc {
     serviceAccount.name = updatedServiceAccountName;
     serviceAccount.description = updatedDescription;
     return _serviceAccountServiceApi
-        .update(serviceAccount.id!, serviceAccount)
+        .updateServiceAccount(serviceAccount.id!, serviceAccount)
         .then((onSuccess) {
       addServiceAccountsToStream(portfolioId);
     }).catchError((e, s) {

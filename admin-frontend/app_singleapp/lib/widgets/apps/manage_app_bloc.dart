@@ -5,23 +5,33 @@ import 'package:app_singleapp/api/mr_client_aware.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:mrapi/api.dart';
+import 'package:openapi_dart_common/openapi.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:rxdart/rxdart.dart';
 
 enum ManageAppPageState { loadingState, initialState }
 
+class ApplicationGroupRoles {
+  final Group group;
+  final String applicationId;
+
+  ApplicationGroupRoles(this.group, this.applicationId);
+}
+
 class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
   final ManagementRepositoryClientBloc _mrClient;
   late ApplicationServiceApi _appServiceApi;
   late EnvironmentServiceApi _environmentServiceApi;
-  late PortfolioServiceApi _portfolioServiceApi;
   late GroupServiceApi _groupServiceApi;
   late ServiceAccountServiceApi _serviceAccountServiceApi;
   late StreamSubscription<String?> _currentAppIdSubscription;
+  late StreamSubscription<Application?>
+      _currentApplicationWithEnvironmentSubscription;
+  late StreamSubscription<List<Group>> _currentPortfolioGroupsSubscription;
+  late StreamSubscription<Portfolio> _currentPortfolioSubscription;
 
   // operational fields
   String? applicationId;
-  Application? application;
   Portfolio? portfolio;
   String? _selectedGroupId;
   List<Environment> environmentsList = [];
@@ -29,12 +39,28 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
   ManageAppBloc(this._mrClient) {
     _appServiceApi = ApplicationServiceApi(_mrClient.apiClient);
     _environmentServiceApi = EnvironmentServiceApi(_mrClient.apiClient);
-    _portfolioServiceApi = PortfolioServiceApi(_mrClient.apiClient);
     _groupServiceApi = GroupServiceApi(_mrClient.apiClient);
     _serviceAccountServiceApi = ServiceAccountServiceApi(_mrClient.apiClient);
     _pageStateBS.add(ManageAppPageState.loadingState);
+
+    _currentPortfolioSubscription =
+        _mrClient.streamValley.currentPortfolioStream.listen(_updatedPortfolio);
+
     _currentAppIdSubscription =
         _mrClient.streamValley.currentAppIdStream.listen(setApplicationId);
+
+    _currentPortfolioGroupsSubscription = _mrClient
+        .streamValley.currentPortfolioGroupsStream
+        .listen(_updatePortfolioGroups);
+
+    // we don't listen to the app itself because we need our own version, we
+    // listen to our own stream instead
+    _currentApplicationWithEnvironmentSubscription =
+        applicationWithEnvironments.listen((app) {
+      _publishEnvironmentListUpdate(app);
+      _updateCurrentlySelectedGroupPermissions();
+      _refreshServiceAccountsOnApplicationChange(app);
+    });
   }
 
   @override
@@ -48,8 +74,17 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     _groupsBS.close();
     _serviceAccountsBS.close();
     _serviceAccountPS.close();
+    _applicationWithEnvironmentsBS.close();
     _currentAppIdSubscription.cancel();
+    _currentApplicationWithEnvironmentSubscription.cancel();
+    _currentPortfolioGroupsSubscription.cancel();
+    _currentPortfolioSubscription.cancel();
   }
+
+  final _applicationWithEnvironmentsBS = BehaviorSubject<Application?>();
+
+  Stream<Application?> get applicationWithEnvironments =>
+      _applicationWithEnvironmentsBS.stream;
 
   final _environmentBS = BehaviorSubject<List<Environment>>();
 
@@ -75,101 +110,80 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
 
   Stream<ServiceAccount> get serviceAccountStream => _serviceAccountPS.stream;
 
-  final _groupWithRolesPS = BehaviorSubject<Group?>();
+  final _groupWithRolesPS = BehaviorSubject<ApplicationGroupRoles?>();
 
-  Stream<Group?> get groupRoleStream => _groupWithRolesPS.stream;
+  Stream<ApplicationGroupRoles?> get groupRoleStream =>
+      _groupWithRolesPS.stream;
 
-  final _pageStateBS = BehaviorSubject<ManageAppPageState>();
+  final _pageStateBS = BehaviorSubject<ManageAppPageState?>();
 
-  Stream<ManageAppPageState> get pageStateStream => _pageStateBS.stream;
+  Stream<ManageAppPageState?> get pageStateStream => _pageStateBS.stream;
 
   void setApplicationId(String? id) {
-    _pageStateBS.add(ManageAppPageState.loadingState);
-    applicationId = id;
-    if (id != null) {
-      _fetchGroups();
-      _fetchEnvironments();
-      _fetchServiceAccounts();
+    if (id != applicationId) {
+      _pageStateBS.add(ManageAppPageState.loadingState);
+
+      applicationId = id;
+      _refreshApplication();
     }
   }
 
-  Future<void> applicationIdChanged() async {
-    if (await refreshApplication()) {
-      // ignore: unawaited_futures
-      _fetchGroups(existingApp: true);
-      _fetchEnvironments(existingApp: true);
-      _fetchEnvironments(existingApp: true);
-    }
+  void _updatedPortfolio(Portfolio portfolio) {
+    this.portfolio = portfolio;
   }
 
-  Future<bool> refreshApplication() async {
-    if (applicationId == null) {
-      return false;
-    }
-
-    return await _appServiceApi
-        .getApplication(applicationId!, includeEnvironments: true)
-        .then((value) {
-      application = value;
-      return true;
-    }).catchError((e, s) {
-      _mrClient.dialogError(e, s);
-      return false;
-    });
-  }
-
-  void _fetchEnvironments({existingApp = false}) async {
-    if (!existingApp || application == null) {
-      if (!(await refreshApplication())) {
-        return;
+  // the portfolio changed, so update the groups
+  void _updatePortfolioGroups(List<Group> groups) {
+    if (!_groupsBS.isClosed) {
+      _groupsBS.add(groups);
+      if (groups.isEmpty) {
+        selectedGroup = null;
+      } else {
+        if (groups[0].id != _selectedGroupId) {
+          selectedGroup = groups[0].id!;
+        }
       }
     }
+  }
 
-    environmentsList = application!.environments;
-    if (!_environmentBS.isClosed) {
-      _environmentBS.add(application!.environments);
+  Future<void> _refreshApplication() async {
+    if (applicationId == null) {
+      return;
     }
-    portfolio = await _portfolioServiceApi
-        .getPortfolio(application!.portfolioId!)
-        .catchError((e, s) {
-      _mrClient.dialogError(e, s);
+
+    await _appServiceApi
+        .getApplication(applicationId!, includeEnvironments: true)
+        .then((value) async {
+      _applicationWithEnvironmentsBS.add(value);
+      if (_pageStateBS.value == ManageAppPageState.loadingState) {
+        _pageStateBS.add(ManageAppPageState.initialState);
+      }
+    }).catchError((e, s) {
+      if (!(e is ApiException && e.code == 404)) {
+        _mrClient.dialogError(e, s);
+      }
+      _applicationWithEnvironmentsBS.add(null);
+      _pageStateBS.add(ManageAppPageState.loadingState);
     });
-    if (!_pageStateBS.isClosed) {
-      _pageStateBS.add(ManageAppPageState.initialState);
+  }
+
+  void _publishEnvironmentListUpdate(Application? app) async {
+    if (app == null) {
+      environmentsList = [];
+    } else {
+      environmentsList = app.environments;
+    }
+
+    if (!_environmentBS.isClosed) {
+      _environmentBS.add(environmentsList);
     }
   }
 
   String? get selectedGroup => _selectedGroupId;
+
   set selectedGroup(String? groupId) {
     _selectedGroupId = groupId;
-    getGroupRoles(_selectedGroupId);
-  }
-
-  Future<void> _fetchGroups({existingApp = false}) async {
-    if (!existingApp || application == null) {
-      if (!(await refreshApplication())) {
-        return;
-      }
-    }
-
-    portfolio = await _portfolioServiceApi
-        .getPortfolio(application!.portfolioId!, includeGroups: true)
-        .catchError((e, s) {
-      _mrClient.dialogError(e, s);
-    });
-    if (portfolio != null && !_groupsBS.isClosed) {
-      _groupsBS.add(portfolio!.groups);
-
-      if (!portfolio!.groups.map((e) => e.id).contains(_selectedGroupId)) {
-        if (portfolio!.groups.isEmpty) {
-          selectedGroup = null;
-        } else {
-          if (portfolio!.groups[0].id != _selectedGroupId) {
-            selectedGroup = portfolio!.groups[0].id!;
-          }
-        }
-      }
-    }
+    _getGroupRoles(_selectedGroupId);
   }
 
   Future<void> _fetchServiceAccountsFromApplication(Application app) async {
@@ -193,39 +207,50 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     }
   }
 
-  void _fetchServiceAccounts({existingApp = false}) async {
-    if (!existingApp || application == null) {
-      if (!(await refreshApplication())) {
-        return;
+  void _refreshServiceAccountsOnApplicationChange(Application? app) async {
+    if (app == null) {
+      _serviceAccountsBS.add([]);
+    } else {
+      try {
+        await _fetchServiceAccountsFromApplication(app);
+      } catch (e, s) {
+        await _mrClient.dialogError(e, s);
       }
-    }
-
-    try {
-      await _fetchServiceAccountsFromApplication(application!);
-    } catch (e, s) {
-      await _mrClient.dialogError(e, s);
     }
   }
 
-  Future<void> getGroupRoles(String? groupId) async {
-    if (groupId == null) {
+  // the application changed, so we need to refresh the group roles
+  void _updateCurrentlySelectedGroupPermissions() {
+    _getGroupRoles(selectedGroup);
+  }
+
+  Future<void> _getGroupRoles(String? groupId) async {
+    if (groupId == null || !_mrClient.userIsCurrentPortfolioAdmin) {
       _groupWithRolesPS.add(null);
     } else {
-      final group =
-          await _groupServiceApi.getGroup(groupId, includeGroupRoles: true);
+      try {
+        final group = await _groupServiceApi.getGroup(groupId,
+            includeGroupRoles: true, byApplicationId: applicationId);
 
-      _groupWithRolesPS.add(group);
+        // the downstream needs to know which application this group is paired with
+        // so it knows when to refresh its internal state
+        _groupWithRolesPS.add(ApplicationGroupRoles(group, applicationId!));
+      } catch (e, s) {
+        await _mrClient.dialogError(e, s);
+        _groupWithRolesPS.add(null);
+      }
     }
   }
 
   void resetGroup(Group group) {
-    getGroupRoles(group.id);
+    _getGroupRoles(group.id);
   }
 
   Future<void> selectServiceAccount(String said) async {
     if (_mrClient.userIsCurrentPortfolioAdmin) {
       await _serviceAccountServiceApi
-          .callGet(said, includePermissions: true)
+          .getServiceAccount(said,
+              includePermissions: true, byApplicationId: applicationId)
           .then((sa) {
         _currentServiceAccountIdSource.add(sa.id);
         if (!_serviceAccountPS.isClosed) {
@@ -250,19 +275,13 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
         .catchError((e, s) {
       _mrClient.dialogError(e, s);
     });
-    _refreshEnvironments();
     return updatedGroup;
-  }
-
-  void _refreshEnvironments() async {
-    var list = await _mrClient.streamValley.getCurrentApplicationEnvironments();
-    _environmentBS.add(list);
   }
 
   Future<ServiceAccount> updateServiceAccountPermissions(
       String sid, ServiceAccount serviceAccount) async {
     final updatedServiceAccount = await _serviceAccountServiceApi
-        .update(
+        .updateServiceAccount(
       sid,
       serviceAccount,
       includePermissions: true,
@@ -289,9 +308,8 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     });
 
     if (success) {
-      environmentsList.remove(toRemove);
       // await updateEnvs(applicationId, environmentsList);
-      _refreshEnvironments();
+      await _refreshApplication();
       return true;
     }
     return false;
@@ -310,10 +328,10 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     env.name = name;
     await _environmentServiceApi
         .updateEnvironment(env.id!, env)
+        .then((e) => _refreshApplication())
         .catchError((e, s) {
       _mrClient.dialogError(e, s);
     });
-    _fetchEnvironments();
   }
 
   Future<void> createEnv(String name, bool _isProduction) async {

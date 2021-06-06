@@ -135,11 +135,12 @@ class _GroupPermissionDetailWidget extends StatefulWidget {
 class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
   Map<String, EnvironmentGroupRole> newEnvironmentRoles = {};
   Group? currentGroup;
+  String? applicationId;
   bool editAccess = false;
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<Group?>(
+    return StreamBuilder<ApplicationGroupRoles?>(
         stream: widget.bloc.groupRoleStream,
         builder: (context, groupSnapshot) {
           if (!groupSnapshot.hasData) {
@@ -165,12 +166,14 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                 }
 
                 if (currentGroup == null ||
-                    currentGroup!.id != groupSnapshot.data!.id) {
+                    (currentGroup!.id != groupSnapshot.data!.group.id) ||
+                    (applicationId != groupSnapshot.data!.applicationId)) {
                   newEnvironmentRoles =
-                      createMap(envSnapshot.data!, groupSnapshot.data!);
-                  currentGroup = groupSnapshot.data;
+                      createMap(envSnapshot.data!, groupSnapshot.data!.group);
+                  currentGroup = groupSnapshot.data?.group;
+                  applicationId = groupSnapshot.data!.applicationId;
                   editAccess = hasEditPermission(
-                      currentGroup!, widget.bloc.application!.id!);
+                      currentGroup!, widget.bloc.applicationId!);
                 }
 
                 final rows = <TableRow>[];
@@ -222,7 +225,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                       FHFlatButtonTransparent(
                         onPressed: () {
                           currentGroup = null;
-                          widget.bloc.resetGroup(groupSnapshot.data!);
+                          widget.bloc.resetGroup(groupSnapshot.data!.group);
                         },
                         title: 'Cancel',
                         keepCase: true,
@@ -233,13 +236,12 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                             newEnvironmentRoles.forEach((key, value) {
                               newList.add(value);
                             });
-                            var newGroup = groupSnapshot.data!;
+                            var newGroup = groupSnapshot.data!.group;
                             newGroup.environmentRoles = newList;
                             newGroup = editAccess
-                                ? addEditPermission(
-                                    newGroup, widget.bloc.application!.id!)
+                                ? addEditPermission(newGroup, applicationId!)
                                 : removeEditPermission(
-                                    newGroup, widget.bloc.application!.id!);
+                                    newGroup, applicationId!);
                             widget.bloc
                                 .updateGroupWithEnvironmentRoles(
                                     newGroup.id, newGroup)

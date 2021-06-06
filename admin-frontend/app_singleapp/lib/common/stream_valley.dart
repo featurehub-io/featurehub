@@ -19,6 +19,8 @@ typedef findApplicationsFunc = Future<List<Application>> Function(
 
 final _log = Logger('stream-valley');
 
+final Portfolio nullPortfolio = Portfolio(name: 'null-portfolio');
+
 class StreamValley {
   final ManagementRepositoryClientBloc mrClient;
   final PersonState personState;
@@ -31,7 +33,7 @@ class StreamValley {
 
   late StreamSubscription<ReleasedPortfolio>
       currentPortfolioAdminOrSuperAdminSubscription;
-  late StreamSubscription<Portfolio> currentPortfolioSubscription;
+  late StreamSubscription<Portfolio?> currentPortfolioSubscription;
 
   bool _isCurrentPortfolioAdminOrSuperAdmin = false;
 
@@ -91,7 +93,8 @@ class StreamValley {
   }
 
   final _portfoliosSource = BehaviorSubject<List<Portfolio>>();
-  final _currentPortfolioSource = BehaviorSubject<Portfolio>();
+  final _currentPortfolioSource =
+      BehaviorSubject<Portfolio>.seeded(nullPortfolio);
   final _routeCheckPortfolioSource = BehaviorSubject<Portfolio?>();
 
   final _currentAppIdSource = BehaviorSubject<String?>();
@@ -110,9 +113,9 @@ class StreamValley {
   Stream<List<Portfolio>> get portfolioListStream => _portfoliosSource.stream;
   Stream<Portfolio> get currentPortfolioStream =>
       _currentPortfolioSource.stream;
-  Portfolio? get currentPortfolio => _currentPortfolioSource.value;
+  Portfolio get currentPortfolio => _currentPortfolioSource.value!;
 
-  String? get currentPortfolioId => currentPortfolio?.id;
+  String? get currentPortfolioId => currentPortfolio.id;
 
   set currentPortfolioId(String? value) {
     _log.fine('Attempting to set portfolio at $value');
@@ -126,6 +129,7 @@ class StreamValley {
     } else if (value == null) {
       _log.fine('Portfolio request was null, storing null.');
       _routeCheckPortfolioSource.add(null); // no portfolio
+      _currentPortfolioSource.add(nullPortfolio);
     } else {
       _log.fine('Ignoring portfolio change request');
     }

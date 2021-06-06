@@ -102,7 +102,7 @@ public class PersonResource implements PersonServiceDelegate {
       return person;
     }
 
-    throw new ForbiddenException("nyet");
+    throw new ForbiddenException("You are not allowed the details of this person");
   }
 
   @Override

@@ -1,5 +1,6 @@
 package io.featurehub.mr.resources;
 
+import io.featurehub.db.FilterOptType;
 import io.featurehub.db.api.DuplicateUsersException;
 import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.GroupApi;
@@ -79,7 +80,7 @@ public class GroupResource implements GroupServiceDelegate {
     if (member) {
       action.accept(adminGroup);
     } else {
-      throw new NotAuthorizedException(error);
+      throw new ForbiddenException(error);
     }
   }
 
@@ -128,7 +129,7 @@ public class GroupResource implements GroupServiceDelegate {
 
     groupCheck(gid, authManager.from(securityContext), group -> {
       if (group.getAdmin()) {
-        throw new NotAuthorizedException("Cannot delete admin group from deleteGroup method.");
+        throw new ForbiddenException("Cannot delete admin group from deleteGroup method.");
       }
 
       isAdminOfGroup(group, securityContext, "Not owner of group, cannot delete", adminGroup -> {
@@ -165,7 +166,14 @@ public class GroupResource implements GroupServiceDelegate {
     final Person from = authManager.from(securityContext);
 
     if (authManager.isOrgAdmin(from) || authManager.isPortfolioGroupMember(id, from)) {
-      return groupApi.findGroups(id, holder.filter, holder.order, new Opts().add(FillOpts.People, holder.includePeople));
+      final List<Group> groups = groupApi.findGroups(id, holder.filter, holder.order, new Opts().add(FillOpts.People,
+        holder.includePeople));
+
+      if (groups == null) {
+        throw new NotFoundException();
+      }
+
+      return groups;
     }
 
     throw new ForbiddenException();
@@ -173,7 +181,7 @@ public class GroupResource implements GroupServiceDelegate {
 
   @Override
   public Group getGroup(String gid, GetGroupHolder holder, SecurityContext securityContext) {
-    Opts opts = new Opts().add(FillOpts.Acls, holder.includeGroupRoles);
+    Opts opts = new Opts().add(FillOpts.Acls, holder.includeGroupRoles).add(FilterOptType.Application, holder.byApplicationId);
 
     if (Boolean.TRUE.equals(holder.includeMembers)) {
       opts.add(FillOpts.People);

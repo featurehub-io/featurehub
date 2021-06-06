@@ -153,8 +153,7 @@ class _EnvWidget extends StatelessWidget {
                 ],
               ),
               Expanded(child: Container()),
-              bloc.mrClient
-                      .isPortfolioOrSuperAdmin(bloc.application!.portfolioId!)
+              bloc.mrClient.isPortfolioOrSuperAdmin(bloc.portfolio?.id)
                   ? _adminFunctions(context)
                   : Container()
             ],
@@ -361,8 +360,7 @@ Widget AddEnvWidget(BuildContext context, ManageAppBloc bloc) {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            if (bloc.mrClient
-                .isPortfolioOrSuperAdmin(bloc.application!.portfolioId!))
+            if (bloc.mrClient.isPortfolioOrSuperAdmin(bloc.portfolio?.id))
               Container(
                   padding: EdgeInsets.only(left: 8),
                   child: FHIconTextButton(

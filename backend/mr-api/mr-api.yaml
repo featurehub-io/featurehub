@@ -11,7 +11,7 @@ paths:
   /mr-api/organization/{id}/group:
     get:
       security:
-        -  bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - GroupService
       description: "Gets the superuser group for this organisation. There is no other way to ascertain which org you are dealing with"
@@ -24,12 +24,18 @@ paths:
           schema:
             type: string
       responses:
-        "200":
+        200:
           description: "The superuser group presuming the organization exists"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Group"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        404:
+          description: "not found"
   /mr-api/portfolio:
     parameters:
       - name: includeGroups
@@ -44,7 +50,7 @@ paths:
           type: boolean
     get:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - PortfolioService
       description: "Gets a list of portfolios."
@@ -66,7 +72,7 @@ paths:
           schema:
             type: string
       responses:
-        "200":
+        200:
           description: "Gets all portfolios, alphabetically sorted"
           content:
             application/json:
@@ -74,9 +80,13 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Portfolio"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
     post:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - PortfolioService
       description: "Create a new portfolio"
@@ -88,12 +98,23 @@ paths:
             schema:
               $ref: "#/components/schemas/Portfolio"
       responses:
-        "200":
+        200:
           description: "Resulting portfolio"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Portfolio"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden to create portfolio"
+        404:
+          description: "unable to create portfolio"
+        409:
+          description: "duplicate portfolio"
+
   /mr-api/portfolio/{id}:
     parameters:
       - name: id
@@ -119,21 +140,27 @@ paths:
           type: boolean
     get:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - PortfolioService
       description: "Get portfolio"
       operationId: getPortfolio
       responses:
-        "200":
+        200:
           description: "Resulting portfolio"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Portfolio"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        404:
+          description: "not found"
     put:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - PortfolioService
       description: "Update a portfolio"
@@ -145,26 +172,45 @@ paths:
             schema:
               $ref: "#/components/schemas/Portfolio"
       responses:
-        "200":
+        200:
           description: "Resulting portfolio"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Portfolio"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "no permission to update portfolio"
+        404:
+          description: "cannot find portfolio to update"
+        409:
+          description: "duplicate portfolio name"
+        422:
+          description: "updating old portfolio"
     delete:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - PortfolioService
       description: "Delete a portfolio"
       operationId: deletePortfolio
       responses:
-        "200":
+        200:
           description: "How many portfolios were deleted."
           content:
             application/json:
               schema:
                 type: boolean
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+
   /mr-api/portfolio/{id}/application:
     parameters:
       - name: id
@@ -185,7 +231,7 @@ paths:
           type: boolean
     get:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - ApplicationService
       description: "Gets a list of applications."
@@ -202,7 +248,7 @@ paths:
           schema:
             type: string
       responses:
-        "200":
+        200:
           description: "Gets all portfolios, alphabetically sorted"
           content:
             application/json:
@@ -210,9 +256,16 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Application"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        404:
+          description: "none found"
+
     post:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - ApplicationService
       description: "Create a new application"
@@ -224,12 +277,20 @@ paths:
             schema:
               $ref: "#/components/schemas/Application"
       responses:
-        "200":
+        200:
           description: "Resulting application"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Application"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        409:
+          description: "duplicates"
   /mr-api/portfolio/{id}/group:
     parameters:
       - name: id
@@ -245,7 +306,7 @@ paths:
           type: boolean
     get:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - GroupService
       description: "Gets a list of groups."
@@ -262,7 +323,7 @@ paths:
           schema:
             type: string
       responses:
-        "200":
+        200:
           description: "Gets groups, alphabetically sorted"
           content:
             application/json:
@@ -270,9 +331,17 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Group"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "not found"
     post:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - GroupService
       description: "Create a new group"
@@ -284,12 +353,21 @@ paths:
             schema:
               $ref: "#/components/schemas/Group"
       responses:
-        "200":
+        200:
           description: "Resulting group"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Group"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "no permission"
+        409:
+          description: "duplicate"
+
   /mr-api/person:
     parameters:
       - name: includeGroups
@@ -299,7 +377,7 @@ paths:
           type: boolean
     get:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - PersonService
       description: "Gets a list of matching people."
@@ -326,15 +404,21 @@ paths:
           schema:
             type: integer
       responses:
-        "200":
+        200:
           description: "Gets all persons, alphabetically sorted"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/SearchPersonResult"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "only admins can call this API"
     post:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - PersonService
       description: "Create a new person"
@@ -346,12 +430,20 @@ paths:
             schema:
               $ref: "#/components/schemas/CreatePersonDetails"
       responses:
-        "200":
+        200:
           description: "Registration url"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/RegistrationUrl"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden to only admins"
+        409:
+          description: "person already exists"
 
   /mr-api/person/{id}:
     parameters:
@@ -373,7 +465,7 @@ paths:
           type: boolean
     get:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - PersonService
       description: "Get person"
@@ -385,15 +477,21 @@ paths:
           schema:
             type: boolean
       responses:
-        "200":
+        200:
           description: "Resulting person"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Person"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        404:
+          description: "not found"
     put:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - PersonService
       description: "Update a person"
@@ -405,26 +503,42 @@ paths:
             schema:
               $ref: "#/components/schemas/Person"
       responses:
-        "200":
+        200:
           description: "Resulting person"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Person"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden to update that person"
+        404:
+          description: "person not found"
+        422:
+          description: "attempting to update old person record"
     delete:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - PersonService
       description: "Delete a person"
       operationId: deletePerson
       responses:
-        "200":
+        200:
           description: "How many people were deleted."
           content:
             application/json:
               schema:
                 type: boolean
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
   /mr-api/authentication:
     post:
       tags:
@@ -438,12 +552,19 @@ paths:
             schema:
               $ref: "#/components/schemas/PersonRegistrationDetails"
       responses:
-        "200":
+        200:
           description: "Tokenized person"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/TokenizedPerson"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        404:
+          description: "person already registered who is using this token or cannot find person to register"
+
   /mr-api/external-provider/{provider}:
     parameters:
       - name: provider
@@ -457,13 +578,17 @@ paths:
       description: "Gets a login URL for this specified provider if it is supported by the server"
       operationId: getLoginUrlForProvider
       responses:
-        "200":
+        200:
           description: "The information required to redirect"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ProviderRedirect"
-        "404":
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        404:
           description: "not found"
   /mr-api/login:
     post:
@@ -478,23 +603,36 @@ paths:
             schema:
               $ref: "#/components/schemas/UserCredentials"
       responses:
-        "200":
+        200:
           description: "Successfully logged in"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/TokenizedPerson"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "login is disabled for this instance"
+        404:
+          description: "user is not found"
   /mr-api/logout:
     get:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - AuthService
       description: "Get person by token"
       operationId: logout
       responses:
-        "204":
+        204:
           description: "Token deactivated"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+
   /mr-api/authentication/{id}/replaceTempPassword:
     parameters:
       - name: id
@@ -509,7 +647,7 @@ paths:
       description: "Replace temporary password"
       x-java-annotations: "@io.featurehub.mr.api.AllowedDuringPasswordReset"
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       operationId: replaceTempPassword
       requestBody:
         required: true
@@ -518,16 +656,23 @@ paths:
             schema:
               $ref: "#/components/schemas/PasswordReset"
       responses:
-        "200":
+        200:
           description: "Successfully reset temporary password"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/TokenizedPerson"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+
   /mr-api/authentication/{email}/expiredTokenReset:
     post:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - AuthService
       parameters:
@@ -540,12 +685,19 @@ paths:
       description: "Allows an administrator to reset a user's expired token so they can login"
       operationId: resetExpiredToken
       responses:
-        "200":
+        200:
           description: "The token of the expired person"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/RegistrationUrl"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+
   /mr-api/authentication/{id}/changePassword:
     parameters:
       - name: id
@@ -556,7 +708,7 @@ paths:
         required: true
     put:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - AuthService
       description: "Change password"
@@ -568,12 +720,19 @@ paths:
             schema:
               $ref: "#/components/schemas/PasswordUpdate"
       responses:
-        "200":
+        200:
           description: "Successfully updated password"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Person"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+
   /mr-api/authentication/{token}:
     get:
       tags:
@@ -587,12 +746,19 @@ paths:
             type: string
           required: true
       responses:
-        "200":
+        200:
           description: "Get user by token"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Person"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        404:
+          description: "not found"
+
   /mr-api/authentication/{id}/resetPassword:
     parameters:
       - name: id
@@ -605,7 +771,7 @@ paths:
       tags:
         - AuthService
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       description: "Reset password"
       operationId: resetPassword
       requestBody:
@@ -615,12 +781,21 @@ paths:
             schema:
               $ref: "#/components/schemas/PasswordReset"
       responses:
-        "200":
+        200:
           description: "Successfully reset password"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Person"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "not found"
+
   /mr-api/application/{appId}:
     parameters:
       - name: appId
@@ -636,21 +811,27 @@ paths:
           type: boolean
     get:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - ApplicationService
       description: "Get application"
       operationId: getApplication
       responses:
-        "200":
+        200:
           description: "Resulting application"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Application"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        404:
+          description: "no application"
     put:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - ApplicationService
       description: "Update an application"
@@ -662,26 +843,48 @@ paths:
             schema:
               $ref: "#/components/schemas/Application"
       responses:
-        "200":
+        200:
           description: "Resulting portfolio"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Application"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "app not found"
+        409:
+          description: "Duplicate application"
+        422:
+          description: "Trying to save old record"
     delete:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - ApplicationService
       description: "Delete an application"
       operationId: deleteApplication
       responses:
-        "200":
+        200:
           description: "Did we delete the application"
           content:
             application/json:
               schema:
                 type: boolean
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "not found"
+
+
   /mr-api/application/{appId}/rollout-strategy:
     parameters:
       - name: appId
@@ -698,7 +901,7 @@ paths:
         required: false
     get:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - RolloutStrategyService
       operationId: listApplicationRolloutStrategies
@@ -710,7 +913,7 @@ paths:
             type: boolean
           required: false
       responses:
-        "200":
+        200:
           description: "Get all strategies for this application, regardless if they are in use"
           content:
             application/json:
@@ -718,9 +921,17 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/RolloutStrategyInfo"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "not found"
     post:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - RolloutStrategyService
       operationId: createRolloutStrategy
@@ -737,10 +948,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RolloutStrategyInfo"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden to create"
+        409:
+          description: "duplicate name"
+
   /mr-api/application/{appId}/rollout-strategy-validation:
     post:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - RolloutStrategyService
       description: "Provide server validation responses for this group of rollout strategies"
@@ -759,16 +979,17 @@ paths:
             schema:
               $ref: "#/components/schemas/RolloutStrategyValidationRequest"
       responses:
-        "200":
+        200:
           description: "validation results"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/RolloutStrategyValidationResponse"
-        "400":
+        400:
           description: "invalid body"
-        "401":
+        401:
           description: "no permission"
+
   /mr-api/application/{appId}/rollout-strategy/{strategyId}:
     parameters:
       - name: appId
@@ -791,22 +1012,28 @@ paths:
         required: false
     get:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - RolloutStrategyService
       operationId: getRolloutStrategy
       responses:
-        "200":
+        200:
           description: "The rollout strategy for this application"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/RolloutStrategyInfo"
-        "404":
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
           description: "If there is no rollout strategy by that id or name"
     put:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - RolloutStrategyService
       operationId: updateRolloutStrategy
@@ -817,25 +1044,43 @@ paths:
             schema:
               $ref: "#/components/schemas/RolloutStrategy"
       responses:
-        "200":
+        200:
           description: "The created rollout strategy for this application"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/RolloutStrategyInfo"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "not found"
+        409:
+          description: "duplicate strategy name"
     delete:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - RolloutStrategyService
       operationId: deleteRolloutStrategy
       responses:
-        "200":
+        200:
           description: "The deleted rollout strategy for this application including its archive date"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/RolloutStrategyInfo"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "strategy not found, could not delete"
   /mr-api/application/{id}/features:
     parameters:
       - name: id
@@ -846,13 +1091,13 @@ paths:
         required: true
     get:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - FeatureService
       description: "get all features available in this application"
       operationId: getAllFeaturesForApplication
       responses:
-        "200":
+        200:
           description: "Gets all features, alphabetically sorted"
           content:
             application/json:
@@ -860,9 +1105,15 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Feature"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
     post:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - FeatureService
       description: "add a new feature to this application, returns all features."
@@ -874,7 +1125,7 @@ paths:
             schema:
               $ref: "#/components/schemas/Feature"
       responses:
-        "200":
+        200:
           description: "All features, alphabetically sorted"
           content:
             application/json:
@@ -882,6 +1133,12 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Feature"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        409:
+          description: "Duplicate feature"
   /mr-api/application/{id}/features/{key}:
     parameters:
       - name: id
@@ -898,21 +1155,27 @@ paths:
         required: true
     get:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - FeatureService
       description: "get an individual feature"
       operationId: getFeatureByKey
       responses:
-        "200":
+        200:
           description: "All features, alphabetically sorted"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Feature"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        404:
+          description: "not found"
     put:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - FeatureService
       description: "updates all named features in this application, returns all features."
@@ -924,7 +1187,7 @@ paths:
             schema:
               $ref: "#/components/schemas/Feature"
       responses:
-        "200":
+        200:
           description: "All features, alphabetically sorted"
           content:
             application/json:
@@ -932,15 +1195,25 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Feature"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        404:
+          description: "not found"
+        409:
+          description: "duplicate feature"
+        422:
+          description: "other feature updated already"
     delete:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - FeatureService
       description: "updates all named features in this application, returns all features."
       operationId: deleteFeatureForApplication
       responses:
-        "200":
+        200:
           description: "All features, alphabetically sorted"
           content:
             application/json:
@@ -948,6 +1221,12 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Feature"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        404:
+          description: "none found"
   /mr-api/application/{id}/feature-environments/{key}:
     parameters:
       - name: id
@@ -964,13 +1243,13 @@ paths:
         required: true
     get:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - FeatureService
       description: "Get a list of all environments and features and their values that this user has access to"
       operationId: getAllFeatureValuesByApplicationForKey
       responses:
-        "200":
+        200:
           description: "Gets all feature values for all environments for an application"
           content:
             application/json:
@@ -978,9 +1257,16 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/FeatureEnvironment"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        404:
+          description: "not found"
+
     put:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - FeatureService
       description: "Update a list of all environments and features and their values that this user has access to"
@@ -1001,7 +1287,7 @@ paths:
               items:
                 $ref: "#/components/schemas/FeatureValue"
       responses:
-        "200":
+        200:
           description: "Gets all feature values for all environments for an application"
           content:
             application/json:
@@ -1009,6 +1295,10 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/FeatureEnvironment"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
         409:
           description: "Conflict in trying to save, someone else updated a record first"
         422:
@@ -1027,18 +1317,25 @@ paths:
         required: true
     get:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - FeatureService
       description: "Get a list of all environments and features and their values that this user has access to"
       operationId: findAllFeatureAndFeatureValuesForEnvironmentsByApplication
       responses:
-        "200":
+        200:
           description: "Gets all portfolios, alphabetically sorted"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationFeatureValues"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        404:
+          description: "not found"
+
   /mr-api/application/{id}/environment-ordering:
     parameters:
       - name: id
@@ -1049,7 +1346,7 @@ paths:
         required: true
     post:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - EnvironmentService
       description: "this api is designed to update the ordering of environments. it will error on circular references or environments that don't exist."
@@ -1063,7 +1360,7 @@ paths:
               items:
                 $ref: "#/components/schemas/Environment"
       responses:
-        "200":
+        200:
           description: "returns all environments with no particular sort order."
           content:
             application/json:
@@ -1071,6 +1368,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Environment"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "not found"
   /mr-api/application/{id}/environment:
     parameters:
       - name: id
@@ -1081,7 +1386,7 @@ paths:
         required: true
     get:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - EnvironmentService
       description: "Gets a list of environments."
@@ -1108,7 +1413,7 @@ paths:
           schema:
             type: boolean
       responses:
-        "200":
+        200:
           description: "Gets all portfolios, alphabetically sorted"
           content:
             application/json:
@@ -1116,9 +1421,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Environment"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+
     post:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - EnvironmentService
       description: "Create a new environment"
@@ -1130,12 +1440,23 @@ paths:
             schema:
               $ref: "#/components/schemas/Environment"
       responses:
-        "200":
+        200:
           description: "Resulting environment"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Environment"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "application not found"
+        409:
+          description: "duplicate environment"
+
   /mr-api/environment/{eid}:
     parameters:
       - name: eid
@@ -1167,21 +1488,27 @@ paths:
           schema:
             type: boolean
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - EnvironmentService
       description: "Get environment"
       operationId: getEnvironment
       responses:
-        "200":
+        200:
           description: "Resulting environment"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Environment"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
     put:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - EnvironmentService
       description: "Update an environment"
@@ -1193,26 +1520,41 @@ paths:
             schema:
               $ref: "#/components/schemas/Environment"
       responses:
-        "200":
+        200:
           description: "Resulting portfolio"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Environment"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        404:
+          description: "No environment found to update TODO: fix, should be 404 or 403"
+        409:
+          description: "Duplicate environment"
+        422:
+          description: "Updating old environment"
     delete:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - EnvironmentService
       description: "Delete an environment"
       operationId: deleteEnvironment
       responses:
-        "200":
+        200:
           description: "Did we delete the environment."
           content:
             application/json:
               schema:
                 type: boolean
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+
   /mr-api/features/{eid}:
     parameters:
       - name: eid
@@ -1223,21 +1565,27 @@ paths:
         required: true
     get:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - EnvironmentFeatureService
       description: "Get all features for this environment"
       operationId: getFeaturesForEnvironment
       responses:
-        "200":
+        200:
           description: "Resulting features"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/EnvironmentFeaturesResult"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
     put:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - EnvironmentFeatureService
       description: "Update all features for this environment"
@@ -1251,7 +1599,7 @@ paths:
               items:
                 $ref: "#/components/schemas/FeatureValue"
       responses:
-        "200":
+        200:
           description: "Resulting features"
           content:
             application/json:
@@ -1259,6 +1607,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/FeatureValue"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "Forbidden, no permission to change role"
+        404:
+          description: "not found"
         409:
           description: "Conflict in trying to save, someone else updated a record first"
         422:
@@ -1283,21 +1639,29 @@ paths:
         required: true
     get:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - EnvironmentFeatureService
       description: "Update a specific feature in this environment."
       operationId: getFeatureForEnvironment
       responses:
-        "200":
+        200:
           description: "Resulting feature"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/FeatureValue"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "not found"
     put:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - EnvironmentFeatureService
       description: "Update a specific feature in this environment."
@@ -1309,12 +1673,18 @@ paths:
             schema:
               $ref: "#/components/schemas/FeatureValue"
       responses:
-        "200":
+        200:
           description: "Resulting features"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/FeatureValue"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
         409:
           description: "Conflict in trying to save, someone else updated a record first"
         422:
@@ -1325,7 +1695,7 @@ paths:
                 $ref: "#/components/schemas/RolloutStrategyValidationResponse"
     post:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - EnvironmentFeatureService
       description: "Create a specific feature in this environment."
@@ -1337,12 +1707,20 @@ paths:
             schema:
               $ref: "#/components/schemas/FeatureValue"
       responses:
-        "200":
+        200:
           description: "Resulting features"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/FeatureValue"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "No permission to change role"
+        404:
+          description: "No feature for that environment found"
         409:
           description: "Conflict in trying to save, someone else updated a record first"
         422:
@@ -1353,14 +1731,22 @@ paths:
                 $ref: "#/components/schemas/RolloutStrategyValidationResponse"
     delete:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - EnvironmentFeatureService
       description: "Delete a specific feature in this environment."
       operationId: deleteFeatureForEnvironment
       responses:
-        "204":
+        204:
           description: "No data returned."
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "not found"
   /mr-api/group/{gid}:
     parameters:
       - name: gid
@@ -1381,21 +1767,35 @@ paths:
           type: boolean
     get:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - GroupService
+      parameters:
+        - name: byApplicationId
+          in: query
+          schema:
+            type: string
+            format: uuid
       description: "Get group"
       operationId: getGroup
       responses:
-        "200":
+        200:
           description: "Resulting group"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Group"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "not found"
     put:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - GroupService
       description: "Update a group"
@@ -1423,26 +1823,46 @@ paths:
             schema:
               $ref: "#/components/schemas/Group"
       responses:
-        "200":
+        200:
           description: "Resulting group"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Group"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "not found"
+        409:
+          description: "duplicate user or duplicate group"
+        422:
+          description: "version conflict"
     delete:
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       tags:
         - GroupService
       description: "Delete a group"
       operationId: deleteGroup
       responses:
-        "200":
+        200:
           description: "Did we delete the group?"
           content:
             application/json:
               schema:
                 type: boolean
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "not found"
   /mr-api/group/{gid}/person/{pId}:
     parameters:
       - name: gid
@@ -1466,30 +1886,46 @@ paths:
       tags:
         - GroupService
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       description: "Add a person to a group"
       operationId: addPersonToGroup
       responses:
-        "200":
+        200:
           description: "Resulting group"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Group"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "group or person not found"
     delete:
       tags:
         - GroupService
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       description: "Remove a person from a group"
       operationId: deletePersonFromGroup
       responses:
-        "200":
+        200:
           description: "Resulting group"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Group"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "not found"
   /mr-api/portfolio/{id}/service-account:
     parameters:
       - name: id
@@ -1507,7 +1943,7 @@ paths:
       tags:
         - ServiceAccountService
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       description: "Get list of all service accounts this user can see"
       parameters:
         - name: filter
@@ -1527,7 +1963,7 @@ paths:
             type: boolean
       operationId: searchServiceAccountsInPortfolio
       responses:
-        "200":
+        200:
           description: "List of service accounts found"
           content:
             application/json:
@@ -1535,11 +1971,15 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ServiceAccount"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
     post:
       tags:
         - ServiceAccountService
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       description: "Add a new service account"
       operationId: createServiceAccountInPortfolio
       requestBody:
@@ -1549,12 +1989,20 @@ paths:
             schema:
               $ref: "#/components/schemas/ServiceAccount"
       responses:
-        "200":
+        200:
           description: "Newly created service account"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ServiceAccount"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        409:
+          description: "duplicate"
   /mr-api/service-account/{id}:
     parameters:
       - name: id
@@ -1572,21 +2020,35 @@ paths:
       tags:
         - ServiceAccountService
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       description: "Get service account by id or 'self' if authenticated as this service account"
-      operationId: get
+      operationId: getServiceAccount
+      parameters:
+        - name: byApplicationId
+          in: query
+          schema:
+            type: string
+            format: uuid
       responses:
-        "200":
+        200:
           description: "Details of service account"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ServiceAccount"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "not found"
     put:
       tags:
         - ServiceAccountService
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       requestBody:
         required: true
         content:
@@ -1594,34 +2056,53 @@ paths:
             schema:
               $ref: "#/components/schemas/ServiceAccount"
       description: "Update this service account, overwiting any attached environment permissions this user has access to"
-      operationId: update
+      operationId: updateServiceAccount
       responses:
-        "200":
+        200:
           description: "Details of service account"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ServiceAccount"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "trying to update SA that doesn't exist"
+        422:
+          description: "trying to update old version"
+
     delete:
       tags:
         - ServiceAccountService
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       description: "Delete this service account, cascade removes all permissions"
-      operationId: delete
+      operationId: deleteServiceAccount
       responses:
-        "200":
+        200:
           description: "Details of service account"
           content:
             application/json:
               schema:
                 type: boolean
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "not found"
   /mr-api/service-account/{id}/reset-api-key:
     post:
       tags:
         - ServiceAccountService
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       description: "Causes a new API Key to be generated. Ensure you confirm this with the user."
       operationId: resetApiKey
       parameters:
@@ -1632,12 +2113,20 @@ paths:
           schema:
             type: string
       responses:
-        "200":
+        200:
           description: "Details of service account"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ServiceAccount"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        403:
+          description: "forbidden"
+        404:
+          description: "not found"
   /mr-api/initialize:
     get:
       tags:
@@ -1645,13 +2134,17 @@ paths:
       description: "Ping Feature Hub"
       operationId: isInstalled
       responses:
-        "200":
+        200:
           description: "Hello from Feature Hub"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/SetupResponse"
-        "404":
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        404:
           "description": "Feature Hub not found"
           content:
             application/json:
@@ -1663,14 +2156,19 @@ paths:
       description: "Setup site admin"
       operationId: setupSiteAdmin
       responses:
-        "200":
+        200:
           description: "Successfully setup site admin"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/TokenizedPerson"
-        "400":
-          description: "Invalid input"
+        400:
+          description: "Bad Request"
+        401:
+          description: "no permission"
+        409:
+          description: "duplicate"
+
       requestBody:
         content:
           application/json:
@@ -1680,7 +2178,7 @@ paths:
         required: true
 components:
   securitySchemes:
-    bearerAuth:            # arbitrary name for the security scheme
+    bearerAuth: # arbitrary name for the security scheme
       type: http
       scheme: bearer
       bearerFormat: JWT    # optional, arbitrary value for documentation purposes

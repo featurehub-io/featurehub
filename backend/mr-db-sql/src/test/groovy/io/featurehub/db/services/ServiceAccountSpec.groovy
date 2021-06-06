@@ -2,6 +2,7 @@ package io.featurehub.db.services
 
 import io.ebean.DB
 import io.ebean.Database
+import io.featurehub.db.FilterOptType
 import io.featurehub.db.api.EnvironmentApi
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
@@ -11,6 +12,8 @@ import io.featurehub.db.model.DbEnvironment
 import io.featurehub.db.model.DbOrganization
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
+import io.featurehub.mr.model.Application
+import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.EnvironmentGroupRole
 import io.featurehub.mr.model.RoleType
 import io.featurehub.db.model.query.QDbOrganization
@@ -29,6 +32,8 @@ class ServiceAccountSpec extends BaseSpec {
   private static final Logger log = LoggerFactory.getLogger(ServiceAccountSpec.class)
   @Shared PersonSqlApi personSqlApi
   @Shared ServiceAccountSqlApi sapi
+  @Shared ApplicationSqlApi applicationSqlApi
+  @Shared EnvironmentSqlApi environmentSqlApi
   @Shared DbPortfolio portfolio1
   @Shared DbApplication application1
   @Shared DbEnvironment environment1
@@ -41,7 +46,8 @@ class ServiceAccountSpec extends BaseSpec {
     baseSetupSpec()
 
     personSqlApi = new PersonSqlApi(database, convertUtils, archiveStrategy)
-
+    environmentSqlApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
+    applicationSqlApi = new ApplicationSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
     sapi = new ServiceAccountSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
 
     // now set up the environments we need
@@ -69,6 +75,30 @@ class ServiceAccountSpec extends BaseSpec {
         new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(environment3.id.toString()),
       ]
     ), false, false, true, Opts.empty())
+  }
+
+  def "service ACL filtering works by application"() {
+    given: "i have a second application"
+      def app2 = applicationSqlApi.createApplication(portfolio1Id, new Application().name("acl-sa-test-filter").description("acl test filter"), superPerson)
+    and: "i have an environment in the second application"
+      def env2 = environmentSqlApi.create(new Environment().name("acl-sa-test-filter-env").description("acl-test-filter-env"), app2, superPerson)
+    and: "i create a new service account"
+      def sa = new ServiceAccount().name('sa-acl-filter').description('sa-acl-filter')
+          .permissions([
+            new ServiceAccountPermission()
+              .environmentId(environment1.id.toString())
+              .permissions([RoleType.LOCK]),
+            new ServiceAccountPermission()
+              .environmentId(env2.id)
+              .permissions([RoleType.CHANGE_VALUE])
+          ])
+      sa = sapi.create(portfolio1Id, superPerson, sa, Opts.opts(FillOpts.Permissions))
+    when: "i query for the service account filtering by the new app"
+      def saFiltered = sapi.get(sa.id, Opts.opts(FillOpts.Permissions).add(FilterOptType.Application, UUID.fromString(app2.id)))
+    then:
+      sa.permissions.size() == 2
+      saFiltered.permissions.size() == 1
+      saFiltered.permissions[0].permissions.containsAll([RoleType.READ, RoleType.CHANGE_VALUE])
   }
 
   def "i can create a service account with no environments"() {
@@ -144,56 +174,99 @@ class ServiceAccountSpec extends BaseSpec {
       thrown ServiceAccountApi.DuplicateServiceAccountException
   }
 
+  def "i can create two service accounts for an environment"() {
+    given: "i have an environment"
+      def app1 = convertUtils.toApplication(application1, Opts.empty())
+      def env1 = environmentApi.create(new Environment().description('app-twosa-env1').name('app-twosa-env1'), app1, superPerson)
+    and: "i have a service account"
+      def sa1 = sapi.create(portfolio1Id, superPerson, new ServiceAccount().name("twosa-sa-1").description("sa-1 test").permissions(
+        [new ServiceAccountPermission()
+           .permissions([RoleType.READ, RoleType.CHANGE_VALUE])
+           .environmentId(env1.id),
+        ]
+      ), Opts.empty())
+    and: "i have another service account"
+      def sa2 = sapi.create(portfolio1Id, superPerson, new ServiceAccount().name("twosa-sa-2").description("sa-2 test").permissions(
+        [new ServiceAccountPermission()
+           .permissions([RoleType.LOCK])
+           .environmentId(env1.id),
+        ]
+      ), Opts.empty())
+    when: "i ask for the environment with its permissions"
+      def env1Details = environmentApi.get(env1.id, Opts.opts(FillOpts.ServiceAccounts), superPerson)
+    then: "i will see it has two sets of service accounts and permissions attached"
+      env1Details.serviceAccountPermission.size() == 2
+      env1Details.serviceAccountPermission.find({it.serviceAccount.id == sa1.id})?.environmentId == env1Details.id
+      env1Details.serviceAccountPermission.find({it.serviceAccount.id == sa1.id})?.permissions?.containsAll([RoleType.READ, RoleType.CHANGE_VALUE])
+      env1Details.serviceAccountPermission.find({it.serviceAccount.id == sa2.id})?.environmentId == env1Details.id
+      env1Details.serviceAccountPermission.find({it.serviceAccount.id == sa2.id})?.permissions?.containsAll([RoleType.READ, RoleType.LOCK])
+  }
+
   def "i can create a service account with permissions in two environments, then update it to remove one environment and change permission on other"() {
-    given: "i have a service account with two environments"
+    given: "i have three environments"
+      def app1 = convertUtils.toApplication(application1, Opts.empty())
+      def env1 = environmentApi.create(new Environment().description('app-sa1-env1').name('app-sa1-env1'), app1, superPerson)
+      def env2 = environmentApi.create(new Environment().description('app-sa1-env2').name('app-sa1-env2'), app1, superPerson)
+      def env3 = environmentApi.create(new Environment().description('app-sa1-env3').name('app-sa1-env3'), app1, superPerson)
+    and: "i have a service account with two environments"
       def sa = new ServiceAccount().name("sa-1").description("sa-1 test").permissions(
         [new ServiceAccountPermission()
            .permissions([RoleType.READ, RoleType.CHANGE_VALUE])
-          .environmentId(environment1.id.toString()),
+          .environmentId(env1.id),
           new ServiceAccountPermission()
           .permissions([RoleType.LOCK, RoleType.UNLOCK])
-          .environmentId(environment2.id.toString())
+          .environmentId(env2.id)
         ]
       )
     when: "i save it"
-      sapi.create(portfolio1Id, superPerson, sa, Opts.empty())
+      def createdServiceAccount = sapi.create(portfolio1Id, superPerson, sa, Opts.empty())
     and: "i get the result"
-      def result = sapi.search(portfolio1Id, "sa-1", application1.id.toString(), superPerson, Opts.opts(FillOpts.Permissions)).find({it.name == 'sa-1' && sa.description == 'sa-1 test'})
+      // compare by name to ensure the SA was saved with the right name and desc
+      def result = sapi.search(portfolio1Id, "sa-1", app1.id, superPerson, Opts.opts(FillOpts.Permissions)).find({it.name == 'sa-1' && sa.description == 'sa-1 test'})
     and: "i re-get the two environments with extra data"
-      def newEnv1 = environmentApi.get(environment1.id.toString(), Opts.opts(FillOpts.ServiceAccounts, FillOpts.SdkURL), superPerson)
-      def newEnv2 = environmentApi.get(environment2.id.toString(), Opts.opts(FillOpts.ServiceAccounts, FillOpts.SdkURL), superPerson)
-      log.info("env 1 sdk url is {}", newEnv1.serviceAccountPermission.first().sdkUrlServerEval)
-      log.info("env 1 sdk url is {}", newEnv1.serviceAccountPermission.first().sdkUrlClientEval)
+      def newEnv1 = environmentApi.get(env1.id, Opts.opts(FillOpts.ServiceAccounts, FillOpts.SdkURL), superPerson)
+      def newEnv2 = environmentApi.get(env2.id, Opts.opts(FillOpts.ServiceAccounts, FillOpts.SdkURL), superPerson)
     and: "i check the result for the two environments"
-      def permE1 = result.permissions.find({it.environmentId == environment1.id.toString()})
-      def permE2 = result.permissions.find({it.environmentId == environment2.id.toString()})
+      def permE1 = result.permissions.find({it.environmentId == env1.id})
+      def permE2 = result.permissions.find({it.environmentId == env2.id})
     and: "then update the service account to remove environment 2 and remove toggle-enabled"
-      def updated = result.copy()
-      updated.description("sa-2 test")
-      updated.permissions.remove(updated.permissions.find({it.environmentId == environment2.id.toString()}))
-      updated.permissions[0].permissions = [RoleType.CHANGE_VALUE]
-      updated.permissions.add(new ServiceAccountPermission()
-        .environmentId(environment3.id.toString())
-        .permissions([RoleType.LOCK, RoleType.UNLOCK]))
-      sapi.update(updated.id, superPerson, updated, Opts.empty())
+      def updated = new ServiceAccount()
+        .version(createdServiceAccount.version)
+        .description('sa-2 test')
+        .permissions(
+        [new ServiceAccountPermission()
+           .permissions([RoleType.CHANGE_VALUE])
+           .environmentId(env1.id),
+         new ServiceAccountPermission()
+           .environmentId(env2.id),
+         new ServiceAccountPermission()
+           .permissions([RoleType.LOCK, RoleType.UNLOCK])
+           .environmentId(env3.id)
+        ]
+      )
+
+      def secondUpdate = sapi.update(createdServiceAccount.id, superPerson, updated, Opts.opts(FillOpts.Permissions))
     and: "search for the result"
-      def updatedResult = sapi.search(portfolio1Id, "sa-1", application1.id.toString(), superPerson, Opts.opts(FillOpts.Permissions)).find({it.name == 'sa-1'})
-      def upd1 = updatedResult.permissions.find({it.environmentId == environment1.id.toString()})
-      def upd2 = updatedResult.permissions.find({it.environmentId == environment3.id.toString()})
+      def updatedResult = sapi.search(portfolio1Id, "sa-1", application1.id.toString(), superPerson, Opts.opts(FillOpts.Permissions)).find({it.id == createdServiceAccount.id})
+
+      def upd1 = updatedResult.permissions.find({it.environmentId == env1.id})
+      def upd2 = updatedResult.permissions.find({it.environmentId == env2.id})
+      def upd3 = updatedResult.permissions.find({it.environmentId == env3.id})
       def getted = sapi.get(updatedResult.id, Opts.opts(FillOpts.Permissions))
     then:
+      updatedResult.id == createdServiceAccount.id
       result.permissions.size() == 2
-      permE1.permissions.intersect([RoleType.READ, RoleType.CHANGE_VALUE]).size() == 2
-      permE1.environmentId == environment1.id.toString()
-      permE2.permissions == [RoleType.LOCK, RoleType.UNLOCK, RoleType.READ]
-      permE2.environmentId == environment2.id.toString()
-      upd1 != null
-      upd2 != null
-      upd1.permissions == [RoleType.CHANGE_VALUE, RoleType.READ]
-      upd2.permissions == [RoleType.LOCK, RoleType.UNLOCK, RoleType.READ]
+      permE1.permissions.containsAll([RoleType.CHANGE_VALUE, RoleType.READ])
+      permE1.environmentId == env1.id
+      permE2.permissions.containsAll([RoleType.LOCK, RoleType.UNLOCK, RoleType.READ]) // READ should be implicit
+      permE2.environmentId == env2.id
+      upd1?.permissions?.containsAll([RoleType.CHANGE_VALUE, RoleType.READ])
+      upd2 == null
+      upd3?.permissions?.containsAll([RoleType.LOCK, RoleType.UNLOCK, RoleType.READ])
       getted.permissions.each { p -> assert updatedResult.permissions.find(p1 -> p1.id == p.id) == p}
       updatedResult.description == 'sa-2 test'
-      newEnv1.serviceAccountPermission.size() == 2
+    // now check it from the environment perspective
+      newEnv1.serviceAccountPermission.size() == 1
       newEnv2.serviceAccountPermission.size() == 1
       newEnv1.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'})
       newEnv2.serviceAccountPermission.find({ it.serviceAccount.name == 'sa-1'})

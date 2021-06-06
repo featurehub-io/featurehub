@@ -56,7 +56,7 @@ public class RolloutStrategyResource implements RolloutStrategyServiceDelegate {
       strategy = rolloutStrategyApi.createStrategy(appId, rolloutStrategy, person,
         new Opts().add(FillOpts.SimplePeople, holder.includeWhoChanged));
     } catch (RolloutStrategyApi.DuplicateNameException e) {
-      throw new WebApplicationException("Duplicate name", 422);
+      throw new WebApplicationException("Duplicate name", 409);
     }
 
     if (strategy == null) {
@@ -71,8 +71,15 @@ public class RolloutStrategyResource implements RolloutStrategyServiceDelegate {
                                                    SecurityContext securityContext) {
     applicationUtils.featureAdminCheck(securityContext, appId);
     Person person = authManager.from(securityContext);
-    return rolloutStrategyApi.archiveStrategy(appId, strategyId, person, new Opts().add(FillOpts.SimplePeople,
+    final RolloutStrategyInfo rolloutStrategyInfo = rolloutStrategyApi.archiveStrategy(appId, strategyId, person,
+      new Opts().add(FillOpts.SimplePeople,
       holder.includeWhoChanged));
+
+    if (rolloutStrategyInfo == null) {
+      throw new NotFoundException();
+    }
+
+    return rolloutStrategyInfo;
   }
 
   @Override
@@ -121,7 +128,7 @@ public class RolloutStrategyResource implements RolloutStrategyServiceDelegate {
         new Opts().add(FillOpts.SimplePeople, holder.includeWhoChanged));
 
     } catch (RolloutStrategyApi.DuplicateNameException e) {
-      throw new WebApplicationException("Duplicate name", 422);
+      throw new WebApplicationException("Duplicate name", 409);
     }
 
     if (strategy == null) {

@@ -1,6 +1,6 @@
 package io.featurehub.mr.resources;
 
-import io.featurehub.db.api.ApplicationApi;
+import io.featurehub.db.FilterOptType;
 import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.OptimisticLockingException;
 import io.featurehub.db.api.Opts;
@@ -21,6 +21,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -29,13 +30,11 @@ public class ServiceAccountResource implements ServiceAccountServiceDelegate {
   private static final Logger log = LoggerFactory.getLogger(ServiceAccountResource.class);
   private final AuthManagerService authManager;
   private final ServiceAccountApi serviceAccountApi;
-  private final ApplicationApi applicationApi;
 
   @Inject
-  public ServiceAccountResource(AuthManagerService authManager, ServiceAccountApi serviceAccountApi, ApplicationApi applicationApi) {
+  public ServiceAccountResource(AuthManagerService authManager, ServiceAccountApi serviceAccountApi) {
     this.authManager = authManager;
     this.serviceAccountApi = serviceAccountApi;
-    this.applicationApi = applicationApi;
   }
 
   @Override
@@ -55,7 +54,7 @@ public class ServiceAccountResource implements ServiceAccountServiceDelegate {
   }
 
   @Override
-  public Boolean delete(String id, DeleteHolder holder, SecurityContext securityContext) {
+  public Boolean deleteServiceAccount(String id, DeleteServiceAccountHolder holder, SecurityContext securityContext) {
     Person person = authManager.from(securityContext);
 
     if (authManager.isPortfolioAdmin(id, person) || authManager.isOrgAdmin(person)) {
@@ -70,13 +69,14 @@ public class ServiceAccountResource implements ServiceAccountServiceDelegate {
   }
 
   @Override
-  public ServiceAccount get(String id, GetHolder holder, SecurityContext securityContext) {
+  public ServiceAccount getServiceAccount(String id, GetServiceAccountHolder holder, SecurityContext securityContext) {
     if ("self".equals(id)) {
       ServiceAccount account = authManager.serviceAccount(securityContext);
       id = account.getId();
     }
 
-    ServiceAccount info = serviceAccountApi.get(id, new Opts().add(FillOpts.Permissions, holder.includePermissions));
+    ServiceAccount info = serviceAccountApi.get(id,
+      new Opts().add(FillOpts.Permissions, holder.includePermissions).add(FilterOptType.Application, holder.byApplicationId));
 
     if (info == null) {
       throw new NotFoundException();
@@ -126,11 +126,13 @@ public class ServiceAccountResource implements ServiceAccountServiceDelegate {
       return new ArrayList<>();
     }
 
+    serviceAccounts.sort(Comparator.comparing(ServiceAccount::getName));
+
     return serviceAccounts;
   }
 
   @Override
-  public ServiceAccount update(String serviceAccountId, ServiceAccount serviceAccount, UpdateHolder holder, SecurityContext securityContext) {
+  public ServiceAccount updateServiceAccount(String serviceAccountId, ServiceAccount serviceAccount, UpdateServiceAccountHolder holder, SecurityContext securityContext) {
     Person person = authManager.from(securityContext);
 
     Set<String> envIds =

@@ -58,6 +58,8 @@ paths:
           description: "no permission to environment"
         "404":
           description: "no such application"
+        422:
+          description: "update invalid, old"
 components:
   schemas:
     HiddenEnvironments:

@@ -23,6 +23,7 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import java.util.ArrayList;
 import java.util.List;
 
 public class FeatureResource implements FeatureServiceDelegate {
@@ -123,7 +124,14 @@ public class FeatureResource implements FeatureServiceDelegate {
       throw new WebApplicationException(Response.status(422).entity(bad.failure).build()); // can't do anything with it
     }
 
-    return featureApi.getFeatureValuesForApplicationForKeyForPerson(id, key, person);
+    final List<FeatureEnvironment> featureValues =
+      featureApi.getFeatureValuesForApplicationForKeyForPerson(id, key, person);
+
+    if (featureValues == null) {
+      return new ArrayList<>();
+    }
+
+    return featureValues;
   }
 
   @Override

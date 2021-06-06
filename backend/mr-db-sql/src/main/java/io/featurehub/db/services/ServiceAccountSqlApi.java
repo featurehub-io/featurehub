@@ -15,6 +15,7 @@ import io.featurehub.db.model.DbPortfolio;
 import io.featurehub.db.model.DbServiceAccount;
 import io.featurehub.db.model.DbServiceAccountEnvironment;
 import io.featurehub.db.model.query.QDbAcl;
+import io.featurehub.db.model.query.QDbServiceAccountEnvironment;
 import io.featurehub.mr.model.RoleType;
 import io.featurehub.db.model.query.QDbEnvironment;
 import io.featurehub.db.model.query.QDbServiceAccount;
@@ -30,6 +31,8 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -101,48 +104,61 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
           throw new OptimisticLockingException();
         }
 
-        // lets see what environments they want to retain (or add)
-        Map<String, DbEnvironment> envs = environmentMap(serviceAccount);
-        Map<String, ServiceAccountPermission> perms =  // environment id  -> SAP mapping
-          serviceAccount.getPermissions().stream().collect(Collectors.toMap(ServiceAccountPermission::getEnvironmentId, Function.identity()));
+        Map<UUID, ServiceAccountPermission> updatedEnvironments = new HashMap<>();
+        List<UUID> newEnvironments = new ArrayList<>();
 
-        List<DbServiceAccountEnvironment> deleteEnvironments = new ArrayList<>();
-
-        // we end up with `envs` holding the environments this update needs and
-        // deleteEnvironments containing those we should remove from this service account
-        List<EnvironmentChange> changedEnvironments = new ArrayList<>();
-        for (DbServiceAccountEnvironment sae : sa.getServiceAccountEnvironments()) {
-          DbEnvironment env = envs.remove(sae.getEnvironment().getId().toString());
-          if (env == null) {
-            changedEnvironments.add(new EnvironmentChange(sae.getEnvironment()));
-            deleteEnvironments.add(sae);
-          } else { // we are keeping this one, so find it again in the SA and copy the new permissions in
-            ServiceAccountPermission perm = perms.get(env.getId().toString());
-            final String newPerms = convertPermissionsToString(perm.getPermissions());
-            if (!newPerms.equals(sae.getPermissions())) {
-              changedEnvironments.add(new EnvironmentChange(env));
-            }
-            sae.setPermissions(newPerms);
-          }
-        }
-
-        database.deleteAll(deleteEnvironments);
-
-        // and now add all the new ones, just like create
-        envs.values().forEach(env -> {
-          String envId = env.getId().toString();
-          ServiceAccountPermission perm = perms.get(envId);
-          changedEnvironments.add(new EnvironmentChange(env));
-          sa.getServiceAccountEnvironments().add(
-            new DbServiceAccountEnvironment.Builder()
-              .environment(envs.get(envId))
-              .permissions(convertPermissionsToString(perm.getPermissions()))
-              .build());
+        serviceAccount.getPermissions().forEach(perm -> {
+          Conversions.uuid(perm.getEnvironmentId()).ifPresent(uuid -> {
+            updatedEnvironments.put(uuid, perm);
+            newEnvironments.add(uuid);
+          });
         });
 
-        sa.setDescription(serviceAccount.getDescription());
+        List<DbServiceAccountEnvironment> deletePerms = new ArrayList<>();
+        List<DbServiceAccountEnvironment> updatePerms = new ArrayList<>();
+        List<DbServiceAccountEnvironment> createPerms = new ArrayList<>();
 
-        update(sa, changedEnvironments);
+        // we drop out of this knowing which perms to delete and update
+        new QDbServiceAccountEnvironment().environment.id.in(updatedEnvironments.keySet()).serviceAccount.eq(sa).findEach(upd -> {
+          final UUID envId = upd.getEnvironment().getId();
+
+          final ServiceAccountPermission perm = updatedEnvironments.get(envId);
+
+          newEnvironments.remove(envId);
+
+          if (perm.getPermissions() == null || perm.getPermissions().isEmpty()) {
+            deletePerms.add(upd);
+          } else {
+            final String newPerms = convertPermissionsToString(perm.getPermissions());
+            if (!newPerms.equals(upd.getPermissions())) {
+              upd.setPermissions(newPerms);
+              updatePerms.add(upd);
+            }
+          }
+        });
+
+        // now we need to know which perms to add
+        newEnvironments.forEach(envId -> {
+          final ServiceAccountPermission perm = updatedEnvironments.get(envId);
+          if (perm.getPermissions() != null && !perm.getPermissions().isEmpty()) {
+            DbEnvironment env = convertUtils.uuidEnvironment(envId, Opts.opts(FillOpts.ApplicationIds,
+              FillOpts.PortfolioIds));
+
+            if (env != null && env.getParentApplication().getPortfolio().getId().equals(sa.getPortfolio().getId())) {
+              createPerms.add(new DbServiceAccountEnvironment.Builder()
+              .environment(env)
+              .serviceAccount(sa)
+              .permissions(convertPermissionsToString(perm.getPermissions()))
+              .build());
+            }
+          }
+        });
+
+        if (serviceAccount.getDescription() != null) {
+          sa.setDescription(serviceAccount.getDescription());
+        }
+
+        updateServiceAccount(sa, deletePerms, updatePerms, createPerms);
 
         return convertUtils.toServiceAccount(sa, opts);
       }
@@ -211,7 +227,8 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
       if (sa != null) {
         sa.setApiKeyServerEval(newServerEvalKey());
         sa.setApiKeyClientEval(newClientEvalKey());
-        update(sa, null);
+        updateOnlyServiceAccount(sa);
+        asyncUpdateCache(sa, null);
         return convertUtils.toServiceAccount(sa, Opts.empty());
       }
     }
@@ -255,7 +272,7 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
     DbPortfolio portfolio = convertUtils.uuidPortfolio(portfolioId);
 
     if (who != null && portfolio != null) {
-      List<EnvironmentChange> changedEnvironments = new ArrayList<>();
+      List<DbEnvironment> changedEnvironments = new ArrayList<>();
       Map<String, DbEnvironment> envs = environmentMap(serviceAccount);
 
       // now where we actually find the environment, add it into the list
@@ -264,7 +281,7 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
         if (sap.getEnvironmentId() != null) {
           DbEnvironment e = envs.get(sap.getEnvironmentId());
           if (e != null) {
-            changedEnvironments.add(new EnvironmentChange(e));
+            changedEnvironments.add(e);
             return new DbServiceAccountEnvironment.Builder()
               .environment(e)
               .permissions(convertPermissionsToString(sap.getPermissions()))
@@ -288,7 +305,7 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
       perms.forEach(p -> p.setServiceAccount(sa));
 
       try {
-        save(sa, changedEnvironments);
+        save(sa);
 
         asyncUpdateCache(sa, changedEnvironments);
       } catch (DuplicateKeyException dke) {
@@ -318,24 +335,39 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
   }
 
   @Transactional
-  private void save(DbServiceAccount sa, List<EnvironmentChange> changedEnvironments) {
+  private void save(DbServiceAccount sa) {
     database.save(sa);
-
   }
 
   @Transactional
-  private void update(DbServiceAccount sa, List<EnvironmentChange> changedEnvironments) {
+  private void updateOnlyServiceAccount(DbServiceAccount sa) {
+    database.update(sa);
+  }
+
+  @Transactional
+  private void updateServiceAccount(DbServiceAccount sa, List<DbServiceAccountEnvironment> deleted,
+                                    List<DbServiceAccountEnvironment> updated, List<DbServiceAccountEnvironment> created) {
     database.update(sa);
 
-    asyncUpdateCache(sa, changedEnvironments);
+    database.updateAll(updated);
+    database.deleteAll(deleted);
+    database.saveAll(created);
+
+    Map<UUID, DbEnvironment> changed = new HashMap<>();
+
+    deleted.forEach(e -> changed.put(e.getEnvironment().getId(), e.getEnvironment()));
+    updated.forEach(e -> changed.put(e.getEnvironment().getId(), e.getEnvironment()));
+    created.forEach(e -> changed.put(e.getEnvironment().getId(), e.getEnvironment()));
+
+    asyncUpdateCache(sa, changed.values());
   }
 
   // because this is an update or save, its no problem we send this out of band of this save/update.
-  private void asyncUpdateCache(DbServiceAccount sa, List<EnvironmentChange> changedEnvironments) {
+  private void asyncUpdateCache(DbServiceAccount sa, Collection<DbEnvironment> changedEnvironments) {
     cacheSource.updateServiceAccount(sa, PublishAction.UPDATE );
 
     if (changedEnvironments != null && !changedEnvironments.isEmpty()) {
-      changedEnvironments.forEach(e -> cacheSource.updateEnvironment(e.environment, PublishAction.UPDATE));
+      changedEnvironments.forEach(e -> cacheSource.updateEnvironment(e, PublishAction.UPDATE));
     }
   }
 

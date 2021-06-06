@@ -1,5 +1,6 @@
 package io.featurehub.db.services;
 
+import io.featurehub.db.FilterOptType;
 import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.Opts;
 import io.featurehub.db.model.DbAcl;
@@ -25,6 +26,7 @@ import io.featurehub.db.model.query.QDbOrganization;
 import io.featurehub.db.model.query.QDbPerson;
 import io.featurehub.db.model.query.QDbPortfolio;
 import io.featurehub.db.model.query.QDbRolloutStrategy;
+import io.featurehub.db.model.query.QDbServiceAccountEnvironment;
 import io.featurehub.mr.model.Application;
 import io.featurehub.mr.model.ApplicationGroupRole;
 import io.featurehub.mr.model.ApplicationRoleType;
@@ -101,22 +103,30 @@ public class ConvertUtils implements Conversions {
       return null;
     }
 
-    return Conversions.uuid(id).map(eId -> {
-      final QDbEnvironment eq = new QDbEnvironment().id.eq(eId);
-      if (opts.contains(FillOpts.Applications)) {
-        eq.parentApplication.fetch();
-      }
-      if (opts.contains(FillOpts.Portfolios)) {
-        eq.parentApplication.portfolio.fetch();
-      }
-      if (opts.contains(FillOpts.ApplicationIds)) {
-        eq.parentApplication.fetch(QDbApplication.Alias.id);
-      }
-      if (opts.contains(FillOpts.PortfolioIds)) {
-        eq.parentApplication.portfolio.fetch(QDbPortfolio.Alias.id);
-      }
-      return eq.findOne();
-    }).orElse(null);
+    return Conversions.uuid(id).map(eId -> uuidEnvironment(eId, opts)).orElse(null);
+  }
+
+  public DbEnvironment uuidEnvironment(UUID id, Opts opts) {
+    if (id == null) {
+      return null;
+    }
+
+    final QDbEnvironment eq = new QDbEnvironment().id.eq(id);
+
+    if (opts.contains(FillOpts.Applications)) {
+      eq.parentApplication.fetch();
+    }
+    if (opts.contains(FillOpts.Portfolios)) {
+      eq.parentApplication.portfolio.fetch();
+    }
+    if (opts.contains(FillOpts.ApplicationIds)) {
+      eq.parentApplication.fetch(QDbApplication.Alias.id);
+    }
+    if (opts.contains(FillOpts.PortfolioIds)) {
+      eq.parentApplication.portfolio.fetch(QDbPortfolio.Alias.id);
+    }
+
+    return eq.findOne();
   }
 
 
@@ -185,6 +195,7 @@ public class ConvertUtils implements Conversions {
 
     // collect all of the ACls for all of the groups for this environment?
     if (opts.contains(FillOpts.Acls)) {
+      final List<DbAcl> list = new QDbAcl().environment.eq(env).findList();
       new QDbAcl().environment.eq(env).findEach(acl -> environment.addGroupRolesItem(environmentGroupRoleFromAcl(acl)));
     }
 
@@ -245,10 +256,17 @@ public class ConvertUtils implements Conversions {
 
   @Override
   public EnvironmentGroupRole environmentGroupRoleFromAcl(DbAcl acl) {
-    return new EnvironmentGroupRole()
+    final EnvironmentGroupRole environmentGroupRole = new EnvironmentGroupRole()
       .groupId(acl.getGroup().getId().toString())
       .roles(splitEnvironmentRoles(acl.getRoles()))
       .environmentId(acl.getEnvironment().getId().toString());
+
+    // READ should be implicit if we have any of the other roles
+    if (!environmentGroupRole.getRoles().contains(RoleType.READ) && !environmentGroupRole.getRoles().isEmpty()) {
+      environmentGroupRole.addRolesItem(RoleType.READ);
+    }
+
+    return environmentGroupRole;
   }
 
   @Override
@@ -381,7 +399,18 @@ public class ConvertUtils implements Conversions {
     }
 
     if (opts.contains(FillOpts.Acls)) {
-      new QDbAcl().group.eq(dbg)
+      UUID appIdFilter = opts.id(FilterOptType.Application);
+
+      QDbAcl aclQuery = new QDbAcl().group.eq(dbg);
+
+      if (appIdFilter != null) {
+        aclQuery = aclQuery
+          .or()
+          .environment.parentApplication.id.eq(appIdFilter)
+          .application.id.eq(appIdFilter).endOr();
+      }
+
+      aclQuery
         .findEach(acl -> {
           if (acl.getEnvironment() != null) {
             group.addEnvironmentRolesItem(environmentGroupRoleFromAcl(acl));
@@ -711,8 +740,14 @@ public class ConvertUtils implements Conversions {
           });
         }
 
+        UUID appIdFilter = opts.id(FilterOptType.Application);
+        QDbServiceAccountEnvironment permQuery = new QDbServiceAccountEnvironment().serviceAccount.eq(sa);
+        if (appIdFilter != null) {
+          permQuery = permQuery.environment.parentApplication.id.eq(appIdFilter);
+        }
+
         account.setPermissions(
-          sa.getServiceAccountEnvironments().stream()
+          permQuery.findList().stream()
             .map(sae -> toServiceAccountPermission(sae,
               envs.get(sae.getEnvironment().getId()),
               !envs.isEmpty(),
