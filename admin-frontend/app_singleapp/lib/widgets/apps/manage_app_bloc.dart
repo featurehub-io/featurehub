@@ -239,7 +239,8 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
   Future<void> selectServiceAccount(String said) async {
     if (_mrClient.userIsCurrentPortfolioAdmin) {
       await _serviceAccountServiceApi
-          .callGet(said, includePermissions: true)
+          .getServiceAccount(said,
+              includePermissions: true, byApplicationId: applicationId)
           .then((sa) {
         _currentServiceAccountIdSource.add(sa.id);
         if (!_serviceAccountPS.isClosed) {
@@ -270,7 +271,7 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
   Future<ServiceAccount> updateServiceAccountPermissions(
       String sid, ServiceAccount serviceAccount) async {
     final updatedServiceAccount = await _serviceAccountServiceApi
-        .update(
+        .updateServiceAccount(
       sid,
       serviceAccount,
       includePermissions: true,

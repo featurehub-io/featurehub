@@ -181,7 +181,7 @@ class PortfolioStepdefs {
       saPermission.permissions.add(permission);
     }
     await userCommon.serviceAccountService
-        .update(sa.id!, sa, includePermissions: true);
+        .updateServiceAccount(sa.id!, sa, includePermissions: true);
   }
 
   @When(

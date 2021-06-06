@@ -26,6 +26,7 @@ import io.featurehub.db.model.query.QDbOrganization;
 import io.featurehub.db.model.query.QDbPerson;
 import io.featurehub.db.model.query.QDbPortfolio;
 import io.featurehub.db.model.query.QDbRolloutStrategy;
+import io.featurehub.db.model.query.QDbServiceAccountEnvironment;
 import io.featurehub.mr.model.Application;
 import io.featurehub.mr.model.ApplicationGroupRole;
 import io.featurehub.mr.model.ApplicationRoleType;
@@ -739,8 +740,14 @@ public class ConvertUtils implements Conversions {
           });
         }
 
+        UUID appIdFilter = opts.id(FilterOptType.Application);
+        QDbServiceAccountEnvironment permQuery = new QDbServiceAccountEnvironment().serviceAccount.eq(sa);
+        if (appIdFilter != null) {
+          permQuery = permQuery.environment.parentApplication.id.eq(appIdFilter);
+        }
+
         account.setPermissions(
-          sa.getServiceAccountEnvironments().stream()
+          permQuery.findList().stream()
             .map(sae -> toServiceAccountPermission(sae,
               envs.get(sae.getEnvironment().getId()),
               !envs.isEmpty(),

@@ -74,8 +74,6 @@ class _MenuContainer extends StatelessWidget {
                             return SizedBox.shrink();
                           }
 
-                          print("person is portfolio or super admin");
-
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
