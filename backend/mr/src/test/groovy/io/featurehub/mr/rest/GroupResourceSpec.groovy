@@ -67,7 +67,7 @@ class GroupResourceSpec extends Specification {
     when: "i find groups"
       gr.findGroups("1", new GroupServiceDelegate.FindGroupsHolder(includePeople: true, order: SortOrder.DESC, filter: "turn"), sc)
     then:
-      1 * groupApi.findGroups("1", "turn", SortOrder.DESC, Opts.opts(FillOpts.People))
+      1 * groupApi.findGroups("1", "turn", SortOrder.DESC, Opts.opts(FillOpts.People)) >> []
   }
 
 
