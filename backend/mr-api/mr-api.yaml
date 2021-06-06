@@ -1770,6 +1770,12 @@ paths:
         - bearerAuth: [ ]
       tags:
         - GroupService
+      parameters:
+        - name: byApplicationId
+          in: query
+          schema:
+            type: string
+            format: uuid
       description: "Get group"
       operationId: getGroup
       responses:

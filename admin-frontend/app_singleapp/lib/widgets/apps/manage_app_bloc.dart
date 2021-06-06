@@ -220,10 +220,15 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     if (groupId == null || !_mrClient.userIsCurrentPortfolioAdmin) {
       _groupWithRolesPS.add(null);
     } else {
-      final group =
-          await _groupServiceApi.getGroup(groupId, includeGroupRoles: true);
+      try {
+        final group = await _groupServiceApi.getGroup(groupId,
+            includeGroupRoles: true, byApplicationId: applicationId);
 
-      _groupWithRolesPS.add(group);
+        _groupWithRolesPS.add(group);
+      } catch (e, s) {
+        await _mrClient.dialogError(e, s);
+        _groupWithRolesPS.add(null);
+      }
     }
   }
 

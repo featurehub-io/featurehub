@@ -164,14 +164,11 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                   );
                 }
 
-                if (currentGroup == null ||
-                    currentGroup!.id != groupSnapshot.data!.id) {
-                  newEnvironmentRoles =
-                      createMap(envSnapshot.data!, groupSnapshot.data!);
-                  currentGroup = groupSnapshot.data;
-                  editAccess = hasEditPermission(
-                      currentGroup!, widget.bloc.applicationId!);
-                }
+                newEnvironmentRoles =
+                    createMap(envSnapshot.data!, groupSnapshot.data!);
+                currentGroup = groupSnapshot.data;
+                editAccess = hasEditPermission(
+                    currentGroup!, widget.bloc.applicationId!);
 
                 final rows = <TableRow>[];
                 rows.add(getHeader());

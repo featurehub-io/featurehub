@@ -1,5 +1,6 @@
 package io.featurehub.db.services;
 
+import io.featurehub.db.FilterOptType;
 import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.Opts;
 import io.featurehub.db.model.DbAcl;
@@ -397,7 +398,18 @@ public class ConvertUtils implements Conversions {
     }
 
     if (opts.contains(FillOpts.Acls)) {
-      new QDbAcl().group.eq(dbg)
+      UUID appIdFilter = opts.id(FilterOptType.Application);
+
+      QDbAcl aclQuery = new QDbAcl().group.eq(dbg);
+
+      if (appIdFilter != null) {
+        aclQuery = aclQuery
+          .or()
+          .environment.parentApplication.id.eq(appIdFilter)
+          .application.id.eq(appIdFilter).endOr();
+      }
+
+      aclQuery
         .findEach(acl -> {
           if (acl.getEnvironment() != null) {
             group.addEnvironmentRolesItem(environmentGroupRoleFromAcl(acl));

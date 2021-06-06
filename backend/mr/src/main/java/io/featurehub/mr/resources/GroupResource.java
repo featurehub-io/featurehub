@@ -1,5 +1,6 @@
 package io.featurehub.mr.resources;
 
+import io.featurehub.db.FilterOptType;
 import io.featurehub.db.api.DuplicateUsersException;
 import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.GroupApi;
@@ -180,7 +181,7 @@ public class GroupResource implements GroupServiceDelegate {
 
   @Override
   public Group getGroup(String gid, GetGroupHolder holder, SecurityContext securityContext) {
-    Opts opts = new Opts().add(FillOpts.Acls, holder.includeGroupRoles);
+    Opts opts = new Opts().add(FillOpts.Acls, holder.includeGroupRoles).add(FilterOptType.Application, holder.byApplicationId);
 
     if (Boolean.TRUE.equals(holder.includeMembers)) {
       opts.add(FillOpts.People);
