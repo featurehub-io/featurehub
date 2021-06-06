@@ -203,8 +203,6 @@ class _SetupPage1ThirdPartyProviders extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final external = bloc.identityProviders.has3rdParty;
-    if (external) {
       return Column(
         children: [
           for (dynamic provider in bloc.identityProviders.externalProviders)
@@ -224,8 +222,5 @@ class _SetupPage1ThirdPartyProviders extends StatelessWidget {
             ),
         ],
       );
-    } else {
-      return SizedBox();
-    }
   }
 }
