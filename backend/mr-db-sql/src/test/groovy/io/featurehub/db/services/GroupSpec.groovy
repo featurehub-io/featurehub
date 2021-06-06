@@ -1,6 +1,7 @@
 package io.featurehub.db.services
 
 import io.ebean.DB
+import io.featurehub.db.FilterOptType
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.GroupApi
 import io.featurehub.db.api.Opts
@@ -52,6 +53,27 @@ class GroupSpec extends BaseSpec {
     commonApplication2 = applicationSqlApi.createApplication(commonPortfolio.id, new Application().name("acl common app2").description("acl common app2"), superPerson)
 
     portfolioAdminGroup = groupSqlApi.createPortfolioGroup(commonPortfolio.id, new Group().name("admin group").admin(true), superPerson)
+  }
+
+  def "group ACL filtering by application works as expected"() {
+    given: "i have a second application"
+      def app2 = applicationSqlApi.createApplication(commonPortfolio.id, new Application().name("acl-test-filter").description("acl test filter"), superPerson)
+    and: "i have an environment in the second application"
+      def env2 = environmentSqlApi.create(new Environment().name("acl-test-filter-env").description("acl-test-filter-env"), app2, superPerson)
+    and: "create a new group"
+      def group = groupSqlApi.createPortfolioGroup(commonPortfolio.id, new Group().name("acl-test-filter-group"), superPerson)
+    and: "i create permissions in the group for both environments"
+      def groupUpdated = groupSqlApi.updateGroup(group.id, group.environmentRoles([
+        new EnvironmentGroupRole().environmentId(env1App1.id).roles([RoleType.UNLOCK]),
+        new EnvironmentGroupRole().environmentId(env2.id).roles([RoleType.CHANGE_VALUE])
+      ]),
+        false, false, true, Opts.opts(FillOpts.Acls))
+    when: "i ask for the permissions only for application 2"
+      def groupApp2 = groupSqlApi.getGroup(group.id, Opts.opts(FillOpts.Acls).add(FilterOptType.Application, UUID.fromString(app2.id)), superPerson)
+    then:
+      groupUpdated.environmentRoles.size() == 2
+      groupApp2.environmentRoles.size() == 1
+      groupApp2.environmentRoles[0].roles.containsAll([RoleType.READ, RoleType.CHANGE_VALUE])
   }
 
   def "i create a group and the user in it, the portfolio admin, and the superuser can get its details"() {

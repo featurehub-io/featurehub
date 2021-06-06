@@ -2,6 +2,7 @@ package io.featurehub.db.services
 
 import io.ebean.DB
 import io.ebean.Database
+import io.featurehub.db.FilterOptType
 import io.featurehub.db.api.EnvironmentApi
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
@@ -11,6 +12,7 @@ import io.featurehub.db.model.DbEnvironment
 import io.featurehub.db.model.DbOrganization
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
+import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.EnvironmentGroupRole
 import io.featurehub.mr.model.RoleType
@@ -30,6 +32,8 @@ class ServiceAccountSpec extends BaseSpec {
   private static final Logger log = LoggerFactory.getLogger(ServiceAccountSpec.class)
   @Shared PersonSqlApi personSqlApi
   @Shared ServiceAccountSqlApi sapi
+  @Shared ApplicationSqlApi applicationSqlApi
+  @Shared EnvironmentSqlApi environmentSqlApi
   @Shared DbPortfolio portfolio1
   @Shared DbApplication application1
   @Shared DbEnvironment environment1
@@ -42,7 +46,8 @@ class ServiceAccountSpec extends BaseSpec {
     baseSetupSpec()
 
     personSqlApi = new PersonSqlApi(database, convertUtils, archiveStrategy)
-
+    environmentSqlApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
+    applicationSqlApi = new ApplicationSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
     sapi = new ServiceAccountSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
 
     // now set up the environments we need
@@ -70,6 +75,30 @@ class ServiceAccountSpec extends BaseSpec {
         new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(environment3.id.toString()),
       ]
     ), false, false, true, Opts.empty())
+  }
+
+  def "service ACL filtering works by application"() {
+    given: "i have a second application"
+      def app2 = applicationSqlApi.createApplication(portfolio1Id, new Application().name("acl-sa-test-filter").description("acl test filter"), superPerson)
+    and: "i have an environment in the second application"
+      def env2 = environmentSqlApi.create(new Environment().name("acl-sa-test-filter-env").description("acl-test-filter-env"), app2, superPerson)
+    and: "i create a new service account"
+      def sa = new ServiceAccount().name('sa-acl-filter').description('sa-acl-filter')
+          .permissions([
+            new ServiceAccountPermission()
+              .environmentId(environment1.id.toString())
+              .permissions([RoleType.LOCK]),
+            new ServiceAccountPermission()
+              .environmentId(env2.id)
+              .permissions([RoleType.CHANGE_VALUE])
+          ])
+      sa = sapi.create(portfolio1Id, superPerson, sa, Opts.opts(FillOpts.Permissions))
+    when: "i query for the service account filtering by the new app"
+      def saFiltered = sapi.get(sa.id, Opts.opts(FillOpts.Permissions).add(FilterOptType.Application, UUID.fromString(app2.id)))
+    then:
+      sa.permissions.size() == 2
+      saFiltered.permissions.size() == 1
+      saFiltered.permissions[0].permissions.containsAll([RoleType.READ, RoleType.CHANGE_VALUE])
   }
 
   def "i can create a service account with no environments"() {
