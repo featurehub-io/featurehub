@@ -11,17 +11,13 @@ class IdentityProviders {
   bool get hasLocal => _identityProviders.contains('local');
   bool get has3rdParty =>
       _identityProviders.where((p) => p != 'local').isNotEmpty;
+
+  // external providers are defined in the FH server properties file, e.g. oauth2.providers=oauth2-google,oauth2-azure,oauth2-github
+
   List<String> get externalProviders =>
       _identityProviders.where((p) => p != 'local').toList(growable: false);
 
   bool get hasMultiple3rdPartyProviders => externalProviders.length > 1;
-
-  Map<String, String> externalProviderAssets = <String, String>{
-    'oauth2-google':
-        'assets/signup_3rdparty/btn_google_signin_dark_normal_web.png',
-    'oauth2-azure': 'assets/signup_3rdparty/azure.png',
-    'oauth2-github': 'assets/signup_3rdparty/github.png'
-  };
 
   final ManagementRepositoryClientBloc _bloc;
   final AuthServiceApi _authServiceApi;

@@ -17,7 +17,7 @@ class FHFlatButtonTransparent extends StatelessWidget {
     return TextButton(
       onPressed: onPressed,
       child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.only(top: 8.0, bottom: 8.0, left: 12.0, right: 16.0),
           child: Text(keepCase ? title : title.toUpperCase(),
               style: TextStyle(color: Theme.of(context).buttonColor))),
     );

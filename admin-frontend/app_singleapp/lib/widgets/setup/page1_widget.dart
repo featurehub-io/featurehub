@@ -1,9 +1,11 @@
 import 'package:app_singleapp/utils/utils.dart';
 import 'package:app_singleapp/widgets/common/FHFlatButton.dart';
+import 'package:app_singleapp/widgets/common/decorations/fh_page_divider.dart';
 import 'package:app_singleapp/widgets/common/fh_card.dart';
 import 'package:app_singleapp/widgets/setup/setup_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:zxcvbn/zxcvbn.dart';
 
 class SetupPage1Widget extends StatefulWidget {
@@ -73,9 +75,6 @@ class _SetupPage1State extends State<SetupPage1Widget> {
       key: _formKey,
       child: FHCardWidget(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.only(bottom: 26.0),
@@ -92,7 +91,7 @@ class _SetupPage1State extends State<SetupPage1Widget> {
               style: Theme.of(context).textTheme.headline6,
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+              padding: const EdgeInsets.fromLTRB(0, 16, 0, 10),
               child: Text(
                   "Well done, FeatureHub is up and running.  You\'ll be the first 'Site administrator' of your FeatureHub account.",
                   style: Theme.of(context).textTheme.bodyText1),
@@ -101,6 +100,17 @@ class _SetupPage1State extends State<SetupPage1Widget> {
               _SetupPage1ThirdPartyProviders(
                 bloc: widget.bloc,
                 selectedExternalProviderFunc: _handleSelectedExternal,
+              ),
+            if (external && local)
+              Column(
+                children: [
+                  SizedBox(height: 24.0),
+                  FHPageDivider(),
+                  Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 24, 0, 16),
+                      child: Text('or register in with a username and password',
+                          style: Theme.of(context).textTheme.caption)),
+                ],
               ),
             if (local)
               Column(
@@ -170,7 +180,7 @@ class _SetupPage1State extends State<SetupPage1Widget> {
                           return null;
                         }),
                   ]),
-            Row(
+            if (local) Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
                   Padding(
@@ -238,31 +248,38 @@ class _SetupPage1ThirdPartyProviders extends StatelessWidget {
       required this.bloc,
       required this.selectedExternalProviderFunc})
       : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     final external = bloc.has3rdParty;
-
-    final children = <Widget>[];
-
     if (external) {
-      bloc.externalProviders.forEach((provider) {
-        children.add(InkWell(
-          mouseCursor: SystemMouseCursors.click,
-          onTap: () {
-            selectedExternalProviderFunc(provider);
-          },
-          child: Image.asset(bloc.externalProviderAssets[provider]!),
-        ));
-        children.add(Padding(
-          padding: const EdgeInsets.fromLTRB(0, 16, 0, 10),
-          child: Text('or enter your details to register',
-              style: Theme.of(context).textTheme.caption),
-        ));
-      });
+      return Column(
+        children: [
+          for (dynamic provider in bloc.externalProviders)
+            Container(
+              height: 48,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 12.0),
+                child: SignInButton(
+                    provider == 'oauth2-google'
+                        ? Buttons.GoogleDark
+                        : provider == 'oauth2-github'
+                        ? Buttons.GitHub
+                        : Buttons.Microsoft,
+                    text: provider == 'oauth2-google'
+                        ? ('Register with Google')
+                        : provider == 'oauth2-github'
+                        ? ('Register with GitHub')
+                        : ('Register with Microsoft'),
+                    onPressed: () {
+                  selectedExternalProviderFunc(provider);
+                }),
+              ),
+            ),
+        ],
+      );
+    } else {
+      return SizedBox();
     }
-    return Column(
-      children: children,
-    );
   }
 }
+
