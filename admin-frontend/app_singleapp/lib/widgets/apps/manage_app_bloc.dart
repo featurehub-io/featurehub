@@ -11,6 +11,13 @@ import 'package:rxdart/rxdart.dart';
 
 enum ManageAppPageState { loadingState, initialState }
 
+class ApplicationGroupRoles {
+  final Group group;
+  final String applicationId;
+
+  ApplicationGroupRoles(this.group, this.applicationId);
+}
+
 class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
   final ManagementRepositoryClientBloc _mrClient;
   late ApplicationServiceApi _appServiceApi;
@@ -103,9 +110,10 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
 
   Stream<ServiceAccount> get serviceAccountStream => _serviceAccountPS.stream;
 
-  final _groupWithRolesPS = BehaviorSubject<Group?>();
+  final _groupWithRolesPS = BehaviorSubject<ApplicationGroupRoles?>();
 
-  Stream<Group?> get groupRoleStream => _groupWithRolesPS.stream;
+  Stream<ApplicationGroupRoles?> get groupRoleStream =>
+      _groupWithRolesPS.stream;
 
   final _pageStateBS = BehaviorSubject<ManageAppPageState?>();
 
@@ -224,7 +232,9 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
         final group = await _groupServiceApi.getGroup(groupId,
             includeGroupRoles: true, byApplicationId: applicationId);
 
-        _groupWithRolesPS.add(group);
+        // the downstream needs to know which application this group is paired with
+        // so it knows when to refresh its internal state
+        _groupWithRolesPS.add(ApplicationGroupRoles(group, applicationId!));
       } catch (e, s) {
         await _mrClient.dialogError(e, s);
         _groupWithRolesPS.add(null);
