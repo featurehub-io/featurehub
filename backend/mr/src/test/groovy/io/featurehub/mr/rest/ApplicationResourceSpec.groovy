@@ -49,7 +49,7 @@ class ApplicationResourceSpec extends Specification {
 
   def "if you are not a portfolio admin you cannot create an application"() {
     when: "i attempt to create an application"
-      ar.createApplication("1", new Application(), new ApplicationServiceDelegate.CreateApplicationHolder(), null)
+      ar.createApplication(UUID.randomUUID(), new Application(), new ApplicationServiceDelegate.CreateApplicationHolder(), null)
     then:
       thrown ForbiddenException
   }
@@ -59,26 +59,28 @@ class ApplicationResourceSpec extends Specification {
       SecurityContext sc = Mock(SecurityContext)
       Person person = new Person()
       authManager.from(sc) >> person
-      String pId = "1"
+      UUID pId = UUID.randomUUID()
+      UUID appId = UUID.randomUUID()
       authManager.isPortfolioAdmin(pId, person, null) >> true
     and: "i have an application"
       Application app = new Application()
     when: "i attempt to create an application"
       ar.createApplication(pId, app, new ApplicationServiceDelegate.CreateApplicationHolder(), sc)
     then:
-      1 * applicationApi.createApplication(pId, app, person) >> new Application().id("fred")
-      1 * environmentApi.create({ Environment e -> e.applicationId == "fred"}, { Application a -> a.id == "fred"}, _)
+      1 * applicationApi.createApplication(pId, app, person) >> new Application().id(appId)
+      1 * environmentApi.create({ Environment e -> e.applicationId == appId}, { Application a -> a.id == appId}, _)
   }
 
   def "findApplications works"() {
     given:
       SecurityContext sc = Mock(SecurityContext)
+      UUID portfolioId = UUID.randomUUID()
       Person person = new Person()
       authManager.from(sc) >> person
       authManager.isOrgAdmin(person) >> true
     when: "i find applications"
-      ar.findApplications("1", new ApplicationServiceDelegate.FindApplicationsHolder(includeEnvironments: true, order: SortOrder.ASC, filter: "fred"), sc)
+      ar.findApplications(portfolioId, new ApplicationServiceDelegate.FindApplicationsHolder(includeEnvironments: true, order: SortOrder.ASC, filter: "fred"), sc)
     then:
-      1 * applicationApi.findApplications("1", "fred", SortOrder.ASC, Opts.opts(FillOpts.Environments), person, true) >> []
+      1 * applicationApi.findApplications(portfolioId, "fred", SortOrder.ASC, Opts.opts(FillOpts.Environments), person, true) >> []
   }
 }

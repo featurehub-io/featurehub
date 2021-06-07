@@ -9,6 +9,7 @@ import io.featurehub.mr.model.ServiceAccountCacheItem;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
@@ -16,19 +17,21 @@ import java.util.stream.Stream;
  *
  */
 public class MrInMemoryCache implements InternalCache {
-  private Map<String, EnvironmentCacheItem> environments = new ConcurrentHashMap<>();
-  private Map<String, ServiceAccountCacheItem> serviceAccounts = new ConcurrentHashMap<>();
+  private Map<UUID, EnvironmentCacheItem> environments = new ConcurrentHashMap<>();
+  private Map<UUID, ServiceAccountCacheItem> serviceAccounts = new ConcurrentHashMap<>();
 
   public MrInMemoryCache() {
-    environments.put("1",
+    UUID envId = UUID.randomUUID();
+    environments.put(envId,
       new EnvironmentCacheItem()
-      .environment(new Environment().id("1").version(1L))
+      .environment(new Environment().id(envId).version(1L))
       .action(PublishAction.CREATE)
       .count(1)
     );
-    serviceAccounts.put("2",
+    UUID svcId = UUID.randomUUID();
+    serviceAccounts.put(svcId,
       new ServiceAccountCacheItem()
-        .serviceAccount(new ServiceAccount().id("2").version(1L).apiKeyServerSide("apikey")
+        .serviceAccount(new ServiceAccount().id(svcId).version(1L).apiKeyServerSide("apikey")
           .apiKeyClientSide("apikey2#2"))
         .count(1)
         .action(PublishAction.CREATE)
@@ -69,7 +72,7 @@ public class MrInMemoryCache implements InternalCache {
   }
 
   @Override
-  public FeatureCollection getFeaturesByEnvironmentAndServiceAccount(String environmentId, String apiKey) {
+  public FeatureCollection getFeaturesByEnvironmentAndServiceAccount(UUID environmentId, String apiKey) {
     return null;
   }
 

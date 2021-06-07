@@ -41,6 +41,7 @@ components:
           type: string
         environmentId:
           type: string
+          format: uuid
         featureKey:
           type: string
         valueBoolean:

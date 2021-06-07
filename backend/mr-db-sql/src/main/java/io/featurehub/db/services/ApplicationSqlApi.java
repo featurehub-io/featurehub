@@ -50,7 +50,11 @@ public class ApplicationSqlApi implements ApplicationApi {
   private final ArchiveStrategy archiveStrategy;
 
   @Inject
-  public ApplicationSqlApi(Database database, Conversions convertUtils, CacheSource cacheSource, ArchiveStrategy archiveStrategy) {
+  public ApplicationSqlApi(
+      Database database,
+      Conversions convertUtils,
+      CacheSource cacheSource,
+      ArchiveStrategy archiveStrategy) {
     this.database = database;
     this.convertUtils = convertUtils;
     this.cacheSource = cacheSource;
@@ -58,24 +62,57 @@ public class ApplicationSqlApi implements ApplicationApi {
   }
 
   @Override
-  public Application createApplication(String portfolioId, Application application, Person current) throws DuplicateApplicationException {
-    DbPortfolio portfolio = convertUtils.uuidPortfolio(portfolioId);
+  public Application createApplication(UUID portfolioId, Application application, Person current)
+      throws DuplicateApplicationException {
+    Conversions.nonNullPortfolioId(portfolioId);
+    Conversions.nonNullPerson(current);
+
+    DbPortfolio portfolio = convertUtils.byPortfolio(portfolioId);
+
     if (portfolio != null) {
-      DbPerson updater = convertUtils.uuidPerson(current);
+      DbPerson updater = convertUtils.byPerson(current);
 
       if (updater != null) {
-        if (new QDbApplication().and().name.iequalTo(application.getName()).whenArchived.isNull().portfolio.eq(portfolio).endAnd().findCount() == 0) {
-          DbApplication aApp = new DbApplication.Builder()
-            .name(application.getName())
-            .description(application.getDescription())
-            .portfolio(portfolio)
-            .whoCreated(updater)
-            .build();
+        if (!new QDbApplication()
+                .and()
+                .name
+                .iequalTo(application.getName())
+                .whenArchived
+                .isNull()
+                .portfolio
+                .eq(portfolio)
+                .endAnd()
+                .exists()
+            ) {
+          DbApplication aApp =
+              new DbApplication.Builder()
+                  .name(application.getName())
+                  .description(application.getDescription())
+                  .portfolio(portfolio)
+                  .whoCreated(updater)
+                  .build();
 
-          // update the portfolio group to ensure it has permissions to add features to this new application
-          final DbGroup adminGroup = new QDbGroup().owningPortfolio.eq(aApp.getPortfolio()).whenArchived.isNull().adminGroup.isTrue().findOne();
+          // update the portfolio group to ensure it has permissions to add features to this new
+          // application
+          final DbGroup adminGroup =
+              new QDbGroup()
+                  .owningPortfolio
+                  .eq(aApp.getPortfolio())
+                  .whenArchived
+                  .isNull()
+                  .adminGroup
+                  .isTrue()
+                  .findOne();
           if (adminGroup != null) {
-            adminGroup.getGroupRolesAcl().add(new DbAcl.Builder().application(aApp).roles(GroupSqlApi.appRolesToString(Collections.singletonList(ApplicationRoleType.FEATURE_EDIT))).build());
+            adminGroup
+                .getGroupRolesAcl()
+                .add(
+                    new DbAcl.Builder()
+                        .application(aApp)
+                        .roles(
+                            GroupSqlApi.appRolesToString(
+                                Collections.singletonList(ApplicationRoleType.FEATURE_EDIT)))
+                        .build());
           }
           addApplicationFeatureCreationRoleToPortfolioAdminGroup(aApp, adminGroup);
 
@@ -90,7 +127,8 @@ public class ApplicationSqlApi implements ApplicationApi {
   }
 
   @Transactional
-  private void addApplicationFeatureCreationRoleToPortfolioAdminGroup(DbApplication aApp, DbGroup adminGroup) {
+  private void addApplicationFeatureCreationRoleToPortfolioAdminGroup(
+      DbApplication aApp, DbGroup adminGroup) {
     database.save(aApp);
 
     if (adminGroup != null) {
@@ -104,37 +142,44 @@ public class ApplicationSqlApi implements ApplicationApi {
   }
 
   @Override
-  public List<Application> findApplications(String portfolioId, String filter, SortOrder order, Opts opts, Person current, boolean loadAll) {
-    UUID pId = Conversions.ifUuid(portfolioId);
+  public List<Application> findApplications(
+      UUID portfolioId,
+      String filter,
+      SortOrder order,
+      Opts opts,
+      Person current,
+      boolean loadAll) {
+    Conversions.nonNullPortfolioId(portfolioId);
 
-    if (pId != null) {
-      QDbApplication queryApplicationList = new QDbApplication().portfolio.id.eq(pId);
+    QDbApplication queryApplicationList = new QDbApplication().portfolio.id.eq(portfolioId);
 
-      if (filter != null) {
-        queryApplicationList = queryApplicationList.name.ilike("%" + filter + "%");
-      }
-
-      if (!opts.contains(FillOpts.Archived)) {
-        queryApplicationList = queryApplicationList.whenArchived.isNull();
-      }
-
-      queryApplicationList = fetchApplicationOpts(opts, queryApplicationList);
-
-      if (SortOrder.ASC == order) {
-        queryApplicationList = queryApplicationList.order().name.asc();
-      } else if (SortOrder.DESC == order) {
-        queryApplicationList = queryApplicationList.order().name.desc();
-      }
-
-      if (!loadAll) {
-        // we need to ascertain which apps they can actually see based on environments
-        queryApplicationList = queryApplicationList.environments.groupRolesAcl.group.peopleInGroup.id.eq(Conversions.ifUuid(current.getId().getId()));
-      }
-
-      return queryApplicationList.findList().stream().map(app -> convertUtils.toApplication(app, opts)).collect(Collectors.toList());
+    if (filter != null) {
+      queryApplicationList = queryApplicationList.name.ilike("%" + filter + "%");
     }
 
-    return null;
+    if (!opts.contains(FillOpts.Archived)) {
+      queryApplicationList = queryApplicationList.whenArchived.isNull();
+    }
+
+    queryApplicationList = fetchApplicationOpts(opts, queryApplicationList);
+
+    if (SortOrder.ASC == order) {
+      queryApplicationList = queryApplicationList.order().name.asc();
+    } else if (SortOrder.DESC == order) {
+      queryApplicationList = queryApplicationList.order().name.desc();
+    }
+
+    if (!loadAll) {
+      Conversions.nonNullPerson(current);
+      // we need to ascertain which apps they can actually see based on environments
+      queryApplicationList =
+          queryApplicationList.environments.groupRolesAcl.group.peopleInGroup.id.eq(
+              current.getId().getId());
+    }
+
+    return queryApplicationList.findList().stream()
+        .map(app -> convertUtils.toApplication(app, opts))
+        .collect(Collectors.toList());
   }
 
   private QDbApplication fetchApplicationOpts(Opts opts, QDbApplication eq) {
@@ -154,11 +199,14 @@ public class ApplicationSqlApi implements ApplicationApi {
   }
 
   @Override
-  public boolean deleteApplication(String portfolioId, String applicationId) {
-    DbPortfolio portfolio = convertUtils.uuidPortfolio(portfolioId);
+  public boolean deleteApplication(UUID portfolioId, UUID applicationId) {
+    Conversions.nonNullPortfolioId(portfolioId);
+    Conversions.nonNullApplicationId(applicationId);
+
+    DbPortfolio portfolio = convertUtils.byPortfolio(portfolioId);
 
     if (portfolio != null) {
-      DbApplication app = convertUtils.uuidApplication(applicationId);
+      DbApplication app = convertUtils.byApplication(applicationId);
 
       if (app != null && app.getPortfolio().getId().equals(portfolio.getId())) {
         archiveStrategy.archiveApplication(app);
@@ -171,63 +219,77 @@ public class ApplicationSqlApi implements ApplicationApi {
   }
 
   @Override
-  public Application getApplication(String appId, Opts opts) {
-    return Conversions.uuid(appId)
-      .map(aId -> convertUtils.toApplication(fetchApplicationOpts(opts, new QDbApplication().id.eq(aId)).findOne(), opts)).orElse(null);
+  public Application getApplication(UUID appId, Opts opts) {
+    Conversions.nonNullApplicationId(appId);
+
+    return convertUtils.toApplication(
+        fetchApplicationOpts(opts, new QDbApplication().id.eq(appId)).findOne(), opts);
   }
 
   @Override
-  public Application updateApplication(String applicationId, Application application, Opts opts) throws DuplicateApplicationException, OptimisticLockingException {
-    UUID appId = Conversions.ifUuid(applicationId);
+  public Application updateApplication(UUID applicationId, Application application, Opts opts)
+      throws DuplicateApplicationException, OptimisticLockingException {
+    Conversions.nonNullApplicationId(applicationId);
 
-    if (appId != null) {
-      DbApplication app = fetchApplicationOpts(opts, new QDbApplication().id.eq(appId)).findOne();
-      if (app != null) {
-        if (application.getVersion() == null || application.getVersion() != app.getVersion()) {
-          throw new OptimisticLockingException();
-        }
-
-        if (!app.getName().equals(application.getName())) {
-          if (new QDbApplication().portfolio.eq(app.getPortfolio()).name.eq(application.getName()).whenArchived.isNull().findCount() > 0) {
-            throw new DuplicateApplicationException();
-          }
-        }
-
-        app.setName(application.getName());
-        app.setDescription(application.getDescription());
-        saveApp(app);
-
-        return convertUtils.toApplication(app, opts);
+    DbApplication app =
+        fetchApplicationOpts(opts, new QDbApplication().id.eq(applicationId)).findOne();
+    if (app != null) {
+      if (application.getVersion() == null || application.getVersion() != app.getVersion()) {
+        throw new OptimisticLockingException();
       }
+
+      if (!app.getName().equals(application.getName())) {
+        if (new QDbApplication()
+                .portfolio
+                .eq(app.getPortfolio())
+                .name
+                .eq(application.getName())
+                .whenArchived
+                .isNull()
+                .exists()) {
+          throw new DuplicateApplicationException();
+        }
+      }
+
+      app.setName(application.getName());
+      app.setDescription(application.getDescription());
+      saveApp(app);
+
+      return convertUtils.toApplication(app, opts);
     }
 
     return null;
   }
 
   @Override
-  public List<Feature> createApplicationFeature(String appId, Feature feature, Person person) throws DuplicateFeatureException {
-    DbApplication app = convertUtils.uuidApplication(appId);
+  public List<Feature> createApplicationFeature(UUID applicationId, Feature feature, Person person)
+      throws DuplicateFeatureException {
+    Conversions.nonNullApplicationId(applicationId);
+
+    DbApplication app = convertUtils.byApplication(applicationId);
 
     if (app != null) {
       if (new QDbApplicationFeature().key.eq(feature.getKey()).parentApplication.eq(app).exists()) {
         throw new DuplicateFeatureException();
       }
 
-      final DbApplicationFeature appFeature = new DbApplicationFeature.Builder()
-        .name(feature.getName())
-        .key(feature.getKey())
-        .parentApplication(app)
-        .alias(feature.getAlias())
-        .link(feature.getLink())
-        .secret(feature.getSecret() != null && feature.getSecret())
-        .valueType(feature.getValueType())
-        .build();
+      final DbApplicationFeature appFeature =
+          new DbApplicationFeature.Builder()
+              .name(feature.getName())
+              .key(feature.getKey())
+              .parentApplication(app)
+              .alias(feature.getAlias())
+              .link(feature.getLink())
+              .secret(feature.getSecret() != null && feature.getSecret())
+              .valueType(feature.getValueType())
+              .build();
 
       saveAppicationFeature(appFeature);
 
       cacheSource.publishFeatureChange(appFeature, PublishAction.CREATE);
 
-      // if this is a boolean feature, create this feature with a default value of false in all environments we currently
+      // if this is a boolean feature, create this feature with a default value of false in all
+      // environments we currently
       // have
       if (appFeature.getValueType() == FeatureValueType.BOOLEAN) {
         createDefaultBooleanFeatureValuesForAllEnvironments(appFeature, app, person);
@@ -239,15 +301,22 @@ public class ApplicationSqlApi implements ApplicationApi {
     return new ArrayList<>();
   }
 
-  private void createDefaultBooleanFeatureValuesForAllEnvironments(DbApplicationFeature appFeature, DbApplication app, Person person) {
-    final List<DbFeatureValue> newFeatures = new QDbEnvironment().whenArchived.isNull().parentApplication.eq(app).findList().stream().map(env -> new DbFeatureValue.Builder()
-      .defaultValue(Boolean.FALSE.toString())
-      .environment(env)
-      .feature(appFeature)
-      .featureState(FeatureState.ENABLED)
-      .locked(true)
-      .whoUpdated(convertUtils.uuidPerson(person))
-      .build()).collect(Collectors.toList());
+  private void createDefaultBooleanFeatureValuesForAllEnvironments(
+      DbApplicationFeature appFeature, DbApplication app, Person person) {
+    final List<DbFeatureValue> newFeatures =
+        new QDbEnvironment()
+            .whenArchived.isNull().parentApplication.eq(app).findList().stream()
+                .map(
+                    env ->
+                        new DbFeatureValue.Builder()
+                            .defaultValue(Boolean.FALSE.toString())
+                            .environment(env)
+                            .feature(appFeature)
+                            .featureState(FeatureState.ENABLED)
+                            .locked(true)
+                            .whoUpdated(convertUtils.byPerson(person))
+                            .build())
+                .collect(Collectors.toList());
 
     saveAllFeatures(newFeatures);
 
@@ -262,15 +331,28 @@ public class ApplicationSqlApi implements ApplicationApi {
   }
 
   private List<Feature> getAppFeatures(DbApplication app) {
-    return app.getFeatures().stream().filter(af -> af.getWhenArchived() == null).map(af -> convertUtils.toApplicationFeature(af, Opts.empty())).collect(Collectors.toList());
+    return app.getFeatures().stream()
+        .filter(af -> af.getWhenArchived() == null)
+        .map(af -> convertUtils.toApplicationFeature(af, Opts.empty()))
+        .collect(Collectors.toList());
   }
 
   @Override
-  public List<Feature> updateApplicationFeature(String appId, String key, Feature feature) throws DuplicateFeatureException, OptimisticLockingException {
-    DbApplication app = convertUtils.uuidApplication(appId);
+  public List<Feature> updateApplicationFeature(UUID appId, String key, Feature feature)
+      throws DuplicateFeatureException, OptimisticLockingException {
+    Conversions.nonNullApplicationId(appId);
+    DbApplication app = convertUtils.byApplication(appId);
 
     if (app != null) {
-      DbApplicationFeature appFeature = new QDbApplicationFeature().and().key.eq(key).parentApplication.eq(app).endAnd().findOne();
+      DbApplicationFeature appFeature =
+          new QDbApplicationFeature()
+              .and()
+              .key
+              .eq(key)
+              .parentApplication
+              .eq(app)
+              .endAnd()
+              .findOne();
 
       if (appFeature == null) {
         return null;
@@ -281,7 +363,13 @@ public class ApplicationSqlApi implements ApplicationApi {
       }
 
       if (!key.equals(feature.getKey())) { // we are changing the key?
-        if (new QDbApplicationFeature().key.eq(feature.getKey()).parentApplication.eq(app).endAnd().exists()) {
+        if (new QDbApplicationFeature()
+            .key
+            .eq(feature.getKey())
+            .parentApplication
+            .eq(app)
+            .endAnd()
+            .exists()) {
           throw new DuplicateFeatureException();
         }
       }
@@ -315,8 +403,10 @@ public class ApplicationSqlApi implements ApplicationApi {
   }
 
   @Override
-  public List<Feature> getApplicationFeatures(String appId) {
-    DbApplication app = convertUtils.uuidApplication(appId);
+  public List<Feature> getApplicationFeatures(UUID appId) {
+    Conversions.nonNullApplicationId(appId);
+
+    DbApplication app = convertUtils.byApplication(appId);
 
     if (app != null) {
       return getAppFeatures(app);
@@ -338,16 +428,28 @@ public class ApplicationSqlApi implements ApplicationApi {
       return app != null && appFeature != null;
     }
   }
-  private AppFeature findAppFeature(String appId, String key) {
-    DbApplication app = convertUtils.uuidApplication(appId);
+
+  private AppFeature findAppFeature(UUID appId, String applicationFeatureKeyName) {
+    Conversions.nonNullApplicationId(appId);
+
+    DbApplication app = convertUtils.byApplication(appId);
 
     if (app != null) {
-      DbApplicationFeature appFeature = new QDbApplicationFeature().and().key.eq(key).parentApplication.eq(app).endAnd().findOne();
+      DbApplicationFeature appFeature =
+          new QDbApplicationFeature()
+              .and()
+              .key
+              .eq(applicationFeatureKeyName)
+              .parentApplication
+              .eq(app)
+              .endAnd()
+              .findOne();
 
       if (appFeature == null) {
-        UUID id = Conversions.ifUuid(key);
+        UUID id = Conversions.checkUuid(applicationFeatureKeyName);
         if (id != null) {
-          return new AppFeature(app, new QDbApplicationFeature().id.eq(id).parentApplication.eq(app).findOne());
+          return new AppFeature(
+              app, new QDbApplicationFeature().id.eq(id).parentApplication.eq(app).findOne());
         }
       } else {
         return new AppFeature(app, appFeature);
@@ -358,7 +460,9 @@ public class ApplicationSqlApi implements ApplicationApi {
   }
 
   @Override
-  public List<Feature> deleteApplicationFeature(String appId, String key) {
+  public List<Feature> deleteApplicationFeature(UUID appId, String key) {
+    Conversions.nonNullApplicationId(appId);
+
     AppFeature appFeature = findAppFeature(appId, key);
 
     if (appFeature == null || !appFeature.isValid()) {
@@ -374,7 +478,9 @@ public class ApplicationSqlApi implements ApplicationApi {
   }
 
   @Override
-  public Feature getApplicationFeatureByKey(String appId, String key) {
+  public Feature getApplicationFeatureByKey(UUID appId, String key) {
+    Conversions.nonNullApplicationId(appId);
+
     AppFeature af = findAppFeature(appId, key);
 
     if (af == null || !af.isValid()) {
@@ -387,68 +493,103 @@ public class ApplicationSqlApi implements ApplicationApi {
   // finds all of the groups attached to this application  that have application roles
   // and filters them by the feature edit role, and adds them to the outgoing set.
   @Override
-  public Set<String> findFeatureEditors(String id) {
+  public Set<UUID> findFeatureEditors(UUID appId) {
+    Conversions.nonNullApplicationId(appId);
 
-    UUID appId = Conversions.ifUuid(id);
+    Set<UUID> featureEditors = new HashSet<>();
 
-    Set<String> featureEditors = new HashSet<>();
+    new QDbAcl()
+        .application
+        .id
+        .eq(appId)
+        .group
+        .whenArchived
+        .isNull()
+        .group
+        .peopleInGroup
+        .fetch()
+        .findList()
+        .forEach(
+            acl -> {
+              ApplicationGroupRole agr = convertUtils.applicationGroupRoleFromAcl(acl);
 
-    if (appId != null) {
-      new QDbAcl().application.id.eq(appId).group.whenArchived.isNull().group.peopleInGroup.fetch().findList().forEach(acl -> {
-        ApplicationGroupRole agr = convertUtils.applicationGroupRoleFromAcl(acl);
-
-        if (agr.getRoles().contains(ApplicationRoleType.FEATURE_EDIT)) {
-          acl.getGroup().getPeopleInGroup().forEach(p -> {
-            featureEditors.add(p.getId().toString());
-          });
-        }
-      });
-    }
+              if (agr.getRoles().contains(ApplicationRoleType.FEATURE_EDIT)) {
+                acl.getGroup()
+                    .getPeopleInGroup()
+                    .forEach(
+                        p -> {
+                          featureEditors.add(p.getId());
+                        });
+              }
+            });
 
     return featureEditors;
   }
 
-  public Set<String> findFeatureReaders(String id) {
-    UUID appId = Conversions.ifUuid(id);
-    Set<String> featureReaders = new HashSet<>();
+  public Set<UUID> findFeatureReaders(UUID appId) {
+    Conversions.nonNullApplicationId(appId);
+    Set<UUID> featureReaders = new HashSet<>();
 
-    if (appId != null) {
-      new QDbAcl()
+    new QDbAcl()
         .or()
-        .environment.parentApplication.id.eq(appId)
-        .application.id.eq(appId)
+        .environment
+        .parentApplication
+        .id
+        .eq(appId)
+        .application
+        .id
+        .eq(appId)
         .endOr()
-        .group.whenArchived.isNull()
-        .group.peopleInGroup.fetch().findList().forEach(acl -> {
-        if (acl.getApplication() != null || acl.getRoles().trim().length() > 0) {
-          acl.getGroup().getPeopleInGroup().forEach(p ->
-            featureReaders.add(p.getId().toString()));
-        }
-      });
+        .group
+        .whenArchived
+        .isNull()
+        .group
+        .peopleInGroup
+        .fetch()
+        .findList()
+        .forEach(
+            acl -> {
+              if (acl.getApplication() != null || acl.getRoles().trim().length() > 0) {
+                acl.getGroup()
+                    .getPeopleInGroup()
+                    .forEach(p -> featureReaders.add(p.getId()));
+              }
+            });
 
-      // we don't need to add superusers because they are automatically added to each portfolio group
-    }
+    // we don't need to add superusers because they are automatically added to each portfolio group
 
     return featureReaders;
   }
 
-  public boolean personIsFeatureReader(String appId, String personId) {
-    UUID applicationId = Conversions.ifUuid(appId);
-    DbPerson person = convertUtils.uuidPerson(personId);
+  public boolean personIsFeatureReader(UUID applicationId, UUID personId) {
+    Conversions.nonNullApplicationId(applicationId);
+    Conversions.nonNullPersonId(personId);
+
+    DbPerson person = convertUtils.byPerson(personId);
 
     if (convertUtils.personIsSuperAdmin(person)) {
       return true;
     }
 
-    if (applicationId != null && person != null) {
-
-      for(DbAcl acl : new QDbAcl()
-        .or()
-        .environment.parentApplication.id.eq(applicationId)
-        .application.id.eq(applicationId)
-        .endOr()
-        .group.whenArchived.isNull()
-        .group.peopleInGroup.eq(person).findList()) {
+    if (person != null) {
+      for (DbAcl acl :
+          new QDbAcl()
+              .or()
+              .environment
+              .parentApplication
+              .id
+              .eq(applicationId)
+              .application
+              .id
+              .eq(applicationId)
+              .endOr()
+              .group
+              .whenArchived
+              .isNull()
+              .group
+              .peopleInGroup
+              .eq(person)
+              .findList()) {
         if (acl.getApplication() != null) {
           return true;
         }

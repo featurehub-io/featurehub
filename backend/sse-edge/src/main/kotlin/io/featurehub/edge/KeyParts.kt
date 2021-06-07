@@ -1,6 +1,8 @@
 package io.featurehub.edge
 
-class KeyParts(cacheName: String, environmentId: String, serviceKey: String) {
+import java.util.*
+
+class KeyParts(cacheName: String, environmentId: UUID, serviceKey: String) {
   val cacheName = cacheName
     get() = field
 
@@ -15,10 +17,14 @@ class KeyParts(cacheName: String, environmentId: String, serviceKey: String) {
     fun fromString(apiUrl: String): KeyParts? {
       val parts: List<String> = apiUrl.split("/")
       if (parts.size == 3) {
-        return KeyParts(parts[0], parts[1], parts[2])
+        try {
+          return KeyParts(parts[0], UUID.fromString(parts[1]), parts[2])
+        } catch (e: Exception) {
+          return null
+        }
       }
 
-      return null;
+      return null
     }
   }
 

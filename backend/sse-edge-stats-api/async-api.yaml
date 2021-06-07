@@ -42,6 +42,7 @@ components:
       properties:
         envId:
           type: string
+          format: uuid
         svcKey:
           type: string
         counters:

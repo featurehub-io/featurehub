@@ -23,6 +23,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.util.List;
+import java.util.UUID;
 
 public class EnvironmentResource implements EnvironmentServiceDelegate {
   private static final Logger log = LoggerFactory.getLogger(EnvironmentResource.class);
@@ -40,7 +41,7 @@ public class EnvironmentResource implements EnvironmentServiceDelegate {
   }
 
   @Override
-  public Environment createEnvironment(String id, Environment environment, SecurityContext securityContext) {
+  public Environment createEnvironment(UUID id, Environment environment, SecurityContext securityContext) {
     Person current = authManager.from(securityContext);
 
     boolean hasPermission = authManager.isOrgAdmin(current);
@@ -67,7 +68,7 @@ public class EnvironmentResource implements EnvironmentServiceDelegate {
   }
 
   @Override
-  public Boolean deleteEnvironment(String eid, DeleteEnvironmentHolder holder, SecurityContext securityContext) {
+  public Boolean deleteEnvironment(UUID eid, DeleteEnvironmentHolder holder, SecurityContext securityContext) {
     Person current = authManager.from(securityContext);
 
     if (authManager.isOrgAdmin(current) ||
@@ -79,7 +80,8 @@ public class EnvironmentResource implements EnvironmentServiceDelegate {
   }
 
   @Override
-  public List<Environment> environmentOrdering(String id, List<Environment> environments, SecurityContext securityContext) {
+  public List<Environment> environmentOrdering(UUID id, List<Environment> environments,
+                                               SecurityContext securityContext) {
     final ApplicationPermissionCheck perm = applicationUtils.check(securityContext, id);
 
     List<Environment> updatedEnvironments = environmentApi.setOrdering(perm.getApp(), environments);
@@ -92,7 +94,7 @@ public class EnvironmentResource implements EnvironmentServiceDelegate {
   }
 
   @Override
-  public List<Environment> findEnvironments(String id, FindEnvironmentsHolder holder, SecurityContext securityContext) {
+  public List<Environment> findEnvironments(UUID id, FindEnvironmentsHolder holder, SecurityContext securityContext) {
     Person current = authManager.from(securityContext);
 
     return environmentApi.search(id, holder.filter, holder.order,
@@ -101,7 +103,7 @@ public class EnvironmentResource implements EnvironmentServiceDelegate {
   }
 
   @Override
-  public Environment getEnvironment(String eid, GetEnvironmentHolder holder, SecurityContext securityContext) {
+  public Environment getEnvironment(UUID eid, GetEnvironmentHolder holder, SecurityContext securityContext) {
     Person current = authManager.from(securityContext);
 
     Environment found = environmentApi.get(eid, new Opts()
@@ -120,7 +122,8 @@ public class EnvironmentResource implements EnvironmentServiceDelegate {
   }
 
   @Override
-  public Environment updateEnvironment(String eid, Environment environment, UpdateEnvironmentHolder holder, SecurityContext securityContext) {
+  public Environment updateEnvironment(UUID eid, Environment environment, UpdateEnvironmentHolder holder,
+                                       SecurityContext securityContext) {
     Person current = authManager.from(securityContext);
 
     if (authManager.isOrgAdmin(current) ||

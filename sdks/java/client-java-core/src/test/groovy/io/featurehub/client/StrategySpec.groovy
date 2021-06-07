@@ -30,6 +30,7 @@ class StrategySpec extends Specification {
         def f = new FeatureState()
           .key("bool1")
           .value(true)
+          .id(UUID.randomUUID())
           .version(1)
           .type(FeatureValueType.BOOLEAN)
           .strategies([new RolloutStrategy().value(false).attributes(
@@ -58,6 +59,7 @@ class StrategySpec extends Specification {
     given: "i have a basic number feature with a rollout strategy"
         def f = new FeatureState()
           .key("num1")
+          .id(UUID.randomUUID())
           .value(16)
           .version(1)
           .type(FeatureValueType.NUMBER)
@@ -94,6 +96,7 @@ class StrategySpec extends Specification {
         def f = new FeatureState()
           .key("feat1")
           .value("feature")
+          .id(UUID.randomUUID())
           .version(1)
           .type(FeatureValueType.STRING)
           .strategies([new RolloutStrategy().value("not-mobile").attributes(
@@ -132,6 +135,7 @@ class StrategySpec extends Specification {
     given: "i have a basic json feature with a rollout strategy"
         def f = new FeatureState()
           .key("feat1")
+          .id(UUID.randomUUID())
           .value("feature")
           .version(1)
           .type(FeatureValueType.JSON)

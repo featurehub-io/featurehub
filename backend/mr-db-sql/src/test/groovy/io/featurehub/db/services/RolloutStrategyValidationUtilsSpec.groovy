@@ -91,15 +91,16 @@ class RolloutStrategyValidationUtilsSpec extends Specification {
 
   def "we specify a attr with no field"() {
     when: "attr has no field name"
+      def id = UUID.randomUUID().toString()
       def fv = [new RolloutStrategy().name("fred").attributes([
-        new RolloutStrategyAttribute().id("ecks").values(['x'])
+        new RolloutStrategyAttribute().id(id).values(['x'])
       ])]
       def validations = validator.validateStrategies(fv, [])
     then:
       validations.isInvalid()
       !validations.customStrategyViolations.isEmpty()
       validations.customStrategyViolations[fv[0]].size() == 3
-      validations.customStrategyViolations[fv[0]]*.id == ["ecks", "ecks", "ecks"]
+      validations.customStrategyViolations[fv[0]]*.id == [id, id, id]
       validations.customStrategyViolations[fv[0]]*.violation.contains(RolloutStrategyViolationType.ATTR_MISSING_FIELD_NAME)
       validations.customStrategyViolations[fv[0]]*.violation.contains(RolloutStrategyViolationType.ATTR_MISSING_FIELD_TYPE)
       validations.customStrategyViolations[fv[0]]*.violation.contains(RolloutStrategyViolationType.ATTR_MISSING_CONDITIONAL)

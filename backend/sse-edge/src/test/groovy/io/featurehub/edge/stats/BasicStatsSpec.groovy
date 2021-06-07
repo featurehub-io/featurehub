@@ -13,7 +13,7 @@ class BasicStatsSpec extends Specification {
     when: "i create an instance"
       def sd = new StatDisruptor(Mock(EventHandler<Stat>))
     and: "i can record an event"
-      sd.recordHit(new KeyParts('1', '2', '3'), EdgeHitResultType.SUCCESS_UNTIL_KICKED_OFF, EdgeHitSourceType.TESTSDK)
+      sd.recordHit(new KeyParts('1', UUID.randomUUID(), '3'), EdgeHitResultType.SUCCESS_UNTIL_KICKED_OFF, EdgeHitSourceType.TESTSDK)
     then:
       sd != null
   }
@@ -35,15 +35,17 @@ class BasicStatsSpec extends Specification {
   }
 
   def "stat beans work as expected"() {
+    given: "i have a environment"
+      def envId = UUID.randomUUID()
     when: "i set up a stat bean"
       def s = new Stat()
       s.resultType = EdgeHitResultType.FORBIDDEN
       s.hitSourceType = EdgeHitSourceType.TESTSDK
-      s.apiKey = new KeyParts("a", "b", 'c"')
+      s.apiKey = new KeyParts("a", envId, 'c"')
     then:
       s.resultType == EdgeHitResultType.FORBIDDEN
       s.hitSourceType == EdgeHitSourceType.TESTSDK
-      s.apiKey.equals( new KeyParts("a", "b", 'c"'))
+      s.apiKey.equals( new KeyParts("a", envId, 'c"'))
   }
 
   // can't really do much more because of the nature of the lmax in terms of stubbing its thread factory

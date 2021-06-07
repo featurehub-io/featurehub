@@ -22,6 +22,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.util.List;
+import java.util.UUID;
 
 public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDelegate {
   private static final Logger log = LoggerFactory.getLogger(EnvironmentFeatureResource.class);
@@ -36,7 +37,7 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
     this.featureApi = featureApi;
   }
 
-  private PersonFeaturePermission requireRoleCheck(String eid, SecurityContext ctx) {
+  private PersonFeaturePermission requireRoleCheck(UUID eid, SecurityContext ctx) {
     Person current = authManagerService.from(ctx);
 
     final EnvironmentRoles roles = environmentApi.personRoles(current, eid);
@@ -45,7 +46,8 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
   }
 
   @Override
-  public FeatureValue createFeatureForEnvironment(String eid, String key, FeatureValue featureValue, SecurityContext securityContext) {
+  public FeatureValue createFeatureForEnvironment(UUID eid, String key, FeatureValue featureValue,
+                                                  SecurityContext securityContext) {
     final FeatureValue featureForEnvironment;
 
     try {
@@ -66,7 +68,7 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
   }
 
   @Override
-  public void deleteFeatureForEnvironment(String eid, String key, SecurityContext securityContext) {
+  public void deleteFeatureForEnvironment(UUID eid, String key, SecurityContext securityContext) {
     if (!requireRoleCheck(eid, securityContext).hasChangeValueRole()) {
       throw new ForbiddenException();
     }
@@ -77,7 +79,7 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
   }
 
   @Override
-  public FeatureValue getFeatureForEnvironment(String eid, String key, SecurityContext securityContext) {
+  public FeatureValue getFeatureForEnvironment(UUID eid, String key, SecurityContext securityContext) {
     if (requireRoleCheck(eid, securityContext).hasNoRoles()) {
       throw new ForbiddenException();
     }
@@ -92,11 +94,7 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
   }
 
   @Override
-  public EnvironmentFeaturesResult getFeaturesForEnvironment(String eid, SecurityContext securityContext) {
-    if ("latest".equalsIgnoreCase(eid)) {
-      return featureApi.lastFeatureValueChanges(authManagerService.from(securityContext));
-    }
-
+  public EnvironmentFeaturesResult getFeaturesForEnvironment(UUID eid, SecurityContext securityContext) {
     if (requireRoleCheck(eid, securityContext).hasNoRoles()) {
       throw new ForbiddenException();
     }
@@ -111,7 +109,8 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
   }
 
   @Override
-  public List<FeatureValue> updateAllFeaturesForEnvironment(String eid, List<FeatureValue> featureValues, SecurityContext securityContext) {
+  public List<FeatureValue> updateAllFeaturesForEnvironment(UUID eid, List<FeatureValue> featureValues,
+                                                            SecurityContext securityContext) {
     List<FeatureValue> updated;
 
     try {
@@ -133,7 +132,8 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
   }
 
   @Override
-  public FeatureValue updateFeatureForEnvironment(String eid, String key, FeatureValue featureValue, SecurityContext securityContext) {
+  public FeatureValue updateFeatureForEnvironment(UUID eid, String key, FeatureValue featureValue,
+                                                  SecurityContext securityContext) {
     try {
       return featureApi.updateFeatureValueForEnvironment(eid, key, featureValue, requireRoleCheck(eid, securityContext));
     } catch (OptimisticLockingException e) {

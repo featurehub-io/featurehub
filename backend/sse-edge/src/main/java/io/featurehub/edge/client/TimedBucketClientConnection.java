@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 public class TimedBucketClientConnection implements ClientConnection {
   private static final Logger log = LoggerFactory.getLogger(TimedBucketClientConnection.class);
@@ -62,7 +63,7 @@ public class TimedBucketClientConnection implements ClientConnection {
   }
 
   @Override
-  public String getEnvironmentId() {
+  public UUID getEnvironmentId() {
     return apiKey.getEnvironmentId();
   }
 

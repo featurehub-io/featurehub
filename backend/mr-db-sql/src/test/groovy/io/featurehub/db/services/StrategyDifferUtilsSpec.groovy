@@ -30,11 +30,11 @@ import spock.lang.Shared
 class StrategyDifferUtilsSpec extends BaseSpec {
   @Shared DbPortfolio portfolio1
   @Shared Application app1
-  @Shared String app1Id
+  @Shared UUID app1Id
   @Shared FeatureSqlApi featureSqlApi
   @Shared RolloutStrategyApi rolloutStrategyApi
   @Shared ApplicationSqlApi appApi
-  @Shared String envId
+  @Shared UUID envId
 
   def setupSpec() {
     baseSetupSpec()
@@ -46,7 +46,7 @@ class StrategyDifferUtilsSpec extends BaseSpec {
 
     database.save(portfolio1)
 
-    app1 = appApi.createApplication(portfolio1.id.toString(), new Application().name("strategy-diff").description('desc'), superPerson)
+    app1 = appApi.createApplication(portfolio1.id, new Application().name("strategy-diff").description('desc'), superPerson)
     app1Id = app1.id
     def environmentSqlApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
     envId = environmentSqlApi.create(new Environment().name("strategy-diff-env-1"), new Application().id(app1.id), superPerson).id
@@ -71,14 +71,14 @@ class StrategyDifferUtilsSpec extends BaseSpec {
       def rs1 = rolloutStrategyApi.createStrategy(app1Id, new RolloutStrategy().name("will"), superPerson, Opts.empty())
       def rs2 = rolloutStrategyApi.createStrategy(app1Id, new RolloutStrategy().name("grace"), superPerson, Opts.empty())
     when: "i update the feature with one"
-      fv.rolloutStrategyInstances([new RolloutStrategyInstance().value(Boolean.FALSE).strategyId(rs1.rolloutStrategy.id)])
+      fv.rolloutStrategyInstances([new RolloutStrategyInstance().value(Boolean.FALSE).strategyId(Conversions.checkUuid(rs1.rolloutStrategy.id))])
       def withOne = featureSqlApi.updateFeatureValueForEnvironment(envId, key, fv, perms)
       def fv1 = featureSqlApi.getFeatureValueForEnvironment(envId, key) // validate
     and: "then I update and add the second one"
-      def withTwo = featureSqlApi.updateFeatureValueForEnvironment(envId, key, withOne.addRolloutStrategyInstancesItem(new RolloutStrategyInstance().strategyId(rs2.rolloutStrategy.id).value(Boolean.TRUE)), perms)
+      def withTwo = featureSqlApi.updateFeatureValueForEnvironment(envId, key, withOne.addRolloutStrategyInstancesItem(new RolloutStrategyInstance().strategyId(Conversions.checkUuid(rs2.rolloutStrategy.id)).value(Boolean.TRUE)), perms)
       def fv2 = featureSqlApi.getFeatureValueForEnvironment(envId, key) // validate
     and: "then remove the first one and change the second"
-      def withThree = featureSqlApi.updateFeatureValueForEnvironment(envId, key, withTwo.rolloutStrategyInstances([new RolloutStrategyInstance().strategyId(rs2.rolloutStrategy.id).value(Boolean.FALSE).disabled(true)]), perms)
+      def withThree = featureSqlApi.updateFeatureValueForEnvironment(envId, key, withTwo.rolloutStrategyInstances([new RolloutStrategyInstance().strategyId(Conversions.checkUuid(rs2.rolloutStrategy.id)).value(Boolean.FALSE).disabled(true)]), perms)
       def fv3 = featureSqlApi.getFeatureValueForEnvironment(envId, key) // validate
     and: "then i fully remove all attachments"
       featureSqlApi.updateFeatureValueForEnvironment(envId, key, withThree.rolloutStrategyInstances([]), perms)
@@ -86,15 +86,15 @@ class StrategyDifferUtilsSpec extends BaseSpec {
     then:
       fv1.rolloutStrategyInstances.size() == 1
       fv1.rolloutStrategyInstances[0].value == Boolean.FALSE
-      fv1.rolloutStrategyInstances[0].strategyId == rs1.rolloutStrategy.id
+      fv1.rolloutStrategyInstances[0].strategyId.toString() == rs1.rolloutStrategy.id
       fv2.rolloutStrategyInstances.size() == 2
-      fv2.rolloutStrategyInstances.find({it.strategyId == rs1.rolloutStrategy.id}).value == Boolean.FALSE
-      fv2.rolloutStrategyInstances.find({it.strategyId == rs1.rolloutStrategy.id}).disabled == null
-      fv2.rolloutStrategyInstances.find({it.strategyId == rs2.rolloutStrategy.id}).value == Boolean.TRUE
-      fv2.rolloutStrategyInstances.find({it.strategyId == rs2.rolloutStrategy.id}).disabled == null
+      fv2.rolloutStrategyInstances.find({it.strategyId.toString() == rs1.rolloutStrategy.id}).value == Boolean.FALSE
+      fv2.rolloutStrategyInstances.find({it.strategyId.toString() == rs1.rolloutStrategy.id}).disabled == null
+      fv2.rolloutStrategyInstances.find({it.strategyId.toString() == rs2.rolloutStrategy.id}).value == Boolean.TRUE
+      fv2.rolloutStrategyInstances.find({it.strategyId.toString() == rs2.rolloutStrategy.id}).disabled == null
       fv3.rolloutStrategyInstances.size() == 1
-      fv3.rolloutStrategyInstances.find({it.strategyId == rs2.rolloutStrategy.id}).value == Boolean.FALSE
-      fv3.rolloutStrategyInstances.find({it.strategyId == rs2.rolloutStrategy.id}).disabled == Boolean.TRUE
+      fv3.rolloutStrategyInstances.find({it.strategyId.toString() == rs2.rolloutStrategy.id}).value == Boolean.FALSE
+      fv3.rolloutStrategyInstances.find({it.strategyId.toString() == rs2.rolloutStrategy.id}).disabled == Boolean.TRUE
       fv4.rolloutStrategyInstances.isEmpty()
   }
 
@@ -109,7 +109,7 @@ class StrategyDifferUtilsSpec extends BaseSpec {
       def rs2 = rolloutStrategyApi.createStrategy(app1Id, new RolloutStrategy().name("mary"), superPerson, Opts.empty())
     when: "i create the feature with the first shared strategy"
       def fv = new FeatureValue()
-        .rolloutStrategyInstances([new RolloutStrategyInstance().value("shimmy").strategyId(rs1.rolloutStrategy.id)])
+        .rolloutStrategyInstances([new RolloutStrategyInstance().value("shimmy").strategyId(Conversions.checkUuid(rs1.rolloutStrategy.id))])
         .locked(false)
         .valueString("georgie")
         .key(key)
@@ -120,10 +120,12 @@ class StrategyDifferUtilsSpec extends BaseSpec {
 
       def fv1 = featureSqlApi.getFeatureValueForEnvironment(envId, key) // validate
     and: "then I update and add the second one"
-      def withTwo = featureSqlApi.updateFeatureValueForEnvironment(envId, key, withOne.addRolloutStrategyInstancesItem(new RolloutStrategyInstance().strategyId(rs2.rolloutStrategy.id).value("ook")), perms)
+      def withTwo = featureSqlApi.updateFeatureValueForEnvironment(envId, key, withOne.addRolloutStrategyInstancesItem(
+        new RolloutStrategyInstance().strategyId(Conversions.checkUuid(rs2.rolloutStrategy.id)).value("ook")), perms)
       def fv2 = featureSqlApi.getFeatureValueForEnvironment(envId, key) // validate
     and: "then remove the first one and change the second"
-      def withThree = featureSqlApi.updateFeatureValueForEnvironment(envId, key, withTwo.rolloutStrategyInstances([new RolloutStrategyInstance().strategyId(rs2.rolloutStrategy.id).value("library").disabled(true)]), perms)
+      def withThree = featureSqlApi.updateFeatureValueForEnvironment(envId, key, withTwo.rolloutStrategyInstances([
+        new RolloutStrategyInstance().strategyId(Conversions.checkUuid(rs2.rolloutStrategy.id)).value("library").disabled(true)]), perms)
       def fv3 = featureSqlApi.getFeatureValueForEnvironment(envId, key) // validate
     and: "then i fully remove all attachments"
       featureSqlApi.updateFeatureValueForEnvironment(envId, key, withThree.rolloutStrategyInstances([]), perms)
@@ -131,17 +133,17 @@ class StrategyDifferUtilsSpec extends BaseSpec {
     then:
       fv1.rolloutStrategyInstances.size() == 1
       fv1.rolloutStrategyInstances[0].value == "shimmy"
-      fv1.rolloutStrategyInstances[0].strategyId == rs1.rolloutStrategy.id
+      fv1.rolloutStrategyInstances[0].strategyId.toString() == rs1.rolloutStrategy.id
       fv2.rolloutStrategyInstances.size() == 2
-      fv2.rolloutStrategyInstances.find({it.strategyId == rs1.rolloutStrategy.id}).value == "shimmy"
-      fv2.rolloutStrategyInstances.find({it.strategyId == rs1.rolloutStrategy.id}).name == "aunt"
-      fv2.rolloutStrategyInstances.find({it.strategyId == rs1.rolloutStrategy.id}).disabled == null
-      fv2.rolloutStrategyInstances.find({it.strategyId == rs2.rolloutStrategy.id}).value == "ook"
-      fv2.rolloutStrategyInstances.find({it.strategyId == rs2.rolloutStrategy.id}).name == "mary"
-      fv2.rolloutStrategyInstances.find({it.strategyId == rs2.rolloutStrategy.id}).disabled == null
+      fv2.rolloutStrategyInstances.find({it.strategyId.toString() == rs1.rolloutStrategy.id}).value == "shimmy"
+      fv2.rolloutStrategyInstances.find({it.strategyId.toString() == rs1.rolloutStrategy.id}).name == "aunt"
+      fv2.rolloutStrategyInstances.find({it.strategyId.toString() == rs1.rolloutStrategy.id}).disabled == null
+      fv2.rolloutStrategyInstances.find({it.strategyId.toString() == rs2.rolloutStrategy.id}).value == "ook"
+      fv2.rolloutStrategyInstances.find({it.strategyId.toString() == rs2.rolloutStrategy.id}).name == "mary"
+      fv2.rolloutStrategyInstances.find({it.strategyId.toString() == rs2.rolloutStrategy.id}).disabled == null
       fv3.rolloutStrategyInstances.size() == 1
-      fv3.rolloutStrategyInstances.find({it.strategyId == rs2.rolloutStrategy.id}).value == "library"
-      fv3.rolloutStrategyInstances.find({it.strategyId == rs2.rolloutStrategy.id}).disabled == Boolean.TRUE
+      fv3.rolloutStrategyInstances.find({it.strategyId.toString() == rs2.rolloutStrategy.id}).value == "library"
+      fv3.rolloutStrategyInstances.find({it.strategyId.toString() == rs2.rolloutStrategy.id}).disabled == Boolean.TRUE
       fv4.rolloutStrategyInstances.isEmpty()
   }
 }

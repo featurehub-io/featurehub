@@ -50,19 +50,19 @@ class EnvironmentSpec extends BaseSpec {
     database.save(portfolio2)
 
     // create the portfolio group
-    groupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id.toString(), new Group().name("p1-app-1-env1-portfolio-group").admin(true), superPerson)
+    groupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("p1-app-1-env1-portfolio-group").admin(true), superPerson)
     groupSqlApi.addPersonToGroup(groupInPortfolio1.id, superPerson.id.id, Opts.empty())
 
-    app1 = appApi.createApplication(portfolio1.id.toString(), new Application().name('app-1-env'), superPerson)
+    app1 = appApi.createApplication(portfolio1.id, new Application().name('app-1-env'), superPerson)
     assert app1 != null && app1.id != null
-    app2 = appApi.createApplication(portfolio2.id.toString(), new Application().name('app-2-env'), superPerson)
+    app2 = appApi.createApplication(portfolio2.id, new Application().name('app-2-env'), superPerson)
     assert app2 != null
-    appTreeEnvs = appApi.createApplication(portfolio2.id.toString(), new Application().name('app-tree-env'), superPerson)
+    appTreeEnvs = appApi.createApplication(portfolio2.id, new Application().name('app-tree-env'), superPerson)
     assert appTreeEnvs != null
   }
 
   def setup() {
-    database.find(DbApplication, UUID.fromString(appTreeEnvs.id)).environments.each({e -> database.delete(e)})
+    database.find(DbApplication, appTreeEnvs.id).environments.each({e -> database.delete(e)})
   }
 
   def "i can create, find and then update an existing environment"() {
@@ -71,7 +71,7 @@ class EnvironmentSpec extends BaseSpec {
       List<Environment> createSearch = envApi.search(app1.id, e.name, SortOrder.ASC, Opts.empty(), superPerson)
       Environment eGet = envApi.get(e.id, Opts.empty(), superPerson)
     and:
-      def originalEnv = envApi.get(e.id.toString(), Opts.empty(), superPerson)
+      def originalEnv = envApi.get(e.id, Opts.empty(), superPerson)
       Environment u = envApi.update(e.id, originalEnv.name("env-1-app-1 update").description("new desc"), Opts.empty())
       List<Environment> updateSearch = envApi.search(app1.id, u.name, SortOrder.ASC, Opts.empty(), superPerson)
       Environment uGet = envApi.get(e.id, Opts.empty(), superPerson)
@@ -185,20 +185,20 @@ class EnvironmentSpec extends BaseSpec {
       database.save(averageJoe)
       def averageJoeMemberOfPortfolio1 = convertUtils.toPerson(averageJoe)
     and: "i create a general portfolio group"
-      groupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id.toString(), new Group().name("envspec-p1-plain-portfolio-group"), superPerson)
+      groupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("envspec-p1-plain-portfolio-group"), superPerson)
       groupSqlApi.addPersonToGroup(groupInPortfolio1.id, averageJoeMemberOfPortfolio1.id.id, Opts.empty())
     and: "i have an environment"
       def env = envApi.create(new Environment().name("env-1-perm-1").description("1"), app1, superPerson)
     when: "i ask for the roles"
-      def perms = envApi.personRoles(averageJoeMemberOfPortfolio1, env.id.toString())
-      def permsWhenNonAdmin = envApi.personRoles(superPerson, env.id.toString())
+      def perms = envApi.personRoles(averageJoeMemberOfPortfolio1, env.id)
+      def permsWhenNonAdmin = envApi.personRoles(superPerson, env.id)
     and: "I change the perms for the environment"
       def g = groupSqlApi.getGroup(groupInPortfolio1.id, Opts.opts(FillOpts.Members), superPerson)
 //      g.members.add(averageJoeMemberOfPortfolio1)
       g.environmentRoles.add(new EnvironmentGroupRole().environmentId(env.id).roles([RoleType.CHANGE_VALUE]))
       groupSqlApi.updateGroup(g.id, g, false, false, true, Opts.empty())
-      def perms2 = envApi.personRoles(averageJoeMemberOfPortfolio1, env.id.toString())
-      def permsAdmin = envApi.personRoles(superPerson, env.id.toString())
+      def perms2 = envApi.personRoles(averageJoeMemberOfPortfolio1, env.id)
+      def permsAdmin = envApi.personRoles(superPerson, env.id)
     then: "the permissions to the portfolio are empty"
       perms.environmentRoles.isEmpty()
       perms.applicationRoles.isEmpty()

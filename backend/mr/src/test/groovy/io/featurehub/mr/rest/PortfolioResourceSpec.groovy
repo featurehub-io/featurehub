@@ -98,7 +98,7 @@ class PortfolioResourceSpec extends Specification {
       authManager.from(sc) >> person
       authManager.isOrgAdmin(person) >> false
     when: "i try and delete a portfolio"
-      pr.deletePortfolio(UUID.randomUUID().toString(), new PortfolioServiceDelegate.DeletePortfolioHolder(), sc)
+      pr.deletePortfolio(UUID.randomUUID(), new PortfolioServiceDelegate.DeletePortfolioHolder(), sc)
     then:
       thrown(ForbiddenException)
   }
@@ -110,7 +110,7 @@ class PortfolioResourceSpec extends Specification {
       authManager.from(sc) >> person
       authManager.isOrgAdmin(person) >> true
     when: "i try and delete a portfolio"
-      def count = pr.deletePortfolio(UUID.randomUUID().toString(), new PortfolioServiceDelegate.DeletePortfolioHolder(), sc)
+      def count = pr.deletePortfolio(UUID.randomUUID(), new PortfolioServiceDelegate.DeletePortfolioHolder(), sc)
     then:
       !count
   }
@@ -122,7 +122,7 @@ class PortfolioResourceSpec extends Specification {
       authManager.from(sc) >> person
       authManager.isOrgAdmin(person) >> true
     and: "i create a portfolio"
-      String pId = "1"
+      UUID pId = UUID.randomUUID()
       portfolioApi.getPortfolio(pId, (Opts)_, _) >> new Portfolio()
     when: "i try and delete a portfolio"
       def count = pr.deletePortfolio(pId, new PortfolioServiceDelegate.DeletePortfolioHolder(), sc)
@@ -132,25 +132,26 @@ class PortfolioResourceSpec extends Specification {
 
   def "getting a non-existent portfolio throws 404"() {
     when:
-      pr.getPortfolio("1", new PortfolioServiceDelegate.GetPortfolioHolder(includeEnvironments: true, includeApplications: true, includeGroups: true), null)
+      pr.getPortfolio(UUID.randomUUID(), new PortfolioServiceDelegate.GetPortfolioHolder(includeEnvironments: true, includeApplications: true, includeGroups: true), null)
     then:
       thrown(NotFoundException)
   }
 
   def "getting portfolio returns portfolio"() {
     given: "i have a portfolio"
-      Portfolio p = new Portfolio().id("sheep")
-      portfolioApi.getPortfolio("1", (Opts)_, _) >> p
+      UUID portId = UUID.randomUUID()
+      Portfolio p = new Portfolio().id(portId)
+      portfolioApi.getPortfolio(portId, (Opts)_, _) >> p
     when:
-      Portfolio p1 = pr.getPortfolio("1", new PortfolioServiceDelegate.GetPortfolioHolder(includeEnvironments: true, includeApplications: true, includeGroups: true), null)
+      Portfolio p1 = pr.getPortfolio(portId, new PortfolioServiceDelegate.GetPortfolioHolder(includeEnvironments: true, includeApplications: true, includeGroups: true), null)
     then:
       p1 != null
-      p1.id == 'sheep'
+      p1.id == portId
   }
 
   def "renaming portfolio is allowed to portfolio admins"() {
     given: "i setup the portfolio"
-      String pId = "x"
+      UUID pId = UUID.randomUUID()
       Portfolio p = new Portfolio().id(pId)
       portfolioApi.updatePortfolio(p, (Opts)_) >> p
     and: "i am a person with admin rights"
@@ -168,7 +169,7 @@ class PortfolioResourceSpec extends Specification {
   def "renaming a portfolio to the name of an existing portfolio results in a conflict error"() {
     given: "i am an admin"
       SecurityContext sc = Mock(SecurityContext)
-      String portfolioId = "x"
+      UUID portfolioId = UUID.randomUUID()
       Person person = new Person()
       authManager.from(sc) >> person
       authManager.isPortfolioAdmin(portfolioId, person, null) >> true
@@ -184,21 +185,21 @@ class PortfolioResourceSpec extends Specification {
 
   def "renaming portfolios is not allowed to non portfolio admins"() {
     given: "i setup the portfolio"
-      Portfolio p = new Portfolio().id("x")
+      Portfolio p = new Portfolio().id(UUID.randomUUID())
       portfolioApi.updatePortfolio(p, (Opts)_) >> p
     and: "i am a person"
       SecurityContext sc = Mock(SecurityContext)
       Person person = new Person()
       authManager.from(sc) >> person
     when: "i rename the portfolio"
-      pr.updatePortfolio("1", p, new PortfolioServiceDelegate.UpdatePortfolioHolder(), sc)
+      pr.updatePortfolio(p.id, p, new PortfolioServiceDelegate.UpdatePortfolioHolder(), sc)
     then:
       thrown(ForbiddenException)
   }
 
   def "cannot rename a non-existent portfolio"() {
     given: "i setup the portfolio"
-      String pId = "y"
+      UUID pId = UUID.randomUUID()
       Portfolio p = new Portfolio().id(pId)
       portfolioApi.updatePortfolio(p, (Opts)_) >> null
     and: "i am a person with admin rights"

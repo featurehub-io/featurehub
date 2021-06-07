@@ -5,17 +5,18 @@ import io.featurehub.mr.model.RolloutStrategy;
 import io.featurehub.mr.model.RolloutStrategyInfo;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface RolloutStrategyApi {
-  RolloutStrategyInfo createStrategy(String appId, RolloutStrategy rolloutStrategy, Person person, Opts opts) throws DuplicateNameException;
+  RolloutStrategyInfo createStrategy(UUID appId, RolloutStrategy rolloutStrategy, Person person, Opts opts) throws DuplicateNameException;
 
-  RolloutStrategyInfo updateStrategy(String appId, RolloutStrategy rolloutStrategy, Person person, Opts opts) throws DuplicateNameException;
+  RolloutStrategyInfo updateStrategy(UUID appId, RolloutStrategy rolloutStrategy, Person person, Opts opts) throws DuplicateNameException;
 
-  List<RolloutStrategyInfo> listStrategies(String appId, boolean includeArchived, Opts opts);
+  List<RolloutStrategyInfo> listStrategies(UUID appId, boolean includeArchived, Opts opts);
 
-  RolloutStrategyInfo getStrategy(String appId, String strategyIdOrName, Opts opts);
+  RolloutStrategyInfo getStrategy(UUID appId, String strategyIdOrName, Opts opts);
 
-  RolloutStrategyInfo archiveStrategy(String appId, String strategyId, Person person, Opts add);
+  RolloutStrategyInfo archiveStrategy(UUID appId, String strategyIdOrName, Person person, Opts add);
 
   static class DuplicateNameException extends Exception {
   }

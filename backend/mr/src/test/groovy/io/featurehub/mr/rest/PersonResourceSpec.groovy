@@ -29,7 +29,7 @@ class PersonResourceSpec extends Specification {
     groupApi = Mock(GroupApi)
     personApi = Mock(PersonApi)
     authManager = Mock(AuthManagerService)
-    authManager.from(_) >> new Person().id(new PersonId().id("x"))
+    authManager.from(_) >> new Person().id(new PersonId().id(UUID.randomUUID()))
 
     System.setProperty("register.url", "%s")
     resource = new PersonResource(personApi, groupApi, authManager)
@@ -71,19 +71,19 @@ class PersonResourceSpec extends Specification {
   def "a person who has groups to add will tell groupApi to add them"() {
     given: "i have a new person"
       CreatePersonDetails cpd = new CreatePersonDetails().email("torvill@f.com").name("name")
-      cpd.addGroupIdsItem("1")
-      cpd.addGroupIdsItem("2")
+      cpd.addGroupIdsItem(UUID.randomUUID())
+      cpd.addGroupIdsItem(UUID.randomUUID())
     and: "i am an admin"
       authManager.isAnyAdmin(_) >> true
     and: "i have setup a create response"
-      PersonApi.PersonToken token = new PersonApi.PersonToken("fred", "x")
+      PersonApi.PersonToken token = new PersonApi.PersonToken("fred", UUID.randomUUID())
       personApi.create(cpd.getEmail(), "name", _) >> token
     when: "i ask to create a new person"
       RegistrationUrl url = resource.createPerson(cpd, null, null)
     then:
       url.registrationUrl == "fred"
-      1 * groupApi.addPersonToGroup("1", "x", (Opts)_)
-      1 * groupApi.addPersonToGroup("2", "x", (Opts)_)
+      1 * groupApi.addPersonToGroup(cpd.groupIds.get(0), token.id, (Opts)_)
+      1 * groupApi.addPersonToGroup(cpd.groupIds.get(1), token.id, (Opts)_)
   }
 
   def "a person who is not an admin cannot search"() {

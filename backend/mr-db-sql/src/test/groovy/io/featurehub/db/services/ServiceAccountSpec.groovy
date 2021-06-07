@@ -39,7 +39,7 @@ class ServiceAccountSpec extends BaseSpec {
   @Shared DbEnvironment environment1
   @Shared DbEnvironment environment2
   @Shared DbEnvironment environment3
-  @Shared String portfolio1Id
+  @Shared UUID portfolio1Id
   @Shared EnvironmentApi environmentApi
 
   def setupSpec() {
@@ -51,11 +51,11 @@ class ServiceAccountSpec extends BaseSpec {
     sapi = new ServiceAccountSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
 
     // now set up the environments we need
-    UUID orgUUID = ConvertUtils.ifUuid(org.id)
+    UUID orgUUID = org.id
     DbOrganization organization = Finder.findDbOrganization()
     portfolio1 = new DbPortfolio.Builder().name("p1-env-1").whoCreated(dbSuperPerson).organization(organization).build()
     database.save(portfolio1)
-    portfolio1Id = portfolio1.id.toString()
+    portfolio1Id = portfolio1.id
     def portfolioGroup = groupSqlApi.createPortfolioGroup(portfolio1Id, new Group().admin(true), superPerson)
     application1 = new DbApplication.Builder().name("app-env-1").portfolio(portfolio1).whoCreated(dbSuperPerson).build()
     database.save(application1)
@@ -70,9 +70,9 @@ class ServiceAccountSpec extends BaseSpec {
 
     groupSqlApi.updateGroup(portfolioGroup.id, portfolioGroup.environmentRoles(
       [
-        new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(environment1.id.toString()),
-        new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(environment2.id.toString()),
-        new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(environment3.id.toString()),
+        new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(environment1.id),
+        new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(environment2.id),
+        new EnvironmentGroupRole().roles([RoleType.READ]).environmentId(environment3.id),
       ]
     ), false, false, true, Opts.empty())
   }
@@ -86,7 +86,7 @@ class ServiceAccountSpec extends BaseSpec {
       def sa = new ServiceAccount().name('sa-acl-filter').description('sa-acl-filter')
           .permissions([
             new ServiceAccountPermission()
-              .environmentId(environment1.id.toString())
+              .environmentId(environment1.id)
               .permissions([RoleType.LOCK]),
             new ServiceAccountPermission()
               .environmentId(env2.id)
@@ -94,7 +94,7 @@ class ServiceAccountSpec extends BaseSpec {
           ])
       sa = sapi.create(portfolio1Id, superPerson, sa, Opts.opts(FillOpts.Permissions))
     when: "i query for the service account filtering by the new app"
-      def saFiltered = sapi.get(sa.id, Opts.opts(FillOpts.Permissions).add(FilterOptType.Application, UUID.fromString(app2.id)))
+      def saFiltered = sapi.get(sa.id, Opts.opts(FillOpts.Permissions).add(FilterOptType.Application, app2.id))
     then:
       sa.permissions.size() == 2
       saFiltered.permissions.size() == 1
@@ -120,14 +120,14 @@ class ServiceAccountSpec extends BaseSpec {
         .permissions([
           new ServiceAccountPermission()
             .permissions([RoleType.READ])
-            .environmentId(environment1.id.toString())
+            .environmentId(environment1.id)
         ])
     when: "i save it"
       def created = sapi.create(portfolio1Id, superPerson, sa, Opts.empty())
     and: "i reset the key"
       sapi.resetApiKey(created.id)
     and: "i find the updated api"
-      def search = sapi.search(portfolio1Id, "sa-reset", application1.id.toString(), superPerson,
+      def search = sapi.search(portfolio1Id, "sa-reset", application1.id, superPerson,
         Opts.opts(FillOpts.Permissions, FillOpts.SdkURL))
     print("search is $search")
       def resetSa = search.find({it.name == 'sa-reset' && sa.description == 'sa-1 test'})
@@ -148,7 +148,7 @@ class ServiceAccountSpec extends BaseSpec {
       def sa = new ServiceAccount().name("sa-delete").description("sa-1 test").permissions(
         [new ServiceAccountPermission()
            .permissions([RoleType.READ, RoleType.CHANGE_VALUE])
-           .environmentId(environment1.id.toString()),
+           .environmentId(environment1.id),
         ]
       )
     and: "i create it"
@@ -247,7 +247,7 @@ class ServiceAccountSpec extends BaseSpec {
 
       def secondUpdate = sapi.update(createdServiceAccount.id, superPerson, updated, Opts.opts(FillOpts.Permissions))
     and: "search for the result"
-      def updatedResult = sapi.search(portfolio1Id, "sa-1", application1.id.toString(), superPerson, Opts.opts(FillOpts.Permissions)).find({it.id == createdServiceAccount.id})
+      def updatedResult = sapi.search(portfolio1Id, "sa-1", application1.id, superPerson, Opts.opts(FillOpts.Permissions)).find({it.id == createdServiceAccount.id})
 
       def upd1 = updatedResult.permissions.find({it.environmentId == env1.id})
       def upd2 = updatedResult.permissions.find({it.environmentId == env2.id})
@@ -278,8 +278,8 @@ class ServiceAccountSpec extends BaseSpec {
 
   def "I cannot request or update an unknown service account"() {
     when:
-      def x = sapi.update("x", superPerson, new ServiceAccount(), Opts.empty())
-      def y = sapi.get("p", Opts.empty())
+      def x = sapi.update(UUID.randomUUID(), superPerson, new ServiceAccount(), Opts.empty())
+      def y = sapi.get(UUID.randomUUID(), Opts.empty())
     then:
       x == null
       y == null

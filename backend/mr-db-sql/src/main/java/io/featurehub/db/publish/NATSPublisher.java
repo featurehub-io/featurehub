@@ -33,7 +33,7 @@ public class NATSPublisher implements PublishManager, NATSSource {
   private final Connection connection;
   private final CacheSource cacheSource;
   private final FeatureUpdateBySDKApi featureUpdateBySDKApi;
-  private final String id;
+  private final UUID id;
   private final Map<String, NamedCacheListener> namedCaches = new ConcurrentHashMap<>();
   private final Map<String, EdgeUpdateListener> edgeFeatureUpdateListeners = new ConcurrentHashMap<>();
   @ConfigKey("feature-update.listener.enable")
@@ -53,7 +53,7 @@ public class NATSPublisher implements PublishManager, NATSSource {
       throw new RuntimeException(e);
     }
 
-    id = UUID.randomUUID().toString();
+    id = UUID.randomUUID();
 
     // always listen to default
     if (new QDbNamedCache().findCount() == 0) {

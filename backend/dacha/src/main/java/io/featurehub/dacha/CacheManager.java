@@ -29,7 +29,7 @@ public class CacheManager implements MessageHandler, HealthSource {
   private static final Logger log = LoggerFactory.getLogger(CacheManager.class);
   private Long mit;
   private Dispatcher cacheManagerDispatcher;
-  private String id;
+  private UUID id;
   @ConfigKey("cache.timeout")
   Integer timeout = 5000;
   @ConfigKey("cache.complete-timeout")
@@ -40,7 +40,7 @@ public class CacheManager implements MessageHandler, HealthSource {
   private final InternalCache internalCache;
   private final ServerConfig config;
   private boolean foundMR = false;
-  private String idOfRefreshSource = null;
+  private UUID idOfRefreshSource = null;
   private ExecutorService executor;
   @ConfigKey("cache.pool-size")
   Integer cachePoolSize = 10;
@@ -61,7 +61,7 @@ public class CacheManager implements MessageHandler, HealthSource {
       }
     }
 
-    id = UUID.randomUUID().toString();
+    id = UUID.randomUUID();
 
     log.info("starting cache: {}:{}", id, mit);
 
@@ -408,7 +408,7 @@ public class CacheManager implements MessageHandler, HealthSource {
     startTimer();
   }
 
-  public String getId() {
+  public UUID getId() {
     return id;
   }
 

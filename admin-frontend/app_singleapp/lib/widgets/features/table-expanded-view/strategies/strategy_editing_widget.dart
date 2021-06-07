@@ -286,7 +286,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
     final validationCheck = await widget.bloc.validationCheck(newStrategy);
 
     if (isValidationOk(validationCheck)) {
-      newStrategy.id = DateTime.now().millisecond.toString();
+      newStrategy.id = null;
       widget.bloc.addStrategy(newStrategy);
       widget.bloc.fvBloc.mrClient.removeOverlay();
     } else {

@@ -1,6 +1,5 @@
 package io.featurehub.db.services;
 
-import cd.connect.app.config.ConfigKey;
 import io.ebean.Database;
 import io.ebean.annotation.Transactional;
 import io.featurehub.db.model.DbApplication;

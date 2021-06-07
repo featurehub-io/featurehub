@@ -9,8 +9,8 @@ import java.util.Set;
 
 public class PersonFeaturePermission {
   public Person person;
-  private Set<RoleType> roles;
-  private Set<ApplicationRoleType> appRoles;
+  private final Set<RoleType> roles;
+  private final Set<ApplicationRoleType> appRoles;
 
   @Deprecated
   public PersonFeaturePermission(Person person, Set<RoleType> roles) {

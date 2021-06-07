@@ -16,6 +16,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.SecurityContext;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 @Singleton
@@ -29,7 +30,8 @@ public class AuthManager implements AuthManagerService {
     this.portfolioApi = portfolioApi;
   }
 
-  public boolean isPortfolioAdmin(String portfolioId, Person person, Consumer<Group> action) {
+  @Override
+  public boolean isPortfolioAdmin(UUID portfolioId, Person person, Consumer<Group> action) {
     if (person == null || portfolioId == null) {
       return false;
     }
@@ -37,6 +39,7 @@ public class AuthManager implements AuthManagerService {
     return isPortfolioAdmin(portfolioId, person.getId(), action);
   }
 
+  @Override
   public boolean isPortfolioAdmin(Portfolio portfolio, Person person) {
     if (portfolio == null || person == null) {
       return false;
@@ -45,7 +48,8 @@ public class AuthManager implements AuthManagerService {
     return isPortfolioAdmin(portfolio.getId(), person, null);
   }
 
-  public boolean isPortfolioAdmin(String portfolioId, Person person) {
+  @Override
+  public boolean isPortfolioAdmin(UUID portfolioId, Person person) {
     if (portfolioId == null || person == null) {
       return false;
     }
@@ -54,7 +58,7 @@ public class AuthManager implements AuthManagerService {
   }
 
   @Override
-  public boolean isAnyAdmin(String personId) {
+  public boolean isAnyAdmin(UUID personId) {
     return isOrgAdmin(personId) ||
       groupApi.groupsWherePersonIsAnAdminMember(personId).size() > 0;
   }
@@ -70,11 +74,12 @@ public class AuthManager implements AuthManagerService {
   }
 
   @Override
-  public boolean isPortfolioGroupMember(String id, Person from) {
+  public boolean isPortfolioGroupMember(UUID id, Person from) {
     return groupApi.isPersonMemberOfPortfolioGroup(id, from.getId().getId());
   }
 
-  public boolean isPortfolioAdmin(String portfolioId, PersonId personId, Consumer<Group> action) {
+  @Override
+  public boolean isPortfolioAdmin(UUID portfolioId, PersonId personId, Consumer<Group> action) {
     if (personId == null || portfolioId == null) {
       return false;
     }
@@ -82,7 +87,7 @@ public class AuthManager implements AuthManagerService {
     return isPortfolioAdmin(portfolioId, personId.getId(), action);
   }
 
-  public boolean isPortfolioAdmin(String portfolioId, String personId, Consumer<Group> action) {
+  public boolean isPortfolioAdmin(UUID portfolioId, UUID personId, Consumer<Group> action) {
     if (personId == null || portfolioId == null) {
       return false;
     }
@@ -96,7 +101,7 @@ public class AuthManager implements AuthManagerService {
     if (adminGroup == null) { // no such portfolio
       return false;
     }
-    String orgId = null;
+    UUID orgId = null;
 
     member = isGroupMember(personId, adminGroup);
 
@@ -124,7 +129,7 @@ public class AuthManager implements AuthManagerService {
     return false;
   }
 
-  private boolean isOrgAdmin(String personId) {
+  private boolean isOrgAdmin(UUID personId) {
     return !groupApi.groupsPersonOrgAdminOf(personId).isEmpty();
   }
 
@@ -137,22 +142,23 @@ public class AuthManager implements AuthManagerService {
     return isOrgAdmin(person.getId().getId());
   }
 
-  public boolean isGroupMember(String userId, Group group) {
+  public boolean isGroupMember(UUID userId, Group group) {
     return group.getMembers().stream().map(Person::getId).anyMatch(uid -> uid.getId().equals(userId));
   }
 
 
+  @Override
   public Person from(SecurityContext context) {
     return ((AuthHolder) context.getUserPrincipal()).getPerson();
   }
 
   @Override
-  public String orgPersonIn(Person person) {
+  public UUID orgPersonIn(Person person) {
     return orgPersonIn(person.getId().getId());
   }
 
   @Override
-  public String orgPersonIn(String id) {
+  public UUID orgPersonIn(UUID id) {
     List<Organization> orgs = groupApi.orgsUserIn(id);
     if (orgs.isEmpty()) {
       return null;
@@ -161,7 +167,7 @@ public class AuthManager implements AuthManagerService {
   }
 
   @Override
-  public String orgPersonIn(PersonId personId) {
+  public UUID orgPersonIn(PersonId personId) {
     return orgPersonIn(personId.getId());
   }
 }

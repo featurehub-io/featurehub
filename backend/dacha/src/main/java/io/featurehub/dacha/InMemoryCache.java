@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -23,15 +24,15 @@ public class InMemoryCache implements InternalCache {
   private static final Logger log = LoggerFactory.getLogger(InMemoryCache.class);
   private boolean wasServiceAccountComplete;
   private boolean wasEnvironmentComplete;
-  private final Map<String, EnvironmentCacheItem> environments = new ConcurrentHashMap<>();
+  private final Map<UUID, EnvironmentCacheItem> environments = new ConcurrentHashMap<>();
   // <environment id, <feature id, fv cache>>
-  private final Map<String, Map<String, FeatureValueCacheItem>> environmentFeatures = new ConcurrentHashMap<>();
-  private final Map<String, ServiceAccountCacheItem> serviceAccounts = new ConcurrentHashMap<>();
+  private final Map<UUID, Map<UUID, FeatureValueCacheItem>> environmentFeatures = new ConcurrentHashMap<>();
+  private final Map<UUID, ServiceAccountCacheItem> serviceAccounts = new ConcurrentHashMap<>();
   // <sdk id + / + environment id ==> ServiceAccount. if null, none maps, otherwise you can do something with it
   private final Map<String, ServiceAccountPermission> serviceAccountPlusEnvIdToEnvIdMap = new ConcurrentHashMap<>();
   // Map<apiKey, serviceAccountId>
 //  private final Map<String, String> apiKeyToServiceAccountKeyMap = new ConcurrentHashMap<>();
-  private final Map<String, List<FeatureValueCacheItem>> valuesForUnpublishedEnvironments = new ConcurrentHashMap<>();
+  private final Map<UUID, List<FeatureValueCacheItem>> valuesForUnpublishedEnvironments = new ConcurrentHashMap<>();
   private Runnable notify;
 
   @Override
@@ -101,7 +102,7 @@ public class InMemoryCache implements InternalCache {
 //        apiKeyToServiceAccountKeyMap.put(sa.getServiceAccount().getApiKeyClientSide(), sa.getServiceAccount().getId());
 //        apiKeyToServiceAccountKeyMap.put(sa.getServiceAccount().getApiKeyServerSide(), sa.getServiceAccount().getId());
 
-        log.debug("have sa {} / {} : {} + {} -> {} : {}", serviceAccounts.size(), sa.getCount(),
+        log.trace("have sa {} / {} : {} + {} -> {} : {}", serviceAccounts.size(), sa.getCount(),
           sa.getServiceAccount().getApiKeyClientSide(),
           sa.getServiceAccount().getApiKeyServerSide(),
           sa.getServiceAccount().getName(), sa.getServiceAccount().getId());
@@ -135,7 +136,7 @@ public class InMemoryCache implements InternalCache {
   private void updateServiceAccountEnvironmentCache(ServiceAccount serviceAccount, ServiceAccountCacheItem oldServiceAccount) {
     if (oldServiceAccount != null) {
       oldServiceAccount.getServiceAccount().getPermissions().forEach(perm -> {
-          log.debug("update cache, removing {} / {} :{}",
+          log.trace("update cache, removing {} / {} :{}",
             serviceAccount.getApiKeyClientSide(),
             serviceAccount.getApiKeyServerSide(),
             perm);
@@ -161,7 +162,7 @@ public class InMemoryCache implements InternalCache {
   private void updateServiceAccountEnvironmentByEnvironment(EnvironmentCacheItem newItem, EnvironmentCacheItem oldCacheItem) {
     if (oldCacheItem != null) {
 
-      final String envId = oldCacheItem.getEnvironment().getId();
+      final UUID envId = oldCacheItem.getEnvironment().getId();
       if (newItem != null) {
         Map<String, Boolean> existing = oldCacheItem.getServiceAccounts().stream()
           .collect(Collectors.toMap(s -> sdkKeyEnvId(s.getApiKeyClientSide(), envId), s -> Boolean.TRUE));
@@ -212,7 +213,7 @@ public class InMemoryCache implements InternalCache {
       return;
     }
 
-    final String envId = e.getEnvironment().getId();
+    final UUID envId = e.getEnvironment().getId();
     EnvironmentCacheItem existing = environments.get(envId);
 
     if (e.getAction() == PublishAction.CREATE || e.getAction() == PublishAction.UPDATE) {
@@ -251,7 +252,7 @@ public class InMemoryCache implements InternalCache {
       return "none";
     }
 
-    return e.getServiceAccounts().stream().map(ServiceAccount::getId).collect(Collectors.joining());
+    return e.getServiceAccounts().stream().map(ServiceAccount::getId).map(Object::toString).collect(Collectors.joining());
   }
 
   /**
@@ -275,12 +276,12 @@ public class InMemoryCache implements InternalCache {
         })));
   }
 
-  private String sdkKeyEnvId(String apiKey, String environmentId) {
-    return apiKey + "/" + environmentId;
+  private String sdkKeyEnvId(String apiKey, UUID environmentId) {
+    return apiKey + "/" + environmentId.toString();
   }
 
   @Override
-  public FeatureCollection getFeaturesByEnvironmentAndServiceAccount(String environmentId, String apiKey) {
+  public FeatureCollection getFeaturesByEnvironmentAndServiceAccount(UUID environmentId, String apiKey) {
     log.debug("got request for environment `{}` and apiKey `{}`", environmentId, apiKey);
 
     ServiceAccountPermission sa = serviceAccountPlusEnvIdToEnvIdMap.get(sdkKeyEnvId(apiKey, environmentId));
@@ -302,7 +303,7 @@ public class InMemoryCache implements InternalCache {
       List<FeatureValueCacheItem> fvs = valuesForUnpublishedEnvironments.computeIfAbsent(fv.getEnvironmentId(), key -> new ArrayList<>());
       fvs.add(fv);
     } else {
-      Map<String, FeatureValueCacheItem> featureMap = environmentFeatures.get(fv.getEnvironmentId());
+      Map<UUID, FeatureValueCacheItem> featureMap = environmentFeatures.get(fv.getEnvironmentId());
 
       if (featureMap != null) {
         FeatureValueCacheItem feature = featureMap.get(fv.getFeature().getId());

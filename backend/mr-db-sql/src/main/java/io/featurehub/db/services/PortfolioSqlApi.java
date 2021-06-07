@@ -11,8 +11,6 @@ import io.featurehub.db.model.DbOrganization;
 import io.featurehub.db.model.DbPerson;
 import io.featurehub.db.model.DbPortfolio;
 import io.featurehub.db.model.query.QDbGroup;
-import io.featurehub.db.model.query.QDbOrganization;
-import io.featurehub.db.model.query.QDbPerson;
 import io.featurehub.db.model.query.QDbPortfolio;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.Portfolio;
@@ -24,6 +22,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Singleton
@@ -34,7 +33,8 @@ public class PortfolioSqlApi implements io.featurehub.db.api.PortfolioApi {
   private final ArchiveStrategy archiveStrategy;
 
   @Inject
-  public PortfolioSqlApi(Database database, Conversions convertUtils, ArchiveStrategy archiveStrategy) {
+  public PortfolioSqlApi(
+      Database database, Conversions convertUtils, ArchiveStrategy archiveStrategy) {
     this.database = database;
     this.convertUtils = convertUtils;
     this.archiveStrategy = archiveStrategy;
@@ -42,8 +42,9 @@ public class PortfolioSqlApi implements io.featurehub.db.api.PortfolioApi {
 
   @Override
   @Transactional(readOnly = true)
-  public List<Portfolio> findPortfolios(String filter, String organizationId, SortOrder ordering, Opts opts, Person currentPerson) {
-    DbPerson personDoingFind = convertUtils.uuidPerson(currentPerson);
+  public List<Portfolio> findPortfolios(
+      String filter, SortOrder ordering, Opts opts, Person currentPerson) {
+    DbPerson personDoingFind = convertUtils.byPerson(currentPerson);
 
     if (personDoingFind == null) {
       return new ArrayList<>();
@@ -69,7 +70,9 @@ public class PortfolioSqlApi implements io.featurehub.db.api.PortfolioApi {
 
     pFinder = finder(pFinder, opts);
 
-    return pFinder.findList().stream().map(p -> convertUtils.toPortfolio(p, opts)).collect(Collectors.toList());
+    return pFinder.findList().stream()
+        .map(p -> convertUtils.toPortfolio(p, opts))
+        .collect(Collectors.toList());
   }
 
   private QDbPortfolio finder(QDbPortfolio pFinder, Opts opts) {
@@ -92,69 +95,74 @@ public class PortfolioSqlApi implements io.featurehub.db.api.PortfolioApi {
     return pFinder;
   }
 
-
   @Override
-  public Portfolio createPortfolio(Portfolio portfolio, Opts opts, Person createdBy) throws DuplicatePortfolioException {
-    if (portfolio.getName() == null) {
-      return null;
+  public Portfolio createPortfolio(Portfolio portfolio, Opts opts, Person createdBy)
+      throws DuplicatePortfolioException {
+    Conversions.nonNullPerson(createdBy);
+
+    if (portfolio == null || portfolio.getName() == null) {
+      throw new IllegalArgumentException("portfolio:name is required");
     }
 
     final DbOrganization org = convertUtils.getDbOrganization();
-    final DbPerson person = convertUtils.uuidPerson(createdBy);
+    final DbPerson person = convertUtils.byPerson(createdBy);
 
-    if (createdBy != null && person == null) {
+    if (person == null) {
       return null; // only null is valid
     }
 
     duplicateCheck(portfolio, null, org);
 
-    DbPortfolio dbPortfolio = new DbPortfolio.Builder()
-      .name(convertUtils.limitLength(portfolio.getName(), 200))
-      .description(convertUtils.limitLength(portfolio.getDescription(), 400))
-      .organization(org)
-      .whoCreated(person)
-      .build();
+    DbPortfolio dbPortfolio =
+        new DbPortfolio.Builder()
+            .name(convertUtils.limitLength(portfolio.getName(), 200))
+            .description(convertUtils.limitLength(portfolio.getDescription(), 400))
+            .organization(org)
+            .whoCreated(person)
+            .build();
 
     updatePortfolio(dbPortfolio);
 
     return convertUtils.toPortfolio(dbPortfolio, opts);
-
   }
 
   @Transactional
   private void updatePortfolio(DbPortfolio portfolio) throws DuplicatePortfolioException {
     try {
       database.save(portfolio);
-    } catch(DuplicateKeyException dke) {
+    } catch (DuplicateKeyException dke) {
       throw new DuplicatePortfolioException();
     }
   }
 
   @Override
   @Transactional(readOnly = true)
-  public Portfolio getPortfolio(String id, Opts opts, Person currentPerson) {
-    DbPerson personDoingFind = convertUtils.uuidPerson(currentPerson);
+  public Portfolio getPortfolio(UUID id, Opts opts, Person currentPerson) {
+    Conversions.nonNullPortfolioId(id);
+    Conversions.nonNullPerson(currentPerson);
+
+    DbPerson personDoingFind = convertUtils.byPerson(currentPerson);
 
     if (personDoingFind == null) {
       return null;
     }
 
-    return Conversions.uuid(id)
-      .map(pId -> {
-        QDbPortfolio finder = finder(new QDbPortfolio().id.eq(pId), opts);
-        if (convertUtils.personIsNotSuperAdmin(personDoingFind)) {
-          finder = finder.groups.peopleInGroup.id.eq(personDoingFind.getId());
-        }
-        return finder.findOneOrEmpty()
-          .map(portf -> convertUtils.toPortfolio(portf, opts))
-          .orElse(null);
-      })
-      .orElse(null);
+    QDbPortfolio finder = finder(new QDbPortfolio().id.eq(id), opts);
+    if (convertUtils.personIsNotSuperAdmin(personDoingFind)) {
+      finder = finder.groups.peopleInGroup.id.eq(personDoingFind.getId());
+    }
+
+    return finder.findOneOrEmpty().map(portf -> convertUtils.toPortfolio(portf, opts)).orElse(null);
   }
 
   @Override
-  public Portfolio updatePortfolio(Portfolio portfolio, Opts opts) throws DuplicatePortfolioException, OptimisticLockingException {
-    DbPortfolio portf = convertUtils.uuidPortfolio(portfolio.getId());
+  public Portfolio updatePortfolio(Portfolio portfolio, Opts opts)
+      throws DuplicatePortfolioException, OptimisticLockingException {
+    if (portfolio == null || portfolio.getId() == null) {
+      throw new IllegalArgumentException("Portfolio:id is required");
+    }
+
+    DbPortfolio portf = convertUtils.byPortfolio(portfolio.getId());
 
     if (portf != null) {
       if (portfolio.getVersion() == null || portfolio.getVersion() != portf.getVersion()) {
@@ -166,14 +174,24 @@ public class PortfolioSqlApi implements io.featurehub.db.api.PortfolioApi {
       portf.setName(portfolio.getName());
       portf.setDescription(portfolio.getDescription());
 
-      // this is actually a possible leak for duplicate portfolio names, we will get an exception here.
+      // this is actually a possible leak for duplicate portfolio names, we will get an exception
+      // here.
       updatePortfolio(portf);
 
       // rename the group
-      new QDbGroup().adminGroup.eq(true).and().owningPortfolio.eq(portf).endAnd().findOneOrEmpty().ifPresent(group -> {
-        group.setName(portfolio.getName());
-        updateGroup(group);
-      });
+      new QDbGroup()
+          .adminGroup
+          .eq(true)
+          .and()
+          .owningPortfolio
+          .eq(portf)
+          .endAnd()
+          .findOneOrEmpty()
+          .ifPresent(
+              group -> {
+                group.setName(portfolio.getName());
+                updateGroup(group);
+              });
 
       return convertUtils.toPortfolio(portf, opts);
     }
@@ -181,13 +199,24 @@ public class PortfolioSqlApi implements io.featurehub.db.api.PortfolioApi {
     return null;
   }
 
-  private void duplicateCheck(Portfolio portfolio, DbPortfolio portf, DbOrganization organization) throws DuplicatePortfolioException {
+  private void duplicateCheck(Portfolio portfolio, DbPortfolio portf, DbOrganization organization)
+      throws DuplicatePortfolioException {
     // if you are changing your name to its existing name, thats fine.  optimisation step
-    if (portf != null && portfolio.getName() != null && portf.getName().equalsIgnoreCase(portfolio.getName())) {
+    if (portf != null
+        && portfolio.getName() != null
+        && portf.getName().equalsIgnoreCase(portfolio.getName())) {
       return;
     }
     // check for name duplicates
-    DbPortfolio nameCheck = new QDbPortfolio().whenArchived.isNull().organization.eq(organization).name.ieq(portfolio.getName()).findOne();
+    DbPortfolio nameCheck =
+        new QDbPortfolio()
+            .whenArchived
+            .isNull()
+            .organization
+            .eq(organization)
+            .name
+            .ieq(portfolio.getName())
+            .findOne();
     if (nameCheck != null && (portf == null || !nameCheck.getId().equals(portf.getId()))) {
       throw new DuplicatePortfolioException();
     }
@@ -200,7 +229,9 @@ public class PortfolioSqlApi implements io.featurehub.db.api.PortfolioApi {
 
   @Override
   @Transactional
-  public void deletePortfolio(String id) {
-    Conversions.uuid(id).flatMap(pId -> new QDbPortfolio().id.eq(pId).findOneOrEmpty()).ifPresent(archiveStrategy::archivePortfolio);
+  public void deletePortfolio(UUID id) {
+    Conversions.nonNullPortfolioId(id);
+
+    new QDbPortfolio().id.eq(id).findOneOrEmpty().ifPresent(archiveStrategy::archivePortfolio);
   }
 }

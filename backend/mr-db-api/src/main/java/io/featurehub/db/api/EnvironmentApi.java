@@ -10,18 +10,19 @@ import io.featurehub.mr.model.SortOrder;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 public interface EnvironmentApi {
-  EnvironmentRoles personRoles(Person current, String eid);
+  EnvironmentRoles personRoles(Person current, UUID eid);
 
   List<Environment> setOrdering(Application app, List<Environment> environments);
 
   class DuplicateEnvironmentException extends Exception {}
   class InvalidEnvironmentChangeException extends Exception {}
-  boolean delete(String id);
-  Environment get(String id, Opts opts, Person current);
-  Environment update(String envId, Environment env, Opts opts) throws OptimisticLockingException, DuplicateEnvironmentException, InvalidEnvironmentChangeException;
+  boolean delete(UUID id);
+  Environment get(UUID id, Opts opts, Person current);
+  Environment update(UUID envId, Environment env, Opts opts) throws OptimisticLockingException, DuplicateEnvironmentException, InvalidEnvironmentChangeException;
   Environment create(Environment env, Application app, Person whoCreated) throws DuplicateEnvironmentException, InvalidEnvironmentChangeException;
-  List<Environment> search(String appId, String filter, SortOrder order, Opts opts, Person current);
-  Portfolio findPortfolio(String envId);
+  List<Environment> search(UUID appId, String filter, SortOrder order, Opts opts, Person current);
+  Portfolio findPortfolio(UUID envId);
 }

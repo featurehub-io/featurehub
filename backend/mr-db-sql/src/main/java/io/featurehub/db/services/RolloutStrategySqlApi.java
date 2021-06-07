@@ -29,32 +29,48 @@ public class RolloutStrategySqlApi implements RolloutStrategyApi {
   private final CacheSource cacheSource;
 
   @Inject
-  public RolloutStrategySqlApi(Database database, Conversions conversions, CacheSource cacheSource) {
+  public RolloutStrategySqlApi(
+      Database database, Conversions conversions, CacheSource cacheSource) {
     this.database = database;
     this.conversions = conversions;
     this.cacheSource = cacheSource;
   }
 
   @Override
-  public RolloutStrategyInfo createStrategy(String appId, RolloutStrategy rolloutStrategy, Person person, Opts opts) throws DuplicateNameException {
-    DbApplication app = conversions.uuidApplication(appId);
-    DbPerson p = conversions.uuidPerson(person);
+  public RolloutStrategyInfo createStrategy(
+      UUID appId, RolloutStrategy rolloutStrategy, Person person, Opts opts)
+      throws DuplicateNameException {
+    Conversions.nonNullApplicationId(appId);
+    Conversions.nonNullPerson(person);
+
+    if (rolloutStrategy == null) {
+      throw new IllegalArgumentException("rolloutStrategy required");
+    }
+
+    DbApplication app = conversions.byApplication(appId);
+    DbPerson p = conversions.byPerson(person);
 
     if (app != null && p != null) {
-      final int existing = new QDbRolloutStrategy()
-        .application.eq(app)
-        .whenArchived.isNull()
-        .name.ieq(rolloutStrategy.getName()).findCount();
-      if (existing > 0)  {
+      final boolean existing =
+          new QDbRolloutStrategy()
+              .application
+              .eq(app)
+              .whenArchived
+              .isNull()
+              .name
+              .ieq(rolloutStrategy.getName())
+              .exists();
+      if (existing) {
         throw new RolloutStrategyApi.DuplicateNameException();
       }
 
       final DbRolloutStrategy rs =
-        new DbRolloutStrategy.Builder().application(app)
-          .whoChanged(p)
-          .strategy(rolloutStrategy)
-          .name(rolloutStrategy.getName())
-          .build();
+          new DbRolloutStrategy.Builder()
+              .application(app)
+              .whoChanged(p)
+              .strategy(rolloutStrategy)
+              .name(rolloutStrategy.getName())
+              .build();
 
       try {
         save(rs);
@@ -74,10 +90,19 @@ public class RolloutStrategySqlApi implements RolloutStrategyApi {
   }
 
   @Override
-  public RolloutStrategyInfo updateStrategy(String appId, RolloutStrategy rolloutStrategy, Person person, Opts opts) throws DuplicateNameException {
-    DbApplication app = conversions.uuidApplication(appId);
-    DbPerson p = conversions.uuidPerson(person);
-    DbRolloutStrategy strategy = conversions.uuidStrategy(rolloutStrategy.getId());
+  public RolloutStrategyInfo updateStrategy(
+      UUID appId, RolloutStrategy rolloutStrategy, Person person, Opts opts)
+      throws DuplicateNameException {
+    Conversions.nonNullApplicationId(appId);
+    Conversions.nonNullPerson(person);
+
+    if (rolloutStrategy == null || rolloutStrategy.getId() == null) {
+      throw new IllegalArgumentException("RolloutStrategy.id is required");
+    }
+
+    DbApplication app = conversions.byApplication(appId);
+    DbPerson p = conversions.byPerson(person);
+    DbRolloutStrategy strategy = byStrategy(appId, rolloutStrategy.getId().toString(), Opts.empty()).findOne();
 
     if (strategy != null && app != null && p != null) {
       if (strategy.getApplication().getId().equals(app.getId())) {
@@ -85,12 +110,16 @@ public class RolloutStrategySqlApi implements RolloutStrategyApi {
         // check if we are renaming it and if so, are we using a duplicate name
         if (!strategy.getName().equalsIgnoreCase(rolloutStrategy.getName())) {
           // is there something using the existing name?
-          final int existing =
-            new QDbRolloutStrategy()
-              .application.eq(app)
-              .name.ieq(rolloutStrategy.getName())
-              .whenArchived.isNull().findCount();
-          if (existing > 0)  {
+          final boolean existing =
+              new QDbRolloutStrategy()
+                  .application
+                  .eq(app)
+                  .name
+                  .ieq(rolloutStrategy.getName())
+                  .whenArchived
+                  .isNull()
+                  .exists();
+          if (existing) {
             throw new RolloutStrategyApi.DuplicateNameException();
           }
         }
@@ -118,74 +147,81 @@ public class RolloutStrategySqlApi implements RolloutStrategyApi {
 
   @Override
   @Transactional(readOnly = true)
-  public List<RolloutStrategyInfo> listStrategies(String appId, boolean includeArchived, Opts opts) {
-    UUID app = Conversions.ifUuid(appId);
+  public List<RolloutStrategyInfo> listStrategies(UUID appId, boolean includeArchived, Opts opts) {
+    Conversions.nonNullApplicationId(appId);
 
-    if (app != null) {
-      QDbRolloutStrategy qRS = new QDbRolloutStrategy().application.id.eq(app);
+    QDbRolloutStrategy qRS = new QDbRolloutStrategy().application.id.eq(appId);
 
-      if (!includeArchived) {
-        qRS = qRS.whenArchived.isNull();
-      }
-
-      if (opts.contains(FillOpts.SimplePeople)) {
-        qRS.whoChanged.fetch();
-      }
-
-      return qRS
-        .findList().stream()
-        .map((rs) -> conversions.toRolloutStrategy(rs, opts)).collect(Collectors.toList());
+    if (!includeArchived) {
+      qRS = qRS.whenArchived.isNull();
     }
 
-    return null;
+    if (opts.contains(FillOpts.SimplePeople)) {
+      qRS.whoChanged.fetch();
+    }
+
+    return qRS.findList().stream()
+        .map((rs) -> conversions.toRolloutStrategy(rs, opts))
+        .collect(Collectors.toList());
   }
 
   @Override
   @Transactional(readOnly = true)
-  public RolloutStrategyInfo getStrategy(String appId, String strategyIdOrName, Opts opts) {
-    UUID app = Conversions.ifUuid(appId);
-    UUID sId = Conversions.ifUuid(strategyIdOrName);
+  public RolloutStrategyInfo getStrategy(UUID appId, String strategyIdOrName, Opts opts) {
+    Conversions.nonNullApplicationId(appId);
 
-    if (app != null) {
-      QDbRolloutStrategy qRS = new QDbRolloutStrategy().application.id.eq(app)
-          .whenArchived.isNull();
-
-      if (sId != null) {
-        qRS = qRS.id.eq(sId);
-      } else {
-        qRS = qRS.name.eq(strategyIdOrName);
-      }
-
-      if (opts.contains(FillOpts.SimplePeople)) {
-        qRS.whoChanged.fetch();
-      }
-
-      return conversions.toRolloutStrategy(qRS.findOne(), opts);
+    if (strategyIdOrName == null) {
+      throw new IllegalArgumentException("strategy name/id required");
     }
 
-    return null;
+    return conversions.toRolloutStrategy(byStrategy(appId, strategyIdOrName, opts).findOne(), opts);
+  }
+
+  private QDbRolloutStrategy byStrategy(UUID appId, String strategyIdOrName, Opts opts) {
+    UUID sId = Conversions.checkUuid(strategyIdOrName);
+
+    QDbRolloutStrategy qRS =
+      new QDbRolloutStrategy().application.id.eq(appId).whenArchived.isNull();
+
+    if (sId != null) {
+      qRS = qRS.id.eq(sId);
+    } else {
+      qRS = qRS.name.eq(strategyIdOrName);
+    }
+
+    if (opts.contains(FillOpts.SimplePeople)) {
+      qRS.whoChanged.fetch();
+    }
+
+    return qRS;
   }
 
   @Override
-  public RolloutStrategyInfo archiveStrategy(String appId, String strategyId, Person person, Opts opts) {
-    DbApplication app = conversions.uuidApplication(appId);
-    DbPerson p = conversions.uuidPerson(person);
-    DbRolloutStrategy strategy = conversions.uuidStrategy(strategyId);
+  public RolloutStrategyInfo archiveStrategy(
+      UUID appId, String strategyIdOrName, Person person, Opts opts) {
+    Conversions.nonNullApplicationId(appId);
+    Conversions.nonNullPerson(person);
+
+    if (strategyIdOrName == null) {
+      throw new IllegalArgumentException("strategy name/id required");
+    }
+
+    DbApplication app = conversions.byApplication(appId);
+    DbPerson p = conversions.byPerson(person);
+    DbRolloutStrategy strategy = byStrategy(appId, strategyIdOrName, Opts.empty()).findOne();
 
     if (strategy != null && app != null && p != null) {
-      if (strategy.getApplication().getId().equals(app.getId())) {
-        // only update and publish if it _actually_ changed
-        if (strategy.getWhenArchived() == null) {
-          strategy.setWhoChanged(p);
-          strategy.setWhenArchived(LocalDateTime.now());
+      // only update and publish if it _actually_ changed
+      if (strategy.getWhenArchived() == null) {
+        strategy.setWhoChanged(p);
+        strategy.setWhenArchived(LocalDateTime.now());
 
-          save(strategy);
+        save(strategy);
 
-          cacheSource.publishRolloutStrategyChange(strategy);
-        }
-
-        return conversions.toRolloutStrategy(strategy, opts);
+        cacheSource.publishRolloutStrategyChange(strategy);
       }
+
+      return conversions.toRolloutStrategy(strategy, opts);
     }
 
     return null;

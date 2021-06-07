@@ -6,6 +6,7 @@ import io.featurehub.mr.model.ServiceAccountCacheItem;
 import io.featurehub.mr.model.ServiceAccountPermission;
 
 import java.util.Collection;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 public interface InternalCache {
@@ -31,7 +32,7 @@ public interface InternalCache {
 
   void environment(EnvironmentCacheItem e);
 
-  FeatureCollection getFeaturesByEnvironmentAndServiceAccount(String environmentId, String apiKey);
+  FeatureCollection getFeaturesByEnvironmentAndServiceAccount(UUID environmentId, String apiKey);
 
   void updateFeatureValue(FeatureValueCacheItem fv);
 }

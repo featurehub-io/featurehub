@@ -28,6 +28,7 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.SecurityContext;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class AuthResource implements AuthServiceDelegate {
   private static final Logger log = LoggerFactory.getLogger(AuthResource.class);
@@ -52,7 +53,7 @@ public class AuthResource implements AuthServiceDelegate {
   }
 
   @Override
-  public Person changePassword(String id, PasswordUpdate passwordUpdate, SecurityContext securityContext) {
+  public Person changePassword(UUID id, PasswordUpdate passwordUpdate, SecurityContext securityContext) {
     Person personByToken = authManager.from(securityContext);
 
     // yourself or a superuser can change your password. This allows a superuser to change the password immediately
@@ -160,7 +161,7 @@ public class AuthResource implements AuthServiceDelegate {
   }
 
   @Override
-  public TokenizedPerson replaceTempPassword(String id, PasswordReset passwordReset, SecurityContext context) {
+  public TokenizedPerson replaceTempPassword(UUID id, PasswordReset passwordReset, SecurityContext context) {
     Person person = authManager.from(context);
 
     if (Boolean.TRUE.equals(person.getPasswordRequiresReset())) {
@@ -188,7 +189,7 @@ public class AuthResource implements AuthServiceDelegate {
   }
 
   @Override
-  public Person resetPassword(String id, PasswordReset passwordReset, SecurityContext context) {
+  public Person resetPassword(UUID id, PasswordReset passwordReset, SecurityContext context) {
     if (authManager.isAnyAdmin(authManager.from(context))) {
       Person person = authenticationApi.resetPassword(id, passwordReset.getPassword(),
         authManager.from(context).getId().getId(),

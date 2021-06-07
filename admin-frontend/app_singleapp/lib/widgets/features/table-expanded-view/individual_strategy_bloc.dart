@@ -2,34 +2,36 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:uuid/uuid.dart';
+
+final _individualBlocUUidGenerator = Uuid();
 
 // this represents a single strategy and allows us to track its state outside of the widget
 class IndividualStrategyBloc extends Bloc {
   final EnvironmentFeatureValues environmentFeatureValue;
   final RolloutStrategy rolloutStrategy;
   final BehaviorSubject<List<RolloutStrategyAttribute>>
-      _rolloutStartegyAttributeSource;
+      _rolloutStrategyAttributeSource;
 
   final BehaviorSubject<List<RolloutStrategyViolation>> _violationSource;
   Stream<List<RolloutStrategyViolation>> get violationStream =>
       _violationSource.stream;
 
   Stream<List<RolloutStrategyAttribute>> get attributes =>
-      _rolloutStartegyAttributeSource.stream;
+      _rolloutStrategyAttributeSource.stream;
 
   List<RolloutStrategyAttribute> get currentAttributes =>
-      _rolloutStartegyAttributeSource.value!;
+      _rolloutStrategyAttributeSource.value!;
 
   IndividualStrategyBloc(this.environmentFeatureValue, this.rolloutStrategy)
       : _violationSource =
             BehaviorSubject<List<RolloutStrategyViolation>>.seeded([]),
-        _rolloutStartegyAttributeSource =
+        _rolloutStrategyAttributeSource =
             BehaviorSubject<List<RolloutStrategyAttribute>>.seeded(
                 rolloutStrategy.attributes) {
-    var counter = 1;
     // ensure all attributes have a unique id
     rolloutStrategy.attributes.forEach((a) {
-      a.id = (counter++).toString();
+      a.id = _individualBlocUUidGenerator.v4();
     });
   }
 
@@ -38,7 +40,7 @@ class IndividualStrategyBloc extends Bloc {
 
   void createAttribute({StrategyAttributeWellKnownNames? type}) {
     final rs = RolloutStrategyAttribute(
-      id: DateTime.now().millisecond.toRadixString(16),
+      id: _individualBlocUUidGenerator.v4(),
       fieldName: type?.name,
     );
 
@@ -62,18 +64,18 @@ class IndividualStrategyBloc extends Bloc {
   }
 
   void addAttribute(RolloutStrategyAttribute rs) {
-    rs.id ??= DateTime.now().millisecond.toRadixString(16);
+    rs.id ??= _individualBlocUUidGenerator.v4();
     rolloutStrategy.attributes.add(rs);
-    _rolloutStartegyAttributeSource.add(rolloutStrategy.attributes);
+    _rolloutStrategyAttributeSource.add(rolloutStrategy.attributes);
   }
 
   void deleteAttribute(RolloutStrategyAttribute rs) {
     rolloutStrategy.attributes.remove(rs);
-    _rolloutStartegyAttributeSource.add(rolloutStrategy.attributes);
+    _rolloutStrategyAttributeSource.add(rolloutStrategy.attributes);
   }
 
   void updateStrategy(RolloutStrategyAttribute rs) {
-    _rolloutStartegyAttributeSource.add(rolloutStrategy.attributes);
+    _rolloutStrategyAttributeSource.add(rolloutStrategy.attributes);
   }
 
   @override

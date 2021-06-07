@@ -22,13 +22,13 @@ class StatsCollectionOrchestratorSpec extends Specification {
       def pub = Mock(StatPublisher)
       def orch = new StatsCollectionOrchestrator(pub)
     and:
-      def k1 = new KeyParts("cache1", "1", "2")
+      def k1 = new KeyParts("cache1", UUID.randomUUID(), "2")
       def col1 = new StatKeyEventCollection(k1)
       col1.add(EdgeHitResultType.FORBIDDEN, EdgeHitSourceType.EVENTSOURCE)
       col1.add(EdgeHitResultType.FORBIDDEN, EdgeHitSourceType.EVENTSOURCE)
       col1.add(EdgeHitResultType.FORBIDDEN, EdgeHitSourceType.EVENTSOURCE)
     and:
-      def k2 = new KeyParts("cache2", "1", "2")
+      def k2 = new KeyParts("cache2", k1.environmentId, "2")
       def col2 = new StatKeyEventCollection(k2)
       col2.add(EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.EVENTSOURCE)
       col2.add(EdgeHitResultType.SUCCESS_UNTIL_KICKED_OFF, EdgeHitSourceType.EVENTSOURCE)
@@ -38,7 +38,7 @@ class StatsCollectionOrchestratorSpec extends Specification {
       1 * pub.publish("cache1", _)
       1 * pub.publish("cache2", { EdgeStatsBundle bundle ->
         bundle.apiKeys.size() == 1
-        bundle.apiKeys[0].envId == '1'
+        bundle.apiKeys[0].envId == k1.environmentId
         bundle.apiKeys[0].svcKey == '2'
         find(bundle, EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.EVENTSOURCE)
         find(bundle, EdgeHitResultType.SUCCESS_UNTIL_KICKED_OFF, EdgeHitSourceType.EVENTSOURCE)
@@ -58,11 +58,11 @@ class StatsCollectionOrchestratorSpec extends Specification {
       def pub = Mock(StatPublisher)
       def orch = new StatsCollectionOrchestrator(pub)
     and:
-      def k1 = new KeyParts("cache1", "1", "2")
+      def k1 = new KeyParts("cache1", UUID.randomUUID(), "2")
       def col1 = new StatKeyEventCollection(k1)
       col1.add(EdgeHitResultType.FORBIDDEN, EdgeHitSourceType.EVENTSOURCE)
     and:
-      def k2 = new KeyParts("cache1", "a", "b")
+      def k2 = new KeyParts("cache1", UUID.randomUUID(), "b")
       def col2 = new StatKeyEventCollection(k2)
       col2.add(EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.EVENTSOURCE)
     when:
@@ -81,7 +81,7 @@ class StatsCollectionOrchestratorSpec extends Specification {
       def orch = new StatsCollectionOrchestrator(pub)
       pub.publish(_ as String,_ as EdgeStatsBundle) >> { String cn, EdgeStatsBundle bundle -> throw new RuntimeException("bad") }
     and:
-      def k1 = new KeyParts("cache1", "1", "2")
+      def k1 = new KeyParts("cache1", UUID.randomUUID(), "2")
       def col1 = new StatKeyEventCollection(k1)
       col1.add(EdgeHitResultType.FORBIDDEN, EdgeHitSourceType.EVENTSOURCE)
     when:

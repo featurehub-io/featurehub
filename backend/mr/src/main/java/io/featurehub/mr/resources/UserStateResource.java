@@ -10,6 +10,7 @@ import javax.inject.Inject;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import java.util.UUID;
 
 public class UserStateResource implements UserStateServiceDelegate {
   private final AuthManagerService authManager;
@@ -24,7 +25,7 @@ public class UserStateResource implements UserStateServiceDelegate {
   }
 
   @Override
-  public HiddenEnvironments getHiddenEnvironments(String appId, SecurityContext securityContext) {
+  public HiddenEnvironments getHiddenEnvironments(UUID appId, SecurityContext securityContext) {
     applicationUtils.featureReadCheck(securityContext, appId);
 
     final HiddenEnvironments hiddenEnvironments =
@@ -34,7 +35,8 @@ public class UserStateResource implements UserStateServiceDelegate {
   }
 
   @Override
-  public HiddenEnvironments saveHiddenEnvironments(String appId, HiddenEnvironments hiddenEnvironments, SecurityContext securityContext) {
+  public HiddenEnvironments saveHiddenEnvironments(UUID appId, HiddenEnvironments hiddenEnvironments,
+                                                   SecurityContext securityContext) {
     applicationUtils.featureReadCheck(securityContext, appId);
 
     try {

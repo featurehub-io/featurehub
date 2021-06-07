@@ -163,9 +163,11 @@ public class DbGroup {
   public DbOrganization findOwningOrganisation() {
     if (getOwningOrganization() != null) {
       return getOwningOrganization();
-    } else {
+    } else if (getOwningPortfolio() != null) {
       return getOwningPortfolio().getOrganization();
     }
+
+    return null;
   }
 
   public static final class Builder {

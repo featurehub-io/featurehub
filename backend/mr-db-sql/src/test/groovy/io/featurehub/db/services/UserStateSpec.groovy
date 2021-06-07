@@ -37,10 +37,10 @@ class UserStateSpec extends BaseSpec {
     database.save(portfolio1)
 
     // create the portfolio group
-    groupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id.toString(), new Group().name("p1-user-spec-admin").admin(true), superPerson)
+    groupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("p1-user-spec-admin").admin(true), superPerson)
     groupSqlApi.addPersonToGroup(groupInPortfolio1.id, superPerson.id.id, Opts.empty())
 
-    app1 = appApi.createApplication(portfolio1.id.toString(), new Application().name('app1-user-spec'), superPerson)
+    app1 = appApi.createApplication(portfolio1.id, new Application().name('app1-user-spec'), superPerson)
     assert app1 != null && app1.id != null
 
     env1 = envApi.create(new Environment().name("dev").description("desc"), app1, superPerson)
@@ -75,7 +75,7 @@ class UserStateSpec extends BaseSpec {
     and: "a new user state with too manny environments"
       def he = new HiddenEnvironments();
       for(int count = 0; count < us.maximumEnvironmentsPerApplication + 5; count ++) {
-        he.addEnvironmentIdsItem("1")
+        he.addEnvironmentIdsItem(UUID.randomUUID())
       }
     when: "i save"
         us.saveHiddenEnvironments(superPerson, he, app1.id)
@@ -87,7 +87,7 @@ class UserStateSpec extends BaseSpec {
     given: "a new user state impl"
       def us = new UserStateSqlApi(convertUtils, database)
     and: "a new user state with invalid environment uuids"
-      def he = new HiddenEnvironments().addEnvironmentIdsItem("1").addEnvironmentIdsItem("2")
+      def he = new HiddenEnvironments().addEnvironmentIdsItem(UUID.randomUUID()).addEnvironmentIdsItem(UUID.randomUUID())
     when: "i save"
         us.saveHiddenEnvironments(superPerson, he, app1.id)
     then:
@@ -98,7 +98,7 @@ class UserStateSpec extends BaseSpec {
     given: "a new user state impl"
       def us = new UserStateSqlApi(convertUtils, database)
     and: "a new user state with invalid environment uuids"
-      def he = new HiddenEnvironments().addEnvironmentIdsItem(UUID.randomUUID().toString()).addEnvironmentIdsItem(UUID.randomUUID().toString())
+      def he = new HiddenEnvironments().addEnvironmentIdsItem(UUID.randomUUID()).addEnvironmentIdsItem(UUID.randomUUID())
     when: "i save"
         us.saveHiddenEnvironments(superPerson, he, app1.id)
     then:

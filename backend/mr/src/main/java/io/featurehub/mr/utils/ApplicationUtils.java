@@ -12,6 +12,7 @@ import javax.inject.Inject;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.SecurityContext;
+import java.util.UUID;
 
 public class ApplicationUtils {
   private static final Logger log = LoggerFactory.getLogger(ApplicationUtils.class);
@@ -24,17 +25,17 @@ public class ApplicationUtils {
     this.applicationApi = applicationApi;
   }
 
-  public ApplicationPermissionCheck check(SecurityContext securityContext, String id) {
+  public ApplicationPermissionCheck check(SecurityContext securityContext, UUID id) {
     return check(securityContext, id, Opts.empty());
   }
 
-  public ApplicationPermissionCheck check(SecurityContext securityContext, String id, Opts opts) {
+  public ApplicationPermissionCheck check(SecurityContext securityContext, UUID id, Opts opts) {
     Person current = authManager.from(securityContext);
 
     return check(current, id, opts);
   }
 
-  public ApplicationPermissionCheck check(Person current, String id, Opts opts) {
+  public ApplicationPermissionCheck check(Person current, UUID id, Opts opts) {
 
     Application app = applicationApi.getApplication(id, opts);
 
@@ -49,7 +50,7 @@ public class ApplicationUtils {
     }
   }
 
-  public ApplicationPermissionCheck featureAdminCheck(SecurityContext securityContext, String id) {
+  public ApplicationPermissionCheck featureAdminCheck(SecurityContext securityContext, UUID id) {
     Person current = authManager.from(securityContext);
 
     if (!applicationApi.findFeatureEditors(id).contains(current.getId().getId())) {
@@ -61,7 +62,7 @@ public class ApplicationUtils {
     }
   }
 
-  public void featureReadCheck(SecurityContext securityContext, String id) {
+  public void featureReadCheck(SecurityContext securityContext, UUID id) {
     Person current = authManager.from(securityContext);
 
     if (!applicationApi.personIsFeatureReader(id, current.getId().getId())) {

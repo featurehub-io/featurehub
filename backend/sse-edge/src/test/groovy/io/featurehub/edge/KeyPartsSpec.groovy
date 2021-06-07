@@ -5,10 +5,11 @@ import spock.lang.Specification
 class KeyPartsSpec extends Specification {
   def "when i have a valid string format i have a valid spec"() {
     when:
-      def x = KeyParts.@Companion.fromString("a/b/c")
+      def envId = UUID.randomUUID()
+      def x = KeyParts.@Companion.fromString(String.format("a/%s/c", envId))
     then:
       x.cacheName == 'a'
-      x.environmentId == 'b'
+      x.environmentId == envId
       x.serviceKey == 'c'
   }
 
@@ -19,7 +20,7 @@ class KeyPartsSpec extends Specification {
       x == null
   }
 
-  def "i cannot create a keypart with null params"() {
+  def "i cannot create a key part with null params"() {
     when:
       def x = new KeyParts(null, null, null)
     then:

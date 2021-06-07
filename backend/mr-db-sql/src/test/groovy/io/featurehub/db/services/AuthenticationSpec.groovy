@@ -115,7 +115,7 @@ class AuthenticationSpec extends BaseSpec {
       personApi.create('william2@featurehub.io', "William", null)
       Person person = auth.register("william2", "william2@featurehub.io", "yacht")
     when: "the super user changes my password"
-      Person resetPerson = auth.resetPassword(person.id.id, "honey", superuser.toString(), false)
+      Person resetPerson = auth.resetPassword(person.id.id, "honey", superuser, false)
     then:
       resetPerson
       resetPerson.email == 'william2@featurehub.io'
@@ -128,7 +128,7 @@ class AuthenticationSpec extends BaseSpec {
     and: "i login"
       Person loginPerson = auth.login("william3@featurehub.io", "bathroom")
     when: "the super user changes my password"
-      auth.resetPassword(person.id.id, "honey", superuser.toString(), false)
+      auth.resetPassword(person.id.id, "honey", superuser, false)
     and: "i try and login "
       Person newPerson = auth.login("william3@featurehub.io", "honey")
     then: "my password requires resetting"
@@ -140,7 +140,7 @@ class AuthenticationSpec extends BaseSpec {
       personApi.create('william-temp@featurehub.io', "William", null)
       Person person = auth.register("william", "william-temp@featurehub.io", "bathroom")
     and: "the super user changes my password"
-      auth.resetPassword(person.id.id, "honey", superuser.toString(), false)
+      auth.resetPassword(person.id.id, "honey", superuser, false)
     and: "i reset my password"
       auth.replaceTemporaryPassword(person.id.id, "buoy")
     and: "i try and reset it again"
@@ -154,10 +154,10 @@ class AuthenticationSpec extends BaseSpec {
 
   def "a person cannot reset their own password"() {
     given: "i register"
-      personApi.create('william-reset@featurehub.io', "William", null)
+      def createdPerson = personApi.create('william-reset@featurehub.io', "William", null)
       Person person = auth.register("william", "william-reset@featurehub.io", "bathroom")
     when: "i try and reset my own password"
-      Person resetUser = auth.resetPassword("william-reset@featurehub.io", "honey", person.id.id, false)
+      Person resetUser = auth.resetPassword(createdPerson.id, "honey", person.id.id, false)
     then: "the system prevents me"
       !resetUser
   }
@@ -167,27 +167,27 @@ class AuthenticationSpec extends BaseSpec {
       personApi.create('william-reset1@featurehub.io',"William", null)
       Person person = auth.register("william", "william-reset1@featurehub.io", "bathroom")
     when: "i try and reset my password to empty"
-      Person resetUser = auth.resetPassword(person.id.id, "", superuser.toString(), false)
+      Person resetUser = auth.resetPassword(person.id.id, "", superuser, false)
     then: "the system prevents me"
       !resetUser
   }
 
   def "i can reset another user's password"() {
     given: "i register"
-      personApi.create('william-reset2@featurehub.io', "William",superuser.toString())
+      personApi.create('william-reset2@featurehub.io', "William",superuser)
       personApi.create('william-reset3@featurehub.io', "William",null)
       Person p2 = auth.register("william", "william-reset2@featurehub.io", "bathroom")
       Person p3 = auth.register("william", "william-reset3@featurehub.io", "bathroom")
     when: "i try and reset their password"
-      Person resetUser = auth.resetPassword(p3.id.id, "bath2", superuser.toString(), false)
-      Person resetUser2 = auth.resetPassword(p2.id.id, "bath2", superuser.toString(), false)
+      Person resetUser = auth.resetPassword(p3.id.id, "bath2", superuser, false)
+      Person resetUser2 = auth.resetPassword(p2.id.id, "bath2", superuser, false)
     then:
       resetUser
   }
 
   def "A user who is a portfolio manager gets their application roles when they login"() {
     given: "i register"
-      personApi.create('portman26@mailinator.com', "Portman26",superuser.toString())
+      personApi.create('portman26@mailinator.com', "Portman26",superuser)
       Person p2 = auth.register("william", "portman26@mailinator.com", "hooray")
     and: "i create a new portfolio"
       Portfolio portfolio1 = portfolioApi.createPortfolio(new Portfolio().name("persontestportfolio").organizationId(org.getId()), Opts.empty(), superPerson)

@@ -24,7 +24,7 @@ class ListenerSpec extends Specification {
         })
         ctxFeat.addListener({ fs -> n2 = fs.number })
     when: "i set the feature state"
-        feat.setFeatureState(new io.featurehub.sse.model.FeatureState().key(key).l(false).value(16).type(FeatureValueType.NUMBER).addStrategiesItem(new RolloutStrategy().value(12).addAttributesItem(
+        feat.setFeatureState(new io.featurehub.sse.model.FeatureState().id(UUID.randomUUID()).key(key).l(false).value(16).type(FeatureValueType.NUMBER).addStrategiesItem(new RolloutStrategy().value(12).addAttributesItem(
           new RolloutStrategyAttribute().conditional(RolloutStrategyAttributeConditional.EQUALS).type(RolloutStrategyFieldType.STRING).fieldName("userkey").addValuesItem("fred")
         )))
     then:

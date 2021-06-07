@@ -30,7 +30,7 @@ class PortfolioSpec extends BaseSpec {
 
     def user = new DbPerson.Builder().email("portolio-simple@featurehub.io").build()
     database.save(user)
-    normalPerson = new Person().id(new PersonId().id(user.id.toString()))
+    normalPerson = new Person().id(new PersonId().id(user.id))
   }
 
   def "we can create a portfolio group"() {
@@ -39,7 +39,7 @@ class PortfolioSpec extends BaseSpec {
     then:
       created != null
       portfolioApi.getPortfolio(created.getId(), Opts.empty(), superPerson).name == created.name
-      portfolioApi.findPortfolios(created.name, org.id, SortOrder.ASC, Opts.empty(), superPerson).size() == 1
+      portfolioApi.findPortfolios(created.name, SortOrder.ASC, Opts.empty(), superPerson).size() == 1
   }
 
   def "a normal person cannot see the portfolio group created by the admin"() {
@@ -48,7 +48,7 @@ class PortfolioSpec extends BaseSpec {
     then:
       created != null
       portfolioApi.getPortfolio(created.id, Opts.empty(), normalPerson) == null
-      portfolioApi.findPortfolios(created.name, org.id, SortOrder.ASC, Opts.empty(), normalPerson).size() == 0
+      portfolioApi.findPortfolios(created.name, SortOrder.ASC, Opts.empty(), normalPerson).size() == 0
   }
 
   def "a normal person in the portfolio group can see the portfolio"() {
@@ -59,7 +59,7 @@ class PortfolioSpec extends BaseSpec {
     then:
       created != null
       portfolioApi.getPortfolio(created.id, Opts.empty(), normalPerson).name == created.name
-      portfolioApi.findPortfolios(created.name, org.id, SortOrder.ASC, Opts.empty(), normalPerson).size() == 1
+      portfolioApi.findPortfolios(created.name, SortOrder.ASC, Opts.empty(), normalPerson).size() == 1
   }
 
   def "we cannot create a duplicate portfolio group"() {
@@ -106,20 +106,32 @@ class PortfolioSpec extends BaseSpec {
       nowDeleted == null
   }
 
-  def "a created portfolio must have a person who creates it"() {
+  def "i must provide a person when creating a portfolio"() {
     when: "i create a portfolio without a person, which is ok because of delayed oauth"
       Portfolio created = portfolioApi.createPortfolio(new Portfolio().name("norton2").organizationId(org.getId()), Opts.empty(), null)
-    and:
+    then:
+      thrown IllegalArgumentException
+  }
+
+  def "the person object must have a person id"() {
+    when:
       Portfolio badUserNoId = portfolioApi.createPortfolio(new Portfolio().name("norton3").organizationId(org.getId()), Opts.empty(), new Person())
-    and:
-      Portfolio badUserBadId = portfolioApi.createPortfolio(new Portfolio().name("norton4").organizationId(org.getId()), Opts.empty(), new Person(id: new PersonId(id: "1")))
-    and:
+    then:
+      thrown IllegalArgumentException
+  }
+
+  def "the person object must have a person id with an idXX"() {
+    when:
+      Portfolio badUserBadId = portfolioApi.createPortfolio(new Portfolio().name("norton4").organizationId(org.getId()), Opts.empty(), new Person(id: new PersonId(id: UUID.randomUUID())))
+    then:
+      1 == 1
+  }
+
+  def "the person object must have a person id with an id"() {
+    when:
       Portfolio badUserBadId2 = portfolioApi.createPortfolio(new Portfolio().name("norton5").organizationId(org.getId()), Opts.empty(), new Person(id: new PersonId(id: null)))
     then:
-      created != null
-      badUserBadId == null
-      badUserBadId2 == null
-      badUserNoId == null
+      thrown IllegalArgumentException
   }
 
   def "i can rename an existing portfolio"() {
@@ -138,7 +150,7 @@ class PortfolioSpec extends BaseSpec {
 
   def "i can't rename a non-existent portfolio"() {
     when: "i rename the portfolio"
-      Portfolio renamed = portfolioApi.updatePortfolio(new Portfolio().id(UUID.randomUUID().toString()).name("new name"), Opts.empty())
+      Portfolio renamed = portfolioApi.updatePortfolio(new Portfolio().id(UUID.randomUUID()).name("new name"), Opts.empty())
     then:
       renamed == null
   }
@@ -151,15 +163,15 @@ class PortfolioSpec extends BaseSpec {
       portfolioApi.createPortfolio(new Portfolio().name("crispy2").organizationId(org.getId()), Opts.empty(), superPerson)
       portfolioApi.createPortfolio(new Portfolio().name("fried").organizationId(org.getId()), Opts.empty(), superPerson)
     when: "i search for crisp"
-      List<Portfolio> crispies = portfolioApi.findPortfolios("crisp", org.getId(), SortOrder.DESC, Opts.opts(FillOpts.Portfolios), superPerson)
+      List<Portfolio> crispies = portfolioApi.findPortfolios("crisp", SortOrder.DESC, Opts.opts(FillOpts.Portfolios), superPerson)
     and: "i search for all"
-      List<Portfolio> all = portfolioApi.findPortfolios(null, org.getId(), SortOrder.ASC, Opts.opts(FillOpts.Members), superPerson)
+      List<Portfolio> all = portfolioApi.findPortfolios(null,  SortOrder.ASC, Opts.opts(FillOpts.Members), superPerson)
     then:
       crispies.size() == 2
       crispies[0].name == 'crispy2' // should be sorted desc
       crispies[1].name == 'crispy'
       crispies*.whenCreated != null
-      crispies*.createdBy*.id*.id as Set == [superuser.toString()] as Set
+      crispies*.createdBy*.id*.id as Set == [superuser] as Set
     and:
       all.size() >= 3
       all[0].name == 'crispy'

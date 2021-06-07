@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.UUID;
 
 /**
  *
@@ -26,14 +27,14 @@ public class NamedCacheListener implements MessageHandler, CacheBroadcast {
   private final String name;
   private final Dispatcher dispatcher;
   private final String managementSubject;
-  private final String id;
+  private final UUID id;
   private final CacheSource cacheSource;
   private final Connection connection;
   private final String environmentSubject;
   private final String serviceAccountSubject;
   private final String featureSubject;
 
-  public NamedCacheListener(String name, Connection connection, String id, CacheSource cacheSource) {
+  public NamedCacheListener(String name, Connection connection, UUID id, CacheSource cacheSource) {
     this.name = name;
 
     dispatcher = connection.createDispatcher(this);

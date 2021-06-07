@@ -6,16 +6,17 @@ import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.SortOrder;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface GroupApi {
 
-  boolean isPersonMemberOfPortfolioGroup(String portfolioId, String personId);
+  boolean isPersonMemberOfPortfolioGroup(UUID portfolioId, UUID personId);
 
-  Group getSuperuserGroup(String id, Person personAsking);
+  Group getSuperuserGroup(UUID id, Person personAsking);
 
-  List<Group> groupsPersonOrgAdminOf(String personId);
+  List<Group> groupsPersonOrgAdminOf(UUID personId);
 
-  List<Organization> orgsUserIn(String personId);
+  List<Organization> orgsUserIn(UUID personId);
 
   class DuplicateGroupException extends Exception {}
   /**
@@ -24,9 +25,9 @@ public interface GroupApi {
    * @param groupName - group name
    * @return Group with the group id
    */
-  Group createOrgAdminGroup(String orgId, String groupName, Person whoCreated);
+  Group createOrgAdminGroup(UUID orgId, String groupName, Person whoCreated);
 
-  Group createPortfolioGroup(String portfolioId, Group group, Person whoCreated) throws DuplicateGroupException;
+  Group createPortfolioGroup(UUID portfolioId, Group group, Person whoCreated) throws DuplicateGroupException;
 
   /**
    * Adds a person to a group
@@ -35,24 +36,24 @@ public interface GroupApi {
    * @param opts
    * @return Group with the group id - default. Or plus opts if provided
    */
-  Group addPersonToGroup(String groupId, String personId, Opts opts);
+  Group addPersonToGroup(UUID groupId, UUID personId, Opts opts);
 
-  Group getGroup(String gid, Opts opts, Person person);
+  Group getGroup(UUID gid, Opts opts, Person person);
 
-  Group findPortfolioAdminGroup(String portfolioId, Opts opts);
+  Group findPortfolioAdminGroup(UUID portfolioId, Opts opts);
 
-  Group findOrganizationAdminGroup(String orgId, Opts opts);
+  Group findOrganizationAdminGroup(UUID orgId, Opts opts);
 
-  List<Group> groupsWherePersonIsAnAdminMember(String personId);
+  List<Group> groupsWherePersonIsAnAdminMember(UUID personId);
 
-  void deleteGroup(String gid);
+  void deleteGroup(UUID gid);
 
-  Group deletePersonFromGroup(String gid, String id, Opts opts);
+  Group deletePersonFromGroup(UUID gid, UUID id, Opts opts);
 
-  Group updateGroup(String gid, Group group, boolean updateMembers, boolean updateApplicationGroupRoles, boolean updateEnvironmentGroupRoles, Opts opts)
+  Group updateGroup(UUID gid, Group group, boolean updateMembers, boolean updateApplicationGroupRoles, boolean updateEnvironmentGroupRoles, Opts opts)
     throws OptimisticLockingException, DuplicateGroupException, DuplicateUsersException;
 
-  List<Group> findGroups(String portfolioId, String filter, SortOrder order, Opts opts);
+  List<Group> findGroups(UUID portfolioId, String filter, SortOrder order, Opts opts);
 
-  void updateAdminGroupForPortfolio(String id, String name);
+  void updateAdminGroupForPortfolio(UUID id, String name);
 }

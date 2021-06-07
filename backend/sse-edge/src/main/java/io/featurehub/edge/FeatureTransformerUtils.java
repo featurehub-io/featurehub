@@ -47,7 +47,7 @@ public class FeatureTransformerUtils implements FeatureTransformer {
         fs.strategies(clientStrategies);
         fs.value(valueAsObject(rf));
       } else {
-        Applied applied = applyFeature.applyFeature(clientStrategies, rf.getFeature().getKey(), rf.getValue().getId()
+        Applied applied = applyFeature.applyFeature(clientStrategies, rf.getFeature().getKey(), rf.getValue().getId().toString()
           , clientAttributes);
         fs.value(applied.isMatched() ? applied.getValue() : valueAsObject(rf));
       }

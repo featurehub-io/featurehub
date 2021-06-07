@@ -7,6 +7,7 @@ import io.featurehub.db.api.GroupApi;
 import io.featurehub.db.api.OptimisticLockingException;
 import io.featurehub.db.api.Opts;
 import io.featurehub.db.api.PersonApi;
+import io.featurehub.db.services.Conversions;
 import io.featurehub.mr.api.PersonServiceDelegate;
 import io.featurehub.mr.auth.AuthManagerService;
 import io.featurehub.mr.model.CreatePersonDetails;
@@ -25,6 +26,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class PersonResource implements PersonServiceDelegate {
@@ -87,13 +89,23 @@ public class PersonResource implements PersonServiceDelegate {
   private Person getPerson(String id, Boolean includeAcls, Boolean includeGroups, SecurityContext securityContext) {
     Person currentUser = authManager.from(securityContext);
 
+
+    UUID personId;
     if ("self".equals(id)) {
-      id = currentUser.getId().getId();
+      personId = currentUser.getId().getId();
       log.info("User requested their own details: {}", id);
+    } else {
+      personId = Conversions.checkUuid(id);
     }
 
-    if (currentUser.getId().getId().equals(id) || authManager.isAnyAdmin(currentUser.getId().getId())) {
-      Person person = personApi.get(id, peopleOpts(includeAcls, includeGroups));
+    if (currentUser.getId().getId().equals(personId) || authManager.isAnyAdmin(currentUser.getId().getId())) {
+      Person person;
+
+      if (personId == null) {
+        person = personApi.get(id, peopleOpts(includeAcls, includeGroups));
+      } else {
+        person = personApi.get(personId, peopleOpts(includeAcls, includeGroups));
+      }
 
       if (person == null) {
         throw new NotFoundException();
@@ -108,16 +120,9 @@ public class PersonResource implements PersonServiceDelegate {
   @Override
   public Boolean deletePerson(String id, DeletePersonHolder holder, SecurityContext securityContext) {
     if (authManager.isOrgAdmin(authManager.from(securityContext))) {
-      if (id.contains("@")) {
-        return personApi.delete(id);
-      } else {
-        Person p = getPerson(id, holder.includeAcls, holder.includeGroups, securityContext);
-        if (p != null) {
-          return personApi.delete(p.getEmail());
-        } else {
-          return false;
-        }
-      }
+      Person p = getPerson(id, false, false, securityContext);
+
+      return personApi.delete(p.getEmail());
     }
 
     throw new ForbiddenException("No permission");
@@ -158,11 +163,13 @@ public class PersonResource implements PersonServiceDelegate {
     if (authManager.isAnyAdmin(from)) {
       Person updatedPerson = null;
       try {
-        updatedPerson = personApi.update(id, person,
+        updatedPerson = personApi.update(Conversions.checkUuid(id), person,
           peopleOpts(holder.includeAcls, holder.includeGroups),
           from.getId().getId());
       } catch (OptimisticLockingException e) {
         throw new WebApplicationException(422);
+      } catch (IllegalArgumentException iae) {
+        throw new BadRequestException();
       }
 
       if (updatedPerson == null) {

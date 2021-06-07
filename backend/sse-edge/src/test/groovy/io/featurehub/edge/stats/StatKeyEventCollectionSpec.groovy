@@ -10,7 +10,8 @@ import java.util.concurrent.Executors
 class StatKeyEventCollectionSpec extends Specification {
   def "multi threaded access to a key collector works as expected"() {
     given: "i have a collection"
-      def sc = new StatKeyEventCollection(new KeyParts('1', '2', '3'))
+      def envId = UUID.randomUUID()
+      def sc = new StatKeyEventCollection(new KeyParts('1', envId, '3'))
     and: "i have a set of threads ready"
       def pool = Executors.newFixedThreadPool(6)
       Runnable run = new Runnable() {
@@ -32,7 +33,7 @@ class StatKeyEventCollectionSpec extends Specification {
     then:
       sc.size() == (EdgeHitResultType.values().size() * EdgeHitSourceType.values().size())
       squashed.svcKey == '3'
-      squashed.envId == '2'
+      squashed.envId == envId
       squashed.counters.size() == (EdgeHitResultType.values().size() * EdgeHitSourceType.values().size())
       squashed.counters.each {it.count == 6}
   }
