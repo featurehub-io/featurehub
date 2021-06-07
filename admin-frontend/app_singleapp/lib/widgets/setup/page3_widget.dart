@@ -44,7 +44,7 @@ class SetupPage3Widget extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
             child: Text(
-                'Ok, next step is to create your first application, an environment and add some features. You can follow the progress stepper by clicking "rocket" icon on the right of the app bar.',
+                'Ok, next step is to create your first application, an environment and add some features. You can follow the progress stepper by clicking the "rocket" icon on the right of the app bar.',
                 style: Theme.of(context).textTheme.bodyText1),
           ),
           Row(

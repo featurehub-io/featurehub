@@ -225,7 +225,7 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
   }
 
   Future<void> _getGroupRoles(String? groupId) async {
-    if (groupId == null || !_mrClient.userIsCurrentPortfolioAdmin) {
+    if (groupId == null || !_mrClient.userIsCurrentPortfolioAdmin || applicationId == null) {
       _groupWithRolesPS.add(null);
     } else {
       try {
