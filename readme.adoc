@@ -57,6 +57,7 @@ image::docs/images/fh-features-console-dark.png[FeatureHub console demo,800]
 === Enterprise ready
 
 * Run on your own infrastructure (self-hosted)
+* SSO login support - Google, Microsoft, GitHub
 * Access control levels to allow different teams/groups permissions.
 * Multiple portfolios (department) support
 
@@ -107,7 +108,7 @@ starting example to work from.
 * SDK's : Mobile (Swift), Python, Ruby
 * SAML support
 * Yaml remote configuration support
-* More deployment options, Helm Charts, Cloud-vendor specific support
+* More deployment options, Cloud-vendor specific support
 
 For more details please refer to https://github.com/featurehub-io/featurehub/issues?q=is%3Aissue+is%3Aopen+label%3Aroadmap[Roadmap tickets]
 
