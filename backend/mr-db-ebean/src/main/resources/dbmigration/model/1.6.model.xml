@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <addColumn tableName="fh_person">
+            <column name="password_alg" type="varchar(60) default 'PBKDF2WithHmacSHA1'" notnull="true"/>
+        </addColumn>
+    </changeSet>
+</migration>
