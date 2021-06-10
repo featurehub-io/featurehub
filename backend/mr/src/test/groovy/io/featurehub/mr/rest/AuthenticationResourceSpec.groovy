@@ -29,7 +29,7 @@ class AuthenticationResourceSpec extends Specification {
     authManager = Mock(AuthManagerService)
     authApi = Mock(AuthenticationApi)
     authRepository = Mock(AuthenticationRepository)
-    fromPerson = new Person().id(new PersonId().id("x"))
+    fromPerson = new Person().id(new PersonId().id(UUID.randomUUID()))
     authManager.from(_) >> fromPerson
 
     resource = new AuthResource(authApi, authManager, personApi, authRepository, null)
@@ -37,7 +37,7 @@ class AuthenticationResourceSpec extends Specification {
 
   def "A non-admin cannot reset a password"() {
     when:
-      resource.resetPassword("1", new PasswordReset(), null)
+      resource.resetPassword(UUID.randomUUID(), new PasswordReset(), null)
     then:
       thrown ForbiddenException
   }
@@ -48,9 +48,9 @@ class AuthenticationResourceSpec extends Specification {
     and:
       Person p = new Person()
     and: "the reset process returns a person"
-      authApi.resetPassword("1", null, "x", false) >> p
+      authApi.resetPassword(fromPerson.id.id, null, fromPerson.id.id, false) >> p
     when: "i try and reset a password"
-      Person newPerson = resource.resetPassword("1", new PasswordReset(), null)
+      Person newPerson = resource.resetPassword(fromPerson.id.id, new PasswordReset(), null)
     then:
       newPerson == p
   }
@@ -58,17 +58,19 @@ class AuthenticationResourceSpec extends Specification {
   def "An admin trying to reset a password for an unknown person will get 404"() {
     given: "i am an admin"
       authManager.isAnyAdmin(_) >> true
+      UUID pId = UUID.randomUUID()
     and: "the reset process returns a person"
-      authApi.resetPassword("1", null, "x", false) >> null
+      authApi.resetPassword(pId, null, UUID.randomUUID(), false) >> null
     when: "i try and reset a password"
-      resource.resetPassword("1", new PasswordReset(), null)
+      resource.resetPassword(pId, new PasswordReset(), null)
     then:
       thrown NotFoundException
   }
 
   def "a person has to be in password reset mode to be allowed to replace password"() {
     when: "i call as a non reset person"
-      resource.replaceTempPassword("x", new PasswordReset(), null)
+      UUID pId = UUID.randomUUID()
+      resource.replaceTempPassword(pId, new PasswordReset(), null)
     then:
       thrown ForbiddenException
   }
@@ -76,8 +78,9 @@ class AuthenticationResourceSpec extends Specification {
   def "a person can only replace the password of themselves"() {
     given:
       fromPerson.passwordRequiresReset(true)
+      UUID pId = UUID.randomUUID()
     when:
-      resource.replaceTempPassword("y", new PasswordReset(), null)
+      resource.replaceTempPassword(pId, new PasswordReset(), null)
     then:
       thrown ForbiddenException
   }
@@ -90,9 +93,9 @@ class AuthenticationResourceSpec extends Specification {
     and:
       SecurityContext ctx = Mock(SecurityContext)
     when:
-      def tp = resource.replaceTempPassword("x", new PasswordReset(), ctx)
+      def tp = resource.replaceTempPassword(fromPerson.id.id, new PasswordReset(), ctx)
     then:
-      authApi.replaceTemporaryPassword("x", null) >> newPerson
+      authApi.replaceTemporaryPassword(fromPerson.id.id, null) >> newPerson
       authRepository.invalidate(ctx)
       authRepository.put(newPerson) >> "fred"
       tp.accessToken == "fred"

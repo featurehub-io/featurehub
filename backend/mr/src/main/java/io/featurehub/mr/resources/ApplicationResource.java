@@ -25,6 +25,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.util.List;
+import java.util.UUID;
 
 public class ApplicationResource implements ApplicationServiceDelegate {
   private static final Logger log = LoggerFactory.getLogger(ApplicationResource.class);
@@ -49,7 +50,8 @@ public class ApplicationResource implements ApplicationServiceDelegate {
   }
 
   @Override
-  public Application createApplication(String id, Application application, CreateApplicationHolder holder, SecurityContext securityContext) {
+  public Application createApplication(UUID id, Application application, CreateApplicationHolder holder,
+                                       SecurityContext securityContext) {
     Person current = authManager.from(securityContext);
 
     if (authManager.isOrgAdmin(current) || authManager.isPortfolioAdmin(id, current, null)) {
@@ -72,14 +74,14 @@ public class ApplicationResource implements ApplicationServiceDelegate {
   }
 
   @Override
-  public Boolean deleteApplication(String eid, DeleteApplicationHolder holder, SecurityContext securityContext) {
+  public Boolean deleteApplication(UUID eid, DeleteApplicationHolder holder, SecurityContext securityContext) {
     ApplicationPermissionCheck apc = applicationUtils.check(securityContext, eid);
 
     return applicationApi.deleteApplication(apc.getApp().getPortfolioId(), apc.getApp().getId());
   }
 
   @Override
-  public List<Application> findApplications(String id, FindApplicationsHolder holder, SecurityContext securityContext) {
+  public List<Application> findApplications(UUID id, FindApplicationsHolder holder, SecurityContext securityContext) {
     final Person from = authManager.from(securityContext);
 
     final List<Application> applications = applicationApi.findApplications(id,
@@ -94,7 +96,7 @@ public class ApplicationResource implements ApplicationServiceDelegate {
   }
 
   @Override
-  public Application getApplication(String appId, GetApplicationHolder holder, SecurityContext securityContext) {
+  public Application getApplication(UUID appId, GetApplicationHolder holder, SecurityContext securityContext) {
     final Application app = applicationApi.getApplication(appId, new Opts().add(FillOpts.Environments,
       holder.includeEnvironments));
 
@@ -106,7 +108,8 @@ public class ApplicationResource implements ApplicationServiceDelegate {
   }
 
   @Override
-  public Application updateApplication(String appId, Application application, UpdateApplicationHolder holder, SecurityContext securityContext) {
+  public Application updateApplication(UUID appId, Application application, UpdateApplicationHolder holder,
+                                       SecurityContext securityContext) {
     applicationUtils.check(securityContext, appId);
 
     try {

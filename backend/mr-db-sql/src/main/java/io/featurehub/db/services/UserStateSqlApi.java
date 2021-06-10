@@ -34,30 +34,31 @@ public class UserStateSqlApi implements UserStateApi {
   }
 
   private QDbUserState userStateFinder(Person person, UUID appUid, UserState userState) {
+    Conversions.nonNullApplicationId(appUid);
+    Conversions.nonNullPerson(person);
+
     return new QDbUserState()
-      .person.id.eq(Conversions.ifUuid(person.getId().getId()))
+      .person.id.eq(person.getId().getId())
       .application.id.eq(appUid)
       .userState.eq(userState);
   }
 
   @Override
-  public HiddenEnvironments getHiddenEnvironments(Person person, String appId) {
-    final UUID appUid = Conversions.ifUuid(appId);
-    if (appUid != null) {
-      final DbUserState features = userStateFinder(person, appUid, UserState.HIDDEN_FEATURES).findOne();
+  public HiddenEnvironments getHiddenEnvironments(Person person, UUID appUid) {
+    Conversions.nonNullApplicationId(appUid);
+    final DbUserState features = userStateFinder(person, appUid, UserState.HIDDEN_FEATURES).findOne();
 
-      if (features != null) {
-        return Conversions.readJsonValue(features.getData(), HiddenEnvironments.class);
-      }
+    if (features != null) {
+      return Conversions.readJsonValue(features.getData(), HiddenEnvironments.class);
     }
 
     return null;
   }
 
   @Override
-  public void saveHiddenEnvironments(Person currentPerson, HiddenEnvironments environments, String appId) throws InvalidUserStateException {
-    final DbApplication application = conversions.uuidApplication(appId);
-    final DbPerson person = conversions.uuidPerson(currentPerson);
+  public void saveHiddenEnvironments(Person currentPerson, HiddenEnvironments environments, UUID appId) throws InvalidUserStateException {
+    final DbApplication application = conversions.byApplication(appId);
+    final DbPerson person = conversions.byPerson(currentPerson);
 
     if (application == null || person == null) {
       log.warn("Attempt made to save user state with invalid person or application.");
@@ -76,7 +77,7 @@ public class UserStateSqlApi implements UserStateApi {
 
     // environment ids that aren't uuids?
     List<UUID> envIds =
-      environments.getEnvironmentIds().stream().map(Conversions::ifUuid).filter(Objects::nonNull).collect(Collectors.toList());
+      environments.getEnvironmentIds().stream().filter(Objects::nonNull).collect(Collectors.toList());
 
     if (envIds.size() != environments.getEnvironmentIds().size()) {
       throw  new InvalidUserStateException("Invalid UUIDs in environments list");
@@ -84,7 +85,7 @@ public class UserStateSqlApi implements UserStateApi {
 
     // environment ids that don't exist?
     if (new QDbEnvironment().id.in(envIds).findCount() != envIds.size()) {
-      throw new InvalidUserStateException("Invalid Environments in environments list");
+      throw new InvalidUserStateException("Invalid number of environments in environments list");
     }
 
     DbUserState features =

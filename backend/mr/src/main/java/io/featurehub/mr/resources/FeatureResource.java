@@ -25,6 +25,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class FeatureResource implements FeatureServiceDelegate {
   private static final Logger log = LoggerFactory.getLogger(FeatureResource.class);
@@ -42,7 +43,7 @@ public class FeatureResource implements FeatureServiceDelegate {
   }
 
   @Override
-  public List<Feature> createFeaturesForApplication(String id, Feature feature, SecurityContext securityContext) {
+  public List<Feature> createFeaturesForApplication(UUID id, Feature feature, SecurityContext securityContext) {
     // here we are only calling it to ensure the security check happens
     final ApplicationPermissionCheck appFeaturePermCheck = applicationUtils.featureAdminCheck(securityContext, id);
 
@@ -54,11 +55,11 @@ public class FeatureResource implements FeatureServiceDelegate {
   }
 
   @Override
-  public List<Feature> deleteFeatureForApplication(String id, String key, SecurityContext securityContext) {
+  public List<Feature> deleteFeatureForApplication(UUID id, String featureKey, SecurityContext securityContext) {
     // here we are only calling it to ensure the security check happens
     applicationUtils.featureAdminCheck(securityContext, id);
 
-    List<Feature> features = applicationApi.deleteApplicationFeature(id, key);
+    List<Feature> features = applicationApi.deleteApplicationFeature(id, featureKey);
     if (features == null) {
       throw new NotFoundException();
     }
@@ -67,7 +68,8 @@ public class FeatureResource implements FeatureServiceDelegate {
   }
 
   @Override
-  public ApplicationFeatureValues findAllFeatureAndFeatureValuesForEnvironmentsByApplication(String id, SecurityContext securityContext) {
+  public ApplicationFeatureValues findAllFeatureAndFeatureValuesForEnvironmentsByApplication(UUID id,
+                                                                                             SecurityContext securityContext) {
     Person current = authManager.from(securityContext);
 
     final ApplicationFeatureValues allFeatureAndFeatureValuesForEnvironmentsByApplication = featureApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(id, current);
@@ -80,7 +82,8 @@ public class FeatureResource implements FeatureServiceDelegate {
   }
 
   @Override
-  public List<FeatureEnvironment> getAllFeatureValuesByApplicationForKey(String id, String key, SecurityContext securityContext) {
+  public List<FeatureEnvironment> getAllFeatureValuesByApplicationForKey(UUID id, String key,
+                                                                         SecurityContext securityContext) {
     final List<FeatureEnvironment> result = featureApi.getFeatureValuesForApplicationForKeyForPerson(id, key, authManager.from(securityContext));
 
     if (result == null) {
@@ -91,13 +94,13 @@ public class FeatureResource implements FeatureServiceDelegate {
   }
 
   @Override
-  public List<Feature> getAllFeaturesForApplication(String id, SecurityContext securityContext) {
+  public List<Feature> getAllFeaturesForApplication(UUID id, SecurityContext securityContext) {
     applicationUtils.featureReadCheck(securityContext, id);
     return applicationApi.getApplicationFeatures(id);
   }
 
   @Override
-  public Feature getFeatureByKey(String id, String key, SecurityContext securityContext) {
+  public Feature getFeatureByKey(UUID id, String key, SecurityContext securityContext) {
     // TODO: permission to read the features
     Feature feature = applicationApi.getApplicationFeatureByKey(id, key);
 
@@ -109,7 +112,8 @@ public class FeatureResource implements FeatureServiceDelegate {
   }
 
   @Override
-  public List<FeatureEnvironment> updateAllFeatureValuesByApplicationForKey(String id, String key, List<FeatureValue> featureValue, UpdateAllFeatureValuesByApplicationForKeyHolder holder, SecurityContext securityContext) {
+  public List<FeatureEnvironment> updateAllFeatureValuesByApplicationForKey(UUID id, String key,
+                                                                            List<FeatureValue> featureValue, UpdateAllFeatureValuesByApplicationForKeyHolder holder, SecurityContext securityContext) {
     final Person person = authManager.from(securityContext);
 
     try {
@@ -135,7 +139,8 @@ public class FeatureResource implements FeatureServiceDelegate {
   }
 
   @Override
-  public List<Feature> updateFeatureForApplication(String id, String key, Feature feature, SecurityContext securityContext) {
+  public List<Feature> updateFeatureForApplication(UUID id, String key, Feature feature,
+                                                   SecurityContext securityContext) {
     applicationUtils.check(securityContext, id);
     try {
       List<Feature> features = applicationApi.updateApplicationFeature(id, key, feature);

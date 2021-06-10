@@ -14,8 +14,8 @@ public class Finder {
     return new QDbPerson().email.eq(email).findOne();
   }
 
-  public static DbPortfolio findPortfolioById(String id) {
-    return new QDbPortfolio().id.eq(UUID.fromString(id)).findOne();
+  public static DbPortfolio findPortfolioById(UUID id) {
+    return new QDbPortfolio().id.eq(id).findOne();
   }
 
   public static DbOrganization findDbOrganization() {

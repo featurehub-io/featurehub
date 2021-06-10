@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class ServiceAccountResource implements ServiceAccountServiceDelegate {
@@ -38,7 +39,8 @@ public class ServiceAccountResource implements ServiceAccountServiceDelegate {
   }
 
   @Override
-  public ServiceAccount createServiceAccountInPortfolio(String id, ServiceAccount serviceAccount, CreateServiceAccountInPortfolioHolder holder, SecurityContext securityContext) {
+  public ServiceAccount createServiceAccountInPortfolio(UUID id, ServiceAccount serviceAccount,
+                                                        CreateServiceAccountInPortfolioHolder holder, SecurityContext securityContext) {
     Person person = authManager.from(securityContext);
 
     if (authManager.isPortfolioAdmin(id, person) || authManager.isOrgAdmin(person)) {
@@ -54,7 +56,7 @@ public class ServiceAccountResource implements ServiceAccountServiceDelegate {
   }
 
   @Override
-  public Boolean deleteServiceAccount(String id, DeleteServiceAccountHolder holder, SecurityContext securityContext) {
+  public Boolean deleteServiceAccount(UUID id, DeleteServiceAccountHolder holder, SecurityContext securityContext) {
     Person person = authManager.from(securityContext);
 
     if (authManager.isPortfolioAdmin(id, person) || authManager.isOrgAdmin(person)) {
@@ -69,7 +71,7 @@ public class ServiceAccountResource implements ServiceAccountServiceDelegate {
   }
 
   @Override
-  public ServiceAccount getServiceAccount(String id, GetServiceAccountHolder holder, SecurityContext securityContext) {
+  public ServiceAccount getServiceAccount(UUID id, GetServiceAccountHolder holder, SecurityContext securityContext) {
     if ("self".equals(id)) {
       ServiceAccount account = authManager.serviceAccount(securityContext);
       id = account.getId();
@@ -92,7 +94,7 @@ public class ServiceAccountResource implements ServiceAccountServiceDelegate {
   }
 
   @Override
-  public ServiceAccount resetApiKey(String id, SecurityContext securityContext) {
+  public ServiceAccount resetApiKey(UUID id, SecurityContext securityContext) {
     Person person = authManager.from(securityContext);
 
     ServiceAccount info = serviceAccountApi.get(id,  Opts.empty());
@@ -115,7 +117,8 @@ public class ServiceAccountResource implements ServiceAccountServiceDelegate {
   }
 
   @Override
-  public List<ServiceAccount> searchServiceAccountsInPortfolio(String id, SearchServiceAccountsInPortfolioHolder holder, SecurityContext securityContext) {
+  public List<ServiceAccount> searchServiceAccountsInPortfolio(UUID id, SearchServiceAccountsInPortfolioHolder holder,
+                                                               SecurityContext securityContext) {
     Person person = authManager.from(securityContext);
 
     List<ServiceAccount> serviceAccounts = serviceAccountApi.search(id, holder.filter, holder.applicationId,
@@ -132,10 +135,11 @@ public class ServiceAccountResource implements ServiceAccountServiceDelegate {
   }
 
   @Override
-  public ServiceAccount updateServiceAccount(String serviceAccountId, ServiceAccount serviceAccount, UpdateServiceAccountHolder holder, SecurityContext securityContext) {
+  public ServiceAccount updateServiceAccount(UUID serviceAccountId, ServiceAccount serviceAccount,
+                                             UpdateServiceAccountHolder holder, SecurityContext securityContext) {
     Person person = authManager.from(securityContext);
 
-    Set<String> envIds =
+    Set<UUID> envIds =
       serviceAccount.getPermissions().stream().map(ServiceAccountPermission::getEnvironmentId).collect(Collectors.toSet());
 
     if (envIds.size() < serviceAccount.getPermissions().size()) {

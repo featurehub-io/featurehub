@@ -15,13 +15,13 @@ import io.featurehub.db.model.DbPortfolio;
 import io.featurehub.db.model.DbServiceAccount;
 import io.featurehub.db.model.DbServiceAccountEnvironment;
 import io.featurehub.db.model.query.QDbAcl;
-import io.featurehub.db.model.query.QDbServiceAccountEnvironment;
-import io.featurehub.mr.model.RoleType;
 import io.featurehub.db.model.query.QDbEnvironment;
 import io.featurehub.db.model.query.QDbServiceAccount;
+import io.featurehub.db.model.query.QDbServiceAccountEnvironment;
 import io.featurehub.db.publish.CacheSource;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.PublishAction;
+import io.featurehub.mr.model.RoleType;
 import io.featurehub.mr.model.ServiceAccount;
 import io.featurehub.mr.model.ServiceAccountPermission;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -41,7 +41,6 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-
 @Singleton
 public class ServiceAccountSqlApi implements ServiceAccountApi {
   private static final Logger log = LoggerFactory.getLogger(ServiceAccountSqlApi.class);
@@ -51,7 +50,11 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
   private final ArchiveStrategy archiveStrategy;
 
   @Inject
-  public ServiceAccountSqlApi(Database database, Conversions convertUtils, CacheSource cacheSource, ArchiveStrategy archiveStrategy) {
+  public ServiceAccountSqlApi(
+      Database database,
+      Conversions convertUtils,
+      CacheSource cacheSource,
+      ArchiveStrategy archiveStrategy) {
     this.database = database;
     this.convertUtils = convertUtils;
     this.cacheSource = cacheSource;
@@ -59,19 +62,15 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
   }
 
   @Override
-  public ServiceAccount get(String saId, Opts opts) {
-    UUID id = Conversions.ifUuid(saId);
+  public ServiceAccount get(UUID id, Opts opts) {
+    Conversions.nonNullServiceAccountId(id);
 
-    if (id != null) {
-      QDbServiceAccount eq = opts(new QDbServiceAccount().id.eq(id), opts);
-      return convertUtils.toServiceAccount(eq.findOne(), opts);
-    }
-
-    return null;
+    QDbServiceAccount eq = opts(new QDbServiceAccount().id.eq(id), opts);
+    return convertUtils.toServiceAccount(eq.findOne(), opts);
   }
 
   private QDbServiceAccount opts(QDbServiceAccount finder, Opts opts) {
-    if (opts.contains(FillOpts.Permissions) || opts.contains(FillOpts.SdkURL) ) {
+    if (opts.contains(FillOpts.Permissions) || opts.contains(FillOpts.SdkURL)) {
       finder = finder.serviceAccountEnvironments.fetch();
     }
     if (!opts.contains(FillOpts.Archived)) {
@@ -80,91 +79,93 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
     return finder;
   }
 
-  static class EnvironmentChange {
-    private DbEnvironment environment;
-
-    public EnvironmentChange(DbEnvironment environment) {
-      this.environment = environment;
-    }
-
-    public DbEnvironment getEnvironment() {
-      return environment;
-    }
-  }
-
-
   @Override
-  public ServiceAccount update(String saId, Person updater, ServiceAccount serviceAccount, Opts opts) throws OptimisticLockingException {
-    UUID id = Conversions.ifUuid(saId);
-    if (id != null) {
-      DbServiceAccount sa = new QDbServiceAccount().id.eq(id).whenArchived.isNull().findOne();
+  public ServiceAccount update(UUID id, Person updater, ServiceAccount serviceAccount, Opts opts)
+      throws OptimisticLockingException {
+    Conversions.nonNullServiceAccountId(id);
 
-      if (sa != null) {
-        if (serviceAccount.getVersion() == null || serviceAccount.getVersion() != sa.getVersion()) {
-          throw new OptimisticLockingException();
-        }
+    DbServiceAccount sa = new QDbServiceAccount().id.eq(id).whenArchived.isNull().findOne();
 
-        Map<UUID, ServiceAccountPermission> updatedEnvironments = new HashMap<>();
-        List<UUID> newEnvironments = new ArrayList<>();
+    if (sa == null) return null;
 
-        serviceAccount.getPermissions().forEach(perm -> {
-          Conversions.uuid(perm.getEnvironmentId()).ifPresent(uuid -> {
-            updatedEnvironments.put(uuid, perm);
-            newEnvironments.add(uuid);
-          });
-        });
+    if (serviceAccount.getVersion() == null || serviceAccount.getVersion() != sa.getVersion()) {
+      throw new OptimisticLockingException();
+    }
 
-        List<DbServiceAccountEnvironment> deletePerms = new ArrayList<>();
-        List<DbServiceAccountEnvironment> updatePerms = new ArrayList<>();
-        List<DbServiceAccountEnvironment> createPerms = new ArrayList<>();
+    Map<UUID, ServiceAccountPermission> updatedEnvironments = new HashMap<>();
+    List<UUID> newEnvironments = new ArrayList<>();
 
-        // we drop out of this knowing which perms to delete and update
-        new QDbServiceAccountEnvironment().environment.id.in(updatedEnvironments.keySet()).serviceAccount.eq(sa).findEach(upd -> {
-          final UUID envId = upd.getEnvironment().getId();
+    serviceAccount
+        .getPermissions()
+        .forEach(
+            perm -> {
+              if (perm.getEnvironmentId() != null) {
+                updatedEnvironments.put(perm.getEnvironmentId(), perm);
+                newEnvironments.add(perm.getEnvironmentId());
+              }
+            });
 
-          final ServiceAccountPermission perm = updatedEnvironments.get(envId);
+    List<DbServiceAccountEnvironment> deletePerms = new ArrayList<>();
+    List<DbServiceAccountEnvironment> updatePerms = new ArrayList<>();
+    List<DbServiceAccountEnvironment> createPerms = new ArrayList<>();
 
-          newEnvironments.remove(envId);
+    // we drop out of this knowing which perms to delete and update
+    new QDbServiceAccountEnvironment()
+        .environment
+        .id
+        .in(updatedEnvironments.keySet())
+        .serviceAccount
+        .eq(sa)
+        .findEach(
+            upd -> {
+              final UUID envId = upd.getEnvironment().getId();
 
-          if (perm.getPermissions() == null || perm.getPermissions().isEmpty()) {
-            deletePerms.add(upd);
-          } else {
-            final String newPerms = convertPermissionsToString(perm.getPermissions());
-            if (!newPerms.equals(upd.getPermissions())) {
-              upd.setPermissions(newPerms);
-              updatePerms.add(upd);
-            }
-          }
-        });
+              final ServiceAccountPermission perm = updatedEnvironments.get(envId);
 
-        // now we need to know which perms to add
-        newEnvironments.forEach(envId -> {
+              newEnvironments.remove(envId);
+
+              if (perm.getPermissions() == null || perm.getPermissions().isEmpty()) {
+                deletePerms.add(upd);
+              } else {
+                final String newPerms = convertPermissionsToString(perm.getPermissions());
+                if (!newPerms.equals(upd.getPermissions())) {
+                  upd.setPermissions(newPerms);
+                  updatePerms.add(upd);
+                }
+              }
+            });
+
+    // now we need to know which perms to add
+    newEnvironments.forEach(
+        envId -> {
           final ServiceAccountPermission perm = updatedEnvironments.get(envId);
           if (perm.getPermissions() != null && !perm.getPermissions().isEmpty()) {
-            DbEnvironment env = convertUtils.uuidEnvironment(envId, Opts.opts(FillOpts.ApplicationIds,
-              FillOpts.PortfolioIds));
+            DbEnvironment env =
+                convertUtils.byEnvironment(
+                    envId, Opts.opts(FillOpts.ApplicationIds, FillOpts.PortfolioIds));
 
-            if (env != null && env.getParentApplication().getPortfolio().getId().equals(sa.getPortfolio().getId())) {
-              createPerms.add(new DbServiceAccountEnvironment.Builder()
-              .environment(env)
-              .serviceAccount(sa)
-              .permissions(convertPermissionsToString(perm.getPermissions()))
-              .build());
+            if (env != null
+                && env.getParentApplication()
+                    .getPortfolio()
+                    .getId()
+                    .equals(sa.getPortfolio().getId())) {
+              createPerms.add(
+                  new DbServiceAccountEnvironment.Builder()
+                      .environment(env)
+                      .serviceAccount(sa)
+                      .permissions(convertPermissionsToString(perm.getPermissions()))
+                      .build());
             }
           }
         });
 
-        if (serviceAccount.getDescription() != null) {
-          sa.setDescription(serviceAccount.getDescription());
-        }
-
-        updateServiceAccount(sa, deletePerms, updatePerms, createPerms);
-
-        return convertUtils.toServiceAccount(sa, opts);
-      }
+    if (serviceAccount.getDescription() != null) {
+      sa.setDescription(serviceAccount.getDescription());
     }
 
-    return null;
+    updateServiceAccount(sa, deletePerms, updatePerms, createPerms);
+
+    return convertUtils.toServiceAccount(sa, opts);
   }
 
   private String convertPermissionsToString(List<RoleType> permissions) {
@@ -172,24 +173,25 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
   }
 
   @Override
-  public List<ServiceAccount> search(String portfolioId, String filter, String applicationId, Person currentPerson, Opts opts) {
-    UUID pId = Conversions.ifUuid(portfolioId);
-    DbPerson personId = convertUtils.uuidPerson(currentPerson);
+  public List<ServiceAccount> search(
+      UUID pId, String filter, UUID applicationId, Person currentPerson, Opts opts) {
+    Conversions.nonNullPortfolioId(pId);
 
-    if (pId == null || personId == null) {
+    DbPerson person = convertUtils.byPerson(currentPerson);
+
+    if (person == null) {
       return null;
     }
 
     DbApplication application = null;
     boolean personAdmin = false;
     if (applicationId != null) {
-      application = convertUtils.uuidApplication(applicationId);
+      application = convertUtils.byApplication(applicationId);
 
       if (application != null) {
-        personAdmin = convertUtils.isPersonApplicationAdmin(personId, application);
+        personAdmin = convertUtils.isPersonApplicationAdmin(person, application);
       }
     }
-
 
     QDbServiceAccount qFinder = opts(new QDbServiceAccount().portfolio.id.eq(pId), opts);
     if (filter != null) {
@@ -197,8 +199,7 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
     }
 
     if (application != null) {
-      qFinder = qFinder
-        .portfolio.applications.eq(application);
+      qFinder = qFinder.portfolio.applications.eq(application);
 
       qFinder = opts(qFinder, opts);
     }
@@ -208,52 +209,76 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
     // if they are an admin they have everything, otherwise spelunk through finding relevant ACLs
     final List<DbAcl> environmentPermissions = new ArrayList<>();
 
-    if (!personAdmin && application != null && (opts.contains(FillOpts.Permissions) || opts.contains(FillOpts.SdkURL))) {
-      environmentPermissions.addAll(new QDbAcl()
-        .roles.notEqualTo("")
-        .environment.parentApplication.eq(application)
-        .group.peopleInGroup.eq(personId)
-        .environment.fetch(QDbEnvironment.Alias.id).findList());
+    if (!personAdmin
+        && application != null
+        && (opts.contains(FillOpts.Permissions) || opts.contains(FillOpts.SdkURL))) {
+      environmentPermissions.addAll(
+          new QDbAcl()
+              .roles
+              .notEqualTo("")
+              .environment
+              .parentApplication
+              .eq(application)
+              .group
+              .peopleInGroup
+              .eq(person)
+              .environment
+              .fetch(QDbEnvironment.Alias.id)
+              .findList());
     }
 
-    return qFinder.findList().stream().map(sa -> convertUtils.toServiceAccount(sa, updatedOpts, environmentPermissions)).collect(Collectors.toList());
+    return qFinder.findList().stream()
+        .map(sa -> convertUtils.toServiceAccount(sa, updatedOpts, environmentPermissions))
+        .collect(Collectors.toList());
   }
 
   @Override
-  public ServiceAccount resetApiKey(String saId) {
-    UUID id = Conversions.ifUuid(saId);
-    if (id != null) {
-      DbServiceAccount sa = new QDbServiceAccount().id.eq(id).whenArchived.isNull().findOne();
-      if (sa != null) {
-        sa.setApiKeyServerEval(newServerEvalKey());
-        sa.setApiKeyClientEval(newClientEvalKey());
-        updateOnlyServiceAccount(sa);
-        asyncUpdateCache(sa, null);
-        return convertUtils.toServiceAccount(sa, Opts.empty());
-      }
-    }
+  public ServiceAccount resetApiKey(UUID id) {
+    Conversions.nonNullServiceAccountId(id);
 
-    return null;
+    DbServiceAccount sa = new QDbServiceAccount().id.eq(id).whenArchived.isNull().findOne();
+    if (sa == null) return null;
+
+    sa.setApiKeyServerEval(newServerEvalKey());
+    sa.setApiKeyClientEval(newClientEvalKey());
+    updateOnlyServiceAccount(sa);
+    asyncUpdateCache(sa, null);
+    return convertUtils.toServiceAccount(sa, Opts.empty());
   }
 
   @Transactional
   public void cleanupServiceAccountApiKeys() {
-    if (new QDbServiceAccount().or().apiKeyClientEval.isNull().apiKeyServerEval.isNull().endOr().findCount() > 0) {
+    if (new QDbServiceAccount()
+            .or()
+            .apiKeyClientEval
+            .isNull()
+            .apiKeyServerEval
+            .isNull()
+            .endOr()
+            .exists()) {
       log.info("Updating service account keys as incomplete.");
-      new QDbServiceAccount().or().apiKeyClientEval.isNull().apiKeyServerEval.isNull().endOr().findEach(sa -> {
-        boolean updated = false;
-        if (sa.getApiKeyClientEval() == null) {
-          updated = true;
-          sa.setApiKeyClientEval(newClientEvalKey());
-        }
-        if (sa.getApiKeyServerEval() == null) {
-          updated = true;
-          sa.setApiKeyServerEval(newServerEvalKey());
-        }
-        if (updated) {
-          database.update(sa);
-        }
-      });
+      new QDbServiceAccount()
+          .or()
+          .apiKeyClientEval
+          .isNull()
+          .apiKeyServerEval
+          .isNull()
+          .endOr()
+          .findEach(
+              sa -> {
+                boolean updated = false;
+                if (sa.getApiKeyClientEval() == null) {
+                  updated = true;
+                  sa.setApiKeyClientEval(newClientEvalKey());
+                }
+                if (sa.getApiKeyServerEval() == null) {
+                  updated = true;
+                  sa.setApiKeyServerEval(newServerEvalKey());
+                }
+                if (updated) {
+                  database.update(sa);
+                }
+              });
     }
   }
 
@@ -262,76 +287,84 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
   }
 
   private String newClientEvalKey() {
-    return RandomStringUtils.randomAlphanumeric(30) + "*" + RandomStringUtils.randomAlphanumeric(20);
+    return RandomStringUtils.randomAlphanumeric(30)
+        + "*"
+        + RandomStringUtils.randomAlphanumeric(20);
   }
 
   @Override
-  public ServiceAccount create(String portfolioId, Person creator, ServiceAccount serviceAccount, Opts opts)
-    throws DuplicateServiceAccountException {
-    DbPerson who = convertUtils.uuidPerson(creator);
-    DbPortfolio portfolio = convertUtils.uuidPortfolio(portfolioId);
+  public ServiceAccount create(
+      UUID portfolioId, Person creator, ServiceAccount serviceAccount, Opts opts)
+      throws DuplicateServiceAccountException {
+    Conversions.nonNullPortfolioId(portfolioId);
+    Conversions.nonNullPerson(creator);
 
-    if (who != null && portfolio != null) {
-      List<DbEnvironment> changedEnvironments = new ArrayList<>();
-      Map<String, DbEnvironment> envs = environmentMap(serviceAccount);
+    DbPerson who = convertUtils.byPerson(creator);
+    DbPortfolio portfolio = convertUtils.byPortfolio(portfolioId);
 
-      // now where we actually find the environment, add it into the list
-      Set<DbServiceAccountEnvironment> perms =
-      serviceAccount.getPermissions().stream().map(sap -> {
-        if (sap.getEnvironmentId() != null) {
-          DbEnvironment e = envs.get(sap.getEnvironmentId());
-          if (e != null) {
-            changedEnvironments.add(e);
-            return new DbServiceAccountEnvironment.Builder()
-              .environment(e)
-              .permissions(convertPermissionsToString(sap.getPermissions()))
-              .build();
-          }
-        }
-        return null;
-      }).filter(Objects::nonNull).collect(Collectors.toSet());
+    if (who == null || portfolio == null) return null;
 
-        // now create the SA and attach the perms to form the links
-      DbServiceAccount sa = new DbServiceAccount.Builder()
-        .name(serviceAccount.getName())
-        .description(serviceAccount.getDescription())
-        .whoChanged(who)
-        .apiKeyServerEval(newServerEvalKey())
-        .apiKeyClientEval(newClientEvalKey())
-        .serviceAccountEnvironments(perms)
-        .portfolio(portfolio)
-        .build();
+    List<DbEnvironment> changedEnvironments = new ArrayList<>();
+    Map<UUID, DbEnvironment> envs = environmentMap(serviceAccount);
 
-      perms.forEach(p -> p.setServiceAccount(sa));
+    // now where we actually find the environment, add it into the list
+    Set<DbServiceAccountEnvironment> perms =
+        serviceAccount.getPermissions().stream()
+            .map(
+                sap -> {
+                  if (sap.getEnvironmentId() != null) {
+                    DbEnvironment e = envs.get(sap.getEnvironmentId());
+                    if (e != null) {
+                      changedEnvironments.add(e);
+                      return new DbServiceAccountEnvironment.Builder()
+                          .environment(e)
+                          .permissions(convertPermissionsToString(sap.getPermissions()))
+                          .build();
+                    }
+                  }
+                  return null;
+                })
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
 
-      try {
-        save(sa);
+    // now create the SA and attach the perms to form the links
+    DbServiceAccount sa =
+        new DbServiceAccount.Builder()
+            .name(serviceAccount.getName())
+            .description(serviceAccount.getDescription())
+            .whoChanged(who)
+            .apiKeyServerEval(newServerEvalKey())
+            .apiKeyClientEval(newClientEvalKey())
+            .serviceAccountEnvironments(perms)
+            .portfolio(portfolio)
+            .build();
 
-        asyncUpdateCache(sa, changedEnvironments);
-      } catch (DuplicateKeyException dke) {
-        log.warn("Duplicate service account {}", sa.getName(), dke);
-        throw new DuplicateServiceAccountException();
-      }
+    perms.forEach(p -> p.setServiceAccount(sa));
 
+    try {
+      save(sa);
 
-      return convertUtils.toServiceAccount(sa, opts);
+      asyncUpdateCache(sa, changedEnvironments);
+    } catch (DuplicateKeyException dke) {
+      log.warn("Duplicate service account {}", sa.getName(), dke);
+      throw new DuplicateServiceAccountException();
     }
 
-    return null;
+    return convertUtils.toServiceAccount(sa, opts);
   }
 
-  private Map<String, DbEnvironment> environmentMap(ServiceAccount serviceAccount) {
+  private Map<UUID, DbEnvironment> environmentMap(ServiceAccount serviceAccount) {
     // find all of the UUIDs in the environment list
-    List<UUID> envIds = serviceAccount.getPermissions().stream().map(sap -> {
-      if (sap.getEnvironmentId() != null) {
-        return Conversions.ifUuid(sap.getEnvironmentId());
-      }
-      return null;
-    }).filter(Objects::nonNull).collect(Collectors.toList());
+    List<UUID> envIds =
+        serviceAccount.getPermissions().stream()
+            .map(ServiceAccountPermission::getEnvironmentId)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
 
     // now find them in the db in one swoop using "in" syntax
-    return new QDbEnvironment().id.in(envIds).whenArchived.isNull().findList().stream()
-      .collect(Collectors.toMap(e -> e.getId().toString(), Function.identity()));
+    return new QDbEnvironment()
+        .id.in(envIds).whenArchived.isNull().findList().stream()
+            .collect(Collectors.toMap(DbEnvironment::getId, Function.identity()));
   }
 
   @Transactional
@@ -345,8 +378,11 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
   }
 
   @Transactional
-  private void updateServiceAccount(DbServiceAccount sa, List<DbServiceAccountEnvironment> deleted,
-                                    List<DbServiceAccountEnvironment> updated, List<DbServiceAccountEnvironment> created) {
+  private void updateServiceAccount(
+      DbServiceAccount sa,
+      List<DbServiceAccountEnvironment> deleted,
+      List<DbServiceAccountEnvironment> updated,
+      List<DbServiceAccountEnvironment> created) {
     database.update(sa);
 
     database.updateAll(updated);
@@ -363,8 +399,9 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
   }
 
   // because this is an update or save, its no problem we send this out of band of this save/update.
-  private void asyncUpdateCache(DbServiceAccount sa, Collection<DbEnvironment> changedEnvironments) {
-    cacheSource.updateServiceAccount(sa, PublishAction.UPDATE );
+  private void asyncUpdateCache(
+      DbServiceAccount sa, Collection<DbEnvironment> changedEnvironments) {
+    cacheSource.updateServiceAccount(sa, PublishAction.UPDATE);
 
     if (changedEnvironments != null && !changedEnvironments.isEmpty()) {
       changedEnvironments.forEach(e -> cacheSource.updateEnvironment(e, PublishAction.UPDATE));
@@ -373,14 +410,14 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
 
   @Override
   @Transactional
-  public Boolean delete(Person deleter, String serviceAccountId) {
-    UUID id = Conversions.ifUuid(serviceAccountId);
-    if (id != null) {
-      DbServiceAccount sa = new QDbServiceAccount().id.eq(id).whenArchived.isNull().findOne();
-      if (sa != null) {
-        archiveStrategy.archiveServiceAccount(sa);
-        return Boolean.TRUE;
-      }
+  public Boolean delete(Person deleter, UUID servcieAccountId) {
+    Conversions.nonNullServiceAccountId(servcieAccountId);
+
+    DbServiceAccount sa =
+        new QDbServiceAccount().id.eq(servcieAccountId).whenArchived.isNull().findOne();
+    if (sa != null) {
+      archiveStrategy.archiveServiceAccount(sa);
+      return Boolean.TRUE;
     }
 
     return Boolean.FALSE;

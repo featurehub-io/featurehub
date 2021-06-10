@@ -164,7 +164,7 @@ public class OauthResource {
       groupApi.addPersonToGroup(group.getId(), person.getId().getId(), Opts.empty());
 
       // find the only portfolio and update its members to include this one
-      final Portfolio portfolio = portfolioApi.findPortfolios(null, organization.getId(), SortOrder.ASC,
+      final Portfolio portfolio = portfolioApi.findPortfolios(null, SortOrder.ASC,
         Opts.empty(), person).get(0);
 
       try {

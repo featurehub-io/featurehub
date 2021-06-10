@@ -60,9 +60,12 @@ public class EnvironmentSqlApi implements EnvironmentApi {
   }
 
   @Override
-  public EnvironmentRoles personRoles(Person current, String eid) {
-    DbEnvironment environment = convertUtils.uuidEnvironment(eid, Opts.opts(FillOpts.Applications));
-    DbPerson p = convertUtils.uuidPerson(current);
+  public EnvironmentRoles personRoles(Person current, UUID eid) {
+    Conversions.nonNullPerson(current);
+    Conversions.nonNullEnvironmentId(eid);
+
+    DbEnvironment environment = convertUtils.byEnvironment(eid, Opts.opts(FillOpts.Applications));
+    DbPerson p = convertUtils.byPerson(current);
 
     Set<RoleType> roles = new HashSet<>();
     Set<ApplicationRoleType> appRoles = new HashSet<>();
@@ -99,8 +102,9 @@ public class EnvironmentSqlApi implements EnvironmentApi {
   }
 
   @Override
-  public boolean delete(String id) {
-    DbEnvironment env = convertUtils.uuidEnvironment(id);
+  public boolean delete(UUID id) {
+    Conversions.nonNullEnvironmentId(id);
+    DbEnvironment env = convertUtils.byEnvironment(id);
 
     if (env != null) {
       archiveStrategy.archiveEnvironment(env);
@@ -111,28 +115,27 @@ public class EnvironmentSqlApi implements EnvironmentApi {
 
 
   @Override
-  public Environment get(String id, Opts opts, Person current) {
-    final UUID envId = Conversions.ifUuid(id);
+  public Environment get(UUID envId, Opts opts, Person current) {
+    Conversions.nonNullEnvironmentId(envId);
+    Conversions.nonNullPerson(current);
 
-    if (envId != null) {
-      DbPerson currentPerson = convertUtils.uuidPerson(current);
+    DbPerson currentPerson = convertUtils.byPerson(current);
 
-      if (currentPerson != null) {
-        QDbEnvironment env = new QDbEnvironment().id.eq(envId);
-        if (convertUtils.personIsNotSuperAdmin(currentPerson)) {
-          env = env.parentApplication.portfolio.groups.peopleInGroup.id.eq(currentPerson.getId());
-        }
-
-        if (opts.contains(FillOpts.ServiceAccounts)) {
-          env = env.serviceAccountEnvironments.fetch();
-        }
-
-        if (opts.contains(FillOpts.Features)) {
-          env = env.environmentFeatures.fetch();
-        }
-
-        return env.findOneOrEmpty().map(e -> convertUtils.toEnvironment(e, opts)).orElse(null);
+    if (currentPerson != null) {
+      QDbEnvironment env = new QDbEnvironment().id.eq(envId);
+      if (convertUtils.personIsNotSuperAdmin(currentPerson)) {
+        env = env.parentApplication.portfolio.groups.peopleInGroup.id.eq(currentPerson.getId());
       }
+
+      if (opts.contains(FillOpts.ServiceAccounts)) {
+        env = env.serviceAccountEnvironments.fetch();
+      }
+
+      if (opts.contains(FillOpts.Features)) {
+        env = env.environmentFeatures.fetch();
+      }
+
+      return env.findOneOrEmpty().map(e -> convertUtils.toEnvironment(e, opts)).orElse(null);
     }
 
     return null;
@@ -140,8 +143,11 @@ public class EnvironmentSqlApi implements EnvironmentApi {
 
   @Override
   @Transactional
-  public Environment update(String envId, Environment env, Opts opts) throws OptimisticLockingException, DuplicateEnvironmentException, InvalidEnvironmentChangeException {
-    DbEnvironment environment = convertUtils.uuidEnvironment(envId);
+  public Environment update(UUID envId, Environment env, Opts opts) throws OptimisticLockingException,
+    DuplicateEnvironmentException, InvalidEnvironmentChangeException {
+    Conversions.nonNullEnvironmentId(envId);
+
+    DbEnvironment environment = convertUtils.byEnvironment(envId);
 
     if (environment != null) {
       if (env.getVersion() == null || environment.getVersion() != env.getVersion()) {
@@ -166,9 +172,10 @@ public class EnvironmentSqlApi implements EnvironmentApi {
     return null;
   }
 
-  private void circularPriorEnvironmentCheck(Environment env, DbEnvironment environment) throws InvalidEnvironmentChangeException {
+  private void circularPriorEnvironmentCheck(Environment env, DbEnvironment environment) {
     // find anything that pointed to this environment and set it to what we used to point to
-    DbEnvironment newPriorEnvironment = env.getPriorEnvironmentId() == null ? null : convertUtils.uuidEnvironment(env.getPriorEnvironmentId());
+    DbEnvironment newPriorEnvironment = env.getPriorEnvironmentId() == null ? null :
+      convertUtils.byEnvironment(env.getPriorEnvironmentId());
 
     if (newPriorEnvironment == null) {
       environment.setPriorEnvironment(null);
@@ -214,12 +221,12 @@ public class EnvironmentSqlApi implements EnvironmentApi {
   // - env has been validated for content
   @Override
   public Environment create(Environment env, Application app, Person whoCreated) throws DuplicateEnvironmentException, InvalidEnvironmentChangeException {
-    DbApplication application = convertUtils.uuidApplication(app.getId());
+    DbApplication application = convertUtils.byApplication(app.getId());
     if (application != null) {
-      if (new QDbEnvironment().and().name.eq(env.getName()).whenArchived.isNull().parentApplication.eq(application).endAnd().findCount() > 0) {
+      if (new QDbEnvironment().and().name.eq(env.getName()).whenArchived.isNull().parentApplication.eq(application).endAnd().exists()) {
         throw new DuplicateEnvironmentException();
       }
-      DbEnvironment priorEnvironment = convertUtils.uuidEnvironment(env.getPriorEnvironmentId());
+      DbEnvironment priorEnvironment = convertUtils.byEnvironment(env.getPriorEnvironmentId());
       if (priorEnvironment != null && !priorEnvironment.getParentApplication().getId().equals(application.getId())) {
         throw new InvalidEnvironmentChangeException();
       }
@@ -261,7 +268,7 @@ public class EnvironmentSqlApi implements EnvironmentApi {
           .feature(af)
           .featureState(FeatureState.ENABLED)
           .locked(true)
-          .whoUpdated(convertUtils.uuidPerson(whoCreated))
+          .whoUpdated(convertUtils.byPerson(whoCreated))
           .build();
       }).collect(Collectors.toList());
 
@@ -315,10 +322,13 @@ public class EnvironmentSqlApi implements EnvironmentApi {
   }
 
   @Override
-  public List<Environment> search(String appId, String filter, SortOrder order, Opts opts, Person current) {
-    DbApplication application = convertUtils.uuidApplication(appId);
+  public List<Environment> search(UUID appId, String filter, SortOrder order, Opts opts, Person current) {
+    Conversions.nonNullApplicationId(appId);
+
+    DbApplication application = convertUtils.byApplication(appId);
+
     if (application != null) {
-      DbPerson currentPerson = convertUtils.uuidPerson(current);
+      DbPerson currentPerson = convertUtils.byPerson(current);
 
       if (currentPerson != null) {
         QDbEnvironment eq = new QDbEnvironment().parentApplication.eq(application);
@@ -350,9 +360,7 @@ public class EnvironmentSqlApi implements EnvironmentApi {
   }
 
   @Override
-  public Portfolio findPortfolio(String envId) {
-    UUID eId = Conversions.ifUuid(envId);
-
+  public Portfolio findPortfolio(UUID eId) {
     if (eId != null) {
       return convertUtils.toPortfolio(new QDbPortfolio().applications.environments.id.eq(eId).findOne(), Opts.empty());
     }
@@ -369,9 +377,10 @@ public class EnvironmentSqlApi implements EnvironmentApi {
 
   @Override
   public List<Environment> setOrdering(Application app, List<Environment> environments) {
-    DbApplication dbApp = convertUtils.uuidApplication(app.getId());
+    DbApplication dbApp = convertUtils.byApplication(app.getId());
 
-    Map<String, DbEnvironment> envs = dbApp.getEnvironments().stream().collect(Collectors.toMap(e -> e.getId().toString(), Function.identity()));
+    Map<UUID, DbEnvironment> envs = dbApp.getEnvironments().stream().collect(Collectors.toMap(DbEnvironment::getId,
+      Function.identity()));
 
     for(Environment e : environments) {
       DbEnvironment dbEnv = envs.get(e.getId());
@@ -389,15 +398,16 @@ public class EnvironmentSqlApi implements EnvironmentApi {
       }
     }
 
-    Map<String, Environment> destinations = environments.stream().collect(Collectors.toMap(Environment::getId, Function.identity()));
+    Map<UUID, Environment> destinations = environments.stream().collect(Collectors.toMap(Environment::getId,
+      Function.identity()));
 
     for(Environment e : environments) {
       // create a slot for each environment
-      Map<String, Integer> spot = environments.stream().collect(Collectors.toMap(Environment::getId, (e1) -> 0));
+      Map<UUID, Integer> spot = environments.stream().collect(Collectors.toMap(Environment::getId, (e1) -> 0));
       // set our one to "visited"
       spot.put(e.getId(), 1);
       // now walk backwards until we either hit the end or see "visited"
-      String currentId = e.getPriorEnvironmentId();
+      UUID currentId = e.getPriorEnvironmentId();
       while (currentId != null && spot.get(currentId) == 0) {
         spot.put(currentId, 1);
         currentId = destinations.get(currentId).getPriorEnvironmentId();
@@ -418,7 +428,7 @@ public class EnvironmentSqlApi implements EnvironmentApi {
 
 
   @Transactional
-  private void updatePriorEnvironmentIds(Map<String, DbEnvironment> envs, List<Environment> environments) {
+  private void updatePriorEnvironmentIds(Map<UUID, DbEnvironment> envs, List<Environment> environments) {
     for(Environment e : environments) {
       DbEnvironment env = envs.get(e.getId());
       DbEnvironment prior = e.getPriorEnvironmentId() == null ? null : envs.get(e.getPriorEnvironmentId());

@@ -4,10 +4,11 @@ import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.SortOrder;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface PersonApi {
 
-  Person update(String id, Person person, Opts opts, String updatedBy) throws OptimisticLockingException;
+  Person update(UUID id, Person person, Opts opts, UUID updatedBy) throws OptimisticLockingException;
 
   // used to determine if the database has no user, which is possible if using external auth
   boolean noUsersExist();
@@ -16,14 +17,14 @@ public interface PersonApi {
     public int max;
     public List<Person> people;
     public List<PersonToken> personsWithOutstandingTokens;
-    public List<String> personIdsWithExpiredTokens;
+    public List<UUID> personIdsWithExpiredTokens;
   }
 
   class PersonToken {
     public String token;
-    public String id;
+    public UUID id;
 
-    public PersonToken(String token, String id) {
+    public PersonToken(String token, UUID id) {
       this.token = token;
       this.id = id;
     }
@@ -37,11 +38,12 @@ public interface PersonApi {
 
   PersonPagination search(String filter, @NotNull SortOrder sortOrder, int offset, int max, Opts opts);
 
-  Person get(@NotNull String id, Opts opts);
+  Person get(@NotNull UUID id, Opts opts);
+  Person get(@NotNull String email, Opts opts);
 
   Person getByToken(@NotNull String id, Opts opts);
 
-  PersonToken create(@NotNull String email, @NotNull String name, String createdBy) throws DuplicatePersonException;
+  PersonToken create(@NotNull String email, @NotNull String name, UUID createdBy) throws DuplicatePersonException;
 
   boolean delete(@NotNull String email);
 }

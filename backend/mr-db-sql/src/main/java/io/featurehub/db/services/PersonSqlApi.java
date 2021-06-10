@@ -12,7 +12,6 @@ import io.featurehub.db.api.PersonApi;
 import io.featurehub.db.model.DbGroup;
 import io.featurehub.db.model.DbOrganization;
 import io.featurehub.db.model.DbPerson;
-import io.featurehub.db.model.query.QDbOrganization;
 import io.featurehub.db.model.query.QDbPerson;
 import io.featurehub.db.password.PasswordSalter;
 import io.featurehub.mr.model.Group;
@@ -47,10 +46,14 @@ public class PersonSqlApi implements PersonApi {
   }
 
   @Override
-  public Person update(String id, Person person, Opts opts, String updatedBy) throws OptimisticLockingException {
-    DbPerson adminPerson = convertUtils.uuidPerson(updatedBy, Opts.opts(FillOpts.Groups));
+  public Person update(UUID id, Person person, Opts opts, UUID updatedBy) throws OptimisticLockingException {
+    Conversions.nonNullPersonId(id);
+    Conversions.nonNullPerson(person);
+    Conversions.nonNullPersonId(updatedBy);
 
-    DbPerson p = convertUtils.uuidPerson(id, opts);
+    DbPerson adminPerson = convertUtils.byPerson(updatedBy, Opts.opts(FillOpts.Groups));
+
+    DbPerson p = convertUtils.byPerson(id, opts);
 
     if (adminPerson != null && p != null && p.getWhenArchived() == null) {
       return updatePerson(person, opts, adminPerson, p);
@@ -61,7 +64,7 @@ public class PersonSqlApi implements PersonApi {
 
   @Override
   public boolean noUsersExist() {
-    return new QDbPerson().findCount() == 0;
+    return !new QDbPerson().exists();
   }
 
   public Person updatePerson(Person person, Opts opts, DbPerson adminPerson, DbPerson p) throws OptimisticLockingException {
@@ -81,7 +84,7 @@ public class PersonSqlApi implements PersonApi {
       Person admin = convertUtils.toPerson(adminPerson, Opts.opts(FillOpts.Groups));
 
       boolean adminSuperuser = admin.getGroups().stream().anyMatch(g -> g.getPortfolioId() == null && g.getAdmin());
-      List<String> validPortfolios = admin.getGroups()
+      List<UUID> validPortfolios = admin.getGroups()
         .stream()
         .filter(g -> g.getPortfolioId() != null && g.getAdmin())
         .map(Group::getPortfolioId)
@@ -91,14 +94,16 @@ public class PersonSqlApi implements PersonApi {
         return null; // why are they even here???
       }
 
+      // TODO: if groups are passed, limit removal of groups to the organisation relevant
+
       List<DbGroup> removeGroups = new ArrayList<>();
-      List<String> replacementGroupIds = person.getGroups().stream().map(Group::getId).collect(Collectors.toList());
-      List<String> foundReplacementGroupIds = new ArrayList<>(); // these are the ones we found
+      List<UUID> replacementGroupIds = person.getGroups().stream().map(Group::getId).collect(Collectors.toList());
+      List<UUID> foundReplacementGroupIds = new ArrayList<>(); // these are the ones we found
 
       p.getGroupsPersonIn().forEach(g -> {
-        if (replacementGroupIds.contains(g.getId().toString())) { // this has been passed to us and it is staying
-          foundReplacementGroupIds.add(g.getId().toString());
-        } else if (adminSuperuser || (g.getOwningPortfolio() != null && validPortfolios.contains(g.getOwningPortfolio().getId().toString()))) {
+        if (replacementGroupIds.contains(g.getId())) { // this has been passed to us and it is staying
+          foundReplacementGroupIds.add(g.getId());
+        } else if (adminSuperuser || (g.getOwningPortfolio() != null && validPortfolios.contains(g.getOwningPortfolio().getId()))) {
           // only if the admin is a superuser or this is a group in one of their portfolios will we honour it
           removeGroups.add(g);
         } else {
@@ -115,9 +120,9 @@ public class PersonSqlApi implements PersonApi {
       log.debug("Attempting to add groups {} to user {} ", replacementGroupIds, p.getEmail());
       // now we have to find the replacement groups and see if this user is allowed to add them
       replacementGroupIds.forEach(gid -> {
-        DbGroup group = convertUtils.uuidGroup(gid, Opts.empty());
+        DbGroup group = convertUtils.byGroup(gid, Opts.empty());
         if (group != null && (adminSuperuser ||
-          (group.getOwningPortfolio() != null && validPortfolios.contains(group.getOwningPortfolio().getId().toString())) )) {
+          (group.getOwningPortfolio() != null && validPortfolios.contains(group.getOwningPortfolio().getId())) )) {
           p.getGroupsPersonIn().add(group);
         } else {
           log.warn("No permission to add group {} to user {}", group, p.getEmail());
@@ -176,12 +181,12 @@ public class PersonSqlApi implements PersonApi {
 
       pagination.personIdsWithExpiredTokens = dbPeople.stream()
         .filter(p -> p.getToken() != null && p.getTokenExpiry() != null && p.getTokenExpiry().isBefore(now))
-        .map(p -> p.getId().toString())
+        .map(DbPerson::getId)
         .collect(Collectors.toList());
 
       pagination.personsWithOutstandingTokens = dbPeople.stream()
         .filter(p -> p.getToken() != null)
-        .map(p -> new PersonToken(p.getToken(), p.getId().toString()))
+        .map(p -> new PersonToken(p.getToken(), p.getId()))
         .collect(Collectors.toList());
 
       return pagination;
@@ -192,9 +197,13 @@ public class PersonSqlApi implements PersonApi {
   }
 
   @Override
-  public Person get(String id, Opts opts) {
-    if (id.contains("@")) {
-      QDbPerson search = new QDbPerson().email.eq(id.toLowerCase());
+  public Person get(@NotNull String email, Opts opts) {
+    if (email == null) {
+      throw new IllegalArgumentException("email required");
+    }
+
+    if (email.contains("@")) {
+      QDbPerson search = new QDbPerson().email.eq(email.toLowerCase());
       if (!opts.contains(FillOpts.Archived)) {
         search = search.whenArchived.isNull();
       }
@@ -204,16 +213,29 @@ public class PersonSqlApi implements PersonApi {
         .orElse(null);
     }
 
-    return Conversions.uuid(id).map(pId -> {
-      QDbPerson search = new QDbPerson().id.eq(pId);
-      if (!opts.contains(FillOpts.Archived)) {
-        search = search.whenArchived.isNull();
-      }
-      return search.groupsPersonIn.fetch()
-        .findOneOrEmpty()
-        .map(p -> convertUtils.toPerson(p, opts))
-        .orElse(null);
-    }).orElse(null);
+    UUID id = Conversions.checkUuid(email);
+
+    if (id != null) {
+      return get(id, opts);
+    }
+
+    return null;
+  }
+
+  @Override
+  public Person get(UUID id, Opts opts) {
+    Conversions.nonNullPersonId(id);
+
+
+    QDbPerson search = new QDbPerson().id.eq(id);
+    if (!opts.contains(FillOpts.Archived)) {
+      search = search.whenArchived.isNull();
+    }
+    return search.groupsPersonIn.fetch()
+      .findOneOrEmpty()
+      .map(p -> convertUtils.toPerson(p, opts))
+      .orElse(null);
+
   }
 
   @Override
@@ -233,13 +255,12 @@ public class PersonSqlApi implements PersonApi {
   }
 
   @Override
-  public PersonToken create(String email, String name, String createdBy) throws DuplicatePersonException {
+  public PersonToken create(String email, String name, UUID createdBy) throws DuplicatePersonException {
     if (email == null || name == null) {
       return null;
     }
 
-    DbPerson created = createdBy == null ? null : Conversions.uuid(createdBy).map(cId ->
-      new QDbPerson().id.eq(cId).findOne()).orElse(null);
+    DbPerson created = createdBy == null ? null : convertUtils.byPerson(createdBy);
 
     if (createdBy != null && created == null) {
       return null;
@@ -263,7 +284,7 @@ public class PersonSqlApi implements PersonApi {
       DbPerson person = builder.build();
       updatePerson(person);
 
-      personToken = new PersonToken(person.getToken(), person.getId().toString());
+      personToken = new PersonToken(person.getToken(), person.getId());
     } else if (onePerson.getWhenArchived() != null) {
       onePerson.setWhenArchived(null);
       onePerson.setToken(UUID.randomUUID().toString()); // ensures it gets past registration again
@@ -283,13 +304,12 @@ public class PersonSqlApi implements PersonApi {
   /**
    * This person will be fully formed, not token. Usually used only for testing.
    */
-  Person createPerson(String email, String name, String password, String createdById, Opts opts) throws DuplicatePersonException {
+  Person createPerson(String email, String name, String password, UUID createdById, Opts opts) throws DuplicatePersonException {
     if (email == null) {
       return null;
     }
 
-    DbPerson created = createdById == null ? null : Conversions.uuid(createdById).map(cId ->
-      new QDbPerson().id.eq(cId).findOne()).orElse(null);
+    DbPerson created = createdById == null ? null : convertUtils.byPerson(createdById);
 
     if (createdById != null && created == null) {
       return null;

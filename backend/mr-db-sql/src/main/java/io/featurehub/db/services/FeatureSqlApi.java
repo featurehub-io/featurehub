@@ -69,13 +69,22 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
   }
 
   @Override
-  public FeatureValue createFeatureValueForEnvironment(String eid, String key, FeatureValue featureValue, PersonFeaturePermission person)
+  public FeatureValue createFeatureValueForEnvironment(UUID eId, String key, FeatureValue featureValue,
+                                                       PersonFeaturePermission person)
     throws OptimisticLockingException, RolloutStrategyValidator.InvalidStrategyCombination, NoAppropriateRole {
-    UUID eId = Conversions.ifUuid(eid);
+    Conversions.nonNullEnvironmentId(eId);
+
+    if (featureValue == null) {
+      throw new IllegalArgumentException("featureValue is null and must be provided");
+    }
+
+    if (person == null) {
+      throw new IllegalArgumentException("person with permission info must not be null");
+    }
 
     if (!person.hasWriteRole()) {
       DbEnvironment env = new QDbEnvironment().id.eq(eId).whenArchived.isNull().findOne();
-      log.warn("User has no roles for environment {} key {}", eid, key);
+      log.warn("User has no roles for environment {} key {}", eId, key);
       if (env == null) {
         log.error("could not find environment or environment is archived");
       } else {
@@ -88,26 +97,21 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
     rolloutStrategyValidator.validateStrategies(featureValue.getRolloutStrategies(),
       featureValue.getRolloutStrategyInstances()).hasFailedValidation();
 
-    if (eId != null) {
-      final DbFeatureValue dbFeatureValue = new QDbFeatureValue().environment.id.eq(eId).feature.key.eq(key).findOne();
-      if (dbFeatureValue != null) {
-        // this is an update not a create, environment + app-feature key exists
-        return onlyUpdateFeatureValueForEnvironment(featureValue, person, dbFeatureValue);
-      } else if (person.hasChangeValueRole()) {
-        return onlyCreateFeatureValueForEnvironment(eid, key, featureValue, person);
-      } else {
-        log.info("roles for person are {} and are not enough for environment {} and key {}", person.toString(), eid, key);
-        throw new NoAppropriateRole();
-      }
+    final DbFeatureValue dbFeatureValue = new QDbFeatureValue().environment.id.eq(eId).feature.key.eq(key).findOne();
+    if (dbFeatureValue != null) {
+      // this is an update not a create, environment + app-feature key exists
+      return onlyUpdateFeatureValueForEnvironment(featureValue, person, dbFeatureValue);
+    } else if (person.hasChangeValueRole()) {
+      return onlyCreateFeatureValueForEnvironment(eId, key, featureValue, person);
+    } else {
+      log.info("roles for person are {} and are not enough for environment {} and key {}", person.toString(), eId, key);
+      throw new NoAppropriateRole();
     }
-
-    log.info("Environment does not exist");
-
-    return null;
   }
 
-  private FeatureValue onlyCreateFeatureValueForEnvironment(String eid, String key, FeatureValue featureValue, PersonFeaturePermission person) throws NoAppropriateRole {
-    final DbEnvironment val = convertUtils.uuidEnvironment(eid);
+  private FeatureValue onlyCreateFeatureValueForEnvironment(UUID eid, String key, FeatureValue featureValue,
+                                                            PersonFeaturePermission person) throws NoAppropriateRole {
+    final DbEnvironment val = convertUtils.byEnvironment(eid);
 
     if (val != null) {
       final DbApplicationFeature appFeature = new QDbApplicationFeature().key.eq(key).parentApplication.environments.eq(val).findOne();
@@ -146,17 +150,15 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
 
   @Override
   @Transactional
-  public boolean deleteFeatureValueForEnvironment(String eid, String key) {
-    UUID eId = Conversions.ifUuid(eid);
+  public boolean deleteFeatureValueForEnvironment(UUID eId, String key) {
+    Conversions.nonNullEnvironmentId(eId);
 
-    if (eId != null) {
-      DbFeatureValue strategy = new QDbFeatureValue().environment.id.eq(eId).feature.key.eq(key).findOne();
+    DbFeatureValue strategy = new QDbFeatureValue().environment.id.eq(eId).feature.key.eq(key).findOne();
 
-      if (strategy != null) {
-        cacheSource.deleteFeatureChange(strategy.getFeature(), strategy.getEnvironment().getId().toString());
+    if (strategy != null) {
+      cacheSource.deleteFeatureChange(strategy.getFeature(), strategy.getEnvironment().getId());
 
-        return database.delete(strategy);
-      }
+      return database.delete(strategy);
     }
 
     return false;
@@ -178,8 +180,6 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
 
     return convertUtils.toFeatureValue(strategy);
   }
-
-
 
   private void updateFeatureValue(FeatureValue featureValue, PersonFeaturePermission person, DbFeatureValue strategy) throws NoAppropriateRole {
     final DbApplicationFeature feature = strategy.getFeature();
@@ -212,56 +212,47 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
       }
     }
 
-    strategy.setWhoUpdated(convertUtils.uuidPerson(person.person));
+    strategy.setWhoUpdated(convertUtils.byPerson(person.person));
     if (strategy.getWhoUpdated() == null) {
       log.error("Unable to set who updated on strategy {}", person.person);
     }
   }
 
   @Override
-  public FeatureValue updateFeatureValueForEnvironment(String eid, String key, FeatureValue featureValue,
+  public FeatureValue updateFeatureValueForEnvironment(UUID eid, String key, FeatureValue featureValue,
                                                        PersonFeaturePermission person) throws OptimisticLockingException, NoAppropriateRole,
      RolloutStrategyValidator.InvalidStrategyCombination {
     return createFeatureValueForEnvironment(eid, key, featureValue, person);
   }
 
   @Override
-  public FeatureValue getFeatureValueForEnvironment(String eid, String key) {
-    UUID eId = Conversions.ifUuid(eid);
+  public FeatureValue getFeatureValueForEnvironment(UUID eid, String key) {
+    Conversions.nonNullEnvironmentId(eid);
 
-    if (eId != null) {
-      final DbFeatureValue strategy =
-        new QDbFeatureValue().environment.id.eq(eId).feature.key.eq(key).sharedRolloutStrategies.fetch().findOne();
-      return strategy == null ? null : convertUtils.toFeatureValue(strategy);
-    }
-
-    return null;
+    final DbFeatureValue strategy =
+      new QDbFeatureValue().environment.id.eq(eid).feature.key.eq(key).sharedRolloutStrategies.fetch().findOne();
+    return strategy == null ? null : convertUtils.toFeatureValue(strategy);
   }
 
   @Override
-  public EnvironmentFeaturesResult getAllFeatureValuesForEnvironment(String eid) {
-    UUID eId = Conversions.ifUuid(eid);
-
-    if (eId != null) {
-      return new EnvironmentFeaturesResult()
-        .featureValues(new QDbFeatureValue().environment.id.eq(eId)
-          .feature.whenArchived.isNull().findList().stream().map(convertUtils::toFeatureValue).collect(Collectors.toList()))
-          .environments(Collections.singletonList(convertUtils.toEnvironment(new QDbEnvironment().id.eq(eId).findOne(), Opts.empty())));
-    }
-
-    return null;
+  public EnvironmentFeaturesResult getAllFeatureValuesForEnvironment(UUID eId) {
+    Conversions.nonNullEnvironmentId(eId);
+    return new EnvironmentFeaturesResult()
+      .featureValues(new QDbFeatureValue().environment.id.eq(eId)
+        .feature.whenArchived.isNull().findList().stream().map(convertUtils::toFeatureValue).collect(Collectors.toList()))
+        .environments(Collections.singletonList(convertUtils.toEnvironment(new QDbEnvironment().id.eq(eId).findOne(), Opts.empty())));
   }
 
   // we are going to have to put a transaction at this level as we want the whole thing to roll back if there is an issue
   @Override
   @Transactional
-  public List<FeatureValue> updateAllFeatureValuesForEnvironment(String eid, List<FeatureValue> featureValues,
+  public List<FeatureValue> updateAllFeatureValuesForEnvironment(UUID eId, List<FeatureValue> featureValues,
                                                                  PersonFeaturePermission person)
     throws OptimisticLockingException, NoAppropriateRole,  RolloutStrategyValidator.InvalidStrategyCombination {
-    UUID eId = Conversions.ifUuid(eid);
+    Conversions.nonNullEnvironmentId(eId);
 
     if (featureValues == null || featureValues.size() != featureValues.stream().map(FeatureValue::getKey).collect(Collectors.toSet()).size()) {
-      throw new BadRequestException("Invalid update dataset");  // todo: wtf?
+      throw new IllegalArgumentException("Invalid update dataset");
     }
 
     // ensure the strategies are valid from a conceptual perspective
@@ -273,105 +264,101 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
 
     failure.hasFailedValidation();
 
-    if (eId != null) {
-      final List<DbFeatureValue> existing = new QDbFeatureValue().environment.id.eq(eId).feature.whenArchived.isNull().findList();
-      final Map<String, FeatureValue> newValues = featureValues.stream().collect(Collectors.toMap(FeatureValue::getKey, Function.identity()));
-      // take them all and remove all fv's we were passed, leaving only EFS's we want to remove
-      final Set<String> deleteKeys = existing.stream().map(e -> e.getFeature().getKey()).collect(Collectors.toSet());
-      for (FeatureValue fv : featureValues) {
-        deleteKeys.remove(fv.getKey());
-      }
-
-      // we should be left with only keys in deleteKeys that do not exist in the passed in list of feature values
-      // and in addingKeys we should be given a list of keys which exist in the passed in FV's but didn't exist in the db
-      List<DbFeatureValue> deleteStrategies = new ArrayList<>();
-      for (DbFeatureValue strategy : existing) {
-        if (deleteKeys.contains(strategy.getFeature().getKey())) {
-          if (strategy.getFeature().getValueType() != FeatureValueType.BOOLEAN) {
-            deleteStrategies.add(strategy); // can't delete booleans
-          }
-        } else {
-          FeatureValue fv = newValues.remove(strategy.getFeature().getKey());
-          onlyUpdateFeatureValueForEnvironment(fv, person, strategy);
-        }
-      }
-
-      // now for the creates
-      for (String key : newValues.keySet()) {
-        FeatureValue fv = newValues.get(key);
-        onlyCreateFeatureValueForEnvironment(eid, key, fv, person);
-      }
-
-      if (!deleteStrategies.isEmpty()) {
-        publishTheRemovalOfABunchOfStrategies(deleteStrategies);
-
-        database.deleteAll(deleteStrategies);
-      }
-
-      return new QDbFeatureValue().environment.id.eq(eId).feature.whenArchived.isNull().findList().stream().map(convertUtils::toFeatureValue).collect(Collectors.toList());
+    final List<DbFeatureValue> existing = new QDbFeatureValue().environment.id.eq(eId).feature.whenArchived.isNull().findList();
+    final Map<String, FeatureValue> newValues = featureValues.stream().collect(Collectors.toMap(FeatureValue::getKey, Function.identity()));
+    // take them all and remove all fv's we were passed, leaving only EFS's we want to remove
+    final Set<String> deleteKeys = existing.stream().map(e -> e.getFeature().getKey()).collect(Collectors.toSet());
+    for (FeatureValue fv : featureValues) {
+      deleteKeys.remove(fv.getKey());
     }
 
-    return null;
+    // we should be left with only keys in deleteKeys that do not exist in the passed in list of feature values
+    // and in addingKeys we should be given a list of keys which exist in the passed in FV's but didn't exist in the db
+    List<DbFeatureValue> deleteStrategies = new ArrayList<>();
+    for (DbFeatureValue strategy : existing) {
+      if (deleteKeys.contains(strategy.getFeature().getKey())) {
+        if (strategy.getFeature().getValueType() != FeatureValueType.BOOLEAN) {
+          deleteStrategies.add(strategy); // can't delete booleans
+        }
+      } else {
+        FeatureValue fv = newValues.remove(strategy.getFeature().getKey());
+        onlyUpdateFeatureValueForEnvironment(fv, person, strategy);
+      }
+    }
+
+    // now for the creates
+    for (String key : newValues.keySet()) {
+      FeatureValue fv = newValues.get(key);
+      onlyCreateFeatureValueForEnvironment(eId, key, fv, person);
+    }
+
+    if (!deleteStrategies.isEmpty()) {
+      publishTheRemovalOfABunchOfStrategies(deleteStrategies);
+
+      database.deleteAll(deleteStrategies);
+    }
+
+    return new QDbFeatureValue().environment.id.eq(eId).feature.whenArchived.isNull().findList().stream().map(convertUtils::toFeatureValue).collect(Collectors.toList());
   }
 
   // can't background this because they will deleted shortly
   private void publishTheRemovalOfABunchOfStrategies(Collection<DbFeatureValue> deleteStrategies) {
     if (!deleteStrategies.isEmpty()) {
-      deleteStrategies.parallelStream().forEach(strategy -> cacheSource.deleteFeatureChange(strategy.getFeature(), strategy.getEnvironment().getId().toString()));
+      deleteStrategies.parallelStream().forEach(strategy -> cacheSource.deleteFeatureChange(strategy.getFeature(), strategy.getEnvironment().getId()));
     }
   }
 
   @Override
-  public void updateFeature(String sdkUrl, String envId, String featureKey, boolean updatingValue, Function<FeatureValueType, FeatureValue> buildFeatureValue)
+  public void updateFeature(String sdkUrl, UUID eid, String featureKey, boolean updatingValue,
+                            Function<FeatureValueType, FeatureValue> buildFeatureValue)
       throws RolloutStrategyValidator.InvalidStrategyCombination {
+    Conversions.nonNullEnvironmentId(eid);
+
     // not checking permissions, edge checks those
-    UUID eid = Conversions.ifUuid(envId);
-    if (eid != null) {
-      DbApplicationFeature feature = new QDbApplicationFeature().parentApplication.environments.id.eq(eid).key.eq(featureKey).findOne();
+    DbApplicationFeature feature = new QDbApplicationFeature().parentApplication.environments.id.eq(eid).key.eq(featureKey).findOne();
 
-      if (feature != null) {
-        DbFeatureValue fv = new QDbFeatureValue().environment.id.eq(eid).feature.eq(feature).findOne();
+    if (feature == null) return;
 
-        FeatureValue newValue = buildFeatureValue.apply(feature.getValueType());
+    DbFeatureValue fv = new QDbFeatureValue().environment.id.eq(eid).feature.eq(feature).findOne();
 
-        rolloutStrategyValidator.validateStrategies(newValue.getRolloutStrategies(),
-          newValue.getRolloutStrategyInstances()).hasFailedValidation();
+    FeatureValue newValue = buildFeatureValue.apply(feature.getValueType());
 
-        boolean saveNew = (fv == null);
+    rolloutStrategyValidator.validateStrategies(newValue.getRolloutStrategies(),
+      newValue.getRolloutStrategyInstances()).hasFailedValidation();
 
-        if (saveNew) { // creating
-          fv = new DbFeatureValue.Builder()
-            .environment(new QDbEnvironment().id.eq(eid).findOne())
-            .feature(feature)
-            .locked(true)
-            .build();
-        }
+    boolean saveNew = (fv == null);
 
-        if (updatingValue) {
-          switch (fv.getFeature().getValueType()) {
-            case BOOLEAN:
-              fv.setDefaultValue(newValue.getValueBoolean() == null ? Boolean.FALSE.toString() : newValue.getValueBoolean().toString());
-              break;
-            case STRING:
-              fv.setDefaultValue(newValue.getValueString());
-              break;
-            case NUMBER:
-              fv.setDefaultValue(newValue.getValueNumber() == null ? null : newValue.getValueNumber().toString());
-              break;
-            case JSON:
-              fv.setDefaultValue(newValue.getValueJson());
-              break;
-          }
-        }
+    if (saveNew) { // creating
+      fv = new DbFeatureValue.Builder()
+        .environment(new QDbEnvironment().id.eq(eid).findOne())
+        .feature(feature)
+        .locked(true)
+        .build();
+    }
 
-        if (newValue.getLocked() != null) {
-          fv.setLocked(newValue.getLocked());
-        }
-
-        // API can never change strategies
-        save(fv);
+    if (updatingValue) {
+      switch (fv.getFeature().getValueType()) {
+        case BOOLEAN:
+          fv.setDefaultValue(newValue.getValueBoolean() == null ? Boolean.FALSE.toString() : newValue.getValueBoolean().toString());
+          break;
+        case STRING:
+          fv.setDefaultValue(newValue.getValueString());
+          break;
+        case NUMBER:
+          fv.setDefaultValue(newValue.getValueNumber() == null ? null : newValue.getValueNumber().toString());
+          break;
+        case JSON:
+          fv.setDefaultValue(newValue.getValueJson());
+          break;
       }
     }
+
+    if (newValue.getLocked() != null) {
+      fv.setLocked(newValue.getLocked());
+    }
+
+    // API can never change strategies
+    save(fv);
   }
 
   static class EnvironmentsAndStrategies {
@@ -389,10 +376,10 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
   }
 
 
-  private EnvironmentsAndStrategies strategiesUserCanAccess(String appId, String key, Person person) {
+  private EnvironmentsAndStrategies strategiesUserCanAccess(UUID appId, String key, Person person) {
 
-    DbPerson dbPerson = convertUtils.uuidPerson(person);
-    DbApplication app = convertUtils.uuidApplication(appId);
+    DbPerson dbPerson = convertUtils.byPerson(person);
+    DbApplication app = convertUtils.byApplication(appId);
 
     if (app == null || app.getWhenArchived() != null || dbPerson == null || dbPerson.getWhenArchived() != null) {
       return null;
@@ -466,7 +453,8 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
   }
 
   @Override
-  public List<FeatureEnvironment> getFeatureValuesForApplicationForKeyForPerson(String appId, String key, Person person) {
+  public List<FeatureEnvironment> getFeatureValuesForApplicationForKeyForPerson(UUID appId, String key, Person person) {
+    Conversions.nonNullApplicationId(appId);
     EnvironmentsAndStrategies result = strategiesUserCanAccess(appId, key, person);
 
     if (result != null) {
@@ -481,10 +469,15 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
 
   @Override
   @Transactional
-  public void updateAllFeatureValuesByApplicationForKey(String id, String key, List<FeatureValue> featureValue,
+  public void updateAllFeatureValuesByApplicationForKey(UUID id, String key, List<FeatureValue> featureValue,
               Person person, boolean removeValuesNotPassed) throws OptimisticLockingException, NoAppropriateRole,
      RolloutStrategyValidator.InvalidStrategyCombination {
     // prevalidate, this will happen again but we should do it before anything else
+    Conversions.nonNullApplicationId(id);
+
+    if (featureValue == null) {
+      throw new IllegalArgumentException("featureValue is required");
+    }
 
     RolloutStrategyValidator.ValidationFailure failure = new RolloutStrategyValidator.ValidationFailure();
 
@@ -503,7 +496,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
       Map<UUID, DbFeatureValue> strategiesToDelete = result.strategies;
 
       for (FeatureValue fv : featureValue) {
-        UUID envId = Conversions.ifUuid(fv.getEnvironmentId());
+        UUID envId = fv.getEnvironmentId();
         if (envId == null) {
           log.warn("Trying to update for environment `{}` and environment id is invalid.", fv.getEnvironmentId());
           throw new NoAppropriateRole();
@@ -551,9 +544,9 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
     }
 
     return new EnvironmentFeatureValues()
-      .environmentId(acl.getEnvironment().getId().toString())
+      .environmentId(acl.getEnvironment().getId())
       .environmentName(acl.getEnvironment().getName())
-      .priorEnvironmentId(acl.getEnvironment().getPriorEnvironment() == null ? null : acl.getEnvironment().getPriorEnvironment().getId().toString())
+      .priorEnvironmentId(acl.getEnvironment().getPriorEnvironment() == null ? null : acl.getEnvironment().getPriorEnvironment().getId())
       .roles(roles)
       .features(new QDbFeatureValue()
         .environment.eq(acl.getEnvironment())
@@ -563,16 +556,20 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
   }
 
   @Override
-  public ApplicationFeatureValues findAllFeatureAndFeatureValuesForEnvironmentsByApplication(String appId, Person person) {
-    DbPerson dbPerson = convertUtils.uuidPerson(person);
-    DbApplication app = convertUtils.uuidApplication(appId);
+  public ApplicationFeatureValues findAllFeatureAndFeatureValuesForEnvironmentsByApplication(UUID appId,
+                                                                                             Person person) {
+    Conversions.nonNullApplicationId(appId);
+    Conversions.nonNullPerson(person);
+
+    DbPerson dbPerson = convertUtils.byPerson(person);
+    DbApplication app = convertUtils.byApplication(appId);
 
     if (app != null && dbPerson != null && app.getWhenArchived() == null && dbPerson.getWhenArchived() == null) {
       final Opts empty = Opts.empty();
 
       boolean personAdmin = convertUtils.isPersonApplicationAdmin(dbPerson, app);
 
-      Map<String, DbEnvironment> environmentOrderingMap = new HashMap<>();
+      Map<UUID, DbEnvironment> environmentOrderingMap = new HashMap<>();
       // the requirement is that we only send back environments they have at least READ access to
       final List<EnvironmentFeatureValues> permEnvs =
           new QDbAcl()
@@ -583,7 +580,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
             .group.whenArchived.isNull()
             .group.peopleInGroup.eq(dbPerson).findList()
         .stream()
-        .peek(acl -> environmentOrderingMap.put(acl.getEnvironment().getId().toString(), acl.getEnvironment()))
+        .peek(acl -> environmentOrderingMap.put(acl.getEnvironment().getId(), acl.getEnvironment()))
         .map(acl -> environmentToFeatureValues(acl, personAdmin))
         .filter(Objects::nonNull)
         .filter(efv -> !efv.getRoles().isEmpty())
@@ -592,13 +589,14 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
 
 //      Set<String> envs = permEnvs.stream().map(EnvironmentFeatureValues::getEnvironmentId).distinct().collect(Collectors.toSet());
 
-      Map<String, EnvironmentFeatureValues> envs = new HashMap<>();
+      Map<UUID, EnvironmentFeatureValues> envs = new HashMap<>();
 
       // merge any duplicates, this occurs because the database query can return duplicate lines
       permEnvs.forEach(e -> {
         EnvironmentFeatureValues original = envs.get(e.getEnvironmentId());
         if (original != null) { // merge them
-          Set<String> originalFeatureValueIds = original.getFeatures().stream().map(FeatureValue::getId).collect(Collectors.toSet());
+          Set<UUID> originalFeatureValueIds =
+            original.getFeatures().stream().map(FeatureValue::getId).collect(Collectors.toSet());
           e.getFeatures().forEach(fv -> {
             if (!originalFeatureValueIds.contains(fv.getId())) {
               original.getFeatures().add(fv);
@@ -627,14 +625,14 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
         List<RoleType> roles = personAdmin ? Arrays.asList(RoleType.values()) : new ArrayList<>();
 
         environments.forEach(e -> {
-          if (envs.get(e.getId().toString()) == null) {
-            environmentOrderingMap.put(e.getId().toString(), e);
+          if (envs.get(e.getId()) == null) {
+            environmentOrderingMap.put(e.getId(), e);
 
             final EnvironmentFeatureValues e1 =
               new EnvironmentFeatureValues()
                 .environmentName(e.getName())
-                .priorEnvironmentId(e.getPriorEnvironment() == null ? null : e.getPriorEnvironment().getId().toString())
-                .environmentId(e.getId().toString())
+                .priorEnvironmentId(e.getPriorEnvironment() == null ? null : e.getPriorEnvironment().getId())
+                .environmentId(e.getId())
                 .roles(roles) // all access (as admin)
                 .features(!personAdmin ? new ArrayList<>() : new QDbFeatureValue()
                   .feature.whenArchived.isNull()
@@ -684,11 +682,5 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
     }
 
     return null;
-  }
-
-  // we no longer support this API
-  @Override
-  public EnvironmentFeaturesResult lastFeatureValueChanges(Person from) {
-    return new EnvironmentFeaturesResult();
   }
 }

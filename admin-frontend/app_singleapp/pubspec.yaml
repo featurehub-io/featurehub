@@ -21,6 +21,7 @@ dependencies:
   mrapi:
     path: ../app_mr_layer
   openapi_dart_common: ^4.1.0
+  uuid: ^3.0.4
   zxcvbn:
     git:
       url: https://github.com/lmordell/zxcvbn-dart.git

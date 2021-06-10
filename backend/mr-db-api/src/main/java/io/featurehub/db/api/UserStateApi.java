@@ -3,6 +3,8 @@ package io.featurehub.db.api;
 import io.featurehub.mr.model.HiddenEnvironments;
 import io.featurehub.mr.model.Person;
 
+import java.util.UUID;
+
 public interface UserStateApi {
   class InvalidUserStateException extends Exception {
     public InvalidUserStateException(String message) {
@@ -16,7 +18,7 @@ public interface UserStateApi {
    * @param appId
    * @return
    */
-  HiddenEnvironments getHiddenEnvironments(Person person, String appId);
+  HiddenEnvironments getHiddenEnvironments(Person person, UUID appId);
 
   /**
    * It is the responsibility of the caller to assert the person has the rights to the application to save
@@ -26,5 +28,5 @@ public interface UserStateApi {
    * @param environments
    * @param appId
    */
-  void saveHiddenEnvironments(Person person, HiddenEnvironments environments, String appId) throws InvalidUserStateException;
+  void saveHiddenEnvironments(Person person, HiddenEnvironments environments, UUID appId) throws InvalidUserStateException;
 }

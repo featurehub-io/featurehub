@@ -19,7 +19,7 @@ public interface CacheSource {
    */
   void publishFeatureChange(DbFeatureValue strategy);
 
-  void deleteFeatureChange(DbApplicationFeature feature, String environmentId);
+  void deleteFeatureChange(DbApplicationFeature feature, UUID environmentId);
 
   /**
    * Whenever a service account changes or at start up, publish it

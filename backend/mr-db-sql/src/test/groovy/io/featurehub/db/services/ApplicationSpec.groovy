@@ -44,23 +44,23 @@ class ApplicationSpec extends BaseSpec {
     portfolio1 = Finder.findPortfolioById(p1.id);
     portfolio2 = Finder.findPortfolioById(p2.id);
 
-    p1AdminGroup = groupSqlApi.createPortfolioGroup(portfolio1.id.toString(), new Group().name("envtest-appX").admin(true), superPerson)
+    p1AdminGroup = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("envtest-appX").admin(true), superPerson)
 
   }
 
   def "i should be able to create, update, and delete an application"() {
     when: "i create an application"
-      Application app =  appApi.createApplication(portfolio1.id.toString(), new Application().name("ghost").description("some desc"), superPerson)
+      Application app =  appApi.createApplication(portfolio1.id, new Application().name("ghost").description("some desc"), superPerson)
     and: "i find it"
-      List<Application> found = appApi.findApplications(portfolio1.id.toString(), 'ghost', null, Opts.empty(), superPerson, true)
+      List<Application> found = appApi.findApplications(portfolio1.id, 'ghost', null, Opts.empty(), superPerson, true)
     and: "i update it"
       Application updated = appApi.updateApplication(app.id, app.name("ghosty"), Opts.empty())
     and: "i delete it"
-      boolean deleted = appApi.deleteApplication(portfolio1.id.toString(), app.id)
+      boolean deleted = appApi.deleteApplication(portfolio1.id, app.id)
     and: "i check for the application count after deletion"
-      List<Application> afterDelete = appApi.findApplications(portfolio1.id.toString(), 'ghost', null, Opts.empty(), superPerson, true)
+      List<Application> afterDelete = appApi.findApplications(portfolio1.id, 'ghost', null, Opts.empty(), superPerson, true)
     and: "and with include archived on"
-      List<Application> afterDeleteWithArchives = appApi.findApplications(portfolio1.id.toString(), 'ghost', null, Opts.opts(FillOpts.Archived), superPerson, true)
+      List<Application> afterDeleteWithArchives = appApi.findApplications(portfolio1.id, 'ghost', null, Opts.opts(FillOpts.Archived), superPerson, true)
     then:
       found != null
       found.size() == 1
@@ -74,8 +74,8 @@ class ApplicationSpec extends BaseSpec {
 
   def "I should be able to have two portfolios with the same application name"() {
     when: "i have and application in each portfolio with different names"
-        Application p1App =  appApi.createApplication(portfolio1.id.toString(), new Application().name("dupe-name1").description("some desc"), superPerson)
-        Application p2App =  appApi.createApplication(portfolio2.id.toString(), new Application().name("dupe-name2").description("some desc"), superPerson)
+        Application p1App =  appApi.createApplication(portfolio1.id, new Application().name("dupe-name1").description("some desc"), superPerson)
+        Application p2App =  appApi.createApplication(portfolio2.id, new Application().name("dupe-name2").description("some desc"), superPerson)
     and: "i rename the second to the same as the first"
       def app2 = appApi.updateApplication(p2App.id, p2App.name("dupe-name1"), Opts.empty())
     then:
@@ -85,25 +85,25 @@ class ApplicationSpec extends BaseSpec {
 
   def "a person who is a member of an environment can see applications in an environment"() {
     when: "i create two applications"
-      def app1 = appApi.createApplication(portfolio1.id.toString(), new Application().name("envtest-app1").description("some desc"), superPerson)
-      def app2 = appApi.createApplication(portfolio1.id.toString(), new Application().name("envtest-app2").description("some desc"), superPerson)
+      def app1 = appApi.createApplication(portfolio1.id, new Application().name("envtest-app1").description("some desc"), superPerson)
+      def app2 = appApi.createApplication(portfolio1.id, new Application().name("envtest-app2").description("some desc"), superPerson)
     and: "a load-all override can find them"
-      List<Application> superuserFoundApps = appApi.findApplications(portfolio1.id.toString(), 'envtest-app', null, Opts.empty(), superPerson, true)
+      List<Application> superuserFoundApps = appApi.findApplications(portfolio1.id, 'envtest-app', null, Opts.empty(), superPerson, true)
     and: "i create a new user who has no group access"
       def user = new DbPerson.Builder().email("envtest-appX@featurehub.io").name("Irina").build();
       database.save(user)
       def person = convertUtils.toPerson(user)
     and: "this person cannot see any apps"
-      def notInAnyGroupsAccess = appApi.findApplications(portfolio1.id.toString(), 'envtest-app', null, Opts.empty(), person, false)
+      def notInAnyGroupsAccess = appApi.findApplications(portfolio1.id, 'envtest-app', null, Opts.empty(), person, false)
     and: "then we give them access to a portfolio group that still has no access"
-      Group group = groupSqlApi.createPortfolioGroup(portfolio1.id.toString(), new Group().name("envtest-appX1"), superPerson)
+      Group group = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("envtest-appX1"), superPerson)
       group = groupSqlApi.addPersonToGroup(group.id, person.id.id, Opts.opts(FillOpts.Members))
     and: "the superuser adds to a group as well"
-      Group superuserGroup = groupSqlApi.createPortfolioGroup(portfolio1.id.toString(), new Group().name("envtest-appSuperuser"), superPerson)
+      Group superuserGroup = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("envtest-appSuperuser"), superPerson)
       superuserGroup = groupSqlApi.addPersonToGroup(superuserGroup.id, superPerson.id.id, Opts.opts(FillOpts.Members))
     and: "with no environment access the two groups have no visibility to applications"
-      def stillNotInAnyGroupsPerson = appApi.findApplications(portfolio1.id.toString(), 'envtest-app', null, Opts.empty(), person, false)
-      def stillNotInAnyGroupsSuperuser = appApi.findApplications(portfolio1.id.toString(), 'envtest-app', null, Opts.empty(), superPerson, false)
+      def stillNotInAnyGroupsPerson = appApi.findApplications(portfolio1.id, 'envtest-app', null, Opts.empty(), person, false)
+      def stillNotInAnyGroupsSuperuser = appApi.findApplications(portfolio1.id, 'envtest-app', null, Opts.empty(), superPerson, false)
     and: "i add an environment to each application and add group permissions"
       def app1Env1 = environmentSqlApi.create(new Environment().name("dev"), app1, superPerson)
       def app2Env1 = environmentSqlApi.create(new Environment().name("dev"), app2, superPerson)
@@ -115,9 +115,9 @@ class ApplicationSpec extends BaseSpec {
 	      new EnvironmentGroupRole().environmentId(app1Env1.id).roles([RoleType.READ])
       ]), true, true, true, Opts.opts(FillOpts.Members))
     and: "person should now be able to see two groups"
-      def shouldSeeTwoAppsPerson = appApi.findApplications(portfolio1.id.toString(), 'envtest-app', null, Opts.empty(), person, false)
+      def shouldSeeTwoAppsPerson = appApi.findApplications(portfolio1.id, 'envtest-app', null, Opts.empty(), person, false)
     and: "superperson should now be able to see 1 group"
-      def shouldSeeOneAppsSuperperson = appApi.findApplications(portfolio1.id.toString(), 'envtest-app', null, Opts.empty(), superPerson, false)
+      def shouldSeeOneAppsSuperperson = appApi.findApplications(portfolio1.id, 'envtest-app', null, Opts.empty(), superPerson, false)
     then:
       notInAnyGroupsAccess.size() == 0
       stillNotInAnyGroupsPerson.size() == 0
@@ -129,16 +129,16 @@ class ApplicationSpec extends BaseSpec {
 
   def "i cannot create two applications with the same name"() {
     when: "i create two applications with the same name"
-      appApi.createApplication(portfolio1.id.toString(), new Application().name("ghost1").description("some desc"), superPerson)
-      appApi.createApplication(portfolio1.id.toString(), new Application().name("ghost1").description("some desc"), superPerson)
+      appApi.createApplication(portfolio1.id, new Application().name("ghost1").description("some desc"), superPerson)
+      appApi.createApplication(portfolio1.id, new Application().name("ghost1").description("some desc"), superPerson)
     then:
       thrown ApplicationApi.DuplicateApplicationException
   }
 
   def "i cannot update two applications to the same name"() {
     when: "i create two applications with the same name"
-      appApi.createApplication(portfolio1.id.toString(), new Application().name("ghost1").description("some desc"), superPerson)
-      def app2 = appApi.createApplication(portfolio1.id.toString(), new Application().name("ghost2").description("some desc"), superPerson)
+      appApi.createApplication(portfolio1.id, new Application().name("ghost1").description("some desc"), superPerson)
+      def app2 = appApi.createApplication(portfolio1.id, new Application().name("ghost2").description("some desc"), superPerson)
       app2.name("ghost1")
       appApi.updateApplication(app2.id, app2, Opts.empty())
     then:
@@ -147,10 +147,10 @@ class ApplicationSpec extends BaseSpec {
 
   def "i can create two applications with the same name in two different portfolios"() {
     when: "i create two applications with the same name"
-      appApi.createApplication(portfolio1.id.toString(), new Application().name("ghost2").description("some desc"), superPerson)
-      appApi.createApplication(portfolio2.id.toString(), new Application().name("ghost2").description("some desc"), superPerson)
+      appApi.createApplication(portfolio1.id, new Application().name("ghost2").description("some desc"), superPerson)
+      appApi.createApplication(portfolio2.id, new Application().name("ghost2").description("some desc"), superPerson)
     then:
-      appApi.findApplications(portfolio1.id.toString(), "ghost2", null, Opts.empty(), null, true)
+      appApi.findApplications(portfolio1.id, "ghost2", null, Opts.empty(), null, true)
   }
 
   // based on this article: https://en.wikipedia.org/wiki/Ukrainian_surnames#Cossack_names
@@ -170,15 +170,15 @@ class ApplicationSpec extends BaseSpec {
       def golodryga = new DbPerson.Builder().email("Golodryga@m.com").name("Golodryga").build()
       database.save(golodryga)
       def golodrygaPortfolioMemberButNoApplicationAccess = convertUtils.toPerson(golodryga)
-      groupSqlApi.createPortfolioGroup(portfolio1.id.toString(), new Group().name("Twitchy Group").members([golodrygaPortfolioMemberButNoApplicationAccess]), superPerson)
+      groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("Twitchy Group").members([golodrygaPortfolioMemberButNoApplicationAccess]), superPerson)
     and: "I create a new portfolio group and add in Sverbylo and give her read access to production"
       def sverbylo = new DbPerson.Builder().email("sverbylo@m.com").name("Sverbylo").build()
       database.save(sverbylo)
       def sverbyloHasReadAccess = convertUtils.toPerson(sverbylo)
-      def iGroup = groupSqlApi.createPortfolioGroup(portfolio1.id.toString(), new Group().name("Itchy Group"), superPerson)
+      def iGroup = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("Itchy Group"), superPerson)
       iGroup = groupSqlApi.updateGroup(iGroup.id, iGroup.members([sverbyloHasReadAccess]), true, false, false, Opts.empty())
     when: "i create a new application"
-      def newApp = appApi.createApplication(portfolio1.id.toString(), new Application().name("app-perm-check-appl1"), superPerson)
+      def newApp = appApi.createApplication(portfolio1.id, new Application().name("app-perm-check-appl1"), superPerson)
     and: "a new environment"
       def env = environmentSqlApi.create(new Environment().name("production").production(true), newApp, superPerson)
     and: "i grant the iGroup access to it"

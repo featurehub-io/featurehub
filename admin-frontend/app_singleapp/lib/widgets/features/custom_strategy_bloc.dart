@@ -2,6 +2,9 @@ import 'package:app_singleapp/widgets/features/per_feature_state_tracking_bloc.d
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:uuid/uuid.dart';
+
+final _strategyBlocUUidGenerator = Uuid();
 
 class CustomStrategyBloc extends Bloc {
   final EnvironmentFeatureValues environmentFeatureValue;
@@ -21,6 +24,16 @@ class CustomStrategyBloc extends Bloc {
   CustomStrategyBloc(this.environmentFeatureValue, this.feature, this.fvBloc)
       : featureValue = fvBloc
             .featureValueByEnvironment(environmentFeatureValue.environmentId!) {
+    featureValue.rolloutStrategies.forEach((rs) {
+      if (rs.id != null && rs.id!.length < 30) {
+        rs.id = _strategyBlocUUidGenerator.v4();
+      }
+      if (rs.attributes.isNotEmpty == true) {
+        rs.attributes
+            .forEach((rsa) => rsa.id = _strategyBlocUUidGenerator.v4());
+      }
+    });
+
     _strategySource.add(featureValue.rolloutStrategies);
   }
 
@@ -31,6 +44,9 @@ class CustomStrategyBloc extends Bloc {
   }
 
   void addStrategy(RolloutStrategy rs) {
+    if (rs.id == null) {
+      rs.id = _strategyBlocUUidGenerator.v4();
+    }
     final strategies = _strategySource.value!;
     strategies.add(rs);
     markDirty();
@@ -45,7 +61,8 @@ class CustomStrategyBloc extends Bloc {
   }
 
   void removeStrategy(RolloutStrategy rs) {
-    rs.id = 'removing';
+    // tag it to ensure it has a number so we can remove it
+    rs.id = _strategyBlocUUidGenerator.v4();
     final strategies = _strategySource.value!;
     strategies.removeWhere((e) => e.id == rs.id);
     markDirty();
@@ -54,7 +71,8 @@ class CustomStrategyBloc extends Bloc {
 
   void addStrategyAttribute() {
     // _strategySource.value
-    var rsa = RolloutStrategyAttribute();
+    final rsa = RolloutStrategyAttribute();
+    rsa.id = _strategyBlocUUidGenerator.v4();
     final attributes = _strategySource.value!.last.attributes;
     attributes.add(rsa);
     _rolloutStartegyAttributeList.add(attributes);
@@ -74,8 +92,6 @@ class CustomStrategyBloc extends Bloc {
       return;
     }
 
-    var start = DateTime.now().microsecond;
-
     final strategiesById = <String, RolloutStrategy>{};
 
     strategies.forEach((s) {
@@ -86,10 +102,7 @@ class CustomStrategyBloc extends Bloc {
 
     strategies.forEach((s) {
       if (s.id == null) {
-        while (strategiesById[start.toString()] != null) {
-          start++;
-        }
-        s.id = start.toString();
+        s.id = _strategyBlocUUidGenerator.v4();
         strategiesById[s.id!] = s;
       }
     });
@@ -102,7 +115,7 @@ class CustomStrategyBloc extends Bloc {
     var strategies =
         _strategySource.value!.where((s) => s.id != strategy.id).toList();
 
-    strategy.id ??= 'created';
+    strategy.id ??= _strategyBlocUUidGenerator.v4();
 
     strategies.add(strategy);
 

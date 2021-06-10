@@ -5,11 +5,12 @@ import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.sse.model.SSEResultState;
 
 import java.io.IOException;
+import java.util.UUID;
 
 public interface ClientConnection {
   boolean discovery();
 
-  String getEnvironmentId();
+  UUID getEnvironmentId();
 
   String getApiKey();
 

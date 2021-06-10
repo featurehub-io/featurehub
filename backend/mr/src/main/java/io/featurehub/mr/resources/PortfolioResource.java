@@ -26,6 +26,7 @@ import javax.ws.rs.core.SecurityContext;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 public class PortfolioResource implements PortfolioServiceDelegate {
   private static final Logger log = LoggerFactory.getLogger(PortfolioResource.class);
@@ -83,7 +84,7 @@ public class PortfolioResource implements PortfolioServiceDelegate {
   }
 
   @Override
-  public Boolean deletePortfolio(String id, DeletePortfolioHolder holder, SecurityContext securityContext) {
+  public Boolean deletePortfolio(UUID id, DeletePortfolioHolder holder, SecurityContext securityContext) {
     final Person from = authManager.from(securityContext);
     if (authManager.isOrgAdmin(from)) {
       if (portfolioApi.getPortfolio(id, Opts.empty(), from) != null) {
@@ -100,15 +101,13 @@ public class PortfolioResource implements PortfolioServiceDelegate {
   @Override
   public List<Portfolio> findPortfolios(FindPortfoliosHolder holder, SecurityContext securityContext) {
     return portfolioApi.findPortfolios(holder.filter,
-      authManager.orgPersonIn(
-        authManager.from(securityContext)
-      ), holder.order,
+      holder.order,
       new Opts().add(FillOpts.Groups, holder.includeGroups).add(FillOpts.Applications, holder.includeApplications),
       authManager.from(securityContext));
   }
 
   @Override
-  public Portfolio getPortfolio(String id, GetPortfolioHolder holder, SecurityContext securityContext) {
+  public Portfolio getPortfolio(UUID id, GetPortfolioHolder holder, SecurityContext securityContext) {
     Portfolio portfolio = portfolioApi.getPortfolio(id,
       new Opts().add(FillOpts.Groups, holder.includeGroups)
         .add(FillOpts.Applications, holder.includeApplications)
@@ -122,7 +121,8 @@ public class PortfolioResource implements PortfolioServiceDelegate {
   }
 
   @Override
-  public Portfolio updatePortfolio(String id, Portfolio portfolio, UpdatePortfolioHolder holder, SecurityContext securityContext) {
+  public Portfolio updatePortfolio(UUID id, Portfolio portfolio, UpdatePortfolioHolder holder,
+                                   SecurityContext securityContext) {
     Person current = authManager.from(securityContext);
 
     if (authManager.isPortfolioAdmin(id, current, null)) {

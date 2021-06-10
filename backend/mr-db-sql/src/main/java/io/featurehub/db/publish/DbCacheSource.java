@@ -159,7 +159,7 @@ public class DbCacheSource implements CacheSource {
       }).collect(Collectors.toList()))
       .serviceAccounts(env.getServiceAccountEnvironments().stream().map(s ->
         new ServiceAccount()
-          .id(s.getServiceAccount().getId().toString())
+          .id(s.getServiceAccount().getId())
           .apiKeyServerSide(s.getServiceAccount().getApiKeyServerEval())
           .apiKeyClientSide(s.getServiceAccount().getApiKeyClientEval())
           ).collect(Collectors.toList()))
@@ -199,7 +199,7 @@ public class DbCacheSource implements CacheSource {
         .feature(feature)
         .value(value)
         .strategies(collectCombinedRolloutStrategies(featureValue, feature.getValueType()))
-        .environmentId(featureValue.getEnvironment().getId().toString())
+        .environmentId(featureValue.getEnvironment().getId())
         .action(PublishAction.UPDATE));
   }
 
@@ -249,7 +249,7 @@ public class DbCacheSource implements CacheSource {
   }
 
   @Override
-  public void deleteFeatureChange(DbApplicationFeature feature, String environmentId) {
+  public void deleteFeatureChange(DbApplicationFeature feature, UUID environmentId) {
     executor.submit(() -> {
       String cacheName =
         new QDbNamedCache().organizations.portfolios.applications.eq(feature.getParentApplication()).findOne().getCacheName();
@@ -318,7 +318,7 @@ public class DbCacheSource implements CacheSource {
         log.debug("Sending delete for service account `{}`", id);
         cacheBroadcast.publishServiceAccount(new ServiceAccountCacheItem()
           .count(serviceAccountsByCacheName(cacheName).findCount() - 1)  // now one less
-          .serviceAccount(new ServiceAccount().id(id.toString())) // just send the id, thats all the cache needs
+          .serviceAccount(new ServiceAccount().id(id)) // just send the id, thats all the cache needs
           .action(PublishAction.DELETE)
         );
       }
@@ -360,7 +360,7 @@ public class DbCacheSource implements CacheSource {
           log.debug("deleting environment: `{}`", id);
           cacheBroadcast.publishEnvironment(new EnvironmentCacheItem()
             .count(environmentsByCacheName(cacheName).findCount() - 1)
-            .environment(new Environment().id(id.toString()))
+            .environment(new Environment().id(id))
             .action(PublishAction.DELETE));
         }
       }
@@ -401,7 +401,7 @@ public class DbCacheSource implements CacheSource {
             Opts.empty());
           cacheBroadcast.publishFeature(
             new FeatureValueCacheItem().feature(feature)
-              .value(featureValue).environmentId(env.getId().toString()).action(action));
+              .value(featureValue).environmentId(env.getId()).action(action));
         });
       }
     }

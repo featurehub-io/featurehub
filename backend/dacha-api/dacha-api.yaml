@@ -16,6 +16,7 @@ paths:
         in: path
         schema:
           type: string
+          format: uuid
     get:
       responses:
         200:
@@ -39,9 +40,11 @@ components:
       properties:
         id:
           type: string
+          format: uuid
         destId:
           description: "this allows one instance on the bus to communicate directly with another instance"
           type: string
+          format: uuid
         requestType:
           $ref: "#/components/schemas/CacheRequestType"
         mit:
@@ -107,6 +110,7 @@ components:
       properties:
         environmentId:
           type: string
+          format: uuid
         apiKey:
           type: string
         featureKey:
@@ -139,6 +143,7 @@ components:
       properties:
         environmentId:
           type: string
+          format: uuid
         apiKey:
           type: string
         success:
@@ -157,6 +162,7 @@ components:
         environmentId:
           description: "this needs to be passed because the feature value may be null"
           type: string
+          format: uuid
         feature:
           $ref: "#/components/schemas/Feature"
         value:

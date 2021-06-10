@@ -42,6 +42,7 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Path("/features")
@@ -98,7 +99,7 @@ public class EventStreamResource {
     // record the result
     realApiKeys.forEach(k -> {
       statRecorder.recordHit(k,
-        environments.stream().anyMatch(e -> e.getId().equalsIgnoreCase(k.getEnvironmentId())) ?
+        environments.stream().anyMatch(e -> e.getId().equals(k.getEnvironmentId())) ?
           EdgeHitResultType.SUCCESS : EdgeHitResultType.MISSED, EdgeHitSourceType.POLL );
     });
 
@@ -115,7 +116,7 @@ public class EventStreamResource {
   @Path("{namedCache}/{environmentId}/{apiKey}")
   @Produces(SseFeature.SERVER_SENT_EVENTS)
   public EventOutput features(@PathParam("namedCache") String namedCache,
-                              @PathParam("environmentId") String envId,
+                              @PathParam("environmentId") UUID envId,
                               @PathParam("apiKey") String apiKey,
                               @HeaderParam("x-featurehub") List<String> featureHubAttrs, // non browsers can set headers
                               @QueryParam("xfeaturehub") String browserHubAttrs // browsers can't set headers
@@ -157,7 +158,7 @@ public class EventStreamResource {
   @PUT
   @Path("{namedCache}/{environmentId}/{apiKey}/{featureKey}")
   public Response update(@PathParam("namedCache") String namedCache,
-                         @PathParam("environmentId") String envId,
+                         @PathParam("environmentId") UUID envId,
                          @PathParam("apiKey") String apiKey,
                          @PathParam("featureKey") String featureKey,
                          FeatureStateUpdate featureStateUpdate) {
@@ -171,8 +172,8 @@ public class EventStreamResource {
     }
   }
 
-  private Response testAPi(String namedCache, String envId, String apiKey, String featureKey,
-                               FeatureStateUpdate featureStateUpdate) {
+  private Response testAPi(String namedCache, UUID envId, String apiKey, String featureKey,
+                           FeatureStateUpdate featureStateUpdate) {
     final KeyParts key = new KeyParts(namedCache, envId, apiKey);
 
     try {

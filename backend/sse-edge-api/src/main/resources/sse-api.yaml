@@ -129,6 +129,7 @@ components:
       properties:
         id:
           type: string
+          format: uuid
         features:
           type: array
           items:
@@ -139,6 +140,7 @@ components:
       properties:
         id:
           type: string
+          format: uuid
         key:
           type: string
         l:
@@ -156,6 +158,7 @@ components:
           description: "This field is filled in from the client side in the GET api as the GET api is able to request multiple environments.
                         It is never passed from the server, as an array of feature states is wrapped in an environment."
           type: string
+          format: uuid
         strategies:
           type: array
           items:

@@ -20,6 +20,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 public class GroupResource implements GroupServiceDelegate {
@@ -39,7 +40,7 @@ public class GroupResource implements GroupServiceDelegate {
     boolean delete = false;
   }
 
-  private void groupCheck(String gid, Person person, Consumer<Group> action) {
+  private void groupCheck(UUID gid, Person person, Consumer<Group> action) {
     Group group = groupApi.getGroup(gid, Opts.empty(), person);
 
     if (group == null) {
@@ -49,7 +50,7 @@ public class GroupResource implements GroupServiceDelegate {
     action.accept(group);
   }
 
-  private Person personCheck(String id, Consumer<Person> action) {
+  private Person personCheck(UUID id, Consumer<Person> action) {
     Person person = personApi.get(id, Opts.empty());
 
     if (person == null) {
@@ -90,7 +91,8 @@ public class GroupResource implements GroupServiceDelegate {
 
 
   @Override
-  public Group addPersonToGroup(String gid, String personId, AddPersonToGroupHolder holder, SecurityContext securityContext) {
+  public Group addPersonToGroup(UUID gid, UUID personId, AddPersonToGroupHolder holder,
+                                SecurityContext securityContext) {
     GroupHolder groupHolder = new GroupHolder();
 
     groupCheck(gid, authManager.from(securityContext), group -> {
@@ -109,7 +111,7 @@ public class GroupResource implements GroupServiceDelegate {
   }
 
   @Override
-  public Group createGroup(String id, Group group, CreateGroupHolder holder, SecurityContext securityContext) {
+  public Group createGroup(UUID id, Group group, CreateGroupHolder holder, SecurityContext securityContext) {
     Person current = authManager.from(securityContext);
 
     if (authManager.isPortfolioAdmin(id, current, null)) {
@@ -124,7 +126,7 @@ public class GroupResource implements GroupServiceDelegate {
   }
 
   @Override
-  public Boolean deleteGroup(String gid, DeleteGroupHolder holder, SecurityContext securityContext) {
+  public Boolean deleteGroup(UUID gid, DeleteGroupHolder holder, SecurityContext securityContext) {
     GroupHolder groupHolder = new GroupHolder();
 
     groupCheck(gid, authManager.from(securityContext), group -> {
@@ -143,7 +145,8 @@ public class GroupResource implements GroupServiceDelegate {
   }
 
   @Override
-  public Group deletePersonFromGroup(String gid, String personId, DeletePersonFromGroupHolder holder, SecurityContext securityContext) {
+  public Group deletePersonFromGroup(UUID gid, UUID personId, DeletePersonFromGroupHolder holder,
+                                     SecurityContext securityContext) {
     GroupHolder groupHolder = new GroupHolder();
 
     groupCheck(gid, authManager.from(securityContext), group -> {
@@ -162,7 +165,7 @@ public class GroupResource implements GroupServiceDelegate {
   }
 
   @Override
-  public List<Group> findGroups(String id, FindGroupsHolder holder, SecurityContext securityContext) {
+  public List<Group> findGroups(UUID id, FindGroupsHolder holder, SecurityContext securityContext) {
     final Person from = authManager.from(securityContext);
 
     if (authManager.isOrgAdmin(from) || authManager.isPortfolioGroupMember(id, from)) {
@@ -180,7 +183,7 @@ public class GroupResource implements GroupServiceDelegate {
   }
 
   @Override
-  public Group getGroup(String gid, GetGroupHolder holder, SecurityContext securityContext) {
+  public Group getGroup(UUID gid, GetGroupHolder holder, SecurityContext securityContext) {
     Opts opts = new Opts().add(FillOpts.Acls, holder.includeGroupRoles).add(FilterOptType.Application, holder.byApplicationId);
 
     if (Boolean.TRUE.equals(holder.includeMembers)) {
@@ -198,7 +201,7 @@ public class GroupResource implements GroupServiceDelegate {
   }
 
   @Override
-  public Group getSuperuserGroup(String id, SecurityContext securityContext) {
+  public Group getSuperuserGroup(UUID id, SecurityContext securityContext) {
     Group g = groupApi.getSuperuserGroup(id, authManager.from(securityContext));
 
     if (g == null) {
@@ -209,7 +212,7 @@ public class GroupResource implements GroupServiceDelegate {
   }
 
   @Override
-  public Group updateGroup(String gid, Group renameDetails, UpdateGroupHolder holder, SecurityContext securityContext) {
+  public Group updateGroup(UUID gid, Group renameDetails, UpdateGroupHolder holder, SecurityContext securityContext) {
     GroupHolder groupHolder = new GroupHolder();
 
     groupCheck(gid, authManager.from(securityContext), group -> {

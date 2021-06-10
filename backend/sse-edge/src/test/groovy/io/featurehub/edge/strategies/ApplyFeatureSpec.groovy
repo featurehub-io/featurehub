@@ -40,10 +40,10 @@ class ApplyFeatureSpec extends Specification {
       cac.attributes.put(ClientContext.USERKEY, ['mary@mary.com'])
     and: "a feature cache item"
       def fci = new FeatureValueCacheItem()
-        .value(new FeatureValue().valueString("yellow").id('1'))
+        .value(new FeatureValue().valueString("yellow").id(UUID.randomUUID()))
         .feature(new Feature().valueType(FeatureValueType.STRING))
     when: "i ask for the percentage"
-      def val = applyFeature.applyFeature(rollout, fci.feature.key, fci.value.id, cac)
+      def val = applyFeature.applyFeature(rollout, fci.feature.key, fci.value.id.toString().toString(), cac)
     then:
       val.matched == matched
       val.value == expected
@@ -64,10 +64,10 @@ class ApplyFeatureSpec extends Specification {
       cac.attributes.put(ClientContext.USERKEY, ['mary@mary.com'])
     and: "a feature cache item"
       def fci = new FeatureValueCacheItem()
-        .value(new FeatureValue().valueString("yellow").id('1'))
+        .value(new FeatureValue().valueString("yellow").id(UUID.randomUUID()))
         .feature(new Feature().valueType(FeatureValueType.STRING))
     when: "i ask for the percentage"
-      def val = applyFeature.applyFeature(rollout, fci.feature.key, fci.value.id, cac)
+      def val = applyFeature.applyFeature(rollout, fci.feature.key, fci.value.id.toString().toString(), cac)
     then:
       val.matched == matched
       val.value == expected
@@ -90,10 +90,10 @@ class ApplyFeatureSpec extends Specification {
       def cac = new ClientContext(false)
     and: "a feature cache item"
       def fci = new FeatureValueCacheItem()
-        .value(new FeatureValue().valueString("yellow").id('1'))
+        .value(new FeatureValue().valueString("yellow").id(UUID.randomUUID()))
         .feature(new Feature().valueType(FeatureValueType.STRING))
     when: "i ask for the percentage"
-      def val = applyFeature.applyFeature(rollout, fci.feature.key, fci.value.id, cac)
+      def val = applyFeature.applyFeature(rollout, fci.feature.key, fci.value.id.toString(), cac)
     then:
       val.matched == matched
       val.value == expected
@@ -115,10 +115,10 @@ class ApplyFeatureSpec extends Specification {
       pc = null
     and: "a feature cache item"
       def fci = new FeatureValueCacheItem()
-        .value(new FeatureValue().valueString("yellow").id('1'))
+        .value(new FeatureValue().valueString("yellow").id(UUID.randomUUID()))
         .feature(new Feature().valueType(FeatureValueType.STRING))
     when: "i ask for the percentage"
-      def val = applyFeature.applyFeature(rollout, fci.feature.key, fci.value.id, null)
+      def val = applyFeature.applyFeature(rollout, fci.feature.key, fci.value.id.toString(), null)
     then:
       !val.matched
   }

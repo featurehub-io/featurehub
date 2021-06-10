@@ -7,37 +7,36 @@ import io.featurehub.mr.model.FeatureValue;
 import io.featurehub.mr.model.Person;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface FeatureApi {
 
-  void updateAllFeatureValuesByApplicationForKey(String id, String key, List<FeatureValue> featureValue, Person from,
+  void updateAllFeatureValuesByApplicationForKey(UUID id, String key, List<FeatureValue> featureValue, Person from,
                                                  boolean removeValuesNotPassed)
     throws OptimisticLockingException, NoAppropriateRole,
     RolloutStrategyValidator.InvalidStrategyCombination;
 
-  ApplicationFeatureValues findAllFeatureAndFeatureValuesForEnvironmentsByApplication(String appId, Person current);
-
-  EnvironmentFeaturesResult lastFeatureValueChanges(Person from);
+  ApplicationFeatureValues findAllFeatureAndFeatureValuesForEnvironmentsByApplication(UUID appId, Person current);
 
   class NoAppropriateRole extends Exception {
   }
 
-  FeatureValue createFeatureValueForEnvironment(String eid, String key, FeatureValue featureValue,
+  FeatureValue createFeatureValueForEnvironment(UUID eid, String key, FeatureValue featureValue,
                                                 PersonFeaturePermission person) throws OptimisticLockingException,
     RolloutStrategyValidator.InvalidStrategyCombination, NoAppropriateRole;
 
-  boolean deleteFeatureValueForEnvironment(String eid, String key);
+  boolean deleteFeatureValueForEnvironment(UUID eid, String key);
 
-  FeatureValue updateFeatureValueForEnvironment(String eid, String key, FeatureValue featureValue,
+  FeatureValue updateFeatureValueForEnvironment(UUID eid, String key, FeatureValue featureValue,
                                                 PersonFeaturePermission person) throws OptimisticLockingException,
     RolloutStrategyValidator.InvalidStrategyCombination, NoAppropriateRole;
 
-  FeatureValue getFeatureValueForEnvironment(String eid, String key);
+  FeatureValue getFeatureValueForEnvironment(UUID eid, String key);
 
-  EnvironmentFeaturesResult getAllFeatureValuesForEnvironment(String eid);
+  EnvironmentFeaturesResult getAllFeatureValuesForEnvironment(UUID eid);
 
-  List<FeatureValue> updateAllFeatureValuesForEnvironment(String eid, List<FeatureValue> featureValues,
+  List<FeatureValue> updateAllFeatureValuesForEnvironment(UUID eid, List<FeatureValue> featureValues,
                                                           PersonFeaturePermission requireRoleCheck) throws OptimisticLockingException, NoAppropriateRole, RolloutStrategyValidator.InvalidStrategyCombination;
 
-  List<FeatureEnvironment> getFeatureValuesForApplicationForKeyForPerson(String appId, String key, Person person);
+  List<FeatureEnvironment> getFeatureValuesForApplicationForKeyForPerson(UUID appId, String key, Person person);
 }

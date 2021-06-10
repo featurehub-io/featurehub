@@ -29,7 +29,6 @@ import io.featurehub.mr.model.Organization;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.Portfolio;
 import io.featurehub.mr.model.RoleType;
-import io.featurehub.mr.model.RolloutStrategy;
 import io.featurehub.mr.model.RolloutStrategyInfo;
 import io.featurehub.mr.model.ServiceAccount;
 import io.featurehub.mr.model.ServiceAccountPermission;
@@ -37,35 +36,65 @@ import io.featurehub.mr.model.ServiceAccountPermission;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 public interface Conversions {
-  static Optional<UUID> uuid(String id) {
-    if (id == null) {
-      return Optional.empty();
-    }
+  //  static Optional<UUID> uuid(String id) {
+  //    if (id == null) {
+  //      return Optional.empty();
+  //    }
+  //
+  //    try {
+  //      return Optional.of(UUID.fromString(id));
+  //    } catch (Exception e) {
+  //      return Optional.empty();
+  //    }
+  //  }
 
-    try {
-      return Optional.of(UUID.fromString(id));
-    } catch (Exception e) {
-      return Optional.empty();
-    }
-  }
-
-  static UUID ifUuid(String id) {
+  // in case a field can be a name or a uuid (i.e. feature key)
+  static UUID checkUuid(String id) {
     if (id == null) {
       return null;
     }
     try {
       return UUID.fromString(id);
-    } catch(Exception e) {
+    } catch (Exception e) {
       return null;
     }
   }
 
-  static <T> T readJsonValue(String content, Class<T> valueType)  {
+  static void nonNullPortfolioId(UUID portfolioId) {
+    if (portfolioId == null) {
+      throw new IllegalArgumentException("Must provide non null portfolioId");
+    }
+  }
+
+  static void nonNullPerson(Person person) {
+    if (person == null || person.getId() == null || person.getId().getId() == null) {
+      throw new IllegalArgumentException("Must provide non null person id in person object");
+    }
+  }
+
+  static void nonNullPersonId(UUID personId) {
+    if (personId == null) {
+      throw new IllegalArgumentException("Must provide a non-null personId");
+    }
+  }
+
+  static void nonNullApplicationId(UUID applicationId) {
+    if (applicationId == null) {
+      throw new IllegalArgumentException("Must provide non-null applicationId");
+    }
+  }
+
+  static void nonNullEnvironmentId(UUID eid) {
+    if (eid == null) {
+      throw new IllegalArgumentException("Must provide a non-null environment id");
+    }
+  }
+
+  static <T> T readJsonValue(String content, Class<T> valueType) {
     try {
       return CacheJsonMapper.mapper.readValue(content, valueType);
     } catch (JsonProcessingException e) {
@@ -81,24 +110,55 @@ public interface Conversions {
     }
   }
 
+  static void nonNullServiceAccountId(UUID saId) {
+    if (saId == null) {
+      throw new IllegalArgumentException("You must provide a non null service account id");
+    }
+  }
+
+  static void nonNullOrganisationId(UUID orgId) {
+    if (orgId == null) {
+      throw new IllegalArgumentException("Organisation ID is required");
+    }
+  }
+
+  static void nonNullGroupId(UUID groupId) {
+    if (groupId == null) {
+      throw new IllegalArgumentException("Group ID is required");
+    }
+  }
+
+  static void nonNullStrategyId(UUID strategyId) {
+    if (strategyId == null) {
+      throw new IllegalArgumentException("Strategy ID is required");
+    }
+  }
+
   // used so things that call toPerson multiple times can hold onto it
   DbOrganization getDbOrganization();
 
-  DbPerson uuidPerson(String id);
+  DbPerson byPerson(UUID id);
 
-  DbPerson uuidPerson(String id, Opts opts);
+  DbPerson byPerson(UUID id, Opts opts);
 
-  DbPortfolio uuidPortfolio(String id);
+  DbPerson byPerson(Person creator);
 
-  DbEnvironment uuidEnvironment(String id);
+  DbRolloutStrategy byStrategy(UUID id);
 
-  DbEnvironment uuidEnvironment(String id, Opts opts);
-  DbEnvironment uuidEnvironment(UUID id, Opts opts);
+  DbPortfolio byPortfolio(UUID portfolioId);
 
-  DbApplication uuidApplication(String id);
+  DbEnvironment byEnvironment(UUID id);
+
+  DbEnvironment byEnvironment(UUID id, Opts opts);
+
+  DbApplication byApplication(UUID id);
+
+  DbGroup byGroup(UUID gid, Opts opts);
 
   boolean personIsNotSuperAdmin(DbPerson person);
+
   boolean personIsSuperAdmin(DbPerson person);
+
   Group getSuperuserGroup(Opts opts);
 
   String limitLength(String s, int len);
@@ -109,7 +169,11 @@ public interface Conversions {
 
   String getCacheNameByEnvironment(DbEnvironment env);
 
-  ServiceAccountPermission toServiceAccountPermission(DbServiceAccountEnvironment sae, Set<RoleType> rolePerms, boolean mustHaveRolePerms, Opts opt);
+  ServiceAccountPermission toServiceAccountPermission(
+      DbServiceAccountEnvironment sae,
+      Set<RoleType> rolePerms,
+      boolean mustHaveRolePerms,
+      Opts opt);
 
   ApplicationGroupRole applicationGroupRoleFromAcl(DbAcl acl);
 
@@ -126,6 +190,7 @@ public interface Conversions {
   Person toPerson(DbPerson person);
 
   Person toPerson(DbPerson dbp, Opts opts);
+
   Person toPerson(DbPerson dbp, DbOrganization org, Opts opts);
 
   default String stripArchived(String name, LocalDateTime whenArchived) {
@@ -150,34 +215,31 @@ public interface Conversions {
   Feature toFeature(DbFeatureValue fs);
 
   FeatureValue toFeatureValue(DbFeatureValue fs);
+
   FeatureValue toFeatureValue(DbFeatureValue fs, Opts opts);
 
   Portfolio toPortfolio(DbPortfolio p, Opts opts);
 
   Organization toOrganization(DbOrganization org, Opts opts);
 
-  DbGroup uuidGroup(String gid, Opts opts);
-
-  DbPerson uuidPerson(Person creator);
-
   boolean isPersonApplicationAdmin(DbPerson dbPerson, DbApplication app);
 
   ServiceAccount toServiceAccount(DbServiceAccount sa, Opts opts);
 
-  ServiceAccount toServiceAccount(DbServiceAccount sa, Opts opts, List<DbAcl> environmentsUserHasAccessTo);
+  ServiceAccount toServiceAccount(
+      DbServiceAccount sa, Opts opts, List<DbAcl> environmentsUserHasAccessTo);
 
   default List<RoleType> splitServiceAccountPermissions(String permissions) {
     // same now, were different historically
     return splitEnvironmentRoles(permissions);
   }
 
-  FeatureEnvironment toFeatureEnvironment(DbFeatureValue s, List<RoleType> roles, DbEnvironment dbEnvironment, Opts opts);
+  FeatureEnvironment toFeatureEnvironment(
+      DbFeatureValue s, List<RoleType> roles, DbEnvironment dbEnvironment, Opts opts);
 
   FeatureValue toFeatureValue(DbApplicationFeature feature, DbFeatureValue value);
+
   FeatureValue toFeatureValue(DbApplicationFeature feature, DbFeatureValue value, Opts opts);
 
   RolloutStrategyInfo toRolloutStrategy(DbRolloutStrategy rs, Opts opts);
-
-  DbRolloutStrategy uuidStrategy(String id);
-
 }

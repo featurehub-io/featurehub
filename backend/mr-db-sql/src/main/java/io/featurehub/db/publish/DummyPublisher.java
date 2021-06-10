@@ -29,7 +29,7 @@ public class DummyPublisher implements PublishManager, CacheSource {
   }
 
   @Override
-  public void deleteFeatureChange(DbApplicationFeature feature, String environmentId) {
+  public void deleteFeatureChange(DbApplicationFeature feature, UUID environmentId) {
 
   }
 

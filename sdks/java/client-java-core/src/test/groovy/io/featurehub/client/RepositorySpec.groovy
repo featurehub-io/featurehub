@@ -37,10 +37,10 @@ class RepositorySpec extends Specification {
   def "a set of features should trigger readyness and make all features available"() {
     given: "we have features"
       def features = [
-        new FeatureState().id('1').key('banana').version(1L).value(false).type(FeatureValueType.BOOLEAN),
-        new FeatureState().id('2').key('peach').version(1L).value("orange").type(FeatureValueType.STRING),
-        new FeatureState().id('3').key('peach_quantity').version(1L).value(17).type(FeatureValueType.NUMBER),
-        new FeatureState().id('4').key('peach_config').version(1L).value("{}").type(FeatureValueType.JSON),
+        new FeatureState().id(UUID.randomUUID()).key('banana').version(1L).value(false).type(FeatureValueType.BOOLEAN),
+        new FeatureState().id(UUID.randomUUID()).key('peach').version(1L).value("orange").type(FeatureValueType.STRING),
+        new FeatureState().id(UUID.randomUUID()).key('peach_quantity').version(1L).value(17).type(FeatureValueType.NUMBER),
+        new FeatureState().id(UUID.randomUUID()).key('peach_config').version(1L).value("{}").type(FeatureValueType.JSON),
       ]
     and: "we have a readyness listener"
       def readynessListener = Mock(ReadynessListener)
@@ -83,24 +83,24 @@ class RepositorySpec extends Specification {
   def "i can make all features available directly"() {
     given: "we have features"
       def features = [
-        new FeatureState().id('1').key('banana').version(1L).value(false).type(FeatureValueType.BOOLEAN),
+        new FeatureState().id(UUID.randomUUID()).key('banana').version(1L).value(false).type(FeatureValueType.BOOLEAN),
       ]
     when:
       repo.notify(features, false)
       def feature = repo.getFeatureState('banana').boolean
     and: "i make a change to the state but keep the version the same (ok because this is what rollout strategies do)"
       repo.notify([
-        new FeatureState().id('1').key('banana').version(1L).value(true).type(FeatureValueType.BOOLEAN),
+        new FeatureState().id(UUID.randomUUID()).key('banana').version(1L).value(true).type(FeatureValueType.BOOLEAN),
       ])
       def feature2 = repo.getFeatureState('banana').boolean
     and: "then i make the change but up the version"
       repo.notify([
-        new FeatureState().id('1').key('banana').version(2L).value(true).type(FeatureValueType.BOOLEAN),
+        new FeatureState().id(UUID.randomUUID()).key('banana').version(2L).value(true).type(FeatureValueType.BOOLEAN),
       ])
       def feature3 = repo.getFeatureState('banana').boolean
     and: "then i make a change but force it even if the version is the same"
       repo.notify([
-        new FeatureState().id('1').key('banana').version(1L).value(false).type(FeatureValueType.BOOLEAN),
+        new FeatureState().id(UUID.randomUUID()).key('banana').version(1L).value(false).type(FeatureValueType.BOOLEAN),
       ], true)
       def feature4 = repo.getFeatureState('banana').boolean
     then:
@@ -119,7 +119,7 @@ class RepositorySpec extends Specification {
 
   def "a feature is deleted that doesn't exist and thats ok"() {
     when: "i create a feature to delete"
-      def feature = new FeatureState().id('1').key('banana').version(1L).value(true).type(FeatureValueType.BOOLEAN)
+      def feature = new FeatureState().id(UUID.randomUUID()).key('banana').version(1L).value(true).type(FeatureValueType.BOOLEAN)
     and: "i delete a non existent feature"
       repo.notify(SSEResultState.DELETE_FEATURE, new ObjectMapper().writeValueAsString(feature))
     then:
@@ -128,13 +128,13 @@ class RepositorySpec extends Specification {
 
   def "A feature is deleted and it is now not set"() {
     given: "i have a feature"
-      def feature = new FeatureState().id('1').key('banana').version(1L).value(true).type(FeatureValueType.BOOLEAN)
+      def feature = new FeatureState().id(UUID.randomUUID()).key('banana').version(1L).value(true).type(FeatureValueType.BOOLEAN)
     and: "i notify repo"
       repo.notify([feature])
     when: "i check the feature state"
       def f = repo.getFeatureState('banana').boolean
     and: "i delete the feature"
-      def featureDel = new FeatureState().id('1').key('banana').version(2L).value(true).type(FeatureValueType.BOOLEAN)
+      def featureDel = new FeatureState().id(UUID.randomUUID()).key('banana').version(2L).value(true).type(FeatureValueType.BOOLEAN)
       repo.notify(SSEResultState.DELETE_FEATURE, new ObjectMapper().writeValueAsString(featureDel))
     then:
       f
@@ -145,10 +145,10 @@ class RepositorySpec extends Specification {
   def "i add an analytics collector and log and event"() {
     given: "i have features"
       def features = [
-        new FeatureState().id('1').key('banana').version(1L).value(false).type(FeatureValueType.BOOLEAN),
-        new FeatureState().id('2').key('peach').version(1L).value("orange").type(FeatureValueType.STRING),
-        new FeatureState().id('3').key('peach_quantity').version(1L).value(17).type(FeatureValueType.NUMBER),
-        new FeatureState().id('4').key('peach_config').version(1L).value("{}").type(FeatureValueType.JSON),
+        new FeatureState().id(UUID.randomUUID()).key('banana').version(1L).value(false).type(FeatureValueType.BOOLEAN),
+        new FeatureState().id(UUID.randomUUID()).key('peach').version(1L).value("orange").type(FeatureValueType.STRING),
+        new FeatureState().id(UUID.randomUUID()).key('peach_quantity').version(1L).value(17).type(FeatureValueType.NUMBER),
+        new FeatureState().id(UUID.randomUUID()).key('peach_config').version(1L).value("{}").type(FeatureValueType.JSON),
       ]
     and: "i redefine the executor in the repository so i can prevent the event logging and update first"
       List<Runnable> commands = []
@@ -168,7 +168,7 @@ class RepositorySpec extends Specification {
       commands.clear()
     and: "i change the status of the feature"
       newRepo.notify(SSEResultState.FEATURE, new ObjectMapper().writeValueAsString(
-        new FeatureState().id('1').key('banana').version(2L).value(true)
+        new FeatureState().id(UUID.randomUUID()).key('banana').version(2L).value(true)
           .type(FeatureValueType.BOOLEAN),))
       commands.each {it.run() } // process
       heldNotificationCalls.each {it.run() } // process
@@ -184,7 +184,7 @@ class RepositorySpec extends Specification {
   def "a json config will properly deserialize into an object"() {
     given: "i have features"
       def features = [
-        new FeatureState().id('1').key('banana').version(1L).value('{"sample":12}').type(FeatureValueType.JSON),
+        new FeatureState().id(UUID.randomUUID()).key('banana').version(1L).value('{"sample":12}').type(FeatureValueType.JSON),
       ]
     and: "i register an alternate object mapper"
       repo.setJsonConfigObjectMapper(new ObjectMapper())
@@ -200,7 +200,7 @@ class RepositorySpec extends Specification {
   def "failure changes readyness to failure"() {
     given: "i have features"
       def features = [
-        new FeatureState().id('1').key('banana').version(1L).value(false).type(FeatureValueType.BOOLEAN),
+        new FeatureState().id(UUID.randomUUID()).key('banana').version(1L).value(false).type(FeatureValueType.BOOLEAN),
       ]
     and: "i notify the repo"
       def mockReadyness = Mock(ReadynessListener)
@@ -218,7 +218,7 @@ class RepositorySpec extends Specification {
   def "ack and bye are ignored"() {
     given: "i have features"
       def features = [
-        new FeatureState().id('1').key('banana').version(1L).value(false).type(FeatureValueType.BOOLEAN),
+        new FeatureState().id(UUID.randomUUID()).key('banana').version(1L).value(false).type(FeatureValueType.BOOLEAN),
       ]
     and: "i notify the repo"
       repo.notify(features)
@@ -232,10 +232,10 @@ class RepositorySpec extends Specification {
   def "i can attach to a feature before it is added and receive notifications when it is"() {
     given: "i have one of each feature type"
       def features = [
-        new FeatureState().id('1').key('banana').version(1L).value(false).type(FeatureValueType.BOOLEAN),
-        new FeatureState().id('2').key('peach').version(1L).value("orange").type(FeatureValueType.STRING),
-        new FeatureState().id('3').key('peach_quantity').version(1L).value(17).type(FeatureValueType.NUMBER),
-        new FeatureState().id('4').key('peach_config').version(1L).value("{}").type(FeatureValueType.JSON),
+        new FeatureState().id(UUID.randomUUID()).key('banana').version(1L).value(false).type(FeatureValueType.BOOLEAN),
+        new FeatureState().id(UUID.randomUUID()).key('peach').version(1L).value("orange").type(FeatureValueType.STRING),
+        new FeatureState().id(UUID.randomUUID()).key('peach_quantity').version(1L).value(17).type(FeatureValueType.NUMBER),
+        new FeatureState().id(UUID.randomUUID()).key('peach_config').version(1L).value("{}").type(FeatureValueType.JSON),
       ]
     and: "I listen for updates for those features"
       def updateListener = []

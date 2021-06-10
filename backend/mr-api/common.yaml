@@ -19,6 +19,7 @@ components:
       properties:
         applicationId:
           type: string
+          format: uuid
         features:
           type: array
           items:
@@ -31,10 +32,12 @@ components:
       properties:
         environmentId:
           type: string
+          format: uuid
         environmentName:
           type: string
         priorEnvironmentId:
           type: string
+          format: uuid
         features:
           description: "the values of the features depending on access"
           type: array
@@ -52,6 +55,7 @@ components:
       properties:
         id:
           type: string
+          format: uuid
         key:
           type: string
           description: "Unique within this application"
@@ -82,6 +86,7 @@ components:
       properties:
         id:
           type: string
+          format: uuid
         key:
           type: string
         locked:
@@ -113,6 +118,7 @@ components:
             $ref: "#/components/schemas/RolloutStrategy"
         environmentId:
           type: string
+          format: uuid
         version:
           description: "used for optimistic locking"
           type: integer
@@ -131,6 +137,7 @@ components:
           type: string
         strategyId:
           type: string
+          format: uuid
         value:
           description: "the value for this rollout strategy for this feature value"
         disabled:
@@ -163,6 +170,7 @@ components:
           properties:
             id:
               type: string
+              format: uuid
             name:
               type: string
               minLength: 1
@@ -175,6 +183,7 @@ components:
               format: int64
             organizationId:
               type: string
+              format: uuid
             groups:
               type: array
               items:
@@ -195,6 +204,7 @@ components:
           properties:
             id:
               type: string
+              format: uuid
             name:
               type: string
               maxLength: 100
@@ -203,6 +213,7 @@ components:
               maxLength: 400
             portfolioId:
               type: string
+              format: uuid
             version:
               type: integer
               format: int64
@@ -274,6 +285,7 @@ components:
       properties:
         id:
           type: string
+          format: uuid
     Environment:
       allOf:
         - $ref: "#/components/schemas/Audit"
@@ -283,14 +295,17 @@ components:
           properties:
             id:
               type: string
+              format: uuid
             applicationId:
               type: string
+              format: uuid
             name:
               type: string
               minLength: 1
               maxLength: 150
             priorEnvironmentId:
               type: string
+              format: uuid
             version:
               type: integer
               format: int64
@@ -322,12 +337,14 @@ components:
       properties:
         id:
           type: string
+          format: uuid
         name:
           type: string
           minLength: 1
           maxLength: 40
         portfolioId:
           type: string
+          format: uuid
         description:
           type: string
           maxLength: 400
@@ -356,6 +373,7 @@ components:
       properties:
         id:
           type: string
+          format: uuid
         permissions:
           type: array
           items:
@@ -365,6 +383,7 @@ components:
           $ref: "#/components/schemas/ServiceAccount"
         environmentId:
           type: string
+          format: uuid
         sdkUrlClientEval:
           description: "Optional if they have chosen includeSdkUrl"
           type: string
@@ -380,14 +399,17 @@ components:
           properties:
             id:
               type: string
+              format: uuid
             admin:
               description: "is this an admin group?"
               type: boolean
             portfolioId:
               type: string
+              format: uuid
             organizationId:
               description: "this will be the organisation this group belongs to at the top level, or if a portfolio group, the organisation of the portfolio"
               type: string
+              format: uuid
             version:
               type: integer
               format: int64
@@ -418,8 +440,10 @@ components:
       properties:
         applicationId:
           type: string
+          format: uuid
         groupId:
           type: string
+          format: uuid
         roles:
           type: array
           items:
@@ -436,8 +460,10 @@ components:
       properties:
         environmentId:
           type: string
+          format: uuid
         groupId:
           type: string
+          format: uuid
         roles:
           type: array
           items:
@@ -451,6 +477,7 @@ components:
           properties:
             id:
               type: string
+              format: uuid
             version:
               type: integer
               format: int64

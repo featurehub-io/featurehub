@@ -109,7 +109,7 @@ public class FeatureStateBase implements FeatureState {
     if (context != null) {
       final Applied applied =
         featureStore.applyFeature(
-          featureState.getStrategies(), key, featureState.getId(), context);
+          featureState.getStrategies(), key, featureState.getId().toString(), context);
 
       if (applied.isMatched()) {
         return applied.getValue() == null ? null : applied.getValue();

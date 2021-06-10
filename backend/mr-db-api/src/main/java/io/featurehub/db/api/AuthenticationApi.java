@@ -4,6 +4,7 @@ import io.featurehub.mr.model.Person;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.UUID;
 
 public interface AuthenticationApi {
   Person login(@NotNull String email, @NotNull String password);
@@ -23,7 +24,7 @@ public interface AuthenticationApi {
    * @param changedBy
    * @return
    */
-  Person resetPassword(@NotNull String id, @NotNull String password, @NotNull String changedBy, boolean reactivate);
+  Person resetPassword(@NotNull UUID id, @NotNull String password, @NotNull UUID changedBy, boolean reactivate);
 
   /**
    * in case of forgotten password user required to replace temp password after admin has reset it for a user
@@ -31,7 +32,7 @@ public interface AuthenticationApi {
    * @param password
    * @return
    */
-  Person replaceTemporaryPassword(@NotNull String id, @NotNull String password);
+  Person replaceTemporaryPassword(@NotNull UUID id, @NotNull String password);
 
 
   /**
@@ -41,7 +42,7 @@ public interface AuthenticationApi {
    * @param newPassword
    * @return
    */
-  Person changePassword(@NotNull String id, @NotNull String oldPassword, @NotNull String newPassword);
+  Person changePassword(@NotNull UUID id, @NotNull String oldPassword, @NotNull String newPassword);
 
   Person getPersonByToken(String token);
 

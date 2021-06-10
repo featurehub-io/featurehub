@@ -9,6 +9,19 @@
   <version>1.1.2-SNAPSHOT</version>
   <packaging>pom</packaging>
 
+  <description>
+    This builds the entire stack into JAR files, but does NOT generate the Docker images. The shell script in the
+    backend folder does this (backend/build.sh).
+
+    The Docker images are based on images in the pipeline/build folder
+    but are built using JIB, the Maven plugin from Google which does not require Docker. The configuration of those
+    images are controlled by backend/tile-app/tile.xml.
+
+    To build this, ensure that you go to the backend folder and do a mvn -f pom-first.xml clean install
+
+    Then build this file (we recommend mvn -T4C clean install)
+  </description>
+
   <url>https://featurehub.io</url>
   <developers>
     <developer>

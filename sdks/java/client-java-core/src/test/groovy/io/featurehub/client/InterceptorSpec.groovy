@@ -84,7 +84,7 @@ class InterceptorSpec extends Specification {
       def fr = new ClientFeatureRepository(1);
       fr.registerValueInterceptor(false, Mock(FeatureValueInterceptor))
     and: "we register a feature"
-      fr.notify([new FeatureState().value(true).type(FeatureValueType.BOOLEAN).key("x").id("1").l(true)])
+      fr.notify([new FeatureState().value(true).type(FeatureValueType.BOOLEAN).key("x").id(UUID.randomUUID()).l(true)])
     when: "i ask for the feature"
      def f = fr.getFeatureState("x").boolean
     then:
@@ -97,10 +97,10 @@ class InterceptorSpec extends Specification {
     and: "we set the system property value interceptor on it"
       fr.registerValueInterceptor(true, new SystemPropertyValueInterceptor())
     and: "we have a set of features and register them"
-      def banana = new FeatureState().id('1').key('banana_or').version(1L).value(false).type(FeatureValueType.BOOLEAN)
-      def orange = new FeatureState().id('2').key('peach_or').version(1L).value("orange").type(FeatureValueType.STRING)
-      def peachQuantity = new FeatureState().id('3').key('peach-quantity_or').version(1L).value(17).type(FeatureValueType.NUMBER)
-      def peachConfig = new FeatureState().id('4').key('peach-config_or').version(1L).value("{}").type(FeatureValueType.JSON)
+      def banana = new FeatureState().id(UUID.randomUUID()).key('banana_or').version(1L).value(false).type(FeatureValueType.BOOLEAN)
+      def orange = new FeatureState().id(UUID.randomUUID()).key('peach_or').version(1L).value("orange").type(FeatureValueType.STRING)
+      def peachQuantity = new FeatureState().id(UUID.randomUUID()).key('peach-quantity_or').version(1L).value(17).type(FeatureValueType.NUMBER)
+      def peachConfig = new FeatureState().id(UUID.randomUUID()).key('peach-config_or').version(1L).value("{}").type(FeatureValueType.JSON)
       def features = [banana, orange, peachConfig, peachQuantity]
       fr.notify(features)
     when: "we set the feature override"

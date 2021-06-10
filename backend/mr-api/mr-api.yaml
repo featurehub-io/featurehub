@@ -23,6 +23,7 @@ paths:
           description: "the id of the organisation"
           schema:
             type: string
+            format: uuid
       responses:
         200:
           description: "The superuser group presuming the organization exists"
@@ -122,6 +123,7 @@ paths:
         in: path
         schema:
           type: string
+          format: uuid
         required: true
       - name: includeGroups
         description: "Include groups for this this portfolio in results"
@@ -218,6 +220,7 @@ paths:
         in: path
         schema:
           type: string
+          format: uuid
         required: true
       - name: includeEnvironments
         in: query
@@ -298,6 +301,7 @@ paths:
         in: path
         schema:
           type: string
+          format: uuid
         required: true
       - name: includePeople
         description: "include people in each group"
@@ -640,6 +644,7 @@ paths:
         in: path
         schema:
           type: string
+          format: uuid
         required: true
     put:
       tags:
@@ -705,6 +710,7 @@ paths:
         in: path
         schema:
           type: string
+          format: uuid
         required: true
     put:
       security:
@@ -766,6 +772,7 @@ paths:
         in: path
         schema:
           type: string
+          format: uuid
         required: true
     put:
       tags:
@@ -803,6 +810,7 @@ paths:
         in: path
         schema:
           type: string
+          format: uuid
         required: true
       - name: includeEnvironments
         in: query
@@ -892,6 +900,7 @@ paths:
         in: path
         schema:
           type: string
+          format: uuid
         required: true
       - name: includeWhoChanged
         description: "include who changed"
@@ -970,6 +979,7 @@ paths:
           in: path
           schema:
             type: string
+            format: uuid
           required: true
       operationId: validate
       requestBody:
@@ -990,15 +1000,16 @@ paths:
         401:
           description: "no permission"
 
-  /mr-api/application/{appId}/rollout-strategy/{strategyId}:
+  /mr-api/application/{appId}/rollout-strategy/{strategyIdOrName}:
     parameters:
       - name: appId
         description: "The id of the application to find"
         in: path
         schema:
           type: string
+          format: uuid
         required: true
-      - name: strategyId
+      - name: strategyIdOrName
         description: "The id of the strategy or the unique name of it"
         in: path
         schema:
@@ -1088,6 +1099,7 @@ paths:
         in: path
         schema:
           type: string
+          format: uuid
         required: true
     get:
       security:
@@ -1146,9 +1158,10 @@ paths:
         in: path
         schema:
           type: string
+          format: uuid
         required: true
       - name: key
-        description: "The key of the associated feature"
+        description: "The named unique key of the associated feature"
         in: path
         schema:
           type: string
@@ -1234,6 +1247,7 @@ paths:
         in: path
         schema:
           type: string
+          format: uuid
         required: true
       - name: key
         description: "The key of the associated feature"
@@ -1314,6 +1328,7 @@ paths:
         in: path
         schema:
           type: string
+          format: uuid
         required: true
     get:
       security:
@@ -1343,6 +1358,7 @@ paths:
         in: path
         schema:
           type: string
+          format: uuid
         required: true
     post:
       security:
@@ -1383,6 +1399,7 @@ paths:
         in: path
         schema:
           type: string
+          format: uuid
         required: true
     get:
       security:
@@ -1464,6 +1481,7 @@ paths:
         in: path
         schema:
           type: string
+          format: uuid
         required: true
       - name: includeAcls
         description: "Include the acls attached to this environment"
@@ -1562,6 +1580,7 @@ paths:
         in: path
         schema:
           type: string
+          format: uuid
         required: true
     get:
       security:
@@ -1630,6 +1649,7 @@ paths:
         in: path
         schema:
           type: string
+          format: uuid
         required: true
       - name: key
         description: "The key of the relevant feature"
@@ -1754,6 +1774,7 @@ paths:
         in: path
         schema:
           type: string
+          format: uuid
         required: true
       - name: includeMembers
         description: "include people in each group"
@@ -1870,12 +1891,14 @@ paths:
         in: path
         schema:
           type: string
+          format: uuid
         required: true
       - name: pId
         description: "The id of the person to add/delete"
         in: path
         schema:
           type: string
+          format: uuid
         required: true
       - name: includeMembers
         description: "include people in each group"
@@ -1934,6 +1957,7 @@ paths:
         required: true
         schema:
           type: string
+          format: uuid
       - name: includePermissions
         description: "include permissions in return"
         in: query
@@ -1956,6 +1980,7 @@ paths:
           in: query
           schema:
             type: string
+            format: uuid
         - name: includeSdkUrls
           description: "Include the SDKs for environments the user has access to"
           in: query
@@ -2011,6 +2036,7 @@ paths:
         required: true
         schema:
           type: string
+          format: uuid
       - name: includePermissions
         description: "include permissions in return"
         in: query
@@ -2112,6 +2138,7 @@ paths:
           in: path
           schema:
             type: string
+            format: uuid
       responses:
         200:
           description: "Details of service account"
@@ -2225,6 +2252,7 @@ components:
       properties:
         id:
           type: string
+          format: uuid
         token:
           type: string
         expired:
@@ -2340,6 +2368,7 @@ components:
           type: array
           items:
             type: string
+            format: uuid
     UserCredentials:
       required:
         - email

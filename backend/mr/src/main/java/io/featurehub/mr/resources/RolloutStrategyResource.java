@@ -23,6 +23,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.SecurityContext;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class RolloutStrategyResource implements RolloutStrategyServiceDelegate {
@@ -42,7 +43,7 @@ public class RolloutStrategyResource implements RolloutStrategyServiceDelegate {
   }
 
   @Override
-  public RolloutStrategyInfo createRolloutStrategy(String appId, RolloutStrategy rolloutStrategy,
+  public RolloutStrategyInfo createRolloutStrategy(UUID appId, RolloutStrategy rolloutStrategy,
                                                    CreateRolloutStrategyHolder holder,
                                                    SecurityContext securityContext) {
     applicationUtils.featureAdminCheck(securityContext, appId);
@@ -67,11 +68,11 @@ public class RolloutStrategyResource implements RolloutStrategyServiceDelegate {
   }
 
   @Override
-  public RolloutStrategyInfo deleteRolloutStrategy(String appId, String strategyId, DeleteRolloutStrategyHolder holder,
+  public RolloutStrategyInfo deleteRolloutStrategy(UUID appId, String strategyIdOrName, DeleteRolloutStrategyHolder holder,
                                                    SecurityContext securityContext) {
     applicationUtils.featureAdminCheck(securityContext, appId);
     Person person = authManager.from(securityContext);
-    final RolloutStrategyInfo rolloutStrategyInfo = rolloutStrategyApi.archiveStrategy(appId, strategyId, person,
+    final RolloutStrategyInfo rolloutStrategyInfo = rolloutStrategyApi.archiveStrategy(appId, strategyIdOrName, person,
       new Opts().add(FillOpts.SimplePeople,
       holder.includeWhoChanged));
 
@@ -83,11 +84,11 @@ public class RolloutStrategyResource implements RolloutStrategyServiceDelegate {
   }
 
   @Override
-  public RolloutStrategyInfo getRolloutStrategy(String appId, String strategyId, GetRolloutStrategyHolder holder,
+  public RolloutStrategyInfo getRolloutStrategy(UUID appId, String strategyIdOrName, GetRolloutStrategyHolder holder,
                                                 SecurityContext securityContext) {
     applicationUtils.featureReadCheck(securityContext, appId);
 
-    RolloutStrategyInfo rs = rolloutStrategyApi.getStrategy(appId, strategyId, new Opts().add(FillOpts.SimplePeople,
+    RolloutStrategyInfo rs = rolloutStrategyApi.getStrategy(appId, strategyIdOrName, new Opts().add(FillOpts.SimplePeople,
       holder.includeWhoChanged));
 
     if (rs == null) {
@@ -98,7 +99,7 @@ public class RolloutStrategyResource implements RolloutStrategyServiceDelegate {
   }
 
   @Override
-  public List<RolloutStrategyInfo> listApplicationRolloutStrategies(String appId,
+  public List<RolloutStrategyInfo> listApplicationRolloutStrategies(UUID appId,
                                                                     ListApplicationRolloutStrategiesHolder holder,
                                                                     SecurityContext securityContext) {
     applicationUtils.featureReadCheck(securityContext, appId);
@@ -114,7 +115,7 @@ public class RolloutStrategyResource implements RolloutStrategyServiceDelegate {
   }
 
   @Override
-  public RolloutStrategyInfo updateRolloutStrategy(String appId, String strategyId, RolloutStrategy rolloutStrategy,
+  public RolloutStrategyInfo updateRolloutStrategy(UUID appId, String strategyIdOrName, RolloutStrategy rolloutStrategy,
                                                    UpdateRolloutStrategyHolder holder,
                                                    SecurityContext securityContext) {
     applicationUtils.featureAdminCheck(securityContext, appId);
@@ -144,7 +145,7 @@ public class RolloutStrategyResource implements RolloutStrategyServiceDelegate {
   }
 
   @Override
-  public RolloutStrategyValidationResponse validate(String appId, RolloutStrategyValidationRequest req,
+  public RolloutStrategyValidationResponse validate(UUID appId, RolloutStrategyValidationRequest req,
                                                     SecurityContext securityContext) {
     final RolloutStrategyValidator.ValidationFailure validationFailure =
       validator.validateStrategies(req.getCustomStrategies(), req.getSharedStrategies());

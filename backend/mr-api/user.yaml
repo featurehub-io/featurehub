@@ -10,6 +10,7 @@ paths:
         required: true
         schema:
           type: string
+          format: uuid
     get:
       security:
         -  bearerAuth: []
@@ -69,3 +70,4 @@ components:
           type: array
           items:
             type: string
+            format: uuid

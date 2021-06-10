@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -93,7 +94,7 @@ public class ServerConfig implements ServerController, NATSSource {
   Integer namedCacheTimeout = 2000; // milliseconds to wait for dacha to responsd
   private final Connection connection;
   // environmentId, list of connections for that environment
-  private final Map<String, Collection<ClientConnection>> clientBuckets = new ConcurrentHashMap<>();
+  private final Map<UUID, Collection<ClientConnection>> clientBuckets = new ConcurrentHashMap<>();
   // dispatcher subject based on named-cache, NamedCacheListener
   private final Map<String, NamedCacheListener> cacheListeners = new ConcurrentHashMap<>();
   private final FeatureTransformer featureTransformer = new FeatureTransformerUtils();
@@ -239,7 +240,8 @@ public class ServerConfig implements ServerController, NATSSource {
     }
   }
 
-  public EdgeInitPermissionResponse requestPermission(String namedCache, String apiKey, String environmentId, String featureKey) {
+  public EdgeInitPermissionResponse requestPermission(String namedCache, String apiKey, UUID environmentId,
+                                                      String featureKey) {
     String subject = namedCache + "/" + ChannelConstants.EDGE_CACHE_CHANNEL;
     try {
       Message response = connection.request(subject,
@@ -278,7 +280,7 @@ public class ServerConfig implements ServerController, NATSSource {
   }
 
   protected Environment getEnvironmentFeaturesBySdk(String namedCache, String apiKey,
-                                                    String envId, ClientContext clientContext) {
+                                                    UUID envId, ClientContext clientContext) {
     EdgeInitRequest request = new EdgeInitRequest()
       .command(EdgeInitRequestCommand.LISTEN)
       .apiKey(apiKey)
@@ -308,11 +310,9 @@ public class ServerConfig implements ServerController, NATSSource {
   public List<Environment> requestFeatures(List<KeyParts> keys, ClientContext clientContext) {
     List<CompletableFuture<Environment>> futures = new ArrayList<>();
 
-    keys.forEach(url -> {
-      futures.add(CompletableFuture.supplyAsync(() -> getEnvironmentFeaturesBySdk(url.getCacheName(),
-        url.getServiceKey(), url.getEnvironmentId(), clientContext),
-        listenExecutor));
-    });
+    keys.forEach(url -> futures.add(CompletableFuture.supplyAsync(() -> getEnvironmentFeaturesBySdk(url.getCacheName(),
+      url.getServiceKey(), url.getEnvironmentId(), clientContext),
+      listenExecutor)));
 
     if (!futures.isEmpty()) {
       try {

@@ -42,9 +42,9 @@ class FeatureSpec extends BaseSpec {
   @Shared FeatureSqlApi featureSqlApi
   @Shared EnvironmentSqlApi environmentSqlApi
   @Shared ServiceAccountSqlApi serviceAccountSqlApi
-  @Shared String envIdApp1
-  @Shared String appId
-  @Shared String app2Id
+  @Shared UUID envIdApp1
+  @Shared UUID appId
+  @Shared UUID app2Id
   @Shared Person averageJoeMemberOfPortfolio1
   @Shared Person portfolioAdminOfPortfolio1
   @Shared Group groupInPortfolio1
@@ -64,10 +64,10 @@ class FeatureSpec extends BaseSpec {
     database.save(portfolio1)
     app1 = new DbApplication.Builder().whoCreated(dbSuperPerson).portfolio(portfolio1).name("feature-app-1").build()
     database.save(app1)
-    appId = app1.id.toString()
+    appId = app1.id
     app2 = new DbApplication.Builder().whoCreated(dbSuperPerson).portfolio(portfolio1).name("feature-app-2").build()
     database.save(app2)
-    app2Id = app2.id.toString()
+    app2Id = app2.id
 
     environmentSqlApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
     envIdApp1 = environmentSqlApi.create(new Environment().name("feature-app-1-env-1"), new Application().id(appId), superPerson).id
@@ -80,14 +80,14 @@ class FeatureSpec extends BaseSpec {
     def averageJoe = new DbPerson.Builder().email("averagejoe-fvs@featurehub.io").name("Average Joe").build()
     database.save(averageJoe)
     averageJoeMemberOfPortfolio1 = convertUtils.toPerson(averageJoe)
-    groupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id.toString(), new Group().name("fsspec-1-p1"), superPerson)
+    groupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("fsspec-1-p1"), superPerson)
     groupSqlApi.addPersonToGroup(groupInPortfolio1.id, averageJoeMemberOfPortfolio1.id.id, Opts.empty())
 
     def portfolioAdmin = new DbPerson.Builder().email("pee-admin-fvs@featurehub.io").name("Portfolio Admin p1 fvs").build()
     database.save(portfolioAdmin)
     portfolioAdminOfPortfolio1 = convertUtils.toPerson(portfolioAdmin)
 
-    adminGroupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id.toString(), new Group().admin(true).name("fsspec-admin-1-p1"), superPerson)
+    adminGroupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().admin(true).name("fsspec-admin-1-p1"), superPerson)
     groupSqlApi.addPersonToGroup(adminGroupInPortfolio1.id, portfolioAdminOfPortfolio1.id.id, Opts.empty())
   }
 
@@ -289,13 +289,13 @@ class FeatureSpec extends BaseSpec {
       def env3 = environmentSqlApi.create(new Environment().name("app2-staging-f1"), new Application().id(app2Id), superPerson)
       def env4 = environmentSqlApi.create(new Environment().name("app2-production-f1"), new Application().id(app2Id), superPerson)
     and: "i create a service account"
-      def serviceA1 = serviceAccountSqlApi.create(portfolio1.id.toString(), superPerson,
+      def serviceA1 = serviceAccountSqlApi.create(portfolio1.id, superPerson,
         new ServiceAccount()
           .description("the dragon").name("wilbur")
           .permissions([new ServiceAccountPermission().environmentId(env1.id).permissions([RoleType.READ])]),
         Opts.empty())
     and: "i allow average joe access to two of the three environments"
-      Group g1 = groupSqlApi.createPortfolioGroup(portfolio1.id.toString(), new Group().name("app2-f1-test"), superPerson)
+      Group g1 = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("app2-f1-test"), superPerson)
       g1.environmentRoles([
         new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]).environmentId(env1.id),
         new EnvironmentGroupRole().roles([RoleType.CHANGE_VALUE, RoleType.LOCK]).environmentId(env3.id),

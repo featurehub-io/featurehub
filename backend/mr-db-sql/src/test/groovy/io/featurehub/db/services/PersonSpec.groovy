@@ -52,14 +52,14 @@ class PersonSpec extends BaseSpec {
 
   def "No email is passed when creating a user causes a null return"() {
     when:
-      PersonApi.PersonToken p = personSqlApi.create(null, "x", "x")
+      PersonApi.PersonToken p = personSqlApi.create(null, "x", UUID.randomUUID())
     then:
       p == null
   }
 
   def "Non uuid for createdBy causes a null return"() {
     when:
-      PersonApi.PersonToken p = personSqlApi.create("toddy1@f.com", "y", "x")
+      PersonApi.PersonToken p = personSqlApi.create("toddy1@f.com", "y", UUID.randomUUID())
     then:
       p == null
   }
@@ -73,7 +73,7 @@ class PersonSpec extends BaseSpec {
 
   def "When I try and create a new person with a person who doesn't exist, I should get a null return"() {
     when:
-      PersonApi.PersonToken p = personSqlApi.create("toddy1@f.com", "choppy", UUID.randomUUID().toString())
+      PersonApi.PersonToken p = personSqlApi.create("toddy1@f.com", "choppy", UUID.randomUUID())
     then:
       p == null
   }
@@ -89,14 +89,14 @@ class PersonSpec extends BaseSpec {
 
   def "When i try and find a person that doesn't exist, i get null"() {
     when:
-      Person p = personSqlApi.get(UUID.randomUUID().toString(), Opts.empty())
+      Person p = personSqlApi.get(UUID.randomUUID(), Opts.empty())
     then:
       p == null
   }
 
   def "When I try and find an invalid id person, i get null"() {
     when:
-      Person p = personSqlApi.get("x", Opts.empty())
+      Person p = personSqlApi.get(UUID.randomUUID(), Opts.empty())
     then:
       p == null
   }
@@ -152,16 +152,16 @@ class PersonSpec extends BaseSpec {
       def g1 = groupSqlApi.createPortfolioGroup(p1.id, new Group(name: 'upd-g-1'), superPerson)
       def g2 = groupSqlApi.createPortfolioGroup(p2.id, new Group(name: 'upd-g-2'), superPerson)
     when:
-      def originalPerson = personSqlApi.get(person.id.toString(), Opts.empty())
-      def resultingPerson = personSqlApi.update(person.id.toString(),
-        originalPerson.name("not me").email("updated@me.com").groups([g1, g2]), Opts.empty(), superuser.toString())
+      def originalPerson = personSqlApi.get(person.id, Opts.empty())
+      def resultingPerson = personSqlApi.update(person.id,
+        originalPerson.name("not me").email("updated@me.com").groups([g1, g2]), Opts.empty(), superuser)
     and:
-      def addGroupsPerson = personSqlApi.get(person.id.toString(), Opts.opts(FillOpts.Groups))
+      def addGroupsPerson = personSqlApi.get(person.id, Opts.opts(FillOpts.Groups))
     and:
-      def removeGroupsPerson = personSqlApi.update(person.id.toString(),
-        addGroupsPerson.copy().name("not you").email("updated@me.com").groups([g2]), Opts.empty(), superuser.toString())
+      def removeGroupsPerson = personSqlApi.update(person.id,
+        addGroupsPerson.copy().name("not you").email("updated@me.com").groups([g2]), Opts.empty(), superuser)
     and:
-      def foundRemovedGroupsPerson = personSqlApi.get(person.id.toString(), Opts.opts(FillOpts.Groups))
+      def foundRemovedGroupsPerson = personSqlApi.get(person.id, Opts.opts(FillOpts.Groups))
     then:
       resultingPerson != null
       addGroupsPerson.name == 'not me'
@@ -189,21 +189,21 @@ class PersonSpec extends BaseSpec {
     and: "i create a user and make them a membe rof the portfolio admin group"
       def pAdmin = new DbPerson.Builder().name("Frederick Von Brinkenstorm").email("freddy@mailinator.com").build()
       database.save(pAdmin)
-      def pAdminId = pAdmin.id.toString()
+      def pAdminId = pAdmin.id
       groupSqlApi.addPersonToGroup(gPortfolioAdmin.id, pAdminId, Opts.empty())
     when: "the portfolio admin updates the person to add the two groups, but only have access to 1"
-      def originalPerson = personSqlApi.get(person.id.toString(), Opts.empty())
-      def resultingPerson = personSqlApi.update(person.id.toString(),
+      def originalPerson = personSqlApi.get(person.id, Opts.empty())
+      def resultingPerson = personSqlApi.update(person.id,
         originalPerson.name("not me").email("updated22@me.com").groups([g1, g2]), Opts.empty(), pAdminId)
-      def addGroupsPerson = personSqlApi.get(person.id.toString(), Opts.opts(FillOpts.Groups))
+      def addGroupsPerson = personSqlApi.get(person.id, Opts.opts(FillOpts.Groups))
     and: "then the superuser sets the groups to just g1"
-      personSqlApi.update(person.id.toString(),
-        addGroupsPerson.copy().name("not admin").email("updated22@me.com").groups([g1]), Opts.empty(), superuser.toString())
-      def adminUpdatePerson = personSqlApi.get(person.id.toString(), Opts.opts(FillOpts.Groups))
+      personSqlApi.update(person.id,
+        addGroupsPerson.copy().name("not admin").email("updated22@me.com").groups([g1]), Opts.empty(), superuser)
+      def adminUpdatePerson = personSqlApi.get(person.id, Opts.opts(FillOpts.Groups))
     and: "then portfolio admin tries to set just g2 on the user, which should give them g1 and g2"
-      def removeGroupsPerson = personSqlApi.update(person.id.toString(),
+      def removeGroupsPerson = personSqlApi.update(person.id,
         adminUpdatePerson.copy().name("not you").email("updated22@me.com").groups([g2]), Opts.empty(), pAdminId)
-      def foundRemovedGroupsPerson = personSqlApi.get(person.id.toString(), Opts.opts(FillOpts.Groups))
+      def foundRemovedGroupsPerson = personSqlApi.get(person.id, Opts.opts(FillOpts.Groups))
     then:
       resultingPerson != null
       addGroupsPerson != null
