@@ -106,11 +106,11 @@ class PortfolioSpec extends BaseSpec {
       nowDeleted == null
   }
 
-  def "i must provide a person when creating a portfolio"() {
+  def "i don't have to provide a person when creating a portfolio because on initial setup i may not have one with oauth2"() {
     when: "i create a portfolio without a person, which is ok because of delayed oauth"
       Portfolio created = portfolioApi.createPortfolio(new Portfolio().name("norton2").organizationId(org.getId()), Opts.empty(), null)
-    then:
-      thrown IllegalArgumentException
+    then: "it gets created, as its ok to not have a createdBy (for initial setup)"
+      created != null
   }
 
   def "the person object must have a person id"() {
@@ -122,7 +122,7 @@ class PortfolioSpec extends BaseSpec {
 
   def "the person object must have a person id with an idXX"() {
     when:
-      Portfolio badUserBadId = portfolioApi.createPortfolio(new Portfolio().name("norton4").organizationId(org.getId()), Opts.empty(), new Person(id: new PersonId(id: UUID.randomUUID())))
+      Portfolio badUserBadId = portfolioApi.createPortfolio(new Portfolio().name("norton4").organizationId(org.getId()), Opts.empty(), normalPerson)
     then:
       1 == 1
   }

@@ -2172,7 +2172,7 @@ paths:
         401:
           description: "no permission"
         404:
-          "description": "Feature Hub not found"
+          description: "Feature Hub not found"
           content:
             application/json:
               schema:
@@ -2195,7 +2195,6 @@ paths:
           description: "no permission"
         409:
           description: "duplicate"
-
       requestBody:
         content:
           application/json:
@@ -2305,8 +2304,6 @@ components:
         redirectUrl:
           type: string
     TokenizedPerson:
-      required:
-        - accessToken
       properties:
         accessToken:
           type: string

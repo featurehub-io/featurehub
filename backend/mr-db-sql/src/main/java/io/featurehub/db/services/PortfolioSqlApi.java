@@ -98,8 +98,6 @@ public class PortfolioSqlApi implements io.featurehub.db.api.PortfolioApi {
   @Override
   public Portfolio createPortfolio(Portfolio portfolio, Opts opts, Person createdBy)
       throws DuplicatePortfolioException {
-    Conversions.nonNullPerson(createdBy);
-
     if (portfolio == null || portfolio.getName() == null) {
       throw new IllegalArgumentException("portfolio:name is required");
     }
@@ -107,8 +105,8 @@ public class PortfolioSqlApi implements io.featurehub.db.api.PortfolioApi {
     final DbOrganization org = convertUtils.getDbOrganization();
     final DbPerson person = convertUtils.byPerson(createdBy);
 
-    if (person == null) {
-      return null; // only null is valid
+    if (createdBy != null && person == null) {
+      throw new IllegalArgumentException("createdBy is an invalid argument");
     }
 
     duplicateCheck(portfolio, null, org);
