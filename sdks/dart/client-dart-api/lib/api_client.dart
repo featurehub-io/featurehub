@@ -84,7 +84,7 @@ class LocalApiClient {
     return deserialize(decodedJson, targetType);
   }
 
-  static dynamic deserialize(dynamic? value, String targetType) {
+  static dynamic deserialize(dynamic value, String targetType) {
     if (value == null) return null; // 204
     try {
       switch (targetType) {
@@ -134,12 +134,13 @@ class LocalApiClient {
   }
 
   /// Format the given parameter object into string.
-  static String parameterToString(dynamic? value) {
+  static String? parameterToString(dynamic value) {
     if (value == null) {
-      return '';
+      return null;
     } else if (value is DateTime) {
-      return value.toUtc().toIso8601String();
-    } else if (value is String) {
+      // shouldn't ever be used, replaced by direct call
+      return Uri.encodeComponent(value.toUtc().toIso8601String());
+    } else if (value is String || value is num || value is bool) {
       return value.toString();
     }
 

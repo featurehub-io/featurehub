@@ -35,7 +35,7 @@ extension StrategyAttributeDeviceNameExtension on StrategyAttributeDeviceName {
     StrategyAttributeDeviceName.embedded: 'embedded'
   };
 
-  static StrategyAttributeDeviceName? fromJson(dynamic? data) =>
+  static StrategyAttributeDeviceName? fromJson(dynamic data) =>
       data == null ? null : fromMap[data];
 
   dynamic toJson() => toMap[this];
@@ -50,10 +50,10 @@ extension StrategyAttributeDeviceNameExtension on StrategyAttributeDeviceName {
       instance;
 
   static Map<String, StrategyAttributeDeviceName> mapFromJson(
-      Map<String, dynamic?>? json) {
+      Map<String, dynamic>? json) {
     final map = <String, StrategyAttributeDeviceName>{};
     if (json != null && json.isNotEmpty) {
-      json.forEach((String key, dynamic? value) {
+      json.forEach((String key, dynamic value) {
         final val = fromJson(value);
         if (val != null) {
           map[key] = val;

@@ -24,7 +24,7 @@ extension RoleTypeExtension on RoleType {
     RoleType.CHANGE_VALUE: 'CHANGE_VALUE'
   };
 
-  static RoleType? fromJson(dynamic? data) =>
+  static RoleType? fromJson(dynamic data) =>
       data == null ? null : fromMap[data];
 
   dynamic toJson() => toMap[this];
@@ -35,10 +35,10 @@ extension RoleTypeExtension on RoleType {
 
   static RoleType copyWith(RoleType instance) => instance;
 
-  static Map<String, RoleType> mapFromJson(Map<String, dynamic?>? json) {
+  static Map<String, RoleType> mapFromJson(Map<String, dynamic>? json) {
     final map = <String, RoleType>{};
     if (json != null && json.isNotEmpty) {
-      json.forEach((String key, dynamic? value) {
+      json.forEach((String key, dynamic value) {
         final val = fromJson(value);
         if (val != null) {
           map[key] = val;

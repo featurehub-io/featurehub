@@ -38,7 +38,7 @@ extension RolloutStrategyFieldTypeExtension on RolloutStrategyFieldType {
     RolloutStrategyFieldType.IP_ADDRESS: 'IP_ADDRESS'
   };
 
-  static RolloutStrategyFieldType? fromJson(dynamic? data) =>
+  static RolloutStrategyFieldType? fromJson(dynamic data) =>
       data == null ? null : fromMap[data];
 
   dynamic toJson() => toMap[this];
@@ -52,10 +52,10 @@ extension RolloutStrategyFieldTypeExtension on RolloutStrategyFieldType {
       instance;
 
   static Map<String, RolloutStrategyFieldType> mapFromJson(
-      Map<String, dynamic?>? json) {
+      Map<String, dynamic>? json) {
     final map = <String, RolloutStrategyFieldType>{};
     if (json != null && json.isNotEmpty) {
-      json.forEach((String key, dynamic? value) {
+      json.forEach((String key, dynamic value) {
         final val = fromJson(value);
         if (val != null) {
           map[key] = val;

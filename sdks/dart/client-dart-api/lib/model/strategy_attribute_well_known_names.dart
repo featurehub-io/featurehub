@@ -36,7 +36,7 @@ extension StrategyAttributeWellKnownNamesExtension
     StrategyAttributeWellKnownNames.version: 'version'
   };
 
-  static StrategyAttributeWellKnownNames? fromJson(dynamic? data) =>
+  static StrategyAttributeWellKnownNames? fromJson(dynamic data) =>
       data == null ? null : fromMap[data];
 
   dynamic toJson() => toMap[this];
@@ -52,10 +52,10 @@ extension StrategyAttributeWellKnownNamesExtension
       instance;
 
   static Map<String, StrategyAttributeWellKnownNames> mapFromJson(
-      Map<String, dynamic?>? json) {
+      Map<String, dynamic>? json) {
     final map = <String, StrategyAttributeWellKnownNames>{};
     if (json != null && json.isNotEmpty) {
-      json.forEach((String key, dynamic? value) {
+      json.forEach((String key, dynamic value) {
         final val = fromJson(value);
         if (val != null) {
           map[key] = val;

@@ -11,7 +11,7 @@ class FeatureHubSimpleApi {
 
   FeatureHubSimpleApi(String host, this._apiKeys, this._repository)
       : _api = FeatureServiceApi(ApiClient(basePath: host)) {
-    if (this._apiKeys.any((key) => key.contains('*'))) {
+    if (_apiKeys.any((key) => key.contains('*'))) {
       throw Exception(
           'You are using a client evaluated API Key in Dart and this is not supported.');
     }

@@ -23,17 +23,17 @@ class FeatureServiceApi {
           'Invalid response code ${response.statusCode} returned from API');
     }
 
-    final body = response.body;
+    final __body = response.body;
     if (response.statusCode >= 400) {
       throw ApiException(response.statusCode,
-          body == null ? null : await decodeBodyBytes(body));
+          __body == null ? null : await decodeBodyBytes(__body));
     }
 
-    if (body == null) {
-      throw ApiException(500, 'Received an empty body');
+    if (__body == null) {
+      throw ApiException(500, 'Received an empty body (not in a 204)');
     }
 
-    return await apiDelegate.getFeatureStates_decode(body);
+    return await apiDelegate.getFeatureStates_decode(__body);
   }
 
   ///
@@ -57,17 +57,17 @@ class FeatureServiceApi {
           'Invalid response code ${response.statusCode} returned from API');
     }
 
-    final body = response.body;
+    final __body = response.body;
     if (response.statusCode >= 400) {
       throw ApiException(response.statusCode,
-          body == null ? null : await decodeBodyBytes(body));
+          __body == null ? null : await decodeBodyBytes(__body));
     }
 
-    if (body == null) {
-      throw ApiException(500, 'Received an empty body');
+    if (__body == null) {
+      throw ApiException(500, 'Received an empty body (not in a 204)');
     }
 
-    return await apiDelegate.setFeatureState_decode(body);
+    return await apiDelegate.setFeatureState_decode(__body);
   }
 
   ///
@@ -95,7 +95,10 @@ class FeatureServiceApiDelegate {
     }
 
     queryParams.addAll(convertParametersForCollectionFormat(
-        LocalApiClient.parameterToString, 'multi', 'sdkUrl', sdkUrl));
+        (p) => LocalApiClient.parameterToString(p)!,
+        'multi',
+        'sdkUrl',
+        sdkUrl));
 
     final authNames = <String>[];
     final opt = options ?? Options();
@@ -127,8 +130,10 @@ class FeatureServiceApiDelegate {
 
     // create path and map variables
     final __path = '/features/{sdkUrl}/{featureKey}'
-        .replaceAll('{' + 'sdkUrl' + '}', sdkUrl.toString())
-        .replaceAll('{' + 'featureKey' + '}', featureKey.toString());
+        .replaceAll(
+            '{' + 'sdkUrl' + '}', LocalApiClient.parameterToString(sdkUrl)!)
+        .replaceAll('{' + 'featureKey' + '}',
+            LocalApiClient.parameterToString(featureKey)!);
 
     // query params
     final queryParams = <QueryParam>[];
