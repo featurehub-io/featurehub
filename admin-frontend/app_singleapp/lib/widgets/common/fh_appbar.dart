@@ -1,7 +1,9 @@
 import 'package:app_singleapp/api/client_api.dart';
+import 'package:app_singleapp/version.dart';
 import 'package:app_singleapp/widgets/dynamic-theme/fh_dynamic_theme.dart';
 import 'package:app_singleapp/widgets/stepper/stepper_container.dart';
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
@@ -37,6 +39,7 @@ class FHappBar extends StatelessWidget {
       ),
       titleSpacing: 0.0,
       title: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           SizedBox(
             height: kToolbarHeight - 20,
@@ -46,14 +49,19 @@ class FHappBar extends StatelessWidget {
                     'assets/logo/FeatureHub-icon.png',
                   ),
           ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: Text(
+              ' (v$appVersion)',
+              style: TextStyle(fontSize: 10.0),
+            ),
+          )
         ],
       ),
       actions: <Widget>[
         StreamBuilder<Person>(
             stream: mrBloc.personStream,
             builder: (BuildContext context, AsyncSnapshot<Person> snapshot) {
-//            if (snapshot.hasData &&
-//                snapshot.data == InitializedCheckState.logged_in) {
               if (snapshot.hasData && mrBloc.isLoggedIn) {
                 final person = snapshot.data!;
                 var light = Theme.of(context).brightness == Brightness.light;

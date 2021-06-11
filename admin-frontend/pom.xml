@@ -52,13 +52,16 @@
         <groupId>org.codehaus.mojo</groupId>
         <executions>
           <execution>
-            <id>generate-sources</id>
-            <phase>generate-sources</phase>
+            <id>generate-app</id>
+            <phase>compile</phase>
             <goals>
               <goal>exec</goal>
             </goals>
             <configuration>
               <executable>${project.basedir}/build-frontend.sh</executable>
+              <arguments>
+                <argument>${build.version}</argument>
+              </arguments>
             </configuration>
           </execution>
         </executions>
@@ -68,7 +71,21 @@
         <version>2.6</version>
         <executions>
           <execution>
-            <id>make-admin-ui</id>
+            <id>package-admin-ui</id>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <phase>generate-sources</phase>
+            <configuration>
+              <appendAssemblyId>false</appendAssemblyId>
+              <descriptors>
+                <descriptor>${project.basedir}/src/main/resources/pre-build-assembly.xml</descriptor>
+              </descriptors>
+              <attach>false</attach>
+            </configuration>
+          </execution>
+          <execution>
+            <id>post-build-admin-ui</id>
             <goals>
               <goal>single</goal>
             </goals>
@@ -76,7 +93,7 @@
             <configuration>
               <appendAssemblyId>false</appendAssemblyId>
               <descriptors>
-                <descriptor>${project.basedir}/assembly.xml</descriptor>
+                <descriptor>${project.basedir}/src/main/resources/post-build-assembly.xml</descriptor>
               </descriptors>
               <attach>true</attach>
               <classifier>admin-ui</classifier>

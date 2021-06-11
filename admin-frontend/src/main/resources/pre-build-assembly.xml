@@ -1,0 +1,18 @@
+<assembly>
+  <id>admin-ui-to-build</id>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  <formats>
+    <format>tar</format>
+  </formats>
+
+  <fileSets>
+    <fileSet>
+      <directory>app_singleapp</directory>
+      <outputDirectory>app_singleapp</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>app_mr_layer</directory>
+      <outputDirectory>app_mr_layer</outputDirectory>
+    </fileSet>
+  </fileSets>
+</assembly>
