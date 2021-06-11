@@ -1,3 +1,7 @@
+1.2.0
+=====
+* Null safe version, minor API update
+
 1.1.2
 =====
 * Documentation update

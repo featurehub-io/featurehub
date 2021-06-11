@@ -12,14 +12,14 @@ class RolloutStrategyAttribute {
 
   String? fieldName;
   /* the value(s) associated with this rule */
-  List<dynamic?> values = [];
+  List<dynamic> values = [];
 
   RolloutStrategyFieldType? type;
   RolloutStrategyAttribute({
     this.id,
     this.conditional,
     this.fieldName,
-    List<dynamic?>? values,
+    List<dynamic>? values,
     this.type,
   }) : this.values = values ?? [];
 
@@ -147,7 +147,7 @@ class RolloutStrategyAttribute {
     String? id,
     RolloutStrategyAttributeConditional? conditional,
     String? fieldName,
-    List<dynamic?>? values,
+    List<dynamic>? values,
     RolloutStrategyFieldType? type,
   }) {
     id ??= this.id;
@@ -159,7 +159,7 @@ class RolloutStrategyAttribute {
     final _copy_id = id;
     final _copy_conditional = conditional;
     final _copy_fieldName = fieldName;
-    final _copy_values = ((List<dynamic?> data) {
+    final _copy_values = ((List<dynamic> data) {
       return data.toList();
     }(values));
 

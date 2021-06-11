@@ -24,7 +24,7 @@ extension FeatureValueTypeExtension on FeatureValueType {
     FeatureValueType.JSON: 'JSON'
   };
 
-  static FeatureValueType? fromJson(dynamic? data) =>
+  static FeatureValueType? fromJson(dynamic data) =>
       data == null ? null : fromMap[data];
 
   dynamic toJson() => toMap[this];
@@ -36,11 +36,10 @@ extension FeatureValueTypeExtension on FeatureValueType {
 
   static FeatureValueType copyWith(FeatureValueType instance) => instance;
 
-  static Map<String, FeatureValueType> mapFromJson(
-      Map<String, dynamic?>? json) {
+  static Map<String, FeatureValueType> mapFromJson(Map<String, dynamic>? json) {
     final map = <String, FeatureValueType>{};
     if (json != null && json.isNotEmpty) {
-      json.forEach((String key, dynamic? value) {
+      json.forEach((String key, dynamic value) {
         final val = fromJson(value);
         if (val != null) {
           map[key] = val;

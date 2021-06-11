@@ -15,7 +15,7 @@ class FeatureState {
 
   FeatureValueType? type;
   /* the current value */
-  dynamic? value;
+  dynamic value;
   /* This field is filled in from the client side in the GET api as the GET api is able to request multiple environments. It is never passed from the server, as an array of feature states is wrapped in an environment. */
   String? environmentId;
 
@@ -51,7 +51,7 @@ class FeatureState {
         ? null
         : FeatureValueTypeExtension.fromJson(json[r'type']);
 
-    value = (json[r'value'] == null) ? null : (json[r'value'] as dynamic?);
+    value = (json[r'value'] == null) ? null : (json[r'value'] as dynamic);
 
     environmentId = (json[r'environmentId'] == null)
         ? null
@@ -182,7 +182,7 @@ class FeatureState {
     bool? l,
     int? version,
     FeatureValueType? type,
-    dynamic? value,
+    dynamic value,
     String? environmentId,
     List<RolloutStrategy>? strategies,
   }) {

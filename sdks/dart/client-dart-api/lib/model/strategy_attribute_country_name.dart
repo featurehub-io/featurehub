@@ -614,7 +614,7 @@ extension StrategyAttributeCountryNameExtension
     StrategyAttributeCountryName.zimbabwe: 'zimbabwe'
   };
 
-  static StrategyAttributeCountryName? fromJson(dynamic? data) =>
+  static StrategyAttributeCountryName? fromJson(dynamic data) =>
       data == null ? null : fromMap[data];
 
   dynamic toJson() => toMap[this];
@@ -629,10 +629,10 @@ extension StrategyAttributeCountryNameExtension
       instance;
 
   static Map<String, StrategyAttributeCountryName> mapFromJson(
-      Map<String, dynamic?>? json) {
+      Map<String, dynamic>? json) {
     final map = <String, StrategyAttributeCountryName>{};
     if (json != null && json.isNotEmpty) {
-      json.forEach((String key, dynamic? value) {
+      json.forEach((String key, dynamic value) {
         final val = fromJson(value);
         if (val != null) {
           map[key] = val;

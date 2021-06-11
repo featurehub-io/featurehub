@@ -1,3 +1,7 @@
+1.2.0
+=====
+* null safe version
+
 1.1.4
 =====
 * documentation updates

@@ -52,7 +52,7 @@ extension RolloutStrategyAttributeConditionalExtension
     RolloutStrategyAttributeConditional.REGEX: 'REGEX'
   };
 
-  static RolloutStrategyAttributeConditional? fromJson(dynamic? data) =>
+  static RolloutStrategyAttributeConditional? fromJson(dynamic data) =>
       data == null ? null : fromMap[data];
 
   dynamic toJson() => toMap[this];
@@ -68,10 +68,10 @@ extension RolloutStrategyAttributeConditionalExtension
       instance;
 
   static Map<String, RolloutStrategyAttributeConditional> mapFromJson(
-      Map<String, dynamic?>? json) {
+      Map<String, dynamic>? json) {
     final map = <String, RolloutStrategyAttributeConditional>{};
     if (json != null && json.isNotEmpty) {
-      json.forEach((String key, dynamic? value) {
+      json.forEach((String key, dynamic value) {
         final val = fromJson(value);
         if (val != null) {
           map[key] = val;

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 
 ClientFeatureRepository? featurehub;
+FeatureHubSimpleApi? featurehubApi;
 
 void main() {
   Logger.root.level = Level.ALL; // defaults to Level.INFO
@@ -24,18 +25,19 @@ void main() {
 
   // if you use this one (GET based, which is geneally preferred in Mobile) then
   // you should uncomment the refresh down below which causes the GET to happen again.
-// FeatureHubSimpleApi // this next step can be delayed based on environment loading, etc
-//     featurehubApi = FeatureHubSimpleApi(
-//         'https://irina.demo.featurehub.io',
-//         [
-//           'default/6cd999a7-70d4-4d78-821c-68a1ecc40d3e/rmbEKXvu0DsPVyzSuVgmFlrlB05vpwC37Q2Vj7qLcGnbyL0C9oIqwWySEBwXKAmMLKdIiOdwTWzVTNsZ'
-//         ],
-//         featurehub);
-
-  EventSourceRepositoryListener rs = EventSourceRepositoryListener(
-      'https://irina.demo.featurehub.io',
-      'default/6cd999a7-70d4-4d78-821c-68a1ecc40d3e/rmbEKXvu0DsPVyzSuVgmFlrlB05vpwC37Q2Vj7qLcGnbyL0C9oIqwWySEBwXKAmMLKdIiOdwTWzVTNsZ',
+  // this next step can be delayed based on environment loading, etc
+  featurehubApi = FeatureHubSimpleApi(
+      'http://localhost:8903',
+      [
+        'default/82afd7ae-e7de-4567-817b-dd684315adf7/SJXBRyGCe1dZwnL7OQYUiJ5J8VcoMrrHP3iKCrkpYovhNIuwuIPNYGy7iOFeKE4Kaqp5sT7g5X2qETsW'
+      ],
       featurehub!);
+  featurehubApi!.request();
+
+  // final rs = EventSourceRepositoryListener(
+  //     'http://localhost:8903',
+  //     'default/82afd7ae-e7de-4567-817b-dd684315adf7/SJXBRyGCe1dZwnL7OQYUiJ5J8VcoMrrHP3iKCrkpYovhNIuwuIPNYGy7iOFeKE4Kaqp5sT7g5X2qETsW',
+  //     featurehub!);
 
   featurehub!.clientContext
       .userKey('susanna')
@@ -90,8 +92,8 @@ class _MyHomePageState extends State<MyHomePage> {
           builder: (context, snapshot) {
             return RefreshIndicator(
               onRefresh: () {
-                return Future.value();
-                // return featurehubApi.request();
+                // return Future.value();
+                return featurehubApi!.request();
               },
               child: ListView(
                 children: [
@@ -139,6 +141,8 @@ class _MyHomePageState extends State<MyHomePage> {
         return Colors.yellow;
       case 'purple':
         return Colors.purple;
+      case 'green':
+        return Colors.green;
       default:
         return Colors.white;
     }

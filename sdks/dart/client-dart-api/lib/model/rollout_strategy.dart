@@ -17,7 +17,7 @@ class RolloutStrategy {
   /* url to avatar (if any). Not sent to SDK. Preferably a unicorn. */
   String? avatar;
   /* when we attach the RolloutStrategy for Dacha or SSE this lets us push the value out. Only visible in SDK and SSE Edge. */
-  dynamic? value;
+  dynamic value;
 
   List<RolloutStrategyAttribute> attributes = [];
   RolloutStrategy({
@@ -67,7 +67,7 @@ class RolloutStrategy {
 
     avatar = (json[r'avatar'] == null) ? null : (json[r'avatar'] as String?);
 
-    value = (json[r'value'] == null) ? null : (json[r'value'] as dynamic?);
+    value = (json[r'value'] == null) ? null : (json[r'value'] as dynamic);
 
     {
       final _jsonData = json[r'attributes'];
@@ -193,7 +193,7 @@ class RolloutStrategy {
     List<String>? percentageAttributes,
     int? colouring,
     String? avatar,
-    dynamic? value,
+    dynamic value,
     List<RolloutStrategyAttribute>? attributes,
   }) {
     id ??= this.id;

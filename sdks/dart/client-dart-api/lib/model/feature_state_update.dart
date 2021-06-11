@@ -6,7 +6,7 @@ part of featurehub_client_api.api;
 // FeatureStateUpdate
 class FeatureStateUpdate {
   /* the new value */
-  dynamic? value;
+  dynamic value;
   /* indicates whether you are trying to update the value, as value can be null */
   bool? updateValue;
   /* set only if you wish to lock or unlock, otherwise null */
@@ -25,7 +25,7 @@ class FeatureStateUpdate {
   fromJson(Map<String, dynamic>? json) {
     if (json == null) return;
 
-    value = (json[r'value'] == null) ? null : (json[r'value'] as dynamic?);
+    value = (json[r'value'] == null) ? null : (json[r'value'] as dynamic);
 
     updateValue =
         (json[r'updateValue'] == null) ? null : (json[r'updateValue'] as bool?);
@@ -102,7 +102,7 @@ class FeatureStateUpdate {
   }
 
   FeatureStateUpdate copyWith({
-    dynamic? value,
+    dynamic value,
     bool? updateValue,
     bool? lock,
   }) {
