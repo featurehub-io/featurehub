@@ -7,7 +7,7 @@
 
   <fileSets>
     <fileSet>
-      <directory>app_singleapp/build/web</directory>
+      <directory>target/app_singleapp/build/web</directory>
       <outputDirectory>/</outputDirectory>
     </fileSet>
   </fileSets>
