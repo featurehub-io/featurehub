@@ -18,12 +18,12 @@ server {
         location /mr-api/ {
           proxy_set_header Host $host;
           proxy_set_header X-Real-IP $remote_addr;
-          proxy_pass http://localhost:8903/mr-api/;
+          proxy_pass http://mr-server:8903/mr-api/;
         }
 
         location /oauth/ {
           proxy_set_header Host $host;
           proxy_set_header X-Real-IP $remote_addr;
-          proxy_pass http://localhost:8903/oauth/;
+          proxy_pass http://mr-server:8903/oauth/;
         }
 }

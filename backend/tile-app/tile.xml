@@ -47,7 +47,7 @@
           <plugin>
             <groupId>com.google.cloud.tools</groupId>
             <artifactId>jib-maven-plugin</artifactId>
-            <version>2.3.0</version>
+            <version>3.1.1</version>
             <executions>
               <execution>
                 <phase>package</phase>
@@ -65,6 +65,7 @@
                 <image>featurehub/${project.artifactId}:${build.version}</image>
               </to>
               <container>
+                <user>999:999</user>
                 <mainClass>bathe.BatheBooter</mainClass>
                 <jvmFlags>
                   <jvmFlag>--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED</jvmFlag>
