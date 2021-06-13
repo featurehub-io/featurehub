@@ -1,69 +1,51 @@
-package io.featurehub.web.security.oauth.providers;
+package io.featurehub.web.security.oauth.providers
 
-import cd.connect.app.config.ConfigKey;
-import cd.connect.app.config.DeclaredConfigResolver;
-import io.featurehub.web.security.oauth.AuthClientResult;
+import cd.connect.app.config.ConfigKey
+import cd.connect.app.config.DeclaredConfigResolver
+import io.featurehub.web.security.oauth.AuthClientResult
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
+class GoogleProvider : OAuth2Provider {
+    @ConfigKey("oauth2.providers.google.secret")
+    override var clientSecret: String? = null
+        protected set
 
-public class GoogleProvider implements OAuth2Provider {
-  public static final String PROVIDER_NAME = "oauth2-google";
-  @ConfigKey("oauth2.providers.google.secret")
-  protected String oauthClientSecret;
-  @ConfigKey("oauth2.providers.google.id")
-  protected String oauthClientID;
-  @ConfigKey("oauth2.redirectUrl")
-  protected String redirectUrl;
+    @ConfigKey("oauth2.providers.google.id")
+    override var clientId: String? = null
+        protected set
 
-  private String actualAuthUrl;
-  private String tokenUrl;
-
-  public GoogleProvider() {
-    DeclaredConfigResolver.resolve(this);
-
-    actualAuthUrl = "https://accounts.google.com/o/oauth2/v2/auth?&scope=profile%20email&access_type=online" +
-      "&include_granted_scopes=true&response_type=code&client_id=" + oauthClientID + "&redirect_uri=" +
-      URLEncoder.encode(redirectUrl, StandardCharsets.UTF_8);
-
-    tokenUrl = "https://oauth2.googleapis.com/token";
-  }
-
-  @Override
-  public ProviderUser discoverProviderUser(AuthClientResult authed) {
-    Map<String, String> idInfo = Jwt.decodeJwt(authed.getIdToken());
-
-    if (idInfo == null) {
-      return null;
+    @ConfigKey("oauth2.redirectUrl")
+    protected var redirectUrl: String? = null
+    private val actualAuthUrl: String
+    private val tokenUrl: String
+    override fun discoverProviderUser(authed: AuthClientResult): ProviderUser? {
+        val idInfo = Jwt.decodeJwt(authed.idToken) ?: return null
+        return ProviderUser.Builder().email(idInfo["email"])
+            .name(idInfo["given_name"].toString() + " " + idInfo["family_name"]).build()
     }
 
-    return new ProviderUser.Builder().email(idInfo.get("email")).name(idInfo.get("given_name") + " " + idInfo.get(
-      "family_name")).build();
-  }
+    override fun providerName(): String {
+        return PROVIDER_NAME
+    }
 
-  @Override
-  public String providerName() {
-    return PROVIDER_NAME;
-  }
+    override fun requestTokenUrl(): String {
+        return tokenUrl
+    }
 
-  @Override
-  public String requestTokenUrl() {
-    return tokenUrl;
-  }
+    override fun requestAuthorizationUrl(): String {
+        return actualAuthUrl
+    }
 
-  @Override
-  public String requestAuthorizationUrl() {
-    return actualAuthUrl;
-  }
+    companion object {
+        const val PROVIDER_NAME = "oauth2-google"
+    }
 
-  @Override
-  public String getClientId() {
-    return oauthClientID;
-  }
-
-  @Override
-  public String getClientSecret() {
-    return oauthClientSecret;
-  }
+    init {
+        DeclaredConfigResolver.resolve(this)
+        actualAuthUrl = "https://accounts.google.com/o/oauth2/v2/auth?&scope=profile%20email&access_type=online" +
+                "&include_granted_scopes=true&response_type=code&client_id=" + clientId + "&redirect_uri=" +
+                URLEncoder.encode(redirectUrl, StandardCharsets.UTF_8)
+        tokenUrl = "https://oauth2.googleapis.com/token"
+    }
 }

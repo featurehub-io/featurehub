@@ -1,9 +1,6 @@
-package io.featurehub.web.security.oauth;
+package io.featurehub.web.security.oauth
 
-import java.util.Collection;
-
-public interface AuthProvider {
-  Collection<String> getProviders();
-
-  String requestRedirectUrl(String provider);
+interface AuthProvider {
+    val providers: Collection<String?>?
+    fun requestRedirectUrl(provider: String): String
 }

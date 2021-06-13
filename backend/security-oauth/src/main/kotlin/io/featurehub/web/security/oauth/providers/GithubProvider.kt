@@ -72,11 +72,9 @@ class GithubProvider @Inject constructor(val client: Client) : OAuth2Provider {
     return actualAuthUrl
   }
 
-  override fun getClientId(): String {
-    return oauthClientID!!
-  }
+  override val clientId: String?
+    get() = oauthClientID!!
 
-  override fun getClientSecret(): String {
-    return oauthClientSecret!!
-  }
+  override val clientSecret: String?
+    get() = oauthClientSecret!!
 }

@@ -1,16 +1,12 @@
-package io.featurehub.web.security.oauth.providers;
+package io.featurehub.web.security.oauth.providers
 
-import io.featurehub.web.security.oauth.AuthClientResult;
+import io.featurehub.web.security.oauth.AuthClientResult
 
-public interface OAuth2Provider {
-  ProviderUser discoverProviderUser(AuthClientResult authed);
-
-  String providerName();
-
-  String requestTokenUrl();
-  String requestAuthorizationUrl();
-
-  String getClientId();
-
-  String getClientSecret();
+interface OAuth2Provider {
+    fun discoverProviderUser(authed: AuthClientResult): ProviderUser?
+    fun providerName(): String
+    fun requestTokenUrl(): String
+    fun requestAuthorizationUrl(): String
+    val clientId: String?
+    val clientSecret: String?
 }

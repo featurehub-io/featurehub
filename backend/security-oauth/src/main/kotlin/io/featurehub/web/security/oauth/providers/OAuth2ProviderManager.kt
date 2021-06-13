@@ -1,49 +1,36 @@
-package io.featurehub.web.security.oauth.providers;
+package io.featurehub.web.security.oauth.providers
 
-import org.glassfish.hk2.api.IterableProvider;
+import org.glassfish.hk2.api.IterableProvider
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+import java.util.*
+import java.util.function.Consumer
+import javax.inject.Inject
 
-import javax.inject.Inject;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
-public class OAuth2ProviderManager implements OAuth2ProviderDiscovery {
-  protected Map<String, OAuth2Provider> providerMap = new HashMap<>();
-
-  @Inject
-  public OAuth2ProviderManager(IterableProvider<OAuth2Provider> oAuth2Providers) {
-    oAuth2Providers.forEach(p -> {
-      providerMap.put(p.providerName(), p);
-    });
-  }
-
-  public OAuth2Provider getProvider(String id) {
-    return providerMap.get(id);
-  }
-
-  @Override
-  public OAuth2Provider getProviderFromState(String state) {
-    final int semi = state.indexOf(";");
-
-    if (semi > 0) {
-      return getProvider(state.substring(0, semi));
+class OAuth2ProviderManager @Inject constructor(oAuth2Providers: IterableProvider<OAuth2Provider>) :
+    OAuth2ProviderDiscovery {
+    protected var providerMap: MutableMap<String?, OAuth2Provider> = HashMap()
+    override fun getProvider(id: String?): OAuth2Provider? {
+        return providerMap[id]
     }
 
-    return null;
-  }
+    override fun getProviderFromState(state: String): OAuth2Provider? {
+        val semi = state.indexOf(";")
+        return if (semi > 0) {
+            getProvider(state.substring(0, semi))
+        } else null
+    }
 
-  @Override
-  public Collection<String> getProviders() {
-    return providerMap.keySet();
-  }
+    override val providers: Collection<String?>?
+        get() = providerMap.keys
 
-  @Override
-  public String requestRedirectUrl(String provider) {
-    // TODO: store state to ensure valid callback and XSRF attacks
-    String state = URLEncoder.encode(provider + ";" + UUID.randomUUID().toString(), StandardCharsets.UTF_8);
-    return providerMap.get(provider).requestAuthorizationUrl() + "&state=" + state;
-  }
+    override fun requestRedirectUrl(provider: String): String {
+        // TODO: store state to ensure valid callback and XSRF attacks
+        val state = URLEncoder.encode(provider + ";" + UUID.randomUUID().toString(), StandardCharsets.UTF_8)
+        return providerMap[provider]!!.requestAuthorizationUrl() + "&state=" + state
+    }
+
+    init {
+        oAuth2Providers.forEach(Consumer { p: OAuth2Provider -> providerMap[p.providerName()] = p })
+    }
 }

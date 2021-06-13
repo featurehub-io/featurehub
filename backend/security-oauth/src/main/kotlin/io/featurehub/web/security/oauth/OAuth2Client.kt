@@ -1,7 +1,7 @@
-package io.featurehub.web.security.oauth;
+package io.featurehub.web.security.oauth
 
-import io.featurehub.web.security.oauth.providers.OAuth2Provider;
+import io.featurehub.web.security.oauth.providers.OAuth2Provider
 
-public interface OAuth2Client {
-  AuthClientResult requestAccess(String code, OAuth2Provider provider);
+interface OAuth2Client {
+    fun requestAccess(code: String?, provider: OAuth2Provider): AuthClientResult?
 }

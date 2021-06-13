@@ -1,19 +1,16 @@
-package io.featurehub.web.security.oauth;
+package io.featurehub.web.security.oauth
 
-import cd.connect.app.config.ConfigKey;
-import cd.connect.app.config.DeclaredConfigResolver;
-import io.featurehub.web.security.oauth.providers.OAuth2Provider;
-import io.featurehub.web.security.oauth.providers.OAuth2ProviderDiscovery;
-import io.featurehub.web.security.oauth.providers.ProviderUser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
-import java.net.URI;
+import cd.connect.app.config.ConfigKey
+import cd.connect.app.config.DeclaredConfigResolver
+import io.featurehub.web.security.oauth.providers.OAuth2ProviderDiscovery
+import org.slf4j.LoggerFactory
+import java.net.URI
+import javax.inject.Inject
+import javax.ws.rs.GET
+import javax.ws.rs.Path
+import javax.ws.rs.QueryParam
+import javax.ws.rs.core.Response
+import kotlin.String
 
 /*
 
@@ -24,76 +21,60 @@ https://YOUR_DOMAIN/authorize?
     scope=SCOPE&
     state=STATE
  */
-
 @Path("/oauth")
-public class OauthResource {
-  private static final Logger log = LoggerFactory.getLogger(OauthResource.class);
+class OauthResource @Inject constructor(
+    protected val oAuth2Client: OAuth2Client,
+    protected val discovery: OAuth2ProviderDiscovery,
+    protected val oAuthAdapter: OAuthAdapter
+) {
+    // where we redirect the user on successful login (with cookie for code)
+    @ConfigKey("oauth2.adminUiUrlSuccess")
+    protected var successUrl: String? = null
 
-  // where we redirect the user on successful login (with cookie for code)
-  @ConfigKey("oauth2.adminUiUrlSuccess")
-  protected String successUrl;
+    @ConfigKey("oauth2.adminUiUrlFailure")
+    protected var failureUrl: String? = null
 
-  @ConfigKey("oauth2.adminUiUrlFailure")
-  protected String failureUrl;
+    @ConfigKey("auth.userMustBeCreatedFirst")
+    protected var userMustBeCreatedFirst: Boolean? = false
 
-  @ConfigKey("auth.userMustBeCreatedFirst")
-  protected Boolean userMustBeCreatedFirst = Boolean.FALSE;
+    @Path("/auth")
+    @GET
+    fun token(
+        @QueryParam("code") code: String?,
+        @QueryParam("state") state: String,
+        @QueryParam("error") error: String?
+    ): Response? {
+        if (error != null) {
+            return Response.ok().location(URI.create(failureUrl)).build()
+        }
 
-  protected final OAuth2Client oAuth2Client;
-  protected final OAuth2ProviderDiscovery discovery;
-  protected final OAuthAdapter oAuthAdapter;
+        // not initialized!
+        if (!oAuthAdapter.organisationCreationRequired()) {
+            return Response.ok().location(URI.create(failureUrl)).build()
+        }
 
-  @Inject
-  public OauthResource(
-      OAuth2Client oAuth2Client, OAuth2ProviderDiscovery discovery, OAuthAdapter oAuthAdapter) {
-    this.oAuth2Client = oAuth2Client;
-    this.discovery = discovery;
-    this.oAuthAdapter = oAuthAdapter;
-
-    DeclaredConfigResolver.resolve(this);
-  }
-
-  @Path("/auth")
-  @GET
-  public Response token(
-      @QueryParam("code") String code,
-      @QueryParam("state") String state,
-      @QueryParam("error") String error) {
-    if (error != null) {
-      return Response.ok().location(URI.create(failureUrl)).build();
+        // decode the ProviderUser
+        val providerFromState = discovery.getProviderFromState(state)
+            ?: return Response.ok().location(URI.create(failureUrl)).build()
+        val authed = oAuth2Client.requestAccess(code, providerFromState)
+            ?: return Response.ok().location(URI.create(failureUrl)).build()
+        log.info("auth was {}", authed)
+        val providerUser = providerFromState.discoverProviderUser(authed)
+            ?: return Response.ok().location(URI.create(failureUrl)).build()
+        return oAuthAdapter.successfulCompletion(
+            providerUser.email,
+            providerUser.name,
+            userMustBeCreatedFirst!!,
+            failureUrl,
+            successUrl
+        )
     }
 
-    // not initialized!
-    if (!oAuthAdapter.organisationCreationRequired()) {
-      return Response.ok().location(URI.create(failureUrl)).build();
+    companion object {
+        private val log = LoggerFactory.getLogger(OauthResource::class.java)
     }
 
-    // decode the ProviderUser
-    OAuth2Provider providerFromState = discovery.getProviderFromState(state);
-
-    if (providerFromState == null) {
-      return Response.ok().location(URI.create(failureUrl)).build();
+    init {
+        DeclaredConfigResolver.resolve(this)
     }
-
-    AuthClientResult authed = oAuth2Client.requestAccess(code, providerFromState);
-
-    if (authed == null) {
-      return Response.ok().location(URI.create(failureUrl)).build();
-    }
-
-    log.info("auth was {}", authed);
-
-    ProviderUser providerUser = providerFromState.discoverProviderUser(authed);
-
-    if (providerUser == null) {
-      return Response.ok().location(URI.create(failureUrl)).build();
-    }
-
-    return oAuthAdapter.successfulCompletion(
-        providerUser.getEmail(),
-        providerUser.getName(),
-        userMustBeCreatedFirst,
-        failureUrl,
-        successUrl);
-  }
 }
