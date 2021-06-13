@@ -3,14 +3,13 @@ package io.featurehub.mr.resources.oauth2.providers
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
 import io.featurehub.mr.resources.oauth2.AuthClientResult
-import io.featurehub.mr.resources.oauth2.OAuth2JerseyClient
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 import javax.ws.rs.client.Client
-import javax.ws.rs.core.MediaType
+import javax.ws.rs.core.GenericType
 import javax.ws.rs.core.Response
 
 class GithubProvider @Inject constructor(val client: Client) : OAuth2Provider {
@@ -50,14 +49,35 @@ class GithubProvider @Inject constructor(val client: Client) : OAuth2Provider {
     if (response.statusInfo.family == Response.Status.Family.SUCCESSFUL) {
       val user = response.readEntity(GithubUser::class.java)
 
+      if (user.name != null && user.email == null) {
+        user.email = requestUserApi(authed);
+      }
+
       if (user.email != null && user.name != null) {
         return ProviderUser.Builder().email(user.email).name(user.name).build()
       }
 
-      log.warn("Failed to get user with name and email from Github", user)
+      log.warn("Failed to get user with name and email from Github {}", user)
     } else {
       log.warn("Failed when attempting to connect to Github for user details {}", response.status)
     }
+
+    return null
+  }
+
+  private fun requestUserApi(authed: AuthClientResult): String? {
+    val response: Response = client.target("https://api.github.com/user/emails").request()
+      .accept("application/vnd.github.v3+json")
+      .header("Authorization", "Bearer " + authed.accessToken).get()
+
+    if (response.statusInfo.family == Response.Status.Family.SUCCESSFUL) {
+      val emails = response.readEntity(object: GenericType<List<GithubEmail>>(){})
+      if (emails.isNotEmpty()) {
+        return emails[0].email
+      }
+    }
+
+    log.warn("Was not able to find user's email address, so failing.")
 
     return null
   }
