@@ -1,22 +1,17 @@
-package io.featurehub.mr.resources.oauth2;
+package io.featurehub.web.security.oauth;
 
 import cd.connect.app.config.ConfigKey;
 import cd.connect.app.config.DeclaredConfigResolver;
-import cd.connect.jersey.common.CommonConfiguration;
-import cd.connect.jersey.common.LoggingConfiguration;
-import io.featurehub.mr.resources.oauth2.providers.OAuth2Provider;
+import io.featurehub.web.security.oauth.providers.OAuth2Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 public class OAuth2JerseyClient implements OAuth2Client {
   private static final Logger log = LoggerFactory.getLogger(OAuth2JerseyClient.class);

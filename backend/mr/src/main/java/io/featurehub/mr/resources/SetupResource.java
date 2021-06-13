@@ -20,7 +20,7 @@ import io.featurehub.mr.model.SetupMissingResponse;
 import io.featurehub.mr.model.SetupResponse;
 import io.featurehub.mr.model.SetupSiteAdmin;
 import io.featurehub.mr.model.TokenizedPerson;
-import io.featurehub.mr.resources.auth.AuthProvider;
+import io.featurehub.web.security.oauth.AuthProvider;
 import io.featurehub.mr.utils.PortfolioUtils;
 import org.glassfish.hk2.api.IterableProvider;
 import org.slf4j.Logger;

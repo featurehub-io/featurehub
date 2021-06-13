@@ -16,7 +16,7 @@ import io.featurehub.mr.model.ProviderRedirect;
 import io.featurehub.mr.model.RegistrationUrl;
 import io.featurehub.mr.model.TokenizedPerson;
 import io.featurehub.mr.model.UserCredentials;
-import io.featurehub.mr.resources.auth.AuthProvider;
+import io.featurehub.web.security.oauth.AuthProvider;
 import org.glassfish.hk2.api.IterableProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +42,9 @@ public class AuthResource implements AuthServiceDelegate {
   protected Boolean loginDisabled = Boolean.FALSE;
 
   @Inject
-  public AuthResource(AuthenticationApi authenticationApi, AuthManagerService authManager, PersonApi personApi, AuthenticationRepository authRepository, IterableProvider<AuthProvider> authProviders) {
+  public AuthResource(AuthenticationApi authenticationApi, AuthManagerService authManager,
+                      PersonApi personApi, AuthenticationRepository authRepository,
+                      IterableProvider<AuthProvider> authProviders) {
     this.authenticationApi = authenticationApi;
     this.authManager = authManager;
     this.personApi = personApi;

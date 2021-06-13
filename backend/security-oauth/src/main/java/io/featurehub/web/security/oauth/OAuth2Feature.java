@@ -1,16 +1,15 @@
-package io.featurehub.mr.resources.oauth2;
+package io.featurehub.web.security.oauth;
 
 import cd.connect.app.config.ConfigKey;
 import cd.connect.app.config.DeclaredConfigResolver;
 import cd.connect.jersey.common.CommonConfiguration;
 import cd.connect.jersey.common.LoggingConfiguration;
-import io.featurehub.mr.resources.auth.AuthProvider;
-import io.featurehub.mr.resources.oauth2.providers.AzureProvider;
-import io.featurehub.mr.resources.oauth2.providers.GithubProvider;
-import io.featurehub.mr.resources.oauth2.providers.GoogleProvider;
-import io.featurehub.mr.resources.oauth2.providers.OAuth2Provider;
-import io.featurehub.mr.resources.oauth2.providers.OAuth2ProviderDiscovery;
-import io.featurehub.mr.resources.oauth2.providers.OAuth2ProviderManager;
+import io.featurehub.web.security.oauth.providers.AzureProvider;
+import io.featurehub.web.security.oauth.providers.GithubProvider;
+import io.featurehub.web.security.oauth.providers.GoogleProvider;
+import io.featurehub.web.security.oauth.providers.OAuth2Provider;
+import io.featurehub.web.security.oauth.providers.OAuth2ProviderDiscovery;
+import io.featurehub.web.security.oauth.providers.OAuth2ProviderManager;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

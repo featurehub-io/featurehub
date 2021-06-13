@@ -10,7 +10,7 @@ import io.featurehub.health.MetricsHealthRegistration;
 import io.featurehub.jersey.config.CommonConfiguration;
 import io.featurehub.jersey.config.EndpointLoggingListener;
 import io.featurehub.mr.ManagementRepositoryFeature;
-import io.featurehub.mr.resources.oauth2.OAuth2Feature;
+import io.featurehub.web.security.oauth.OAuth2Feature;
 import io.featurehub.mr.utils.NginxUtils;
 import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
 import org.glassfish.jersey.server.ResourceConfig;

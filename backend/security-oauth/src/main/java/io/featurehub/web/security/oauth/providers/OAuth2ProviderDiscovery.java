@@ -1,6 +1,6 @@
-package io.featurehub.mr.resources.oauth2.providers;
+package io.featurehub.web.security.oauth.providers;
 
-import io.featurehub.mr.resources.auth.AuthProvider;
+import io.featurehub.web.security.oauth.AuthProvider;
 
 public interface OAuth2ProviderDiscovery extends AuthProvider {
   OAuth2Provider getProvider(String id);

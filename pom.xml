@@ -47,6 +47,7 @@
   </licenses>
 
   <modules>
+    <module>backend/security-oauth</module>
     <module>backend/common-web</module>
     <module>backend/composite-jackson</module>
     <module>backend/composite-ebean</module>

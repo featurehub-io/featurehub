@@ -1,4 +1,4 @@
-package io.featurehub.mr.resources.oauth2.providers;
+package io.featurehub.web.security.oauth.providers;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

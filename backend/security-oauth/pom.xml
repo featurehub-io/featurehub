@@ -2,13 +2,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>io.featurehub.mr</groupId>
-  <artifactId>mr</artifactId>
+  <groupId>io.featurehub.components</groupId>
+  <artifactId>security-oauth</artifactId>
   <version>1.1-SNAPSHOT</version>
-  <name>mr</name>
+  <name>security-oauth</name>
 
   <description>
-    Management Registry API.
+    The OAuth Feature for implementing OAuth support in MR.
   </description>
 
   <url>https://featurehub.io</url>
@@ -35,14 +35,6 @@
     </license>
   </licenses>
 
-  <properties>
-    <app.entrypoint>io.featurehub.Application</app.entrypoint>
-    <app.baseimage>docker://featurehub/base_mr:1.5</app.baseimage>
-    <app.port>8085</app.port>
-    <build.version>0.0.1</build.version>
-  </properties>
-
-
   <dependencies>
     <dependency>
       <groupId>io.featurehub.common</groupId>
@@ -59,42 +51,6 @@
     <dependency>
       <groupId>io.featurehub.mr</groupId>
       <artifactId>mr-api</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
-      <version>1.4.199</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.postgresql</groupId>
-      <artifactId>postgresql</artifactId>
-      <version>42.2.19</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.mariadb.jdbc</groupId>
-      <artifactId>mariadb-java-client</artifactId>
-      <version>2.7.2</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.featurehub.mr</groupId>
-      <artifactId>mr-streaming-api</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.featurehub.mr</groupId>
-      <artifactId>mr-db-ebean</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.featurehub.components</groupId>
-      <artifactId>security-oauth</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
 
@@ -119,7 +75,6 @@
           <filtering>false</filtering>
           <tiles>
             <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
-            <tile>io.featurehub.tiles:tile-app-with-ui:[1.1,2)</tile>
           </tiles>
         </configuration>
       </plugin>

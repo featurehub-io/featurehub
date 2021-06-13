@@ -1,16 +1,14 @@
-package io.featurehub.mr.resources.oauth2.providers
+package io.featurehub.web.security.oauth.providers
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
-import io.featurehub.mr.resources.oauth2.AuthClientResult
-import io.featurehub.mr.resources.oauth2.OAuth2JerseyClient
+import io.featurehub.web.security.oauth.AuthClientResult
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 import javax.ws.rs.client.Client
-import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
 
 class GithubProvider @Inject constructor(val client: Client) : OAuth2Provider {

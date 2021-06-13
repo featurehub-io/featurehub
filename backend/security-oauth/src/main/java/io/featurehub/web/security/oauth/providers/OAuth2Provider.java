@@ -1,6 +1,6 @@
-package io.featurehub.mr.resources.oauth2.providers;
+package io.featurehub.web.security.oauth.providers;
 
-import io.featurehub.mr.resources.oauth2.AuthClientResult;
+import io.featurehub.web.security.oauth.AuthClientResult;
 
 public interface OAuth2Provider {
   ProviderUser discoverProviderUser(AuthClientResult authed);

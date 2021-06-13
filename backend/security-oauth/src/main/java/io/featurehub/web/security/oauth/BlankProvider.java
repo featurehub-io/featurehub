@@ -1,4 +1,4 @@
-package io.featurehub.mr.resources.auth;
+package io.featurehub.web.security.oauth;
 
 import javax.ws.rs.NotFoundException;
 import java.util.Collection;
