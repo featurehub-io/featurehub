@@ -72,7 +72,7 @@ class SuperuserCommon {
     _tokenizedPerson = tp;
     _initialized = true;
 
-    bearerToken = token;
+    bearerToken = token!;
   }
 
   TokenizedPerson? get tokenizedPerson => _tokenizedPerson;

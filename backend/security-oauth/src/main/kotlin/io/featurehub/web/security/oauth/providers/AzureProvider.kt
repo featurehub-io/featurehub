@@ -27,6 +27,7 @@ class AzureProvider : OAuth2Provider {
     protected var scopes = "openid email profile"
     private val actualAuthUrl: String
     private val tokenUrl: String
+
     override fun discoverProviderUser(authed: AuthClientResult): ProviderUser? {
         val idInfo = Jwt.decodeJwt(authed.idToken) ?: return null
         return ProviderUser.Builder().email(idInfo["email"]).name(idInfo["name"]).build()
