@@ -58,7 +58,7 @@ class OauthResource @Inject constructor(
             ?: return Response.ok().location(URI.create(failureUrl)).build()
         val authed = oAuth2Client.requestAccess(code, providerFromState)
             ?: return Response.ok().location(URI.create(failureUrl)).build()
-        log.info("auth was {}", authed)
+        log.trace("auth was {}", authed)
         val providerUser = providerFromState.discoverProviderUser(authed)
             ?: return Response.ok().location(URI.create(failureUrl)).build()
         return oAuthAdapter.successfulCompletion(
