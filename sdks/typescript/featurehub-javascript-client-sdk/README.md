@@ -3,7 +3,7 @@
 ## Overview
 Welcome to the Javascript/Typescript SDK implementation for [FeatureHub.io](https://featurehub.io) - Open source Feature flags management, A/B testing and remote configuration platform.
 
-This documentation covers both [featurehub-javascript-node-sdk](https://www.npmjs.com/packages/featurehub-javascript-node-sdk) and [featurehub-javascript-client-sdk](https://www.npmjs.com/featurehub-javascript-client-sdk) and explains how you can use the FeatureHub SDK in Javascript or Typescript for applications like Node.js
+This documentation covers both [featurehub-javascript-node-sdk](https://www.npmjs.com/featurehub-javascript-node-sdk) and [featurehub-javascript-client-sdk](https://www.npmjs.com/featurehub-javascript-client-sdk) and explains how you can use the FeatureHub SDK in Javascript or Typescript for applications like Node.js
 backend server, Web front-end (e.g. React) or Mobile apps (React Native, Ionic, etc.). 
 
 
@@ -18,6 +18,8 @@ We have deprecated [FeatureHub Eventsource Javascript SDK](https://www.npmjs.com
 ## Changelog
 
 ### featurehub-javascript-client-sdk
+#### 1.0.4
+- Documentation updates
 #### 1.0.3
 - Bugfix: Edge server urls passed to the config that include '/feature' should be processed correctly
 #### 1.0.2
@@ -29,6 +31,8 @@ We have deprecated [FeatureHub Eventsource Javascript SDK](https://www.npmjs.com
 Angular & Vue to use this library. 
 
 ### featurehub-javascript-node-sdk
+#### 1.0.4
+- Documentation updates
 #### 1.0.3
 - Bugfix: Edge server urls passed to the config that include '/feature' should be processed correctly
 #### 1.0.2
@@ -59,15 +63,15 @@ if you are using NodeJS use
 
 There are 2 ways to request for feature updates via this SDK:
 
-- **SSE (Server Sent Events) realtime updates mechanism** 
-  
-  In this mode, you will make a connection to the FeatureHub Edge server using the EventSource, and any updates to any features will come through to you in _near realtime_, automatically updating the feature values in the repository.
-Note, there is a known issues in the browsers with Kaspersky antivirus potentially blocking SSE events. [GitHub issue](https://github.com/featurehub-io/featurehub/issues/296) 
 
 - **FeatureHub polling client (GET request updates)** 
   
   In this mode, you make a GET request, which you can choose to either do once, when specific things happen in your application,
-  (such as navigation change) or on a regular basis (say every 5 minutes) and the changes will be passed into the FeatureHub repository for processing.  
+  (such as navigation change) or on a regular basis (say every 5 minutes) and the changes will be passed into the FeatureHub repository for processing. This mode is recommended for browser type applications (React, Angular, Vue) and server applications (Node).
+
+- **SSE (Server Sent Events) realtime updates mechanism**
+
+  In this mode, you will make a connection to the FeatureHub Edge server using the EventSource, and any updates to any features will come through to you in _near realtime_, automatically updating the feature values in the repository. This method is recommended for server (Node) applications. If you decide to use it in the browser applications, there is a known issues in the browsers with Kaspersky antivirus potentially blocking SSE events. [GitHub issue](https://github.com/featurehub-io/featurehub/issues/296)
 
 ## Quick start
 
