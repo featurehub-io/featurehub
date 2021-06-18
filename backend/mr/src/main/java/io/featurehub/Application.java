@@ -6,6 +6,7 @@ import cd.connect.jersey.common.TracingConfiguration;
 import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
 import cd.connect.openapi.support.ReturnStatusContainerResponseFilter;
+import io.featurehub.health.CommonFeatureHubFeatures;
 import io.featurehub.health.MetricsHealthRegistration;
 import io.featurehub.jersey.config.CommonConfiguration;
 import io.featurehub.jersey.config.EndpointLoggingListener;
@@ -36,11 +37,7 @@ public class Application {
   private void run() throws Exception {
     // register our resources, try and tag them as singleton as they are instantiated faster
     ResourceConfig config = new ResourceConfig(
-      ClientTracingFeature.class,
-      CommonConfiguration.class,
-      LoggingConfiguration.class,
-      ReturnStatusContainerResponseFilter.class,
-      TracingConfiguration.class
+      CommonFeatureHubFeatures.class
       )
       .register(EndpointLoggingListener.class)
       .register(ManagementRepositoryFeature.class)

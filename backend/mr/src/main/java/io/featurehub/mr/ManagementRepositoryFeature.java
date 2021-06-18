@@ -93,14 +93,6 @@ public class ManagementRepositoryFeature implements Feature {
     context.register(new ApiToSqlApiBinder());
     context.register(new ComplexUpdateMigrations());
     context.register(new MRPublishModule());
-    context.property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
-
-    context.register(new AbstractBinder() {
-      @Override
-      protected void configure() {
-
-      }
-      });
 
     context.register(new AbstractBinder() {
         @Override

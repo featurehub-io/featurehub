@@ -6,6 +6,7 @@ import cd.connect.jersey.common.LoggingConfiguration;
 import cd.connect.jersey.common.TracingConfiguration;
 import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
+import io.featurehub.health.CommonFeatureHubFeatures;
 import io.featurehub.health.HealthSource;
 import io.featurehub.health.MetricsHealthRegistration;
 import io.featurehub.jersey.config.EndpointLoggingListener;
@@ -38,12 +39,7 @@ public class Application {
 
   private static void initializeCommonJerseyLayer(CacheManager cm) throws Exception {
     // register our resources, try and tag them as singleton as they are instantiated faster
-    ResourceConfig config = new ResourceConfig(
-      ClientTracingFeature.class,
-      CommonConfiguration.class,
-      LoggingConfiguration.class,
-      TracingConfiguration.class,
-      EndpointLoggingListener.class)
+    ResourceConfig config = new ResourceConfig(CommonFeatureHubFeatures.class)
       .register(new AbstractBinder() {
         @Override
         protected void configure() {
