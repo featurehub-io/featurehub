@@ -1,3 +1,3 @@
-entity-packages: io.featurehub.db.model,com.anywayslabs.db.models
-transactional-packages: io.featurehub.db.services,com.anywayslabs.db.services
-querybean-packages: io.featurehub.db,com.anywayslabs.db
+entity-packages: io.featurehub.db.model
+transactional-packages: io.featurehub.db.services
+querybean-packages: io.featurehub.db
