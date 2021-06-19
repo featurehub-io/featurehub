@@ -75,7 +75,7 @@ image:https://docs.featurehub.io//images/languages.png[Featurehub SDK Languages,
 
 include::docs/capabilities-table.adoc[]
 
-More detailed documentation on SDK's can be found https://docs.featurehub.io#sdks[here]
+More detailed documentation on SDK's can be found https://docs.featurehub.io/#_sdks[here]
 
 
 == Documentation
