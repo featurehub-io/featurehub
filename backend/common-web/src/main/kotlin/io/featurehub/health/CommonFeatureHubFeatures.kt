@@ -14,11 +14,9 @@ class CommonFeatureHubFeatures : Feature {
     context.property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true)
 
     arrayOf(
-      ClientTracingFeature::class.java,
       CommonConfiguration::class.java,
       LoggingConfiguration::class.java,
       ReturnStatusContainerResponseFilter::class.java,
-      TracingConfiguration::class.java
     ).forEach { context.register(it) }
 
     return true
