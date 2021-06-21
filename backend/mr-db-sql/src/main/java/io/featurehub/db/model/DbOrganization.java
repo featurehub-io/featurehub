@@ -99,6 +99,10 @@ public class DbOrganization {
     this.portfolios = portfolios;
   }
 
+  public void setId(UUID id) {
+    this.id = id;
+  }
+
   public UUID getId() { return id; }
 
   public LocalDateTime getWhenArchived() {

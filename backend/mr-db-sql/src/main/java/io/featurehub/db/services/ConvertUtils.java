@@ -374,6 +374,10 @@ public class ConvertUtils implements Conversions {
         .groups(null);
   }
 
+  public UUID getOrganizationId() {
+    return getDbOrganization().getId();
+  }
+
   public DbOrganization getDbOrganization() {
     return new QDbOrganization().findOne();
   }
@@ -417,7 +421,7 @@ public class ConvertUtils implements Conversions {
           .peopleInGroup
           .eq(dbp)
           .owningOrganization
-          .eq(org == null ? getDbOrganization() : org)
+          .id.eq(org == null ? getOrganizationId() : org.getId())
           .findList()
           .forEach(dbg -> p.addGroupsItem(toGroup(dbg, opts.minus(FillOpts.Groups))));
     }
@@ -895,7 +899,7 @@ public class ConvertUtils implements Conversions {
     final DbGroup g =
         new QDbGroup()
             .owningOrganization
-            .eq(getDbOrganization())
+            .id.eq(getOrganizationId())
             .adminGroup
             .isTrue()
             .owningPortfolio

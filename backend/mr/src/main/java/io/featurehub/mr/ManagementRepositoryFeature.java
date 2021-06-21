@@ -85,8 +85,7 @@ public class ManagementRepositoryFeature implements Feature {
       RolloutStrategyServiceDelegator.class,
       CorsFilter.class,
 //      ConstraintExceptionHandler.class,
-      AuthApplicationEventListener.class,
-      PrometheusDynamicFeature.class
+      AuthApplicationEventListener.class
       ).forEach(context::register);
 
     context.register(new DatabaseBinder());
