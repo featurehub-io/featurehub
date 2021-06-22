@@ -153,7 +153,7 @@ public class AuthResource implements AuthServiceDelegate {
 
     Person newPerson = authenticationApi.register(personRegistrationDetails.getName(),
       personRegistrationDetails.getEmail(),
-      personRegistrationDetails.getPassword());
+      personRegistrationDetails.getPassword(), null);
 
     if (newPerson == null) {
       throw new NotFoundException("Cannot find person to register");

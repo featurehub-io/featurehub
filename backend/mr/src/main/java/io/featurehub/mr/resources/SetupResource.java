@@ -136,7 +136,7 @@ public class SetupResource implements SetupServiceDelegate {
     }
 
     // now register them
-    Person person = authenticationApi.register(setupSiteAdmin.getName(), setupSiteAdmin.getEmailAddress(), setupSiteAdmin.getPassword());
+    Person person = authenticationApi.register(setupSiteAdmin.getName(), setupSiteAdmin.getEmailAddress(), setupSiteAdmin.getPassword(), null);
 
     createPortfolio(setupSiteAdmin, organization, person);
 

@@ -91,7 +91,7 @@ public class OAuth2MRAdapter implements OAuthAdapter {
 
     // now register them
     Person person = authenticationApi.register(username, email,
-      null);
+      null, null);
 
     if (firstUser) {
       Organization organization = organizationApi.get();

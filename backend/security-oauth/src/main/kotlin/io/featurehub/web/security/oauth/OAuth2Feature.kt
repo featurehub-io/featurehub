@@ -2,8 +2,8 @@ package io.featurehub.web.security.oauth
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
-import cd.connect.jersey.common.CommonConfiguration
 import cd.connect.jersey.common.LoggingConfiguration
+import io.featurehub.jersey.config.CommonConfiguration
 import io.featurehub.web.security.oauth.providers.*
 import io.featurehub.web.security.oauth.providers.GithubProvider.Companion.PROVIDER_NAME
 import org.glassfish.jersey.internal.inject.AbstractBinder
