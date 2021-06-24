@@ -49,7 +49,7 @@ class OauthResource @Inject constructor(
         }
 
         // not initialized!
-        if (!oAuthAdapter.organisationCreationRequired()) {
+        if (!oAuthAdapter.initialAppSetupComplete()) {
             return Response.ok().location(URI.create(failureUrl)).build()
         }
 

@@ -9,7 +9,7 @@ import javax.inject.Inject
 
 class OAuth2ProviderManager @Inject constructor(oAuth2Providers: IterableProvider<OAuth2Provider>) :
     OAuth2ProviderDiscovery {
-    protected var providerMap: MutableMap<String?, OAuth2Provider> = HashMap()
+    protected var providerMap: MutableMap<String, OAuth2Provider> = HashMap()
     override fun getProvider(id: String?): OAuth2Provider? {
         return providerMap[id]
     }
@@ -21,7 +21,7 @@ class OAuth2ProviderManager @Inject constructor(oAuth2Providers: IterableProvide
         } else null
     }
 
-    override val providers: Collection<String?>?
+    override val providers: Collection<String>
         get() = providerMap.keys
 
     override fun requestRedirectUrl(provider: String): String {

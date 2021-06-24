@@ -2,6 +2,7 @@ import 'dart:html';
 
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:mrapi/api.dart';
+import 'package:openapi_dart_common/openapi.dart';
 
 class IdentityProviders {
   List<String> _identityProviders = <String>['local'];
@@ -19,16 +20,19 @@ class IdentityProviders {
 
   bool get hasMultiple3rdPartyProviders => externalProviders.length > 1;
 
-  final ManagementRepositoryClientBloc _bloc;
-  final AuthServiceApi _authServiceApi;
+  final ManagementRepositoryClientBloc bloc;
+  AuthServiceApi? _authServiceApi;
+  final ApiClient apiClient;
 
-  IdentityProviders(this._bloc, this._authServiceApi);
+  IdentityProviders(this.bloc, this.apiClient);
 
   void authenticateViaProvider(String provider) {
-    _authServiceApi.getLoginUrlForProvider(provider).then((value) {
+    _authServiceApi ??= AuthServiceApi(apiClient);
+
+    _authServiceApi!.getLoginUrlForProvider(provider).then((value) {
       return window.location.href = value.redirectUrl!;
     }).catchError((e, s) {
-      _bloc.dialogError(e, s);
+      bloc.dialogError(e, s);
     });
   }
 }

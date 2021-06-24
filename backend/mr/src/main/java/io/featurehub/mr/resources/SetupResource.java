@@ -78,7 +78,7 @@ public class SetupResource implements SetupServiceDelegate {
       boolean oneExternal = sr.getProviders().size() == 1;
       if (!loginDisabled) {
         sr.addProvidersItem("local");
-      } else {
+      } else if (oneExternal) { // only 1 external one
         String providerName = sr.getProviders().get(0);
         authProviders.stream().filter(p -> p.getProviders().contains(providerName)).findFirst().ifPresent(ap ->
           sr.redirectUrl(ap.requestRedirectUrl(providerName)));

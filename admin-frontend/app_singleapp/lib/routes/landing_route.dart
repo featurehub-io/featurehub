@@ -3,14 +3,16 @@ import 'dart:async';
 import 'package:app_singleapp/api/client_api.dart';
 import 'package:app_singleapp/config/route_handlers.dart';
 import 'package:app_singleapp/routes/andys_scaffold_route.dart';
+import 'package:app_singleapp/widget_creator.dart';
 import 'package:app_singleapp/widgets/common/fh_scaffold.dart';
 import 'package:app_singleapp/widgets/setup/setup_bloc.dart';
 import 'package:app_singleapp/widgets/setup/setup_widget.dart';
 import 'package:app_singleapp/widgets/simple_widget.dart';
-import 'package:app_singleapp/widgets/user/signin/signin_widget.dart';
 import 'package:app_singleapp/widgets/user/update/password_reset_widget.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+
+import '../api/client_api.dart';
 
 class LandingRoute extends StatefulWidget {
   final String title;
@@ -43,21 +45,21 @@ class LandingRouteState extends State<LandingRoute> {
           if (snapshot.hasError) {
             client.customError(messageTitle: 'Error getting initial state');
             widget = Text('Error!');
-          } else if (snapshot.data == InitializedCheckState.initialized) {
+          } else if (snapshot.data == preRouterStateInitialized) {
             if (client.currentRoute != null &&
                 client.currentRoute!.route == '/register-url') {
-              widget = registerUrl(client, params: client.currentRoute!.params);
+              widget = routeCreator.registerUrl(client,
+                  params: client.currentRoute!.params);
             } else {
               widget = Center(
                   child: MediaQuery.of(context).size.width > 400
                       ? Container(
                           width: 500,
-                          child: SigninWidget(client),
+                          child: widgetCreator.createSigninWidget(client),
                         )
-                      : SigninWidget(client));
+                      : widgetCreator.createSigninWidget(client));
             }
-          } else if (snapshot.data ==
-              InitializedCheckState.requires_password_reset) {
+          } else if (snapshot.data == preRouterStateRequiresPasswordReset) {
             widget = Center(
                 child: MediaQuery.of(context).size.width > 400
                     ? Container(
@@ -65,13 +67,13 @@ class LandingRouteState extends State<LandingRoute> {
                         child: ResetPasswordWidget(),
                       )
                     : ResetPasswordWidget());
-          } else if (snapshot.data == InitializedCheckState.zombie) {
+          } else if (snapshot.data == preRouterStateZombie) {
             var currentRoute = client.currentRoute;
             ManagementRepositoryClientBloc.router.navigateTo(context,
                 currentRoute != null ? currentRoute.route : '/applications',
                 params: currentRoute?.params ?? {});
             widget = AndysScaffoldRoute();
-          } else if (snapshot.data == InitializedCheckState.uninitialized) {
+          } else if (snapshot.data == preRouterStateUninitialized) {
             widget = Center(
                 child: MediaQuery.of(context).size.width > 500
                     ? Container(
@@ -84,9 +86,7 @@ class LandingRouteState extends State<LandingRoute> {
                         creator: (_context, _bag) => SetupBloc(client),
                         child: SetupPageWidget()));
           } else {
-            widget = SimpleWidget(
-              message: 'waiting for connection....',
-            );
+            widget = unknownStateToWidget(snapshot.data);
           }
 
           return FHScaffoldWidget(
@@ -94,6 +94,12 @@ class LandingRouteState extends State<LandingRoute> {
             bodyMainAxisAlignment: MainAxisAlignment.center,
           );
         });
+  }
+
+  Widget unknownStateToWidget(String? state) {
+    return SimpleWidget(
+      message: 'waiting for connection....',
+    );
   }
 
   @override

@@ -36,98 +36,102 @@ Handler handleRouteChangeRequest(builder) {
   });
 }
 
-Widget root(mrBloc, {params}) {
-  return LandingRoute(title: 'FeatureHub');
+class RouteCreator {
+  Widget root(mrBloc, {params}) {
+    return LandingRoute(title: 'FeatureHub');
+  }
+
+  Widget portfolios(mrBloc, {params}) {
+    return BlocProvider<PortfolioBloc>(
+        creator: (_context, _bag) =>
+            PortfolioBloc(params['search']?.elementAt(0), mrBloc),
+        child: PortfolioRoute());
+  }
+
+  Widget users(mrBloc, {params}) {
+    return BlocProvider<ListUsersBloc>(
+        creator: (_context, _bag) =>
+            ListUsersBloc(params['search']?.elementAt(0), mrBloc),
+        child: ManageUsersRoute());
+  }
+
+  Widget group(mrBloc, {params}) {
+    return BlocProvider<GroupBloc>(
+        creator: (_context, _bag) =>
+            GroupBloc(params['id']?.elementAt(0), mrBloc),
+        child: ManageGroupRoute());
+  }
+
+  Widget forgotPassword(mrBloc, {params}) {
+    return SimpleWidget(
+      message: 'forgot-password, contact you system administrator.',
+    );
+  }
+
+  Widget registerUrl(mrBloc, {params}) {
+    return BlocProvider<RegisterBloc>(
+        creator: (_context, _bag) =>
+            RegisterBloc(mrBloc)..getDetails(params['token']?.elementAt(0)),
+        child: RegisterURLRoute(params['token']?.elementAt(0)));
+  }
+
+  Widget createUser(mrBloc, {params}) {
+    // TODO: fix this construction, bloc should not be created outside of provider
+    final select = SelectPortfolioGroupBloc(mrBloc);
+    return BlocProvider<SelectPortfolioGroupBloc>(
+        creator: (_context, _bag) => select,
+        child: BlocProvider<CreateUserBloc>(
+            creator: (_context, _bag) =>
+                CreateUserBloc(mrBloc, selectGroupBloc: select),
+            child: CreateUserRoute(title: 'Create User')));
+  }
+
+  Widget manageUser(mrBloc, {params}) {
+    final select = SelectPortfolioGroupBloc(mrBloc);
+    return BlocProvider<SelectPortfolioGroupBloc>(
+        creator: (_context, _bag) => select,
+        child: BlocProvider<EditUserBloc>(
+            creator: (_context, _bag) => EditUserBloc(
+                mrBloc, params['id']?.elementAt(0),
+                selectGroupBloc: select),
+            child: EditUserRoute()));
+  }
+
+  Widget serviceAccount(mrBloc, {params}) {
+    return BlocProvider<ManageServiceAccountsBloc>(
+        creator: (_context, _bag) =>
+            ManageServiceAccountsBloc(params['pid']?.elementAt(0), mrBloc),
+        child: ManageServiceAccountsRoute());
+  }
+
+  Widget featureStatus(ManagementRepositoryClientBloc mrBloc, {params}) {
+    return BlocProvider<PerApplicationFeaturesBloc>(
+        creator: (_c, _b) => PerApplicationFeaturesBloc(mrBloc),
+        child: Builder(builder: (context) => FeatureStatusRoute()));
+  }
+
+  Widget apps(mrBloc, {params}) {
+    return BlocProvider<AppsBloc>(
+        creator: (_context, _bag) => AppsBloc(mrBloc), child: AppsRoute());
+  }
+
+  Widget serviceEnvsHandler(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String>>? params}) {
+    return BlocProvider<ServiceAccountEnvBloc>(
+      creator: (_c, _b) => ServiceAccountEnvBloc(mrBloc),
+      child: ServiceAccountEnvRoute(),
+    );
+  }
+
+  Widget manageApp(mrBloc, {params}) {
+    return BlocProvider<ManageAppBloc>(
+        creator: (_context, _bag) => ManageAppBloc(mrBloc),
+        child: ManageAppRoute());
+  }
+
+  Widget featureValues(mrBloc, {params}) {
+    return Container();
+  }
 }
 
-Widget portfolios(mrBloc, {params}) {
-  return BlocProvider<PortfolioBloc>(
-      creator: (_context, _bag) =>
-          PortfolioBloc(params['search']?.elementAt(0), mrBloc),
-      child: PortfolioRoute());
-}
-
-Widget users(mrBloc, {params}) {
-  return BlocProvider<ListUsersBloc>(
-      creator: (_context, _bag) =>
-          ListUsersBloc(params['search']?.elementAt(0), mrBloc),
-      child: ManageUsersRoute());
-}
-
-Widget group(mrBloc, {params}) {
-  return BlocProvider<GroupBloc>(
-      creator: (_context, _bag) =>
-          GroupBloc(params['id']?.elementAt(0), mrBloc),
-      child: ManageGroupRoute());
-}
-
-Widget forgotPassword(mrBloc, {params}) {
-  return SimpleWidget(
-    message: 'forgot-password, contact you system administrator.',
-  );
-}
-
-Widget registerUrl(mrBloc, {params}) {
-  return BlocProvider<RegisterBloc>(
-      creator: (_context, _bag) =>
-          RegisterBloc(mrBloc)..getDetails(params['token']?.elementAt(0)),
-      child: RegisterURLRoute(params['token']?.elementAt(0)));
-}
-
-Widget createUser(mrBloc, {params}) {
-  // TODO: fix this construction, bloc should not be created outside of provider
-  final select = SelectPortfolioGroupBloc(mrBloc);
-  return BlocProvider<SelectPortfolioGroupBloc>(
-      creator: (_context, _bag) => select,
-      child: BlocProvider<CreateUserBloc>(
-          creator: (_context, _bag) =>
-              CreateUserBloc(mrBloc, selectGroupBloc: select),
-          child: CreateUserRoute(title: 'Create User')));
-}
-
-Widget manageUser(mrBloc, {params}) {
-  final select = SelectPortfolioGroupBloc(mrBloc);
-  return BlocProvider<SelectPortfolioGroupBloc>(
-      creator: (_context, _bag) => select,
-      child: BlocProvider<EditUserBloc>(
-          creator: (_context, _bag) => EditUserBloc(
-              mrBloc, params['id']?.elementAt(0),
-              selectGroupBloc: select),
-          child: EditUserRoute()));
-}
-
-Widget serviceAccount(mrBloc, {params}) {
-  return BlocProvider<ManageServiceAccountsBloc>(
-      creator: (_context, _bag) =>
-          ManageServiceAccountsBloc(params['pid']?.elementAt(0), mrBloc),
-      child: ManageServiceAccountsRoute());
-}
-
-Widget featureStatus(ManagementRepositoryClientBloc mrBloc, {params}) {
-  return BlocProvider<PerApplicationFeaturesBloc>(
-      creator: (_c, _b) => PerApplicationFeaturesBloc(mrBloc),
-      child: Builder(builder: (context) => FeatureStatusRoute()));
-}
-
-Widget apps(mrBloc, {params}) {
-  return BlocProvider<AppsBloc>(
-      creator: (_context, _bag) => AppsBloc(mrBloc), child: AppsRoute());
-}
-
-Widget serviceEnvsHandler(ManagementRepositoryClientBloc mrBloc,
-    {Map<String, List<String>>? params}) {
-  return BlocProvider<ServiceAccountEnvBloc>(
-    creator: (_c, _b) => ServiceAccountEnvBloc(mrBloc),
-    child: ServiceAccountEnvRoute(),
-  );
-}
-
-Widget manageApp(mrBloc, {params}) {
-  return BlocProvider<ManageAppBloc>(
-      creator: (_context, _bag) => ManageAppBloc(mrBloc),
-      child: ManageAppRoute());
-}
-
-Widget featureValues(mrBloc, {params}) {
-  return Container();
-}
+var routeCreator = RouteCreator();

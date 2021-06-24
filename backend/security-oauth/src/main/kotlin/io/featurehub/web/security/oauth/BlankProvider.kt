@@ -4,7 +4,7 @@ import javax.ws.rs.NotFoundException
 
 // ensures we have at least one of these as injection requires it
 class BlankProvider : AuthProvider {
-    override val providers: Collection<String?>?
+    override val providers: Collection<String>
         get() = emptyList<String>()
 
     override fun requestRedirectUrl(provider: String): String {

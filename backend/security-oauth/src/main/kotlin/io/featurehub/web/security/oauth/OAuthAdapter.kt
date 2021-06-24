@@ -13,5 +13,5 @@ interface OAuthAdapter {
     ): Response?
 
     // does the organisation need to be created and does it already exist
-    fun organisationCreationRequired(): Boolean
+    fun initialAppSetupComplete(): Boolean
 }

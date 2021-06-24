@@ -115,7 +115,7 @@ public class OAuth2MRAdapter implements OAuthAdapter {
   }
 
   @Override
-  public boolean organisationCreationRequired() {
+  public boolean initialAppSetupComplete() {
     return organizationApi.get() != null;
   }
 }
