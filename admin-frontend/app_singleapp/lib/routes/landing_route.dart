@@ -86,7 +86,7 @@ class LandingRouteState extends State<LandingRoute> {
                         creator: (_context, _bag) => SetupBloc(client),
                         child: SetupPageWidget()));
           } else {
-            widget = unknownStateToWidget(snapshot.data);
+            widget = unknownStateToWidget(snapshot.data, client);
           }
 
           return FHScaffoldWidget(
@@ -96,7 +96,8 @@ class LandingRouteState extends State<LandingRoute> {
         });
   }
 
-  Widget unknownStateToWidget(String? state) {
+  Widget unknownStateToWidget(
+      String? state, ManagementRepositoryClientBloc client) {
     return SimpleWidget(
       message: 'waiting for connection....',
     );
