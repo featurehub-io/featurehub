@@ -236,12 +236,11 @@ class ManagementRepositoryClientBloc implements Bloc {
     initializeApis(_client);
   }
 
-  void setupFeaturehubClientApisi(ApiClient client) {
+  void setupFeaturehubClientApis(ApiClient client) {
     setupApi = SetupServiceApi(client);
     personServiceApi = PersonServiceApi(client);
 
     authServiceApi = AuthServiceApi(client);
-    identityProviders = setupIdentityProviders(this);
 
     portfolioServiceApi = PortfolioServiceApi(client);
     serviceAccountServiceApi = ServiceAccountServiceApi(client);
@@ -257,14 +256,16 @@ class ManagementRepositoryClientBloc implements Bloc {
             {if (portfolio != null) _checkRouteForPermission(portfolio)});
 
     _initializeRouteStreams();
-
-    init();
   }
 
   void initializeApis(ApiClient client) {
     router = Routes.configureRoutes(this);
 
-    setupFeaturehubClientApisi(client);
+    identityProviders = setupIdentityProviders(this);
+
+    setupFeaturehubClientApis(client);
+
+    init();
   }
 
   ApiClient get apiClient => _client;
