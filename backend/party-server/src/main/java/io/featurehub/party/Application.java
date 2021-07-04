@@ -9,6 +9,7 @@ import cd.connect.lifecycle.LifecycleStatus;
 import cd.connect.openapi.support.ReturnStatusContainerResponseFilter;
 import io.featurehub.dacha.CacheManager;
 import io.featurehub.edge.EdgeFeature;
+import io.featurehub.edge.EdgeResourceFeature;
 import io.featurehub.health.HealthSource;
 import io.featurehub.health.MetricsHealthRegistration;
 import io.featurehub.jersey.config.CommonConfiguration;
@@ -62,6 +63,7 @@ public class Application {
       .register(CorsFilter.class)
       .register(OAuth2Feature.class)
       .register(ManagementRepositoryFeature.class)
+      .register(EdgeResourceFeature.class)
       .register(EdgeFeature.class);
 
     // check if we should list on a different port

@@ -48,6 +48,7 @@ public class Application {
       .register(CorsFilter.class)
       .register(LoggingConfiguration.class)
       .register(EdgeFeature.class)
+      .register(EdgeResourceFeature.class)
       ;
 
     // check if we should list on a different port
