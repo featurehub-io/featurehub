@@ -32,8 +32,6 @@ public class EdgeFeature implements Feature {
   @Override
   public boolean configure(FeatureContext context) {
     context
-        .register(EventStreamResource.class)
-        .register(SSEHeaderFilter.class)
         .register(
             new AbstractBinder() {
 
@@ -76,7 +74,6 @@ public class EdgeFeature implements Feature {
                 // starts the stats time publisher if there are any
                 injector.getService(StatTimeTrigger.class);
                 injector.getService(StatRecorder.class);
-                System.out.println("printing");
               }
 
               public void onReload(Container container) {}

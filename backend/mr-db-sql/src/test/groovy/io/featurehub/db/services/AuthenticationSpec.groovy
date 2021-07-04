@@ -1,10 +1,7 @@
 package io.featurehub.db.services
 
-import io.ebean.DB
-import io.ebean.Database
+
 import io.featurehub.db.api.Opts
-import io.featurehub.db.model.DbPerson
-import io.featurehub.db.model.query.QDbPerson
 import io.featurehub.db.publish.CacheSource
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.ApplicationGroupRole
@@ -13,7 +10,6 @@ import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.Portfolio
 import spock.lang.Shared
-import spock.lang.Specification
 
 class AuthenticationSpec extends BaseSpec {
   @Shared AuthenticationSqlApi auth
@@ -33,7 +29,7 @@ class AuthenticationSpec extends BaseSpec {
   def "I should be able to register a new user"() {
     when: "i register"
       personApi.create('william@featurehub.io', "William", null)
-      Person person = auth.register("william", "william@featurehub.io", "yacht")
+      Person person = auth.register("william", "william@featurehub.io", "yacht", null)
     then:
       person.id
       person.name == "william"
@@ -44,9 +40,9 @@ class AuthenticationSpec extends BaseSpec {
   def "I cannot register twice"() {
     when: "i register"
       personApi.create('william-double-reg@featurehub.io', "William", null)
-      Person person = auth.register("william", "william-double-reg@featurehub.io", "yacht")
+      Person person = auth.register("william", "william-double-reg@featurehub.io", "yacht", null)
     and: "i try again"
-      Person person2 = auth.register("william", "william-double-reg@featurehub.io", "yacht")
+      Person person2 = auth.register("william", "william-double-reg@featurehub.io", "yacht", null)
     then:
       person != null
       person2 == null
@@ -55,7 +51,7 @@ class AuthenticationSpec extends BaseSpec {
   def "I should be able to login"() {
     given: "i register"
       personApi.create('william1@featurehub.io', "William", null)
-      Person person = auth.register("william", "william1@featurehub.io", "bathroom")
+      Person person = auth.register("william", "william1@featurehub.io", "bathroom", null)
     when: "i login"
       Person loginPerson = auth.login("william1@featurehub.io", "bathroom")
     then:
@@ -65,7 +61,7 @@ class AuthenticationSpec extends BaseSpec {
   def "I should be able to login and change my password"() {
     given: "i register"
       personApi.create('william4@featurehub.io', "William", null)
-      Person person = auth.register("william", "william4@featurehub.io", "bathroom")
+      Person person = auth.register("william", "william4@featurehub.io", "bathroom", null)
     and: "i login"
       Person loginPerson = auth.login("william4@featurehub.io", "bathroom")
     when: "i change my password"
@@ -80,7 +76,7 @@ class AuthenticationSpec extends BaseSpec {
   def "i cannot register with an empty password"() {
     when:
       personApi.create('william-empty-pw@featurehub.io',"William", null)
-      Person person = auth.register("william", "william-empty-pw@featurehub.io", "")
+      Person person = auth.register("william", "william-empty-pw@featurehub.io", "", null)
     then:
       person == null
   }
@@ -88,7 +84,7 @@ class AuthenticationSpec extends BaseSpec {
   def "i cannot change my password to an empty password"() {
     given: "i register"
       personApi.create('william-emptypw-change@featurehub.io', "William", null)
-      Person person = auth.register("william", "william-emptypw-change@featurehub.io", "bathroom")
+      Person person = auth.register("william", "william-emptypw-change@featurehub.io", "bathroom", null)
     when: "i change my password using the wrong one"
       Person changedPerson = auth.changePassword(person.id.id, "bathroom", "")
     then:
@@ -98,7 +94,7 @@ class AuthenticationSpec extends BaseSpec {
   def "i shouldn't be able to change my password if the old one is wrong"() {
     given: "i register"
       personApi.create('william-badpw@featurehub.io', "William", null)
-      Person person = auth.register("william", "william-badpw@featurehub.io", "bathroom")
+      Person person = auth.register("william", "william-badpw@featurehub.io", "bathroom", null)
     and: "i login"
       Person loginPerson = auth.login("william-badpw@featurehub.io", "bathroom")
     when: "i change my password using the wrong one"
@@ -113,7 +109,7 @@ class AuthenticationSpec extends BaseSpec {
   def "a superuser can change a person's password"() {
     given: "i register"
       personApi.create('william2@featurehub.io', "William", null)
-      Person person = auth.register("william2", "william2@featurehub.io", "yacht")
+      Person person = auth.register("william2", "william2@featurehub.io", "yacht", null)
     when: "the super user changes my password"
       Person resetPerson = auth.resetPassword(person.id.id, "honey", superuser, false)
     then:
@@ -124,7 +120,7 @@ class AuthenticationSpec extends BaseSpec {
   def "a newly registered user has forgotten their password"() {
     given: "i register"
       personApi.create('william3@featurehub.io', "William", null)
-      Person person = auth.register("william", "william3@featurehub.io", "bathroom")
+      Person person = auth.register("william", "william3@featurehub.io", "bathroom", null)
     and: "i login"
       Person loginPerson = auth.login("william3@featurehub.io", "bathroom")
     when: "the super user changes my password"
@@ -138,7 +134,7 @@ class AuthenticationSpec extends BaseSpec {
   def "a superuser changes my password, i reset it and i can't reset it again"() {
     given: "i register"
       personApi.create('william-temp@featurehub.io', "William", null)
-      Person person = auth.register("william", "william-temp@featurehub.io", "bathroom")
+      Person person = auth.register("william", "william-temp@featurehub.io", "bathroom", null)
     and: "the super user changes my password"
       auth.resetPassword(person.id.id, "honey", superuser, false)
     and: "i reset my password"
@@ -155,7 +151,7 @@ class AuthenticationSpec extends BaseSpec {
   def "a person cannot reset their own password"() {
     given: "i register"
       def createdPerson = personApi.create('william-reset@featurehub.io', "William", null)
-      Person person = auth.register("william", "william-reset@featurehub.io", "bathroom")
+      Person person = auth.register("william", "william-reset@featurehub.io", "bathroom", null)
     when: "i try and reset my own password"
       Person resetUser = auth.resetPassword(createdPerson.id, "honey", person.id.id, false)
     then: "the system prevents me"
@@ -165,7 +161,7 @@ class AuthenticationSpec extends BaseSpec {
   def "i cannot reset my password to an empty password"() {
     given: "i register"
       personApi.create('william-reset1@featurehub.io',"William", null)
-      Person person = auth.register("william", "william-reset1@featurehub.io", "bathroom")
+      Person person = auth.register("william", "william-reset1@featurehub.io", "bathroom", null)
     when: "i try and reset my password to empty"
       Person resetUser = auth.resetPassword(person.id.id, "", superuser, false)
     then: "the system prevents me"
@@ -176,8 +172,8 @@ class AuthenticationSpec extends BaseSpec {
     given: "i register"
       personApi.create('william-reset2@featurehub.io', "William",superuser)
       personApi.create('william-reset3@featurehub.io', "William",null)
-      Person p2 = auth.register("william", "william-reset2@featurehub.io", "bathroom")
-      Person p3 = auth.register("william", "william-reset3@featurehub.io", "bathroom")
+      Person p2 = auth.register("william", "william-reset2@featurehub.io", "bathroom", null)
+      Person p3 = auth.register("william", "william-reset3@featurehub.io", "bathroom", null)
     when: "i try and reset their password"
       Person resetUser = auth.resetPassword(p3.id.id, "bath2", superuser, false)
       Person resetUser2 = auth.resetPassword(p2.id.id, "bath2", superuser, false)
@@ -188,7 +184,7 @@ class AuthenticationSpec extends BaseSpec {
   def "A user who is a portfolio manager gets their application roles when they login"() {
     given: "i register"
       personApi.create('portman26@mailinator.com', "Portman26",superuser)
-      Person p2 = auth.register("william", "portman26@mailinator.com", "hooray")
+      Person p2 = auth.register("william", "portman26@mailinator.com", "hooray", null)
     and: "i create a new portfolio"
       Portfolio portfolio1 = portfolioApi.createPortfolio(new Portfolio().name("persontestportfolio").organizationId(org.getId()), Opts.empty(), superPerson)
     and: "i create an application in that portfolio"

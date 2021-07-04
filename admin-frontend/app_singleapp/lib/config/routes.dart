@@ -23,41 +23,43 @@ class Routes {
 
     // Public routes (public URL's also need ot be added to array above)
     router.define('/forgot-password',
-        handler: handleRouteChangeRequest(forgotPassword));
+        handler: handleRouteChangeRequest(routeCreator.forgotPassword));
     router.define('/register-url',
-        handler: handleRouteChangeRequest(registerUrl));
+        handler: handleRouteChangeRequest(routeCreator.registerUrl));
 
     // main app routes
-    router.define('/', handler: handleRouteChangeRequest(root));
-    router.define('', handler: handleRouteChangeRequest(root));
-    router.define('/applications', handler: handleRouteChangeRequest(apps));
+    router.define('/', handler: handleRouteChangeRequest(routeCreator.root));
+    router.define('', handler: handleRouteChangeRequest(routeCreator.root));
+    router.define('/applications',
+        handler: handleRouteChangeRequest(routeCreator.apps));
     router.define('/feature-status',
-        handler: handleRouteChangeRequest(featureStatus));
+        handler: handleRouteChangeRequest(routeCreator.featureStatus));
     router.define('/feature-values',
-        handler: handleRouteChangeRequest(featureValues));
+        handler: handleRouteChangeRequest(routeCreator.featureValues));
 
     router.define('/service-envs',
-        handler: handleRouteChangeRequest(serviceEnvsHandler));
+        handler: handleRouteChangeRequest(routeCreator.serviceEnvsHandler));
 
     //Admin routes
     router.define('/create-user',
-        handler: handleRouteChangeRequest(createUser),
+        handler: handleRouteChangeRequest(routeCreator.createUser),
         permissionType: PermissionType.portfolioadmin);
-    router.define('/portfolios', handler: handleRouteChangeRequest(portfolios));
+    router.define('/portfolios',
+        handler: handleRouteChangeRequest(routeCreator.portfolios));
     router.define('/manage-app',
-        handler: handleRouteChangeRequest(manageApp),
+        handler: handleRouteChangeRequest(routeCreator.manageApp),
         permissionType: PermissionType.portfolioadmin);
     router.define('/manage-group',
-        handler: handleRouteChangeRequest(group),
+        handler: handleRouteChangeRequest(routeCreator.group),
         permissionType: PermissionType.portfolioadmin);
     router.define('/manage-service-accounts',
-        handler: handleRouteChangeRequest(serviceAccount),
+        handler: handleRouteChangeRequest(routeCreator.serviceAccount),
         permissionType: PermissionType.portfolioadmin);
     router.define('/manage-user',
-        handler: handleRouteChangeRequest(manageUser),
+        handler: handleRouteChangeRequest(routeCreator.manageUser),
         permissionType: PermissionType.portfolioadmin);
     router.define('/manage-users',
-        handler: handleRouteChangeRequest(users),
+        handler: handleRouteChangeRequest(routeCreator.users),
         permissionType: PermissionType.portfolioadmin);
 
     return router;

@@ -2,8 +2,6 @@ package io.featurehub.db.api;
 
 import io.featurehub.mr.model.Person;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.UUID;
 
 public interface AuthenticationApi {
@@ -13,9 +11,10 @@ public interface AuthenticationApi {
    * @param name
    * @param email
    * @param password
+   * @param opts
    * @return
    */
-  Person register(@NotNull String name, @NotNull String email, @NotNull String password);
+  Person register(@NotNull String name, @NotNull String email, @NotNull String password, Opts opts);
 
   /**
    * in case of forgotten password admin resets the password and sets a reset token which can be used in email.

@@ -32,6 +32,9 @@ public class DbPerson {
 
   public UUID getId() { return id; }
 
+  public void setId(UUID id) {
+    this.id = id;
+  }
 
   @WhenModified
   @Column(name = "when_updated")

@@ -27,18 +27,6 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <configuration>
-          <archive>
-            <manifestEntries>
-              <FeatureHub-AppName>${project.artifactId}</FeatureHub-AppName>
-              <FeatureHUb-Version>${build.version}</FeatureHUb-Version>
-            </manifestEntries>
-          </archive>
-        </configuration>
-      </plugin>
-      <plugin>
         <groupId>org.jetbrains.kotlin</groupId>
         <artifactId>kotlin-maven-plugin</artifactId>
         <version>1.5.0</version>

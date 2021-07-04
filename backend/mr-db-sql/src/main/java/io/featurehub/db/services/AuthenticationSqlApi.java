@@ -72,7 +72,7 @@ public class AuthenticationSqlApi implements AuthenticationApi {
   }
 
   @Override
-  public Person register(String name, String email, String password) {
+  public Person register(String name, String email, String password, Opts opts) {
     if (name == null || email == null) return null;
 
     return new QDbPerson()
@@ -97,7 +97,7 @@ public class AuthenticationSqlApi implements AuthenticationApi {
               person.setTokenExpiry(null);
               updateUser(person);
 
-              return convertUtils.toPerson(person, Opts.opts(FillOpts.Groups, FillOpts.Acls));
+              return convertUtils.toPerson(person, opts == null ?  Opts.opts(FillOpts.Groups, FillOpts.Acls) : opts );
             })
         .orElse(null);
   }

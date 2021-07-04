@@ -40,18 +40,6 @@ import java.util.Set;
 import java.util.UUID;
 
 public interface Conversions {
-  //  static Optional<UUID> uuid(String id) {
-  //    if (id == null) {
-  //      return Optional.empty();
-  //    }
-  //
-  //    try {
-  //      return Optional.of(UUID.fromString(id));
-  //    } catch (Exception e) {
-  //      return Optional.empty();
-  //    }
-  //  }
-
   // in case a field can be a name or a uuid (i.e. feature key)
   static UUID checkUuid(String id) {
     if (id == null) {
@@ -135,6 +123,7 @@ public interface Conversions {
   }
 
   // used so things that call toPerson multiple times can hold onto it
+  UUID getOrganizationId();
   DbOrganization getDbOrganization();
 
   DbPerson byPerson(UUID id);

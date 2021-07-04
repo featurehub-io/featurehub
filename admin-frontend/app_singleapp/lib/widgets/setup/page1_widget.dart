@@ -108,7 +108,7 @@ class _SetupPage1State extends State<SetupPage1Widget> {
                   FHPageDivider(),
                   Padding(
                       padding: const EdgeInsets.fromLTRB(0, 24, 0, 16),
-                      child: Text('or register in with a username and password',
+                      child: Text('or register by providing the details below',
                           style: Theme.of(context).textTheme.caption)),
                 ],
               ),

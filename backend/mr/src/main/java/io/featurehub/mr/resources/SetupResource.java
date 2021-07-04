@@ -20,7 +20,7 @@ import io.featurehub.mr.model.SetupMissingResponse;
 import io.featurehub.mr.model.SetupResponse;
 import io.featurehub.mr.model.SetupSiteAdmin;
 import io.featurehub.mr.model.TokenizedPerson;
-import io.featurehub.mr.resources.auth.AuthProvider;
+import io.featurehub.web.security.oauth.AuthProvider;
 import io.featurehub.mr.utils.PortfolioUtils;
 import org.glassfish.hk2.api.IterableProvider;
 import org.slf4j.Logger;
@@ -78,7 +78,7 @@ public class SetupResource implements SetupServiceDelegate {
       boolean oneExternal = sr.getProviders().size() == 1;
       if (!loginDisabled) {
         sr.addProvidersItem("local");
-      } else {
+      } else if (oneExternal) { // only 1 external one
         String providerName = sr.getProviders().get(0);
         authProviders.stream().filter(p -> p.getProviders().contains(providerName)).findFirst().ifPresent(ap ->
           sr.redirectUrl(ap.requestRedirectUrl(providerName)));
@@ -136,7 +136,7 @@ public class SetupResource implements SetupServiceDelegate {
     }
 
     // now register them
-    Person person = authenticationApi.register(setupSiteAdmin.getName(), setupSiteAdmin.getEmailAddress(), setupSiteAdmin.getPassword());
+    Person person = authenticationApi.register(setupSiteAdmin.getName(), setupSiteAdmin.getEmailAddress(), setupSiteAdmin.getPassword(), null);
 
     createPortfolio(setupSiteAdmin, organization, person);
 

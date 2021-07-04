@@ -17,7 +17,7 @@ class InfoSource {
 
       while (resources.hasMoreElements()) {
         try {
-          val manifest = Manifest(resources.nextElement().openStream());
+          val manifest = Manifest(resources.nextElement().openStream())
           val attr = manifest.mainAttributes.getValue(key)
           if (attr != null) {
             info = attr.toString()

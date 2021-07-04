@@ -100,7 +100,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                           CrossAxisAlignment.start,
                                       children: <Widget>[
                                         Text(
-                                          'Although groups are portofolio-wide, we recommend creating application specific groups eg “MyApp developers”',
+                                          'Groups are portfolio-wide, we recommend creating application specific groups eg “MyApp developers”',
                                           style: captionStyle,
                                         ),
                                         FHFlatButtonTransparent(
