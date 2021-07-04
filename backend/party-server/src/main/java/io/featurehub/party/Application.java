@@ -16,6 +16,7 @@ import io.featurehub.jersey.config.EndpointLoggingListener;
 import io.featurehub.mr.ManagementRepositoryFeature;
 import io.featurehub.mr.utils.NginxUtils;
 import io.featurehub.publish.NATSHealthSource;
+import io.featurehub.web.security.oauth.OAuth2Feature;
 import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -59,6 +60,7 @@ public class Application {
         }
       })
       .register(CorsFilter.class)
+      .register(OAuth2Feature.class)
       .register(ManagementRepositoryFeature.class)
       .register(EdgeFeature.class);
 
