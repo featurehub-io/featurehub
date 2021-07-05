@@ -37,7 +37,7 @@
 
   <properties>
     <app.entrypoint>io.featurehub.Application</app.entrypoint>
-    <app.baseimage>docker://featurehub/base_mr:1.5</app.baseimage>
+    <app.baseimage>docker://featurehub/base_mr:1.6</app.baseimage>
     <app.port>8085</app.port>
     <build.version>0.0.1</build.version>
   </properties>

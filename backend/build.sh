@@ -4,5 +4,5 @@ if [ $# -eq 0 ]
     echo "No arguments supplied"
     exit -1
 fi
-mvn -f pom-packages.xml -Ddocker-cloud-build=true -Dbuild.version=$1 -DskipTest clean install
+mvn -f pom-packages.xml -DskipTests -Ddocker-cloud-build=true -Dbuild.version=$1 clean install
 

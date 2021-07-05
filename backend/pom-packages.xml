@@ -40,7 +40,7 @@
   <modules>
     <module>sse-edge</module>
     <module>mr</module>
-    <module>../admin-frontend</module>
+<!--    <module>../admin-frontend</module>-->
     <module>dacha</module>
     <module>party-server</module>
   </modules>
