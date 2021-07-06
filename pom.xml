@@ -57,7 +57,6 @@
     <module>backend/composite-parent</module>
     <module>backend/composite-logging</module>
     <module>backend/composite-logging-api</module>
-    <module>backend/composite-opentracing</module>
     <module>backend/composite-prometheus</module>
     <module>backend/composite-test</module>
     <module>backend/sse-edge-api</module>
@@ -77,7 +76,6 @@
     <module>sdks/java/client-java-core</module>
     <module>sdks/java/client-java-android</module>
     <module>sdks/java/client-java-jersey</module>
-    <module>sdks/java/client-java-opentracing</module>
     <module>sdks/java/client-java-opentelemetry</module>
     <module>sdks/java/client-java-loadtest</module>
     <module>sdks/dart/client-dart-api</module>

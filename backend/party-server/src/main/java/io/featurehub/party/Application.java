@@ -3,7 +3,6 @@ package io.featurehub.party;
 import cd.connect.jersey.JerseyHttp2Server;
 import cd.connect.jersey.common.CorsFilter;
 import cd.connect.jersey.common.LoggingConfiguration;
-import cd.connect.jersey.common.TracingConfiguration;
 import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
 import cd.connect.openapi.support.ReturnStatusContainerResponseFilter;
@@ -18,7 +17,6 @@ import io.featurehub.mr.ManagementRepositoryFeature;
 import io.featurehub.mr.utils.NginxUtils;
 import io.featurehub.publish.NATSHealthSource;
 import io.featurehub.web.security.oauth.OAuth2Feature;
-import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
@@ -47,10 +45,8 @@ public class Application {
 
     // register our resources, try and tag them as singleton as they are instantiated faster
     ResourceConfig config = new ResourceConfig(
-      ClientTracingFeature.class,
       CommonConfiguration.class,
       LoggingConfiguration.class,
-      TracingConfiguration.class,
       ReturnStatusContainerResponseFilter.class,
       EndpointLoggingListener.class)
       .register(new AbstractBinder() {

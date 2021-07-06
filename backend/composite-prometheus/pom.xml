@@ -56,7 +56,6 @@
       <artifactId>simpleclient_hotspot</artifactId>
       <version>[${prometheus.version}]</version>
     </dependency>
-    <!-- opentracing for jaxrs -->
     <dependency>
       <groupId>cd.connect.common</groupId>
       <artifactId>connect-prometheus-jersey</artifactId>
