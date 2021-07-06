@@ -254,7 +254,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
       widget.bloc.updateStrategy();
       widget.bloc.fvBloc.mrClient.removeOverlay();
     } else {
-      layoutValidationFailures(validationCheck);
+      layoutValidationFailures(validationCheck, updatedStrategy);
     }
   }
 
@@ -290,13 +290,14 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
       widget.bloc.addStrategy(newStrategy);
       widget.bloc.fvBloc.mrClient.removeOverlay();
     } else {
-      layoutValidationFailures(validationCheck);
+      layoutValidationFailures(validationCheck, newStrategy);
     }
   }
 
   void layoutValidationFailures(
-      RolloutStrategyValidationResponse validationCheck) {
-    individualStrategyBloc!.updateStrategyViolations(validationCheck);
+      RolloutStrategyValidationResponse validationCheck,
+      RolloutStrategy strategy) {
+    individualStrategyBloc!.updateStrategyViolations(validationCheck, strategy);
 
     setState(() {
       if (validationCheck.violations.contains(
