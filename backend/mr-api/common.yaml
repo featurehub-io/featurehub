@@ -341,7 +341,7 @@ components:
         name:
           type: string
           minLength: 1
-          maxLength: 40
+          maxLength: 70
         portfolioId:
           type: string
           format: uuid

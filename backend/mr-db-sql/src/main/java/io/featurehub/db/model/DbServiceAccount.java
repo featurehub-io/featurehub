@@ -23,7 +23,7 @@ import java.util.UUID;
 public class DbServiceAccount {
   @Id
   private UUID id;
-  @Column(length = 40)
+  @Column(length = 100)
   private String name;
   @Column(length = 400)
   private String description;
