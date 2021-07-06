@@ -72,16 +72,6 @@
       <artifactId>querybean-generator</artifactId>
       <version>${ebean.version}</version>
     </dependency>
-    <dependency>
-      <groupId>io.opentracing.contrib</groupId>
-      <artifactId>opentracing-p6spy</artifactId>
-      <version>0.2.2</version>
-    </dependency>
-    <dependency>
-      <groupId>p6spy</groupId>
-      <artifactId>p6spy</artifactId>
-      <version>3.8.0</version>
-    </dependency>
   </dependencies>
 
   <build>
