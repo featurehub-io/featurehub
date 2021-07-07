@@ -12,7 +12,7 @@ echo Flutter version is $VERSION dart version is $DVERSION
 cd admin-frontend/app_mr_layer
 flutter channel
 flutter pub get
-cd ../app_singleapp
+cd ../open_admin_app
 flutter config --enable-web
 flutter pub get
 echo FLUTTER: building deploy_main

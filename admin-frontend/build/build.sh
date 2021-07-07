@@ -11,7 +11,7 @@ echo FLUTTER: Cleaning up after last build
 
 cd app_mr_layer && flutter pub get
 echo "Flutter App will be version: ${BUILD_VERSION}"
-cd ../app_singleapp && echo "final appVersion = '${BUILD_VERSION}';" > lib/version.dart && flutter clean && flutter pub get
+cd ../open_admin_app && echo "final appVersion = '${BUILD_VERSION}';" > lib/version.dart && flutter clean && flutter pub get
 
 echo FLUTTER: building deploy_main
 #flutter analyze
