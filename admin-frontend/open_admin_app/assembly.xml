@@ -7,7 +7,7 @@
 
   <fileSets>
     <fileSet>
-      <directory>target/open_admin_app/build/web</directory>
+      <directory>open_admin_app/build/web</directory>
       <outputDirectory>/</outputDirectory>
     </fileSet>
   </fileSets>
