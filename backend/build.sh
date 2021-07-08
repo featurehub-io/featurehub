@@ -1,4 +1,5 @@
 #!/bin/sh
+# make sure you have built all artifacts first
 if [ $# -eq 0 ]
   then
     echo "No arguments supplied"
