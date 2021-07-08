@@ -98,6 +98,10 @@
       <version>[1.2, 2)</version>
       <exclusions>
         <exclusion>
+          <groupId>cd.connect.common</groupId>
+          <artifactId>connect-java-logging</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>cd.connect.composites.java</groupId>
           <artifactId>connect-composite-jackson</artifactId>
         </exclusion>
@@ -110,6 +114,12 @@
           <artifactId>connect-composite-groovy</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>cd.connect.common</groupId>
+      <artifactId>connect-java-logging</artifactId>
+      <version>2.2</version>
     </dependency>
 
     <dependency>
