@@ -2,7 +2,7 @@ package io.featurehub.health
 
 import cd.connect.lifecycle.ApplicationLifecycleManager
 import cd.connect.lifecycle.LifecycleStatus
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 
 @Singleton
 class ApplicationHealthSource : HealthSource {

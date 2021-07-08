@@ -12,8 +12,8 @@ import io.featurehub.db.model.query.QDbOrganization;
 import io.featurehub.mr.model.Organization;
 import io.featurehub.publish.ChannelConstants;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.util.List;
 
 @Singleton

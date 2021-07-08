@@ -2,8 +2,8 @@ package io.featurehub.publish
 
 import io.featurehub.health.HealthSource
 import io.nats.client.Connection
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class NATSHealthSource

@@ -7,10 +7,10 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-import javax.inject.Inject
-import javax.ws.rs.client.Client
-import javax.ws.rs.core.Response
-import javax.ws.rs.core.GenericType
+import jakarta.inject.Inject
+import jakarta.ws.rs.client.Client
+import jakarta.ws.rs.core.Response
+import jakarta.ws.rs.core.GenericType
 
 class GithubProvider @Inject constructor(val client: Client) : OAuth2Provider {
   private val log: Logger = LoggerFactory.getLogger(GithubProvider::class.java)

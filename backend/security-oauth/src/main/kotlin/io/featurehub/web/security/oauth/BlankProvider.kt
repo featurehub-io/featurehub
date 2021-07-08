@@ -1,6 +1,6 @@
 package io.featurehub.web.security.oauth
 
-import javax.ws.rs.NotFoundException
+import jakarta.ws.rs.NotFoundException
 
 // ensures we have at least one of these as injection requires it
 class BlankProvider : AuthProvider {

@@ -11,7 +11,7 @@ import java.util.*
 import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import javax.inject.Inject
+import jakarta.inject.Inject
 
 /**
  * the StatEventHandler is responsible for collecting, against an API key, a list of events, ideally at most one of

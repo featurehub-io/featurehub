@@ -7,7 +7,7 @@ import io.featurehub.publish.NATSHealthSource;
 import io.featurehub.publish.NATSSource;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 public class MRPublishModule  extends AbstractBinder {
   @ConfigKey("nats.urls")

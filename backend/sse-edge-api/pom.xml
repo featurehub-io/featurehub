@@ -46,7 +46,7 @@
     <dependency>
       <groupId>io.featurehub.composites</groupId>
       <artifactId>composite-jersey</artifactId>
-      <version>1.2</version>
+      <version>1.3-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
@@ -95,8 +95,8 @@
         <dependencies>
           <dependency>
             <groupId>cd.connect.openapi</groupId>
-            <artifactId>connect-openapi-jersey2</artifactId>
-            <version>6.4</version>
+            <artifactId>connect-openapi-jersey3</artifactId>
+            <version>7.1-SNAPSHOT</version>
           </dependency>
         </dependencies>
         <executions>
@@ -111,7 +111,7 @@
               <apiPackage>io.featurehub.sse.api</apiPackage>
               <modelPackage>io.featurehub.sse.model</modelPackage>
               <inputSpec>${project.basedir}/final.yaml</inputSpec>
-              <generatorName>jersey2-api</generatorName>
+              <generatorName>jersey3-api</generatorName>
 
               <additionalProperties>
                 <additionalProperty>server</additionalProperty>

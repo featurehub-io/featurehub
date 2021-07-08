@@ -1,4 +1,4 @@
-#!/bin/sh
+cd .#!/bin/sh
 cd /opt/app
 tar xf *.tar
 echo flutter home is $FLUTTER

@@ -53,8 +53,8 @@
         <dependencies>
           <dependency>
             <groupId>cd.connect.openapi</groupId>
-            <artifactId>connect-openapi-jersey2</artifactId>
-            <version>6.5</version>
+            <artifactId>connect-openapi-jersey3</artifactId>
+            <version>7.1-SNAPSHOT</version>
           </dependency>
         </dependencies>
         <executions>
@@ -69,7 +69,7 @@
               <modelPackage>io.featurehub.mr.messaging</modelPackage>
               <inputSpec>${project.basedir}/mr-nats.yaml</inputSpec>
               <generateApis>false</generateApis>
-              <generatorName>jersey2-api</generatorName>
+              <generatorName>jersey3-api</generatorName>
               <enablePostProcessFile>true</enablePostProcessFile>
             </configuration>
           </execution>

@@ -10,7 +10,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.lang.Exception
 import java.util.*
-import javax.inject.Inject
+import jakarta.inject.Inject
 
 /**
  * This combines a timer and a stats squasher that then asks a StatsPublisher to publish the bundles in

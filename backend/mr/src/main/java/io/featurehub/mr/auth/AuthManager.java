@@ -12,9 +12,9 @@ import io.featurehub.mr.model.PersonId;
 import io.featurehub.mr.model.Portfolio;
 import io.featurehub.mr.model.ServiceAccount;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.ws.rs.core.SecurityContext;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+import jakarta.ws.rs.core.SecurityContext;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;

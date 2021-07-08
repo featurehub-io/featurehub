@@ -1,9 +1,9 @@
 package io.featurehub.health
 
 import org.glassfish.jersey.internal.inject.AbstractBinder
-import javax.inject.Singleton
-import javax.ws.rs.core.Feature
-import javax.ws.rs.core.FeatureContext
+import jakarta.inject.Singleton
+import jakarta.ws.rs.core.Feature
+import jakarta.ws.rs.core.FeatureContext
 
 class HealthFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {

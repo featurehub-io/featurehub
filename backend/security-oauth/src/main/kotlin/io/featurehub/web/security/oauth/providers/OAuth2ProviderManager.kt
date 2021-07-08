@@ -5,7 +5,7 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.*
 import java.util.function.Consumer
-import javax.inject.Inject
+import jakarta.inject.Inject
 
 class OAuth2ProviderManager @Inject constructor(oAuth2Providers: IterableProvider<OAuth2Provider>) :
     OAuth2ProviderDiscovery {

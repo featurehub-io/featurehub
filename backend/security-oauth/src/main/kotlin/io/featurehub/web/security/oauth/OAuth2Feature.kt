@@ -9,11 +9,11 @@ import io.featurehub.web.security.oauth.providers.GithubProvider.Companion.PROVI
 import org.glassfish.jersey.internal.inject.AbstractBinder
 import org.slf4j.LoggerFactory
 import java.util.function.Consumer
-import javax.inject.Singleton
-import javax.ws.rs.client.Client
-import javax.ws.rs.client.ClientBuilder
-import javax.ws.rs.core.Feature
-import javax.ws.rs.core.FeatureContext
+import jakarta.inject.Singleton
+import jakarta.ws.rs.client.Client
+import jakarta.ws.rs.client.ClientBuilder
+import jakarta.ws.rs.core.Feature
+import jakarta.ws.rs.core.FeatureContext
 
 class OAuth2Feature : Feature {
     // a comma separated list of valid providers

@@ -10,9 +10,9 @@ import io.featurehub.mr.model.PersonId
 import io.featurehub.mr.resources.AuthResource
 import spock.lang.Specification
 
-import javax.ws.rs.ForbiddenException
-import javax.ws.rs.NotFoundException
-import javax.ws.rs.core.SecurityContext
+import jakarta.ws.rs.ForbiddenException
+import jakarta.ws.rs.NotFoundException
+import jakarta.ws.rs.core.SecurityContext
 
 class AuthenticationResourceSpec extends Specification {
   PersonApi personApi

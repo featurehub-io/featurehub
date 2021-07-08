@@ -5,8 +5,8 @@ import cd.connect.jersey.prometheus.PrometheusDynamicFeature
 import cd.connect.openapi.support.ReturnStatusContainerResponseFilter
 import io.featurehub.jersey.config.CommonConfiguration
 import org.glassfish.jersey.server.ServerProperties
-import javax.ws.rs.core.Feature
-import javax.ws.rs.core.FeatureContext
+import jakarta.ws.rs.core.Feature
+import jakarta.ws.rs.core.FeatureContext
 
 class CommonFeatureHubFeatures : Feature {
   override fun configure(context: FeatureContext): Boolean {

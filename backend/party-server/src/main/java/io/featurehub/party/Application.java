@@ -22,7 +22,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 public class Application {
   private static final Logger log = LoggerFactory.getLogger(io.featurehub.Application.class);
