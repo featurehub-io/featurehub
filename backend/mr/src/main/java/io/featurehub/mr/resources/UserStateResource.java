@@ -6,10 +6,10 @@ import io.featurehub.mr.auth.AuthManagerService;
 import io.featurehub.mr.model.HiddenEnvironments;
 import io.featurehub.mr.utils.ApplicationUtils;
 
-import javax.inject.Inject;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.SecurityContext;
 import java.util.UUID;
 
 public class UserStateResource implements UserStateServiceDelegate {

@@ -36,7 +36,7 @@
   <modules>
     <module>backend/mr-api</module>
     <module>admin-frontend/app_mr_layer</module>
-    <module>admin-frontend/app_singleapp</module>
+    <module>admin-frontend/open_admin_app</module>
   </modules>
 
   <properties>

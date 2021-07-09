@@ -3,7 +3,7 @@ package io.featurehub.mr.utils;
 import cd.connect.app.config.ConfigKey;
 import io.featurehub.mr.model.Portfolio;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 @Singleton
 public class PortfolioUtils {

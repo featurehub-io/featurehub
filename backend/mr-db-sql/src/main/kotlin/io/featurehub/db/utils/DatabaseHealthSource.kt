@@ -2,8 +2,8 @@ package io.featurehub.db.utils
 
 import io.ebean.Database
 import io.featurehub.health.HealthSource
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class DatabaseHealthSource

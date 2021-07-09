@@ -6,7 +6,7 @@ import io.featurehub.edge.client.ClientConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;

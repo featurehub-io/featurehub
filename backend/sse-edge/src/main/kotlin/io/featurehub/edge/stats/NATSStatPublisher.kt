@@ -9,8 +9,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.OffsetDateTime
 import java.util.concurrent.ConcurrentHashMap
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class NATSStatPublisher @Inject constructor(private val nats : NATSSource) : StatPublisher {

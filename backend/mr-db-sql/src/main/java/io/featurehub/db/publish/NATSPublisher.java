@@ -15,8 +15,8 @@ import io.nats.client.Nats;
 import io.nats.client.Options;
 import org.jetbrains.annotations.NotNull;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;

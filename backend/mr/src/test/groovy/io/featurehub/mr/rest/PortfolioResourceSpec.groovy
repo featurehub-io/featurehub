@@ -20,11 +20,11 @@ import io.featurehub.mr.resources.PortfolioResource
 import io.featurehub.mr.utils.PortfolioUtils
 import spock.lang.Specification
 
-import javax.ws.rs.ForbiddenException
-import javax.ws.rs.NotFoundException
-import javax.ws.rs.WebApplicationException
-import javax.ws.rs.core.Response
-import javax.ws.rs.core.SecurityContext
+import jakarta.ws.rs.ForbiddenException
+import jakarta.ws.rs.NotFoundException
+import jakarta.ws.rs.WebApplicationException
+import jakarta.ws.rs.core.Response
+import jakarta.ws.rs.core.SecurityContext
 
 class PortfolioResourceSpec extends Specification {
   AuthManagerService authManager;

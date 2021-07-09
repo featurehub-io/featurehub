@@ -34,8 +34,8 @@ import io.featurehub.mr.model.RoleType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
-import javax.ws.rs.BadRequestException;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.BadRequestException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;

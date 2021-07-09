@@ -7,8 +7,8 @@ import io.featurehub.db.model.DbPerson;
 import io.featurehub.db.model.query.QDbPerson;
 import io.featurehub.mr.model.SetupSiteAdmin;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 @Singleton
 public class SetupSqlApi implements SetupApi {

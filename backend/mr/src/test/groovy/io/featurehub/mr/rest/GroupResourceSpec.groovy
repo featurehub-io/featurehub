@@ -13,10 +13,10 @@ import io.featurehub.mr.model.SortOrder
 import io.featurehub.mr.resources.GroupResource
 import spock.lang.Specification
 
-import javax.ws.rs.ForbiddenException
-import javax.ws.rs.NotAuthorizedException
-import javax.ws.rs.NotFoundException
-import javax.ws.rs.core.SecurityContext
+import jakarta.ws.rs.ForbiddenException
+import jakarta.ws.rs.NotAuthorizedException
+import jakarta.ws.rs.NotFoundException
+import jakarta.ws.rs.core.SecurityContext
 
 
 class GroupResourceSpec extends Specification {

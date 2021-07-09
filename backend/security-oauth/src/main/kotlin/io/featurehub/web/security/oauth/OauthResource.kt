@@ -5,11 +5,11 @@ import cd.connect.app.config.DeclaredConfigResolver
 import io.featurehub.web.security.oauth.providers.OAuth2ProviderDiscovery
 import org.slf4j.LoggerFactory
 import java.net.URI
-import javax.inject.Inject
-import javax.ws.rs.GET
-import javax.ws.rs.Path
-import javax.ws.rs.QueryParam
-import javax.ws.rs.core.Response
+import jakarta.inject.Inject
+import jakarta.ws.rs.GET
+import jakarta.ws.rs.Path
+import jakarta.ws.rs.QueryParam
+import jakarta.ws.rs.core.Response
 import kotlin.String
 
 /*

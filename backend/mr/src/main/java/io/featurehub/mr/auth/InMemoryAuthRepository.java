@@ -3,8 +3,8 @@ package io.featurehub.mr.auth;
 import io.featurehub.mr.model.Person;
 import org.apache.commons.lang3.RandomStringUtils;
 
-import javax.inject.Singleton;
-import javax.ws.rs.core.SecurityContext;
+import jakarta.inject.Singleton;
+import jakarta.ws.rs.core.SecurityContext;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

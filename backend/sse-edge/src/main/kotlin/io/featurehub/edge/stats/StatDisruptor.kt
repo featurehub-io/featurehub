@@ -12,7 +12,7 @@ import io.featurehub.sse.stats.model.EdgeHitResultType
 import io.featurehub.sse.stats.model.EdgeHitSourceType
 import java.lang.RuntimeException
 import java.util.concurrent.ThreadFactory
-import javax.inject.Inject
+import jakarta.inject.Inject
 
 open class StatDisruptor @Inject constructor(eventHandler: EventHandler<Stat>) : StatRecorder {
   @ConfigKey("edge.stats.disruptor-buffer-size")

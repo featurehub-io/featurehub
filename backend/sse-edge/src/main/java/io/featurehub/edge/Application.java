@@ -15,7 +15,7 @@ import io.featurehub.publish.NATSHealthSource;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 import java.net.URI;
 
 public class Application {

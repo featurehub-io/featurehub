@@ -73,11 +73,11 @@
     <module>backend/party-server</module>
     <module>backend/dacha</module>
     <module>backend/dacha-api</module>
-    <module>sdks/java/client-java-core</module>
-    <module>sdks/java/client-java-android</module>
-    <module>sdks/java/client-java-jersey</module>
-    <module>sdks/java/client-java-opentelemetry</module>
-    <module>sdks/java/client-java-loadtest</module>
+<!--    <module>sdks/java/client-java-core</module>-->
+<!--    <module>sdks/java/client-java-android</module>-->
+<!--    <module>sdks/java/client-java-jersey</module>-->
+<!--    <module>sdks/java/client-java-opentelemetry</module>-->
+<!--    <module>sdks/java/client-java-loadtest</module>-->
     <module>sdks/dart/client-dart-api</module>
     <module>sdks/dart/client-dart-sdk</module>
     <module>admin-frontend/app_mr_layer</module>

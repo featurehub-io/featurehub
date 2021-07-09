@@ -41,7 +41,7 @@ import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.spi.Container;
 import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
 
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
 
 public class ApiToSqlApiBinder extends AbstractBinder {
   @Override

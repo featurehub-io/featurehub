@@ -17,14 +17,14 @@ import io.featurehub.web.security.oauth.OAuthAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.ws.rs.core.NewCookie;
-import javax.ws.rs.core.Response;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+import jakarta.ws.rs.core.NewCookie;
+import jakarta.ws.rs.core.Response;
 import java.net.URI;
 
-import static javax.ws.rs.core.Cookie.DEFAULT_VERSION;
-import static javax.ws.rs.core.NewCookie.DEFAULT_MAX_AGE;
+import static jakarta.ws.rs.core.Cookie.DEFAULT_VERSION;
+import static jakarta.ws.rs.core.NewCookie.DEFAULT_MAX_AGE;
 
 @Singleton
 public class OAuth2MRAdapter implements OAuthAdapter {

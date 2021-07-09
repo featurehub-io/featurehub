@@ -7,8 +7,8 @@
 
   <fileSets>
     <fileSet>
-      <directory>app_singleapp</directory>
-      <outputDirectory>app_singleapp</outputDirectory>
+      <directory>open_admin_app</directory>
+      <outputDirectory>open_admin_app</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>app_mr_layer</directory>

@@ -1,6 +1,6 @@
 package io.featurehub.web.security.oauth
 
-import javax.ws.rs.core.Response
+import jakarta.ws.rs.core.Response
 
 // this is a call back mechanism that lets the core system
 interface OAuthAdapter {

@@ -20,8 +20,8 @@ import io.featurehub.mr.utils.ApplicationUtils
 import io.featurehub.mr.utils.PortfolioUtils
 import spock.lang.Specification
 
-import javax.ws.rs.ForbiddenException
-import javax.ws.rs.core.SecurityContext
+import jakarta.ws.rs.ForbiddenException
+import jakarta.ws.rs.core.SecurityContext
 
 class ApplicationResourceSpec extends Specification {
   AuthManagerService authManager;

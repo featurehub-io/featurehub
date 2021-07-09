@@ -5,8 +5,8 @@ import io.featurehub.db.api.DBLoginSession;
 import io.featurehub.mr.model.Person;
 import org.apache.commons.lang3.RandomStringUtils;
 
-import javax.inject.Inject;
-import javax.ws.rs.core.SecurityContext;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.SecurityContext;
 import java.time.LocalDateTime;
 
 public class DatabaseAuthRepository implements AuthenticationRepository {
