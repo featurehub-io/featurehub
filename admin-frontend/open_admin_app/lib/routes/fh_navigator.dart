@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/router.dart';
 import 'package:open_admin_app/config/route_handlers.dart';
@@ -52,8 +51,6 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
   bool isLoggedIn = false;
   bool? isInitialised;
   FHRoutePath? path;
-  late StreamSubscription<Person> personStateListener;
-  late StreamSubscription<bool?> siteInitializedListener;
 
   @override
   FHRoutePath get currentConfiguration {
@@ -108,13 +105,21 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
 
   @override
   FHRouteDelegate(this.bloc) : navigatorKey = GlobalKey<NavigatorState>() {
-    personStateListener = bloc.personState.personStream.listen((p) {
+    // notifyListeners simply causes the build() method above to be called.
+
+    // TODO: note these listeners have NO cleanup. If a user changes them we will start getting two events
+
+    // listen for changes in  the person and make sure we alter our internal state to match
+    // and then force a rebuild. We are just checking if they went from logged in to logged out
+    bloc.personState.personStream.listen((p) {
       if (bloc.isLoggedIn != this.isLoggedIn) {
         this.isLoggedIn = bloc.isLoggedIn;
         notifyListeners();
       }
     });
 
+    // listen for an internal route change. This is someone calling ManagementRepositoryClientBloc.route.swapRoutes
+    // which currently exists all over the code base.
     bloc.routeChangedStream.listen((r) {
       if (r != null) {
         if (isLoggedIn && path?.routeName != r.route) {
@@ -126,7 +131,7 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
       }
     });
 
-    siteInitializedListener = bloc.siteInitialisedSource.listen((s) {
+    bloc.siteInitialisedSource.listen((s) {
       if (s != isInitialised) {
         isInitialised = s;
         notifyListeners();
