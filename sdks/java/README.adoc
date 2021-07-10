@@ -1,0 +1,4 @@
+= client-java
+
+The Java libraries have moved to their own repository https://github.com/featurehub-io/featurehub-java-sdk[here].
+
