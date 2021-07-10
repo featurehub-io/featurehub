@@ -2,6 +2,7 @@ package io.featurehub.client;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 /**
@@ -22,11 +23,14 @@ class ClientEvalFeatureContext extends BaseClientContext {
   // this doesn't matter for client eval
   @Override
   public Future<ClientContext> build() {
-    final CompletableFuture<ClientContext> build = new CompletableFuture<>();
+    return CompletableFuture.supplyAsync(() -> {
+      try {
+        edgeService.contextChange(null).get();
+      } catch (InterruptedException|ExecutionException ignored) {
+      }
 
-    build.complete(this);
-
-    return build;
+      return this;
+    });
   }
 
   @Override
@@ -46,7 +50,8 @@ class ClientEvalFeatureContext extends BaseClientContext {
   public void close() {
     if (weOwnRepositoryAndEdge) {
       repository.close();
-      edgeService.close();
     }
+
+    edgeService.close();
   }
 }

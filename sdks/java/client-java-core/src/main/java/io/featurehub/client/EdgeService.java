@@ -9,7 +9,7 @@ public interface EdgeService {
    * @param newHeader
    * @return
    */
-  Future<?> contextChange(String newHeader);
+  Future<Readyness> contextChange(String newHeader);
 
   /**
    * are we doing client side evaluation?

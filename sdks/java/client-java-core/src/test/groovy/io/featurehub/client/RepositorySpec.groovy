@@ -21,7 +21,8 @@ class RepositorySpec extends Specification {
   def setup() {
     exec = [
       execute: { Runnable cmd -> cmd.run() },
-      shutdownNow: { -> }
+      shutdownNow: { -> },
+      isShutdown: { false }
     ] as ExecutorService
 
     repo = new ClientFeatureRepository(exec)
@@ -154,7 +155,8 @@ class RepositorySpec extends Specification {
       List<Runnable> commands = []
       ExecutorService mockExecutor = [
         execute: { Runnable cmd -> commands.add(cmd) },
-        shutdownNow: { -> }
+        shutdownNow: { -> },
+        isShutdown: { false }
       ] as ExecutorService
       def newRepo = new ClientFeatureRepository(mockExecutor)
       newRepo.notify(features)

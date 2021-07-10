@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.featurehub.sdk</groupId>
-  <artifactId>java-client-android</artifactId>
-  <version>1.3-SNAPSHOT</version>
-  <name>java-client-android</name>
+  <artifactId>java-client-sse</artifactId>
+  <version>1.1-SNAPSHOT</version>
+  <name>java-client-sse</name>
 
   <description>
-    The Android (OKHttp) client for Java.
+    The OKHttp3 SSE client for Java.
   </description>
 
   <url>https://featurehub.io</url>
@@ -57,6 +57,12 @@
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>okhttp</artifactId>
+      <version>4.9.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>okhttp-sse</artifactId>
       <version>4.9.1</version>
     </dependency>
 

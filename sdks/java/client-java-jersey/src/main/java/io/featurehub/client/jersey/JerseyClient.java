@@ -76,7 +76,7 @@ public class JerseyClient implements EdgeService {
     }
   }
 
-  protected Executor makeExecutor() {
+  protected ExecutorService makeExecutor() {
     // in case they keep changing the context, it will ask the server and cancel and ask and cancel
     // if they are in client mode
     return Executors.newFixedThreadPool(4);
@@ -221,6 +221,10 @@ public class JerseyClient implements EdgeService {
       request.active = false;
     }
 
+    if (eventInput != null) {
+      eventInput.close();
+    }
+
     if (executor instanceof ExecutorService) {
       ((ExecutorService)executor).shutdownNow();
     }
@@ -249,7 +253,7 @@ public class JerseyClient implements EdgeService {
   }
 
   @Override
-  public Future<?> contextChange(String newHeader) {
+  public Future<Readyness> contextChange(String newHeader) {
     final CompletableFuture<Readyness> change = new CompletableFuture<>();
 
     if (fhConfig.isServerEvaluation() && (!newHeader.equals(xFeaturehubHeader) || !initialized)) {
