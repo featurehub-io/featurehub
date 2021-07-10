@@ -1,8 +1,8 @@
-import 'package:open_admin_app/api/client_api.dart';
-import 'package:open_admin_app/api/router.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
+import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/api/router.dart';
 
 import 'route_handlers.dart';
 
@@ -29,6 +29,8 @@ class Routes {
 
     // main app routes
     router.define('/', handler: handleRouteChangeRequest(routeCreator.root));
+    router.define('/loading',
+        handler: handleRouteChangeRequest(routeCreator.root));
     router.define('', handler: handleRouteChangeRequest(routeCreator.root));
     router.define('/applications',
         handler: handleRouteChangeRequest(routeCreator.apps));

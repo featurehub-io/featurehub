@@ -1,6 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/identity_providers.dart';
 import 'package:open_admin_app/api/router.dart';
 import 'package:open_admin_app/api/web_interface/url_handler.dart';
@@ -12,10 +16,6 @@ import 'package:open_admin_app/common/person_state.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/config/routes.dart';
 import 'package:open_admin_app/utils/utils.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:logging/logging.dart';
-import 'package:mrapi/api.dart';
 import 'package:openapi_dart_common/openapi.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -31,12 +31,6 @@ import 'package:rxdart/rxdart.dart';
 
 // this was an enum, but it is too restrictive
 typedef InitializedCheckState = String;
-
-final preRouterStateUninitialized = 'uninitialized';
-final preRouterStateInitialized = 'initialized';
-final preRouterStateUnknown = 'unknown';
-final preRouterStateRequiresPasswordReset = 'requires_password_reset';
-final preRouterStateZombie = 'zombie';
 
 // if true then if we find we are on localhost, we redirect to 8903 for api calls
 bool overrideOrigin = true;
@@ -166,13 +160,8 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   bool get isLoggedIn => personState.isLoggedIn;
 
-  Stream<InitializedCheckState> get initializedState =>
-      _initializedSource.stream;
-  final _initializedSource = BehaviorSubject<InitializedCheckState>();
-
-  void replaceSuperState(InitializedCheckState ics) {
-    _initializedSource.add(ics);
-  }
+  Stream<bool?> get siteInitialisedSource => _siteInitialisedSource.stream;
+  final _siteInitialisedSource = BehaviorSubject<bool?>();
 
   Stream<FHError?> get errorStream => _errorSource.stream;
   final _errorSource = PublishSubject<FHError?>();
@@ -283,7 +272,7 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   Future isInitialized() async {
     if (personState.isLoggedIn) {
-      _initializedSource.add(preRouterStateZombie);
+      _siteInitialisedSource.add(true);
       return;
     }
 
@@ -295,14 +284,16 @@ class ManagementRepositoryClientBloc implements Bloc {
       final bearerToken = getBearerCookie();
       organization = setupResponse.organization;
       identityProviders.identityProviders = setupResponse.providers;
+
+      // yes its initialised, we may not have logged in yet
+      _siteInitialisedSource.add(true);
+
       if (bearerToken != null) {
         setBearerToken(bearerToken);
         requestOwnDetails();
       } else if (setupResponse.redirectUrl != null) {
         // they can only authenticate via one provider, so lets use them
         webInterface.authenticateViaProvider(setupResponse.redirectUrl!);
-      } else {
-        _initializedSource.add(preRouterStateInitialized);
       }
     }).catchError((e, s) {
       if (e is ApiException) {
@@ -311,7 +302,7 @@ class ManagementRepositoryClientBloc implements Bloc {
                   jsonDecode(e.message!), 'SetupMissingResponse')
               as SetupMissingResponse;
           identityProviders.identityProviders = smr.providers;
-          _initializedSource.add(preRouterStateUninitialized);
+          _siteInitialisedSource.add(false);
         } else {
           dialogError(e, s);
         }
@@ -338,18 +329,13 @@ class ManagementRepositoryClientBloc implements Bloc {
         .getPerson('self', includeAcls: true, includeGroups: true)
         .then((p) {
       setPerson(p);
-      if (_initializedSource.value != preRouterStateZombie) {
-        _initializedSource.add(preRouterStateZombie);
-      }
     }).catchError((_) {
       setBearerToken(null);
-      _initializedSource.add(preRouterStateInitialized);
     });
   }
 
   Future logout() async {
     await authServiceApi.logout();
-    _initializedSource.add(preRouterStateInitialized);
     setBearerToken(null);
     personState.logout();
     menuOpened.add(false);
@@ -359,7 +345,6 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   void setOrg(Organization o) {
     organization = o;
-    _initializedSource.add(preRouterStateZombie);
   }
 
   void setBearerToken(String? token) {
@@ -477,12 +462,6 @@ class ManagementRepositoryClientBloc implements Bloc {
     setLastUsername(person.email!);
 
     setPerson(person);
-
-    if (person.passwordRequiresReset == true) {
-      _initializedSource.add(preRouterStateRequiresPasswordReset);
-    } else {
-      _initializedSource.add(preRouterStateZombie);
-    }
   }
 
   Future<void> replaceTempPassword(String password) {
@@ -494,7 +473,6 @@ class ManagementRepositoryClientBloc implements Bloc {
             ))
         .then((tp) {
       setBearerToken(tp.accessToken);
-      _initializedSource.add(preRouterStateZombie);
     });
   }
 
@@ -533,7 +511,6 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   @override
   void dispose() {
-    _initializedSource.close();
     _errorSource.close();
     _overlaySource.close();
     _snackbarSource.close();
@@ -587,6 +564,6 @@ class ManagementRepositoryClientBloc implements Bloc {
   }
 
   void resetInitialized() {
-    _initializedSource.add(preRouterStateInitialized);
+    // _initializedSource.add(preRouterStateInitialized);
   }
 }

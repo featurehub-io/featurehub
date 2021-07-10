@@ -1,10 +1,12 @@
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/router.dart';
 import 'package:open_admin_app/routes/apps_route.dart';
 import 'package:open_admin_app/routes/create_user_route.dart';
 import 'package:open_admin_app/routes/edit_user_route.dart';
 import 'package:open_admin_app/routes/features_overview_route.dart';
-import 'package:open_admin_app/routes/landing_route.dart';
+import 'package:open_admin_app/routes/home_route.dart';
 import 'package:open_admin_app/routes/manage_app_route.dart';
 import 'package:open_admin_app/routes/manage_group_route.dart';
 import 'package:open_admin_app/routes/manage_portfolios_route.dart';
@@ -25,8 +27,6 @@ import 'package:open_admin_app/widgets/user/create/create_user_bloc.dart';
 import 'package:open_admin_app/widgets/user/edit/edit_user_bloc.dart';
 import 'package:open_admin_app/widgets/user/list/list_users_bloc.dart';
 import 'package:open_admin_app/widgets/user/register/register_url_bloc.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
 
 Handler handleRouteChangeRequest(builder) {
   return Handler(
@@ -38,7 +38,8 @@ Handler handleRouteChangeRequest(builder) {
 
 class RouteCreator {
   Widget root(mrBloc, {params}) {
-    return LandingRoute(title: 'FeatureHub');
+    return HomeRoute(title: 'Featurehub');
+    // return LandingRoute(title: 'FeatureHub');
   }
 
   Widget portfolios(mrBloc, {params}) {

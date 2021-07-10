@@ -6,6 +6,6 @@ class HomeRoute extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(child: Text('My Page!'));
+    return Center(child: Text(title));
   }
 }

@@ -1,3 +1,8 @@
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter_icons/flutter_icons.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/widgets/apps/app_delete_dialog_widget.dart';
@@ -6,11 +11,6 @@ import 'package:open_admin_app/widgets/apps/apps_bloc.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_text_button.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter_icons/flutter_icons.dart';
-import 'package:mrapi/api.dart';
 
 class AppsRoute extends StatefulWidget {
   @override
@@ -122,6 +122,8 @@ class _ApplicationCard extends StatelessWidget {
             bloc.mrClient
                 .setCurrentAid(application.id); //is it the right function?
 
+            // Router.of(context).
+            // Navigator.of(context).pushNamed('/feature-status');
             ManagementRepositoryClientBloc.router.navigateTo(
               context,
               '/feature-status',
