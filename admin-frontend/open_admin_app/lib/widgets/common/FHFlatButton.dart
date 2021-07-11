@@ -19,7 +19,7 @@ class FHFlatButton extends StatelessWidget {
       style:
           TextButton.styleFrom(backgroundColor: Theme.of(context).buttonColor),
       child: Padding(
-        padding: const EdgeInsets.only(top: 8.0, bottom: 8.0, left: 12.0, right: 16.0),
+        padding: const EdgeInsets.only(top: 8.0, bottom: 8.0, left: 12.0, right: 12.0),
         child: Text(title, style: TextStyle(color: Colors.white)),
       ),
     );

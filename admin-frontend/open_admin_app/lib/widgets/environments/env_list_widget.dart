@@ -182,18 +182,23 @@ class _EnvWidget extends StatelessWidget {
 }
 
 class _ProductionEnvironmentIndicatorWidget extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
+    final bs = BorderSide(color: Colors.red);
     return Tooltip(
       message: 'Production environment',
       child: Container(
         width: 24.0,
         height: 24.0,
-        decoration: BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+        decoration: BoxDecoration(color: Colors.transparent, shape: BoxShape.circle, border:Border(bottom: bs, left: bs, right: bs, top: bs)),
         child: Center(
-            child: Text('P',
-                style: TextStyle(
-                    color: Theme.of(context).cardColor, fontSize: 18.0))),
+          child: Padding(
+            padding: const EdgeInsets.only(left: 2.0),
+              child: Text('P',
+                  style: TextStyle(
+                      color: Colors.red, fontSize: 16.0))),
+        ),
       ),
     );
   }
