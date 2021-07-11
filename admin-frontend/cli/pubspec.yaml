@@ -3,16 +3,16 @@ description: A command line interface for Admin functions for FeatureHub
 
 environment:
   # You must be using Flutter >=1.5.0 or Dart >=2.3.0
-  sdk: '>=2.7.0 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
-  rxdart: 0.24.1
+  rxdart: 0.26.0
   mrapi:
     path: ../app_mr_layer
-  openapi_dart_common: ^3.1.0
-  collection: ^1.14.11
-  args: ^1.5.1
+  openapi_dart_common: ^4.1.0
+  collection: ^1.15.0
+  args: ^2.1.1
 dev_dependencies:
-  pedantic: ^1.0.0
-  test: ^1.6.5
+  lints: ^1.0.0
+  test: ^1.17.9
 

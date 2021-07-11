@@ -1,5 +1,3 @@
-
-
 import 'package:openapi_dart_common/openapi.dart';
 
 class Host {
@@ -8,9 +6,5 @@ class Host {
 
   ApiClient get apiClient => _apiClient;
 
-  Host({this.apiHost}) {
-    _apiClient = ApiClient(basePath: this.apiHost);
-  }
-
-
+  Host({required this.apiHost}) : _apiClient = ApiClient(basePath: apiHost);
 }
