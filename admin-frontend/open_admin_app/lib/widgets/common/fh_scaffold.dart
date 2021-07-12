@@ -1,13 +1,13 @@
 import 'dart:async';
 
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/common/fh_appbar.dart';
 import 'package:open_admin_app/widgets/stepper/stepper_container.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:mrapi/api.dart';
 
 import 'fh_drawer.dart';
 import 'fh_error.dart';
@@ -137,9 +137,7 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
                       Expanded(
                           child: SingleChildScrollView(
                               child: Column(
-                        children: <Widget>[
-                          child,
-                        ],
+                        children: <Widget>[child],
                       ))),
                     ]));
               }
@@ -152,9 +150,7 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
                       width: scrollAtWidth.toDouble(),
                       child: ListView(
                         shrinkWrap: true,
-                        children: <Widget>[
-                          child,
-                        ],
+                        children: <Widget>[child],
                       )));
             }),
           ),
@@ -167,9 +163,9 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
                       child: StepperContainer(
                     mrBloc: mrBloc,
                   ));
-                } else {
-                  return SizedBox.shrink();
                 }
+
+                return SizedBox.shrink();
               }),
         ],
       ),

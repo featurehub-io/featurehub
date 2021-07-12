@@ -21,16 +21,25 @@ class Routes {
           return Container();
         }));
 
+    router.define('/404',
+        handler: handleRouteChangeRequest(routeCreator.notFound),
+        permissionType: PermissionType.any);
     // Public routes (public URL's also need ot be added to array above)
     router.define('/forgot-password',
         handler: handleRouteChangeRequest(routeCreator.forgotPassword));
     router.define('/register-url',
         handler: handleRouteChangeRequest(routeCreator.registerUrl));
-
+    router.define('/setup',
+        handler: handleRouteChangeRequest(routeCreator.setup),
+        permissionType: PermissionType.setup);
+    router.define('/login',
+        handler: handleRouteChangeRequest(routeCreator.login),
+        permissionType: PermissionType.login);
     // main app routes
     router.define('/', handler: handleRouteChangeRequest(routeCreator.root));
     router.define('/loading',
-        handler: handleRouteChangeRequest(routeCreator.root));
+        handler: handleRouteChangeRequest(routeCreator.loading),
+        permissionType: PermissionType.any);
     router.define('', handler: handleRouteChangeRequest(routeCreator.root));
     router.define('/applications',
         handler: handleRouteChangeRequest(routeCreator.apps));

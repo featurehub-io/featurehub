@@ -1,17 +1,10 @@
 import 'dart:async';
 
-import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/router.dart';
-import 'package:open_admin_app/config/route_handlers.dart';
-import 'package:open_admin_app/routes/home_route.dart';
 import 'package:open_admin_app/widgets/common/fh_scaffold.dart';
-import 'package:open_admin_app/widgets/setup/setup_bloc.dart';
-import 'package:open_admin_app/widgets/setup/setup_widget.dart';
-
-import '../widget_creator.dart';
 
 final String routeSetupApp = 'setup';
 final String routeLoginApp = 'login';
@@ -29,7 +22,12 @@ class FHRoutePath {
       return RouteInformation(location: _routeName ?? '/loading');
     }
 
-    return RouteInformation(location: "404");
+    return RouteInformation(location: '404');
+  }
+
+  @override
+  String toString() {
+    return 'FHRoutePath{_routeName: $_routeName, params: $params}';
   }
 }
 
@@ -46,7 +44,7 @@ class RouteWrapperWidget extends StatelessWidget {
 
 class FHRouteDelegate extends RouterDelegate<FHRoutePath>
     with ChangeNotifier, PopNavigatorRouterDelegateMixin<FHRoutePath> {
-  final GlobalKey<NavigatorState> navigatorKey;
+  final GlobalKey<NavigatorState> _navigatorKey;
   final ManagementRepositoryClientBloc bloc;
   bool isLoggedIn = false;
   bool? isInitialised;
@@ -56,40 +54,29 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
   FHRoutePath get currentConfiguration {
     if (isInitialised == null) return FHRoutePath()..routeName = '/loading';
     if (isInitialised == false) return FHRoutePath()..routeName = '/setup';
-    if (isInitialised == true && isLoggedIn == false)
+    if (isInitialised == true && isLoggedIn == false) {
       return FHRoutePath()..routeName = '/login';
+    }
 
-    return path == null ? (FHRoutePath()..routeName = '/app') : path!;
+    return path == null ? (FHRoutePath()..routeName = '/applications') : path!;
   }
 
   @override
   Widget build(BuildContext context) {
-    if (isInitialised == true && isLoggedIn == true) {
-      print("path is ${path?.routeName}");
-    }
-
     return Navigator(
       key: navigatorKey,
       pages: [
         if (isInitialised == null)
-          MaterialPage(
-              key: ValueKey('loading'), child: HomeRoute(title: 'Loading')),
+          routeWrapperPage(context, '/loading', '/loading'),
         if (isInitialised == false)
-          MaterialPage(key: ValueKey('setup'), child: SetupWrapperWidget()),
+          routeWrapperPage(context, '/setup', '/404',
+              permissionType: PermissionType.setup),
         if (isInitialised == true && isLoggedIn == false)
-          MaterialPage(key: ValueKey('login'), child: SigninWrapperWidget()),
+          routeWrapperPage(context, '/login', '/404',
+              permissionType: PermissionType.login),
         if (isInitialised == true && isLoggedIn == true)
-          MaterialPage(
-              key: ValueKey('app'),
-              child: RouteWrapperWidget(
-                  child: path?.routeName == null
-                      ? routeCreator.apps(bloc)
-                      : ManagementRepositoryClientBloc
-                          .router.handlers[path!.routeName!]!.handler
-                          .handlerFunc(context, {}))),
-        // MaterialPage(
-        //   key: ValueKey('UnknownPage'),
-        //   child: HomeRoute(title: 'No idea what you were looking for')),
+          routeWrapperPage(context, path?.routeName ?? '/loading', '/404',
+              params: path?.params),
       ],
       onPopPage: (route, result) {
         if (!route.didPop(result)) {
@@ -103,8 +90,22 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
     );
   }
 
+  MaterialPage routeWrapperPage(
+      BuildContext context, String? route, String defaultUrl,
+      {PermissionType? permissionType, Map<String, List<String>>? params}) {
+    final handler =
+        ManagementRepositoryClientBloc.router.forNamedRoute(route, defaultUrl);
+
+    final child = handler.handler.handlerFunc(context, {});
+    final wrapWidget = scaffoldWrapPermissions.contains(handler.permissionType);
+
+    return MaterialPage(
+        key: ValueKey('app'),
+        child: wrapWidget ? RouteWrapperWidget(child: child) : child);
+  }
+
   @override
-  FHRouteDelegate(this.bloc) : navigatorKey = GlobalKey<NavigatorState>() {
+  FHRouteDelegate(this.bloc) : _navigatorKey = GlobalKey<NavigatorState>() {
     // notifyListeners simply causes the build() method above to be called.
 
     // TODO: note these listeners have NO cleanup. If a user changes them we will start getting two events
@@ -112,8 +113,8 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
     // listen for changes in  the person and make sure we alter our internal state to match
     // and then force a rebuild. We are just checking if they went from logged in to logged out
     bloc.personState.personStream.listen((p) {
-      if (bloc.isLoggedIn != this.isLoggedIn) {
-        this.isLoggedIn = bloc.isLoggedIn;
+      if (bloc.isLoggedIn != isLoggedIn) {
+        isLoggedIn = bloc.isLoggedIn;
         notifyListeners();
       }
     });
@@ -141,7 +142,7 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
 
   @override
   Future<void> setNewRoutePath(FHRoutePath configuration) async {
-    this.path = configuration;
+    path = configuration;
 
     if (isInitialised == true && isLoggedIn) {
       // this will trigger the listener but it will ignore it
@@ -149,6 +150,9 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
           params: configuration.params ?? {}));
     }
   }
+
+  @override
+  GlobalKey<NavigatorState>? get navigatorKey => _navigatorKey;
 }
 
 class FHRouteInformationParser extends RouteInformationParser<FHRoutePath> {
@@ -166,7 +170,7 @@ class FHRouteInformationParser extends RouteInformationParser<FHRoutePath> {
     }
 
     if (uri.pathSegments.length == 1) {
-      String path = uri.pathSegments[0];
+      final path = uri.pathSegments[0];
       return FHRoutePath()..routeName = path.startsWith('/') ? path : '/$path';
     }
 
@@ -176,49 +180,5 @@ class FHRouteInformationParser extends RouteInformationParser<FHRoutePath> {
   @override
   RouteInformation restoreRouteInformation(FHRoutePath path) {
     return path.make();
-  }
-}
-
-class SigninWrapperWidget extends StatelessWidget {
-  const SigninWrapperWidget({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final client = BlocProvider.of<ManagementRepositoryClientBloc>(context);
-
-    return FHScaffoldWidget(
-      bodyMainAxisAlignment: MainAxisAlignment.center,
-      body: Center(
-          child: MediaQuery.of(context).size.width > 400
-              ? Container(
-                  width: 500,
-                  child: widgetCreator.createSigninWidget(client),
-                )
-              : widgetCreator.createSigninWidget(client)),
-    );
-  }
-}
-
-class SetupWrapperWidget extends StatelessWidget {
-  const SetupWrapperWidget({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final client = BlocProvider.of<ManagementRepositoryClientBloc>(context);
-
-    return FHScaffoldWidget(
-      bodyMainAxisAlignment: MainAxisAlignment.center,
-      body: Center(
-          child: MediaQuery.of(context).size.width > 500
-              ? Container(
-                  width: 500,
-                  child: BlocProvider<SetupBloc>(
-                      creator: (_context, _bag) => SetupBloc(client),
-                      child: SetupPageWidget()),
-                )
-              : BlocProvider<SetupBloc>(
-                  creator: (_context, _bag) => SetupBloc(client),
-                  child: SetupPageWidget())),
-    );
   }
 }
