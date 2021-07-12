@@ -139,7 +139,7 @@ class ManagementRepositoryClientBloc implements Bloc {
   void _checkRouteForPermission(Portfolio p) {
     if (_routerSource.hasValue) {
       if (!router.hasRoutePermissions(_routerSource.value!, userIsSuperAdmin,
-          personState.userIsPortfolioAdmin(p.id!, person.groups))) {
+          personState.userIsPortfolioAdmin(p.id!, person.groups), isLoggedIn)) {
         swapRoutes(router.defaultRoute());
       }
     }
@@ -563,7 +563,7 @@ class ManagementRepositoryClientBloc implements Bloc {
     return Uri.base.replace(fragment: '/register-url?token=$token').toString();
   }
 
-  void resetInitialized() {
-    // _initializedSource.add(preRouterStateInitialized);
+  void siteInitialized(bool value) {
+    _siteInitialisedSource.add(value);
   }
 }

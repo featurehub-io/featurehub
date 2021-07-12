@@ -94,8 +94,8 @@ this all clean. It essentially copy-pasta from the docs.
 - There is no lifecycle on the `FHRouteDelegate` so we are unable to clean up the listeners as yet. We need to figure out some way to add it as if a user
 changes the theme it will start having two+ firing state changes for the browser.
 - Invalid URLs are not supported, they will just blow up I think?
-- Should we include the portfolio + application in the url again? If so, should we consider removing the shared pref for it?
-- the environment/service-account pages which are on tabs aren't "remembered"
+[NO] - Should we include the portfolio + application in the url again? If so, should we consider removing the shared pref for it?
+[YES] - the environment/service-account pages which are on tabs aren't "remembered"
 - registration url isn't checked
 
 

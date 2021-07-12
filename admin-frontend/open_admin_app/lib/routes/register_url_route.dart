@@ -1,9 +1,9 @@
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/widgets/common/FHFlatButton.dart';
 import 'package:open_admin_app/widgets/common/fh_card.dart';
 import 'package:open_admin_app/widgets/user/register/register_url_bloc.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
 import 'package:openapi_dart_common/openapi.dart';
 import 'package:zxcvbn/zxcvbn.dart';
 
@@ -49,11 +49,8 @@ class RegisterURLState extends State<RegisterURLRoute> {
                       return SizedBox.shrink();
                     } else if (snapshot.data ==
                         RegisterUrlForm.alreadyLoggedIn) {
-                      // go back to login
                       ManagementRepositoryClientBloc.router
-                          .navigateTo(context, '/');
-                      BlocProvider.of<ManagementRepositoryClientBloc>(context)
-                          .resetInitialized();
+                          .navigateRoute('/login');
                       return SizedBox.shrink();
                     }
                   }

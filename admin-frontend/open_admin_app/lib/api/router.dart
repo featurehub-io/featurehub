@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/widgets.dart';
 import 'package:open_admin_app/api/client_api.dart';
 
@@ -39,7 +40,21 @@ class Handler {
 }
 
 enum TransitionType { fadeIn, material }
-enum PermissionType { superadmin, portfolioadmin, regular }
+enum PermissionType {
+  superadmin,
+  portfolioadmin,
+  regular,
+  personal,
+  any,
+  login,
+  setup
+}
+
+List<PermissionType> scaffoldWrapPermissions = [
+  PermissionType.superadmin,
+  PermissionType.portfolioadmin,
+  PermissionType.regular
+];
 
 class RouterRoute {
   Handler handler;
@@ -76,31 +91,73 @@ class FHRouter {
     return handlers[route]?.permissionType ?? PermissionType.regular;
   }
 
-  bool hasRoutePermissions(
-      RouteChange route, bool superuser, bool portfolioAdmin) {
-    if (superuser == true) {
-      return true;
+  RouterRoute forNamedRoute(String? requestedRouteName, String defaultRouteName,
+      {PermissionType? permissionType}) {
+    final routeName = requestedRouteName ?? defaultRouteName;
+
+    final route = ManagementRepositoryClientBloc.router.handlers[routeName] ??
+        ManagementRepositoryClientBloc.router.handlers[defaultRouteName]!;
+    final defaultRoute =
+        ManagementRepositoryClientBloc.router.handlers[defaultRouteName]!;
+    final routePerm = route.permissionType;
+
+    if (permissionType == PermissionType.setup && routePerm != permissionType ||
+        permissionType == PermissionType.login && routePerm != permissionType) {
+      return defaultRoute;
     }
 
-    final perm = permissionForRoute(route.route);
-
-    if (perm == PermissionType.portfolioadmin && portfolioAdmin == true) {
-      return true;
+    if (!hasRoutePermissions(
+        RouteChange(route == defaultRoute ? defaultRouteName : routeName),
+        mrBloc.userIsSuperAdmin,
+        mrBloc.userIsCurrentPortfolioAdmin,
+        mrBloc.isLoggedIn)) {
+      return defaultRoute;
     }
 
-    return perm == PermissionType.regular;
+    return route;
   }
 
-  void navigateTo(BuildContext context, String route,
-      {Map<String, List<String>>? params}) {
+  bool hasRoutePermissions(
+      RouteChange route, bool superuser, bool portfolioAdmin, bool isLoggedIn) {
+    final perm = permissionForRoute(route.route);
+
+    if (perm == PermissionType.any) {
+      return true;
+    }
+
+    if (perm == PermissionType.login && !isLoggedIn) {
+      return true;
+    }
+
+    if (perm != PermissionType.login && perm != PermissionType.setup) {
+      if (superuser == true) {
+        return true;
+      }
+
+      if (perm == PermissionType.portfolioadmin && portfolioAdmin == true) {
+        return true;
+      }
+
+      return perm == PermissionType.regular || perm == PermissionType.personal;
+    }
+
+    return false;
+  }
+
+  void navigateRoute(String route, {Map<String, List<String>>? params}) {
     final rc = RouteChange(route, params: params ?? const {});
 
-    if (hasRoutePermissions(
-        rc, mrBloc.userIsSuperAdmin, mrBloc.userIsCurrentPortfolioAdmin)) {
+    if (hasRoutePermissions(rc, mrBloc.userIsSuperAdmin,
+        mrBloc.userIsCurrentPortfolioAdmin, mrBloc.isLoggedIn)) {
       mrBloc.swapRoutes(rc);
     } else {
       mrBloc.swapRoutes(defaultRoute());
     }
+  }
+
+  void navigateTo(BuildContext? context, String route,
+      {Map<String, List<String>>? params}) {
+    navigateRoute(route, params: params);
   }
 
   RouteChange defaultRoute() {

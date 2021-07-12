@@ -14,6 +14,8 @@ import 'package:open_admin_app/routes/manage_service_accounts_route.dart';
 import 'package:open_admin_app/routes/manage_users_route.dart';
 import 'package:open_admin_app/routes/register_url_route.dart';
 import 'package:open_admin_app/routes/service_env_route.dart';
+import 'package:open_admin_app/routes/setup_route.dart';
+import 'package:open_admin_app/routes/signin_route.dart';
 import 'package:open_admin_app/widgets/apps/apps_bloc.dart';
 import 'package:open_admin_app/widgets/apps/manage_app_bloc.dart';
 import 'package:open_admin_app/widgets/apps/manage_service_accounts_bloc.dart';
@@ -37,8 +39,26 @@ Handler handleRouteChangeRequest(builder) {
 }
 
 class RouteCreator {
+  Widget loading(mrBloc, {params}) {
+    return HomeRoute(title: 'FeatureHub');
+    // return LandingRoute(title: 'FeatureHub');
+  }
+
+  Widget notFound(mrBloc, {params}) {
+    return HomeRoute(title: 'Link not found');
+  }
+
   Widget root(mrBloc, {params}) {
-    return HomeRoute(title: 'Featurehub');
+    return HomeRoute(title: 'FeatureHub');
+    // return LandingRoute(title: 'FeatureHub');
+  }
+
+  Widget login(mrBloc, {params}) {
+    return SigninWrapperWidget();
+  }
+
+  Widget setup(mrBloc, {params}) {
+    return SetupWrapperWidget();
     // return LandingRoute(title: 'FeatureHub');
   }
 
