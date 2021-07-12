@@ -90,17 +90,7 @@ class _SigninState extends State<SigninWidget> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Animator<double>(
-                      tween: Tween<double>(begin: 0, end: 2 * pi),
-                      duration: Duration(seconds: 2),
-                      repeats: 0,
-                      builder: (context, anim, other) => Transform.rotate(
-                            angle: anim.value,
-                            child: Image.asset(
-                                'assets/logo/FeatureHub-icon.png',
-                                width: 40,
-                                height: 40),
-                          ))
+                  RotatingLogoWidget()
                 ],
               ),
             ),
@@ -186,6 +176,27 @@ class _SigninState extends State<SigninWidget> {
         ),
       ),
     );
+  }
+}
+
+class RotatingLogoWidget extends StatelessWidget {
+  const RotatingLogoWidget({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Animator<double>(
+        tween: Tween<double>(begin: 0, end: 2 * pi),
+        duration: Duration(seconds: 2),
+        repeats: 0,
+        builder: (context, anim, other) => Transform.rotate(
+              angle: anim.value,
+              child: Image.asset(
+                  'assets/logo/FeatureHub-icon.png',
+                  width: 40,
+                  height: 40),
+            ));
   }
 }
 
