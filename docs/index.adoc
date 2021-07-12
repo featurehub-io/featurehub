@@ -74,7 +74,7 @@ docker run -p 8085:8085 --user 999:999 -v ~/tmp/party:/db featurehub/party-serve
 on Linux:
 
 ----
-docker run --network host -p 8085:8085 --user 999:999 -v $HOME/party:/db featurehub/party-server:latest
+docker run --network host -p 8085:8085 -v $HOME/party:/db featurehub/party-server:latest
 ----
 
 where `~/tmp` is where you wish to store the database (h2).
