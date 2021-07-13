@@ -40,7 +40,7 @@ Handler handleRouteChangeRequest(builder) {
 
 class RouteCreator {
   Widget loading(mrBloc, {params}) {
-    return HomeRoute(title: 'FeatureHub');
+    return HomeRoute(title: 'Loading MotherFlagga!');
     // return LandingRoute(title: 'FeatureHub');
   }
 

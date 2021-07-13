@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:open_admin_app/api/client_api.dart';
@@ -10,16 +11,20 @@ final String routeSetupApp = 'setup';
 final String routeLoginApp = 'login';
 
 class FHRoutePath {
-  String? _routeName;
-  Map<String, List<String>>? params;
+  final String _routeName;
+  Map<String, List<String>> params;
 
-  set routeName(String? value) => _routeName =
-      value == null ? null : (value.startsWith('/') ? value : '/$value');
-  String? get routeName => _routeName;
+  FHRoutePath(String routeName, {this.params = const {}})
+      : _routeName = routeName.startsWith('/') ? routeName : '/$routeName';
+
+  String get routeName => _routeName;
 
   RouteInformation make() {
     if (_routeName != null) {
-      return RouteInformation(location: _routeName ?? '/loading');
+      final p =
+          params.entries.map((e) => '${e.key}=${e.value.join(',')}').join('&');
+      return RouteInformation(
+          location: _routeName + (p.isNotEmpty ? '?$p' : ''));
     }
 
     return RouteInformation(location: '404');
@@ -46,38 +51,20 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
     with ChangeNotifier, PopNavigatorRouterDelegateMixin<FHRoutePath> {
   final GlobalKey<NavigatorState> _navigatorKey;
   final ManagementRepositoryClientBloc bloc;
-  bool isLoggedIn = false;
-  bool? isInitialised;
-  FHRoutePath? path;
+  FHRoutePath _path;
+  RouteSlot _currentSlot = RouteSlot.loading;
 
   @override
   FHRoutePath get currentConfiguration {
-    if (isInitialised == null) return FHRoutePath()..routeName = '/loading';
-    if (isInitialised == false) return FHRoutePath()..routeName = '/setup';
-    if (isInitialised == true && isLoggedIn == false) {
-      return FHRoutePath()..routeName = '/login';
-    }
-
-    return path == null ? (FHRoutePath()..routeName = '/applications') : path!;
+    print("current config $_path slot is $_currentSlot");
+    return _path;
   }
 
   @override
   Widget build(BuildContext context) {
     return Navigator(
       key: navigatorKey,
-      pages: [
-        if (isInitialised == null)
-          routeWrapperPage(context, '/loading', '/loading'),
-        if (isInitialised == false)
-          routeWrapperPage(context, '/setup', '/404',
-              permissionType: PermissionType.setup),
-        if (isInitialised == true && isLoggedIn == false)
-          routeWrapperPage(context, '/login', '/404',
-              permissionType: PermissionType.login),
-        if (isInitialised == true && isLoggedIn == true)
-          routeWrapperPage(context, path?.routeName ?? '/loading', '/404',
-              params: path?.params),
-      ],
+      pages: [routeWrapperPage(context)],
       onPopPage: (route, result) {
         if (!route.didPop(result)) {
           return false;
@@ -90,13 +77,11 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
     );
   }
 
-  MaterialPage routeWrapperPage(
-      BuildContext context, String? route, String defaultUrl,
-      {PermissionType? permissionType, Map<String, List<String>>? params}) {
-    final handler =
-        ManagementRepositoryClientBloc.router.forNamedRoute(route, defaultUrl);
+  MaterialPage routeWrapperPage(BuildContext context) {
+    final handler = ManagementRepositoryClientBloc.router
+        .forNamedRoute(_path.routeName, _currentSlot);
 
-    final child = handler.handler.handlerFunc(context, {});
+    final child = handler.handler.handlerFunc(context, _path.params);
     final wrapWidget = scaffoldWrapPermissions.contains(handler.permissionType);
 
     return MaterialPage(
@@ -105,49 +90,72 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
   }
 
   @override
-  FHRouteDelegate(this.bloc) : _navigatorKey = GlobalKey<NavigatorState>() {
+  FHRouteDelegate(this.bloc)
+      : _navigatorKey = GlobalKey<NavigatorState>(),
+        _path =
+            FHRoutePath(routeSlotMappings[RouteSlot.loading]!.initialRoute) {
     // notifyListeners simply causes the build() method above to be called.
 
     // TODO: note these listeners have NO cleanup. If a user changes them we will start getting two events
-
-    // listen for changes in  the person and make sure we alter our internal state to match
-    // and then force a rebuild. We are just checking if they went from logged in to logged out
-    bloc.personState.personStream.listen((p) {
-      if (bloc.isLoggedIn != isLoggedIn) {
-        isLoggedIn = bloc.isLoggedIn;
-        notifyListeners();
-      }
-    });
 
     // listen for an internal route change. This is someone calling ManagementRepositoryClientBloc.route.swapRoutes
     // which currently exists all over the code base.
     bloc.routeChangedStream.listen((r) {
       if (r != null) {
-        if (isLoggedIn && path?.routeName != r.route) {
-          path = FHRoutePath()
-            ..routeName = r.route
-            ..params = r.params;
+        print("route change request $r");
+        if (_path.routeName != r.route ||
+            (!const MapEquality().equals(_path.params, r.params) &&
+                _path.routeName == r.route)) {
+          _path = FHRoutePath(r.route, params: r.params);
+          print("route change event to $_path");
           notifyListeners();
         }
       }
     });
 
-    bloc.siteInitialisedSource.listen((s) {
-      if (s != isInitialised) {
-        isInitialised = s;
+    bloc.siteInitialisedStream.listen((s) {
+      print("site init stream is $s vs $_currentSlot");
+      if (s != _currentSlot) {
+        _currentSlot = s;
+
+        // if they have logged in now and have a held route, lets check if they are allowed to access it, and if so
+        // swap to that instead
+        if ((_currentSlot == RouteSlot.personal ||
+                _currentSlot == RouteSlot.portfolio) &&
+            _stashedRoutePath != null) {
+          if (ManagementRepositoryClientBloc.router
+              .canUseRoute(_stashedRoutePath!.routeName)) {
+            print("can not use route, unstashing $_stashedRoutePath!");
+            bloc.swapRoutes(RouteChange(_stashedRoutePath!.routeName,
+                params: _stashedRoutePath!.params));
+            _stashedRoutePath = null;
+            return;
+          } else {
+            _stashedRoutePath = null;
+            _path = FHRoutePath(routeSlotMappings[_currentSlot]!.initialRoute);
+          }
+        } else {
+          _path = FHRoutePath(routeSlotMappings[_currentSlot]!.initialRoute);
+        }
+
         notifyListeners();
       }
     });
   }
 
-  @override
-  Future<void> setNewRoutePath(FHRoutePath configuration) async {
-    path = configuration;
+  FHRoutePath? _stashedRoutePath;
 
-    if (isInitialised == true && isLoggedIn) {
+  @override
+  Future<void> setNewRoutePath(FHRoutePath newPath) async {
+    if (ManagementRepositoryClientBloc.router.canUseRoute(newPath.routeName)) {
+      print("set new route path $newPath");
+      _path = newPath;
+
       // this will trigger the listener but it will ignore it
-      bloc.swapRoutes(RouteChange(configuration.routeName!,
-          params: configuration.params ?? {}));
+      bloc.swapRoutes(RouteChange(newPath.routeName, params: newPath.params));
+    } else {
+      print("cant use route $newPath so stashing");
+      _stashedRoutePath = newPath;
     }
   }
 
@@ -159,22 +167,25 @@ class FHRouteInformationParser extends RouteInformationParser<FHRoutePath> {
   @override
   Future<FHRoutePath> parseRouteInformation(
       RouteInformation routeInformation) async {
+    print("parsing route $routeInformation");
     if (routeInformation.location == null) {
-      return FHRoutePath()..routeName = '/loading';
+      return FHRoutePath('/loading');
     }
 
     final uri = Uri.parse(routeInformation.location!);
 
     if (uri.pathSegments.isEmpty) {
-      return FHRoutePath()..routeName = '/loading';
+      return FHRoutePath('/loading');
     }
 
     if (uri.pathSegments.length == 1) {
       final path = uri.pathSegments[0];
-      return FHRoutePath()..routeName = path.startsWith('/') ? path : '/$path';
+      final p = FHRoutePath(path, params: uri.queryParametersAll);
+      print("parsed segs $p");
+      return p;
     }
 
-    return FHRoutePath()..routeName = '/loading';
+    return FHRoutePath('/loading');
   }
 
   @override

@@ -50,6 +50,23 @@ enum PermissionType {
   setup
 }
 
+// we need to track what states we can be in, what permission types routes have to have, and what the initial route you should have when you are in i
+
+enum RouteSlot { loading, setup, login, personal, portfolio }
+
+class RouteSlotMapping {
+  final RouteSlot routePermission;
+  final List<PermissionType> acceptablePermissionTypes;
+  final String initialRoute;
+
+  RouteSlotMapping(
+      {required this.routePermission,
+      required this.acceptablePermissionTypes,
+      required this.initialRoute});
+}
+
+Map<RouteSlot, RouteSlotMapping> routeSlotMappings = {};
+
 List<PermissionType> scaffoldWrapPermissions = [
   PermissionType.superadmin,
   PermissionType.portfolioadmin,
@@ -91,30 +108,23 @@ class FHRouter {
     return handlers[route]?.permissionType ?? PermissionType.regular;
   }
 
-  RouterRoute forNamedRoute(String? requestedRouteName, String defaultRouteName,
-      {PermissionType? permissionType}) {
-    final routeName = requestedRouteName ?? defaultRouteName;
+  RouterRoute forNamedRoute(String requestedRouteName, RouteSlot slot) {
+    if (ManagementRepositoryClientBloc.router.handlers
+        .containsKey(requestedRouteName)) {
+      final route =
+          ManagementRepositoryClientBloc.router.handlers[requestedRouteName]!;
+      final slotPerm = routeSlotMappings[slot]!;
 
-    final route = ManagementRepositoryClientBloc.router.handlers[routeName] ??
-        ManagementRepositoryClientBloc.router.handlers[defaultRouteName]!;
-    final defaultRoute =
-        ManagementRepositoryClientBloc.router.handlers[defaultRouteName]!;
-    final routePerm = route.permissionType;
+      if (slotPerm.acceptablePermissionTypes.contains(route.permissionType)) {
+        return route;
+      }
 
-    if (permissionType == PermissionType.setup && routePerm != permissionType ||
-        permissionType == PermissionType.login && routePerm != permissionType) {
-      return defaultRoute;
+      return ManagementRepositoryClientBloc
+          .router.handlers[slotPerm.initialRoute]!;
     }
 
-    if (!hasRoutePermissions(
-        RouteChange(route == defaultRoute ? defaultRouteName : routeName),
-        mrBloc.userIsSuperAdmin,
-        mrBloc.userIsCurrentPortfolioAdmin,
-        mrBloc.isLoggedIn)) {
-      return defaultRoute;
-    }
-
-    return route;
+    // otherwise we are using the 404 route
+    return ManagementRepositoryClientBloc.router.handlers['/404']!;
   }
 
   bool hasRoutePermissions(
@@ -162,5 +172,11 @@ class FHRouter {
 
   RouteChange defaultRoute() {
     return RouteChange('/feature-status', params: {});
+  }
+
+  bool canUseRoute(String routeName) {
+    final rc = RouteChange(routeName);
+    return hasRoutePermissions(rc, mrBloc.userIsSuperAdmin,
+        mrBloc.userIsCurrentPortfolioAdmin, mrBloc.isLoggedIn);
   }
 }
