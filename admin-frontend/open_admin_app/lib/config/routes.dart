@@ -11,6 +11,32 @@ final _log = Logger('Routes');
 class Routes {
   static final List<String> PUBLIC_URLS = ['/forgot-password', '/register-url'];
   static FHRouter configureRoutes(ManagementRepositoryClientBloc mrBloc) {
+    routeSlotMappings[RouteSlot.loading] = RouteSlotMapping(
+        routePermission: RouteSlot.loading,
+        acceptablePermissionTypes: [PermissionType.any],
+        initialRoute: '/loading');
+
+    routeSlotMappings[RouteSlot.login] = RouteSlotMapping(
+        routePermission: RouteSlot.login,
+        acceptablePermissionTypes: [PermissionType.login, PermissionType.any],
+        initialRoute: '/login');
+
+    routeSlotMappings[RouteSlot.setup] = RouteSlotMapping(
+        routePermission: RouteSlot.setup,
+        acceptablePermissionTypes: [PermissionType.setup, PermissionType.any],
+        initialRoute: '/setup');
+
+    routeSlotMappings[RouteSlot.portfolio] = RouteSlotMapping(
+        routePermission: RouteSlot.portfolio,
+        acceptablePermissionTypes: [
+          PermissionType.personal,
+          PermissionType.any,
+          PermissionType.portfolioadmin,
+          PermissionType.superadmin,
+          PermissionType.regular
+        ],
+        initialRoute: '/applications');
+
     final router = FHRouter(
         mrBloc: mrBloc,
         notFoundHandler: Handler(handlerFunc: (context, params) {

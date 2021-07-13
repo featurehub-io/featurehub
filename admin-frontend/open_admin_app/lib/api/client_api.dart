@@ -51,7 +51,7 @@ final _log = Logger('mr_bloc');
 class ManagementRepositoryClientBloc implements Bloc {
   final ApiClient _client;
   late PersonState personState;
-  late FHSharedPrefs sharedPreferences;
+  FHSharedPrefs? sharedPreferences;
 
   late SetupServiceApi setupApi;
   late PersonServiceApi personServiceApi;
@@ -114,7 +114,9 @@ class ManagementRepositoryClientBloc implements Bloc {
 
     // this is for fine grained route changes, like tab changes
     _routerSource.add(route);
-    sharedPreferences.saveString('current-route', route.toJson());
+    if (sharedPreferences != null) {
+      sharedPreferences!.saveString('current-route', route.toJson());
+    }
   }
 
   void _initializeRouteStreams() {
@@ -149,7 +151,7 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   Future<void> _setCurrentRoute() async {
     try {
-      var currentRoute = await sharedPreferences.getString('current-route');
+      var currentRoute = await sharedPreferences!.getString('current-route');
       if (currentRoute != null) {
         _routerSource.add(RouteChange.fromJson(currentRoute));
       }
@@ -160,8 +162,9 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   bool get isLoggedIn => personState.isLoggedIn;
 
-  Stream<bool?> get siteInitialisedSource => _siteInitialisedSource.stream;
-  final _siteInitialisedSource = BehaviorSubject<bool?>();
+  Stream<RouteSlot> get siteInitialisedStream => _siteInitialisedSource.stream;
+  final _siteInitialisedSource =
+      BehaviorSubject<RouteSlot>.seeded(RouteSlot.loading);
 
   Stream<FHError?> get errorStream => _errorSource.stream;
   final _errorSource = PublishSubject<FHError?>();
@@ -266,13 +269,12 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   Future<void> init() async {
     sharedPreferences = await FHSharedPrefs.getSharedInstance();
-    await _setCurrentRoute();
     await isInitialized();
   }
 
   Future isInitialized() async {
     if (personState.isLoggedIn) {
-      _siteInitialisedSource.add(true);
+      _siteInitialisedSource.add(RouteSlot.portfolio);
       return;
     }
 
@@ -286,14 +288,15 @@ class ManagementRepositoryClientBloc implements Bloc {
       identityProviders.identityProviders = setupResponse.providers;
 
       // yes its initialised, we may not have logged in yet
-      _siteInitialisedSource.add(true);
-
       if (bearerToken != null) {
         setBearerToken(bearerToken);
         requestOwnDetails();
       } else if (setupResponse.redirectUrl != null) {
         // they can only authenticate via one provider, so lets use them
         webInterface.authenticateViaProvider(setupResponse.redirectUrl!);
+      } else {
+        // we have to login
+        _siteInitialisedSource.add(RouteSlot.login);
       }
     }).catchError((e, s) {
       if (e is ApiException) {
@@ -302,7 +305,7 @@ class ManagementRepositoryClientBloc implements Bloc {
                   jsonDecode(e.message!), 'SetupMissingResponse')
               as SetupMissingResponse;
           identityProviders.identityProviders = smr.providers;
-          _siteInitialisedSource.add(false);
+          _siteInitialisedSource.add(RouteSlot.setup);
         } else {
           dialogError(e, s);
         }
@@ -329,8 +332,10 @@ class ManagementRepositoryClientBloc implements Bloc {
         .getPerson('self', includeAcls: true, includeGroups: true)
         .then((p) {
       setPerson(p);
+      _siteInitialisedSource.add(RouteSlot.portfolio);
     }).catchError((_) {
       setBearerToken(null);
+      _siteInitialisedSource.add(RouteSlot.login);
     });
   }
 
@@ -341,6 +346,7 @@ class ManagementRepositoryClientBloc implements Bloc {
     menuOpened.add(false);
     currentPid = null;
     currentAid = null;
+    _siteInitialisedSource.add(RouteSlot.login);
   }
 
   void setOrg(Organization o) {
@@ -456,12 +462,13 @@ class ManagementRepositoryClientBloc implements Bloc {
 
     // if we are swapping users, remove all shared preferences (including last portfolio, route, etc)
     if (person.email != previousPerson) {
-      await sharedPreferences.clear();
+      await sharedPreferences!.clear();
     }
 
     setLastUsername(person.email!);
 
     setPerson(person);
+    _siteInitialisedSource.add(RouteSlot.portfolio);
   }
 
   Future<void> replaceTempPassword(String password) {
@@ -487,9 +494,9 @@ class ManagementRepositoryClientBloc implements Bloc {
 
       var foundValidStoredPortfolio = false;
 
-      if (await sharedPreferences.getString('currentPid') != null) {
-        final aid = await sharedPreferences.getString('currentAid');
-        final pid = await sharedPreferences.getString('currentPid');
+      if (await sharedPreferences!.getString('currentPid') != null) {
+        final aid = await sharedPreferences!.getString('currentAid');
+        final pid = await sharedPreferences!.getString('currentPid');
         if (streamValley.containsPid(pid)) {
           setCurrentPid(pid);
           foundValidStoredPortfolio = true;
@@ -521,26 +528,26 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   void _setPidSharedPrefs(String? pid) async {
     if (pid == null) {
-      await sharedPreferences.delete('currentPid');
+      await sharedPreferences!.delete('currentPid');
     } else {
-      await sharedPreferences.saveString('currentPid', pid);
+      await sharedPreferences!.saveString('currentPid', pid);
     }
   }
 
   void _setAidSharedPrefs(String? aid) async {
     if (aid == null) {
-      await sharedPreferences.delete('currentAid');
+      await sharedPreferences!.delete('currentAid');
     } else {
-      await sharedPreferences.saveString('currentAid', aid);
+      await sharedPreferences!.saveString('currentAid', aid);
     }
   }
 
   Future<String?> lastUsername() async {
-    return await sharedPreferences.getString('lastUsername');
+    return await sharedPreferences!.getString('lastUsername');
   }
 
   void setLastUsername(String lastUsername) async {
-    await sharedPreferences.saveString('lastUsername', lastUsername);
+    await sharedPreferences!.saveString('lastUsername', lastUsername);
   }
 
   // if a url comes back from the backend with a back-end url, we need to rewrite it to our
@@ -561,9 +568,5 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   String registrationUrl(String token) {
     return Uri.base.replace(fragment: '/register-url?token=$token').toString();
-  }
-
-  void siteInitialized(bool value) {
-    _siteInitialisedSource.add(value);
   }
 }
