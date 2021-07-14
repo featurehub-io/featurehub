@@ -32,7 +32,7 @@ class _ValueContainer extends StatelessWidget {
   final Feature feature;
   final FeatureValue? fv;
 
-  _ValueContainer({required this.feature, this.fv});
+  const _ValueContainer({required this.feature, this.fv});
 
   @override
   Widget build(BuildContext context) {

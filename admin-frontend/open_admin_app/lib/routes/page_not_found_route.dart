@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class PageNotFoundRoute extends StatelessWidget {
-  PageNotFoundRoute({Key? key, required this.title}) : super(key: key);
+  const PageNotFoundRoute({Key? key, required this.title}) : super(key: key);
   final String title;
 
   @override

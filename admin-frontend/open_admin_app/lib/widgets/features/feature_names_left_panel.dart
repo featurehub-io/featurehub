@@ -101,7 +101,7 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              AutoSizeText('${feature.name}',
+                                              AutoSizeText(feature.name,
                                                   overflow:
                                                       TextOverflow.ellipsis,
                                                   maxLines: 3,
@@ -116,7 +116,7 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                                 height: 4.0,
                                               ),
                                               Text(
-                                                  '${feature.valueType.toString().split('.').last}',
+                                                  feature.valueType.toString().split('.').last,
                                                   overflow:
                                                       TextOverflow.ellipsis,
                                                   style: TextStyle(

@@ -11,7 +11,7 @@ class MultiSelectDropdown extends StatefulWidget {
   final String hint;
   final MultiSelectMapPossibleValueToName mapper;
 
-  MultiSelectDropdown(this.values, this.possibleValues, this.mapper, this.hint);
+  const MultiSelectDropdown(this.values, this.possibleValues, this.mapper, this.hint);
 
   @override
   State<StatefulWidget> createState() {

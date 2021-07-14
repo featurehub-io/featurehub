@@ -12,7 +12,7 @@ import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
 class SigninWidget extends StatefulWidget {
-  SigninWidget(this.bloc);
+  const SigninWidget(this.bloc);
 
   final ManagementRepositoryClientBloc bloc;
 

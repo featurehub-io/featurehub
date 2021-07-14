@@ -9,7 +9,7 @@ typedef ChipsBuilder<T> = Widget Function(
     BuildContext context, ChipsInputState<T> state, T data);
 
 class ChipsInput<T> extends StatefulWidget {
-  ChipsInput({
+  const ChipsInput({
     Key? key,
     this.initialValue = const [],
     this.decoration = const InputDecoration(),
@@ -119,7 +119,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
     var renderBox = context.findRenderObject();
     // TODO: See if after_layout mixin (https://pub.dartlang.org/packages/after_layout) works instead of keep checking if rendered
 
-    while (renderBox == null && !(renderBox is RenderBox)) {
+    while (renderBox == null && renderBox is! RenderBox) {
       await Future.delayed(Duration(milliseconds: 10));
 
       renderBox = context.findRenderObject();

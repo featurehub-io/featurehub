@@ -1,6 +1,6 @@
-import 'package:open_admin_app/api/client_api.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/api/client_api.dart';
 
 class PersonAvatar extends StatelessWidget {
   final ManagementRepositoryClientBloc mrBloc;
@@ -22,7 +22,7 @@ class PersonAvatar extends StatelessWidget {
                       backgroundColor: Color(0xffA6F2DE),
                       child: Text(
                           //here the name should be returned from a current user
-                          '${person.name!.substring(0, 1)}',
+                          person.name!.substring(0, 1),
                           style: Theme.of(context)
                               .textTheme
                               .bodyText2!
@@ -31,7 +31,7 @@ class PersonAvatar extends StatelessWidget {
                     SizedBox(height: 4.0),
                     Text(
                         //here the name should be returned from a current user
-                        '${person.name}',
+                        person.name!,
                         style: Theme.of(context).textTheme.bodyText2),
                   ],
                 ));

@@ -7,8 +7,8 @@ import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/router.dart';
 import 'package:open_admin_app/widgets/common/fh_scaffold.dart';
 
-final String routeSetupApp = 'setup';
-final String routeLoginApp = 'login';
+const String routeSetupApp = 'setup';
+const String routeLoginApp = 'login';
 
 class FHRoutePath {
   final String _routeName;

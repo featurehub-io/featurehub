@@ -11,7 +11,7 @@ class AppUpdateDialogWidget extends StatefulWidget {
   final Application? application;
   final AppsBloc bloc;
 
-  AppUpdateDialogWidget({
+  const AppUpdateDialogWidget({
     Key? key,
     required this.bloc,
     this.application,

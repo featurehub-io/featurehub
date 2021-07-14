@@ -76,7 +76,6 @@ class EditUserBloc implements Bloc {
     } catch (e, s) {
       await mrClient.dialogError(e, s);
     }
-    ;
     return portfolios;
   }
 
