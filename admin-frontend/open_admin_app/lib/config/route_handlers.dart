@@ -54,11 +54,11 @@ class RouteCreator {
   }
 
   Widget login(mrBloc, {params}) {
-    return SigninWrapperWidget();
+    return const SigninWrapperWidget();
   }
 
   Widget setup(mrBloc, {params}) {
-    return SetupWrapperWidget();
+    return const SetupWrapperWidget();
     // return LandingRoute(title: 'FeatureHub');
   }
 
@@ -84,7 +84,7 @@ class RouteCreator {
   }
 
   Widget forgotPassword(mrBloc, {params}) {
-    return SimpleWidget(
+    return const SimpleWidget(
       message: 'forgot-password, contact you system administrator.',
     );
   }
@@ -104,7 +104,7 @@ class RouteCreator {
         child: BlocProvider<CreateUserBloc>(
             creator: (_context, _bag) =>
                 CreateUserBloc(mrBloc, selectGroupBloc: select),
-            child: CreateUserRoute(title: 'Create User')));
+            child: const CreateUserRoute(title: 'Create User')));
   }
 
   Widget manageUser(mrBloc, {params}) {
