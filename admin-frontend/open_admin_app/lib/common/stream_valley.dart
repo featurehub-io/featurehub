@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:open_admin_app/api/client_api.dart';
-import 'package:open_admin_app/common/person_state.dart';
 import 'package:logging/logging.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/common/person_state.dart';
 import 'package:rxdart/rxdart.dart';
 
 class ReleasedPortfolio {
@@ -14,7 +14,7 @@ class ReleasedPortfolio {
       {required this.portfolio, required this.currentPortfolioOrSuperAdmin});
 }
 
-typedef findApplicationsFunc = Future<List<Application>> Function(
+typedef FindApplicationsFunc = Future<List<Application>> Function(
     String portfolioId);
 
 final _log = Logger('stream-valley');
@@ -44,8 +44,6 @@ class StreamValley {
         environmentServiceApi = EnvironmentServiceApi(mrClient.apiClient),
         featureServiceApi = FeatureServiceApi(mrClient.apiClient),
         applicationServiceApi = ApplicationServiceApi(mrClient.apiClient) {
-    ;
-
     // release the route check portfolio into the main stream so downstream stuff can trigger as usual.
     // we  have done our permission checks on it and swapped their route if they have no access
     currentPortfolioAdminOrSuperAdminSubscription =
@@ -203,7 +201,7 @@ class StreamValley {
   }
 
   Future<void> getCurrentPortfolioApplications(
-      {findApplicationsFunc? findApp}) async {
+      {FindApplicationsFunc? findApp}) async {
     List<Application> appList;
     if (currentPortfolioId != null) {
       if (findApp != null) {

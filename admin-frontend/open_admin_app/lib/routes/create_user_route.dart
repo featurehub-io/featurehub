@@ -1,3 +1,5 @@
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/common/FHFlatButton.dart';
@@ -10,14 +12,12 @@ import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/user/common/admin_checkbox.dart';
 import 'package:open_admin_app/widgets/user/common/portfolio_group_selector_widget.dart';
 import 'package:open_admin_app/widgets/user/create/create_user_bloc.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
 class CreateUserRoute extends StatelessWidget {
   final String title;
 
-  CreateUserRoute({Key? key, required this.title}) : super(key: key);
+  const CreateUserRoute({Key? key, required this.title}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -28,12 +28,10 @@ class CreateUserRoute extends StatelessWidget {
 class AddUserFormWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: <Widget>[TopWidget(), BottomWidget()],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: <Widget>[TopWidget(), BottomWidget()],
     );
   }
 }
@@ -63,8 +61,6 @@ class TopWidgetDefault extends StatefulWidget {
 class _TopWidgetDefaultState extends State<TopWidgetDefault> {
   final _email = TextEditingController();
   final _name = TextEditingController();
-  var selectedPortfolio;
-  var selectedGroupID;
   bool isAddButtonDisabled = true;
 
   @override

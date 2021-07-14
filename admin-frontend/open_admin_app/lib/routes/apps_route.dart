@@ -29,8 +29,8 @@ class _AppsRouteState extends State<AppsRoute> {
             Wrap(
               children: [
                 Container(
-                  padding: EdgeInsets.only(bottom: 10),
-                  child: FHHeader(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: const FHHeader(
                     title: 'Applications',
                   ),
                 ),
@@ -43,8 +43,7 @@ class _AppsRouteState extends State<AppsRoute> {
                               true)) {
                         return Padding(
                           padding: const EdgeInsets.only(top: 8.0),
-                          child: Container(
-                              child: FHIconTextButton(
+                          child: FHIconTextButton(
                             iconData: Icons.add,
                             keepCase: true,
                             label: 'Create new application',
@@ -54,16 +53,16 @@ class _AppsRouteState extends State<AppsRoute> {
                                 bloc: bloc,
                               );
                             }),
-                          )),
+                          ),
                         );
                       } else {
-                        return SizedBox.shrink();
+                        return const SizedBox.shrink();
                       }
                     }),
               ],
             ),
             FHPageDivider(),
-            SizedBox(height: 8.0),
+            const SizedBox(height: 8.0),
             _ApplicationsCardsList(
               bloc: bloc,
             )
@@ -84,7 +83,7 @@ class _ApplicationsCardsList extends StatelessWidget {
         stream: bloc.currentApplicationsStream,
         builder: (context, snapshot) {
           if (!snapshot.hasData || snapshot.hasError) {
-            return SizedBox.shrink();
+            return const SizedBox.shrink();
           }
 
           return Wrap(
@@ -144,7 +143,7 @@ class _ApplicationCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Container(
-                        constraints: BoxConstraints(maxWidth: 150),
+                        constraints: const BoxConstraints(maxWidth: 150),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.start,
@@ -159,7 +158,7 @@ class _ApplicationCard extends StatelessWidget {
                                                 Brightness.light
                                             ? Theme.of(context).primaryColor
                                             : null)),
-                            SizedBox(height: 4.0),
+                            const SizedBox(height: 4.0),
                             Text(application.description!,
                                 maxLines: 2,
 //                              overflow: TextOverflow.ellipsis,
@@ -179,14 +178,14 @@ class _ApplicationCard extends StatelessWidget {
                                 application: application,
                               );
                             } else {
-                              return SizedBox();
+                              return const SizedBox();
                             }
                           })
                     ],
                   ),
                   Column(
                     children: [
-                      SizedBox(height: 4.0),
+                      const SizedBox(height: 4.0),
                       _AppTotals(application: application),
                     ],
                   )
@@ -219,7 +218,7 @@ class _AppTotals extends StatelessWidget {
             _NumberAndIcon(
               tooltipText: 'Environments',
               text: application.environments.length.toString(),
-              icon: Icon(AntDesign.bars,
+              icon: const Icon(AntDesign.bars,
                   size: 16.0, color: Colors.deepPurpleAccent),
             ),
           if (application.features
@@ -234,7 +233,7 @@ class _AppTotals extends StatelessWidget {
                   .toList()
                   .length
                   .toString(),
-              icon: Icon(Icons.flag, size: 16.0, color: Colors.green),
+              icon: const Icon(Icons.flag, size: 16.0, color: Colors.green),
             ),
           if ((application.features
                   .where(
@@ -248,7 +247,7 @@ class _AppTotals extends StatelessWidget {
                   .isNotEmpty))
             _NumberAndIcon(
               tooltipText: 'Feature values',
-              icon: Icon(Icons.code, size: 16.0, color: Colors.blue),
+              icon: const Icon(Icons.code, size: 16.0, color: Colors.blue),
               text: (((application.features
                           .where((element) =>
                               element.valueType == FeatureValueType.STRING)
@@ -273,7 +272,8 @@ class _AppTotals extends StatelessWidget {
                   .length
                   .toString(),
               tooltipText: 'Configurations',
-              icon: Icon(Icons.device_hub, size: 16.0, color: Colors.orange),
+              icon: const Icon(Icons.device_hub,
+                  size: 16.0, color: Colors.orange),
             ),
         ],
       ),
@@ -302,7 +302,7 @@ class _NumberAndIcon extends StatelessWidget {
           _NumberContainer(
             child: Text(text),
           ),
-          SizedBox(height: 2.0),
+          const SizedBox(height: 2.0),
           icon,
         ],
       ),
@@ -318,9 +318,9 @@ class _NumberContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        padding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0),
+        padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(12.0)),
+          borderRadius: const BorderRadius.all(Radius.circular(12.0)),
           color: Theme.of(context).cardColor,
         ),
         child: child);
@@ -337,59 +337,55 @@ class _PopUpAdminMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-//      width: 34,
-//      height: 0,
-      child: Material(
-        shape: CircleBorder(),
-        color: Colors.transparent,
-        child: PopupMenuButton(
-          tooltip: 'Show more',
-          icon: Icon(
-            Icons.more_vert,
-            size: 22.0,
-          ),
-          onSelected: (value) {
-            if (value == 'edit') {
-              bloc.mrClient
-                  .addOverlay((BuildContext context) => AppUpdateDialogWidget(
-                        bloc: bloc,
-                        application: application,
-                      ));
-            }
-            if (value == 'delete') {
-              bloc.mrClient.addOverlay((BuildContext context) {
-                return AppDeleteDialogWidget(
-                  bloc: bloc,
-                  application: application,
-                );
-              });
-            }
-            if (value == 'features') {
-              bloc.mrClient.setCurrentAid(application.id);
-              ManagementRepositoryClientBloc.router.navigateTo(
-                context,
-                '/feature-status',
-              );
-            }
-          },
-          itemBuilder: (BuildContext context) {
-            return [
-              PopupMenuItem(
-                  value: 'features',
-                  child: Text('Features',
-                      style: Theme.of(context).textTheme.bodyText2)),
-              PopupMenuItem(
-                  value: 'edit',
-                  child: Text('Edit',
-                      style: Theme.of(context).textTheme.bodyText2)),
-              PopupMenuItem(
-                  value: 'delete',
-                  child: Text('Delete',
-                      style: Theme.of(context).textTheme.bodyText2))
-            ];
-          },
+    return Material(
+      shape: const CircleBorder(),
+      color: Colors.transparent,
+      child: PopupMenuButton(
+        tooltip: 'Show more',
+        icon: const Icon(
+          Icons.more_vert,
+          size: 22.0,
         ),
+        onSelected: (value) {
+          if (value == 'edit') {
+            bloc.mrClient
+                .addOverlay((BuildContext context) => AppUpdateDialogWidget(
+                      bloc: bloc,
+                      application: application,
+                    ));
+          }
+          if (value == 'delete') {
+            bloc.mrClient.addOverlay((BuildContext context) {
+              return AppDeleteDialogWidget(
+                bloc: bloc,
+                application: application,
+              );
+            });
+          }
+          if (value == 'features') {
+            bloc.mrClient.setCurrentAid(application.id);
+            ManagementRepositoryClientBloc.router.navigateTo(
+              context,
+              '/feature-status',
+            );
+          }
+        },
+        itemBuilder: (BuildContext context) {
+          return [
+            PopupMenuItem(
+                value: 'features',
+                child: Text('Features',
+                    style: Theme.of(context).textTheme.bodyText2)),
+            PopupMenuItem(
+                value: 'edit',
+                child:
+                    Text('Edit', style: Theme.of(context).textTheme.bodyText2)),
+            PopupMenuItem(
+                value: 'delete',
+                child: Text('Delete',
+                    style: Theme.of(context).textTheme.bodyText2))
+          ];
+        },
       ),
     );
   }

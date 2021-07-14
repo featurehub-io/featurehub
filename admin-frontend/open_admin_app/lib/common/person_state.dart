@@ -1,6 +1,6 @@
-import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:collection/collection.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:rxdart/rxdart.dart';
 
 typedef SetPersonHook = void Function(PersonState personState, Person person);
@@ -35,7 +35,9 @@ class PersonState {
 
   set person(Person person) {
     if (person != _unauthenticatedPerson) {
-      setPersonHooks.forEach((callback) => callback(this, person));
+      for (final callback in setPersonHooks) {
+        callback(this, person);
+      }
     }
 
     _isUserIsSuperAdmin = isSuperAdminGroupFound(person.groups);
