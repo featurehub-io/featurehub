@@ -261,7 +261,7 @@ class MemberWidget extends StatelessWidget {
               child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text("${member.name ?? ''}"),
+              Text(member.name ?? ''),
             ],
           )),
           if (bloc.mrClient.isPortfolioOrSuperAdmin(group.portfolioId!))

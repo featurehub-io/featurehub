@@ -6,7 +6,7 @@ import '../custom_strategy_bloc.dart';
 class FeatureValueUpdatedByCell extends StatelessWidget {
   final CustomStrategyBloc strBloc;
 
-  FeatureValueUpdatedByCell({Key? key, required this.strBloc})
+  const FeatureValueUpdatedByCell({Key? key, required this.strBloc})
       : super(key: key);
 
   @override

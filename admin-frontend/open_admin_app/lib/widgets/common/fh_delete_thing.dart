@@ -72,7 +72,7 @@ class FHDeleteThingWarningWidget extends StatelessWidget {
 class _WarningWidget extends StatelessWidget {
   final bool extra;
 
-  _WarningWidget({Key? key, this.extra = false}) : super(key: key);
+  const _WarningWidget({Key? key, this.extra = false}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

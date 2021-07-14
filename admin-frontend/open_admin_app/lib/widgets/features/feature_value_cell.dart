@@ -16,7 +16,7 @@ class FeatureValueCell extends StatelessWidget {
   final EnvironmentFeatureValues efv;
   final Feature feature;
 
-  FeatureValueCell(
+  const FeatureValueCell(
       {Key? key,
       required this.tabsBloc,
       this.value,

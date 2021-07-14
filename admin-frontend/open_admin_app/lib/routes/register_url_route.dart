@@ -10,7 +10,7 @@ import 'package:zxcvbn/zxcvbn.dart';
 class RegisterURLRoute extends StatefulWidget {
   final String token;
 
-  RegisterURLRoute(this.token, {Key? key}) : super(key: key);
+  const RegisterURLRoute(this.token, {Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {

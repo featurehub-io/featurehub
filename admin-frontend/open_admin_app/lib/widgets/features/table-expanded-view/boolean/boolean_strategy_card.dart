@@ -8,7 +8,7 @@ class BooleanStrategyCard extends StatelessWidget {
   final RolloutStrategy? rolloutStrategy;
   final CustomStrategyBloc strBloc;
 
-  BooleanStrategyCard({Key? key, this.rolloutStrategy, required this.strBloc})
+  const BooleanStrategyCard({Key? key, this.rolloutStrategy, required this.strBloc})
       : super(key: key);
 
   @override

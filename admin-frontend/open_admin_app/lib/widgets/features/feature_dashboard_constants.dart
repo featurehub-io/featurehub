@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-final unselectedRowHeight = 70.0;
-final unselectedRowHeightPerStrategy = 45.0;
-final lockHeight = 60.0;
-final selectedRowHeight = 260.0;
-final selectedRowHeightPerStrategy = 40.0;
-final headerHeight = 40.0;
-final cellWidth = 250.0;
+const unselectedRowHeight = 70.0;
+const unselectedRowHeightPerStrategy = 45.0;
+const lockHeight = 60.0;
+const selectedRowHeight = 260.0;
+const selectedRowHeightPerStrategy = 40.0;
+const headerHeight = 40.0;
+const cellWidth = 250.0;
 final defaultValueColor = Color(0xffE0EEFD);
 final defaultValueColorDark = Color(0xff303030);
 final defaultTextColor = Color(0xff4DA1FF);

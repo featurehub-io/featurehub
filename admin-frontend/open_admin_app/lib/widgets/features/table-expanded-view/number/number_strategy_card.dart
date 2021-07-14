@@ -8,7 +8,7 @@ class NumberStrategyCard extends StatelessWidget {
   final RolloutStrategy? rolloutStrategy;
   final CustomStrategyBloc strBloc;
 
-  NumberStrategyCard({Key? key, this.rolloutStrategy, required this.strBloc})
+  const NumberStrategyCard({Key? key, this.rolloutStrategy, required this.strBloc})
       : super(key: key);
 
   @override

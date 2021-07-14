@@ -1,11 +1,11 @@
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/widgets/common/FHFlatButton.dart';
 import 'package:open_admin_app/widgets/common/fh_card.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
 
 class ResetPasswordWidget extends StatefulWidget {
-  ResetPasswordWidget();
+  const ResetPasswordWidget();
 
   @override
   State<StatefulWidget> createState() {

@@ -19,7 +19,7 @@ class StrategyEditingWidget extends StatefulWidget {
   final CustomStrategyBloc bloc;
   final bool editable;
 
-  StrategyEditingWidget({
+  const StrategyEditingWidget({
     Key? key,
     required this.bloc,
     required this.editable,
