@@ -20,14 +20,9 @@ class FHRoutePath {
   String get routeName => _routeName;
 
   RouteInformation make() {
-    if (_routeName != null) {
-      final p =
-          params.entries.map((e) => '${e.key}=${e.value.join(',')}').join('&');
-      return RouteInformation(
-          location: _routeName + (p.isNotEmpty ? '?$p' : ''));
-    }
-
-    return RouteInformation(location: '404');
+    final p =
+        params.entries.map((e) => '${e.key}=${e.value.join(',')}').join('&');
+    return RouteInformation(location: _routeName + (p.isNotEmpty ? '?$p' : ''));
   }
 
   @override
@@ -56,7 +51,7 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
 
   @override
   FHRoutePath get currentConfiguration {
-    print("current config $_path slot is $_currentSlot");
+    print('current config $_path slot is $_currentSlot');
     return _path;
   }
 
@@ -102,19 +97,19 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
     // which currently exists all over the code base.
     bloc.routeChangedStream.listen((r) {
       if (r != null) {
-        print("route change request $r");
+        print('route change request $r');
         if (_path.routeName != r.route ||
             (!const MapEquality().equals(_path.params, r.params) &&
                 _path.routeName == r.route)) {
           _path = FHRoutePath(r.route, params: r.params);
-          print("route change event to $_path");
+          print('route change event to $_path');
           notifyListeners();
         }
       }
     });
 
     bloc.siteInitialisedStream.listen((s) {
-      print("site init stream is $s vs $_currentSlot");
+      print('site init stream is $s vs $_currentSlot');
       if (s != _currentSlot) {
         _currentSlot = s;
 
@@ -125,7 +120,7 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
             _stashedRoutePath != null) {
           if (ManagementRepositoryClientBloc.router
               .canUseRoute(_stashedRoutePath!.routeName)) {
-            print("can not use route, unstashing $_stashedRoutePath!");
+            print('can not use route, unstashing $_stashedRoutePath!');
             bloc.swapRoutes(RouteChange(_stashedRoutePath!.routeName,
                 params: _stashedRoutePath!.params));
             _stashedRoutePath = null;
@@ -148,13 +143,13 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
   @override
   Future<void> setNewRoutePath(FHRoutePath newPath) async {
     if (ManagementRepositoryClientBloc.router.canUseRoute(newPath.routeName)) {
-      print("set new route path $newPath");
+      print('set new route path $newPath');
       _path = newPath;
 
       // this will trigger the listener but it will ignore it
       bloc.swapRoutes(RouteChange(newPath.routeName, params: newPath.params));
     } else {
-      print("cant use route $newPath so stashing");
+      print('cant use route $newPath so stashing');
       _stashedRoutePath = newPath;
     }
   }
@@ -167,7 +162,7 @@ class FHRouteInformationParser extends RouteInformationParser<FHRoutePath> {
   @override
   Future<FHRoutePath> parseRouteInformation(
       RouteInformation routeInformation) async {
-    print("parsing route $routeInformation");
+    print('parsing route $routeInformation');
     if (routeInformation.location == null) {
       return FHRoutePath('/loading');
     }
@@ -181,7 +176,7 @@ class FHRouteInformationParser extends RouteInformationParser<FHRoutePath> {
     if (uri.pathSegments.length == 1) {
       final path = uri.pathSegments[0];
       final p = FHRoutePath(path, params: uri.queryParametersAll);
-      print("parsed segs $p");
+      print('parsed segs $p');
       return p;
     }
 

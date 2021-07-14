@@ -149,17 +149,6 @@ class ManagementRepositoryClientBloc implements Bloc {
     personState.currentPortfolioOrSuperAdminUpdateState(p);
   }
 
-  Future<void> _setCurrentRoute() async {
-    try {
-      var currentRoute = await sharedPreferences!.getString('current-route');
-      if (currentRoute != null) {
-        _routerSource.add(RouteChange.fromJson(currentRoute));
-      }
-      // ignore: empty_catches
-    } catch (e) {}
-    ;
-  }
-
   bool get isLoggedIn => personState.isLoggedIn;
 
   Stream<RouteSlot> get siteInitialisedStream => _siteInitialisedSource.stream;
@@ -332,21 +321,29 @@ class ManagementRepositoryClientBloc implements Bloc {
         .getPerson('self', includeAcls: true, includeGroups: true)
         .then((p) {
       setPerson(p);
-      _siteInitialisedSource.add(RouteSlot.portfolio);
+      routeSlot(RouteSlot.portfolio);
     }).catchError((_) {
       setBearerToken(null);
-      _siteInitialisedSource.add(RouteSlot.login);
+      routeSlot(RouteSlot.login);
     });
   }
 
-  Future logout() async {
+  Future<void> logoutBackend() async {
     await authServiceApi.logout();
+  }
+
+  Future logout() async {
+    logoutBackend();
     setBearerToken(null);
     personState.logout();
     menuOpened.add(false);
     currentPid = null;
     currentAid = null;
-    _siteInitialisedSource.add(RouteSlot.login);
+    routeSlot(RouteSlot.login);
+  }
+
+  void routeSlot(RouteSlot slot) {
+    _siteInitialisedSource.add(slot);
   }
 
   void setOrg(Organization o) {
@@ -468,7 +465,7 @@ class ManagementRepositoryClientBloc implements Bloc {
     setLastUsername(person.email!);
 
     setPerson(person);
-    _siteInitialisedSource.add(RouteSlot.portfolio);
+    routeSlot(RouteSlot.portfolio);
   }
 
   Future<void> replaceTempPassword(String password) {
