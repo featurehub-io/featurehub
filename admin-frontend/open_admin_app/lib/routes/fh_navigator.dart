@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -48,11 +49,20 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
   final ManagementRepositoryClientBloc bloc;
   FHRoutePath _path;
   RouteSlot _currentSlot = RouteSlot.loading;
+  late StreamSubscription<RouteChange?> _routeChangeSubscription;
+  late StreamSubscription<RouteSlot> _siteInitialisedSubscription;
 
   @override
   FHRoutePath get currentConfiguration {
     print('current config $_path slot is $_currentSlot');
     return _path;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _routeChangeSubscription.cancel();
+    _siteInitialisedSubscription.cancel();
   }
 
   @override
@@ -91,11 +101,9 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
             FHRoutePath(routeSlotMappings[RouteSlot.loading]!.initialRoute) {
     // notifyListeners simply causes the build() method above to be called.
 
-    // TODO: note these listeners have NO cleanup. If a user changes them we will start getting two events
-
     // listen for an internal route change. This is someone calling ManagementRepositoryClientBloc.route.swapRoutes
     // which currently exists all over the code base.
-    bloc.routeChangedStream.listen((r) {
+    _routeChangeSubscription = bloc.routeChangedStream.listen((r) {
       if (r != null) {
         print('route change request $r');
         if (_path.routeName != r.route ||
@@ -108,7 +116,7 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
       }
     });
 
-    bloc.siteInitialisedStream.listen((s) {
+    _siteInitialisedSubscription = bloc.siteInitialisedStream.listen((s) {
       print('site init stream is $s vs $_currentSlot');
       if (s != _currentSlot) {
         _currentSlot = s;
@@ -145,12 +153,11 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
     if (ManagementRepositoryClientBloc.router.canUseRoute(newPath.routeName)) {
       print('set new route path $newPath');
       _path = newPath;
-
-      // this will trigger the listener but it will ignore it
       bloc.swapRoutes(RouteChange(newPath.routeName, params: newPath.params));
     } else {
       print('cant use route $newPath so stashing');
       _stashedRoutePath = newPath;
+      notifyListeners();
     }
   }
 
@@ -186,5 +193,19 @@ class FHRouteInformationParser extends RouteInformationParser<FHRoutePath> {
   @override
   RouteInformation restoreRouteInformation(FHRoutePath path) {
     return path.make();
+  }
+}
+
+class NavigationProviderBloc implements Bloc {
+  final ManagementRepositoryClientBloc bloc;
+  final routeInfoParser = FHRouteInformationParser();
+  final FHRouteDelegate routeDelegate;
+
+  NavigationProviderBloc(this.bloc)
+      : this.routeDelegate = FHRouteDelegate(bloc);
+
+  @override
+  void dispose() {
+    routeDelegate.dispose();
   }
 }

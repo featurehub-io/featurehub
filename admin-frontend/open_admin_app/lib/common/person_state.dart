@@ -42,7 +42,11 @@ class PersonState {
 
     _isUserIsSuperAdmin = isSuperAdminGroupFound(person.groups);
 
-    _userIsAnyPortfolioOrSuperAdmin = isAnyPortfolioOrSuperAdmin(groupList);
+    _userIsAnyPortfolioOrSuperAdmin = isAnyPortfolioOrSuperAdmin(person.groups);
+
+    _isCurrentPortfolioOrSuperAdmin.add(ReleasedPortfolio(
+        portfolio: Portfolio(name: '', id: ''),
+        currentPortfolioOrSuperAdmin: false));
 
     _personSource.add(person);
   }

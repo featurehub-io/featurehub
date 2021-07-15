@@ -176,6 +176,8 @@ class FHRouter {
 
   bool canUseRoute(String routeName) {
     final rc = RouteChange(routeName);
+    print(
+        "canUseRoute $routeName super-admin ${mrBloc.userIsSuperAdmin} current portfolio admin ${mrBloc.userIsCurrentPortfolioAdmin} loggedin ${mrBloc.isLoggedIn}");
     return hasRoutePermissions(rc, mrBloc.userIsSuperAdmin,
         mrBloc.userIsCurrentPortfolioAdmin, mrBloc.isLoggedIn);
   }
