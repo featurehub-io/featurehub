@@ -35,7 +35,10 @@ Future<void> mainApp() async {
     creator: (_context, _bag) {
       return ManagementRepositoryClientBloc();
     },
-    child: FeatureHubApp(),
+    child: BlocProvider(
+        creator: (_c, _b) => NavigationProviderBloc(
+            BlocProvider.of<ManagementRepositoryClientBloc>(_c)),
+        child: FeatureHubApp()),
   ));
 }
 
@@ -43,7 +46,7 @@ class FeatureHubApp extends StatelessWidget {
   // This widget is the root of the application.
   @override
   Widget build(BuildContext context) {
-    final client = BlocProvider.of<ManagementRepositoryClientBloc>(context);
+    final navBloc = BlocProvider.of<NavigationProviderBloc>(context);
 
     return DynamicTheme(
         defaultBrightness: Brightness.light,
@@ -54,8 +57,8 @@ class FeatureHubApp extends StatelessWidget {
               debugShowCheckedModeBanner: false,
               title: 'FeatureHub',
               theme: theme,
-              routeInformationParser: FHRouteInformationParser(),
-              routerDelegate: FHRouteDelegate(client));
+              routeInformationParser: navBloc.routeInfoParser,
+              routerDelegate: navBloc.routeDelegate);
         });
   }
 }

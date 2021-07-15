@@ -9,7 +9,6 @@ import 'route_handlers.dart';
 final _log = Logger('Routes');
 
 class Routes {
-  static final List<String> PUBLIC_URLS = ['/forgot-password', '/register-url'];
   static FHRouter configureRoutes(ManagementRepositoryClientBloc mrBloc) {
     routeSlotMappings[RouteSlot.loading] = RouteSlotMapping(
         routePermission: RouteSlot.loading,
@@ -52,9 +51,11 @@ class Routes {
         permissionType: PermissionType.any);
     // Public routes (public URL's also need ot be added to array above)
     router.define('/forgot-password',
-        handler: handleRouteChangeRequest(routeCreator.forgotPassword));
+        handler: handleRouteChangeRequest(routeCreator.forgotPassword),
+        permissionType: PermissionType.login);
     router.define('/register-url',
-        handler: handleRouteChangeRequest(routeCreator.registerUrl));
+        handler: handleRouteChangeRequest(routeCreator.registerUrl),
+        permissionType: PermissionType.login);
     router.define('/setup',
         handler: handleRouteChangeRequest(routeCreator.setup),
         permissionType: PermissionType.setup);
