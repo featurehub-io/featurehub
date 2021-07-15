@@ -18,6 +18,10 @@ We have deprecated [FeatureHub Eventsource Javascript SDK](https://www.npmjs.com
 ## Changelog
 
 ### featurehub-javascript-client-sdk
+#### 1.0.5
+- A case existed in the Polling Client where the client requests could cascade and end up DDOSing the server. On
+each poll a new request would be added, so within a short period of a time the client would be making hundreds or
+more requests before failing.  
 #### 1.0.4
 - Documentation updates
 #### 1.0.3

@@ -108,6 +108,9 @@ export class FeatureHubPollingClient implements EdgeService {
   private _startable: boolean;
   private readonly _config: FeatureHubConfig;
   private _xHeader: string;
+  private _pollPromiseResolve: (value: (PromiseLike<void> | void)) => void;
+  private _pollPromiseReject: (reason?: any) => void;
+  private _pollingStarted = false;
 
   public static pollingClientProvider: PollingClientProvider = (opt, url, freq, callback) =>
     new BrowserPollingService(opt, url, freq, callback)
@@ -141,8 +144,17 @@ export class FeatureHubPollingClient implements EdgeService {
         this._xHeader = header;
 
         this._initService();
-        return this._pollingService.attributeHeader(header);
+
+        const pollForContext = this._pollingService.attributeHeader(header);
+
+        if (!this._pollingStarted) {
+          this._restartTimer();
+        }
+
+        return pollForContext;
       }
+    } else {
+      return new Promise<void>((resolve) => resolve());
     }
   }
 
@@ -161,9 +173,18 @@ export class FeatureHubPollingClient implements EdgeService {
   }
 
   poll(): Promise<void> {
+    if (this._pollPromiseResolve !== undefined || this._pollingStarted) {
+      return new Promise<void>((resolve) => resolve());
+    }
+
     this._initService();
 
-    return this._pollingService.poll();
+    return new Promise<void>((resolve, reject) => {
+      this._pollPromiseReject = reject;
+      this._pollPromiseResolve = resolve;
+
+      this._restartTimer();
+    });
   }
 
   private stop() {
@@ -172,12 +193,26 @@ export class FeatureHubPollingClient implements EdgeService {
   }
 
   private _restartTimer() {
-    setTimeout(() => this._pollingService.poll().catch((e) => {
-      // we only get here if we failed once, so lets assume it is transient and keep going
-      // console.error(e);
-      fhLog.error(`Failed to poll, restarting in ${this._frequency}ms: ${e}`);
-      this._repository.notify(SSEResultState.Failure, null);
-    }).finally(() => this._restartTimer()), this._frequency);
+    this._pollingStarted = true;
+    setTimeout(() => this._pollingService.poll()
+      .then(() => {
+        if (this._pollPromiseResolve !== undefined) {
+          this._pollPromiseResolve();
+        }
+      })
+      .catch((e) => {
+        // we only get here if we failed once, so lets assume it is transient and keep going
+        // console.error(e);
+        fhLog.error(`Failed to poll, restarting in ${this._frequency}ms: ${e}`);
+        this._repository.notify(SSEResultState.Failure, null);
+        if (this._pollPromiseReject !== undefined) {
+          this._pollPromiseReject();
+        }
+      }).finally(() => {
+        this._pollPromiseReject = undefined;
+        this._pollPromiseResolve = undefined;
+        this._restartTimer();
+    }),        this._frequency);
   }
 
   private response(environments: Array<Environment>): void {
@@ -199,7 +234,6 @@ export class FeatureHubPollingClient implements EdgeService {
       });
 
       this._repository.notify(SSEResultState.Features, features);
-      this._restartTimer();
     }
   }
 
