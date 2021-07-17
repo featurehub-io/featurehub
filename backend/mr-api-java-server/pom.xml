@@ -3,12 +3,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.featurehub.mr</groupId>
-  <artifactId>dacha-api</artifactId>
+  <artifactId>mr-api-java-server</artifactId>
   <version>1.1-SNAPSHOT</version>
-  <name>dacha-api</name>
+  <name>mr-api-java-server</name>
 
   <description>
-    The API for the caching layer - where features go for a holiday.
+    This is a separate artifact only because it rarely changes and it is for internal use only.
   </description>
 
   <url>https://featurehub.io</url>
@@ -35,45 +35,54 @@
     </license>
   </licenses>
 
+  <properties>
+    <mr-api-version>1.1-SNAPSHOT</mr-api-version>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>io.featurehub.composites</groupId>
       <artifactId>composite-jersey</artifactId>
       <version>[1.1, 2)</version>
     </dependency>
-    <!-- we need this because these two generate the same code and it can clash if dacha-api isn't built -->
     <dependency>
       <groupId>io.featurehub.mr</groupId>
-      <artifactId>mr-api-java-server</artifactId>
-      <version>1.1-SNAPSHOT</version>
-      <scope>provided</scope>
+      <artifactId>mr-api</artifactId>
+      <version>${mr-api-version}</version>
     </dependency>
   </dependencies>
 
   <build>
     <plugins>
       <plugin>
-        <groupId>cd.connect.maven</groupId>
-        <artifactId>merge-yaml-plugin</artifactId>
-        <version>1.1</version>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
         <executions>
           <execution>
-            <id>combine</id>
-            <goals>
-              <goal>mergeYaml</goal>
-            </goals>
+            <id>extract MR API</id>
             <phase>initialize</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
             <configuration>
-              <files>
-                <file>${project.basedir}/dacha-api.yaml</file>
-                <file>${project.basedir}/../mr-api/end2end-common.yaml</file>
-                <file>${project.basedir}/../mr-api/common.yaml</file>
-              </files>
-              <finalYaml>${project.basedir}/final.yaml</finalYaml>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>io.featurehub.mr</groupId>
+                  <artifactId>mr-api</artifactId>
+                  <version>${mr-api-version}</version>
+                  <classifier>api</classifier>
+                  <type>yaml</type>
+                  <outputDirectory>${project.basedir}/target</outputDirectory>
+                  <destFileName>mr-api.yaml</destFileName>
+                </artifactItem>
+              </artifactItems>
+              <overWriteReleases>true</overWriteReleases>
+              <overWriteSnapshots>true</overWriteSnapshots>
             </configuration>
           </execution>
         </executions>
       </plugin>
+
       <plugin>
         <groupId>org.openapitools</groupId>
         <artifactId>openapi-generator-maven-plugin</artifactId>
@@ -94,17 +103,15 @@
             <phase>generate-sources</phase>
             <configuration>
               <output>${project.basedir}/target/generated-sources/api</output>
-              <apiPackage>io.featurehub.dacha.api</apiPackage>
-              <!-- we overlap the models -->
+              <apiPackage>io.featurehub.mr.api</apiPackage>
               <modelPackage>io.featurehub.mr.model</modelPackage>
-              <inputSpec>${project.basedir}/final.yaml</inputSpec>
+              <inputSpec>${project.basedir}/target/mr-api.yaml</inputSpec>
               <generatorName>jersey3-api</generatorName>
-              <generateApis>false</generateApis>
-
+              <enablePostProcessFile>true</enablePostProcessFile>
               <additionalProperties>
-                <additionalProperty>server</additionalProperty>
+                <additionalProperty>server-delegate</additionalProperty>
+                <additionalProperty>serviceUrlBase=/mr-api</additionalProperty>
               </additionalProperties>
-
               <configOptions>
                 <configOption>
                   <name>useBeanValidation</name>
@@ -138,7 +145,7 @@
       <plugin>
         <groupId>io.repaint.maven</groupId>
         <artifactId>tiles-maven-plugin</artifactId>
-        <version>2.22</version>
+        <version>2.23</version>
         <extensions>true</extensions>
         <configuration>
           <filtering>false</filtering>

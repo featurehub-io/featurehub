@@ -3,12 +3,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.featurehub.mr</groupId>
-  <artifactId>dacha-api</artifactId>
+  <artifactId>mr-api-java-client</artifactId>
   <version>1.1-SNAPSHOT</version>
-  <name>dacha-api</name>
+  <name>mr-api-java-client</name>
 
   <description>
-    The API for the caching layer - where features go for a holiday.
+    Management Registry API Java Client API
   </description>
 
   <url>https://featurehub.io</url>
@@ -28,6 +28,10 @@
     </developer>
   </developers>
 
+  <properties>
+    <mr-api-version>1.1-SNAPSHOT</mr-api-version>
+  </properties>
+
   <licenses>
     <license>
       <name>Apache 2 with Commons Clause</name>
@@ -41,39 +45,46 @@
       <artifactId>composite-jersey</artifactId>
       <version>[1.1, 2)</version>
     </dependency>
-    <!-- we need this because these two generate the same code and it can clash if dacha-api isn't built -->
     <dependency>
       <groupId>io.featurehub.mr</groupId>
-      <artifactId>mr-api-java-server</artifactId>
-      <version>1.1-SNAPSHOT</version>
-      <scope>provided</scope>
+      <artifactId>mr-api</artifactId>
+      <version>${mr-api-version}</version>
     </dependency>
   </dependencies>
 
   <build>
     <plugins>
+      <!-- pull the defined API and unzip it -->
       <plugin>
-        <groupId>cd.connect.maven</groupId>
-        <artifactId>merge-yaml-plugin</artifactId>
-        <version>1.1</version>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
         <executions>
           <execution>
-            <id>combine</id>
-            <goals>
-              <goal>mergeYaml</goal>
-            </goals>
+            <id>extract MR API</id>
             <phase>initialize</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
             <configuration>
-              <files>
-                <file>${project.basedir}/dacha-api.yaml</file>
-                <file>${project.basedir}/../mr-api/end2end-common.yaml</file>
-                <file>${project.basedir}/../mr-api/common.yaml</file>
-              </files>
-              <finalYaml>${project.basedir}/final.yaml</finalYaml>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>io.featurehub.mr</groupId>
+                  <artifactId>mr-api</artifactId>
+                  <version>${mr-api-version}</version>
+                  <classifier>api</classifier>
+                  <type>yaml</type>
+                  <outputDirectory>${project.basedir}/target</outputDirectory>
+                  <destFileName>mr-api.yaml</destFileName>
+                </artifactItem>
+              </artifactItems>
+              <overWriteReleases>true</overWriteReleases>
+              <overWriteSnapshots>true</overWriteSnapshots>
             </configuration>
           </execution>
         </executions>
       </plugin>
+
+      <!-- generate code from it, we need client impl and server -->
       <plugin>
         <groupId>org.openapitools</groupId>
         <artifactId>openapi-generator-maven-plugin</artifactId>
@@ -94,17 +105,16 @@
             <phase>generate-sources</phase>
             <configuration>
               <output>${project.basedir}/target/generated-sources/api</output>
-              <apiPackage>io.featurehub.dacha.api</apiPackage>
-              <!-- we overlap the models -->
+              <apiPackage>io.featurehub.mr.api</apiPackage>
               <modelPackage>io.featurehub.mr.model</modelPackage>
-              <inputSpec>${project.basedir}/final.yaml</inputSpec>
+              <inputSpec>${project.basedir}/target/mr-api.yaml</inputSpec>
               <generatorName>jersey3-api</generatorName>
-              <generateApis>false</generateApis>
-
+              <enablePostProcessFile>true</enablePostProcessFile>
               <additionalProperties>
-                <additionalProperty>server</additionalProperty>
+                <additionalProperty>client,server</additionalProperty>
+<!--                <additionalProperty>server-delegate</additionalProperty>-->
+                <additionalProperty>serviceUrlBase=/mr-api</additionalProperty>
               </additionalProperties>
-
               <configOptions>
                 <configOption>
                   <name>useBeanValidation</name>
@@ -116,6 +126,7 @@
         </executions>
       </plugin>
 
+      <!-- this attaches it as an artifact for publishing -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
@@ -143,7 +154,9 @@
         <configuration>
           <filtering>false</filtering>
           <tiles>
-            <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
+            <!-- we use java8 for people who need it -->
+            <tile>io.featurehub.tiles:tile-java8:[1.1,2)</tile>
+            <tile>io.featurehub.tiles:tile-release:[1.1,2)</tile>
           </tiles>
         </configuration>
       </plugin>
