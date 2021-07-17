@@ -73,7 +73,7 @@ class _ServiceAccountWidget extends StatelessWidget {
                 SizedBox(width: 4.0),
                 _ServiceAccountDescription(serviceAccount: serviceAccount),
                 SizedBox(width: 24.0),
-                StreamBuilder<ReleasedPortfolio>(
+                StreamBuilder<ReleasedPortfolio?>(
                     stream: bloc
                         .mrClient.personState.isCurrentPortfolioOrSuperAdmin,
                     builder: (context, snapshot) {

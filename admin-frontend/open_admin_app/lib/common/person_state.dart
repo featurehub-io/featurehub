@@ -14,8 +14,8 @@ Person _unauthenticatedPerson =
 class PersonState {
   final PersonServiceApi _personServiceApi;
   //stream if person user is current portfolio or super admin user
-  final BehaviorSubject<ReleasedPortfolio> _isCurrentPortfolioOrSuperAdmin =
-      BehaviorSubject<ReleasedPortfolio>();
+  final BehaviorSubject<ReleasedPortfolio?> _isCurrentPortfolioOrSuperAdmin =
+      BehaviorSubject<ReleasedPortfolio?>();
 
   final BehaviorSubject<Person> _personSource =
       BehaviorSubject.seeded(_unauthenticatedPerson);
@@ -44,14 +44,12 @@ class PersonState {
 
     _userIsAnyPortfolioOrSuperAdmin = isAnyPortfolioOrSuperAdmin(person.groups);
 
-    _isCurrentPortfolioOrSuperAdmin.add(ReleasedPortfolio(
-        portfolio: Portfolio(name: '', id: ''),
-        currentPortfolioOrSuperAdmin: false));
+    _isCurrentPortfolioOrSuperAdmin.add(null);
 
     _personSource.add(person);
   }
 
-  Stream<ReleasedPortfolio> get isCurrentPortfolioOrSuperAdmin =>
+  Stream<ReleasedPortfolio?> get isCurrentPortfolioOrSuperAdmin =>
       _isCurrentPortfolioOrSuperAdmin.stream;
 
   PersonState(this._personServiceApi);

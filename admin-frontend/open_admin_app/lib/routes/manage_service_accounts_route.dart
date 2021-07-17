@@ -1,10 +1,10 @@
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/widgets/apps/manage_service_accounts_bloc.dart';
 import 'package:open_admin_app/widgets/apps/service_account_list_widget.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_text_button.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
 
 /// Every user has access to portfolios, they can only see the ones they have access to
 /// and their access will be limited based on whether they are a super admin.
@@ -54,7 +54,7 @@ class _ServiceAccountSearchState extends State<_ServiceAccountSearchWidget> {
           decoration: BoxDecoration(
               color: Theme.of(context).cardColor,
               border: Border(bottom: bs, left: bs, right: bs, top: bs)),
-          child: StreamBuilder<ReleasedPortfolio>(
+          child: StreamBuilder<ReleasedPortfolio?>(
               stream: bloc.mrClient.personState.isCurrentPortfolioOrSuperAdmin,
               builder: (context, snapshot) {
                 if (snapshot.hasData &&

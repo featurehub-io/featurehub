@@ -1,10 +1,10 @@
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/widgets/stepper/progress_stepper_bloc.dart';
 import 'package:open_admin_app/widgets/stepper/progress_stepper_widget.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 
 class StepperContainer extends StatelessWidget {
   final ManagementRepositoryClientBloc mrBloc;
@@ -41,7 +41,7 @@ class StepperRocketButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<ReleasedPortfolio>(
+    return StreamBuilder<ReleasedPortfolio?>(
         stream: mrBloc.personState.isCurrentPortfolioOrSuperAdmin,
         builder: (context, snapshot) {
           if (snapshot.data != null &&

@@ -1,13 +1,13 @@
-import 'package:open_admin_app/api/client_api.dart';
-import 'package:open_admin_app/api/router.dart';
-import 'package:open_admin_app/common/stream_valley.dart';
-import 'package:open_admin_app/widgets/common/fh_portfolio_selector.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/api/router.dart';
+import 'package:open_admin_app/common/stream_valley.dart';
+import 'package:open_admin_app/widgets/common/fh_portfolio_selector.dart';
 
 class DrawerViewWidget extends StatefulWidget {
   @override
@@ -65,7 +65,7 @@ class _MenuContainer extends StatelessWidget {
                     PortfolioSelectorWidget(),
                     SizedBox(height: 16),
                     _MenuFeaturesOptionsWidget(),
-                    StreamBuilder<ReleasedPortfolio>(
+                    StreamBuilder<ReleasedPortfolio?>(
                         stream:
                             mrBloc.personState.isCurrentPortfolioOrSuperAdmin,
                         builder: (context, snapshot) {

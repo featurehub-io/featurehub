@@ -34,7 +34,7 @@ class _AppsRouteState extends State<AppsRoute> {
                     title: 'Applications',
                   ),
                 ),
-                StreamBuilder<ReleasedPortfolio>(
+                StreamBuilder<ReleasedPortfolio?>(
                     stream: bloc
                         .mrClient.personState.isCurrentPortfolioOrSuperAdmin,
                     builder: (context, snapshot) {
@@ -166,7 +166,7 @@ class _ApplicationCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                      StreamBuilder<ReleasedPortfolio>(
+                      StreamBuilder<ReleasedPortfolio?>(
                           stream: bloc.mrClient.personState
                               .isCurrentPortfolioOrSuperAdmin,
                           builder: (context, snapshot) {

@@ -1,3 +1,6 @@
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/widgets/common/application_drop_down.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
@@ -7,9 +10,6 @@ import 'package:open_admin_app/widgets/common/link_to_applications_page.dart';
 import 'package:open_admin_app/widgets/features/create-update-feature-dialog-widget.dart';
 import 'package:open_admin_app/widgets/features/features_overview_table_widget.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:mrapi/api.dart';
 
 class FeatureStatusRoute extends StatelessWidget {
   @override
@@ -71,7 +71,7 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
                       applications: snapshot.data!, bloc: bloc);
                 }
                 if (snapshot.hasData && snapshot.data!.isEmpty) {
-                  return StreamBuilder<ReleasedPortfolio>(
+                  return StreamBuilder<ReleasedPortfolio?>(
                       stream: bloc
                           .mrClient.personState.isCurrentPortfolioOrSuperAdmin,
                       builder: (context, snapshot) {

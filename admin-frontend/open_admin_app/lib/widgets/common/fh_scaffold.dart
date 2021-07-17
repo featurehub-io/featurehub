@@ -154,7 +154,7 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
                       )));
             }),
           ),
-          StreamBuilder<ReleasedPortfolio>(
+          StreamBuilder<ReleasedPortfolio?>(
               stream: mrBloc.personState.isCurrentPortfolioOrSuperAdmin,
               builder: (context, snapshot) {
                 if (snapshot.data != null &&

@@ -1,3 +1,9 @@
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_icons/flutter_icons.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/widgets/common/application_drop_down.dart';
@@ -6,12 +12,6 @@ import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/service-accounts/service_accounts_env_bloc.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter_icons/flutter_icons.dart';
-import 'package:mrapi/api.dart';
 
 class ServiceAccountEnvRoute extends StatelessWidget {
   @override
@@ -54,7 +54,7 @@ class ServiceAccountEnvRoute extends StatelessWidget {
                                   return SizedBox.shrink();
                                 }
                               }),
-                          StreamBuilder<ReleasedPortfolio>(
+                          StreamBuilder<ReleasedPortfolio?>(
                               stream: bloc.mrClient.personState
                                   .isCurrentPortfolioOrSuperAdmin,
                               builder: (context, snapshot) {
