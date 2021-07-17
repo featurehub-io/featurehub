@@ -31,7 +31,7 @@ class StreamValley {
   final FeatureServiceApi featureServiceApi;
   final ApplicationServiceApi applicationServiceApi;
 
-  late StreamSubscription<ReleasedPortfolio>
+  late StreamSubscription<ReleasedPortfolio?>
       currentPortfolioAdminOrSuperAdminSubscription;
   late StreamSubscription<Portfolio?> currentPortfolioSubscription;
 
@@ -48,9 +48,14 @@ class StreamValley {
     // we  have done our permission checks on it and swapped their route if they have no access
     currentPortfolioAdminOrSuperAdminSubscription =
         personState.isCurrentPortfolioOrSuperAdmin.listen((val) {
-      _currentPortfolioSource.add(val.portfolio);
-      _isCurrentPortfolioAdminOrSuperAdmin = val.currentPortfolioOrSuperAdmin;
-      _refreshApplicationIdChanged();
+      if (val != null) {
+        _currentPortfolioSource.add(val.portfolio);
+        _isCurrentPortfolioAdminOrSuperAdmin = val.currentPortfolioOrSuperAdmin;
+        _refreshApplicationIdChanged();
+      } else {
+        _isCurrentPortfolioAdminOrSuperAdmin = false;
+      }
+
       if (_isCurrentPortfolioAdminOrSuperAdmin) {
         getCurrentPortfolioGroups();
         getCurrentPortfolioServiceAccounts();

@@ -1,13 +1,13 @@
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:logging/logging.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/features/environments_features_list_view.dart';
 import 'package:open_admin_app/widgets/features/feature_names_left_panel.dart';
 import 'package:open_admin_app/widgets/features/tabs_bloc.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:logging/logging.dart';
 
 import 'feature_dashboard_constants.dart';
 import 'hidden_environment_list.dart';
@@ -241,7 +241,7 @@ class NoEnvironmentMessage extends StatelessWidget {
           Text(
               'Either there are no environments defined for this application or you don\'t have permissions to access any of them',
               style: Theme.of(context).textTheme.caption),
-          StreamBuilder<ReleasedPortfolio>(
+          StreamBuilder<ReleasedPortfolio?>(
               stream: bloc.mrClient.personState.isCurrentPortfolioOrSuperAdmin,
               builder: (context, snapshot) {
                 if (snapshot.hasData &&
