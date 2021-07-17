@@ -1,10 +1,9 @@
-== the base_party image
+= The Testing Database
 
-This contains the base of the Party Server, including NATs Server and the Open JRE v11.
+This is a testing database that is intended to be baked into the testing party server instance that is
+used to test each SDK. 
 
-It is used by the Party Server build to create a build.
+By having a testing database, the API Keys are kept consistent and repeatable. 
 
-It is built using make-image.sh
+The admin user is `test@mailinator.com` and the password is `password123`
 
-Once built, you can login to DockerHub (`docker login` - use `docker logout` if you are logged in using 
-something else). 
