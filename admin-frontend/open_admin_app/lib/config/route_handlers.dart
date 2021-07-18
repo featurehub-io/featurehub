@@ -7,11 +7,13 @@ import 'package:open_admin_app/routes/create_user_route.dart';
 import 'package:open_admin_app/routes/edit_user_route.dart';
 import 'package:open_admin_app/routes/features_overview_route.dart';
 import 'package:open_admin_app/routes/home_route.dart';
+import 'package:open_admin_app/routes/loading_route.dart';
 import 'package:open_admin_app/routes/manage_app_route.dart';
 import 'package:open_admin_app/routes/manage_group_route.dart';
 import 'package:open_admin_app/routes/manage_portfolios_route.dart';
 import 'package:open_admin_app/routes/manage_service_accounts_route.dart';
 import 'package:open_admin_app/routes/manage_users_route.dart';
+import 'package:open_admin_app/routes/not_found_route.dart';
 import 'package:open_admin_app/routes/register_url_route.dart';
 import 'package:open_admin_app/routes/service_env_route.dart';
 import 'package:open_admin_app/routes/setup_route.dart';
@@ -40,17 +42,15 @@ Handler handleRouteChangeRequest(builder) {
 
 class RouteCreator {
   Widget loading(mrBloc, {params}) {
-    return HomeRoute(title: 'Loading MotherFlagga!');
-    // return LandingRoute(title: 'FeatureHub');
+    return const LoadingRoute();
   }
 
   Widget notFound(mrBloc, {params}) {
-    return HomeRoute(title: 'Link not found');
+    return const NotFoundRoute();
   }
 
   Widget root(mrBloc, {params}) {
-    return HomeRoute(title: 'FeatureHub');
-    // return LandingRoute(title: 'FeatureHub');
+    return const HomeRoute(title: 'FeatureHub');
   }
 
   Widget login(mrBloc, {params}) {
@@ -66,14 +66,14 @@ class RouteCreator {
     return BlocProvider<PortfolioBloc>(
         creator: (_context, _bag) =>
             PortfolioBloc(params['search']?.elementAt(0), mrBloc),
-        child: PortfolioRoute());
+        child: const PortfolioRoute());
   }
 
   Widget users(mrBloc, {params}) {
     return BlocProvider<ListUsersBloc>(
         creator: (_context, _bag) =>
             ListUsersBloc(params['search']?.elementAt(0), mrBloc),
-        child: ManageUsersRoute());
+        child: const ManageUsersRoute());
   }
 
   Widget group(mrBloc, {params}) {

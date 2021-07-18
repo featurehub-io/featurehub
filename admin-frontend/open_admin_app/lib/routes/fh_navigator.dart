@@ -90,7 +90,7 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
     final wrapWidget = scaffoldWrapPermissions.contains(handler.permissionType);
 
     return MaterialPage(
-        key: ValueKey('app'),
+        key: const ValueKey('app'),
         child: wrapWidget ? RouteWrapperWidget(child: child) : child);
   }
 

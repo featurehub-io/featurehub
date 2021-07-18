@@ -40,7 +40,6 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
             padding: const EdgeInsets.fromLTRB(0, 0, 30, 10),
             child: FHHeader(
               title: 'Manage group members',
-              children: [],
             )),
         FHPageDivider(),
         Row(

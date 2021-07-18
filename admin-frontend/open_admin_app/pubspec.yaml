@@ -59,6 +59,7 @@ flutter:
     - assets/logo/FeatureHub-icon.png
     - assets/logo/FeatureHubPrimaryWhite.png
     - assets/logo/FlowerDarkBackground.png
+    - assets/images/meditation.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
