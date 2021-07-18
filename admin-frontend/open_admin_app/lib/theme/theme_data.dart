@@ -307,4 +307,8 @@ final ThemeData darkTheme = ThemeData(
               letterSpacing: 0.8)
       )
   ),
+  iconTheme: IconThemeData(
+    opacity: 1,
+    size: 16,
+  ),
 );
