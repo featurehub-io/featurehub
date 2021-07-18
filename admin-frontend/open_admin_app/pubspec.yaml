@@ -12,6 +12,8 @@ environment:
   sdk: '>=2.13.0 <3.0.0'
 
 dependencies:
+  flutter_web_plugins:
+    sdk: flutter
   flutter:
     sdk: flutter
 
