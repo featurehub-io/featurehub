@@ -55,7 +55,6 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
               padding: EdgeInsets.only(bottom: 10),
               child: FHHeader(
                 title: 'Application settings',
-                children: <Widget>[],
               ),
             ),
             FHPageDivider(),

@@ -14,7 +14,7 @@ import 'package:open_admin_app/widgets/features/per_application_features_bloc.da
 class FeatureStatusRoute extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(child: _FeatureStatusWidget());
+    return _FeatureStatusWidget();
   }
 }
 
@@ -33,7 +33,7 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
       children: <Widget>[
         _headerRow(context, bloc),
         FHPageDivider(),
-        SizedBox(height: 16.0),
+        const SizedBox(height: 16.0),
         FeaturesOverviewTableWidget()
       ],
     );
@@ -41,12 +41,12 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
 
   Widget _headerRow(BuildContext context, PerApplicationFeaturesBloc bloc) {
     return Container(
-        padding: const EdgeInsets.fromLTRB(0, 0, 30, 10),
+        padding: const EdgeInsets.fromLTRB(0, 8, 30, 10),
         child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              _FeaturesOverviewHeader(),
+              const _FeaturesOverviewHeader(),
               FittedBox(
                 child: Row(
                   children: [
@@ -62,6 +62,7 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
     return Column(
       children: <Widget>[
         Container(
+          // color: Colors.red,
           padding: const EdgeInsets.fromLTRB(12, 16, 16, 16),
           child: StreamBuilder<List<Application>?>(
               stream: bloc.applications,
@@ -93,7 +94,7 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
                         }
                       });
                 }
-                return Container();
+                return const SizedBox.shrink();
               }),
         ),
       ],
@@ -108,7 +109,7 @@ class _FeaturesOverviewHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FHHeader(
+    return const FHHeader(
       title: 'Features console',
     );
   }

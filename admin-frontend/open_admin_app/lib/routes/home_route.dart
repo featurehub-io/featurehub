@@ -6,6 +6,6 @@ class HomeRoute extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(child: Text(title));
+    return Center(child: Text(title, style: Theme.of(context).textTheme.headline3),);
   }
 }

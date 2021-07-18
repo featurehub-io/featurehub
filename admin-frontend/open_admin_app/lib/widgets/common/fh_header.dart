@@ -16,7 +16,7 @@ class FHHeader extends StatelessWidget {
 
     titleChildren.add(
       Container(
-        padding: EdgeInsets.only(right: 25),
+        padding: const EdgeInsets.only(right: 24),
         child: Text(title, style: Theme.of(context).textTheme.headline5
             // .copyWith(color: Theme.of(context).primaryColor
             ),
@@ -27,7 +27,7 @@ class FHHeader extends StatelessWidget {
 
     return FittedBox(
       child: Container(
-        padding: EdgeInsets.fromLTRB(10, 10, 25, 0),
+        padding: const EdgeInsets.fromLTRB(10, 10, 25, 0),
         child: Row(
           children: titleChildren,
         ),
