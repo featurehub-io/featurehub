@@ -1,5 +1,4 @@
 import 'package:open_admin_app/widgets/common/fh_header.dart';
-import 'package:open_admin_app/widgets/common/fh_icon_text_button.dart';
 import 'package:open_admin_app/widgets/portfolio/portfolio_bloc.dart';
 import 'package:open_admin_app/widgets/portfolio/portfolio_widget.dart';
 import 'package:bloc_provider/bloc_provider.dart';
@@ -38,16 +37,15 @@ class PortfolioRoute extends StatelessWidget {
         if (bloc.mrClient.userIsSuperAdmin == true)
           Padding(
             padding: const EdgeInsets.only(top: 12.0),
-            child: FHIconTextButton(
-              iconData: Icons.add,
-              label: 'Create new portfolio',
+            child: TextButton.icon(
+              icon: const Icon(Icons.add),
+              label: const Text('Create new portfolio'),
               onPressed: () =>
                   bloc.mrClient.addOverlay((BuildContext context) {
                     return PortfolioUpdateDialogWidget(
                       bloc: bloc,
                     );
                   }),
-              keepCase: true,
             ),
           )
       ],

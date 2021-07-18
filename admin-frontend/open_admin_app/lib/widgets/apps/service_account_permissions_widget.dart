@@ -119,7 +119,7 @@ with only 'Read' permission for service accounts.'''),
                   padding: EdgeInsets.only(left: 8.0),
                   child: Icon(
                     Icons.keyboard_arrow_down,
-                    size: 24,
+                    size: 18,
                   ),
                 ),
                 isExpanded: true,

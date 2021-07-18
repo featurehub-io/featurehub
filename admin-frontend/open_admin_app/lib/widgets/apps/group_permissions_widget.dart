@@ -89,7 +89,7 @@ class __GroupsDropdownState extends State<_GroupsDropdown> {
             padding: EdgeInsets.only(left: 8.0),
             child: Icon(
               Icons.keyboard_arrow_down,
-              size: 24,
+              size: 18,
             ),
           ),
           isDense: true,

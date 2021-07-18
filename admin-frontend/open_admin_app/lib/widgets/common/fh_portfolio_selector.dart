@@ -35,6 +35,7 @@ class _PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
                       children: [
                         Text('Your current portfolio',
                             style: Theme.of(context).textTheme.caption),
+                        SizedBox(height: 4.0),
                         InkWell(
                           mouseCursor: SystemMouseCursors.click,
                           child: OutlinedButton(
@@ -45,7 +46,7 @@ class _PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
                                   padding: EdgeInsets.only(left: 8.0),
                                   child: Icon(
                                     Icons.keyboard_arrow_down,
-                                    size: 24,
+                                    size: 18,
                                   ),
                                 ),
                                 style: Theme.of(context).textTheme.bodyText1,

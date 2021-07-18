@@ -105,7 +105,7 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
                       padding: EdgeInsets.only(left: 8.0),
                       child: Icon(
                         Icons.keyboard_arrow_down,
-                        size: 24,
+                        size: 18,
                       ),
                     ),
                     isExpanded: true,
@@ -158,7 +158,7 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
                         padding: EdgeInsets.only(left: 8.0),
                         child: Icon(
                           Icons.keyboard_arrow_down,
-                          size: 24,
+                          size: 18,
                         ),
                       ),
                       isExpanded: true,

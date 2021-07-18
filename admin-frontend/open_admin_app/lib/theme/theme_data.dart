@@ -6,7 +6,7 @@ final fontFamily = GoogleFonts.roboto().fontFamily;
 final ThemeData myTheme = ThemeData(
   // primarySwatch: MaterialColor(4278391389,{50: Instance of 'minified:i', 100: Instance of 'minified:i', 200: Instance of 'minified:i', 300: Instance of 'minified:i', 400: Instance of 'minified:i', 500: Instance of 'minified:i', 600: Instance of 'minified:i', 700: Instance of 'minified:i', 800: Instance of 'minified:i', 900: Instance of 'minified:i'}),
   brightness: Brightness.light,
-  primaryColor: Color(0xff03125d),
+  primaryColor: const Color(0xff03125d),
   primaryColorBrightness: Brightness.dark,
   primaryColorLight: Color(0xffced6fd),
   primaryColorDark: Color(0xff051d94),
@@ -37,8 +37,31 @@ final ThemeData myTheme = ThemeData(
     selectionHandleColor: Color(0xff6b83fa),
   ),
   textButtonTheme: TextButtonThemeData(
-    style: TextButton.styleFrom(primary: Color(0xff473e8f)),
+    // style: TextButton.styleFrom(primary: Color(0xff473e8f)),
+      style: TextButton.styleFrom(
+          padding: EdgeInsets.all(16),
+          textStyle: TextStyle(
+              wordSpacing: 0.8,
+              letterSpacing: 0.8)
+      )
   ),
+  elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+          padding: EdgeInsets.all(16),
+          textStyle: TextStyle(
+              wordSpacing: 0.8,
+              letterSpacing: 0.8)
+            )
+  ),
+  outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+          padding: EdgeInsets.all(16),
+          textStyle: TextStyle(
+              wordSpacing: 0.8,
+              letterSpacing: 0.8)
+      )
+  ),
+  // iconTheme: IconThemeData(size: 16.0),
   buttonTheme: ButtonThemeData(
     textTheme: ButtonTextTheme.normal,
     minWidth: 88,
@@ -176,7 +199,7 @@ final ThemeData myTheme = ThemeData(
   iconTheme: IconThemeData(
     color: Color(0xff473e8f),
     opacity: 1,
-    size: 24,
+    size: 16,
   ),
   primaryIconTheme: IconThemeData(
     color: Color(0xffffffff),
@@ -258,4 +281,30 @@ final ThemeData darkTheme = ThemeData(
   primarySwatch: Colors.blue,
   brightness: Brightness.dark,
   fontFamily: fontFamily,
+
+  textButtonTheme: TextButtonThemeData(
+    // style: TextButton.styleFrom(primary: Color(0xff473e8f)),
+      style: TextButton.styleFrom(
+          padding: EdgeInsets.all(16),
+          textStyle: TextStyle(
+              wordSpacing: 0.8,
+              letterSpacing: 0.8)
+      )
+  ),
+  elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+          padding: EdgeInsets.all(16),
+          textStyle: TextStyle(
+              wordSpacing: 0.8,
+              letterSpacing: 0.8)
+      )
+  ),
+  outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+          padding: EdgeInsets.all(16),
+          textStyle: TextStyle(
+              wordSpacing: 0.8,
+              letterSpacing: 0.8)
+      )
+  ),
 );

@@ -10,7 +10,6 @@ import 'package:open_admin_app/widgets/apps/app_update_dialog_widget.dart';
 import 'package:open_admin_app/widgets/apps/apps_bloc.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
-import 'package:open_admin_app/widgets/common/fh_icon_text_button.dart';
 
 class AppsRoute extends StatefulWidget {
   @override
@@ -43,10 +42,9 @@ class _AppsRouteState extends State<AppsRoute> {
                               true)) {
                         return Padding(
                           padding: const EdgeInsets.only(top: 8.0),
-                          child: FHIconTextButton(
-                            iconData: Icons.add,
-                            keepCase: true,
-                            label: 'Create new application',
+                          child: TextButton.icon(
+                            icon: const Icon(Icons.add),
+                            label: const Text('Create new application'),
                             onPressed: () => bloc.mrClient
                                 .addOverlay((BuildContext context) {
                               return AppUpdateDialogWidget(
