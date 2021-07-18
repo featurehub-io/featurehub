@@ -110,6 +110,7 @@ class _ValueCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var displayValue = _findDisplayValue();
+    var lightTheme = Theme.of(context).brightness == Brightness.light;
     return Padding(
       padding: const EdgeInsets.only(top: 8.0, bottom: 4.0),
       child: Row(
@@ -121,19 +122,19 @@ class _ValueCard extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 8.0),
             decoration: BoxDecoration(
               color: rolloutStrategy == null
-                  ? (Theme.of(context).brightness == Brightness.light
+                  ? (lightTheme
                       ? defaultValueColor
                       : Colors.transparent)
-                  : (Theme.of(context).brightness == Brightness.light
+                  : (lightTheme
                       ? strategyValueColor
                       : Colors.transparent),
               borderRadius: BorderRadius.all(Radius.circular(16.0)),
-              border: Theme.of(context).brightness == Brightness.light
+              border: lightTheme
                   ? null
-                  : Border.all(
-                      color: Theme.of(context).disabledColor,
-                      width: 1.0,
-                    ),
+                  :  Border.all(
+              color: Colors.blue,
+              width: 1.0,
+            ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -161,6 +162,7 @@ class _ValueCard extends StatelessWidget {
                 if (fv.rolloutStrategies.isNotEmpty)
                   VerticalDivider(
                     thickness: 1.0,
+                    color: lightTheme ? null : Colors.blue
                   ),
                 Expanded(
                   flex: 4,
@@ -179,7 +181,7 @@ class _ValueCard extends StatelessWidget {
                               maxLines: 1,
                               style: displayValue.isEmpty
                                   ? Theme.of(context).textTheme.caption
-                                  : Theme.of(context).textTheme.bodyText2),
+                                  : Theme.of(context).textTheme.bodyText2?.copyWith(color: Color(0xff11C8B5))),
                     ),
                   ),
                 )
