@@ -181,26 +181,23 @@ class _EditAttributeStrategyWidgetState
         child: Column(
           children: [
             if (_wellKnown == null)
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: _customFieldType(),
-              ),
+              _customFieldType(),
             Padding(
               padding: const EdgeInsets.only(left: 8.0),
               child: Container(
-                padding: EdgeInsets.all(4.0),
-                margin: EdgeInsets.all(8.0),
+                padding: const EdgeInsets.all(4.0),
+                // margin: EdgeInsets.all(8.0),
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.all(Radius.circular(6.0)),
                     color: Theme.of(context).cardColor),
-                height: 32,
+                height: 42,
                 child: OutlinedButton(
                   onPressed: () => {},
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<RolloutStrategyAttributeConditional>(
                       icon: Icon(
                         Icons.keyboard_arrow_down,
-                        size: 24,
+                        size: 18,
                       ),
                       isExpanded: true,
                       items: _matchers.map((RolloutStrategyAttributeConditional
@@ -283,17 +280,14 @@ class _EditAttributeStrategyWidgetState
       decoration: BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(6.0)),
           color: Theme.of(context).cardColor),
-      height: 32,
+      height: 42,
       child: OutlinedButton(
         onPressed: () => {},
         child: DropdownButtonHideUnderline(
           child: DropdownButton<RolloutStrategyFieldType>(
-            icon: Padding(
-              padding: EdgeInsets.only(left: 16.0),
-              child: Icon(
-                Icons.keyboard_arrow_down,
-                size: 24,
-              ),
+            icon: Icon(
+              Icons.keyboard_arrow_down,
+              size: 18,
             ),
             isExpanded: true,
             items: RolloutStrategyFieldType.values
@@ -382,7 +376,7 @@ class _EditAttributeStrategyWidgetState
                       padding: EdgeInsets.only(left: 16.0),
                       child: Icon(
                         Icons.keyboard_arrow_down,
-                        size: 24,
+                        size: 18,
                       ),
                     ),
                     isExpanded: true,

@@ -5,7 +5,6 @@ import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
-import 'package:open_admin_app/widgets/common/fh_icon_text_button.dart';
 import 'package:open_admin_app/widgets/group/group_bloc.dart';
 import 'package:open_admin_app/widgets/group/group_update_widget.dart';
 import 'package:bloc_provider/bloc_provider.dart';
@@ -72,18 +71,16 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                           Flexible(flex: 1, child: _getAdminActions(bloc)),
                           Flexible(
                             flex: 4,
-                            child: Container(
-                                child: FHIconTextButton(
-                              iconData: Icons.add,
-                              keepCase: true,
-                              label: 'Create new group',
+                            child: TextButton.icon(
+                              icon: const Icon(Icons.add),
+                              label: const Text('Create new group'),
                               onPressed: () => bloc.mrClient
-                                  .addOverlay((BuildContext context) {
-                                return GroupUpdateDialogWidget(
-                                  bloc: bloc,
-                                );
+                              .addOverlay((BuildContext context) {
+                            return GroupUpdateDialogWidget(
+                              bloc: bloc,
+                            );
                               }),
-                            )),
+                            ),
                           ),
                         ],
                       ),
@@ -174,7 +171,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                         padding: EdgeInsets.only(left: 8.0),
                         child: Icon(
                           Icons.keyboard_arrow_down,
-                          size: 24,
+                          size: 18,
                         ),
                       ),
                       isDense: true,
@@ -216,9 +213,9 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
         children: <Widget>[
           Container(
             child: bloc.mrClient.isPortfolioOrSuperAdmin(group.portfolioId!)
-                ? FHIconTextButton(
-                    iconData: Icons.add,
-                    label: 'Add members',
+                ? TextButton.icon(
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add members'),
                     onPressed: () =>
                         bloc.mrClient.addOverlay((BuildContext context) {
                       return AddMembersDialogWidget(
@@ -226,7 +223,6 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                         group: group,
                       );
                     }),
-                    keepCase: true,
                   )
                 : Container(),
           )

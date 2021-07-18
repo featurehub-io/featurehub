@@ -94,7 +94,7 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                           amSelected
                                               ? Icons.keyboard_arrow_down
                                               : Icons.keyboard_arrow_right,
-                                          size: 24.0,
+                                          size: 18.0,
                                         ),
                                         Expanded(
                                           child: Column(

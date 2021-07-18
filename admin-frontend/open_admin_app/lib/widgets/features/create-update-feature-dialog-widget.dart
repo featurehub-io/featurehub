@@ -133,7 +133,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                         padding: EdgeInsets.only(left: 8.0),
                         child: Icon(
                           Icons.keyboard_arrow_down,
-                          size: 24,
+                          size: 18,
                         ),
                       ),
                       isExpanded: false,

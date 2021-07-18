@@ -22,7 +22,6 @@ class _ApplicationDropDownState extends State<ApplicationDropDown> {
     return OutlinedButton(
       onPressed: () => {},
       child: Container(
-        padding: EdgeInsets.all(4.0),
         constraints: BoxConstraints(maxWidth: 200),
         child: StreamBuilder<String?>(
             stream: widget.bloc.mrClient.streamValley.currentAppIdStream,
@@ -33,7 +32,7 @@ class _ApplicationDropDownState extends State<ApplicationDropDown> {
                     padding: EdgeInsets.only(left: 8.0),
                     child: Icon(
                       Icons.keyboard_arrow_down,
-                      size: 24,
+                      size: 18,
                     ),
                   ),
                   isExpanded: true,

@@ -4,7 +4,6 @@ import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_delete_thing.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
-import 'package:open_admin_app/widgets/common/fh_icon_text_button.dart';
 import 'package:open_admin_app/widgets/common/fh_info_card.dart';
 import 'package:open_admin_app/widgets/common/fh_reorderable_list_view.dart';
 import 'package:bloc_provider/bloc_provider.dart';
@@ -360,18 +359,16 @@ class _EnvUpdateDialogWidgetState extends State<EnvUpdateDialogWidget> {
 Widget AddEnvWidget(BuildContext context, ManageAppBloc bloc) {
   return Column(children: <Widget>[
     Container(
-        padding: const EdgeInsets.fromLTRB(30, 10, 30, 10),
+        padding: const EdgeInsets.fromLTRB(0, 10, 30, 10),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             if (bloc.mrClient.isPortfolioOrSuperAdmin(bloc.portfolio?.id))
               Container(
-                  padding: EdgeInsets.only(left: 8),
-                  child: FHIconTextButton(
-                    iconData: Icons.add,
-                    keepCase: true,
-                    label: 'Create new environment',
+                  child: TextButton.icon(
+                    icon: const Icon(Icons.add),
+                    label: const Text('Create new environment'),
                     onPressed: () =>
                         bloc.mrClient.addOverlay((BuildContext context) {
                       return EnvUpdateDialogWidget(
@@ -379,7 +376,7 @@ Widget AddEnvWidget(BuildContext context, ManageAppBloc bloc) {
                       );
                     }),
                   )),
-            FHInfoCardWidget(
+            const FHInfoCardWidget(
               message: '''
 Ordering your environments,
 showing the path to production (top to bottom)
