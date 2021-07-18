@@ -111,7 +111,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                                 .router
                                                 .navigateTo(
                                               context,
-                                              '/manage-group',
+                                              '/groups',
                                             )
                                           },
                                         ),
@@ -138,7 +138,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                                 .router
                                                 .navigateTo(
                                               context,
-                                              '/manage-service-accounts',
+                                              '/service-accounts',
                                             )
                                           },
                                         ),
@@ -167,10 +167,10 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                                 .router
                                                 .navigateTo(
                                               context,
-                                              '/manage-app',
+                                              '/app-settings',
                                               params: {
                                                 'id': [bloc.applicationId!],
-                                                'tab-name': ['environments']
+                                                'tab': ['environments']
                                               },
                                             )
                                           },
@@ -201,10 +201,10 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                                 .router
                                                 .navigateTo(
                                               context,
-                                              '/manage-app',
+                                              '/app-settings',
                                               params: {
                                                 'id': [bloc.applicationId!],
-                                                'tab-name': [
+                                                'tab': [
                                                   'group-permissions'
                                                 ]
                                               },
@@ -241,10 +241,10 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                                 .router
                                                 .navigateTo(
                                               context,
-                                              '/manage-app',
+                                              '/app-settings',
                                               params: {
                                                 'id': [bloc.applicationId!],
-                                                'tab-name': ['service-accounts']
+                                                'tab': ['service-accounts']
                                               },
                                             )
                                           },
@@ -274,7 +274,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                                 .router
                                                 .navigateTo(
                                               context,
-                                              '/feature-status',
+                                              '/features',
                                             )
                                           },
                                         ),

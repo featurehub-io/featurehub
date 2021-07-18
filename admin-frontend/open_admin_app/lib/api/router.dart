@@ -96,7 +96,7 @@ class FHRouter {
 
   HandlerFunc getRoute(String route) {
     if (route == '/') {
-      route = '/feature-status';
+      route = '/features';
     }
     final f = handlers[route];
 
@@ -171,7 +171,7 @@ class FHRouter {
   }
 
   RouteChange defaultRoute() {
-    return RouteChange('/feature-status', params: {});
+    return RouteChange('/features', params: {});
   }
 
   bool canUseRoute(String routeName) {

@@ -101,18 +101,18 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
 
   void tabChangeListener() {
     // tab has changed, notify external route
-    final rc = RouteChange('/manage-app');
+    final rc = RouteChange('/app-settings');
     if (_controller?.index == 0) {
       rc.params = {
-        'tab-name': ['environments']
+        'tab': ['environments']
       };
     } else if (_controller?.index == 1) {
       rc.params = {
-        'tab-name': ['group-permissions']
+        'tab': ['group-permissions']
       };
     } else if (_controller?.index == 2) {
       rc.params = {
-        'tab-name': ['service-accounts']
+        'tab': ['service-accounts']
       };
     }
     bloc?.notifyExternalRouteChange(rc);
@@ -200,8 +200,8 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
     _routeChange = BlocProvider.of<ManagementRepositoryClientBloc>(context)
         .routeChangedStream
         .listen((routeChange) {
-      if (routeChange?.route == '/manage-app') {
-        switch (routeChange!.params['tab-name']![0]) {
+      if (routeChange?.route == '/app-settings') {
+        switch (routeChange!.params['tab']![0]) {
           case 'environments':
             _controller!.animateTo(0);
             break;

@@ -70,12 +70,12 @@ class Routes {
     router.define('', handler: handleRouteChangeRequest(routeCreator.root));
     router.define('/applications',
         handler: handleRouteChangeRequest(routeCreator.apps));
-    router.define('/feature-status',
+    router.define('/features',
         handler: handleRouteChangeRequest(routeCreator.featureStatus));
     router.define('/feature-values',
         handler: handleRouteChangeRequest(routeCreator.featureValues));
 
-    router.define('/service-envs',
+    router.define('/api-keys',
         handler: handleRouteChangeRequest(routeCreator.serviceEnvsHandler));
 
     //Admin routes
@@ -84,19 +84,19 @@ class Routes {
         permissionType: PermissionType.portfolioadmin);
     router.define('/portfolios',
         handler: handleRouteChangeRequest(routeCreator.portfolios));
-    router.define('/manage-app',
+    router.define('/app-settings',
         handler: handleRouteChangeRequest(routeCreator.manageApp),
         permissionType: PermissionType.portfolioadmin);
-    router.define('/manage-group',
+    router.define('/groups',
         handler: handleRouteChangeRequest(routeCreator.group),
         permissionType: PermissionType.portfolioadmin);
-    router.define('/manage-service-accounts',
+    router.define('/service-accounts',
         handler: handleRouteChangeRequest(routeCreator.serviceAccount),
         permissionType: PermissionType.portfolioadmin);
     router.define('/manage-user',
         handler: handleRouteChangeRequest(routeCreator.manageUser),
         permissionType: PermissionType.portfolioadmin);
-    router.define('/manage-users',
+    router.define('/users',
         handler: handleRouteChangeRequest(routeCreator.users),
         permissionType: PermissionType.portfolioadmin);
 

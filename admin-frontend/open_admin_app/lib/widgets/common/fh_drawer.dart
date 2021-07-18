@@ -150,7 +150,7 @@ class _SiteAdminOptionsWidget extends StatelessWidget {
                 name: 'Users',
                 permissionType: PermissionType.portfolioadmin,
                 iconData: AntDesign.addusergroup,
-                path: '/manage-users',
+                path: '/users',
                 params: {}),
           ]);
         });
@@ -170,14 +170,14 @@ class _MenuPortfolioAdminOptionsWidget extends StatelessWidget {
               _MenuItem(
                   name: 'Groups',
                   iconData: MaterialIcons.people_outline,
-                  path: '/manage-group',
+                  path: '/groups',
                   permissionType: PermissionType.portfolioadmin,
                   params: {}),
               _MenuItem(
                   name: 'Service Accounts',
                   iconData: AntDesign.tool,
                   permissionType: PermissionType.portfolioadmin,
-                  path: '/manage-service-accounts',
+                  path: '/service-accounts',
                   params: {}),
             ]);
           } else {
@@ -200,26 +200,26 @@ class _ApplicationSettings extends StatelessWidget {
               _MenuItem(
                   name: 'Environments',
                   iconData: AntDesign.bars,
-                  path: '/manage-app',
+                  path: '/app-settings',
                   permissionType: PermissionType.portfolioadmin,
                   params: {
-                    'tab-name': ['environments']
+                    'tab': ['environments']
                   }),
               _MenuItem(
                   name: 'Group permissions',
                   iconData: MaterialCommunityIcons.check_box_multiple_outline,
-                  path: '/manage-app',
+                  path: '/app-settings',
                   permissionType: PermissionType.portfolioadmin,
                   params: {
-                    'tab-name': ['group-permissions']
+                    'tab': ['group-permissions']
                   }),
               _MenuItem(
                   name: 'Service account permissions',
                   iconData: MaterialCommunityIcons.cogs,
-                  path: '/manage-app',
+                  path: '/app-settings',
                   permissionType: PermissionType.portfolioadmin,
                   params: {
-                    'tab-name': ['service-accounts']
+                    'tab': ['service-accounts']
                   }),
             ]);
           } else {
@@ -247,14 +247,14 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
           name: 'Features',
           iconData: Feather.flag,
           iconSize: 24,
-          path: '/feature-status',
+          path: '/features',
           params: {},
         ),
         _MenuItem(
           name: 'API Keys',
           iconData: AntDesign.key,
           iconSize: 24,
-          path: '/service-envs',
+          path: '/api-keys',
           params: {},
         )
       ],

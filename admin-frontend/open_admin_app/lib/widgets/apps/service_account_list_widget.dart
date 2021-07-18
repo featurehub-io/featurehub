@@ -192,9 +192,9 @@ class _ServiceAccountEnvironment extends StatelessWidget {
                           .currentAid = application.id;
 
                       ManagementRepositoryClientBloc.router
-                          .navigateTo(context, '/manage-app', params: {
+                          .navigateTo(context, '/app-settings', params: {
                         'service-account': [serviceAccount.id!],
-                        'tab-name': ['service-accounts']
+                        'tab': ['service-accounts']
                       });
                     },
                   )
