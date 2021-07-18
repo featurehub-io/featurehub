@@ -63,7 +63,7 @@ class _ServiceAccountPermissionState
                           child: FHLinkWidget(
                               text:
                                   'Manage service accounts for this portfolio?',
-                              href: '/manage-service-accounts'),
+                              href: '/service-accounts'),
                         )
                       ],
                     )),

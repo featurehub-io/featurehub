@@ -120,10 +120,10 @@ class _ApplicationCard extends StatelessWidget {
                 .setCurrentAid(application.id); //is it the right function?
 
             // Router.of(context).
-            // Navigator.of(context).pushNamed('/feature-status');
+            // Navigator.of(context).pushNamed('/features');
             ManagementRepositoryClientBloc.router.navigateTo(
               context,
-              '/feature-status',
+              '/features',
             );
           },
           child: Container(
@@ -364,7 +364,7 @@ class _PopUpAdminMenu extends StatelessWidget {
             bloc.mrClient.setCurrentAid(application.id);
             ManagementRepositoryClientBloc.router.navigateTo(
               context,
-              '/feature-status',
+              '/features',
             );
           }
         },

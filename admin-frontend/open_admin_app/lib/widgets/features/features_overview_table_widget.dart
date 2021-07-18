@@ -250,9 +250,9 @@ class NoEnvironmentMessage extends StatelessWidget {
                       title: 'Environments',
                       keepCase: true,
                       onPressed: () => ManagementRepositoryClientBloc.router
-                              .navigateTo(context, '/manage-app', params: {
+                              .navigateTo(context, '/app-settings', params: {
                             'id': [bloc.applicationId!],
-                            'tab-name': ['environments']
+                            'tab': ['environments']
                           }));
                 } else {
                   return Container();

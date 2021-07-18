@@ -72,7 +72,7 @@ class ServiceAccountEnvRoute extends StatelessWidget {
                                                   .router
                                                   .navigateTo(
                                                 context,
-                                                '/manage-service-accounts',
+                                                '/service-accounts',
                                               )
                                             })),
                               );

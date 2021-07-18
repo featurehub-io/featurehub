@@ -127,7 +127,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
                 onPressed: () {
                   _formKey.currentState!.reset;
                   ManagementRepositoryClientBloc.router
-                      .navigateTo(context, '/manage-users');
+                      .navigateTo(context, '/users');
                 },
                 title: 'Cancel',
                 keepCase: true),
@@ -142,7 +142,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
                           bloc.mrClient.addSnackbar(Text(
                               'User ${bloc.person!.name!} has been updated'));
                           ManagementRepositoryClientBloc.router
-                              .navigateTo(context, '/manage-users');
+                              .navigateTo(context, '/users');
                         } catch (e, s) {
                           bloc.mrClient.dialogError(e, s);
                         }

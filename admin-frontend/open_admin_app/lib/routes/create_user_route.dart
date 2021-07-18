@@ -196,7 +196,7 @@ class TopWidgetSuccess extends StatelessWidget {
                 onPressed: () {
                   bloc.backToDefault();
                   ManagementRepositoryClientBloc.router
-                      .navigateTo(context, '/manage-users');
+                      .navigateTo(context, '/users');
                 },
                 title: 'Close'),
             FHFlatButton(
@@ -239,7 +239,7 @@ class CreateUserFormButtons extends StatelessWidget {
             bloc.formKey!.currentState!.reset;
           }
           ManagementRepositoryClientBloc.router
-              .navigateTo(context, '/manage-users');
+              .navigateTo(context, '/users');
         },
         title: 'Cancel',
         keepCase: true,

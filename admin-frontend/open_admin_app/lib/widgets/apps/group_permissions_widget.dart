@@ -53,7 +53,7 @@ class GroupPermissionsWidget extends StatelessWidget {
                       keepCase: true,
                       onPressed: () {
                         ManagementRepositoryClientBloc.router
-                            .navigateTo(context, '/manage-group', params: {
+                            .navigateTo(context, '/groups', params: {
                           'id': [bloc.selectedGroup!]
                         });
                       },
