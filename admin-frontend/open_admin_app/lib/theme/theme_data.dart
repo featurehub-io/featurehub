@@ -308,6 +308,7 @@ final ThemeData darkTheme = ThemeData(
       )
   ),
   iconTheme: IconThemeData(
+    color: Colors.blue,
     opacity: 1,
     size: 16,
   ),
