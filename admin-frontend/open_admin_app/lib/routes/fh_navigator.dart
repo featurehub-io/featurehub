@@ -121,6 +121,8 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
       if (s != _currentSlot) {
         _currentSlot = s;
 
+        if (_currentSlot == RouteSlot.nowhere) return;
+
         // if they have logged in now and have a held route, lets check if they are allowed to access it, and if so
         // swap to that instead
         if ((_currentSlot == RouteSlot.personal ||
@@ -150,14 +152,20 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
 
   @override
   Future<void> setNewRoutePath(FHRoutePath newPath) async {
-    if (ManagementRepositoryClientBloc.router.canUseRoute(newPath.routeName)) {
-      print('set new route path $newPath');
-      _path = newPath;
-      bloc.swapRoutes(RouteChange(newPath.routeName, params: newPath.params));
+    if (ManagementRepositoryClientBloc.router.routeExists(newPath.routeName)) {
+      if (ManagementRepositoryClientBloc.router
+          .canUseRoute(newPath.routeName)) {
+        print('set new route path $newPath');
+        _path = newPath;
+        bloc.swapRoutes(RouteChange(newPath.routeName, params: newPath.params));
+      } else {
+        print('cant use route $newPath so stashing');
+        _stashedRoutePath = newPath;
+        notifyListeners();
+      }
     } else {
-      print('cant use route $newPath so stashing');
-      _stashedRoutePath = newPath;
-      notifyListeners();
+      _path = newPath;
+      bloc.routeSlot(RouteSlot.nowhere);
     }
   }
 

@@ -10,6 +10,11 @@ final _log = Logger('Routes');
 
 class Routes {
   static FHRouter configureRoutes(ManagementRepositoryClientBloc mrBloc) {
+    routeSlotMappings[RouteSlot.nowhere] = RouteSlotMapping(
+        routePermission: RouteSlot.nowhere,
+        acceptablePermissionTypes: [PermissionType.nowhere],
+        initialRoute: '/404');
+
     routeSlotMappings[RouteSlot.loading] = RouteSlotMapping(
         routePermission: RouteSlot.loading,
         acceptablePermissionTypes: [PermissionType.any],
@@ -48,7 +53,7 @@ class Routes {
 
     router.define('/404',
         handler: handleRouteChangeRequest(routeCreator.notFound),
-        permissionType: PermissionType.any);
+        permissionType: PermissionType.nowhere);
     // Public routes (public URL's also need ot be added to array above)
     router.define('/forgot-password',
         handler: handleRouteChangeRequest(routeCreator.forgotPassword),

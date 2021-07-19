@@ -343,7 +343,9 @@ class ManagementRepositoryClientBloc implements Bloc {
   }
 
   void routeSlot(RouteSlot slot) {
-    _siteInitialisedSource.add(slot);
+    if (_siteInitialisedSource.value != RouteSlot.nowhere) {
+      _siteInitialisedSource.add(slot);
+    }
   }
 
   void setOrg(Organization o) {

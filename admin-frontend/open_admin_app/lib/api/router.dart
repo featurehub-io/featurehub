@@ -46,13 +46,14 @@ enum PermissionType {
   regular,
   personal,
   any,
+  nowhere,
   login,
   setup
 }
 
 // we need to track what states we can be in, what permission types routes have to have, and what the initial route you should have when you are in i
 
-enum RouteSlot { loading, setup, login, personal, portfolio }
+enum RouteSlot { loading, setup, login, personal, portfolio, nowhere }
 
 class RouteSlotMapping {
   final RouteSlot routePermission;
@@ -180,5 +181,9 @@ class FHRouter {
         "canUseRoute $routeName super-admin ${mrBloc.userIsSuperAdmin} current portfolio admin ${mrBloc.userIsCurrentPortfolioAdmin} loggedin ${mrBloc.isLoggedIn}");
     return hasRoutePermissions(rc, mrBloc.userIsSuperAdmin,
         mrBloc.userIsCurrentPortfolioAdmin, mrBloc.isLoggedIn);
+  }
+
+  bool routeExists(String routeName) {
+    return routeName != '/404' && handlers[routeName] != null;
   }
 }
