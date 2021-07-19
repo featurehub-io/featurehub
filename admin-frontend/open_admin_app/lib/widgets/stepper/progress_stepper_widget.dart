@@ -274,7 +274,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                                 .router
                                                 .navigateTo(
                                               context,
-                                              '/features',
+                                              '/features-dashboard',
                                             )
                                           },
                                         ),
