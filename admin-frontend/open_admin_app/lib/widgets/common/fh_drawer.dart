@@ -247,7 +247,7 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
           name: 'Features',
           iconData: Feather.flag,
           iconSize: 24,
-          path: '/features',
+          path: '/features-dashboard',
           params: {},
         ),
         _MenuItem(

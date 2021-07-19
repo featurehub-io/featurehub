@@ -70,7 +70,8 @@ class Routes {
     router.define('', handler: handleRouteChangeRequest(routeCreator.root));
     router.define('/applications',
         handler: handleRouteChangeRequest(routeCreator.apps));
-    router.define('/features',
+    // NEVER EVER use /features as that is reserved for use by the Edge app
+    router.define('/features-dashboard',
         handler: handleRouteChangeRequest(routeCreator.featureStatus));
     router.define('/feature-values',
         handler: handleRouteChangeRequest(routeCreator.featureValues));

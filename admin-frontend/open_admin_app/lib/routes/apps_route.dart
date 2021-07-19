@@ -123,7 +123,7 @@ class _ApplicationCard extends StatelessWidget {
             // Navigator.of(context).pushNamed('/features');
             ManagementRepositoryClientBloc.router.navigateTo(
               context,
-              '/features',
+              '/features-dashboard',
             );
           },
           child: Container(
@@ -364,7 +364,7 @@ class _PopUpAdminMenu extends StatelessWidget {
             bloc.mrClient.setCurrentAid(application.id);
             ManagementRepositoryClientBloc.router.navigateTo(
               context,
-              '/features',
+              '/features-dashboard',
             );
           }
         },
