@@ -33,6 +33,10 @@ class PersonState {
   bool _userIsAnyPortfolioOrSuperAdmin = false;
   bool get userIsAnyPortfolioOrSuperAdmin => _userIsAnyPortfolioOrSuperAdmin;
 
+  void logout() {
+    person = _unauthenticatedPerson;
+  }
+
   set person(Person person) {
     if (person != _unauthenticatedPerson) {
       for (final callback in setPersonHooks) {
@@ -44,7 +48,18 @@ class PersonState {
 
     _userIsAnyPortfolioOrSuperAdmin = isAnyPortfolioOrSuperAdmin(person.groups);
 
-    _isCurrentPortfolioOrSuperAdmin.add(null);
+    if (person == _unauthenticatedPerson) {
+      _isCurrentPortfolioOrSuperAdmin.add(null);
+    } else {
+      final releasedPortfolio = _isCurrentPortfolioOrSuperAdmin.value;
+
+      if (releasedPortfolio != null) {
+        _isCurrentPortfolioOrSuperAdmin.add(ReleasedPortfolio(
+            portfolio: releasedPortfolio.portfolio,
+            currentPortfolioOrSuperAdmin: userIsPortfolioAdmin(
+                releasedPortfolio.portfolio.id, person.groups)));
+      }
+    }
 
     _personSource.add(person);
   }
@@ -108,10 +123,6 @@ class PersonState {
             userIsPortfolioAdmin(p.id, person.groups));
     _isCurrentPortfolioOrSuperAdmin.add(
         ReleasedPortfolio(portfolio: p, currentPortfolioOrSuperAdmin: isAdmin));
-  }
-
-  void logout() {
-    person = _unauthenticatedPerson;
   }
 
   void dispose() {

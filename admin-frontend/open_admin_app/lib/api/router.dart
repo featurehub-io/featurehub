@@ -130,8 +130,13 @@ class FHRouter {
   }
 
   bool hasRoutePermissions(
-      RouteChange route, bool superuser, bool portfolioAdmin, bool isLoggedIn) {
+      RouteChange route, bool superuser, bool portfolioAdmin, bool isLoggedIn,
+      {List<PermissionType> autoFailPermissions = const []}) {
     final perm = permissionForRoute(route.route);
+
+    if (autoFailPermissions.contains(perm)) {
+      return false;
+    }
 
     if (perm == PermissionType.any) {
       return true;
@@ -176,12 +181,14 @@ class FHRouter {
     return RouteChange(routeNameFeatureDashboard, params: {});
   }
 
-  bool canUseRoute(String routeName) {
+  bool canUseRoute(String routeName,
+      {List<PermissionType> autoFailPermissions = const []}) {
     final rc = RouteChange(routeName);
     print(
         "canUseRoute $routeName super-admin ${mrBloc.userIsSuperAdmin} current portfolio admin ${mrBloc.userIsCurrentPortfolioAdmin} loggedin ${mrBloc.isLoggedIn}");
     return hasRoutePermissions(rc, mrBloc.userIsSuperAdmin,
-        mrBloc.userIsCurrentPortfolioAdmin, mrBloc.isLoggedIn);
+        mrBloc.userIsCurrentPortfolioAdmin, mrBloc.isLoggedIn,
+        autoFailPermissions: autoFailPermissions);
   }
 
   bool routeExists(String routeName) {

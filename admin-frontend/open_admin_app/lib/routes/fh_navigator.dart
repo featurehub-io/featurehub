@@ -139,8 +139,9 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
             _stashedRoutePath = null;
             _path = FHRoutePath(routeSlotMappings[_currentSlot]!.initialRoute);
           }
-        } else if (!ManagementRepositoryClientBloc.router
-            .canUseRoute(_path.routeName)) {
+        } else if (!ManagementRepositoryClientBloc.router.canUseRoute(
+            _path.routeName,
+            autoFailPermissions: [PermissionType.any])) {
           _path = FHRoutePath(routeSlotMappings[_currentSlot]!.initialRoute);
         }
 
