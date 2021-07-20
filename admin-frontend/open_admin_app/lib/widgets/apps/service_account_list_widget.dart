@@ -70,9 +70,9 @@ class _ServiceAccountWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
-                SizedBox(width: 4.0),
+                const SizedBox(width: 4.0),
                 _ServiceAccountDescription(serviceAccount: serviceAccount),
-                SizedBox(width: 24.0),
+                const SizedBox(width: 24.0),
                 StreamBuilder<ReleasedPortfolio?>(
                     stream: bloc
                         .mrClient.personState.isCurrentPortfolioOrSuperAdmin,
@@ -86,11 +86,9 @@ class _ServiceAccountWidget extends StatelessWidget {
                     }),
               ],
             ),
-            SizedBox(height: 8.0),
-            Container(
-              child: ServiceAccountEnvironments(
-                  serviceAccount: serviceAccount, serviceAccountBloc: bloc),
-            )
+            const SizedBox(height: 8.0),
+            ServiceAccountEnvironments(
+                serviceAccount: serviceAccount, serviceAccountBloc: bloc)
           ],
         ),
       ),
@@ -100,12 +98,12 @@ class _ServiceAccountWidget extends StatelessWidget {
   Widget _adminFunctions(BuildContext context) {
     return Row(children: [
       FHIconButton(
-          icon: Icon(Icons.edit),
+          icon: const Icon(Icons.edit),
           onPressed: () => bloc.mrClient.addOverlay((BuildContext context) =>
               ServiceAccountUpdateDialogWidget(
                   bloc: bloc, serviceAccount: serviceAccount))),
       FHIconButton(
-          icon: Icon(Icons.delete),
+          icon: const Icon(Icons.delete),
           onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
                 return ServiceAccountDeleteDialogWidget(
                   serviceAccount: serviceAccount,
@@ -132,7 +130,7 @@ class ServiceAccountEnvironments extends StatelessWidget {
         stream: serviceAccountBloc.applicationsList,
         builder: (context, snapshot) {
           if (!snapshot.hasData || snapshot.hasError) {
-            return SizedBox.shrink();
+            return const SizedBox.shrink();
           }
 
           return Wrap(
@@ -325,8 +323,8 @@ class _ServiceAccountUpdateDialogWidgetState
                     )
                   : TextFormField(
                       controller: _name,
-                      decoration:
-                          InputDecoration(labelText: 'Service account name'),
+                      decoration: const InputDecoration(
+                          labelText: 'Service account name'),
                       validator: ((v) {
                         if (v == null || v.isEmpty) {
                           return 'Please enter a service account name';
@@ -338,8 +336,8 @@ class _ServiceAccountUpdateDialogWidgetState
                       })),
               TextFormField(
                   controller: _description,
-                  decoration:
-                      InputDecoration(labelText: 'Service account description'),
+                  decoration: const InputDecoration(
+                      labelText: 'Service account description'),
                   validator: ((v) {
                     if (v == null || v.isEmpty) {
                       return 'Please enter service account description';

@@ -11,16 +11,16 @@ class _NotFoundRouteState extends State<NotFoundRoute>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   final RelativeRectTween _relativeRectTween = RelativeRectTween(
-    begin: RelativeRect.fromLTRB(24, 24, 24, 200),
-    end: RelativeRect.fromLTRB(24, 24, 24, 250),
+    begin: const RelativeRect.fromLTRB(24, 24, 24, 200),
+    end: const RelativeRect.fromLTRB(24, 24, 24, 250),
   );
 
   @override
   void initState() {
     super.initState();
     _controller =
-    AnimationController(vsync: this, duration: const Duration(seconds: 3))
-      ..repeat(reverse: true);
+        AnimationController(vsync: this, duration: const Duration(seconds: 3))
+          ..repeat(reverse: true);
   }
 
   @override
@@ -35,12 +35,10 @@ class _NotFoundRouteState extends State<NotFoundRoute>
       body: Stack(
         children: [
           PositionedTransition(
-
             rect: _relativeRectTween.animate(_controller),
             child: Center(
-              child: Image.asset('assets/images/meditation.png',  height: 200,
-                  width: 200,
-                  fit:BoxFit.scaleDown),
+              child: Image.asset('assets/images/meditation.png',
+                  height: 200, width: 200, fit: BoxFit.scaleDown),
             ),
           ),
           Positioned(

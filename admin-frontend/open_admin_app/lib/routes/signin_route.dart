@@ -15,7 +15,7 @@ class SigninWrapperWidget extends StatelessWidget {
       bodyMainAxisAlignment: MainAxisAlignment.center,
       body: Center(
           child: MediaQuery.of(context).size.width > 400
-              ? Container(
+              ? SizedBox(
                   width: 500,
                   child: widgetCreator.createSigninWidget(client),
                 )

@@ -1,12 +1,12 @@
-import 'package:open_admin_app/api/client_api.dart';
-import 'package:open_admin_app/widgets/common/FHFlatButton.dart';
-import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
-import 'package:open_admin_app/widgets/common/fh_footer_button_bar.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/widgets/common/FHFlatButton.dart';
+import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
+import 'package:open_admin_app/widgets/common/fh_footer_button_bar.dart';
 
 import 'manage_app_bloc.dart';
 
@@ -20,8 +20,8 @@ class GroupPermissionsWidget extends StatelessWidget {
         builder: (context, snapshot) {
           if (!snapshot.hasData || snapshot.hasError) {
             return Container(
-              padding: EdgeInsets.all(30),
-              child: Text('Loading...'),
+              padding: const EdgeInsets.all(30),
+              child: const Text('Loading...'),
             );
           }
 
@@ -29,7 +29,7 @@ class GroupPermissionsWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
-                SizedBox(
+                const SizedBox(
                   height: 16.0,
                 ),
                 Row(
@@ -37,17 +37,14 @@ class GroupPermissionsWidget extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                            child: Text(
+                        Text(
                           'Group',
                           style: Theme.of(context).textTheme.caption,
-                        )),
-                        Container(
-                            child: _GroupsDropdown(
-                                groups: snapshot.data!, bloc: bloc)),
+                        ),
+                        _GroupsDropdown(groups: snapshot.data!, bloc: bloc),
                       ],
                     ),
-                    SizedBox(width: 16.0),
+                    const SizedBox(width: 16.0),
                     FHFlatButtonTransparent(
                       title: 'Manage group members',
                       keepCase: true,
@@ -81,11 +78,11 @@ class __GroupsDropdownState extends State<_GroupsDropdown> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: BoxConstraints(maxWidth: 250),
+      constraints: const BoxConstraints(maxWidth: 250),
       child: InkWell(
         mouseCursor: SystemMouseCursors.click,
         child: DropdownButton(
-          icon: Padding(
+          icon: const Padding(
             padding: EdgeInsets.only(left: 8.0),
             child: Icon(
               Icons.keyboard_arrow_down,
@@ -103,7 +100,7 @@ class __GroupsDropdownState extends State<_GroupsDropdown> {
                   overflow: TextOverflow.ellipsis,
                 ));
           }).toList(),
-          hint: Text('Select group'),
+          hint: const Text('Select group'),
           onChanged: (String? value) {
             if (value != null) {
               setState(() {
@@ -145,8 +142,8 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
         builder: (context, groupSnapshot) {
           if (!groupSnapshot.hasData) {
             return Container(
-                padding: EdgeInsets.all(20),
-                child: Text(
+                padding: const EdgeInsets.all(20),
+                child: const Text(
                     'You need to select a group to edit the permissions for.'));
           }
 
@@ -158,8 +155,8 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
                       Container(
-                          padding: EdgeInsets.all(20),
-                          child: Text(
+                          padding: const EdgeInsets.all(20),
+                          child: const Text(
                               "You need to first create some 'Environments' for this application.")),
                     ],
                   );
@@ -186,7 +183,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                                   color: Theme.of(context).dividerColor))),
                       children: [
                         Container(
-                            padding: EdgeInsets.fromLTRB(5, 15, 0, 0),
+                            padding: const EdgeInsets.fromLTRB(5, 15, 0, 0),
                             child: Text(env.name)),
                         getPermissionCheckbox(env.id!, RoleType.READ),
                         getPermissionCheckbox(env.id!, RoleType.LOCK),
@@ -214,7 +211,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                       ],
                     ),
                     Container(
-                        padding: EdgeInsets.fromLTRB(0, 16, 0, 16),
+                        padding: const EdgeInsets.fromLTRB(0, 16, 0, 16),
                         child: Center(
                           child: Text(
                               'Set the group access to features for each environment',
@@ -267,8 +264,8 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
                 bottom: BorderSide(color: Theme.of(context).dividerColor))),
         children: [
           Container(
-            padding: EdgeInsets.fromLTRB(5, 0, 0, 15),
-            child: Text(
+            padding: const EdgeInsets.fromLTRB(5, 0, 0, 15),
+            child: const Text(
               '',
             ),
           ),

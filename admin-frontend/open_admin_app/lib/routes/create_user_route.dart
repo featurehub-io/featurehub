@@ -80,7 +80,7 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              FHHeader(title: 'Create new user'),
+              const FHHeader(title: 'Create new user'),
               Padding(
                 padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
                 child: Text(
@@ -89,7 +89,7 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
                 ),
               ),
               Container(
-                constraints: BoxConstraints(maxWidth: 300),
+                constraints: const BoxConstraints(maxWidth: 300),
                 child: Column(
                   children: [
                     TextFormField(
@@ -105,7 +105,7 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
                       },
                       onSaved: (v) => bloc.name = v,
                     ),
-                    SizedBox(height: 16.0),
+                    const SizedBox(height: 16.0),
                     TextFormField(
                       controller: _email,
                       decoration: FHFilledInputDecoration(
@@ -133,7 +133,7 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
                 ),
               ),
               PortfolioGroupSelector(),
-              AdminCheckboxWidget()
+              const AdminCheckboxWidget()
             ]));
   }
 }
@@ -238,8 +238,7 @@ class CreateUserFormButtons extends StatelessWidget {
           if (bloc.formKey != null) {
             bloc.formKey!.currentState!.reset;
           }
-          ManagementRepositoryClientBloc.router
-              .navigateTo(context, '/users');
+          ManagementRepositoryClientBloc.router.navigateTo(context, '/users');
         },
         title: 'Cancel',
         keepCase: true,

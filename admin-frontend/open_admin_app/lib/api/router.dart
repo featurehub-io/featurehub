@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/widgets.dart';
 import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/config/route_names.dart';
 
 typedef HandlerFunc = Widget Function(
     BuildContext context, Map<String, List<String>> params);
@@ -172,7 +173,7 @@ class FHRouter {
   }
 
   RouteChange defaultRoute() {
-    return RouteChange('/features-dashboard', params: {});
+    return RouteChange(routeNameFeatureDashboard, params: {});
   }
 
   bool canUseRoute(String routeName) {
