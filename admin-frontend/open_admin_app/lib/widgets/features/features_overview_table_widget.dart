@@ -4,7 +4,7 @@ import 'package:flutter/rendering.dart';
 import 'package:logging/logging.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
-import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
+import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
 import 'package:open_admin_app/widgets/features/environments_features_list_view.dart';
 import 'package:open_admin_app/widgets/features/feature_names_left_panel.dart';
 import 'package:open_admin_app/widgets/features/tabs_bloc.dart';
@@ -244,14 +244,17 @@ class NoEnvironmentMessage extends StatelessWidget {
               builder: (context, snapshot) {
                 if (snapshot.hasData &&
                     snapshot.data!.currentPortfolioOrSuperAdmin) {
-                  return FHFlatButtonTransparent(
-                      title: 'Environments',
-                      keepCase: true,
-                      onPressed: () => ManagementRepositoryClientBloc.router
-                              .navigateTo(context, '/app-settings', params: {
-                            'id': [bloc.applicationId!],
-                            'tab': ['environments']
-                          }));
+                  return Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: FHUnderlineButton(
+                        title: 'Go to environments settings',
+                        keepCase: true,
+                        onPressed: () => ManagementRepositoryClientBloc.router
+                                .navigateTo(context, '/app-settings', params: {
+                              'id': [bloc.applicationId!],
+                              'tab': ['environments']
+                            })),
+                  );
                 } else {
                   return Container();
                 }

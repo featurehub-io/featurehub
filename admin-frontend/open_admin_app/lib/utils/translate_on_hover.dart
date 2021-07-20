@@ -18,10 +18,10 @@ class _TranslateOnHoverState extends State<TranslateOnHover> {
       onExit: (e) => _mouseEnter(false),
       child: Container(
         decoration: _hovering
-            ? BoxDecoration(
+            ? const BoxDecoration(
                 border: Border(
                   bottom: BorderSide(
-                    color: Theme.of(context).buttonColor,
+                    color: Colors.blue,
                     width: 1.0,
                   ),
                 ),
