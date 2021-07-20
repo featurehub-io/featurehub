@@ -295,7 +295,7 @@ class _MenuItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
     final menuOkForThisUser = (bloc.userIsCurrentPortfolioAdmin ||
-        permissionType == PermissionType.regular);
+        ManagementRepositoryClientBloc.router.canUseRoute(path));
     var light = Theme.of(context).brightness == Brightness.light;
     return InkWell(
       canRequestFocus: false,
