@@ -82,12 +82,21 @@ class RouterRoute {
   RouterRoute(this.handler, {this.permissionType = PermissionType.regular});
 }
 
+typedef PermissionCheckHandler = bool Function(
+    RouteChange route, bool superuser, bool portfolioAdmin, bool isLoggedIn,
+    {List<PermissionType> autoFailPermissions});
+
+PermissionCheckHandler? permissionCheckHandler;
+
 class FHRouter {
   final Handler notFoundHandler;
   final ManagementRepositoryClientBloc mrBloc;
   final Map<String, RouterRoute> handlers = {};
 
-  FHRouter({required this.mrBloc, required this.notFoundHandler});
+  FHRouter({required this.mrBloc, required this.notFoundHandler}) {
+    permissionCheckHandler = _hasRoutePermissions;
+    print("set route perm handler");
+  }
 
   void define(String route,
       {required Handler handler,
@@ -129,7 +138,7 @@ class FHRouter {
     return ManagementRepositoryClientBloc.router.handlers['/404']!;
   }
 
-  bool hasRoutePermissions(
+  bool _hasRoutePermissions(
       RouteChange route, bool superuser, bool portfolioAdmin, bool isLoggedIn,
       {List<PermissionType> autoFailPermissions = const []}) {
     final perm = permissionForRoute(route.route);
@@ -164,7 +173,7 @@ class FHRouter {
   void navigateRoute(String route, {Map<String, List<String>>? params}) {
     final rc = RouteChange(route, params: params ?? const {});
 
-    if (hasRoutePermissions(rc, mrBloc.userIsSuperAdmin,
+    if (permissionCheckHandler!(rc, mrBloc.userIsSuperAdmin,
         mrBloc.userIsCurrentPortfolioAdmin, mrBloc.isLoggedIn)) {
       mrBloc.swapRoutes(rc);
     } else {
@@ -186,7 +195,7 @@ class FHRouter {
     final rc = RouteChange(routeName);
     print(
         "canUseRoute $routeName super-admin ${mrBloc.userIsSuperAdmin} current portfolio admin ${mrBloc.userIsCurrentPortfolioAdmin} loggedin ${mrBloc.isLoggedIn}");
-    return hasRoutePermissions(rc, mrBloc.userIsSuperAdmin,
+    return permissionCheckHandler!(rc, mrBloc.userIsSuperAdmin,
         mrBloc.userIsCurrentPortfolioAdmin, mrBloc.isLoggedIn,
         autoFailPermissions: autoFailPermissions);
   }
