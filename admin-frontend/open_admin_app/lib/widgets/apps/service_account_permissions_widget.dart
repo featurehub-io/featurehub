@@ -89,7 +89,7 @@ class _ServiceAccountPermissionState
                       ],
                     ),
                     const Padding(
-                      padding: const EdgeInsets.only(left: 16.0),
+                      padding: EdgeInsets.only(left: 16.0),
                       child: FHInfoCardWidget(
                           message:
                               '''The 'Lock/Unlock' and 'Change value' permissions
@@ -133,7 +133,7 @@ with only 'Read' permission for service accounts.'''),
                         overflow: TextOverflow.ellipsis,
                       ));
                 }).toList(),
-                hint: Text(
+                hint: const Text(
                   'Select service account',
                   textAlign: TextAlign.end,
                 ),
@@ -192,8 +192,8 @@ class _ServiceAccountPermissionDetailState
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
                       Container(
-                          padding: EdgeInsets.all(20),
-                          child: Text(
+                          padding: const EdgeInsets.all(20),
+                          child: const Text(
                               "You need to first create some 'Environments' for this application.")),
                     ],
                   );
@@ -216,7 +216,7 @@ class _ServiceAccountPermissionDetailState
                                   color: Theme.of(context).dividerColor))),
                       children: [
                         Container(
-                            padding: EdgeInsets.fromLTRB(5, 15, 0, 0),
+                            padding: const EdgeInsets.fromLTRB(5, 15, 0, 0),
                             child: Text(env.name)),
                         getPermissionCheckbox(env.id!, RoleType.READ),
                         getPermissionCheckbox(env.id!, RoleType.LOCK),
@@ -231,7 +231,7 @@ class _ServiceAccountPermissionDetailState
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     Container(
-                        padding: EdgeInsets.fromLTRB(0, 24, 0, 16),
+                        padding: const EdgeInsets.fromLTRB(0, 24, 0, 16),
                         child: Center(
                           child: Text(
                               'Set the service account access to features for each environment',
@@ -281,8 +281,8 @@ class _ServiceAccountPermissionDetailState
                 bottom: BorderSide(color: Theme.of(context).dividerColor))),
         children: [
           Container(
-            padding: EdgeInsets.fromLTRB(5, 0, 0, 15),
-            child: Text(
+            padding: const EdgeInsets.fromLTRB(5, 0, 0, 15),
+            child: const Text(
               '',
             ),
           ),
@@ -331,7 +331,8 @@ class _ServiceAccountPermissionDetailState
   Map<String, ServiceAccountPermission> createMap(
       List<Environment> environments, ServiceAccount serviceAccount) {
     final retMap = <String, ServiceAccountPermission>{};
-    environments.forEach((environment) {
+
+    for (var environment in environments) {
       final sap = serviceAccount.permissions
           .firstWhere((item) => item.environmentId == environment.id,
               orElse: () => ServiceAccountPermission(
@@ -340,7 +341,8 @@ class _ServiceAccountPermissionDetailState
                   ));
 
       retMap[environment.id!] = sap;
-    });
+    }
+
     return retMap;
   }
 }

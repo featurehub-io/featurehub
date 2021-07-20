@@ -1,7 +1,7 @@
-import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/attribute_value_chip_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/attribute_value_chip_widget.dart';
 
 typedef MultiSelectMapPossibleValueToName = String Function(dynamic value);
 
@@ -11,7 +11,8 @@ class MultiSelectDropdown extends StatefulWidget {
   final String hint;
   final MultiSelectMapPossibleValueToName mapper;
 
-  const MultiSelectDropdown(this.values, this.possibleValues, this.mapper, this.hint);
+  const MultiSelectDropdown(
+      this.values, this.possibleValues, this.mapper, this.hint);
 
   @override
   State<StatefulWidget> createState() {
@@ -33,10 +34,10 @@ class _MultiSelectDropdownState extends State<MultiSelectDropdown> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(4.0),
-      margin: EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(4.0),
+      margin: const EdgeInsets.all(8.0),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.all(Radius.circular(6.0)),
+        borderRadius: const BorderRadius.all(const Radius.circular(6.0)),
         color: Theme.of(context).cardColor,
       ),
       child: Column(

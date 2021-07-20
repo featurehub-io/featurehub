@@ -23,7 +23,7 @@ class FeatureValueUpdatedByCell extends StatelessWidget {
     }
 
     return Container(
-        padding: EdgeInsets.only(top: 16.0, left: 8, right: 8),
+        padding: const EdgeInsets.only(top: 16.0, left: 8, right: 8),
         child: Column(
           children: <Widget>[
             Row(

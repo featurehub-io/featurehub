@@ -1,3 +1,8 @@
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/apps/manage_app_bloc.dart';
 import 'package:open_admin_app/widgets/common/FHFlatButton.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
@@ -6,11 +11,6 @@ import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
 import 'package:open_admin_app/widgets/common/fh_info_card.dart';
 import 'package:open_admin_app/widgets/common/fh_reorderable_list_view.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:mrapi/api.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
 class EnvListWidget extends StatefulWidget {
@@ -34,7 +34,7 @@ class _EnvListState extends State<EnvListWidget> {
           //_environments = snapshot.data!.reversed.toList();
           _environments = _sortEnvironments(snapshot.data!);
 
-          return Container(
+          return SizedBox(
             //height:(snapshot.data!.length*50).toDouble(),
             height: 500.0,
             child: FHReorderableListView(
@@ -100,7 +100,7 @@ class _EnvListState extends State<EnvListWidget> {
     _environments[0].priorEnvironmentId =
         null; // first environment should never have a parent
     await bloc.updateEnvs(bloc.applicationId!, _environments);
-    bloc.mrClient.addSnackbar(Text('Environment order updated!'));
+    bloc.mrClient.addSnackbar(const Text('Environment order updated!'));
   }
 
   List<Environment> swapPreviousIds(oldPid, newPid) {
@@ -136,8 +136,8 @@ class _EnvWidget extends StatelessWidget {
           child: Row(
             children: <Widget>[
               Container(
-                  padding: EdgeInsets.only(right: 30),
-                  child: Icon(
+                  padding: const EdgeInsets.only(right: 30),
+                  child: const Icon(
                     Icons.drag_handle,
                     size: 24.0,
                   )),
@@ -145,7 +145,7 @@ class _EnvWidget extends StatelessWidget {
                 children: <Widget>[
                   Text(env.name),
                   Padding(
-                      padding: EdgeInsets.only(left: 8.0),
+                      padding: const EdgeInsets.only(left: 8.0),
                       child: (env.production == true)
                           ? _ProductionEnvironmentIndicatorWidget()
                           : _NonProductionEnvironmentIndicatorWidget()),
@@ -165,11 +165,11 @@ class _EnvWidget extends StatelessWidget {
   Widget _adminFunctions(BuildContext context) {
     return Row(children: [
       FHIconButton(
-          icon: Icon(Icons.edit),
+          icon: const Icon(Icons.edit),
           onPressed: () => bloc.mrClient.addOverlay((BuildContext context) =>
               EnvUpdateDialogWidget(bloc: bloc, env: env))),
       FHIconButton(
-          icon: Icon(Icons.delete),
+          icon: const Icon(Icons.delete),
           onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
                 return EnvDeleteDialogWidget(
                   env: env,
@@ -181,22 +181,23 @@ class _EnvWidget extends StatelessWidget {
 }
 
 class _ProductionEnvironmentIndicatorWidget extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
-    final bs = BorderSide(color: Colors.red);
+    const bs = BorderSide(color: Colors.red);
     return Tooltip(
       message: 'Production environment',
       child: Container(
         width: 24.0,
         height: 24.0,
-        decoration: BoxDecoration(color: Colors.transparent, shape: BoxShape.circle, border:Border(bottom: bs, left: bs, right: bs, top: bs)),
-        child: Center(
+        decoration: const BoxDecoration(
+            color: Colors.transparent,
+            shape: BoxShape.circle,
+            border: Border(bottom: bs, left: bs, right: bs, top: bs)),
+        child: const Center(
           child: Padding(
-            padding: const EdgeInsets.only(left: 2.0),
+              padding: EdgeInsets.only(left: 2.0),
               child: Text('P',
-                  style: TextStyle(
-                      color: Colors.red, fontSize: 16.0))),
+                  style: TextStyle(color: Colors.red, fontSize: 16.0))),
         ),
       ),
     );
@@ -206,7 +207,7 @@ class _ProductionEnvironmentIndicatorWidget extends StatelessWidget {
 class _NonProductionEnvironmentIndicatorWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return const SizedBox(
       width: 24.0,
       height: 24.0,
     );
@@ -290,7 +291,8 @@ class _EnvUpdateDialogWidgetState extends State<EnvUpdateDialogWidget> {
             children: <Widget>[
               TextFormField(
                   controller: _envName,
-                  decoration: InputDecoration(labelText: 'Environment name'),
+                  decoration:
+                      const InputDecoration(labelText: 'Environment name'),
                   validator: ((v) {
                     if (v == null || v.isEmpty) {
                       return 'Please enter an environment name';
@@ -365,17 +367,16 @@ Widget AddEnvWidget(BuildContext context, ManageAppBloc bloc) {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             if (bloc.mrClient.isPortfolioOrSuperAdmin(bloc.portfolio?.id))
-              Container(
-                  child: TextButton.icon(
-                    icon: const Icon(Icons.add),
-                    label: const Text('Create new environment'),
-                    onPressed: () =>
-                        bloc.mrClient.addOverlay((BuildContext context) {
-                      return EnvUpdateDialogWidget(
-                        bloc: bloc,
-                      );
-                    }),
-                  )),
+              TextButton.icon(
+                icon: const Icon(Icons.add),
+                label: const Text('Create new environment'),
+                onPressed: () =>
+                    bloc.mrClient.addOverlay((BuildContext context) {
+                  return EnvUpdateDialogWidget(
+                    bloc: bloc,
+                  );
+                }),
+              ),
             const FHInfoCardWidget(
               message: '''
 Ordering your environments,

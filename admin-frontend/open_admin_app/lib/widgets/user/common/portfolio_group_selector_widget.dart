@@ -1,9 +1,9 @@
-import 'package:open_admin_app/widgets/user/common/portfolio_group.dart';
-import 'package:open_admin_app/widgets/user/common/select_portfolio_group_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/widgets/user/common/portfolio_group.dart';
+import 'package:open_admin_app/widgets/user/common/select_portfolio_group_bloc.dart';
 
 import '../../common/fh_filled_input_decoration.dart';
 
@@ -67,13 +67,13 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
                               child: InputChip(
                                 deleteIcon: InkWell(
                                     mouseCursor: SystemMouseCursors.click,
-                                    child: Icon(
+                                    child: const Icon(
                                       Icons.cancel,
                                       size: 18.0,
                                     )),
                                 key: ObjectKey(item),
                                 label: item.portfolio == null
-                                    ? Text('FeatureHub Administrators')
+                                    ? const Text('FeatureHub Administrators')
                                     : Text(
                                         '${item.portfolio?.name}: ${item.group.name}'),
                                 onDeleted: () =>
@@ -155,8 +155,8 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
                     mouseCursor: SystemMouseCursors.click,
                     child: DropdownButton<String?>(
                       icon: Padding(
-                        padding: EdgeInsets.only(left: 8.0),
-                        child: Icon(
+                        padding: const EdgeInsets.only(left: 8.0),
+                        child: const Icon(
                           Icons.keyboard_arrow_down,
                           size: 18,
                         ),
@@ -187,7 +187,7 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
               ),
             );
           }
-          return Text('no data');
+          return const Text('no data');
         });
   }
 }

@@ -1,9 +1,9 @@
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/common/copy_to_clipboard_html.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
 
 import 'fh_alert_dialog.dart';
 
@@ -65,7 +65,8 @@ class _FHErrorState extends State<FHErrorWidget> {
                               });
                             },
                             child: Container(
-                              padding: EdgeInsets.only(top: 20, bottom: 20),
+                              padding:
+                                  const EdgeInsets.only(top: 20, bottom: 20),
                               child: Text(showDetailsButton,
                                   style: Theme.of(context)
                                       .textTheme
@@ -103,7 +104,7 @@ class _FHErrorState extends State<FHErrorWidget> {
           child: SingleChildScrollView(
             child: Text(
               '${error.exception.toString()}+\n\n${error.stackTrace.toString()}',
-              style: TextStyle(fontFamily: 'Source', fontSize: 12),
+              style: const TextStyle(fontFamily: 'Source', fontSize: 12),
             ),
           ),
         ),

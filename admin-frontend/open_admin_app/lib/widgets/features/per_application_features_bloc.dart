@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:open_admin_app/api/client_api.dart';
-import 'package:open_admin_app/api/mr_client_aware.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/api/mr_client_aware.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:rxdart/rxdart.dart' hide Notification;
 
@@ -74,7 +74,7 @@ class PerApplicationFeaturesBloc
     _currentAppId = _mrClient.streamValley.currentAppIdStream.listen(setAppId);
 
     _getAllAppValuesDebounceStream
-        .debounceTime(Duration(milliseconds: 300))
+        .debounceTime(const Duration(milliseconds: 300))
         .listen((event) {
       _actuallyCallAddAppFeatureValuesToStream();
     });

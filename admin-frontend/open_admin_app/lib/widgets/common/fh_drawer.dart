@@ -34,7 +34,7 @@ class _DrawerViewWidgetState extends State<DrawerViewWidget> {
               mrBloc: mrBloc,
             );
           } else {
-            return SizedBox.shrink();
+            return const SizedBox.shrink();
           }
         });
   }
@@ -47,7 +47,7 @@ class _MenuContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: 260,
       height: MediaQuery.of(context).size.height - kToolbarHeight,
       child: Drawer(
@@ -56,7 +56,7 @@ class _MenuContainer extends StatelessWidget {
               stream: mrBloc.personState.personStream,
               builder: (context, snapshot) {
                 if (!snapshot.hasData || !mrBloc.personState.isLoggedIn) {
-                  return SizedBox.shrink();
+                  return const SizedBox.shrink();
                 }
 
                 return Column(
@@ -64,15 +64,15 @@ class _MenuContainer extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     PortfolioSelectorWidget(),
-                    SizedBox(height: 16),
-                    _MenuFeaturesOptionsWidget(),
+                    const SizedBox(height: 16),
+                    const _MenuFeaturesOptionsWidget(),
                     StreamBuilder<ReleasedPortfolio?>(
                         stream:
                             mrBloc.personState.isCurrentPortfolioOrSuperAdmin,
                         builder: (context, snapshot) {
                           if (snapshot.data == null ||
                               !snapshot.data!.currentPortfolioOrSuperAdmin) {
-                            return SizedBox.shrink();
+                            return const SizedBox.shrink();
                           }
 
                           return Column(
@@ -111,7 +111,7 @@ class _MenuContainer extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               Container(
-                                padding: EdgeInsets.only(
+                                padding: const EdgeInsets.only(
                                     left: 16.0, top: 32.0, bottom: 8.0),
                                 child: Text(
                                   'Global Settings',
@@ -140,7 +140,7 @@ class _SiteAdminOptionsWidget extends StatelessWidget {
             .streamValley
             .currentPortfolioIdStream,
         builder: (context, snapshot) {
-          return Column(children: <Widget>[
+          return Column(children: const <Widget>[
             _MenuItem(
                 name: 'Portfolios',
                 iconData: MaterialCommunityIcons.briefcase_plus_outline,
@@ -167,7 +167,7 @@ class _MenuPortfolioAdminOptionsWidget extends StatelessWidget {
             .currentPortfolioIdStream,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return Column(children: <Widget>[
+            return Column(children: const <Widget>[
               _MenuItem(
                   name: 'Groups',
                   iconData: MaterialIcons.people_outline,
@@ -182,7 +182,7 @@ class _MenuPortfolioAdminOptionsWidget extends StatelessWidget {
                   params: {}),
             ]);
           } else {
-            return SizedBox.shrink();
+            return const SizedBox.shrink();
           }
         });
   }
@@ -197,7 +197,7 @@ class _ApplicationSettings extends StatelessWidget {
             .currentPortfolioIdStream,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return Column(children: <Widget>[
+            return Column(children: const <Widget>[
               _MenuItem(
                   name: 'Environments',
                   iconData: AntDesign.bars,
@@ -224,7 +224,7 @@ class _ApplicationSettings extends StatelessWidget {
                   }),
             ]);
           } else {
-            return SizedBox.shrink();
+            return const SizedBox.shrink();
           }
         });
   }
@@ -236,7 +236,7 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: [
+      children: const [
         _MenuItem(
           name: 'Applications',
           iconData: Feather.grid,
@@ -266,7 +266,7 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
 class _MenuItem extends StatelessWidget {
   final String name;
   final IconData iconData;
-  final iconSize;
+  final double? iconSize;
   final String path;
   final Map<String, List<String>> params;
   final PermissionType permissionType;
@@ -317,7 +317,7 @@ class _MenuItem extends StatelessWidget {
               final selected = snapshot.data!.route == path &&
                   equalsParams(snapshot.data!.params);
               return Container(
-                padding: EdgeInsets.fromLTRB(16, 12, 0, 12),
+                padding: const EdgeInsets.fromLTRB(16, 12, 0, 12),
                 color: selected
                     ? (light
                         ? Theme.of(context).primaryColorLight
@@ -351,7 +351,7 @@ class _MenuItem extends StatelessWidget {
                 ),
               );
             } else {
-              return SizedBox.shrink();
+              return const SizedBox.shrink();
             }
           }),
     );
@@ -362,8 +362,8 @@ class _MenuDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        padding: EdgeInsets.only(top: 16.0),
-        decoration: BoxDecoration(
+        padding: const EdgeInsets.only(top: 16.0),
+        decoration: const BoxDecoration(
             border:
                 Border(bottom: BorderSide(color: Colors.black, width: 0.5))));
   }

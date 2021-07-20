@@ -13,10 +13,12 @@ class FlagOnOffColoredIndicator extends StatelessWidget {
         ? Text('ON',
             style: GoogleFonts.openSans(
                 textStyle: Theme.of(context).textTheme.button!.copyWith(
-                    color: Color(0xff11C8B5), fontWeight: FontWeight.bold)))
+                    color: const Color(0xff11C8B5),
+                    fontWeight: FontWeight.bold)))
         : Text('OFF',
             style: GoogleFonts.openSans(
                 textStyle: Theme.of(context).textTheme.button!.copyWith(
-                    color: Color(0xffF44C49), fontWeight: FontWeight.bold)));
+                    color: const Color(0xffF44C49),
+                    fontWeight: FontWeight.bold)));
   }
 }

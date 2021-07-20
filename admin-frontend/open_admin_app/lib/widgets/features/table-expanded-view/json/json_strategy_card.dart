@@ -1,14 +1,15 @@
+import 'package:flutter/material.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/json/edit_json_value_container.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/strategy_card_widget.dart';
-import 'package:flutter/material.dart';
-import 'package:mrapi/api.dart';
 
 class JsonStrategyCard extends StatelessWidget {
   final RolloutStrategy? rolloutStrategy;
   final CustomStrategyBloc strBloc;
 
-  const JsonStrategyCard({Key? key, this.rolloutStrategy, required this.strBloc})
+  const JsonStrategyCard(
+      {Key? key, this.rolloutStrategy, required this.strBloc})
       : super(key: key);
 
   @override
@@ -34,7 +35,7 @@ class JsonStrategyCard extends StatelessWidget {
               ),
             );
           } else {
-            return SizedBox.shrink();
+            return const SizedBox.shrink();
           }
         });
   }

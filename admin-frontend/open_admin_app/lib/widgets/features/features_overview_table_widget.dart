@@ -49,12 +49,12 @@ class FeaturesOverviewTableWidget extends StatelessWidget {
                 bloc: bloc,
               );
             } else {
-              return NoFeaturesMessage();
+              return const NoFeaturesMessage();
             }
           });
     } catch (e, s) {
       _log.shout('Failed to render, $e\n$s\n');
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
   }
 }
@@ -108,34 +108,31 @@ class _FeatureTabsBodyHolder extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(left: 8.0),
-          child: Container(
-//            color: Theme.of(context).highlightColor,
-            child: StreamBuilder<TabsState>(
-                stream: bloc.currentTab,
-                builder: (context, snapshot) {
-                  return Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (bloc.features.isNotEmpty)
-                          Container(
-                              color: Theme.of(context).highlightColor,
-                              height: headerHeight,
-                              width: MediaQuery.of(context).size.width > 600
-                                  ? 260.0
-                                  : 130,
-                              padding: EdgeInsets.only(left: 8.0),
-                              child: Text('',
-                                  style: Theme.of(context).textTheme.caption)),
-                        ...bloc.features.map(
-                          (f) {
-                            return FeatureNamesLeftPanel(
-                                tabsBloc: bloc, feature: f);
-                          },
-                        ).toList(),
-                      ]);
-                }),
-          ),
+          child: StreamBuilder<TabsState>(
+              stream: bloc.currentTab,
+              builder: (context, snapshot) {
+                return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (bloc.features.isNotEmpty)
+                        Container(
+                            color: Theme.of(context).highlightColor,
+                            height: headerHeight,
+                            width: MediaQuery.of(context).size.width > 600
+                                ? 260.0
+                                : 130,
+                            padding: EdgeInsets.only(left: 8.0),
+                            child: Text('',
+                                style: Theme.of(context).textTheme.caption)),
+                      ...bloc.features.map(
+                        (f) {
+                          return FeatureNamesLeftPanel(
+                              tabsBloc: bloc, feature: f);
+                        },
+                      ).toList(),
+                    ]);
+              }),
         ),
         Flexible(
           child: EnvironmentsAndFeatureValuesListView(bloc: bloc),
@@ -207,10 +204,11 @@ class _FeatureTab extends StatelessWidget {
                     bloc.swapTab(state);
                   },
                   child: Container(
-                      padding:
-                          EdgeInsets.symmetric(vertical: 6.0, horizontal: 12.0),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 6.0, horizontal: 12.0),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(16.0)),
+                        borderRadius:
+                            BorderRadius.all(const Radius.circular(16.0)),
                         color: state == snapshot.data
                             ? Theme.of(context).primaryColorLight
                             : Colors.transparent,

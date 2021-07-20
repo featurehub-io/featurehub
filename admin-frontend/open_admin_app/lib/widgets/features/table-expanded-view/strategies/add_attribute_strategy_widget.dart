@@ -1,14 +1,14 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
 import 'package:open_admin_app/widgets/common/input_fields_validators/input_field_number_formatter.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/individual_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/multiselect_dropdown.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/transform_strategy_conditions.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/transform_strategy_type_field.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
-import 'package:mrapi/api.dart';
 
 import 'attribute_value_chip_widget.dart';
 import 'matchers.dart';
@@ -180,15 +180,14 @@ class _EditAttributeStrategyWidgetState
         flex: 2,
         child: Column(
           children: [
-            if (_wellKnown == null)
-              _customFieldType(),
+            if (_wellKnown == null) _customFieldType(),
             Padding(
               padding: const EdgeInsets.only(left: 8.0),
               child: Container(
                 padding: const EdgeInsets.all(4.0),
                 // margin: EdgeInsets.all(8.0),
                 decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                    borderRadius: const BorderRadius.all(Radius.circular(6.0)),
                     color: Theme.of(context).cardColor),
                 height: 42,
                 child: OutlinedButton(
@@ -230,7 +229,7 @@ class _EditAttributeStrategyWidgetState
           ],
         ),
       ),
-      SizedBox(width: 16.0),
+      const SizedBox(width: 16.0),
       if (_wellKnown == StrategyAttributeWellKnownNames.country)
         Expanded(
             flex: 4,
@@ -285,7 +284,7 @@ class _EditAttributeStrategyWidgetState
         onPressed: () => {},
         child: DropdownButtonHideUnderline(
           child: DropdownButton<RolloutStrategyFieldType>(
-            icon: Icon(
+            icon: const Icon(
               Icons.keyboard_arrow_down,
               size: 18,
             ),
@@ -361,8 +360,8 @@ class _EditAttributeStrategyWidgetState
         return Padding(
             padding: const EdgeInsets.only(left: 8.0),
             child: Container(
-              padding: EdgeInsets.all(4.0),
-              margin: EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(4.0),
+              margin: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.all(Radius.circular(6.0)),
                   color: Theme.of(context).cardColor),
@@ -413,8 +412,8 @@ class _EditAttributeStrategyWidgetState
     }
 
     return Container(
-      padding: EdgeInsets.all(4.0),
-      margin: EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(4.0),
+      margin: const EdgeInsets.all(8.0),
       decoration: BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(6.0)),
           color: Theme.of(context).cardColor),
@@ -430,7 +429,7 @@ class _EditAttributeStrategyWidgetState
                   controller: _value,
                   textInputAction: TextInputAction.next,
                   decoration: InputDecoration(
-                      border: OutlineInputBorder(),
+                      border: const OutlineInputBorder(),
                       labelText: labelText,
                       helperText: helperText,
                       labelStyle: Theme.of(context)

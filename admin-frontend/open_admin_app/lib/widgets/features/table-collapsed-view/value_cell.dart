@@ -1,11 +1,11 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart';
 import 'package:open_admin_app/widgets/features/feature_value_status_tags.dart';
 import 'package:open_admin_app/widgets/features/table-collapsed-view/flag_colored_on_off_label.dart';
 import 'package:open_admin_app/widgets/features/table-collapsed-view/tooltip.dart';
 import 'package:open_admin_app/widgets/features/table-collapsed-view/value_not_set_container.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:mrapi/api.dart';
 
 class CollapsedViewValueCellHolder extends StatelessWidget {
   final FeatureValue? fv;
@@ -49,7 +49,7 @@ class _ValueContainer extends StatelessWidget {
               _StrategiesList(feature: feature, fv: fv!)
           ],
         ),
-        if (fv != null && fv!.locked) LockedIndicator()
+        if (fv != null && fv!.locked) const LockedIndicator()
       ],
     );
   }
@@ -119,22 +119,18 @@ class _ValueCard extends StatelessWidget {
           Container(
             height: 30,
             width: 150,
-            padding: EdgeInsets.symmetric(horizontal: 8.0),
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
             decoration: BoxDecoration(
               color: rolloutStrategy == null
-                  ? (lightTheme
-                      ? defaultValueColor
-                      : Colors.transparent)
-                  : (lightTheme
-                      ? strategyValueColor
-                      : Colors.transparent),
-              borderRadius: BorderRadius.all(Radius.circular(16.0)),
+                  ? (lightTheme ? defaultValueColor : Colors.transparent)
+                  : (lightTheme ? strategyValueColor : Colors.transparent),
+              borderRadius: const BorderRadius.all(Radius.circular(16.0)),
               border: lightTheme
                   ? null
-                  :  Border.all(
-              color: Colors.blue,
-              width: 1.0,
-            ),
+                  : Border.all(
+                      color: Colors.blue,
+                      width: 1.0,
+                    ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -146,7 +142,7 @@ class _ValueCard extends StatelessWidget {
                         ? Tooltip(
                             message: generateTooltipMessage(rolloutStrategy),
                             child: rolloutStrategy == null
-                                ? SizedBox.shrink()
+                                ? const SizedBox.shrink()
                                 : Text(rolloutStrategy!.name,
                                     style: Theme.of(context)
                                         .textTheme
@@ -161,9 +157,7 @@ class _ValueCard extends StatelessWidget {
                   ),
                 if (fv.rolloutStrategies.isNotEmpty)
                   VerticalDivider(
-                    thickness: 1.0,
-                    color: lightTheme ? null : Colors.blue
-                  ),
+                      thickness: 1.0, color: lightTheme ? null : Colors.blue),
                 Expanded(
                   flex: 4,
                   child: Align(
@@ -181,7 +175,11 @@ class _ValueCard extends StatelessWidget {
                               maxLines: 1,
                               style: displayValue.isEmpty
                                   ? Theme.of(context).textTheme.caption
-                                  : Theme.of(context).textTheme.bodyText2?.copyWith(color: Color(0xff11C8B5))),
+                                  : Theme.of(context)
+                                      .textTheme
+                                      .bodyText2
+                                      ?.copyWith(
+                                          color: const Color(0xff11C8B5))),
                     ),
                   ),
                 )

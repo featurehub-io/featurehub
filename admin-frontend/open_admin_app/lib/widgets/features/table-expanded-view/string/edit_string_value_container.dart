@@ -1,6 +1,6 @@
-import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';
 
 class EditStringValueContainer extends StatefulWidget {
   const EditStringValueContainer({
@@ -45,18 +45,17 @@ class _EditStringValueContainerState extends State<EditStringValueContainer> {
           controller: tec,
           decoration: InputDecoration(
               contentPadding:
-                  EdgeInsets.only(left: 4.0, right: 4.0, bottom: 8.0),
+                  const EdgeInsets.only(left: 4.0, right: 4.0, bottom: 8.0),
               enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(
                 color: Theme.of(context).buttonColor,
               )),
-              disabledBorder: OutlineInputBorder(
+              disabledBorder: const OutlineInputBorder(
                   borderSide: BorderSide(
                 color: Colors.grey,
               )),
-              hintText: widget.canEdit
-                  ? 'Enter string value'
-                  : 'No editing rights',
+              hintText:
+                  widget.canEdit ? 'Enter string value' : 'No editing rights',
               hintStyle: Theme.of(context).textTheme.caption),
           onChanged: (value) {
             final replacementValue = value.isEmpty ? null : tec.text.trim();

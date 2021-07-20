@@ -87,7 +87,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
             ],
           ),
           Container(
-            constraints: BoxConstraints(maxWidth: 400),
+            constraints: const BoxConstraints(maxWidth: 400),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
@@ -99,7 +99,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
                       (v?.isEmpty == true) ? 'Edit email address' : null,
                 ),
                 Padding(
-                  padding: EdgeInsets.only(top: 30),
+                  padding: const EdgeInsets.only(top: 30),
                   child: TextFormField(
                     controller: _name,
                     decoration: FHFilledInputDecoration(labelText: 'Name'),
@@ -179,7 +179,7 @@ class _UserPasswordUpdateDialogWidgetState
     return Form(
       key: _formKey,
       child: FHAlertDialog(
-        title: Text('Reset password'),
+        title: const Text('Reset password'),
         content: SizedBox(
           width: 500,
           child: Column(

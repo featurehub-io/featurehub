@@ -1,7 +1,7 @@
-import 'package:open_admin_app/widgets/user/common/select_portfolio_group_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/widgets/user/common/select_portfolio_group_bloc.dart';
 
 class AdminCheckboxWidget extends StatefulWidget {
   final Person? person;
@@ -34,7 +34,7 @@ class AdminCheckboxWidgetState extends State<AdminCheckboxWidget> {
 
     return bloc.mrClient.userIsSuperAdmin
         ? Container(
-            constraints: BoxConstraints(maxWidth: 300),
+            constraints: const BoxConstraints(maxWidth: 300),
             child: CheckboxListTile(
                 title: Text(
                   'Set this user as a FeatureHub site admin.',

@@ -1,9 +1,9 @@
-import 'package:open_admin_app/api/client_api.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/api/client_api.dart';
 
 class PortfolioSelectorWidget extends StatefulWidget {
   @override
@@ -19,7 +19,7 @@ class _PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
         stream: bloc.streamValley.portfolioListStream,
         builder: (context, snapshot) {
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return SizedBox.shrink();
+            return const SizedBox.shrink();
           }
 
           return StreamBuilder<Portfolio>(
@@ -35,14 +35,14 @@ class _PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
                       children: [
                         Text('Your current portfolio',
                             style: Theme.of(context).textTheme.caption),
-                        SizedBox(height: 4.0),
+                        const SizedBox(height: 4.0),
                         InkWell(
                           mouseCursor: SystemMouseCursors.click,
                           child: OutlinedButton(
                             onPressed: () => {},
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton(
-                                icon: Padding(
+                                icon: const Padding(
                                   padding: EdgeInsets.only(left: 8.0),
                                   child: Icon(
                                     Icons.keyboard_arrow_down,

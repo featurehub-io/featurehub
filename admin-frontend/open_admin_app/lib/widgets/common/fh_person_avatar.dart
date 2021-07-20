@@ -19,7 +19,7 @@ class PersonAvatar extends StatelessWidget {
                 child: Column(
                   children: [
                     CircleAvatar(
-                      backgroundColor: Color(0xffA6F2DE),
+                      backgroundColor: const Color(0xffA6F2DE),
                       child: Text(
                           //here the name should be returned from a current user
                           person.name!.substring(0, 1),
@@ -28,7 +28,7 @@ class PersonAvatar extends StatelessWidget {
                               .bodyText2!
                               .copyWith(color: Theme.of(context).primaryColor)),
                     ),
-                    SizedBox(height: 4.0),
+                    const SizedBox(height: 4.0),
                     Text(
                         //here the name should be returned from a current user
                         person.name!,

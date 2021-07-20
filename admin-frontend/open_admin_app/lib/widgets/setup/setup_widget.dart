@@ -1,9 +1,9 @@
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
 import 'package:open_admin_app/widgets/setup/page1_widget.dart';
 import 'package:open_admin_app/widgets/setup/page2_widget.dart';
 import 'package:open_admin_app/widgets/setup/page3_widget.dart';
 import 'package:open_admin_app/widgets/setup/setup_bloc.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
 
 class SetupPageWidget extends StatelessWidget {
   @override
@@ -37,7 +37,7 @@ class SetupPageWidget extends StatelessWidget {
           }
 
           return AnimatedSwitcher(
-            duration: Duration(milliseconds: 300),
+            duration: const Duration(milliseconds: 300),
             child: child,
           );
         });

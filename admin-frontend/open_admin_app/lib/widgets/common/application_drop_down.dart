@@ -1,8 +1,8 @@
-import 'package:open_admin_app/api/mr_client_aware.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/api/mr_client_aware.dart';
 
 class ApplicationDropDown extends StatefulWidget {
   final List<Application> applications;
@@ -22,13 +22,13 @@ class _ApplicationDropDownState extends State<ApplicationDropDown> {
     return OutlinedButton(
       onPressed: () => {},
       child: Container(
-        constraints: BoxConstraints(maxWidth: 200),
+        constraints: const BoxConstraints(maxWidth: 200),
         child: StreamBuilder<String?>(
             stream: widget.bloc.mrClient.streamValley.currentAppIdStream,
             builder: (context, snapshot) {
               return DropdownButtonHideUnderline(
                 child: DropdownButton(
-                  icon: Padding(
+                  icon: const Padding(
                     padding: EdgeInsets.only(left: 8.0),
                     child: Icon(
                       Icons.keyboard_arrow_down,

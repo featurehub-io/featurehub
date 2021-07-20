@@ -25,7 +25,7 @@ class StepperContainer extends StatelessWidget {
                 creator: (_context, _bag) => StepperBloc(mrBloc),
                 child: FHSetupProgressStepper());
           } else {
-            return SizedBox.shrink();
+            return const SizedBox.shrink();
           }
         });
   }
@@ -48,7 +48,7 @@ class StepperRocketButton extends StatelessWidget {
               (snapshot.data!.currentPortfolioOrSuperAdmin == true)) {
             return IconButton(
               tooltip: 'Open setup helper',
-              icon: Icon(
+              icon: const Icon(
                 MaterialCommunityIcons.rocket,
 //                color: Theme.of(context).primaryColor,
                 size: 24.0,
@@ -56,7 +56,7 @@ class StepperRocketButton extends StatelessWidget {
               onPressed: () => mrBloc.stepperOpened = true,
             );
           } else {
-            return SizedBox.shrink();
+            return const SizedBox.shrink();
           }
         });
   }

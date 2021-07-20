@@ -48,7 +48,7 @@ class _ResetPasswordState extends State<ResetPasswordWidget> {
               ),
               Column(
                 children: <Widget>[
-                  Text(
+                  const Text(
                       'It looks like you tried to sign in with a temporary password, please reset your password below before proceeding.'),
                   TextFormField(
                       controller: _password,
@@ -58,7 +58,7 @@ class _ResetPasswordState extends State<ResetPasswordWidget> {
                       validator: (v) => v == null || v.isEmpty
                           ? 'Please enter your new password'
                           : null,
-                      decoration: InputDecoration(labelText: 'Password')),
+                      decoration: const InputDecoration(labelText: 'Password')),
                   TextFormField(
                       controller: _confirmPassword,
                       obscureText: true,
@@ -67,15 +67,15 @@ class _ResetPasswordState extends State<ResetPasswordWidget> {
                           ? 'Please confirm your password'
                           : null,
                       decoration:
-                          InputDecoration(labelText: 'Confirm password')),
+                          const InputDecoration(labelText: 'Confirm password')),
                 ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
-                children: <Widget>[],
+                children: const <Widget>[],
               ),
               Container(
-                padding: EdgeInsets.only(top: 20),
+                padding: const EdgeInsets.only(top: 20),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: <Widget>[

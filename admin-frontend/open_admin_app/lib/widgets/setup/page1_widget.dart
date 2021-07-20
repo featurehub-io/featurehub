@@ -1,11 +1,11 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/common/FHFlatButton.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_card.dart';
 import 'package:open_admin_app/widgets/setup/setup_bloc.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:zxcvbn/zxcvbn.dart';
 
 class SetupPage1Widget extends StatefulWidget {
@@ -26,7 +26,7 @@ class _SetupPage1State extends State<SetupPage1Widget> {
   final _pw2 = TextEditingController();
   final _PASSWORD_SCORE_THRESHOLD = 1;
 
-  Text _passwordStrength = Text('');
+  Text _passwordStrength = const Text('');
 
   final _formKey = GlobalKey<FormState>(debugLabel: 'setup_page1');
 
@@ -104,7 +104,7 @@ class _SetupPage1State extends State<SetupPage1Widget> {
             if (external && local)
               Column(
                 children: [
-                  SizedBox(height: 24.0),
+                  const SizedBox(height: 24.0),
                   FHPageDivider(),
                   Padding(
                       padding: const EdgeInsets.fromLTRB(0, 24, 0, 16),
@@ -113,84 +113,86 @@ class _SetupPage1State extends State<SetupPage1Widget> {
                 ],
               ),
             if (local)
-              Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    TextFormField(
-                      controller: _name,
-                      autofocus: true,
-                      decoration: InputDecoration(labelText: 'Name'),
-                      textInputAction: TextInputAction.next,
-                      onFieldSubmitted: (_) => _handleSubmitted(),
-                      validator: (v) => (v == null || v.isEmpty)
-                          ? 'Please enter your name'
-                          : null,
-                    ),
-                    TextFormField(
-                        controller: _email,
-                        decoration: InputDecoration(labelText: 'Email address'),
-                        textInputAction: TextInputAction.next,
-                        onFieldSubmitted: (_) => _handleSubmitted(),
-                        validator: (v) {
-                          if (v == null || v.isEmpty) {
-                            return 'Please enter your email address';
-                          }
-                          if (!validateEmail(v)) {
-                            return ('Please enter a valid email address');
-                          }
-                          return null;
-                        }),
-                    TextFormField(
-                        controller: _pw1,
-                        obscureText: true,
-                        textInputAction: TextInputAction.next,
-                        onFieldSubmitted: (_) => _handleSubmitted(),
-                        decoration: InputDecoration(labelText: 'Password'),
-                        validator: (v) {
-                          if (v == null || v.isEmpty) {
-                            return 'Please enter your password';
-                          }
-                          if (v.length < 7) {
-                            return 'Password must be at least 7 characters';
-                          }
-                          //this is quite sensitive and annoying at the moment, commenting out
+              Column(mainAxisAlignment: MainAxisAlignment.start, children: <
+                  Widget>[
+                TextFormField(
+                  controller: _name,
+                  autofocus: true,
+                  decoration: const InputDecoration(labelText: 'Name'),
+                  textInputAction: TextInputAction.next,
+                  onFieldSubmitted: (_) => _handleSubmitted(),
+                  validator: (v) => (v == null || v.isEmpty)
+                      ? 'Please enter your name'
+                      : null,
+                ),
+                TextFormField(
+                    controller: _email,
+                    decoration:
+                        const InputDecoration(labelText: 'Email address'),
+                    textInputAction: TextInputAction.next,
+                    onFieldSubmitted: (_) => _handleSubmitted(),
+                    validator: (v) {
+                      if (v == null || v.isEmpty) {
+                        return 'Please enter your email address';
+                      }
+                      if (!validateEmail(v)) {
+                        return ('Please enter a valid email address');
+                      }
+                      return null;
+                    }),
+                TextFormField(
+                    controller: _pw1,
+                    obscureText: true,
+                    textInputAction: TextInputAction.next,
+                    onFieldSubmitted: (_) => _handleSubmitted(),
+                    decoration: const InputDecoration(labelText: 'Password'),
+                    validator: (v) {
+                      if (v == null || v.isEmpty) {
+                        return 'Please enter your password';
+                      }
+                      if (v.length < 7) {
+                        return 'Password must be at least 7 characters';
+                      }
+                      //this is quite sensitive and annoying at the moment, commenting out
 //                    Result result = Xcvbnm().estimate(v);
 //                    if (result.score < _PASSWORD_SCORE_THRESHOLD) {
 //                      return 'Password not strong enough, try adding numbers and symbols';
 //                    }
-                          return null;
-                        }),
-                    Align(
-                      alignment: Alignment.topLeft,
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
-                        child: _passwordStrength,
-                      ),
-                    ),
-                    TextFormField(
-                        controller: _pw2,
-                        obscureText: true,
-                        onFieldSubmitted: (_) => _handleSubmitted(),
-                        decoration:
-                            InputDecoration(labelText: 'Confirm Password'),
-                        validator: (v) {
-                          if (v != _pw1.text) {
-                            return "Passwords don't match";
-                          }
-                          return null;
-                        }),
-                  ]),
-            if (local) Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: <Widget>[
+                      return null;
+                    }),
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
+                    child: _passwordStrength,
+                  ),
+                ),
+                TextFormField(
+                    controller: _pw2,
+                    obscureText: true,
+                    onFieldSubmitted: (_) => _handleSubmitted(),
+                    decoration:
+                        const InputDecoration(labelText: 'Confirm Password'),
+                    validator: (v) {
+                      if (v != _pw1.text) {
+                        return "Passwords don't match";
+                      }
+                      return null;
+                    }),
+              ]),
+            if (local)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: <Widget>[
                   Padding(
-                  padding: const EdgeInsets.only(top: 16.0),
-                  child: FHFlatButton(
-                  onPressed: () => _handleSubmitted(),
-                  title: 'Next',
-                  ),)
-              ],
-            )
+                    padding: const EdgeInsets.only(top: 16.0),
+                    child: FHFlatButton(
+                      onPressed: () => _handleSubmitted(),
+                      title: 'Next',
+                    ),
+                  )
+                ],
+              )
           ],
         ),
       ),
@@ -250,32 +252,29 @@ class _SetupPage1ThirdPartyProviders extends StatelessWidget {
       : super(key: key);
   @override
   Widget build(BuildContext context) {
-
-      return Column(
-        children: [
-          for (dynamic provider in bloc.externalProviders)
-            Container(
-              height: 48,
-              child: Padding(
-                padding: const EdgeInsets.only(top: 12.0),
-                child: SignInButton(
-                    provider == 'oauth2-google'
-                        ? Buttons.GoogleDark
-                        : provider == 'oauth2-github'
-                        ? Buttons.GitHub
-                        : Buttons.Microsoft,
-                    text: provider == 'oauth2-google'
-                        ? ('Register with Google')
-                        : provider == 'oauth2-github'
-                        ? ('Register with GitHub')
-                        : ('Register with Microsoft'),
-                    onPressed: () {
-                  selectedExternalProviderFunc(provider);
-                }),
-              ),
+    return Column(
+      children: [
+        for (dynamic provider in bloc.externalProviders)
+          Container(
+            height: 48,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 12.0),
+              child: SignInButton(
+                  provider == 'oauth2-google'
+                      ? Buttons.GoogleDark
+                      : provider == 'oauth2-github'
+                          ? Buttons.GitHub
+                          : Buttons.Microsoft,
+                  text: provider == 'oauth2-google'
+                      ? ('Register with Google')
+                      : provider == 'oauth2-github'
+                          ? ('Register with GitHub')
+                          : ('Register with Microsoft'), onPressed: () {
+                selectedExternalProviderFunc(provider);
+              }),
             ),
-        ],
-      );
+          ),
+      ],
+    );
   }
 }
-

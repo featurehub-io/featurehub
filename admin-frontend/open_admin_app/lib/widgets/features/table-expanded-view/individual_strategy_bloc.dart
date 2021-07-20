@@ -4,7 +4,7 @@ import 'package:mrapi/api.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:uuid/uuid.dart';
 
-final _individualBlocUUidGenerator = Uuid();
+const _individualBlocUUidGenerator = Uuid();
 
 // this represents a single strategy and allows us to track its state outside of the widget
 class IndividualStrategyBloc extends Bloc {

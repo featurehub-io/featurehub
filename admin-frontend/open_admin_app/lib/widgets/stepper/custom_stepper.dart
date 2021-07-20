@@ -298,7 +298,7 @@ class _CustomStepperState extends State<CustomStepper>
             size: 18.0,
           );
         case CustomStepState.complete:
-          return Icon(
+          return const Icon(
             Icons.check,
             color: Colors.white,
             size: 18.0,
@@ -478,7 +478,7 @@ class _CustomStepperState extends State<CustomStepper>
               style: _subtitle2Style(index),
               duration: kThemeAnimationDuration,
               curve: Curves.fastOutSlowIn,
-              child: widget.steps[index].subtitle2 ?? SizedBox.shrink(),
+              child: widget.steps[index].subtitle2 ?? const SizedBox.shrink(),
             ),
           ),
       ],
@@ -556,7 +556,7 @@ class _CustomStepperState extends State<CustomStepper>
 
   Widget _buildVertical() {
     if (_keys == null) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
 
     return ListView(

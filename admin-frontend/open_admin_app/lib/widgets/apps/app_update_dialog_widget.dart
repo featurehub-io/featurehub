@@ -48,7 +48,7 @@ class _AppUpdateDialogWidgetState extends State<AppUpdateDialogWidget> {
           : 'Edit application'),
       content: Form(
           key: _formKey,
-          child: Container(
+          child: SizedBox(
             width: 500,
             child: Column(
               mainAxisSize: MainAxisSize.min,

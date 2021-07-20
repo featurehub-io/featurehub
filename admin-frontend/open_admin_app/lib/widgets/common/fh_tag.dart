@@ -27,13 +27,14 @@ class FHTagWidget extends StatelessWidget {
       child: Container(
         width: 100,
         height: 30,
-        margin: EdgeInsets.all(8.0),
+        margin: const EdgeInsets.all(8.0),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(10.0)),
+          borderRadius: const BorderRadius.all(Radius.circular(10.0)),
           color: labelColor,
         ),
         alignment: Alignment.center,
-        padding: EdgeInsets.only(top: 5.0, left: 8, right: 8, bottom: 5.0),
+        padding:
+            const EdgeInsets.only(top: 5.0, left: 8, right: 8, bottom: 5.0),
         child: Text(
           text,
           style: style ??

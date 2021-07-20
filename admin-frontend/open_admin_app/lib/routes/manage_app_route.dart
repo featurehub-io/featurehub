@@ -52,7 +52,7 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
                   }
                 }),
             Container(
-              padding: EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.only(bottom: 10),
               child: const FHHeader(
                 title: 'Application settings',
               ),
@@ -141,10 +141,10 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
           labelStyle: Theme.of(context).textTheme.bodyText1,
           labelColor: Theme.of(context).textTheme.subtitle2!.color,
           unselectedLabelColor: Theme.of(context).textTheme.bodyText2!.color,
-          tabs: [
-            const Tab(text: 'Environments'),
-            const Tab(text: 'Group permissions'),
-            const Tab(text: 'Service account permissions'),
+          tabs: const [
+            Tab(text: 'Environments'),
+            Tab(text: 'Group permissions'),
+            Tab(text: 'Service account permissions'),
           ],
         ),
         SizedBox(
@@ -175,8 +175,8 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
               // Service accounts
               SingleChildScrollView(
                 child: Column(
-                  children: <Widget>[
-                    const ServiceAccountPermissionsWidget(),
+                  children: const <Widget>[
+                    ServiceAccountPermissionsWidget(),
                   ],
                 ),
               ),
