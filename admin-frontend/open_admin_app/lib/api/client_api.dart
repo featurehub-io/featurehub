@@ -140,7 +140,7 @@ class ManagementRepositoryClientBloc implements Bloc {
   /// still have permission to this route and if not, go to the default route
   void _checkRouteForPermission(Portfolio p) {
     if (_routerSource.hasValue) {
-      if (!router.hasRoutePermissions(_routerSource.value!, userIsSuperAdmin,
+      if (!permissionCheckHandler!(_routerSource.value!, userIsSuperAdmin,
           personState.userIsPortfolioAdmin(p.id!, person.groups), isLoggedIn)) {
         swapRoutes(router.defaultRoute());
       }
