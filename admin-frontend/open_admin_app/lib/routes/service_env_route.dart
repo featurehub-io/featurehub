@@ -9,8 +9,8 @@ import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/widgets/common/application_drop_down.dart';
 import 'package:open_admin_app/widgets/common/copy_to_clipboard_html.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
-import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
+import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
 import 'package:open_admin_app/widgets/service-accounts/service_accounts_env_bloc.dart';
 
 class ServiceAccountEnvRoute extends StatelessWidget {
@@ -60,10 +60,10 @@ class ServiceAccountEnvRoute extends StatelessWidget {
                                     true)) {
                               return Padding(
                                 padding: const EdgeInsets.only(
-                                    left: 16.0, bottom: 8.0),
-                                child: FHFlatButtonTransparent(
+                                    left: 8.0, bottom: 8.0),
+                                child: FHUnderlineButton(
                                     keepCase: true,
-                                    title: 'Manage service accounts',
+                                    title: 'Go to service accounts settings',
                                     onPressed: () => {
                                           ManagementRepositoryClientBloc.router
                                               .navigateTo(

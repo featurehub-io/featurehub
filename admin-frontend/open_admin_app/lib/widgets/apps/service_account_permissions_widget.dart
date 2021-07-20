@@ -10,8 +10,7 @@ import 'package:open_admin_app/widgets/common/FHFlatButton.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_footer_button_bar.dart';
 import 'package:open_admin_app/widgets/common/fh_info_card.dart';
-import 'package:open_admin_app/widgets/common/fh_link.dart';
-
+import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
 import 'manage_app_bloc.dart';
 
 final _log = Logger('ServiceAccountPermissionsWidget');
@@ -57,13 +56,19 @@ class _ServiceAccountPermissionState
                     child: Column(
                       children: <Widget>[
                         Text(
-                            "There are no 'service accounts' in the '${bloc.portfolio!.name}' portfolio."),
+                            'There are no service accounts in the "${bloc.portfolio!.name}" portfolio.'),
                         Container(
                           padding: const EdgeInsets.only(top: 20, bottom: 20),
-                          child: const FHLinkWidget(
-                              text:
-                                  'Manage service accounts for this portfolio?',
-                              href: '/service-accounts'),
+                          child: FHUnderlineButton(
+                              title: 'Go to service accounts settings', onPressed: () => {
+                            ManagementRepositoryClientBloc
+                                .router
+                                .navigateTo(
+                              context,
+                              '/service-accounts',
+                            )
+                          },
+                          ),
                         )
                       ],
                     )),

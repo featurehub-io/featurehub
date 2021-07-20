@@ -46,7 +46,10 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
                           children: [
                             Text('There are no applications in this portfolio',
                                 style: Theme.of(context).textTheme.caption),
-                            LinkToApplicationsPage(),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: LinkToApplicationsPage(),
+                            ),
                           ],
                         ));
                   }

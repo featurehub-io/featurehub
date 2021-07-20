@@ -7,6 +7,7 @@ import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/widgets/common/FHFlatButton.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_footer_button_bar.dart';
+import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
 
 import 'manage_app_bloc.dart';
 
@@ -45,8 +46,8 @@ class GroupPermissionsWidget extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(width: 16.0),
-                    FHFlatButtonTransparent(
-                      title: 'Manage group members',
+                    FHUnderlineButton(
+                      title: 'Go to groups settings',
                       keepCase: true,
                       onPressed: () {
                         ManagementRepositoryClientBloc.router

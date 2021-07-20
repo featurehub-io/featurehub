@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:open_admin_app/utils/translate_on_hover.dart';
 
 class FHUnderlineButton extends StatelessWidget {
   final VoidCallback onPressed;
@@ -20,13 +21,17 @@ class FHUnderlineButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-        mouseCursor: enabled ? SystemMouseCursors.click : null,
-        onTap: onPressed,
-        child: Text(keepCase ? title : title.toUpperCase(),
-            style: Theme.of(context).textTheme.bodyText1!.copyWith(
-                decoration: TextDecoration.underline,
-                color: enabled
-                    ? Theme.of(context).buttonColor
-                    : color ?? Colors.black54)));
+      mouseCursor: SystemMouseCursors.click,
+      onTap: onPressed,
+      child: Container(
+        padding: const EdgeInsets.all(2.0),
+        alignment: Alignment.centerLeft,
+        child: TranslateOnHover(
+          child: Text(title,
+              style: Theme.of(context).textTheme.button?.copyWith(color: Colors.blue),
+                  ),
+        ),
+      ),
+    );
   }
 }

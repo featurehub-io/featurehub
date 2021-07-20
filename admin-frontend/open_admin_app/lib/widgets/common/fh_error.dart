@@ -71,9 +71,7 @@ class _FHErrorState extends State<FHErrorWidget> {
                                   style: Theme.of(context)
                                       .textTheme
                                       .button!
-                                      .merge(TextStyle(
-                                          color:
-                                              Theme.of(context).buttonColor))),
+                                      ),
                             )),
                       ],
                     ),

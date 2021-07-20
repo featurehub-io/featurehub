@@ -45,7 +45,7 @@ class FHCopyToClipboardFlatButton extends StatelessWidget {
                   style: Theme.of(context)
                       .textTheme
                       .subtitle2!
-                      .merge(TextStyle(color: Theme.of(context).buttonColor))),
+                      ),
         ],
       ),
     );
