@@ -26,7 +26,7 @@ class _TranslateOnHoverState extends State<TranslateOnHover> {
                   ),
                 ),
               )
-            : BoxDecoration(
+            : const BoxDecoration(
                 border: Border(
                   bottom: BorderSide(
                     color: Colors.transparent,

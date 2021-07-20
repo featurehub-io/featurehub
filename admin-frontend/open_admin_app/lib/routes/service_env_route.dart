@@ -28,8 +28,8 @@ class ServiceAccountEnvRoute extends StatelessWidget {
                   Wrap(
                     children: [
                       Container(
-                        padding: EdgeInsets.only(bottom: 10),
-                        child: FHHeader(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: const FHHeader(
                           title: 'API Keys',
                         ),
                       ),
@@ -41,15 +41,14 @@ class ServiceAccountEnvRoute extends StatelessWidget {
                           stream: bloc.mrClient.streamValley
                               .currentPortfolioApplicationsStream,
                           builder: (context, snapshot) {
-                            if (snapshot.hasData &&
-                                snapshot.data!.isNotEmpty) {
+                            if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                               return Container(
-                                  padding: EdgeInsets.only(bottom: 8),
+                                  padding: const EdgeInsets.only(bottom: 8),
                                   child: ApplicationDropDown(
                                       applications: snapshot.data!,
                                       bloc: bloc));
                             } else {
-                              return SizedBox.shrink();
+                              return const SizedBox.shrink();
                             }
                           }),
                       StreamBuilder<ReleasedPortfolio?>(
@@ -57,40 +56,37 @@ class ServiceAccountEnvRoute extends StatelessWidget {
                               .isCurrentPortfolioOrSuperAdmin,
                           builder: (context, snapshot) {
                             if (snapshot.data != null &&
-                                (snapshot.data!
-                                        .currentPortfolioOrSuperAdmin ==
+                                (snapshot.data!.currentPortfolioOrSuperAdmin ==
                                     true)) {
                               return Padding(
                                 padding: const EdgeInsets.only(
                                     left: 16.0, bottom: 8.0),
-                                child: Container(
-                                    child: FHFlatButtonTransparent(
-                                        keepCase: true,
-                                        title: 'Manage service accounts',
-                                        onPressed: () => {
-                                              ManagementRepositoryClientBloc
-                                                  .router
-                                                  .navigateTo(
-                                                context,
-                                                '/service-accounts',
-                                              )
-                                            })),
+                                child: FHFlatButtonTransparent(
+                                    keepCase: true,
+                                    title: 'Manage service accounts',
+                                    onPressed: () => {
+                                          ManagementRepositoryClientBloc.router
+                                              .navigateTo(
+                                            context,
+                                            '/service-accounts',
+                                          )
+                                        }),
                               );
                             } else {
-                              return SizedBox.shrink();
+                              return const SizedBox.shrink();
                             }
                           }),
                     ],
                   ),
                   FHPageDivider(),
-                  SizedBox(
+                  const SizedBox(
                     height: 16.0,
                   ),
                   StreamBuilder<ServiceAccountEnvironments>(
                       stream: bloc.serviceAccountStream,
                       builder: (context, envSnapshot) {
                         if (!envSnapshot.hasData) {
-                          return SizedBox.shrink();
+                          return const SizedBox.shrink();
                         }
 
                         if (envSnapshot.data!.serviceAccounts.isEmpty) {
@@ -147,46 +143,43 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
                     ),
                     Expanded(
                         flex: 6,
-                        child: Container(
-                          child: Column(
-                            children: [
-                              for (var env in serviceAccountEnvs.environments)
-                                if (serviceAccount.permissions
-                                    .firstWhere(
-                                        (p) => p.environmentId == env.id,
-                                        orElse: () => ServiceAccountPermission(
-                                            permissions: [],
-                                            environmentId: env.id!))
-                                    .permissions
-                                    .isNotEmpty)
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                          flex: 3,
-                                          child: Text(env.name,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyText2),
-                                        ),
-                                        Expanded(
-                                            flex: 4,
-                                            child:
-                                                _ServiceAccountPermissionWidget(
-                                                    env: env,
-                                                    sa: serviceAccount)),
-                                        Expanded(
-                                            flex: 4,
-                                            child: _ServiceAccountCopyWidget(
-                                                env: env, sa: serviceAccount))
+                        child: Column(
+                          children: [
+                            for (var env in serviceAccountEnvs.environments)
+                              if (serviceAccount.permissions
+                                  .firstWhere((p) => p.environmentId == env.id,
+                                      orElse: () => ServiceAccountPermission(
+                                          permissions: [],
+                                          environmentId: env.id!))
+                                  .permissions
+                                  .isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        flex: 3,
+                                        child: Text(env.name,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyText2),
+                                      ),
+                                      Expanded(
+                                          flex: 4,
+                                          child:
+                                              _ServiceAccountPermissionWidget(
+                                                  env: env,
+                                                  sa: serviceAccount)),
+                                      Expanded(
+                                          flex: 4,
+                                          child: _ServiceAccountCopyWidget(
+                                              env: env, sa: serviceAccount))
 
 //
-                                      ],
-                                    ),
-                                  )
-                            ],
-                          ),
+                                    ],
+                                  ),
+                                )
+                          ],
                         )),
                   ],
                 ),
@@ -219,7 +212,7 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
     return Container(
         child: perms.isNotEmpty
             ? Text(perms.map((p) => p.name).join(', '),
-                style: TextStyle(
+                style: const TextStyle(
                     fontFamily: 'Source', fontSize: 12, letterSpacing: 1.0))
             : Text('No permissions defined',
                 style: Theme.of(context).textTheme.caption));
@@ -273,7 +266,7 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
               ),
             ),
           if (account.sdkUrlClientEval == null)
-            Tooltip(
+            const Tooltip(
               message:
                   'SDK URL is unavailable because your current permissions for this environment are lower level',
               child: Icon(
@@ -283,7 +276,7 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
               ),
             ),
           if (account.sdkUrlServerEval == null)
-            Tooltip(
+            const Tooltip(
               message:
                   'SDK URL is unavailable because your current permissions for this environment are lower level',
               child: Icon(

@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/router.dart';
 import 'package:open_admin_app/widgets/apps/group_permissions_widget.dart';
@@ -11,9 +14,6 @@ import 'package:open_admin_app/widgets/common/fh_card.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/common/link_to_applications_page.dart';
 import 'package:open_admin_app/widgets/environments/env_list_widget.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:mrapi/api.dart';
 
 class ManageAppRoute extends StatefulWidget {
   @override
@@ -35,13 +35,13 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
                 builder: (context, snapshot) {
                   if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                     return Container(
-                        padding: EdgeInsets.only(left: 8, bottom: 8),
+                        padding: const EdgeInsets.only(left: 8, bottom: 8),
                         child: ApplicationDropDown(
                             applications: snapshot.data!, bloc: bloc));
                   } else {
                     bloc.setApplicationId(bloc.mrClient.currentAid);
                     return Container(
-                        padding: EdgeInsets.only(left: 8, top: 15),
+                        padding: const EdgeInsets.only(left: 8, top: 15),
                         child: Row(
                           children: [
                             Text('There are no applications in this portfolio',
@@ -53,7 +53,7 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
                 }),
             Container(
               padding: EdgeInsets.only(bottom: 10),
-              child: FHHeader(
+              child: const FHHeader(
                 title: 'Application settings',
               ),
             ),
@@ -142,9 +142,9 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
           labelColor: Theme.of(context).textTheme.subtitle2!.color,
           unselectedLabelColor: Theme.of(context).textTheme.bodyText2!.color,
           tabs: [
-            Tab(text: 'Environments'),
-            Tab(text: 'Group permissions'),
-            Tab(text: 'Service account permissions'),
+            const Tab(text: 'Environments'),
+            const Tab(text: 'Group permissions'),
+            const Tab(text: 'Service account permissions'),
           ],
         ),
         SizedBox(
@@ -176,7 +176,7 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
               SingleChildScrollView(
                 child: Column(
                   children: <Widget>[
-                    ServiceAccountPermissionsWidget(),
+                    const ServiceAccountPermissionsWidget(),
                   ],
                 ),
               ),

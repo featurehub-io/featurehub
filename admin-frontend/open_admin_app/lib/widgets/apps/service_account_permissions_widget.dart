@@ -1,16 +1,16 @@
 import 'dart:ui';
 
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:logging/logging.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/widgets/common/FHFlatButton.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_footer_button_bar.dart';
 import 'package:open_admin_app/widgets/common/fh_info_card.dart';
 import 'package:open_admin_app/widgets/common/fh_link.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:logging/logging.dart';
-import 'package:mrapi/api.dart';
 
 import 'manage_app_bloc.dart';
 
@@ -53,14 +53,14 @@ class _ServiceAccountPermissionState
               mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
                 Container(
-                    padding: EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(20),
                     child: Column(
                       children: <Widget>[
                         Text(
                             "There are no 'service accounts' in the '${bloc.portfolio!.name}' portfolio."),
                         Container(
-                          padding: EdgeInsets.only(top: 20, bottom: 20),
-                          child: FHLinkWidget(
+                          padding: const EdgeInsets.only(top: 20, bottom: 20),
+                          child: const FHLinkWidget(
                               text:
                                   'Manage service accounts for this portfolio?',
                               href: '/service-accounts'),
@@ -74,7 +74,7 @@ class _ServiceAccountPermissionState
           return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                SizedBox(height: 16.0),
+                const SizedBox(height: 16.0),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -88,7 +88,7 @@ class _ServiceAccountPermissionState
                         serviceAccountDropdown(snapshot.data!, bloc),
                       ],
                     ),
-                    Padding(
+                    const Padding(
                       padding: const EdgeInsets.only(left: 16.0),
                       child: FHInfoCardWidget(
                           message:
@@ -108,14 +108,14 @@ with only 'Read' permission for service accounts.'''),
   Widget serviceAccountDropdown(
       List<ServiceAccount> serviceAccounts, ManageAppBloc bloc) {
     return Container(
-      constraints: BoxConstraints(maxWidth: 250),
+      constraints: const BoxConstraints(maxWidth: 250),
       child: StreamBuilder<String?>(
           stream: bloc.currentServiceAccountIdStream,
           builder: (context, snapshot) {
             return InkWell(
               mouseCursor: SystemMouseCursors.click,
               child: DropdownButton(
-                icon: Padding(
+                icon: const Padding(
                   padding: EdgeInsets.only(left: 8.0),
                   child: Icon(
                     Icons.keyboard_arrow_down,

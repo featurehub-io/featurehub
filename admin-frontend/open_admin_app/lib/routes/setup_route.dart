@@ -16,7 +16,7 @@ class SetupWrapperWidget extends StatelessWidget {
       bodyMainAxisAlignment: MainAxisAlignment.center,
       body: Center(
           child: MediaQuery.of(context).size.width > 500
-              ? Container(
+              ? SizedBox(
                   width: 500,
                   child: BlocProvider<SetupBloc>(
                       creator: (_context, _bag) => SetupBloc(client),

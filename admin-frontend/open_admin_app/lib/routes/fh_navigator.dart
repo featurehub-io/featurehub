@@ -151,20 +151,22 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
   FHRoutePath? _stashedRoutePath;
 
   @override
-  Future<void> setNewRoutePath(FHRoutePath newPath) async {
-    if (ManagementRepositoryClientBloc.router.routeExists(newPath.routeName)) {
+  Future<void> setNewRoutePath(FHRoutePath configuration) async {
+    if (ManagementRepositoryClientBloc.router
+        .routeExists(configuration.routeName)) {
       if (ManagementRepositoryClientBloc.router
-          .canUseRoute(newPath.routeName)) {
-        print('set new route path $newPath');
-        _path = newPath;
-        bloc.swapRoutes(RouteChange(newPath.routeName, params: newPath.params));
+          .canUseRoute(configuration.routeName)) {
+        print('set new route path $configuration');
+        _path = configuration;
+        bloc.swapRoutes(
+            RouteChange(configuration.routeName, params: configuration.params));
       } else {
-        print('cant use route $newPath so stashing');
-        _stashedRoutePath = newPath;
+        print('cant use route $configuration so stashing');
+        _stashedRoutePath = configuration;
         notifyListeners();
       }
     } else {
-      _path = newPath;
+      _path = configuration;
       bloc.routeSlot(RouteSlot.nowhere);
     }
   }
@@ -199,8 +201,8 @@ class FHRouteInformationParser extends RouteInformationParser<FHRoutePath> {
   }
 
   @override
-  RouteInformation restoreRouteInformation(FHRoutePath path) {
-    return path.make();
+  RouteInformation restoreRouteInformation(FHRoutePath configuration) {
+    return configuration.make();
   }
 }
 
@@ -209,8 +211,7 @@ class NavigationProviderBloc implements Bloc {
   final routeInfoParser = FHRouteInformationParser();
   final FHRouteDelegate routeDelegate;
 
-  NavigationProviderBloc(this.bloc)
-      : this.routeDelegate = FHRouteDelegate(bloc);
+  NavigationProviderBloc(this.bloc) : routeDelegate = FHRouteDelegate(bloc);
 
   @override
   void dispose() {

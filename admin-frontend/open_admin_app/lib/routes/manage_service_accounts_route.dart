@@ -10,7 +10,7 @@ import 'package:open_admin_app/widgets/common/fh_header.dart';
 class ManageServiceAccountsRoute extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(child: _ServiceAccountSearchWidget());
+    return _ServiceAccountSearchWidget();
   }
 }
 
@@ -39,7 +39,7 @@ class _ServiceAccountSearchState extends State<_ServiceAccountSearchWidget> {
   Widget _headerRow() {
     return Container(
         padding: const EdgeInsets.fromLTRB(0, 8, 30, 10),
-        child: FHHeader(
+        child: const FHHeader(
           title: 'Manage service accounts',
         ));
   }

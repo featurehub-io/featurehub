@@ -7,6 +7,7 @@ import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/router.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
+import 'package:open_admin_app/config/route_names.dart';
 import 'package:open_admin_app/widgets/common/fh_portfolio_selector.dart';
 
 class DrawerViewWidget extends StatefulWidget {
@@ -247,7 +248,7 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
           name: 'Features',
           iconData: Feather.flag,
           iconSize: 24,
-          path: '/features-dashboard',
+          path: routeNameFeatureDashboard,
           params: {},
         ),
         _MenuItem(

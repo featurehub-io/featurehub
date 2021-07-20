@@ -48,7 +48,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
       StreamController<List<dynamic>?>.broadcast();
   int _searchId = 0;
   FocusNode? _focusNode;
-  TextEditingValue _value = TextEditingValue();
+  TextEditingValue _value = const TextEditingValue();
   TextInputConnection? _connection;
   _SuggestionsBoxController? _suggestionsBoxController;
   final LayerLink _layerLink = LayerLink();
@@ -120,7 +120,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
     // TODO: See if after_layout mixin (https://pub.dartlang.org/packages/after_layout) works instead of keep checking if rendered
 
     while (renderBox == null && renderBox is! RenderBox) {
-      await Future.delayed(Duration(milliseconds: 10));
+      await Future.delayed(const Duration(milliseconds: 10));
 
       renderBox = context.findRenderObject();
     }
@@ -128,7 +128,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
     var box = renderBox as RenderBox;
 
     while (!box.hasSize) {
-      await Future.delayed(Duration(milliseconds: 10));
+      await Future.delayed(const Duration(milliseconds: 10));
     }
 
     final size = renderBox.size;
@@ -213,7 +213,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
 
   void _openInputConnection() {
     if (!_hasInputConnection) {
-      _connection = TextInput.attach(this, TextInputConfiguration());
+      _connection = TextInput.attach(this, const TextInputConfiguration());
       _connection!.setEditingState(_value);
     }
     _connection?.show();
@@ -235,7 +235,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
     final theme = Theme.of(context);
 
     chipsChildren.add(
-      Container(
+      SizedBox(
         height: 32.0,
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -308,7 +308,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
     );
 
     // if _connection is null, assign it something
-    _connection ??= TextInput.attach(this, TextInputConfiguration());
+    _connection ??= TextInput.attach(this, const TextInputConfiguration());
     _connection!.setEditingState(_value);
   }
 

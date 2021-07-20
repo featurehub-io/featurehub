@@ -147,10 +147,10 @@ class _CreateFeatureButton extends StatelessWidget {
                     );
                   }
 
-                  return SizedBox.shrink();
+                  return const SizedBox.shrink();
                 });
           }
-          return SizedBox.shrink();
+          return const SizedBox.shrink();
         });
   }
 }

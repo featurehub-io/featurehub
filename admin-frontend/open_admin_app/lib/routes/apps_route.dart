@@ -5,6 +5,7 @@ import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
+import 'package:open_admin_app/config/route_names.dart';
 import 'package:open_admin_app/widgets/apps/app_delete_dialog_widget.dart';
 import 'package:open_admin_app/widgets/apps/app_update_dialog_widget.dart';
 import 'package:open_admin_app/widgets/apps/apps_bloc.dart';
@@ -123,7 +124,7 @@ class _ApplicationCard extends StatelessWidget {
             // Navigator.of(context).pushNamed('/features');
             ManagementRepositoryClientBloc.router.navigateTo(
               context,
-              '/features-dashboard',
+              routeNameFeatureDashboard,
             );
           },
           child: Container(
@@ -364,7 +365,7 @@ class _PopUpAdminMenu extends StatelessWidget {
             bloc.mrClient.setCurrentAid(application.id);
             ManagementRepositoryClientBloc.router.navigateTo(
               context,
-              '/features-dashboard',
+              routeNameFeatureDashboard,
             );
           }
         },

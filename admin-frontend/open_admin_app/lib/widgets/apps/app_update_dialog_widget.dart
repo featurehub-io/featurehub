@@ -1,8 +1,8 @@
+import 'package:flutter/material.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/common/FHFlatButton.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
-import 'package:flutter/material.dart';
-import 'package:mrapi/api.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
 import 'apps_bloc.dart';
@@ -57,7 +57,8 @@ class _AppUpdateDialogWidgetState extends State<AppUpdateDialogWidget> {
                     controller: _appName,
                     autofocus: true,
                     textInputAction: TextInputAction.next,
-                    decoration: InputDecoration(labelText: 'Application name'),
+                    decoration:
+                        const InputDecoration(labelText: 'Application name'),
                     validator: ((v) {
                       if (v == null || v.isEmpty) {
                         return 'Please enter an application name';
@@ -70,8 +71,8 @@ class _AppUpdateDialogWidgetState extends State<AppUpdateDialogWidget> {
                 TextFormField(
                     controller: _appDescription,
                     textInputAction: TextInputAction.done,
-                    decoration:
-                        InputDecoration(labelText: 'Application description'),
+                    decoration: const InputDecoration(
+                        labelText: 'Application description'),
                     validator: ((v) {
                       if (v == null || v.isEmpty) {
                         return 'Please enter app description';
