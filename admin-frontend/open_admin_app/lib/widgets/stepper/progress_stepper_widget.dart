@@ -42,7 +42,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
               onTap: () => bloc.mrClient.stepperOpened = false)
         ],
       ),
-      SizedBox(height: 8.0),
+      const SizedBox(height: 8.0),
       FHPageDivider(),
     ]);
 
@@ -51,7 +51,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
       child: Material(
         elevation: 16.0,
         child: Container(
-            constraints: BoxConstraints(maxWidth: 260),
+            constraints: const BoxConstraints(maxWidth: 260),
             height: MediaQuery.of(context).size.height - kToolbarHeight,
             padding:
                 const EdgeInsets.only(bottom: 16.0, right: 16.0, left: 16.0),
@@ -119,7 +119,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                       ],
                                     )),
                                 CustomStep(
-                                    title: Text('Create service account'),
+                                    title: const Text('Create service account'),
                                     state: snapshot.data!.serviceAccount == true
                                         ? CustomStepState.complete
                                         : CustomStepState.indexed,
@@ -310,9 +310,8 @@ class _StepperState extends State<FHSetupProgressStepper> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  Container(
-                      child: Text('Select application or create a new one',
-                          style: Theme.of(context).textTheme.caption)),
+                  Text('Select application or create a new one',
+                      style: Theme.of(context).textTheme.caption),
                   Container(
                       constraints: BoxConstraints(maxWidth: 200),
                       child: applicationsDropdown(snapshot.data!, bloc))
@@ -327,7 +326,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
     return InkWell(
       mouseCursor: SystemMouseCursors.click,
       child: DropdownButton(
-        icon: Padding(
+        icon: const Padding(
           padding: EdgeInsets.only(left: 8.0),
           child: Icon(
             Icons.keyboard_arrow_down,

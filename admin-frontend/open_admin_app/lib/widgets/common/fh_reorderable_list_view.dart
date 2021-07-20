@@ -128,7 +128,7 @@ class _ReorderableListViewState extends State<FHReorderableListView> {
       opaque: true,
       builder: (BuildContext context) {
         return _ReorderableListContent(
-          header: widget.header ?? SizedBox.shrink(),
+          header: widget.header ?? const SizedBox.shrink(),
           scrollDirection: widget.scrollDirection,
           onReorder: widget.onReorder,
           padding: widget.padding,

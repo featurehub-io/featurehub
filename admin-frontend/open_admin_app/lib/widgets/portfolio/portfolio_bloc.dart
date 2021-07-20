@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:open_admin_app/api/client_api.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/api/client_api.dart';
 import 'package:rxdart/rxdart.dart';
 
 enum PortfolioState { list, create, edit }
@@ -28,7 +28,7 @@ class PortfolioBloc implements Bloc {
     final newSearch = s;
     search = s;
 
-    Timer(Duration(milliseconds: 300), () {
+    Timer(const Duration(milliseconds: 300), () {
       if (newSearch == search) {
         // hasn't changed
         _requestSearch(); // don't need to await it, async is fine

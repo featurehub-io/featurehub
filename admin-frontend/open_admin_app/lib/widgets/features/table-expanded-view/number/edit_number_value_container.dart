@@ -1,8 +1,8 @@
+import 'package:flutter/material.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/common/input_fields_validators/input_field_number_formatter.dart';
 import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';
-import 'package:flutter/material.dart';
-import 'package:mrapi/api.dart';
 
 class EditNumberValueContainer extends StatefulWidget {
   const EditNumberValueContainer({
@@ -46,18 +46,18 @@ class _EditNumberValueContainerState extends State<EditNumberValueContainer> {
           enabled: widget.enabled,
           controller: tec,
           decoration: InputDecoration(
-            contentPadding: EdgeInsets.only(left: 4.0, top: 4.0, bottom: 8.0),
+            contentPadding:
+                const EdgeInsets.only(left: 4.0, top: 4.0, bottom: 8.0),
             enabledBorder: OutlineInputBorder(
                 borderSide: BorderSide(
               color: Theme.of(context).buttonColor,
             )),
-            disabledBorder: OutlineInputBorder(
+            disabledBorder: const OutlineInputBorder(
                 borderSide: BorderSide(
               color: Colors.grey,
             )),
-            hintText: widget.canEdit
-                ? 'Enter number value'
-                : 'No editing rights',
+            hintText:
+                widget.canEdit ? 'Enter number value' : 'No editing rights',
             hintStyle: Theme.of(context).textTheme.caption,
             errorText:
                 validateNumber(tec.text) != null ? 'Not a valid number' : null,

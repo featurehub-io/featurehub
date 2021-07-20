@@ -1,9 +1,9 @@
-import 'package:open_admin_app/widgets/common/fh_outline_button.dart';
-import 'package:open_admin_app/widgets/features/table-expanded-view/individual_strategy_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/widgets/common/fh_outline_button.dart';
+import 'package:open_admin_app/widgets/features/table-expanded-view/individual_strategy_bloc.dart';
 
 import 'attribute_strategy_widget.dart';
 
@@ -29,14 +29,14 @@ class RolloutStrategiesWidget extends StatelessWidget {
               return Container();
             }
           }),
-      SizedBox(
+      const SizedBox(
         height: 16.0,
       ),
       StreamBuilder<List<RolloutStrategyAttribute>>(
           stream: bloc.attributes,
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
-              return SizedBox.shrink();
+              return const SizedBox.shrink();
             }
 
             return Row(
@@ -57,7 +57,7 @@ class RolloutStrategiesWidget extends StatelessWidget {
               ],
             );
           }),
-      SizedBox(
+      const SizedBox(
         height: 8.0,
       ),
       Row(

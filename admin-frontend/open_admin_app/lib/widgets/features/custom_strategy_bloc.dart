@@ -1,10 +1,10 @@
-import 'package:open_admin_app/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:uuid/uuid.dart';
 
-final _strategyBlocUUidGenerator = Uuid();
+const _strategyBlocUUidGenerator = Uuid();
 
 class CustomStrategyBloc extends Bloc {
   final EnvironmentFeatureValues environmentFeatureValue;

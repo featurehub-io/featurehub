@@ -1,9 +1,9 @@
-import 'package:open_admin_app/widgets/features/table-expanded-view/individual_strategy_bloc.dart';
-import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/strategy_utils.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/widgets/features/table-expanded-view/individual_strategy_bloc.dart';
+import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/strategy_utils.dart';
 
 import 'add_attribute_strategy_widget.dart';
 
@@ -23,7 +23,7 @@ class AttributeStrategyWidget extends StatelessWidget {
         stream: bloc.violationStream,
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return SizedBox.shrink();
+            return const SizedBox.shrink();
           }
 
           final violation =
@@ -33,10 +33,11 @@ class AttributeStrategyWidget extends StatelessWidget {
             return Column(children: [
               if (!attributeIsFirst)
                 Container(
-                    padding: EdgeInsets.all(4.0),
-                    margin: EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.all(4.0),
+                    margin: const EdgeInsets.all(8.0),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(6.0)),
                       color: Theme.of(context).primaryColorLight,
                     ),
                     child: Text('AND',
@@ -55,7 +56,7 @@ class AttributeStrategyWidget extends StatelessWidget {
                         .copyWith(color: Theme.of(context).errorColor))
             ]);
           } catch (e) {
-            return SizedBox.shrink();
+            return const SizedBox.shrink();
           }
         });
   }

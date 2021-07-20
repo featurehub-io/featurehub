@@ -6,7 +6,8 @@ import 'package:flutter/material.dart';
 InputDecoration FHFilledInputDecoration(
     {required String labelText, bool filled = true}) {
   return InputDecoration(
-      contentPadding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 10.0),
+      contentPadding:
+          const EdgeInsets.symmetric(vertical: 12.0, horizontal: 10.0),
       filled: filled,
       labelText: labelText);
 }

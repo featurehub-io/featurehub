@@ -29,7 +29,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
         builder: (context, snapshot) {
           if (snapshot.hasError || snapshot.data == null) {
             return Container(
-                padding: EdgeInsets.all(30), child: Text('Loading...'));
+                padding: EdgeInsets.all(30), child: const Text('Loading...'));
           }
           final allowedLocalIdentity = bloc.mrClient.identityProviders.hasLocal;
           return Column(
@@ -91,7 +91,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                                 }),
                               ),
                               FHIconButton(
-                                  icon: Icon(Icons.edit),
+                                  icon: const Icon(Icons.edit),
                                   onPressed: () => {
                                         ManagementRepositoryClientBloc.router
                                             .navigateTo(context, '/manage-user',
@@ -103,7 +103,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                                 width: 20.0,
                               ),
                               FHIconButton(
-                                icon: Icon(Icons.delete),
+                                icon: const Icon(Icons.delete),
                                 onPressed: () => bloc.mrClient
                                     .addOverlay((BuildContext context) {
                                   return bloc.mrClient.person.id!.id ==
@@ -293,7 +293,7 @@ class _ListUserInfo extends StatelessWidget {
               padding: const EdgeInsets.only(top: 12.0, bottom: 4.0),
               child: Text(
                 'Registration Expired',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
           if (allowedLocalIdentity && entry.registration.expired)
@@ -313,7 +313,7 @@ class _ListUserInfo extends StatelessWidget {
                 return null;
               },
             ),
-          SizedBox(height: 16.0),
+          const SizedBox(height: 16.0),
           FHPageDivider(),
           SizedBox(height: 16.0),
           if (entry.person.groups.isNotEmpty)

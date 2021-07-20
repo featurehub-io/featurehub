@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:open_admin_app/api/client_api.dart';
-import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';
-import 'package:open_admin_app/widgets/features/tabs_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';
+import 'package:open_admin_app/widgets/features/tabs_bloc.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'per_application_features_bloc.dart';
@@ -133,7 +133,7 @@ class PerFeatureStateTrackingBloc implements Bloc {
     } else if (original != null) {
       if (_originalValue(original) != current.value) {
         _dirty[envId] = true;
-      } else if (!(ListEquality()
+      } else if (!(const ListEquality()
           .equals(original.rolloutStrategies, current.customStrategies))) {
         _dirty[envId] = true;
       }

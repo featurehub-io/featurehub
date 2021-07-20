@@ -153,52 +153,50 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
   Widget _groupsDropdown(List<Group>? groups, GroupBloc bloc) {
     return groups == null || groups.isEmpty
         ? const Text('No groups found in the portfolio')
-        : Container(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: <Widget>[
-                Text(
-                  'Portfolio groups',
-                  style: Theme.of(context).textTheme.caption,
-                ),
-                InkWell(
-                  mouseCursor: SystemMouseCursors.click,
-                  child: Container(
-                    constraints: const BoxConstraints(maxWidth: 300),
-                    child: DropdownButton(
-                      icon: const Padding(
-                        padding: EdgeInsets.only(left: 8.0),
-                        child: Icon(
-                          Icons.keyboard_arrow_down,
-                          size: 18,
-                        ),
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: <Widget>[
+              Text(
+                'Portfolio groups',
+                style: Theme.of(context).textTheme.caption,
+              ),
+              InkWell(
+                mouseCursor: SystemMouseCursors.click,
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 300),
+                  child: DropdownButton(
+                    icon: const Padding(
+                      padding: EdgeInsets.only(left: 8.0),
+                      child: Icon(
+                        Icons.keyboard_arrow_down,
+                        size: 18,
                       ),
-                      isDense: true,
-                      isExpanded: true,
-                      items: groups.map((Group group) {
-                        return DropdownMenuItem<String>(
-                            value: group.id,
-                            child: Text(group.name,
-                                style: Theme.of(context).textTheme.bodyText2,
-                                overflow: TextOverflow.ellipsis));
-                      }).toList(),
-                      hint: Text(
-                        'Select group',
-                        style: Theme.of(context).textTheme.subtitle2,
-                      ),
-                      onChanged: (value) {
-                        setState(() {
-                          bloc.getGroup(value?.toString());
-                          bloc.groupId = value?.toString();
-                        });
-                      },
-                      value: bloc.groupId,
                     ),
+                    isDense: true,
+                    isExpanded: true,
+                    items: groups.map((Group group) {
+                      return DropdownMenuItem<String>(
+                          value: group.id,
+                          child: Text(group.name,
+                              style: Theme.of(context).textTheme.bodyText2,
+                              overflow: TextOverflow.ellipsis));
+                    }).toList(),
+                    hint: Text(
+                      'Select group',
+                      style: Theme.of(context).textTheme.subtitle2,
+                    ),
+                    onChanged: (value) {
+                      setState(() {
+                        bloc.getGroup(value?.toString());
+                        bloc.groupId = value?.toString();
+                      });
+                    },
+                    value: bloc.groupId,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           );
   }
 
@@ -303,7 +301,7 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
       key: _formKey,
       child: FHAlertDialog(
         title: Text('Add members to group ' + widget.group.name),
-        content: Container(
+        content: SizedBox(
           width: 500,
           child: Column(
             mainAxisSize: MainAxisSize.min,

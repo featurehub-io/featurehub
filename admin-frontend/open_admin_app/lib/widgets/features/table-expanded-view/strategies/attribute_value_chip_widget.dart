@@ -1,5 +1,5 @@
-import 'package:open_admin_app/widgets/common/fh_label_container.dart';
 import 'package:flutter/material.dart';
+import 'package:open_admin_app/widgets/common/fh_label_container.dart';
 
 class AttributeValueChipWidget extends StatelessWidget {
   final String label;
@@ -23,7 +23,7 @@ class AttributeValueChipWidget extends StatelessWidget {
               label,
               style: Theme.of(context).textTheme.bodyText1,
             )),
-        FHLabelContainer(text: 'OR')
+        const FHLabelContainer(text: 'OR')
       ],
     );
   }

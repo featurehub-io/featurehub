@@ -21,7 +21,7 @@ class PortfolioListWidget extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.hasError || snapshot.data == null) {
             return Container(
-                padding: EdgeInsets.all(30), child: Text('Loading...'));
+                padding: EdgeInsets.all(30), child: const Text('Loading...'));
           }
 
           return Column(
@@ -73,7 +73,7 @@ class _PortfolioWidget extends StatelessWidget {
               ? Row(
                   children: <Widget>[
                     FHIconButton(
-                        icon: Icon(Icons.edit),
+                        icon: const Icon(Icons.edit),
                         onPressed: () =>
                             bloc.mrClient.addOverlay((BuildContext context) {
                               return PortfolioUpdateDialogWidget(
@@ -81,7 +81,7 @@ class _PortfolioWidget extends StatelessWidget {
                             })),
                     if (mr.userIsSuperAdmin)
                       FHIconButton(
-                          icon: Icon(Icons.delete),
+                          icon: const Icon(Icons.delete),
                           onPressed: () =>
                               bloc.mrClient.addOverlay((BuildContext context) {
                                 return PortfolioDeleteDialogWidget(
@@ -168,7 +168,8 @@ class _PortfolioUpdateDialogWidgetState
                 children: <Widget>[
                   TextFormField(
                       controller: _portfolioName,
-                      decoration: InputDecoration(labelText: 'Portfolio name'),
+                      decoration:
+                          const InputDecoration(labelText: 'Portfolio name'),
                       validator: ((v) {
                         if (v == null || v.isEmpty) {
                           return 'Please enter a portfolio name';
@@ -180,8 +181,8 @@ class _PortfolioUpdateDialogWidgetState
                       })),
                   TextFormField(
                       controller: _portfolioDescription,
-                      decoration:
-                          InputDecoration(labelText: 'Portfolio description'),
+                      decoration: const InputDecoration(
+                          labelText: 'Portfolio description'),
                       validator: ((v) {
                         if (v == null || v.isEmpty) {
                           return 'Please enter a portfolio description';
