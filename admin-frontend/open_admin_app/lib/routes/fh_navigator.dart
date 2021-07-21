@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/router.dart';
+import 'package:open_admin_app/routes/loading_route.dart';
 import 'package:open_admin_app/widgets/common/fh_scaffold.dart';
 
 const String routeSetupApp = 'setup';
@@ -69,8 +70,13 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
   Widget build(BuildContext context) {
     return Navigator(
       key: navigatorKey,
-      pages: [routeWrapperPage(context)],
+      pages: [
+        if (_currentSlot == RouteSlot.loading) _loadingPage(context),
+        if (_currentSlot != RouteSlot.loading) routeWrapperPage(context)
+      ],
       onPopPage: (route, result) {
+        print("attempting to pop page");
+
         if (!route.didPop(result)) {
           return false;
         }
@@ -80,6 +86,10 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
         return true;
       },
     );
+  }
+
+  MaterialPage _loadingPage(BuildContext context) {
+    return const MaterialPage(key: ValueKey('loading'), child: LoadingRoute());
   }
 
   MaterialPage routeWrapperPage(BuildContext context) {
@@ -97,19 +107,26 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
   @override
   FHRouteDelegate(this.bloc)
       : _navigatorKey = GlobalKey<NavigatorState>(),
-        _path =
-            FHRoutePath(routeSlotMappings[RouteSlot.loading]!.initialRoute) {
+        _path = FHRoutePath('/') {
     // notifyListeners simply causes the build() method above to be called.
 
     // listen for an internal route change. This is someone calling ManagementRepositoryClientBloc.route.swapRoutes
     // which currently exists all over the code base.
     _routeChangeSubscription = bloc.routeChangedStream.listen((r) {
+      if (_currentSlot == RouteSlot.nowhere ||
+          _currentSlot == RouteSlot.loading) return;
+
       if (r != null) {
         print('route change request $r');
-        if (_path.routeName != r.route ||
+        if (r.route == '/') {
+          print("route is / and should never be");
+          _path = FHRoutePath(routeSlotMappings[_currentSlot]!.initialRoute);
+          notifyListeners();
+        } else if (_path.routeName != r.route ||
             (!const MapEquality().equals(_path.params, r.params) &&
                 _path.routeName == r.route)) {
           _path = FHRoutePath(r.route, params: r.params);
+
           print('route change event to $_path');
           notifyListeners();
         }
@@ -121,16 +138,24 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
       if (s != _currentSlot) {
         _currentSlot = s;
 
-        if (_currentSlot == RouteSlot.nowhere) return;
+        // if we are on a 404 page or loading just ignore this
+        if (_currentSlot == RouteSlot.nowhere ||
+            _currentSlot == RouteSlot.loading) {
+          return;
+        }
 
-        // if they have logged in now and have a held route, lets check if they are allowed to access it, and if so
-        // swap to that instead
-        if ((_currentSlot == RouteSlot.personal ||
+        if (_path.routeName == '/') {
+          _path = FHRoutePath(routeSlotMappings[_currentSlot]!.initialRoute);
+          print("current route is /, forcing change to $_path");
+          bloc.swapRoutes(RouteChange(_path.routeName));
+        } else if ((_currentSlot == RouteSlot.personal ||
                 _currentSlot == RouteSlot.portfolio) &&
             _stashedRoutePath != null) {
+          // if they have logged in now and have a held route, lets check if they are allowed to access it, and if so
+          // swap to that instead
           if (ManagementRepositoryClientBloc.router
               .canUseRoute(_stashedRoutePath!.routeName)) {
-            print('can not use route, unstashing $_stashedRoutePath!');
+            print('can use route unstashing $_stashedRoutePath!');
             bloc.swapRoutes(RouteChange(_stashedRoutePath!.routeName,
                 params: _stashedRoutePath!.params));
             _stashedRoutePath = null;
@@ -138,11 +163,13 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
           } else {
             _stashedRoutePath = null;
             _path = FHRoutePath(routeSlotMappings[_currentSlot]!.initialRoute);
+            bloc.swapRoutes(RouteChange(_path.routeName));
           }
         } else if (!ManagementRepositoryClientBloc.router.canUseRoute(
             _path.routeName,
             autoFailPermissions: [PermissionType.any])) {
           _path = FHRoutePath(routeSlotMappings[_currentSlot]!.initialRoute);
+          bloc.swapRoutes(RouteChange(_path.routeName));
         }
 
         notifyListeners();
@@ -154,6 +181,18 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
 
   @override
   Future<void> setNewRoutePath(FHRoutePath configuration) async {
+    print("setNewRoutePath $configuration");
+
+    if (configuration.routeName == '/') {
+      if (_currentSlot != RouteSlot.loading) {
+        _path = FHRoutePath(routeSlotMappings[_currentSlot]!.initialRoute);
+        bloc.swapRoutes(RouteChange(_path.routeName));
+        notifyListeners();
+      }
+
+      return; // just ignore it for now
+    }
+
     if (ManagementRepositoryClientBloc.router
         .routeExists(configuration.routeName)) {
       if (ManagementRepositoryClientBloc.router
@@ -168,6 +207,7 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
         notifyListeners();
       }
     } else {
+      print("no such route, stopping and going no-where");
       _path = configuration;
       bloc.routeSlot(RouteSlot.nowhere);
     }
@@ -183,23 +223,21 @@ class FHRouteInformationParser extends RouteInformationParser<FHRoutePath> {
       RouteInformation routeInformation) async {
     print('parsing route $routeInformation');
     if (routeInformation.location == null) {
-      return FHRoutePath('/loading');
+      return FHRoutePath('/');
     }
 
     final uri = Uri.parse(routeInformation.location!);
 
     if (uri.pathSegments.isEmpty) {
-      return FHRoutePath('/loading');
+      return FHRoutePath('/');
     }
 
     if (uri.pathSegments.length == 1) {
       final path = uri.pathSegments[0];
-      final p = FHRoutePath(path, params: uri.queryParametersAll);
-      print('parsed segs $p');
-      return p;
+      return FHRoutePath(path, params: uri.queryParametersAll);
     }
 
-    return FHRoutePath('/loading');
+    return FHRoutePath('/');
   }
 
   @override
