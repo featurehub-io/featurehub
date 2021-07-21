@@ -18,6 +18,8 @@ We have deprecated [FeatureHub Eventsource Javascript SDK](https://www.npmjs.com
 ## Changelog
 
 ### featurehub-javascript-client-sdk
+#### 1.0.5
+- Fix an issue with the polling client. We _strongly_ recommend people upgrade to this version if using the Polling client.  
 #### 1.0.4
 - Documentation updates
 #### 1.0.3
@@ -31,6 +33,8 @@ We have deprecated [FeatureHub Eventsource Javascript SDK](https://www.npmjs.com
 Angular & Vue to use this library. 
 
 ### featurehub-javascript-node-sdk
+#### 1.0.5
+- Tracking the changes in the javascript-client-sdk
 #### 1.0.4
 - Documentation updates
 #### 1.0.3
