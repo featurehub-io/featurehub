@@ -44,7 +44,7 @@ For Postgres option:
 
 `docker-compose up`
 
-This will install all the necessary components including FeatureHub Admin Console. You can now load it on localhost:8085/#/
+This will install all the necessary components including FeatureHub Admin Console. You can now load it on localhost:8085
 
 image::images/fh_deployment_option_1.svg[Option 1,500]
 
@@ -75,7 +75,7 @@ Make sure you have your docker running, and run the following commands from the 
 
 `docker-compose up`
 
-This will install all the necessary components including FeatureHub Admin Console. You can now load it on localhost:8085/#/
+This will install all the necessary components including FeatureHub Admin Console. You can now load it on localhost:8085
 
 === Option 3 - Scalable Deployment
 This option is best if you want to run FeatureHub at scale. Running separate instances of Edge, Cache, NATS and
@@ -112,8 +112,8 @@ The following properties can be set:
 be tagged "production".
 - `environment.production.desc` (production) - the description field for same.
 - `register.url` - the url used for registration. The front-end should strip the prefix off this and add its own relative one. The format has to
-be `register.url=http://localhost:8085/#/register-url?token=%s` - if your site is `https://some.domain.info` for example, it would
-be `register.url=https://some.domain.info/#/register-url?token=%s`
+be `register.url=http://localhost:8085/register-url?token=%s` - if your site is `https://some.domain.info` for example, it would
+be `register.url=https://some.domain.info/register-url?token=%s`
 - `portfolio.admin.group.suffix` ("Administrators") - the suffix added to a portfolio group when a portfolio is created
 for the first time, it needs an Admin group. So a portfolio called "Marketing" would get an admin group called "Marketing Administrators"
 created. 

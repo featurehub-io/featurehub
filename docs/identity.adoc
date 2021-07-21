@@ -57,8 +57,8 @@ a way that you can easily support others.
 ----
 oauth2.providers=[comma seperated list of providers]
 oauth2.redirectUrl=http://localhost:8085/oauth/auth
-oauth2.adminUiUrlSuccess=http://localhost:8085/#
-oauth2.adminUiUrlFailure=http://localhost:8085/#oauth2-failure
+oauth2.adminUiUrlSuccess=http://localhost:8085/
+oauth2.adminUiUrlFailure=http://localhost:8085/oauth2-failure
 ----
 
 - `oauth2.redirectUrl` - In this case, this needs to be registered with your OAuth provider as a web callback url. 
