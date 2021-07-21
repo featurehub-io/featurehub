@@ -1,3 +1,7 @@
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/common/FHFlatButton.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
@@ -8,10 +12,6 @@ import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/features/percentage_utils.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/individual_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/strategy_utils.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:mrapi/api.dart';
 
 import 'rollout_strategies_widget.dart';
 
@@ -19,7 +19,7 @@ class StrategyEditingWidget extends StatefulWidget {
   final CustomStrategyBloc bloc;
   final bool editable;
 
-  StrategyEditingWidget({
+  const StrategyEditingWidget({
     Key? key,
     required this.bloc,
     required this.editable,
@@ -87,12 +87,13 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.0),
                   decoration: BoxDecoration(
-                      borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(6.0)),
                       color:
                           Theme.of(context).primaryColorLight.withOpacity(0.3)),
                   child: TextFormField(
                       controller: _strategyName,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                           labelText: 'Split strategy name',
                           helperText: 'E.g. 20% rollout'),
                       readOnly: !widget.editable,
@@ -106,15 +107,16 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                         return null;
                       })),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 RolloutStrategiesWidget(),
-                SizedBox(height: 16.0),
+                const SizedBox(height: 16.0),
                 FHPageDivider(),
-                SizedBox(height: 16.0),
+                const SizedBox(height: 16.0),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   decoration: BoxDecoration(
-                      borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(6.0)),
                       color: Theme.of(context).brightness == Brightness.light
                           ? Theme.of(context).selectedRowColor
                           : Theme.of(context)
@@ -156,7 +158,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                           Flexible(
                             child: Material(
                                 type: MaterialType.transparency,
-                                shape: CircleBorder(),
+                                shape: const CircleBorder(),
                                 child: IconButton(
                                     icon: Icon(
                                       Icons.delete_forever_sharp,
@@ -180,7 +182,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                       ),
                   ]),
                 ),
-                SizedBox(height: 8.0),
+                const SizedBox(height: 8.0),
                 Row(
                   children: [
                     Text('Add percentage rollout rule',

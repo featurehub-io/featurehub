@@ -1,10 +1,10 @@
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/widgets/stepper/progress_stepper_bloc.dart';
 import 'package:open_admin_app/widgets/stepper/progress_stepper_widget.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 
 class StepperContainer extends StatelessWidget {
   final ManagementRepositoryClientBloc mrBloc;
@@ -25,7 +25,7 @@ class StepperContainer extends StatelessWidget {
                 creator: (_context, _bag) => StepperBloc(mrBloc),
                 child: FHSetupProgressStepper());
           } else {
-            return SizedBox.shrink();
+            return const SizedBox.shrink();
           }
         });
   }
@@ -41,14 +41,14 @@ class StepperRocketButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<ReleasedPortfolio>(
+    return StreamBuilder<ReleasedPortfolio?>(
         stream: mrBloc.personState.isCurrentPortfolioOrSuperAdmin,
         builder: (context, snapshot) {
           if (snapshot.data != null &&
               (snapshot.data!.currentPortfolioOrSuperAdmin == true)) {
             return IconButton(
               tooltip: 'Open setup helper',
-              icon: Icon(
+              icon: const Icon(
                 MaterialCommunityIcons.rocket,
 //                color: Theme.of(context).primaryColor,
                 size: 24.0,
@@ -56,7 +56,7 @@ class StepperRocketButton extends StatelessWidget {
               onPressed: () => mrBloc.stepperOpened = true,
             );
           } else {
-            return SizedBox.shrink();
+            return const SizedBox.shrink();
           }
         });
   }

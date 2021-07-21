@@ -1,8 +1,8 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
-import 'package:flutter/material.dart';
 
 class FHJsonEditorWidget extends StatefulWidget {
   final TextEditingController controller;
@@ -26,8 +26,8 @@ class _FHJsonEditorState extends State<FHJsonEditorWidget> {
             FHFlatButtonTransparent(
               onPressed: () {
                 setState(() {
-                  var jsonMap = json.decode(widget.controller.text);
-                  var encoder = JsonEncoder.withIndent('  ');
+                  final jsonMap = json.decode(widget.controller.text);
+                  const encoder = JsonEncoder.withIndent('  ');
                   widget.controller.text = encoder.convert(jsonMap);
                 });
               },
@@ -35,12 +35,10 @@ class _FHJsonEditorState extends State<FHJsonEditorWidget> {
               keepCase: true,
             ),
           ]),
-          Container(
-            child: Text(
-              'JSON Value',
-              textAlign: TextAlign.left,
-              style: Theme.of(context).textTheme.caption,
-            ),
+          Text(
+            'JSON Value',
+            textAlign: TextAlign.left,
+            style: Theme.of(context).textTheme.caption,
           ),
           Expanded(
             child: Form(
@@ -48,10 +46,10 @@ class _FHJsonEditorState extends State<FHJsonEditorWidget> {
               autovalidateMode: AutovalidateMode.always,
               child: Container(
                 width: 600,
-                padding: EdgeInsets.all(10),
+                padding: const EdgeInsets.all(10),
                 color: Theme.of(context).scaffoldBackgroundColor,
                 child: TextFormField(
-                  style: TextStyle(fontFamily: 'source', fontSize: 14),
+                  style: const TextStyle(fontFamily: 'source', fontSize: 14),
                   maxLines: 20,
                   controller: widget.controller,
                   validator: validateJson,

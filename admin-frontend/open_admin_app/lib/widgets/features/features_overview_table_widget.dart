@@ -1,13 +1,13 @@
-import 'package:open_admin_app/api/client_api.dart';
-import 'package:open_admin_app/common/stream_valley.dart';
-import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
-import 'package:open_admin_app/widgets/features/environments_features_list_view.dart';
-import 'package:open_admin_app/widgets/features/feature_names_left_panel.dart';
-import 'package:open_admin_app/widgets/features/tabs_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:logging/logging.dart';
+import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/common/stream_valley.dart';
+import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
+import 'package:open_admin_app/widgets/features/environments_features_list_view.dart';
+import 'package:open_admin_app/widgets/features/feature_names_left_panel.dart';
+import 'package:open_admin_app/widgets/features/tabs_bloc.dart';
 
 import 'feature_dashboard_constants.dart';
 import 'hidden_environment_list.dart';
@@ -49,12 +49,12 @@ class FeaturesOverviewTableWidget extends StatelessWidget {
                 bloc: bloc,
               );
             } else {
-              return NoFeaturesMessage();
+              return const NoFeaturesMessage();
             }
           });
     } catch (e, s) {
       _log.shout('Failed to render, $e\n$s\n');
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
   }
 }
@@ -108,34 +108,31 @@ class _FeatureTabsBodyHolder extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(left: 8.0),
-          child: Container(
-//            color: Theme.of(context).highlightColor,
-            child: StreamBuilder<TabsState>(
-                stream: bloc.currentTab,
-                builder: (context, snapshot) {
-                  return Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (bloc.features.isNotEmpty)
-                          Container(
-                              color: Theme.of(context).highlightColor,
-                              height: headerHeight,
-                              width: MediaQuery.of(context).size.width > 600
-                                  ? 260.0
-                                  : 130,
-                              padding: EdgeInsets.only(left: 8.0),
-                              child: Text('',
-                                  style: Theme.of(context).textTheme.caption)),
-                        ...bloc.features.map(
-                          (f) {
-                            return FeatureNamesLeftPanel(
-                                tabsBloc: bloc, feature: f);
-                          },
-                        ).toList(),
-                      ]);
-                }),
-          ),
+          child: StreamBuilder<TabsState>(
+              stream: bloc.currentTab,
+              builder: (context, snapshot) {
+                return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (bloc.features.isNotEmpty)
+                        Container(
+                            color: Theme.of(context).highlightColor,
+                            height: headerHeight,
+                            width: MediaQuery.of(context).size.width > 600
+                                ? 260.0
+                                : 130,
+                            padding: EdgeInsets.only(left: 8.0),
+                            child: Text('',
+                                style: Theme.of(context).textTheme.caption)),
+                      ...bloc.features.map(
+                        (f) {
+                          return FeatureNamesLeftPanel(
+                              tabsBloc: bloc, feature: f);
+                        },
+                      ).toList(),
+                    ]);
+              }),
         ),
         Flexible(
           child: EnvironmentsAndFeatureValuesListView(bloc: bloc),
@@ -207,10 +204,11 @@ class _FeatureTab extends StatelessWidget {
                     bloc.swapTab(state);
                   },
                   child: Container(
-                      padding:
-                          EdgeInsets.symmetric(vertical: 6.0, horizontal: 12.0),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 6.0, horizontal: 12.0),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(16.0)),
+                        borderRadius:
+                            BorderRadius.all(const Radius.circular(16.0)),
                         color: state == snapshot.data
                             ? Theme.of(context).primaryColorLight
                             : Colors.transparent,
@@ -241,19 +239,22 @@ class NoEnvironmentMessage extends StatelessWidget {
           Text(
               'Either there are no environments defined for this application or you don\'t have permissions to access any of them',
               style: Theme.of(context).textTheme.caption),
-          StreamBuilder<ReleasedPortfolio>(
+          StreamBuilder<ReleasedPortfolio?>(
               stream: bloc.mrClient.personState.isCurrentPortfolioOrSuperAdmin,
               builder: (context, snapshot) {
                 if (snapshot.hasData &&
                     snapshot.data!.currentPortfolioOrSuperAdmin) {
-                  return FHFlatButtonTransparent(
-                      title: 'Environments',
-                      keepCase: true,
-                      onPressed: () => ManagementRepositoryClientBloc.router
-                              .navigateTo(context, '/manage-app', params: {
-                            'id': [bloc.applicationId!],
-                            'tab-name': ['environments']
-                          }));
+                  return Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: FHUnderlineButton(
+                        title: 'Go to environments settings',
+                        keepCase: true,
+                        onPressed: () => ManagementRepositoryClientBloc.router
+                                .navigateTo(context, '/app-settings', params: {
+                              'id': [bloc.applicationId!],
+                              'tab': ['environments']
+                            })),
+                  );
                 } else {
                   return Container();
                 }

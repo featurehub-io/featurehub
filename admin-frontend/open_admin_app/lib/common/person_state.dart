@@ -1,6 +1,6 @@
-import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:collection/collection.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:rxdart/rxdart.dart';
 
 typedef SetPersonHook = void Function(PersonState personState, Person person);
@@ -14,8 +14,8 @@ Person _unauthenticatedPerson =
 class PersonState {
   final PersonServiceApi _personServiceApi;
   //stream if person user is current portfolio or super admin user
-  final BehaviorSubject<ReleasedPortfolio> _isCurrentPortfolioOrSuperAdmin =
-      BehaviorSubject<ReleasedPortfolio>();
+  final BehaviorSubject<ReleasedPortfolio?> _isCurrentPortfolioOrSuperAdmin =
+      BehaviorSubject<ReleasedPortfolio?>();
 
   final BehaviorSubject<Person> _personSource =
       BehaviorSubject.seeded(_unauthenticatedPerson);
@@ -33,19 +33,38 @@ class PersonState {
   bool _userIsAnyPortfolioOrSuperAdmin = false;
   bool get userIsAnyPortfolioOrSuperAdmin => _userIsAnyPortfolioOrSuperAdmin;
 
+  void logout() {
+    person = _unauthenticatedPerson;
+  }
+
   set person(Person person) {
     if (person != _unauthenticatedPerson) {
-      setPersonHooks.forEach((callback) => callback(this, person));
+      for (final callback in setPersonHooks) {
+        callback(this, person);
+      }
     }
 
     _isUserIsSuperAdmin = isSuperAdminGroupFound(person.groups);
 
-    _userIsAnyPortfolioOrSuperAdmin = isAnyPortfolioOrSuperAdmin(groupList);
+    _userIsAnyPortfolioOrSuperAdmin = isAnyPortfolioOrSuperAdmin(person.groups);
+
+    if (person == _unauthenticatedPerson) {
+      _isCurrentPortfolioOrSuperAdmin.add(null);
+    } else {
+      final releasedPortfolio = _isCurrentPortfolioOrSuperAdmin.value;
+
+      if (releasedPortfolio != null) {
+        _isCurrentPortfolioOrSuperAdmin.add(ReleasedPortfolio(
+            portfolio: releasedPortfolio.portfolio,
+            currentPortfolioOrSuperAdmin: userIsPortfolioAdmin(
+                releasedPortfolio.portfolio.id, person.groups)));
+      }
+    }
 
     _personSource.add(person);
   }
 
-  Stream<ReleasedPortfolio> get isCurrentPortfolioOrSuperAdmin =>
+  Stream<ReleasedPortfolio?> get isCurrentPortfolioOrSuperAdmin =>
       _isCurrentPortfolioOrSuperAdmin.stream;
 
   PersonState(this._personServiceApi);
@@ -104,10 +123,6 @@ class PersonState {
             userIsPortfolioAdmin(p.id, person.groups));
     _isCurrentPortfolioOrSuperAdmin.add(
         ReleasedPortfolio(portfolio: p, currentPortfolioOrSuperAdmin: isAdmin));
-  }
-
-  void logout() {
-    person = _unauthenticatedPerson;
   }
 
   void dispose() {

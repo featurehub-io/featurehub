@@ -1,5 +1,5 @@
-import 'package:open_admin_app/api/client_api.dart';
 import 'package:flutter/material.dart';
+import 'package:open_admin_app/api/client_api.dart';
 
 import 'FHFlatButton.dart';
 import 'fh_alert_dialog.dart';
@@ -72,13 +72,13 @@ class FHDeleteThingWarningWidget extends StatelessWidget {
 class _WarningWidget extends StatelessWidget {
   final bool extra;
 
-  _WarningWidget({Key? key, this.extra = false}) : super(key: key);
+  const _WarningWidget({Key? key, this.extra = false}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final size = extra ? 50.0 : 40.0;
     final iconSize = extra ? 48.0 : 36.0;
-    return Container(
+    return SizedBox(
       width: size,
       height: size,
       child: Icon(

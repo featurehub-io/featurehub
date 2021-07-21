@@ -1,13 +1,14 @@
-import 'package:open_admin_app/api/client_api.dart';
-import 'package:open_admin_app/api/router.dart';
-import 'package:open_admin_app/common/stream_valley.dart';
-import 'package:open_admin_app/widgets/common/fh_portfolio_selector.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/api/router.dart';
+import 'package:open_admin_app/common/stream_valley.dart';
+import 'package:open_admin_app/config/route_names.dart';
+import 'package:open_admin_app/widgets/common/fh_portfolio_selector.dart';
 
 class DrawerViewWidget extends StatefulWidget {
   @override
@@ -33,7 +34,7 @@ class _DrawerViewWidgetState extends State<DrawerViewWidget> {
               mrBloc: mrBloc,
             );
           } else {
-            return SizedBox.shrink();
+            return const SizedBox.shrink();
           }
         });
   }
@@ -46,7 +47,7 @@ class _MenuContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: 260,
       height: MediaQuery.of(context).size.height - kToolbarHeight,
       child: Drawer(
@@ -55,7 +56,7 @@ class _MenuContainer extends StatelessWidget {
               stream: mrBloc.personState.personStream,
               builder: (context, snapshot) {
                 if (!snapshot.hasData || !mrBloc.personState.isLoggedIn) {
-                  return SizedBox.shrink();
+                  return const SizedBox.shrink();
                 }
 
                 return Column(
@@ -63,15 +64,15 @@ class _MenuContainer extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     PortfolioSelectorWidget(),
-                    SizedBox(height: 16),
-                    _MenuFeaturesOptionsWidget(),
-                    StreamBuilder<ReleasedPortfolio>(
+                    const SizedBox(height: 16),
+                    const _MenuFeaturesOptionsWidget(),
+                    StreamBuilder<ReleasedPortfolio?>(
                         stream:
                             mrBloc.personState.isCurrentPortfolioOrSuperAdmin,
                         builder: (context, snapshot) {
                           if (snapshot.data == null ||
                               !snapshot.data!.currentPortfolioOrSuperAdmin) {
-                            return SizedBox.shrink();
+                            return const SizedBox.shrink();
                           }
 
                           return Column(
@@ -110,7 +111,7 @@ class _MenuContainer extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               Container(
-                                padding: EdgeInsets.only(
+                                padding: const EdgeInsets.only(
                                     left: 16.0, top: 32.0, bottom: 8.0),
                                 child: Text(
                                   'Global Settings',
@@ -139,7 +140,7 @@ class _SiteAdminOptionsWidget extends StatelessWidget {
             .streamValley
             .currentPortfolioIdStream,
         builder: (context, snapshot) {
-          return Column(children: <Widget>[
+          return Column(children: const <Widget>[
             _MenuItem(
                 name: 'Portfolios',
                 iconData: MaterialCommunityIcons.briefcase_plus_outline,
@@ -150,7 +151,7 @@ class _SiteAdminOptionsWidget extends StatelessWidget {
                 name: 'Users',
                 permissionType: PermissionType.portfolioadmin,
                 iconData: AntDesign.addusergroup,
-                path: '/manage-users',
+                path: '/users',
                 params: {}),
           ]);
         });
@@ -166,22 +167,22 @@ class _MenuPortfolioAdminOptionsWidget extends StatelessWidget {
             .currentPortfolioIdStream,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return Column(children: <Widget>[
+            return Column(children: const <Widget>[
               _MenuItem(
                   name: 'Groups',
                   iconData: MaterialIcons.people_outline,
-                  path: '/manage-group',
+                  path: '/groups',
                   permissionType: PermissionType.portfolioadmin,
                   params: {}),
               _MenuItem(
                   name: 'Service Accounts',
                   iconData: AntDesign.tool,
                   permissionType: PermissionType.portfolioadmin,
-                  path: '/manage-service-accounts',
+                  path: '/service-accounts',
                   params: {}),
             ]);
           } else {
-            return SizedBox.shrink();
+            return const SizedBox.shrink();
           }
         });
   }
@@ -196,34 +197,34 @@ class _ApplicationSettings extends StatelessWidget {
             .currentPortfolioIdStream,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return Column(children: <Widget>[
+            return Column(children: const <Widget>[
               _MenuItem(
                   name: 'Environments',
                   iconData: AntDesign.bars,
-                  path: '/manage-app',
+                  path: '/app-settings',
                   permissionType: PermissionType.portfolioadmin,
                   params: {
-                    'tab-name': ['environments']
+                    'tab': ['environments']
                   }),
               _MenuItem(
                   name: 'Group permissions',
                   iconData: MaterialCommunityIcons.check_box_multiple_outline,
-                  path: '/manage-app',
+                  path: '/app-settings',
                   permissionType: PermissionType.portfolioadmin,
                   params: {
-                    'tab-name': ['group-permissions']
+                    'tab': ['group-permissions']
                   }),
               _MenuItem(
                   name: 'Service account permissions',
                   iconData: MaterialCommunityIcons.cogs,
-                  path: '/manage-app',
+                  path: '/app-settings',
                   permissionType: PermissionType.portfolioadmin,
                   params: {
-                    'tab-name': ['service-accounts']
+                    'tab': ['service-accounts']
                   }),
             ]);
           } else {
-            return SizedBox.shrink();
+            return const SizedBox.shrink();
           }
         });
   }
@@ -235,7 +236,7 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: [
+      children: const [
         _MenuItem(
           name: 'Applications',
           iconData: Feather.grid,
@@ -247,14 +248,14 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
           name: 'Features',
           iconData: Feather.flag,
           iconSize: 24,
-          path: '/feature-status',
+          path: routeNameFeatureDashboard,
           params: {},
         ),
         _MenuItem(
           name: 'API Keys',
           iconData: AntDesign.key,
           iconSize: 24,
-          path: '/service-envs',
+          path: '/api-keys',
           params: {},
         )
       ],
@@ -265,7 +266,7 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
 class _MenuItem extends StatelessWidget {
   final String name;
   final IconData iconData;
-  final iconSize;
+  final double? iconSize;
   final String path;
   final Map<String, List<String>> params;
   final PermissionType permissionType;
@@ -294,7 +295,7 @@ class _MenuItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
     final menuOkForThisUser = (bloc.userIsCurrentPortfolioAdmin ||
-        permissionType == PermissionType.regular);
+        ManagementRepositoryClientBloc.router.canUseRoute(path));
     var light = Theme.of(context).brightness == Brightness.light;
     return InkWell(
       canRequestFocus: false,
@@ -316,7 +317,7 @@ class _MenuItem extends StatelessWidget {
               final selected = snapshot.data!.route == path &&
                   equalsParams(snapshot.data!.params);
               return Container(
-                padding: EdgeInsets.fromLTRB(16, 12, 0, 12),
+                padding: const EdgeInsets.fromLTRB(16, 12, 0, 12),
                 color: selected
                     ? (light
                         ? Theme.of(context).primaryColorLight
@@ -350,7 +351,7 @@ class _MenuItem extends StatelessWidget {
                 ),
               );
             } else {
-              return SizedBox.shrink();
+              return const SizedBox.shrink();
             }
           }),
     );
@@ -361,8 +362,8 @@ class _MenuDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        padding: EdgeInsets.only(top: 16.0),
-        decoration: BoxDecoration(
+        padding: const EdgeInsets.only(top: 16.0),
+        decoration: const BoxDecoration(
             border:
                 Border(bottom: BorderSide(color: Colors.black, width: 0.5))));
   }

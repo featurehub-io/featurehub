@@ -6,40 +6,50 @@ final fontFamily = GoogleFonts.roboto().fontFamily;
 final ThemeData myTheme = ThemeData(
   // primarySwatch: MaterialColor(4278391389,{50: Instance of 'minified:i', 100: Instance of 'minified:i', 200: Instance of 'minified:i', 300: Instance of 'minified:i', 400: Instance of 'minified:i', 500: Instance of 'minified:i', 600: Instance of 'minified:i', 700: Instance of 'minified:i', 800: Instance of 'minified:i', 900: Instance of 'minified:i'}),
   brightness: Brightness.light,
-  primaryColor: Color(0xff03125d),
+  primaryColor: const Color(0xff03125d),
   primaryColorBrightness: Brightness.dark,
-  primaryColorLight: Color(0xffced6fd),
-  primaryColorDark: Color(0xff051d94),
+  primaryColorLight: const Color(0xffced6fd),
+  primaryColorDark: const Color(0xff051d94),
   accentColor: Colors.orange,
   accentColorBrightness: Brightness.dark,
-  canvasColor: Color(0xffffffff),
-  scaffoldBackgroundColor: Color(0xfffafafa),
-  bottomAppBarColor: Color(0xffffffff),
-  cardColor: Color(0xffffffff),
-  dividerColor: Color(0x1f000000),
-  highlightColor: Color(0x66bcbcbc),
-  splashColor: Color(0x66c8c8c8),
-  selectedRowColor: Color(0xfff5f5f5),
-  unselectedWidgetColor: Color(0x8a000000),
-  disabledColor: Color(0x61000000),
-  buttonColor: Color(0xff473e8f),
-  toggleableActiveColor: Color(0xff678de5),
-  secondaryHeaderColor: Color(0xfff6f6f6),
-
-  backgroundColor: Color(0x226DD3F4),
-  dialogBackgroundColor: Color(0xffffffff),
-  indicatorColor: Color(0xff051d94),
-  hintColor: Color(0x8a000000),
-  errorColor: Color(0xffd32f2f),
-  textSelectionTheme: TextSelectionThemeData(
+  canvasColor: const Color(0xffffffff),
+  scaffoldBackgroundColor: const Color(0xfffafafa),
+  bottomAppBarColor: const Color(0xffffffff),
+  cardColor: const Color(0xffffffff),
+  dividerColor: const Color(0x1f000000),
+  highlightColor: const Color(0x66bcbcbc),
+  splashColor: const Color(0x66c8c8c8),
+  selectedRowColor: const Color(0xfff5f5f5),
+  unselectedWidgetColor: const Color(0x8a000000),
+  disabledColor: const Color(0x61000000),
+  buttonColor: const Color(0xff473e8f),
+  toggleableActiveColor: const Color(0xff678de5),
+  secondaryHeaderColor: const Color(0xfff6f6f6),
+  backgroundColor: const Color(0x226DD3F4),
+  dialogBackgroundColor: const Color(0xffffffff),
+  indicatorColor: const Color(0xff051d94),
+  hintColor: const Color(0x8a000000),
+  errorColor: const Color(0xffd32f2f),
+  textSelectionTheme: const TextSelectionThemeData(
     selectionColor: Color(0xff9cacfc),
     cursorColor: Color(0xff4285f4),
     selectionHandleColor: Color(0xff6b83fa),
   ),
   textButtonTheme: TextButtonThemeData(
-    style: TextButton.styleFrom(primary: Color(0xff473e8f)),
-  ),
-  buttonTheme: ButtonThemeData(
+      // style: TextButton.styleFrom(primary: Color(0xff473e8f)),
+      style: TextButton.styleFrom(
+          padding: const EdgeInsets.all(16),
+          textStyle: const TextStyle(wordSpacing: 0.8, letterSpacing: 0.8))),
+  elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.all(16),
+          textStyle: const TextStyle(wordSpacing: 0.8, letterSpacing: 0.8))),
+  outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.all(16),
+          textStyle: const TextStyle(wordSpacing: 0.8, letterSpacing: 0.8))),
+  // iconTheme: IconThemeData(size: 16.0),
+  buttonTheme: const ButtonThemeData(
     textTheme: ButtonTextTheme.normal,
     minWidth: 88,
     height: 36,
@@ -75,7 +85,7 @@ final ThemeData myTheme = ThemeData(
   ),
   fontFamily: GoogleFonts.roboto().fontFamily,
 
-  inputDecorationTheme: InputDecorationTheme(
+  inputDecorationTheme: const InputDecorationTheme(
     labelStyle: TextStyle(
       color: Color(0xff473e8f),
       fontSize: 16,
@@ -173,22 +183,22 @@ final ThemeData myTheme = ThemeData(
           topLeft: Radius.circular(4.0), topRight: Radius.circular(4.0)),
     ),
   ),
-  iconTheme: IconThemeData(
+  iconTheme: const IconThemeData(
     color: Color(0xff473e8f),
     opacity: 1,
-    size: 24,
+    size: 16,
   ),
-  primaryIconTheme: IconThemeData(
+  primaryIconTheme: const IconThemeData(
     color: Color(0xffffffff),
     opacity: 1,
     size: 24,
   ),
-  accentIconTheme: IconThemeData(
+  accentIconTheme: const IconThemeData(
     color: Color(0xffffffff),
     opacity: 1,
     size: 24,
   ),
-  sliderTheme: SliderThemeData(
+  sliderTheme: const SliderThemeData(
     activeTrackColor: Color(0xff03125d),
     inactiveTrackColor: Color(0x3d03125d),
     disabledActiveTrackColor: Color(0x52020a31),
@@ -211,12 +221,12 @@ final ThemeData myTheme = ThemeData(
       fontStyle: FontStyle.normal,
     ),
   ),
-  tabBarTheme: TabBarTheme(
+  tabBarTheme: const TabBarTheme(
     indicatorSize: TabBarIndicatorSize.tab,
     labelColor: Color(0xffffffff),
     unselectedLabelColor: Color(0xb2ffffff),
   ),
-  chipTheme: ChipThemeData(
+  chipTheme: const ChipThemeData(
     backgroundColor: Color(0x3d03125d),
     brightness: Brightness.light,
     deleteIconColor: Color(0xde03125d),
@@ -244,7 +254,7 @@ final ThemeData myTheme = ThemeData(
       style: BorderStyle.none,
     )),
   ),
-  dialogTheme: DialogTheme(
+  dialogTheme: const DialogTheme(
       shape: RoundedRectangleBorder(
     side: BorderSide(
       color: Color(0xff000000),
@@ -258,4 +268,22 @@ final ThemeData darkTheme = ThemeData(
   primarySwatch: Colors.blue,
   brightness: Brightness.dark,
   fontFamily: fontFamily,
+  textButtonTheme: TextButtonThemeData(
+      // style: TextButton.styleFrom(primary: Color(0xff473e8f)),
+      style: TextButton.styleFrom(
+          padding: const EdgeInsets.all(16),
+          textStyle: const TextStyle(wordSpacing: 0.8, letterSpacing: 0.8))),
+  elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.all(16),
+          textStyle: const TextStyle(wordSpacing: 0.8, letterSpacing: 0.8))),
+  outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.all(16),
+          textStyle: const TextStyle(wordSpacing: 0.8, letterSpacing: 0.8))),
+  iconTheme: const IconThemeData(
+    color: Colors.blue,
+    opacity: 1,
+    size: 16,
+  ),
 );

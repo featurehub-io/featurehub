@@ -1,6 +1,6 @@
-import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
 
 typedef CopyToClipboardTextProvider = Future<String?> Function();
 
@@ -33,8 +33,8 @@ class FHCopyToClipboardFlatButton extends StatelessWidget {
       },
       child: Row(
         children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
+          const Padding(
+            padding: EdgeInsets.only(right: 8.0),
             child: Icon(
               Icons.content_copy,
               size: 15.0,
@@ -45,7 +45,7 @@ class FHCopyToClipboardFlatButton extends StatelessWidget {
                   style: Theme.of(context)
                       .textTheme
                       .subtitle2!
-                      .merge(TextStyle(color: Theme.of(context).buttonColor))),
+                      ),
         ],
       ),
     );
@@ -74,7 +74,7 @@ class FHCopyToClipboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FHIconButton(
-      icon: Icon(Icons.content_copy, size: 16.0),
+      icon: const Icon(Icons.content_copy, size: 16.0),
       tooltip: tooltipMessage,
       onPressed: () async {
         await Clipboard.setData(ClipboardData(text: copyString));

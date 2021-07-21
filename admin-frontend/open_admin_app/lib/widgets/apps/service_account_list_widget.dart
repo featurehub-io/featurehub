@@ -1,3 +1,6 @@
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/widgets/common/FHFlatButton.dart';
@@ -5,9 +8,6 @@ import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_delete_thing.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:mrapi/api.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
 import 'manage_service_accounts_bloc.dart';
@@ -70,10 +70,10 @@ class _ServiceAccountWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
-                SizedBox(width: 4.0),
+                const SizedBox(width: 4.0),
                 _ServiceAccountDescription(serviceAccount: serviceAccount),
-                SizedBox(width: 24.0),
-                StreamBuilder<ReleasedPortfolio>(
+                const SizedBox(width: 24.0),
+                StreamBuilder<ReleasedPortfolio?>(
                     stream: bloc
                         .mrClient.personState.isCurrentPortfolioOrSuperAdmin,
                     builder: (context, snapshot) {
@@ -86,11 +86,9 @@ class _ServiceAccountWidget extends StatelessWidget {
                     }),
               ],
             ),
-            SizedBox(height: 8.0),
-            Container(
-              child: ServiceAccountEnvironments(
-                  serviceAccount: serviceAccount, serviceAccountBloc: bloc),
-            )
+            const SizedBox(height: 8.0),
+            ServiceAccountEnvironments(
+                serviceAccount: serviceAccount, serviceAccountBloc: bloc)
           ],
         ),
       ),
@@ -100,12 +98,12 @@ class _ServiceAccountWidget extends StatelessWidget {
   Widget _adminFunctions(BuildContext context) {
     return Row(children: [
       FHIconButton(
-          icon: Icon(Icons.edit),
+          icon: const Icon(Icons.edit),
           onPressed: () => bloc.mrClient.addOverlay((BuildContext context) =>
               ServiceAccountUpdateDialogWidget(
                   bloc: bloc, serviceAccount: serviceAccount))),
       FHIconButton(
-          icon: Icon(Icons.delete),
+          icon: const Icon(Icons.delete),
           onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
                 return ServiceAccountDeleteDialogWidget(
                   serviceAccount: serviceAccount,
@@ -132,7 +130,7 @@ class ServiceAccountEnvironments extends StatelessWidget {
         stream: serviceAccountBloc.applicationsList,
         builder: (context, snapshot) {
           if (!snapshot.hasData || snapshot.hasError) {
-            return SizedBox.shrink();
+            return const SizedBox.shrink();
           }
 
           return Wrap(
@@ -192,9 +190,9 @@ class _ServiceAccountEnvironment extends StatelessWidget {
                           .currentAid = application.id;
 
                       ManagementRepositoryClientBloc.router
-                          .navigateTo(context, '/manage-app', params: {
+                          .navigateTo(context, '/app-settings', params: {
                         'service-account': [serviceAccount.id!],
-                        'tab-name': ['service-accounts']
+                        'tab': ['service-accounts']
                       });
                     },
                   )
@@ -228,9 +226,7 @@ class _ServiceAccountDescription extends StatelessWidget {
                     ? Theme.of(context).primaryColor
                     : Theme.of(context).accentColor)),
         Text(
-          serviceAccount.description != null
-              ? '${serviceAccount.description}'
-              : '',
+          serviceAccount.description ?? '',
           style: Theme.of(context).textTheme.caption,
         ),
       ],
@@ -327,8 +323,8 @@ class _ServiceAccountUpdateDialogWidgetState
                     )
                   : TextFormField(
                       controller: _name,
-                      decoration:
-                          InputDecoration(labelText: 'Service account name'),
+                      decoration: const InputDecoration(
+                          labelText: 'Service account name'),
                       validator: ((v) {
                         if (v == null || v.isEmpty) {
                           return 'Please enter a service account name';
@@ -340,8 +336,8 @@ class _ServiceAccountUpdateDialogWidgetState
                       })),
               TextFormField(
                   controller: _description,
-                  decoration:
-                      InputDecoration(labelText: 'Service account description'),
+                  decoration: const InputDecoration(
+                      labelText: 'Service account description'),
                   validator: ((v) {
                     if (v == null || v.isEmpty) {
                       return 'Please enter service account description';

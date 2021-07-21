@@ -1,3 +1,5 @@
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/common/FHFlatButton.dart';
@@ -10,14 +12,12 @@ import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/user/common/admin_checkbox.dart';
 import 'package:open_admin_app/widgets/user/common/portfolio_group_selector_widget.dart';
 import 'package:open_admin_app/widgets/user/create/create_user_bloc.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
 class CreateUserRoute extends StatelessWidget {
   final String title;
 
-  CreateUserRoute({Key? key, required this.title}) : super(key: key);
+  const CreateUserRoute({Key? key, required this.title}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -28,12 +28,10 @@ class CreateUserRoute extends StatelessWidget {
 class AddUserFormWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: <Widget>[TopWidget(), BottomWidget()],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: <Widget>[TopWidget(), BottomWidget()],
     );
   }
 }
@@ -63,8 +61,6 @@ class TopWidgetDefault extends StatefulWidget {
 class _TopWidgetDefaultState extends State<TopWidgetDefault> {
   final _email = TextEditingController();
   final _name = TextEditingController();
-  var selectedPortfolio;
-  var selectedGroupID;
   bool isAddButtonDisabled = true;
 
   @override
@@ -84,7 +80,7 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              FHHeader(title: 'Create new user'),
+              const FHHeader(title: 'Create new user'),
               Padding(
                 padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
                 child: Text(
@@ -93,7 +89,7 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
                 ),
               ),
               Container(
-                constraints: BoxConstraints(maxWidth: 300),
+                constraints: const BoxConstraints(maxWidth: 300),
                 child: Column(
                   children: [
                     TextFormField(
@@ -109,7 +105,7 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
                       },
                       onSaved: (v) => bloc.name = v,
                     ),
-                    SizedBox(height: 16.0),
+                    const SizedBox(height: 16.0),
                     TextFormField(
                       controller: _email,
                       decoration: FHFilledInputDecoration(
@@ -137,7 +133,7 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
                 ),
               ),
               PortfolioGroupSelector(),
-              AdminCheckboxWidget()
+              const AdminCheckboxWidget()
             ]));
   }
 }
@@ -200,7 +196,7 @@ class TopWidgetSuccess extends StatelessWidget {
                 onPressed: () {
                   bloc.backToDefault();
                   ManagementRepositoryClientBloc.router
-                      .navigateTo(context, '/manage-users');
+                      .navigateTo(context, '/users');
                 },
                 title: 'Close'),
             FHFlatButton(
@@ -242,8 +238,7 @@ class CreateUserFormButtons extends StatelessWidget {
           if (bloc.formKey != null) {
             bloc.formKey!.currentState!.reset;
           }
-          ManagementRepositoryClientBloc.router
-              .navigateTo(context, '/manage-users');
+          ManagementRepositoryClientBloc.router.navigateTo(context, '/users');
         },
         title: 'Cancel',
         keepCase: true,

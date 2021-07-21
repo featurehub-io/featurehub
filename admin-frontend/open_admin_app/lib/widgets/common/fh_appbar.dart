@@ -1,12 +1,12 @@
-import 'package:open_admin_app/api/client_api.dart';
-import 'package:open_admin_app/version.dart';
-import 'package:open_admin_app/widgets/dynamic-theme/fh_dynamic_theme.dart';
-import 'package:open_admin_app/widgets/stepper/stepper_container.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/version.dart';
+import 'package:open_admin_app/widgets/dynamic-theme/fh_dynamic_theme.dart';
+import 'package:open_admin_app/widgets/stepper/stepper_container.dart';
 
 class FHappBar extends StatelessWidget {
   const FHappBar({Key? key}) : super(key: key);
@@ -22,17 +22,13 @@ class FHappBar extends StatelessWidget {
               stream: mrBloc.menuOpened,
               builder: (context, snapshot) {
                 if (snapshot.hasData && snapshot.data == true) {
-                  return Container(
-                    child: IconButton(
-                        icon: Icon(SimpleLineIcons.menu, size: 20.0),
-                        onPressed: () => mrBloc.menuOpened.add(false)),
-                  );
+                  return IconButton(
+                      icon: const Icon(SimpleLineIcons.menu, size: 20.0),
+                      onPressed: () => mrBloc.menuOpened.add(false));
                 } else {
-                  return Container(
-                    child: IconButton(
-                        icon: Icon(SimpleLineIcons.menu, size: 20.0),
-                        onPressed: () => mrBloc.menuOpened.add(true)),
-                  );
+                  return IconButton(
+                      icon: const Icon(SimpleLineIcons.menu, size: 20.0),
+                      onPressed: () => mrBloc.menuOpened.add(true));
                 }
               });
         },
@@ -53,7 +49,7 @@ class FHappBar extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 8.0),
             child: Text(
               ' (v$appVersion)',
-              style: TextStyle(fontSize: 10.0),
+              style: const TextStyle(fontSize: 10.0),
             ),
           )
         ],
@@ -73,14 +69,14 @@ class FHappBar extends StatelessWidget {
                           //here the name should be returned from a current user
                           'Hi, ${person.name}',
                           style: Theme.of(context).primaryTextTheme.bodyText2),
-                      SizedBox(
+                      const SizedBox(
                         width: 32.0,
                       ),
                       VerticalDivider(
                         width: 1.0,
                         color: Theme.of(context).cardColor,
                       ),
-                      SizedBox(
+                      const SizedBox(
                         width: 16.0,
                       ),
                       IconButton(
@@ -99,13 +95,13 @@ class FHappBar extends StatelessWidget {
                             ManagementRepositoryClientBloc.router
                                 .navigateTo(context, '/');
                           },
-                          icon: Icon(Icons.exit_to_app),
+                          icon: const Icon(Icons.exit_to_app),
                           tooltip: 'Sign out'),
                     ],
                   ),
                 );
               } else {
-                return SizedBox.shrink();
+                return const SizedBox.shrink();
               }
             })
       ],

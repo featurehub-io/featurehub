@@ -1,16 +1,16 @@
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/widgets/common/FHFlatButton.dart';
 import 'package:open_admin_app/widgets/common/fh_card.dart';
 import 'package:open_admin_app/widgets/user/register/register_url_bloc.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
 import 'package:openapi_dart_common/openapi.dart';
 import 'package:zxcvbn/zxcvbn.dart';
 
 class RegisterURLRoute extends StatefulWidget {
   final String token;
 
-  RegisterURLRoute(this.token, {Key? key}) : super(key: key);
+  const RegisterURLRoute(this.token, {Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -18,13 +18,14 @@ class RegisterURLRoute extends StatefulWidget {
   }
 }
 
+const _PASSWORD_SCORE_THRESHOLD = 1;
+
 class RegisterURLState extends State<RegisterURLRoute> {
   final _formKey = GlobalKey<FormState>(debugLabel: 'registration url');
   final _name = TextEditingController();
   final _pw1 = TextEditingController();
   final _pw2 = TextEditingController();
-  final _PASSWORD_SCORE_THRESHOLD = 1;
-  Text _passwordStrength = Text('');
+  Text _passwordStrength = const Text('');
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +35,7 @@ class RegisterURLState extends State<RegisterURLRoute> {
         child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: <Widget>[
-        Container(
+        SizedBox(
             width: 500,
             //  color: Colors.yellow,
             child: StreamBuilder(
@@ -46,15 +47,12 @@ class RegisterURLState extends State<RegisterURLRoute> {
                     } else if (snapshot.data == RegisterUrlForm.successState) {
                       ManagementRepositoryClientBloc.router
                           .navigateTo(context, '/');
-                      return SizedBox.shrink();
+                      return const SizedBox.shrink();
                     } else if (snapshot.data ==
                         RegisterUrlForm.alreadyLoggedIn) {
-                      // go back to login
                       ManagementRepositoryClientBloc.router
-                          .navigateTo(context, '/');
-                      BlocProvider.of<ManagementRepositoryClientBloc>(context)
-                          .resetInitialized();
-                      return SizedBox.shrink();
+                          .navigateRoute('/login');
+                      return const SizedBox.shrink();
                     }
                   }
                   if (snapshot.hasError) {
@@ -70,7 +68,7 @@ class RegisterURLState extends State<RegisterURLRoute> {
                     }
                     return Text(humanErrorMessage);
                   }
-                  return Text('Validating your invitation URL');
+                  return const Text('Validating your invitation URL');
                 })),
       ],
     ));
@@ -95,13 +93,13 @@ class RegisterURLState extends State<RegisterURLRoute> {
           ),
           TextFormField(
             enabled: false,
-            decoration: InputDecoration(labelText: 'Email'),
+            decoration: const InputDecoration(labelText: 'Email'),
             initialValue: bloc.person!.email,
           ),
           TextFormField(
             controller: _name,
             autofocus: true,
-            decoration: InputDecoration(labelText: 'Name'),
+            decoration: const InputDecoration(labelText: 'Name'),
             textInputAction: TextInputAction.next,
             validator: (v) =>
                 v?.isEmpty == false ? null : 'Please enter your name',
@@ -110,7 +108,7 @@ class RegisterURLState extends State<RegisterURLRoute> {
               controller: _pw1,
               obscureText: true,
               textInputAction: TextInputAction.next,
-              decoration: InputDecoration(labelText: 'Password'),
+              decoration: const InputDecoration(labelText: 'Password'),
               validator: (v) {
                 if (v == null) {
                   return 'Please enter your password';
@@ -135,7 +133,7 @@ class RegisterURLState extends State<RegisterURLRoute> {
               obscureText: true,
               autovalidateMode: AutovalidateMode.onUserInteraction,
               textInputAction: TextInputAction.next,
-              decoration: InputDecoration(labelText: 'Confirm Password'),
+              decoration: const InputDecoration(labelText: 'Confirm Password'),
               validator: (v) {
                 if (v == null || v.isEmpty) {
                   return 'Please confirm your password';

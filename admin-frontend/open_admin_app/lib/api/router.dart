@@ -1,7 +1,9 @@
 import 'dart:convert';
 
-import 'package:open_admin_app/api/client_api.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/widgets.dart';
+import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/config/route_names.dart';
 
 typedef HandlerFunc = Widget Function(
     BuildContext context, Map<String, List<String>> params);
@@ -39,7 +41,39 @@ class Handler {
 }
 
 enum TransitionType { fadeIn, material }
-enum PermissionType { superadmin, portfolioadmin, regular }
+enum PermissionType {
+  superadmin,
+  portfolioadmin,
+  regular,
+  personal,
+  any,
+  nowhere,
+  login,
+  setup
+}
+
+// we need to track what states we can be in, what permission types routes have to have, and what the initial route you should have when you are in i
+
+enum RouteSlot { loading, setup, login, personal, portfolio, nowhere }
+
+class RouteSlotMapping {
+  final RouteSlot routePermission;
+  final List<PermissionType> acceptablePermissionTypes;
+  final String initialRoute;
+
+  RouteSlotMapping(
+      {required this.routePermission,
+      required this.acceptablePermissionTypes,
+      required this.initialRoute});
+}
+
+Map<RouteSlot, RouteSlotMapping> routeSlotMappings = {};
+
+List<PermissionType> scaffoldWrapPermissions = [
+  PermissionType.superadmin,
+  PermissionType.portfolioadmin,
+  PermissionType.regular
+];
 
 class RouterRoute {
   Handler handler;
@@ -48,12 +82,21 @@ class RouterRoute {
   RouterRoute(this.handler, {this.permissionType = PermissionType.regular});
 }
 
+typedef PermissionCheckHandler = bool Function(
+    RouteChange route, bool superuser, bool portfolioAdmin, bool isLoggedIn,
+    {List<PermissionType> autoFailPermissions});
+
+PermissionCheckHandler? permissionCheckHandler;
+
 class FHRouter {
   final Handler notFoundHandler;
   final ManagementRepositoryClientBloc mrBloc;
   final Map<String, RouterRoute> handlers = {};
 
-  FHRouter({required this.mrBloc, required this.notFoundHandler});
+  FHRouter({required this.mrBloc, required this.notFoundHandler}) {
+    permissionCheckHandler = _hasRoutePermissions;
+    print("set route perm handler");
+  }
 
   void define(String route,
       {required Handler handler,
@@ -64,7 +107,7 @@ class FHRouter {
 
   HandlerFunc getRoute(String route) {
     if (route == '/') {
-      route = '/feature-status';
+      route = '/feature-dashboard';
     }
     final f = handlers[route];
 
@@ -76,34 +119,88 @@ class FHRouter {
     return handlers[route]?.permissionType ?? PermissionType.regular;
   }
 
-  bool hasRoutePermissions(
-      RouteChange route, bool superuser, bool portfolioAdmin) {
-    if (superuser == true) {
-      return true;
+  RouterRoute forNamedRoute(String requestedRouteName, RouteSlot slot) {
+    if (ManagementRepositoryClientBloc.router.handlers
+        .containsKey(requestedRouteName)) {
+      final route =
+          ManagementRepositoryClientBloc.router.handlers[requestedRouteName]!;
+      final slotPerm = routeSlotMappings[slot]!;
+
+      if (slotPerm.acceptablePermissionTypes.contains(route.permissionType)) {
+        return route;
+      }
+
+      return ManagementRepositoryClientBloc
+          .router.handlers[slotPerm.initialRoute]!;
     }
 
-    final perm = permissionForRoute(route.route);
-
-    if (perm == PermissionType.portfolioadmin && portfolioAdmin == true) {
-      return true;
-    }
-
-    return perm == PermissionType.regular;
+    // otherwise we are using the 404 route
+    return ManagementRepositoryClientBloc.router.handlers['/404']!;
   }
 
-  void navigateTo(BuildContext context, String route,
-      {Map<String, List<String>>? params}) {
+  bool _hasRoutePermissions(
+      RouteChange route, bool superuser, bool portfolioAdmin, bool isLoggedIn,
+      {List<PermissionType> autoFailPermissions = const []}) {
+    final perm = permissionForRoute(route.route);
+
+    if (autoFailPermissions.contains(perm)) {
+      return false;
+    }
+
+    if (perm == PermissionType.any) {
+      return true;
+    }
+
+    if (perm == PermissionType.login && !isLoggedIn) {
+      return true;
+    }
+
+    if (perm != PermissionType.login && perm != PermissionType.setup) {
+      if (superuser == true) {
+        return true;
+      }
+
+      if (perm == PermissionType.portfolioadmin && portfolioAdmin == true) {
+        return true;
+      }
+
+      return perm == PermissionType.regular || perm == PermissionType.personal;
+    }
+
+    return false;
+  }
+
+  void navigateRoute(String route, {Map<String, List<String>>? params}) {
     final rc = RouteChange(route, params: params ?? const {});
 
-    if (hasRoutePermissions(
-        rc, mrBloc.userIsSuperAdmin, mrBloc.userIsCurrentPortfolioAdmin)) {
+    if (permissionCheckHandler!(rc, mrBloc.userIsSuperAdmin,
+        mrBloc.userIsCurrentPortfolioAdmin, mrBloc.isLoggedIn)) {
       mrBloc.swapRoutes(rc);
     } else {
       mrBloc.swapRoutes(defaultRoute());
     }
   }
 
+  void navigateTo(BuildContext? context, String route,
+      {Map<String, List<String>>? params}) {
+    navigateRoute(route, params: params);
+  }
+
   RouteChange defaultRoute() {
-    return RouteChange('/feature-status', params: {});
+    return RouteChange(routeNameFeatureDashboard, params: {});
+  }
+
+  bool canUseRoute(String routeName,
+      {List<PermissionType> autoFailPermissions = const []}) {
+    final rc = RouteChange(routeName);
+    print(
+        "canUseRoute $routeName super-admin ${mrBloc.userIsSuperAdmin} current portfolio admin ${mrBloc.userIsCurrentPortfolioAdmin} loggedin ${mrBloc.isLoggedIn}");
+    return permissionCheckHandler!(rc, mrBloc.userIsSuperAdmin,
+        mrBloc.userIsCurrentPortfolioAdmin, mrBloc.isLoggedIn,
+        autoFailPermissions: autoFailPermissions);
+  }
+
+  bool routeExists(String routeName) {
+    return routeName != '/404' && handlers[routeName] != null;
   }
 }

@@ -1,18 +1,18 @@
 import 'dart:math';
 
 import 'package:animator/animator.dart';
-import 'package:open_admin_app/api/client_api.dart';
-import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
-import 'package:open_admin_app/widgets/common/fh_card.dart';
-import 'package:open_admin_app/widgets/common/fh_flat_button_green.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
+import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
+import 'package:open_admin_app/widgets/common/fh_card.dart';
+import 'package:open_admin_app/widgets/common/fh_flat_button_green.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
 class SigninWidget extends StatefulWidget {
-  SigninWidget(this.bloc);
+  const SigninWidget(this.bloc);
 
   final ManagementRepositoryClientBloc bloc;
 
@@ -89,9 +89,7 @@ class _SigninState extends State<SigninWidget> {
               padding: const EdgeInsets.only(bottom: 26.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  RotatingLogoWidget()
-                ],
+                children: <Widget>[const RotatingLogoWidget()],
               ),
             ),
             Container(
@@ -106,10 +104,11 @@ class _SigninState extends State<SigninWidget> {
                 bloc: widget.bloc,
                 selectedExternalProviderFunc: _loginViaProvider,
               ),
-            if (widget.bloc.identityProviders.has3rdParty && widget.bloc.identityProviders.hasLocal)
+            if (widget.bloc.identityProviders.has3rdParty &&
+                widget.bloc.identityProviders.hasLocal)
               Column(
                 children: [
-                  SizedBox(height: 24.0),
+                  const SizedBox(height: 24.0),
                   FHPageDivider(),
                   Padding(
                       padding: const EdgeInsets.fromLTRB(0, 24, 0, 16),
@@ -129,7 +128,7 @@ class _SigninState extends State<SigninWidget> {
                           ? 'Please enter your email'
                           : null,
                       decoration:
-                          InputDecoration(labelText: 'Email address')),
+                          const InputDecoration(labelText: 'Email address')),
                   TextFormField(
                       controller: _password,
                       obscureText: true,
@@ -138,40 +137,42 @@ class _SigninState extends State<SigninWidget> {
                       validator: (v) => v == null || v.isEmpty
                           ? 'Please enter your password'
                           : null,
-                      decoration: InputDecoration(labelText: 'Password')),
+                      decoration: const InputDecoration(labelText: 'Password')),
                 ],
               ),
-            if (widget.bloc.identityProviders.hasLocal) Container(
-                child: displayError
-                    ? Text(
-                        'Incorrect email address or password',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyText2!
-                            .copyWith(color: Theme.of(context).errorColor),
-                      )
-                    : Container()),
-            if (widget.bloc.identityProviders.hasLocal) Container(
-              padding: EdgeInsets.only(top: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
+            if (widget.bloc.identityProviders.hasLocal)
+              Container(
+                  child: displayError
+                      ? Text(
+                          'Incorrect email address or password',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyText2!
+                              .copyWith(color: Theme.of(context).errorColor),
+                        )
+                      : Container()),
+            if (widget.bloc.identityProviders.hasLocal)
+              Container(
+                padding: const EdgeInsets.only(top: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
 //                    FHFlatButtonTransparent(
 //                      onPressed: () =>
 //                          Navigator.pushNamed(context, '/forgot-password'),
 //                      title: 'Forgot password?',
 //                      keepCase: true,
 //                    ),
-                  Expanded(
-                    child: FHFlatButtonGreen(
-                        title: 'Sign in',
-                        onPressed: () {
-                          _handleSubmitted();
-                        }),
-                  )
-                ],
-              ),
-            )
+                    Expanded(
+                      child: FHFlatButtonGreen(
+                          title: 'Sign in',
+                          onPressed: () {
+                            _handleSubmitted();
+                          }),
+                    )
+                  ],
+                ),
+              )
           ],
         ),
       ),
@@ -188,14 +189,12 @@ class RotatingLogoWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Animator<double>(
         tween: Tween<double>(begin: 0, end: 2 * pi),
-        duration: Duration(seconds: 2),
+        duration: const Duration(seconds: 2),
         repeats: 0,
         builder: (context, anim, other) => Transform.rotate(
               angle: anim.value,
-              child: Image.asset(
-                  'assets/logo/FeatureHub-icon.png',
-                  width: 40,
-                  height: 40),
+              child: Image.asset('assets/logo/FeatureHub-icon.png',
+                  width: 40, height: 40),
             ));
   }
 }
@@ -214,24 +213,24 @@ class _SetupPage1ThirdPartyProviders extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-      return Column(
-        children: [
-          for (dynamic provider in bloc.identityProviders.externalProviders)
-            Container(
-              height: 48,
-              child: Padding(
-                padding: const EdgeInsets.only(top: 12.0),
-                child: SignInButton(
-                    provider == 'oauth2-google'
-                        ? Buttons.GoogleDark
-                        : provider == 'oauth2-github'
-                            ? Buttons.GitHub
-                            : Buttons.Microsoft, onPressed: () {
-                  selectedExternalProviderFunc(provider);
-                }),
-              ),
+    return Column(
+      children: [
+        for (dynamic provider in bloc.identityProviders.externalProviders)
+          Container(
+            height: 48,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 12.0),
+              child: SignInButton(
+                  provider == 'oauth2-google'
+                      ? Buttons.GoogleDark
+                      : provider == 'oauth2-github'
+                          ? Buttons.GitHub
+                          : Buttons.Microsoft, onPressed: () {
+                selectedExternalProviderFunc(provider);
+              }),
             ),
-        ],
-      );
+          ),
+      ],
+    );
   }
 }

@@ -24,7 +24,7 @@ class EditValueStrategyLinkButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FHUnderlineButton(
-        title: '${rolloutStrategy.name}',
+        title: rolloutStrategy.name,
         onPressed: () => {
               fvBloc.mrClient.addOverlay((BuildContext context) {
                 return BlocProvider(

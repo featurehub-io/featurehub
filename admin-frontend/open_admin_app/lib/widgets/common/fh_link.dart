@@ -42,7 +42,7 @@ class FHLink extends StatelessWidget {
   final String? tooltip;
   final Widget child;
 
-  FHLink(
+  const FHLink(
       {Key? key,
       required this.href,
       this.tooltip,

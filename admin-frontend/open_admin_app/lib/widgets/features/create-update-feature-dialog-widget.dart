@@ -1,10 +1,10 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/common/FHFlatButton.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:mrapi/api.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
 import 'per_application_features_bloc.dart';
@@ -67,7 +67,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
             children: <Widget>[
               TextFormField(
                   controller: _featureName,
-                  decoration: InputDecoration(labelText: 'Feature name'),
+                  decoration: const InputDecoration(labelText: 'Feature name'),
                   readOnly: isReadOnly,
                   autofocus: true,
                   onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
@@ -129,11 +129,11 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                   child: InkWell(
                     mouseCursor: SystemMouseCursors.click,
                     child: DropdownButton(
-                      icon: Padding(
+                      icon: const Padding(
                         padding: EdgeInsets.only(left: 8.0),
                         child: Icon(
                           Icons.keyboard_arrow_down,
-                          size: 24,
+                          size: 18,
                         ),
                       ),
                       isExpanded: false,
@@ -160,14 +160,13 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                   ),
                 ),
               if (isError)
-                Container(
-                    child: Text(
+                Text(
                   'Select feature type',
                   style: Theme.of(context)
                       .textTheme
                       .bodyText2!
                       .copyWith(color: Theme.of(context).errorColor),
-                )),
+                ),
             ],
           ),
         ),

@@ -1,13 +1,14 @@
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/config/route_names.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_circle_icon_button.dart';
 import 'package:open_admin_app/widgets/stepper/FHStepper.dart';
 import 'package:open_admin_app/widgets/stepper/custom_stepper.dart';
 import 'package:open_admin_app/widgets/stepper/progress_stepper_bloc.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:mrapi/api.dart';
 
 import '../common/fh_flat_button_transparent.dart';
 
@@ -41,7 +42,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
               onTap: () => bloc.mrClient.stepperOpened = false)
         ],
       ),
-      SizedBox(height: 8.0),
+      const SizedBox(height: 8.0),
       FHPageDivider(),
     ]);
 
@@ -50,7 +51,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
       child: Material(
         elevation: 16.0,
         child: Container(
-            constraints: BoxConstraints(maxWidth: 260),
+            constraints: const BoxConstraints(maxWidth: 260),
             height: MediaQuery.of(context).size.height - kToolbarHeight,
             padding:
                 const EdgeInsets.only(bottom: 16.0, right: 16.0, left: 16.0),
@@ -111,14 +112,14 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                                 .router
                                                 .navigateTo(
                                               context,
-                                              '/manage-group',
+                                              '/groups',
                                             )
                                           },
                                         ),
                                       ],
                                     )),
                                 CustomStep(
-                                    title: Text('Create service account'),
+                                    title: const Text('Create service account'),
                                     state: snapshot.data!.serviceAccount == true
                                         ? CustomStepState.complete
                                         : CustomStepState.indexed,
@@ -138,7 +139,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                                 .router
                                                 .navigateTo(
                                               context,
-                                              '/manage-service-accounts',
+                                              '/service-accounts',
                                             )
                                           },
                                         ),
@@ -167,10 +168,10 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                                 .router
                                                 .navigateTo(
                                               context,
-                                              '/manage-app',
+                                              '/app-settings',
                                               params: {
                                                 'id': [bloc.applicationId!],
-                                                'tab-name': ['environments']
+                                                'tab': ['environments']
                                               },
                                             )
                                           },
@@ -201,12 +202,10 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                                 .router
                                                 .navigateTo(
                                               context,
-                                              '/manage-app',
+                                              '/app-settings',
                                               params: {
                                                 'id': [bloc.applicationId!],
-                                                'tab-name': [
-                                                  'group-permissions'
-                                                ]
+                                                'tab': ['group-permissions']
                                               },
                                             )
                                           },
@@ -241,10 +240,10 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                                 .router
                                                 .navigateTo(
                                               context,
-                                              '/manage-app',
+                                              '/app-settings',
                                               params: {
                                                 'id': [bloc.applicationId!],
-                                                'tab-name': ['service-accounts']
+                                                'tab': ['service-accounts']
                                               },
                                             )
                                           },
@@ -274,7 +273,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                                 .router
                                                 .navigateTo(
                                               context,
-                                              '/feature-status',
+                                              routeNameFeatureDashboard,
                                             )
                                           },
                                         ),
@@ -311,9 +310,8 @@ class _StepperState extends State<FHSetupProgressStepper> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  Container(
-                      child: Text('Select application or create a new one',
-                          style: Theme.of(context).textTheme.caption)),
+                  Text('Select application or create a new one',
+                      style: Theme.of(context).textTheme.caption),
                   Container(
                       constraints: BoxConstraints(maxWidth: 200),
                       child: applicationsDropdown(snapshot.data!, bloc))
@@ -328,11 +326,11 @@ class _StepperState extends State<FHSetupProgressStepper> {
     return InkWell(
       mouseCursor: SystemMouseCursors.click,
       child: DropdownButton(
-        icon: Padding(
+        icon: const Padding(
           padding: EdgeInsets.only(left: 8.0),
           child: Icon(
             Icons.keyboard_arrow_down,
-            size: 24,
+            size: 18,
           ),
         ),
         isExpanded: true,

@@ -1,9 +1,9 @@
+import 'package:flutter/material.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/delete_strategy_icon_button.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/edit_value_strategy_link_button.dart';
-import 'package:flutter/material.dart';
-import 'package:mrapi/api.dart';
 
 class StrategyCardWidget extends StatelessWidget {
   final bool editable;
@@ -58,7 +58,7 @@ class StrategyCardWidget extends StatelessWidget {
                           rolloutStrategy: rolloutStrategy!,
                           strBloc: strBloc,
                         )
-                      : SizedBox.shrink(),
+                      : const SizedBox.shrink(),
                 )
               ]),
         ),

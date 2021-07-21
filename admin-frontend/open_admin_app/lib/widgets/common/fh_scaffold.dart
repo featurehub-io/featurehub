@@ -1,13 +1,13 @@
 import 'dart:async';
 
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/common/fh_appbar.dart';
 import 'package:open_admin_app/widgets/stepper/stepper_container.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:mrapi/api.dart';
 
 import 'fh_drawer.dart';
 import 'fh_error.dart';
@@ -61,8 +61,8 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
     var mrBloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
 
     return Scaffold(
-        appBar: PreferredSize(
-            preferredSize: const Size(double.infinity, kToolbarHeight),
+        appBar: const PreferredSize(
+            preferredSize: Size(double.infinity, kToolbarHeight),
             child: FHappBar()),
         body: Stack(children: [
           Column(
@@ -82,7 +82,7 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
                   );
                   // make async as calls another build
                   Timer(
-                      Duration(milliseconds: 1),
+                      const Duration(milliseconds: 1),
                       () =>
                           ScaffoldMessenger.of(context).showSnackBar(snackBar));
                   //after snackbar message shows up - need to make sure it doesn't show up again
@@ -122,7 +122,7 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
               stream: mrBloc.personStream,
               builder: (BuildContext context, AsyncSnapshot<Person> snapshot) {
                 if (snapshot.hasData && mrBloc.isLoggedIn) {
-                  return Container(child: DrawerViewWidget());
+                  return DrawerViewWidget();
                 }
                 return Container();
               }),
@@ -132,14 +132,12 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
                 //parent that constraints this widget is the page width (without a menu)
                 return Container(
                     height: MediaQuery.of(context).size.height - kToolbarHeight,
-                    padding: EdgeInsets.fromLTRB(16, 0, 16, 0),
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Column(children: [
                       Expanded(
                           child: SingleChildScrollView(
                               child: Column(
-                        children: <Widget>[
-                          child,
-                        ],
+                        children: <Widget>[child],
                       ))),
                     ]));
               }
@@ -148,28 +146,25 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
                   child: Container(
                       height:
                           MediaQuery.of(context).size.height - kToolbarHeight,
-                      padding: EdgeInsets.fromLTRB(16, 0, 16, 0),
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
                       width: scrollAtWidth.toDouble(),
                       child: ListView(
                         shrinkWrap: true,
-                        children: <Widget>[
-                          child,
-                        ],
+                        children: <Widget>[child],
                       )));
             }),
           ),
-          StreamBuilder<ReleasedPortfolio>(
+          StreamBuilder<ReleasedPortfolio?>(
               stream: mrBloc.personState.isCurrentPortfolioOrSuperAdmin,
               builder: (context, snapshot) {
                 if (snapshot.data != null &&
                     (snapshot.data!.currentPortfolioOrSuperAdmin == true)) {
-                  return Container(
-                      child: StepperContainer(
+                  return StepperContainer(
                     mrBloc: mrBloc,
-                  ));
-                } else {
-                  return SizedBox.shrink();
+                  );
                 }
+
+                return const SizedBox.shrink();
               }),
         ],
       ),

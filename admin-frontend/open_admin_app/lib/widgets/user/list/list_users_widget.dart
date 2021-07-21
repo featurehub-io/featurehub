@@ -1,3 +1,6 @@
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/common/FHFlatButton.dart';
@@ -7,9 +10,6 @@ import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_delete_thing.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
 import 'package:open_admin_app/widgets/user/list/list_users_bloc.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:mrapi/api.dart';
 
 class PersonListWidget extends StatefulWidget {
   @override
@@ -29,7 +29,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
         builder: (context, snapshot) {
           if (snapshot.hasError || snapshot.data == null) {
             return Container(
-                padding: EdgeInsets.all(30), child: Text('Loading...'));
+                padding: EdgeInsets.all(30), child: const Text('Loading...'));
           }
           final allowedLocalIdentity = bloc.mrClient.identityProviders.hasLocal;
           return Column(
@@ -71,58 +71,58 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                   rows: [
                     for (SearchPersonEntry p in snapshot.data!)
                       DataRow(
-                        cells: [
-                          DataCell(p.person.name == null
-                              ? Text('Not yet registered',
-                                  style: Theme.of(context).textTheme.caption)
-                              : Text(
-                                  '${p.person.name}',
-                                )),
-                          DataCell(Text('${p.person.email}')),
-                          DataCell(Text('${p.person.groups.length}')),
-                          DataCell(Row(children: <Widget>[
-                            FHIconButton(
-                              icon: Icon(Icons.info,
-                                  color: _infoColour(p, allowedLocalIdentity)),
-                              onPressed: () => bloc.mrClient
-                                  .addOverlay((BuildContext context) {
-                                return ListUserInfoDialog(bloc, p);
-                              }),
-                            ),
-                            FHIconButton(
-                                icon: Icon(Icons.edit),
-                                onPressed: () => {
-                                      ManagementRepositoryClientBloc.router
-                                          .navigateTo(context, '/manage-user',
-                                              params: {
-                                            'id': [p.person.id!.id]
-                                          })
-                                    }),
-                            SizedBox(
-                              width: 20.0,
-                            ),
-                            FHIconButton(
-                              icon: Icon(Icons.delete),
-                              onPressed: () => bloc.mrClient
-                                  .addOverlay((BuildContext context) {
-                                return bloc.mrClient.person.id!.id ==
-                                        p.person.id!.id
-                                    ? CantDeleteDialog(bloc)
-                                    : DeleteDialogWidget(
-                                        person: p.person,
-                                        bloc: bloc,
-                                      );
-                              }),
-                            ),
-                          ])),
-                        ],
-                        onSelectChanged: (newValue) {
-                          ManagementRepositoryClientBloc.router
-                              .navigateTo(context, '/manage-user',
-                              params: {
-                                'id': [p.person.id!.id]
-                              });
-                        }),
+                          cells: [
+                            DataCell(p.person.name == null
+                                ? Text('Not yet registered',
+                                    style: Theme.of(context).textTheme.caption)
+                                : Text(
+                                    p.person.name!,
+                                  )),
+                            DataCell(Text(p.person.email!)),
+                            DataCell(Text('${p.person.groups.length}')),
+                            DataCell(Row(children: <Widget>[
+                              FHIconButton(
+                                icon: Icon(Icons.info,
+                                    color:
+                                        _infoColour(p, allowedLocalIdentity)),
+                                onPressed: () => bloc.mrClient
+                                    .addOverlay((BuildContext context) {
+                                  return ListUserInfoDialog(bloc, p);
+                                }),
+                              ),
+                              FHIconButton(
+                                  icon: const Icon(Icons.edit),
+                                  onPressed: () => {
+                                        ManagementRepositoryClientBloc.router
+                                            .navigateTo(context, '/manage-user',
+                                                params: {
+                                              'id': [p.person.id!.id]
+                                            })
+                                      }),
+                              SizedBox(
+                                width: 20.0,
+                              ),
+                              FHIconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () => bloc.mrClient
+                                    .addOverlay((BuildContext context) {
+                                  return bloc.mrClient.person.id!.id ==
+                                          p.person.id!.id
+                                      ? CantDeleteDialog(bloc)
+                                      : DeleteDialogWidget(
+                                          person: p.person,
+                                          bloc: bloc,
+                                        );
+                                }),
+                              ),
+                            ])),
+                          ],
+                          onSelectChanged: (newValue) {
+                            ManagementRepositoryClientBloc.router
+                                .navigateTo(context, '/manage-user', params: {
+                              'id': [p.person.id!.id]
+                            });
+                          }),
                   ],
                 ),
               ),
@@ -208,7 +208,7 @@ class ListUserInfoDialog extends StatelessWidget {
   final ListUsersBloc bloc;
   final SearchPersonEntry entry;
 
-  ListUserInfoDialog(this.bloc, this.entry);
+  const ListUserInfoDialog(this.bloc, this.entry);
 
   @override
   Widget build(BuildContext context) {
@@ -293,7 +293,7 @@ class _ListUserInfo extends StatelessWidget {
               padding: const EdgeInsets.only(top: 12.0, bottom: 4.0),
               child: Text(
                 'Registration Expired',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
           if (allowedLocalIdentity && entry.registration.expired)
@@ -313,7 +313,7 @@ class _ListUserInfo extends StatelessWidget {
                 return null;
               },
             ),
-          SizedBox(height: 16.0),
+          const SizedBox(height: 16.0),
           FHPageDivider(),
           SizedBox(height: 16.0),
           if (entry.person.groups.isNotEmpty)

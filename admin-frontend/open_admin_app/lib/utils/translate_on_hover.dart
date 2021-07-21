@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class TranslateOnHover extends StatefulWidget {
   final Widget child;
-  TranslateOnHover({Key? key, required this.child}) : super(key: key);
+  const TranslateOnHover({Key? key, required this.child}) : super(key: key);
 
   @override
   _TranslateOnHoverState createState() => _TranslateOnHoverState();
@@ -18,15 +18,15 @@ class _TranslateOnHoverState extends State<TranslateOnHover> {
       onExit: (e) => _mouseEnter(false),
       child: Container(
         decoration: _hovering
-            ? BoxDecoration(
+            ? const BoxDecoration(
                 border: Border(
                   bottom: BorderSide(
-                    color: Theme.of(context).buttonColor,
+                    color: Colors.blue,
                     width: 1.0,
                   ),
                 ),
               )
-            : BoxDecoration(
+            : const BoxDecoration(
                 border: Border(
                   bottom: BorderSide(
                     color: Colors.transparent,

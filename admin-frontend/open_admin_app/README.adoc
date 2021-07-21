@@ -49,4 +49,47 @@ Use for insignificant errors that you want to only show in the browser console, 
 
  justThrowError().catchError(bloc.mrClient.consoleError);
 
+== Routing
+
+The Open Admin front end uses a combination of an internal router and the Navigator 2 library from Flutter. There are
+essentially two important states that we need to know about:
+
+- does the backend exist at all? The MRBloc detects this by doing an initialization call and the route is `/loading` while this happens. 
+  The valid responses are 200 (yes, initialized) or 404 (not initialized). 
+- is the user logged in? This is surface in the PersonState which is accessed via the MR bloc. If the user has a valid token, the user
+  is logged in, otherwise they are not.
+
+For the Flutter Navigator - there is a central class - which for FH is called the `FHRouteDelegate`. It is responsible for:
+
+- telling the browser what the URL should be given the internal state of the `FHRouteDelegate` - this is the method `currentConfiguration`
+- listening to changes in the normal operation of the Admin application to change the route (e.g. via button clicks, or the left hand menu) and changing to that route
+- listening to changes in the browser URL location (either by direct typing or forward/backward requests) and notifying the internal state to match. 
+
+=== Data driven Routing Updates (internal changes)
+
+We achieve this in the constructor of the `FHRouteDelegate` by listening to three streams from the MR Bloc: 
+
+- is the app through its initialisation sequence? => `bloc.siteInitialisedSource` 
+- the state of the person (are they logged in or not?) => `bloc.personState.personStream`
+- has the app requested to change => `bloc.routeChangedStream`
+
+When these things happen, these trigger the update of the internal state of the `FHRouteDelegate` - primarily indicating the route it should currently
+be on. This route is represented by a class called `FHRoutePath` which currently stores data identical to the existing router functionality (name + params).
+
+What does _trigger an update_ mean? It means calling `notifyListeners()` because `FHRouteDelegate` is a ChangeListener. This causes the `build` method to
+be called and the widget tree to be updated. `FHRouteDelegate` is itself NOT a widget, even though it has a `build` method.
+
+=== Browser driven Routing Updates (external changes)
+
+If the browser link is updated instead (either via forward/backward or directly typing), then Flutter calls a different class to parse that information,
+the `FHRouteInformationParser` will map a URL to a `FHRoutePath` and back again. If it takes a url from the browser, it will ask the 
+`FHRoutePath` by calling ` `FHRouteInformationParser.parseRouteInformation` and then pass the corresponding object to the `FHRouteDelegate` from above
+so it can update its internal state. It calls `notifyListeners` itself, so we don't need to do this.
+
+The other part of this equation is when we go backwards or forwards, Flutter does something funky with _popping the page_ and there is some code that keeps
+this all clean. It essentially copy-pasta from the docs. 
+
+
+
+
 

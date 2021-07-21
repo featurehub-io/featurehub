@@ -1,3 +1,6 @@
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/widgets/common/FHFlatButton.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
@@ -5,9 +8,6 @@ import 'package:open_admin_app/widgets/common/fh_delete_thing.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
 import 'package:open_admin_app/widgets/portfolio/portfolio_bloc.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:mrapi/api.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
 class PortfolioListWidget extends StatelessWidget {
@@ -21,7 +21,7 @@ class PortfolioListWidget extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.hasError || snapshot.data == null) {
             return Container(
-                padding: EdgeInsets.all(30), child: Text('Loading...'));
+                padding: EdgeInsets.all(30), child: const Text('Loading...'));
           }
 
           return Column(
@@ -62,9 +62,9 @@ class _PortfolioWidget extends StatelessWidget {
               child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text('${portfolio.name}'),
+              Text(portfolio.name),
               Text(
-                portfolio.description != null ? '${portfolio.description}' : '',
+                portfolio.description ?? '',
                 style: Theme.of(context).textTheme.caption,
               ),
             ],
@@ -73,7 +73,7 @@ class _PortfolioWidget extends StatelessWidget {
               ? Row(
                   children: <Widget>[
                     FHIconButton(
-                        icon: Icon(Icons.edit),
+                        icon: const Icon(Icons.edit),
                         onPressed: () =>
                             bloc.mrClient.addOverlay((BuildContext context) {
                               return PortfolioUpdateDialogWidget(
@@ -81,7 +81,7 @@ class _PortfolioWidget extends StatelessWidget {
                             })),
                     if (mr.userIsSuperAdmin)
                       FHIconButton(
-                          icon: Icon(Icons.delete),
+                          icon: const Icon(Icons.delete),
                           onPressed: () =>
                               bloc.mrClient.addOverlay((BuildContext context) {
                                 return PortfolioDeleteDialogWidget(
@@ -168,7 +168,8 @@ class _PortfolioUpdateDialogWidgetState
                 children: <Widget>[
                   TextFormField(
                       controller: _portfolioName,
-                      decoration: InputDecoration(labelText: 'Portfolio name'),
+                      decoration:
+                          const InputDecoration(labelText: 'Portfolio name'),
                       validator: ((v) {
                         if (v == null || v.isEmpty) {
                           return 'Please enter a portfolio name';
@@ -180,8 +181,8 @@ class _PortfolioUpdateDialogWidgetState
                       })),
                   TextFormField(
                       controller: _portfolioDescription,
-                      decoration:
-                          InputDecoration(labelText: 'Portfolio description'),
+                      decoration: const InputDecoration(
+                          labelText: 'Portfolio description'),
                       validator: ((v) {
                         if (v == null || v.isEmpty) {
                           return 'Please enter a portfolio description';

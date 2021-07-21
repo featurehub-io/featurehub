@@ -1,3 +1,6 @@
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/widgets/common/FHFlatButton.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
@@ -9,9 +12,6 @@ import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/user/common/admin_checkbox.dart';
 import 'package:open_admin_app/widgets/user/common/portfolio_group_selector_widget.dart';
 import 'package:open_admin_app/widgets/user/edit/edit_user_bloc.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:mrapi/api.dart';
 
 class EditUserRoute extends StatelessWidget {
   @override
@@ -45,8 +45,6 @@ class _EditUserFormState extends State<EditUserFormWidget> {
   final _name = TextEditingController();
   final _email = TextEditingController();
 
-  var selectedPortfolio;
-  var selectedGroupID;
   bool isAddButtonDisabled = true;
 
   @override
@@ -89,7 +87,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
             ],
           ),
           Container(
-            constraints: BoxConstraints(maxWidth: 400),
+            constraints: const BoxConstraints(maxWidth: 400),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
@@ -101,7 +99,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
                       (v?.isEmpty == true) ? 'Edit email address' : null,
                 ),
                 Padding(
-                  padding: EdgeInsets.only(top: 30),
+                  padding: const EdgeInsets.only(top: 30),
                   child: TextFormField(
                     controller: _name,
                     decoration: FHFilledInputDecoration(labelText: 'Name'),
@@ -127,7 +125,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
                 onPressed: () {
                   _formKey.currentState!.reset;
                   ManagementRepositoryClientBloc.router
-                      .navigateTo(context, '/manage-users');
+                      .navigateTo(context, '/users');
                 },
                 title: 'Cancel',
                 keepCase: true),
@@ -142,7 +140,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
                           bloc.mrClient.addSnackbar(Text(
                               'User ${bloc.person!.name!} has been updated'));
                           ManagementRepositoryClientBloc.router
-                              .navigateTo(context, '/manage-users');
+                              .navigateTo(context, '/users');
                         } catch (e, s) {
                           bloc.mrClient.dialogError(e, s);
                         }
@@ -181,8 +179,8 @@ class _UserPasswordUpdateDialogWidgetState
     return Form(
       key: _formKey,
       child: FHAlertDialog(
-        title: Text('Reset password'),
-        content: Container(
+        title: const Text('Reset password'),
+        content: SizedBox(
           width: 500,
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -193,7 +191,7 @@ class _UserPasswordUpdateDialogWidgetState
               ),
               TextFormField(
                   controller: _password,
-                  decoration: InputDecoration(labelText: 'New password'),
+                  decoration: const InputDecoration(labelText: 'New password'),
                   validator: ((v) {
                     if (v?.isEmpty == true) {
                       return 'Please enter new password';
@@ -203,7 +201,7 @@ class _UserPasswordUpdateDialogWidgetState
               TextFormField(
                   controller: _passwordConfirm,
                   decoration:
-                      InputDecoration(labelText: 'Confirm new password'),
+                      const InputDecoration(labelText: 'Confirm new password'),
                   validator: ((v) {
                     if (v?.isEmpty == true) {
                       return 'Please confirm new password';

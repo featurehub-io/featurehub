@@ -1,6 +1,6 @@
-import 'package:open_admin_app/widgets/features/feature_value_cell.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:open_admin_app/widgets/features/feature_value_cell.dart';
 
 import 'feature_dashboard_constants.dart';
 import 'tabs_bloc.dart';
@@ -28,7 +28,7 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                   child: Scrollbar(
                     child: ListView(
                       scrollDirection: Axis.horizontal,
-                      physics: ClampingScrollPhysics(),
+                      physics: const ClampingScrollPhysics(),
                       children: [
                         if (bloc.features.isNotEmpty)
                           ...bloc.sortedEnvironmentsThatAreShowing.map((efv) {

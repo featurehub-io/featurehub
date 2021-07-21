@@ -1,7 +1,7 @@
-import 'package:open_admin_app/api/client_api.dart';
-import 'package:open_admin_app/api/router.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/api/router.dart';
 
 class AndysScaffoldRoute extends StatefulWidget {
   @override
@@ -20,7 +20,7 @@ class _AndysScaffoldRouteState extends State<AndysScaffoldRoute> {
               .getRoute(data.data!.route)(context, data.data!.params);
         }
 
-        return SizedBox.shrink();
+        return const SizedBox.shrink();
       },
     );
   }

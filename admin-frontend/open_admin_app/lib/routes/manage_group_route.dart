@@ -1,3 +1,7 @@
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/third_party/chips_input.dart';
 import 'package:open_admin_app/widgets/common/FHFlatButton.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
@@ -5,13 +9,8 @@ import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
-import 'package:open_admin_app/widgets/common/fh_icon_text_button.dart';
 import 'package:open_admin_app/widgets/group/group_bloc.dart';
 import 'package:open_admin_app/widgets/group/group_update_widget.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:mrapi/api.dart';
 
 /// Every user has access to portfolios, they can only see the ones they have access to
 /// and their access will be limited based on whether they are a site admin.
@@ -38,9 +37,8 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
       children: <Widget>[
         Container(
             padding: const EdgeInsets.fromLTRB(0, 0, 30, 10),
-            child: FHHeader(
+            child: const FHHeader(
               title: 'Manage group members',
-              children: [],
             )),
         FHPageDivider(),
         Row(
@@ -53,11 +51,11 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) {
                       return Container(
-                          padding: EdgeInsets.all(8),
-                          child: Text('Fetching Groups...'));
+                          padding: const EdgeInsets.all(8),
+                          child: const Text('Fetching Groups...'));
                     } else {
                       return Container(
-                        padding: EdgeInsets.only(top: 24, left: 8),
+                        padding: const EdgeInsets.only(top: 24, left: 8),
                         child: _groupsDropdown(snapshot.data, bloc),
                       );
                     }
@@ -73,18 +71,16 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                           Flexible(flex: 1, child: _getAdminActions(bloc)),
                           Flexible(
                             flex: 4,
-                            child: Container(
-                                child: FHIconTextButton(
-                              iconData: Icons.add,
-                              keepCase: true,
-                              label: 'Create new group',
+                            child: TextButton.icon(
+                              icon: const Icon(Icons.add),
+                              label: const Text('Create new group'),
                               onPressed: () => bloc.mrClient
                                   .addOverlay((BuildContext context) {
                                 return GroupUpdateDialogWidget(
                                   bloc: bloc,
                                 );
                               }),
-                            )),
+                            ),
                           ),
                         ],
                       ),
@@ -128,7 +124,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
             if (snapshot.hasData) {
               return Row(children: <Widget>[
                 FHIconButton(
-                    icon: Icon(Icons.edit),
+                    icon: const Icon(Icons.edit),
                     onPressed: () => bloc.mrClient.addOverlay(
                         (BuildContext context) => GroupUpdateDialogWidget(
                               bloc: bloc,
@@ -138,7 +134,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                 snapshot.data!.admin!
                     ? Container()
                     : FHIconButton(
-                        icon: Icon(Icons.delete),
+                        icon: const Icon(Icons.delete),
                         onPressed: () =>
                             bloc.mrClient.addOverlay((BuildContext context) {
                               return GroupDeleteDialogWidget(
@@ -156,53 +152,51 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
 
   Widget _groupsDropdown(List<Group>? groups, GroupBloc bloc) {
     return groups == null || groups.isEmpty
-        ? Text('No groups found in the portfolio')
-        : Container(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: <Widget>[
-                Text(
-                  'Portfolio groups',
-                  style: Theme.of(context).textTheme.caption,
-                ),
-                InkWell(
-                  mouseCursor: SystemMouseCursors.click,
-                  child: Container(
-                    constraints: BoxConstraints(maxWidth: 300),
-                    child: DropdownButton(
-                      icon: Padding(
-                        padding: EdgeInsets.only(left: 8.0),
-                        child: Icon(
-                          Icons.keyboard_arrow_down,
-                          size: 24,
-                        ),
+        ? const Text('No groups found in the portfolio')
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: <Widget>[
+              Text(
+                'Portfolio groups',
+                style: Theme.of(context).textTheme.caption,
+              ),
+              InkWell(
+                mouseCursor: SystemMouseCursors.click,
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 300),
+                  child: DropdownButton(
+                    icon: const Padding(
+                      padding: EdgeInsets.only(left: 8.0),
+                      child: Icon(
+                        Icons.keyboard_arrow_down,
+                        size: 18,
                       ),
-                      isDense: true,
-                      isExpanded: true,
-                      items: groups.map((Group group) {
-                        return DropdownMenuItem<String>(
-                            value: group.id,
-                            child: Text(group.name,
-                                style: Theme.of(context).textTheme.bodyText2,
-                                overflow: TextOverflow.ellipsis));
-                      }).toList(),
-                      hint: Text(
-                        'Select group',
-                        style: Theme.of(context).textTheme.subtitle2,
-                      ),
-                      onChanged: (value) {
-                        setState(() {
-                          bloc.getGroup(value?.toString());
-                          bloc.groupId = value?.toString();
-                        });
-                      },
-                      value: bloc.groupId,
                     ),
+                    isDense: true,
+                    isExpanded: true,
+                    items: groups.map((Group group) {
+                      return DropdownMenuItem<String>(
+                          value: group.id,
+                          child: Text(group.name,
+                              style: Theme.of(context).textTheme.bodyText2,
+                              overflow: TextOverflow.ellipsis));
+                    }).toList(),
+                    hint: Text(
+                      'Select group',
+                      style: Theme.of(context).textTheme.subtitle2,
+                    ),
+                    onChanged: (value) {
+                      setState(() {
+                        bloc.getGroup(value?.toString());
+                        bloc.groupId = value?.toString();
+                      });
+                    },
+                    value: bloc.groupId,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           );
   }
 
@@ -217,9 +211,9 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
         children: <Widget>[
           Container(
             child: bloc.mrClient.isPortfolioOrSuperAdmin(group.portfolioId!)
-                ? FHIconTextButton(
-                    iconData: Icons.add,
-                    label: 'Add members',
+                ? TextButton.icon(
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add members'),
                     onPressed: () =>
                         bloc.mrClient.addOverlay((BuildContext context) {
                       return AddMembersDialogWidget(
@@ -227,7 +221,6 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                         group: group,
                       );
                     }),
-                    keepCase: true,
                   )
                 : Container(),
           )
@@ -261,7 +254,7 @@ class MemberWidget extends StatelessWidget {
               child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text("${member.name ?? ''}"),
+              Text(member.name ?? ''),
             ],
           )),
           if (bloc.mrClient.isPortfolioOrSuperAdmin(group.portfolioId!))
@@ -308,7 +301,7 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
       key: _formKey,
       child: FHAlertDialog(
         title: Text('Add members to group ' + widget.group.name),
-        content: Container(
+        content: SizedBox(
           width: 500,
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -348,7 +341,7 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
       initialValue: [],
       // none, but we could
       decoration:
-          InputDecoration(labelText: 'Enter members to add to group...'),
+          const InputDecoration(labelText: 'Enter members to add to group...'),
       findSuggestions: (String query) async {
         if (query.isNotEmpty) {
           var sp = await bloc.mrClient.personServiceApi

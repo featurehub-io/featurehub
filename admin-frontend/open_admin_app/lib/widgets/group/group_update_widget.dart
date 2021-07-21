@@ -1,9 +1,9 @@
+import 'package:flutter/material.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/common/FHFlatButton.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_delete_thing.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
-import 'package:flutter/material.dart';
-import 'package:mrapi/api.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
 import 'group_bloc.dart';
@@ -47,7 +47,7 @@ class _GroupUpdateDialogWidgetState extends State<GroupUpdateDialogWidget> {
               TextFormField(
                   autofocus: true,
                   controller: _groupName,
-                  decoration: InputDecoration(labelText: 'Group name'),
+                  decoration: const InputDecoration(labelText: 'Group name'),
                   validator: ((v) {
                     if (v == null || v.isEmpty) {
                       return 'Please enter a group name';

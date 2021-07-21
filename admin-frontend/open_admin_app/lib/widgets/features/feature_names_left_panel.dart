@@ -1,14 +1,14 @@
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/common/FHFlatButton.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/features/create-update-feature-dialog-widget.dart';
 import 'package:open_admin_app/widgets/features/delete_feature_widget.dart';
 import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart';
 import 'package:open_admin_app/widgets/features/tabs_bloc.dart';
-import 'package:auto_size_text/auto_size_text.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:mrapi/api.dart';
 
 import 'per_application_features_bloc.dart';
 
@@ -35,37 +35,32 @@ class FeatureNamesLeftPanel extends StatelessWidget {
             onTap: () => tabsBloc.hideOrShowFeature(feature),
             child: Container(
                 decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor,
-                    border: Border(
-                      bottom: BorderSide(
-                          color: Theme.of(context)
-                              .buttonTheme
-                              .colorScheme!
-                              .onSurface
-                              .withOpacity(0.12),
-                          width: 1.0),
-                      right: BorderSide(
-                          color: Theme.of(context)
-                              .buttonTheme
-                              .colorScheme!
-                              .onSurface
-                              .withOpacity(0.12),
-                          width: 1.0),
-                      left: BorderSide(
-                          color: Theme.of(context)
-                              .buttonTheme
-                              .colorScheme!
-                              .onSurface
-                              .withOpacity(0.12),
-                          width: 1.0),
-                    ),
-                    boxShadow: [
-//                  BoxShadow(
-//                      color: Color(0xffe5e7f1),
-//                      offset: Offset(15.0, 15),
-//                      blurRadius: 16),
-                    ]),
-                padding: EdgeInsets.only(top: 8.0, left: 8.0),
+                  color: Theme.of(context).cardColor,
+                  border: Border(
+                    bottom: BorderSide(
+                        color: Theme.of(context)
+                            .buttonTheme
+                            .colorScheme!
+                            .onSurface
+                            .withOpacity(0.12),
+                        width: 1.0),
+                    right: BorderSide(
+                        color: Theme.of(context)
+                            .buttonTheme
+                            .colorScheme!
+                            .onSurface
+                            .withOpacity(0.12),
+                        width: 1.0),
+                    left: BorderSide(
+                        color: Theme.of(context)
+                            .buttonTheme
+                            .colorScheme!
+                            .onSurface
+                            .withOpacity(0.12),
+                        width: 1.0),
+                  ),
+                ),
+                padding: const EdgeInsets.only(top: 8.0, left: 8.0),
                 height: tabsBloc.featureExtraCellHeight(feature) +
                     (amSelected ? selectedRowHeight : unselectedRowHeight) +
                     0.5,
@@ -94,14 +89,14 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                           amSelected
                                               ? Icons.keyboard_arrow_down
                                               : Icons.keyboard_arrow_right,
-                                          size: 24.0,
+                                          size: 18.0,
                                         ),
                                         Expanded(
                                           child: Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              AutoSizeText('${feature.name}',
+                                              AutoSizeText(feature.name,
                                                   overflow:
                                                       TextOverflow.ellipsis,
                                                   maxLines: 3,
@@ -112,14 +107,17 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                                       .copyWith(
                                                           fontWeight:
                                                               FontWeight.bold)),
-                                              SizedBox(
+                                              const SizedBox(
                                                 height: 4.0,
                                               ),
                                               Text(
-                                                  '${feature.valueType.toString().split('.').last}',
+                                                  feature.valueType
+                                                      .toString()
+                                                      .split('.')
+                                                      .last,
                                                   overflow:
                                                       TextOverflow.ellipsis,
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                       fontFamily: 'Source',
                                                       fontSize: 10,
                                                       letterSpacing: 1.0)),
@@ -136,7 +134,7 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                       shape: CircleBorder(),
                                       child: PopupMenuButton(
                                         tooltip: 'Show more',
-                                        icon: Icon(Icons.more_vert),
+                                        icon: const Icon(Icons.more_vert),
                                         onSelected: (value) {
                                           if (value == 'edit') {
                                             tabsBloc.mrClient.addOverlay(
@@ -232,7 +230,7 @@ class _FeatureListenForUpdatedFeatureValues extends StatelessWidget {
           );
         }
 
-        return SizedBox.shrink();
+        return const SizedBox.shrink();
       },
     );
   }

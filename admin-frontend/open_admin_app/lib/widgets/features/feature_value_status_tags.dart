@@ -48,7 +48,7 @@ Widget inactiveTag(Feature feature, TextStyle textStyle) {
 
 Widget activeTag(Feature feature, FeatureValue fv, TextStyle textStyle) {
   return FHTagWidget(
-      text: '${condenseJson(_getFeatureValue(fv))}',
+      text: condenseJson(_getFeatureValue(fv)),
       state: TagStatus.active,
       style: textStyle);
 }

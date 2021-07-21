@@ -7,7 +7,7 @@ abstract class AbstractWebInterface {
 
   void authenticateViaProvider(String redirectUrl);
 
-  static final bearerToken = 'bearer-token';
+  static var bearerToken = 'bearer-token';
 
   String? getStoredAuthToken();
 

@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/router.dart';
 import 'package:open_admin_app/widgets/apps/group_permissions_widget.dart';
@@ -11,9 +14,6 @@ import 'package:open_admin_app/widgets/common/fh_card.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/common/link_to_applications_page.dart';
 import 'package:open_admin_app/widgets/environments/env_list_widget.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:mrapi/api.dart';
 
 class ManageAppRoute extends StatefulWidget {
   @override
@@ -35,27 +35,29 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
                 builder: (context, snapshot) {
                   if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                     return Container(
-                        padding: EdgeInsets.only(left: 8, bottom: 8),
+                        padding: const EdgeInsets.only(left: 8, bottom: 8),
                         child: ApplicationDropDown(
                             applications: snapshot.data!, bloc: bloc));
                   } else {
                     bloc.setApplicationId(bloc.mrClient.currentAid);
                     return Container(
-                        padding: EdgeInsets.only(left: 8, top: 15),
+                        padding: const EdgeInsets.only(left: 8, top: 15),
                         child: Row(
                           children: [
                             Text('There are no applications in this portfolio',
                                 style: Theme.of(context).textTheme.caption),
-                            LinkToApplicationsPage(),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: LinkToApplicationsPage(),
+                            ),
                           ],
                         ));
                   }
                 }),
             Container(
-              padding: EdgeInsets.only(bottom: 10),
-              child: FHHeader(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: const FHHeader(
                 title: 'Application settings',
-                children: <Widget>[],
               ),
             ),
             FHPageDivider(),
@@ -102,18 +104,18 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
 
   void tabChangeListener() {
     // tab has changed, notify external route
-    final rc = RouteChange('/manage-app');
+    final rc = RouteChange('/app-settings');
     if (_controller?.index == 0) {
       rc.params = {
-        'tab-name': ['environments']
+        'tab': ['environments']
       };
     } else if (_controller?.index == 1) {
       rc.params = {
-        'tab-name': ['group-permissions']
+        'tab': ['group-permissions']
       };
     } else if (_controller?.index == 2) {
       rc.params = {
-        'tab-name': ['service-accounts']
+        'tab': ['service-accounts']
       };
     }
     bloc?.notifyExternalRouteChange(rc);
@@ -142,7 +144,7 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
           labelStyle: Theme.of(context).textTheme.bodyText1,
           labelColor: Theme.of(context).textTheme.subtitle2!.color,
           unselectedLabelColor: Theme.of(context).textTheme.bodyText2!.color,
-          tabs: [
+          tabs: const [
             Tab(text: 'Environments'),
             Tab(text: 'Group permissions'),
             Tab(text: 'Service account permissions'),
@@ -176,7 +178,7 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
               // Service accounts
               SingleChildScrollView(
                 child: Column(
-                  children: <Widget>[
+                  children: const <Widget>[
                     ServiceAccountPermissionsWidget(),
                   ],
                 ),
@@ -201,8 +203,8 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
     _routeChange = BlocProvider.of<ManagementRepositoryClientBloc>(context)
         .routeChangedStream
         .listen((routeChange) {
-      if (routeChange?.route == '/manage-app') {
-        switch (routeChange!.params['tab-name']![0]) {
+      if (routeChange?.route == '/app-settings') {
+        switch (routeChange!.params['tab']![0]) {
           case 'environments':
             _controller!.animateTo(0);
             break;

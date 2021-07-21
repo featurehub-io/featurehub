@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/common/FHFlatButton.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
@@ -5,9 +8,6 @@ import 'package:open_admin_app/widgets/common/fh_footer_button_bar.dart';
 import 'package:open_admin_app/widgets/common/fh_json_editor.dart';
 import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/json/json_viewer_field.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:mrapi/api.dart';
 
 class EditJsonValueContainer extends StatefulWidget {
   const EditJsonValueContainer({
@@ -44,10 +44,13 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
   Widget build(BuildContext context) {
     BoxDecoration myBoxDecoration() {
       return BoxDecoration(
-        border: Border.all(width: 1.0, color: Theme.of(context).buttonColor,),
-        borderRadius: BorderRadius.all(
-            Radius.circular(6.0), //         <--- border radius here
-            ),
+        border: Border.all(
+          width: 1.0,
+          color: Theme.of(context).buttonColor,
+        ),
+        borderRadius: const BorderRadius.all(
+          Radius.circular(6.0), //         <--- border radius here
+        ),
       );
     }
 
@@ -57,7 +60,7 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
       child: InkWell(
         canRequestFocus: false,
         mouseCursor: SystemMouseCursors.click,
-        customBorder: RoundedRectangleBorder(
+        customBorder: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(6.0)),
         ),
         hoverColor: Colors.black12,

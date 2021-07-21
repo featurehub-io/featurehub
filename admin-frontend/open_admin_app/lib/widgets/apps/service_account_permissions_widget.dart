@@ -1,17 +1,16 @@
 import 'dart:ui';
 
-import 'package:open_admin_app/api/client_api.dart';
-import 'package:open_admin_app/widgets/common/FHFlatButton.dart';
-import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
-import 'package:open_admin_app/widgets/common/fh_footer_button_bar.dart';
-import 'package:open_admin_app/widgets/common/fh_info_card.dart';
-import 'package:open_admin_app/widgets/common/fh_link.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:logging/logging.dart';
 import 'package:mrapi/api.dart';
-
+import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/widgets/common/FHFlatButton.dart';
+import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
+import 'package:open_admin_app/widgets/common/fh_footer_button_bar.dart';
+import 'package:open_admin_app/widgets/common/fh_info_card.dart';
+import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
 import 'manage_app_bloc.dart';
 
 final _log = Logger('ServiceAccountPermissionsWidget');
@@ -53,17 +52,23 @@ class _ServiceAccountPermissionState
               mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
                 Container(
-                    padding: EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(20),
                     child: Column(
                       children: <Widget>[
                         Text(
-                            "There are no 'service accounts' in the '${bloc.portfolio!.name}' portfolio."),
+                            'There are no service accounts in the "${bloc.portfolio!.name}" portfolio.'),
                         Container(
-                          padding: EdgeInsets.only(top: 20, bottom: 20),
-                          child: FHLinkWidget(
-                              text:
-                                  'Manage service accounts for this portfolio?',
-                              href: '/manage-service-accounts'),
+                          padding: const EdgeInsets.only(top: 20, bottom: 20),
+                          child: FHUnderlineButton(
+                              title: 'Go to service accounts settings', onPressed: () => {
+                            ManagementRepositoryClientBloc
+                                .router
+                                .navigateTo(
+                              context,
+                              '/service-accounts',
+                            )
+                          },
+                          ),
                         )
                       ],
                     )),
@@ -74,7 +79,7 @@ class _ServiceAccountPermissionState
           return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                SizedBox(height: 16.0),
+                const SizedBox(height: 16.0),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -88,8 +93,8 @@ class _ServiceAccountPermissionState
                         serviceAccountDropdown(snapshot.data!, bloc),
                       ],
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 16.0),
+                    const Padding(
+                      padding: EdgeInsets.only(left: 16.0),
                       child: FHInfoCardWidget(
                           message:
                               '''The 'Lock/Unlock' and 'Change value' permissions
@@ -108,18 +113,18 @@ with only 'Read' permission for service accounts.'''),
   Widget serviceAccountDropdown(
       List<ServiceAccount> serviceAccounts, ManageAppBloc bloc) {
     return Container(
-      constraints: BoxConstraints(maxWidth: 250),
+      constraints: const BoxConstraints(maxWidth: 250),
       child: StreamBuilder<String?>(
           stream: bloc.currentServiceAccountIdStream,
           builder: (context, snapshot) {
             return InkWell(
               mouseCursor: SystemMouseCursors.click,
               child: DropdownButton(
-                icon: Padding(
+                icon: const Padding(
                   padding: EdgeInsets.only(left: 8.0),
                   child: Icon(
                     Icons.keyboard_arrow_down,
-                    size: 24,
+                    size: 18,
                   ),
                 ),
                 isExpanded: true,
@@ -133,7 +138,7 @@ with only 'Read' permission for service accounts.'''),
                         overflow: TextOverflow.ellipsis,
                       ));
                 }).toList(),
-                hint: Text(
+                hint: const Text(
                   'Select service account',
                   textAlign: TextAlign.end,
                 ),
@@ -192,8 +197,8 @@ class _ServiceAccountPermissionDetailState
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
                       Container(
-                          padding: EdgeInsets.all(20),
-                          child: Text(
+                          padding: const EdgeInsets.all(20),
+                          child: const Text(
                               "You need to first create some 'Environments' for this application.")),
                     ],
                   );
@@ -216,7 +221,7 @@ class _ServiceAccountPermissionDetailState
                                   color: Theme.of(context).dividerColor))),
                       children: [
                         Container(
-                            padding: EdgeInsets.fromLTRB(5, 15, 0, 0),
+                            padding: const EdgeInsets.fromLTRB(5, 15, 0, 0),
                             child: Text(env.name)),
                         getPermissionCheckbox(env.id!, RoleType.READ),
                         getPermissionCheckbox(env.id!, RoleType.LOCK),
@@ -231,7 +236,7 @@ class _ServiceAccountPermissionDetailState
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     Container(
-                        padding: EdgeInsets.fromLTRB(0, 24, 0, 16),
+                        padding: const EdgeInsets.fromLTRB(0, 24, 0, 16),
                         child: Center(
                           child: Text(
                               'Set the service account access to features for each environment',
@@ -281,8 +286,8 @@ class _ServiceAccountPermissionDetailState
                 bottom: BorderSide(color: Theme.of(context).dividerColor))),
         children: [
           Container(
-            padding: EdgeInsets.fromLTRB(5, 0, 0, 15),
-            child: Text(
+            padding: const EdgeInsets.fromLTRB(5, 0, 0, 15),
+            child: const Text(
               '',
             ),
           ),
@@ -331,7 +336,8 @@ class _ServiceAccountPermissionDetailState
   Map<String, ServiceAccountPermission> createMap(
       List<Environment> environments, ServiceAccount serviceAccount) {
     final retMap = <String, ServiceAccountPermission>{};
-    environments.forEach((environment) {
+
+    for (var environment in environments) {
       final sap = serviceAccount.permissions
           .firstWhere((item) => item.environmentId == environment.id,
               orElse: () => ServiceAccountPermission(
@@ -340,7 +346,8 @@ class _ServiceAccountPermissionDetailState
                   ));
 
       retMap[environment.id!] = sap;
-    });
+    }
+
     return retMap;
   }
 }

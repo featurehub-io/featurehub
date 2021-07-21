@@ -1,17 +1,23 @@
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/router.dart';
 import 'package:open_admin_app/routes/apps_route.dart';
 import 'package:open_admin_app/routes/create_user_route.dart';
 import 'package:open_admin_app/routes/edit_user_route.dart';
 import 'package:open_admin_app/routes/features_overview_route.dart';
-import 'package:open_admin_app/routes/landing_route.dart';
+import 'package:open_admin_app/routes/home_route.dart';
+import 'package:open_admin_app/routes/loading_route.dart';
 import 'package:open_admin_app/routes/manage_app_route.dart';
 import 'package:open_admin_app/routes/manage_group_route.dart';
 import 'package:open_admin_app/routes/manage_portfolios_route.dart';
 import 'package:open_admin_app/routes/manage_service_accounts_route.dart';
 import 'package:open_admin_app/routes/manage_users_route.dart';
+import 'package:open_admin_app/routes/not_found_route.dart';
 import 'package:open_admin_app/routes/register_url_route.dart';
 import 'package:open_admin_app/routes/service_env_route.dart';
+import 'package:open_admin_app/routes/setup_route.dart';
+import 'package:open_admin_app/routes/signin_route.dart';
 import 'package:open_admin_app/widgets/apps/apps_bloc.dart';
 import 'package:open_admin_app/widgets/apps/manage_app_bloc.dart';
 import 'package:open_admin_app/widgets/apps/manage_service_accounts_bloc.dart';
@@ -25,8 +31,6 @@ import 'package:open_admin_app/widgets/user/create/create_user_bloc.dart';
 import 'package:open_admin_app/widgets/user/edit/edit_user_bloc.dart';
 import 'package:open_admin_app/widgets/user/list/list_users_bloc.dart';
 import 'package:open_admin_app/widgets/user/register/register_url_bloc.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
 
 Handler handleRouteChangeRequest(builder) {
   return Handler(
@@ -37,22 +41,39 @@ Handler handleRouteChangeRequest(builder) {
 }
 
 class RouteCreator {
+  Widget loading(mrBloc, {params}) {
+    return const LoadingRoute();
+  }
+
+  Widget notFound(mrBloc, {params}) {
+    return const NotFoundRoute();
+  }
+
   Widget root(mrBloc, {params}) {
-    return LandingRoute(title: 'FeatureHub');
+    return const HomeRoute(title: 'FeatureHub');
+  }
+
+  Widget login(mrBloc, {params}) {
+    return const SigninWrapperWidget();
+  }
+
+  Widget setup(mrBloc, {params}) {
+    return const SetupWrapperWidget();
+    // return LandingRoute(title: 'FeatureHub');
   }
 
   Widget portfolios(mrBloc, {params}) {
     return BlocProvider<PortfolioBloc>(
         creator: (_context, _bag) =>
             PortfolioBloc(params['search']?.elementAt(0), mrBloc),
-        child: PortfolioRoute());
+        child: const PortfolioRoute());
   }
 
   Widget users(mrBloc, {params}) {
     return BlocProvider<ListUsersBloc>(
         creator: (_context, _bag) =>
             ListUsersBloc(params['search']?.elementAt(0), mrBloc),
-        child: ManageUsersRoute());
+        child: const ManageUsersRoute());
   }
 
   Widget group(mrBloc, {params}) {
@@ -63,7 +84,7 @@ class RouteCreator {
   }
 
   Widget forgotPassword(mrBloc, {params}) {
-    return SimpleWidget(
+    return const SimpleWidget(
       message: 'forgot-password, contact you system administrator.',
     );
   }
@@ -83,7 +104,7 @@ class RouteCreator {
         child: BlocProvider<CreateUserBloc>(
             creator: (_context, _bag) =>
                 CreateUserBloc(mrBloc, selectGroupBloc: select),
-            child: CreateUserRoute(title: 'Create User')));
+            child: const CreateUserRoute(title: 'Create User')));
   }
 
   Widget manageUser(mrBloc, {params}) {
