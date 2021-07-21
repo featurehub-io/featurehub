@@ -70,9 +70,6 @@ class Routes {
         permissionType: PermissionType.login);
     // main app routes
     router.define('/', handler: handleRouteChangeRequest(routeCreator.root));
-    router.define('/loading',
-        handler: handleRouteChangeRequest(routeCreator.loading),
-        permissionType: PermissionType.any);
     router.define('', handler: handleRouteChangeRequest(routeCreator.root));
     router.define('/applications',
         handler: handleRouteChangeRequest(routeCreator.apps));
