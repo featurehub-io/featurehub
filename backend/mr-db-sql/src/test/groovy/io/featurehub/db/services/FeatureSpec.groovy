@@ -419,4 +419,29 @@ class FeatureSpec extends BaseSpec {
       stored.rolloutStrategies == null
   }
 
+  def "a plain user in a group that has lock/unlock/read but not change is able to lock and unlock"() {
+    given: "i have an environment"
+      def env1 = environmentSqlApi.create(new Environment().name("lock-unlock-env"), new Application().id(app2Id), superPerson)
+    and: "i have a string feature (which will automatically create a feature value in each environment) - which has no feature value created"
+      def key = 'FEATURE_LOCK_UNLOCK_NOT_CHANGE'
+      appApi.createApplicationFeature(app2Id, new Feature().key(key).valueType(FeatureValueType.STRING), superPerson)
+    and: "i have a person"
+      def person = personSqlApi.createPerson("lockunlock@mailinator.com", "Locky McLockface", "password123", superuser, Opts.empty())
+    and: "a group in the current portfolio"
+      def group = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("lockunlock group"), superPerson)
+    and: "i add permissions and members to the group"
+      group.environmentRoles([new EnvironmentGroupRole().environmentId(env1.id).roles([RoleType.LOCK, RoleType.UNLOCK, RoleType.READ])])
+      group.members([person])
+      group = groupSqlApi.updateGroup(group.id, group, true, false, true, Opts.empty())
+    when: "i try and unlock the feature with the person, it will let me"
+      def fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
+      if (fv == null) {
+        fv = new FeatureValue().environmentId(env1.id).key(key)
+      }
+      featureSqlApi.updateAllFeatureValuesByApplicationForKey(app2Id, key, [fv.locked(false).valueString("sausage")], person, false)
+      fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
+    then:
+      !fv.locked
+      fv.valueString == null
+  }
 }

@@ -35,7 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import jakarta.inject.Inject;
-import jakarta.ws.rs.BadRequestException;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -101,7 +101,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
     if (dbFeatureValue != null) {
       // this is an update not a create, environment + app-feature key exists
       return onlyUpdateFeatureValueForEnvironment(featureValue, person, dbFeatureValue);
-    } else if (person.hasChangeValueRole()) {
+    } else if (person.hasChangeValueRole() || person.hasLockRole() || person.hasUnlockRole()) {
       return onlyCreateFeatureValueForEnvironment(eId, key, featureValue, person);
     } else {
       log.info("roles for person are {} and are not enough for environment {} and key {}", person.toString(), eId, key);
