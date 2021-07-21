@@ -4,6 +4,7 @@ import io.featurehub.mr.model.ApplicationRoleType;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.RoleType;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -59,8 +60,8 @@ public class PersonFeaturePermission {
 
   public static final class Builder {
     private Person person;
-    private Set<RoleType> roles;
-    private Set<ApplicationRoleType> appRoles;
+    private Set<RoleType> roles = Collections.emptySet();
+    private Set<ApplicationRoleType> appRoles = Collections.emptySet();
 
     public Builder() {
     }
