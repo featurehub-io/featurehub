@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>io.featurehub.mr</groupId>
+  <artifactId>admin-csharp</artifactId>
+  <version>1.1-SNAPSHOT</version>
+  <name>admin-csharp</name>
+
+  <description>
+    Management Registry API CSharp Client API
+  </description>
+
+  <url>https://featurehub.io</url>
+  <developers>
+    <developer>
+      <email>irina@featurehub.io</email>
+      <id>isouthwell</id>
+      <name>Irina Southwell</name>
+      <organization>Anyways Labs Ltd</organization>
+    </developer>
+
+    <developer>
+      <email>richard@featurehub.io</email>
+      <id>rvowles</id>
+      <name>Richard Vowles</name>
+      <organization>Anyways Labs Ltd</organization>
+    </developer>
+  </developers>
+
+  <properties>
+    <mr-api-version>1.1-SNAPSHOT</mr-api-version>
+  </properties>
+
+  <licenses>
+    <license>
+      <name>Apache 2 with Commons Clause</name>
+      <url>https://github.com/featurehub-io/featurehub/blob/master/LICENSE.txt</url>
+    </license>
+  </licenses>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.featurehub.mr</groupId>
+      <artifactId>mr-api</artifactId>
+      <version>${mr-api-version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- pull the defined API and unzip it -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>extract MR API</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>io.featurehub.mr</groupId>
+                  <artifactId>mr-api</artifactId>
+                  <version>${mr-api-version}</version>
+                  <classifier>api</classifier>
+                  <type>yaml</type>
+                  <outputDirectory>${project.basedir}/target</outputDirectory>
+                  <destFileName>mr-api.yaml</destFileName>
+                </artifactItem>
+              </artifactItems>
+              <overWriteReleases>true</overWriteReleases>
+              <overWriteSnapshots>true</overWriteSnapshots>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- generate code from it, we need client impl and server -->
+      <plugin>
+        <artifactId>maven-clean-plugin</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>src/IO.FeatureHub.MR</directory>
+              <includes>
+                <include>**/**</include>
+              </includes>
+            </fileset>
+            <fileset>
+              <directory>docs</directory>
+              <includes>
+                <include>**/**</include>
+              </includes>
+            </fileset>
+            <fileset>
+              <directory>.openapi-generator</directory>
+              <includes>
+                <include>**/**</include>
+              </includes>
+            </fileset>
+          </filesets>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.openapitools</groupId>
+        <artifactId>openapi-generator-maven-plugin</artifactId>
+        <version>5.2.0</version>
+        <executions>
+          <execution>
+            <id>featurehub-admin-api</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <phase>generate-sources</phase>
+            <configuration>
+              <output>${project.basedir}</output>
+              <inputSpec>${project.basedir}/target/mr-api.yaml</inputSpec>
+              <generatorName>csharp-netcore</generatorName>
+              <generateApiDocumentation>false</generateApiDocumentation>
+              <generateModelDocumentation>false</generateModelDocumentation>
+              <generateApiTests>false</generateApiTests>
+              <generateModelTests>false</generateModelTests>
+              <generateSupportingFiles>true</generateSupportingFiles>
+              <enablePostProcessFile>true</enablePostProcessFile>
+              <additionalProperties>
+                <additionalProperty>
+                  packageName=IO.FeatureHub.MR
+                </additionalProperty>
+                <additionalProperty>optionalProjectFile=true</additionalProperty>
+                <additionalProperty>optionalAssemblyInfo=true</additionalProperty>
+                <additionalProperty>validatable=false</additionalProperty>
+              </additionalProperties>
+              <typeMappings>
+<!--                <typeMapping>AnyType=object</typeMapping>-->
+<!--                <typeMapping>ModelObject=object</typeMapping>-->
+                <typeMapping>Environment=MREnvironment</typeMapping>
+              </typeMappings>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <artifactId>exec-maven-plugin</artifactId>
+        <groupId>org.codehaus.mojo</groupId>
+        <executions>
+          <execution>
+            <id>generate-sources</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>${project.basedir}/hack-api.sh</executable>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+
+      <plugin>
+        <groupId>io.repaint.maven</groupId>
+        <artifactId>tiles-maven-plugin</artifactId>
+        <version>2.22</version>
+        <extensions>true</extensions>
+        <configuration>
+          <filtering>false</filtering>
+          <tiles>
+            <!-- we use java8 for people who need it -->
+            <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
+          </tiles>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+
+</project>

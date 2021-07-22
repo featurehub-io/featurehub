@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>io.featurehub.mr</groupId>
+  <artifactId>mr-api-java-client</artifactId>
+  <version>1.1-SNAPSHOT</version>
+  <name>mr-api-java-client</name>
+
+  <description>
+    Management Registry API Java Client API
+  </description>
+
+  <url>https://featurehub.io</url>
+  <developers>
+    <developer>
+      <email>irina@featurehub.io</email>
+      <id>isouthwell</id>
+      <name>Irina Southwell</name>
+      <organization>Anyways Labs Ltd</organization>
+    </developer>
+
+    <developer>
+      <email>richard@featurehub.io</email>
+      <id>rvowles</id>
+      <name>Richard Vowles</name>
+      <organization>Anyways Labs Ltd</organization>
+    </developer>
+  </developers>
+
+  <properties>
+    <mr-api-version>1.1-SNAPSHOT</mr-api-version>
+  </properties>
+
+  <licenses>
+    <license>
+      <name>Apache 2 with Commons Clause</name>
+      <url>https://github.com/featurehub-io/featurehub/blob/master/LICENSE.txt</url>
+    </license>
+  </licenses>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.featurehub.mr</groupId>
+      <artifactId>mr-api</artifactId>
+      <version>${mr-api-version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- pull the defined API and unzip it -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>extract MR API</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>io.featurehub.mr</groupId>
+                  <artifactId>mr-api</artifactId>
+                  <version>${mr-api-version}</version>
+                  <classifier>api</classifier>
+                  <type>yaml</type>
+                  <outputDirectory>${project.basedir}/target</outputDirectory>
+                  <destFileName>mr-api.yaml</destFileName>
+                </artifactItem>
+              </artifactItems>
+              <overWriteReleases>true</overWriteReleases>
+              <overWriteSnapshots>true</overWriteSnapshots>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- generate code from it, we need client impl and server -->
+      <plugin>
+        <groupId>org.openapitools</groupId>
+        <artifactId>openapi-generator-maven-plugin</artifactId>
+        <version>5.1.0</version>
+        <dependencies>
+          <dependency>
+            <groupId>com.bluetrainsoftware.maven</groupId>
+            <artifactId>openapi-tsaxios-generator</artifactId>
+            <version>1.1</version>
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
+            <id>featurehub-api</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+            <phase>generate-sources</phase>
+            <configuration>
+              <generatorName>typescript-axios-enhanced</generatorName>
+              <generateApis>true</generateApis>
+              <generateModelTests>false</generateModelTests>
+              <generateApiDocumentation>true</generateApiDocumentation>
+              <generateApiTests>false</generateApiTests>
+              <generateModelDocumentation>true</generateModelDocumentation>
+              <generateSupportingFiles>true</generateSupportingFiles>
+              <inputSpec>${project.basedir}/target/mr-api.yaml</inputSpec>
+              <modelPackage>models</modelPackage>
+              <apiPackage>api</apiPackage>
+              <output>app/admin-sdk</output>
+              <additionalProperties>
+                <additionalProperty>useEnhancedSerializer</additionalProperty>
+                <additionalProperty>exposeTransformers</additionalProperty>
+                <additionalProperty>withSeparateModelsAndApi=true</additionalProperty>
+              </additionalProperties>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- this attaches it as an artifact for publishing -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>add-generated-source</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${project.build.directory}/generated-sources/api/src/gen</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-clean-plugin</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>app/models</directory>
+              <includes>
+                <include>**/*</include>
+              </includes>
+              <followSymlinks>false</followSymlinks>
+            </fileset>
+            <fileset>
+              <directory>dist</directory>
+              <includes>
+                <include>**/*</include>
+              </includes>
+              <followSymlinks>false</followSymlinks>
+            </fileset>
+          </filesets>
+        </configuration>
+      </plugin>
+
+
+      <plugin>
+        <groupId>io.repaint.maven</groupId>
+        <artifactId>tiles-maven-plugin</artifactId>
+        <version>2.23</version>
+        <extensions>true</extensions>
+        <configuration>
+          <filtering>false</filtering>
+          <tiles>
+            <!-- we use java8 for people who need it -->
+            <tile>io.featurehub.tiles:tile-java8:[1.1,2)</tile>
+          </tiles>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+
+</project>

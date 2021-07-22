@@ -38,69 +38,15 @@
   </licenses>
 
   <dependencies>
-  </dependencies>
 
-  <profiles>
-    <profile>
-      <id>docker-cloud-build</id>
-      <!-- otherwise don't active in tiles -->
-      <activation>
-        <property>
-          <name>docker-cloud-build</name>
-          <value>true</value>
-        </property>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>com.github.eirslett</groupId>
-            <artifactId>frontend-maven-plugin</artifactId>
-            <version>1.9.1</version>
-            <executions>
-              <execution>
-                <id>setup</id>
-                <phase>compile</phase>
-                <goals>
-                  <goal>install-node-and-npm</goal>
-                </goals>
-              </execution>
-              <execution>
-                <id>install-deps</id>
-                <phase>compile</phase>
-                <goals>
-                  <goal>npm</goal>
-                </goals>
-                <configuration>
-                  <arguments>install</arguments>
-                </configuration>
-              </execution>
-              <execution>
-                <id>compile-and-link</id>
-                <phase>compile</phase>
-                <goals>
-                  <goal>npm</goal>
-                </goals>
-                <configuration>
-                  <arguments>run compile</arguments>
-                </configuration>
-              </execution>
-            </executions>
-            <configuration>
-              <nodeVersion>v14.0.0</nodeVersion>
-              <installDirectory>../../node-js</installDirectory>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
+  </dependencies>
 
   <build>
     <plugins>
       <plugin>
         <groupId>io.repaint.maven</groupId>
         <artifactId>tiles-maven-plugin</artifactId>
-        <version>2.17</version>
+        <version>2.23</version>
         <extensions>true</extensions>
         <configuration>
           <filtering>false</filtering>
@@ -157,12 +103,12 @@
       <plugin>
         <groupId>org.openapitools</groupId>
         <artifactId>openapi-generator-maven-plugin</artifactId>
-        <version>5.0.0-SNAPSHOT</version>
+        <version>5.1.0</version>
         <dependencies>
           <dependency>
             <groupId>com.bluetrainsoftware.maven</groupId>
             <artifactId>openapi-tsaxios-generator</artifactId>
-            <version>1.1-SNAPSHOT</version>
+            <version>1.1</version>
           </dependency>
         </dependencies>
         <executions>
