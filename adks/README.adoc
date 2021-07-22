@@ -1,0 +1,22 @@
+= Admin SDKs
+
+The artifacts under this directory provide API for the Admin SDKs - the SDKS exclusively talk to the Management Repository,
+or Admin App. The Management front end application uses a similar SDK.
+
+They are purely generated from the OpenAPI documentation, so if the API formats don't suite your needs, there is 
+likely to be one that is closer in format to what you require.
+
+We have included these as examples, references (we will keep them up to date as the API changes), and they 
+are used for testing our Client SDKs and Examples.
+
+Because the code is generated, the generated code is not stored in this repository (unlike the Client SDKs). In
+each case the code can be generated using Maven, with `mvn clean package`. 
+
+== Admin SDKs Provided
+
+- Java 8 (OK-HTTP/GSON based)
+- Java 11 (pure Java + Jackson)
+- C Sharp
+- Typescript
+- Dart
+
