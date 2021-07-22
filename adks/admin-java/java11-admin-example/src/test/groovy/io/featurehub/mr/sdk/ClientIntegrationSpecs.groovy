@@ -12,7 +12,7 @@ class ClientIntegrationSpecs extends Specification {
   def "I can connect and list the existing features"() {
     given: "i have a connection"
       def api = new ApiClient()
-      api.setBasePath("http://localhost:8085")
+      api.updateBaseUri("http://localhost:8085")
     and: "i attempt to login 30 times because i need to wait for the docker image to become active and accept logins"
       def authApi = new AuthServiceApi(api)
       def loggedIn = false
@@ -20,7 +20,9 @@ class ClientIntegrationSpecs extends Specification {
       while (!loggedIn && count < 30) {
         try {
           def tp = authApi.login(new UserCredentials().email("test@mailinator.com").password("password123"))
-          api.setBearerToken(tp.accessToken)
+          api.setRequestInterceptor({ builder ->
+            builder.header('Authorization', "Bearer ${tp.accessToken}")
+          } )
           loggedIn = true
           count = 0
         } catch (Exception ignored) {

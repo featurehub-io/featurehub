@@ -41,26 +41,6 @@
 
   <dependencies>
     <!-- if you don't want our versions of either of these, just use an excludes -->
-<!--    <dependency>-->
-<!--      <groupId>com.squareup.okhttp3</groupId>-->
-<!--      <artifactId>okhttp</artifactId>-->
-<!--      <version>4.9.1</version>-->
-<!--    </dependency>-->
-<!--    <dependency>-->
-<!--      <groupId>com.squareup.okhttp3</groupId>-->
-<!--      <artifactId>logging-interceptor</artifactId>-->
-<!--      <version>4.9.1</version>-->
-<!--    </dependency>-->
-<!--    <dependency>-->
-<!--      <groupId>io.gsonfire</groupId>-->
-<!--      <artifactId>gson-fire</artifactId>-->
-<!--      <version>1.8.5</version>-->
-<!--    </dependency>-->
-<!--    <dependency>-->
-<!--      <groupId>com.google.code.gson</groupId>-->
-<!--      <artifactId>gson</artifactId>-->
-<!--      <version>2.8.7</version>-->
-<!--    </dependency>-->
     <dependency>
       <groupId>org.openapitools</groupId>
       <artifactId>jackson-databind-nullable</artifactId>
@@ -142,6 +122,12 @@
               <generatorName>java</generatorName>
               <library>native</library>
               <enablePostProcessFile>true</enablePostProcessFile>
+              <generateApiTests>false</generateApiTests>
+              <generateModelTests>false</generateModelTests>
+              <generateModelDocumentation>false</generateModelDocumentation>
+              <generateApiDocumentation>false</generateApiDocumentation>
+              <addTestCompileSourceRoot>false</addTestCompileSourceRoot>
+              <addCompileSourceRoot>false</addCompileSourceRoot>
               <additionalProperties>
                 <additionalProperty>dateLibrary=java8</additionalProperty>
                 <additionalProperty>disallowAdditionalPropertiesIfNotPresent=false</additionalProperty>
@@ -164,7 +150,7 @@
             </goals>
             <configuration>
               <sources>
-                <source>${project.build.directory}/generated-sources/api/src/gen</source>
+                <source>${project.build.directory}/generated-sources/api/src/main/java</source>
               </sources>
             </configuration>
           </execution>
