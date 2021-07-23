@@ -1,1 +1,3 @@
-This is the real readme
+# DOTNET Admin SDK
+
+

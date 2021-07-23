@@ -5,7 +5,6 @@ ADD . /src
 ADD AdminSDKTestProject /src
 RUN dotnet restore IO.FeatureHub.MR.sln
 RUN dotnet publish IO.FeatureHub.MR.sln -c Release -o out
-RUN dotnet test IO.FeatureHub.MR.sln
 RUN dotnet build IO.FeatureHub.MR.sln /p:PackageVersion=$Version -c Release --no-restore && \
      dotnet pack IO.FeatureHub.MR.sln /p:PackageVersion=$Version -c Release --no-restore --no-build -o /sln/artifacts
 ENTRYPOINT ["dotnet", "nuget", "push", "/sln/artifacts/*.nupkg"]
