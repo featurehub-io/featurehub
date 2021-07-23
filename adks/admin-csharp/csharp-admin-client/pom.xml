@@ -163,7 +163,72 @@
         </executions>
       </plugin>
 
+      <!-- end of generation -->
 
+      <!-- start of integration tests -->
+      <plugin>
+        <artifactId>exec-maven-plugin</artifactId>
+        <groupId>org.codehaus.mojo</groupId>
+        <executions>
+          <execution>
+            <id>docker-start-sdk-server</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>docker</executable>
+              <arguments>
+                <argument>run</argument>
+                <argument>--rm</argument>
+                <argument>-d</argument>
+                <argument>--network</argument>
+                <argument>host</argument>
+                <argument>--name</argument>
+                <argument>party-test</argument>
+                <argument>-p</argument>
+                <argument>8085:8085</argument>
+                <argument>featurehub/party-sdk:${party-sdk-version}</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>docker-build-and-test</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>docker</executable>
+              <arguments>
+                <argument>build</argument>
+                <argument>--build-arg</argument>
+                <argument>Version=${project.version}</argument>
+                <argument>--network</argument>
+                <argument>host</argument>
+                <argument>-f</argument>
+                <argument>Dockerfile-integration-test</argument>
+                <argument>${project.basedir}</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>docker-stop</id>
+            <!-- this has to be after the failsafe but still in integration test -->
+            <phase>integration-test</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>docker</executable>
+              <arguments>
+                <argument>stop</argument>
+                <argument>party-test</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>io.repaint.maven</groupId>
         <artifactId>tiles-maven-plugin</artifactId>

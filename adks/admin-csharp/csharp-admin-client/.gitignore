@@ -366,5 +366,4 @@ target
 *.iml
 git_push.sh
 appveyor.yml
-IO.FeatureHub.MR.sln
 
