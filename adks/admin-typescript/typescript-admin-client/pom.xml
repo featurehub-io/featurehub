@@ -3,9 +3,8 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.featurehub.mr</groupId>
-  <artifactId>mr-api-java-client</artifactId>
+  <artifactId>typescript-admin-client</artifactId>
   <version>1.1-SNAPSHOT</version>
-  <name>mr-api-java-client</name>
 
   <description>
     Management Registry API Java Client API

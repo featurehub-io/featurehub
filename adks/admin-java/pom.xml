@@ -35,8 +35,11 @@
 
   <modules>
     <module>java8-admin-client</module>
-    <module>java8-admin-example</module>
     <module>java11-admin-client</module>
-    <module>java11-admin-example</module>
   </modules>
+
+  <properties>
+    <gib.disable>true</gib.disable>
+  </properties>
+
 </project>

@@ -30,6 +30,8 @@
 
   <properties>
     <mr-api-version>1.1-SNAPSHOT</mr-api-version>
+    <party-sdk-version>1.3.4</party-sdk-version>
+    <jackson.version>2.12.4</jackson.version>
   </properties>
 
   <licenses>
@@ -41,6 +43,12 @@
 
   <dependencies>
     <!-- if you don't want our versions of either of these, just use an excludes -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>org.openapitools</groupId>
       <artifactId>jackson-databind-nullable</artifactId>
@@ -62,12 +70,45 @@
       <artifactId>jsr305</artifactId>
       <version>3.0.2</version>
     </dependency>
+
     <dependency>
       <groupId>io.featurehub.mr</groupId>
       <artifactId>mr-api</artifactId>
       <version>${mr-api-version}</version>
       <scope>provided</scope>
     </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>[${jackson.version}]</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+      <version>[${jackson.version}]</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.spockframework</groupId>
+      <artifactId>spock-core</artifactId>
+      <version>2.0-groovy-3.0</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.codehaus.groovy</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.groovy</groupId>
+      <artifactId>groovy-test</artifactId>
+      <version>3.0.8</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <build>
@@ -152,6 +193,66 @@
               <sources>
                 <source>${project.build.directory}/generated-sources/api/src/main/java</source>
               </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>3.0.0-M5</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <includes>
+            <include>**/*IntegrationSpecs.java</include>
+          </includes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>exec-maven-plugin</artifactId>
+        <groupId>org.codehaus.mojo</groupId>
+        <executions>
+          <execution>
+            <id>docker-start</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>docker</executable>
+              <arguments>
+                <argument>run</argument>
+                <argument>--rm</argument>
+                <argument>-d</argument>
+                <argument>--name</argument>
+                <argument>party-test</argument>
+                <argument>-p</argument>
+                <argument>8085:8085</argument>
+                <argument>featurehub/party-sdk:${party-sdk-version}</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>docker-stop</id>
+            <!-- this has to be after the failsafe but still in integration test -->
+            <phase>integration-test</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>docker</executable>
+              <arguments>
+                <argument>stop</argument>
+                <argument>party-test</argument>
+              </arguments>
             </configuration>
           </execution>
         </executions>
