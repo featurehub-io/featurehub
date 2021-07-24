@@ -48,8 +48,17 @@ public class AuthenticationSqlApi implements AuthenticationApi {
         .findOneOrEmpty()
         .map(
             p -> {
-              if (passwordSalter.validatePassword(password, p.getPassword())) {
+              if (passwordSalter.validatePassword(password, p.getPassword(), p.getPasswordAlgorithm())) {
                 updateLastAuthenticated(p);
+
+                // update the password algorithm for their password if it is "old" now we know their password
+                if (!p.getPasswordAlgorithm().equals(DbPerson.DEFAULT_PASSWORD_ALGORITHM)) {
+                  log.info("password: password for {} using old algorithm {}, replacing with {}", email,
+                    p.getPasswordAlgorithm(), DbPerson.DEFAULT_PASSWORD_ALGORITHM);
+                  p.setPassword(passwordSalter.saltAnyPassword(password, DbPerson.DEFAULT_PASSWORD_ALGORITHM));
+                  p.setPasswordAlgorithm(DbPerson.DEFAULT_PASSWORD_ALGORITHM);
+                  updateUser(p);
+                }
 
                 return convertUtils
                     .toPerson(p, Opts.opts(FillOpts.Groups, FillOpts.Acls))
@@ -85,7 +94,7 @@ public class AuthenticationSqlApi implements AuthenticationApi {
                 return null;
               }
 
-              String saltedPassword = passwordSalter.saltAnyPassword(password);
+              String saltedPassword = passwordSalter.saltAnyPassword(password, DbPerson.DEFAULT_PASSWORD_ALGORITHM);
 
               if (saltedPassword == null && password != null) {
                 return null;
@@ -93,6 +102,7 @@ public class AuthenticationSqlApi implements AuthenticationApi {
 
               person.setName(name);
               person.setPassword(saltedPassword);
+              person.setPasswordAlgorithm(DbPerson.DEFAULT_PASSWORD_ALGORITHM);
               person.setToken(null);
               person.setTokenExpiry(null);
               updateUser(person);
@@ -115,11 +125,12 @@ public class AuthenticationSqlApi implements AuthenticationApi {
 
       if (person != null && !person.getId().equals(whoChanged.getId())) {
         return passwordSalter
-            .saltPassword(password)
+            .saltPassword(password, DbPerson.DEFAULT_PASSWORD_ALGORITHM)
             .map(
                 saltedPassword -> {
                   person.setPassword(saltedPassword);
                   person.setPasswordRequiresReset(true);
+                  person.setPasswordAlgorithm(DbPerson.DEFAULT_PASSWORD_ALGORITHM);
                   person.setWhoChanged(whoChanged);
 
                   if (reactivate) {
@@ -153,10 +164,11 @@ public class AuthenticationSqlApi implements AuthenticationApi {
 
     if (person != null && person.isPasswordRequiresReset()) {
       return passwordSalter
-          .saltPassword(password)
+          .saltPassword(password, DbPerson.DEFAULT_PASSWORD_ALGORITHM)
           .map(
               saltedPassword -> {
                 person.setPassword(saltedPassword);
+                person.setPasswordAlgorithm(DbPerson.DEFAULT_PASSWORD_ALGORITHM);
                 person.setPasswordRequiresReset(false);
                 person.setWhoChanged(null);
 
@@ -180,12 +192,14 @@ public class AuthenticationSqlApi implements AuthenticationApi {
 
     if (person != null
         && person.getPassword() != null
-        && passwordSalter.validatePassword(oldPassword, person.getPassword())) {
+        && passwordSalter.validatePassword(
+            oldPassword, person.getPassword(), person.getPasswordAlgorithm())) {
       return passwordSalter
-          .saltPassword(newPassword)
+          .saltPassword(newPassword, DbPerson.DEFAULT_PASSWORD_ALGORITHM)
           .map(
               saltedPassword -> {
                 person.setPassword(saltedPassword);
+                person.setPasswordAlgorithm(DbPerson.DEFAULT_PASSWORD_ALGORITHM);
                 person.setPasswordRequiresReset(false);
                 person.setWhoChanged(null);
                 updateUser(person);
