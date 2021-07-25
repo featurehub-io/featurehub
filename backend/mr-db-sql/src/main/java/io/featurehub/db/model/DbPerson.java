@@ -1,5 +1,6 @@
 package io.featurehub.db.model;
 
+import io.ebean.annotation.DbDefault;
 import io.ebean.annotation.Index;
 import io.ebean.annotation.WhenCreated;
 import io.ebean.annotation.WhenModified;
@@ -27,6 +28,12 @@ public class DbPerson {
 
   @Version
   private long version;
+
+  public static final String DEFAULT_PASSWORD_ALGORITHM = "PBKDF2WithHmacSHA512";
+
+  @Column(name = "password_alg", length = 60, nullable = false)
+  @DbDefault("PBKDF2WithHmacSHA1")
+  private String passwordAlgorithm = DEFAULT_PASSWORD_ALGORITHM;
 
   public DbPerson() {}
 
@@ -72,6 +79,14 @@ public class DbPerson {
     joinColumns = @JoinColumn(name = "fk_person_id", referencedColumnName = "id"),
     inverseJoinColumns = @JoinColumn(name = "fk_group_id", referencedColumnName = "id"))
   private Set<DbGroup> groupsPersonIn;
+
+  public String getPasswordAlgorithm() {
+    return passwordAlgorithm;
+  }
+
+  public void setPasswordAlgorithm(String passwordAlgorithm) {
+    this.passwordAlgorithm = passwordAlgorithm;
+  }
 
   public long getVersion() {
     return version;
