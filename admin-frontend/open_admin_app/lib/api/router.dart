@@ -95,7 +95,6 @@ class FHRouter {
 
   FHRouter({required this.mrBloc, required this.notFoundHandler}) {
     permissionCheckHandler = _hasRoutePermissions;
-    print("set route perm handler");
   }
 
   void define(String route,
@@ -193,8 +192,6 @@ class FHRouter {
   bool canUseRoute(String routeName,
       {List<PermissionType> autoFailPermissions = const []}) {
     final rc = RouteChange(routeName);
-    print(
-        "canUseRoute $routeName super-admin ${mrBloc.userIsSuperAdmin} current portfolio admin ${mrBloc.userIsCurrentPortfolioAdmin} loggedin ${mrBloc.isLoggedIn}");
     return permissionCheckHandler!(rc, mrBloc.userIsSuperAdmin,
         mrBloc.userIsCurrentPortfolioAdmin, mrBloc.isLoggedIn,
         autoFailPermissions: autoFailPermissions);
