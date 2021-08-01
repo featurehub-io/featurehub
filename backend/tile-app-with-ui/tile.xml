@@ -110,6 +110,9 @@
               </from>
               <to>
                 <image>featurehub/${project.artifactId}:${build.version}</image>
+                <tags>
+                  <tag>featurehub/${project.artifactId}:latest</tag>
+                </tags>
               </to>
               <extraDirectories>
                 <paths>
