@@ -1,8 +1,6 @@
 package io.featurehub.db.model;
 
 import io.ebean.annotation.Index;
-import io.ebean.annotation.WhenCreated;
-import io.ebean.annotation.WhenModified;
 import io.featurehub.mr.model.FeatureValueType;
 
 import javax.persistence.CascadeType;
@@ -10,26 +8,17 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Version;
 import java.time.LocalDateTime;
 import java.util.Set;
-import java.util.UUID;
 
 @Index(unique = true, name = "idx_app_features", columnNames = {"fk_app_id", "feature_key"})
 @Entity
 @Table(name = "fh_app_feature")
-public class DbApplicationFeature {
-  @Id
-  private UUID id;
-
-  @Version
-  private long version;
-
+public class DbApplicationFeature extends DbVersionedBase {
   private DbApplicationFeature(Builder builder) {
     setParentApplication(builder.parentApplication);
     setKey(builder.key);
@@ -39,15 +28,6 @@ public class DbApplicationFeature {
     setLink(builder.link);
     setValueType(builder.valueType);
   }
-
-  public UUID getId() { return id; }
-
-  @WhenModified
-  @Column(name = "when_updated")
-  public LocalDateTime whenUpdated;
-  @WhenCreated
-  @Column(name = "when_created")
-  public LocalDateTime whenCreated;
 
   @ManyToOne(optional = false)
   @JoinColumn(name = "fk_app_id")
@@ -72,18 +52,6 @@ public class DbApplicationFeature {
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "fk_feature_id")
   private Set<DbFeatureValue> environmentFeatures;
-
-  public long getVersion() {
-    return version;
-  }
-
-  public void setVersion(long version) {
-    this.version = version;
-  }
-
-  public void setId(UUID id) {
-    this.id = id;
-  }
 
   public DbApplication getParentApplication() {
     return parentApplication;

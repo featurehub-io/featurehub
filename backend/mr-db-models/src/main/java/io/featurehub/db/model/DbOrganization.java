@@ -2,47 +2,30 @@ package io.featurehub.db.model;
 
 import io.ebean.annotation.ConstraintMode;
 import io.ebean.annotation.DbForeignKey;
-import io.ebean.annotation.WhenCreated;
-import io.ebean.annotation.WhenModified;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import javax.persistence.Version;
 import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
 
 @Entity
 @Table(name = "fh_organization")
-public class DbOrganization {
+public class DbOrganization extends DbVersionedBase {
 
   public DbOrganization() {}
 
-  @Id
-  private UUID id;
-
-  @Version
-  private long version;
-
   private DbOrganization(Builder builder) {
-    id = builder.id;
+    setId(builder.id);
     setName(builder.name);
     setNamedCache(builder.namedCache);
   }
-
-  @WhenModified
-  @Column(name = "when_updated")
-  private LocalDateTime whenUpdated;
-  @WhenCreated
-  @Column(name = "when_created")
-  private LocalDateTime whenCreated;
 
   @Column(name = "when_archived")
   private LocalDateTime whenArchived;
@@ -78,11 +61,6 @@ public class DbOrganization {
     this.namedCache = namedCache;
   }
 
-  public long getVersion() {
-    return version;
-  }
-
-
   public String getName() {
     return name;
   }
@@ -98,12 +76,6 @@ public class DbOrganization {
   public void setPortfolios(Set<DbPortfolio> portfolios) {
     this.portfolios = portfolios;
   }
-
-  public void setId(UUID id) {
-    this.id = id;
-  }
-
-  public UUID getId() { return id; }
 
   public LocalDateTime getWhenArchived() {
     return whenArchived;

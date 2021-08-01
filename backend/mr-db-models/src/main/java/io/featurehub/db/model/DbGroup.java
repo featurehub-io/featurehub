@@ -1,43 +1,24 @@
 package io.featurehub.db.model;
 
 import io.ebean.annotation.Index;
-import io.ebean.annotation.WhenCreated;
-import io.ebean.annotation.WhenModified;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Version;
 import java.time.LocalDateTime;
 import java.util.Set;
-import java.util.UUID;
 
 @Index(unique = true, name = "idx_group_names", columnNames = {"fk_portfolio_id", "group_name"})
 @Entity
 @Table(name = "fh_group")
-public class DbGroup {
-
-  @Id
-  private UUID id;
-
-  @WhenModified
-  @Column(name = "when_updated")
-  private LocalDateTime whenUpdated;
-  @WhenCreated
-  @Column(name = "when_created")
-  private LocalDateTime whenCreated;
-
+public class DbGroup extends DbVersionedBase {
   @Column(name = "when_archived")
   private LocalDateTime whenArchived;
-
-  @Version
-  private long version;
 
   @ManyToOne(optional = false)
   @JoinColumn(name = "fk_person_who_created")
@@ -138,20 +119,6 @@ public class DbGroup {
     this.adminGroup = adminGroup;
   }
 
-  public UUID getId() { return id; }
-
-  public LocalDateTime getWhenUpdated() {
-    return whenUpdated;
-  }
-
-  public LocalDateTime getWhenCreated() {
-    return whenCreated;
-  }
-
-  public long getVersion() {
-    return version;
-  }
-
   public LocalDateTime getWhenArchived() {
     return whenArchived;
   }
@@ -225,11 +192,11 @@ public class DbGroup {
   @Override
   public String toString() {
     return "DbGroup{" +
-      "id=" + id +
-      ", whenUpdated=" + whenUpdated +
-      ", whenCreated=" + whenCreated +
+      "id=" + getId() +
+      ", whenUpdated=" + getWhenUpdated() +
+      ", whenCreated=" + getWhenCreated() +
       ", whenArchived=" + whenArchived +
-      ", version=" + version +
+      ", version=" + getVersion() +
       ", whoCreated=" + whoCreated +
       ", owningPortfolio=" + owningPortfolio +
       ", adminGroup=" + adminGroup +

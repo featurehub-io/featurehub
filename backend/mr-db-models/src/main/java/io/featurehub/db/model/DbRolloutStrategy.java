@@ -2,50 +2,28 @@ package io.featurehub.db.model;
 
 import io.ebean.annotation.DbJson;
 import io.ebean.annotation.Index;
-import io.ebean.annotation.WhenCreated;
-import io.ebean.annotation.WhenModified;
 import io.featurehub.mr.model.RolloutStrategy;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Version;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 @Index(unique = true, name = "idx_app_strategies", columnNames = {"fk_app_id", "strategy_name"})
 @Entity
 @Table(name = "fh_app_strategy")
-public class DbRolloutStrategy {
-  @Id
-  private UUID id;
-
-  @Version
-  private long version;
-
+public class DbRolloutStrategy extends DbVersionedBase {
   private DbRolloutStrategy(Builder builder) {
     setApplication(builder.application);
     setName(builder.name);
     setStrategy(builder.strategy);
     setWhoChanged(builder.whoChanged);
   }
-
-  public UUID getId() {
-    return id;
-  }
-
-  @WhenModified
-  @Column(name = "when_updated")
-  public LocalDateTime whenUpdated;
-  @WhenCreated
-  @Column(name = "when_created")
-  public LocalDateTime whenCreated;
 
   @ManyToOne(optional = false)
   @JoinColumn(name = "fk_app_id")
@@ -98,18 +76,6 @@ public class DbRolloutStrategy {
 
   public void setWhenArchived(LocalDateTime whenArchived) {
     this.whenArchived = whenArchived;
-  }
-
-  public long getVersion() {
-    return version;
-  }
-
-  public LocalDateTime getWhenUpdated() {
-    return whenUpdated;
-  }
-
-  public LocalDateTime getWhenCreated() {
-    return whenCreated;
   }
 
   public RolloutStrategy getStrategy() {

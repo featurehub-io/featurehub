@@ -1,39 +1,20 @@
 package io.featurehub.db.model;
 
 import io.ebean.annotation.Index;
-import io.ebean.annotation.WhenCreated;
-import io.ebean.annotation.WhenModified;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Version;
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "fh_userstate")
 @Index(unique = true, name = "idx_user_state", columnNames = {"fk_person", "fk_portfolio_id", "fk_app_id", "fk_env_id"})
-public class DbUserState {
-  @Id
-  private UUID id;
-
-  @Version
-  private long version;
-
-  @WhenModified
-  @Column(name = "when_updated")
-  private LocalDateTime whenUpdated;
-  @WhenCreated
-  @Column(name = "when_created")
-  private LocalDateTime whenCreated;
-
+public class DbUserState extends DbVersionedBase {
   @ManyToOne(optional = false)
   @JoinColumn(name = "fk_person")
   @Column(name = "fk_person")
@@ -67,22 +48,6 @@ public class DbUserState {
     setEnvironment(builder.environment);
     setUserState(builder.userState);
     setData(builder.data);
-  }
-
-  public UUID getId() {
-    return id;
-  }
-
-  public long getVersion() {
-    return version;
-  }
-
-  public LocalDateTime getWhenUpdated() {
-    return whenUpdated;
-  }
-
-  public LocalDateTime getWhenCreated() {
-    return whenCreated;
   }
 
   public DbPerson getPerson() {
