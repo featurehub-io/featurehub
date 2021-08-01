@@ -1,31 +1,23 @@
 package io.featurehub.db.model;
 
 import io.ebean.annotation.Index;
-import io.ebean.annotation.WhenCreated;
-import io.ebean.annotation.WhenModified;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Version;
 import java.time.LocalDateTime;
 import java.util.Set;
-import java.util.UUID;
 
 @Index(unique = true, name = "idx_portfolio_name", columnNames = {"name", "fk_org_id"})
 @Entity
 @Table(name = "fh_portfolio")
-public class DbPortfolio {
+public class DbPortfolio extends DbVersionedBase {
 
   public DbPortfolio() {}
-
-  @Id
-  private UUID id;
 
   private DbPortfolio(Builder builder) {
     setWhoCreated(builder.whoCreated);
@@ -33,16 +25,6 @@ public class DbPortfolio {
     setName(builder.name);
     setDescription(builder.description);
   }
-
-  public UUID getId() { return id; }
-
-
-  @WhenModified
-  @Column(name = "when_updated")
-  private LocalDateTime whenUpdated;
-  @WhenCreated
-  @Column(name = "when_created")
-  private LocalDateTime whenCreated;
 
   @Column(name = "when_archived")
   private LocalDateTime whenArchived;
@@ -71,13 +53,6 @@ public class DbPortfolio {
   @Column
   private String name;
   private String description;
-
-  @Version
-  private long version;
-
-  public long getVersion() {
-    return version;
-  }
 
   public DbPerson getWhoCreated() {
     return whoCreated;
@@ -117,14 +92,6 @@ public class DbPortfolio {
 
   public void setName(String name) {
     this.name = name;
-  }
-
-  public LocalDateTime getWhenUpdated() {
-    return whenUpdated;
-  }
-
-  public LocalDateTime getWhenCreated() {
-    return whenCreated;
   }
 
   public String getDescription() {

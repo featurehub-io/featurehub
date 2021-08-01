@@ -3,8 +3,6 @@ package io.featurehub.db.model;
 import io.ebean.annotation.ConstraintMode;
 import io.ebean.annotation.DbForeignKey;
 import io.ebean.annotation.DbJson;
-import io.ebean.annotation.WhenCreated;
-import io.ebean.annotation.WhenModified;
 import io.featurehub.mr.model.RolloutStrategy;
 
 import javax.persistence.CascadeType;
@@ -12,23 +10,16 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Version;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "fh_env_feature_strategy")
-public class DbFeatureValue {
-  @Id
-  private UUID id;
-
+public class DbFeatureValue extends DbVersionedBase {
   private DbFeatureValue(Builder builder) {
     setWhoUpdated(builder.whoUpdated);
     setWhatUpdated(builder.whatUpdated);
@@ -41,11 +32,6 @@ public class DbFeatureValue {
     sharedRolloutStrategies = builder.sharedRolloutStrategies;
   }
 
-  public UUID getId() { return id; }
-
-  @Version
-  private long version;
-
   @ManyToOne
   @Column(name = "fk_who_updated", nullable = true)
   @JoinColumn(name = "fk_who_updated")
@@ -55,27 +41,12 @@ public class DbFeatureValue {
   @Column(length = 400)
   private String whatUpdated;
 
-  @WhenModified
-  @Column(name = "when_updated")
-  private LocalDateTime whenUpdated;
-  @WhenCreated
-  @Column(name = "when_created")
-  private LocalDateTime whenCreated;
-
   public void setWhatUpdated(String whatUpdated) {
     this.whatUpdated = whatUpdated;
   }
 
   public String getWhatUpdated() {
     return whatUpdated;
-  }
-
-  public LocalDateTime getWhenUpdated() {
-    return whenUpdated;
-  }
-
-  public LocalDateTime getWhenCreated() {
-    return whenCreated;
   }
 
   // in sql, create a unique index on these two
@@ -175,11 +146,6 @@ public class DbFeatureValue {
   public void setRolloutStrategies(List<RolloutStrategy> rolloutStrategies) {
     this.rolloutStrategies = rolloutStrategies;
   }
-
-  public long getVersion() {
-    return version;
-  }
-
 
   public static final class Builder {
     private DbPerson whoUpdated;

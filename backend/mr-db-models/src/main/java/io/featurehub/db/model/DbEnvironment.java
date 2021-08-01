@@ -2,28 +2,20 @@ package io.featurehub.db.model;
 
 import io.ebean.annotation.ConstraintMode;
 import io.ebean.annotation.DbForeignKey;
-import io.ebean.annotation.WhenCreated;
-import io.ebean.annotation.WhenModified;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Version;
 import java.time.LocalDateTime;
 import java.util.Set;
-import java.util.UUID;
 
 @Entity
 @Table(name = "fh_environment")
-public class DbEnvironment {
-  @Id
-  private UUID id;
-
+public class DbEnvironment extends DbVersionedBase {
   public DbEnvironment() {
   }
 
@@ -39,19 +31,6 @@ public class DbEnvironment {
     setEnvironmentFeatures(builder.environmentFeatures);
     setServiceAccountEnvironments(builder.serviceAccountEnvironments);
   }
-
-
-  public UUID getId() { return id; }
-
-  @Version
-  private long version;
-
-  @WhenModified
-  @Column(name = "when_updated")
-  private LocalDateTime whenUpdated;
-  @WhenCreated
-  @Column(name = "when_created")
-  private LocalDateTime whenCreated;
 
   private DbPerson whoUpdated;
 
@@ -93,21 +72,12 @@ public class DbEnvironment {
   @Column(name = "when_archived")
   private LocalDateTime whenArchived;
 
-
   public DbEnvironment getPriorEnvironment() {
     return priorEnvironment;
   }
 
   public void setPriorEnvironment(DbEnvironment priorEnvironment) {
     this.priorEnvironment = priorEnvironment;
-  }
-
-  public void setId(UUID id) {
-    this.id = id;
-  }
-
-  public long getVersion() {
-    return version;
   }
 
   public DbPerson getWhoUpdated() {
@@ -165,15 +135,6 @@ public class DbEnvironment {
   public void setServiceAccountEnvironments(Set<DbServiceAccountEnvironment> serviceAccountEnvironments) {
     this.serviceAccountEnvironments = serviceAccountEnvironments;
   }
-
-  public LocalDateTime getWhenUpdated() {
-    return whenUpdated;
-  }
-
-  public LocalDateTime getWhenCreated() {
-    return whenCreated;
-  }
-
 
   public String getDescription() {
     return description;

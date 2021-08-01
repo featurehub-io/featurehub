@@ -15,28 +15,13 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "fh_acl")
-public class DbAcl {
-  @Id
-  private UUID id;
-
+public class DbAcl extends DbVersionedBase {
   private DbAcl(Builder builder) {
     setEnvironment(builder.environment);
     setApplication(builder.application);
     setGroup(builder.group);
     setRoles(builder.roles);
   }
-
-  private UUID getId() { return id; }
-
-  @Version
-  private long version;
-
-  @WhenModified
-  @Column(name = "when_updated")
-  private LocalDateTime whenUpdated;
-  @WhenCreated
-  @Column(name = "when_created")
-  private LocalDateTime whenCreated;
 
   @ManyToOne(optional = true)
   @Column(name = "environment_id")
@@ -58,10 +43,6 @@ public class DbAcl {
   public DbAcl() {
   }
 
-  public void setId(UUID id) {
-    this.id = id;
-  }
-
   public DbEnvironment getEnvironment() {
     return environment;
   }
@@ -80,10 +61,6 @@ public class DbAcl {
 
   public String getRoles() {
     return roles;
-  }
-
-  public long getVersion() {
-    return version;
   }
 
   public void setRoles(String roles) {

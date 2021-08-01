@@ -1,28 +1,22 @@
 package io.featurehub.db.model;
 
 import io.ebean.annotation.Index;
-import io.ebean.annotation.WhenCreated;
 import io.ebean.annotation.WhenModified;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Version;
 import java.time.LocalDateTime;
 import java.util.Set;
-import java.util.UUID;
 
 @Index(unique = true, name = "idx_service_name", columnNames = {"fk_portfolio_id", "name"})
 @Entity
 @Table(name = "fh_service_account")
-public class DbServiceAccount {
-  @Id
-  private UUID id;
+public class DbServiceAccount extends DbVersionedBase {
   @Column(length = 100)
   private String name;
   @Column(length = 400)
@@ -34,18 +28,10 @@ public class DbServiceAccount {
   @JoinColumn(name = "fk_person_who_created")
   @Column(name = "fk_person_who_created")
   private DbPerson whoChanged;
-  @WhenModified
-  @Column(name = "when_updated")
-  private LocalDateTime whenUpdated;
-  @WhenCreated
-  @Column(name = "when_created")
-  private LocalDateTime whenCreated;
   @Column(name = "api_key", unique = true, nullable = false, length = 100)
   private String apiKeyServerEval;
   @Column(name = "api_key_client_eval", unique = true, nullable = true, length = 100)
   private String apiKeyClientEval;
-  @Version
-  private long version;
 
   @Column(name = "when_archived")
   private LocalDateTime whenArchived;
@@ -75,14 +61,6 @@ public class DbServiceAccount {
 
   public void setPortfolio(DbPortfolio portfolio) {
     this.portfolio = portfolio;
-  }
-
-  public UUID getId() {
-    return id;
-  }
-
-  public void setId(UUID id) {
-    this.id = id;
   }
 
   public String getName() {
@@ -123,18 +101,6 @@ public class DbServiceAccount {
 
   public void setWhoChanged(DbPerson whoChanged) {
     this.whoChanged = whoChanged;
-  }
-
-  public LocalDateTime getWhenUpdated() {
-    return whenUpdated;
-  }
-
-  public LocalDateTime getWhenCreated() {
-    return whenCreated;
-  }
-
-  public long getVersion() {
-    return version;
   }
 
   public LocalDateTime getWhenArchived() {

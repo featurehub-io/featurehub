@@ -8,27 +8,18 @@ import io.ebean.annotation.WhenModified;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Version;
 import java.time.LocalDateTime;
 import java.util.Set;
-import java.util.UUID;
 
 @Index(unique = true, name = "idx_person_email", columnNames = {"email"})
 @Entity
 @Table(name = "fh_person")
-public class DbPerson {
-  @Id
-  private UUID id;
-
-  @Version
-  private long version;
-
+public class DbPerson extends DbVersionedBase {
   public static final String DEFAULT_PASSWORD_ALGORITHM = "PBKDF2WithHmacSHA512";
 
   @Column(name = "password_alg", length = 60, nullable = false)
@@ -36,19 +27,6 @@ public class DbPerson {
   private String passwordAlgorithm = DEFAULT_PASSWORD_ALGORITHM;
 
   public DbPerson() {}
-
-  public UUID getId() { return id; }
-
-  public void setId(UUID id) {
-    this.id = id;
-  }
-
-  @WhenModified
-  @Column(name = "when_updated")
-  private LocalDateTime whenUpdated;
-  @WhenCreated
-  @Column(name = "when_created")
-  private LocalDateTime whenCreated;
 
   private LocalDateTime whenLastAuthenticated;
 
@@ -86,26 +64,6 @@ public class DbPerson {
 
   public void setPasswordAlgorithm(String passwordAlgorithm) {
     this.passwordAlgorithm = passwordAlgorithm;
-  }
-
-  public long getVersion() {
-    return version;
-  }
-
-  public LocalDateTime getWhenUpdated() {
-    return whenUpdated;
-  }
-
-  public void setWhenUpdated(LocalDateTime whenUpdated) {
-    this.whenUpdated = whenUpdated;
-  }
-
-  public LocalDateTime getWhenCreated() {
-    return whenCreated;
-  }
-
-  public void setWhenCreated(LocalDateTime whenCreated) {
-    this.whenCreated = whenCreated;
   }
 
   public LocalDateTime getWhenLastAuthenticated() {

@@ -2,43 +2,26 @@ package io.featurehub.db.model;
 
 import io.ebean.annotation.ConstraintMode;
 import io.ebean.annotation.DbForeignKey;
-import io.ebean.annotation.WhenCreated;
-import io.ebean.annotation.WhenModified;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Version;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 @Entity
 @Table(name = "fh_application")
-public class DbApplication {
-  @Id
-  private UUID id;
-
+public class DbApplication extends DbVersionedBase {
   @Column(length = 100, nullable = false)
   private String name;
   @Column(length = 400)
   private String description;
 
-  @Version
-  private long version;
-
-  @WhenModified
-  @Column(name = "when_updated")
-  private LocalDateTime whenUpdated;
-  @WhenCreated
-  @Column(name = "when_created")
-  private LocalDateTime whenCreated;
   @ManyToOne(optional = false)
   @JoinColumn(name = "fk_person_who_created")
   @Column(name = "fk_person_who_created")
@@ -81,20 +64,6 @@ public class DbApplication {
     setFeatures(builder.features);
     setGroupRolesAcl(builder.groupRolesAcl);
     setSharedRolloutStrategies(builder.sharedRolloutStrategies);
-  }
-
-  public UUID getId() { return id; }
-
-  public long getVersion() {
-    return version;
-  }
-
-  public LocalDateTime getWhenUpdated() {
-    return whenUpdated;
-  }
-
-  public LocalDateTime getWhenCreated() {
-    return whenCreated;
   }
 
   public DbPortfolio getPortfolio() {

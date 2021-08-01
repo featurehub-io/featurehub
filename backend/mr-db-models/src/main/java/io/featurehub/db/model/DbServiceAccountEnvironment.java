@@ -1,24 +1,15 @@
 package io.featurehub.db.model;
 
-import io.ebean.annotation.WhenCreated;
-import io.ebean.annotation.WhenModified;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Version;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "fh_service_account_env")
-public class DbServiceAccountEnvironment {
-  @Id
-  private UUID id;
-
+public class DbServiceAccountEnvironment extends DbVersionedBase {
   @ManyToOne(optional = false)
   @JoinColumn(name = "fk_environment_id")
   @Column(name = "fk_environment_id")
@@ -29,31 +20,12 @@ public class DbServiceAccountEnvironment {
   @JoinColumn(name = "fk_service_account_id")
   @Column(name = "fk_service_account_id")
   private DbServiceAccount serviceAccount;
-  @WhenModified
-  @Column(name = "when_updated")
-  private LocalDateTime whenUpdated;
-  @WhenCreated
-  @Column(name = "when_created")
-  private LocalDateTime whenCreated;
-  @Version
-  long version;
-
-  public DbServiceAccountEnvironment() {
-  }
 
   private DbServiceAccountEnvironment(Builder builder) {
     setId(builder.id);
     setEnvironment(builder.environment);
     setPermissions(builder.permissions);
     setServiceAccount(builder.serviceAccount);
-  }
-
-  public UUID getId() {
-    return id;
-  }
-
-  public void setId(UUID id) {
-    this.id = id;
   }
 
   public DbEnvironment getEnvironment() {
@@ -80,18 +52,6 @@ public class DbServiceAccountEnvironment {
     this.serviceAccount = serviceAccount;
   }
 
-
-  public LocalDateTime getWhenUpdated() {
-    return whenUpdated;
-  }
-
-  public LocalDateTime getWhenCreated() {
-    return whenCreated;
-  }
-
-  public long getVersion() {
-    return version;
-  }
 
   public static final class Builder {
     private UUID id;
