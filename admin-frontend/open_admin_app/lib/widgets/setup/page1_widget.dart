@@ -93,7 +93,7 @@ class _SetupPage1State extends State<SetupPage1Widget> {
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 16, 0, 10),
               child: Text(
-                  "Well done, FeatureHub is up and running.  You\'ll be the first 'Site administrator' of your FeatureHub account.",
+                  "Well done, FeatureHub is up and running.  You'll be the first 'Site administrator' of your FeatureHub account.",
                   style: Theme.of(context).textTheme.bodyText1),
             ),
             if (external)
@@ -105,7 +105,7 @@ class _SetupPage1State extends State<SetupPage1Widget> {
               Column(
                 children: [
                   const SizedBox(height: 24.0),
-                  FHPageDivider(),
+                  const FHPageDivider(),
                   Padding(
                       padding: const EdgeInsets.fromLTRB(0, 24, 0, 16),
                       child: Text('or register by providing the details below',
@@ -255,7 +255,7 @@ class _SetupPage1ThirdPartyProviders extends StatelessWidget {
     return Column(
       children: [
         for (dynamic provider in bloc.externalProviders)
-          Container(
+          SizedBox(
             height: 48,
             child: Padding(
               padding: const EdgeInsets.only(top: 12.0),

@@ -6,6 +6,8 @@ import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 
 class PortfolioSelectorWidget extends StatefulWidget {
+  const PortfolioSelectorWidget({Key? key}) : super(key: key);
+
   @override
   _PortfolioSelectorWidgetState createState() =>
       _PortfolioSelectorWidgetState();

@@ -59,7 +59,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
         title: Text(widget.feature == null
             ? 'Create new feature'
             : (isReadOnly ? 'View feature' : 'Edit feature')),
-        content: Container(
+        content: SizedBox(
           width: 500,
           child: Column(
             mainAxisSize: MainAxisSize.min,

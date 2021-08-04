@@ -13,6 +13,8 @@ import 'package:open_admin_app/widgets/stepper/progress_stepper_bloc.dart';
 import '../common/fh_flat_button_transparent.dart';
 
 class FHSetupProgressStepper extends StatefulWidget {
+  const FHSetupProgressStepper({Key? key}) : super(key: key);
+
   @override
   _StepperState createState() => _StepperState();
 }
@@ -26,7 +28,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
     final captionStyle = Theme.of(context).textTheme.caption;
     final cardWidgetTextPart =
         Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-      SizedBox(height: 16),
+      const SizedBox(height: 16),
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -35,7 +37,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
             style: Theme.of(context).textTheme.subtitle1,
           ),
           CircleIconButton(
-              icon: Icon(
+              icon: const Icon(
                 Icons.close,
                 size: 16.0,
               ),
@@ -43,7 +45,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
         ],
       ),
       const SizedBox(height: 8.0),
-      FHPageDivider(),
+      const FHPageDivider(),
     ]);
 
     return Padding(
@@ -64,10 +66,10 @@ class _StepperState extends State<FHSetupProgressStepper> {
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
                           return CustomStepper(
-                              physics: ClampingScrollPhysics(),
+                              physics: const ClampingScrollPhysics(),
                               steps: [
                                 CustomStep(
-                                    title: Text('Create application'),
+                                    title: const Text('Create application'),
                                     state: snapshot.data!.application == true
                                         ? CustomStepState.complete
                                         : CustomStepState.indexed,
@@ -91,7 +93,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                       ],
                                     )),
                                 CustomStep(
-                                    title: Text('Create team group'),
+                                    title: const Text('Create team group'),
 //                            isActive: _index == 1,
                                     state: snapshot.data!.group == true
                                         ? CustomStepState.complete
@@ -146,7 +148,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                       ],
                                     )),
                                 CustomStep(
-                                    title: Text('Create environment'),
+                                    title: const Text('Create environment'),
                                     state: snapshot.data!.application
                                         ? (snapshot.data!.environment == true
                                             ? CustomStepState.complete
@@ -179,7 +181,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                       ],
                                     )),
                                 CustomStep(
-                                    title: Text('Give access to groups'),
+                                    title: const Text('Give access to groups'),
                                     state: snapshot.data!.environment
                                         ? (snapshot.data!.groupPermission ==
                                                 true
@@ -213,7 +215,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                       ],
                                     )),
                                 CustomStep(
-                                    title: Text(
+                                    title: const Text(
                                         ' Give access to service\n account'),
                                     state: snapshot.data!.environment &&
                                             snapshot.data!.serviceAccount
@@ -251,7 +253,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                       ],
                                     )),
                                 CustomStep(
-                                    title: Text('Create a feature'),
+                                    title: const Text('Create a feature'),
                                     state: snapshot.data!.application
                                         ? (snapshot.data!.feature == true
                                             ? CustomStepState.complete
@@ -313,7 +315,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                   Text('Select application or create a new one',
                       style: Theme.of(context).textTheme.caption),
                   Container(
-                      constraints: BoxConstraints(maxWidth: 200),
+                      constraints: const BoxConstraints(maxWidth: 200),
                       child: applicationsDropdown(snapshot.data!, bloc))
                 ]);
           }

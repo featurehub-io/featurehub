@@ -122,7 +122,7 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
               stream: mrBloc.personStream,
               builder: (BuildContext context, AsyncSnapshot<Person> snapshot) {
                 if (snapshot.hasData && mrBloc.isLoggedIn) {
-                  return DrawerViewWidget();
+                  return const DrawerViewWidget();
                 }
                 return Container();
               }),

@@ -1,8 +1,8 @@
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/portfolio/portfolio_bloc.dart';
 import 'package:open_admin_app/widgets/portfolio/portfolio_widget.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
 
 /// Every user has access to portfolios, they can only see the ones they have access to
 /// and their access will be limited based on whether they are a super admin.
@@ -22,7 +22,7 @@ class PortfolioRoute extends StatelessWidget {
         ),
         const SizedBox(height: 16.0),
         _filterRow(context, bloc),
-        PortfolioListWidget(),
+        const PortfolioListWidget(),
       ],
     );
   }
@@ -40,12 +40,11 @@ class PortfolioRoute extends StatelessWidget {
             child: TextButton.icon(
               icon: const Icon(Icons.add),
               label: const Text('Create new portfolio'),
-              onPressed: () =>
-                  bloc.mrClient.addOverlay((BuildContext context) {
-                    return PortfolioUpdateDialogWidget(
-                      bloc: bloc,
-                    );
-                  }),
+              onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
+                return PortfolioUpdateDialogWidget(
+                  bloc: bloc,
+                );
+              }),
             ),
           )
       ],
@@ -64,8 +63,7 @@ class PortfolioRoute extends StatelessWidget {
           SizedBox(
             width: 300,
             child: TextField(
-              decoration: const InputDecoration(
-                  hintText: 'Filter portfolios'),
+              decoration: const InputDecoration(hintText: 'Filter portfolios'),
               onChanged: (val) => bloc.triggerSearch(val),
             ),
           ),

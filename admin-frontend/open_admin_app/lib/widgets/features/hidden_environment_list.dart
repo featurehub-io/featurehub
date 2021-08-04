@@ -7,6 +7,8 @@ import 'package:open_admin_app/widgets/features/tabs_bloc.dart';
 import 'per_application_features_bloc.dart';
 
 class HiddenEnvironmentsList extends StatelessWidget {
+  const HiddenEnvironmentsList({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<FeaturesOnThisTabTrackerBloc>(context);

@@ -21,22 +21,26 @@ class CreateUserRoute extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FHCardWidget(width: 800, child: AddUserFormWidget());
+    return const FHCardWidget(width: 800, child: AddUserFormWidget());
   }
 }
 
 class AddUserFormWidget extends StatelessWidget {
+  const AddUserFormWidget({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.start,
-      children: <Widget>[TopWidget(), BottomWidget()],
+      children: const <Widget>[TopWidget(), BottomWidget()],
     );
   }
 }
 
 class TopWidget extends StatelessWidget {
+  const TopWidget({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<CreateUserBloc>(context);
@@ -46,14 +50,16 @@ class TopWidget extends StatelessWidget {
         builder: (context, AsyncSnapshot<CreateUserForm> snapshot) {
           if (snapshot.hasData &&
               snapshot.data == CreateUserForm.successState) {
-            return TopWidgetSuccess();
+            return const TopWidgetSuccess();
           }
-          return TopWidgetDefault();
+          return const TopWidgetDefault();
         });
   }
 }
 
 class TopWidgetDefault extends StatefulWidget {
+  const TopWidgetDefault({Key? key}) : super(key: key);
+
   @override
   _TopWidgetDefaultState createState() => _TopWidgetDefaultState();
 }
@@ -132,13 +138,15 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
                   style: Theme.of(context).textTheme.caption,
                 ),
               ),
-              PortfolioGroupSelector(),
+              const PortfolioGroupSelector(),
               const AdminCheckboxWidget()
             ]));
   }
 }
 
 class TopWidgetSuccess extends StatelessWidget {
+  const TopWidgetSuccess({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<CreateUserBloc>(context);
@@ -211,6 +219,8 @@ class TopWidgetSuccess extends StatelessWidget {
 }
 
 class BottomWidget extends StatelessWidget {
+  const BottomWidget({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<CreateUserBloc>(context);
@@ -222,12 +232,14 @@ class BottomWidget extends StatelessWidget {
               snapshot.data == CreateUserForm.successState) {
             return Container();
           }
-          return CreateUserFormButtons();
+          return const CreateUserFormButtons();
         });
   }
 }
 
 class CreateUserFormButtons extends StatelessWidget {
+  const CreateUserFormButtons({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<CreateUserBloc>(context);

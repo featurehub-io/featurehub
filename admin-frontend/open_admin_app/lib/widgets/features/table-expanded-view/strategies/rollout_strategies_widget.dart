@@ -8,6 +8,8 @@ import 'package:open_admin_app/widgets/features/table-expanded-view/individual_s
 import 'attribute_strategy_widget.dart';
 
 class RolloutStrategiesWidget extends StatelessWidget {
+  const RolloutStrategiesWidget({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<IndividualStrategyBloc>(context);

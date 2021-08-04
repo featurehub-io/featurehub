@@ -76,7 +76,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
       title: Text(
           widget.editable ? 'Edit split targeting' : 'View split targeting'),
       content: SingleChildScrollView(
-        child: Container(
+        child: SizedBox(
           width: 1000,
           child: Form(
             key: _formKey,
@@ -85,7 +85,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   decoration: BoxDecoration(
                       borderRadius:
                           const BorderRadius.all(Radius.circular(6.0)),
@@ -108,9 +108,9 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                       })),
                 ),
                 const SizedBox(height: 16),
-                RolloutStrategiesWidget(),
+                const RolloutStrategiesWidget(),
                 const SizedBox(height: 16.0),
-                FHPageDivider(),
+                const FHPageDivider(),
                 const SizedBox(height: 16.0),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -131,7 +131,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                           Flexible(
                             child: TextFormField(
                               controller: _strategyPercentage,
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                   labelText: 'Percentage value',
                                   helperText:
                                       'You can enter a value with up to 4 decimal points, e.g. 0.0005 %'),
@@ -160,7 +160,7 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                                 type: MaterialType.transparency,
                                 shape: const CircleBorder(),
                                 child: IconButton(
-                                    icon: Icon(
+                                    icon: const Icon(
                                       Icons.delete_forever_sharp,
                                       color: Colors.red,
                                       size: 20.0,
@@ -325,7 +325,7 @@ class _NaughtyDataEntryWidget extends StatelessWidget {
           if (!snapshot.hasData ||
               snapshot.data!.isEmpty ||
               snapshot.data!.where((element) => element.id == null).isEmpty) {
-            return SizedBox.shrink();
+            return const SizedBox.shrink();
           }
 
           final globalErrors = snapshot.data!

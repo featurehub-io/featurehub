@@ -8,6 +8,8 @@ import 'package:open_admin_app/widgets/user/common/select_portfolio_group_bloc.d
 import '../../common/fh_filled_input_decoration.dart';
 
 class PortfolioGroupSelector extends StatefulWidget {
+  const PortfolioGroupSelector({Key? key}) : super(key: key);
+
   @override
   _PortfolioGroupSelectorState createState() => _PortfolioGroupSelectorState();
 }
@@ -30,7 +32,7 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
               if (constraints.maxWidth < 600) {
                 return Column(children: <Widget>[
                   buildPortfolioDropDown(bloc),
-                  SizedBox(height: 16.0),
+                  const SizedBox(height: 16.0),
                   buildGroupDropDown(bloc)
                 ]);
               } else {
@@ -65,9 +67,9 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
                           .map((item) => Padding(
                               padding: const EdgeInsets.all(6.0),
                               child: InputChip(
-                                deleteIcon: InkWell(
+                                deleteIcon: const InkWell(
                                     mouseCursor: SystemMouseCursors.click,
-                                    child: const Icon(
+                                    child: Icon(
                                       Icons.cancel,
                                       size: 18.0,
                                     )),
@@ -95,13 +97,13 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
           return Theme(
             data: Theme.of(context).copyWith(brightness: Brightness.light),
             child: Container(
-              constraints: BoxConstraints(maxWidth: 300),
+              constraints: const BoxConstraints(maxWidth: 300),
               child: InputDecorator(
                 decoration: FHFilledInputDecoration(labelText: 'Group'),
                 child: InkWell(
                   mouseCursor: SystemMouseCursors.click,
                   child: DropdownButton(
-                    icon: Padding(
+                    icon: const Padding(
                       padding: EdgeInsets.only(left: 8.0),
                       child: Icon(
                         Icons.keyboard_arrow_down,
@@ -148,15 +150,15 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
 //                canvasColor: Colors.blue,
                   brightness: Brightness.light),
               child: Container(
-                constraints: BoxConstraints(maxWidth: 300),
+                constraints: const BoxConstraints(maxWidth: 300),
                 child: InputDecorator(
                   decoration: FHFilledInputDecoration(labelText: 'Portfolio'),
                   child: InkWell(
                     mouseCursor: SystemMouseCursors.click,
                     child: DropdownButton<String?>(
-                      icon: Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
-                        child: const Icon(
+                      icon: const Padding(
+                        padding: EdgeInsets.only(left: 8.0),
+                        child: Icon(
                           Icons.keyboard_arrow_down,
                           size: 18,
                         ),
