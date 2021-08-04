@@ -82,12 +82,7 @@ class UserCommon {
     clearAuth();
 
     var uriParse = Uri.parse(registrationUrl);
-    String token = uriParse.fragment;
-    token = token
-        .substring(token.indexOf('?') + 1)
-        .split("&")
-        .firstWhere((frag) => frag.startsWith("token="), orElse: () => 'token=')
-        .substring('token='.length);
+    String token = uriParse.queryParameters['token'] ?? '';
 
     assert(token.isNotEmpty, 'token is empty or null $token');
 
