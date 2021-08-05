@@ -12,6 +12,8 @@ import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
 import 'manage_app_bloc.dart';
 
 class GroupPermissionsWidget extends StatelessWidget {
+  const GroupPermissionsWidget({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<ManageAppBloc>(context);

@@ -609,7 +609,7 @@ class _CustomStepperState extends State<CustomStepper>
           canRequestFocus: widget.steps[i].state != CustomStepState.disabled,
           child: Row(
             children: <Widget>[
-              Container(
+              SizedBox(
                 height: 72.0,
                 child: Center(
                   child: _buildIcon(i),

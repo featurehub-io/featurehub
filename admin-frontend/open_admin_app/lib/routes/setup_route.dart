@@ -20,11 +20,11 @@ class SetupWrapperWidget extends StatelessWidget {
                   width: 500,
                   child: BlocProvider<SetupBloc>(
                       creator: (_context, _bag) => SetupBloc(client),
-                      child: SetupPageWidget()),
+                      child: const SetupPageWidget()),
                 )
               : BlocProvider<SetupBloc>(
                   creator: (_context, _bag) => SetupBloc(client),
-                  child: SetupPageWidget())),
+                  child: const SetupPageWidget())),
     );
   }
 }

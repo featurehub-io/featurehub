@@ -23,7 +23,7 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
               builder: (context, snapshot) {
                 final unselHeight = bloc.unselectedFeatureCountForHeight;
                 final selHeight = bloc.selectedFeatureCountForHeight;
-                return Container(
+                return SizedBox(
                   height: unselHeight + selHeight + headerHeight + 2 + 35,
                   child: Scrollbar(
                     child: ListView(
@@ -32,7 +32,7 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                       children: [
                         if (bloc.features.isNotEmpty)
                           ...bloc.sortedEnvironmentsThatAreShowing.map((efv) {
-                            return Container(
+                            return SizedBox(
 //                                  padding:
 //                                      EdgeInsets.only(left: 1.0, right: 1.0),
                               width: cellWidth,

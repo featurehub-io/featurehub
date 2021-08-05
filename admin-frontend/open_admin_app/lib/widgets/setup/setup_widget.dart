@@ -6,6 +6,8 @@ import 'package:open_admin_app/widgets/setup/page3_widget.dart';
 import 'package:open_admin_app/widgets/setup/setup_bloc.dart';
 
 class SetupPageWidget extends StatelessWidget {
+  const SetupPageWidget({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     final setupBloc = BlocProvider.of<SetupBloc>(context);

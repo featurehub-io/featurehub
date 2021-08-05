@@ -13,6 +13,8 @@ import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 
 class AppsRoute extends StatefulWidget {
+  const AppsRoute({Key? key}) : super(key: key);
+
   @override
   _AppsRouteState createState() => _AppsRouteState();
 }
@@ -60,7 +62,7 @@ class _AppsRouteState extends State<AppsRoute> {
                     }),
               ],
             ),
-            FHPageDivider(),
+            const FHPageDivider(),
             const SizedBox(height: 8.0),
             _ApplicationsCardsList(
               bloc: bloc,

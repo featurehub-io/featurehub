@@ -11,6 +11,8 @@ import 'package:open_admin_app/config/route_names.dart';
 import 'package:open_admin_app/widgets/common/fh_portfolio_selector.dart';
 
 class DrawerViewWidget extends StatefulWidget {
+  const DrawerViewWidget({Key? key}) : super(key: key);
+
   @override
   _DrawerViewWidgetState createState() => _DrawerViewWidgetState();
 }
@@ -63,7 +65,7 @@ class _MenuContainer extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    PortfolioSelectorWidget(),
+                    const PortfolioSelectorWidget(),
                     const SizedBox(height: 16),
                     const _MenuFeaturesOptionsWidget(),
                     StreamBuilder<ReleasedPortfolio?>(

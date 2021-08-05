@@ -1,9 +1,9 @@
+import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/material.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/user/list/list_users_bloc.dart';
 import 'package:open_admin_app/widgets/user/list/list_users_widget.dart';
-import 'package:bloc_provider/bloc_provider.dart';
-import 'package:flutter/material.dart';
 
 class ManageUsersRoute extends StatelessWidget {
   const ManageUsersRoute({Key? key}) : super(key: key);
@@ -20,7 +20,7 @@ class ManageUsersRoute extends StatelessWidget {
         ),
         const SizedBox(height: 16.0),
         _filterRow(context, bloc),
-        PersonListWidget(),
+        const PersonListWidget(),
       ],
     );
   }

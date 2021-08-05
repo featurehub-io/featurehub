@@ -4,6 +4,8 @@ import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/router.dart';
 
 class AndysScaffoldRoute extends StatefulWidget {
+  const AndysScaffoldRoute({Key? key}) : super(key: key);
+
   @override
   _AndysScaffoldRouteState createState() => _AndysScaffoldRouteState();
 }

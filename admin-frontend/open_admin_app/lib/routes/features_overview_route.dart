@@ -12,6 +12,8 @@ import 'package:open_admin_app/widgets/features/features_overview_table_widget.d
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 
 class FeatureStatusRoute extends StatelessWidget {
+  const FeatureStatusRoute({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return _FeatureStatusWidget();
@@ -32,9 +34,9 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         _headerRow(context, bloc),
-        FHPageDivider(),
+        const FHPageDivider(),
         const SizedBox(height: 16.0),
-        FeaturesOverviewTableWidget()
+        const FeaturesOverviewTableWidget()
       ],
     );
   }
@@ -83,8 +85,8 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
                               Text(
                                   'There are no applications in this portfolio',
                                   style: Theme.of(context).textTheme.caption),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 8.0),
+                              const Padding(
+                                padding: EdgeInsets.only(left: 8.0),
                                 child: LinkToApplicationsPage(),
                               ),
                             ],

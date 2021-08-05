@@ -16,6 +16,8 @@ import 'package:open_admin_app/widgets/common/link_to_applications_page.dart';
 import 'package:open_admin_app/widgets/environments/env_list_widget.dart';
 
 class ManageAppRoute extends StatefulWidget {
+  const ManageAppRoute({Key? key}) : super(key: key);
+
   @override
   _ManageAppRouteState createState() => _ManageAppRouteState();
 }
@@ -46,8 +48,8 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
                           children: [
                             Text('There are no applications in this portfolio',
                                 style: Theme.of(context).textTheme.caption),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 8.0),
+                            const Padding(
+                              padding: EdgeInsets.only(left: 8.0),
                               child: LinkToApplicationsPage(),
                             ),
                           ],
@@ -60,7 +62,7 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
                 title: 'Application settings',
               ),
             ),
-            FHPageDivider(),
+            const FHPageDivider(),
             StreamBuilder(
                 stream: bloc.pageStateStream,
                 builder: (context, envSnapshot) {
@@ -68,7 +70,7 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
                   if (envSnapshot.data == ManageAppPageState.initialState) {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: <Widget>[
+                      children: const <Widget>[
                         FHCardWidget(child: ManageAppWidget()),
                       ],
                     );
@@ -84,6 +86,8 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
 }
 
 class ManageAppWidget extends StatefulWidget {
+  const ManageAppWidget({Key? key}) : super(key: key);
+
   @override
   _ManageAppWidgetState createState() => _ManageAppWidgetState();
 }
@@ -163,14 +167,14 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
                       padding: const EdgeInsets.only(top: 12.0),
                       child: AddEnvWidget(context, bloc),
                     ),
-                    EnvListWidget()
+                    const EnvListWidget()
                   ],
                 ),
               ),
               // Groups permissions
               SingleChildScrollView(
                 child: Column(
-                  children: <Widget>[
+                  children: const <Widget>[
                     GroupPermissionsWidget(),
                   ],
                 ),
