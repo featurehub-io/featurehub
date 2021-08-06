@@ -1,10 +1,15 @@
 package io.featurehub.db.model;
 
+import io.ebean.annotation.DbDefault;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -20,6 +25,16 @@ public class DbServiceAccountEnvironment extends DbVersionedBase {
   @JoinColumn(name = "fk_service_account_id")
   @Column(name = "fk_service_account_id")
   private DbServiceAccount serviceAccount;
+
+  @Column
+  private Instant whenUsagePeriodStarted;
+
+  @Column
+  @DbDefault("0")
+  private long usageCounter;
+
+  @OneToMany
+  private List<DbApiKeyUsageCounter> usageCounters;
 
   private DbServiceAccountEnvironment(Builder builder) {
     setId(builder.id);
@@ -85,5 +100,29 @@ public class DbServiceAccountEnvironment extends DbVersionedBase {
     public DbServiceAccountEnvironment build() {
       return new DbServiceAccountEnvironment(this);
     }
+  }
+
+  public Instant getWhenUsagePeriodStarted() {
+    return whenUsagePeriodStarted;
+  }
+
+  public void setWhenUsagePeriodStarted(Instant whenUsagePeriodStarted) {
+    this.whenUsagePeriodStarted = whenUsagePeriodStarted;
+  }
+
+  public long getUsageCounter() {
+    return usageCounter;
+  }
+
+  public void setUsageCounter(long usageCounter) {
+    this.usageCounter = usageCounter;
+  }
+
+  public List<DbApiKeyUsageCounter> getUsageCounters() {
+    return usageCounters;
+  }
+
+  public void setUsageCounters(List<DbApiKeyUsageCounter> usageCounters) {
+    this.usageCounters = usageCounters;
   }
 }
