@@ -26,16 +26,6 @@ public class DbServiceAccountEnvironment extends DbVersionedBase {
   @Column(name = "fk_service_account_id")
   private DbServiceAccount serviceAccount;
 
-  @Column
-  private Instant whenUsagePeriodStarted;
-
-  @Column
-  @DbDefault("0")
-  private long usageCounter;
-
-  @OneToMany
-  private List<DbApiKeyUsageCounter> usageCounters;
-
   private DbServiceAccountEnvironment(Builder builder) {
     setId(builder.id);
     setEnvironment(builder.environment);
@@ -100,29 +90,5 @@ public class DbServiceAccountEnvironment extends DbVersionedBase {
     public DbServiceAccountEnvironment build() {
       return new DbServiceAccountEnvironment(this);
     }
-  }
-
-  public Instant getWhenUsagePeriodStarted() {
-    return whenUsagePeriodStarted;
-  }
-
-  public void setWhenUsagePeriodStarted(Instant whenUsagePeriodStarted) {
-    this.whenUsagePeriodStarted = whenUsagePeriodStarted;
-  }
-
-  public long getUsageCounter() {
-    return usageCounter;
-  }
-
-  public void setUsageCounter(long usageCounter) {
-    this.usageCounter = usageCounter;
-  }
-
-  public List<DbApiKeyUsageCounter> getUsageCounters() {
-    return usageCounters;
-  }
-
-  public void setUsageCounters(List<DbApiKeyUsageCounter> usageCounters) {
-    this.usageCounters = usageCounters;
   }
 }
