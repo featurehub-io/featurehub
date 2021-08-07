@@ -264,7 +264,7 @@ public class CacheManager implements MessageHandler, HealthSource {
   @Override
   public void onMessage(Message message) throws InterruptedException {
     try {
-      CacheManagementMessage resp = CacheJsonMapper.mapper.readValue(message.getData(), CacheManagementMessage.class);
+      CacheManagementMessage resp = CacheJsonMapper.readFromZipBytes(message.getData(), CacheManagementMessage.class);
 
       // ignore messages not directed at us or our own messages
       if (resp.getDestId() != null && !id.equals(resp.getDestId()) || id.equals(resp.getId())) {

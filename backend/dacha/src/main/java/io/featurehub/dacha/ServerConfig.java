@@ -74,7 +74,7 @@ public class ServerConfig implements NATSSource {
   private void listenForServiceAccounts() {
     listen(message -> {
       try {
-        ServiceAccountCacheItem sa = CacheJsonMapper.mapper.readValue(message.getData(), ServiceAccountCacheItem.class);
+        ServiceAccountCacheItem sa = CacheJsonMapper.readFromZipBytes(message.getData(), ServiceAccountCacheItem.class);
         cache.serviceAccount(sa);
 //        log.debug("cache received {}", sa);
       } catch (Exception e) {
@@ -86,7 +86,7 @@ public class ServerConfig implements NATSSource {
   private void listenForFeatureValues() {
     listen(message -> {
       try {
-        FeatureValueCacheItem fv = CacheJsonMapper.mapper.readValue(message.getData(), FeatureValueCacheItem.class);
+        FeatureValueCacheItem fv = CacheJsonMapper.readFromZipBytes(message.getData(), FeatureValueCacheItem.class);
         cache.updateFeatureValue(fv);
       } catch (Exception e) {
         log.error("Failure to decode featue value message", e);
@@ -97,7 +97,7 @@ public class ServerConfig implements NATSSource {
   private void listenForEnvironments() {
     listen(message -> {
       try {
-        EnvironmentCacheItem e = CacheJsonMapper.mapper.readValue(message.getData(), EnvironmentCacheItem.class);
+        EnvironmentCacheItem e = CacheJsonMapper.readFromZipBytes(message.getData(), EnvironmentCacheItem.class);
         cache.environment(e);
 //        log.debug("cache received {}", e);
       } catch (Exception ex) {

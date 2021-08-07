@@ -28,7 +28,7 @@ public class EdgeHandler implements IncomingEdgeRequest {
     Object response;
 
     try {
-      final EdgeInitRequest request = CacheJsonMapper.mapper.readValue(message.getData(), EdgeInitRequest.class);
+      final EdgeInitRequest request = CacheJsonMapper.readFromZipBytes(message.getData(), EdgeInitRequest.class);
       if (request.getCommand() == EdgeInitRequestCommand.LISTEN) {
         final EdgeInitResponse success = new EdgeInitResponse().success(false);
         edgeInitRequest(request, success);

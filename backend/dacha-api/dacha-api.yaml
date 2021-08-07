@@ -82,6 +82,9 @@ components:
       properties:
         environment:
           $ref: "#/components/schemas/Environment"
+        organizationId:
+          type: string
+          format: uuid
         featureValues:
           type: array
           items:

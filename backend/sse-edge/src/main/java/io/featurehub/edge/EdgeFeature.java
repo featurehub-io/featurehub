@@ -1,37 +1,21 @@
 package io.featurehub.edge;
 
-import com.lmax.disruptor.EventHandler;
 import io.featurehub.edge.bucket.EventOutputBucketService;
-import io.featurehub.edge.rest.EventStreamResource;
-import io.featurehub.edge.rest.SSEHeaderFilter;
-import io.featurehub.edge.stats.NATSStatPublisher;
-import io.featurehub.edge.stats.Stat;
-import io.featurehub.edge.stats.StatCollector;
-import io.featurehub.edge.stats.StatDisruptor;
-import io.featurehub.edge.stats.StatsCollectionOrchestrator;
-import io.featurehub.edge.stats.StatEventHandler;
-import io.featurehub.edge.stats.StatPublisher;
-import io.featurehub.edge.stats.StatRecorder;
-import io.featurehub.edge.stats.StatTimeTrigger;
-import io.featurehub.edge.stats.StatsOrchestrator;
+import io.featurehub.edge.stats.StatsFeature;
 import io.featurehub.publish.NATSSource;
+import jakarta.inject.Singleton;
+import jakarta.ws.rs.core.Feature;
+import jakarta.ws.rs.core.FeatureContext;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.spi.Container;
 import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
 
-import jakarta.inject.Singleton;
-import jakarta.ws.rs.core.Feature;
-import jakarta.ws.rs.core.FeatureContext;
-import jakarta.ws.rs.core.GenericType;
-
 public class EdgeFeature implements Feature {
-
-  private final static GenericType<EventHandler<Stat>> eventHandlerType = new GenericType<>(){};
-
   @Override
   public boolean configure(FeatureContext context) {
     context
+      .register(StatsFeature.class)
         .register(
             new AbstractBinder() {
 
@@ -48,14 +32,6 @@ public class EdgeFeature implements Feature {
                 bind(FeatureTransformerUtils.class)
                     .to(FeatureTransformer.class)
                     .in(Singleton.class);
-                bind(StatsCollectionOrchestrator.class)
-                    .to(StatsOrchestrator.class)
-                    .in(Singleton.class);
-                bind(StatDisruptor.class).to(StatRecorder.class).in(Singleton.class);
-                bind(NATSStatPublisher.class).to(StatPublisher.class).in(Singleton.class);
-                bind(StatsCollectionOrchestrator.class).to(StatsOrchestrator.class).in(Singleton.class);
-                bind(StatEventHandler.class).to(StatCollector.class).to(eventHandlerType).in(Singleton.class);
-                bind(StatTimeTrigger.class).to(StatTimeTrigger.class).in(Singleton.class);
               }
             })
         .register(
@@ -70,10 +46,6 @@ public class EdgeFeature implements Feature {
 
                 injector.getService(EventOutputBucketService.class);
                 injector.getService(ServerConfig.class);
-
-                // starts the stats time publisher if there are any
-                injector.getService(StatTimeTrigger.class);
-                injector.getService(StatRecorder.class);
               }
 
               public void onReload(Container container) {}

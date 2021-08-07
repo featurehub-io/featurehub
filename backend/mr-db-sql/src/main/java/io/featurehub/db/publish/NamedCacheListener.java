@@ -95,8 +95,10 @@ public class NamedCacheListener implements MessageHandler, CacheBroadcast {
   @Override
   public void publishEnvironment(EnvironmentCacheItem eci) {
     try {
+      log.debug("eci: {}", CacheJsonMapper.mapper.writeValueAsString(eci));
       connection.publish(environmentSubject, CacheJsonMapper.mapper.writeValueAsBytes(eci));
-    } catch (JsonProcessingException e) {
+//      connection.publish(environmentSubject, CacheJsonMapper.writeAsZipBytes(eci));
+    } catch (IOException e) {
       log.error("Could not encode environment update", e);
     }
   }
@@ -104,8 +106,10 @@ public class NamedCacheListener implements MessageHandler, CacheBroadcast {
   @Override
   public void publishServiceAccount(ServiceAccountCacheItem saci) {
     try {
+      log.debug("saci: {}", CacheJsonMapper.mapper.writeValueAsString(saci));
+//      connection.publish(serviceAccountSubject, CacheJsonMapper.writeAsZipBytes(saci));
       connection.publish(serviceAccountSubject, CacheJsonMapper.mapper.writeValueAsBytes(saci));
-    } catch (JsonProcessingException e) {
+    } catch (IOException e) {
       log.error("Could not encode service account", e);
     }
   }
@@ -114,8 +118,9 @@ public class NamedCacheListener implements MessageHandler, CacheBroadcast {
   public void publishFeature(FeatureValueCacheItem feature) {
     try {
       log.trace("publishing feature {}", feature);
+//      connection.publish(featureSubject, CacheJsonMapper.writeAsZipBytes(feature));
       connection.publish(featureSubject, CacheJsonMapper.mapper.writeValueAsBytes(feature));
-    } catch (JsonProcessingException e) {
+    } catch (IOException e) {
       log.error("Could not encode feature");
     }
   }
