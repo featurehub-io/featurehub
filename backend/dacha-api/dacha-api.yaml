@@ -83,19 +83,31 @@ components:
         environment:
           $ref: "#/components/schemas/Environment"
         organizationId:
+          x-basename: oId
+          type: string
+          format: uuid
+        portfolioId:
+          x-basename: pId
+          type: string
+          format: uuid
+        applicationId:
+          x-basename: aId
           type: string
           format: uuid
         featureValues:
+          x-basename: fv
           type: array
           items:
             $ref: "#/components/schemas/FeatureValue"
         serviceAccounts:
+          x-basename: sa
           type: array
           items:
             $ref: "#/components/schemas/ServiceAccount"
         action:
           $ref: "#/components/schemas/PublishAction"
         count:
+          x-basename: c
           type: integer
     ServiceAccountCacheItem:
       properties:

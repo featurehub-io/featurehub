@@ -17,6 +17,7 @@ import io.featurehub.db.model.query.QDbEnvironment;
 import io.featurehub.db.model.query.QDbFeatureValue;
 import io.featurehub.db.model.query.QDbNamedCache;
 import io.featurehub.db.model.query.QDbOrganization;
+import io.featurehub.db.model.query.QDbPortfolio;
 import io.featurehub.db.model.query.QDbServiceAccount;
 import io.featurehub.db.model.query.QDbStrategyForFeatureValue;
 import io.featurehub.db.services.Conversions;
@@ -153,6 +154,8 @@ public class DbCacheSource implements CacheSource {
       .action(publishAction)
       .environment(toEnvironment(env, features))
       .organizationId(env.getParentApplication().getPortfolio().getOrganization().getId())
+      .portfolioId(env.getParentApplication().getPortfolio().getId())
+      .applicationId(env.getParentApplication().getId())
       .featureValues(features.stream().map(f -> {
         final DbFeatureValue featureV = envFeatures.get(f.getId());
         final FeatureValue featureValue = convertUtils.toFeatureValue(f, featureV, empty);
@@ -176,7 +179,6 @@ public class DbCacheSource implements CacheSource {
     return new Environment()
       .version(env.getVersion())
       .id(env.getId())
-      .applicationId(env.getParentApplication().getId())
       .name(env.getName())
       .features(features.stream()
         .map(ef -> convertUtils.toApplicationFeature(ef, Opts.empty()))
@@ -190,6 +192,7 @@ public class DbCacheSource implements CacheSource {
       .parentApplication.portfolio.organization.namedCache.cacheName.eq(cacheName)
       .environmentFeatures.feature.fetch()
       .parentApplication.fetch(QDbApplication.Alias.id)
+      .parentApplication.portfolio.fetch(QDbPortfolio.Alias.id)
       .parentApplication.portfolio.organization.fetch(QDbOrganization.Alias.id);
   }
 
