@@ -4,19 +4,18 @@ info:
   description: This is used by the Edge servers to access features and environments quickly.
   version: "1.1.1"
 paths:
-  /environment/{eId}/{serviceAccountId}:
+  /environment/{eId}/{serviceAccountKey}:
     parameters:
       - name: eId
         description: "id of environment"
         in: path
         schema:
           type: string
-      - name: serviceAccountId
-        description: "id of service account"
+      - name: serviceAccountKey
+        description: "serviceAccountKey of service account"
         in: path
         schema:
           type: string
-          format: uuid
     get:
       responses:
         200:
@@ -26,7 +25,50 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/FeatureValue"
+                  $ref: "#/components/schemas/FeatureValueCacheItem"
+        404:
+          description: "No such environment/account combo has read access"
+  /environment/{eId}/{serviceAccountKey}/permissions:
+    parameters:
+      - name: eId
+        description: "id of environment"
+        in: path
+        schema:
+          type: string
+      - name: serviceAccountKey
+        description: "id of service account"
+        in: path
+        schema:
+          type: string
+    get:
+      responses:
+        200:
+          description: "All permissions and feature values for this environment"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DachaPermissionResponse"
+        404:
+          description: "No such environment/account combo has read access"
+  /environment/{eId}/structure:
+    parameters:
+      - name: eId
+        description: "id of environment"
+        in: path
+        schema:
+          type: string
+    get:
+      responses:
+        200:
+          description: "The parent structure for this environment"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DachaStructureResponse"
         404:
           description: "No such environment/account combo has read access"
 components:
@@ -78,6 +120,25 @@ components:
         - UPDATE
         - DELETE
         - EMPTY
+    DachaStructureResponse:
+      type: object
+      required:
+        - organizationId
+        - portfolioId
+        - applicationId
+      properties:
+        organizationId:
+          x-basename: oId
+          type: string
+          format: uuid
+        portfolioId:
+          x-basename: pId
+          type: string
+          format: uuid
+        applicationId:
+          x-basename: aId
+          type: string
+          format: uuid
     EnvironmentCacheItem:
       properties:
         environment:
@@ -149,6 +210,18 @@ components:
             $ref: "#/components/schemas/RoleType"
         feature:
           $ref: "#/components/schemas/FeatureValueCacheItem"
+    DachaPermissionResponse:
+      type: object
+      required:
+        - roles
+        - feature
+      properties:
+        roles:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoleType"
+        feature:
+          $ref: "#/components/schemas/DachaFeatureValueItem"
     EdgeInitResponse:
       required:
         - environmentId
@@ -167,6 +240,21 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/FeatureValueCacheItem"
+    DachaFeatureValueItem:
+      required:
+        - feature
+        - value
+        - action
+      properties:
+        feature:
+          $ref: "#/components/schemas/Feature"
+        value:
+          $ref: "#/components/schemas/FeatureValue"
+        strategies:
+          type: array
+          description: "A copy of the strategies that apply to this feature at this time."
+          items:
+            $ref: "#/components/schemas/RolloutStrategy"
     FeatureValueCacheItem:
       required:
         - feature

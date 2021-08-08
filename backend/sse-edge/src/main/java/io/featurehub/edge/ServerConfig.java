@@ -164,7 +164,7 @@ public class ServerConfig implements ServerController, NATSSource {
 
   private void updateFeature(Message msg) {
     try {
-      FeatureValueCacheItem fv = CacheJsonMapper.mapper.readValue(msg.getData(), FeatureValueCacheItem.class);
+      FeatureValueCacheItem fv = CacheJsonMapper.readFromZipBytes(msg.getData(), FeatureValueCacheItem.class);
 
       final Collection<ClientConnection> tbc = clientBuckets.get(fv.getEnvironmentId());
       if (tbc != null) {
