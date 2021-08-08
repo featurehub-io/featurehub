@@ -8,11 +8,14 @@ import io.ebean.datasource.DataSourcePool;
 import io.ebean.migration.DbPlatformNames;
 import io.ebean.migration.MigrationConfig;
 import io.ebean.migration.MigrationRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.util.Properties;
 
 public class EbeanHolder implements EbeanSource {
+  private static final Logger log = LoggerFactory.getLogger(EbeanHolder.class);
   private final Database ebeanServer;
   private final DatabaseConfig config;
 
@@ -27,6 +30,8 @@ public class EbeanHolder implements EbeanSource {
     });
 
     DataSourceConfig dsConfig = new DataSourceConfig();
+
+    log.info("database url: {}", dbUrl);
 
     dsConfig.setUrl(dbUrl);
     dsConfig.setUsername(dbUsername);
