@@ -93,6 +93,11 @@ In the https://github.com/featurehub-io/featurehub-install/tree/master/docker-co
 a set of possible external configurations. If you wish to build and rebundle the images yourself you can easily do this,
 the base images, exposed ports and so forth are all configurable as part of the build.
 
+NOTE: All properties that are configured using `properties` files below can also be specified using environment
+variables - but use the exact upper case variant. E.g. `db.url` becomes `DB.URL`, `passwordsalt.iterations` becomes
+`PASSWORDSALT.ITERATIONS`. If you are running your FeatureHub on AWS ECS you will need to use environment variables
+for configuration.
+
 === Run configuration
 
 By this we mean the properties you can set to control the behaviour of different servers.
