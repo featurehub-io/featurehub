@@ -63,9 +63,6 @@
               </from>
               <to>
                 <image>featurehub/${project.artifactId}:${build.version}</image>
-                <tags>
-                  <tag>featurehub/${project.artifactId}:latest</tag>
-                </tags>
               </to>
               <container>
                 <user>999:999</user>
