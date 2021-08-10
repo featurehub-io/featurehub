@@ -2,16 +2,12 @@ package io.featurehub.edge
 
 import java.util.*
 
-class KeyParts(cacheName: String, environmentId: UUID, serviceKey: String) {
-  val cacheName = cacheName
-    get() = field
+class KeyParts(val cacheName: String, val environmentId: UUID, val serviceKey: String) {
 
-  val environmentId = environmentId
-    get() = field
-
-  val serviceKey = serviceKey
-    get() = field
-
+  var organisationId: UUID? = null
+  var portfolioId: UUID? = null
+  var applicationId: UUID? = null
+  var serviceKeyId: UUID? = null
 
   companion object {
     fun fromString(apiUrl: String): KeyParts? {

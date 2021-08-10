@@ -49,7 +49,7 @@ class StatsCollectionOrchestrator @Inject constructor(private val publisher: Sta
       try {
         for (stat in stats) {
           val bundle = perCachePublish.computeIfAbsent(stat.key.cacheName
-          ) { k -> EdgeStatsBundle() }
+          ) { EdgeStatsBundle() }
 
           bundle.apiKeys.add(stat.value.squash())
 

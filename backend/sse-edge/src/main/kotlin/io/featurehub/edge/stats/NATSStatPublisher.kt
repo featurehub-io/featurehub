@@ -32,14 +32,14 @@ class NATSStatPublisher @Inject constructor(private val nats : NATSSource) : Sta
       nats.connection.publish(channelName,
         CacheJsonMapper.mapper.writeValueAsBytes(bundle))
 
-      prometheusPublishSuccessCounter.computeIfAbsent(cacheName) { k ->
+      prometheusPublishSuccessCounter.computeIfAbsent(cacheName) {
         Counter.build(
           String.format("edge_stat_nats_success_%s", cacheName.replace("-", "_")),
           String.format("Edge Stats NATS Success publishing to channel %s", cacheName)
         ).create()
       }.inc()
     } catch (e : Exception) {
-      prometheusPublishFailedCounter.computeIfAbsent(cacheName) { k ->
+      prometheusPublishFailedCounter.computeIfAbsent(cacheName) {
         Counter.build(
           String.format("edge_stat_nats_failed_%s", cacheName.replace("-", "_")),
           String.format("Edge Stats NATS Failed publishing to channel %s", cacheName)

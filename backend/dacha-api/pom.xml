@@ -104,10 +104,11 @@
               <modelPackage>io.featurehub.mr.model</modelPackage>
               <inputSpec>${project.basedir}/final.yaml</inputSpec>
               <generatorName>jersey3-api</generatorName>
-              <generateApis>false</generateApis>
+              <generateApis>true</generateApis>
 
               <additionalProperties>
                 <additionalProperty>server</additionalProperty>
+                <additionalProperty>client</additionalProperty>
               </additionalProperties>
 
               <configOptions>

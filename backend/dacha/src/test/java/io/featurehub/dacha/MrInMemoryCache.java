@@ -80,4 +80,9 @@ public class MrInMemoryCache implements InternalCache {
   @Override
   public void updateFeatureValue(FeatureValueCacheItem fv) {
   }
+
+  @Override
+  public EnvironmentCacheItem findEnvironment(UUID environmentId) {
+    return environments.get(environmentId);
+  }
 }

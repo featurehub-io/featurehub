@@ -40,7 +40,7 @@ class StatKeyEventCollection(val apiKey: KeyParts) {
   fun add(resultType: EdgeHitResultType, hitSourceType: EdgeHitSourceType) {
     val statType = StatType(resultType, hitSourceType)
 
-    (counters.computeIfAbsent(statType) { key -> AtomicLong(0L) }).incrementAndGet()
+    (counters.computeIfAbsent(statType) { AtomicLong(0L) }).incrementAndGet()
   }
 
   fun size(): Int {
@@ -49,8 +49,11 @@ class StatKeyEventCollection(val apiKey: KeyParts) {
 
   fun squash(): EdgeStatApiKey? {
     return EdgeStatApiKey()
-      .svcKey(apiKey.serviceKey)
-      .envId(apiKey.environmentId)
+      .serviceKeyId(apiKey.serviceKeyId?.toString() ?: apiKey.serviceKey)
+      .environmentId(apiKey.environmentId)
+      .organizationId(apiKey.organisationId)
+      .portfolioId(apiKey.portfolioId)
+      .applicationId(apiKey.applicationId)
       .counters(squashCounters())
   }
 

@@ -11,45 +11,54 @@ paths:
         in: path
         schema:
           type: string
+          format: uuid
       - name: serviceAccountKey
         description: "serviceAccountKey of service account"
         in: path
         schema:
           type: string
     get:
+      operationId: getApiKeyDetails
+      tags:
+        - DachaApiKeyService
       responses:
         200:
           description: "All feature values for this environment"
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/FeatureValueCacheItem"
+                $ref: "#/components/schemas/DachaKeyDetailsResponse"
         404:
           description: "No such environment/account combo has read access"
-  /environment/{eId}/{serviceAccountKey}/permissions:
+  /environment/{eId}/{serviceAccountKey}/permissions/{featureKey}:
     parameters:
       - name: eId
         description: "id of environment"
         in: path
         schema:
           type: string
+          format: uuid
       - name: serviceAccountKey
         description: "id of service account"
         in: path
         schema:
           type: string
+      - name: featureKey
+        in: path
+        description: "The key that we want"
+        schema:
+          type: string
     get:
+      operationId: getApiKeyPermissions
+      tags:
+        - DachaApiKeyService
       responses:
         200:
           description: "All permissions and feature values for this environment"
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/DachaPermissionResponse"
+                $ref: "#/components/schemas/DachaPermissionResponse"
         404:
           description: "No such environment/account combo has read access"
   /environment/{eId}/structure:
@@ -59,16 +68,18 @@ paths:
         in: path
         schema:
           type: string
+          format: uuid
     get:
+      operationId: getEnvironmentStructure
+      tags:
+        - DachaEnvironmentService
       responses:
         200:
           description: "The parent structure for this environment"
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/DachaStructureResponse"
+                $ref: "#/components/schemas/DachaStructureResponse"
         404:
           description: "No such environment/account combo has read access"
 components:
@@ -182,7 +193,7 @@ components:
     EdgeInitRequest:
       required:
         - environmentId
-        - serviceAccountId
+        - apiKey
       properties:
         environmentId:
           type: string
@@ -244,17 +255,11 @@ components:
       required:
         - feature
         - value
-        - action
       properties:
         feature:
           $ref: "#/components/schemas/Feature"
         value:
           $ref: "#/components/schemas/FeatureValue"
-        strategies:
-          type: array
-          description: "A copy of the strategies that apply to this feature at this time."
-          items:
-            $ref: "#/components/schemas/RolloutStrategy"
     FeatureValueCacheItem:
       required:
         - feature
@@ -277,3 +282,9 @@ components:
           description: "A copy of the strategies that apply to this feature at this time."
           items:
             $ref: "#/components/schemas/RolloutStrategy"
+    DachaKeyDetailsResponse:
+      properties:
+        features:
+          type: array
+          items:
+            $ref: "#/components/schemas/FeatureValueCacheItem"

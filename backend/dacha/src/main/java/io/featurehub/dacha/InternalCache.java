@@ -35,4 +35,6 @@ public interface InternalCache {
   FeatureCollection getFeaturesByEnvironmentAndServiceAccount(UUID environmentId, String apiKey);
 
   void updateFeatureValue(FeatureValueCacheItem fv);
+
+  EnvironmentCacheItem findEnvironment(UUID environmentId);
 }

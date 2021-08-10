@@ -354,4 +354,9 @@ public class InMemoryCache implements InternalCache {
       }
     }
   }
+
+  @Override
+  public EnvironmentCacheItem findEnvironment(UUID environmentId) {
+    return environments.get(environmentId);
+  }
 }
