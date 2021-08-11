@@ -13,7 +13,7 @@ import io.featurehub.edge.KeyParts;
 import io.featurehub.edge.stats.StatRecorder;
 import io.featurehub.edge.strategies.ClientContext;
 import io.featurehub.mr.messaging.StreamedFeatureUpdate;
-import io.featurehub.mr.model.EdgeInitPermissionResponse;
+import io.featurehub.mr.model.DachaPermissionResponse;
 import io.featurehub.mr.model.FeatureValue;
 import io.featurehub.mr.model.RoleType;
 import io.featurehub.sse.model.Environment;
@@ -177,9 +177,9 @@ public class EventStreamResource {
     final KeyParts key = new KeyParts(namedCache, envId, apiKey);
 
     try {
-      final EdgeInitPermissionResponse perms = serverConfig.requestPermission(namedCache, apiKey, envId, featureKey);
+      final DachaPermissionResponse perms = serverConfig.requestPermission(namedCache, apiKey, envId, featureKey);
 
-      if (perms == null || Boolean.FALSE.equals(perms.getSuccess())) {
+      if (perms == null) {
         statRecorder.recordHit(key, EdgeHitResultType.MISSED, EdgeHitSourceType.TESTSDK);
         return Response.status(Response.Status.NOT_FOUND).build();
       }

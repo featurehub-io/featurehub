@@ -189,38 +189,6 @@ components:
           $ref: "#/components/schemas/PublishAction"
         count:
           type: integer
-    # we will version based in different listening names
-    EdgeInitRequest:
-      required:
-        - environmentId
-        - apiKey
-      properties:
-        environmentId:
-          type: string
-          format: uuid
-        apiKey:
-          type: string
-        featureKey:
-          description: "The key of the feature that a permission response will be looking for"
-          type: string
-        command:
-          $ref: "#/components/schemas/EdgeInitRequestCommand"
-    EdgeInitRequestCommand:
-      type: string
-      enum:
-        - listen
-        - permission
-    EdgeInitPermissionResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-        roles:
-          type: array
-          items:
-            $ref: "#/components/schemas/RoleType"
-        feature:
-          $ref: "#/components/schemas/FeatureValueCacheItem"
     DachaPermissionResponse:
       type: object
       required:
@@ -233,24 +201,6 @@ components:
             $ref: "#/components/schemas/RoleType"
         feature:
           $ref: "#/components/schemas/DachaFeatureValueItem"
-    EdgeInitResponse:
-      required:
-        - environmentId
-        - serviceAccountId
-        - success
-        - features
-      properties:
-        environmentId:
-          type: string
-          format: uuid
-        apiKey:
-          type: string
-        success:
-          type: boolean
-        features:
-          type: array
-          items:
-            $ref: "#/components/schemas/FeatureValueCacheItem"
     DachaFeatureValueItem:
       required:
         - feature

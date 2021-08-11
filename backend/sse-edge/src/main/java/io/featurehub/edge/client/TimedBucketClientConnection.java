@@ -6,7 +6,6 @@ import io.featurehub.edge.KeyParts;
 import io.featurehub.edge.stats.StatRecorder;
 import io.featurehub.edge.strategies.ClientContext;
 import io.featurehub.mr.model.DachaKeyDetailsResponse;
-import io.featurehub.mr.model.EdgeInitResponse;
 import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.mr.model.PublishAction;
 import io.featurehub.sse.model.SSEResultState;

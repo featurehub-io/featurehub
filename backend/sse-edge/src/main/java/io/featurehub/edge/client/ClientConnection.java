@@ -1,7 +1,6 @@
 package io.featurehub.edge.client;
 
 import io.featurehub.mr.model.DachaKeyDetailsResponse;
-import io.featurehub.mr.model.EdgeInitResponse;
 import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.sse.model.SSEResultState;
 

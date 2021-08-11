@@ -2,7 +2,6 @@ package io.featurehub.edge;
 
 import io.featurehub.edge.client.ClientConnection;
 import io.featurehub.mr.model.DachaKeyDetailsResponse;
-import io.featurehub.mr.model.EdgeInitResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

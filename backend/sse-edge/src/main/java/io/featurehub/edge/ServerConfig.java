@@ -11,10 +11,7 @@ import io.featurehub.edge.client.ClientConnection;
 import io.featurehub.edge.strategies.ClientContext;
 import io.featurehub.mr.messaging.StreamedFeatureUpdate;
 import io.featurehub.mr.model.DachaKeyDetailsResponse;
-import io.featurehub.mr.model.EdgeInitPermissionResponse;
-import io.featurehub.mr.model.EdgeInitRequest;
-import io.featurehub.mr.model.EdgeInitRequestCommand;
-import io.featurehub.mr.model.EdgeInitResponse;
+import io.featurehub.mr.model.DachaPermissionResponse;
 import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.publish.ChannelConstants;
 import io.featurehub.publish.ChannelNames;
@@ -25,7 +22,6 @@ import io.nats.client.Dispatcher;
 import io.nats.client.Message;
 import io.nats.client.Nats;
 import io.nats.client.Options;
-import jakarta.ws.rs.NotFoundException;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -233,23 +229,13 @@ public class ServerConfig implements ServerController, NATSSource {
     }
   }
 
-  public EdgeInitPermissionResponse requestPermission(String namedCache, String apiKey, UUID environmentId,
-                                                      String featureKey) {
-    String subject = namedCache + "/" + ChannelConstants.EDGE_CACHE_CHANNEL;
+  public DachaPermissionResponse requestPermission(String namedCache, String apiKey, UUID environmentId,
+                                                   String featureKey) {
     try {
-      Message response = connection.request(subject,
-        CacheJsonMapper.mapper.writeValueAsBytes(new EdgeInitRequest().command(EdgeInitRequestCommand.PERMISSION).apiKey(apiKey).environmentId(environmentId).featureKey(featureKey)),
-        Duration.ofMillis(namedCacheTimeout)
-      );
-
-      if (response != null) {
-        return CacheJsonMapper.mapper.readValue(response.getData(), EdgeInitPermissionResponse.class);
-      }
-    } catch (Exception e) {
-      log.error("Failed request for cache {}, apiKey {}, envId {}, key {}", namedCache, apiKey, environmentId, featureKey);
+      return apiKeyService.getApiKeyPermissions(environmentId, apiKey, featureKey);
+    } catch (Exception ignored) {
+      return null;
     }
-
-    return null;
   }
 
   // responsible for removing a client connection once it has been closed
@@ -274,30 +260,15 @@ public class ServerConfig implements ServerController, NATSSource {
 
   protected Environment getEnvironmentFeaturesBySdk(String namedCache, String apiKey,
                                                     UUID envId, ClientContext clientContext) {
-    EdgeInitRequest request = new EdgeInitRequest()
-      .command(EdgeInitRequestCommand.LISTEN)
-      .apiKey(apiKey)
-      .environmentId(envId);
 
     try {
-      String subject = namedCache + "/" + ChannelConstants.EDGE_CACHE_CHANNEL;
+      final DachaKeyDetailsResponse details = apiKeyService.getApiKeyDetails(envId, apiKey);
 
-      Message response = connection.request(subject, CacheJsonMapper.mapper.writeValueAsBytes(request),
-        Duration.ofMillis(namedCacheTimeout));
-
-      if (response != null) {
-        EdgeInitResponse edgeResponse = CacheJsonMapper.mapper.readValue(response.getData(),
-          EdgeInitResponse.class);
-
-        return new Environment().id(envId).features(featureTransformer
-          .transform(edgeResponse.getFeatures(), clientContext));
-
-      }
+      return new Environment().id(envId).features(featureTransformer.transform(details.getFeatures(), clientContext));
     } catch (Exception e) {
-      log.error("Failed to request ");
+      log.error("Failed to get details and transform");
+      return null;
     }
-
-    return null;
   }
 
   public List<Environment> requestFeatures(List<KeyParts> keys, ClientContext clientContext) {
