@@ -1,5 +1,6 @@
 package io.featurehub.edge.client;
 
+import io.featurehub.mr.model.DachaKeyDetailsResponse;
 import io.featurehub.mr.model.EdgeInitResponse;
 import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.sse.model.SSEResultState;
@@ -26,7 +27,7 @@ public interface ClientConnection {
 
   void failed(String reason);
 
-  void initResponse(EdgeInitResponse edgeResponse);
+  void initResponse(DachaKeyDetailsResponse edgeResponse);
 
   // notify the client of a new feature (if they have received their features)
   void notifyFeature(FeatureValueCacheItem rf);

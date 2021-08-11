@@ -7,6 +7,7 @@ import jakarta.inject.Inject
 import jakarta.ws.rs.NotFoundException
 import java.util.*
 
+
 class DachaEnvironmentResource @Inject constructor(private val cache: InternalCache) : DachaEnvironmentService {
   override fun getEnvironmentStructure(eId: UUID): DachaStructureResponse {
     val env = cache.findEnvironment(eId) ?: throw NotFoundException()

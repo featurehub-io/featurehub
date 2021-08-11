@@ -13,14 +13,28 @@ public interface InternalCache {
   class FeatureCollection {
     public Collection<FeatureValueCacheItem> features;
     public ServiceAccountPermission perms;
+    public UUID organizationId;
+    public UUID portfolioId;
+    public UUID applicationId;
 
-    public FeatureCollection(Collection<FeatureValueCacheItem> features, ServiceAccountPermission perms) {
+    public FeatureCollection(Collection<FeatureValueCacheItem> features, ServiceAccountPermission perms,
+                             UUID organizationId, UUID portfolioId, UUID applicationId) {
       this.features = features;
       this.perms = perms;
+      this.organizationId = organizationId;
+      this.portfolioId = portfolioId;
+      this.applicationId = applicationId;
     }
   }
 
+  /**
+   * Is this cache complete and ready for requests?
+   */
   boolean cacheComplete();
+
+  /*
+   * Register an action to complete when the cache is complete
+   */
   void onCompletion(Runnable notify);
 
   void clear();

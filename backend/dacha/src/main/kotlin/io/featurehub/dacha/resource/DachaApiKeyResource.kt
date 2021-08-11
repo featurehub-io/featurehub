@@ -14,6 +14,9 @@ class DachaApiKeyResource @Inject constructor(private val cache: InternalCache) 
     val collection = cache.getFeaturesByEnvironmentAndServiceAccount(eId, serviceAccountKey) ?: throw NotFoundException()
 
     return DachaKeyDetailsResponse()
+      .organizationId(collection.organizationId)
+      .portfolioId(collection.portfolioId)
+      .applicationId(collection.applicationId)
       .features(collection.features.toMutableList())
   }
 

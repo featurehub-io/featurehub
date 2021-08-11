@@ -1,6 +1,7 @@
 package io.featurehub.edge;
 
 import io.featurehub.edge.client.ClientConnection;
+import io.featurehub.mr.model.DachaKeyDetailsResponse;
 import io.featurehub.mr.model.EdgeInitResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,16 +37,18 @@ class InflightSSEListenerRequest {
     synchronized (sameRequestClients) {
       if (!sameRequestClients.isEmpty()) {
         controller.unlistenForFeatureUpdates(sameRequestClients.stream().findFirst().get().getNamedCache());
+
         sameRequestClients.forEach(client -> controller.listenExecutor(() -> {
           client.failed("unable to communicate with named cache.");
           controller.clientRemoved(client);
         }));
+
         sameRequestClients.clear();
       }
     }
   }
 
-  void success(EdgeInitResponse response) {
+  void success(final DachaKeyDetailsResponse response) {
     synchronized (sameRequestClients) {
       sameRequestClients.forEach(client -> controller.listenExecutor(() -> {
         client.initResponse(response);

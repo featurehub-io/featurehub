@@ -5,6 +5,7 @@ import io.featurehub.edge.FeatureTransformer;
 import io.featurehub.edge.KeyParts;
 import io.featurehub.edge.stats.StatRecorder;
 import io.featurehub.edge.strategies.ClientContext;
+import io.featurehub.mr.model.DachaKeyDetailsResponse;
 import io.featurehub.mr.model.EdgeInitResponse;
 import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.mr.model.PublishAction;
@@ -148,20 +149,19 @@ public class TimedBucketClientConnection implements ClientConnection {
   }
 
   @Override
-  public void initResponse(EdgeInitResponse edgeResponse) {
-    if (Boolean.TRUE.equals(edgeResponse.getSuccess())) {
+  public void initResponse(DachaKeyDetailsResponse edgeResponse) {
+    try {
+      apiKey.setOrganisationId(edgeResponse.getOrganizationId());
+      apiKey.setPortfolioId(edgeResponse.getPortfolioId());
+      apiKey.setApplicationId(edgeResponse.getApplicationId());
+
       try {
         writeMessage(
             SSEResultState.FEATURES,
             CacheJsonMapper.mapper.writeValueAsString(
                 featureTransformer.transform(edgeResponse.getFeatures(), attributesForStrategy)));
 
-        if (!output.isClosed()) {
-          statRecorder.recordHit(apiKey, EdgeHitResultType.SUCCESS, EdgeHitSourceType.EVENTSOURCE);
-        } else {
-          statRecorder.recordHit(
-              apiKey, EdgeHitResultType.FAILED_TO_WRITE_ON_INIT, EdgeHitSourceType.EVENTSOURCE);
-        }
+        statRecorder.recordHit(apiKey, EdgeHitResultType.SUCCESS, EdgeHitSourceType.EVENTSOURCE);
 
         List<FeatureValueCacheItem> heldUpdates = heldFeatureUpdates;
 
@@ -170,11 +170,12 @@ public class TimedBucketClientConnection implements ClientConnection {
         if (heldUpdates != null) {
           heldUpdates.forEach(this::notifyFeature);
         }
-      } catch (Exception e) {
-        failed("Could not write initial features");
+      } catch (IOException iex) {
+        statRecorder.recordHit(
+          apiKey, EdgeHitResultType.FAILED_TO_WRITE_ON_INIT, EdgeHitSourceType.EVENTSOURCE);
       }
-    } else {
-      failed("Invalid combination of environment, apiKey, named cache or not yet initialized.");
+    } catch (Exception e) {
+      failed("Could not write initial features");
     }
   }
 

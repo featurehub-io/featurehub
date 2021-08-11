@@ -7,6 +7,7 @@ import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
 import cd.connect.openapi.support.ReturnStatusContainerResponseFilter;
 import io.featurehub.dacha.CacheManager;
+import io.featurehub.dacha.DachaFeature;
 import io.featurehub.edge.EdgeFeature;
 import io.featurehub.edge.EdgeResourceFeature;
 import io.featurehub.health.HealthSource;
@@ -60,6 +61,7 @@ public class Application {
       .register(OAuth2Feature.class)
       .register(ManagementRepositoryFeature.class)
       .register(EdgeResourceFeature.class)
+      .register(DachaFeature.class)
       .register(EdgeFeature.class);
 
     // check if we should list on a different port

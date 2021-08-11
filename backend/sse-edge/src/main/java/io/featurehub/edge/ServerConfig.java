@@ -6,9 +6,11 @@ import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.featurehub.dacha.api.CacheJsonMapper;
+import io.featurehub.dacha.api.DachaApiKeyService;
 import io.featurehub.edge.client.ClientConnection;
 import io.featurehub.edge.strategies.ClientContext;
 import io.featurehub.mr.messaging.StreamedFeatureUpdate;
+import io.featurehub.mr.model.DachaKeyDetailsResponse;
 import io.featurehub.mr.model.EdgeInitPermissionResponse;
 import io.featurehub.mr.model.EdgeInitRequest;
 import io.featurehub.mr.model.EdgeInitRequestCommand;
@@ -23,6 +25,7 @@ import io.nats.client.Dispatcher;
 import io.nats.client.Message;
 import io.nats.client.Nats;
 import io.nats.client.Options;
+import jakarta.ws.rs.NotFoundException;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,6 +85,7 @@ class NamedCacheListener {
 
 public class ServerConfig implements ServerController, NATSSource {
   private static final Logger log = LoggerFactory.getLogger(ServerConfig.class);
+  private final DachaApiKeyService apiKeyService;
   @ConfigKey("nats.urls")
   public String natsServer = "nats://localhost:4222";
   private final ExecutorService updateExecutor;
@@ -99,7 +103,9 @@ public class ServerConfig implements ServerController, NATSSource {
   private final Map<String, NamedCacheListener> cacheListeners = new ConcurrentHashMap<>();
   private final FeatureTransformer featureTransformer = new FeatureTransformerUtils();
 
-  public ServerConfig() {
+  public ServerConfig(DachaApiKeyService apiKeyService) {
+    this.apiKeyService = apiKeyService;
+
     DeclaredConfigResolver.resolve(this);
 
     Options options = new Options.Builder().server(natsServer).build();
@@ -211,31 +217,18 @@ public class ServerConfig implements ServerController, NATSSource {
     // if we are the first one, make the request. If any follow before this one finishes it gets this result
     if (inflightSSEListenerRequest.add(client) == 0) {
       listenExecutor.submit(() -> {
-        EdgeInitRequest request = new EdgeInitRequest()
-          .command(EdgeInitRequestCommand.LISTEN)
-          .apiKey(client.getApiKey())
-          .environmentId(client.getEnvironmentId());
-
         try {
           String subject = client.getNamedCache() + "/" + ChannelConstants.EDGE_CACHE_CHANNEL;
 
           listenForFeatureUpdates(client.getNamedCache());
 
-          Message response = connection.request(subject, CacheJsonMapper.mapper.writeValueAsBytes(request), Duration.ofMillis(namedCacheTimeout));
+          final DachaKeyDetailsResponse apiKeyDetails = apiKeyService.getApiKeyDetails(client.getEnvironmentId(),
+                client.getApiKey());
 
-          if (response != null) {
-            EdgeInitResponse edgeResponse = CacheJsonMapper.mapper.readValue(response.getData(), EdgeInitResponse.class);
-
-            if (Boolean.TRUE.equals(edgeResponse.getSuccess())) {
-              inflightSSEListenerRequest.success(edgeResponse);
-              return;
-            }
-          }
-        } catch (Exception e) {
-          log.error("Failed to communicate with cache", e);
+          inflightSSEListenerRequest.success(apiKeyDetails);
+        } catch (Exception nfe) {
+          inflightSSEListenerRequest.reject();
         }
-
-        inflightSSEListenerRequest.reject();
       });
     }
   }

@@ -8,6 +8,7 @@ import cd.connect.jersey.common.CorsFilter;
 import cd.connect.jersey.common.LoggingConfiguration;
 import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
+import io.featurehub.dacha.api.DachaClientFeature;
 import io.featurehub.health.HealthSource;
 import io.featurehub.health.MetricsHealthRegistration;
 import io.featurehub.jersey.config.EndpointLoggingListener;
@@ -47,6 +48,7 @@ public class Application {
       .register(CommonConfiguration.class)
       .register(CorsFilter.class)
       .register(LoggingConfiguration.class)
+      .register(DachaClientFeature.class)
       .register(EdgeFeature.class)
       .register(EdgeResourceFeature.class)
       ;
