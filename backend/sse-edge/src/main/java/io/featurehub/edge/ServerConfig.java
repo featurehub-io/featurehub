@@ -8,15 +8,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.featurehub.dacha.api.CacheJsonMapper;
 import io.featurehub.dacha.api.DachaApiKeyService;
 import io.featurehub.edge.client.ClientConnection;
-import io.featurehub.edge.strategies.ClientContext;
 import io.featurehub.mr.messaging.StreamedFeatureUpdate;
 import io.featurehub.mr.model.DachaKeyDetailsResponse;
 import io.featurehub.mr.model.DachaPermissionResponse;
 import io.featurehub.mr.model.FeatureValueCacheItem;
-import io.featurehub.publish.ChannelConstants;
 import io.featurehub.publish.ChannelNames;
 import io.featurehub.publish.NATSSource;
-import io.featurehub.sse.model.Environment;
 import io.nats.client.Connection;
 import io.nats.client.Dispatcher;
 import io.nats.client.Message;
@@ -27,22 +24,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
 class NamedCacheListener {
   private static final Logger log = LoggerFactory.getLogger(NamedCacheListener.class);
@@ -82,16 +72,18 @@ class NamedCacheListener {
 public class ServerConfig implements ServerController, NATSSource {
   private static final Logger log = LoggerFactory.getLogger(ServerConfig.class);
   private final DachaApiKeyService apiKeyService;
+
   @ConfigKey("nats.urls")
   public String natsServer = "nats://localhost:4222";
   private final ExecutorService updateExecutor;
   private final ExecutorService listenExecutor;
+
   @ConfigKey("update.pool-size")
   Integer updatePoolSize = 10;
+
   @ConfigKey("listen.pool-size")
   Integer listenPoolSize = 10;
-  @ConfigKey("edge.dacha.response-timeout")
-  Integer namedCacheTimeout = 2000; // milliseconds to wait for dacha to responsd
+
   private final Connection connection;
   // environmentId, list of connections for that environment
   private final Map<UUID, Collection<ClientConnection>> clientBuckets = new ConcurrentHashMap<>();
@@ -256,45 +248,11 @@ public class ServerConfig implements ServerController, NATSSource {
     inflightSSEListenerRequests.remove(key);
   }
 
-  protected Environment getEnvironmentFeaturesBySdk(KeyParts key, ClientContext clientContext) {
-
-    try {
-      final DachaKeyDetailsResponse details = apiKeyService.getApiKeyDetails(key.getEnvironmentId(), key.getServiceKey());
-
-      copyKeyDetails(key, details);
-
-      return new Environment().id(key.getEnvironmentId()).features(featureTransformer.transform(details.getFeatures(), clientContext));
-    } catch (Exception e) {
-      log.error("Failed to get details and transform");
-      return null;
-    }
-  }
-
   private void copyKeyDetails(KeyParts key, DachaKeyDetailsResponse details) {
     key.setOrganisationId(details.getOrganizationId());
     key.setPortfolioId(details.getPortfolioId());
     key.setApplicationId(details.getApplicationId());
     key.setServiceKeyId(details.getServiceKeyId());
-  }
-
-  public List<Environment> requestFeatures(List<KeyParts> keys, ClientContext clientContext) {
-    List<CompletableFuture<Environment>> futures = new ArrayList<>();
-
-    keys.forEach(key -> futures.add(CompletableFuture.supplyAsync(() ->
-        getEnvironmentFeaturesBySdk(key, clientContext), listenExecutor)));
-
-    if (!futures.isEmpty()) {
-      try {
-        return
-          CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenApply((f) -> futures.stream()
-          .map(CompletableFuture::join).collect(Collectors.toList())).get().stream()
-            .filter(Objects::nonNull).collect(Collectors.toList());
-      } catch (InterruptedException|ExecutionException e) {
-        log.error("GET failed for features.", e);
-      }
-    }
-
-    return new ArrayList<>();
   }
 
   @NotNull

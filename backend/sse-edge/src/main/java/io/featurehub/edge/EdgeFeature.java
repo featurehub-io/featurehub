@@ -32,6 +32,9 @@ public class EdgeFeature implements Feature {
                 bind(FeatureTransformerUtils.class)
                     .to(FeatureTransformer.class)
                     .in(Singleton.class);
+                bind(ConcurrentRequestPool.class).to(EdgeConcurrentRequestPool.class).in(Singleton.class);
+                bind(InflightGETOrchestrator.class).to(InflightGETSubmitter.class).in(Singleton.class);
+
               }
             })
         .register(

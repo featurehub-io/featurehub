@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.featurehub.edge.FeatureTransformer;
 import io.featurehub.edge.FeatureTransformerUtils;
+import io.featurehub.edge.InflightGETSubmitter;
 import io.featurehub.edge.ServerConfig;
 import io.featurehub.edge.bucket.EventOutputBucketService;
 import io.featurehub.edge.client.ClientConnection;
@@ -52,6 +53,7 @@ public class EventStreamResource {
   private final EventOutputBucketService bucketService;
   private final ServerConfig serverConfig;
   private final StatRecorder statRecorder;
+  private final InflightGETSubmitter getOrchestrator;
   private final FeatureTransformer featureTransformer;
   private final ObjectMapper mapper = new ObjectMapper();
 
@@ -63,10 +65,12 @@ public class EventStreamResource {
     "time that the connection is open for Testing clients").create();
 
   @Inject
-  public EventStreamResource(EventOutputBucketService bucketService, ServerConfig serverConfig, StatRecorder statRecorder) {
+  public EventStreamResource(EventOutputBucketService bucketService, ServerConfig serverConfig,
+                             StatRecorder statRecorder, InflightGETSubmitter getOrchestrator) {
     this.bucketService = bucketService;
     this.serverConfig = serverConfig;
     this.statRecorder = statRecorder;
+    this.getOrchestrator = getOrchestrator;
     featureTransformer = new FeatureTransformerUtils();
 
     mapper.enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
@@ -93,7 +97,7 @@ public class EventStreamResource {
         .map(KeyParts.Companion::fromString)
         .filter(Objects::nonNull).collect(Collectors.toList());
 
-    final List<Environment> environments = serverConfig.requestFeatures(realApiKeys,
+    final List<Environment> environments = getOrchestrator.request(realApiKeys,
       ClientContext.decode(featureHubAttrs, realApiKeys));
 
     // record the result

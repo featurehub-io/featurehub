@@ -16,12 +16,17 @@ interface InflightGETSubmitter {
    * we have a result, don't use this request again
    */
   fun removeGET(key: KeyParts)
+
+  /*
+   * Requests a bunch of environment details from Dacha in the most efficient way possible
+   */
+  fun request(keys: List<KeyParts>, context: ClientContext) : List<Environment>
 }
 
 class InflightGETOrchestrator @Inject constructor(private val featureTransformer: FeatureTransformer, private val dachaApi: DachaApiKeyService, private val executor: EdgeConcurrentRequestPool) : InflightGETSubmitter {
   private val getMap = ConcurrentHashMap<KeyParts, InflightGETRequest>()
 
-  fun request(keys: List<KeyParts>, context: ClientContext) : List<Environment> {
+  override fun request(keys: List<KeyParts>, context: ClientContext) : List<Environment> {
     val future = CompletableFuture<List<Environment>>()
 
     // get an existing or create a new one for each of the sdk urls
