@@ -17,6 +17,7 @@ class DachaApiKeyResource @Inject constructor(private val cache: InternalCache) 
       .organizationId(collection.organizationId)
       .portfolioId(collection.portfolioId)
       .applicationId(collection.applicationId)
+      .serviceKeyId(collection.serviceAccountId)
       .features(collection.features.toMutableList())
   }
 
@@ -26,6 +27,10 @@ class DachaApiKeyResource @Inject constructor(private val cache: InternalCache) 
     val feature = collection.features.find { fv -> fv.feature?.key?.equals(featureKey) == true } ?: throw NotFoundException()
 
     return DachaPermissionResponse()
+      .organizationId(collection.organizationId)
+      .portfolioId(collection.portfolioId)
+      .applicationId(collection.applicationId)
+      .serviceKeyId(collection.serviceAccountId)
       .roles(collection.perms.permissions)
       .feature(DachaFeatureValueItem()
         .feature(feature.feature)

@@ -16,14 +16,16 @@ public interface InternalCache {
     public UUID organizationId;
     public UUID portfolioId;
     public UUID applicationId;
+    public UUID serviceAccountId;
 
     public FeatureCollection(Collection<FeatureValueCacheItem> features, ServiceAccountPermission perms,
-                             UUID organizationId, UUID portfolioId, UUID applicationId) {
+                             UUID organizationId, UUID portfolioId, UUID applicationId, UUID serviceAccountId) {
       this.features = features;
       this.perms = perms;
       this.organizationId = organizationId;
       this.portfolioId = portfolioId;
       this.applicationId = applicationId;
+      this.serviceAccountId = serviceAccountId;
     }
   }
 

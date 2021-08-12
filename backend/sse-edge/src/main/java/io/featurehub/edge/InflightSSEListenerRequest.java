@@ -11,10 +11,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 class InflightSSEListenerRequest {
   private static final Logger log = LoggerFactory.getLogger(InflightSSEListenerRequest.class);
   private final Collection<ClientConnection> sameRequestClients = new ConcurrentLinkedQueue<>();
-  private final String key;
+  private final KeyParts key;
   private final ServerController controller;
 
-  InflightSSEListenerRequest(String key, ServerController controller) {
+  InflightSSEListenerRequest(KeyParts key, ServerController controller) {
     this.key = key;
     this.controller = controller;
   }

@@ -75,11 +75,9 @@ public class CacheManager implements MessageHandler, HealthSource {
     if (masterTimer != null) {
       masterTimer.cancel();
     }
+
     setCurrentAction(CacheAction.AT_REST);
     log.info("cache ({}:{}) filled, at rest.", id, mit);
-
-    // we now know we are ready to listen for any environmental requests from Edge servers
-    config.listenForEnvironmentRequests(new EdgeHandler(internalCache));
   }
 
   public void init() {

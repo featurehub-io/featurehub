@@ -11,5 +11,5 @@ public interface ServerController {
 
   void listenExecutor(Runnable runnable);
 
-  void removeInflightSSEListenerRequest(String key);
+  void removeInflightSSEListenerRequest(KeyParts key);
 }

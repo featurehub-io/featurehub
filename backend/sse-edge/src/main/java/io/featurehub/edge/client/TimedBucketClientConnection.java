@@ -73,6 +73,11 @@ public class TimedBucketClientConnection implements ClientConnection {
   }
 
   @Override
+  public KeyParts getKey() {
+    return apiKey;
+  }
+
+  @Override
   public void writeMessage(SSEResultState name, String data) throws IOException {
     if (!output.isClosed()) {
       final OutboundEvent.Builder eventBuilder = new OutboundEvent.Builder();
@@ -150,10 +155,6 @@ public class TimedBucketClientConnection implements ClientConnection {
   @Override
   public void initResponse(DachaKeyDetailsResponse edgeResponse) {
     try {
-      apiKey.setOrganisationId(edgeResponse.getOrganizationId());
-      apiKey.setPortfolioId(edgeResponse.getPortfolioId());
-      apiKey.setApplicationId(edgeResponse.getApplicationId());
-
       try {
         writeMessage(
             SSEResultState.FEATURES,

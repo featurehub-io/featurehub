@@ -177,12 +177,17 @@ public class EventStreamResource {
     final KeyParts key = new KeyParts(namedCache, envId, apiKey);
 
     try {
-      final DachaPermissionResponse perms = serverConfig.requestPermission(namedCache, apiKey, envId, featureKey);
+      final DachaPermissionResponse perms = serverConfig.requestPermission(key, featureKey);
 
       if (perms == null) {
         statRecorder.recordHit(key, EdgeHitResultType.MISSED, EdgeHitSourceType.TESTSDK);
         return Response.status(Response.Status.NOT_FOUND).build();
       }
+
+      key.setApplicationId(perms.getApplicationId());
+      key.setOrganisationId(perms.getOrganizationId());
+      key.setPortfolioId(perms.getPortfolioId());
+      key.setServiceKeyId(perms.getServiceKeyId());
 
       if (perms.getRoles().isEmpty() || (perms.getRoles().size() == 1 && perms.getRoles().get(0) == RoleType.READ)) {
         statRecorder.recordHit(key, EdgeHitResultType.FORBIDDEN, EdgeHitSourceType.TESTSDK);

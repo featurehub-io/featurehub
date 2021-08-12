@@ -4,6 +4,10 @@ import java.util.*
 
 class KeyParts(val cacheName: String, val environmentId: UUID, val serviceKey: String) {
 
+  // we try and collect this data at creation time because it can get removed or deleted by
+  // the environment owner at any point, meaning we would have to query it from the database
+  // it also means if it drops into something like kafka or NATs Streaming or Pulsar then
+  // it is re-playable
   var organisationId: UUID? = null
   var portfolioId: UUID? = null
   var applicationId: UUID? = null

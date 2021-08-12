@@ -195,6 +195,23 @@ components:
         - roles
         - feature
       properties:
+        organizationId:
+          x-basename: oId
+          type: string
+          format: uuid
+        portfolioId:
+          x-basename: pId
+          type: string
+          format: uuid
+        applicationId:
+          x-basename: aId
+          type: string
+          format: uuid
+        serviceKeyId:
+          description: "The actual service key id rather than the key"
+          x-basename: sId
+          type: string
+          format: uuid
         roles:
           type: array
           items:
@@ -244,6 +261,11 @@ components:
           format: uuid
         applicationId:
           x-basename: aId
+          type: string
+          format: uuid
+        serviceKeyId:
+          description: "The actual service key id rather than the key"
+          x-basename: sId
           type: string
           format: uuid
         features:

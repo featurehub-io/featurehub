@@ -1,5 +1,6 @@
 package io.featurehub.edge.client;
 
+import io.featurehub.edge.KeyParts;
 import io.featurehub.mr.model.DachaKeyDetailsResponse;
 import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.sse.model.SSEResultState;
@@ -13,6 +14,8 @@ public interface ClientConnection {
   UUID getEnvironmentId();
 
   String getApiKey();
+
+  KeyParts getKey();
 
   void writeMessage(SSEResultState name, String data) throws IOException;
 

@@ -31,12 +31,22 @@ class DachaApiKeyResourceSpec extends Specification {
       def eId = UUID.randomUUID()
       def sKey = "123*456"
     and: "we have a internal cache"
-      cache.getFeaturesByEnvironmentAndServiceAccount(eId, sKey) >> new InternalCache.FeatureCollection([new FeatureValueCacheItem().environmentId(eId)], new ServiceAccountPermission())
+      def orgId = UUID.randomUUID()
+      def portId = UUID.randomUUID()
+      def appId = UUID.randomUUID()
+      def serviceAccountId = UUID.randomUUID()
+
+      cache.getFeaturesByEnvironmentAndServiceAccount(eId, sKey) >> new InternalCache.FeatureCollection([new FeatureValueCacheItem().environmentId(eId)], new ServiceAccountPermission(),
+          orgId, portId, appId, serviceAccountId)
     when: "we ask for a bad key"
       def details = resource.getApiKeyDetails(eId, sKey)
     then:
       details.features.size() == 1
       details.features[0].environmentId == eId
+      details.organizationId == orgId
+      details.portfolioId == portId
+      details.applicationId == appId
+      details.serviceKeyId == serviceAccountId
   }
 
   def "if we ask for permissions for a key combo that doesn't exist we get a NFE"() {
@@ -50,7 +60,8 @@ class DachaApiKeyResourceSpec extends Specification {
 
   def "if we ask for a feature key that doesn't exist we get a NFE"() {
     given: "we tell the cache to accept the request"
-      cache.getFeaturesByEnvironmentAndServiceAccount(_, _) >> new InternalCache.FeatureCollection([new FeatureValueCacheItem()], new ServiceAccountPermission())
+      cache.getFeaturesByEnvironmentAndServiceAccount(_, _) >> new InternalCache.FeatureCollection([new FeatureValueCacheItem()], new ServiceAccountPermission(),
+        UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID())
     when: "we ask for a key that isn't in the list"
       resource.getApiKeyPermissions(UUID.randomUUID(), "xxx", "FEATURE_ONE")
     then:
@@ -60,13 +71,21 @@ class DachaApiKeyResourceSpec extends Specification {
   def "if we ask for a key that does exist, we get details and roles back"() {
     given: "we tell the cache to accept the request"
       def key = 'FEATURE_ONE'
+      def orgId = UUID.randomUUID()
+      def portId = UUID.randomUUID()
+      def appId = UUID.randomUUID()
+      def serviceAccountId = UUID.randomUUID()
       cache.getFeaturesByEnvironmentAndServiceAccount(_, _) >> new InternalCache.FeatureCollection([new FeatureValueCacheItem().feature(
         new Feature().key(key)
-      )], new ServiceAccountPermission().permissions([RoleType.CHANGE_VALUE]))
+      )], new ServiceAccountPermission().permissions([RoleType.CHANGE_VALUE]), orgId, portId, appId, serviceAccountId)
     when: "we ask for a key that isn't in the list"
       def details = resource.getApiKeyPermissions(UUID.randomUUID(), "xxx", key)
     then:
       details.roles == [RoleType.CHANGE_VALUE]
       details.feature.feature.key == key
+      details.organizationId == orgId
+      details.portfolioId == portId
+      details.applicationId == appId
+      details.serviceKeyId == serviceAccountId
   }
 }

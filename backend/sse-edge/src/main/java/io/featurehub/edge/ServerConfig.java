@@ -179,7 +179,7 @@ public class ServerConfig implements ServerController, NATSSource {
     }
   }
 
-  private final Map<String, InflightSSEListenerRequest> inflightSSEListenerRequests = new ConcurrentHashMap<>();
+  private final Map<KeyParts, InflightSSEListenerRequest> inflightSSEListenerRequests = new ConcurrentHashMap<>();
 
   // this ensures we don't get an ever growing memory leak of sdk requests that no-one is using
   // if we don't do this, it can lead to an attack that would rob an Edge listener of remaining memory
@@ -199,40 +199,38 @@ public class ServerConfig implements ServerController, NATSSource {
   // keep track of expired one so we can walk through periodically and delete them
 //  private Map<String, InflightSdkUrlRequest> expired
 
+
+
   public void requestFeatures(final ClientConnection client) {
     clientBuckets.computeIfAbsent(client.getEnvironmentId(), (k) -> new ConcurrentLinkedQueue<>()).add(client);
 
-    final int clientEvaluationIndex = client.getApiKey().indexOf("*");
-    // this is temporary, we just strip the *... off
-    final String apiKey = clientEvaluationIndex >= 0 ? client.getApiKey().substring(0, clientEvaluationIndex) :
-      client.getApiKey();
-    final String key = apiKey + "," + client.getEnvironmentId();
-    final InflightSSEListenerRequest inflightSSEListenerRequest = inflightSSEListenerRequests.computeIfAbsent(key,
-        (k) -> new InflightSSEListenerRequest(key, this));
+    final KeyParts key = client.getKey();
+    final InflightSSEListenerRequest inflightSSEListenerRequest =
+      inflightSSEListenerRequests.computeIfAbsent(key, (k) -> new InflightSSEListenerRequest(k, this));
 
     // if we are the first one, make the request. If any follow before this one finishes it gets this result
     if (inflightSSEListenerRequest.add(client) == 0) {
-      listenExecutor.submit(() -> {
-        try {
-          String subject = client.getNamedCache() + "/" + ChannelConstants.EDGE_CACHE_CHANNEL;
+      listenExecutor.submit(
+          () -> {
+            try {
+              listenForFeatureUpdates(key.getCacheName());
 
-          listenForFeatureUpdates(client.getNamedCache());
+              final DachaKeyDetailsResponse details =
+                  apiKeyService.getApiKeyDetails(key.getEnvironmentId(), key.getServiceKey());
 
-          final DachaKeyDetailsResponse apiKeyDetails = apiKeyService.getApiKeyDetails(client.getEnvironmentId(),
-                client.getApiKey());
+              copyKeyDetails(key, details);
 
-          inflightSSEListenerRequest.success(apiKeyDetails);
-        } catch (Exception nfe) {
-          inflightSSEListenerRequest.reject();
-        }
-      });
+              inflightSSEListenerRequest.success(details);
+            } catch (Exception nfe) {
+              inflightSSEListenerRequest.reject();
+            }
+          });
     }
   }
 
-  public DachaPermissionResponse requestPermission(String namedCache, String apiKey, UUID environmentId,
-                                                   String featureKey) {
+  public DachaPermissionResponse requestPermission(KeyParts key, String featureKey) {
     try {
-      return apiKeyService.getApiKeyPermissions(environmentId, apiKey, featureKey);
+      return apiKeyService.getApiKeyPermissions(key.getEnvironmentId(), key.getServiceKey(), featureKey);
     } catch (Exception ignored) {
       return null;
     }
@@ -254,29 +252,36 @@ public class ServerConfig implements ServerController, NATSSource {
   }
 
   @Override
-  public void removeInflightSSEListenerRequest(String key) {
+  public void removeInflightSSEListenerRequest(KeyParts key) {
     inflightSSEListenerRequests.remove(key);
   }
 
-  protected Environment getEnvironmentFeaturesBySdk(String namedCache, String apiKey,
-                                                    UUID envId, ClientContext clientContext) {
+  protected Environment getEnvironmentFeaturesBySdk(KeyParts key, ClientContext clientContext) {
 
     try {
-      final DachaKeyDetailsResponse details = apiKeyService.getApiKeyDetails(envId, apiKey);
+      final DachaKeyDetailsResponse details = apiKeyService.getApiKeyDetails(key.getEnvironmentId(), key.getServiceKey());
 
-      return new Environment().id(envId).features(featureTransformer.transform(details.getFeatures(), clientContext));
+      copyKeyDetails(key, details);
+
+      return new Environment().id(key.getEnvironmentId()).features(featureTransformer.transform(details.getFeatures(), clientContext));
     } catch (Exception e) {
       log.error("Failed to get details and transform");
       return null;
     }
   }
 
+  private void copyKeyDetails(KeyParts key, DachaKeyDetailsResponse details) {
+    key.setOrganisationId(details.getOrganizationId());
+    key.setPortfolioId(details.getPortfolioId());
+    key.setApplicationId(details.getApplicationId());
+    key.setServiceKeyId(details.getServiceKeyId());
+  }
+
   public List<Environment> requestFeatures(List<KeyParts> keys, ClientContext clientContext) {
     List<CompletableFuture<Environment>> futures = new ArrayList<>();
 
-    keys.forEach(url -> futures.add(CompletableFuture.supplyAsync(() -> getEnvironmentFeaturesBySdk(url.getCacheName(),
-      url.getServiceKey(), url.getEnvironmentId(), clientContext),
-      listenExecutor)));
+    keys.forEach(key -> futures.add(CompletableFuture.supplyAsync(() ->
+        getEnvironmentFeaturesBySdk(key, clientContext), listenExecutor)));
 
     if (!futures.isEmpty()) {
       try {
