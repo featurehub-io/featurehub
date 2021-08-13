@@ -6,18 +6,17 @@ Welcome to the Javascript/Typescript SDK implementation for [FeatureHub.io](http
 This documentation covers both [featurehub-javascript-node-sdk](https://www.npmjs.com/featurehub-javascript-node-sdk) and [featurehub-javascript-client-sdk](https://www.npmjs.com/featurehub-javascript-client-sdk) and explains how you can use the FeatureHub SDK in Javascript or Typescript for applications like Node.js
 backend server, Web front-end (e.g. React) or Mobile apps (React Native, Ionic, etc.). 
 
-
 To control the feature flags from the FeatureHub Admin console, either use our [demo](https://demo.featurehub.io) version for evaluation or install the app using our guide [here](http://docs.featurehub.io/#_installation)
-
 
 ### **Important Note**
 
 We have deprecated [FeatureHub Eventsource Javascript SDK](https://www.npmjs.com/package/featurehub-eventsource-sdk) which covers both client (browser) and server (node) applications in favor of splitting it into two separate NPM modules to enable support for additional browser frameworks like Angular and Vue. To transition to one of the new NPM modules, follow installation instructions below and change the imports in your code. The FeatureHub SDK API hasn't changed so you don't have to reimplement your SDK code.
 
-
 ## Changelog
 
 ### featurehub-javascript-client-sdk
+#### 1.0.6
+- Fix to the SSE client where it can create an excess of connections to the server.
 #### 1.0.5
 - Fix an issue with the polling client. We _strongly_ recommend people upgrade to this version if using the Polling client.  
 #### 1.0.4
