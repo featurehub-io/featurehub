@@ -1,6 +1,6 @@
 {
   "name": "featurehub-javascript-node-sdk",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "featurehub sdk intended for use by nodejs.",
   "author": "info@featurehub.io",
   "main": "dist/index.js",
@@ -40,7 +40,7 @@
     "coverage": "nyc npm run test",
     "test:watch": "npm run mocha --opts mocha.opts --watch",
     "tsc": "node ./node_modules/typescript/bin/tsc -p",
-    "link": "npm link featurehub-repository && npm link featurehub-eventsource-sdk",
+    "link": "npm link featurehub-javascript-client-sdk",
     "compile": "npm run build && npm link",
     "release": "rm README.md && cp ../featurehub-javascript-client-sdk/README.md . && npm run build && npm publish",
     "prepublishOnly": "npm run build",
@@ -61,7 +61,7 @@
   },
   "dependencies": {
     "eventsource": "^1.1.0",
-    "featurehub-javascript-client-sdk": "^1.0.5"
+    "featurehub-javascript-client-sdk": "^1.0.6"
   },
   "engines": {
     "node": ">=12.12.0"
