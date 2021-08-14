@@ -8,6 +8,7 @@ import io.featurehub.health.MetricsHealthRegistration;
 import io.featurehub.jersey.config.EndpointLoggingListener;
 import io.featurehub.mr.ManagementRepositoryFeature;
 import io.featurehub.mr.utils.NginxUtils;
+import io.featurehub.publish.NATSFeature;
 import io.featurehub.web.security.oauth.OAuth2Feature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
@@ -32,11 +33,12 @@ public class Application {
   private void run() throws Exception {
     // register our resources, try and tag them as singleton as they are instantiated faster
     ResourceConfig config = new ResourceConfig(
-      CommonFeatureHubFeatures.class
-      )
-      .register(EndpointLoggingListener.class)
-      .register(ManagementRepositoryFeature.class)
-      .register(OAuth2Feature.class);
+      CommonFeatureHubFeatures.class,
+      EndpointLoggingListener.class,
+      ManagementRepositoryFeature.class,
+      OAuth2Feature.class,
+      NATSFeature.class
+      );
 
     MetricsHealthRegistration.Companion.registerMetrics(config);
 

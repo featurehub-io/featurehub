@@ -174,7 +174,6 @@
       <artifactId>composite-prometheus</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
-
   </dependencies>
 
   <build>

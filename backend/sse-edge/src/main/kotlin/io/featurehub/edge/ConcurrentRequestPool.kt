@@ -7,13 +7,13 @@ import java.util.concurrent.Executors
 
 class ConcurrentRequestPool : EdgeConcurrentRequestPool {
   @ConfigKey("listen.pool-size")
-  var edgePoolSize : Int = 10
+  var edgePoolSize : Int? = 10
   val executor: ExecutorService
 
   init {
     DeclaredConfigResolver.resolve(this)
 
-    executor = Executors.newFixedThreadPool(edgePoolSize)
+    executor = Executors.newFixedThreadPool(edgePoolSize!!)
   }
 
   override fun execute(task: Runnable) {

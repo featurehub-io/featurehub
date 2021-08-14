@@ -11,9 +11,12 @@ import io.featurehub.mr.model.CacheManagementMessage;
 import io.featurehub.mr.model.CacheRequestType;
 import io.featurehub.mr.model.CacheState;
 import io.featurehub.publish.ChannelNames;
+import io.featurehub.publish.NATSSource;
 import io.nats.client.Dispatcher;
 import io.nats.client.Message;
 import io.nats.client.MessageHandler;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +42,7 @@ public class CacheManager implements MessageHandler, HealthSource {
   private CacheAction currentAction;
   private final InternalCache internalCache;
   private final ServerConfig config;
+  private final NATSSource natsSource;
   private boolean foundMR = false;
   private UUID idOfRefreshSource = null;
   private ExecutorService executor;
@@ -46,9 +50,11 @@ public class CacheManager implements MessageHandler, HealthSource {
   Integer cachePoolSize = 10;
 
 
-  public CacheManager(InternalCache internalCache,  ServerConfig config) {
+  @Inject
+  public CacheManager(InternalCache internalCache, ServerConfig config, NATSSource natsSource) {
     this.internalCache = internalCache;
     this.config = config;
+    this.natsSource = natsSource;
 
     DeclaredConfigResolver.resolve(this);
 
@@ -80,12 +86,13 @@ public class CacheManager implements MessageHandler, HealthSource {
     log.info("cache ({}:{}) filled, at rest.", id, mit);
   }
 
+  @PostConstruct
   public void init() {
     final String channelName = ChannelNames.managementChannel(config.name);
 
     log.info("subscribing {}:{} to channel `{}`", id, mit, channelName);
 
-    cacheManagerDispatcher = config.getConnection().createDispatcher(this);
+    cacheManagerDispatcher = natsSource.getConnection().createDispatcher(this);
     cacheManagerDispatcher.subscribe(channelName);
 
     actionTimer = new CacheTimer();

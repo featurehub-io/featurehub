@@ -7,6 +7,7 @@ import cd.connect.lifecycle.LifecycleStatus;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.featurehub.dacha.api.CacheJsonMapper;
 import io.featurehub.dacha.api.DachaApiKeyService;
+import io.featurehub.dacha.api.DachaClientServiceRegistry;
 import io.featurehub.edge.client.ClientConnection;
 import io.featurehub.mr.messaging.StreamedFeatureUpdate;
 import io.featurehub.mr.model.DachaKeyDetailsResponse;
@@ -14,12 +15,9 @@ import io.featurehub.mr.model.DachaPermissionResponse;
 import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.publish.ChannelNames;
 import io.featurehub.publish.NATSSource;
-import io.nats.client.Connection;
 import io.nats.client.Dispatcher;
 import io.nats.client.Message;
-import io.nats.client.Nats;
-import io.nats.client.Options;
-import org.jetbrains.annotations.NotNull;
+import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,12 +67,11 @@ class NamedCacheListener {
   }
 }
 
-public class ServerConfig implements ServerController, NATSSource {
+public class ServerConfig implements ServerController {
   private static final Logger log = LoggerFactory.getLogger(ServerConfig.class);
-  private final DachaApiKeyService apiKeyService;
+  private final DachaClientServiceRegistry dachaClientRegistry;
+  private final NATSSource natsSource;
 
-  @ConfigKey("nats.urls")
-  public String natsServer = "nats://localhost:4222";
   private final ExecutorService updateExecutor;
   private final ExecutorService listenExecutor;
 
@@ -84,30 +81,23 @@ public class ServerConfig implements ServerController, NATSSource {
   @ConfigKey("listen.pool-size")
   Integer listenPoolSize = 10;
 
-  private final Connection connection;
   // environmentId, list of connections for that environment
   private final Map<UUID, Collection<ClientConnection>> clientBuckets = new ConcurrentHashMap<>();
   // dispatcher subject based on named-cache, NamedCacheListener
   private final Map<String, NamedCacheListener> cacheListeners = new ConcurrentHashMap<>();
   private final FeatureTransformer featureTransformer = new FeatureTransformerUtils();
 
-  public ServerConfig(DachaApiKeyService apiKeyService) {
-    this.apiKeyService = apiKeyService;
+  @Inject
+  public ServerConfig(DachaClientServiceRegistry dachaClientRegistry, NATSSource natsSource) {
+    this.dachaClientRegistry = dachaClientRegistry;
+    this.natsSource = natsSource;
 
     DeclaredConfigResolver.resolve(this);
-
-    Options options = new Options.Builder().server(natsServer).build();
-    try {
-      connection = Nats.connect(options);
-    } catch (IOException |InterruptedException e) {
-      // should fail if we can't connect
-      throw new RuntimeException(e);
-    }
 
     updateExecutor = Executors.newFixedThreadPool(updatePoolSize);
     listenExecutor = Executors.newFixedThreadPool(listenPoolSize);
 
-    log.info("connected to NATS on `{}` with cache pool size of `{}", natsServer, updatePoolSize);
+    log.info("connected to NATS with cache pool size of `{}", updatePoolSize);
 
     ApplicationLifecycleManager.registerListener(trans -> {
       if (trans.next == LifecycleStatus.TERMINATING) {
@@ -128,7 +118,7 @@ public class ServerConfig implements ServerController, NATSSource {
     String subject = ChannelNames.featureValueChannel(namedCache);
 
     cacheListeners.computeIfAbsent(subject, nc -> {
-      Dispatcher dispatcher = connection.createDispatcher(this::updateFeature);
+      Dispatcher dispatcher = natsSource.getConnection().createDispatcher(this::updateFeature);
 
       return new NamedCacheListener(nc, dispatcher);
     });
@@ -149,7 +139,7 @@ public class ServerConfig implements ServerController, NATSSource {
     String subject = "/" + namedCache + "/feature-updates";
 
     try {
-      connection.publish(subject, CacheJsonMapper.mapper.writeValueAsBytes(featureUpdate));
+      natsSource.getConnection().publish(subject, CacheJsonMapper.mapper.writeValueAsBytes(featureUpdate));
     } catch (JsonProcessingException e) {
       log.error("Unable to send feature-update message to server");
     }
@@ -194,6 +184,13 @@ public class ServerConfig implements ServerController, NATSSource {
 
 
   public void requestFeatures(final ClientConnection client) {
+    final DachaApiKeyService apiKeyService = dachaClientRegistry.getApiKeyService(client.getNamedCache());
+
+    if (apiKeyService == null) {
+      client.failed("unable to communicate with named cache.");
+      return;
+    }
+
     clientBuckets.computeIfAbsent(client.getEnvironmentId(), (k) -> new ConcurrentLinkedQueue<>()).add(client);
 
     final KeyParts key = client.getKey();
@@ -208,7 +205,7 @@ public class ServerConfig implements ServerController, NATSSource {
               listenForFeatureUpdates(key.getCacheName());
 
               final DachaKeyDetailsResponse details =
-                  apiKeyService.getApiKeyDetails(key.getEnvironmentId(), key.getServiceKey());
+                apiKeyService.getApiKeyDetails(key.getEnvironmentId(), key.getServiceKey());
 
               copyKeyDetails(key, details);
 
@@ -221,6 +218,12 @@ public class ServerConfig implements ServerController, NATSSource {
   }
 
   public DachaPermissionResponse requestPermission(KeyParts key, String featureKey) {
+    final DachaApiKeyService apiKeyService = dachaClientRegistry.getApiKeyService(key.getCacheName());
+
+    if (apiKeyService == null) {
+      return null;
+    }
+
     try {
       return apiKeyService.getApiKeyPermissions(key.getEnvironmentId(), key.getServiceKey(), featureKey);
     } catch (Exception ignored) {
@@ -253,11 +256,5 @@ public class ServerConfig implements ServerController, NATSSource {
     key.setPortfolioId(details.getPortfolioId());
     key.setApplicationId(details.getApplicationId());
     key.setServiceKeyId(details.getServiceKeyId());
-  }
-
-  @NotNull
-  @Override
-  public Connection getConnection() {
-    return connection;
   }
 }

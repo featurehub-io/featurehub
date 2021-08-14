@@ -1,6 +1,6 @@
 package io.featurehub.edge
 
-import io.featurehub.dacha.api.DachaApiKeyService
+import io.featurehub.dacha.api.DachaClientServiceRegistry
 import io.featurehub.edge.strategies.ClientContext
 import io.featurehub.sse.model.Environment
 import jakarta.inject.Inject
@@ -20,18 +20,23 @@ interface InflightGETSubmitter {
   /*
    * Requests a bunch of environment details from Dacha in the most efficient way possible
    */
-  fun request(keys: List<KeyParts>, context: ClientContext) : List<Environment>
+  fun request(keys: List<KeyParts>, context: ClientContext): List<Environment>
 }
 
-class InflightGETOrchestrator @Inject constructor(private val featureTransformer: FeatureTransformer, private val dachaApi: DachaApiKeyService, private val executor: EdgeConcurrentRequestPool) : InflightGETSubmitter {
+class InflightGETOrchestrator @Inject constructor(
+  private val featureTransformer: FeatureTransformer, private val dachaApi: DachaClientServiceRegistry,
+  private val executor: EdgeConcurrentRequestPool
+) : InflightGETSubmitter {
   private val getMap = ConcurrentHashMap<KeyParts, InflightGETRequest>()
 
-  override fun request(keys: List<KeyParts>, context: ClientContext) : List<Environment> {
+  override fun request(keys: List<KeyParts>, context: ClientContext): List<Environment> {
     val future = CompletableFuture<List<Environment>>()
 
     // get an existing or create a new one for each of the sdk urls
-    val getters = keys.map { key ->
-      getMap.computeIfAbsent(key) { InflightGETRequest(dachaApi, key, executor, this) }
+    val getters = keys
+      .filter { key -> dachaApi.getApiKeyService(key.cacheName) != null } // only caches that exist
+      .map { key ->
+      getMap.computeIfAbsent(key) { InflightGETRequest(dachaApi.getApiKeyService(key.cacheName), key, executor, this) }
     }.toList()
 
     // now create a collector for the requests to notify

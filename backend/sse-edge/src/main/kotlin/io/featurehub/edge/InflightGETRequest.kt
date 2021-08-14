@@ -23,7 +23,8 @@ class InflightGETRequest(private val api: DachaApiKeyService, val key: KeyParts,
       size = notifyListener.size
     }
 
-    if (size == 0) {
+    // if we sre the first one, trigger it off
+    if (size == 1) {
       executor.execute {
         try {
           details = api.getApiKeyDetails(key.environmentId, key.serviceKey)

@@ -7,6 +7,7 @@ import io.featurehub.edge.FeatureTransformer;
 import io.featurehub.edge.FeatureTransformerUtils;
 import io.featurehub.edge.InflightGETSubmitter;
 import io.featurehub.edge.ServerConfig;
+import io.featurehub.edge.ServerController;
 import io.featurehub.edge.bucket.EventOutputBucketService;
 import io.featurehub.edge.client.ClientConnection;
 import io.featurehub.edge.client.TimedBucketClientConnection;
@@ -51,7 +52,7 @@ public class EventStreamResource {
   private static final Logger log = LoggerFactory.getLogger(EventStreamResource.class);
 
   private final EventOutputBucketService bucketService;
-  private final ServerConfig serverConfig;
+  private final ServerController serverConfig;
   private final StatRecorder statRecorder;
   private final InflightGETSubmitter getOrchestrator;
   private final FeatureTransformer featureTransformer;
@@ -65,7 +66,7 @@ public class EventStreamResource {
     "time that the connection is open for Testing clients").create();
 
   @Inject
-  public EventStreamResource(EventOutputBucketService bucketService, ServerConfig serverConfig,
+  public EventStreamResource(EventOutputBucketService bucketService, ServerController serverConfig,
                              StatRecorder statRecorder, InflightGETSubmitter getOrchestrator) {
     this.bucketService = bucketService;
     this.serverConfig = serverConfig;

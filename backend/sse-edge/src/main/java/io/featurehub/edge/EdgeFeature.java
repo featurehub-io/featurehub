@@ -1,8 +1,8 @@
 package io.featurehub.edge;
 
+import io.featurehub.dacha.api.DachaClientServiceRegistry;
 import io.featurehub.edge.bucket.EventOutputBucketService;
 import io.featurehub.edge.stats.StatsFeature;
-import io.featurehub.publish.NATSSource;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.core.Feature;
 import jakarta.ws.rs.core.FeatureContext;
@@ -15,26 +15,25 @@ public class EdgeFeature implements Feature {
   @Override
   public boolean configure(FeatureContext context) {
     context
-      .register(StatsFeature.class)
+        .register(StatsFeature.class)
         .register(
             new AbstractBinder() {
 
               @Override
               protected void configure() {
-                bind(ServerConfig.class)
-                    .to(ServerConfig.class)
-                    .to(NATSSource.class)
-                    .named("edge-source")
-                    .in(Singleton.class);
+                bind(ServerConfig.class).to(ServerController.class).in(Singleton.class);
                 bind(EventOutputBucketService.class)
                     .to(EventOutputBucketService.class)
                     .in(Singleton.class);
                 bind(FeatureTransformerUtils.class)
                     .to(FeatureTransformer.class)
                     .in(Singleton.class);
-                bind(ConcurrentRequestPool.class).to(EdgeConcurrentRequestPool.class).in(Singleton.class);
-                bind(InflightGETOrchestrator.class).to(InflightGETSubmitter.class).in(Singleton.class);
-
+                bind(ConcurrentRequestPool.class)
+                    .to(EdgeConcurrentRequestPool.class)
+                    .in(Singleton.class);
+                bind(InflightGETOrchestrator.class)
+                    .to(InflightGETSubmitter.class)
+                    .in(Singleton.class);
               }
             })
         .register(
@@ -48,7 +47,8 @@ public class EdgeFeature implements Feature {
                         .getInstance(ServiceLocator.class);
 
                 injector.getService(EventOutputBucketService.class);
-                injector.getService(ServerConfig.class);
+                injector.getService(DachaClientServiceRegistry.class);
+                injector.getService(ServerController.class);
               }
 
               public void onReload(Container container) {}

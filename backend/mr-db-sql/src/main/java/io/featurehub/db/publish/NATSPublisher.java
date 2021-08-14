@@ -10,14 +10,9 @@ import io.featurehub.db.listener.FeatureUpdateListener;
 import io.featurehub.db.model.query.QDbNamedCache;
 import io.featurehub.publish.ChannelConstants;
 import io.featurehub.publish.NATSSource;
-import io.nats.client.Connection;
-import io.nats.client.Nats;
-import io.nats.client.Options;
-import org.jetbrains.annotations.NotNull;
-
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import java.io.IOException;
+
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,12 +22,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 
 @Singleton
-public class NATSPublisher implements PublishManager, NATSSource {
-  @ConfigKey("nats.urls")
-  public String natsServer;
-  private final Connection connection;
+public class NATSPublisher implements PublishManager {
   private final CacheSource cacheSource;
-  private final FeatureUpdateBySDKApi featureUpdateBySDKApi;
   private final UUID id;
   private final Map<String, NamedCacheListener> namedCaches = new ConcurrentHashMap<>();
   private final Map<String, EdgeUpdateListener> edgeFeatureUpdateListeners = new ConcurrentHashMap<>();
@@ -40,32 +31,26 @@ public class NATSPublisher implements PublishManager, NATSSource {
   public Boolean enableListener = Boolean.TRUE;
 
   @Inject
-  public NATSPublisher(CacheSource cacheSource, FeatureUpdateBySDKApi featureUpdateBySDKApi) {
+  public NATSPublisher(CacheSource cacheSource, FeatureUpdateBySDKApi featureUpdateBySDKApi, NATSSource natsServer) {
     this.cacheSource = cacheSource;
-    this.featureUpdateBySDKApi = featureUpdateBySDKApi;
-    DeclaredConfigResolver.resolve(this);
 
-    Options options = new Options.Builder().server(natsServer).build();
-    try {
-      connection = Nats.connect(options);
-    } catch (IOException |InterruptedException e) {
-      // should fail if we can't connect
-      throw new RuntimeException(e);
-    }
+    DeclaredConfigResolver.resolve(this);
 
     id = UUID.randomUUID();
 
     // always listen to default
     if (new QDbNamedCache().findCount() == 0) {
-      namedCaches.put(ChannelConstants.DEFAULT_CACHE_NAME, new NamedCacheListener(ChannelConstants.DEFAULT_CACHE_NAME, connection, id, cacheSource));
+      namedCaches.put(ChannelConstants.DEFAULT_CACHE_NAME, new NamedCacheListener(ChannelConstants.DEFAULT_CACHE_NAME
+        , natsServer.getConnection(), id, cacheSource));
       if (enableListener) {
-        edgeFeatureUpdateListeners.put(ChannelConstants.DEFAULT_CACHE_NAME, new FeatureUpdateListener(ChannelConstants.DEFAULT_CACHE_NAME, connection, featureUpdateBySDKApi));
+        edgeFeatureUpdateListeners.put(ChannelConstants.DEFAULT_CACHE_NAME,
+          new FeatureUpdateListener(ChannelConstants.DEFAULT_CACHE_NAME, natsServer.getConnection(), featureUpdateBySDKApi));
       }
     }
 
     new QDbNamedCache().findList().forEach(nc -> {
-      namedCaches.put(nc.getCacheName(), new NamedCacheListener(nc.getCacheName(), connection, id, this.cacheSource));
-      edgeFeatureUpdateListeners.put(nc.getCacheName(), new FeatureUpdateListener(nc.getCacheName(), connection, featureUpdateBySDKApi));
+      namedCaches.put(nc.getCacheName(), new NamedCacheListener(nc.getCacheName(), natsServer.getConnection(), id, this.cacheSource));
+      edgeFeatureUpdateListeners.put(nc.getCacheName(), new FeatureUpdateListener(nc.getCacheName(), natsServer.getConnection(), featureUpdateBySDKApi));
     });
 
     ApplicationLifecycleManager.registerListener(trans -> {
@@ -78,11 +63,5 @@ public class NATSPublisher implements PublishManager, NATSSource {
   private void shutdown() {
     namedCaches.values().parallelStream().forEach(NamedCacheListener::close);
     edgeFeatureUpdateListeners.values().parallelStream().forEach(EdgeUpdateListener::close);
-  }
-
-  @NotNull
-  @Override
-  public Connection getConnection() {
-    return connection;
   }
 }

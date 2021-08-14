@@ -12,40 +12,30 @@ import io.featurehub.mr.model.ServiceAccountCacheItem;
 import io.featurehub.publish.ChannelConstants;
 import io.featurehub.publish.ChannelNames;
 import io.featurehub.publish.NATSSource;
-import io.nats.client.Connection;
 import io.nats.client.Dispatcher;
 import io.nats.client.MessageHandler;
-import io.nats.client.Nats;
-import io.nats.client.Options;
+import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ServerConfig implements NATSSource {
+public class ServerConfig {
   private static final Logger log = LoggerFactory.getLogger(ServerConfig.class);
   private final InternalCache cache;
+  private final NATSSource natsServer;
 
-  @ConfigKey("nats.urls")
-  public String natsServer;
   @ConfigKey("cache.name")
   public String name = ChannelConstants.DEFAULT_CACHE_NAME;
-  private final Connection connection;
   private final List<Runnable> dispatchers = new ArrayList<>();
 
-  public ServerConfig(InternalCache cache) {
+  @Inject
+  public ServerConfig(InternalCache cache, NATSSource natsServer) {
     this.cache = cache;
-    DeclaredConfigResolver.resolve(this);
+    this.natsServer = natsServer;
 
-    Options options = new Options.Builder().server(natsServer).build();
-    try {
-      connection = Nats.connect(options);
-    } catch (IOException |InterruptedException e) {
-      // should fail if we can't connect
-      throw new RuntimeException(e);
-    }
+    DeclaredConfigResolver.resolve(this);
 
     listenForEnvironments();
     listenForFeatureValues();
@@ -64,7 +54,7 @@ public class ServerConfig implements NATSSource {
   }
 
   private void listen(MessageHandler handler, String subject) {
-    final Dispatcher dispatcher = getConnection().createDispatcher(handler);
+    final Dispatcher dispatcher = natsServer.getConnection().createDispatcher(handler);
     final Dispatcher subscribe = dispatcher.subscribe(subject);
     dispatchers.add(() -> {
       subscribe.unsubscribe(subject);
@@ -106,10 +96,6 @@ public class ServerConfig implements NATSSource {
     }, ChannelNames.environmentChannel(name));
   }
 
-  public Connection getConnection() {
-    return connection;
-  }
-
   private byte[] encode(Object o) throws JsonProcessingException {
 //    log.debug("encoding as as{}:{}", o.getClass().getName(), CacheJsonMapper.mapper.writeValueAsString(o));
     return CacheJsonMapper.mapper.writeValueAsBytes(o);
@@ -118,7 +104,7 @@ public class ServerConfig implements NATSSource {
   public void publish(String subject, Object o, String errorMessage) {
     try {
 //      log.debug("publishing: {} => {} ", subject, o);
-      connection.publish(subject, encode(o));
+      natsServer.getConnection().publish(subject, encode(o));
     } catch (JsonProcessingException e) {
       log.error(errorMessage, e);
     }
