@@ -21,14 +21,20 @@ class StatsCollectionOrchestratorSpec extends Specification {
     given: "i have a publisher"
       def pub = Mock(StatPublisher)
       def orch = new StatsCollectionOrchestrator(pub)
-    and:
+    and: "a cache/envid/servicekey combo with some data"
       def k1 = new KeyParts("cache1", UUID.randomUUID(), "2")
+      k1.organisationId = UUID.randomUUID()
+      k1.portfolioId = UUID.randomUUID()
+      k1.applicationId == UUID.randomUUID()
       def col1 = new StatKeyEventCollection(k1)
       col1.add(EdgeHitResultType.FORBIDDEN, EdgeHitSourceType.EVENTSOURCE)
       col1.add(EdgeHitResultType.FORBIDDEN, EdgeHitSourceType.EVENTSOURCE)
       col1.add(EdgeHitResultType.FORBIDDEN, EdgeHitSourceType.EVENTSOURCE)
-    and:
+    and: "a combo with same env/servicekey but different cache"
       def k2 = new KeyParts("cache2", k1.environmentId, "2")
+      k2.applicationId = k1.applicationId
+      k2.portfolioId = k1.portfolioId
+      k2.organisationId = k1.organisationId
       def col2 = new StatKeyEventCollection(k2)
       col2.add(EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.EVENTSOURCE)
       col2.add(EdgeHitResultType.SUCCESS_UNTIL_KICKED_OFF, EdgeHitSourceType.EVENTSOURCE)
@@ -38,8 +44,11 @@ class StatsCollectionOrchestratorSpec extends Specification {
       1 * pub.publish("cache1", _)
       1 * pub.publish("cache2", { EdgeStatsBundle bundle ->
         bundle.apiKeys.size() == 1
-        bundle.apiKeys[0].envId == k1.environmentId
-        bundle.apiKeys[0].svcKey == '2'
+        bundle.apiKeys[0].environmentId == k1.environmentId
+        bundle.apiKeys[0].serviceKeyId == '2'
+        bundle.apiKeys[0].organizationId == k1.organisationId
+        bundle.apiKeys[0].portfolioId == k1.portfolioId
+        bundle.apiKeys[0].applicationId == k1.applicationId
         find(bundle, EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.EVENTSOURCE)
         find(bundle, EdgeHitResultType.SUCCESS_UNTIL_KICKED_OFF, EdgeHitSourceType.EVENTSOURCE)
       })

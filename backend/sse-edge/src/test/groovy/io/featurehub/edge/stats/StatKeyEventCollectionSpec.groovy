@@ -32,8 +32,8 @@ class StatKeyEventCollectionSpec extends Specification {
       def squashed = sc.squash()
     then:
       sc.size() == (EdgeHitResultType.values().size() * EdgeHitSourceType.values().size())
-      squashed.svcKey == '3'
-      squashed.envId == envId
+      squashed.serviceKeyId == '3'
+      squashed.environmentId == envId
       squashed.counters.size() == (EdgeHitResultType.values().size() * EdgeHitSourceType.values().size())
       squashed.counters.each {it.count == 6}
   }
