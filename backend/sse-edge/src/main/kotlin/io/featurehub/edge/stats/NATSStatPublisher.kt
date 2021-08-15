@@ -36,14 +36,14 @@ class NATSStatPublisher @Inject constructor(private val nats : NATSSource) : Sta
         Counter.build(
           String.format("edge_stat_nats_success_%s", cacheName.replace("-", "_")),
           String.format("Edge Stats NATS Success publishing to channel %s", cacheName)
-        ).create()
+        ).register()
       }.inc()
     } catch (e : Exception) {
       prometheusPublishFailedCounter.computeIfAbsent(cacheName) {
         Counter.build(
           String.format("edge_stat_nats_failed_%s", cacheName.replace("-", "_")),
           String.format("Edge Stats NATS Failed publishing to channel %s", cacheName)
-        ).create()
+        ).register()
       }.inc()
 
       log.error("Failed to publish to channel {}", channelName)

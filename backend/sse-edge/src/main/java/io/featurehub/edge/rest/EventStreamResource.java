@@ -1,19 +1,16 @@
 package io.featurehub.edge.rest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.featurehub.edge.FeatureTransformer;
-import io.featurehub.edge.FeatureTransformerUtils;
-import io.featurehub.edge.InflightGETSubmitter;
-import io.featurehub.edge.ServerConfig;
+import io.featurehub.edge.KeyParts;
 import io.featurehub.edge.ServerController;
 import io.featurehub.edge.bucket.EventOutputBucketService;
 import io.featurehub.edge.client.ClientConnection;
 import io.featurehub.edge.client.TimedBucketClientConnection;
-import io.featurehub.edge.KeyParts;
+import io.featurehub.edge.justget.InflightGETSubmitter;
 import io.featurehub.edge.stats.StatRecorder;
 import io.featurehub.edge.strategies.ClientContext;
+import io.featurehub.edge.utils.UpdateMapper;
 import io.featurehub.mr.messaging.StreamedFeatureUpdate;
 import io.featurehub.mr.model.DachaPermissionResponse;
 import io.featurehub.mr.model.FeatureValue;
@@ -22,13 +19,10 @@ import io.featurehub.sse.model.Environment;
 import io.featurehub.sse.model.FeatureStateUpdate;
 import io.featurehub.sse.stats.model.EdgeHitResultType;
 import io.featurehub.sse.stats.model.EdgeHitSourceType;
+import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram;
-import org.glassfish.jersey.media.sse.EventOutput;
-import org.glassfish.jersey.media.sse.SseFeature;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.HeaderParam;
@@ -40,6 +34,11 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Response;
+import org.glassfish.jersey.media.sse.EventOutput;
+import org.glassfish.jersey.media.sse.SseFeature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
@@ -48,6 +47,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Path("/features")
+@Singleton
 public class EventStreamResource {
   private static final Logger log = LoggerFactory.getLogger(EventStreamResource.class);
 
@@ -56,26 +56,31 @@ public class EventStreamResource {
   private final StatRecorder statRecorder;
   private final InflightGETSubmitter getOrchestrator;
   private final FeatureTransformer featureTransformer;
-  private final ObjectMapper mapper = new ObjectMapper();
+  private final UpdateMapper updateMapper;
 
   // we are doing timers here rather than instrumenting Jersey because in this case the names are more interesting and
   // useful in the sea of metrics
   private static final Histogram pollSpeedHistogram = Histogram.build("edge_conn_length_poll", "The length of " +
-    "time that the connection is open for Polling clients").create();
+    "time that the connection is open for Polling clients").register();
   private static final Histogram testSpeedHistogram = Histogram.build("edge_conn_length_test", "The length of " +
-    "time that the connection is open for Testing clients").create();
+    "time that the connection is open for Testing clients").register();
 
   @Inject
   public EventStreamResource(EventOutputBucketService bucketService, ServerController serverConfig,
-                             StatRecorder statRecorder, InflightGETSubmitter getOrchestrator) {
+                             StatRecorder statRecorder, InflightGETSubmitter getOrchestrator,
+                             FeatureTransformer featureTransformer, UpdateMapper updateMapper) {
     this.bucketService = bucketService;
     this.serverConfig = serverConfig;
     this.statRecorder = statRecorder;
     this.getOrchestrator = getOrchestrator;
-    featureTransformer = new FeatureTransformerUtils();
+    this.featureTransformer = featureTransformer;
+    this.updateMapper = updateMapper;
 
-    mapper.enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
+    log.warn("-------------------------- created instance");
+
   }
+
+  static Gauge inout = Gauge.build("edge_get_req", "how many GET requests").register();
 
   // support new and old style for GET - apiKeys and sdkUrl, they are the same we just want to transition the
   // naming at some point
@@ -88,6 +93,7 @@ public class EventStreamResource {
     if ((sdkUrls == null || sdkUrls.isEmpty()) && (apiKeys == null || apiKeys.isEmpty()) ) {
       throw new BadRequestException();
     }
+    inout.inc();
 
     final Histogram.Timer timer = pollSpeedHistogram.startTimer();
 
@@ -110,6 +116,7 @@ public class EventStreamResource {
 
     timer.observeDuration();
 
+    inout.dec();
     if (environments.isEmpty()) {
       throw new NotFoundException(); // no environments were found
     }
@@ -267,7 +274,7 @@ public class EventStreamResource {
               break;
             case JSON:
               try {
-                mapper.readTree(val);
+                updateMapper.getMapper().readTree(val);
               } catch (JsonProcessingException jpe) {
                 statRecorder.recordHit(key, EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.TESTSDK);
                 return Response.status(Response.Status.BAD_REQUEST).build();

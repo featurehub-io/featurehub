@@ -1,5 +1,7 @@
-package io.featurehub.edge
+package io.featurehub.edge.justget
 
+import io.featurehub.edge.FeatureTransformer
+import io.featurehub.edge.KeyParts
 import io.featurehub.edge.strategies.ClientContext
 import io.featurehub.mr.model.DachaKeyDetailsResponse
 import io.featurehub.sse.model.Environment
@@ -24,11 +26,11 @@ class InflightGETCollection(
     completed.add(key)
 
     if (completed.size == requests.size) {
-      future.complete(completed.map { req -> transformFeatues(req.details, req.key) }.toList())
+      future.complete(completed.map { req -> transformFeatures(req.details, req.key) }.toList())
     }
   }
 
-  private fun transformFeatues(details: DachaKeyDetailsResponse?, key: KeyParts): Environment {
+  private fun transformFeatures(details: DachaKeyDetailsResponse?, key: KeyParts): Environment {
     return Environment().id(key.environmentId)
       .features(if (details == null) null else featureTransformer.transform(details.features, clientContext))
   }

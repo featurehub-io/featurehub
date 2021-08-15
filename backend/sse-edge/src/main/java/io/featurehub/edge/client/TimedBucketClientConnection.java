@@ -35,7 +35,7 @@ public class TimedBucketClientConnection implements ClientConnection {
   private final StatRecorder statRecorder;
 
   private static final Histogram connectionLengthHistogram = Histogram.build("edge_conn_length_sse", "The length of " +
-    "time that the connection is open for SSE clients").create();
+    "time that the connection is open for SSE clients").register();
 
   private final Histogram.Timer timer;
 

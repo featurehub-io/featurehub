@@ -12,6 +12,7 @@ import io.featurehub.health.MetricsHealthRegistration;
 import io.featurehub.jersey.config.EndpointLoggingListener;
 import io.featurehub.jersey.config.LocalExceptionMapper;
 import io.featurehub.publish.NATSFeature;
+import org.glassfish.jersey.jdkhttp.JdkHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import java.net.URI;

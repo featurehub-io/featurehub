@@ -2,7 +2,12 @@ package io.featurehub.edge;
 
 import io.featurehub.dacha.api.DachaClientServiceRegistry;
 import io.featurehub.edge.bucket.EventOutputBucketService;
+import io.featurehub.edge.justget.EdgeConcurrentRequestPool;
+import io.featurehub.edge.justget.InflightGETOrchestrator;
+import io.featurehub.edge.justget.InflightGETSubmitter;
 import io.featurehub.edge.stats.StatsFeature;
+import io.featurehub.edge.utils.UpdateFeatureMapper;
+import io.featurehub.edge.utils.UpdateMapper;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.core.Feature;
 import jakarta.ws.rs.core.FeatureContext;
@@ -34,6 +39,9 @@ public class EdgeFeature implements Feature {
                 bind(InflightGETOrchestrator.class)
                     .to(InflightGETSubmitter.class)
                     .in(Singleton.class);
+                bind(UpdateFeatureMapper.class)
+                  .to(UpdateMapper.class)
+                  .in(Singleton.class);
               }
             })
         .register(

@@ -1,5 +1,7 @@
 package io.featurehub.dacha.api;
 
+import cd.connect.app.config.ConfigKey;
+import cd.connect.app.config.DeclaredConfigResolver;
 import cd.connect.jersey.common.LoggingConfiguration;
 import cd.connect.openapi.support.ApiClient;
 import io.featurehub.dacha.api.impl.DachaApiKeyServiceServiceImpl;
@@ -8,6 +10,7 @@ import io.featurehub.jersey.config.CommonConfiguration;
 import io.prometheus.client.Counter;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
+import org.glassfish.jersey.client.ClientProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,11 +27,21 @@ public class DachaClientRegistry implements DachaClientServiceRegistry {
   private final Counter cacheMissCounter = new Counter.Builder().name("dacha_client_cache_miss")
     .help("Number of times the cache was missed when requesting dacha client").register();
 
+  @ConfigKey("dacha.timeout.connect")
+  Integer connectTimeout = 4000;
+  @ConfigKey("dacha.timeout.read")
+  Integer readTimeout = 4000;
+
   public DachaClientRegistry() {
+    DeclaredConfigResolver.resolve(this);
+
     client =
         ClientBuilder.newClient()
             .register(CommonConfiguration.class)
             .register(LoggingConfiguration.class);
+
+    client.property(ClientProperties.CONNECT_TIMEOUT, connectTimeout);
+    client.property(ClientProperties.READ_TIMEOUT,    readTimeout);
   }
 
   private String url(String cache) {

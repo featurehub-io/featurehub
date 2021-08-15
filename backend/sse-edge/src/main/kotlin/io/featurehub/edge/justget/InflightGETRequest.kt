@@ -1,12 +1,11 @@
-package io.featurehub.edge
+package io.featurehub.edge.justget
 
 import io.featurehub.dacha.api.DachaApiKeyService
+import io.featurehub.edge.KeyParts
 import io.featurehub.mr.model.DachaKeyDetailsResponse
-import io.featurehub.mr.model.Environment
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.ExecutorService
 
 
 class InflightGETRequest(private val api: DachaApiKeyService, val key: KeyParts, private val executor: EdgeConcurrentRequestPool, private val submitter: InflightGETSubmitter) {
