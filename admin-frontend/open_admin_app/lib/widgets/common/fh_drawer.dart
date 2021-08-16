@@ -126,7 +126,6 @@ class _MenuContainer extends StatelessWidget {
                             ],
                           )
                         : Container(),
-                    widgetCreator.createExtraMenu(mrBloc)
                   ],
                 );
               }),
@@ -139,12 +138,11 @@ class _MenuContainer extends StatelessWidget {
 class _SiteAdminOptionsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final client = BlocProvider.of<ManagementRepositoryClientBloc>(context);
     return StreamBuilder<String?>(
-        stream: BlocProvider.of<ManagementRepositoryClientBloc>(context)
-            .streamValley
-            .currentPortfolioIdStream,
+        stream: client.streamValley.currentPortfolioIdStream,
         builder: (context, snapshot) {
-          return Column(children: const <Widget>[
+          List<Widget> menus = [
             MenuItem(
                 name: 'Portfolios',
                 iconData: MaterialCommunityIcons.briefcase_plus_outline,
@@ -157,7 +155,9 @@ class _SiteAdminOptionsWidget extends StatelessWidget {
                 iconData: AntDesign.addusergroup,
                 path: '/users',
                 params: {}),
-          ]);
+          ];
+          menus.addAll(widgetCreator.extraGlobalMenuItems(client));
+          return Column(children: menus);
         });
   }
 }
