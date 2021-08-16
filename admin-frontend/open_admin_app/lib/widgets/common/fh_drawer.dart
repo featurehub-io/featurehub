@@ -273,6 +273,7 @@ class MenuItem extends StatelessWidget {
   final double? iconSize;
   final String path;
   final Map<String, List<String>> params;
+  final bool greyOnNoPermission;
   final PermissionType permissionType;
 
   const MenuItem(
@@ -282,6 +283,7 @@ class MenuItem extends StatelessWidget {
       required this.path,
       required this.params,
       this.permissionType = PermissionType.regular,
+      this.greyOnNoPermission = false,
       this.iconSize})
       : super(key: key);
 
@@ -297,10 +299,15 @@ class MenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
-    final menuOkForThisUser = (bloc.userIsCurrentPortfolioAdmin ||
-        ManagementRepositoryClientBloc.router.canUseRoute(path));
+    final menuOkForThisUser =
+        ManagementRepositoryClientBloc.router.canUseRoute(path);
+
     var light = Theme.of(context).brightness == Brightness.light;
+
+    if (!menuOkForThisUser && !greyOnNoPermission) {
+      return SizedBox.shrink();
+    }
+
     return InkWell(
       canRequestFocus: false,
       mouseCursor: SystemMouseCursors.click,
@@ -317,46 +324,42 @@ class MenuItem extends StatelessWidget {
           stream: BlocProvider.of<ManagementRepositoryClientBloc>(context)
               .routeCurrentStream,
           builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              final selected = snapshot.data!.route == path &&
-                  equalsParams(snapshot.data!.params);
-              return Container(
-                padding: const EdgeInsets.fromLTRB(16, 12, 0, 12),
-                color: selected
-                    ? (light
-                        ? Theme.of(context).primaryColorLight
-                        : Theme.of(context).accentColor)
-                    : null,
-                child: Row(
-                  children: <Widget>[
-                    Icon(
-                      iconData,
-                      color: Theme.of(context).buttonColor,
-                      size: iconSize ?? 20.0,
-                    ),
-                    Padding(
-                      padding:
-                          EdgeInsets.only(left: iconSize != null ? 18.0 : 24.0),
-                      child: Text(' $name',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyText2!
-                              .copyWith(
-                                  fontWeight: selected
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                  color: light
-                                      ? null
-                                      : (selected
-                                          ? Theme.of(context).primaryColor
-                                          : null))),
-                    )
-                  ],
-                ),
-              );
-            } else {
-              return const SizedBox.shrink();
+            if (!snapshot.hasData) {
+              return SizedBox.shrink();
             }
+
+            final selected = snapshot.data!.route == path &&
+                equalsParams(snapshot.data!.params);
+            return Container(
+              padding: const EdgeInsets.fromLTRB(16, 12, 0, 12),
+              color: selected
+                  ? (light
+                      ? Theme.of(context).primaryColorLight
+                      : Theme.of(context).accentColor)
+                  : null,
+              child: Row(
+                children: <Widget>[
+                  Icon(
+                    iconData,
+                    color: Theme.of(context).buttonColor,
+                    size: iconSize ?? 20.0,
+                  ),
+                  Padding(
+                    padding:
+                        EdgeInsets.only(left: iconSize != null ? 18.0 : 24.0),
+                    child: Text(' $name',
+                        style: Theme.of(context).textTheme.bodyText2!.copyWith(
+                            fontWeight:
+                                selected ? FontWeight.bold : FontWeight.normal,
+                            color: light
+                                ? null
+                                : (selected
+                                    ? Theme.of(context).primaryColor
+                                    : null))),
+                  )
+                ],
+              ),
+            );
           }),
     );
   }

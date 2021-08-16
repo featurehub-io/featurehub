@@ -83,7 +83,7 @@ class RouterRoute {
 }
 
 typedef PermissionCheckHandler = bool Function(
-    RouteChange route, bool superuser, bool portfolioAdmin, bool isLoggedIn,
+    RouteChange route, ManagementRepositoryClientBloc bloc,
     {List<PermissionType> autoFailPermissions});
 
 PermissionCheckHandler? permissionCheckHandler;
@@ -140,7 +140,7 @@ class FHRouter {
   }
 
   bool _hasRoutePermissions(
-      RouteChange route, bool superuser, bool portfolioAdmin, bool isLoggedIn,
+      RouteChange route, ManagementRepositoryClientBloc bloc,
       {List<PermissionType> autoFailPermissions = const []}) {
     final perm = permissionForRoute(route.route);
 
@@ -151,6 +151,10 @@ class FHRouter {
     if (perm == PermissionType.any) {
       return true;
     }
+
+    bool superuser = bloc.userIsSuperAdmin;
+    bool portfolioAdmin = bloc.userIsCurrentPortfolioAdmin;
+    bool isLoggedIn = bloc.isLoggedIn;
 
     if (perm == PermissionType.login && !isLoggedIn) {
       return true;
@@ -174,8 +178,7 @@ class FHRouter {
   void navigateRoute(String route, {Map<String, List<String>>? params}) {
     final rc = RouteChange(route, params: params ?? const {});
 
-    if (permissionCheckHandler!(rc, mrBloc.userIsSuperAdmin,
-        mrBloc.userIsCurrentPortfolioAdmin, mrBloc.isLoggedIn)) {
+    if (permissionCheckHandler!(rc, mrBloc)) {
       mrBloc.swapRoutes(rc);
     } else {
       mrBloc.swapRoutes(defaultRoute());
@@ -194,8 +197,7 @@ class FHRouter {
   bool canUseRoute(String routeName,
       {List<PermissionType> autoFailPermissions = const []}) {
     final rc = RouteChange(routeName);
-    return permissionCheckHandler!(rc, mrBloc.userIsSuperAdmin,
-        mrBloc.userIsCurrentPortfolioAdmin, mrBloc.isLoggedIn,
+    return permissionCheckHandler!(rc, mrBloc,
         autoFailPermissions: autoFailPermissions);
   }
 
