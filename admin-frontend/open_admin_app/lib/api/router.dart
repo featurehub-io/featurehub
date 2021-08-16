@@ -72,17 +72,14 @@ class RouteSlotMapping {
 
 Map<RouteSlot, RouteSlotMapping> routeSlotMappings = {};
 
-List<PermissionType> scaffoldWrapPermissions = [
-  PermissionType.superadmin,
-  PermissionType.portfolioadmin,
-  PermissionType.regular
-];
-
 class RouterRoute {
   Handler handler;
   PermissionType permissionType;
+  bool wrapInAndysScaffold;
 
-  RouterRoute(this.handler, {this.permissionType = PermissionType.regular});
+  RouterRoute(this.handler,
+      {this.permissionType = PermissionType.regular,
+      this.wrapInAndysScaffold = true});
 }
 
 typedef PermissionCheckHandler = bool Function(
@@ -102,9 +99,11 @@ class FHRouter {
 
   void define(String route,
       {required Handler handler,
+      bool wrapInScaffold = true,
       TransitionType transitionType = TransitionType.material,
       PermissionType permissionType = PermissionType.regular}) {
-    handlers[route] = RouterRoute(handler, permissionType: permissionType);
+    handlers[route] = RouterRoute(handler,
+        permissionType: permissionType, wrapInAndysScaffold: wrapInScaffold);
   }
 
   HandlerFunc getRoute(String route) {

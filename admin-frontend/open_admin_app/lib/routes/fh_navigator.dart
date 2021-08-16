@@ -94,7 +94,7 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
         .forNamedRoute(_path.routeName, _currentSlot);
 
     final child = handler.handler.handlerFunc(context, _path.params);
-    final wrapWidget = scaffoldWrapPermissions.contains(handler.permissionType);
+    final wrapWidget = handler.wrapInAndysScaffold;
 
     return MaterialPage(
         key: const ValueKey('app'),

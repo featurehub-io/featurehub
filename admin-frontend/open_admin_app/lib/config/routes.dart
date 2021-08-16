@@ -54,23 +54,32 @@ class Routes {
 
     router.define('/404',
         handler: handleRouteChangeRequest(routeCreator.notFound),
-        permissionType: PermissionType.nowhere);
+        permissionType: PermissionType.nowhere,
+        wrapInScaffold: false);
     // Public routes (public URL's also need ot be added to array above)
     router.define('/forgot-password',
         handler: handleRouteChangeRequest(routeCreator.forgotPassword),
-        permissionType: PermissionType.login);
+        permissionType: PermissionType.login,
+        wrapInScaffold: false);
     router.define('/register-url',
         handler: handleRouteChangeRequest(routeCreator.registerUrl),
-        permissionType: PermissionType.login);
+        permissionType: PermissionType.login,
+        wrapInScaffold: false);
     router.define('/setup',
         handler: handleRouteChangeRequest(routeCreator.setup),
-        permissionType: PermissionType.setup);
+        permissionType: PermissionType.setup,
+        wrapInScaffold: false);
     router.define('/login',
         handler: handleRouteChangeRequest(routeCreator.login),
-        permissionType: PermissionType.login);
+        permissionType: PermissionType.login,
+        wrapInScaffold: false);
     // main app routes
-    router.define('/', handler: handleRouteChangeRequest(routeCreator.root));
-    router.define('', handler: handleRouteChangeRequest(routeCreator.root));
+    router.define('/',
+        handler: handleRouteChangeRequest(routeCreator.root),
+        wrapInScaffold: false);
+    router.define('',
+        handler: handleRouteChangeRequest(routeCreator.root),
+        wrapInScaffold: false);
     router.define('/applications',
         handler: handleRouteChangeRequest(routeCreator.apps));
     // NEVER EVER use /features as that is reserved for use by the Edge app
