@@ -8,15 +8,21 @@ import io.featurehub.edge.justget.InflightGETSubmitter;
 import io.featurehub.edge.stats.StatsFeature;
 import io.featurehub.edge.utils.UpdateFeatureMapper;
 import io.featurehub.edge.utils.UpdateMapper;
+import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.core.Feature;
 import jakarta.ws.rs.core.FeatureContext;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
-import org.glassfish.jersey.server.spi.Container;
-import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
 
 public class EdgeFeature implements Feature {
+
+  @Inject
+  public EdgeFeature(ServiceLocator locator) {
+    ServiceLocatorUtilities.enableImmediateScope(locator);
+  }
+
   @Override
   public boolean configure(FeatureContext context) {
     context
@@ -42,27 +48,6 @@ public class EdgeFeature implements Feature {
                 bind(UpdateFeatureMapper.class)
                   .to(UpdateMapper.class)
                   .in(Singleton.class);
-              }
-            })
-        .register(
-            new ContainerLifecycleListener() {
-              public void onStartup(Container container) {
-                // access the ServiceLocator here
-                ServiceLocator injector =
-                    container
-                        .getApplicationHandler()
-                        .getInjectionManager()
-                        .getInstance(ServiceLocator.class);
-
-                injector.getService(EventOutputBucketService.class);
-                injector.getService(DachaClientServiceRegistry.class);
-                injector.getService(ServerController.class);
-              }
-
-              public void onReload(Container container) {}
-
-              public void onShutdown(Container container) {
-                /*...*/
               }
             });
     return true;

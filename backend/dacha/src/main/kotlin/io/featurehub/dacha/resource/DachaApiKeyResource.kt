@@ -7,8 +7,10 @@ import io.featurehub.mr.model.DachaKeyDetailsResponse
 import io.featurehub.mr.model.DachaPermissionResponse
 import jakarta.inject.Inject
 import jakarta.ws.rs.NotFoundException
+import org.glassfish.hk2.api.Immediate
 import java.util.*
 
+@Immediate
 class DachaApiKeyResource @Inject constructor(private val cache: InternalCache) : DachaApiKeyService {
   override fun getApiKeyDetails(eId: UUID, serviceAccountKey: String): DachaKeyDetailsResponse {
     val collection = cache.getFeaturesByEnvironmentAndServiceAccount(eId, serviceAccountKey) ?: throw NotFoundException()

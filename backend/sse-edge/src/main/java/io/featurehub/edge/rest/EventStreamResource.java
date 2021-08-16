@@ -34,6 +34,7 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Response;
+import org.glassfish.hk2.api.Immediate;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.SseFeature;
 import org.slf4j.Logger;
@@ -47,7 +48,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Path("/features")
-@Singleton
+@Immediate
 public class EventStreamResource {
   private static final Logger log = LoggerFactory.getLogger(EventStreamResource.class);
 
