@@ -8,6 +8,7 @@ import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/router.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/config/route_names.dart';
+import 'package:open_admin_app/widget_creator.dart';
 import 'package:open_admin_app/widgets/common/fh_portfolio_selector.dart';
 
 class DrawerViewWidget extends StatefulWidget {
@@ -125,6 +126,7 @@ class _MenuContainer extends StatelessWidget {
                             ],
                           )
                         : Container(),
+                    widgetCreator.createExtraMenu(mrBloc)
                   ],
                 );
               }),
@@ -143,13 +145,13 @@ class _SiteAdminOptionsWidget extends StatelessWidget {
             .currentPortfolioIdStream,
         builder: (context, snapshot) {
           return Column(children: const <Widget>[
-            _MenuItem(
+            MenuItem(
                 name: 'Portfolios',
                 iconData: MaterialCommunityIcons.briefcase_plus_outline,
                 path: '/portfolios',
                 permissionType: PermissionType.portfolioadmin,
                 params: {}),
-            _MenuItem(
+            MenuItem(
                 name: 'Users',
                 permissionType: PermissionType.portfolioadmin,
                 iconData: AntDesign.addusergroup,
@@ -170,13 +172,13 @@ class _MenuPortfolioAdminOptionsWidget extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return Column(children: const <Widget>[
-              _MenuItem(
+              MenuItem(
                   name: 'Groups',
                   iconData: MaterialIcons.people_outline,
                   path: '/groups',
                   permissionType: PermissionType.portfolioadmin,
                   params: {}),
-              _MenuItem(
+              MenuItem(
                   name: 'Service Accounts',
                   iconData: AntDesign.tool,
                   permissionType: PermissionType.portfolioadmin,
@@ -200,7 +202,7 @@ class _ApplicationSettings extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return Column(children: const <Widget>[
-              _MenuItem(
+              MenuItem(
                   name: 'Environments',
                   iconData: AntDesign.bars,
                   path: '/app-settings',
@@ -208,7 +210,7 @@ class _ApplicationSettings extends StatelessWidget {
                   params: {
                     'tab': ['environments']
                   }),
-              _MenuItem(
+              MenuItem(
                   name: 'Group permissions',
                   iconData: MaterialCommunityIcons.check_box_multiple_outline,
                   path: '/app-settings',
@@ -216,7 +218,7 @@ class _ApplicationSettings extends StatelessWidget {
                   params: {
                     'tab': ['group-permissions']
                   }),
-              _MenuItem(
+              MenuItem(
                   name: 'Service account permissions',
                   iconData: MaterialCommunityIcons.cogs,
                   path: '/app-settings',
@@ -239,21 +241,21 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: const [
-        _MenuItem(
+        MenuItem(
           name: 'Applications',
           iconData: Feather.grid,
           iconSize: 24,
           path: '/applications',
           params: {},
         ),
-        _MenuItem(
+        MenuItem(
           name: 'Features',
           iconData: Feather.flag,
           iconSize: 24,
           path: routeNameFeatureDashboard,
           params: {},
         ),
-        _MenuItem(
+        MenuItem(
           name: 'API Keys',
           iconData: AntDesign.key,
           iconSize: 24,
@@ -265,7 +267,7 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
   }
 }
 
-class _MenuItem extends StatelessWidget {
+class MenuItem extends StatelessWidget {
   final String name;
   final IconData iconData;
   final double? iconSize;
@@ -273,7 +275,7 @@ class _MenuItem extends StatelessWidget {
   final Map<String, List<String>> params;
   final PermissionType permissionType;
 
-  const _MenuItem(
+  const MenuItem(
       {Key? key,
       required this.name,
       required this.iconData,

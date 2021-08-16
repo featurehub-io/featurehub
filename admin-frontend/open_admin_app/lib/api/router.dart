@@ -49,7 +49,10 @@ enum PermissionType {
   any,
   nowhere,
   login,
-  setup
+  setup,
+  extra1,
+  extra2,
+  extra3
 }
 
 // we need to track what states we can be in, what permission types routes have to have, and what the initial route you should have when you are in i
