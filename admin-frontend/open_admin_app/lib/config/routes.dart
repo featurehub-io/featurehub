@@ -38,7 +38,10 @@ class Routes {
           PermissionType.any,
           PermissionType.portfolioadmin,
           PermissionType.superadmin,
-          PermissionType.regular
+          PermissionType.regular,
+          PermissionType.extra1,
+          PermissionType.extra2,
+          PermissionType.extra3,
         ],
         initialRoute: '/applications');
 

@@ -308,6 +308,10 @@ class MenuItem extends StatelessWidget {
       return SizedBox.shrink();
     }
 
+    if (!menuOkForThisUser && greyOnNoPermission) {
+      return Text('<grey>$name</grey>');
+    }
+
     return InkWell(
       canRequestFocus: false,
       mouseCursor: SystemMouseCursors.click,

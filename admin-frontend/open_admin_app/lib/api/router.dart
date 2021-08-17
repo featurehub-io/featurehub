@@ -41,6 +41,8 @@ class Handler {
 }
 
 enum TransitionType { fadeIn, material }
+
+// these have to have entries in routeSlotMappings otherwise they cannot be routed to
 enum PermissionType {
   superadmin,
   portfolioadmin,
