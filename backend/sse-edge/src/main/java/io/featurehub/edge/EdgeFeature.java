@@ -17,12 +17,6 @@ import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 
 public class EdgeFeature implements Feature {
-
-  @Inject
-  public EdgeFeature(ServiceLocator locator) {
-    ServiceLocatorUtilities.enableImmediateScope(locator);
-  }
-
   @Override
   public boolean configure(FeatureContext context) {
     context

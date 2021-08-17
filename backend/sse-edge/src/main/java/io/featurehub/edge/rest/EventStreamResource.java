@@ -33,10 +33,13 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.container.AsyncResponse;
+import jakarta.ws.rs.container.Suspended;
 import jakarta.ws.rs.core.Response;
 import org.glassfish.hk2.api.Immediate;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.SseFeature;
+import org.glassfish.jersey.server.ManagedAsync;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,9 +79,6 @@ public class EventStreamResource {
     this.getOrchestrator = getOrchestrator;
     this.featureTransformer = featureTransformer;
     this.updateMapper = updateMapper;
-
-    log.warn("-------------------------- created instance");
-
   }
 
   static Gauge inout = Gauge.build("edge_get_req", "how many GET requests").register();
@@ -88,12 +88,14 @@ public class EventStreamResource {
   @GET
   @Path("/")
   @Produces({ "application/json" })
-  public List<Environment> getFeatureStates(@QueryParam("sdkUrl") List<String> sdkUrls,
-                                            @QueryParam("apiKeys") List<String> apiKeys,
-                                            @HeaderParam("x-featurehub") List<String> featureHubAttrs) {
+  @ManagedAsync
+  public void getFeatureStates(@Suspended AsyncResponse response, @QueryParam("sdkUrl") List<String> sdkUrls,
+                               @QueryParam("apiKeys") List<String> apiKeys,
+                               @HeaderParam("x-featurehub") List<String> featureHubAttrs) {
     if ((sdkUrls == null || sdkUrls.isEmpty()) && (apiKeys == null || apiKeys.isEmpty()) ) {
-      throw new BadRequestException();
+      response.resume(new BadRequestException());
     }
+
     inout.inc();
 
     final Histogram.Timer timer = pollSpeedHistogram.startTimer();
@@ -119,10 +121,10 @@ public class EventStreamResource {
 
     inout.dec();
     if (environments.isEmpty()) {
-      throw new NotFoundException(); // no environments were found
+      response.resume(new NotFoundException()); // no environments were found
     }
 
-    return environments;
+    response.resume(Response.status(200).entity(environments).build());
   }
 
   @GET

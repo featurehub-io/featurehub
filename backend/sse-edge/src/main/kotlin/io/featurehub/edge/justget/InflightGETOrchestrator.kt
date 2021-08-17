@@ -63,6 +63,7 @@ class InflightGETOrchestrator @Inject constructor(
   }
 
   override fun removeGET(key: KeyParts) {
+    println("number of listeners: ${getMap[key]?.notifyListener?.size ?: "none"}")
     getMap.remove(key)
   }
 }
