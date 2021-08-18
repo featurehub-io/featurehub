@@ -52,7 +52,8 @@ class TopWidget extends StatelessWidget {
               snapshot.data == CreateUserForm.successState) {
             return const TopWidgetSuccess();
           }
-          return const TopWidgetDefault();
+          // ignore: prefer_const_constructors
+          return TopWidgetDefault();
         });
   }
 }
