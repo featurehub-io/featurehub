@@ -7,14 +7,17 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentLinkedQueue
 
+interface InflightRequest {
+  fun add(notifier: InflightGETNotifier)
+}
 
-class InflightGETRequest(private val api: DachaApiKeyService, val key: KeyParts, private val executor: EdgeConcurrentRequestPool, private val submitter: InflightGETSubmitter) {
+class InflightGETRequest(private val api: DachaApiKeyService, val key: KeyParts, private val executor: EdgeConcurrentRequestPool, private val submitter: InflightGETSubmitter) : InflightRequest {
   private val log: Logger = LoggerFactory.getLogger(InflightGETRequest::class.java)
 
   val notifyListener: MutableCollection<InflightGETNotifier> = ConcurrentLinkedQueue()
   var details: DachaKeyDetailsResponse? = null
 
-  fun add(notifier: InflightGETNotifier) {
+  override fun add(notifier: InflightGETNotifier) {
     var size: Int?
 
     synchronized(this) {

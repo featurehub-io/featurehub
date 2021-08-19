@@ -13,7 +13,7 @@ interface InflightGETNotifier {
 }
 
 class InflightGETCollection(
-  private val requests: List<InflightGETRequest>,
+  private val requests: List<InflightRequest>,
   private val featureTransformer: FeatureTransformer,
   private val clientContext: ClientContext,
   private val future: CompletableFuture<List<Environment>>

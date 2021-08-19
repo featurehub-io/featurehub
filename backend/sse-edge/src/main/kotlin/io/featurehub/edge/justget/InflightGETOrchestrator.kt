@@ -5,7 +5,6 @@ import io.featurehub.edge.FeatureTransformer
 import io.featurehub.edge.KeyParts
 import io.featurehub.edge.strategies.ClientContext
 import io.featurehub.sse.model.Environment
-import io.prometheus.client.Counter
 import io.prometheus.client.Gauge
 import jakarta.inject.Inject
 import java.util.concurrent.CompletableFuture
@@ -27,11 +26,11 @@ interface InflightGETSubmitter {
   fun request(keys: List<KeyParts>, context: ClientContext): List<Environment>
 }
 
-class InflightGETOrchestrator @Inject constructor(
+open class InflightGETOrchestrator @Inject constructor(
   private val featureTransformer: FeatureTransformer, private val dachaApi: DachaClientServiceRegistry,
   private val executor: EdgeConcurrentRequestPool
 ) : InflightGETSubmitter {
-  private val getMap = ConcurrentHashMap<KeyParts, InflightGETRequest>()
+  private val getMap = ConcurrentHashMap<KeyParts, InflightRequest>()
 
   companion object {
     val inflightGauge = Gauge.build("edge_get_inflight_requests", "Inflight GET request Counter").register()
@@ -46,11 +45,11 @@ class InflightGETOrchestrator @Inject constructor(
     val getters = keys
       .filter { key -> dachaApi.getApiKeyService(key.cacheName) != null } // only caches that exist
       .map { key ->
-      getMap.computeIfAbsent(key) { InflightGETRequest(dachaApi.getApiKeyService(key.cacheName), key, executor, this) }
+      getMap.computeIfAbsent(key) { createInflightRequest(key) }
     }.toList()
 
     // now create a collector for the requests to notify
-    val action = InflightGETCollection(getters, featureTransformer, context, future)
+    val action = getRequestCollector(getters, context, future)
 
     // and tell them to go get the data or add us to their list
     getters.forEach { getter -> getter.add(action) }
@@ -62,8 +61,17 @@ class InflightGETOrchestrator @Inject constructor(
     return result
   }
 
+  protected open fun createInflightRequest(key: KeyParts) : InflightRequest =
+    InflightGETRequest(dachaApi.getApiKeyService(key.cacheName), key, executor, this)
+
+  protected open fun getRequestCollector(
+    getters: List<InflightRequest>,
+    context: ClientContext,
+    future: CompletableFuture<List<Environment>>
+  ) : InflightGETNotifier = InflightGETCollection(getters, featureTransformer, context, future)
+
+
   override fun removeGET(key: KeyParts) {
-    println("number of listeners: ${getMap[key]?.notifyListener?.size ?: "none"}")
     getMap.remove(key)
   }
 }
