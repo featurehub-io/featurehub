@@ -4,7 +4,7 @@ name: Build typescript-featurehub-repository
 on:
   # Triggers the workflow on push request events but only for the master branch
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
     paths:
     - 'sdks/typescript/featurehub-repository/**'
 
