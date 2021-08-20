@@ -38,7 +38,7 @@ class _EditNumberValueContainerState extends State<EditNumberValueContainer> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
         width: 123,
         height: 30,
         child: TextField(

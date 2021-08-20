@@ -39,7 +39,7 @@ class _GroupUpdateDialogWidgetState extends State<GroupUpdateDialogWidget> {
       key: _formKey,
       child: FHAlertDialog(
         title: Text(widget.group == null ? 'Create new group' : 'Edit group'),
-        content: Container(
+        content: SizedBox(
           width: 500,
           child: Column(
             mainAxisSize: MainAxisSize.min,

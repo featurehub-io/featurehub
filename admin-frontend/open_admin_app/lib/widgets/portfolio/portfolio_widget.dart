@@ -11,6 +11,8 @@ import 'package:open_admin_app/widgets/portfolio/portfolio_bloc.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
 class PortfolioListWidget extends StatelessWidget {
+  const PortfolioListWidget({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<PortfolioBloc>(context);
@@ -21,7 +23,8 @@ class PortfolioListWidget extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.hasError || snapshot.data == null) {
             return Container(
-                padding: EdgeInsets.all(30), child: const Text('Loading...'));
+                padding: const EdgeInsets.all(30),
+                child: const Text('Loading...'));
           }
 
           return Column(
@@ -161,7 +164,7 @@ class _PortfolioUpdateDialogWidgetState
             title: Text(widget.portfolio == null
                 ? 'Create new portfolio'
                 : 'Edit portfolio'),
-            content: Container(
+            content: SizedBox(
               width: 500,
               child: Column(
                 mainAxisSize: MainAxisSize.min,

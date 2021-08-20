@@ -16,6 +16,8 @@ import 'per_application_features_bloc.dart';
 final _log = Logger('FeaturesOverviewTable');
 
 class FeaturesOverviewTableWidget extends StatelessWidget {
+  const FeaturesOverviewTableWidget({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
@@ -25,7 +27,7 @@ class FeaturesOverviewTableWidget extends StatelessWidget {
           stream: bloc.appFeatureValues,
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
-              return SizedBox.shrink();
+              return const SizedBox.shrink();
             }
 
             if (snapshot.hasData &&
@@ -33,13 +35,13 @@ class FeaturesOverviewTableWidget extends StatelessWidget {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  NoEnvironmentMessage(),
+                  const NoEnvironmentMessage(),
                 ],
               );
             }
             if (snapshot.hasData &&
                 snapshot.data!.applicationFeatureValues.features.isEmpty) {
-              return NoFeaturesMessage();
+              return const NoFeaturesMessage();
             }
 
             if (snapshot.hasData) {
@@ -87,7 +89,7 @@ class TabsView extends StatelessWidget {
             Card(
               child: Column(
                 children: [
-                  HiddenEnvironmentsList(),
+                  const HiddenEnvironmentsList(),
                   _FeatureTabsBodyHolder(),
                 ],
               ),
@@ -122,7 +124,7 @@ class _FeatureTabsBodyHolder extends StatelessWidget {
                             width: MediaQuery.of(context).size.width > 600
                                 ? 260.0
                                 : 130,
-                            padding: EdgeInsets.only(left: 8.0),
+                            padding: const EdgeInsets.only(left: 8.0),
                             child: Text('',
                                 style: Theme.of(context).textTheme.caption)),
                       ...bloc.features.map(
@@ -150,7 +152,7 @@ class _FeatureTabsHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
-        children: [
+        children: const [
           _FeatureTab(
               text: 'Feature Flags',
               icon: Icons.flag,
@@ -208,14 +210,14 @@ class _FeatureTab extends StatelessWidget {
                           vertical: 6.0, horizontal: 12.0),
                       decoration: BoxDecoration(
                         borderRadius:
-                            BorderRadius.all(const Radius.circular(16.0)),
+                            const BorderRadius.all(Radius.circular(16.0)),
                         color: state == snapshot.data
                             ? Theme.of(context).primaryColorLight
                             : Colors.transparent,
                       ),
                       child: Row(children: <Widget>[
                         Icon(icon, color: color, size: 20.0),
-                        SizedBox(width: 4.0),
+                        const SizedBox(width: 4.0),
                         Text(text,
                             style: Theme.of(context).textTheme.subtitle1),
                       ]))));
@@ -273,7 +275,7 @@ class NoFeaturesMessage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(top: 16.0),
+      padding: const EdgeInsets.only(top: 16.0),
       child: Column(
         children: <Widget>[
           Text('There are no features defined for this application',

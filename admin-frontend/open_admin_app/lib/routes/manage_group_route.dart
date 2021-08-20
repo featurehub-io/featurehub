@@ -15,6 +15,8 @@ import 'package:open_admin_app/widgets/group/group_update_widget.dart';
 /// Every user has access to portfolios, they can only see the ones they have access to
 /// and their access will be limited based on whether they are a site admin.
 class ManageGroupRoute extends StatefulWidget {
+  const ManageGroupRoute({Key? key}) : super(key: key);
+
   @override
   _ManageGroupRouteState createState() => _ManageGroupRouteState();
 }
@@ -40,7 +42,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
             child: const FHHeader(
               title: 'Manage group members',
             )),
-        FHPageDivider(),
+        const FHPageDivider(),
         Row(
           children: <Widget>[
             Flexible(
@@ -338,7 +340,7 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
 
   Widget membersChips(GroupBloc bloc) {
     return ChipsInput(
-      initialValue: [],
+      initialValue: const [],
       // none, but we could
       decoration:
           const InputDecoration(labelText: 'Enter members to add to group...'),

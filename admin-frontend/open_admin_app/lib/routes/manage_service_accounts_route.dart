@@ -8,6 +8,8 @@ import 'package:open_admin_app/widgets/common/fh_header.dart';
 /// Every user has access to portfolios, they can only see the ones they have access to
 /// and their access will be limited based on whether they are a super admin.
 class ManageServiceAccountsRoute extends StatelessWidget {
+  const ManageServiceAccountsRoute({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return _ServiceAccountSearchWidget();
@@ -31,7 +33,7 @@ class _ServiceAccountSearchState extends State<_ServiceAccountSearchWidget> {
       children: <Widget>[
         _headerRow(),
         _filterRow(context, bloc),
-        ServiceAccountsListWidget(),
+        const ServiceAccountsListWidget(),
       ],
     );
   }

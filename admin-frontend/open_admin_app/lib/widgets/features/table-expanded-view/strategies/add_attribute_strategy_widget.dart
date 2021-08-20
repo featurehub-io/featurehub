@@ -19,7 +19,8 @@ class EditAttributeStrategyWidget extends StatefulWidget {
   final bool attributeIsFirst;
   final IndividualStrategyBloc bloc;
 
-  const EditAttributeStrategyWidget({
+  // ignore: prefer_const_constructors, prefer_const_constructors_in_immutables
+  EditAttributeStrategyWidget({
     Key? key,
     required this.attribute,
     required this.attributeIsFirst,
@@ -118,7 +119,7 @@ class _EditAttributeStrategyWidgetState
               labelText: 'Custom rule name',
               labelStyle: Theme.of(context).textTheme.bodyText1!.copyWith(
                   fontSize: 12.0, color: Theme.of(context).buttonColor)),
-          style: TextStyle(fontSize: 14.0),
+          style: const TextStyle(fontSize: 14.0),
           autofocus: true,
           textInputAction: TextInputAction.next,
           onChanged: (v) => _updateAttributeFieldName(),
@@ -135,10 +136,10 @@ class _EditAttributeStrategyWidgetState
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(8.0),
-      margin: EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.all(8.0),
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.all(Radius.circular(6.0)),
+        borderRadius: const BorderRadius.all(Radius.circular(6.0)),
         color: Theme.of(context).brightness == Brightness.light
             ? Theme.of(context).selectedRowColor
             : Theme.of(context).primaryColorLight.withOpacity(0.1),
@@ -154,10 +155,10 @@ class _EditAttributeStrategyWidgetState
               children: [
                 Material(
                     type: MaterialType.transparency,
-                    shape: CircleBorder(),
+                    shape: const CircleBorder(),
                     child: IconButton(
                         tooltip: 'Delete rule',
-                        icon: Icon(
+                        icon: const Icon(
                           Icons.delete_forever_sharp,
                           color: Colors.red,
                           size: 20.0,
@@ -194,7 +195,7 @@ class _EditAttributeStrategyWidgetState
                   onPressed: () => {},
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<RolloutStrategyAttributeConditional>(
-                      icon: Icon(
+                      icon: const Icon(
                         Icons.keyboard_arrow_down,
                         size: 18,
                       ),
@@ -274,10 +275,10 @@ class _EditAttributeStrategyWidgetState
 
   Widget _customFieldType() {
     return Container(
-      padding: EdgeInsets.all(4.0),
-      margin: EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(4.0),
+      margin: const EdgeInsets.all(8.0),
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(6.0)),
+          borderRadius: const BorderRadius.all(Radius.circular(6.0)),
           color: Theme.of(context).cardColor),
       height: 42,
       child: OutlinedButton(
@@ -363,7 +364,7 @@ class _EditAttributeStrategyWidgetState
               padding: const EdgeInsets.all(4.0),
               margin: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(6.0)),
+                  borderRadius: const BorderRadius.all(Radius.circular(6.0)),
                   color: Theme.of(context).cardColor),
               height: 32,
               child: OutlinedButton(
@@ -371,7 +372,7 @@ class _EditAttributeStrategyWidgetState
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton(
                     isDense: true,
-                    icon: Padding(
+                    icon: const Padding(
                       padding: EdgeInsets.only(left: 16.0),
                       child: Icon(
                         Icons.keyboard_arrow_down,
@@ -415,7 +416,7 @@ class _EditAttributeStrategyWidgetState
       padding: const EdgeInsets.all(4.0),
       margin: const EdgeInsets.all(8.0),
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(6.0)),
+          borderRadius: const BorderRadius.all(Radius.circular(6.0)),
           color: Theme.of(context).cardColor),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -424,7 +425,7 @@ class _EditAttributeStrategyWidgetState
           Row(
             children: [
               Container(
-                constraints: BoxConstraints(maxWidth: 250),
+                constraints: const BoxConstraints(maxWidth: 250),
                 child: TextFormField(
                   controller: _value,
                   textInputAction: TextInputAction.next,

@@ -14,6 +14,8 @@ import 'package:open_admin_app/widgets/common/fh_reorderable_list_view.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
 class EnvListWidget extends StatefulWidget {
+  const EnvListWidget({Key? key}) : super(key: key);
+
   @override
   _EnvListState createState() => _EnvListState();
 }
@@ -129,7 +131,7 @@ class _EnvWidget extends StatelessWidget {
       decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
           border: Border.all(color: Theme.of(context).dividerColor)),
-      child: Container(
+      child: SizedBox(
         height: 50,
         child: InkWell(
           mouseCursor: SystemMouseCursors.grab,
@@ -284,7 +286,7 @@ class _EnvUpdateDialogWidgetState extends State<EnvUpdateDialogWidget> {
       child: FHAlertDialog(
         title: Text(
             widget.env == null ? 'Create new environment' : 'Edit environment'),
-        content: Container(
+        content: SizedBox(
           width: 500,
           child: Column(
             mainAxisSize: MainAxisSize.min,

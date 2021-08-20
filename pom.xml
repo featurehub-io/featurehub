@@ -64,8 +64,10 @@
     <module>backend/sse-edge-stats-api</module>
     <module>backend/mr</module>
     <module>backend/mr-api</module>
+    <module>backend/mr-api-java-server</module>
     <module>backend/mr-db-api</module>
     <module>backend/mr-db-sql</module>
+    <module>backend/mr-db-models</module>
     <module>backend/mr-db-ebean</module>
     <module>backend/mr-streaming-api</module>
     <module>backend/mr-publish-api</module>

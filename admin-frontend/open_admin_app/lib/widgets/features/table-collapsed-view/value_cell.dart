@@ -24,7 +24,7 @@ class CollapsedViewValueCellHolder extends StatelessWidget {
     if ((fv?.id == null) && efv.roles.isEmpty) {
       return noAccessTag(null);
     }
-    return SizedBox.shrink();
+    return const SizedBox.shrink();
   }
 }
 
@@ -44,7 +44,7 @@ class _ValueContainer extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             if (fv != null) _ValueCard(feature: feature, fv: fv!),
-            if (fv == null) NotSetContainer(),
+            if (fv == null) const NotSetContainer(),
             if (fv != null && fv!.rolloutStrategies.isNotEmpty)
               _StrategiesList(feature: feature, fv: fv!)
           ],
@@ -62,14 +62,14 @@ class LockedIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: cellWidth - 1,
       child: Align(
         alignment: Alignment.topLeft,
         child: Container(
-          padding: EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(8.0),
 //          color: Colors.black.withOpacity(0.1),
-          child: Icon(Icons.lock_outline, size: 16.0, color: Colors.red),
+          child: const Icon(Icons.lock_outline, size: 16.0, color: Colors.red),
         ),
       ),
     );

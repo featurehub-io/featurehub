@@ -18,7 +18,7 @@ class AddStrategyButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: 16.0),
-      child: Container(
+      child: SizedBox(
         height: 36,
         child: TextButton.icon(
             label: const Text('Add split targeting rules'),

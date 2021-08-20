@@ -80,7 +80,7 @@ class RouteCreator {
     return BlocProvider<GroupBloc>(
         creator: (_context, _bag) =>
             GroupBloc(params['id']?.elementAt(0), mrBloc),
-        child: ManageGroupRoute());
+        child: const ManageGroupRoute());
   }
 
   Widget forgotPassword(mrBloc, {params}) {
@@ -115,39 +115,40 @@ class RouteCreator {
             creator: (_context, _bag) => EditUserBloc(
                 mrBloc, params['id']?.elementAt(0),
                 selectGroupBloc: select),
-            child: EditUserRoute()));
+            child: const EditUserRoute()));
   }
 
   Widget serviceAccount(mrBloc, {params}) {
     return BlocProvider<ManageServiceAccountsBloc>(
         creator: (_context, _bag) =>
             ManageServiceAccountsBloc(params['pid']?.elementAt(0), mrBloc),
-        child: ManageServiceAccountsRoute());
+        child: const ManageServiceAccountsRoute());
   }
 
   Widget featureStatus(ManagementRepositoryClientBloc mrBloc, {params}) {
     return BlocProvider<PerApplicationFeaturesBloc>(
         creator: (_c, _b) => PerApplicationFeaturesBloc(mrBloc),
-        child: Builder(builder: (context) => FeatureStatusRoute()));
+        child: Builder(builder: (context) => const FeatureStatusRoute()));
   }
 
   Widget apps(mrBloc, {params}) {
     return BlocProvider<AppsBloc>(
-        creator: (_context, _bag) => AppsBloc(mrBloc), child: AppsRoute());
+        creator: (_context, _bag) => AppsBloc(mrBloc),
+        child: const AppsRoute());
   }
 
   Widget serviceEnvsHandler(ManagementRepositoryClientBloc mrBloc,
       {Map<String, List<String>>? params}) {
     return BlocProvider<ServiceAccountEnvBloc>(
       creator: (_c, _b) => ServiceAccountEnvBloc(mrBloc),
-      child: ServiceAccountEnvRoute(),
+      child: const ServiceAccountEnvRoute(),
     );
   }
 
   Widget manageApp(mrBloc, {params}) {
     return BlocProvider<ManageAppBloc>(
         creator: (_context, _bag) => ManageAppBloc(mrBloc),
-        child: ManageAppRoute());
+        child: const ManageAppRoute());
   }
 
   Widget featureValues(mrBloc, {params}) {

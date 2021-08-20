@@ -128,10 +128,10 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                     ),
                                   ),
                                   Container(
-                                    padding: EdgeInsets.only(right: 4.0),
+                                    padding: const EdgeInsets.only(right: 4.0),
                                     child: Material(
                                       color: Theme.of(context).cardColor,
-                                      shape: CircleBorder(),
+                                      shape: const CircleBorder(),
                                       child: PopupMenuButton(
                                         tooltip: 'Show more',
                                         icon: const Icon(Icons.more_vert),

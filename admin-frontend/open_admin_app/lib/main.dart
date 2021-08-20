@@ -40,11 +40,13 @@ Future<void> mainApp() async {
     child: BlocProvider(
         creator: (_c, _b) => NavigationProviderBloc(
             BlocProvider.of<ManagementRepositoryClientBloc>(_c)),
-        child: FeatureHubApp()),
+        child: const FeatureHubApp()),
   ));
 }
 
 class FeatureHubApp extends StatelessWidget {
+  const FeatureHubApp({Key? key}) : super(key: key);
+
   // This widget is the root of the application.
   @override
   Widget build(BuildContext context) {

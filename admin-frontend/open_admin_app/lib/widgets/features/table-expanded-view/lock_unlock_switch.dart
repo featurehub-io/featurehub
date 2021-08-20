@@ -1,8 +1,8 @@
-import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart';
-import 'package:open_admin_app/widgets/features/per_feature_state_tracking_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart';
+import 'package:open_admin_app/widgets/features/per_feature_state_tracking_bloc.dart';
 
 class LockUnlockSwitch extends StatefulWidget {
   final EnvironmentFeatureValues environmentFeatureValue;
@@ -45,7 +45,7 @@ class _LockUnlockSwitchState extends State<LockUnlockSwitch> {
                 widget.environmentFeatureValue.environmentId!, locked != true);
           }
 
-          return Container(
+          return SizedBox(
             height: lockHeight,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -72,7 +72,7 @@ class _LockUnlockIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Container(
+        SizedBox(
           width: 36,
           height: 36,
           child: IconButton(

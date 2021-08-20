@@ -14,6 +14,8 @@ import 'package:open_admin_app/widgets/user/common/portfolio_group_selector_widg
 import 'package:open_admin_app/widgets/user/edit/edit_user_bloc.dart';
 
 class EditUserRoute extends StatelessWidget {
+  const EditUserRoute({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<EditUserBloc>(context);
@@ -118,7 +120,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
               ],
             ),
           ),
-          PortfolioGroupSelector(),
+          const PortfolioGroupSelector(),
           AdminCheckboxWidget(person: bloc.person),
           FHButtonBar(children: <Widget>[
             FHFlatButtonTransparent(

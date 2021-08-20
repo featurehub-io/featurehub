@@ -1,0 +1,13 @@
+= The Testing Database
+
+This is a testing database that is intended to be baked into the testing party server instance that is
+used to test each SDK. 
+
+By having a testing database, the API Keys are kept consistent and repeatable. 
+
+The admin user is `test@mailinator.com` and the password is `password123`
+
+run with:
+
+`docker run --rm -p 8085:8085 featurehub/party-server-test-db:<version>`
+

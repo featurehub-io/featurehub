@@ -83,12 +83,20 @@ export class EdgeFeatureHubConfig implements FeatureHubConfig {
     edgeService = edgeService || this.edgeServiceProvider();
 
     return this._clientEval ?
-      new ClientEvalFeatureContext(repository, this, edgeService(this._repository, this)) :
-      new ServerEvalFeatureContext(repository, this, () => this._createEdgeService(edgeService));
+      new ClientEvalFeatureContext(repository, this, this._getOrCreateEdgeService(edgeService, repository)) :
+      new ServerEvalFeatureContext(repository, this, () => this._createEdgeService(edgeService, repository));
   }
 
-  _createEdgeService(edgeServSupplier: EdgeServiceProvider): EdgeService {
-    const es = edgeServSupplier(this._repository, this);
+  _getOrCreateEdgeService(edgeServSupplier: EdgeServiceProvider, repository?: InternalFeatureRepository): EdgeService {
+    if (this._edgeServices.length === 0) {
+      return this._createEdgeService(edgeServSupplier, repository);
+    }
+
+    return this._edgeServices[0];
+  }
+
+  _createEdgeService(edgeServSupplier: EdgeServiceProvider, repository?: InternalFeatureRepository): EdgeService {
+    const es = edgeServSupplier(repository || this.repository(), this);
     this._edgeServices.push(es);
     return es;
   }

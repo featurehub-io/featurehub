@@ -54,7 +54,7 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
       );
     }
 
-    return Container(
+    return SizedBox(
       width: 123,
       height: 30,
       child: InkWell(
@@ -81,7 +81,7 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
     var initialValue = tec.text;
     widget.strBloc.fvBloc.mrClient
         .addOverlay((BuildContext context) => AlertDialog(
-                content: Container(
+                content: SizedBox(
               height: 575,
               child: Column(
                 children: <Widget>[

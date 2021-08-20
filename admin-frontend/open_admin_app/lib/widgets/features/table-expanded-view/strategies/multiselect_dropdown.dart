@@ -12,7 +12,9 @@ class MultiSelectDropdown extends StatefulWidget {
   final MultiSelectMapPossibleValueToName mapper;
 
   const MultiSelectDropdown(
-      this.values, this.possibleValues, this.mapper, this.hint);
+      this.values, this.possibleValues, this.mapper, this.hint,
+      {Key? key})
+      : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -37,7 +39,7 @@ class _MultiSelectDropdownState extends State<MultiSelectDropdown> {
       padding: const EdgeInsets.all(4.0),
       margin: const EdgeInsets.all(8.0),
       decoration: BoxDecoration(
-        borderRadius: const BorderRadius.all(const Radius.circular(6.0)),
+        borderRadius: const BorderRadius.all(Radius.circular(6.0)),
         color: Theme.of(context).cardColor,
       ),
       child: Column(
@@ -66,13 +68,13 @@ class _MultiSelectDropdownState extends State<MultiSelectDropdown> {
   }
 
   Widget buildDropDown(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: 32,
       child: OutlinedButton(
         onPressed: () => {},
         child: DropdownButtonHideUnderline(
           child: DropdownButton<dynamic>(
-            icon: Padding(
+            icon: const Padding(
               padding: EdgeInsets.only(left: 8.0),
               child: Icon(
                 Icons.keyboard_arrow_down,

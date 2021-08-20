@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart';
 import 'package:open_admin_app/widgets/features/feature_value_status_tags.dart';
 import 'package:open_admin_app/widgets/features/table-collapsed-view/value_cell.dart';
@@ -6,9 +9,6 @@ import 'package:open_admin_app/widgets/features/table-expanded-view/json/json_ce
 import 'package:open_admin_app/widgets/features/table-expanded-view/number/number_cell_holder.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/string/string_cell_holder.dart';
 import 'package:open_admin_app/widgets/features/tabs_bloc.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:mrapi/api.dart';
 
 class FeatureValueCell extends StatelessWidget {
   final FeaturesOnThisTabTrackerBloc tabsBloc;
@@ -86,7 +86,7 @@ class FeatureValueCell extends StatelessWidget {
           // final panelH = extra + baseH;
           // print("${feature.key} is $baseH + $extra = $panelH");
 
-          return Container(
+          return SizedBox(
               height: extra +
                   (amSelected ? selectedRowHeight : unselectedRowHeight),
               child: cellWidget);

@@ -14,6 +14,8 @@ import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
 import 'package:open_admin_app/widgets/service-accounts/service_accounts_env_bloc.dart';
 
 class ServiceAccountEnvRoute extends StatelessWidget {
+  const ServiceAccountEnvRoute({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<ServiceAccountEnvBloc>(context);
@@ -78,7 +80,7 @@ class ServiceAccountEnvRoute extends StatelessWidget {
                           }),
                     ],
                   ),
-                  FHPageDivider(),
+                  const FHPageDivider(),
                   const SizedBox(
                     height: 16.0,
                   ),

@@ -1,6 +1,6 @@
-import 'package:open_admin_app/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/utils/utils.dart';
 
 import '../common/fh_tag.dart';
 
@@ -32,8 +32,7 @@ extension FeatureValueSet on FeatureValue {
   }
 }
 
-// this function is WRONG
-@deprecated
+@Deprecated("this function is wrong!")
 bool isFVSet(FeatureValue fv) {
   return fv.valueString != null ||
       fv.valueJson != null ||

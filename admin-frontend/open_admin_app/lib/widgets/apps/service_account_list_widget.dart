@@ -13,6 +13,8 @@ import 'package:openapi_dart_common/openapi.dart';
 import 'manage_service_accounts_bloc.dart';
 
 class ServiceAccountsListWidget extends StatelessWidget {
+  const ServiceAccountsListWidget({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<ManageServiceAccountsBloc>(context);
@@ -309,7 +311,7 @@ class _ServiceAccountUpdateDialogWidgetState
         title: Text(widget.serviceAccount == null
             ? 'Create new service account'
             : 'Edit service account'),
-        content: Container(
+        content: SizedBox(
           width: 500,
           child: Column(
             mainAxisSize: MainAxisSize.min,

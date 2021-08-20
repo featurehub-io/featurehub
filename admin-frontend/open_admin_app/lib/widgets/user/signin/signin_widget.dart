@@ -12,7 +12,7 @@ import 'package:open_admin_app/widgets/common/fh_flat_button_green.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
 class SigninWidget extends StatefulWidget {
-  const SigninWidget(this.bloc);
+  const SigninWidget(this.bloc, {Key? key}) : super(key: key);
 
   final ManagementRepositoryClientBloc bloc;
 
@@ -92,7 +92,7 @@ class _SigninState extends State<SigninWidget> {
                 children: <Widget>[const RotatingLogoWidget()],
               ),
             ),
-            Container(
+            SizedBox(
               height: 48.0,
               child: Text(
                 'Sign in to FeatureHub\n\n',
@@ -109,7 +109,7 @@ class _SigninState extends State<SigninWidget> {
               Column(
                 children: [
                   const SizedBox(height: 24.0),
-                  FHPageDivider(),
+                  const FHPageDivider(),
                   Padding(
                       padding: const EdgeInsets.fromLTRB(0, 24, 0, 16),
                       child: Text('or sign in with a username and password',
@@ -216,7 +216,7 @@ class _SetupPage1ThirdPartyProviders extends StatelessWidget {
     return Column(
       children: [
         for (dynamic provider in bloc.identityProviders.externalProviders)
-          Container(
+          SizedBox(
             height: 48,
             child: Padding(
               padding: const EdgeInsets.only(top: 12.0),
