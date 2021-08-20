@@ -44,7 +44,7 @@ public class FeatureUpdateListener implements EdgeUpdateListener, MessageHandler
   @Override
   public void onMessage(Message msg) throws InterruptedException {
     try {
-      final StreamedFeatureUpdate update = CacheJsonMapper.mapper.readValue(msg.getData(), StreamedFeatureUpdate.class);
+      final StreamedFeatureUpdate update = CacheJsonMapper.readFromZipBytes(msg.getData(), StreamedFeatureUpdate.class);
       log.debug("received update {}", update);
       featureUpdateBySDKApi.updateFeature(update.getApiKey(), update.getEnvironmentId(), update.getFeatureKey(), Boolean.TRUE.equals(update.getUpdatingValue()),
         (valueType) -> {

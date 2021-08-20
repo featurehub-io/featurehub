@@ -43,8 +43,8 @@
   </licenses>
 
   <properties>
-    <grizzly.version>2.4.4</grizzly.version>
-    <grizzly.npn.version>1.9</grizzly.npn.version>
+    <grizzly.version>3.0.0</grizzly.version>
+    <grizzly.npn.version>2.0.0</grizzly.npn.version>
   </properties>
 
   <dependencies>
@@ -174,7 +174,6 @@
       <artifactId>composite-prometheus</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
-
   </dependencies>
 
   <build>

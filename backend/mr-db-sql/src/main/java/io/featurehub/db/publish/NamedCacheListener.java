@@ -64,7 +64,7 @@ public class NamedCacheListener implements MessageHandler, CacheBroadcast {
     try {
       CacheManagementMessage cmm = CacheJsonMapper.mapper.readValue(message.getData(), CacheManagementMessage.class);
 
-      log.debug("incoming message {}", cmm.toString());
+      log.trace("incoming message {}", cmm.toString());
 
       // ignore messages not directed at us or our own messages
       if (cmm.getDestId() != null && !id.equals(cmm.getDestId()) || id.equals(cmm.getId())) {
@@ -84,7 +84,7 @@ public class NamedCacheListener implements MessageHandler, CacheBroadcast {
 
   private void sayHelloToNewNamedCache() {
     try {
-      log.info("responding with complete cache message to {}", managementSubject);
+      log.trace("responding with complete cache message to {}", managementSubject);
       connection.publish(managementSubject, CacheJsonMapper.mapper.writeValueAsBytes(
         new CacheManagementMessage().mit(1L).id(id).cacheState(CacheState.COMPLETE).requestType(CacheRequestType.CACHE_SOURCE)));
     } catch (JsonProcessingException e) {
@@ -95,8 +95,12 @@ public class NamedCacheListener implements MessageHandler, CacheBroadcast {
   @Override
   public void publishEnvironment(EnvironmentCacheItem eci) {
     try {
+      if (log.isTraceEnabled())
+        log.trace("eci: {}", CacheJsonMapper.mapper.writeValueAsString(eci));
+
       connection.publish(environmentSubject, CacheJsonMapper.mapper.writeValueAsBytes(eci));
-    } catch (JsonProcessingException e) {
+//      connection.publish(environmentSubject, CacheJsonMapper.writeAsZipBytes(eci));
+    } catch (IOException e) {
       log.error("Could not encode environment update", e);
     }
   }
@@ -104,8 +108,11 @@ public class NamedCacheListener implements MessageHandler, CacheBroadcast {
   @Override
   public void publishServiceAccount(ServiceAccountCacheItem saci) {
     try {
+      if (log.isTraceEnabled())
+        log.trace("saci: {}", CacheJsonMapper.mapper.writeValueAsString(saci));
+//      connection.publish(serviceAccountSubject, CacheJsonMapper.writeAsZipBytes(saci));
       connection.publish(serviceAccountSubject, CacheJsonMapper.mapper.writeValueAsBytes(saci));
-    } catch (JsonProcessingException e) {
+    } catch (IOException e) {
       log.error("Could not encode service account", e);
     }
   }
@@ -114,8 +121,9 @@ public class NamedCacheListener implements MessageHandler, CacheBroadcast {
   public void publishFeature(FeatureValueCacheItem feature) {
     try {
       log.trace("publishing feature {}", feature);
+//      connection.publish(featureSubject, CacheJsonMapper.writeAsZipBytes(feature));
       connection.publish(featureSubject, CacheJsonMapper.mapper.writeValueAsBytes(feature));
-    } catch (JsonProcessingException e) {
+    } catch (IOException e) {
       log.error("Could not encode feature");
     }
   }

@@ -1,6 +1,8 @@
 package io.featurehub.edge.client;
 
-import io.featurehub.mr.model.EdgeInitResponse;
+import io.featurehub.edge.KeyParts;
+import io.featurehub.edge.features.FeatureRequestResponse;
+import io.featurehub.edge.strategies.ClientContext;
 import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.sse.model.SSEResultState;
 
@@ -14,6 +16,10 @@ public interface ClientConnection {
 
   String getApiKey();
 
+  KeyParts getKey();
+
+  ClientContext getClientContext();
+
   void writeMessage(SSEResultState name, String data) throws IOException;
 
   void registerEjection(EjectHandler handler);
@@ -26,7 +32,7 @@ public interface ClientConnection {
 
   void failed(String reason);
 
-  void initResponse(EdgeInitResponse edgeResponse);
+  void initResponse(FeatureRequestResponse edgeResponse);
 
   // notify the client of a new feature (if they have received their features)
   void notifyFeature(FeatureValueCacheItem rf);

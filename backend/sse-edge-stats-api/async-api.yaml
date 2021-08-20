@@ -1,8 +1,8 @@
 openapi: 3.0.1
 info:
-  title: FeatureServiceApi,
-  description: This describes the API clients use for accessing features
-  version: 1.1.2
+  title: Usage API - consider nascent
+  description: This is primarily for model generation for the usage channel
+  version: 0.9.1
 paths:
   /fake-get:
     get:
@@ -40,15 +40,33 @@ components:
         - envId
         - counters
       properties:
-        envId:
+        environmentId:
+          x-basename: "eId"
           type: string
           format: uuid
-        svcKey:
+        serviceKeyId:
+          description: "This is the service key UUID if it exists and if not, it will be the API Key that someone tried to use"
+          x-basename: "sId"
           type: string
         counters:
           type: array
           items:
             $ref: "#/components/schemas/EdgeApiStat"
+        organizationId:
+          description: "This is carried (if it exists) as it could become unpublished by the time downstream consumers are notified"
+          x-basename: oId
+          type: string
+          format: uuid
+        portfolioId:
+          description: "This is carried (if it exists) as it could become unpublished by the time downstream consumers are notified"
+          x-basename: pId
+          type: string
+          format: uuid
+        applicationId:
+          description: "This is carried (if it exists) as it could become unpublished by the time downstream consumers are notified"
+          x-basename: aId
+          type: string
+          format: uuid
     EdgeApiStat:
       type: object
       required:

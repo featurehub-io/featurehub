@@ -46,7 +46,7 @@ open class StatDisruptor @Inject constructor(eventHandler: EventHandler<Stat>) :
   }
 
   private val TRANSLATOR: EventTranslatorThreeArg<Stat, KeyParts, EdgeHitResultType, EdgeHitSourceType> =
-    EventTranslatorThreeArg<Stat, KeyParts, EdgeHitResultType, EdgeHitSourceType> { event, sequence, apiKey, resultType, hitType ->
+    EventTranslatorThreeArg<Stat, KeyParts, EdgeHitResultType, EdgeHitSourceType> { event, _, apiKey, resultType, hitType ->
       event.apiKey = apiKey
       event.resultType = resultType
       event.hitSourceType = hitType

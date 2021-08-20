@@ -4,6 +4,7 @@ import cd.connect.jersey.common.LoggingConfiguration
 import cd.connect.jersey.prometheus.PrometheusDynamicFeature
 import cd.connect.openapi.support.ReturnStatusContainerResponseFilter
 import io.featurehub.jersey.config.CommonConfiguration
+import io.featurehub.jersey.config.EndpointLoggingListener
 import jakarta.inject.Inject
 import org.glassfish.jersey.server.ServerProperties
 import jakarta.ws.rs.core.Feature
@@ -25,6 +26,7 @@ class CommonFeatureHubFeatures @Inject constructor(locator: ServiceLocator) : Fe
       CommonConfiguration::class.java,
       LoggingConfiguration::class.java,
       ReturnStatusContainerResponseFilter::class.java,
+      EndpointLoggingListener::class.java,
       PrometheusDynamicFeature::class.java
     ).forEach { context.register(it) }
 

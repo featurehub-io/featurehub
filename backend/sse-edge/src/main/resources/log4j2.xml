@@ -8,7 +8,7 @@
 
 	<Loggers>
 		<AsyncLogger name="io.featurehub" level="debug"/>
-<!--		<AsyncLogger name="org.glassfish" level="debug"/>-->
+		<AsyncLogger name="org.glassfish" level="debug"/>
 		<AsyncLogger name="jersey-logging" level="trace"/>
 
 		<AsyncRoot level="info">
