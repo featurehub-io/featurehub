@@ -11,13 +11,22 @@ import spock.lang.Specification
 
 import java.util.concurrent.CompletableFuture
 
-class InflightGETOrchestratorSpec extends Specification {
+class FeatureRequesterSpec extends Specification {
   int inflightRequestCounter = 0
   FeatureRequester inflightRequest
 
   def setup() {
     inflightRequestCounter = 0
     inflightRequest = Mock(FeatureRequester)
+  }
+
+  def "when i pass no keys, i get no responses"() {
+    given: "i have an orchestrator"
+      def orch = new DachaRequestOrchestrator(Mock(FeatureTransformer), Mock(DachaClientServiceRegistry), Mock(EdgeConcurrentRequestPool))
+    when: "i pass in no keys"
+      def result = orch.request([], new ClientContext(false))
+    then:
+      result.isEmpty()
   }
 
   def "when i pass 3 keys, i get 3 environments back"() {

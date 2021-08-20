@@ -27,6 +27,7 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.HeaderParam;
 import jakarta.ws.rs.InternalServerErrorException;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -109,6 +110,10 @@ public class EventStreamResource {
         .map(KeyParts.Companion::fromString)
         .filter(Objects::nonNull).collect(Collectors.toList());
 
+    if (realApiKeys.isEmpty()) {
+      response.resume(new NotFoundException());
+    }
+
     final List<FeatureRequestResponse> environments = getOrchestrator.request(realApiKeys,
       ClientContext.decode(featureHubAttrs, realApiKeys));
 
@@ -121,7 +126,7 @@ public class EventStreamResource {
 
     inout.dec();
 
-    response.resume(Response.status(200).entity(environments.stream().map(FeatureRequestResponse::getEnvironment)).build());
+    response.resume(Response.status(200).entity(environments.stream().map(FeatureRequestResponse::getEnvironment).collect(Collectors.toList())).build());
   }
 
   @GET

@@ -20,6 +20,12 @@ open class DachaRequestOrchestrator @Inject constructor(
   }
 
   override fun request(keys: List<KeyParts>, context: ClientContext): List<FeatureRequestResponse> {
+
+    // we need at least one for it to work
+    if (keys.isEmpty()) {
+      return arrayListOf();
+    }
+
     inflightGauge.inc()
 
     val future = CompletableFuture<List<FeatureRequestResponse>>()
