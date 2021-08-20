@@ -39,4 +39,8 @@ class KeyParts(val cacheName: String, val environmentId: UUID, val serviceKey: S
   override fun hashCode(): Int {
     return String.format("%s/%s/%s", cacheName, environmentId, serviceKey).hashCode()
   }
+
+  override fun toString(): String {
+    return "$cacheName/$environmentId/$serviceKey"
+  }
 }

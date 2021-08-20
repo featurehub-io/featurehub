@@ -1,4 +1,4 @@
-package io.featurehub.edge.justget
+package io.featurehub.edge.features
 
 import io.featurehub.edge.FeatureTransformer
 import io.featurehub.edge.KeyParts
@@ -8,21 +8,17 @@ import io.featurehub.sse.model.Environment
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentLinkedQueue
 
-interface InflightGETNotifier {
-  fun complete(key: InflightGETRequest)
-}
-
-class InflightGETCollection(
-  private val requests: List<InflightRequest>,
+class FeatureRequestCollection(
+  private val requests: List<FeatureRequester>,
   private val featureTransformer: FeatureTransformer,
   private val clientContext: ClientContext,
-  private val future: CompletableFuture<List<Environment>>
-) : InflightGETNotifier {
-  val completed: MutableCollection<InflightGETRequest> = ConcurrentLinkedQueue()
+  private val future: CompletableFuture<List<FeatureRequestResponse>>
+) : FeatureRequestCompleteNotifier {
+  private val completed: MutableCollection<FeatureRequesterSource> = ConcurrentLinkedQueue()
 
   // this gets called on each requester each time a response comes back. Once it matches
   // the number that went in, we can process and complete the future
-  override fun complete(key: InflightGETRequest) {
+  override fun complete(key: FeatureRequesterSource) {
     completed.add(key)
 
     if (completed.size == requests.size) {
@@ -30,8 +26,12 @@ class InflightGETCollection(
     }
   }
 
-  private fun transformFeatures(details: DachaKeyDetailsResponse?, key: KeyParts): Environment {
-    return Environment().id(key.environmentId)
-      .features(if (details == null) null else featureTransformer.transform(details.features, clientContext))
+  private fun transformFeatures(details: DachaKeyDetailsResponse?, key: KeyParts): FeatureRequestResponse {
+    val env = Environment().id(key.environmentId)
+    if (details == null)
+      return FeatureRequestResponse(env, false, key)
+
+    return FeatureRequestResponse(env
+      .features(featureTransformer.transform(details.features, clientContext)), true, key)
   }
 }

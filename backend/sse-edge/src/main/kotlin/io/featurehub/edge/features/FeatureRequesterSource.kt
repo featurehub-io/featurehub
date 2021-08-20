@@ -1,4 +1,4 @@
-package io.featurehub.edge.justget
+package io.featurehub.edge.features
 
 import io.featurehub.dacha.api.DachaApiKeyService
 import io.featurehub.edge.KeyParts
@@ -7,17 +7,13 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentLinkedQueue
 
-interface InflightRequest {
-  fun add(notifier: InflightGETNotifier)
-}
+class FeatureRequesterSource(private val api: DachaApiKeyService, val key: KeyParts, private val executor: EdgeConcurrentRequestPool, private val submitter: DachaFeatureRequestSubmitter) : FeatureRequester {
+  private val log: Logger = LoggerFactory.getLogger(FeatureRequesterSource::class.java)
 
-class InflightGETRequest(private val api: DachaApiKeyService, val key: KeyParts, private val executor: EdgeConcurrentRequestPool, private val submitter: InflightGETSubmitter) : InflightRequest {
-  private val log: Logger = LoggerFactory.getLogger(InflightGETRequest::class.java)
-
-  val notifyListener: MutableCollection<InflightGETNotifier> = ConcurrentLinkedQueue()
+  val notifyListener: MutableCollection<FeatureRequestCompleteNotifier> = ConcurrentLinkedQueue()
   var details: DachaKeyDetailsResponse? = null
 
-  override fun add(notifier: InflightGETNotifier) {
+  override fun add(notifier: FeatureRequestCompleteNotifier) {
     var size: Int?
 
     synchronized(this) {
@@ -36,7 +32,7 @@ class InflightGETRequest(private val api: DachaApiKeyService, val key: KeyParts,
           log.error("failed to request details for key {}", key, e)
         }
 
-        submitter.removeGET(key)
+        submitter.requestForKeyComplete(key)
 
         notifyListener.forEach { nl -> nl.complete(this) }
         notifyListener.clear()

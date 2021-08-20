@@ -3,11 +3,13 @@ package io.featurehub.edge.rest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.featurehub.edge.FeatureTransformer;
 import io.featurehub.edge.KeyParts;
-import io.featurehub.edge.ServerController;
+import io.featurehub.edge.StreamingFeatureController;
 import io.featurehub.edge.bucket.EventOutputBucketService;
 import io.featurehub.edge.client.ClientConnection;
 import io.featurehub.edge.client.TimedBucketClientConnection;
-import io.featurehub.edge.justget.InflightGETSubmitter;
+import io.featurehub.edge.features.DachaFeatureRequestSubmitter;
+import io.featurehub.edge.features.FeatureRequestResponse;
+import io.featurehub.edge.permission.PermissionPublisher;
 import io.featurehub.edge.stats.StatRecorder;
 import io.featurehub.edge.strategies.ClientContext;
 import io.featurehub.edge.utils.UpdateMapper;
@@ -15,19 +17,16 @@ import io.featurehub.mr.messaging.StreamedFeatureUpdate;
 import io.featurehub.mr.model.DachaPermissionResponse;
 import io.featurehub.mr.model.FeatureValue;
 import io.featurehub.mr.model.RoleType;
-import io.featurehub.sse.model.Environment;
 import io.featurehub.sse.model.FeatureStateUpdate;
 import io.featurehub.sse.stats.model.EdgeHitResultType;
 import io.featurehub.sse.stats.model.EdgeHitSourceType;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.Histogram;
 import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.HeaderParam;
 import jakarta.ws.rs.InternalServerErrorException;
-import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -56,11 +55,12 @@ public class EventStreamResource {
   private static final Logger log = LoggerFactory.getLogger(EventStreamResource.class);
 
   private final EventOutputBucketService bucketService;
-  private final ServerController serverConfig;
+  private final StreamingFeatureController serverConfig;
   private final StatRecorder statRecorder;
-  private final InflightGETSubmitter getOrchestrator;
+  private final DachaFeatureRequestSubmitter getOrchestrator;
   private final FeatureTransformer featureTransformer;
   private final UpdateMapper updateMapper;
+  private final PermissionPublisher permissionPublisher;
 
   // we are doing timers here rather than instrumenting Jersey because in this case the names are more interesting and
   // useful in the sea of metrics
@@ -70,15 +70,16 @@ public class EventStreamResource {
     "time that the connection is open for Testing clients").register();
 
   @Inject
-  public EventStreamResource(EventOutputBucketService bucketService, ServerController serverConfig,
-                             StatRecorder statRecorder, InflightGETSubmitter getOrchestrator,
-                             FeatureTransformer featureTransformer, UpdateMapper updateMapper) {
+  public EventStreamResource(EventOutputBucketService bucketService, StreamingFeatureController serverConfig,
+                             StatRecorder statRecorder, DachaFeatureRequestSubmitter getOrchestrator,
+                             FeatureTransformer featureTransformer, UpdateMapper updateMapper, PermissionPublisher permissionPublisher) {
     this.bucketService = bucketService;
     this.serverConfig = serverConfig;
     this.statRecorder = statRecorder;
     this.getOrchestrator = getOrchestrator;
     this.featureTransformer = featureTransformer;
     this.updateMapper = updateMapper;
+    this.permissionPublisher = permissionPublisher;
   }
 
   static Gauge inout = Gauge.build("edge_get_req", "how many GET requests").register();
@@ -94,6 +95,7 @@ public class EventStreamResource {
                                @HeaderParam("x-featurehub") List<String> featureHubAttrs) {
     if ((sdkUrls == null || sdkUrls.isEmpty()) && (apiKeys == null || apiKeys.isEmpty()) ) {
       response.resume(new BadRequestException());
+      return;
     }
 
     inout.inc();
@@ -107,24 +109,19 @@ public class EventStreamResource {
         .map(KeyParts.Companion::fromString)
         .filter(Objects::nonNull).collect(Collectors.toList());
 
-    final List<Environment> environments = getOrchestrator.request(realApiKeys,
+    final List<FeatureRequestResponse> environments = getOrchestrator.request(realApiKeys,
       ClientContext.decode(featureHubAttrs, realApiKeys));
 
     // record the result
-    realApiKeys.forEach(k -> {
-      statRecorder.recordHit(k,
-        environments.stream().anyMatch(e -> e.getId().equals(k.getEnvironmentId())) ?
-          EdgeHitResultType.SUCCESS : EdgeHitResultType.MISSED, EdgeHitSourceType.POLL );
-    });
+    environments.forEach(resp -> statRecorder.recordHit(resp.getKey(), resp.getSuccess() ?
+      EdgeHitResultType.SUCCESS : EdgeHitResultType.MISSED,
+      EdgeHitSourceType.POLL));
 
     timer.observeDuration();
 
     inout.dec();
-    if (environments.isEmpty()) {
-      response.resume(new NotFoundException()); // no environments were found
-    }
 
-    response.resume(Response.status(200).entity(environments).build());
+    response.resume(Response.status(200).entity(environments.stream().map(FeatureRequestResponse::getEnvironment)).build());
   }
 
   @GET
@@ -172,7 +169,8 @@ public class EventStreamResource {
    */
   @PUT
   @Path("{namedCache}/{environmentId}/{apiKey}/{featureKey}")
-  public Response update(@PathParam("namedCache") String namedCache,
+  @ManagedAsync
+  public void update(@Suspended AsyncResponse response, @PathParam("namedCache") String namedCache,
                          @PathParam("environmentId") UUID envId,
                          @PathParam("apiKey") String apiKey,
                          @PathParam("featureKey") String featureKey,
@@ -181,22 +179,23 @@ public class EventStreamResource {
     Histogram.Timer timer = testSpeedHistogram.startTimer();
 
     try {
-      return testAPi(namedCache, envId, apiKey, featureKey, featureStateUpdate);
+      testAPi(response, namedCache, envId, apiKey, featureKey, featureStateUpdate);
     } finally{
       timer.observeDuration();
     }
   }
 
-  private Response testAPi(String namedCache, UUID envId, String apiKey, String featureKey,
+  private void testAPi(AsyncResponse response, String namedCache, UUID envId, String apiKey, String featureKey,
                            FeatureStateUpdate featureStateUpdate) {
     final KeyParts key = new KeyParts(namedCache, envId, apiKey);
 
     try {
-      final DachaPermissionResponse perms = serverConfig.requestPermission(key, featureKey);
+      final DachaPermissionResponse perms = permissionPublisher.requestPermission(key, featureKey);
 
       if (perms == null) {
         statRecorder.recordHit(key, EdgeHitResultType.MISSED, EdgeHitSourceType.TESTSDK);
-        return Response.status(Response.Status.NOT_FOUND).build();
+        response.resume(Response.status(Response.Status.NOT_FOUND).build());
+        return;
       }
 
       key.setApplicationId(perms.getApplicationId());
@@ -206,18 +205,21 @@ public class EventStreamResource {
 
       if (perms.getRoles().isEmpty() || (perms.getRoles().size() == 1 && perms.getRoles().get(0) == RoleType.READ)) {
         statRecorder.recordHit(key, EdgeHitResultType.FORBIDDEN, EdgeHitSourceType.TESTSDK);
-        return Response.status(Response.Status.FORBIDDEN).build();
+        response.resume(Response.status(Response.Status.FORBIDDEN).build());
+        return;
       }
 
       if (Boolean.TRUE.equals(featureStateUpdate.getLock())) {
         if (!perms.getRoles().contains(RoleType.LOCK)) {
           statRecorder.recordHit(key, EdgeHitResultType.FORBIDDEN, EdgeHitSourceType.TESTSDK);
-          return Response.status(Response.Status.FORBIDDEN).build();
+          response.resume(Response.status(Response.Status.FORBIDDEN).build());
+          return;
         }
       } else if (Boolean.FALSE.equals(featureStateUpdate.getLock())) {
         if (!perms.getRoles().contains(RoleType.UNLOCK)) {
           statRecorder.recordHit(key, EdgeHitResultType.FORBIDDEN, EdgeHitSourceType.TESTSDK);
-          return Response.status(Response.Status.FORBIDDEN).build();
+          response.resume(Response.status(Response.Status.FORBIDDEN).build());
+          return;
         }
       }
 
@@ -228,17 +230,21 @@ public class EventStreamResource {
       // nothing to do?
       if (featureStateUpdate.getLock() == null && (featureStateUpdate.getUpdateValue() == null || Boolean.FALSE.equals(featureStateUpdate.getUpdateValue()) )) {
         statRecorder.recordHit(key, EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.TESTSDK);
-        return Response.status(Response.Status.BAD_REQUEST).build();
+        response.resume(Response.status(Response.Status.BAD_REQUEST).build());
+        return;
       }
 
       if (Boolean.TRUE.equals(featureStateUpdate.getUpdateValue())) {
         if (!perms.getRoles().contains(RoleType.CHANGE_VALUE)) {
           statRecorder.recordHit(key, EdgeHitResultType.FORBIDDEN, EdgeHitSourceType.TESTSDK);
-          return Response.status(Response.Status.FORBIDDEN).build();
+          response.resume(Response.status(Response.Status.FORBIDDEN).build());
+          return;
         } else if (Boolean.TRUE.equals(perms.getFeature().getValue().getLocked()) && !Boolean.FALSE.equals(featureStateUpdate.getLock())) {
-          // its locked and you are trying to change its value and not unlocking it at the same time, that makes no sense
+          // its locked, and you are trying to change its value and not unlocking it at the same time, that makes no
+          // sense
           statRecorder.recordHit(key, EdgeHitResultType.UPDATE_NONSENSE, EdgeHitSourceType.TESTSDK);
-          return Response.status(Response.Status.PRECONDITION_FAILED).build();
+          response.resume(Response.status(Response.Status.PRECONDITION_FAILED).build());
+          return;
         }
       }
 
@@ -264,7 +270,8 @@ public class EventStreamResource {
               // must be true or false in some case
               if (!val.equalsIgnoreCase("true") && !val.equalsIgnoreCase("false")) {
                 statRecorder.recordHit(key, EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.TESTSDK);
-                return Response.status(Response.Status.BAD_REQUEST).build();
+                response.resume(Response.status(Response.Status.BAD_REQUEST).build());
+                return;
               }
 
               upd.valueBoolean(Boolean.parseBoolean(val));
@@ -280,7 +287,8 @@ public class EventStreamResource {
                 updateMapper.getMapper().readTree(val);
               } catch (JsonProcessingException jpe) {
                 statRecorder.recordHit(key, EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.TESTSDK);
-                return Response.status(Response.Status.BAD_REQUEST).build();
+                response.resume(Response.status(Response.Status.BAD_REQUEST).build());
+                return;
               }
 
               upd.valueString(val);
@@ -292,7 +300,8 @@ public class EventStreamResource {
                 valueNotActuallyChanging = upd.getValueNumber().equals(value.getValueNumber());
               } catch (Exception e) {
                 statRecorder.recordHit(key, EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.TESTSDK);
-                return Response.status(Response.Status.BAD_REQUEST).build();
+                response.resume(Response.status(Response.Status.BAD_REQUEST).build());
+                return;
               }
               break;
           }
@@ -301,7 +310,8 @@ public class EventStreamResource {
             case BOOLEAN:
               // a null boolean is not valid
               statRecorder.recordHit(key, EdgeHitResultType.UPDATE_NONSENSE, EdgeHitSourceType.TESTSDK);
-              return Response.status(Response.Status.PRECONDITION_FAILED).build();
+              response.resume(Response.status(Response.Status.PRECONDITION_FAILED).build());
+              return;
             case STRING:
               valueNotActuallyChanging = (value.getValueString() == null);
               break;
@@ -317,7 +327,8 @@ public class EventStreamResource {
 
       if (valueNotActuallyChanging && !lockChanging) {
         statRecorder.recordHit(key, EdgeHitResultType.UPDATE_NO_CHANGE, EdgeHitSourceType.TESTSDK);
-        return Response.status(Response.Status.ACCEPTED).build();
+        response.resume(Response.status(Response.Status.ACCEPTED).build());
+        return;
       }
 
       if (valueNotActuallyChanging) {
@@ -328,16 +339,16 @@ public class EventStreamResource {
       }
 
       log.debug("publishing update on {} for {}", namedCache, upd);
-      serverConfig.publishFeatureChangeRequest(upd, namedCache);
+      permissionPublisher.publishFeatureChangeRequest(upd, namedCache);
 
       statRecorder.recordHit(key, EdgeHitResultType.SUCCESS, EdgeHitSourceType.TESTSDK);
-      return Response.ok().build();
+      response.resume(Response.ok().build());
     } catch (Exception e) {
       log.error("Failed to process request: {}/{}/{}/{} : {}", namedCache, envId, apiKey, featureKey,
         featureStateUpdate, e);
 
       statRecorder.recordHit(key, EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.TESTSDK);
-      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+      response.resume(Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
     }
   }
 }

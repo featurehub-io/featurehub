@@ -1,28 +1,28 @@
-package io.featurehub.edge.justget
+package io.featurehub.edge.features
 
 import io.featurehub.dacha.api.DachaApiKeyService
 import io.featurehub.edge.KeyParts
 import io.featurehub.mr.model.DachaKeyDetailsResponse
 import spock.lang.Specification
 
-class InflightGETRequestSpec extends Specification {
+class FeatureRequesterSourceSpec extends Specification {
   DachaApiKeyService api
   EdgeConcurrentRequestPool executor
-  InflightGETSubmitter submitter
+  DachaFeatureRequestSubmitter submitter
 
   def setup() {
     api = Mock(DachaApiKeyService)
     executor = Mock(EdgeConcurrentRequestPool)
-    submitter = Mock(InflightGETSubmitter)
+    submitter = Mock(DachaFeatureRequestSubmitter)
   }
 
   def "I should be able to submit a bunch of notifiers and after the first one, it should trigger an execution event"() {
     given: "i have a key"
       def key = new KeyParts("default", UUID.randomUUID(), "1234")
     and: "a service"
-      def service = new InflightGETRequest(api, key, executor, submitter)
+      def service = new FeatureRequesterSource(api, key, executor, submitter)
     when:
-      service.add(Mock(InflightGETNotifier))
+      service.add(Mock(FeatureRequestCompleteNotifier))
     then:
       1 * executor.execute(_)
   }
@@ -31,8 +31,8 @@ class InflightGETRequestSpec extends Specification {
     given: "i have a key"
       def key = new KeyParts("default", UUID.randomUUID(), "1234")
     and: "a service"
-      def service = new InflightGETRequest(api, key, executor, submitter)
-      def notifier = Mock(InflightGETNotifier)
+      def service = new FeatureRequesterSource(api, key, executor, submitter)
+      def notifier = Mock(FeatureRequestCompleteNotifier)
     when:
       List<Thread> threads = []
       (1..10).each {
@@ -54,8 +54,8 @@ class InflightGETRequestSpec extends Specification {
     given: "i have a key"
       def key = new KeyParts("default", UUID.randomUUID(), "1234")
     and: "a service"
-      def service = new InflightGETRequest(api, key, executor, submitter)
-      def notifier = Mock(InflightGETNotifier)
+      def service = new FeatureRequesterSource(api, key, executor, submitter)
+      def notifier = Mock(FeatureRequestCompleteNotifier)
     and:
       def org = UUID.randomUUID()
       def port = UUID.randomUUID()
@@ -69,7 +69,7 @@ class InflightGETRequestSpec extends Specification {
       })
       1 * api.getApiKeyDetails(key.environmentId, key.serviceKey) >>
         new DachaKeyDetailsResponse().portfolioId(port).organizationId(org).applicationId(app).serviceKeyId(sid)
-      1 * submitter.removeGET(key)
+      1 * submitter.requestForKeyComplete(key)
       1 * notifier.complete(service)
       key.organisationId == org
       key.portfolioId == port
@@ -82,8 +82,8 @@ class InflightGETRequestSpec extends Specification {
     given: "i have a key"
       def key = new KeyParts("default", UUID.randomUUID(), "1234")
     and: "a service"
-      def service = new InflightGETRequest(api, key, executor, submitter)
-      def notifier = Mock(InflightGETNotifier)
+      def service = new FeatureRequesterSource(api, key, executor, submitter)
+      def notifier = Mock(FeatureRequestCompleteNotifier)
     when:
       service.add(notifier)
     then:
@@ -92,7 +92,7 @@ class InflightGETRequestSpec extends Specification {
       })
       1 * api.getApiKeyDetails(key.environmentId, key.serviceKey) >>
         { -> throw new RuntimeException() }
-      1 * submitter.removeGET(key)
+      1 * submitter.requestForKeyComplete(key)
       1 * notifier.complete(service)
       key.organisationId == null
       key.portfolioId == null

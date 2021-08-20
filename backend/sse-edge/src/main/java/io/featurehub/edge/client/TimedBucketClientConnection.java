@@ -3,9 +3,9 @@ package io.featurehub.edge.client;
 import io.featurehub.dacha.api.CacheJsonMapper;
 import io.featurehub.edge.FeatureTransformer;
 import io.featurehub.edge.KeyParts;
+import io.featurehub.edge.features.FeatureRequestResponse;
 import io.featurehub.edge.stats.StatRecorder;
 import io.featurehub.edge.strategies.ClientContext;
-import io.featurehub.mr.model.DachaKeyDetailsResponse;
 import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.mr.model.PublishAction;
 import io.featurehub.sse.model.SSEResultState;
@@ -75,6 +75,11 @@ public class TimedBucketClientConnection implements ClientConnection {
   @Override
   public KeyParts getKey() {
     return apiKey;
+  }
+
+  @Override
+  public ClientContext getClientContext() {
+    return attributesForStrategy;
   }
 
   @Override
@@ -153,22 +158,25 @@ public class TimedBucketClientConnection implements ClientConnection {
   }
 
   @Override
-  public void initResponse(DachaKeyDetailsResponse edgeResponse) {
+  public void initResponse(FeatureRequestResponse edgeResponse) {
     try {
       try {
-        writeMessage(
+        if (edgeResponse.getSuccess()) {
+          writeMessage(
             SSEResultState.FEATURES,
-            CacheJsonMapper.mapper.writeValueAsString(
-                featureTransformer.transform(edgeResponse.getFeatures(), attributesForStrategy)));
+            CacheJsonMapper.mapper.writeValueAsString(edgeResponse.getEnvironment().getFeatures()));
 
-        statRecorder.recordHit(apiKey, EdgeHitResultType.SUCCESS, EdgeHitSourceType.EVENTSOURCE);
+          statRecorder.recordHit(apiKey, EdgeHitResultType.SUCCESS, EdgeHitSourceType.EVENTSOURCE);
 
-        List<FeatureValueCacheItem> heldUpdates = heldFeatureUpdates;
+          List<FeatureValueCacheItem> heldUpdates = heldFeatureUpdates;
 
-        heldFeatureUpdates = null;
+          heldFeatureUpdates = null;
 
-        if (heldUpdates != null) {
-          heldUpdates.forEach(this::notifyFeature);
+          if (heldUpdates != null) {
+            heldUpdates.forEach(this::notifyFeature);
+          }
+        } else {
+          failed("Unrecognized API Key");
         }
       } catch (IOException iex) {
         statRecorder.recordHit(
