@@ -7,10 +7,7 @@ import io.featurehub.lifecycle.BaseLifecycleListener
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
-import org.glassfish.hk2.api.ServiceLocator
 import org.glassfish.jersey.internal.inject.AbstractBinder
-import org.glassfish.jersey.server.spi.Container
-import org.glassfish.jersey.server.spi.ContainerLifecycleListener
 
 class DachaFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
