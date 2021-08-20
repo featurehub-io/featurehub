@@ -74,6 +74,11 @@ public class DachaClientRegistry implements DachaClientServiceRegistry {
   }
 
   @Override
+  public void registerApiKeyService(String cache, DachaApiKeyService apiKeyService) {
+    apiServiceMap.put(cache, apiKeyService);
+  }
+
+  @Override
   public DachaEnvironmentService getEnvironmentService(String cache) {
     cache = cache.toLowerCase();
 
