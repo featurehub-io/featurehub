@@ -128,6 +128,9 @@ created.
 The following properties can be set (that are meaningful):
 
 - `nats.urls` - a comma separated list of NATs servers
+- `cache.timeout` - how long the server will attempt to find and resolve a master cache before moving onto the next step (in ms, default = 5000)
+- `cache.complete-timeout` - how long it will wait after another cache has negotiated master before it expects to see data (in ms, default = 15000)
+- `cache.pool-size` - the number of threads in pool for doing "work" - defaults to 10
 
 ==== SSE-Edge Config
 
@@ -139,11 +142,14 @@ requests and feature updates coming from the server.
 decodes it and sends it down via NATs and releases. 
 - `maxSlots` (30) - how many seconds a client is allowed to listen for before being kicked off. Used to ensure connections
 don't go stale.
-
+- `dacha.url.<cache-name>` = url - this is only relevant if you are running split servers - so Dacha and Edge run in their own containers. You
+need to tell Edge where Dacha is located. The default cache is called `default, so it will expect one called `dacha.url.default` and the url. In the
+sample docker-compose where they are split, the hostname for Dacha is `dacha`, so this is `dacha.url.default=http://localhost:8094`. This isn't
+required for the Party Server because communication is internal. 
 
 ==== Party Server
 
-The party server honours all values set by the Management Repository, Dacha and the the SSE-Edge.
+The party server honours all values set by the Management Repository, Dacha and the SSE-Edge.
 
 ==== Common to all servers 
 
