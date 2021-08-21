@@ -1,6 +1,6 @@
 package io.featurehub.edge.client;
 
-import io.featurehub.dacha.api.CacheJsonMapper;
+import io.featurehub.jersey.config.CacheJsonMapper;
 import io.featurehub.edge.FeatureTransformer;
 import io.featurehub.edge.KeyParts;
 import io.featurehub.edge.features.FeatureRequestResponse;

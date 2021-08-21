@@ -1,5 +1,7 @@
 package io.featurehub.lifecycle
 
+import cd.connect.lifecycle.ApplicationLifecycleManager
+import cd.connect.lifecycle.LifecycleStatus
 import org.glassfish.hk2.api.ServiceLocator
 import org.glassfish.jersey.server.spi.Container
 import org.glassfish.jersey.server.spi.ContainerLifecycleListener
@@ -19,6 +21,10 @@ open class BaseLifecycleListener(vararg private val postStartupLoadServices: Cla
     postStartupLoadServices.forEach { injector.getService(it) }
 
     withInjector(injector)
+
+    if (!ApplicationLifecycleManager.isReady()) {
+      ApplicationLifecycleManager.updateStatus(LifecycleStatus.STARTED)
+    }
   }
 
   open fun withInjector(injector: ServiceLocator) {

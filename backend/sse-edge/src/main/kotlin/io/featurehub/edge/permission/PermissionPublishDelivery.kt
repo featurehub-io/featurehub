@@ -1,7 +1,7 @@
 package io.featurehub.edge.permission
 
 import com.fasterxml.jackson.core.JsonProcessingException
-import io.featurehub.dacha.api.CacheJsonMapper
+import io.featurehub.jersey.config.CacheJsonMapper
 import io.featurehub.dacha.api.DachaApiKeyService
 import io.featurehub.dacha.api.DachaClientServiceRegistry
 import io.featurehub.edge.KeyParts

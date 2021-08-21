@@ -1,6 +1,6 @@
 package io.featurehub.edge.stats
 
-import io.featurehub.dacha.api.CacheJsonMapper
+import io.featurehub.jersey.config.CacheJsonMapper
 import io.featurehub.publish.ChannelNames
 import io.featurehub.publish.NATSSource
 import io.featurehub.sse.stats.model.EdgeStatsBundle
@@ -30,7 +30,7 @@ class NATSStatPublisher @Inject constructor(private val nats : NATSSource) : Sta
       }
 
       nats.connection.publish(channelName,
-        CacheJsonMapper.mapper.writeValueAsBytes(bundle))
+        CacheJsonMapper.writeAsZipBytes(bundle))
 
       prometheusPublishSuccessCounter.computeIfAbsent(cacheName) {
         Counter.build(
