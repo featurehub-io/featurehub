@@ -12,8 +12,8 @@ import org.glassfish.jersey.server.spi.Container
 import org.glassfish.jersey.server.spi.ContainerLifecycleListener
 
 class StatsFeature : Feature {
-  @ConfigKey("edge.publish-stats-with-nats")
-  var publishUsingNats: Boolean? = true
+  @ConfigKey("edge.stats-publisher")
+  var publishUsingNats: String = "nats"
 
   private val eventHandlerType: GenericType<EventHandler<Stat>> = object : GenericType<EventHandler<Stat>>() {}
 
@@ -29,7 +29,11 @@ class StatsFeature : Feature {
           .`in`(Singleton::class.java)
 
         bind(StatDisruptor::class.java).to(StatRecorder::class.java).`in`(Singleton::class.java)
-        bind(NATSStatPublisher::class.java).to(StatPublisher::class.java).`in`(Singleton::class.java)
+
+        if (publishUsingNats.equals("nats")) {
+          bind(NATSStatPublisher::class.java).to(StatPublisher::class.java).`in`(Singleton::class.java)
+        }
+
         bind(StatsCollectionOrchestrator::class.java).to(StatsOrchestrator::class.java).`in`(
           Singleton::class.java
         )

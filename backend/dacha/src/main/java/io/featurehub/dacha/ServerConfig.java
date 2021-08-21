@@ -5,7 +5,7 @@ import cd.connect.app.config.DeclaredConfigResolver;
 import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import io.featurehub.dacha.api.CacheJsonMapper;
+import io.featurehub.jersey.config.CacheJsonMapper;
 import io.featurehub.mr.model.EnvironmentCacheItem;
 import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.mr.model.ServiceAccountCacheItem;

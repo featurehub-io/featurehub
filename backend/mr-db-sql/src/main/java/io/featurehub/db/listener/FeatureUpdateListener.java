@@ -1,8 +1,6 @@
 package io.featurehub.db.listener;
 
-import cd.connect.app.config.ConfigKey;
-import io.featurehub.dacha.api.CacheJsonMapper;
-import io.featurehub.db.api.FeatureApi;
+import io.featurehub.jersey.config.CacheJsonMapper;
 import io.featurehub.db.api.RolloutStrategyValidator;
 import io.featurehub.mr.messaging.StreamedFeatureUpdate;
 import io.featurehub.mr.model.FeatureValue;

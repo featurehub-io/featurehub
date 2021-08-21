@@ -4,7 +4,7 @@ import cd.connect.app.config.ConfigKey;
 import cd.connect.app.config.DeclaredConfigResolver;
 import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
-import io.featurehub.dacha.api.CacheJsonMapper;
+import io.featurehub.jersey.config.CacheJsonMapper;
 import io.featurehub.edge.client.ClientConnection;
 import io.featurehub.edge.features.DachaFeatureRequestSubmitter;
 import io.featurehub.edge.features.FeatureRequestResponse;

@@ -1,7 +1,7 @@
 package io.featurehub.edge.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import io.featurehub.dacha.api.CacheJsonMapper;
+import io.featurehub.jersey.config.CacheJsonMapper;
 
 public class SSEStatusMessage {
   private String status;

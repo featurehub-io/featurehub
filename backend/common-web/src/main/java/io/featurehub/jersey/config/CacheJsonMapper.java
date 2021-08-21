@@ -1,10 +1,10 @@
-package io.featurehub.dacha.api;
+package io.featurehub.jersey.config;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.module.kotlin.KotlinModule;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -22,6 +22,7 @@ public class CacheJsonMapper {
   static {
     mapper = new ObjectMapper();
     mapper.registerModule(new JavaTimeModule());
+    mapper.registerModule(new KotlinModule());
     mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
@@ -40,7 +41,10 @@ public class CacheJsonMapper {
   }
 
   static public <T> T readFromZipBytes(byte[] data, Class<T> clazz) throws IOException {
-    log.debug("byte array is {} size", data.length);
+    if (log.isTraceEnabled()) {
+      log.trace("byte array is {} size", data.length);
+    }
+
     try (ByteArrayInputStream bais = new ByteArrayInputStream(data); GZIPInputStream is = new GZIPInputStream(bais)) {
       return mapper.readValue(is, clazz);
     } catch (Exception ignored) {

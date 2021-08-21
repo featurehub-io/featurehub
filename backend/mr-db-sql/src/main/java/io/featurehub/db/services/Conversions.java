@@ -1,7 +1,7 @@
 package io.featurehub.db.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import io.featurehub.dacha.api.CacheJsonMapper;
+import io.featurehub.jersey.config.CacheJsonMapper;
 import io.featurehub.db.api.Opts;
 import io.featurehub.db.model.DbAcl;
 import io.featurehub.db.model.DbApplication;
