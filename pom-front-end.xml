@@ -57,7 +57,7 @@
               <goal>writeChanged</goal>
             </goals>
             <configuration>
-              <referenceBranch>master</referenceBranch>
+              <referenceBranch>main</referenceBranch>
               <outputFile>${project.basedir}/front-end-changed.projects</outputFile>
             </configuration>
           </execution>
