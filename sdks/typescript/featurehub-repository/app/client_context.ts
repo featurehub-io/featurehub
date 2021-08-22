@@ -48,11 +48,9 @@ export interface ClientContext {
 export abstract class BaseClientContext implements ClientContext {
   protected readonly _repository: InternalFeatureRepository;
   protected _attributes = new Map<string, Array<string>>();
-  protected readonly _config: FeatureHubConfig;
 
-  protected constructor(repository: InternalFeatureRepository, config: FeatureHubConfig) {
+  protected constructor(repository: InternalFeatureRepository) {
     this._repository = repository;
-    this._config = config;
   }
 
   userKey(value: string): ClientContext {
@@ -180,9 +178,9 @@ export class ServerEvalFeatureContext extends BaseClientContext {
   private _currentEdge: EdgeService;
   private _xHeader: string;
 
-  constructor(repository: InternalFeatureRepository, config: FeatureHubConfig,
+  constructor(repository: InternalFeatureRepository,
               edgeServiceSupplier: EdgeServiceSupplier) {
-    super(repository, config);
+    super(repository);
 
     this._edgeServiceSupplier = edgeServiceSupplier;
   }
@@ -229,8 +227,8 @@ export class ServerEvalFeatureContext extends BaseClientContext {
 export class ClientEvalFeatureContext extends BaseClientContext {
   private readonly _edgeService: EdgeService;
 
-  constructor(repository: InternalFeatureRepository, config: FeatureHubConfig, edgeService: EdgeService) {
-    super(repository, config);
+  constructor(repository: InternalFeatureRepository, edgeService: EdgeService) {
+    super(repository);
 
     this._edgeService = edgeService;
   }

@@ -9,17 +9,15 @@ import { ClientEvalFeatureContext, ServerEvalFeatureContext, InternalFeatureRepo
 
 describe('Client context should be able to encode as expected', () => {
   let repo: SubstituteOf<InternalFeatureRepository>;
-  let config: SubstituteOf<FeatureHubConfig>;
   let edge: SubstituteOf<EdgeService>;
 
   beforeEach(() => {
     repo = Substitute.for<InternalFeatureRepository>();
-    config = Substitute.for<FeatureHubConfig>();
     edge = Substitute.for<EdgeService>();
   });
 
   it('the server context should trigger a header change update', async () => {
-    const serverContext = new ServerEvalFeatureContext(repo, config, () => edge);
+    const serverContext = new ServerEvalFeatureContext(repo, () => edge);
     await serverContext.userKey('DJElif')
       .sessionKey('VirtualBurningMan')
       .country(StrategyAttributeCountryName.Turkey)
@@ -47,7 +45,7 @@ describe('Client context should be able to encode as expected', () => {
   });
 
   it('the server context should close the current edge if it has been told to reset edge', async () => {
-    const serverContext = new ServerEvalFeatureContext(repo, config, () => edge);
+    const serverContext = new ServerEvalFeatureContext(repo, () => edge);
     edge.requiresReplacementOnHeaderChange().mimicks(() => true);
     await serverContext.userKey('DJElif')
       .sessionKey('VirtualBurningMan').build();
@@ -57,7 +55,7 @@ describe('Client context should be able to encode as expected', () => {
   });
 
   it('the client context should not trigger a context change or a not ready', async () => {
-    const clientContext = new ClientEvalFeatureContext(repo, config, edge);
+    const clientContext = new ClientEvalFeatureContext(repo, edge);
     await clientContext.userKey('DJElif')
       .sessionKey('VirtualBurningMan').build();
     repo.received(0).notReady();
