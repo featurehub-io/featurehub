@@ -1,11 +1,7 @@
 import unittest
-
-import httpx
 import respx
 from httpx import Response
-
 import featurehub_client
-from unittest.mock import MagicMock, patch, Mock
 
 
 class FeatureHubClientTest(unittest.TestCase):
@@ -17,10 +13,12 @@ class FeatureHubClientTest(unittest.TestCase):
         repo.ready = True
         self.assertTrue(repo.is_ready())
 
+    @respx.mock
     def test_url_param(self):
+        respx.get("http://localhost/features?apiKeys=abc&apiKeys=123&apiKeys=xyz").mock(return_value=Response(200, json = {}))
         repo = featurehub_client.FeatureHubRepository()
         client = featurehub_client.FeatureHubClient("http://localhost", ['abc', '123', 'xyz'], repo)
-        self.assertEqual(client.url, "http://localhost/features?apiKeys=abc&sdkUrl=123&apiKeys=xyz")
+        self.assertEqual(client.url, "http://localhost/features?apiKeys=abc&apiKeys=123&apiKeys=xyz")
 
     def test_url_param_no_apikey_provided(self):
         repo = featurehub_client.FeatureHubRepository()
@@ -73,8 +71,6 @@ class FeatureHubClientTest(unittest.TestCase):
         featurehub_client.FeatureHubClient("http://localhost", ['abc', '123', 'xyz'], repo)
         self.assertTrue(repo.ready)
         self.assertEqual(repo.features, {})
-
-
 
 
 if __name__ == '__main__':
