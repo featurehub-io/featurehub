@@ -5,7 +5,6 @@ import {
 } from './models';
 import { FeatureStateHolder } from './feature_state';
 import { FeatureHubRepository } from './featurehub_repository';
-import { EdgeService } from './edge_service';
 
 export interface ConfigChangedListener {
   (config: ClientContext);

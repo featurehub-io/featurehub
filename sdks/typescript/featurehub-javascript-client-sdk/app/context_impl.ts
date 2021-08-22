@@ -1,5 +1,5 @@
 import { InternalFeatureRepository } from './internal_feature_repository';
-import { EdgeServiceSupplier, FeatureHubConfig, fhLog } from './feature_hub_config';
+import { EdgeServiceSupplier, fhLog } from './feature_hub_config';
 import { StrategyAttributeCountryName, StrategyAttributeDeviceName, StrategyAttributePlatformName } from './models';
 import { FeatureStateHolder } from './feature_state';
 import { EdgeService } from './edge_service';
