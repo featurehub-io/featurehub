@@ -36,7 +36,6 @@ export interface ClientContext {
   feature(name: string): FeatureStateHolder;
   isEnabled(name: string): boolean;
   isSet(name: string): boolean;
-  edgeService(): EdgeService;
   repository(): FeatureHubRepository;
   logAnalyticsEvent(action: string, other?: Map<string, string>, user?: string);
 

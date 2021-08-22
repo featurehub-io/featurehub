@@ -38,7 +38,6 @@ export interface ClientContext {
   feature(name: string): FeatureStateHolder;
   isEnabled(name: string): boolean;
   isSet(name: string): boolean;
-  edgeService(): EdgeService;
   repository(): FeatureHubRepository;
   logAnalyticsEvent(action: string, other?: Map<string, string>, user?: string);
 
@@ -150,7 +149,6 @@ export abstract class BaseClientContext implements ClientContext {
   // feature(name: string): FeatureStateHolder {
   //   return this._repository.feature(name);
   // }
-  abstract edgeService(): EdgeService;
   abstract close();
 
   repository(): FeatureHubRepository {

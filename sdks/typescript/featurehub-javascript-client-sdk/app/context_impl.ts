@@ -110,7 +110,6 @@ export abstract class BaseClientContext implements ClientContext {
   // feature(name: string): FeatureStateHolder {
   //   return this._repository.feature(name);
   // }
-  abstract edgeService(): EdgeService;
   abstract close();
 
   repository(): FeatureHubRepository {
