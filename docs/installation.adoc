@@ -61,13 +61,13 @@ Make sure you have your docker running, and run the following commands from the 
 
 For Postgres option:
 
-`cd featurehub-install-release-1.2.0/docker-compose-options/all-in-one-postgres`
+`cd featurehub-install-release-1.4.1/docker-compose-options/all-in-one-postgres`
 
 `docker-compose up`
 
 Or for MySQL option:
 
-`cd featurehub-install-release-1.2.0/docker-compose-options/all-in-one-mysql`
+`cd featurehub-install-release-1.4.1/docker-compose-options/all-in-one-mysql`
 
 `docker-compose up`
 
