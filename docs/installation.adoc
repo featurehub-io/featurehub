@@ -13,20 +13,21 @@ link:index{outfilesuffix}[Back to index]
 There is a GitHub https://github.com/featurehub-io/featurehub-install[repository] where you can find source for all the deployment options.
 
 === Option 1 - Evaluation Deployment
+
+image::images/fh_deployment_option_1.svg[Option 1,500]
+
 This is the most basic option recommended for getting started quickly, and is the example we use in demos.
 
 It uses one Docker container for the entire stack and works with all supported databases
 baked in. The two web endpoints of interest -  the Management Server and the Edge layer that client
 SDKs talk to - are all served from the same web server.
 
-This deployment, with an attached Docker volume for the database, is not recommended for production usage,
-it is only really for demonstration and evaluation purposes.
-
-We provide two evaluation examples - one for H2 and one for Postgres
+This deployment is designed with H2 in-memory database. It is not recommended for production usage,
+and aimed for demonstration and evaluation purposes.
 
 To install, grab the latest version of FeatureHub tagged release, e.g.
 
-`curl https://github.com/featurehub-io/featurehub-install/archive/release-1.2.0.tar.gz -o featurehub.tar.gz | tar -xvz`
+`curl https://github.com/featurehub-io/featurehub-install/archive/release-1.4.1.tar.gz -o featurehub.tar.gz | tar -xvz`
 
 You can check for the latest versions https://github.com/featurehub-io/featurehub-install/releases[here] 
 
@@ -38,19 +39,58 @@ For H2 option:
 
 `docker-compose up`
 
+This will install all the necessary components including FeatureHub Admin Console. You can now load it on localhost:8085
+
+
+
+=== Option 2 - Low Volume Deployment
+
+This option is similar to the H2-in memory example, however in this case a single docker image with all FeatureHub components talks to the external database. (You can choose from Postgres or MySQL). This gives you more control over external database and lets you do single Docker image cloud deployments, however it doesn't scale well for large volume applications as all Edge traffic routes to the same container as your Admin application. It is possible that excess Edge
+traffic will cause performance issues with your Admin app.
+
+
+NOTE: In this `docker-compose` image, there is a sample database along with an initialization script. 
+
+To install, grab the latest version of FeatureHub tagged release, e.g.
+
+`curl https://github.com/featurehub-io/featurehub-install/archive/release-1.4.1.tar.gz -o featurehub.tar.gz | tar -xvz`
+
+You can check for the latest versions https://github.com/featurehub-io/featurehub-install/releases[here]
+
+Make sure you have your docker running, and run the following commands from the folder where you saved the FeatureHub executable:
+
 For Postgres option:
 
-`cd featurehub-install-release-1.2.0/docker-compose-options/all-in-one-postgres`
+`cd featurehub-install-release-1.4.1/docker-compose-options/all-in-one-postgres`
+
+`docker-compose up`
+
+Or for MySQL option:
+
+`cd featurehub-install-release-1.4.1/docker-compose-options/all-in-one-mysql`
 
 `docker-compose up`
 
 This will install all the necessary components including FeatureHub Admin Console. You can now load it on localhost:8085
 
-image::images/fh_deployment_option_1.svg[Option 1,500]
+NOTE: H2 and Postgres are the two databases we test actively with. We are relying on our open source community to test MySQL database and report issues. 
 
-NOTE: H2 and Postgres are the two databases we test actively with.
 
-=== Option 2 - Low Volume Deployment
+=== Option 3 - Scalable Deployment
+
+image::images/fh_deployment_option_3.svg[Option 2,500]
+
+This option is best if you want to run FeatureHub in production at scale. Running separate instances of Edge, Cache, NATS and
+FeatureHub Server, means you can deploy these components independently for scalability and redundancy.
+
+In order to scale FeatureHub Server, you need to have first configured a separate database. We provide an installation option for this with Postgres database:
+
+`cd featurehub-install-release-1.4.1/docker-compose-options/all-separate-postgres`
+
+`docker-compose up`
+
+There is also a helm chart available for production Kubernetes deployment. Please follow documentation link:https://github.com/featurehub-io/featurehub-install/tree/master/helm[here]
+
 In this deployment, all components (MR, Dacha, NATS, Edge) are split into separate Docker containers, but
 `docker-compose` runs them all in the same server. This example is intended to show you how you can
 split and separate the configuration for each of these pieces.
@@ -58,34 +98,7 @@ split and separate the configuration for each of these pieces.
 Because they are deployed in separate containers, you have considerably greater control over what
 network traffic gains access to each of these pieces, and they do not all sit under the same Web server. However,
 because they run in a single Docker-Compose, they must run on different ports, which means you will need further
-configuration to expose them in a normal organisation.
-
-image::images/fh_deployment_option_3.svg[Option 2,500]
-NOTE: In this `docker-compose` image, there is a sample database along with an initialization script. If you are considering to run this option for your team, you will need to run an external database.
-
-To install, grab the latest version of FeatureHub tagged release, e.g.
-
-`curl https://github.com/featurehub-io/featurehub-install/archive/release-1.2.0.tar.gz -o featurehub.tar.gz | tar -xvz`
-
-You can check for the latest versions https://github.com/featurehub-io/featurehub-install/releases[here]
-
-Make sure you have your docker running, and run the following commands from the folder where you saved the FeatureHub executable:
-
-`cd featurehub-install-release-1.2.0/docker-compose-options/all-separate-postgres`
-
-`docker-compose up`
-
-This will install all the necessary components including FeatureHub Admin Console. You can now load it on localhost:8085
-
-=== Option 3 - Scalable Deployment
-This option is best if you want to run FeatureHub at scale. Running separate instances of Edge, Cache, NATS and
-FeatureHub Server, means you can deploy these components independently for scalability and redundancy.
-
-Helm chart is available for production Kubernetes deployment. Please follow documentation link:https://github.com/featurehub-io/featurehub-install/tree/master/helm[here]
-
-NOTE: In order to scale FeatureHub Server, you need to have first configured a separate database
-(see <<Option 2 - Low Volume Deployment>> above).
-
+configuration to expose them in a normal organisation. This type of deployment is recommended for low volume traffic.
 
 == Configuration
 
