@@ -1,19 +1,18 @@
-def get_flag(key: string):
-  return this.feature(key).getFlag()
+def get_flag(key: str) -> str or None:
+    pass
 
 
-def getString(key: string): string | undefined {
-return this.feature(key).getString();
-}
+def get_string(key: str) -> str or None:
+    pass
 
-def getJson(key: string): string | undefined {
-return this.feature(key).getRawJson();
-}
 
-def getNumber(key: string): number | undefined {
-return this.feature(key).getNumber();
-}
+def get_json(key: str) -> str or None:
+    pass
 
-def isSet(key: string): boolean {
-return this.feature(key).isSet();
-}
+
+def get_number(key: str) -> int or float or None:
+    pass
+
+
+def is_set(key: str) -> bool:
+    pass
