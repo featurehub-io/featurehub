@@ -1,8 +1,11 @@
+from typing import Optional
+
+
 class FeatureHubRepository:
     features = {}
     ready: bool
 
-    def notify(self, status: str, data: list[dict]):
+    def notify(self, status: str, data: Optional[list[dict]]):
         if status == 'FEATURES':
             self.__update_features(data)
             self.ready = True
