@@ -5,7 +5,7 @@ import {
 } from './models';
 import { FeatureStateHolder } from './feature_state';
 import { FeatureHubRepository } from './client_feature_repository';
-import { FeatureHubConfig, EdgeServiceSupplier, fhLog } from './feature_hub_config';
+import { EdgeServiceSupplier, fhLog } from './feature_hub_config';
 import { EdgeService } from './edge_service';
 import { InternalFeatureRepository } from './internal_feature_repository';
 
