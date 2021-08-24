@@ -1,4 +1,4 @@
-name: Build typescript-featurehub-repository
+name: Build typescript-client-repository
 
 # Controls when the action will run.
 on:
@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [ main ]
     paths:
-    - 'sdks/typescript/featurehub-repository/**'
+    - 'sdks/typescript/featurehub-javascript-client-sdk/**'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -26,10 +26,10 @@ jobs:
           node-version: '12.x'
       - name: Install dependencies
         run: npm install
-        working-directory: sdks/typescript/featurehub-repository
+        working-directory: sdks/typescript/featurehub-javascript-client-sdk
       - name: Build (tests build of commonjs and es6 modules)
         run: npm run build
-        working-directory: sdks/typescript/featurehub-repository
+        working-directory: sdks/typescript/featurehub-javascript-client-sdk
       - name: Build and test
         run: npm run test
-        working-directory: sdks/typescript/featurehub-repository
+        working-directory: sdks/typescript/featurehub-javascript-client-sdk
