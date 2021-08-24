@@ -15,6 +15,8 @@ We have deprecated [FeatureHub Eventsource Javascript SDK](https://www.npmjs.com
 ## Changelog
 
 ### featurehub-javascript-client-sdk
+#### 1.0.7
+- Community contribution - remove some unnecessary code from BaseClientContext 
 #### 1.0.6
 - Fix to the SSE client to prevent excess of connections to the server.
 #### 1.0.5
