@@ -61,9 +61,8 @@
   },
   "dependencies": {
     "@types/murmurhash": "^2.0.0",
-    "@types/semver": "^7.3.5",
     "murmurhash": "^2.0.0",
-    "semver": "^7.3.5"
+    "semver-compare": "^1.0.0"
   },
   "engines": {
     "node": ">=12.12.0"

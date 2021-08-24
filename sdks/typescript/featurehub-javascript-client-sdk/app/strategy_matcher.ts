@@ -6,7 +6,7 @@ import {
 } from './models';
 
 
-import { eq, gt, gte, lt, lte } from 'semver';
+import compareSemver from 'semver-compare';
 // this library was node specific so required de-noding
 import { Addr, CIDR } from './ip6addr';
 // this library is not node specific
@@ -332,22 +332,22 @@ class SemanticVersionMatcher implements StrategyMatcher {
     switch (attr.conditional) {
       case RolloutStrategyAttributeConditional.Includes:
       case RolloutStrategyAttributeConditional.Equals:
-        return vals.findIndex((v) => eq(suppliedValue, v)) >= 0;
+        return vals.findIndex((v) => compareSemver(suppliedValue, v) === 0) >= 0;
       case RolloutStrategyAttributeConditional.EndsWith:
         break;
       case RolloutStrategyAttributeConditional.StartsWith:
         break;
       case RolloutStrategyAttributeConditional.Greater:
-        return vals.findIndex((v) => gt(suppliedValue, v)) >= 0;
+        return vals.findIndex((v) => compareSemver(suppliedValue, v) > 0) >= 0;
       case RolloutStrategyAttributeConditional.GreaterEquals:
-        return vals.findIndex((v) => gte(suppliedValue, v)) >= 0;
+        return vals.findIndex((v) => compareSemver(suppliedValue, v) >= 0) >= 0;
       case RolloutStrategyAttributeConditional.Less:
-        return vals.findIndex((v) => lt(suppliedValue, v)) >= 0;
+        return vals.findIndex((v) => compareSemver(suppliedValue, v) < 0) >= 0;
       case RolloutStrategyAttributeConditional.LessEquals:
-        return vals.findIndex((v) => lte(suppliedValue, v)) >= 0;
+        return vals.findIndex((v) => compareSemver(suppliedValue, v) <= 0) >= 0;
       case RolloutStrategyAttributeConditional.NotEquals:
       case RolloutStrategyAttributeConditional.Excludes:
-        return vals.findIndex((v) => !eq(suppliedValue, v)) >= 0;
+        return vals.findIndex((v) => compareSemver(suppliedValue, v) !== 0) >= 0;
       case RolloutStrategyAttributeConditional.Regex:
         break;
     }
