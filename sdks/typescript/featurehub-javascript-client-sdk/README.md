@@ -16,7 +16,8 @@ We have deprecated [FeatureHub Eventsource Javascript SDK](https://www.npmjs.com
 
 ### featurehub-javascript-client-sdk
 #### 1.0.7
-- Community contribution - remove some unnecessary code from BaseClientContext 
+- Support static flag evaluation [GitHub issue](https://github.com/featurehub-io/featurehub/issues/497)
+- Decrease sdk size by replacing semver with semver-compare [GitHub issue](https://github.com/featurehub-io/featurehub/issues/498)
 #### 1.0.6
 - Fix to the SSE client to prevent excess of connections to the server.
 #### 1.0.5
@@ -34,6 +35,9 @@ We have deprecated [FeatureHub Eventsource Javascript SDK](https://www.npmjs.com
 Angular & Vue to use this library. 
 
 ### featurehub-javascript-node-sdk
+#### 1.0.7
+- Support static flag evaluation [GitHub issue](https://github.com/featurehub-io/featurehub/issues/497)
+- Decrease sdk size by replacing semver with semver-compare [GitHub issue](https://github.com/featurehub-io/featurehub/issues/498)
 #### 1.0.6
 - Fix to the SSE client to prevent excess of connections to the server.
 #### 1.0.5
