@@ -35,7 +35,7 @@ Make sure you have your docker running, and run the following commands from the 
 
 For H2 option:
 
-`cd featurehub-install-release-1.2.0/docker-compose-options/all-in-one-h2`
+`cd featurehub-install-release-1.4.1/docker-compose-options/all-in-one-h2`
 
 `docker-compose up`
 
