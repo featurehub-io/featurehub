@@ -1,11 +1,16 @@
 import {
-  EdgeService, FeatureHubConfig,
+  EdgeService,
+  Environment,
+  FeatureState,
+  FeatureValueType,
+  LocalClientContext,
   StrategyAttributeCountryName,
   StrategyAttributeDeviceName,
   StrategyAttributePlatformName
 } from '../app';
 import { Substitute, Arg, SubstituteOf } from '@fluffy-spoon/substitute';
 import { ClientEvalFeatureContext, ServerEvalFeatureContext, InternalFeatureRepository } from '../app';
+import { expect } from 'chai';
 
 describe('Client context should be able to encode as expected', () => {
   let repo: SubstituteOf<InternalFeatureRepository>;
@@ -60,5 +65,21 @@ describe('Client context should be able to encode as expected', () => {
       .sessionKey('VirtualBurningMan').build();
     repo.received(0).notReady();
     edge.received(0).contextChange(Arg.all());
+  });
+
+  it("the static client context should just work", async () => {
+    const environment = new Environment({
+      features: [
+        new FeatureState({
+          id: "1", key: "banana", version: 1, type: FeatureValueType.Boolean, value: true,
+        }),
+      ],
+    });
+    const context = await new LocalClientContext(environment)
+      .userKey("DJElif")
+      .sessionKey("VirtualBurningMan")
+      .build();
+
+    expect(context.getBoolean("banana")).to.eq(true);
   });
 });
