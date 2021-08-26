@@ -41,11 +41,10 @@ public class CacheJsonMapper {
   }
 
   static public <T> T readFromZipBytes(byte[] data, Class<T> clazz) throws IOException {
-    if (log.isTraceEnabled()) {
-      log.trace("byte array is {} size", data.length);
-    }
-
     try (ByteArrayInputStream bais = new ByteArrayInputStream(data); GZIPInputStream is = new GZIPInputStream(bais)) {
+      if (clazz.equals(String.class)) {
+        return (T)new String(is.readAllBytes());
+      }
       return mapper.readValue(is, clazz);
     } catch (Exception ignored) {
       // not a valid gzip stream
