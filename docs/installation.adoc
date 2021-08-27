@@ -14,7 +14,7 @@ There is a GitHub https://github.com/featurehub-io/featurehub-install[repository
 
 === Option 1 - Evaluation Deployment
 
-image::images/fh_deployment_option_1.svg[Option 1,500]
+image::images/fh_deployment_option_1.png[Option 1,500]
 
 This is the most basic option recommended for getting started quickly, and is the example we use in demos.
 
@@ -29,7 +29,7 @@ To install, grab the latest version of FeatureHub tagged release, e.g.
 
 `curl https://github.com/featurehub-io/featurehub-install/archive/release-1.4.1.tar.gz -o featurehub.tar.gz | tar -xvz`
 
-You can check for the latest versions https://github.com/featurehub-io/featurehub-install/releases[here] 
+You can check for the latest versions https://github.com/featurehub-io/featurehub-install/releases[here]
 
 Make sure you have your docker running, and run the following commands from the folder where you saved the FeatureHub executable:
 
@@ -45,11 +45,13 @@ This will install all the necessary components including FeatureHub Admin Consol
 
 === Option 2 - Low Volume Deployment
 
+image::images/fh_deployment_option_2.png[Option 1,500]
+
 This option is similar to the H2-in memory example, however in this case a single docker image with all FeatureHub components talks to the external database. (You can choose from Postgres or MySQL). This gives you more control over external database and lets you do single Docker image cloud deployments, however it doesn't scale well for large volume applications as all Edge traffic routes to the same container as your Admin application. It is possible that excess Edge
 traffic will cause performance issues with your Admin app.
 
 
-NOTE: In this `docker-compose` image, there is a sample database along with an initialization script. 
+NOTE: In this `docker-compose` image, there is a sample database along with an initialization script.
 
 To install, grab the latest version of FeatureHub tagged release, e.g.
 
@@ -73,12 +75,12 @@ Or for MySQL option:
 
 This will install all the necessary components including FeatureHub Admin Console. You can now load it on localhost:8085
 
-NOTE: H2 and Postgres are the two databases we test actively with. We are relying on our open source community to test MySQL database and report issues. 
+NOTE: H2 and Postgres are the two databases we test actively with. We are relying on our open source community to test MySQL database and report issues.
 
 
 === Option 3 - Scalable Deployment
 
-image::images/fh_deployment_option_3.svg[Option 2,500]
+image::images/fh_deployment_option_3.png[Option 2,500]
 
 This option is best if you want to run FeatureHub in production at scale. Running separate instances of Edge, Cache, NATS and
 FeatureHub Server, means you can deploy these components independently for scalability and redundancy.
@@ -119,7 +121,7 @@ By this we mean the properties you can set to control the behaviour of different
 
 The following properties can be set:
 
-- `db.url` - the jdbc url of the database server. 
+- `db.url` - the jdbc url of the database server.
 - `db.username` -  the username used to log in.
 - `db.password` - the password for the user
 - `nats.urls` - a comma separated list of NATs servers. If null it simply won't publish.
@@ -134,7 +136,7 @@ be `register.url=http://localhost:8085/register-url?token=%s` - if your site is 
 be `register.url=https://some.domain.info/register-url?token=%s`
 - `portfolio.admin.group.suffix` ("Administrators") - the suffix added to a portfolio group when a portfolio is created
 for the first time, it needs an Admin group. So a portfolio called "Marketing" would get an admin group called "Marketing Administrators"
-created. 
+created.
 
 ==== Dacha Config
 
@@ -150,21 +152,21 @@ The following properties can be set (that are meaningful):
 - `jersey.cors.headers` - a list of CORS headers that will be allowed, specifically for browser support
 - `nats.urls` - a comma separated list of NATs servers
 - `update.pool-size` (10) - how many threads to allocate to processing incoming updates from NATs. These are responses to feature
-requests and feature updates coming from the server. 
-- `listen.pool-size` (10) - how many threads to allocate to processing incoming requests to listen. This just takes the request, 
-decodes it and sends it down via NATs and releases. 
+requests and feature updates coming from the server.
+- `listen.pool-size` (10) - how many threads to allocate to processing incoming requests to listen. This just takes the request,
+decodes it and sends it down via NATs and releases.
 - `maxSlots` (30) - how many seconds a client is allowed to listen for before being kicked off. Used to ensure connections
 don't go stale.
 - `dacha.url.<cache-name>` = url - this is only relevant if you are running split servers - so Dacha and Edge run in their own containers. You
 need to tell Edge where Dacha is located. The default cache is called `default, so it will expect one called `dacha.url.default` and the url. In the
 sample docker-compose where they are split, the hostname for Dacha is `dacha`, so this is `dacha.url.default=http://localhost:8094`. This isn't
-required for the Party Server because communication is internal. 
+required for the Party Server because communication is internal.
 
 ==== Party Server
 
 The party server honours all values set by the Management Repository, Dacha and the SSE-Edge.
 
-==== Common to all servers 
+==== Common to all servers
 
 All servers expose metrics and health checks. The metrics are for Prometheus and are on `/metrics`,
 liveness is on `/health/liveness` and readyness on `/health/readyness`. Each different server has a collection
@@ -173,7 +175,7 @@ which means they are available to all of your normal API endpoints as well. In a
 which FeatureHub is aimed at, this is rarely what you want. So FeatureHub has the ability to list these
 endpoints on a different port.
 
-- `monitor.port` (undefined) - if not defined, it will expose the metrics and health on the server port. 
+- `monitor.port` (undefined) - if not defined, it will expose the metrics and health on the server port.
 If not, it will expose them on this port (and not on the server port).
 
 All servers expose quite extensive metrics for Prometheus.
@@ -197,20 +199,20 @@ wish to include login urls.
 
 == Runtime Monitoring
 
-=== Prometheus 
+=== Prometheus
 
 The Prometheus endpoint is on /metrics for each of the servers. It is exposed on the Party and MR Servers by default.
 
 === Health and Liveness checks
 
 A server is deemed "Alive" once it is in STARTING or STARTED mode. It is deemed "Ready" when it is in STARTED mode. All
-servers put themselves into STARTING mode as soon as they are able, and then STARTED once the server is actually 
+servers put themselves into STARTING mode as soon as they are able, and then STARTED once the server is actually
 listening. The urls are:
 
 - `/health/liveness`
 - `/health/readyness`
 
-== Build 
+== Build
 
 Each of the different options, SSE-Edge, Dacha, the Management Repository and the Party Server build docker images
 when called from Maven with a cloud image profile.
