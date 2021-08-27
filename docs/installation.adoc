@@ -14,7 +14,7 @@ There is a GitHub https://github.com/featurehub-io/featurehub-install[repository
 
 === Option 1 - Evaluation Deployment
 
-image::images/fh_deployment_option_1.png[Option 1,500]
+image::images/fh_deployment_option_1.svg[Option 1,500]
 
 This is the most basic option recommended for getting started quickly, and is the example we use in demos.
 
@@ -45,7 +45,7 @@ This will install all the necessary components including FeatureHub Admin Consol
 
 === Option 2 - Low Volume Deployment
 
-image::images/fh_deployment_option_2.png[Option 1,500]
+image::images/fh_deployment_option_2.svg[Option 1,500]
 
 This option is similar to the H2-in memory example, however in this case a single docker image with all FeatureHub components talks to the external database. (You can choose from Postgres or MySQL). This gives you more control over external database and lets you do single Docker image cloud deployments, however it doesn't scale well for large volume applications as all Edge traffic routes to the same container as your Admin application. It is possible that excess Edge
 traffic will cause performance issues with your Admin app.
@@ -80,7 +80,7 @@ NOTE: H2 and Postgres are the two databases we test actively with. We are relyin
 
 === Option 3 - Scalable Deployment
 
-image::images/fh_deployment_option_3.png[Option 2,500]
+image::images/fh_deployment_option_3.svg[Option 2,500]
 
 This option is best if you want to run FeatureHub in production at scale. Running separate instances of Edge, Cache, NATS and
 FeatureHub Server, means you can deploy these components independently for scalability and redundancy.
