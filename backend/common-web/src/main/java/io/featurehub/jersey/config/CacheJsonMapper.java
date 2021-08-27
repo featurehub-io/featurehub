@@ -9,6 +9,7 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -29,7 +30,7 @@ public class CacheJsonMapper {
   }
 
   static public byte[] writeAsZipBytes(Object o) throws IOException {
-    byte[] data = mapper.writeValueAsBytes(o);
+    byte[] data = (o instanceof String) ? ((String)o).getBytes(StandardCharsets.UTF_8) : mapper.writeValueAsBytes(o);
     final ByteArrayOutputStream baos = new ByteArrayOutputStream(data.length);
     GZIPOutputStream gzip = new GZIPOutputStream(baos);
     gzip.write(data, 0, data.length);

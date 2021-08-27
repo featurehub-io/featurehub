@@ -28,11 +28,11 @@ import io.featurehub.mr.model.FeatureValueType;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.PublishAction;
 import io.featurehub.mr.model.SortOrder;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;

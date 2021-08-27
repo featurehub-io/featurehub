@@ -3,10 +3,10 @@ package io.featurehub.edge.bucket;
 import cd.connect.app.config.ConfigKey;
 import cd.connect.app.config.DeclaredConfigResolver;
 import io.featurehub.edge.client.ClientConnection;
+import jakarta.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.inject.Singleton;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;

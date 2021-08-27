@@ -5,8 +5,8 @@ import cd.connect.app.config.DeclaredConfigResolver;
 import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
 import io.featurehub.dacha.api.CacheAction;
-import io.featurehub.jersey.config.CacheJsonMapper;
 import io.featurehub.health.HealthSource;
+import io.featurehub.jersey.config.CacheJsonMapper;
 import io.featurehub.mr.model.CacheManagementMessage;
 import io.featurehub.mr.model.CacheRequestType;
 import io.featurehub.mr.model.CacheState;
@@ -58,8 +58,8 @@ public class CacheManager implements MessageHandler, HealthSource {
 
     DeclaredConfigResolver.resolve(this);
 
-    if (System.getProperty("cache.mit") != null) {
-      mit = Long.parseLong(System.getProperty("cache.mit"));
+    if (System.getProperty("cache.mit", System.getenv("CACHE.MIT")) != null) {
+      mit = Long.parseLong(System.getProperty("cache.mit", System.getenv("CACHE.MIT")));
     } else {
       mit = (long)(Math.random() * Long.MAX_VALUE);
       if (mit == 1) {

@@ -7,11 +7,10 @@ import io.featurehub.edge.KeyParts
 import io.featurehub.sse.stats.model.EdgeHitResultType
 import io.featurehub.sse.stats.model.EdgeHitSourceType
 import io.prometheus.client.Counter
+import jakarta.inject.Inject
 import java.util.*
 import java.util.concurrent.Executor
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import jakarta.inject.Inject
 
 /**
  * the StatEventHandler is responsible for collecting, against an API key, a list of events, ideally at most one of

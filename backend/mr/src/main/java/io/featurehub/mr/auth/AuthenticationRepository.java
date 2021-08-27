@@ -1,7 +1,6 @@
 package io.featurehub.mr.auth;
 
 import io.featurehub.mr.model.Person;
-
 import jakarta.ws.rs.core.SecurityContext;
 
 public interface AuthenticationRepository {

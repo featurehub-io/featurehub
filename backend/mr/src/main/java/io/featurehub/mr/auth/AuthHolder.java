@@ -2,8 +2,8 @@ package io.featurehub.mr.auth;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.featurehub.mr.model.Person;
-
 import jakarta.ws.rs.core.SecurityContext;
+
 import java.security.Principal;
 
 public class AuthHolder implements SecurityContext, Principal {

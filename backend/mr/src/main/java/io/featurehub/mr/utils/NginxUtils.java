@@ -10,7 +10,7 @@ public class NginxUtils {
 
   // get around the issue of running nginx
   public static void seeIfWeNeedToRunNginx() {
-    if (System.getProperty("run.nginx") != null) {
+    if (System.getProperty("run.nginx", System.getenv("RUN.NGINX")) != null) {
       try {
         new ProcessBuilder("/usr/sbin/nginx").start();
       } catch (IOException e) {

@@ -17,15 +17,15 @@ import io.featurehub.mr.model.RegistrationUrl;
 import io.featurehub.mr.model.TokenizedPerson;
 import io.featurehub.mr.model.UserCredentials;
 import io.featurehub.web.security.oauth.AuthProvider;
-import org.glassfish.hk2.api.IterableProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.SecurityContext;
+import org.glassfish.hk2.api.IterableProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;

@@ -2,7 +2,6 @@ package io.featurehub.mr.rest
 
 import io.featurehub.db.api.ApplicationApi
 import io.featurehub.db.api.EnvironmentApi
-import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.GroupApi
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.OrganizationApi
@@ -10,21 +9,16 @@ import io.featurehub.db.api.PortfolioApi
 import io.featurehub.db.api.ServiceAccountApi
 import io.featurehub.mr.api.PortfolioServiceDelegate
 import io.featurehub.mr.auth.AuthManagerService
-import io.featurehub.mr.model.Application
-import io.featurehub.mr.model.Environment
-import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.Portfolio
-import io.featurehub.mr.model.SortOrder
 import io.featurehub.mr.resources.PortfolioResource
 import io.featurehub.mr.utils.PortfolioUtils
-import spock.lang.Specification
-
 import jakarta.ws.rs.ForbiddenException
 import jakarta.ws.rs.NotFoundException
 import jakarta.ws.rs.WebApplicationException
 import jakarta.ws.rs.core.Response
 import jakarta.ws.rs.core.SecurityContext
+import spock.lang.Specification
 
 class PortfolioResourceSpec extends Specification {
   AuthManagerService authManager;

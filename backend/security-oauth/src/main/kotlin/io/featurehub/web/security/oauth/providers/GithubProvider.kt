@@ -3,14 +3,14 @@ package io.featurehub.web.security.oauth.providers
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
 import io.featurehub.web.security.oauth.AuthClientResult
+import jakarta.inject.Inject
+import jakarta.ws.rs.client.Client
+import jakarta.ws.rs.core.GenericType
+import jakarta.ws.rs.core.Response
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-import jakarta.inject.Inject
-import jakarta.ws.rs.client.Client
-import jakarta.ws.rs.core.Response
-import jakarta.ws.rs.core.GenericType
 
 class GithubProvider @Inject constructor(val client: Client) : OAuth2Provider {
   private val log: Logger = LoggerFactory.getLogger(GithubProvider::class.java)

@@ -11,13 +11,10 @@ import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.PersonId
 import io.featurehub.mr.model.SortOrder
 import io.featurehub.mr.resources.GroupResource
-import spock.lang.Specification
-
 import jakarta.ws.rs.ForbiddenException
-import jakarta.ws.rs.NotAuthorizedException
 import jakarta.ws.rs.NotFoundException
 import jakarta.ws.rs.core.SecurityContext
-
+import spock.lang.Specification
 
 class GroupResourceSpec extends Specification {
   GroupApi groupApi

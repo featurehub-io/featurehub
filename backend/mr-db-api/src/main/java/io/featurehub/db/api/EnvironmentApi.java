@@ -1,15 +1,12 @@
 package io.featurehub.db.api;
 
 import io.featurehub.mr.model.Application;
-import io.featurehub.mr.model.ApplicationRoleType;
 import io.featurehub.mr.model.Environment;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.Portfolio;
-import io.featurehub.mr.model.RoleType;
 import io.featurehub.mr.model.SortOrder;
 
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 public interface EnvironmentApi {

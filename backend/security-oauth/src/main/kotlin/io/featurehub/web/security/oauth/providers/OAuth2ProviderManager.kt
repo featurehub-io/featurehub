@@ -1,11 +1,11 @@
 package io.featurehub.web.security.oauth.providers
 
+import jakarta.inject.Inject
 import org.glassfish.hk2.api.IterableProvider
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.*
 import java.util.function.Consumer
-import jakarta.inject.Inject
 
 class OAuth2ProviderManager @Inject constructor(oAuth2Providers: IterableProvider<OAuth2Provider>) :
     OAuth2ProviderDiscovery {

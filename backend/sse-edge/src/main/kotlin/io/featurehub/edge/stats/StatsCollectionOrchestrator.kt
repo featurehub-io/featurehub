@@ -6,11 +6,9 @@ import io.featurehub.edge.KeyParts
 import io.featurehub.sse.stats.model.EdgeStatsBundle
 import io.prometheus.client.Counter
 import io.prometheus.client.Histogram
+import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.lang.Exception
-import java.util.*
-import jakarta.inject.Inject
 
 /**
  * This combines a timer and a stats squasher that then asks a StatsPublisher to publish the bundles in

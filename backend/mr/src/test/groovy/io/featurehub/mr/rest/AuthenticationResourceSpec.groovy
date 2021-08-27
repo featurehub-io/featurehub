@@ -8,11 +8,10 @@ import io.featurehub.mr.model.PasswordReset
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.PersonId
 import io.featurehub.mr.resources.AuthResource
-import spock.lang.Specification
-
 import jakarta.ws.rs.ForbiddenException
 import jakarta.ws.rs.NotFoundException
 import jakarta.ws.rs.core.SecurityContext
+import spock.lang.Specification
 
 class AuthenticationResourceSpec extends Specification {
   PersonApi personApi

@@ -10,9 +10,8 @@ import com.lmax.disruptor.util.DaemonThreadFactory
 import io.featurehub.edge.KeyParts
 import io.featurehub.sse.stats.model.EdgeHitResultType
 import io.featurehub.sse.stats.model.EdgeHitSourceType
-import java.lang.RuntimeException
-import java.util.concurrent.ThreadFactory
 import jakarta.inject.Inject
+import java.util.concurrent.ThreadFactory
 
 open class StatDisruptor @Inject constructor(eventHandler: EventHandler<Stat>) : StatRecorder {
   @ConfigKey("edge.stats.disruptor-buffer-size")

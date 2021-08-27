@@ -1,7 +1,7 @@
 package io.featurehub.db.listener;
 
-import io.featurehub.jersey.config.CacheJsonMapper;
 import io.featurehub.db.api.RolloutStrategyValidator;
+import io.featurehub.jersey.config.CacheJsonMapper;
 import io.featurehub.mr.messaging.StreamedFeatureUpdate;
 import io.featurehub.mr.model.FeatureValue;
 import io.nats.client.Connection;

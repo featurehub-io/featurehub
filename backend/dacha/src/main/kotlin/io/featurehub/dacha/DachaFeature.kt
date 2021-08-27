@@ -3,7 +3,7 @@ package io.featurehub.dacha
 import io.featurehub.dacha.resource.DachaApiKeyResource
 import io.featurehub.dacha.resource.DachaEnvironmentResource
 import io.featurehub.health.HealthSource
-import io.featurehub.lifecycle.BaseLifecycleListener
+import io.featurehub.jersey.FeatureHubJerseyHost
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
@@ -23,7 +23,7 @@ class DachaFeature : Feature {
       }
     })
 
-    context.register(BaseLifecycleListener(CacheManager::class.java))
+    FeatureHubJerseyHost.forceStart(context, CacheManager::class.java)
 
     return true
   }

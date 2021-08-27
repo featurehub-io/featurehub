@@ -1,13 +1,12 @@
 package io.featurehub.jersey.config;
 
+import jakarta.ws.rs.core.Configurable;
+import jakarta.ws.rs.core.Feature;
+import jakarta.ws.rs.core.FeatureContext;
 import org.glassfish.jersey.CommonProperties;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.message.GZipEncoder;
-
-import jakarta.ws.rs.core.Configurable;
-import jakarta.ws.rs.core.Feature;
-import jakarta.ws.rs.core.FeatureContext;
 
 public class CommonConfiguration implements Feature {
 
