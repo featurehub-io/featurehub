@@ -63,6 +63,7 @@
   "dependencies": {
     "@types/murmurhash": "^2.0.0",
     "murmurhash": "^2.0.0",
+    "netmask": "^2.0.2",
     "semver-compare": "^1.0.0"
   },
   "engines": {
