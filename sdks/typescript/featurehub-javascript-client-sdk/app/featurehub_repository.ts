@@ -2,7 +2,7 @@ import { ClientContext } from './client_context';
 import { FeatureStateHolder } from './feature_state';
 import { FeatureStateValueInterceptor } from './interceptors';
 import { AnalyticsCollector } from './analytics';
-import { ClientFeatureRepository } from './client_feature_repository';
+import { InternalFeatureRepository } from './internal_feature_repository';
 
 export enum Readyness {
   NotReady = 'NotReady',
@@ -15,7 +15,7 @@ export interface ReadynessListener {
 }
 
 export interface PostLoadNewFeatureStateAvailableListener {
-  (repo: ClientFeatureRepository): void;
+  (repo: InternalFeatureRepository): void;
 }
 
 export interface FeatureHubRepository {

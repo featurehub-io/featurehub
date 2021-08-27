@@ -1,8 +1,6 @@
 import { InternalFeatureRepository } from './internal_feature_repository';
 import { EdgeServiceSupplier, fhLog } from './feature_hub_config';
 import {
-  Environment,
-  SSEResultState,
   StrategyAttributeCountryName,
   StrategyAttributeDeviceName,
   StrategyAttributePlatformName,
@@ -11,7 +9,6 @@ import { FeatureStateHolder } from './feature_state';
 import { EdgeService } from './edge_service';
 import { FeatureHubRepository } from './featurehub_repository';
 import { ClientContext } from './client_context';
-import { ClientFeatureRepository } from './client_feature_repository';
 
 export abstract class BaseClientContext implements ClientContext {
   protected readonly _repository: InternalFeatureRepository;
@@ -217,21 +214,4 @@ export class ClientEvalFeatureContext extends BaseClientContext {
     return this._repository.feature(name).withContext(this);
   }
 
-}
-
-export class LocalClientContext extends BaseClientContext {
-  constructor(environment: Environment) {
-    super(new ClientFeatureRepository());
-    this._repository.notify(SSEResultState.Features, environment.features);
-  }
-
-  async build(): Promise<ClientContext> {
-    return this;
-  }
-
-  feature(name: string): FeatureStateHolder {
-    return this._repository.feature(name).withContext(this);
-  }
-
-  close() {}
 }
