@@ -49,7 +49,7 @@ auth provider. The default is false.
 
 == OAuth2
 
-FeatureHub currently supports OAuth2 as a protocol, and currently two providers (Google, GitHub, Azure). It is built in such
+FeatureHub currently supports OAuth2 as a protocol, and currently three providers (Google, GitHub, Azure). It is built in such
 a way that you can easily support others.
 
 === Generalised OAuth Config
