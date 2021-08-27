@@ -5,12 +5,12 @@ import io.featurehub.publish.ChannelNames
 import io.featurehub.publish.NATSSource
 import io.featurehub.sse.stats.model.EdgeStatsBundle
 import io.prometheus.client.Counter
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.OffsetDateTime
 import java.util.concurrent.ConcurrentHashMap
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 
 @Singleton
 class NATSStatPublisher @Inject constructor(private val nats : NATSSource) : StatPublisher {

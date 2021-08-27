@@ -17,11 +17,11 @@ import io.featurehub.db.password.PasswordSalter;
 import io.featurehub.mr.model.Group;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.SortOrder;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;

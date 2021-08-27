@@ -1,10 +1,10 @@
 package io.featurehub.mr.auth;
 
 import io.featurehub.mr.model.Person;
-import org.apache.commons.lang3.RandomStringUtils;
-
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.core.SecurityContext;
+import org.apache.commons.lang3.RandomStringUtils;
+
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

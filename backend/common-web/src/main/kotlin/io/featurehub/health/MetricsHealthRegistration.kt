@@ -1,9 +1,10 @@
 package io.featurehub.health
 
-import cd.connect.jersey.JerseyHttp2Server
 import cd.connect.jersey.common.JerseyPrometheusResource
+import io.featurehub.jersey.FeatureHubJerseyHost
 import io.prometheus.client.hotspot.DefaultExports
 import org.glassfish.hk2.api.ServiceLocator
+import org.glassfish.jersey.internal.inject.AbstractBinder
 import org.glassfish.jersey.server.ResourceConfig
 import org.glassfish.jersey.server.spi.Container
 import org.glassfish.jersey.server.spi.ContainerLifecycleListener
@@ -28,7 +29,7 @@ class MetricsHealthRegistration {
       // turn on all jvm prometheus metrics
       DefaultExports.initialize()
 
-      if (System.getProperty(monitorPortName) == null) {
+      if (System.getProperty(monitorPortName, System.getenv("MONITOR.PORT")) == null) {
         config.register(JerseyPrometheusResource::class.java)
         config.register(HealthFeature::class.java)
       } else {
@@ -44,17 +45,20 @@ class MetricsHealthRegistration {
 
             val resourceConfig = ResourceConfig(JerseyPrometheusResource::class.java, HealthFeature::class.java)
 
-            healthSources.forEach { hs ->
-              if (!(hs is ApplicationHealthSource)) {
-                resourceConfig.register(hs)
+            resourceConfig.register(object: AbstractBinder() {
+              override fun configure() {
+                healthSources.forEach { hs ->
+                  if (!(hs is ApplicationHealthSource)) {
+                    bind(hs).to(HealthSource::class.java)
+                  }
+                }
               }
-            }
+            })
 
-            JerseyHttp2Server().start(
-              resourceConfig, System.getProperty(monitorPortName).toInt()
-            )
+            val port = System.getProperty(monitorPortName, System.getenv("MONITOR.PORT")).toInt()
+            FeatureHubJerseyHost(resourceConfig).start(port)
 
-            log.info("metric/health endpoint now active on port {}", System.getProperty(monitorPortName))
+            log.info("metric/health endpoint now active on port {}", port)
           }
 
           override fun onReload(container: Container) {

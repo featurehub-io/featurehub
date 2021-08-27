@@ -11,10 +11,10 @@ import io.featurehub.db.model.query.QDbEnvironment;
 import io.featurehub.db.model.query.QDbUserState;
 import io.featurehub.mr.model.HiddenEnvironments;
 import io.featurehub.mr.model.Person;
+import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.inject.Inject;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;

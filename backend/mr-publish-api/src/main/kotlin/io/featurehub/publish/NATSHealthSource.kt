@@ -3,9 +3,7 @@ package io.featurehub.publish
 import io.featurehub.health.HealthSource
 import io.nats.client.Connection
 import jakarta.inject.Inject
-import jakarta.inject.Singleton
 
-@Singleton
 class NATSHealthSource
   @Inject
   constructor(val natsSource: NATSSource) : HealthSource {

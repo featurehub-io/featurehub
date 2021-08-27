@@ -1,7 +1,6 @@
 package io.featurehub.mr;
 
 import cd.connect.jersey.common.CorsFilter;
-import cd.connect.jersey.prometheus.PrometheusDynamicFeature;
 import io.featurehub.db.publish.CacheSource;
 import io.featurehub.db.publish.MRPublishModule;
 import io.featurehub.db.publish.PublishManager;
@@ -50,20 +49,19 @@ import io.featurehub.mr.resources.ServiceAccountResource;
 import io.featurehub.mr.resources.SetupResource;
 import io.featurehub.mr.resources.UserStateResource;
 import io.featurehub.mr.resources.oauth2.OAuth2MRAdapter;
-import io.featurehub.web.security.oauth.AuthProvider;
-import io.featurehub.web.security.oauth.BlankProvider;
 import io.featurehub.mr.utils.ApplicationUtils;
 import io.featurehub.mr.utils.PortfolioUtils;
+import io.featurehub.web.security.oauth.AuthProvider;
+import io.featurehub.web.security.oauth.BlankProvider;
 import io.featurehub.web.security.oauth.OAuthAdapter;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.jersey.internal.inject.AbstractBinder;
-import org.glassfish.jersey.server.ServerProperties;
-import org.glassfish.jersey.server.spi.Container;
-import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
-
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.core.Feature;
 import jakarta.ws.rs.core.FeatureContext;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.server.spi.Container;
+import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
+
 import java.util.Arrays;
 
 public class ManagementRepositoryFeature implements Feature {

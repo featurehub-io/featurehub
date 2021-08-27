@@ -3,14 +3,13 @@ package io.featurehub.web.security.oauth
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
 import io.featurehub.web.security.oauth.providers.OAuth2ProviderDiscovery
-import org.slf4j.LoggerFactory
-import java.net.URI
 import jakarta.inject.Inject
 import jakarta.ws.rs.GET
 import jakarta.ws.rs.Path
 import jakarta.ws.rs.QueryParam
 import jakarta.ws.rs.core.Response
-import kotlin.String
+import org.slf4j.LoggerFactory
+import java.net.URI
 
 /*
 

@@ -1,11 +1,9 @@
 package io.featurehub.dacha;
 
-import cd.connect.jersey.JerseyHttp2Server;
 import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
-import io.featurehub.health.CommonFeatureHubFeatures;
 import io.featurehub.health.MetricsHealthRegistration;
-import io.featurehub.jersey.config.EndpointLoggingListener;
+import io.featurehub.jersey.FeatureHubJerseyHost;
 import io.featurehub.publish.NATSFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
@@ -18,15 +16,13 @@ public class Application {
     // register our resources, try and tag them as singleton as they are instantiated faster
     ResourceConfig config =
         new ResourceConfig(
-                CommonFeatureHubFeatures.class,
-                EndpointLoggingListener.class,
                 NATSFeature.class,
                 DachaFeature.class);
 
     // check if we should list on a different port
     MetricsHealthRegistration.Companion.registerMetrics(config);
 
-    new JerseyHttp2Server().start(config);
+    new FeatureHubJerseyHost(config).start();
 
     log.info("Dacha Launched - (HTTP/2 payloads enabled!)");
   }
@@ -41,7 +37,7 @@ public class Application {
       Thread.currentThread().join();
     } catch (Exception e) {
       log.error("Failed to start", e);
-      ApplicationLifecycleManager.updateStatus(LifecycleStatus.TERMINATED);
+      ApplicationLifecycleManager.updateStatus(LifecycleStatus.TERMINATING);
       System.exit(-1);
     }
   }

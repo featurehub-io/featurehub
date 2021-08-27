@@ -1,9 +1,9 @@
 package io.featurehub.edge;
 
 import io.featurehub.edge.bucket.EventOutputBucketService;
-import io.featurehub.edge.features.EdgeConcurrentRequestPool;
-import io.featurehub.edge.features.DachaRequestOrchestrator;
 import io.featurehub.edge.features.DachaFeatureRequestSubmitter;
+import io.featurehub.edge.features.DachaRequestOrchestrator;
+import io.featurehub.edge.features.EdgeConcurrentRequestPool;
 import io.featurehub.edge.permission.PermissionPublishDelivery;
 import io.featurehub.edge.permission.PermissionPublisher;
 import io.featurehub.edge.stats.StatsFeature;

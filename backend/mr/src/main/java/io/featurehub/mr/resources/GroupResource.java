@@ -11,14 +11,13 @@ import io.featurehub.mr.api.GroupServiceDelegate;
 import io.featurehub.mr.auth.AuthManagerService;
 import io.featurehub.mr.model.Group;
 import io.featurehub.mr.model.Person;
-
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.NotAuthorizedException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
+
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;

@@ -26,10 +26,13 @@ public class BatheInitializerNatsServer implements BatheInitializer {
 
   @Override
   public String[] initialize(String[] args, String jumpClass) {
-    if (System.getProperty("dont-run-nats-server") != null) {
+    if (System.getProperty("dont-run-nats-server", System.getenv("DONT-RUN-NATS-SERVER")) != null) {
       log.info("dont-run-nats-server configured, so not running.");
     }
-    String natsLocation = System.getProperty("nats.executable") == null ? "/target/nats-server" : System.getProperty("nats.executable");
+
+    String natsLocation = System.getProperty("nats.executable") == null ? "/target/nats-server" : System.getProperty(
+      "nats.executable", System.getenv("NATS.EXECUTABLE"));
+
     if (!new File(natsLocation).exists()) {
       log.info("No NATS server in /target, skipping.");
     } else {

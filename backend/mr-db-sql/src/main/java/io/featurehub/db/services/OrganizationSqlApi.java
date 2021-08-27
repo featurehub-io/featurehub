@@ -8,13 +8,10 @@ import io.featurehub.db.api.OrganizationApi;
 import io.featurehub.db.model.DbNamedCache;
 import io.featurehub.db.model.DbOrganization;
 import io.featurehub.db.model.query.QDbNamedCache;
-import io.featurehub.db.model.query.QDbOrganization;
 import io.featurehub.mr.model.Organization;
 import io.featurehub.publish.ChannelConstants;
-
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import java.util.List;
 
 @Singleton
 public class OrganizationSqlApi implements OrganizationApi {

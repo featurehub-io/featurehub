@@ -3,13 +3,13 @@ package io.featurehub.web.security.oauth
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
 import io.featurehub.web.security.oauth.providers.OAuth2Provider
-import org.slf4j.LoggerFactory
 import jakarta.inject.Inject
 import jakarta.ws.rs.client.Client
 import jakarta.ws.rs.client.Entity
 import jakarta.ws.rs.core.Form
 import jakarta.ws.rs.core.MediaType
 import jakarta.ws.rs.core.Response
+import org.slf4j.LoggerFactory
 
 class OAuth2JerseyClient @Inject constructor(protected val client: Client) : OAuth2Client {
     // the url we pass to the POST to confirm we are who we say we are

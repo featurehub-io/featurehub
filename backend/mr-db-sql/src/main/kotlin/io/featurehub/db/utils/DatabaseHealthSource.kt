@@ -5,7 +5,6 @@ import io.featurehub.health.HealthSource
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 
-@Singleton
 class DatabaseHealthSource
   @Inject
   constructor(val database: Database) : HealthSource {

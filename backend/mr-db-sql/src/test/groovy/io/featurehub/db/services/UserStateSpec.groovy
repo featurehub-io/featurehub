@@ -3,7 +3,6 @@ package io.featurehub.db.services
 import io.ebean.Database
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.UserStateApi
-import io.featurehub.db.model.DbApplication
 import io.featurehub.db.model.DbOrganization
 import io.featurehub.db.model.DbPortfolio
 import io.featurehub.db.publish.CacheSource

@@ -2,16 +2,16 @@ package io.featurehub.edge;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import io.featurehub.jersey.config.CacheJsonMapper;
 import io.featurehub.edge.strategies.Applied;
 import io.featurehub.edge.strategies.ApplyFeature;
 import io.featurehub.edge.strategies.ClientContext;
-import io.featurehub.strategies.percentage.PercentageMumurCalculator;
-import io.featurehub.strategies.matchers.MatcherRegistry;
+import io.featurehub.jersey.config.CacheJsonMapper;
 import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.mr.model.FeatureValueType;
 import io.featurehub.sse.model.FeatureState;
 import io.featurehub.sse.model.RolloutStrategy;
+import io.featurehub.strategies.matchers.MatcherRegistry;
+import io.featurehub.strategies.percentage.PercentageMumurCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

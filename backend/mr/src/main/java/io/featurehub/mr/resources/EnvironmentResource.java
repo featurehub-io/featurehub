@@ -12,9 +12,6 @@ import io.featurehub.mr.model.Environment;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.utils.ApplicationPermissionCheck;
 import io.featurehub.mr.utils.ApplicationUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
@@ -22,6 +19,9 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 import java.util.UUID;
 

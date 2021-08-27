@@ -2,8 +2,6 @@ package io.featurehub.db.model;
 
 import io.ebean.annotation.DbDefault;
 import io.ebean.annotation.Index;
-import io.ebean.annotation.WhenCreated;
-import io.ebean.annotation.WhenModified;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;

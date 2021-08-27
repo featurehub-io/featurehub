@@ -5,11 +5,11 @@ import io.featurehub.mr.api.UserStateServiceDelegate;
 import io.featurehub.mr.auth.AuthManagerService;
 import io.featurehub.mr.model.HiddenEnvironments;
 import io.featurehub.mr.utils.ApplicationUtils;
-
 import jakarta.inject.Inject;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
+
 import java.util.UUID;
 
 public class UserStateResource implements UserStateServiceDelegate {

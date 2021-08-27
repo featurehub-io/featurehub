@@ -1,17 +1,10 @@
 package io.featurehub.db.model;
 
-import io.ebean.annotation.WhenCreated;
-import io.ebean.annotation.WhenModified;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Version;
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "fh_acl")

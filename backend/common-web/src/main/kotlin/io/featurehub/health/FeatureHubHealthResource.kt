@@ -1,20 +1,25 @@
 package io.featurehub.health
 
-import org.glassfish.hk2.api.IterableProvider
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import jakarta.inject.Inject
 import jakarta.ws.rs.GET
 import jakarta.ws.rs.Path
 import jakarta.ws.rs.core.Response
+import org.glassfish.hk2.api.ServiceLocator
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 @Path("/health")
 class FeatureHubHealthResource
-  @Inject
-  constructor(val healthSources: IterableProvider<HealthSource>) {
+  @Inject constructor(private val serviceLocator: ServiceLocator) {
   private val log: Logger = LoggerFactory.getLogger(FeatureHubHealthResource::class.java)
 
+  private val healthSources: MutableList<HealthSource> = mutableListOf()
+
   private fun allHealthy(): Boolean {
+    if (healthSources.isEmpty()) {
+      healthSources.addAll(serviceLocator.getAllServices(HealthSource::class.java))
+    }
+
     var healthy = true;
 
     for (hs in healthSources) {

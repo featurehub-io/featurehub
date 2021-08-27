@@ -31,10 +31,10 @@ import io.featurehub.mr.model.PublishAction;
 import io.featurehub.mr.model.RolloutStrategy;
 import io.featurehub.mr.model.ServiceAccount;
 import io.featurehub.mr.model.ServiceAccountCacheItem;
+import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.inject.Inject;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;

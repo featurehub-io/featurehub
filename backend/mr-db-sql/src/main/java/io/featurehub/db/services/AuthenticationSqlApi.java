@@ -13,11 +13,11 @@ import io.featurehub.db.model.query.QDbPerson;
 import io.featurehub.db.password.PasswordSalter;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.PersonId;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 import java.time.LocalDateTime;
 import java.util.UUID;
 

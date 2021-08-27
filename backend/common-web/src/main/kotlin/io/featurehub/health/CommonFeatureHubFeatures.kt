@@ -6,11 +6,11 @@ import cd.connect.openapi.support.ReturnStatusContainerResponseFilter
 import io.featurehub.jersey.config.CommonConfiguration
 import io.featurehub.jersey.config.EndpointLoggingListener
 import jakarta.inject.Inject
-import org.glassfish.jersey.server.ServerProperties
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
 import org.glassfish.hk2.api.ServiceLocator
 import org.glassfish.hk2.utilities.ServiceLocatorUtilities
+import org.glassfish.jersey.server.ServerProperties
 
 class CommonFeatureHubFeatures @Inject constructor(locator: ServiceLocator) : Feature {
 
@@ -22,13 +22,11 @@ class CommonFeatureHubFeatures @Inject constructor(locator: ServiceLocator) : Fe
   override fun configure(context: FeatureContext): Boolean {
     context.property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true)
 
-    arrayOf(
-      CommonConfiguration::class.java,
-      LoggingConfiguration::class.java,
-      ReturnStatusContainerResponseFilter::class.java,
-      EndpointLoggingListener::class.java,
-      PrometheusDynamicFeature::class.java
-    ).forEach { context.register(it) }
+    context.register(CommonConfiguration::class.java)
+    context.register(LoggingConfiguration::class.java)
+    context.register(ReturnStatusContainerResponseFilter::class.java)
+    context.register(EndpointLoggingListener::class.java)
+    context.register(PrometheusDynamicFeature::class.java)
 
     return true
   }

@@ -9,7 +9,6 @@ import io.featurehub.sse.model.RolloutStrategyAttribute
 import io.featurehub.sse.model.RolloutStrategyAttributeConditional
 import io.featurehub.sse.model.RolloutStrategyFieldType
 import io.featurehub.strategies.matchers.MatcherRegistry
-import io.featurehub.strategies.matchers.MatcherRepository
 import io.featurehub.strategies.percentage.PercentageCalculator
 import spock.lang.Specification
 import spock.lang.Unroll

@@ -104,12 +104,6 @@
       <version>${grizzly.npn.version}</version>
     </dependency>
 
-    <dependency>
-      <groupId>cd.connect.jersey</groupId>
-      <artifactId>connect-jersey-grizzly</artifactId>
-      <version>[2, 3)</version>
-    </dependency>
-
     <!-- ensures JUL goes to SLF4J -->
     <dependency>
       <groupId>com.bluetrainsoftware.bathe.initializers</groupId>
