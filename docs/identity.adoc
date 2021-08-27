@@ -25,7 +25,7 @@ anything to use the built in identity system, it is there by default.
 However you may wish to federate your identity. FeatureHub lets you support both the internal system, or an
 external identity system (or several) as well as providing you the ability to turn off your internal system completely.
 You can migrate from one to the other as it will simply match email addresses. e.g. If you configure a user in the system
-using the identity foo@bar.com and then federate bar.com to an OAuth provider, the user will remain the same in the 
+using the identity foo@bar.com and then federate bar.com to an OAuth provider, the user will remain the same in the
 system, you do not need to recreate or delete the user.
 
 Further, you can configure the system to disallow attempts at logging in to your FeatureHub instances if their user
@@ -33,7 +33,7 @@ hasn't already been created. This allows you to expose FeatureHub to your organi
 from that IDP in.
 
 NOTE: it is important to note that FeatureHub does not use the Access Token it receives from the OAuth provider to call
-back, it simply follows the standard OAuth2 Authorization Code Flow nad requests an openid style token. This contains
+back, it simply follows the standard OAuth2 Authorization Code Flow and requests an openid style token. This contains
 the email address and username and FeatureHub will then drop the token. No further callbacks are made.
 
 === Generalised Config
@@ -49,7 +49,7 @@ auth provider. The default is false.
 
 == OAuth2
 
-FeatureHub currently supports OAuth2 as a protocol, and currently two providers (Google, Azure). It is built in such
+FeatureHub currently supports OAuth2 as a protocol, and currently two providers (Google, GitHub, Azure). It is built in such
 a way that you can easily support others.
 
 === Generalised OAuth Config
@@ -61,15 +61,15 @@ oauth2.adminUiUrlSuccess=http://localhost:8085/
 oauth2.adminUiUrlFailure=http://localhost:8085/oauth2-failure
 ----
 
-- `oauth2.redirectUrl` - In this case, this needs to be registered with your OAuth provider as a web callback url. 
+- `oauth2.redirectUrl` - In this case, this needs to be registered with your OAuth provider as a web callback url.
 The actual url will depend on where you have installed it, and it only has to be visible to browsers in your organisation.
 - `adminUiUrlSuccess` and `adminUiUrlFailure` - are links back to your running FeatureHub system and indicate where
-to go. FeatureHub will set a cookie with the necessary information to authenticate the user on success. 
+to go. FeatureHub will set a cookie with the necessary information to authenticate the user on success.
 
 
 === Google Config
 
-Basic details on https://developers.google.com/identity/protocols/oauth2/web-server[setting up your credentials] is 
+Basic details on https://developers.google.com/identity/protocols/oauth2/web-server[setting up your credentials] is
 located in Google's help documentation. It needs to be allowed access to the `profile` (name) and `email` scopes.
 
 For FeatureHub, your properties file needs to add a few configuration items:
@@ -82,6 +82,19 @@ oauth2.providers.google.secret=[CLIENT-SECRET]
 ----
 
 FeatureHub knows all of the URLs necessary to ask Google for the negotiation phase.
+
+=== GitHub Config
+
+To authorise via GitHub, your properties file needs to add a few configuration items:
+
+[source,properties]
+----
+oauth2.providers=oauth2-github
+oauth2.providers.github.id=[CLIENT-ID]
+oauth2.providers.github.secret=[CLIENT-SECRET]
+----
+
+To obtain client id and secret follow these instructions to register https://docs.github.com/en/developers/apps/building-oauth-apps/creating-an-oauth-app[OAuth app on Github] under your organisation's GitHub account.
 
 === Azure Config
 
