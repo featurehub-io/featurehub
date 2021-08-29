@@ -67,11 +67,11 @@ export class EdgeFeatureHubConfig implements FeatureHubConfig {
   }
 
   public clientEvaluated(): boolean {
-    return this._apiKey.includes('*');
+    return this._clientEval;
   }
 
   getApiKeys(): string[] {
-    return Object.assign([], this._apiKeys);
+    return this._apiKeys;
   }
 
   getHost(): string {

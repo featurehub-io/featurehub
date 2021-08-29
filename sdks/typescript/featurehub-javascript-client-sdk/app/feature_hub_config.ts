@@ -36,10 +36,6 @@ export class FHLog {
     FHLog.fhLog.trace = (...args: any[]) => {
     };
   }
-
-  public Замолчи() {
-    this.quiet();
-  }
 }
 
 export const fhLog = FHLog.fhLog;
