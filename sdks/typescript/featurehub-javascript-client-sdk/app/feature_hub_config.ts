@@ -37,6 +37,9 @@ export class FHLog {
     };
   }
 
+  /**
+   * @deprecated The method is deprecated. Use quiet() instead.
+   */
   public Замолчи() {
     this.quiet();
   }
