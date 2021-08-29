@@ -15,6 +15,9 @@ We have deprecated [FeatureHub Eventsource Javascript SDK](https://www.npmjs.com
 ## Changelog
 
 ### featurehub-javascript-client-sdk
+#### 1.0.8
+- Enabled Tree Shaking [GitHub issue](https://github.com/featurehub-io/featurehub/issues/509)
+- Decrease sdk size by replacing ip6addr.ts with netmask package.
 #### 1.0.7
 - Support static flag evaluation [GitHub issue](https://github.com/featurehub-io/featurehub/issues/497)
 - Decrease sdk size by replacing semver with semver-compare [GitHub issue](https://github.com/featurehub-io/featurehub/issues/498)
