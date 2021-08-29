@@ -71,7 +71,7 @@ class FeatureHubJerseyHost constructor(private val config: ResourceConfig) {
      * you can create as many of these as you like. If you use a common class and register it multiple times, it
      * will only create the first instance.
      */
-    fun forceStart(config: Configurable<*>, vararg postStartupLoadServices: Class<*>) {
+    fun registerServiceToLoadOnStart(config: Configurable<*>, vararg postStartupLoadServices: Class<*>) {
       config.register(object: ContainerLifecycleListener {
         override fun onStartup(container: Container) {
           // access the ServiceLocator here
