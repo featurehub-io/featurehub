@@ -71,7 +71,7 @@ export class EdgeFeatureHubConfig implements FeatureHubConfig {
   }
 
   getApiKeys(): string[] {
-    return this._apiKeys;
+    return Object.assign([], this._apiKeys);
   }
 
   getHost(): string {

@@ -36,6 +36,13 @@ export class FHLog {
     FHLog.fhLog.trace = (...args: any[]) => {
     };
   }
+
+  /**
+   * @deprecated The method is deprecated. Use quiet() instead.
+   */
+  public Замолчи() {
+    this.quiet();
+  }
 }
 
 export const fhLog = FHLog.fhLog;
