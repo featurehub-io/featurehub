@@ -23,7 +23,7 @@ class DachaFeature : Feature {
       }
     })
 
-    FeatureHubJerseyHost.forceStart(context, CacheManager::class.java)
+    FeatureHubJerseyHost.registerServiceToLoadOnStart(context, CacheManager::class.java)
 
     return true
   }
