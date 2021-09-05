@@ -1,0 +1,16 @@
+openapi: 3.0.1
+info:
+  title: Usage API - consider nascent
+  description: This is primarily for model generation for the usage channel
+  version: 0.9.1
+paths:
+  /fake-get:
+    get:
+      description: "fake get api"
+      responses:
+        "200":
+          description: "fake response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EdgeStatsBundle"
