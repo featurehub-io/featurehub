@@ -37,6 +37,8 @@ public class EbeanHolder implements EbeanSource {
       }
     });
 
+    dbUrl = dbUrl.replace("$home", System.getProperty("user.home"));
+
     DataSourceConfig dsConfig = new DataSourceConfig();
 
     log.info("database url: {}", dbUrl);
