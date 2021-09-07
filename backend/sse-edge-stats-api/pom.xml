@@ -80,7 +80,7 @@
                 <file>${project.basedir}/fake-api.yaml</file>
                 <file>${project.basedir}/async-api.yaml</file>
               </files>
-              <finalYaml>${project.basedir}/final.yaml</finalYaml>
+              <finalYaml>${project.basedir}/target/final.yaml</finalYaml>
             </configuration>
           </execution>
         </executions>
@@ -108,7 +108,7 @@
               <output>${project.basedir}/target/generated-sources/api</output>
               <apiPackage>io.featurehub.sse.stats.api</apiPackage>
               <modelPackage>io.featurehub.sse.stats.model</modelPackage>
-              <inputSpec>${project.basedir}/final.yaml</inputSpec>
+              <inputSpec>${project.basedir}/target/final.yaml</inputSpec>
               <generatorName>jersey3-api</generatorName>
               <generateApis>false</generateApis>
             </configuration>
