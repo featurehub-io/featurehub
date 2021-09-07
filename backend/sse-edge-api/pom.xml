@@ -83,7 +83,7 @@
                 <file>${project.basedir}/../mr-api/strategy-enums.yaml</file>
                 <file>${project.basedir}/src/main/resources/sse-api.yaml</file>
               </files>
-              <finalYaml>${project.basedir}/final.yaml</finalYaml>
+              <finalYaml>${project.basedir}/target/final.yaml</finalYaml>
             </configuration>
           </execution>
         </executions>
@@ -110,7 +110,7 @@
               <output>${project.basedir}/target/generated-sources/api</output>
               <apiPackage>io.featurehub.sse.api</apiPackage>
               <modelPackage>io.featurehub.sse.model</modelPackage>
-              <inputSpec>${project.basedir}/final.yaml</inputSpec>
+              <inputSpec>${project.basedir}/target/final.yaml</inputSpec>
               <generatorName>jersey3-api</generatorName>
 
               <additionalProperties>
@@ -142,6 +142,23 @@
               <sources>
                 <source>${project.build.directory}/generated-sources/api/src/gen</source>
               </sources>
+            </configuration>
+          </execution>
+          <!-- publish the API at packaging time -->
+          <execution>
+            <id>attach-final-yaml</id>
+            <phase>package</phase>
+            <goals>
+              <goal>attach-artifact</goal>
+            </goals>
+            <configuration>
+              <artifacts>
+                <artifact>
+                  <file>${project.basedir}/target/final.yaml</file>
+                  <type>yaml</type>
+                  <classifier>api</classifier>
+                </artifact>
+              </artifacts>
             </configuration>
           </execution>
         </executions>
