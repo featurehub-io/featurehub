@@ -19,7 +19,7 @@ open class DachaRequestOrchestrator @Inject constructor(
     val inflightGauge = Gauge.build("edge_get_inflight_requests", "Inflight GET request Counter").register()
   }
 
-  override fun request(keys: List<KeyParts>, context: ClientContext): List<FeatureRequestResponse> {
+  override fun request(keys: List<KeyParts>, context: ClientContext, etags: EtagStructureHolder): List<FeatureRequestResponse> {
 
     // we need at least one for it to work
     if (keys.isEmpty()) {
@@ -38,7 +38,7 @@ open class DachaRequestOrchestrator @Inject constructor(
     }.toList()
 
     // now create a collector for the requests to notify
-    val action = getRequestCollector(getters, context, future)
+    val action = getRequestCollector(getters, context, future, etags)
 
     // and tell them to go get the data or add us to their list
     getters.forEach { getter -> getter.add(action) }
@@ -56,8 +56,9 @@ open class DachaRequestOrchestrator @Inject constructor(
   protected open fun getRequestCollector(
     getters: List<FeatureRequester>,
     context: ClientContext,
-    future: CompletableFuture<List<FeatureRequestResponse>>
-  ) : FeatureRequestCompleteNotifier = FeatureRequestCollection(getters, featureTransformer, context, future)
+    future: CompletableFuture<List<FeatureRequestResponse>>,
+    etags: EtagStructureHolder
+  ) : FeatureRequestCompleteNotifier = FeatureRequestCollection(getters, featureTransformer, context, future, etags)
 
 
   override fun requestForKeyComplete(key: KeyParts) {

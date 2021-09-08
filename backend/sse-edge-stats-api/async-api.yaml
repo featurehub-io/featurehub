@@ -70,6 +70,7 @@ components:
       enum:
         - success_until_kicked_off
         - success
+        - no_change
         - missed
         - failed_to_write_on_init
         - failed_to_process_request

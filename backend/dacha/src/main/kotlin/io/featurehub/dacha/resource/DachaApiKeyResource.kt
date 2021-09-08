@@ -20,13 +20,14 @@ class DachaApiKeyResource @Inject constructor(private val cache: InternalCache) 
       .portfolioId(collection.portfolioId)
       .applicationId(collection.applicationId)
       .serviceKeyId(collection.serviceAccountId)
-      .features(collection.features.toMutableList())
+      .etag(collection.features.etag)
+      .features(collection.features.features.toMutableList())
   }
 
   override fun getApiKeyPermissions(eId: UUID, serviceAccountKey: String, featureKey: String): DachaPermissionResponse {
     val collection = cache.getFeaturesByEnvironmentAndServiceAccount(eId, serviceAccountKey) ?: throw NotFoundException()
 
-    val feature = collection.features.find { fv -> fv.feature?.key?.equals(featureKey) == true } ?: throw NotFoundException()
+    val feature = collection.features.features.find { fv -> fv.feature?.key?.equals(featureKey) == true } ?: throw NotFoundException()
 
     return DachaPermissionResponse()
       .organizationId(collection.organizationId)

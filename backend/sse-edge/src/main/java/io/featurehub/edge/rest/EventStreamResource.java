@@ -8,7 +8,10 @@ import io.featurehub.edge.bucket.EventOutputBucketService;
 import io.featurehub.edge.client.ClientConnection;
 import io.featurehub.edge.client.TimedBucketClientConnection;
 import io.featurehub.edge.features.DachaFeatureRequestSubmitter;
+import io.featurehub.edge.features.ETagSplitter;
+import io.featurehub.edge.features.EtagStructureHolder;
 import io.featurehub.edge.features.FeatureRequestResponse;
+import io.featurehub.edge.features.FeatureRequestSuccess;
 import io.featurehub.edge.permission.PermissionPublisher;
 import io.featurehub.edge.stats.StatRecorder;
 import io.featurehub.edge.strategies.ClientContext;
@@ -92,8 +95,9 @@ public class EventStreamResource {
   @Produces({ "application/json" })
   @ManagedAsync
   public void getFeatureStates(@Suspended AsyncResponse response, @QueryParam("sdkUrl") List<String> sdkUrls,
-                               @QueryParam("apiKeys") List<String> apiKeys,
-                               @HeaderParam("x-featurehub") List<String> featureHubAttrs) {
+                               @QueryParam("apiKey") List<String> apiKeys,
+                               @HeaderParam("x-featurehub") List<String> featureHubAttrs,
+                               @HeaderParam("etag") String etagHeader) {
     if ((sdkUrls == null || sdkUrls.isEmpty()) && (apiKeys == null || apiKeys.isEmpty()) ) {
       response.resume(new BadRequestException());
       return;
@@ -114,19 +118,42 @@ public class EventStreamResource {
       response.resume(new NotFoundException());
     }
 
-    final List<FeatureRequestResponse> environments = getOrchestrator.request(realApiKeys,
-      ClientContext.decode(featureHubAttrs, realApiKeys));
+    final ClientContext clientContext = ClientContext.decode(featureHubAttrs, realApiKeys);
+    final EtagStructureHolder etags = ETagSplitter.Companion.splitTag(etagHeader, realApiKeys, clientContext.makeEtag());
+
+    final List<FeatureRequestResponse> environments = getOrchestrator.request(realApiKeys, clientContext, etags);
 
     // record the result
-    environments.forEach(resp -> statRecorder.recordHit(resp.getKey(), resp.getSuccess() ?
-      EdgeHitResultType.SUCCESS : EdgeHitResultType.MISSED,
+    environments.forEach(resp -> statRecorder.recordHit(resp.getKey(), mapSuccess(resp.getSuccess()),
       EdgeHitSourceType.POLL));
 
     timer.observeDuration();
 
     inout.dec();
 
-    response.resume(Response.status(200).entity(environments.stream().map(FeatureRequestResponse::getEnvironment).collect(Collectors.toList())).build());
+    if (environments.get(0).getSuccess() == FeatureRequestSuccess.NO_CHANGE) {
+      response.resume(Response.status(304).header("etag", etagHeader).build());
+    } else {
+      response.resume(Response.status(200)
+          .header("etag", ETagSplitter.Companion.makeEtags(etags, environments))
+        .entity(environments.stream().map(FeatureRequestResponse::getEnvironment).collect(Collectors.toList()))
+        .build());
+    }
+
+
+  }
+
+  private EdgeHitResultType mapSuccess(FeatureRequestSuccess success) {
+    switch (success) {
+      case FAILED:
+        return EdgeHitResultType.MISSED;
+      case SUCCESS:
+        return EdgeHitResultType.SUCCESS;
+      case NO_CHANGE:
+        return EdgeHitResultType.NO_CHANGE;
+    }
+
+    return EdgeHitResultType.SUCCESS;
   }
 
   @GET

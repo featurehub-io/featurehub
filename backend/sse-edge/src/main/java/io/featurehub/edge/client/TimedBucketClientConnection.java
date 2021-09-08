@@ -2,7 +2,9 @@ package io.featurehub.edge.client;
 
 import io.featurehub.edge.FeatureTransformer;
 import io.featurehub.edge.KeyParts;
+import io.featurehub.edge.features.EtagStructureHolder;
 import io.featurehub.edge.features.FeatureRequestResponse;
+import io.featurehub.edge.features.FeatureRequestSuccess;
 import io.featurehub.edge.stats.StatRecorder;
 import io.featurehub.edge.strategies.ClientContext;
 import io.featurehub.jersey.config.CacheJsonMapper;
@@ -21,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -84,11 +87,18 @@ public class TimedBucketClientConnection implements ClientConnection {
 
   @Override
   public void writeMessage(SSEResultState name, String data) throws IOException {
+    writeMessage(name, null, data);
+  }
+
+  public void writeMessage(SSEResultState name, String etags, String data) throws IOException {
     if (!output.isClosed()) {
       final OutboundEvent.Builder eventBuilder = new OutboundEvent.Builder();
       log.trace("data is : {}", data);
       eventBuilder.name(name.toString());
       eventBuilder.mediaType(MediaType.TEXT_PLAIN_TYPE);
+      if (etags != null) {
+        eventBuilder.id(etags);
+      }
       eventBuilder.data(data);
       final OutboundEvent event = eventBuilder.build();
       output.write(event);
@@ -161,10 +171,13 @@ public class TimedBucketClientConnection implements ClientConnection {
   public void initResponse(FeatureRequestResponse edgeResponse) {
     try {
       try {
-        if (edgeResponse.getSuccess()) {
-          writeMessage(
-            SSEResultState.FEATURES,
-            CacheJsonMapper.mapper.writeValueAsString(edgeResponse.getEnvironment().getFeatures()));
+        if (edgeResponse.getSuccess() != FeatureRequestSuccess.FAILED) {
+          if (edgeResponse.getSuccess() == FeatureRequestSuccess.SUCCESS) {
+            writeMessage(
+              SSEResultState.FEATURES,
+              edgeResponse.getEtag(),
+              CacheJsonMapper.mapper.writeValueAsString(edgeResponse.getEnvironment().getFeatures()));
+          }
 
           statRecorder.recordHit(apiKey, EdgeHitResultType.SUCCESS, EdgeHitSourceType.EVENTSOURCE);
 
@@ -207,6 +220,11 @@ public class TimedBucketClientConnection implements ClientConnection {
         close(false);
       }
     }
+  }
+
+  @Override
+  public EtagStructureHolder etags() {
+    return new EtagStructureHolder(new HashMap<>(), "", false);
   }
 
   public static final class Builder {

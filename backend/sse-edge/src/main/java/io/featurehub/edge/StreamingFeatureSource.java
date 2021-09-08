@@ -158,7 +158,7 @@ public class StreamingFeatureSource implements StreamingFeatureController {
           // this squashes all of the requests and optimises the daylights out of this call so we don't need to
           final List<FeatureRequestResponse> request =
             dachaFeatureRequestSubmitter.request(Collections.singletonList(key),
-              client.getClientContext());
+              client.getClientContext(), client.etags());
 
           client.initResponse(request.get(0));
           client.registerEjection(this::clientRemoved);
