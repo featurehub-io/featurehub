@@ -23,7 +23,7 @@ class ETagSplitter {
 
       val envTags = mutableMapOf<KeyParts, String>()
       if (environmentTagVsContextTag.isNotEmpty()) {
-        val tags = environmentTagVsContextTag[0].trim().split(";").toTypedArray()
+        val tags = environmentTagVsContextTag[0].trim().split(";").filter { it.isNotEmpty() }.toTypedArray()
 
         // if the tags != key sizes, its not valid, they have added or removed a key
         if (tags.size != keys.size) {
