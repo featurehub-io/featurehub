@@ -19,6 +19,8 @@ class ETagSplitter {
         if (!clientContextTag.equals(contextTags)) { // different so we will need to transform the features
           return EtagStructureHolder(mapOf(), clientContextTag, false)
         }
+      } else if (clientContextTag != "0") {
+        return EtagStructureHolder(mapOf(), clientContextTag, false)
       }
 
       val envTags = mutableMapOf<KeyParts, String>()
@@ -42,7 +44,7 @@ class ETagSplitter {
      * makes the new etags with
      */
     fun makeEtags(etags: EtagStructureHolder, responses: List<FeatureRequestResponse>) : String {
-      return responses.map { it.etag }.joinToString(";") + "//" + etags.contextTag
+      return responses.map { it.etag }.joinToString(";") + (if (etags.contextTag == "0") "" else  "//" + etags.contextTag)
     }
   }
 }

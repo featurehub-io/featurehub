@@ -1,6 +1,8 @@
 package io.featurehub.edge.features
 
 import io.featurehub.edge.KeyParts
+import io.featurehub.mr.model.Feature
+import io.featurehub.sse.model.Environment
 import spock.lang.Specification
 
 class EtagSplitterSpec extends Specification {
@@ -73,5 +75,31 @@ class EtagSplitterSpec extends Specification {
     then:
       !holder.validEtag
       holder.contextTag == "other"
+  }
+
+  def "when the keys are right but there is no context"() {
+    given: "i have tags"
+      def etag = "1;2"
+    and: "i have two keypairs"
+      def k1 = new KeyParts("1", UUID.randomUUID(), "s1")
+      def k2 = new KeyParts("1", UUID.randomUUID(), "s2")
+      def keypairs = [k1,k2]
+    when: "i split"
+      def holder = ETagSplitter.@Companion.splitTag(etag, keypairs, "other")
+    then:
+      !holder.validEtag
+      holder.contextTag == "other"
+  }
+
+  def "when i pass in an etag holder and a bunch of feature requests, i get the expected etag header"() {
+    given: "i have 2 responses"
+      def r1 = new FeatureRequestResponse(new Environment(), FeatureRequestSuccess.SUCCESS, new KeyParts("1", UUID.randomUUID(), "1"), "r1")
+      def r2 = new FeatureRequestResponse(new Environment(), FeatureRequestSuccess.SUCCESS, new KeyParts("1", UUID.randomUUID(), "1"), "r2")
+    and: "an existing etag holder"
+      def tag = new EtagStructureHolder([:], "context-key", true)
+    when: "i generate the tag"
+      def etag = ETagSplitter.@Companion.makeEtags(tag, [r1, r2])
+    then:
+      etag == 'r1;r2//context-key'
   }
 }

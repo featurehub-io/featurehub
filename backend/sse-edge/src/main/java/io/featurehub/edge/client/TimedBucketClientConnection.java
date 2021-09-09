@@ -54,7 +54,7 @@ public class TimedBucketClientConnection implements ClientConnection {
     attributesForStrategy =
         ClientContext.decode(builder.featureHubAttributes, Collections.singletonList(apiKey));
 
-    etags = ETagSplitter.Companion.splitTag(builder.etag, Arrays.asList(apiKey), attributesForStrategy.makeEtag());
+    etags = ETagSplitter.Companion.splitTag(builder.etag, List.of(apiKey), attributesForStrategy.makeEtag());
 
     timer = connectionLengthHistogram.startTimer();
   }
@@ -180,7 +180,7 @@ public class TimedBucketClientConnection implements ClientConnection {
           if (edgeResponse.getSuccess() == FeatureRequestSuccess.SUCCESS) {
             writeMessage(
               SSEResultState.FEATURES,
-              edgeResponse.getEtag(),
+              ETagSplitter.Companion.makeEtags(etags, List.of(edgeResponse)),
               CacheJsonMapper.mapper.writeValueAsString(edgeResponse.getEnvironment().getFeatures()));
           }
 
