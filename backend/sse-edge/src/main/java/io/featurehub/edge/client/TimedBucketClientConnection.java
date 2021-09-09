@@ -2,6 +2,7 @@ package io.featurehub.edge.client;
 
 import io.featurehub.edge.FeatureTransformer;
 import io.featurehub.edge.KeyParts;
+import io.featurehub.edge.features.ETagSplitter;
 import io.featurehub.edge.features.EtagStructureHolder;
 import io.featurehub.edge.features.FeatureRequestResponse;
 import io.featurehub.edge.features.FeatureRequestSuccess;
@@ -22,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +38,7 @@ public class TimedBucketClientConnection implements ClientConnection {
   private final FeatureTransformer featureTransformer;
   private final ClientContext attributesForStrategy;
   private final StatRecorder statRecorder;
+  private final EtagStructureHolder etags;
 
   private static final Histogram connectionLengthHistogram = Histogram.build("edge_conn_length_sse", "The length of " +
     "time that the connection is open for SSE clients").register();
@@ -50,6 +53,8 @@ public class TimedBucketClientConnection implements ClientConnection {
 
     attributesForStrategy =
         ClientContext.decode(builder.featureHubAttributes, Collections.singletonList(apiKey));
+
+    etags = ETagSplitter.Companion.splitTag(builder.etag, Arrays.asList(apiKey), attributesForStrategy.makeEtag());
 
     timer = connectionLengthHistogram.startTimer();
   }
@@ -224,7 +229,7 @@ public class TimedBucketClientConnection implements ClientConnection {
 
   @Override
   public EtagStructureHolder etags() {
-    return new EtagStructureHolder(new HashMap<>(), "", false);
+    return etags;
   }
 
   public static final class Builder {
@@ -233,6 +238,7 @@ public class TimedBucketClientConnection implements ClientConnection {
     private List<String> featureHubAttributes;
     private FeatureTransformer featureTransformer;
     private StatRecorder statRecorder;
+    private String etag;
 
     public Builder() {}
 
@@ -263,6 +269,11 @@ public class TimedBucketClientConnection implements ClientConnection {
 
     public ClientConnection build() {
       return new TimedBucketClientConnection(this);
+    }
+
+    public Builder etag(String etag) {
+      this.etag = etag;
+      return this;
     }
   }
 }

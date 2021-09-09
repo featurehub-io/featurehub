@@ -139,8 +139,6 @@ public class EventStreamResource {
         .entity(environments.stream().map(FeatureRequestResponse::getEnvironment).collect(Collectors.toList()))
         .build());
     }
-
-
   }
 
   private EdgeHitResultType mapSuccess(FeatureRequestSuccess success) {
@@ -163,7 +161,8 @@ public class EventStreamResource {
                               @PathParam("environmentId") UUID envId,
                               @PathParam("apiKey") String apiKey,
                               @HeaderParam("x-featurehub") List<String> featureHubAttrs, // non browsers can set headers
-                              @QueryParam("xfeaturehub") String browserHubAttrs // browsers can't set headers
+                              @QueryParam("xfeaturehub") String browserHubAttrs, // browsers can't set headers,
+                              @HeaderParam("Last-Event-ID") String etag
                               ) {
     EventOutput o = new EventOutput();
 
@@ -174,6 +173,7 @@ public class EventStreamResource {
         .featureTransformer(featureTransformer)
         .statRecorder(statRecorder)
         .apiKey(key)
+        .etag(etag)
         .featureHubAttributes(browserHubAttrs == null ? featureHubAttrs : Collections.singletonList(browserHubAttrs))
         .output(o)
         .build();
