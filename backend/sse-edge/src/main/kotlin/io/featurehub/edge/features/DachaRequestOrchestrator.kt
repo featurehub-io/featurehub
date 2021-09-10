@@ -58,7 +58,7 @@ open class DachaRequestOrchestrator @Inject constructor(
     context: ClientContext,
     future: CompletableFuture<List<FeatureRequestResponse>>,
     etags: EtagStructureHolder
-  ) : FeatureRequestCompleteNotifier = FeatureRequestCollection(getters, featureTransformer, context, future, etags)
+  ) : FeatureRequestCompleteNotifier = FeatureRequestCollection(getters.size, featureTransformer, context, future, etags)
 
 
   override fun requestForKeyComplete(key: KeyParts) {

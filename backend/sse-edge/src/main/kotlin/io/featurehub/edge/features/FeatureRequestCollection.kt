@@ -9,20 +9,20 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentLinkedQueue
 
 class FeatureRequestCollection(
-  private val requests: List<FeatureRequester>,
+  private val requestCount: Int,
   private val featureTransformer: FeatureTransformer,
   private val clientContext: ClientContext,
   private val future: CompletableFuture<List<FeatureRequestResponse>>,
   private val etags: EtagStructureHolder
 ) : FeatureRequestCompleteNotifier {
-  private val completed: MutableCollection<FeatureRequesterSource> = ConcurrentLinkedQueue()
+  private val completed: MutableCollection<FeatureRequester> = ConcurrentLinkedQueue()
 
   // this gets called on each requester each time a response comes back. Once it matches
   // the number that went in, we can process and complete the future
-  override fun complete(key: FeatureRequesterSource) {
+  override fun complete(key: FeatureRequester) {
     completed.add(key)
 
-    if (completed.size == requests.size) {
+    if (completed.size == requestCount) {
       // determine first if any of the environments failed its etag match
       val sendFullResults = !etags.validEtag || completed.find { !etags.environmentTags[it.key].equals(it.details?.etag) } != null
       future.complete(completed.map { req -> transformFeatures(req.details, req.key, sendFullResults) }.toList())
