@@ -10,15 +10,20 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 public interface InternalCache {
+  interface FeatureValues {
+    Collection<FeatureValueCacheItem> getFeatures();
+    String getEtag();
+  }
+
   class FeatureCollection {
-    public Collection<FeatureValueCacheItem> features;
+    public FeatureValues features;
     public ServiceAccountPermission perms;
     public UUID organizationId;
     public UUID portfolioId;
     public UUID applicationId;
     public UUID serviceAccountId;
 
-    public FeatureCollection(Collection<FeatureValueCacheItem> features, ServiceAccountPermission perms,
+    public FeatureCollection(FeatureValues features, ServiceAccountPermission perms,
                              UUID organizationId, UUID portfolioId, UUID applicationId, UUID serviceAccountId) {
       this.features = features;
       this.perms = perms;

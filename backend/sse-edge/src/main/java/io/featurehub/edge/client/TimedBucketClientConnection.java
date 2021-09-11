@@ -2,7 +2,10 @@ package io.featurehub.edge.client;
 
 import io.featurehub.edge.FeatureTransformer;
 import io.featurehub.edge.KeyParts;
+import io.featurehub.edge.features.ETagSplitter;
+import io.featurehub.edge.features.EtagStructureHolder;
 import io.featurehub.edge.features.FeatureRequestResponse;
+import io.featurehub.edge.features.FeatureRequestSuccess;
 import io.featurehub.edge.stats.StatRecorder;
 import io.featurehub.edge.strategies.ClientContext;
 import io.featurehub.jersey.config.CacheJsonMapper;
@@ -20,7 +23,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,6 +38,7 @@ public class TimedBucketClientConnection implements ClientConnection {
   private final FeatureTransformer featureTransformer;
   private final ClientContext attributesForStrategy;
   private final StatRecorder statRecorder;
+  private final EtagStructureHolder etags;
 
   private static final Histogram connectionLengthHistogram = Histogram.build("edge_conn_length_sse", "The length of " +
     "time that the connection is open for SSE clients").register();
@@ -47,6 +53,8 @@ public class TimedBucketClientConnection implements ClientConnection {
 
     attributesForStrategy =
         ClientContext.decode(builder.featureHubAttributes, Collections.singletonList(apiKey));
+
+    etags = ETagSplitter.Companion.splitTag(builder.etag, List.of(apiKey), attributesForStrategy.makeEtag());
 
     timer = connectionLengthHistogram.startTimer();
   }
@@ -84,11 +92,18 @@ public class TimedBucketClientConnection implements ClientConnection {
 
   @Override
   public void writeMessage(SSEResultState name, String data) throws IOException {
+    writeMessage(name, null, data);
+  }
+
+  public void writeMessage(SSEResultState name, String etags, String data) throws IOException {
     if (!output.isClosed()) {
       final OutboundEvent.Builder eventBuilder = new OutboundEvent.Builder();
       log.trace("data is : {}", data);
       eventBuilder.name(name.toString());
       eventBuilder.mediaType(MediaType.TEXT_PLAIN_TYPE);
+      if (etags != null) {
+        eventBuilder.id(etags);
+      }
       eventBuilder.data(data);
       final OutboundEvent event = eventBuilder.build();
       output.write(event);
@@ -161,10 +176,13 @@ public class TimedBucketClientConnection implements ClientConnection {
   public void initResponse(FeatureRequestResponse edgeResponse) {
     try {
       try {
-        if (edgeResponse.getSuccess()) {
-          writeMessage(
-            SSEResultState.FEATURES,
-            CacheJsonMapper.mapper.writeValueAsString(edgeResponse.getEnvironment().getFeatures()));
+        if (edgeResponse.getSuccess() != FeatureRequestSuccess.FAILED) {
+          if (edgeResponse.getSuccess() == FeatureRequestSuccess.SUCCESS) {
+            writeMessage(
+              SSEResultState.FEATURES,
+              ETagSplitter.Companion.makeEtags(etags, List.of(edgeResponse)),
+              CacheJsonMapper.mapper.writeValueAsString(edgeResponse.getEnvironment().getFeatures()));
+          }
 
           statRecorder.recordHit(apiKey, EdgeHitResultType.SUCCESS, EdgeHitSourceType.EVENTSOURCE);
 
@@ -209,12 +227,18 @@ public class TimedBucketClientConnection implements ClientConnection {
     }
   }
 
+  @Override
+  public EtagStructureHolder etags() {
+    return etags;
+  }
+
   public static final class Builder {
     private EventOutput output;
     private KeyParts apiKey;
     private List<String> featureHubAttributes;
     private FeatureTransformer featureTransformer;
     private StatRecorder statRecorder;
+    private String etag;
 
     public Builder() {}
 
@@ -245,6 +269,11 @@ public class TimedBucketClientConnection implements ClientConnection {
 
     public ClientConnection build() {
       return new TimedBucketClientConnection(this);
+    }
+
+    public Builder etag(String etag) {
+      this.etag = etag;
+      return this;
     }
   }
 }

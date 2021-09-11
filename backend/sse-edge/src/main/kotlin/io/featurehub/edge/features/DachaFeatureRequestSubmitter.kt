@@ -16,5 +16,5 @@ interface DachaFeatureRequestSubmitter {
   /*
    * Requests a bunch of environment details from Dacha in the most efficient way possible
    */
-  fun request(keys: List<KeyParts>, context: ClientContext): List<FeatureRequestResponse>
+  fun request(keys: List<KeyParts>, context: ClientContext, etags: EtagStructureHolder): List<FeatureRequestResponse>
 }

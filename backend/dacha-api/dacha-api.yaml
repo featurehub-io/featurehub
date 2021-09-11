@@ -251,6 +251,9 @@ components:
             $ref: "#/components/schemas/RolloutStrategy"
     DachaKeyDetailsResponse:
       properties:
+        etag:
+          x-basename: etag
+          type: string
         organizationId:
           x-basename: oId
           type: string

@@ -26,7 +26,7 @@ public class InMemoryCache implements InternalCache {
   private boolean wasEnvironmentComplete;
   private final Map<UUID, EnvironmentCacheItem> environments = new ConcurrentHashMap<>();
   // <environment id, <feature id, fv cache>>
-  private final Map<UUID, Map<UUID, FeatureValueCacheItem>> environmentFeatures = new ConcurrentHashMap<>();
+  private final Map<UUID, EnvironmentFeatures> environmentFeatures = new ConcurrentHashMap<>();
   private final Map<UUID, ServiceAccountCacheItem> serviceAccounts = new ConcurrentHashMap<>();
   // <service account UUID id + / + environment UUID id ==> ServiceAccount. if null, none maps, otherwise you can do
   // something with it
@@ -135,7 +135,7 @@ public class InMemoryCache implements InternalCache {
   private void updateServiceAccountEnvironmentCache(ServiceAccount serviceAccount, ServiceAccountCacheItem oldServiceAccount) {
     if (oldServiceAccount != null) {
       oldServiceAccount.getServiceAccount().getPermissions().forEach(perm -> {
-          log.trace("update cache, removing {} :{}",
+          log.trace("update cache, removing {} :{} - {}",
             serviceAccount.getId(),
             serviceAccount.getApiKeyServerSide(),
             perm);
@@ -177,9 +177,7 @@ public class InMemoryCache implements InternalCache {
         newItem
             .getServiceAccounts()
             .forEach(
-                sa -> {
-                  existing.remove(serviceAccountIdPlusEnvId(sa.getId(), newItem.getEnvironment().getId()));
-                });
+                sa -> existing.remove(serviceAccountIdPlusEnvId(sa.getId(), newItem.getEnvironment().getId())));
 
         // ones that are left we have to delete
         existing.keySet().forEach(k -> {
@@ -269,13 +267,13 @@ public class InMemoryCache implements InternalCache {
 
     // now create a map of featureId -> feature + feature-value that clients can consume easily.
     environmentFeatures.put(e.getEnvironment().getId(),
-      e.getEnvironment().getFeatures().stream()
+      new EnvironmentFeatures(e.getEnvironment().getFeatures().stream()
         .collect(Collectors.toMap(Feature::getId, f -> {
           final FeatureValue value = values.get(f.getKey());
           final FeatureValueCacheItem fvci = new FeatureValueCacheItem().feature(f).value(value).strategies(value.getRolloutStrategies());
           value.setRolloutStrategies(null);
           return fvci;
-        })));
+        }))));
   }
 
   @Override
@@ -293,7 +291,7 @@ public class InMemoryCache implements InternalCache {
     if (sa != null && !sa.getPermissions().isEmpty()) {  // any permission is good enough to read
       final EnvironmentCacheItem eci = environments.get(environmentId);
 
-      return new FeatureCollection(environmentFeatures.get(environmentId).values(), sa, eci.getOrganizationId(),
+      return new FeatureCollection(environmentFeatures.get(environmentId), sa, eci.getOrganizationId(),
         eci.getPortfolioId(), eci.getApplicationId(), serviceAccountId);
     }
 
@@ -311,7 +309,7 @@ public class InMemoryCache implements InternalCache {
       List<FeatureValueCacheItem> fvs = valuesForUnpublishedEnvironments.computeIfAbsent(fv.getEnvironmentId(), key -> new ArrayList<>());
       fvs.add(fv);
     } else {
-      Map<UUID, FeatureValueCacheItem> featureMap = environmentFeatures.get(fv.getEnvironmentId());
+      EnvironmentFeatures featureMap = environmentFeatures.get(fv.getEnvironmentId());
 
       if (featureMap != null) {
         FeatureValueCacheItem feature = featureMap.get(fv.getFeature().getId());

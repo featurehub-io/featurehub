@@ -1,6 +1,7 @@
 package io.featurehub.edge.client;
 
 import io.featurehub.edge.KeyParts;
+import io.featurehub.edge.features.EtagStructureHolder;
 import io.featurehub.edge.features.FeatureRequestResponse;
 import io.featurehub.edge.strategies.ClientContext;
 import io.featurehub.mr.model.FeatureValueCacheItem;
@@ -36,4 +37,6 @@ public interface ClientConnection {
 
   // notify the client of a new feature (if they have received their features)
   void notifyFeature(FeatureValueCacheItem rf);
+
+  EtagStructureHolder etags();
 }

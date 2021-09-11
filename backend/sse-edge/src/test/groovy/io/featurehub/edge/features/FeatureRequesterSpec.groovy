@@ -23,8 +23,10 @@ class FeatureRequesterSpec extends Specification {
   def "when i pass no keys, i get no responses"() {
     given: "i have an orchestrator"
       def orch = new DachaRequestOrchestrator(Mock(FeatureTransformer), Mock(DachaClientServiceRegistry), Mock(EdgeConcurrentRequestPool))
+    and: "i have no etags"
+      def etags = new EtagStructureHolder([:], "", false)
     when: "i pass in no keys"
-      def result = orch.request([], new ClientContext(false))
+      def result = orch.request([], new ClientContext(false), etags)
     then:
       result.isEmpty()
   }
@@ -46,15 +48,20 @@ class FeatureRequesterSpec extends Specification {
         }
 
         @Override
-        protected FeatureRequestCompleteNotifier getRequestCollector(@NotNull List<? extends FeatureRequester> getters, @NotNull ClientContext context, @NotNull CompletableFuture<List<Environment>> future) {
+        protected FeatureRequestCompleteNotifier getRequestCollector(@NotNull List<? extends FeatureRequester> getters,
+                                                                     @NotNull ClientContext context,
+                                                                     @NotNull CompletableFuture<List<Environment>> future,
+        @NotNull EtagStructureHolder etags) {
           future.complete(envs)
           return notifier
         }
       }
+    and: "I have a fake etags"
+      def etags = new EtagStructureHolder([:], "", true)
     when:
       def result = orch.request([new KeyParts("default", UUID.randomUUID(), "x"),
                     new KeyParts("fred", UUID.randomUUID(), "x"),
-                    new KeyParts("mary", UUID.randomUUID(), "x")], new ClientContext(false))
+                    new KeyParts("mary", UUID.randomUUID(), "x")], new ClientContext(false), etags)
     then:
       1 * dacha.getApiKeyService("default") >> Mock(DachaApiKeyService)
       1 * dacha.getApiKeyService("fred") >> Mock(DachaApiKeyService)

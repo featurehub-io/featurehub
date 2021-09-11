@@ -7,11 +7,11 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentLinkedQueue
 
-class FeatureRequesterSource(private val api: DachaApiKeyService, val key: KeyParts, private val executor: EdgeConcurrentRequestPool, private val submitter: DachaFeatureRequestSubmitter) : FeatureRequester {
+class FeatureRequesterSource(private val api: DachaApiKeyService, override val key: KeyParts, private val executor: EdgeConcurrentRequestPool, private val submitter: DachaFeatureRequestSubmitter) : FeatureRequester {
   private val log: Logger = LoggerFactory.getLogger(FeatureRequesterSource::class.java)
 
   val notifyListener: MutableCollection<FeatureRequestCompleteNotifier> = ConcurrentLinkedQueue()
-  var details: DachaKeyDetailsResponse? = null
+  override var details: DachaKeyDetailsResponse? = null
 
   override fun add(notifier: FeatureRequestCompleteNotifier) {
     var size: Int?

@@ -74,4 +74,8 @@ public class ClientContext {
 
     return val.get(0);
   }
+
+  public String makeEtag() {
+    return Integer.toHexString(attributes.hashCode());
+  }
 }
