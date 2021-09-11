@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any,@typescript-eslint/no-empty-function */
 import { EdgeService } from './edge_service';
 import { ClientContext } from './client_context';
 import { InternalFeatureRepository } from './internal_feature_repository';
@@ -23,19 +22,15 @@ export class FHLog {
     console.error(args);
   };
 
-  // tslint:disable-next-line:no-empty
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public trace: FHLogMethod = (...args: any[]) => {};
 
   public quiet(): void {
-    // tslint:disable-next-line:no-empty
     FHLog.fhLog.log = () => {
     };
-    // tslint:disable-next-line:no-empty
     FHLog.fhLog.error = () => {
     };
 
-    // tslint:disable-next-line:no-empty
     FHLog.fhLog.trace = () => {
     };
   }
@@ -43,7 +38,6 @@ export class FHLog {
   /**
    * @deprecated The method is deprecated. Use quiet() instead.
    */
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   public Замолчи(): void {
     this.quiet();
   }

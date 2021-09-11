@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { FeatureHubRepository } from './featurehub_repository';
 import { RolloutStrategy, SSEResultState } from './models';
 import { InterceptorValueMatch } from './interceptors';

@@ -13,9 +13,9 @@ export interface ClientContext {
   device(value: StrategyAttributeDeviceName): ClientContext;
   platform(value: StrategyAttributePlatformName): ClientContext;
   version(version: string): ClientContext;
-  // eslint-disable-next-line @typescript-eslint/naming-convention,camelcase
+  // eslint-disable-next-line camelcase
   attribute_value(key: string, value: string): ClientContext;
-  // eslint-disable-next-line @typescript-eslint/naming-convention,camelcase
+  // eslint-disable-next-line camelcase
   attribute_values(key: string, values: Array<string>): ClientContext;
   clear(): ClientContext;
   build(): Promise<ClientContext>;
@@ -23,7 +23,6 @@ export interface ClientContext {
   getAttr(key: string, defaultValue: string): string;
   getNumber(name: string): number | undefined;
   getString(name: string): string | undefined;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getJson(name: string): any | undefined;
   getRawJson(name: string): string | undefined;
   getFlag(name: string): boolean | undefined;

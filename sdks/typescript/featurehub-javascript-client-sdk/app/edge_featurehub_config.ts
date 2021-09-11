@@ -87,7 +87,6 @@ export class EdgeFeatureHubConfig implements FeatureHubConfig {
       new ServerEvalFeatureContext(repository, () => this.createEdgeService(edgeService, repository));
   }
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   private getOrCreateEdgeService(edgeServSupplier: EdgeServiceProvider, repository?: InternalFeatureRepository): EdgeService {
     if (this._edgeServices.length === 0) {
       return this.createEdgeService(edgeServSupplier, repository);
@@ -96,7 +95,6 @@ export class EdgeFeatureHubConfig implements FeatureHubConfig {
     return this._edgeServices[0];
   }
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   private createEdgeService(edgeServSupplier: EdgeServiceProvider, repository?: InternalFeatureRepository): EdgeService {
     const es = edgeServSupplier(repository || this.repository(), this);
     this._edgeServices.push(es);

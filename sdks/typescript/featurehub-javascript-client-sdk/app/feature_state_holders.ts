@@ -5,12 +5,9 @@ import { InternalFeatureRepository } from './internal_feature_repository';
 
 export class FeatureStateBaseHolder implements FeatureStateHolder {
   protected internalFeatureState: FeatureState;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   protected _key: string;
   protected listeners: Array<FeatureListener> = [];
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   protected _repo: InternalFeatureRepository;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   protected _ctx: ClientContext;
   protected parentHolder: FeatureStateBaseHolder;
 
@@ -146,7 +143,6 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
     return this.internalFeatureState;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private _getValue(type?: FeatureValueType): any | undefined {
     if (!this.isLocked()) {
       const intercept = this._repo.valueInterceptorMatched(this._key);
@@ -172,7 +168,6 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
     return featureState?.value;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private _castType(type: FeatureValueType, value: any): any | undefined {
     if (value == null) {
       return undefined;

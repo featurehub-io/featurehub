@@ -5,11 +5,8 @@ import { AnalyticsCollector } from './analytics';
 import { InternalFeatureRepository } from './internal_feature_repository';
 
 export enum Readyness {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   NotReady = 'NotReady',
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Ready = 'Ready',
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Failed = 'Failed'
 }
 
@@ -30,7 +27,7 @@ export interface FeatureHubRepository {
   logAnalyticsEvent(action: string, other?: Map<string, string>, ctx?: ClientContext);
 
   // returns undefined if the feature does not exist
-  hasFeature(key: string): FeatureStateHolder;
+  hasFeature(key: string): undefined | FeatureStateHolder;
 
   // synonym for getFeatureState
   feature(key: string): FeatureStateHolder;

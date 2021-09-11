@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   RolloutStrategy,
   RolloutStrategyAttribute,
@@ -19,7 +18,6 @@ export interface PercentageCalculator {
 }
 
 export class Murmur3PercentageCalculator implements PercentageCalculator {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   private readonly MAX_PERCENTAGE = 1000000;
 
   public determineClientPercentage(percentageText: string, featureId: string): number {
@@ -32,7 +30,6 @@ export class Applied {
   public readonly matched: boolean;
   public readonly value: any;
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   constructor(matched: boolean, value: any) {
     this.matched = matched;
     this.value = value;

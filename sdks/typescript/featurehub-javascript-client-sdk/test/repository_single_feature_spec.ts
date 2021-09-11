@@ -25,6 +25,45 @@ describe('repository reacts to single feature changes as expected', () => {
     expect(feat.getBoolean()).to.be.undefined;
   });
 
+  it('should be able to deal with pure json data', () => {
+    let triggerBanana = 0;
+    let triggerPear = 0;
+    let triggerPeach = 0;
+
+    repo.getFeatureState('banana').addListener(() => triggerBanana++);
+    repo.getFeatureState('pear').addListener(() => triggerPear++);
+    repo.getFeatureState('peach').addListener(() => triggerPeach++);
+
+    const features = [
+      { id: '1', key: 'banana', version: 1, type: FeatureValueType.Json, value: '{}' },
+      { id: '2', key: 'pear', version: 1, type: FeatureValueType.Json, value: '"nashi"' },
+      { id: '3', key: 'peach', version: 1, type: FeatureValueType.Json, value: '{"variety": "golden queen"}' }
+    ];
+
+    repo.notify(SSEResultState.Features, features);
+
+    repo.notify(SSEResultState.Feature, {
+      id: '1', key: 'banana',
+      version: 2, type: FeatureValueType.Json, value: '{}'
+    });
+
+    // banana doesn't change because version diff + value same
+    expect(triggerBanana).to.eq(1);
+
+    repo.notify(SSEResultState.Feature, {
+      id: '1', key: 'banana',
+      version: 3, type: FeatureValueType.Json, value: '"yellow"'
+    });
+
+    expect(triggerBanana).to.eq(2);
+    expect(triggerPear).to.eq(1);
+    expect(triggerPeach).to.eq(1);
+
+    repo.notify(SSEResultState.DeleteFeature, { id: '1', key: 'banana' });
+
+    expect(repo.hasFeature('banana').getRawJson()).to.be.undefined;
+  });
+
   it('should react to a single feature changing', () => {
     let triggerBanana = 0;
     let triggerPear = 0;

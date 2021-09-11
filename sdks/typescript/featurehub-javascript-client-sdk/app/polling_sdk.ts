@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention,@typescript-eslint/no-explicit-any */
 // prevents circular deps
 import { ObjectSerializer } from './models/models/model_serializer';
 

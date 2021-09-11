@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { FeatureStateBaseHolder } from './feature_state_holders';
 import { FeatureStateValueInterceptor, InterceptorValueMatch } from './interceptors';
 
@@ -6,7 +5,6 @@ import { FeatureStateHolder } from './feature_state';
 
 import { AnalyticsCollector } from './analytics';
 // leave this here, prevents circular deps
-import { FeatureStateTypeTransformer } from './models/models/model_serializer';
 import { FeatureState, FeatureValueType, RolloutStrategy, SSEResultState } from './models';
 import { ClientContext } from './client_context';
 import { Applied, ApplyFeature } from './strategy_matcher';
@@ -41,7 +39,6 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
     return this.readynessState;
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   public notify(state: SSEResultState, data: any) {
     if (state !== null && state !== undefined) {
       switch (state) {
@@ -49,7 +46,7 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
         case SSEResultState.Bye: // do nothing, we expect a reconnection shortly
           break;
         case SSEResultState.DeleteFeature:
-          this.deleteFeature(FeatureStateTypeTransformer.fromJson(data));
+          this.deleteFeature(data);
           break;
         case SSEResultState.Failure:
           this.readynessState = Readyness.Failed;
@@ -58,7 +55,7 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
           }
           break;
         case SSEResultState.Feature: {
-          const fs = FeatureStateTypeTransformer.fromJson(data);
+          const fs = data instanceof FeatureState ? data : new FeatureState(data);
 
           if (this._catchAndReleaseMode) {
             this._catchUpdatedFeatures([fs]);
@@ -70,8 +67,7 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
         }
           break;
         case SSEResultState.Features: {
-          const features = (data instanceof Array) ? (data as Array<FeatureState>) :
-            (data as []).map((f) => FeatureStateTypeTransformer.fromJson(f));
+          const features = (data as []).map((f : any) => f instanceof FeatureState ? f : new FeatureState(f));
           if (this.hasReceivedInitialState && this._catchAndReleaseMode) {
 
             this._catchUpdatedFeatures(features);
@@ -181,7 +177,7 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
     this.analyticsCollectors.forEach((ac) => ac.logEvent(action, other, featureStateAtCurrentTime));
   }
 
-  public hasFeature(key: string): FeatureStateHolder {
+  public hasFeature(key: string): undefined | FeatureStateHolder {
     return this.features.get(key);
   }
 

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { MatcherRegistry } from '../app/strategy_matcher';
 import {
   RolloutStrategyAttribute,
