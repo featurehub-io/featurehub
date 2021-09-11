@@ -154,7 +154,7 @@ describe('Feature repository reacts to incoming event lists as expected', () => 
       const fhConfig = new EdgeFeatureHubConfig('http://localhost:8080', '123*123');
       fhConfig.repository(repo);
       const edgeService = Substitute.for<EdgeService>();
-      fhConfig.edgeServiceProvider((repository, config) => edgeService);
+      fhConfig.edgeServiceProvider(() => edgeService);
 
       let triggerContext = 0;
       let triggerRepo = 0;

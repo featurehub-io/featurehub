@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention,@typescript-eslint/no-explicit-any */
 // prevents circular deps
 import { ObjectSerializer } from './models/models/model_serializer';
 
@@ -30,7 +31,7 @@ export abstract class PollingBase implements PollingService {
     this._callback = callback;
   }
 
-  async attributeHeader(header: string): Promise<void> {
+  attributeHeader(header: string): Promise<void> {
     this._header = header;
     return this.poll();
   }
@@ -41,6 +42,7 @@ export abstract class PollingBase implements PollingService {
 
   public abstract poll(): Promise<void>;
 
+  // eslint-disable-next-line require-await
   protected async delayTimer(): Promise<void> {
     return new Promise(((resolve, reject) => {
       if (!this.stopped && this.frequency > 0) {
@@ -52,6 +54,14 @@ export abstract class PollingBase implements PollingService {
   }
 }
 
+export interface NodejsOptions {
+  timeout?: number;
+}
+
+export interface BrowserOptions {
+  timeout?: number;
+}
+
 class BrowserPollingService extends PollingBase implements PollingService {
   private readonly _options: BrowserOptions;
 
@@ -61,7 +71,7 @@ class BrowserPollingService extends PollingBase implements PollingService {
     this._options = options;
   }
 
-  public async poll(): Promise<void> {
+  public poll(): Promise<void> {
     return new Promise((resolve, reject) => {
       const req = new XMLHttpRequest();
       req.open('GET', this.url);
@@ -86,14 +96,6 @@ class BrowserPollingService extends PollingBase implements PollingService {
       };
     });
   }
-}
-
-export interface NodejsOptions {
-  timeout?: number;
-}
-
-export interface BrowserOptions {
-  timeout?: number;
 }
 
 export type PollingClientProvider = (options: BrowserOptions, url: string,
@@ -126,7 +128,7 @@ export class FeatureHubPollingClient implements EdgeService {
     this._url = config.getHost() + 'features?' + config.getApiKeys().map(e => 'sdkUrl=' + encodeURIComponent(e)).join('&');
   }
 
-  _initService() {
+  private _initService(): void {
     if (this._pollingService === undefined) {
       this._pollingService =
         FeatureHubPollingClient.pollingClientProvider(this._options, this._url,
@@ -138,7 +140,7 @@ export class FeatureHubPollingClient implements EdgeService {
     }
   }
 
-  async contextChange(header: string): Promise<void> {
+  public contextChange(header: string): Promise<void> {
     if (!this._config.clientEvaluated()) {
       if (this._xHeader !== header) {
         this._xHeader = header;
@@ -158,21 +160,21 @@ export class FeatureHubPollingClient implements EdgeService {
     }
   }
 
-  clientEvaluated(): boolean {
+  public clientEvaluated(): boolean {
     return this._config.clientEvaluated();
   }
 
-  requiresReplacementOnHeaderChange(): boolean {
+  public requiresReplacementOnHeaderChange(): boolean {
     return false;
   }
 
-  close(): void {
+  public close(): void {
     if (this._pollingService) {
       this._pollingService.stop();
     }
   }
 
-  poll(): Promise<void> {
+  public poll(): Promise<void> {
     if (this._pollPromiseResolve !== undefined || this._pollingStarted) {
       return new Promise<void>((resolve) => resolve());
     }

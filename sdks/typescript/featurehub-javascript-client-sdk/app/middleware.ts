@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /// Our goal here is to determine if the appropriate environment variable is loaded and if so,
 /// allow overriding of the fh repository. But it has to be addressed in the request context.
 ///
@@ -29,7 +30,7 @@ class BaggageHolder implements FeatureStateHolder {
     return new BaggageHolder(this.existing.withContext(param), this.value);
   }
 
-  // tslint:disable-next-line:no-empty
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
   addListener(listener: FeatureListener): void {
   }
 
@@ -234,6 +235,7 @@ class BaggageRepository implements InternalFeatureRepository {
 
 export function featurehubMiddleware(repo: InternalFeatureRepository) {
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   return (req: any, res: any, next: any) => {
     let reqRepo: InternalFeatureRepository = repo;
 

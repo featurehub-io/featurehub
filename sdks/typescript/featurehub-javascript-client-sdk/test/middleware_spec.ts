@@ -12,9 +12,10 @@ describe('middleware decodes and provides face to repository', () => {
   });
 
   it('baggage repository is decoded correctly and provides face', () => {
-    const _header = 'current-baggage,fhub=FEATURE_STRING%3Dblah*%2526%253Dblah%2CFEATURE_NUMBER%3D17%2CFEATURE_BOOLEAN%3Dtrue%2CUNDEF%3D';
+    const baggageHeader = 'current-baggage,fhub=FEATURE_STRING%3Dblah*%2526%253Dblah%2CFEATURE_NUMBER%3D17%2CFEATURE_BOOLEAN%3Dtrue%2CUNDEF%3D';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const req: any = {
-      header: (x: string) => _header
+      header: () => baggageHeader
     };
 
     const fhRepo = Substitute.for<InternalFeatureRepository>();
@@ -50,9 +51,10 @@ describe('middleware decodes and provides face to repository', () => {
   });
 
   it('features that are locked cannot be overridden', () => {
-    const _header = 'current-baggage,fhub=FEATURE_STRING%3Dblah*%2526%253Dblah%2CFEATURE_NUMBER%3D17%2CFEATURE_BOOLEAN%3Dtrue%2CUNDEF%3D';
+    const baggageHeader = 'current-baggage,fhub=FEATURE_STRING%3Dblah*%2526%253Dblah%2CFEATURE_NUMBER%3D17%2CFEATURE_BOOLEAN%3Dtrue%2CUNDEF%3D';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const req: any = {
-      header: (x: string) => _header
+      header: () => baggageHeader
     };
 
     const fhRepo = Substitute.for<InternalFeatureRepository>();
@@ -66,6 +68,7 @@ describe('middleware decodes and provides face to repository', () => {
     const mw = featurehubMiddleware(fhRepo);
 
     // tslint:disable-next-line:no-empty
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     const next = () => {};
     const resp = {};
 

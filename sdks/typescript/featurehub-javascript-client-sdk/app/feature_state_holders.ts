@@ -5,9 +5,12 @@ import { InternalFeatureRepository } from './internal_feature_repository';
 
 export class FeatureStateBaseHolder implements FeatureStateHolder {
   protected internalFeatureState: FeatureState;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   protected _key: string;
   protected listeners: Array<FeatureListener> = [];
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   protected _repo: InternalFeatureRepository;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   protected _ctx: ClientContext;
   protected parentHolder: FeatureStateBaseHolder;
 
@@ -32,7 +35,7 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
 
   public addListener(listener: FeatureListener): void {
     if (this._ctx !== undefined) {
-      this.listeners.push((fs) => listener(this));
+      this.listeners.push(() => listener(this));
     } else {
       this.listeners.push(listener);
     }
@@ -115,7 +118,7 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
     this.notifyListeners(feature);
   }
 
-  protected async notifyListeners(feature?: FeatureStateHolder) {
+  protected notifyListeners(feature?: FeatureStateHolder): void {
     this.listeners.forEach((l) => {
       try {
         l(feature || this);
@@ -143,6 +146,7 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
     return this.internalFeatureState;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private _getValue(type?: FeatureValueType): any | undefined {
     if (!this.isLocked()) {
       const intercept = this._repo.valueInterceptorMatched(this._key);
@@ -168,6 +172,7 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
     return featureState?.value;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private _castType(type: FeatureValueType, value: any): any | undefined {
     if (value == null) {
       return undefined;

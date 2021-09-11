@@ -31,7 +31,7 @@ describe('We can initialize the config', () => {
 
   it('asking a new config for edge and repository should repeatedly give the same one', () => {
     const edge = Substitute.for<EdgeService>();
-    const edgeProvider = (repo1, config) => edge;
+    const edgeProvider = () => edge;
     EdgeFeatureHubConfig.defaultEdgeServiceSupplier = edgeProvider;
 
     const fc = new EdgeFeatureHubConfig('http://localhost:8080', '123*345');
@@ -46,11 +46,10 @@ describe('We can initialize the config', () => {
   it('should only create a default edge service implementation once no matter how many contexts are made', () => {
     const edge = Substitute.for<EdgeService>();
     let counter = 0;
-    const edgeProvider = (repo1, config) => {
+    EdgeFeatureHubConfig.defaultEdgeServiceSupplier = () => {
       counter++;
       return edge;
     };
-    EdgeFeatureHubConfig.defaultEdgeServiceSupplier = edgeProvider;
 
     const fc = new EdgeFeatureHubConfig('http://localhost:8080', '123*345');
     fc.repository(Substitute.for<InternalFeatureRepository>());
@@ -65,11 +64,10 @@ describe('We can initialize the config', () => {
     const edge = Substitute.for<EdgeService>();
     const repo = Substitute.for<InternalFeatureRepository>();
     const repos = [];
-    const edgeProvider = (repo1, config) => {
+    EdgeFeatureHubConfig.defaultEdgeServiceSupplier = (repo1) => {
       repos.push(repo1);
       return edge;
     };
-    EdgeFeatureHubConfig.defaultEdgeServiceSupplier = edgeProvider;
     const fc = new EdgeFeatureHubConfig('http://localhost:8080', '123*345');
     fc.newContext(repo);
     fc.newContext(repo);
@@ -81,7 +79,7 @@ describe('We can initialize the config', () => {
 
   it('should allow for the creation of a new context which on building should poll the edge repo', async () => {
     const edge = Substitute.for<EdgeService>();
-    EdgeFeatureHubConfig.defaultEdgeServiceSupplier = (repo, config) =>
+    EdgeFeatureHubConfig.defaultEdgeServiceSupplier = () =>
       edge;
 
     const fc = new EdgeFeatureHubConfig('http://localhost:8080', '123345');

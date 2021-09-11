@@ -7,11 +7,11 @@ import {
   SSEResultState
 } from '../app';
 import { expect } from 'chai';
-import { Arg, Substitute } from '@fluffy-spoon/substitute';
+import { Substitute } from '@fluffy-spoon/substitute';
 
 class KeyValueInterceptor implements FeatureStateValueInterceptor {
-  private key: string;
-  private value: string;
+  private readonly key: string;
+  private readonly value: string;
 
   constructor(key: string, value: string) {
     this.key = key;
@@ -22,6 +22,7 @@ class KeyValueInterceptor implements FeatureStateValueInterceptor {
     return key === this.key ? new InterceptorValueMatch(this.value) : undefined;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   repository(repo: FeatureHubRepository): void {
     //
   }
@@ -62,7 +63,7 @@ describe('Interceptor functionality works as expected', () => {
     const fhConfig = new EdgeFeatureHubConfig('http://localhost:8080', '123*123');
     fhConfig.repository(repo);
     const edgeService = Substitute.for<EdgeService>();
-    fhConfig.edgeServiceProvider((repository, config) => edgeService);
+    fhConfig.edgeServiceProvider(() => edgeService);
 
     const features = [
       new FeatureState({ id: '1', key: 'banana', version: 1, type: FeatureValueType.Boolean, l: true, value: false }),

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { EdgeService } from './edge_service';
 import { FeatureHubConfig, fhLog } from './feature_hub_config';
 import { InternalFeatureRepository } from './internal_feature_repository';
@@ -5,12 +6,18 @@ import { SSEResultState } from './models';
 import { Readyness } from './featurehub_repository';
 
 export declare class EventSource {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   static readonly CLOSED: number;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   static readonly CONNECTING: number;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   static readonly OPEN: number;
 
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   readonly CLOSED: number;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   readonly CONNECTING: number;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   readonly OPEN: number;
   readonly url: string;
   readonly readyState: number;
@@ -28,13 +35,17 @@ export declare class EventSource {
   close(): void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export declare namespace EventSource {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   enum ReadyState { CONNECTING = 0, OPEN = 1, CLOSED = 2 }
 
   interface EventSourceInitDict {
     withCredentials?: boolean;
+    // eslint-disable-next-line @typescript-eslint/ban-types
     headers?: object;
     proxy?: string;
+    // eslint-disable-next-line @typescript-eslint/ban-types
     https?: object;
     rejectUnauthorized?: boolean;
   }

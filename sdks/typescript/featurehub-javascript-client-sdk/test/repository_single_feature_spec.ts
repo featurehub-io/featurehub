@@ -1,6 +1,6 @@
 import { ClientContext, ClientFeatureRepository, FeatureState, FeatureValueType, SSEResultState } from '../app';
 import { expect } from 'chai';
-import { Arg, Substitute, SubstituteOf } from '@fluffy-spoon/substitute';
+import { Substitute } from '@fluffy-spoon/substitute';
 
 describe('repository reacts to single feature changes as expected', () => {
   let repo: ClientFeatureRepository;

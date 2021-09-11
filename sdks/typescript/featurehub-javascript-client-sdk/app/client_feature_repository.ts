@@ -94,7 +94,7 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
     }
   }
 
-  public addValueInterceptor(matcher: FeatureStateValueInterceptor) {
+  public addValueInterceptor(matcher: FeatureStateValueInterceptor): void {
     this._matchers.push(matcher);
 
     matcher.repository(this);
@@ -111,7 +111,7 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
     return null;
   }
 
-  public addPostLoadNewFeatureStateAvailableListener(listener: PostLoadNewFeatureStateAvailableListener) {
+  public addPostLoadNewFeatureStateAvailableListener(listener: PostLoadNewFeatureStateAvailableListener): void {
     this._newFeatureStateAvailableListeners.push(listener);
 
     if (this._catchReleaseStates.size > 0) {
@@ -119,7 +119,7 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
     }
   }
 
-  public addReadynessListener(listener: ReadynessListener) {
+  public addReadynessListener(listener: ReadynessListener): void {
     this.readynessListeners.push(listener);
 
     // always let them know what it is in case its already ready
@@ -131,7 +131,7 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
     this.broadcastReadynessState();
   }
 
-  public async broadcastReadynessState() {
+  public broadcastReadynessState(): void {
     this.readynessListeners.forEach((l) => l(this.readynessState));
   }
 
@@ -168,7 +168,7 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
     return vals;
   }
 
-  public async logAnalyticsEvent(action: string, other?: Map<string, string>, ctx?: ClientContext) {
+  public logAnalyticsEvent(action: string, other?: Map<string, string>, ctx?: ClientContext): void {
     const featureStateAtCurrentTime = [];
 
     for (const fs of this.features.values()) {
@@ -212,6 +212,7 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
     this._catchAndReleaseMode = value;
   }
 
+  // eslint-disable-next-line require-await
   public async release(disableCatchAndRelease?: boolean): Promise<void> {
     while (this._catchReleaseStates.size > 0) {
       const states = [...this._catchReleaseStates.values()];
@@ -270,7 +271,7 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
     }
   }
 
-  private async triggerNewStateAvailable() {
+  private triggerNewStateAvailable(): void {
     if (this.hasReceivedInitialState && this._newFeatureStateAvailableListeners.length > 0) {
       if (!this._catchAndReleaseMode || (this._catchReleaseStates.size > 0)) {
         this._newFeatureStateAvailableListeners.forEach((l) => {

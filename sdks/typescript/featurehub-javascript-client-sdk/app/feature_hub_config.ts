@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any,@typescript-eslint/no-empty-function */
 import { EdgeService } from './edge_service';
 import { ClientContext } from './client_context';
 import { InternalFeatureRepository } from './internal_feature_repository';
@@ -5,6 +6,7 @@ import { AnalyticsCollector } from './analytics';
 import { FeatureStateValueInterceptor } from './interceptors';
 import { FeatureHubRepository, Readyness, ReadynessListener } from './featurehub_repository';
 
+// eslint-disable-next-line no-use-before-define
 export type EdgeServiceProvider = (repository: InternalFeatureRepository, config: FeatureHubConfig) => EdgeService;
 export type EdgeServiceSupplier = () => EdgeService;
 
@@ -22,25 +24,27 @@ export class FHLog {
   };
 
   // tslint:disable-next-line:no-empty
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public trace: FHLogMethod = (...args: any[]) => {};
 
-  public quiet() {
+  public quiet(): void {
     // tslint:disable-next-line:no-empty
-    FHLog.fhLog.log = (...args: any[]) => {
+    FHLog.fhLog.log = () => {
     };
     // tslint:disable-next-line:no-empty
-    FHLog.fhLog.error = (...args: any[]) => {
+    FHLog.fhLog.error = () => {
     };
 
     // tslint:disable-next-line:no-empty
-    FHLog.fhLog.trace = (...args: any[]) => {
+    FHLog.fhLog.trace = () => {
     };
   }
 
   /**
    * @deprecated The method is deprecated. Use quiet() instead.
    */
-  public Замолчи() {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  public Замолчи(): void {
     this.quiet();
   }
 }
@@ -77,7 +81,7 @@ export interface FeatureHubConfig {
   init(): FeatureHubConfig;
 
   // close any server connections
-  close();
+  close(): void;
 
   // add a callback for when the system is ready
   addReadynessListener(listener: ReadynessListener): void;

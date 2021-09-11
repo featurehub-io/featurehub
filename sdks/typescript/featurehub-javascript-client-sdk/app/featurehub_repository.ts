@@ -5,8 +5,11 @@ import { AnalyticsCollector } from './analytics';
 import { InternalFeatureRepository } from './internal_feature_repository';
 
 export enum Readyness {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   NotReady = 'NotReady',
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   Ready = 'Ready',
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   Failed = 'Failed'
 }
 
@@ -51,9 +54,9 @@ export interface FeatureHubRepository {
 
   isSet(key: string): boolean;
 
-  addValueInterceptor(interceptor: FeatureStateValueInterceptor);
+  addValueInterceptor(interceptor: FeatureStateValueInterceptor): void;
 
-  addReadynessListener(listener: ReadynessListener);
+  addReadynessListener(listener: ReadynessListener): void;
 
   addAnalyticCollector(collector: AnalyticsCollector): void;
 

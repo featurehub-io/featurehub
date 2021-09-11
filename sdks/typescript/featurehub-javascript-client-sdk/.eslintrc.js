@@ -75,6 +75,7 @@ module.exports = {
     "keyword-spacing": "warn",
     "key-spacing": "warn",
     "no-multiple-empty-lines": "warn",
+    "no-explicit-any": "off",
     "no-use-before-define": "error",
     "require-await": "warn",
     "@typescript-eslint/member-delimiter-style": "warn",

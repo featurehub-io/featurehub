@@ -23,6 +23,7 @@ export interface ClientContext {
   getAttr(key: string, defaultValue: string): string;
   getNumber(name: string): number | undefined;
   getString(name: string): string | undefined;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getJson(name: string): any | undefined;
   getRawJson(name: string): string | undefined;
   getFlag(name: string): boolean | undefined;
@@ -41,6 +42,5 @@ export interface ClientContext {
 export interface ConfigChangedListener {
   (config: ClientContext);
 }
-
 
 

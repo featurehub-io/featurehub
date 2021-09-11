@@ -35,6 +35,7 @@ class LocalFeatureRepository implements InternalFeatureRepository {
     return Readyness.Ready;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-explicit-any,@typescript-eslint/no-empty-function
   public notify(state: SSEResultState, data: any): void {}
 
   public addValueInterceptor(matcher: FeatureStateValueInterceptor) {
@@ -54,6 +55,7 @@ class LocalFeatureRepository implements InternalFeatureRepository {
     return null;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
   public addPostLoadNewFeatureStateAvailableListener(listener: PostLoadNewFeatureStateAvailableListener) {
   }
 
@@ -61,9 +63,11 @@ class LocalFeatureRepository implements InternalFeatureRepository {
     listener(Readyness.Ready);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   notReady(): void {
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   public async broadcastReadynessState() {
   }
 
@@ -76,6 +80,7 @@ class LocalFeatureRepository implements InternalFeatureRepository {
 
     this.features.forEach((value, key) => {
       if (value.getKey()) { // only include value features
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let val: any;
         switch (value.getType()) {// we need to pick up any overrides
           case FeatureValueType.Boolean:
@@ -100,7 +105,7 @@ class LocalFeatureRepository implements InternalFeatureRepository {
     return vals;
   }
 
-  public async logAnalyticsEvent(action: string, other?: Map<string, string>, ctx?: ClientContext) {
+  public logAnalyticsEvent(action: string, other?: Map<string, string>, ctx?: ClientContext) {
     const featureStateAtCurrentTime = [];
 
     for (const fs of this.features.values()) {
@@ -137,8 +142,10 @@ class LocalFeatureRepository implements InternalFeatureRepository {
     return false;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   set catchAndReleaseMode(value: boolean) {}
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
   public async release(disableCatchAndRelease?: boolean): Promise<void> {}
 
   public getFlag(key: string): boolean | undefined {
@@ -167,6 +174,7 @@ export class LocalClientContext extends BaseClientContext {
     super(new LocalFeatureRepository(environment));
   }
 
+  // eslint-disable-next-line require-await
   async build(): Promise<ClientContext> {
     return this;
   }
@@ -175,5 +183,6 @@ export class LocalClientContext extends BaseClientContext {
     return this._repository.feature(name).withContext(this);
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types,@typescript-eslint/no-empty-function
   close() {}
 }
