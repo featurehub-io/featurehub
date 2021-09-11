@@ -1,10 +1,10 @@
 package io.featurehub.edge.stats
 
+import com.lmax.disruptor.EventHandler
 import io.featurehub.edge.KeyParts
 import io.featurehub.sse.stats.model.EdgeHitResultType
 import io.featurehub.sse.stats.model.EdgeHitSourceType
 import spock.lang.Specification
-import com.lmax.disruptor.EventHandler
 
 class BasicStatsSpec extends Specification {
   def "a disruptor must have used a bucket size of a factor of 2"() {

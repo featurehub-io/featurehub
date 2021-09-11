@@ -5,8 +5,8 @@ import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.PersonId;
 import io.featurehub.mr.model.Portfolio;
 import io.featurehub.mr.model.ServiceAccount;
-
 import jakarta.ws.rs.core.SecurityContext;
+
 import java.util.UUID;
 import java.util.function.Consumer;
 

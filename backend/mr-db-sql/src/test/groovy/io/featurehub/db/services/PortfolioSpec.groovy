@@ -1,22 +1,18 @@
 package io.featurehub.db.services
 
-import io.ebean.DB
-import io.ebean.Database
+
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PortfolioApi
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
 import io.featurehub.db.model.query.QDbPortfolio
-import io.featurehub.db.publish.CacheSource
 import io.featurehub.mr.model.Group
-import io.featurehub.mr.model.Organization
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.PersonId
 import io.featurehub.mr.model.Portfolio
 import io.featurehub.mr.model.SortOrder
 import spock.lang.Shared
-import spock.lang.Specification
 
 class PortfolioSpec extends BaseSpec {
   @Shared PortfolioSqlApi portfolioApi

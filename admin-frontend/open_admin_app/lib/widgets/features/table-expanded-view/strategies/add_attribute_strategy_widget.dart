@@ -19,7 +19,8 @@ class EditAttributeStrategyWidget extends StatefulWidget {
   final bool attributeIsFirst;
   final IndividualStrategyBloc bloc;
 
-  const EditAttributeStrategyWidget({
+  // ignore: prefer_const_constructors, prefer_const_constructors_in_immutables
+  EditAttributeStrategyWidget({
     Key? key,
     required this.attribute,
     required this.attributeIsFirst,

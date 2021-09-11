@@ -6,9 +6,8 @@ import {
 } from './models';
 
 
-import { eq, gt, gte, lt, lte } from 'semver';
-// this library was node specific so required de-noding
-import { Addr, CIDR } from './ip6addr';
+import compareSemver from 'semver-compare';
+import { Netmask } from 'netmask';
 // this library is not node specific
 import { v3 as murmur3 } from 'murmurhash';
 import { ClientContext } from './client_context';
@@ -332,22 +331,22 @@ class SemanticVersionMatcher implements StrategyMatcher {
     switch (attr.conditional) {
       case RolloutStrategyAttributeConditional.Includes:
       case RolloutStrategyAttributeConditional.Equals:
-        return vals.findIndex((v) => eq(suppliedValue, v)) >= 0;
+        return vals.findIndex((v) => compareSemver(suppliedValue, v) === 0) >= 0;
       case RolloutStrategyAttributeConditional.EndsWith:
         break;
       case RolloutStrategyAttributeConditional.StartsWith:
         break;
       case RolloutStrategyAttributeConditional.Greater:
-        return vals.findIndex((v) => gt(suppliedValue, v)) >= 0;
+        return vals.findIndex((v) => compareSemver(suppliedValue, v) > 0) >= 0;
       case RolloutStrategyAttributeConditional.GreaterEquals:
-        return vals.findIndex((v) => gte(suppliedValue, v)) >= 0;
+        return vals.findIndex((v) => compareSemver(suppliedValue, v) >= 0) >= 0;
       case RolloutStrategyAttributeConditional.Less:
-        return vals.findIndex((v) => lt(suppliedValue, v)) >= 0;
+        return vals.findIndex((v) => compareSemver(suppliedValue, v) < 0) >= 0;
       case RolloutStrategyAttributeConditional.LessEquals:
-        return vals.findIndex((v) => lte(suppliedValue, v)) >= 0;
+        return vals.findIndex((v) => compareSemver(suppliedValue, v) <= 0) >= 0;
       case RolloutStrategyAttributeConditional.NotEquals:
       case RolloutStrategyAttributeConditional.Excludes:
-        return vals.findIndex((v) => !eq(suppliedValue, v)) >= 0;
+        return vals.findIndex((v) => compareSemver(suppliedValue, v) !== 0) >= 0;
       case RolloutStrategyAttributeConditional.Regex:
         break;
     }
@@ -357,53 +356,19 @@ class SemanticVersionMatcher implements StrategyMatcher {
 }
 
 class IPNetworkMatcher implements StrategyMatcher {
-  match(suppliedValue: string, attr: RolloutStrategyAttribute): boolean {
-    const ip = new IPNetworkProxy(suppliedValue);
-    const vals = attr.values.filter((v) => v != null).map((v) => new IPNetworkProxy(v.toString()));
+  match(ip: string, attr: RolloutStrategyAttribute): boolean {
+    const vals = attr.values.filter((v) => v != null);
 
     // tslint:disable-next-line:switch-default
     switch (attr.conditional) {
       case RolloutStrategyAttributeConditional.Equals:
       case RolloutStrategyAttributeConditional.Includes:
-        return vals.findIndex((v) => v.contains(ip)) >= 0;
+        return vals.findIndex((v) => new Netmask(v).contains(ip)) >= 0;
       case RolloutStrategyAttributeConditional.NotEquals:
       case RolloutStrategyAttributeConditional.Excludes:
-        return vals.findIndex((v) => v.contains(ip)) === -1;
+        return vals.findIndex((v) => new Netmask(v).contains(ip)) === -1;
     }
 
     return false;
-  }
-}
-
-class IPNetworkProxy {
-  private readonly _address: Addr;
-  private readonly _network: CIDR;
-  private readonly _isAddress: boolean;
-  private readonly _original: string;
-
-  constructor(addr: string) {
-    this._original = addr;
-
-    if (addr.includes('/')) {
-      this._isAddress = false;
-      this._network = new CIDR(addr);
-    } else {
-      this._isAddress = true;
-      this._address = Addr.toAddr(addr);
-    }
-  }
-
-  public contains(proxy: IPNetworkProxy): boolean {
-    if (proxy._isAddress && this._isAddress) {
-      return proxy._address.compare(this._address) === 0;
-    }
-
-    if (!proxy._isAddress && !this._isAddress) {
-      return this._network.compare(proxy._network) === 0;
-    }
-
-    if (proxy._isAddress && !this._isAddress) {
-      return this._network.contains(proxy._original);
-    }
   }
 }

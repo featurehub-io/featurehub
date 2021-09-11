@@ -43,8 +43,8 @@
   </licenses>
 
   <properties>
-    <grizzly.version>2.4.4</grizzly.version>
-    <grizzly.npn.version>1.9</grizzly.npn.version>
+    <grizzly.version>3.0.0</grizzly.version>
+    <grizzly.npn.version>2.0.0</grizzly.npn.version>
   </properties>
 
   <dependencies>
@@ -102,12 +102,6 @@
       <groupId>org.glassfish.grizzly</groupId>
       <artifactId>grizzly-npn-api</artifactId>
       <version>${grizzly.npn.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>cd.connect.jersey</groupId>
-      <artifactId>connect-jersey-grizzly</artifactId>
-      <version>[2, 3)</version>
     </dependency>
 
     <!-- ensures JUL goes to SLF4J -->
@@ -174,7 +168,6 @@
       <artifactId>composite-prometheus</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
-
   </dependencies>
 
   <build>

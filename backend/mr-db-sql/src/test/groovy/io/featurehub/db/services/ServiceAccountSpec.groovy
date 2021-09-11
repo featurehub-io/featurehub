@@ -1,7 +1,6 @@
 package io.featurehub.db.services
 
-import io.ebean.DB
-import io.ebean.Database
+
 import io.featurehub.db.FilterOptType
 import io.featurehub.db.api.EnvironmentApi
 import io.featurehub.db.api.FillOpts
@@ -10,23 +9,18 @@ import io.featurehub.db.api.ServiceAccountApi
 import io.featurehub.db.model.DbApplication
 import io.featurehub.db.model.DbEnvironment
 import io.featurehub.db.model.DbOrganization
-import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
+import io.featurehub.db.publish.CacheSource
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.EnvironmentGroupRole
-import io.featurehub.mr.model.RoleType
-import io.featurehub.db.model.query.QDbOrganization
-import io.featurehub.db.publish.CacheSource
 import io.featurehub.mr.model.Group
-import io.featurehub.mr.model.Organization
-import io.featurehub.mr.model.Person
+import io.featurehub.mr.model.RoleType
 import io.featurehub.mr.model.ServiceAccount
 import io.featurehub.mr.model.ServiceAccountPermission
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import spock.lang.Shared
-import spock.lang.Specification
 
 class ServiceAccountSpec extends BaseSpec {
   private static final Logger log = LoggerFactory.getLogger(ServiceAccountSpec.class)

@@ -4,29 +4,82 @@ info:
   description: This is used by the Edge servers to access features and environments quickly.
   version: "1.1.1"
 paths:
-  /environment/{eId}/{serviceAccountId}:
+  /environment/{eId}/{serviceAccountKey}:
     parameters:
       - name: eId
         description: "id of environment"
         in: path
         schema:
           type: string
-      - name: serviceAccountId
-        description: "id of service account"
+          format: uuid
+      - name: serviceAccountKey
+        description: "serviceAccountKey of service account"
         in: path
         schema:
           type: string
-          format: uuid
     get:
+      operationId: getApiKeyDetails
+      tags:
+        - DachaApiKeyService
       responses:
         200:
           description: "All feature values for this environment"
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/FeatureValue"
+                $ref: "#/components/schemas/DachaKeyDetailsResponse"
+        404:
+          description: "No such environment/account combo has read access"
+  /environment/{eId}/{serviceAccountKey}/permissions/{featureKey}:
+    parameters:
+      - name: eId
+        description: "id of environment"
+        in: path
+        schema:
+          type: string
+          format: uuid
+      - name: serviceAccountKey
+        description: "id of service account"
+        in: path
+        schema:
+          type: string
+      - name: featureKey
+        in: path
+        description: "The key that we want"
+        schema:
+          type: string
+    get:
+      operationId: getApiKeyPermissions
+      tags:
+        - DachaApiKeyService
+      responses:
+        200:
+          description: "All permissions and feature values for this environment"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DachaPermissionResponse"
+        404:
+          description: "No such environment/account combo has read access"
+  /environment/{eId}/structure:
+    parameters:
+      - name: eId
+        description: "id of environment"
+        in: path
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: getEnvironmentStructure
+      tags:
+        - DachaEnvironmentService
+      responses:
+        200:
+          description: "The parent structure for this environment"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DachaStructureResponse"
         404:
           description: "No such environment/account combo has read access"
 components:
@@ -78,21 +131,55 @@ components:
         - UPDATE
         - DELETE
         - EMPTY
+    DachaStructureResponse:
+      type: object
+      required:
+        - organizationId
+        - portfolioId
+        - applicationId
+      properties:
+        organizationId:
+          x-basename: oId
+          type: string
+          format: uuid
+        portfolioId:
+          x-basename: pId
+          type: string
+          format: uuid
+        applicationId:
+          x-basename: aId
+          type: string
+          format: uuid
     EnvironmentCacheItem:
       properties:
         environment:
           $ref: "#/components/schemas/Environment"
+        organizationId:
+          x-basename: oId
+          type: string
+          format: uuid
+        portfolioId:
+          x-basename: pId
+          type: string
+          format: uuid
+        applicationId:
+          x-basename: aId
+          type: string
+          format: uuid
         featureValues:
+          x-basename: fv
           type: array
           items:
             $ref: "#/components/schemas/FeatureValue"
         serviceAccounts:
+          x-basename: sa
           type: array
           items:
             $ref: "#/components/schemas/ServiceAccount"
         action:
           $ref: "#/components/schemas/PublishAction"
         count:
+          x-basename: c
           type: integer
     ServiceAccountCacheItem:
       properties:
@@ -102,56 +189,44 @@ components:
           $ref: "#/components/schemas/PublishAction"
         count:
           type: integer
-    # we will version based in different listening names
-    EdgeInitRequest:
+    DachaPermissionResponse:
+      type: object
       required:
-        - environmentId
-        - serviceAccountId
+        - roles
+        - feature
       properties:
-        environmentId:
+        organizationId:
+          x-basename: oId
           type: string
           format: uuid
-        apiKey:
+        portfolioId:
+          x-basename: pId
           type: string
-        featureKey:
-          description: "The key of the feature that a permission response will be looking for"
+          format: uuid
+        applicationId:
+          x-basename: aId
           type: string
-        command:
-          $ref: "#/components/schemas/EdgeInitRequestCommand"
-    EdgeInitRequestCommand:
-      type: string
-      enum:
-        - listen
-        - permission
-    EdgeInitPermissionResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
+          format: uuid
+        serviceKeyId:
+          description: "The actual service key id rather than the key"
+          x-basename: sId
+          type: string
+          format: uuid
         roles:
           type: array
           items:
             $ref: "#/components/schemas/RoleType"
         feature:
-          $ref: "#/components/schemas/FeatureValueCacheItem"
-    EdgeInitResponse:
+          $ref: "#/components/schemas/DachaFeatureValueItem"
+    DachaFeatureValueItem:
       required:
-        - environmentId
-        - serviceAccountId
-        - success
-        - features
+        - feature
+        - value
       properties:
-        environmentId:
-          type: string
-          format: uuid
-        apiKey:
-          type: string
-        success:
-          type: boolean
-        features:
-          type: array
-          items:
-            $ref: "#/components/schemas/FeatureValueCacheItem"
+        feature:
+          $ref: "#/components/schemas/Feature"
+        value:
+          $ref: "#/components/schemas/FeatureValue"
     FeatureValueCacheItem:
       required:
         - feature
@@ -174,3 +249,26 @@ components:
           description: "A copy of the strategies that apply to this feature at this time."
           items:
             $ref: "#/components/schemas/RolloutStrategy"
+    DachaKeyDetailsResponse:
+      properties:
+        organizationId:
+          x-basename: oId
+          type: string
+          format: uuid
+        portfolioId:
+          x-basename: pId
+          type: string
+          format: uuid
+        applicationId:
+          x-basename: aId
+          type: string
+          format: uuid
+        serviceKeyId:
+          description: "The actual service key id rather than the key"
+          x-basename: sId
+          type: string
+          format: uuid
+        features:
+          type: array
+          items:
+            $ref: "#/components/schemas/FeatureValueCacheItem"

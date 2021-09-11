@@ -13,10 +13,10 @@ import io.featurehub.db.publish.CacheSource;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.RolloutStrategy;
 import io.featurehub.mr.model.RolloutStrategyInfo;
+import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.inject.Inject;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;

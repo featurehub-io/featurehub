@@ -15,11 +15,11 @@ import io.featurehub.db.model.query.QDbPortfolio;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.Portfolio;
 import io.featurehub.mr.model.SortOrder;
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;

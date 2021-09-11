@@ -6,14 +6,14 @@ import cd.connect.jersey.common.LoggingConfiguration
 import io.featurehub.jersey.config.CommonConfiguration
 import io.featurehub.web.security.oauth.providers.*
 import io.featurehub.web.security.oauth.providers.GithubProvider.Companion.PROVIDER_NAME
-import org.glassfish.jersey.internal.inject.AbstractBinder
-import org.slf4j.LoggerFactory
-import java.util.function.Consumer
 import jakarta.inject.Singleton
 import jakarta.ws.rs.client.Client
 import jakarta.ws.rs.client.ClientBuilder
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
+import org.glassfish.jersey.internal.inject.AbstractBinder
+import org.slf4j.LoggerFactory
+import java.util.function.Consumer
 
 class OAuth2Feature : Feature {
     // a comma separated list of valid providers

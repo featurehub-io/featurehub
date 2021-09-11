@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
+import java.util.Locale;
 import java.util.Properties;
 
 public class EbeanHolder implements EbeanSource {
@@ -28,6 +29,15 @@ public class EbeanHolder implements EbeanSource {
         p.put(k, v);
       }
     });
+
+    // support environments like ECS that can only support environment variables
+    System.getenv().forEach((k, v) -> {
+      if (k.startsWith("DB.")) {
+        p.put(k.toLowerCase(), v);
+      }
+    });
+
+    dbUrl = dbUrl.replace("$home", System.getProperty("user.home"));
 
     DataSourceConfig dsConfig = new DataSourceConfig();
 

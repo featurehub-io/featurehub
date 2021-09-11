@@ -11,10 +11,13 @@ import io.featurehub.db.model.DbNamedCache;
 import io.featurehub.db.model.DbRolloutStrategy;
 import io.featurehub.db.model.DbServiceAccount;
 import io.featurehub.db.model.DbStrategyForFeatureValue;
+import io.featurehub.db.model.query.QDbApplication;
 import io.featurehub.db.model.query.QDbApplicationFeature;
 import io.featurehub.db.model.query.QDbEnvironment;
 import io.featurehub.db.model.query.QDbFeatureValue;
 import io.featurehub.db.model.query.QDbNamedCache;
+import io.featurehub.db.model.query.QDbOrganization;
+import io.featurehub.db.model.query.QDbPortfolio;
 import io.featurehub.db.model.query.QDbServiceAccount;
 import io.featurehub.db.model.query.QDbStrategyForFeatureValue;
 import io.featurehub.db.services.Conversions;
@@ -28,10 +31,10 @@ import io.featurehub.mr.model.PublishAction;
 import io.featurehub.mr.model.RolloutStrategy;
 import io.featurehub.mr.model.ServiceAccount;
 import io.featurehub.mr.model.ServiceAccountCacheItem;
+import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.inject.Inject;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -112,8 +115,6 @@ public class DbCacheSource implements CacheSource {
     return new QDbServiceAccount().whenArchived.isNull().portfolio.organization.namedCache.cacheName.eq(cacheName);
   }
 
-  static final Opts environmentOpts = Opts.opts(FillOpts.Features);
-
   private void publishCacheEnvironments(String cacheName, CacheBroadcast cacheBroadcast) {
     QDbEnvironment envFinder;
 
@@ -141,35 +142,58 @@ public class DbCacheSource implements CacheSource {
     final Set<DbApplicationFeature> features =
       new QDbApplicationFeature().parentApplication.eq(env.getParentApplication()).whenArchived.isNull().findSet();
     Map<UUID, DbFeatureValue> envFeatures =
-      env.getEnvironmentFeatures()
-        .stream()
-        .filter(f -> f.getFeature().getWhenArchived() == null)
+      new QDbFeatureValue()
+        .select(QDbFeatureValue.Alias.id, QDbFeatureValue.Alias.locked, QDbFeatureValue.Alias.feature.id,
+          QDbFeatureValue.Alias.rolloutStrategies, QDbFeatureValue.Alias.version,
+          QDbFeatureValue.Alias.defaultValue)
+        .feature.whenArchived.isNull()
+        .environment.eq(env).findStream()
         .collect(Collectors.toMap(f -> f.getFeature().getId(), Function.identity()));
     final Opts empty = Opts.empty();
     final EnvironmentCacheItem eci = new EnvironmentCacheItem()
       .action(publishAction)
-      .environment(convertUtils.toEnvironment(env, environmentOpts, features))
+      .environment(toEnvironment(env, features))
+      .organizationId(env.getParentApplication().getPortfolio().getOrganization().getId())
+      .portfolioId(env.getParentApplication().getPortfolio().getId())
+      .applicationId(env.getParentApplication().getId())
       .featureValues(features.stream().map(f -> {
         final DbFeatureValue featureV = envFeatures.get(f.getId());
         final FeatureValue featureValue = convertUtils.toFeatureValue(f, featureV, empty);
         if (featureV != null) {
           featureValue.setRolloutStrategies(collectCombinedRolloutStrategies(featureV, f.getValueType()));
         }
+        featureValue.setEnvironmentId(null);
         return featureValue;
       }).collect(Collectors.toList()))
       .serviceAccounts(env.getServiceAccountEnvironments().stream().map(s ->
         new ServiceAccount()
           .id(s.getServiceAccount().getId())
-          .apiKeyServerSide(s.getServiceAccount().getApiKeyServerEval())
-          .apiKeyClientSide(s.getServiceAccount().getApiKeyClientEval())
           ).collect(Collectors.toList()))
       .count(count);
 
     return eci;
   }
 
+  private Environment toEnvironment(DbEnvironment env, Set<DbApplicationFeature> features) {
+    // match these fields with the finder environmentsByCacheName so you don't get fields you don't need
+    return new Environment()
+      .version(env.getVersion())
+      .id(env.getId())
+      .name(env.getName())
+      .features(features.stream()
+        .map(ef -> convertUtils.toApplicationFeature(ef, Opts.empty()))
+        .collect(Collectors.toList()));
+  }
+
   private QDbEnvironment environmentsByCacheName(String cacheName) {
-    return new QDbEnvironment().whenArchived.isNull().environmentFeatures.feature.fetch().parentApplication.portfolio.organization.namedCache.cacheName.eq(cacheName);
+    return new QDbEnvironment()
+      .select(QDbEnvironment.Alias.id, QDbEnvironment.Alias.name, QDbEnvironment.Alias.version)
+      .whenArchived.isNull()
+      .parentApplication.portfolio.organization.namedCache.cacheName.eq(cacheName)
+      .environmentFeatures.feature.fetch()
+      .parentApplication.fetch(QDbApplication.Alias.id)
+      .parentApplication.portfolio.fetch(QDbPortfolio.Alias.id)
+      .parentApplication.portfolio.organization.fetch(QDbOrganization.Alias.id);
   }
 
   @Override

@@ -15,13 +15,10 @@ import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.SortOrder
 import io.featurehub.mr.resources.ApplicationResource
-import io.featurehub.mr.resources.PortfolioResource
 import io.featurehub.mr.utils.ApplicationUtils
-import io.featurehub.mr.utils.PortfolioUtils
-import spock.lang.Specification
-
 import jakarta.ws.rs.ForbiddenException
 import jakarta.ws.rs.core.SecurityContext
+import spock.lang.Specification
 
 class ApplicationResourceSpec extends Specification {
   AuthManagerService authManager;

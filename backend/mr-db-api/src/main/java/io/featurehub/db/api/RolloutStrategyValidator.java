@@ -3,11 +3,8 @@ package io.featurehub.db.api;
 import io.featurehub.mr.model.RolloutStrategy;
 import io.featurehub.mr.model.RolloutStrategyCollectionViolationType;
 import io.featurehub.mr.model.RolloutStrategyInstance;
-import io.featurehub.mr.model.RolloutStrategyValidationResponse;
 import io.featurehub.mr.model.RolloutStrategyViolation;
-import io.featurehub.mr.model.RolloutStrategyViolationType;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;

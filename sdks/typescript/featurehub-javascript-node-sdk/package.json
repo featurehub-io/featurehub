@@ -1,6 +1,6 @@
 {
   "name": "featurehub-javascript-node-sdk",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "description": "featurehub sdk intended for use by nodejs.",
   "author": "info@featurehub.io",
   "main": "dist/index.js",
@@ -35,8 +35,7 @@
     "build": "npm run clean && npm run tsc tsconfig.json && npm run tsc tsconfig-es.json",
     "clean": "rm -rf dist lib && rm -rf app/*.js app/*.d.ts app/*.map",
     "build:watch": "npm run build -- -- -w",
-    "mocha": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' node ./node_modules/mocha/bin/mocha --config mocharc.yml",
-    "test": "npm run clean && npm run tsc tsconfig.json && npm run mocha",
+    "test": "npm run clean && npm run tsc tsconfig.json",
     "coverage": "nyc npm run test",
     "test:watch": "npm run mocha --opts mocha.opts --watch",
     "tsc": "node ./node_modules/typescript/bin/tsc -p",
@@ -61,7 +60,7 @@
   },
   "dependencies": {
     "eventsource": "^1.1.0",
-    "featurehub-javascript-client-sdk": "^1.0.6"
+    "featurehub-javascript-client-sdk": "^1.0.8"
   },
   "engines": {
     "node": ">=12.12.0"

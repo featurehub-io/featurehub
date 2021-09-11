@@ -10,12 +10,11 @@ import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.PersonId
 import io.featurehub.mr.model.RegistrationUrl
 import io.featurehub.mr.resources.PersonResource
-import spock.lang.Specification
-
 import jakarta.ws.rs.BadRequestException
 import jakarta.ws.rs.ForbiddenException
 import jakarta.ws.rs.NotFoundException
 import jakarta.ws.rs.core.SecurityContext
+import spock.lang.Specification
 
 // Irina was supposed to write these
 

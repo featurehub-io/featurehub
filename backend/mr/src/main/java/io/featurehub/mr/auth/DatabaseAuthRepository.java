@@ -3,10 +3,10 @@ package io.featurehub.mr.auth;
 import io.featurehub.db.api.AuthenticationApi;
 import io.featurehub.db.api.DBLoginSession;
 import io.featurehub.mr.model.Person;
-import org.apache.commons.lang3.RandomStringUtils;
-
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.SecurityContext;
+import org.apache.commons.lang3.RandomStringUtils;
+
 import java.time.LocalDateTime;
 
 public class DatabaseAuthRepository implements AuthenticationRepository {

@@ -20,16 +20,16 @@ import io.featurehub.mr.model.SetupMissingResponse;
 import io.featurehub.mr.model.SetupResponse;
 import io.featurehub.mr.model.SetupSiteAdmin;
 import io.featurehub.mr.model.TokenizedPerson;
-import io.featurehub.web.security.oauth.AuthProvider;
 import io.featurehub.mr.utils.PortfolioUtils;
-import org.glassfish.hk2.api.IterableProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import io.featurehub.web.security.oauth.AuthProvider;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
+import org.glassfish.hk2.api.IterableProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 

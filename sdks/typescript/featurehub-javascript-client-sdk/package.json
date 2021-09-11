@@ -1,8 +1,9 @@
 {
   "name": "featurehub-javascript-client-sdk",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "description": "Core package of API that exposes FeatureHub feature flags, values and configuration to client applications written in Typescript or Javascript.",
   "author": "info@featurehub.io",
+  "sideEffects": false,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "module": "lib/index.js",
@@ -61,9 +62,9 @@
   },
   "dependencies": {
     "@types/murmurhash": "^2.0.0",
-    "@types/semver": "^7.3.5",
     "murmurhash": "^2.0.0",
-    "semver": "^7.3.5"
+    "netmask": "^2.0.2",
+    "semver-compare": "^1.0.0"
   },
   "engines": {
     "node": ">=12.12.0"

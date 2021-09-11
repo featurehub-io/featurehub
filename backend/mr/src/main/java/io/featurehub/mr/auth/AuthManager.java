@@ -3,7 +3,6 @@ package io.featurehub.mr.auth;
 import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.GroupApi;
 import io.featurehub.db.api.Opts;
-import io.featurehub.db.api.OrganizationApi;
 import io.featurehub.db.api.PortfolioApi;
 import io.featurehub.mr.model.Group;
 import io.featurehub.mr.model.Organization;
@@ -11,10 +10,10 @@ import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.PersonId;
 import io.featurehub.mr.model.Portfolio;
 import io.featurehub.mr.model.ServiceAccount;
-
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.core.SecurityContext;
+
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;

@@ -8,23 +8,19 @@ import io.featurehub.db.api.OrganizationApi;
 import io.featurehub.db.api.PortfolioApi;
 import io.featurehub.mr.api.PortfolioServiceDelegate;
 import io.featurehub.mr.auth.AuthManagerService;
-import io.featurehub.mr.model.ApplicationGroupRole;
-import io.featurehub.mr.model.ApplicationRoleType;
 import io.featurehub.mr.model.Group;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.Portfolio;
 import io.featurehub.mr.utils.PortfolioUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
-import java.util.Arrays;
-import java.util.Collections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 import java.util.UUID;
 

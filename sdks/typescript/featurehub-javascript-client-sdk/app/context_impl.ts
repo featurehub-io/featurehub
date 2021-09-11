@@ -1,6 +1,10 @@
 import { InternalFeatureRepository } from './internal_feature_repository';
-import { EdgeServiceSupplier, FeatureHubConfig, fhLog } from './feature_hub_config';
-import { StrategyAttributeCountryName, StrategyAttributeDeviceName, StrategyAttributePlatformName } from './models';
+import { EdgeServiceSupplier, fhLog } from './feature_hub_config';
+import {
+  StrategyAttributeCountryName,
+  StrategyAttributeDeviceName,
+  StrategyAttributePlatformName,
+} from "./models";
 import { FeatureStateHolder } from './feature_state';
 import { EdgeService } from './edge_service';
 import { FeatureHubRepository } from './featurehub_repository';
@@ -9,11 +13,9 @@ import { ClientContext } from './client_context';
 export abstract class BaseClientContext implements ClientContext {
   protected readonly _repository: InternalFeatureRepository;
   protected _attributes = new Map<string, Array<string>>();
-  protected readonly _config: FeatureHubConfig;
 
-  protected constructor(repository: InternalFeatureRepository, config: FeatureHubConfig) {
+  protected constructor(repository: InternalFeatureRepository) {
     this._repository = repository;
-    this._config = config;
   }
 
   userKey(value: string): ClientContext {
@@ -112,7 +114,6 @@ export abstract class BaseClientContext implements ClientContext {
   // feature(name: string): FeatureStateHolder {
   //   return this._repository.feature(name);
   // }
-  abstract edgeService(): EdgeService;
   abstract close();
 
   repository(): FeatureHubRepository {
@@ -140,9 +141,9 @@ export class ServerEvalFeatureContext extends BaseClientContext {
   private _currentEdge: EdgeService;
   private _xHeader: string;
 
-  constructor(repository: InternalFeatureRepository, config: FeatureHubConfig,
+  constructor(repository: InternalFeatureRepository,
               edgeServiceSupplier: EdgeServiceSupplier) {
-    super(repository, config);
+    super(repository);
 
     this._edgeServiceSupplier = edgeServiceSupplier;
   }
@@ -189,8 +190,8 @@ export class ServerEvalFeatureContext extends BaseClientContext {
 export class ClientEvalFeatureContext extends BaseClientContext {
   private readonly _edgeService: EdgeService;
 
-  constructor(repository: InternalFeatureRepository, config: FeatureHubConfig, edgeService: EdgeService) {
-    super(repository, config);
+  constructor(repository: InternalFeatureRepository, edgeService: EdgeService) {
+    super(repository);
 
     this._edgeService = edgeService;
   }

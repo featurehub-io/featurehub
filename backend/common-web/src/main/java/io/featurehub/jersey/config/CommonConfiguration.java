@@ -1,13 +1,14 @@
 package io.featurehub.jersey.config;
 
+import cd.connect.openapi.support.OpenApiEnumProvider;
+import io.featurehub.jersey.OffsetDateTimeQueryProvider;
+import jakarta.ws.rs.core.Configurable;
+import jakarta.ws.rs.core.Feature;
+import jakarta.ws.rs.core.FeatureContext;
 import org.glassfish.jersey.CommonProperties;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.message.GZipEncoder;
-
-import jakarta.ws.rs.core.Configurable;
-import jakarta.ws.rs.core.Feature;
-import jakarta.ws.rs.core.FeatureContext;
 
 public class CommonConfiguration implements Feature {
 
@@ -21,6 +22,8 @@ public class CommonConfiguration implements Feature {
     config.register(GZipEncoder.class);
     config.register(JacksonContextProvider.class);
     config.register(LocalExceptionMapper.class);
+    config.register(OffsetDateTimeQueryProvider.class);
+    config.register(OpenApiEnumProvider.class);
   }
 
   @Override

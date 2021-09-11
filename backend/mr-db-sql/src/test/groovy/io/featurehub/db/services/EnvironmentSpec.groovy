@@ -1,7 +1,6 @@
 package io.featurehub.db.services
 
-import io.ebean.DB
-import io.ebean.Database
+
 import io.featurehub.db.api.EnvironmentApi
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
@@ -9,19 +8,15 @@ import io.featurehub.db.model.DbApplication
 import io.featurehub.db.model.DbOrganization
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
-import io.featurehub.db.model.query.QDbOrganization
 import io.featurehub.db.publish.CacheSource
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.ApplicationRoleType
 import io.featurehub.mr.model.Environment
 import io.featurehub.mr.model.EnvironmentGroupRole
 import io.featurehub.mr.model.Group
-import io.featurehub.mr.model.Organization
-import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.RoleType
 import io.featurehub.mr.model.SortOrder
 import spock.lang.Shared
-import spock.lang.Specification
 
 class EnvironmentSpec extends BaseSpec {
   @Shared PersonSqlApi personSqlApi

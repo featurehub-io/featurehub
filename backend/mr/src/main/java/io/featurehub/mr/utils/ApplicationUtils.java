@@ -5,13 +5,13 @@ import io.featurehub.db.api.Opts;
 import io.featurehub.mr.auth.AuthManagerService;
 import io.featurehub.mr.model.Application;
 import io.featurehub.mr.model.Person;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.SecurityContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.UUID;
 
 public class ApplicationUtils {

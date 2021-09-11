@@ -7,11 +7,10 @@ import io.featurehub.edge.KeyParts
 import io.featurehub.sse.stats.model.EdgeHitResultType
 import io.featurehub.sse.stats.model.EdgeHitSourceType
 import io.prometheus.client.Counter
+import jakarta.inject.Inject
 import java.util.*
 import java.util.concurrent.Executor
-import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import jakarta.inject.Inject
 
 /**
  * the StatEventHandler is responsible for collecting, against an API key, a list of events, ideally at most one of
@@ -46,13 +45,13 @@ open class StatEventHandler @Inject constructor(private val orchestrator: StatsO
   }
 
   companion object Prometheus {
-    val apiKeyCounter = Counter.build("edge_stat_api_key_counter", "Keeps track of how many api keys we have waiting in memory").create()
+    val apiKeyCounter = Counter.build("edge_stat_api_key_counter", "Keeps track of how many api keys we have waiting in memory").register()
     val resultTypeCounters = EdgeHitResultType.values().map { v -> v to Counter.build(String.format("edge_stat_result_%s",  v.name.lowercase()),
-        String.format("How many results of type %s there are hitting this Edge", v.name)).create() }.toMap()
+        String.format("How many results of type %s there are hitting this Edge", v.name)).register() }.toMap()
     val hitTypeCounters = EdgeHitSourceType.values().map { v -> v to Counter.build(
       String.format("edge_stat_hitsource_%s", v.name.lowercase()),
       String.format("Where did this traffic come from: %s", v.name)
-    ).create() }.toMap()
+    ).register() }.toMap()
   }
 
   override fun onEvent(stat: Stat, sequence: Long, endOfBatch: Boolean) {

@@ -62,10 +62,9 @@
   "dependencies": {
     "@types/ip6addr": "^0.2.1",
     "@types/murmurhash": "^2.0.0",
-    "@types/semver": "^7.3.4",
     "ip6addr": "^0.2.3",
     "murmurhash": "^2.0.0",
-    "semver": "^7.3.4"
+    "semver-compare": "^1.0.0"
   },
   "engines": {
     "node": ">=12.12.0"

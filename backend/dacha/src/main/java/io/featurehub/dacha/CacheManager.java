@@ -5,15 +5,18 @@ import cd.connect.app.config.DeclaredConfigResolver;
 import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
 import io.featurehub.dacha.api.CacheAction;
-import io.featurehub.dacha.api.CacheJsonMapper;
 import io.featurehub.health.HealthSource;
+import io.featurehub.jersey.config.CacheJsonMapper;
 import io.featurehub.mr.model.CacheManagementMessage;
 import io.featurehub.mr.model.CacheRequestType;
 import io.featurehub.mr.model.CacheState;
 import io.featurehub.publish.ChannelNames;
+import io.featurehub.publish.NATSSource;
 import io.nats.client.Dispatcher;
 import io.nats.client.Message;
 import io.nats.client.MessageHandler;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Inject;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +42,7 @@ public class CacheManager implements MessageHandler, HealthSource {
   private CacheAction currentAction;
   private final InternalCache internalCache;
   private final ServerConfig config;
+  private final NATSSource natsSource;
   private boolean foundMR = false;
   private UUID idOfRefreshSource = null;
   private ExecutorService executor;
@@ -46,14 +50,16 @@ public class CacheManager implements MessageHandler, HealthSource {
   Integer cachePoolSize = 10;
 
 
-  public CacheManager(InternalCache internalCache,  ServerConfig config) {
+  @Inject
+  public CacheManager(InternalCache internalCache, ServerConfig config, NATSSource natsSource) {
     this.internalCache = internalCache;
     this.config = config;
+    this.natsSource = natsSource;
 
     DeclaredConfigResolver.resolve(this);
 
-    if (System.getProperty("cache.mit") != null) {
-      mit = Long.parseLong(System.getProperty("cache.mit"));
+    if (System.getProperty("cache.mit", System.getenv("CACHE.MIT")) != null) {
+      mit = Long.parseLong(System.getProperty("cache.mit", System.getenv("CACHE.MIT")));
     } else {
       mit = (long)(Math.random() * Long.MAX_VALUE);
       if (mit == 1) {
@@ -75,19 +81,18 @@ public class CacheManager implements MessageHandler, HealthSource {
     if (masterTimer != null) {
       masterTimer.cancel();
     }
+
     setCurrentAction(CacheAction.AT_REST);
     log.info("cache ({}:{}) filled, at rest.", id, mit);
-
-    // we now know we are ready to listen for any environmental requests from Edge servers
-    config.listenForEnvironmentRequests(new EdgeHandler(internalCache));
   }
 
+  @PostConstruct
   public void init() {
     final String channelName = ChannelNames.managementChannel(config.name);
 
     log.info("subscribing {}:{} to channel `{}`", id, mit, channelName);
 
-    cacheManagerDispatcher = config.getConnection().createDispatcher(this);
+    cacheManagerDispatcher = natsSource.getConnection().createDispatcher(this);
     cacheManagerDispatcher.subscribe(channelName);
 
     actionTimer = new CacheTimer();
@@ -264,7 +269,7 @@ public class CacheManager implements MessageHandler, HealthSource {
   @Override
   public void onMessage(Message message) throws InterruptedException {
     try {
-      CacheManagementMessage resp = CacheJsonMapper.mapper.readValue(message.getData(), CacheManagementMessage.class);
+      CacheManagementMessage resp = CacheJsonMapper.readFromZipBytes(message.getData(), CacheManagementMessage.class);
 
       // ignore messages not directed at us or our own messages
       if (resp.getDestId() != null && !id.equals(resp.getDestId()) || id.equals(resp.getId())) {

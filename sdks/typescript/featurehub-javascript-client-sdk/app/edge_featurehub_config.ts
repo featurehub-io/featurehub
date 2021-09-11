@@ -67,7 +67,7 @@ export class EdgeFeatureHubConfig implements FeatureHubConfig {
   }
 
   public clientEvaluated(): boolean {
-    return this._apiKey.includes('*');
+    return this._clientEval;
   }
 
   getApiKeys(): string[] {
@@ -83,8 +83,8 @@ export class EdgeFeatureHubConfig implements FeatureHubConfig {
     edgeService = edgeService || this.edgeServiceProvider();
 
     return this._clientEval ?
-      new ClientEvalFeatureContext(repository, this, this._getOrCreateEdgeService(edgeService, repository)) :
-      new ServerEvalFeatureContext(repository, this, () => this._createEdgeService(edgeService, repository));
+      new ClientEvalFeatureContext(repository, this._getOrCreateEdgeService(edgeService, repository)) :
+      new ServerEvalFeatureContext(repository, () => this._createEdgeService(edgeService, repository));
   }
 
   _getOrCreateEdgeService(edgeServSupplier: EdgeServiceProvider, repository?: InternalFeatureRepository): EdgeService {

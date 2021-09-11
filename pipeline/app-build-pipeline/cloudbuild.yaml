@@ -66,7 +66,7 @@ steps:
     entrypoint: '/bin/sh'
     args:
       - '-c'
-      - 'cd featurehub && if [ ! -f all-build ]; then mvn -s pipeline/m2/settings.xml --no-transfer-progress install -Dgib.disable=false -Dgib.referenceBranch=master -f pom.xml; else true; fi'
+      - 'cd featurehub && if [ ! -f all-build ]; then mvn -s pipeline/m2/settings.xml --no-transfer-progress install -Dgib.disable=false -Dgib.referenceBranch=main -f pom.xml; else true; fi'
 
 
 

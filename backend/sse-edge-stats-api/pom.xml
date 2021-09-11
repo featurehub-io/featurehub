@@ -65,14 +65,36 @@
         </configuration>
       </plugin>
       <plugin>
+        <groupId>cd.connect.maven</groupId>
+        <artifactId>merge-yaml-plugin</artifactId>
+        <version>1.1</version>
+        <executions>
+          <execution>
+            <id>combine</id>
+            <goals>
+              <goal>mergeYaml</goal>
+            </goals>
+            <phase>initialize</phase>
+            <configuration>
+              <files>
+                <file>${project.basedir}/fake-api.yaml</file>
+                <file>${project.basedir}/async-api.yaml</file>
+              </files>
+              <finalYaml>${project.basedir}/target/final.yaml</finalYaml>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
         <groupId>org.openapitools</groupId>
         <artifactId>openapi-generator-maven-plugin</artifactId>
-        <version>5.1.0</version>
+        <version>5.2.1</version>
         <dependencies>
           <dependency>
             <groupId>cd.connect.openapi</groupId>
             <artifactId>connect-openapi-jersey3</artifactId>
-            <version>7.4</version>
+            <version>7.6</version>
           </dependency>
         </dependencies>
         <executions>
@@ -86,7 +108,7 @@
               <output>${project.basedir}/target/generated-sources/api</output>
               <apiPackage>io.featurehub.sse.stats.api</apiPackage>
               <modelPackage>io.featurehub.sse.stats.model</modelPackage>
-              <inputSpec>${project.basedir}/async-api.yaml</inputSpec>
+              <inputSpec>${project.basedir}/target/final.yaml</inputSpec>
               <generatorName>jersey3-api</generatorName>
               <generateApis>false</generateApis>
             </configuration>
@@ -108,6 +130,23 @@
               <sources>
                 <source>${project.build.directory}/generated-sources/api/src/gen</source>
               </sources>
+            </configuration>
+          </execution>
+          <!-- publish the API at packaging time -->
+          <execution>
+            <id>attach-final-yaml</id>
+            <phase>package</phase>
+            <goals>
+              <goal>attach-artifact</goal>
+            </goals>
+            <configuration>
+              <artifacts>
+                <artifact>
+                  <file>${project.basedir}/async-api.yaml</file>
+                  <type>yaml</type>
+                  <classifier>api</classifier>
+                </artifact>
+              </artifacts>
             </configuration>
           </execution>
         </executions>

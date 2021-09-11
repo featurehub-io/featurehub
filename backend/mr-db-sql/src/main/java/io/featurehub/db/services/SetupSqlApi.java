@@ -4,9 +4,7 @@ import io.ebean.Database;
 import io.ebean.annotation.Transactional;
 import io.featurehub.db.api.SetupApi;
 import io.featurehub.db.model.DbPerson;
-import io.featurehub.db.model.query.QDbPerson;
 import io.featurehub.mr.model.SetupSiteAdmin;
-
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 

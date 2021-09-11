@@ -1,7 +1,6 @@
 package io.featurehub.db.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import io.featurehub.dacha.api.CacheJsonMapper;
 import io.featurehub.db.api.Opts;
 import io.featurehub.db.model.DbAcl;
 import io.featurehub.db.model.DbApplication;
@@ -15,6 +14,7 @@ import io.featurehub.db.model.DbPortfolio;
 import io.featurehub.db.model.DbRolloutStrategy;
 import io.featurehub.db.model.DbServiceAccount;
 import io.featurehub.db.model.DbServiceAccountEnvironment;
+import io.featurehub.jersey.config.CacheJsonMapper;
 import io.featurehub.mr.model.Application;
 import io.featurehub.mr.model.ApplicationGroupRole;
 import io.featurehub.mr.model.ApplicationRoleType;

@@ -1,7 +1,6 @@
 package io.featurehub.jersey.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import jakarta.ws.rs.ext.ContextResolver;
 import jakarta.ws.rs.ext.Provider;
 

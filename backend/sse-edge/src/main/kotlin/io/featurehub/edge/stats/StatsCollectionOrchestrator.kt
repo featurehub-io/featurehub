@@ -6,11 +6,9 @@ import io.featurehub.edge.KeyParts
 import io.featurehub.sse.stats.model.EdgeStatsBundle
 import io.prometheus.client.Counter
 import io.prometheus.client.Histogram
+import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.lang.Exception
-import java.util.*
-import jakarta.inject.Inject
 
 /**
  * This combines a timer and a stats squasher that then asks a StatsPublisher to publish the bundles in
@@ -25,9 +23,9 @@ class StatsCollectionOrchestrator @Inject constructor(private val publisher: Sta
   var maxApiKeysPerPublish: Long? = 300
 
   companion object Prometheus {
-    val publishTimeHistogram = Histogram.build("edge_publish_time", "Time taken to publish stats to NATS").create()
-    val successfulPublishing = Counter.build("edge_publish_success", "Number of successes for publishing").create()
-    val failedPublishing = Counter.build("edge_publish_failure", "Number of failures for publishing").create()
+    val publishTimeHistogram = Histogram.build("edge_publish_time", "Time taken to publish stats to NATS").register()
+    val successfulPublishing = Counter.build("edge_publish_success", "Number of successes for publishing").register()
+    val failedPublishing = Counter.build("edge_publish_failure", "Number of failures for publishing").register()
   }
 
   init {
@@ -49,7 +47,7 @@ class StatsCollectionOrchestrator @Inject constructor(private val publisher: Sta
       try {
         for (stat in stats) {
           val bundle = perCachePublish.computeIfAbsent(stat.key.cacheName
-          ) { k -> EdgeStatsBundle() }
+          ) { EdgeStatsBundle() }
 
           bundle.apiKeys.add(stat.value.squash())
 

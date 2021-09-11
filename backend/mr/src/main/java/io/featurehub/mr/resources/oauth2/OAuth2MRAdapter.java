@@ -14,13 +14,13 @@ import io.featurehub.mr.model.Portfolio;
 import io.featurehub.mr.model.SortOrder;
 import io.featurehub.mr.utils.PortfolioUtils;
 import io.featurehub.web.security.oauth.OAuthAdapter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.URI;
 
 import static jakarta.ws.rs.core.Cookie.DEFAULT_VERSION;

@@ -5,7 +5,6 @@ import {
 } from './models';
 import { FeatureStateHolder } from './feature_state';
 import { FeatureHubRepository } from './featurehub_repository';
-import { EdgeService } from './edge_service';
 
 export interface ConfigChangedListener {
   (config: ClientContext);
@@ -36,7 +35,6 @@ export interface ClientContext {
   feature(name: string): FeatureStateHolder;
   isEnabled(name: string): boolean;
   isSet(name: string): boolean;
-  edgeService(): EdgeService;
   repository(): FeatureHubRepository;
   logAnalyticsEvent(action: string, other?: Map<string, string>, user?: string);
 

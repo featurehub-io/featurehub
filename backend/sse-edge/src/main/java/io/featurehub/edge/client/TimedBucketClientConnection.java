@@ -1,23 +1,23 @@
 package io.featurehub.edge.client;
 
-import io.featurehub.dacha.api.CacheJsonMapper;
 import io.featurehub.edge.FeatureTransformer;
 import io.featurehub.edge.KeyParts;
+import io.featurehub.edge.features.FeatureRequestResponse;
 import io.featurehub.edge.stats.StatRecorder;
 import io.featurehub.edge.strategies.ClientContext;
-import io.featurehub.mr.model.EdgeInitResponse;
+import io.featurehub.jersey.config.CacheJsonMapper;
 import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.mr.model.PublishAction;
 import io.featurehub.sse.model.SSEResultState;
 import io.featurehub.sse.stats.model.EdgeHitResultType;
 import io.featurehub.sse.stats.model.EdgeHitSourceType;
 import io.prometheus.client.Histogram;
+import jakarta.ws.rs.core.MediaType;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.OutboundEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,7 +35,7 @@ public class TimedBucketClientConnection implements ClientConnection {
   private final StatRecorder statRecorder;
 
   private static final Histogram connectionLengthHistogram = Histogram.build("edge_conn_length_sse", "The length of " +
-    "time that the connection is open for SSE clients").create();
+    "time that the connection is open for SSE clients").register();
 
   private final Histogram.Timer timer;
 
@@ -70,6 +70,16 @@ public class TimedBucketClientConnection implements ClientConnection {
   @Override
   public String getApiKey() {
     return apiKey.getServiceKey();
+  }
+
+  @Override
+  public KeyParts getKey() {
+    return apiKey;
+  }
+
+  @Override
+  public ClientContext getClientContext() {
+    return attributesForStrategy;
   }
 
   @Override
@@ -148,33 +158,32 @@ public class TimedBucketClientConnection implements ClientConnection {
   }
 
   @Override
-  public void initResponse(EdgeInitResponse edgeResponse) {
-    if (Boolean.TRUE.equals(edgeResponse.getSuccess())) {
+  public void initResponse(FeatureRequestResponse edgeResponse) {
+    try {
       try {
-        writeMessage(
+        if (edgeResponse.getSuccess()) {
+          writeMessage(
             SSEResultState.FEATURES,
-            CacheJsonMapper.mapper.writeValueAsString(
-                featureTransformer.transform(edgeResponse.getFeatures(), attributesForStrategy)));
+            CacheJsonMapper.mapper.writeValueAsString(edgeResponse.getEnvironment().getFeatures()));
 
-        if (!output.isClosed()) {
           statRecorder.recordHit(apiKey, EdgeHitResultType.SUCCESS, EdgeHitSourceType.EVENTSOURCE);
+
+          List<FeatureValueCacheItem> heldUpdates = heldFeatureUpdates;
+
+          heldFeatureUpdates = null;
+
+          if (heldUpdates != null) {
+            heldUpdates.forEach(this::notifyFeature);
+          }
         } else {
-          statRecorder.recordHit(
-              apiKey, EdgeHitResultType.FAILED_TO_WRITE_ON_INIT, EdgeHitSourceType.EVENTSOURCE);
+          failed("Unrecognized API Key");
         }
-
-        List<FeatureValueCacheItem> heldUpdates = heldFeatureUpdates;
-
-        heldFeatureUpdates = null;
-
-        if (heldUpdates != null) {
-          heldUpdates.forEach(this::notifyFeature);
-        }
-      } catch (Exception e) {
-        failed("Could not write initial features");
+      } catch (IOException iex) {
+        statRecorder.recordHit(
+          apiKey, EdgeHitResultType.FAILED_TO_WRITE_ON_INIT, EdgeHitSourceType.EVENTSOURCE);
       }
-    } else {
-      failed("Invalid combination of environment, apiKey, named cache or not yet initialized.");
+    } catch (Exception e) {
+      failed("Could not write initial features");
     }
   }
 

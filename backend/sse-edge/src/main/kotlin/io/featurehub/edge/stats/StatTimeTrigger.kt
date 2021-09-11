@@ -2,10 +2,10 @@ package io.featurehub.edge.stats
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
+import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
-import jakarta.inject.Inject
 
 class StatTimeTrigger @Inject constructor(private val statCollector: StatCollector,
                                           private val orchestrator: StatsOrchestrator) {
