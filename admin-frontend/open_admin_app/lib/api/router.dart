@@ -49,7 +49,7 @@ enum PermissionType {
   regular,
   personal,
   any,
-  nowhere,
+  none,
   login,
   setup,
   extra1,
@@ -77,11 +77,11 @@ Map<RouteSlot, RouteSlotMapping> routeSlotMappings = {};
 class RouterRoute {
   Handler handler;
   PermissionType permissionType;
-  bool wrapInAndysScaffold;
+  bool wrapInScaffold;
 
   RouterRoute(this.handler,
       {this.permissionType = PermissionType.regular,
-      this.wrapInAndysScaffold = true});
+      this.wrapInScaffold = true});
 }
 
 typedef PermissionCheckHandler = bool Function(
@@ -105,7 +105,7 @@ class FHRouter {
       TransitionType transitionType = TransitionType.material,
       PermissionType permissionType = PermissionType.regular}) {
     handlers[route] = RouterRoute(handler,
-        permissionType: permissionType, wrapInAndysScaffold: wrapInScaffold);
+        permissionType: permissionType, wrapInScaffold: wrapInScaffold);
   }
 
   HandlerFunc getRoute(String route) {
