@@ -13,7 +13,7 @@ class Routes {
   static FHRouter configureRoutes(ManagementRepositoryClientBloc mrBloc) {
     routeSlotMappings[RouteSlot.nowhere] = RouteSlotMapping(
         routePermission: RouteSlot.nowhere,
-        acceptablePermissionTypes: [PermissionType.nowhere],
+        acceptablePermissionTypes: [PermissionType.none],
         initialRoute: '/404');
 
     routeSlotMappings[RouteSlot.loading] = RouteSlotMapping(
@@ -38,7 +38,10 @@ class Routes {
           PermissionType.any,
           PermissionType.portfolioadmin,
           PermissionType.superadmin,
-          PermissionType.regular
+          PermissionType.regular,
+          PermissionType.extra1,
+          PermissionType.extra2,
+          PermissionType.extra3,
         ],
         initialRoute: '/applications');
 
@@ -54,23 +57,32 @@ class Routes {
 
     router.define('/404',
         handler: handleRouteChangeRequest(routeCreator.notFound),
-        permissionType: PermissionType.nowhere);
+        permissionType: PermissionType.none,
+        wrapInScaffold: false);
     // Public routes (public URL's also need ot be added to array above)
     router.define('/forgot-password',
         handler: handleRouteChangeRequest(routeCreator.forgotPassword),
-        permissionType: PermissionType.login);
+        permissionType: PermissionType.login,
+        wrapInScaffold: false);
     router.define('/register-url',
         handler: handleRouteChangeRequest(routeCreator.registerUrl),
-        permissionType: PermissionType.login);
+        permissionType: PermissionType.login,
+        wrapInScaffold: false);
     router.define('/setup',
         handler: handleRouteChangeRequest(routeCreator.setup),
-        permissionType: PermissionType.setup);
+        permissionType: PermissionType.setup,
+        wrapInScaffold: false);
     router.define('/login',
         handler: handleRouteChangeRequest(routeCreator.login),
-        permissionType: PermissionType.login);
+        permissionType: PermissionType.login,
+        wrapInScaffold: false);
     // main app routes
-    router.define('/', handler: handleRouteChangeRequest(routeCreator.root));
-    router.define('', handler: handleRouteChangeRequest(routeCreator.root));
+    router.define('/',
+        handler: handleRouteChangeRequest(routeCreator.root),
+        wrapInScaffold: false);
+    router.define('',
+        handler: handleRouteChangeRequest(routeCreator.root),
+        wrapInScaffold: false);
     router.define('/applications',
         handler: handleRouteChangeRequest(routeCreator.apps));
     // NEVER EVER use /features as that is reserved for use by the Edge app

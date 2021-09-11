@@ -6,6 +6,13 @@ import 'api/client_api.dart';
 class WidgetCreator {
   Widget createSigninWidget(ManagementRepositoryClientBloc client) =>
       SigninWidget(client);
+  List<Widget> extraApplicationMenuItems(
+          ManagementRepositoryClientBloc client) =>
+      [];
+  List<Widget> extraPortfolioMenuItems(ManagementRepositoryClientBloc client) =>
+      [];
+  List<Widget> extraGlobalMenuItems(ManagementRepositoryClientBloc client) =>
+      [];
 }
 
 WidgetCreator widgetCreator = WidgetCreator();

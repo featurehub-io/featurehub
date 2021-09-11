@@ -41,15 +41,20 @@ class Handler {
 }
 
 enum TransitionType { fadeIn, material }
+
+// these have to have entries in routeSlotMappings otherwise they cannot be routed to
 enum PermissionType {
   superadmin,
   portfolioadmin,
   regular,
   personal,
   any,
-  nowhere,
+  none,
   login,
-  setup
+  setup,
+  extra1,
+  extra2,
+  extra3
 }
 
 // we need to track what states we can be in, what permission types routes have to have, and what the initial route you should have when you are in i
@@ -69,21 +74,18 @@ class RouteSlotMapping {
 
 Map<RouteSlot, RouteSlotMapping> routeSlotMappings = {};
 
-List<PermissionType> scaffoldWrapPermissions = [
-  PermissionType.superadmin,
-  PermissionType.portfolioadmin,
-  PermissionType.regular
-];
-
 class RouterRoute {
   Handler handler;
   PermissionType permissionType;
+  bool wrapInScaffold;
 
-  RouterRoute(this.handler, {this.permissionType = PermissionType.regular});
+  RouterRoute(this.handler,
+      {this.permissionType = PermissionType.regular,
+      this.wrapInScaffold = true});
 }
 
 typedef PermissionCheckHandler = bool Function(
-    RouteChange route, bool superuser, bool portfolioAdmin, bool isLoggedIn,
+    RouteChange route, ManagementRepositoryClientBloc bloc,
     {List<PermissionType> autoFailPermissions});
 
 PermissionCheckHandler? permissionCheckHandler;
@@ -99,9 +101,11 @@ class FHRouter {
 
   void define(String route,
       {required Handler handler,
+      bool wrapInScaffold = true,
       TransitionType transitionType = TransitionType.material,
       PermissionType permissionType = PermissionType.regular}) {
-    handlers[route] = RouterRoute(handler, permissionType: permissionType);
+    handlers[route] = RouterRoute(handler,
+        permissionType: permissionType, wrapInScaffold: wrapInScaffold);
   }
 
   HandlerFunc getRoute(String route) {
@@ -138,7 +142,7 @@ class FHRouter {
   }
 
   bool _hasRoutePermissions(
-      RouteChange route, bool superuser, bool portfolioAdmin, bool isLoggedIn,
+      RouteChange route, ManagementRepositoryClientBloc bloc,
       {List<PermissionType> autoFailPermissions = const []}) {
     final perm = permissionForRoute(route.route);
 
@@ -149,6 +153,10 @@ class FHRouter {
     if (perm == PermissionType.any) {
       return true;
     }
+
+    bool superuser = bloc.userIsSuperAdmin;
+    bool portfolioAdmin = bloc.userIsCurrentPortfolioAdmin;
+    bool isLoggedIn = bloc.isLoggedIn;
 
     if (perm == PermissionType.login && !isLoggedIn) {
       return true;
@@ -172,8 +180,7 @@ class FHRouter {
   void navigateRoute(String route, {Map<String, List<String>>? params}) {
     final rc = RouteChange(route, params: params ?? const {});
 
-    if (permissionCheckHandler!(rc, mrBloc.userIsSuperAdmin,
-        mrBloc.userIsCurrentPortfolioAdmin, mrBloc.isLoggedIn)) {
+    if (permissionCheckHandler!(rc, mrBloc)) {
       mrBloc.swapRoutes(rc);
     } else {
       mrBloc.swapRoutes(defaultRoute());
@@ -192,8 +199,7 @@ class FHRouter {
   bool canUseRoute(String routeName,
       {List<PermissionType> autoFailPermissions = const []}) {
     final rc = RouteChange(routeName);
-    return permissionCheckHandler!(rc, mrBloc.userIsSuperAdmin,
-        mrBloc.userIsCurrentPortfolioAdmin, mrBloc.isLoggedIn,
+    return permissionCheckHandler!(rc, mrBloc,
         autoFailPermissions: autoFailPermissions);
   }
 

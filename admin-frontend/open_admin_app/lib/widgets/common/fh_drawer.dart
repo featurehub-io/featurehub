@@ -8,6 +8,7 @@ import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/router.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/config/route_names.dart';
+import 'package:open_admin_app/widget_creator.dart';
 import 'package:open_admin_app/widgets/common/fh_portfolio_selector.dart';
 
 class DrawerViewWidget extends StatefulWidget {
@@ -137,25 +138,26 @@ class _MenuContainer extends StatelessWidget {
 class _SiteAdminOptionsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final client = BlocProvider.of<ManagementRepositoryClientBloc>(context);
     return StreamBuilder<String?>(
-        stream: BlocProvider.of<ManagementRepositoryClientBloc>(context)
-            .streamValley
-            .currentPortfolioIdStream,
+        stream: client.streamValley.currentPortfolioIdStream,
         builder: (context, snapshot) {
-          return Column(children: const <Widget>[
-            _MenuItem(
+          List<Widget> menus = [
+            MenuItem(
                 name: 'Portfolios',
                 iconData: MaterialCommunityIcons.briefcase_plus_outline,
                 path: '/portfolios',
                 permissionType: PermissionType.portfolioadmin,
                 params: {}),
-            _MenuItem(
+            MenuItem(
                 name: 'Users',
                 permissionType: PermissionType.portfolioadmin,
                 iconData: AntDesign.addusergroup,
                 path: '/users',
                 params: {}),
-          ]);
+          ];
+          menus.addAll(widgetCreator.extraGlobalMenuItems(client));
+          return Column(children: menus);
         });
   }
 }
@@ -170,13 +172,13 @@ class _MenuPortfolioAdminOptionsWidget extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return Column(children: const <Widget>[
-              _MenuItem(
+              MenuItem(
                   name: 'Groups',
                   iconData: MaterialIcons.people_outline,
                   path: '/groups',
                   permissionType: PermissionType.portfolioadmin,
                   params: {}),
-              _MenuItem(
+              MenuItem(
                   name: 'Service Accounts',
                   iconData: AntDesign.tool,
                   permissionType: PermissionType.portfolioadmin,
@@ -200,7 +202,7 @@ class _ApplicationSettings extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return Column(children: const <Widget>[
-              _MenuItem(
+              MenuItem(
                   name: 'Environments',
                   iconData: AntDesign.bars,
                   path: '/app-settings',
@@ -208,7 +210,7 @@ class _ApplicationSettings extends StatelessWidget {
                   params: {
                     'tab': ['environments']
                   }),
-              _MenuItem(
+              MenuItem(
                   name: 'Group permissions',
                   iconData: MaterialCommunityIcons.check_box_multiple_outline,
                   path: '/app-settings',
@@ -216,7 +218,7 @@ class _ApplicationSettings extends StatelessWidget {
                   params: {
                     'tab': ['group-permissions']
                   }),
-              _MenuItem(
+              MenuItem(
                   name: 'Service account permissions',
                   iconData: MaterialCommunityIcons.cogs,
                   path: '/app-settings',
@@ -239,21 +241,21 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: const [
-        _MenuItem(
+        MenuItem(
           name: 'Applications',
           iconData: Feather.grid,
           iconSize: 24,
           path: '/applications',
           params: {},
         ),
-        _MenuItem(
+        MenuItem(
           name: 'Features',
           iconData: Feather.flag,
           iconSize: 24,
           path: routeNameFeatureDashboard,
           params: {},
         ),
-        _MenuItem(
+        MenuItem(
           name: 'API Keys',
           iconData: AntDesign.key,
           iconSize: 24,
@@ -265,7 +267,7 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
   }
 }
 
-class _MenuItem extends StatelessWidget {
+class MenuItem extends StatelessWidget {
   final String name;
   final IconData iconData;
   final double? iconSize;
@@ -273,7 +275,7 @@ class _MenuItem extends StatelessWidget {
   final Map<String, List<String>> params;
   final PermissionType permissionType;
 
-  const _MenuItem(
+  const MenuItem(
       {Key? key,
       required this.name,
       required this.iconData,
@@ -295,10 +297,15 @@ class _MenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
-    final menuOkForThisUser = (bloc.userIsCurrentPortfolioAdmin ||
-        ManagementRepositoryClientBloc.router.canUseRoute(path));
+    final menuOkForThisUser =
+        ManagementRepositoryClientBloc.router.canUseRoute(path);
+
     var light = Theme.of(context).brightness == Brightness.light;
+
+    if (!menuOkForThisUser) {
+      return SizedBox.shrink();
+    }
+
     return InkWell(
       canRequestFocus: false,
       mouseCursor: SystemMouseCursors.click,
@@ -315,46 +322,42 @@ class _MenuItem extends StatelessWidget {
           stream: BlocProvider.of<ManagementRepositoryClientBloc>(context)
               .routeCurrentStream,
           builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              final selected = snapshot.data!.route == path &&
-                  equalsParams(snapshot.data!.params);
-              return Container(
-                padding: const EdgeInsets.fromLTRB(16, 12, 0, 12),
-                color: selected
-                    ? (light
-                        ? Theme.of(context).primaryColorLight
-                        : Theme.of(context).accentColor)
-                    : null,
-                child: Row(
-                  children: <Widget>[
-                    Icon(
-                      iconData,
-                      color: Theme.of(context).buttonColor,
-                      size: iconSize ?? 20.0,
-                    ),
-                    Padding(
-                      padding:
-                          EdgeInsets.only(left: iconSize != null ? 18.0 : 24.0),
-                      child: Text(' $name',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyText2!
-                              .copyWith(
-                                  fontWeight: selected
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                  color: light
-                                      ? null
-                                      : (selected
-                                          ? Theme.of(context).primaryColor
-                                          : null))),
-                    )
-                  ],
-                ),
-              );
-            } else {
-              return const SizedBox.shrink();
+            if (!snapshot.hasData) {
+              return SizedBox.shrink();
             }
+
+            final selected = snapshot.data!.route == path &&
+                equalsParams(snapshot.data!.params);
+            return Container(
+              padding: const EdgeInsets.fromLTRB(16, 12, 0, 12),
+              color: selected
+                  ? (light
+                      ? Theme.of(context).primaryColorLight
+                      : Theme.of(context).accentColor)
+                  : null,
+              child: Row(
+                children: <Widget>[
+                  Icon(
+                    iconData,
+                    color: Theme.of(context).buttonColor,
+                    size: iconSize ?? 20.0,
+                  ),
+                  Padding(
+                    padding:
+                        EdgeInsets.only(left: iconSize != null ? 18.0 : 24.0),
+                    child: Text(' $name',
+                        style: Theme.of(context).textTheme.bodyText2!.copyWith(
+                            fontWeight:
+                                selected ? FontWeight.bold : FontWeight.normal,
+                            color: light
+                                ? null
+                                : (selected
+                                    ? Theme.of(context).primaryColor
+                                    : null))),
+                  )
+                ],
+              ),
+            );
           }),
     );
   }
