@@ -273,7 +273,6 @@ class MenuItem extends StatelessWidget {
   final double? iconSize;
   final String path;
   final Map<String, List<String>> params;
-  final bool greyOnNoPermission;
   final PermissionType permissionType;
 
   const MenuItem(
@@ -283,7 +282,6 @@ class MenuItem extends StatelessWidget {
       required this.path,
       required this.params,
       this.permissionType = PermissionType.regular,
-      this.greyOnNoPermission = false,
       this.iconSize})
       : super(key: key);
 
@@ -304,12 +302,8 @@ class MenuItem extends StatelessWidget {
 
     var light = Theme.of(context).brightness == Brightness.light;
 
-    if (!menuOkForThisUser && !greyOnNoPermission) {
+    if (!menuOkForThisUser) {
       return SizedBox.shrink();
-    }
-
-    if (!menuOkForThisUser && greyOnNoPermission) {
-      return Text('<grey>$name</grey>');
     }
 
     return InkWell(
