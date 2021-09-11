@@ -27,11 +27,11 @@ class NodejsPollingService extends PollingBase implements PollingService {
     this.uri = new URL(this.url);
   }
 
-  public async poll(): Promise<void> {
+  public poll(): Promise<void> {
     return new Promise(((resolve, reject) => {
       const http = this.uri.protocol === 'http:' ? require('http') : require('https');
       let data = '';
-      let headers = this._header === undefined ? {} : {
+      const headers = this._header === undefined ? {} : {
         'x-featurehub': this._header
       };
       // we are not specifying the type as it forces us to bring in one of http or https
@@ -71,14 +71,14 @@ FeatureHubPollingClient.pollingClientProvider = (opt, url, freq, callback) =>
 class NodejsFeaturePostUpdater implements FeatureUpdatePostManager {
   post(url: string, update: FeatureStateUpdate): Promise<boolean> {
     const loc = new URL(url);
-    const cra = {protocol: loc.protocol, path: loc.pathname,
+    const cra = { protocol: loc.protocol, path: loc.pathname,
       host: loc.hostname, method: 'PUT', port: loc.port, timeout: 3000,
       headers: {
         'content-type': 'application/json'
       }
     };
     const http = cra.protocol === 'http:' ? require('http') : require('https');
-    return new Promise<boolean>((resolve, reject) => {
+    return new Promise<boolean>((resolve) => {
       try {
         const req = http.request(cra, (res) => {
           if (res.statusCode >= 200 && res.statusCode < 300) {
@@ -88,7 +88,7 @@ class NodejsFeaturePostUpdater implements FeatureUpdatePostManager {
           }
         });
 
-        req.on('error', (e) => {
+        req.on('error', () => {
           resolve(false);
         });
 
