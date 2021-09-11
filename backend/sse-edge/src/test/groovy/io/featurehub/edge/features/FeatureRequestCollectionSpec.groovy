@@ -70,11 +70,57 @@ class FeatureRequestCollectionSpec extends Specification {
       responses[1].success == FeatureRequestSuccess.NO_CHANGE
   }
 
-  def "if all requests complete and at least one has a different etag, we will get a  SUCCESS response"() {
-
+  def "if all requests complete and at least one has a different etag, we will get a SUCCESS response"() {
+    given: "we have an valid etag holder"
+      def holder = new EtagStructureHolder(Map.of(kp1, "x", kp2, "y"), "0", true)
+    and: "we have created our collection"
+      def coll = new FeatureRequestCollection(2, transformer, context, future, holder)
+    when: "we drop our requests in"
+      def r1 = Mock(FeatureRequester)
+      def details1 = new DachaKeyDetailsResponse().etag("x")
+      r1.key >> kp1
+      r1.details >> details1
+      def r2 = Mock(FeatureRequester)
+      def details2 = new DachaKeyDetailsResponse().etag("z") // different
+      r2.key >> kp2
+      r2.details >> details2
+      coll.complete(r1)
+      coll.complete(r2)
+    and: "we wait for the future"
+      def responses = future.get()
+    then:
+      responses.size() == 2
+      responses[0].success == FeatureRequestSuccess.SUCCESS
+      responses[0].etag == 'x'
+      responses[1].success == FeatureRequestSuccess.SUCCESS
+      responses[1].etag == 'z'
+      2 * transformer.transform([], context)
   }
 
   def "if any requests failed, the ones that are successful will get a success response even if their etags are the same"() {
-
+    given: "we have an valid etag holder"
+      def holder = new EtagStructureHolder(Map.of(kp1, "x", kp2, "y"), "0", true)
+    and: "we have created our collection"
+      def coll = new FeatureRequestCollection(2, transformer, context, future, holder)
+    when: "we drop our requests in"
+      def r1 = Mock(FeatureRequester)
+      def details1 = new DachaKeyDetailsResponse().etag("x")
+      r1.key >> kp1
+      r1.details >> null // request failed
+      def r2 = Mock(FeatureRequester)
+      def details2 = new DachaKeyDetailsResponse().etag("z") // different
+      r2.key >> kp2
+      r2.details >> details2
+      coll.complete(r1)
+      coll.complete(r2)
+    and: "we wait for the future"
+      def responses = future.get()
+    then:
+      responses.size() == 2
+      responses[0].success == FeatureRequestSuccess.FAILED
+      responses[0].etag == '0'
+      responses[1].success == FeatureRequestSuccess.SUCCESS
+      responses[1].etag == 'z'
+      1 * transformer.transform([], context)
   }
 }
