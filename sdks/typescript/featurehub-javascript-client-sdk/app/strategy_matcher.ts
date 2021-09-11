@@ -45,23 +45,23 @@ export class ApplyFeature {
   }
 
   public apply(strategies: Array<RolloutStrategy>, key: string, featureValueId: string,
-               context: ClientContext): Applied {
+    context: ClientContext): Applied {
     if (context != null && strategies != null && strategies.length > 0) {
       let percentage: number = null;
       let percentageKey: string = null;
-      let basePercentage = new Map<string, number>();
+      const basePercentage = new Map<string, number>();
       const defaultPercentageKey = context.defaultPercentageKey();
 
-      for (let rsi of strategies) {
+      for (const rsi of strategies) {
         if (rsi.percentage !== 0 && (defaultPercentageKey != null ||
           (rsi.percentageAttributes !== undefined && rsi.percentageAttributes.length > 0))) {
-          let newPercentageKey = this.determinePercentageKey(context, rsi.percentageAttributes);
+          const newPercentageKey = this.determinePercentageKey(context, rsi.percentageAttributes);
 
           if (!basePercentage.has(newPercentageKey)) {
             basePercentage.set(newPercentageKey, 0);
           }
 
-          let basePercentageVal = basePercentage.get(newPercentageKey);
+          const basePercentageVal = basePercentage.get(newPercentageKey);
 
           // if we have changed the key or we have never calculated it, calculate it and set the
           // base percentage to null
@@ -70,7 +70,7 @@ export class ApplyFeature {
             percentage = this._percentageCalculator.determineClientPercentage(percentageKey, featureValueId);
           }
 
-          let useBasePercentage = (rsi.attributes === undefined || rsi.attributes.length === 0) ? basePercentageVal : 0;
+          const useBasePercentage = (rsi.attributes === undefined || rsi.attributes.length === 0) ? basePercentageVal : 0;
 
           // if the percentage is lower than the user's key +
           // id of feature value then apply it
@@ -110,7 +110,7 @@ export class ApplyFeature {
   }
 
   private matchAttribute(context: ClientContext, rsi: RolloutStrategy): boolean {
-    for (let attr of rsi.attributes) {
+    for (const attr of rsi.attributes) {
       let suppliedValue = context.getAttr(attr.fieldName, null);
       if (suppliedValue === null && attr.fieldName.toLowerCase() === 'now') {
         // tslint:disable-next-line:switch-default

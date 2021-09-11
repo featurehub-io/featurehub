@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { FeatureHubRepository } from './featurehub_repository';
 import { RolloutStrategy, SSEResultState } from './models';
 import { InterceptorValueMatch } from './interceptors';
@@ -10,7 +11,7 @@ export interface InternalFeatureRepository extends FeatureHubRepository {
   // change the context
   notReady(): void;
 
-  notify(state: SSEResultState, data: any): void;
+  notify(state: SSEResultState, data: any);
 
   valueInterceptorMatched(key: string): InterceptorValueMatch;
 

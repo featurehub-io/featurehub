@@ -21,7 +21,7 @@ export abstract class PollingBase implements PollingService {
   protected url: string;
   protected frequency: number;
   protected _callback: FeaturesFunction;
-  protected stopped: boolean = false;
+  protected stopped = false;
   protected _header: string;
 
   constructor(url: string, frequency: number, callback: FeaturesFunction) {
@@ -113,12 +113,12 @@ export class FeatureHubPollingClient implements EdgeService {
   private _pollingStarted = false;
 
   public static pollingClientProvider: PollingClientProvider = (opt, url, freq, callback) =>
-    new BrowserPollingService(opt, url, freq, callback)
+    new BrowserPollingService(opt, url, freq, callback);
 
   constructor(repository: InternalFeatureRepository,
-              config: FeatureHubConfig,
-              frequency: number,
-              options: BrowserOptions | NodejsOptions = {}) {
+    config: FeatureHubConfig,
+    frequency: number,
+    options: BrowserOptions | NodejsOptions = {}) {
     this._frequency = frequency;
     this._repository = repository;
     this._options = options;
@@ -130,8 +130,8 @@ export class FeatureHubPollingClient implements EdgeService {
     if (this._pollingService === undefined) {
       this._pollingService =
         FeatureHubPollingClient.pollingClientProvider(this._options, this._url,
-                                                      this._frequency,
-                                                      (e) =>
+          this._frequency,
+          (e) =>
             this.response(e));
 
       fhLog.log(`featurehub: initialized polling client to ${this._url}`);
@@ -212,7 +212,7 @@ export class FeatureHubPollingClient implements EdgeService {
         this._pollPromiseReject = undefined;
         this._pollPromiseResolve = undefined;
         this._restartTimer();
-    }),        this._frequency);
+      }),        this._frequency);
   }
 
   private response(environments: Array<Environment>): void {

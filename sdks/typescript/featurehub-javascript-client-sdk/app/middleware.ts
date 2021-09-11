@@ -29,7 +29,7 @@ class BaggageHolder implements FeatureStateHolder {
     return new BaggageHolder(this.existing.withContext(param), this.value);
   }
 
-// tslint:disable-next-line:no-empty
+  // tslint:disable-next-line:no-empty
   addListener(listener: FeatureListener): void {
   }
 

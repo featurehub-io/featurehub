@@ -15,11 +15,11 @@ export class FHLog {
 
   public log: FHLogMethod = (...args: any[]) => {
     console.log(args);
-  }
+  };
 
   public error: FHLogMethod = (...args: any[]) => {
     console.error(args);
-  }
+  };
 
   // tslint:disable-next-line:no-empty
   public trace: FHLogMethod = (...args: any[]) => {};

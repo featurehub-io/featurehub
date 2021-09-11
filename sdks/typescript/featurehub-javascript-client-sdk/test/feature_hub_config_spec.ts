@@ -47,7 +47,7 @@ describe('We can initialize the config', () => {
     const edge = Substitute.for<EdgeService>();
     let counter = 0;
     const edgeProvider = (repo1, config) => {
-      counter ++;
+      counter++;
       return edge;
     };
     EdgeFeatureHubConfig.defaultEdgeServiceSupplier = edgeProvider;

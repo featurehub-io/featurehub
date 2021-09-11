@@ -4,7 +4,7 @@ import {
   StrategyAttributeCountryName,
   StrategyAttributeDeviceName,
   StrategyAttributePlatformName,
-} from "./models";
+} from './models';
 import { FeatureStateHolder } from './feature_state';
 import { EdgeService } from './edge_service';
 import { FeatureHubRepository } from './featurehub_repository';
@@ -142,7 +142,7 @@ export class ServerEvalFeatureContext extends BaseClientContext {
   private _xHeader: string;
 
   constructor(repository: InternalFeatureRepository,
-              edgeServiceSupplier: EdgeServiceSupplier) {
+    edgeServiceSupplier: EdgeServiceSupplier) {
     super(repository);
 
     this._edgeServiceSupplier = edgeServiceSupplier;

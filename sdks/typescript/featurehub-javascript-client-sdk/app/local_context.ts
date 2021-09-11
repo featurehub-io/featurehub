@@ -1,13 +1,13 @@
-import { AnalyticsCollector } from "./analytics";
-import { ClientContext } from "./client_context";
-import { BaseClientContext } from "./context_impl";
-import { PostLoadNewFeatureStateAvailableListener, Readyness, ReadynessListener } from "./featurehub_repository";
-import { FeatureStateHolder } from "./feature_state";
-import { FeatureStateBaseHolder } from "./feature_state_holders";
-import { FeatureStateValueInterceptor, InterceptorValueMatch } from "./interceptors";
-import { InternalFeatureRepository } from "./internal_feature_repository";
-import { Environment, FeatureValueType, RolloutStrategy, SSEResultState } from "./models";
-import { Applied, ApplyFeature } from "./strategy_matcher";
+import { AnalyticsCollector } from './analytics';
+import { ClientContext } from './client_context';
+import { BaseClientContext } from './context_impl';
+import { PostLoadNewFeatureStateAvailableListener, Readyness, ReadynessListener } from './featurehub_repository';
+import { FeatureStateHolder } from './feature_state';
+import { FeatureStateBaseHolder } from './feature_state_holders';
+import { FeatureStateValueInterceptor, InterceptorValueMatch } from './interceptors';
+import { InternalFeatureRepository } from './internal_feature_repository';
+import { Environment, FeatureValueType, RolloutStrategy, SSEResultState } from './models';
+import { Applied, ApplyFeature } from './strategy_matcher';
 
 class LocalFeatureRepository implements InternalFeatureRepository {
   // indexed by key as that what the user cares about
@@ -27,7 +27,7 @@ class LocalFeatureRepository implements InternalFeatureRepository {
   }
 
   public apply(strategies: Array<RolloutStrategy>, key: string, featureValueId: string,
-               context: ClientContext): Applied {
+    context: ClientContext): Applied {
     return this._applyFeature.apply(strategies, key, featureValueId, context);
   }
 
@@ -44,7 +44,7 @@ class LocalFeatureRepository implements InternalFeatureRepository {
   }
 
   public valueInterceptorMatched(key: string): InterceptorValueMatch {
-    for (let matcher of this._matchers) {
+    for (const matcher of this._matchers) {
       const m = matcher.matched(key);
       if (m?.value) {
         return m;
@@ -103,10 +103,10 @@ class LocalFeatureRepository implements InternalFeatureRepository {
   public async logAnalyticsEvent(action: string, other?: Map<string, string>, ctx?: ClientContext) {
     const featureStateAtCurrentTime = [];
 
-    for (let fs of this.features.values()) {
+    for (const fs of this.features.values()) {
       if (fs.isSet()) {
         const fsVal: FeatureStateBaseHolder = ctx == null ? fs : fs.withContext(ctx) as FeatureStateBaseHolder;
-        featureStateAtCurrentTime.push( fsVal.analyticsCopy() );
+        featureStateAtCurrentTime.push(fsVal.analyticsCopy());
       }
     }
 

@@ -32,7 +32,7 @@ describe('middleware decodes and provides face to repository', () => {
     const mw = featurehubMiddleware(fhRepo);
 
     let nextCalled = false;
-    const next = function() {
+    const next = function () {
       nextCalled = true;
     };
 

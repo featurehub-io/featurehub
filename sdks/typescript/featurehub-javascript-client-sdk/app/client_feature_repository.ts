@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { FeatureStateBaseHolder } from './feature_state_holders';
 import { FeatureStateValueInterceptor, InterceptorValueMatch } from './interceptors';
 
@@ -20,7 +21,7 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
   private analyticsCollectors = new Array<AnalyticsCollector>();
   private readynessState: Readyness = Readyness.NotReady;
   private readynessListeners: Array<ReadynessListener> = [];
-  private _catchAndReleaseMode: boolean = false;
+  private _catchAndReleaseMode = false;
   // indexed by id
   private _catchReleaseStates = new Map<string, FeatureState>();
   private _newFeatureStateAvailableListeners: Array<PostLoadNewFeatureStateAvailableListener> = [];
@@ -32,7 +33,7 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
   }
 
   public apply(strategies: Array<RolloutStrategy>, key: string, featureValueId: string,
-               context: ClientContext): Applied {
+    context: ClientContext): Applied {
     return this._applyFeature.apply(strategies, key, featureValueId, context);
   }
 
@@ -40,7 +41,8 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
     return this.readynessState;
   }
 
-  public notify(state: SSEResultState, data: any): void {
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  public notify(state: SSEResultState, data: any) {
     if (state !== null && state !== undefined) {
       switch (state) {
         case SSEResultState.Ack: // do nothing, expect state shortly
@@ -55,7 +57,7 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
             this.broadcastReadynessState();
           }
           break;
-        case SSEResultState.Feature:
+        case SSEResultState.Feature: {
           const fs = FeatureStateTypeTransformer.fromJson(data);
 
           if (this._catchAndReleaseMode) {
@@ -65,9 +67,9 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
               this.triggerNewStateAvailable();
             }
           }
-
+        }
           break;
-        case SSEResultState.Features:
+        case SSEResultState.Features: {
           const features = (data instanceof Array) ? (data as Array<FeatureState>) :
             (data as []).map((f) => FeatureStateTypeTransformer.fromJson(f));
           if (this.hasReceivedInitialState && this._catchAndReleaseMode) {
@@ -84,6 +86,7 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
               this.triggerNewStateAvailable();
             }
           }
+        }
           break;
         default:
           break;
@@ -98,7 +101,7 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
   }
 
   public valueInterceptorMatched(key: string): InterceptorValueMatch {
-    for (let matcher of this._matchers) {
+    for (const matcher of this._matchers) {
       const m = matcher.matched(key);
       if (m?.value) {
         return m;
@@ -168,10 +171,10 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
   public async logAnalyticsEvent(action: string, other?: Map<string, string>, ctx?: ClientContext) {
     const featureStateAtCurrentTime = [];
 
-    for (let fs of this.features.values()) {
+    for (const fs of this.features.values()) {
       if (fs.isSet()) {
         const fsVal: FeatureStateBaseHolder = ctx == null ? fs : fs.withContext(ctx) as FeatureStateBaseHolder;
-        featureStateAtCurrentTime.push( fsVal.analyticsCopy() );
+        featureStateAtCurrentTime.push(fsVal.analyticsCopy());
       }
     }
 
@@ -309,7 +312,7 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
   private deleteFeature(featureState: FeatureState) {
     featureState.value = undefined;
 
-    let holder = this.features.get(featureState.key);
+    const holder = this.features.get(featureState.key);
 
     if (holder) {
       holder.setFeatureState(featureState);
