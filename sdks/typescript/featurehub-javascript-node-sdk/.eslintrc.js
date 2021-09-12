@@ -80,4 +80,13 @@ module.exports = {
     "require-await": "warn",
     "@typescript-eslint/member-delimiter-style": "warn",
   },
+  "overrides": [{
+    "files": ["app/**/**.ts", "test/**/**.ts"],
+    "rules": {
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/naming-convention": "off",
+      "@typescript-eslint/no-empty-function": "off",
+      "@typescript-eslint/explicit-module-boundary-types": "off"
+    }
+  }]
 };
