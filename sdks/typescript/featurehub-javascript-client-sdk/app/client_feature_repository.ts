@@ -5,7 +5,6 @@ import { FeatureStateHolder } from './feature_state';
 
 import { AnalyticsCollector } from './analytics';
 // leave this here, prevents circular deps
-import { FeatureStateTypeTransformer } from './models/models/model_serializer';
 import { FeatureState, FeatureValueType, RolloutStrategy, SSEResultState } from './models';
 import { ClientContext } from './client_context';
 import { Applied, ApplyFeature } from './strategy_matcher';
@@ -20,7 +19,7 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
   private analyticsCollectors = new Array<AnalyticsCollector>();
   private readynessState: Readyness = Readyness.NotReady;
   private readynessListeners: Array<ReadynessListener> = [];
-  private _catchAndReleaseMode: boolean = false;
+  private _catchAndReleaseMode = false;
   // indexed by id
   private _catchReleaseStates = new Map<string, FeatureState>();
   private _newFeatureStateAvailableListeners: Array<PostLoadNewFeatureStateAvailableListener> = [];
@@ -32,7 +31,7 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
   }
 
   public apply(strategies: Array<RolloutStrategy>, key: string, featureValueId: string,
-               context: ClientContext): Applied {
+    context: ClientContext): Applied {
     return this._applyFeature.apply(strategies, key, featureValueId, context);
   }
 
@@ -40,14 +39,14 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
     return this.readynessState;
   }
 
-  public notify(state: SSEResultState, data: any): void {
+  public notify(state: SSEResultState, data: any) {
     if (state !== null && state !== undefined) {
       switch (state) {
         case SSEResultState.Ack: // do nothing, expect state shortly
         case SSEResultState.Bye: // do nothing, we expect a reconnection shortly
           break;
         case SSEResultState.DeleteFeature:
-          this.deleteFeature(FeatureStateTypeTransformer.fromJson(data));
+          this.deleteFeature(data);
           break;
         case SSEResultState.Failure:
           this.readynessState = Readyness.Failed;
@@ -55,8 +54,8 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
             this.broadcastReadynessState();
           }
           break;
-        case SSEResultState.Feature:
-          const fs = FeatureStateTypeTransformer.fromJson(data);
+        case SSEResultState.Feature: {
+          const fs = data instanceof FeatureState ? data : new FeatureState(data);
 
           if (this._catchAndReleaseMode) {
             this._catchUpdatedFeatures([fs]);
@@ -65,11 +64,10 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
               this.triggerNewStateAvailable();
             }
           }
-
+        }
           break;
-        case SSEResultState.Features:
-          const features = (data instanceof Array) ? (data as Array<FeatureState>) :
-            (data as []).map((f) => FeatureStateTypeTransformer.fromJson(f));
+        case SSEResultState.Features: {
+          const features = (data as []).map((f : any) => f instanceof FeatureState ? f : new FeatureState(f));
           if (this.hasReceivedInitialState && this._catchAndReleaseMode) {
 
             this._catchUpdatedFeatures(features);
@@ -84,6 +82,7 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
               this.triggerNewStateAvailable();
             }
           }
+        }
           break;
         default:
           break;
@@ -91,14 +90,14 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
     }
   }
 
-  public addValueInterceptor(matcher: FeatureStateValueInterceptor) {
+  public addValueInterceptor(matcher: FeatureStateValueInterceptor): void {
     this._matchers.push(matcher);
 
     matcher.repository(this);
   }
 
   public valueInterceptorMatched(key: string): InterceptorValueMatch {
-    for (let matcher of this._matchers) {
+    for (const matcher of this._matchers) {
       const m = matcher.matched(key);
       if (m?.value) {
         return m;
@@ -108,7 +107,7 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
     return null;
   }
 
-  public addPostLoadNewFeatureStateAvailableListener(listener: PostLoadNewFeatureStateAvailableListener) {
+  public addPostLoadNewFeatureStateAvailableListener(listener: PostLoadNewFeatureStateAvailableListener): void {
     this._newFeatureStateAvailableListeners.push(listener);
 
     if (this._catchReleaseStates.size > 0) {
@@ -116,7 +115,7 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
     }
   }
 
-  public addReadynessListener(listener: ReadynessListener) {
+  public addReadynessListener(listener: ReadynessListener): void {
     this.readynessListeners.push(listener);
 
     // always let them know what it is in case its already ready
@@ -128,7 +127,7 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
     this.broadcastReadynessState();
   }
 
-  public async broadcastReadynessState() {
+  public broadcastReadynessState(): void {
     this.readynessListeners.forEach((l) => l(this.readynessState));
   }
 
@@ -165,20 +164,20 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
     return vals;
   }
 
-  public async logAnalyticsEvent(action: string, other?: Map<string, string>, ctx?: ClientContext) {
+  public logAnalyticsEvent(action: string, other?: Map<string, string>, ctx?: ClientContext): void {
     const featureStateAtCurrentTime = [];
 
-    for (let fs of this.features.values()) {
+    for (const fs of this.features.values()) {
       if (fs.isSet()) {
         const fsVal: FeatureStateBaseHolder = ctx == null ? fs : fs.withContext(ctx) as FeatureStateBaseHolder;
-        featureStateAtCurrentTime.push( fsVal.analyticsCopy() );
+        featureStateAtCurrentTime.push(fsVal.analyticsCopy());
       }
     }
 
     this.analyticsCollectors.forEach((ac) => ac.logEvent(action, other, featureStateAtCurrentTime));
   }
 
-  public hasFeature(key: string): FeatureStateHolder {
+  public hasFeature(key: string): undefined | FeatureStateHolder {
     return this.features.get(key);
   }
 
@@ -209,6 +208,7 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
     this._catchAndReleaseMode = value;
   }
 
+  // eslint-disable-next-line require-await
   public async release(disableCatchAndRelease?: boolean): Promise<void> {
     while (this._catchReleaseStates.size > 0) {
       const states = [...this._catchReleaseStates.values()];
@@ -267,7 +267,7 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
     }
   }
 
-  private async triggerNewStateAvailable() {
+  private triggerNewStateAvailable(): void {
     if (this.hasReceivedInitialState && this._newFeatureStateAvailableListeners.length > 0) {
       if (!this._catchAndReleaseMode || (this._catchReleaseStates.size > 0)) {
         this._newFeatureStateAvailableListeners.forEach((l) => {
@@ -309,7 +309,7 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
   private deleteFeature(featureState: FeatureState) {
     featureState.value = undefined;
 
-    let holder = this.features.get(featureState.key);
+    const holder = this.features.get(featureState.key);
 
     if (holder) {
       holder.setFeatureState(featureState);

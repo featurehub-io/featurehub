@@ -13,7 +13,7 @@ describe('baggage header should encode correctly', () => {
     features.set('UNDEF', undefined);
     repo.simpleFeatures().returns(features);
 
-    const val = w3cBaggageHeader({repo: repo, header: 'current-baggage'});
+    const val = w3cBaggageHeader({ repo: repo, header: 'current-baggage' });
 
     expect(val).to.eq('current-baggage,fhub=FEATURE_STRING%3Dblah*%2526%253Dblah%2CFEATURE_NUMBER%3D17%2CFEATURE_BOOLEAN%3Dtrue%2CUNDEF%3D');
   });
@@ -29,7 +29,7 @@ describe('baggage header should encode correctly', () => {
     values.set('UNDEF', undefined);
     repo.simpleFeatures().returns(features);
 
-    const val = w3cBaggageHeader({repo: repo});
+    const val = w3cBaggageHeader({ repo: repo });
 
     expect(val).to.eq('fhub=FEATURE_STRING%3Dblah*%2526%253Dblah');
   });
@@ -40,7 +40,7 @@ describe('baggage header should encode correctly', () => {
     const features = new Map<string, string|undefined>();
     repo.simpleFeatures().returns(features);
 
-    const val = w3cBaggageHeader({repo: repo});
+    const val = w3cBaggageHeader({ repo: repo });
     expect(val).to.be.undefined;
   });
 
@@ -50,7 +50,7 @@ describe('baggage header should encode correctly', () => {
     const features = new Map<string, string|undefined>();
     repo.simpleFeatures().returns(features);
 
-    const val = w3cBaggageHeader({repo: repo, header: 'sausage'});
+    const val = w3cBaggageHeader({ repo: repo, header: 'sausage' });
     expect(val).to.eq('sausage');
   });
 });

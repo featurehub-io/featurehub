@@ -67,19 +67,19 @@ describe('Client context should be able to encode as expected', () => {
     edge.received(0).contextChange(Arg.all());
   });
 
-  it("the static client context should just work", async () => {
+  it('the static client context should just work', async () => {
     const environment = new Environment({
       features: [
         new FeatureState({
-          id: "1", key: "banana", version: 1, type: FeatureValueType.Boolean, value: true,
+          id: '1', key: 'banana', version: 1, type: FeatureValueType.Boolean, value: true,
         }),
       ],
     });
     const context = await new LocalClientContext(environment)
-      .userKey("DJElif")
-      .sessionKey("VirtualBurningMan")
+      .userKey('DJElif')
+      .sessionKey('VirtualBurningMan')
       .build();
 
-    expect(context.getBoolean("banana")).to.eq(true);
+    expect(context.getBoolean('banana')).to.eq(true);
   });
 });

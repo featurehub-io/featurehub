@@ -8,6 +8,7 @@ import {
 
 import compareSemver from 'semver-compare';
 import { Netmask } from 'netmask';
+
 // this library is not node specific
 import { v3 as murmur3 } from 'murmurhash';
 import { ClientContext } from './client_context';
@@ -35,116 +36,6 @@ export class Applied {
   }
 }
 
-export class ApplyFeature {
-  private readonly _percentageCalculator: PercentageCalculator;
-  private readonly _matcherRepository: MatcherRepository;
-
-  constructor(percentageCalculator?: PercentageCalculator, matcherRepository?: MatcherRepository) {
-    this._percentageCalculator = percentageCalculator || new Murmur3PercentageCalculator();
-    this._matcherRepository = matcherRepository || new MatcherRegistry();
-  }
-
-  public apply(strategies: Array<RolloutStrategy>, key: string, featureValueId: string,
-               context: ClientContext): Applied {
-    if (context != null && strategies != null && strategies.length > 0) {
-      let percentage: number = null;
-      let percentageKey: string = null;
-      let basePercentage = new Map<string, number>();
-      const defaultPercentageKey = context.defaultPercentageKey();
-
-      for (let rsi of strategies) {
-        if (rsi.percentage !== 0 && (defaultPercentageKey != null ||
-          (rsi.percentageAttributes !== undefined && rsi.percentageAttributes.length > 0))) {
-          let newPercentageKey = this.determinePercentageKey(context, rsi.percentageAttributes);
-
-          if (!basePercentage.has(newPercentageKey)) {
-            basePercentage.set(newPercentageKey, 0);
-          }
-
-          let basePercentageVal = basePercentage.get(newPercentageKey);
-
-          // if we have changed the key or we have never calculated it, calculate it and set the
-          // base percentage to null
-          if (percentage === null || newPercentageKey !== percentageKey) {
-            percentageKey = newPercentageKey;
-            percentage = this._percentageCalculator.determineClientPercentage(percentageKey, featureValueId);
-          }
-
-          let useBasePercentage = (rsi.attributes === undefined || rsi.attributes.length === 0) ? basePercentageVal : 0;
-
-          // if the percentage is lower than the user's key +
-          // id of feature value then apply it
-          if (percentage <= (useBasePercentage + rsi.percentage)) {
-            if (rsi.attributes != null && rsi.attributes.length > 0) {
-              if (this.matchAttribute(context, rsi)) {
-                return new Applied(true, rsi.value);
-              }
-            } else {
-              return new Applied(true, rsi.value);
-            }
-          }
-
-          // this was only a percentage and had no other attributes
-          if (rsi.attributes !== undefined && rsi.attributes.length > 0) {
-            basePercentage.set(percentageKey, basePercentage.get(percentageKey) + rsi.percentage);
-          }
-        }
-
-        if ((rsi.percentage === 0 || rsi.percentage === undefined) && rsi.attributes !== undefined
-              && rsi.attributes.length > 0 &&
-          this.matchAttribute(context, rsi)) { // nothing to do with a percentage
-          return new Applied(true, rsi.value);
-        }
-      }
-    }
-
-    return new Applied(false, null);
-  }
-
-  private determinePercentageKey(context: ClientContext, percentageAttributes: Array<string>): string {
-    if (percentageAttributes == null || percentageAttributes.length === 0) {
-      return context.defaultPercentageKey();
-    }
-
-    return percentageAttributes.filter((pa) => context.getAttr(pa, '<none>')).join('$');
-  }
-
-  private matchAttribute(context: ClientContext, rsi: RolloutStrategy): boolean {
-    for (let attr of rsi.attributes) {
-      let suppliedValue = context.getAttr(attr.fieldName, null);
-      if (suppliedValue === null && attr.fieldName.toLowerCase() === 'now') {
-        // tslint:disable-next-line:switch-default
-        switch (attr.type) {
-          case RolloutStrategyFieldType.Date:
-            suppliedValue = new Date().toISOString().substring(0, 10);
-            break;
-          case RolloutStrategyFieldType.Datetime:
-            suppliedValue = new Date().toISOString();
-            break;
-        }
-      }
-
-      if (attr.values == null && suppliedValue == null) {
-        if (attr.conditional !== RolloutStrategyAttributeConditional.Equals) {
-          return false;
-        }
-
-        continue; // skip
-      }
-
-      if (attr.values == null || suppliedValue == null) {
-        return false;
-      }
-
-      if (!this._matcherRepository.findMatcher(attr).match(suppliedValue, attr)) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-}
-
 export interface StrategyMatcher {
   match(suppliedValue: string, attr: RolloutStrategyAttribute): boolean;
 }
@@ -153,32 +44,8 @@ export interface MatcherRepository {
   findMatcher(attr: RolloutStrategyAttribute): StrategyMatcher;
 }
 
-export class MatcherRegistry implements MatcherRepository {
-  findMatcher(attr: RolloutStrategyAttribute): StrategyMatcher {
-    // tslint:disable-next-line:switch-default
-    switch (attr?.type) {
-      case RolloutStrategyFieldType.String:
-        return new StringMatcher();
-      case RolloutStrategyFieldType.SemanticVersion:
-        return new SemanticVersionMatcher();
-      case RolloutStrategyFieldType.Number:
-        return new NumberMatcher();
-      case RolloutStrategyFieldType.Date:
-        return new DateMatcher();
-      case RolloutStrategyFieldType.Datetime:
-        return new DateTimeMatcher();
-      case RolloutStrategyFieldType.Boolean:
-        return new BooleanMatcher();
-      case RolloutStrategyFieldType.IpAddress:
-        return new IPNetworkMatcher();
-    }
-
-    return new FallthroughMatcher();
-  }
-
-}
-
 class FallthroughMatcher implements StrategyMatcher {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   match(suppliedValue: string, attr: RolloutStrategyAttribute): boolean {
     return false;
   }
@@ -370,5 +237,140 @@ class IPNetworkMatcher implements StrategyMatcher {
     }
 
     return false;
+  }
+}
+
+export class MatcherRegistry implements MatcherRepository {
+  findMatcher(attr: RolloutStrategyAttribute): StrategyMatcher {
+    // tslint:disable-next-line:switch-default
+    switch (attr?.type) {
+      case RolloutStrategyFieldType.String:
+        return new StringMatcher();
+      case RolloutStrategyFieldType.SemanticVersion:
+        return new SemanticVersionMatcher();
+      case RolloutStrategyFieldType.Number:
+        return new NumberMatcher();
+      case RolloutStrategyFieldType.Date:
+        return new DateMatcher();
+      case RolloutStrategyFieldType.Datetime:
+        return new DateTimeMatcher();
+      case RolloutStrategyFieldType.Boolean:
+        return new BooleanMatcher();
+      case RolloutStrategyFieldType.IpAddress:
+        return new IPNetworkMatcher();
+    }
+
+    return new FallthroughMatcher();
+  }
+
+}
+
+export class ApplyFeature {
+  private readonly _percentageCalculator: PercentageCalculator;
+  private readonly _matcherRepository: MatcherRepository;
+
+  constructor(percentageCalculator?: PercentageCalculator, matcherRepository?: MatcherRepository) {
+    this._percentageCalculator = percentageCalculator || new Murmur3PercentageCalculator();
+    this._matcherRepository = matcherRepository || new MatcherRegistry();
+  }
+
+  public apply(strategies: Array<RolloutStrategy>, key: string, featureValueId: string,
+    context: ClientContext): Applied {
+    if (context != null && strategies != null && strategies.length > 0) {
+      let percentage: number = null;
+      let percentageKey: string = null;
+      const basePercentage = new Map<string, number>();
+      const defaultPercentageKey = context.defaultPercentageKey();
+
+      for (const rsi of strategies) {
+        if (rsi.percentage !== 0 && (defaultPercentageKey != null ||
+          (rsi.percentageAttributes !== undefined && rsi.percentageAttributes.length > 0))) {
+          const newPercentageKey = this.determinePercentageKey(context, rsi.percentageAttributes);
+
+          if (!basePercentage.has(newPercentageKey)) {
+            basePercentage.set(newPercentageKey, 0);
+          }
+
+          const basePercentageVal = basePercentage.get(newPercentageKey);
+
+          // if we have changed the key or we have never calculated it, calculate it and set the
+          // base percentage to null
+          if (percentage === null || newPercentageKey !== percentageKey) {
+            percentageKey = newPercentageKey;
+            percentage = this._percentageCalculator.determineClientPercentage(percentageKey, featureValueId);
+          }
+
+          const useBasePercentage = (rsi.attributes === undefined || rsi.attributes.length === 0) ? basePercentageVal : 0;
+
+          // if the percentage is lower than the user's key +
+          // id of feature value then apply it
+          if (percentage <= (useBasePercentage + rsi.percentage)) {
+            if (rsi.attributes != null && rsi.attributes.length > 0) {
+              if (this.matchAttribute(context, rsi)) {
+                return new Applied(true, rsi.value);
+              }
+            } else {
+              return new Applied(true, rsi.value);
+            }
+          }
+
+          // this was only a percentage and had no other attributes
+          if (rsi.attributes !== undefined && rsi.attributes.length > 0) {
+            basePercentage.set(percentageKey, basePercentage.get(percentageKey) + rsi.percentage);
+          }
+        }
+
+        if ((rsi.percentage === 0 || rsi.percentage === undefined) && rsi.attributes !== undefined
+          && rsi.attributes.length > 0 &&
+          this.matchAttribute(context, rsi)) { // nothing to do with a percentage
+          return new Applied(true, rsi.value);
+        }
+      }
+    }
+
+    return new Applied(false, null);
+  }
+
+  private determinePercentageKey(context: ClientContext, percentageAttributes: Array<string>): string {
+    if (percentageAttributes == null || percentageAttributes.length === 0) {
+      return context.defaultPercentageKey();
+    }
+
+    return percentageAttributes.filter((pa) => context.getAttr(pa, '<none>')).join('$');
+  }
+
+  private matchAttribute(context: ClientContext, rsi: RolloutStrategy): boolean {
+    for (const attr of rsi.attributes) {
+      let suppliedValue = context.getAttr(attr.fieldName, null);
+      if (suppliedValue === null && attr.fieldName.toLowerCase() === 'now') {
+        // tslint:disable-next-line:switch-default
+        switch (attr.type) {
+          case RolloutStrategyFieldType.Date:
+            suppliedValue = new Date().toISOString().substring(0, 10);
+            break;
+          case RolloutStrategyFieldType.Datetime:
+            suppliedValue = new Date().toISOString();
+            break;
+        }
+      }
+
+      if (attr.values == null && suppliedValue == null) {
+        if (attr.conditional !== RolloutStrategyAttributeConditional.Equals) {
+          return false;
+        }
+
+        continue; // skip
+      }
+
+      if (attr.values == null || suppliedValue == null) {
+        return false;
+      }
+
+      if (!this._matcherRepository.findMatcher(attr).match(suppliedValue, attr)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 }

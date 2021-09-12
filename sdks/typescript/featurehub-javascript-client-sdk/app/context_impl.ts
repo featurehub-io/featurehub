@@ -4,7 +4,7 @@ import {
   StrategyAttributeCountryName,
   StrategyAttributeDeviceName,
   StrategyAttributePlatformName,
-} from "./models";
+} from './models';
 import { FeatureStateHolder } from './feature_state';
 import { EdgeService } from './edge_service';
 import { FeatureHubRepository } from './featurehub_repository';
@@ -48,11 +48,13 @@ export abstract class BaseClientContext implements ClientContext {
     return this;
   }
 
+  // eslint-disable-next-line camelcase
   attribute_value(key: string, value: string): ClientContext {
     this._attributes.set(key, [value]);
     return this;
   }
 
+  // eslint-disable-next-line camelcase
   attribute_values(key: string, values: Array<string>): ClientContext {
     this._attributes.set(key, values);
     return this;
@@ -114,13 +116,13 @@ export abstract class BaseClientContext implements ClientContext {
   // feature(name: string): FeatureStateHolder {
   //   return this._repository.feature(name);
   // }
-  abstract close();
+  abstract close(): void;
 
   repository(): FeatureHubRepository {
     return this._repository;
   }
 
-  logAnalyticsEvent(action: string, other?: Map<string, string>, user?: string) {
+  logAnalyticsEvent(action: string, other?: Map<string, string>, user?: string): void {
     if (user == null) {
       user = this.getAttr('userkey');
     }
@@ -142,7 +144,7 @@ export class ServerEvalFeatureContext extends BaseClientContext {
   private _xHeader: string;
 
   constructor(repository: InternalFeatureRepository,
-              edgeServiceSupplier: EdgeServiceSupplier) {
+    edgeServiceSupplier: EdgeServiceSupplier) {
     super(repository);
 
     this._edgeServiceSupplier = edgeServiceSupplier;
@@ -172,7 +174,7 @@ export class ServerEvalFeatureContext extends BaseClientContext {
     return this;
   }
 
-  close() {
+  close(): void {
     if (this._currentEdge) {
       this._currentEdge.close();
     }
@@ -196,13 +198,14 @@ export class ClientEvalFeatureContext extends BaseClientContext {
     this._edgeService = edgeService;
   }
 
+  // eslint-disable-next-line require-await
   async build(): Promise<ClientContext> {
     this._edgeService.poll(); // in case it hasn't already been initialized
 
     return this;
   }
 
-  close() {
+  close(): void {
     this._edgeService.close();
   }
 

@@ -32,7 +32,7 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
 
   public addListener(listener: FeatureListener): void {
     if (this._ctx !== undefined) {
-      this.listeners.push((fs) => listener(this));
+      this.listeners.push(() => listener(this));
     } else {
       this.listeners.push(listener);
     }
@@ -115,7 +115,7 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
     this.notifyListeners(feature);
   }
 
-  protected async notifyListeners(feature?: FeatureStateHolder) {
+  protected notifyListeners(feature?: FeatureStateHolder): void {
     this.listeners.forEach((l) => {
       try {
         l(feature || this);

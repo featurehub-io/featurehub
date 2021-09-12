@@ -33,7 +33,7 @@ describe('Feature repository reacts to incoming event lists as expected', () => 
     });
     repo.addPostLoadNewFeatureStateAvailableListener(() => postTrigger++);
     const features = [
-      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.Boolean, value: true}),
+      new FeatureState({ id: '1', key: 'banana', version: 1, type: FeatureValueType.Boolean, value: true }),
     ];
 
     repo.notify(SSEResultState.Features, features);
@@ -69,9 +69,9 @@ describe('Feature repository reacts to incoming event lists as expected', () => 
     expect(repo.getFeatureState('peach').getBoolean()).to.be.undefined;
 
     const features = [
-      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.Boolean, value: true}),
-      new FeatureState({id: '2', key: 'pear', version: 1, type: FeatureValueType.Boolean, value: false}),
-      new FeatureState({id: '3', key: 'peach', version: 1, type: FeatureValueType.Boolean, value: true}),
+      new FeatureState({ id: '1', key: 'banana', version: 1, type: FeatureValueType.Boolean, value: true }),
+      new FeatureState({ id: '2', key: 'pear', version: 1, type: FeatureValueType.Boolean, value: false }),
+      new FeatureState({ id: '3', key: 'peach', version: 1, type: FeatureValueType.Boolean, value: true }),
     ];
 
     repo.notify(SSEResultState.Features, features);
@@ -87,9 +87,9 @@ describe('Feature repository reacts to incoming event lists as expected', () => 
     expect(repo.getFeatureState('peach').getBoolean()).to.be.true;
 
     const features2 = [
-      new FeatureState({id: '1', key: 'banana', version: 2, type: FeatureValueType.Boolean, value: false}),
-      new FeatureState({id: '2', key: 'pear', version: 1, type: FeatureValueType.Boolean, value: false}),
-      new FeatureState({id: '3', key: 'peach', version: 2, type: FeatureValueType.Boolean, value: true}),
+      new FeatureState({ id: '1', key: 'banana', version: 2, type: FeatureValueType.Boolean, value: false }),
+      new FeatureState({ id: '2', key: 'pear', version: 1, type: FeatureValueType.Boolean, value: false }),
+      new FeatureState({ id: '3', key: 'peach', version: 2, type: FeatureValueType.Boolean, value: true }),
     ];
 
     // only banana should trigger as it has changed its value and its version
@@ -116,9 +116,9 @@ describe('Feature repository reacts to incoming event lists as expected', () => 
     repo.getFeatureState('peach').addListener(() => triggerPeach++);
 
     const features = [
-      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.Number, value: 7.2}),
-      new FeatureState({id: '2', key: 'pear', version: 1, type: FeatureValueType.Number, value: 15}),
-      new FeatureState({id: '3', key: 'peach', version: 1, type: FeatureValueType.Number, value: 56534.23}),
+      new FeatureState({ id: '1', key: 'banana', version: 1, type: FeatureValueType.Number, value: 7.2 }),
+      new FeatureState({ id: '2', key: 'pear', version: 1, type: FeatureValueType.Number, value: 15 }),
+      new FeatureState({ id: '3', key: 'peach', version: 1, type: FeatureValueType.Number, value: 56534.23 }),
     ];
 
     repo.notify(SSEResultState.Features, features);
@@ -131,9 +131,9 @@ describe('Feature repository reacts to incoming event lists as expected', () => 
     expect(repo.getFeatureState('peach').getNumber()).to.eq(56534.23);
 
     const features2 = [
-      new FeatureState({id: '1', key: 'banana', version: 2, type: FeatureValueType.Number, value: 16}),
-      new FeatureState({id: '2', key: 'pear', version: 1, type: FeatureValueType.Number, value: 15}),
-      new FeatureState({id: '3', key: 'peach', version: 2, type: FeatureValueType.Number, value: 56534.23}),
+      new FeatureState({ id: '1', key: 'banana', version: 2, type: FeatureValueType.Number, value: 16 }),
+      new FeatureState({ id: '2', key: 'pear', version: 1, type: FeatureValueType.Number, value: 15 }),
+      new FeatureState({ id: '3', key: 'peach', version: 2, type: FeatureValueType.Number, value: 56534.23 }),
     ];
 
     // only banana should trigger as it has changed its value and its version
@@ -150,11 +150,11 @@ describe('Feature repository reacts to incoming event lists as expected', () => 
   });
 
   it('should accept and trigger events via a context and the repo in the same fashion for the same feature',
-     async () => {
+    async () => {
       const fhConfig = new EdgeFeatureHubConfig('http://localhost:8080', '123*123');
       fhConfig.repository(repo);
       const edgeService = Substitute.for<EdgeService>();
-      fhConfig.edgeServiceProvider((repository, config) => edgeService);
+      fhConfig.edgeServiceProvider(() => edgeService);
 
       let triggerContext = 0;
       let triggerRepo = 0;
@@ -224,9 +224,9 @@ describe('Feature repository reacts to incoming event lists as expected', () => 
     repo.getFeatureState('peach').addListener(() => triggerPeach++);
 
     const features = [
-      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.String, value: '7.2'}),
-      new FeatureState({id: '2', key: 'pear', version: 1, type: FeatureValueType.String, value: '15'}),
-      new FeatureState({id: '3', key: 'peach', version: 1, type: FeatureValueType.String, value: '56534.23'}),
+      new FeatureState({ id: '1', key: 'banana', version: 1, type: FeatureValueType.String, value: '7.2' }),
+      new FeatureState({ id: '2', key: 'pear', version: 1, type: FeatureValueType.String, value: '15' }),
+      new FeatureState({ id: '3', key: 'peach', version: 1, type: FeatureValueType.String, value: '56534.23' }),
     ];
 
     repo.notify(SSEResultState.Features, features);
@@ -239,9 +239,9 @@ describe('Feature repository reacts to incoming event lists as expected', () => 
     expect(repo.getFeatureState('peach').getString()).to.eq('56534.23');
 
     const features2 = [
-      new FeatureState({id: '1', key: 'banana', version: 2, type: FeatureValueType.String, value: '16'}),
-      new FeatureState({id: '2', key: 'pear', version: 1, type: FeatureValueType.String, value: '15'}),
-      new FeatureState({id: '3', key: 'peach', version: 2, type: FeatureValueType.String, value: '56534.23'}),
+      new FeatureState({ id: '1', key: 'banana', version: 2, type: FeatureValueType.String, value: '16' }),
+      new FeatureState({ id: '2', key: 'pear', version: 1, type: FeatureValueType.String, value: '15' }),
+      new FeatureState({ id: '3', key: 'peach', version: 2, type: FeatureValueType.String, value: '56534.23' }),
     ];
 
     // only banana should trigger as it has changed its value and its version
@@ -266,8 +266,8 @@ describe('Feature repository reacts to incoming event lists as expected', () => 
     repo.getFeatureState('peach').addListener(() => triggerPeach++);
 
     const features = [
-      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.Json, value: '{}'}),
-      new FeatureState({id: '2', key: 'pear', version: 1, type: FeatureValueType.Json, value: '"nashi"'}),
+      new FeatureState({ id: '1', key: 'banana', version: 1, type: FeatureValueType.Json, value: '{}' }),
+      new FeatureState({ id: '2', key: 'pear', version: 1, type: FeatureValueType.Json, value: '"nashi"' }),
       new FeatureState({
         id: '3',
         key: 'peach',
@@ -287,8 +287,8 @@ describe('Feature repository reacts to incoming event lists as expected', () => 
     expect(repo.getFeatureState('peach').getRawJson()).to.eq('{"variety": "golden queen"}');
 
     const features2 = [
-      new FeatureState({id: '1', key: 'banana', version: 2, type: FeatureValueType.Json, value: '"yellow"'}),
-      new FeatureState({id: '2', key: 'pear', version: 1, type: FeatureValueType.Json, value: '"nashi"'}),
+      new FeatureState({ id: '1', key: 'banana', version: 2, type: FeatureValueType.Json, value: '"yellow"' }),
+      new FeatureState({ id: '2', key: 'pear', version: 1, type: FeatureValueType.Json, value: '"nashi"' }),
       new FeatureState({
         id: '3',
         key: 'peach',

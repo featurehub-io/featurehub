@@ -10,7 +10,7 @@ export interface InternalFeatureRepository extends FeatureHubRepository {
   // change the context
   notReady(): void;
 
-  notify(state: SSEResultState, data: any): void;
+  notify(state: SSEResultState, data: any);
 
   valueInterceptorMatched(key: string): InterceptorValueMatch;
 

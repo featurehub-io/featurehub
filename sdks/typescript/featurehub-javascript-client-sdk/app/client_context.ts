@@ -6,10 +6,6 @@ import {
 import { FeatureStateHolder } from './feature_state';
 import { FeatureHubRepository } from './featurehub_repository';
 
-export interface ConfigChangedListener {
-  (config: ClientContext);
-}
-
 export interface ClientContext {
   userKey(value: string): ClientContext;
   sessionKey(value: string): ClientContext;
@@ -17,7 +13,9 @@ export interface ClientContext {
   device(value: StrategyAttributeDeviceName): ClientContext;
   platform(value: StrategyAttributePlatformName): ClientContext;
   version(version: string): ClientContext;
+  // eslint-disable-next-line camelcase
   attribute_value(key: string, value: string): ClientContext;
+  // eslint-disable-next-line camelcase
   attribute_values(key: string, values: Array<string>): ClientContext;
   clear(): ClientContext;
   build(): Promise<ClientContext>;
@@ -39,6 +37,9 @@ export interface ClientContext {
   logAnalyticsEvent(action: string, other?: Map<string, string>, user?: string);
 
   close();
+}
+export interface ConfigChangedListener {
+  (config: ClientContext);
 }
 
 

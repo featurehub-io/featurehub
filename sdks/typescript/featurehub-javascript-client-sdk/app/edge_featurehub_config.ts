@@ -20,7 +20,7 @@ export class EdgeFeatureHubConfig implements FeatureHubConfig {
   private _edgeServices: Array<EdgeService> = [];
 
   static defaultEdgeServiceSupplier: EdgeServiceProvider = (repository, config) =>
-    new FeatureHubEventSourceClient(config, repository)
+    new FeatureHubEventSourceClient(config, repository);
 
   constructor(host: string, apiKey: string) {
     this._apiKey = apiKey;
@@ -39,7 +39,7 @@ export class EdgeFeatureHubConfig implements FeatureHubConfig {
     }
 
     if (this._host.endsWith('/features/')) {
-      this._host = this._host.substring(0, this._host.length - ('/features/'.length-1));
+      this._host = this._host.substring(0, this._host.length - ('/features/'.length - 1));
     }
 
     this._url = this._host + 'features/' + this._apiKey;
@@ -83,25 +83,25 @@ export class EdgeFeatureHubConfig implements FeatureHubConfig {
     edgeService = edgeService || this.edgeServiceProvider();
 
     return this._clientEval ?
-      new ClientEvalFeatureContext(repository, this._getOrCreateEdgeService(edgeService, repository)) :
-      new ServerEvalFeatureContext(repository, () => this._createEdgeService(edgeService, repository));
+      new ClientEvalFeatureContext(repository, this.getOrCreateEdgeService(edgeService, repository)) :
+      new ServerEvalFeatureContext(repository, () => this.createEdgeService(edgeService, repository));
   }
 
-  _getOrCreateEdgeService(edgeServSupplier: EdgeServiceProvider, repository?: InternalFeatureRepository): EdgeService {
+  private getOrCreateEdgeService(edgeServSupplier: EdgeServiceProvider, repository?: InternalFeatureRepository): EdgeService {
     if (this._edgeServices.length === 0) {
-      return this._createEdgeService(edgeServSupplier, repository);
+      return this.createEdgeService(edgeServSupplier, repository);
     }
 
     return this._edgeServices[0];
   }
 
-  _createEdgeService(edgeServSupplier: EdgeServiceProvider, repository?: InternalFeatureRepository): EdgeService {
+  private createEdgeService(edgeServSupplier: EdgeServiceProvider, repository?: InternalFeatureRepository): EdgeService {
     const es = edgeServSupplier(repository || this.repository(), this);
     this._edgeServices.push(es);
     return es;
   }
 
-  close() {
+  close(): void {
     this._edgeServices.forEach((es) => {
       es.close();
     });
@@ -112,7 +112,7 @@ export class EdgeFeatureHubConfig implements FeatureHubConfig {
     this.repository();
 
     // ensure the edge service provider exists
-    this._createEdgeService(this.edgeServiceProvider()).poll().catch((e) => fhLog.error(`Failed to connect to FeatureHub Edge ${e}`));
+    this.createEdgeService(this.edgeServiceProvider()).poll().catch((e) => fhLog.error(`Failed to connect to FeatureHub Edge ${e}`));
 
     return this;
   }

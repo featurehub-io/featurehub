@@ -31,7 +31,7 @@ export class GoogleAnalyticsCollector implements AnalyticsCollector {
   private apiClient: GoogleAnalyticsApiClient;
 
   public static googleAnalyticsClientProvider: GoogleAnalyticsApiClientProvider =
-    () => new BrowserGoogleAnalyticsApiClient()
+    () => new BrowserGoogleAnalyticsApiClient();
 
   constructor(uaKey: string, cid?: string, apiClient?: GoogleAnalyticsApiClient) {
     if (uaKey == null) {
@@ -53,7 +53,7 @@ export class GoogleAnalyticsCollector implements AnalyticsCollector {
   }
 
   public logEvent(action: string, other: Map<string, string>,
-                  featureStateAtCurrentTime: Array<FeatureStateHolder>): void {
+    featureStateAtCurrentTime: Array<FeatureStateHolder>): void {
     const finalCid = this._cid ?? this.apiClient.cid(other);
     if (finalCid === undefined) {
       return; // cannot log this event

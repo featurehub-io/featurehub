@@ -7,11 +7,11 @@ import {
   SSEResultState
 } from '../app';
 import { expect } from 'chai';
-import { Arg, Substitute } from '@fluffy-spoon/substitute';
+import { Substitute } from '@fluffy-spoon/substitute';
 
 class KeyValueInterceptor implements FeatureStateValueInterceptor {
-  private key: string;
-  private value: string;
+  private readonly key: string;
+  private readonly value: string;
 
   constructor(key: string, value: string) {
     this.key = key;
@@ -22,6 +22,7 @@ class KeyValueInterceptor implements FeatureStateValueInterceptor {
     return key === this.key ? new InterceptorValueMatch(this.value) : undefined;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   repository(repo: FeatureHubRepository): void {
     //
   }
@@ -36,9 +37,9 @@ describe('Interceptor functionality works as expected', () => {
 
   it('should allow us to override unlocked values', () => {
     const features = [
-      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.Boolean, value: false}),
-      new FeatureState({id: '1', key: 'apricot', version: 1, type: FeatureValueType.Number, value: 16.2}),
-      new FeatureState({id: '1', key: 'nashi', version: 1, type: FeatureValueType.String, value: 'oook'}),
+      new FeatureState({ id: '1', key: 'banana', version: 1, type: FeatureValueType.Boolean, value: false }),
+      new FeatureState({ id: '1', key: 'apricot', version: 1, type: FeatureValueType.Number, value: 16.2 }),
+      new FeatureState({ id: '1', key: 'nashi', version: 1, type: FeatureValueType.String, value: 'oook' }),
       new FeatureState({
         id: '3', key: 'peach', version: 1, type: FeatureValueType.Json,
         value: '{"variety": "golden queen"}'
@@ -62,12 +63,12 @@ describe('Interceptor functionality works as expected', () => {
     const fhConfig = new EdgeFeatureHubConfig('http://localhost:8080', '123*123');
     fhConfig.repository(repo);
     const edgeService = Substitute.for<EdgeService>();
-    fhConfig.edgeServiceProvider((repository, config) => edgeService);
+    fhConfig.edgeServiceProvider(() => edgeService);
 
     const features = [
-      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.Boolean, l: true, value: false}),
-      new FeatureState({id: '1', key: 'apricot', version: 1, type: FeatureValueType.Number, l: true, value: 16.2}),
-      new FeatureState({id: '1', key: 'nashi', version: 1, type: FeatureValueType.String, l: true, value: 'oook'}),
+      new FeatureState({ id: '1', key: 'banana', version: 1, type: FeatureValueType.Boolean, l: true, value: false }),
+      new FeatureState({ id: '1', key: 'apricot', version: 1, type: FeatureValueType.Number, l: true, value: 16.2 }),
+      new FeatureState({ id: '1', key: 'nashi', version: 1, type: FeatureValueType.String, l: true, value: 'oook' }),
       new FeatureState({
         id: '3', key: 'peach', version: 1, type: FeatureValueType.Json, l: true,
         value: '{"variety": "golden queen"}'
@@ -90,6 +91,6 @@ describe('Interceptor functionality works as expected', () => {
     expect(client.feature('nashi').getString()).to.eq('oook');
     expect(client.getString('nashi')).to.eq('oook');
     expect(client.feature('peach').getRawJson()).to.eq('{"variety": "golden queen"}');
-    expect(client.getJson('peach')).to.deep.eq({variety: 'golden queen'});
+    expect(client.getJson('peach')).to.deep.eq({ variety: 'golden queen' });
   });
 });

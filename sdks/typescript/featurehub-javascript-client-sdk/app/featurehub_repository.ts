@@ -27,7 +27,7 @@ export interface FeatureHubRepository {
   logAnalyticsEvent(action: string, other?: Map<string, string>, ctx?: ClientContext);
 
   // returns undefined if the feature does not exist
-  hasFeature(key: string): FeatureStateHolder;
+  hasFeature(key: string): undefined | FeatureStateHolder;
 
   // synonym for getFeatureState
   feature(key: string): FeatureStateHolder;
@@ -51,9 +51,9 @@ export interface FeatureHubRepository {
 
   isSet(key: string): boolean;
 
-  addValueInterceptor(interceptor: FeatureStateValueInterceptor);
+  addValueInterceptor(interceptor: FeatureStateValueInterceptor): void;
 
-  addReadynessListener(listener: ReadynessListener);
+  addReadynessListener(listener: ReadynessListener): void;
 
   addAnalyticCollector(collector: AnalyticsCollector): void;
 

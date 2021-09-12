@@ -29,7 +29,7 @@ class BaggageHolder implements FeatureStateHolder {
     return new BaggageHolder(this.existing.withContext(param), this.value);
   }
 
-// tslint:disable-next-line:no-empty
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   addListener(listener: FeatureListener): void {
   }
 
@@ -141,7 +141,7 @@ class BaggageRepository implements InternalFeatureRepository {
     return this.repo.readyness;
   }
 
-  hasFeature(key: string): FeatureStateHolder {
+  hasFeature(key: string): undefined | FeatureStateHolder {
     return this.feature(key);
   }
 

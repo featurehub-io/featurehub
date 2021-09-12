@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { EdgeService } from './edge_service';
 import { FeatureHubConfig, fhLog } from './feature_hub_config';
 import { InternalFeatureRepository } from './internal_feature_repository';
@@ -28,13 +29,16 @@ export declare class EventSource {
   close(): void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export declare namespace EventSource {
   enum ReadyState { CONNECTING = 0, OPEN = 1, CLOSED = 2 }
 
   interface EventSourceInitDict {
     withCredentials?: boolean;
+    // eslint-disable-next-line @typescript-eslint/ban-types
     headers?: object;
     proxy?: string;
+    // eslint-disable-next-line @typescript-eslint/ban-types
     https?: object;
     rejectUnauthorized?: boolean;
   }
@@ -52,7 +56,7 @@ export class FeatureHubEventSourceClient implements EdgeService {
     const realUrl = dict.headers && dict.headers['x-featurehub'] ?
       url + '?xfeaturehub=' + encodeURI(dict.headers['x-featurehub']) : url;
     return new EventSource(realUrl, dict);
-  }
+  };
 
   constructor(config: FeatureHubConfig, repository: InternalFeatureRepository) {
     this._config = config;
@@ -72,16 +76,16 @@ export class FeatureHubEventSourceClient implements EdgeService {
     this.eventSource = FeatureHubEventSourceClient.eventSourceProvider(this._config.url(), options);
 
     [SSEResultState.Features, SSEResultState.Feature, SSEResultState.DeleteFeature,
-        SSEResultState.Bye, SSEResultState.Failure, SSEResultState.Ack].forEach((name) => {
-          const fName = name.toString();
-          this.eventSource.addEventListener(fName,
-                                            e => {
-        try {
-          const data = JSON.parse((e as any).data);
-          fhLog.trace(`received ${fName}`, data);
-          this._repository.notify(name, data);
-        } catch (e) { fhLog.error(JSON.stringify(e)); }
-                                        });
+      SSEResultState.Bye, SSEResultState.Failure, SSEResultState.Ack].forEach((name) => {
+      const fName = name.toString();
+      this.eventSource.addEventListener(fName,
+        e => {
+          try {
+            const data = JSON.parse((e as any).data);
+            fhLog.trace(`received ${fName}`, data);
+            this._repository.notify(name, data);
+          } catch (e) { fhLog.error(JSON.stringify(e)); }
+        });
     });
 
     this.eventSource.onerror = (e) => {

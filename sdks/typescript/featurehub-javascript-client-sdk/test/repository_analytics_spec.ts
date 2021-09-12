@@ -7,7 +7,7 @@ import {
 } from '../app';
 import { expect } from 'chai';
 
-describe( 'We should be able to log an analytics event', () => {
+describe('We should be able to log an analytics event', () => {
   let repo: ClientFeatureRepository;
   let firedAction: string;
   let firedOther: Map<string, string>;
@@ -20,8 +20,8 @@ describe( 'We should be able to log an analytics event', () => {
     firedFeatures = undefined;
 
     repo.addAnalyticCollector({
-      logEvent: function(action: string, other: Map<string, string>,
-                         featureStateAtCurrentTime: Array<FeatureStateHolder>) {
+      logEvent: function (action: string, other: Map<string, string>,
+        featureStateAtCurrentTime: Array<FeatureStateHolder>) {
         firedAction = action;
         firedOther = other;
         firedFeatures = featureStateAtCurrentTime;
@@ -34,8 +34,8 @@ describe( 'We should be able to log an analytics event', () => {
     const fhConfig = new EdgeFeatureHubConfig('http://localhost:8080', '123*123');
     fhConfig.repository(repo);
     fhConfig.addAnalyticCollector({
-      logEvent: function(action: string, other: Map<string, string>,
-                         featureStateAtCurrentTime: Array<FeatureStateHolder>) {
+      logEvent: function (action: string, other: Map<string, string>,
+        featureStateAtCurrentTime: Array<FeatureStateHolder>) {
         firedAction = action;
         firedOther = other;
         firedFeatures = featureStateAtCurrentTime;
@@ -68,7 +68,7 @@ describe( 'We should be able to log an analytics event', () => {
 
   it('should snapshot the features', () => {
     const features = [
-      new FeatureState({id: '1', key: 'banana', version: 1, type: FeatureValueType.Boolean, value: true}),
+      new FeatureState({ id: '1', key: 'banana', version: 1, type: FeatureValueType.Boolean, value: true }),
     ];
 
     repo.notify(SSEResultState.Features, features);

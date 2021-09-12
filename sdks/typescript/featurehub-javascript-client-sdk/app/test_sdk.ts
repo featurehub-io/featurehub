@@ -9,12 +9,12 @@ export interface FeatureUpdatePostManager {
 
 class BrowserFeaturePostUpdater implements FeatureUpdatePostManager {
   post(url: string, update: FeatureStateUpdate): Promise<boolean> {
-    return new Promise<boolean>( (resolve) => {
+    return new Promise<boolean>((resolve) => {
       const req = new XMLHttpRequest();
       req.open('PUT', url);
       req.setRequestHeader('Content-type', 'application/json');
       req.send(JSON.stringify(ObjectSerializer.serialize(update, 'FeatureStateUpdate')));
-      req.onreadystatechange  = function() {
+      req.onreadystatechange  = function () {
         if (req.readyState === 4) {
           resolve(req.status >= 200 && req.status < 300);
         }

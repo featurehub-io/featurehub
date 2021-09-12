@@ -31,7 +31,7 @@ export interface BaggageHeader {
 }
 
 // allows for consistency between client and server
-export function w3cBaggageHeader({repo, values, header}: BaggageHeader): string|undefined {
+export function w3cBaggageHeader({ repo, values, header }: BaggageHeader): string|undefined {
   const newHeader = createBaseBaggageHeader(header);
 
   let features: string;

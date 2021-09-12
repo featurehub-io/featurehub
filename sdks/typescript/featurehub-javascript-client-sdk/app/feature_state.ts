@@ -1,7 +1,10 @@
 import { FeatureValueType } from './models';
 import { ClientContext } from './client_context';
 
+// these two depend on each other
+
 export interface FeatureListener {
+  // eslint-disable-next-line no-use-before-define
   (featureChanged: FeatureStateHolder): void;
 }
 

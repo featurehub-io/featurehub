@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { Environment, FeatureState, FeatureValueType, LocalClientContext } from '../app';
 
 describe('Local context should be able to evaluate', () => {
-  it('the ', async () => {
+  it('the ', () => {
     const context = new LocalClientContext(new Environment({
       features: [
         new FeatureState({

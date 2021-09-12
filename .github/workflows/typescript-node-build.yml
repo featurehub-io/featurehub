@@ -30,6 +30,9 @@ jobs:
       - name: Build (tests build of commonjs and es6 modules)
         run: npm run build
         working-directory: sdks/typescript/featurehub-javascript-node-sdk
+      - name: Ensure everything is linted correctly
+        run: npm run lint
+        working-directory: sdks/typescript/featurehub-javascript-node-sdk
       - name: Build and test
         run: npm run test
         working-directory: sdks/typescript/featurehub-javascript-node-sdk
