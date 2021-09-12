@@ -34,6 +34,11 @@ class NodejsPollingService extends PollingBase implements PollingService {
       const headers = this._header === undefined ? {} : {
         'x-featurehub': this._header
       };
+
+      if (this._etag) {
+        headers['if-none-match'] = this._etag;
+      }
+
       // we are not specifying the type as it forces us to bring in one of http or https
       const reqOptions = {
         protocol: this.uri.protocol,
@@ -49,7 +54,10 @@ class NodejsPollingService extends PollingBase implements PollingService {
         res.on('data', (chunk) => data += chunk);
         res.on('end', () => {
           if (res.statusCode === 200) {
+            this._etag = res.headers.etag;
             this._callback(ObjectSerializer.deserialize(JSON.parse(data), 'Array<Environment>'));
+            resolve();
+          } else if (res.statusCode == 304) {
             resolve();
           } else if (res.statusCode >= 400 && res.statusCode < 500) {
             reject(`Failed to connect to ${this.url} with ${res.statusCode}`);

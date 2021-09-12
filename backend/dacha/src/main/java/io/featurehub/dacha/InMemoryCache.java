@@ -325,10 +325,12 @@ public class InMemoryCache implements InternalCache {
           return;
         }
 
+        boolean featureMapChanged = false;
         if (fv.getAction() == PublishAction.CREATE || fv.getAction() == PublishAction.UPDATE) {
           boolean featureChanged = feature.getFeature().getVersion() < fv.getFeature().getVersion();
           if (featureChanged) {
             feature.feature(fv.getFeature()); // replace the feature it has changed
+            featureMapChanged = true;
           }
           // now we know the feature + feature-value
           //log.info("feature new  {} vs old {}", fv, feature);
@@ -336,10 +338,12 @@ public class InMemoryCache implements InternalCache {
             if (feature.getValue() == null) {
               feature.value(fv.getValue());
               feature.strategies(fv.getStrategies());
+              featureMapChanged = true;
             } else if (feature.getValue().getVersion() == null || (fv.getValue().getVersion() != null && feature.getValue().getVersion() < fv.getValue().getVersion())) {
               feature.value(fv.getValue());
               feature.strategies(fv.getStrategies());
               log.trace("replacing with {}: {} / {}", fv.getFeature(), fv.getValue(), fv.getStrategies());
+              featureMapChanged = true;
             } else if (!featureChanged) {
               log.warn("attempted to remove/update envId:key {}:{} that is older than existing version, ignoring", fv.getEnvironmentId(), fv.getFeature().getKey());
             }
@@ -349,6 +353,10 @@ public class InMemoryCache implements InternalCache {
         } else if (fv.getAction() == PublishAction.DELETE) {
           log.debug("removing feature value from feature key `{}` in environment `{}`", fv.getFeature().getKey(), fv.getEnvironmentId());
           featureMap.remove(fv.getFeature().getId());
+          featureMapChanged = true;
+        }
+        if (featureMapChanged) {
+          featureMap.calculateEtag();
         }
       } else {
         log.warn("received update for non existent environment `{}`", fv.getEnvironmentId());
