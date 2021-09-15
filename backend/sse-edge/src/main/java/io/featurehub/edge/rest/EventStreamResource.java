@@ -97,7 +97,7 @@ public class EventStreamResource {
   public void getFeatureStates(@Suspended AsyncResponse response, @QueryParam("sdkUrl") List<String> sdkUrls,
                                @QueryParam("apiKey") List<String> apiKeys,
                                @HeaderParam("x-featurehub") List<String> featureHubAttrs,
-                               @HeaderParam("etag") String etagHeader) {
+                               @HeaderParam("if-none-match") String etagHeader) {
     if ((sdkUrls == null || sdkUrls.isEmpty()) && (apiKeys == null || apiKeys.isEmpty()) ) {
       response.resume(new BadRequestException());
       return;

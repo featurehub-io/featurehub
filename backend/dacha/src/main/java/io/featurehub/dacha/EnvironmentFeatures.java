@@ -17,13 +17,12 @@ class EnvironmentFeatures implements InternalCache.FeatureValues {
     calculateEtag();
   }
 
-  private void calculateEtag() {
+  public void calculateEtag() {
+    String val = features.values().stream()
+      .map(fvci -> fvci.getFeature().getId() + "-" + (fvci.getValue() == null ? "0000" :  fvci.getValue().getVersion()))
+      .collect(Collectors.joining("-"));
     etag =
-        Integer.toHexString(
-            features.values().stream()
-                .map(fvci -> fvci.getFeature().getId() + "-" + fvci.getFeature().getVersion())
-                .collect(Collectors.joining("-"))
-                .hashCode());
+        Integer.toHexString(val.hashCode());
   }
 
   public FeatureValueCacheItem get(UUID id) {

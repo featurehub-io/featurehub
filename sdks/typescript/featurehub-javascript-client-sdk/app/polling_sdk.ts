@@ -23,6 +23,7 @@ export abstract class PollingBase implements PollingService {
   protected _callback: FeaturesFunction;
   protected stopped = false;
   protected _header: string;
+  protected _etag: string;
 
   constructor(url: string, frequency: number, callback: FeaturesFunction) {
     this.url = url;
@@ -75,6 +76,11 @@ class BrowserPollingService extends PollingBase implements PollingService {
       const req = new XMLHttpRequest();
       req.open('GET', this.url);
       req.setRequestHeader('Content-type', 'application/json');
+
+      if (this._etag) {
+        req.setRequestHeader('if-none-match', this._etag);
+      }
+
       if (this._header) {
         req.setRequestHeader('x-featurehub', this._header);
       }
@@ -84,7 +90,10 @@ class BrowserPollingService extends PollingBase implements PollingService {
       req.onreadystatechange = () => {
         if (req.readyState === 4) {
           if (req.status === 200) {
+            this._etag = req.getResponseHeader('etag');
             this._callback(ObjectSerializer.deserialize(JSON.parse(req.responseText), 'Array<Environment>'));
+            resolve();
+          } else if (req.status == 304) { // no change
             resolve();
           } else if (req.status >= 400 && req.status < 500) {
             reject(`Failed to connect to ${this.url} with ${req.status}`);

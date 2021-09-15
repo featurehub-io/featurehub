@@ -61,10 +61,12 @@ public class TimedBucketClientConnection implements ClientConnection {
 
   @Override
   public boolean discovery() {
-    try {
-      writeMessage(SSEResultState.ACK, SSEStatusMessage.status("discover"));
-    } catch (IOException e) {
-      return false;
+    if (!etags.getValidEtag()) {
+      try {
+        writeMessage(SSEResultState.ACK, SSEStatusMessage.status("discover"));
+      } catch (IOException e) {
+        return false;
+      }
     }
 
     return true;
@@ -98,7 +100,7 @@ public class TimedBucketClientConnection implements ClientConnection {
   public void writeMessage(SSEResultState name, String etags, String data) throws IOException {
     if (!output.isClosed()) {
       final OutboundEvent.Builder eventBuilder = new OutboundEvent.Builder();
-      log.trace("data is : {}", data);
+      log.debug("data is  etag `{}`: data `{}`", etags, data);
       eventBuilder.name(name.toString());
       eventBuilder.mediaType(MediaType.TEXT_PLAIN_TYPE);
       if (etags != null) {
