@@ -1,15 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>io.featurehub.common</groupId>
-  <artifactId>common-web</artifactId>
+  <parent>
+    <groupId>io.featurehub.composites</groupId>
+    <artifactId>composite-parent</artifactId>
+    <version>1.2-SNAPSHOT</version>
+    <relativePath>../composite-parent</relativePath>
+  </parent>
+
+  <artifactId>composite-opentelemetry</artifactId>
   <version>1.1-SNAPSHOT</version>
-  <name>common-web</name>
+  <name>composite-opentelemetry</name>
 
   <description>
-    common web classes
+    composite opentelemetry
   </description>
 
   <url>https://featurehub.io</url>
@@ -31,45 +36,25 @@
 
   <licenses>
     <license>
-      <name>Apache 2 with Commons Clause</name>
+      <name>MIT</name>
       <url>https://github.com/featurehub-io/featurehub/blob/master/LICENSE.txt</url>
     </license>
   </licenses>
 
-  <dependencies>
-    <dependency>
-      <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-app</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
+  <scm>
+    <connection>scm:git:git@github.com:featurehub-io/featurehub.git</connection>
+    <developerConnection>scm:git:git@github.com:featurehub-io/featurehub.git</developerConnection>
+    <url>git@github.com:featurehub-io/featurehub.git</url>
+    <tag>HEAD</tag>
+  </scm>
 
+  <dependencies>
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-api</artifactId>
-      <version>1.5.0</version>
-    </dependency>
-    <dependency>
-      <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-sdk</artifactId>
-      <version>1.5.0</version>
-    </dependency>
-    <dependency>
-      <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-sdk-trace</artifactId>
-      <version>1.5.0</version>
-    </dependency>
-    <dependency>
-      <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-sdk-baggage</artifactId>
-      <version>0.9.1</version>
+      <version>1.6.0</version>
     </dependency>
 
-    <dependency>
-      <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-test</artifactId>
-      <version>[1.1, 2)</version>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <build>
@@ -83,11 +68,11 @@
           <filtering>false</filtering>
           <tiles>
             <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
+            <tile>io.featurehub.tiles:tile-release:[1.1,2)</tile>
           </tiles>
         </configuration>
       </plugin>
     </plugins>
   </build>
-
 
 </project>

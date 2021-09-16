@@ -4,6 +4,7 @@ import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
 import io.featurehub.health.MetricsHealthRegistration;
 import io.featurehub.jersey.FeatureHubJerseyHost;
+import io.featurehub.lifecycle.TelemetryFeature;
 import io.featurehub.mr.ManagementRepositoryFeature;
 import io.featurehub.mr.utils.NginxUtils;
 import io.featurehub.publish.NATSFeature;
@@ -34,7 +35,8 @@ public class Application {
     ResourceConfig config = new ResourceConfig(
       ManagementRepositoryFeature.class,
       OAuth2Feature.class,
-      NATSFeature.class
+      NATSFeature.class,
+      TelemetryFeature.class
       );
 
     MetricsHealthRegistration.Companion.registerMetrics(config);
