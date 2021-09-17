@@ -13,6 +13,7 @@ import io.featurehub.publish.ChannelNames;
 import io.featurehub.publish.NATSSource;
 import io.nats.client.Dispatcher;
 import io.nats.client.Message;
+import io.opentelemetry.context.Context;
 import io.prometheus.client.Gauge;
 import jakarta.inject.Inject;
 import org.jetbrains.annotations.NotNull;
@@ -63,8 +64,8 @@ public class StreamingFeatureSource implements StreamingFeatureController {
 
     DeclaredConfigResolver.resolve(this);
 
-    updateExecutor = Executors.newFixedThreadPool(updatePoolSize);
-    listenExecutor = Executors.newFixedThreadPool(listenPoolSize);
+    updateExecutor = Context.taskWrapping(Executors.newFixedThreadPool(updatePoolSize));
+    listenExecutor = Context.taskWrapping(Executors.newFixedThreadPool(listenPoolSize));
 
     log.info("connected to NATS with cache pool size of `{}", updatePoolSize);
 

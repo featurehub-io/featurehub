@@ -1,24 +1,45 @@
 package io.featurehub.lifecycle
 
+import cd.connect.app.config.ConfigKey
+import cd.connect.app.config.DeclaredConfigResolver
 import io.opentelemetry.api.OpenTelemetry
+import io.opentelemetry.api.baggage.Baggage
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator
+import io.opentelemetry.api.trace.Span
+import io.opentelemetry.api.trace.SpanKind
+import io.opentelemetry.api.trace.StatusCode
+import io.opentelemetry.api.trace.Tracer
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator
 import io.opentelemetry.context.Context
+import io.opentelemetry.context.Scope
 import io.opentelemetry.context.propagation.ContextPropagators
 import io.opentelemetry.context.propagation.TextMapGetter
+import io.opentelemetry.context.propagation.TextMapPropagator
 import io.opentelemetry.context.propagation.TextMapSetter
+import io.opentelemetry.exporters.logging.LoggingSpanExporter
 import io.opentelemetry.sdk.OpenTelemetrySdk
 import io.opentelemetry.sdk.trace.SdkTracerProvider
+import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import jakarta.ws.rs.client.ClientRequestContext
-import jakarta.ws.rs.client.ClientRequestFilter
+import jakarta.ws.rs.client.ClientResponseContext
 import jakarta.ws.rs.container.ContainerRequestContext
-import jakarta.ws.rs.container.ContainerRequestFilter
-import jakarta.ws.rs.container.ContainerResponseContext
-import jakarta.ws.rs.container.ContainerResponseFilter
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
+import org.glassfish.hk2.api.ServiceLocator
+import org.glassfish.jersey.client.spi.PostInvocationInterceptor
+import org.glassfish.jersey.client.spi.PreInvocationInterceptor
 import org.glassfish.jersey.internal.inject.AbstractBinder
+import org.glassfish.jersey.server.ContainerRequest
+import org.glassfish.jersey.server.ExtendedUriInfo
+import org.glassfish.jersey.server.monitoring.ApplicationEvent
+import org.glassfish.jersey.server.monitoring.ApplicationEventListener
+import org.glassfish.jersey.server.monitoring.RequestEvent
+import org.glassfish.jersey.server.monitoring.RequestEventListener
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.util.*
 
 class JaxRsContainerRequestMap : TextMapGetter<ContainerRequestContext> {
   override fun keys(carrier: ContainerRequestContext): MutableIterable<String> {
@@ -37,35 +58,152 @@ class JaxRsClientRequestMap : TextMapSetter<ClientRequestContext> {
 }
 
 @Singleton
-class TelemetryRequestFeature @Inject constructor(private val openTelemetry: OpenTelemetry) : ContainerRequestFilter {
-  private val extractor = JaxRsContainerRequestMap()
+class TelemetryInvocationInterceptor @Inject constructor(
+  private val openTelemetry: OpenTelemetry,
+  private val tracer: Tracer
+) : PreInvocationInterceptor, PostInvocationInterceptor {
+  private val injector = JaxRsClientRequestMap()
 
-  override fun filter(requestContext: ContainerRequestContext) {
-    openTelemetry.propagators.textMapPropagator.extract(Context.current(),
-      requestContext, extractor)
+  override fun beforeRequest(request: ClientRequestContext) {
+    val path = TelemetryApplicationEventListener.normalizePath(request.uri.path)
+    val span = tracer.spanBuilder("${request.method} ${request.uri}").setSpanKind(SpanKind.CLIENT).startSpan()
+    val scope = span.makeCurrent()
+
+    openTelemetry.propagators.textMapPropagator.inject(Context.current(), request, injector)
+
+    span.setAttribute("HTTP_METHOD", request.method)
+    span.setAttribute("HTTP_SCHEME", request.uri.scheme)
+    span.setAttribute("HTTP_HOST", request.uri.host)
+    span.setAttribute("HTTP_RESOURCE", path)
+
+    request.setProperty("span", span)
+    request.setProperty("scope", scope)
   }
+
+  override fun afterRequest(request: ClientRequestContext, response: ClientResponseContext) {
+    close(request)
+  }
+
+  private fun close(request: ClientRequestContext) {
+    (request.getProperty("span") as Span).end()
+    (request.getProperty("scope") as Scope).close()
+  }
+
+  override fun onException(
+    request: ClientRequestContext,
+    exceptionContext: PostInvocationInterceptor.ExceptionContext
+  ) {
+    (request.getProperty("span") as Span).setStatus(StatusCode.ERROR)
+    close(request)
+  }
+
 }
 
 @Singleton
-class TelemetryClientRequestFeature @Inject constructor(private val openTelemetry: OpenTelemetry) : ClientRequestFilter {
-  private val injector = JaxRsClientRequestMap()
+class TelemetryApplicationEventListener @Inject constructor(
+  private val openTelemetry: OpenTelemetry,
+  private val tracer: Tracer
+) : ApplicationEventListener {
+  private val extractor = JaxRsContainerRequestMap()
 
-  override fun filter(requestContext: ClientRequestContext?) {
-    openTelemetry.propagators.textMapPropagator.inject(Context.current(), requestContext, injector)
+  override fun onEvent(event: ApplicationEvent?) {
+  }
+
+  override fun onRequest(requestEvent: RequestEvent): RequestEventListener? {
+    return TelemetryRequestEventListener(openTelemetry, tracer, extractor)
+  }
+
+  internal class TelemetryRequestEventListener constructor(
+    private val openTelemetry: OpenTelemetry,
+    private val tracer: Tracer,
+    private val extractor: JaxRsContainerRequestMap
+  ) : RequestEventListener {
+    private val log: Logger = LoggerFactory.getLogger(TelemetryRequestEventListener::class.java)
+
+    var span: Span? = null
+    var scope: Scope? = null
+
+    override fun onEvent(event: RequestEvent) {
+      if (event.type == RequestEvent.Type.REQUEST_MATCHED) {
+        processRequest(event.containerRequest)
+      } else if (event.type == RequestEvent.Type.ON_EXCEPTION) {
+        span?.setStatus(StatusCode.ERROR)
+      } else if (event.type == RequestEvent.Type.FINISHED) {
+        span?.end()
+        scope?.close()
+      }
+    }
+
+    private fun processRequest(request: ContainerRequest) {
+      val extractedContext = openTelemetry.propagators.textMapPropagator.extract(
+        Context.current(),
+        request, extractor
+      )
+
+      scope = extractedContext.makeCurrent()
+      val extendedUriInfo = request.uriInfo
+      val name: Optional<String> = extendedUriInfo.matchedTemplates.stream()
+        .map { uriTemplate -> normalizePath(uriTemplate.template) }
+        .reduce { a, b -> b + a }
+      val path = if (name.isPresent) name.get() else "/"
+      span = tracer.spanBuilder("${request.method} ${path}")
+        .setSpanKind(SpanKind.SERVER)
+        .startSpan()
+
+      val baggage = Baggage.fromContext(Context.current())
+
+      if (baggage.size() > 0) {
+        baggage.forEach({ k, v -> log.info("baggage `{}`:`{}", k, v.value) } )
+      } else {
+        log.info("baggage is empty")
+      }
+
+      span!!.setAttribute("HTTP_METHOD", request.method)
+      span!!.setAttribute("HTTP_SCHEME", request.requestUri.scheme)
+      span!!.setAttribute("HTTP_HOST", request.requestUri.host)
+      span!!.setAttribute("HTTP_RESOURCE", path)
+      span!!.setStatus(StatusCode.OK)
+    }
+  }
+
+  companion object {
+    fun normalizePath(normPath: String?): String {
+      var path = normPath
+      // ensure that non-empty path starts with /
+      if (path == null || "/" == path) {
+        path = ""
+      } else if (!path.startsWith("/")) {
+        path = "/$path"
+      }
+      // remove trailing /
+      if (path.endsWith("/")) {
+        path = path.substring(0, path.length - 1)
+      }
+      return path
+    }
+  }
+}
+
+
+class ClientTelemetryFeature : Feature {
+  override fun configure(context: FeatureContext): Boolean {
+    context.register(TelemetryInvocationInterceptor::class.java)
+
+    return true
   }
 }
 
 /**
  * When we need to use the OpenTelemetry from another context.
  */
-class UseTelemetryFeature constructor(private val openTelemetry: OpenTelemetry) : Feature {
+class UseTelemetryFeature constructor(private val injector: ServiceLocator) : Feature {
   override fun configure(context: FeatureContext): Boolean {
-    context.register(TelemetryClientRequestFeature::class.java)
-    context.register(TelemetryRequestFeature::class.java)
+    context.register(TelemetryApplicationEventListener::class.java)
 
-    context.register(object: AbstractBinder() {
+    context.register(object : AbstractBinder() {
       override fun configure() {
-        bind(openTelemetry).to(OpenTelemetry::class.java).`in`(Singleton::class.java)
+        bind(injector.getService(OpenTelemetry::class.java)).to(OpenTelemetry::class.java).`in`(Singleton::class.java)
+        bind(injector.getService(Tracer::class.java)).to(Tracer::class.java).`in`(Singleton::class.java)
       }
     })
 
@@ -73,23 +211,44 @@ class UseTelemetryFeature constructor(private val openTelemetry: OpenTelemetry) 
   }
 }
 
-class TelemetryFeature: Feature {
+class TelemetryFeature : Feature {
+  private val log: Logger = LoggerFactory.getLogger(TelemetryFeature::class.java)
+
+  @ConfigKey("telemetry.logging-enabled")
+  var logTelemetry: Boolean? = false
+
+  init {
+    DeclaredConfigResolver.resolve(this)
+  }
+
   override fun configure(context: FeatureContext): Boolean {
-    context.register(TelemetryClientRequestFeature::class.java)
-    context.register(TelemetryRequestFeature::class.java)
+    context.register(TelemetryApplicationEventListener::class.java)
 
     val sdkTracerProvider = SdkTracerProvider.builder()
-//      .addSpanProcessor()
-      .build()
+
+    if (logTelemetry == true)
+      sdkTracerProvider.addSpanProcessor(SimpleSpanProcessor.create(LoggingSpanExporter()))
 
     val openTelemetry: OpenTelemetry = OpenTelemetrySdk.builder()
-      .setTracerProvider(sdkTracerProvider)
-      .setPropagators(ContextPropagators.create(W3CBaggagePropagator.getInstance()))
+      .setTracerProvider(sdkTracerProvider.build())
+      .setPropagators(
+        ContextPropagators.create(
+          TextMapPropagator.composite(
+            W3CBaggagePropagator.getInstance(),
+            W3CTraceContextPropagator.getInstance()
+          )
+        )
+      )
       .buildAndRegisterGlobal()
 
-    context.register(object: AbstractBinder() {
+    val tracer = openTelemetry.getTracer("featurehub")
+
+    log.info("OpenTelemetry configured")
+
+    context.register(object : AbstractBinder() {
       override fun configure() {
         bind(openTelemetry).to(OpenTelemetry::class.java).`in`(Singleton::class.java)
+        bind(tracer).to(Tracer::class.java).`in`(Singleton::class.java)
       }
     })
 

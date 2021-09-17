@@ -31,6 +31,7 @@ import io.featurehub.mr.model.PublishAction;
 import io.featurehub.mr.model.RolloutStrategy;
 import io.featurehub.mr.model.ServiceAccount;
 import io.featurehub.mr.model.ServiceAccountCacheItem;
+import io.opentelemetry.context.Context;
 import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +63,7 @@ public class DbCacheSource implements CacheSource {
   public DbCacheSource(Conversions convertUtils) {
     this.convertUtils = convertUtils;
     DeclaredConfigResolver.resolve(this);
-    executor = Executors.newFixedThreadPool(cachePoolSize);
+    executor = Context.taskWrapping(Executors.newFixedThreadPool(cachePoolSize));
   }
 
   public void publishToCache(String cacheName) {

@@ -7,6 +7,7 @@ import cd.connect.lifecycle.LifecycleStatus;
 import io.featurehub.dacha.api.DachaClientFeature;
 import io.featurehub.health.MetricsHealthRegistration;
 import io.featurehub.jersey.FeatureHubJerseyHost;
+import io.featurehub.lifecycle.TelemetryFeature;
 import io.featurehub.publish.NATSFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 
@@ -23,7 +24,8 @@ public class Application {
       DachaClientFeature.class,
       EdgeFeature.class,
       EdgeResourceFeature.class,
-      CorsFilter.class
+      CorsFilter.class,
+      TelemetryFeature.class
       );
 
     // check if we should list on a different port

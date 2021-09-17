@@ -48,19 +48,22 @@
       <artifactId>opentelemetry-api</artifactId>
       <version>1.5.0</version>
     </dependency>
+
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-sdk</artifactId>
       <version>1.5.0</version>
     </dependency>
+
     <dependency>
       <groupId>io.opentelemetry</groupId>
       <artifactId>opentelemetry-sdk-trace</artifactId>
       <version>1.5.0</version>
     </dependency>
+
     <dependency>
       <groupId>io.opentelemetry</groupId>
-      <artifactId>opentelemetry-sdk-baggage</artifactId>
+      <artifactId>opentelemetry-exporters-logging</artifactId>
       <version>0.9.1</version>
     </dependency>
 

@@ -15,6 +15,7 @@ import io.featurehub.publish.NATSSource;
 import io.nats.client.Dispatcher;
 import io.nats.client.Message;
 import io.nats.client.MessageHandler;
+import io.opentelemetry.context.Context;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import org.jetbrains.annotations.NotNull;
@@ -71,7 +72,7 @@ public class CacheManager implements MessageHandler, HealthSource {
 
     log.info("starting cache: {}:{}", id, mit);
 
-    executor = Executors.newFixedThreadPool(cachePoolSize);
+    executor = Context.taskWrapping(Executors.newFixedThreadPool(cachePoolSize));
 
     internalCache.onCompletion(this::cacheLoaded);
   }
