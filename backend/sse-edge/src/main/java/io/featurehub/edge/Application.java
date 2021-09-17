@@ -19,13 +19,13 @@ public class Application {
 
     DeclaredConfigResolver.resolve(this);
 
+    // we do not want telemetry enabled on Edge
     ResourceConfig config = new ResourceConfig(
       NATSFeature.class,
       DachaClientFeature.class,
       EdgeFeature.class,
       EdgeResourceFeature.class,
-      CorsFilter.class,
-      TelemetryFeature.class
+      CorsFilter.class
       );
 
     // check if we should list on a different port

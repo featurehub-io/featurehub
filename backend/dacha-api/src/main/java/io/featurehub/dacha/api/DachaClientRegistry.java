@@ -38,7 +38,6 @@ public class DachaClientRegistry implements DachaClientServiceRegistry {
 
     client =
         ClientBuilder.newClient()
-            .register(ClientTelemetryFeature.class)
             .register(CommonConfiguration.class)
             .register(LoggingConfiguration.class);
 

@@ -5,7 +5,6 @@ import cd.connect.jersey.prometheus.PrometheusDynamicFeature
 import cd.connect.openapi.support.ReturnStatusContainerResponseFilter
 import io.featurehub.jersey.config.CommonConfiguration
 import io.featurehub.jersey.config.EndpointLoggingListener
-import io.featurehub.lifecycle.TelemetryFeature
 import io.featurehub.utils.CurrentTime
 import io.featurehub.utils.CurrentTimeSource
 import jakarta.inject.Inject
@@ -17,7 +16,7 @@ import org.glassfish.hk2.utilities.ServiceLocatorUtilities
 import org.glassfish.jersey.internal.inject.AbstractBinder
 import org.glassfish.jersey.server.ServerProperties
 
-class CommonFeatureHubFeatures @Inject constructor(locator: ServiceLocator) : Feature {
+class CommonFeatureHubFeatures @Inject constructor(private val locator: ServiceLocator) : Feature {
 
   // ensure Immediate scope which is HK2 specific is enabled everywhere
   init {
@@ -32,6 +31,7 @@ class CommonFeatureHubFeatures @Inject constructor(locator: ServiceLocator) : Fe
     context.register(ReturnStatusContainerResponseFilter::class.java)
     context.register(EndpointLoggingListener::class.java)
     context.register(PrometheusDynamicFeature::class.java)
+
     context.register(object : AbstractBinder() {
       override fun configure() {
         bind(CurrentTime::class.java).to(CurrentTimeSource::class.java).`in`(
@@ -39,7 +39,6 @@ class CommonFeatureHubFeatures @Inject constructor(locator: ServiceLocator) : Fe
         )
       }
     })
-
 
     return true
   }

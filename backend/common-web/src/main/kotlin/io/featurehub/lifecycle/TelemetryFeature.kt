@@ -2,6 +2,8 @@ package io.featurehub.lifecycle
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
+import cd.connect.jersey.common.LoggingConfiguration
+import io.featurehub.jersey.config.CommonConfiguration
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.baggage.Baggage
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator
@@ -22,6 +24,8 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import jakarta.ws.rs.client.Client
+import jakarta.ws.rs.client.ClientBuilder
 import jakarta.ws.rs.client.ClientRequestContext
 import jakarta.ws.rs.client.ClientResponseContext
 import jakarta.ws.rs.container.ContainerRequestContext
@@ -194,16 +198,37 @@ class ClientTelemetryFeature : Feature {
 }
 
 /**
- * When we need to use the OpenTelemetry from another context.
+ * When we need to use the OpenTelemetry from another DI context. How the client is bound in is quite complicated
+ * as when we can only have one OpenTelemetry instance and it originates in a different context. The Client is also
+ * its own context, so we have to pull the opentelemetry + tracer from its original context and bind it to this server
+ * based one, and the new client one (which is in turn bound to this server based one).
+ *
+ * This feature only works with an injector that has completed its service cycle from a different DI context.
  */
 class UseTelemetryFeature constructor(private val injector: ServiceLocator) : Feature {
   override fun configure(context: FeatureContext): Boolean {
     context.register(TelemetryApplicationEventListener::class.java)
 
-    context.register(object : AbstractBinder() {
+    val telemetryBinder = object : AbstractBinder() {
       override fun configure() {
         bind(injector.getService(OpenTelemetry::class.java)).to(OpenTelemetry::class.java).`in`(Singleton::class.java)
         bind(injector.getService(Tracer::class.java)).to(Tracer::class.java).`in`(Singleton::class.java)
+      }
+    }
+
+    context.register(telemetryBinder)
+
+    val client = ClientBuilder.newClient()
+      .register(ClientTelemetryFeature::class.java)
+      .register(CommonConfiguration::class.java)
+      .register(LoggingConfiguration::class.java)
+      .register(telemetryBinder)
+
+    context.register(object: AbstractBinder() {
+      override fun configure() {
+        bind(client).to(Client::class.java).`in`(
+          Singleton::class.java
+        )
       }
     })
 
@@ -245,10 +270,26 @@ class TelemetryFeature : Feature {
 
     log.info("OpenTelemetry configured")
 
-    context.register(object : AbstractBinder() {
+    val client = ClientBuilder.newClient()
+      .register(ClientTelemetryFeature::class.java)
+      .register(CommonConfiguration::class.java)
+      .register(LoggingConfiguration::class.java)
+
+    val telemetryBinder = object : AbstractBinder() {
       override fun configure() {
         bind(openTelemetry).to(OpenTelemetry::class.java).`in`(Singleton::class.java)
         bind(tracer).to(Tracer::class.java).`in`(Singleton::class.java)
+      }
+    }
+
+    context.register(telemetryBinder)
+    client.register(telemetryBinder)
+
+    context.register(object: AbstractBinder() {
+      override fun configure() {
+        bind(client).to(Client::class.java).`in`(
+          Singleton::class.java
+        )
       }
     })
 
