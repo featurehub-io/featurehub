@@ -4,6 +4,7 @@ import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
 import io.featurehub.health.MetricsHealthRegistration;
 import io.featurehub.jersey.FeatureHubJerseyHost;
+import io.featurehub.lifecycle.TelemetryFeature;
 import io.featurehub.publish.NATSFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
@@ -17,6 +18,7 @@ public class Application {
     ResourceConfig config =
         new ResourceConfig(
                 NATSFeature.class,
+                TelemetryFeature.class,
                 DachaFeature.class);
 
     // check if we should list on a different port

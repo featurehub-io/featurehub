@@ -7,6 +7,7 @@ import cd.connect.lifecycle.LifecycleStatus;
 import io.featurehub.dacha.api.DachaClientFeature;
 import io.featurehub.health.MetricsHealthRegistration;
 import io.featurehub.jersey.FeatureHubJerseyHost;
+import io.featurehub.lifecycle.TelemetryFeature;
 import io.featurehub.publish.NATSFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 
@@ -18,6 +19,7 @@ public class Application {
 
     DeclaredConfigResolver.resolve(this);
 
+    // we do not want telemetry enabled on Edge
     ResourceConfig config = new ResourceConfig(
       NATSFeature.class,
       DachaClientFeature.class,

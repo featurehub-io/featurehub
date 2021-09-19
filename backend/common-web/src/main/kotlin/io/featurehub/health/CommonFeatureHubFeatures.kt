@@ -16,7 +16,7 @@ import org.glassfish.hk2.utilities.ServiceLocatorUtilities
 import org.glassfish.jersey.internal.inject.AbstractBinder
 import org.glassfish.jersey.server.ServerProperties
 
-class CommonFeatureHubFeatures @Inject constructor(locator: ServiceLocator) : Feature {
+class CommonFeatureHubFeatures @Inject constructor(private val locator: ServiceLocator) : Feature {
 
   // ensure Immediate scope which is HK2 specific is enabled everywhere
   init {
@@ -31,6 +31,7 @@ class CommonFeatureHubFeatures @Inject constructor(locator: ServiceLocator) : Fe
     context.register(ReturnStatusContainerResponseFilter::class.java)
     context.register(EndpointLoggingListener::class.java)
     context.register(PrometheusDynamicFeature::class.java)
+
     context.register(object : AbstractBinder() {
       override fun configure() {
         bind(CurrentTime::class.java).to(CurrentTimeSource::class.java).`in`(
@@ -38,7 +39,6 @@ class CommonFeatureHubFeatures @Inject constructor(locator: ServiceLocator) : Fe
         )
       }
     })
-
 
     return true
   }

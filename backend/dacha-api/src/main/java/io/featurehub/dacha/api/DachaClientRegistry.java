@@ -7,6 +7,7 @@ import cd.connect.openapi.support.ApiClient;
 import io.featurehub.dacha.api.impl.DachaApiKeyServiceServiceImpl;
 import io.featurehub.dacha.api.impl.DachaEnvironmentServiceServiceImpl;
 import io.featurehub.jersey.config.CommonConfiguration;
+import io.featurehub.lifecycle.ClientTelemetryFeature;
 import io.prometheus.client.Counter;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;

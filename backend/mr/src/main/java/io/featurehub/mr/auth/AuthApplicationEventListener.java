@@ -27,12 +27,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class AuthApplicationEventListener implements ApplicationEventListener {
   private static final Logger log = LoggerFactory.getLogger(AuthApplicationEventListener.class);
-  private final SecurityContext securityContext;
   private final AuthenticationRepository authRepo;
 
   @Inject
-  public AuthApplicationEventListener(SecurityContext securityContext, AuthenticationRepository authRepo) {
-    this.securityContext = securityContext;
+  public AuthApplicationEventListener(AuthenticationRepository authRepo) {
     this.authRepo = authRepo;
   }
 
@@ -43,7 +41,12 @@ public class AuthApplicationEventListener implements ApplicationEventListener {
 
   @Override
   public RequestEventListener onRequest(RequestEvent requestEvent) {
-    return new AuthRequestListener();
+    // do not return an interceptor when running as the party server otherwise it slows the features API down
+    if (requestEvent.getUriInfo().getPath() != null &&
+        !requestEvent.getUriInfo().getPath().startsWith("/features")
+    ) return new AuthRequestListener();
+
+    return null;
   }
 
   static Map<Method, AuthInfo> methodRequiresAuth = new ConcurrentHashMap<>();

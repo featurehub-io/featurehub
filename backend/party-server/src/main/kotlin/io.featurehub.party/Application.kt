@@ -13,6 +13,7 @@ import io.featurehub.edge.EdgeFeature
 import io.featurehub.edge.EdgeResourceFeature
 import io.featurehub.health.MetricsHealthRegistration.Companion.registerMetrics
 import io.featurehub.jersey.FeatureHubJerseyHost
+import io.featurehub.lifecycle.TelemetryFeature
 import io.featurehub.mr.ManagementRepositoryFeature
 import io.featurehub.mr.utils.NginxUtils
 import io.featurehub.publish.ChannelConstants
@@ -43,7 +44,8 @@ class Application {
       EdgeResourceFeature::class.java,
       EdgeFeature::class.java,
       DachaFeature::class.java,
-      DachaClientFeature::class.java
+      DachaClientFeature::class.java,
+      TelemetryFeature::class.java
     )
 
     FeatureHubJerseyHost.withInjector(config) { injector ->
