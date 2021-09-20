@@ -189,9 +189,43 @@ class TelemetryApplicationEventListener @Inject constructor(
 }
 
 
+/**
+ * Because the OpenTelemetry baggage is only available in a static context, there is no way we can mock
+ * this out, we would have to create an entire in memory instance of the OpenTelemetry stack and then
+ * inject a fake header into it. So we create an interface wrapper around it and this should be used in
+ * all cases of checking for baggage.
+ */
+interface BaggageChecker {
+  fun baggage(key: String): String?
+  fun hasBaggage(key: String): Boolean
+}
+
+class OpenTelemetryBaggageChecker : BaggageChecker {
+  override fun baggage(key: String): String? {
+    return Baggage.current().getEntryValue(key)
+  }
+
+  override fun hasBaggage(key: String): Boolean {
+    return baggage(key) != null
+  }
+}
+
+class BaggageFeature: Feature {
+  override fun configure(context: FeatureContext): Boolean {
+    context.register(object: AbstractBinder() {
+      override fun configure() {
+        bind(OpenTelemetryBaggageChecker::class.java).to(BaggageChecker::class.java).`in`(Singleton::class.java)
+      }
+    })
+
+    return true
+  }
+}
+
 class ClientTelemetryFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
     context.register(TelemetryInvocationInterceptor::class.java)
+    context.register(BaggageFeature::class.java)
 
     return true
   }
@@ -208,6 +242,7 @@ class ClientTelemetryFeature : Feature {
 class UseTelemetryFeature constructor(private val injector: ServiceLocator) : Feature {
   override fun configure(context: FeatureContext): Boolean {
     context.register(TelemetryApplicationEventListener::class.java)
+    context.register(BaggageFeature::class.java)
 
     val telemetryBinder = object : AbstractBinder() {
       override fun configure() {
@@ -248,6 +283,7 @@ class TelemetryFeature : Feature {
 
   override fun configure(context: FeatureContext): Boolean {
     context.register(TelemetryApplicationEventListener::class.java)
+    context.register(BaggageFeature::class.java)
 
     val sdkTracerProvider = SdkTracerProvider.builder()
 
