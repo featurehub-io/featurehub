@@ -1,8 +1,0 @@
-=== Changes
-
-=== 2.3  
-- Expose analytic collector, readyness listener, readyness state, and value interceptor properties on the FeatureHubConfig
-- Respect context when using feature listeners
-
-=== 2.2 
-- fixed issue where no header for server eval context was causing NPE at times.
