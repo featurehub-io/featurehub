@@ -128,7 +128,7 @@ public class AuthManager implements AuthManagerService {
     return false;
   }
 
-  private boolean isOrgAdmin(UUID personId) {
+  public boolean isOrgAdmin(UUID personId) {
     return !groupApi.groupsPersonOrgAdminOf(personId).isEmpty();
   }
 

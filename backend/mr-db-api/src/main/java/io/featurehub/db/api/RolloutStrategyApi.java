@@ -18,6 +18,6 @@ public interface RolloutStrategyApi {
 
   RolloutStrategyInfo archiveStrategy(UUID appId, String strategyIdOrName, Person person, Opts add);
 
-  static class DuplicateNameException extends Exception {
+  class DuplicateNameException extends Exception {
   }
 }

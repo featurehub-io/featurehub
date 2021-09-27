@@ -17,6 +17,7 @@ import io.featurehub.mr.model.Portfolio;
 import io.featurehub.mr.model.SortOrder;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +43,7 @@ public class PortfolioSqlApi implements io.featurehub.db.api.PortfolioApi {
 
   @Override
   @Transactional(readOnly = true)
-  public List<Portfolio> findPortfolios(
+  public @NotNull List<Portfolio> findPortfolios(
       String filter, SortOrder ordering, Opts opts, Person currentPerson) {
     DbPerson personDoingFind = convertUtils.byPerson(currentPerson);
 

@@ -3,6 +3,7 @@ package io.featurehub.db.api;
 import io.featurehub.mr.model.Person;
 
 import java.util.UUID;
+import org.jetbrains.annotations.NotNull;
 
 public interface AuthenticationApi {
   Person login(@NotNull String email, @NotNull String password);

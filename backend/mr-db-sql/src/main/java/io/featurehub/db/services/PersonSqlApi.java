@@ -5,7 +5,6 @@ import io.ebean.FutureList;
 import io.ebean.FutureRowCount;
 import io.ebean.annotation.Transactional;
 import io.featurehub.db.api.FillOpts;
-import io.featurehub.db.api.NotNull;
 import io.featurehub.db.api.OptimisticLockingException;
 import io.featurehub.db.api.Opts;
 import io.featurehub.db.api.PersonApi;
@@ -19,6 +18,7 @@ import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.SortOrder;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,8 +93,6 @@ public class PersonSqlApi implements PersonApi {
       if (!adminSuperuser && validPortfolios.isEmpty()) {
         return null; // why are they even here???
       }
-
-      // TODO: if groups are passed, limit removal of groups to the organisation relevant
 
       List<DbGroup> removeGroups = new ArrayList<>();
       List<UUID> replacementGroupIds = person.getGroups().stream().map(Group::getId).collect(Collectors.toList());

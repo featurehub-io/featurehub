@@ -5,9 +5,9 @@ import io.featurehub.mr.model.Person;
 import java.time.LocalDateTime;
 
 public class DBLoginSession {
-  private Person person;
-  private String token;
-  private LocalDateTime lastSeen;
+  private final Person person;
+  private final String token;
+  private final LocalDateTime lastSeen;
 
   public DBLoginSession(Person person, String token, LocalDateTime lastSeen) {
     this.person = person;
