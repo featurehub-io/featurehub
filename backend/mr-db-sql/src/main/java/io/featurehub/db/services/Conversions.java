@@ -32,6 +32,8 @@ import io.featurehub.mr.model.RoleType;
 import io.featurehub.mr.model.RolloutStrategyInfo;
 import io.featurehub.mr.model.ServiceAccount;
 import io.featurehub.mr.model.ServiceAccountPermission;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -168,7 +170,7 @@ public interface Conversions {
 
   EnvironmentGroupRole environmentGroupRoleFromAcl(DbAcl acl);
 
-  List<RoleType> splitEnvironmentRoles(String roles);
+  @NotNull List<RoleType> splitEnvironmentRoles(@Nullable String roles);
 
   List<ApplicationRoleType> splitApplicationRoles(String roles);
 
@@ -176,11 +178,11 @@ public interface Conversions {
 
   OffsetDateTime toOff(LocalDateTime ldt);
 
-  Person toPerson(DbPerson person);
+  @Nullable Person toPerson(@Nullable DbPerson person);
 
-  Person toPerson(DbPerson dbp, Opts opts);
+  @Nullable Person toPerson(@Nullable DbPerson dbp, @NotNull Opts opts);
 
-  Person toPerson(DbPerson dbp, DbOrganization org, Opts opts);
+  @Nullable Person toPerson(@Nullable DbPerson dbp, @Nullable DbOrganization org, @NotNull Opts opts);
 
   default String stripArchived(String name, LocalDateTime whenArchived) {
     if (whenArchived == null) {

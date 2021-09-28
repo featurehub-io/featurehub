@@ -47,6 +47,7 @@ import io.featurehub.mr.model.RolloutStrategyInstance;
 import io.featurehub.mr.model.ServiceAccount;
 import io.featurehub.mr.model.ServiceAccountPermission;
 import jakarta.inject.Singleton;
+import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -313,7 +314,7 @@ public class ConvertUtils implements Conversions {
   }
 
   @Override
-  public List<RoleType> splitEnvironmentRoles(String roles) {
+  public @NotNull List<RoleType> splitEnvironmentRoles(String roles) {
     List<RoleType> roleTypes = new ArrayList<>();
     if (roles == null || roles.length() == 0) {
       return roleTypes;
@@ -322,8 +323,7 @@ public class ConvertUtils implements Conversions {
     for (String n : roles.split(",")) {
       try {
         roleTypes.add(RoleType.valueOf(n));
-      } catch (Exception e) {
-        return null;
+      } catch (Exception ignored) {
       }
     }
 
@@ -383,12 +383,12 @@ public class ConvertUtils implements Conversions {
   }
 
   @Override
-  public Person toPerson(DbPerson dbp, Opts opts) {
+  public Person toPerson(DbPerson dbp, @NotNull Opts opts) {
     return toPerson(dbp, null, opts);
   }
 
   @Override
-  public Person toPerson(DbPerson dbp, DbOrganization org, Opts opts) {
+  public Person toPerson(DbPerson dbp, DbOrganization org, @NotNull Opts opts) {
     if (dbp == null) {
       return null;
     }
