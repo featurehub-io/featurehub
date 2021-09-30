@@ -11,6 +11,7 @@ import io.featurehub.db.api.PortfolioApi;
 import io.featurehub.db.api.RolloutStrategyApi;
 import io.featurehub.db.api.RolloutStrategyValidator;
 import io.featurehub.db.api.ServiceAccountApi;
+import io.featurehub.db.api.SessionApi;
 import io.featurehub.db.api.SetupApi;
 import io.featurehub.db.api.UserStateApi;
 import io.featurehub.db.listener.FeatureUpdateBySDKApi;
@@ -40,7 +41,7 @@ public class ApiToSqlApiBinder extends AbstractBinder {
   @Override
   protected void configure() {
     bind(OrganizationSqlApi.class).to(OrganizationApi.class).in(Singleton.class);
-    bind(AuthenticationSqlApi.class).to(AuthenticationApi.class).in(Singleton.class);
+    bind(AuthenticationSqlApi.class).to(AuthenticationApi.class).to(SessionApi.class).in(Singleton.class);
     bind(SetupSqlApi.class).to(SetupApi.class).in(Singleton.class);
     bind(PortfolioSqlApi.class).to(PortfolioApi.class).in(Singleton.class);
     bind(GroupSqlApi.class).to(GroupApi.class).in(Singleton.class);

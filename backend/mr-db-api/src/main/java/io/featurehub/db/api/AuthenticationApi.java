@@ -46,12 +46,6 @@ public interface AuthenticationApi {
 
   Person getPersonByToken(String token);
 
-  DBLoginSession findSession(String token);
-
-  DBLoginSession createSession(DBLoginSession session);
-
-  void invalidateSession(String sessionToken);
-
   /**
    * This causes the email address to be issued with a new registration token and a new expiry and that passed back.
    * Valid tokens are reset. User's with no token's are ignored. User's who do not exist are ignored.

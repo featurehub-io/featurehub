@@ -359,6 +359,14 @@ public class ConvertUtils implements Conversions {
     return ldt == null ? null : ldt.atOffset(ZoneOffset.UTC);
   }
 
+  @NotNull @Override public String personName(@NotNull DbPerson person) {
+    if (person.getName() == null || person.getName().isEmpty()) {
+      return "No name";
+    }
+
+    return person.getName();
+  }
+
   @Override
   public Person toPerson(DbPerson person) {
     if (person == null) {
@@ -370,7 +378,7 @@ public class ConvertUtils implements Conversions {
         .version(person.getVersion())
         .passwordRequiresReset(person.isPasswordRequiresReset())
         .email(person.getEmail())
-        .name(person.getName())
+        .name(personName(person))
         .groups(null);
   }
 
@@ -400,7 +408,7 @@ public class ConvertUtils implements Conversions {
     Person p =
         new Person()
             .email(dbp.getEmail())
-            .name(stripArchived(dbp.getName(), dbp.getWhenArchived()))
+            .name(stripArchived(personName(dbp), dbp.getWhenArchived()))
             .version(dbp.getVersion())
             .passwordRequiresReset(dbp.isPasswordRequiresReset())
             .whenArchived(toOff(dbp.getWhenArchived()))

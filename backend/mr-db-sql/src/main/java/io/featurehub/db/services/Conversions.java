@@ -178,6 +178,7 @@ public interface Conversions {
 
   OffsetDateTime toOff(LocalDateTime ldt);
 
+  @NotNull String personName(@NotNull DbPerson person);
   @Nullable Person toPerson(@Nullable DbPerson person);
 
   @Nullable Person toPerson(@Nullable DbPerson dbp, @NotNull Opts opts);
