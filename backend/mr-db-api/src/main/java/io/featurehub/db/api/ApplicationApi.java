@@ -4,6 +4,8 @@ import io.featurehub.mr.model.Application;
 import io.featurehub.mr.model.Feature;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.SortOrder;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Set;
@@ -14,8 +16,10 @@ public interface ApplicationApi {
   class DuplicateApplicationException extends Exception {}
   class DuplicateFeatureException extends Exception {}
 
+  @Nullable
   Application createApplication(@NotNull UUID portfolioId, @NotNull Application application, @NotNull Person current) throws DuplicateApplicationException;
 
+  @NotNull
   List<Application> findApplications(@NotNull UUID portfolioId, String filter, SortOrder order, @NotNull Opts opts, @NotNull Person current, boolean loadAll);
 
   boolean deleteApplication(@NotNull UUID portfolioId, UUID applicationId);

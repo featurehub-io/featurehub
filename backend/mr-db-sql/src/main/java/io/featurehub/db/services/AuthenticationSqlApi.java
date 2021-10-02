@@ -6,6 +6,7 @@ import io.featurehub.db.api.AuthenticationApi;
 import io.featurehub.db.api.DBLoginSession;
 import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.Opts;
+import io.featurehub.db.api.SessionApi;
 import io.featurehub.db.model.DbLogin;
 import io.featurehub.db.model.DbPerson;
 import io.featurehub.db.model.query.QDbLogin;
@@ -26,7 +27,7 @@ import java.util.UUID;
  * every database layer.
  */
 @Singleton
-public class AuthenticationSqlApi implements AuthenticationApi {
+public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
   private static final Logger log = LoggerFactory.getLogger(AuthenticationSqlApi.class);
   private final Database database;
   private final Conversions convertUtils;

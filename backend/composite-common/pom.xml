@@ -62,6 +62,13 @@
       <version>2.0.0</version>
     </dependency>
 
+    <!-- because we are using kotlin now, lets use their annotations -->
+    <dependency>
+      <groupId>org.jetbrains</groupId>
+      <artifactId>annotations</artifactId>
+      <version>22.0.0</version>
+    </dependency>
+
     <dependency>
       <groupId>org.jetbrains.kotlin</groupId>
       <artifactId>kotlin-stdlib-jdk8</artifactId>

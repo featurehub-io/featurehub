@@ -3,6 +3,7 @@ package io.featurehub.db.api;
 import io.featurehub.mr.model.Person;
 
 import java.util.UUID;
+import org.jetbrains.annotations.NotNull;
 
 public interface AuthenticationApi {
   Person login(@NotNull String email, @NotNull String password);
@@ -44,12 +45,6 @@ public interface AuthenticationApi {
   Person changePassword(@NotNull UUID id, @NotNull String oldPassword, @NotNull String newPassword);
 
   Person getPersonByToken(String token);
-
-  DBLoginSession findSession(String token);
-
-  DBLoginSession createSession(DBLoginSession session);
-
-  void invalidateSession(String sessionToken);
 
   /**
    * This causes the email address to be issued with a new registration token and a new expiry and that passed back.

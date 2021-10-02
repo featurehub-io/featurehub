@@ -2,6 +2,7 @@ package io.featurehub.db.api;
 
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.SortOrder;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.UUID;

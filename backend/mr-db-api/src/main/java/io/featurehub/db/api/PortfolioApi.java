@@ -6,7 +6,7 @@ import io.featurehub.mr.model.SortOrder;
 
 import java.util.List;
 import java.util.UUID;
-
+import org.jetbrains.annotations.NotNull;
 /**
  * This exposes the functionality of the Database version of the Portfolio API. It assumes
  * that

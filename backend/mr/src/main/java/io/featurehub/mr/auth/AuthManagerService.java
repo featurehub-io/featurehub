@@ -16,6 +16,7 @@ public interface AuthManagerService {
   UUID orgPersonIn(UUID id);
   UUID orgPersonIn(PersonId personId);
   boolean isOrgAdmin(Person person);
+  boolean isOrgAdmin(UUID person);
   boolean isPortfolioAdmin(UUID portfolioId, UUID personId, Consumer<Group> action);
   boolean isPortfolioAdmin(UUID portfolioId, PersonId personId, Consumer<Group> action);
   boolean isPortfolioAdmin(UUID portfolioId, Person person, Consumer<Group> action);

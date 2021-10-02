@@ -30,6 +30,7 @@ import io.featurehub.mr.model.PublishAction;
 import io.featurehub.mr.model.SortOrder;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +63,7 @@ public class ApplicationSqlApi implements ApplicationApi {
   }
 
   @Override
-  public Application createApplication(UUID portfolioId, Application application, Person current)
+  public Application createApplication(@NotNull UUID portfolioId, @NotNull Application application, @NotNull Person current)
       throws DuplicateApplicationException {
     Conversions.nonNullPortfolioId(portfolioId);
     Conversions.nonNullPerson(current);
@@ -142,13 +143,13 @@ public class ApplicationSqlApi implements ApplicationApi {
   }
 
   @Override
-  public List<Application> findApplications(
-      UUID portfolioId,
-      String filter,
-      SortOrder order,
-      Opts opts,
-      Person current,
-      boolean loadAll) {
+  public @NotNull List<Application> findApplications(
+    @NotNull UUID portfolioId,
+    String filter,
+    SortOrder order,
+    @NotNull Opts opts,
+    @NotNull Person current,
+    boolean loadAll) {
     Conversions.nonNullPortfolioId(portfolioId);
 
     QDbApplication queryApplicationList = new QDbApplication().portfolio.id.eq(portfolioId);
