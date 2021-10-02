@@ -44,7 +44,7 @@ public interface AuthenticationApi {
    */
   Person changePassword(@NotNull UUID id, @NotNull String oldPassword, @NotNull String newPassword);
 
-  Person getPersonByToken(String token);
+  Person getPersonByToken(@NotNull String token);
 
   /**
    * This causes the email address to be issued with a new registration token and a new expiry and that passed back.

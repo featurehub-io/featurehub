@@ -16,6 +16,7 @@ import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.PersonId;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +41,7 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
   }
 
   @Override
-  public Person login(String email, String password) {
+  public Person login(@NotNull String email, @NotNull String password) {
     if (email == null || password == null) return null;
 
     return new QDbPerson()
@@ -82,7 +83,7 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
   }
 
   @Override
-  public Person register(String name, String email, String password, Opts opts) {
+  public Person register(@NotNull String name, @NotNull String email, @NotNull String password, Opts opts) {
     if (name == null || email == null) return null;
 
     return new QDbPerson()
@@ -114,7 +115,7 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
   }
 
   @Override
-  public Person resetPassword(UUID id, String password, UUID changedBy, boolean reactivate) {
+  public Person resetPassword(@NotNull UUID id, @NotNull String password, @NotNull UUID changedBy, boolean reactivate) {
     Conversions.nonNullPersonId(id);
     Conversions.nonNullPersonId(changedBy);
 
@@ -156,7 +157,7 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
   }
 
   @Override
-  public Person replaceTemporaryPassword(UUID pId, String password) {
+  public Person replaceTemporaryPassword(@NotNull UUID pId, @NotNull String password) {
     Conversions.nonNullPersonId(pId);
 
     if (password == null) return null;
@@ -184,7 +185,7 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
   }
 
   @Override
-  public Person changePassword(UUID id, String oldPassword, String newPassword) {
+  public Person changePassword(@NotNull UUID id, @NotNull String oldPassword, @NotNull String newPassword) {
     Conversions.nonNullPersonId(id);
 
     if (oldPassword == null || newPassword == null) return null;
@@ -213,12 +214,12 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
   }
 
   @Override
-  public Person getPersonByToken(String token) {
+  public Person getPersonByToken(@NotNull String token) {
     return convertUtils.toPerson(new QDbPerson().token.eq(token).findOne(), Opts.empty());
   }
 
   @Override
-  public DBLoginSession findSession(String token) {
+  public DBLoginSession findSession(@NotNull String token) {
     // severely limit the data for person
     final DbLogin login =
         new QDbLogin()
@@ -267,12 +268,8 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
   }
 
   @Override
-  public void invalidateSession(String token) {
-    final DbLogin login = new QDbLogin().token.eq(token).findOne();
-
-    if (login != null) {
-      database.delete(login);
-    }
+  public void invalidateSession(@NotNull String token) {
+    new QDbLogin().token.eq(token).delete();
   }
 
   @Override
