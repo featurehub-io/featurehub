@@ -24,9 +24,7 @@ dependencies:
     path: ../app_mr_layer
   openapi_dart_common: ^4.1.0
   uuid: ^3.0.4
-  zxcvbn:
-    git:
-      url: https://github.com/lmordell/zxcvbn-dart.git
+  zxcvbn: ^1.0.0
   universal_html: ^2.0.8
   url_launcher: ^6.0.3
   intl: ^0.17.0
@@ -36,7 +34,6 @@ dependencies:
   animator: ^3.0.0
   shared_preferences: ^2.0.5
   plugin_platform_interface: ^2.0.0
-  flutter_lints: ^1.0.4
   flutter_signin_button: ^2.0.0
   flutter_icons:
     git:
@@ -46,6 +43,7 @@ dependencies:
   collection: ^1.15.0
 
 dev_dependencies:
+  flutter_lints: ^1.0.4
   flutter_test:
     sdk: flutter
 
