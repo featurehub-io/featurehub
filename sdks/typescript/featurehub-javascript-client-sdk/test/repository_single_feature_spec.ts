@@ -9,6 +9,21 @@ describe('repository reacts to single feature changes as expected', () => {
     repo = new ClientFeatureRepository();
   });
 
+  it('should be able to recognize newly created values that are not set', () => {
+    const features = [
+      { id: '1', key: 'pear', version: 0, type: FeatureValueType.String }
+    ];
+
+    repo.notify(SSEResultState.Features, features);
+
+    expect(repo.feature('pear').getVersion()).to.eq(0);
+
+    repo.notify(SSEResultState.Feature, { id: '1', key: 'pear', version: 1, type: FeatureValueType.String, value: 'now-set' });
+
+    expect(repo.feature('pear').getVersion()).to.eq(1);
+    expect(repo.feature('pear').getString()).to.eq('now-set');
+  });
+
   it('should specify undefined for unknown feature values', () => {
     // tslint:disable-next-line:no-unused-expression
     expect(repo.getFeatureState('bool').getBoolean()).to.be.undefined;
