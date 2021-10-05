@@ -7,7 +7,7 @@ If you are considering helping us by writing a new SDK for your favourite langua
 ||Java|Javascript^1^|Go|Dart^2^|C#
 |Event Streaming|Y|Y|Y|Y|Y
 |Rollout Strategies - Server Evaluated*|Y|Y|N|Y|Y
-|Rollout Strategies - Client Evaluated*|Y|Y|N|N|Y
+|Rollout Strategies - Client Evaluated*|Y|Y|Y|N|Y
 |Background Start|Y|Y|Y|Y|Y
 |Block until Start|N|N|Y|N|N
 |Readyness Listeners|Y|Y|Y|Y|Y
