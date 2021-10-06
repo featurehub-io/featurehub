@@ -1,4 +1,4 @@
-= FeatureHub Documentation 
+= FeatureHub Documentation
 ifdef::env-github,env-browser[:outfilesuffix: .adoc]
 :sectlinks:
 :toc: left
@@ -51,14 +51,14 @@ There is a GitHub https://github.com/featurehub-io/featurehub-install[repository
 All of the deployment options mount the database volume separately from the main set of containers, allowing you to upgrade your database and versions of FeatureHub without destroying your database.
 
 NOTE: As FeatureHub is an open source project, we provide Tier 1 support for Postgres, as that is the platform we primarily
-run and test on. 
+run and test on.
 
 We provide and maintain database migrations scripts for MySQL/MariaDB, MS SQL Server, and Oracle as well, but we do not
 actively test on them. There is also a MariaDB example docker-compose install, and the MariaDB driver is installed in all
 server runtimes.
 
 Other databases can potentially be added, please feel free to lodge a ticket on our Github Issues register, particularly if
-you are willing to test it out. 
+you are willing to test it out.
 
 === Starting small
 
@@ -146,18 +146,18 @@ Applications are where you create features and environments, they belong inside 
 === Environments
 
 Applications have one or more environments, these typically refer to groups of co-operating deployments of your
-application in different environments. There are often multiple development environments, testing environments, 
-acceptance testing and customer demo environments depending on the application. 
+application in different environments. There are often multiple development environments, testing environments,
+acceptance testing and customer demo environments depending on the application.
 
-When an application is created there is always an initial environment 
-called `Production` created. The values of your features are set, per environment. 
+When an application is created there is always an initial environment
+called `Production` created. The values of your features are set, per environment.
 
-Every FeatureHub environment has a unique ID, this ID plus a Service Account is what you reference in your application via the 
+Every FeatureHub environment has a unique ID, this ID plus a Service Account is what you reference in your application via the
 SDK when you query for the value of the features.
 
 === Features
 
-Features are the main part of FeatureHub, they can be simple feature flags, strings, numbers or more advanced JSON 
+Features are the main part of FeatureHub, they can be simple feature flags, strings, numbers or more advanced JSON
 formats intended for forms of configuration.
 
 ==== Feature types
@@ -179,7 +179,7 @@ It *must be unique* for your application.
 
 ==== Feature value
 
-When you add a feature flag, this will also automatically create a feature value in each environment. The default feature value will be set to `*off*` for `boolean` type and to `*null*` for `string`, `number` and `json`. By default, each feature value will be locked. Essentially feature value is always associated with an application and an environment for that application.  
+When you add a feature flag, this will also automatically create a feature value in each environment. The default feature value will be set to `*off*` for `boolean` type and to `*null*` for `string`, `number` and `json`. By default, each feature value will be locked. Essentially feature value is always associated with an application and an environment for that application.
 
 NOTE: See <<Feature Permissions>> for details on the various permission states a feature can have.
 
@@ -192,12 +192,12 @@ e.g green, blue, red etc. With rollout strategies, you can serve a `green` value
 `blue` value to users whose emails ending with `gmail.com` and `red` value to users whose location is
 `New Zealand or United States or United Kingdom`. You can also use percentage based rollouts and for example, turn your feature "on" only to 50% of the audience.
 
-Rollout strategies are created and added per <<Feature value>>. Once you add a strategy you can set a feature value to serve to users that will match this strategy, for example "on" or "off". In case a user doesn't match any of the provided strategies, they will be served a "default value". You can change the default strategy and rollout strategy feature values at any time (given you have permissions). 
+Rollout strategies are created and added per <<Feature value>>. Once you add a strategy you can set a feature value to serve to users that will match this strategy, for example "on" or "off". In case a user doesn't match any of the provided strategies, they will be served a "default value". You can change the default strategy and rollout strategy feature values at any time (given you have permissions).
 
 You can apply zero or more rollout strategies to a feature. Each rollout strategy can be assigned a different feature value.
 
 === Targeting rules
-A rollout strategy consists of one or more targeting rules. The rule can consist of any combination of matching criteria. 
+A rollout strategy consists of one or more targeting rules. The rule can consist of any combination of matching criteria.
 
 Each additional rule is always applied as an `AND` condition - the user is using a mobile device that is iOS `AND`
 their country is Australia.
@@ -206,8 +206,8 @@ Each rule is essentially a key, a condition (equals, includes, etc) and zero or 
 is an `AND` condition, each _value_ is an `OR` condition. For example, if the `country` is `New Zealand` `OR` `Indonesia`
 `AND` the custom field `payment_method` is equal to `credit_card` `OR` `direct_debit`.
 
-Each rollout strategy can have zero or more rules associated with it. If it has zero rules and no percentage rule 
-the strategy will be ignored. There is no limit on how many rules you can apply. There are 3 main rule types: *Preset*, *Custom* and *Percentage split* 
+Each rollout strategy can have zero or more rules associated with it. If it has zero rules and no percentage rule
+the strategy will be ignored. There is no limit on how many rules you can apply. There are 3 main rule types: *Preset*, *Custom* and *Percentage split*
 
 === Targeting rule types
 
@@ -242,9 +242,9 @@ If you cannot find a suitable rule from those listed above, you can create your 
 
 *Supported custom rules types:*
 
-`string` 
+`string`
 
-`number` - any valid number 
+`number` - any valid number
 
 `boolean` - true and false
 
@@ -289,7 +289,7 @@ be more accurate.
 
 == Security
 
-FeatureHub was designed to ensure that security was built into the platform from the ground up. If we split this into authentication vs authorization FeatureHub provides two primary methods for authentication: a login, by which someone is able to get a bearer token and then uses the FeatureHub Admin Console, or a Service account, by which SDKs are able to read (and potentially) update states of features. 
+FeatureHub was designed to ensure that security was built into the platform from the ground up. If we split this into authentication vs authorization FeatureHub provides two primary methods for authentication: a login, by which someone is able to get a bearer token and then uses the FeatureHub Admin Console, or a Service account, by which SDKs are able to read (and potentially) update states of features.
 
 === Key Security concepts
 
@@ -308,7 +308,7 @@ There are two types of administrators, *Site Administrators* and *Portfolio Admi
 ** Manage access to applications
 ** Create Service Accounts
 
-NOTE: Every Portfolio automatically gets a group called "Administrators", Simply adding people to this group 
+NOTE: Every Portfolio automatically gets a group called "Administrators", Simply adding people to this group
 will make them administrators for this portfolio.
 
 
@@ -321,14 +321,14 @@ safety net when deploying incomplete code into production.
 (Typically developers and testers keep features locked until they are finished and ready to be set)
 * `UNLOCK` Can unlock a feature, so it's value can be changed
 * `CHANGE_VALUE` Can change the value of a feature
- 
+
 
 NOTE: Groups can also separately be assigned the permission to create, edit and delete entire features.
 
 === Service Accounts
 
 Service accounts are used for programmatic access to the features for an application through FeatureHub SDKs.
-A service account will need a minimum of `READ` access to an environment in order to access a feature value. You can set permissions for a service account from the FeatureHub Admin Console. 
+A service account will need a minimum of `READ` access to an environment in order to access a feature value. You can set permissions for a service account from the FeatureHub Admin Console.
 
 When service account is created for an environment, it automatically creates two types of API keys that you can choose from *Client Evaluated API Key* and *Server Evaluated API Key*
 
@@ -343,6 +343,10 @@ FeatureHub supports external link:identity{outfilesuffix}[identity providers].
 
 Please read the following link:analytics{outfilesuffix}[for information about Analytics]
 
-== Developer Setup
+== Contributors Documentation
+=== SDK Contributors
+Please read link:sdks-development{outfilesuffix}[for information about Developer Setup]
+
+=== FeatureHub Backend Services Setup
 
 Please read link:developers{outfilesuffix}[for information about Developer Setup]
