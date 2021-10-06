@@ -10,6 +10,14 @@ This is the primary source code repository for FeatureHub.
 
 https://demo.featurehub.io[Try FeatureHub demo now]
 
+**Install with Docker (evaluation mode) **
+
+```
+$ docker run -p 8085:8085 --user 999:999 -v $HOME/party:/db featurehub/party-server:latest
+```
+
+Once installed, head to http://localhost:8085 to see FeatureHub Admin Console in action 
+
 image::docs/images/fh-features-console-dark.png[FeatureHub console demo,800]
 
 
@@ -83,23 +91,21 @@ Full documentation can be found at https://docs.featurehub.io[docs.featurehub.io
 
 === Getting started
 
-IMPORTANT: If you like to install FeatureHub, please refer to https://github.com/featurehub-io/featurehub-install[install repository] with configured docker images
-
-We selectively take cuts of this repository and build them into docker image sets. We then
-update the main https://github.com/featurehub-io/featurehub-install[install repository] with the latest
-images and issues tags on that repository.
-
 If you are just curious to see how FeatureHub works and would like to play with it there is a simple way of doing it,
 please follow instructions https://docs.featurehub.io/#_starting_small[here].
 
 Once you have decided to start using FeatureHub in your team, there are also several installation options
 depending on your use case, please read about these options https://docs.featurehub.io/#_installation[here].
 
+Note: We have a separate https://github.com/featurehub-io/featurehub-install[install repository] with configured docker images
+
+We selectively take cuts of the main repository and build them into docker image sets. We then
+update install repository with the latest images and issue tags on that repository.
+
 == Coming soon
 
 * Feature auditing
-* SDK's : Python, Ruby, Mobile (Swift), 
-* SAML support
+* SDK's : Python, Ruby
 * Yaml remote configuration support
 * More deployment options, Cloud-vendor specific support
 
@@ -140,7 +146,7 @@ to contribute to the Admin Console - we would love you to join us!
 
 ==== The SDKs
 
-If you are planning on helping us by building an SDK in a language we don't yet support, please refer to https://docs.featurehub.io/#_sdk_contributors[this] doc. We are happy to get contributions that slowly add full
+If you are planning on helping us by building an SDK in a language we don't yet support, please refer to this https://docs.featurehub.io/sdks-development.html [documentation]. We are happy to get contributions that slowly add full
 functionality for a new language.
 
 == Where to get help? 
