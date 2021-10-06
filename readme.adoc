@@ -6,10 +6,12 @@ image::https://github.com/featurehub-io/featurehub/actions/workflows/codeql-anal
 image::docs/images/fh_primary_navy.png[Feature Hub,500]
 
 FeatureHub is a Cloud Native platform to help software teams manage their features, from feature flags (also known as feature toggles) to A/B experiments and remote or centralised configuration. 
-This is the primary source code repository for FeatureHub - if you want to help us resolve any outstanding
-issues, contribute a new SDK or just get a deeper understanding of how it works, this is the right place to be.
+This is the primary source code repository for FeatureHub.
 
 https://demo.featurehub.io[Try FeatureHub demo now]
+
+image::docs/images/fh-features-console-dark.png[FeatureHub console demo,800]
+
 
 **New in version 1.3 - Client evaluated rollout strategies support for better performance! **
 
@@ -25,9 +27,6 @@ https://github.com/featurehub-io/featurehub/wiki/Migration-notes[SDKs migration 
 
 API Keys (former SDK URLs) explained https://docs.featurehub.io/#_client_and_server_api_keys[here]  
 
-**New in version 1.2 - Dark Mode! **
-
-image::docs/images/fh-features-console-dark.png[FeatureHub console demo,800]
 
 == Why FeatureHub?
 
@@ -73,9 +72,9 @@ image::docs/images/fh-features-console-dark.png[FeatureHub console demo,800]
 
 image:https://docs.featurehub.io//images/languages.png[Featurehub SDK Languages,1000]
 
-include::docs/capabilities-table.adoc[]
+https://docs.featurehub.io/#_sdk_usage[SDKs documentation and examples table]
 
-More detailed documentation on SDK's can be found https://docs.featurehub.io/#_sdks[here]
+https://docs.featurehub.io/#_sdk_capabilities_overview[SDKs capabilities table]
 
 
 == Documentation
@@ -96,16 +95,10 @@ please follow instructions https://docs.featurehub.io/#_starting_small[here].
 Once you have decided to start using FeatureHub in your team, there are also several installation options
 depending on your use case, please read about these options https://docs.featurehub.io/#_installation[here].
 
-=== How to use SDKs and examples 
-
-Please follow documentation http://docs.featurehub.io/index.html#_sdk_usage[here]. The examples are
-https://github.com/featurehub-io/featurehub-examples[located here] in their own repository if you wish to have a
-starting example to work from.
-
 == Coming soon
 
 * Feature auditing
-* SDK's : Mobile (Swift), Python, Ruby
+* SDK's : Python, Ruby, Mobile (Swift), 
 * SAML support
 * Yaml remote configuration support
 * More deployment options, Cloud-vendor specific support
@@ -147,7 +140,7 @@ to contribute to the Admin Console - we would love you to join us!
 
 ==== The SDKs
 
-If you are planning on helping us by building an SDK in a language we don't yet support, please refer to link:sdks/README.adoc[this] doc. We are happy to get contributions that slowly add full
+If you are planning on helping us by building an SDK in a language we don't yet support, please refer to https://docs.featurehub.io/#_sdk_contributors[this] doc. We are happy to get contributions that slowly add full
 functionality for a new language.
 
 == Where to get help? 
