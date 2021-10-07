@@ -146,7 +146,7 @@ to contribute to the Admin Console - we would love you to join us!
 
 ==== The SDKs
 
-If you are planning on helping us by building an SDK in a language we don't yet support, please refer to this https://docs.featurehub.io/sdks-development.html [documentation]. We are happy to get contributions that slowly add full
+If you are planning on helping us by building an SDK in a language we don't yet support, please refer to this https://docs.featurehub.io/sdks-development.html[documentation]. We are happy to get contributions that slowly add full
 functionality for a new language.
 
 == Where to get help? 
