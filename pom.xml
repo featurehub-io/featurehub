@@ -59,9 +59,11 @@
     <module>backend/composite-logging-api</module>
     <module>backend/composite-prometheus</module>
     <module>backend/composite-test</module>
-    <module>backend/sse-edge-api</module>
-    <module>backend/sse-edge</module>
-    <module>backend/sse-edge-stats-api</module>
+    <module>backend/edge-api</module>
+    <module>backend/edge-common</module>
+    <module>backend/edge-full</module>
+    <module>backend/edge-get</module>
+    <module>backend/edge-stats-api</module>
     <module>backend/mr</module>
     <module>backend/mr-api</module>
     <module>backend/mr-api-java-server</module>
@@ -69,9 +71,9 @@
     <module>backend/mr-db-sql</module>
     <module>backend/mr-db-models</module>
     <module>backend/mr-db-ebean</module>
-    <module>backend/mr-streaming-api</module>
+    <module>backend/edge-feature-update-async-api</module>
     <module>backend/mr-publish-api</module>
-    <module>backend/sse-strategy-matchers</module>
+    <module>backend/sdk-strategy-matchers</module>
     <module>backend/party-server</module>
     <module>backend/dacha</module>
     <module>backend/dacha-api</module>

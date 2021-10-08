@@ -12,6 +12,7 @@
     <app.port>8903</app.port>
     <build.version>0.0.1</build.version>
     <app.baseimage>adoptopenjdk:11-jre-hotspot</app.baseimage>
+    <app.imagename>${project.artifactId}</app.imagename>
   </properties>
 
   <profiles>
@@ -38,8 +39,8 @@
                   <goal>babysaur</goal>
                 </goals>
                 <configuration>
-                  <fullImageName>featurehub/${project.artifactId}:${build.version}</fullImageName>
-                  <baseImageName>featurehub/${project.artifactId}:${build.version}</baseImageName>
+                  <fullImageName>featurehub/${app.imagename}:${build.version}</fullImageName>
+                  <baseImageName>featurehub/${app.imagename}:${build.version}</baseImageName>
                 </configuration>
               </execution>
             </executions>
@@ -62,7 +63,7 @@
                 <image>${app.baseimage}</image>
               </from>
               <to>
-                <image>featurehub/${project.artifactId}:${build.version}</image>
+                <image>featurehub/${app.imagename}:${build.version}</image>
               </to>
               <container>
                 <user>999:999</user>
