@@ -55,7 +55,7 @@ NOTE: In this `docker-compose` image, there is a sample database along with an i
 
 To install, grab the latest version of FeatureHub tagged release, e.g.
 
-`curl https://github.com/featurehub-io/featurehub-install/archive/release-1.4.1.tar.gz -o featurehub.tar.gz | tar -xvz`
+`curl -L https://github.com/featurehub-io/featurehub-install/archive/refs/tags/featurehub-1.4.1.tar.gz | tar xv`
 
 You can check for the latest versions https://github.com/featurehub-io/featurehub-install/releases[here]
 
@@ -63,15 +63,15 @@ Make sure you have your docker running, and run the following commands from the 
 
 For Postgres option:
 
-`cd featurehub-install-release-1.4.1/docker-compose-options/all-in-one-postgres`
+`cd featurehub-install-featurehub-1.4.1/docker-compose-options/all-in-one-postgres`
 
 `docker-compose up`
 
 Or for MySQL option:
 
-`cd featurehub-install-release-1.4.1/docker-compose-options/all-in-one-mysql`
+`cd featurehub-install-featurehub-1.4.1/docker-compose-options/all-in-one-mysql`
 
-`docker-compose up`
+`docker compose up`
 
 This will install all the necessary components including FeatureHub Admin Console. You can now load it on localhost:8085
 
@@ -87,9 +87,9 @@ FeatureHub Server, means you can deploy these components independently for scala
 
 In order to scale FeatureHub Server, you need to have first configured a separate database. We provide an installation option for this with Postgres database:
 
-`cd featurehub-install-release-1.4.1/docker-compose-options/all-separate-postgres`
+`cd featurehub-install-featurehub-1.4.1/docker-compose-options/all-separate-postgres`
 
-`docker-compose up`
+`docker compose up`
 
 There is also a helm chart available for production Kubernetes deployment. Please follow documentation link:https://github.com/featurehub-io/featurehub-install/tree/master/helm[here]
 
