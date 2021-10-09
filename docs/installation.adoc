@@ -27,7 +27,7 @@ and aimed for demonstration and evaluation purposes.
 
 To install, grab the latest version of FeatureHub tagged release, e.g.
 
-`curl https://github.com/featurehub-io/featurehub-install/archive/release-1.4.1.tar.gz -o featurehub.tar.gz | tar -xvz`
+`curl -L https://github.com/featurehub-io/featurehub-install/archive/refs/tags/featurehub-1.4.1.tar.gz | tar xv`
 
 You can check for the latest versions https://github.com/featurehub-io/featurehub-install/releases[here]
 
@@ -35,7 +35,7 @@ Make sure you have your docker running, and run the following commands from the 
 
 For H2 option:
 
-`cd featurehub-install-release-1.4.1/docker-compose-options/all-in-one-h2`
+`cd featurehub-install-featurehub-1.4.1/docker-compose-options/all-in-one-h2`
 
 `docker-compose up`
 
