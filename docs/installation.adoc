@@ -37,7 +37,7 @@ For H2 option:
 
 `cd featurehub-install-featurehub-1.4.1/docker-compose-options/all-in-one-h2`
 
-`docker-compose up`
+`docker compose up`
 
 This will install all the necessary components including FeatureHub Admin Console. You can now load it on localhost:8085
 
@@ -51,7 +51,7 @@ This option is similar to the H2-in memory example, however in this case a singl
 traffic will cause performance issues with your Admin app.
 
 
-NOTE: In this `docker-compose` image, there is a sample database along with an initialization script.
+NOTE: In this `docker compose` image, there is a sample database along with an initialization script.
 
 To install, grab the latest version of FeatureHub tagged release, e.g.
 
@@ -65,7 +65,7 @@ For Postgres option:
 
 `cd featurehub-install-featurehub-1.4.1/docker-compose-options/all-in-one-postgres`
 
-`docker-compose up`
+`docker compose up`
 
 Or for MySQL option:
 
@@ -94,7 +94,7 @@ In order to scale FeatureHub Server, you need to have first configured a separat
 There is also a helm chart available for production Kubernetes deployment. Please follow documentation link:https://github.com/featurehub-io/featurehub-install/tree/master/helm[here]
 
 In this deployment, all components (MR, Dacha, NATS, Edge) are split into separate Docker containers, but
-`docker-compose` runs them all in the same server. This example is intended to show you how you can
+`docker compose` runs them all in the same server. This example is intended to show you how you can
 split and separate the configuration for each of these pieces.
 
 Because they are deployed in separate containers, you have considerably greater control over what
