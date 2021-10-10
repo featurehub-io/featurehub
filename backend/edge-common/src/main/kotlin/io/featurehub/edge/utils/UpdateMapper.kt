@@ -5,4 +5,3 @@ import com.fasterxml.jackson.databind.ObjectMapper
 interface UpdateMapper {
   val mapper: ObjectMapper
 }
-

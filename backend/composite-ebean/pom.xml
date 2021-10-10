@@ -41,21 +41,17 @@
     </license>
   </licenses>
 
-  <properties>
-    <ebean.version>12.8.2</ebean.version>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>io.ebean</groupId>
       <artifactId>ebean-datasource</artifactId>
-      <version>7.0</version>
+      <version>7.3</version>
     </dependency>
 
     <dependency>
       <groupId>io.ebean</groupId>
       <artifactId>ebean-migration</artifactId>
-      <version>12.2.0</version>
+      <version>${ebean.version}</version>
     </dependency>
     <dependency>
       <groupId>io.ebean</groupId>

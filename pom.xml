@@ -49,6 +49,8 @@
   <modules>
     <module>backend/security-oauth</module>
     <module>backend/common-web</module>
+    <module>backend/common-db</module>
+    <module>backend/common-db-test</module>
     <module>backend/composite-jackson</module>
     <module>backend/composite-ebean</module>
     <module>backend/composite-app</module>

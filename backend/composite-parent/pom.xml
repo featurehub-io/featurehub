@@ -53,6 +53,7 @@
     <jackson.version>2.13.0</jackson.version>
     <sticky.version>1.3</sticky.version>
     <groovy.version>3.0.9</groovy.version>
+    <ebean.version>12.12.1</ebean.version>
   </properties>
 
   <build>

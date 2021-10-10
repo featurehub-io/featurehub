@@ -61,6 +61,20 @@
       <artifactId>dacha-api</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
+
+    <!-- this makes reusability feasible for the test api -->
+    <dependency>
+      <groupId>io.featurehub.edge</groupId>
+      <artifactId>edge-stats-api</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>io.featurehub.edge</groupId>
+      <artifactId>edge-feature-update-async-api</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+
     <dependency>
       <groupId>io.featurehub.composites</groupId>
       <artifactId>composite-test</artifactId>

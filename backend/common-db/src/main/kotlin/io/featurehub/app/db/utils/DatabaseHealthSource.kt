@@ -1,13 +1,12 @@
-package io.featurehub.db.utils
+package io.featurehub.app.db.utils
 
 import io.ebean.Database
 import io.featurehub.health.HealthSource
 import jakarta.inject.Inject
-import jakarta.inject.Singleton
 
 class DatabaseHealthSource
-  @Inject
-  constructor(val database: Database) : HealthSource {
+@Inject
+constructor(val database: Database) : HealthSource {
 
   override val healthy: Boolean
     get() {

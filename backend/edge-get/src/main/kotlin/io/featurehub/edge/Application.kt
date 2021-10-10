@@ -4,6 +4,7 @@ import cd.connect.app.config.DeclaredConfigResolver
 import cd.connect.jersey.common.CorsFilter
 import cd.connect.lifecycle.ApplicationLifecycleManager
 import cd.connect.lifecycle.LifecycleStatus
+import io.featurehub.app.db.utils.CommonDbFeature
 import io.featurehub.health.MetricsHealthRegistration.Companion.registerMetrics
 import io.featurehub.jersey.FeatureHubJerseyHost
 import io.featurehub.lifecycle.TelemetryFeature
@@ -19,11 +20,17 @@ class Application {
 
     DeclaredConfigResolver.resolve(this)
 
+    // ensure migrations do not run
+    System.setProperty("db.run-migrations", "false")
+
     val config = ResourceConfig(
       CorsFilter::class.java,
-      TelemetryFeature::class.java
+      TelemetryFeature::class.java,
+      EdgeGetFeature::class.java,
+      CommonDbFeature::class.java,
     )
 
+    // recommended this is on a different port
     registerMetrics(config)
 
     FeatureHubJerseyHost(config).start()
