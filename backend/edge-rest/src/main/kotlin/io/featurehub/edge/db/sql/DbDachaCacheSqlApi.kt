@@ -20,7 +20,7 @@ class DbDachaCacheSqlApi : DachaClientServiceRegistry {
   }
 
   internal class FakeDachaEnvironmentService : DachaEnvironmentService {
-    override fun getEnvironmentStructure(eId: UUID?): DachaStructureResponse {
+    override fun getEnvironmentStructure(eId: UUID): DachaStructureResponse {
       return DachaStructureResponse()
     }
   }

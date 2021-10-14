@@ -15,8 +15,8 @@ class DachaEnvironmentResource @Inject constructor(private val cache: InternalCa
     val env = cache.findEnvironment(eId) ?: throw NotFoundException()
 
     return DachaStructureResponse()
-      .organizationId(env.organizationId)
-      .portfolioId(env.portfolioId)
-      .applicationId(env.applicationId)
+      .organizationId(env.organizationId!!)
+      .portfolioId(env.portfolioId!!)
+      .applicationId(env.applicationId!!)
   }
 }

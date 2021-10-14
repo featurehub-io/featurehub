@@ -41,6 +41,6 @@ class FeatureRequestCollection(
     }
 
     return FeatureRequestResponse(env
-      .features(featureTransformer.transform(details.features, clientContext)), FeatureRequestSuccess.SUCCESS, key, details.etag)
+      .features( featureTransformer.transform(details.features, clientContext)), FeatureRequestSuccess.SUCCESS, key, details.etag!!)
   }
 }

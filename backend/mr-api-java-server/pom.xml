@@ -91,7 +91,7 @@
           <dependency>
             <groupId>cd.connect.openapi</groupId>
             <artifactId>connect-openapi-jersey3</artifactId>
-            <version>7.6</version>
+            <version>7.9</version>
           </dependency>
         </dependencies>
         <executions>
@@ -111,6 +111,7 @@
               <additionalProperties>
                 <additionalProperty>server-delegate</additionalProperty>
                 <additionalProperty>serviceUrlBase=/mr-api</additionalProperty>
+                <additionalProperty>openApiNullable=false</additionalProperty>
               </additionalProperties>
               <configOptions>
                 <configOption>

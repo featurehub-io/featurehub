@@ -1,20 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>io.featurehub.composites</groupId>
-    <artifactId>composite-parent</artifactId>
-    <version>1.2-SNAPSHOT</version>
-    <relativePath>../composite-parent</relativePath>
-  </parent>
-  <groupId>io.featurehub.edge</groupId>
-  <artifactId>edge-get</artifactId>
+
+  <groupId>io.featurehub</groupId>
+  <artifactId>party-server-ish</artifactId>
   <version>1.1-SNAPSHOT</version>
-  <name>edge-get</name>
+  <name>party-server-ish</name>
 
   <description>
-    This artifact is an implementation of Edge but only for GET/PUT and it talks directly to the database.
+    This includes the MR, the Dacha cache, and the SSE Edge all in one server.
   </description>
+
+  <properties>
+    <app.entrypoint>io.featurehub.party.Application</app.entrypoint>
+    <app.baseimage>docker://featurehub/base_party:1.8</app.baseimage>
+    <app.port>8085</app.port>
+    <build.version>0.0.1</build.version>
+  </properties>
 
   <url>https://featurehub.io</url>
   <developers>
@@ -40,52 +42,30 @@
     </license>
   </licenses>
 
-  <properties>
-    <app.port>8553</app.port>
-    <app.entrypoint>io.featurehub.edge.Application</app.entrypoint>
-  </properties>
-
   <dependencies>
     <dependency>
-      <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-app</artifactId>
+      <groupId>io.featurehub.mr</groupId>
+      <artifactId>mr</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
-    <dependency>
-      <groupId>io.featurehub.common</groupId>
-      <artifactId>common-db</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
+
     <dependency>
       <groupId>io.featurehub.edge</groupId>
-      <artifactId>edge-common</artifactId>
+      <artifactId>edge-rest</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
-    <dependency>
-      <groupId>io.featurehub.mr</groupId>
-      <artifactId>mr-db-models</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
+
     <dependency>
       <groupId>io.featurehub.composites</groupId>
       <artifactId>composite-test</artifactId>
       <version>[1.1, 2)</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
-      <version>1.4.199</version>
-    </dependency>
-    <dependency>
-      <groupId>org.postgresql</groupId>
-      <artifactId>postgresql</artifactId>
-      <version>42.2.12</version>
-    </dependency>
   </dependencies>
 
   <build>
     <plugins>
+
       <plugin>
         <groupId>io.repaint.maven</groupId>
         <artifactId>tiles-maven-plugin</artifactId>
@@ -94,10 +74,8 @@
         <configuration>
           <filtering>false</filtering>
           <tiles>
-            <tile>io.featurehub.tiles:tile-app:[1.1,2)</tile>
             <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
-            <tile>org.avaje.tile:java-compile:11</tile>
-            <tile>io.ebean.tile:enhancement:${ebean.version}</tile>
+            <tile>io.featurehub.tiles:tile-app-with-ui:[1.1,2)</tile>
           </tiles>
         </configuration>
       </plugin>

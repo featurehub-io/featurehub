@@ -1,15 +1,11 @@
 package io.featurehub.edge;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import io.featurehub.edge.strategies.Applied;
 import io.featurehub.edge.strategies.ApplyFeature;
 import io.featurehub.edge.strategies.ClientContext;
-import io.featurehub.jersey.config.CacheJsonMapper;
 import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.mr.model.FeatureValueType;
 import io.featurehub.sse.model.FeatureState;
-import io.featurehub.sse.model.RolloutStrategy;
 import io.featurehub.strategies.matchers.MatcherRegistry;
 import io.featurehub.strategies.percentage.PercentageMumurCalculator;
 import org.slf4j.Logger;
@@ -24,14 +20,19 @@ public class FeatureTransformerUtils implements FeatureTransformer {
   private final ApplyFeature applyFeature = new ApplyFeature(new PercentageMumurCalculator(), new MatcherRegistry());
 
   public List<FeatureState> transform(List<FeatureValueCacheItem> features, ClientContext clientAttributes) {
-    return features.stream().map(f -> transform(f, clientAttributes)).collect(Collectors.toList());
+    try {
+      return features.stream().map(f -> transform(f, clientAttributes)).collect(Collectors.toList());
+    } catch (Exception e) {
+      log.error("Failed transform", e);
+      return new ArrayList<>();
+    }
   }
 
   public FeatureState transform(FeatureValueCacheItem rf, ClientContext clientAttributes) {
     FeatureState fs = new FeatureState()
 //      .key(rf.getFeature().getAlias() != null ? rf.getFeature().getAlias() : rf.getFeature().getKey())
       .key(rf.getFeature().getKey())
-      .type(io.featurehub.sse.model.FeatureValueType.fromValue(rf.getFeature().getValueType().toString())) // they are the same
+      .type(rf.getFeature().getValueType()) // they are the same
       .id(rf.getFeature().getId())
       .l(rf.getValue().getLocked());
 
@@ -42,29 +43,17 @@ public class FeatureTransformerUtils implements FeatureTransformer {
     }
 
     if (clientAttributes != null) {
-      List<RolloutStrategy> clientStrategies = transformStrategies(rf.getStrategies());
       if (clientAttributes.isClientEvaluation) {
-        fs.strategies(clientStrategies);
+        fs.strategies(rf.getStrategies());
         fs.value(valueAsObject(rf));
       } else {
-        Applied applied = applyFeature.applyFeature(clientStrategies, rf.getFeature().getKey(), rf.getValue().getId().toString()
+        Applied applied = applyFeature.applyFeature(rf.getStrategies(), rf.getFeature().getKey(), rf.getValue().getId().toString()
           , clientAttributes);
         fs.value(applied.isMatched() ? applied.getValue() : valueAsObject(rf));
       }
     }
 
     return fs;
-  }
-
-  private static final TypeReference<List<RolloutStrategy>> ROLLOUT_TYPE = new TypeReference<List<RolloutStrategy>>(){};
-
-  // these are exactly the same class and from a maintenance perspective this is more sensible.
-  private List<RolloutStrategy> transformStrategies(List<io.featurehub.mr.model.RolloutStrategy> strategies) {
-    try {
-      return CacheJsonMapper.mapper.readValue(CacheJsonMapper.mapper.writeValueAsString(strategies), ROLLOUT_TYPE);
-    } catch (JsonProcessingException e) {
-      return new ArrayList<>();
-    }
   }
 
   private Object valueAsObject(FeatureValueCacheItem rf) {

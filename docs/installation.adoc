@@ -236,7 +236,7 @@ This is a docker build using a Flutter image of the front-end.
 Then jump into your chosen folder and your command is:
 
 ----
-mvn -Ddocker-cloud-build=true -Dapp.baseimage=docker://featurehub/base_mr:1.2 -Dapp.port=8085 -Dbuild.version=0.0.1 clean package
+mvn -Ddocker-cloud-build=true -Dapp.baseimage=docker://featurehub/base_mr:1.7 -Dapp.port=8085 -Dbuild.version=0.0.1 clean package
 ----
 
 Where the `app.baseimage`, `app.port` and `build.version` are the versions you specify. The `docker://` prefix just means

@@ -1,9 +1,9 @@
 package io.featurehub.edge.strategies
 
-import io.featurehub.sse.model.RolloutStrategy
-import io.featurehub.sse.model.RolloutStrategyAttribute
-import io.featurehub.sse.model.RolloutStrategyAttributeConditional
-import io.featurehub.sse.model.RolloutStrategyFieldType
+import io.featurehub.mr.model.RolloutStrategy
+import io.featurehub.mr.model.RolloutStrategyAttribute
+import io.featurehub.mr.model.RolloutStrategyAttributeConditional
+import io.featurehub.mr.model.RolloutStrategyFieldType
 import io.featurehub.strategies.matchers.MatcherRegistry
 import io.featurehub.strategies.percentage.PercentageCalculator
 import spock.lang.Specification

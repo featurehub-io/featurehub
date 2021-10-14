@@ -2,6 +2,7 @@ package io.featurehub.edge.db.sql
 
 import io.ebean.annotation.Transactional
 import io.featurehub.dacha.api.DachaApiKeyService
+import io.featurehub.db.model.DbApplicationFeature
 import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.db.model.query.QDbApplicationFeature
 import io.featurehub.db.model.query.QDbFeatureValue
@@ -25,26 +26,28 @@ class DbDachaSqlApi : DachaApiKeyService {
     val saEnv = findMatch(
       eId,
       serviceAccountKey
-    ).environment.environmentFeatures.fetch(
+    ).environment.parentApplication.features.fetch(
+      QDbApplicationFeature.Alias.key,
+      QDbApplicationFeature.Alias.id,
+      QDbApplicationFeature.Alias.valueType,
+    )
+    .environment.environmentFeatures.fetch(
       QDbFeatureValue.Alias.locked,
       QDbFeatureValue.Alias.version,
       QDbFeatureValue.Alias.rolloutStrategies,
       QDbFeatureValue.Alias.defaultValue,
     )
-     .environment.environmentFeatures.feature.fetch(
-        QDbApplicationFeature.Alias.key,
-        QDbApplicationFeature.Alias.id,
-        QDbApplicationFeature.Alias.valueType,
-     )
       .findOne()
 
     return if (saEnv != null) {
+      val featureValues = saEnv.environment.environmentFeatures.map { it.feature.key to it }.toMap()
+      val features = saEnv.environment.parentApplication.features
       val response = DachaKeyDetailsResponse()
         .serviceKeyId(saEnv.serviceAccount.id)
         .applicationId(fakeApplicationId)
         .portfolioId(fakePortfolioId)
         .organizationId(fakeOrganisationId)
-        .features(saEnv.environment.environmentFeatures.map { toFeatureValueCacheItem(eId, it) })
+        .features(features.map { toFeatureValueCacheItem(eId, it, featureValues[it.key]) })
 
       response.etag = calculateEtag(response)
       log.info("etag is {}", response.etag)
@@ -70,11 +73,26 @@ class DbDachaSqlApi : DachaApiKeyService {
     }
   }
 
+  private fun toFeatureValueCacheItem(envId: UUID, feature: DbApplicationFeature, fv: DbFeatureValue?) : FeatureValueCacheItem =
+    FeatureValueCacheItem()
+      .environmentId(envId)
+      .feature(Feature().key(feature.key).id(feature.id).valueType(feature.valueType))
+      .value(if (fv == null) toEmptyFeatureValue(feature) else toFeatureValue(fv) )
+
+
+  private fun toEmptyFeatureValue(feature: DbApplicationFeature): FeatureValue =
+    FeatureValue()
+      .key(feature.key)
+      .id(feature.id)
+      .version(0)
+      .locked(false)
+
   private fun toFeatureValueCacheItem(envId: UUID, dbFeature: DbFeatureValue): FeatureValueCacheItem =
     FeatureValueCacheItem()
       .environmentId(envId)
       .feature(toFeature(dbFeature))
       .value(toFeatureValue(dbFeature))
+      .strategies(dbFeature.rolloutStrategies)
 
   private fun toFeature(dbFeature: DbFeatureValue) =
     Feature().key(dbFeature.feature.key).id(dbFeature.feature.id).valueType(dbFeature.feature.valueType)
@@ -84,7 +102,7 @@ class DbDachaSqlApi : DachaApiKeyService {
       .key(dbFeature.feature.key)
       .locked(dbFeature.isLocked)
       .version(dbFeature.version)
-      .rolloutStrategies(dbFeature.rolloutStrategies)
+      .id(dbFeature.id)
 
     // we haven't implemented shared rollout strategies so don't both to include those
     when (dbFeature.feature.valueType) {
@@ -101,8 +119,7 @@ class DbDachaSqlApi : DachaApiKeyService {
   private fun calculateEtag(details: DachaKeyDetailsResponse): String {
     val det =
       details
-        .features
-        .map { fvci -> fvci.feature.id.toString() + "-" + if (fvci.value == null) "0000" else fvci.value.version }
+        .features!!.map { fvci -> fvci.feature.id.toString() + "-" + fvci.value.version }
         .joinToString("-")
     return Integer.toHexString(det.hashCode())
   }
@@ -153,7 +170,7 @@ class DbDachaSqlApi : DachaApiKeyService {
           .feature(toFeature(found))
           .value(toFeatureValue(found))
       )
-      .roles(serviceAccount.permissions?.split(",")?.filterNot { it.isEmpty() }?.map { RoleType.valueOf(it) })
+      .roles(serviceAccount.permissions?.split(",")?.filterNot { it.isEmpty() }?.map { RoleType.valueOf(it) } ?: listOf())
       .serviceKeyId(serviceAccount.serviceAccount.id)
       .applicationId(fakeApplicationId)
       .portfolioId(fakePortfolioId)

@@ -64,7 +64,7 @@
     <module>backend/edge-api</module>
     <module>backend/edge-common</module>
     <module>backend/edge-full</module>
-    <module>backend/edge-get</module>
+    <module>backend/edge-rest</module>
     <module>backend/edge-stats-api</module>
     <module>backend/mr</module>
     <module>backend/mr-api</module>
@@ -77,6 +77,7 @@
     <module>backend/mr-publish-api</module>
     <module>backend/sdk-strategy-matchers</module>
     <module>backend/party-server</module>
+    <module>backend/party-server-ish</module>
     <module>backend/dacha</module>
     <module>backend/dacha-api</module>
     <module>admin-frontend/app_mr_layer</module>

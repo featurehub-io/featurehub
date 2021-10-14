@@ -38,11 +38,13 @@
   </properties>
 
   <modules>
-    <module>sse-edge</module>
+    <module>edge-full</module>
+    <module>edge-rest</module>
     <module>mr</module>
     <module>../admin-frontend</module>
     <module>dacha</module>
     <module>party-server</module>
+    <module>party-server-ish</module>
   </modules>
 
   <profiles>

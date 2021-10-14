@@ -11,7 +11,7 @@
     <app.entrypoint>io.featurehub.Application</app.entrypoint>
     <app.port>8903</app.port>
     <build.version>0.0.1</build.version>
-    <app.baseimage>adoptopenjdk:11-jre-hotspot</app.baseimage>
+    <app.baseimage>adoptopenjdk/openjdk11@sha256:faa097729e4904c80b982ef6962803210db032564c9850d70b5b2a52f0a02200</app.baseimage>
     <app.imagename>${project.artifactId}</app.imagename>
   </properties>
 

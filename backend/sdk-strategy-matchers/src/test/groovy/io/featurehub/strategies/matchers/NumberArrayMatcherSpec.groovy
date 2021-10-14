@@ -1,7 +1,7 @@
 package io.featurehub.strategies.matchers
 
-import io.featurehub.sse.model.RolloutStrategyAttribute
-import io.featurehub.sse.model.RolloutStrategyAttributeConditional
+import io.featurehub.mr.model.RolloutStrategyAttribute
+import io.featurehub.mr.model.RolloutStrategyAttributeConditional
 import spock.lang.Specification
 import spock.lang.Unroll
 

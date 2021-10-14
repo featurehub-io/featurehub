@@ -56,7 +56,7 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
     }
   }
 
-  private fun requestPermission(key: KeyParts, featureKey: String?): DachaPermissionResponse? {
+  private fun requestPermission(key: KeyParts, featureKey: String): DachaPermissionResponse? {
     val apiKeyService: DachaApiKeyService = dachaClientRegistry.getApiKeyService(key.cacheName) ?: return null
     return try {
       apiKeyService.getApiKeyPermissions(
@@ -133,7 +133,7 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
       val upd = StreamedFeatureUpdate()
         .apiKey(apiKey)
         .environmentId(envId)
-        .updatingValue(featureStateUpdate.updateValue)
+        .updatingValue(featureStateUpdate.updateValue!!)
         .lock(featureStateUpdate.lock)
         .featureKey(featureKey)
 
@@ -202,7 +202,7 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
         return
       }
       if (valueNotActuallyChanging) {
-        upd.updatingValue(null)
+        upd.updatingValue(false)
         upd.valueBoolean(null)
         upd.valueNumber(null)
         upd.valueString(null)
