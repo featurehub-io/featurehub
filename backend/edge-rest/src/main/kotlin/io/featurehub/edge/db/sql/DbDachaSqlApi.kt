@@ -87,13 +87,6 @@ class DbDachaSqlApi : DachaApiKeyService {
       .version(0)
       .locked(false)
 
-  private fun toFeatureValueCacheItem(envId: UUID, dbFeature: DbFeatureValue): FeatureValueCacheItem =
-    FeatureValueCacheItem()
-      .environmentId(envId)
-      .feature(toFeature(dbFeature))
-      .value(toFeatureValue(dbFeature))
-      .strategies(dbFeature.rolloutStrategies)
-
   private fun toFeature(dbFeature: DbFeatureValue) =
     Feature().key(dbFeature.feature.key).id(dbFeature.feature.id).valueType(dbFeature.feature.valueType)
 

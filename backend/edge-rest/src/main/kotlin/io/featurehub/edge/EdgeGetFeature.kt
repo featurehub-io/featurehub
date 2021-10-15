@@ -18,9 +18,7 @@ class EdgeGetFeature : Feature {
       override fun configure() {
         bind(DbDachaCacheSqlApi::class.java).to(DachaClientServiceRegistry::class.java).`in`(Singleton::class.java)
         bind(DbFeatureUpdateProcessor::class.java).to(FeatureUpdatePublisher::class.java).`in`(Singleton::class.java)
-
       }
-
     })
 
     return true
