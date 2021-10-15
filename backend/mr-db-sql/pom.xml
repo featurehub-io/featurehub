@@ -79,23 +79,10 @@
       <version>1.1-SNAPSHOT</version>
     </dependency>
 
-
     <dependency>
-      <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-test</artifactId>
-      <version>[1.1, 2)</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
-      <version>1.4.197</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.ebean</groupId>
-      <artifactId>ebean-test</artifactId>
-      <version>${ebean.version}</version>
+      <groupId>io.featurehub.common</groupId>
+      <artifactId>common-db-test</artifactId>
+      <version>1.1-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
 

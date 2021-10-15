@@ -7,6 +7,7 @@
     </Appenders>
 
     <Loggers>
+      <!--
         <AsyncLogger name="io.featurehub" level="debug"/>
       <AsyncLogger name="io.ebean.SQL" level="trace"/>
       <AsyncLogger name="io.ebean.TXN" level="trace"/>
@@ -19,7 +20,7 @@
       <AsyncLogger name="io.featurehub.edge.stats" level="trace"/>
 
         <AsyncLogger name="jersey-logging" level="trace" />
-
+       -->
         <AsyncRoot level="info">
             <AppenderRef ref="STDOUT"/>
         </AsyncRoot>

@@ -66,21 +66,18 @@
       <artifactId>mr-db-models</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
+
+    <dependency>
+      <groupId>io.featurehub.composites</groupId>
+      <artifactId>composite-db-drivers</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
     <dependency>
       <groupId>io.featurehub.composites</groupId>
       <artifactId>composite-test</artifactId>
       <version>[1.1, 2)</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
-      <version>1.4.199</version>
-    </dependency>
-    <dependency>
-      <groupId>org.postgresql</groupId>
-      <artifactId>postgresql</artifactId>
-      <version>42.2.12</version>
     </dependency>
   </dependencies>
 

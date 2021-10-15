@@ -50,7 +50,7 @@ class DbDachaSqlApi : DachaApiKeyService {
         .features(features.map { toFeatureValueCacheItem(eId, it, featureValues[it.key]) })
 
       response.etag = calculateEtag(response)
-      log.info("etag is {}", response.etag)
+      log.trace("etag is {}", response.etag)
 
       response
     } else {

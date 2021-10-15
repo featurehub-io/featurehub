@@ -58,9 +58,9 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
-      <version>1.4.199</version>
+      <groupId>io.featurehub.composites</groupId>
+      <artifactId>composite-db-drivers</artifactId>
+      <version>1.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

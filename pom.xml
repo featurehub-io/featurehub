@@ -52,6 +52,7 @@
     <module>backend/common-db</module>
     <module>backend/common-db-test</module>
     <module>backend/composite-jackson</module>
+    <module>backend/composite-db-drivers</module>
     <module>backend/composite-ebean</module>
     <module>backend/composite-app</module>
     <module>backend/composite-jersey</module>
