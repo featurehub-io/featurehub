@@ -50,9 +50,11 @@
 
   <properties>
     <jersey.version>3.0.2</jersey.version>
-    <jackson.version>2.12.5</jackson.version>
+    <jackson.version>2.13.0</jackson.version>
     <sticky.version>1.3</sticky.version>
-    <groovy.version>3.0.8</groovy.version>
+    <groovy.version>3.0.9</groovy.version>
+    <ebean.version>12.12.1</ebean.version>
+    <h2.version>1.4.200</h2.version>
   </properties>
 
   <build>

@@ -1,2 +1,2 @@
 #!/bin/sh
-docker build  $DOCKER_OPTS  --no-cache -t featurehub/base_party:1.7 .
+docker build  $DOCKER_OPTS  --no-cache -t featurehub/base_party:1.8 .

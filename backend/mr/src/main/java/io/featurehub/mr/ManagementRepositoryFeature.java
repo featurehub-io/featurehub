@@ -1,12 +1,12 @@
 package io.featurehub.mr;
 
 import cd.connect.jersey.common.CorsFilter;
+import io.featurehub.app.db.utils.CommonDbFeature;
 import io.featurehub.db.publish.CacheSource;
 import io.featurehub.db.publish.MRPublishModule;
 import io.featurehub.db.publish.PublishManager;
 import io.featurehub.db.utils.ApiToSqlApiBinder;
 import io.featurehub.db.utils.ComplexUpdateMigrations;
-import io.featurehub.db.utils.DatabaseBinder;
 import io.featurehub.mr.api.ApplicationServiceDelegate;
 import io.featurehub.mr.api.ApplicationServiceDelegator;
 import io.featurehub.mr.api.AuthServiceDelegate;
@@ -86,7 +86,7 @@ public class ManagementRepositoryFeature implements Feature {
       AuthApplicationEventListener.class
       ).forEach(context::register);
 
-    context.register(new DatabaseBinder());
+    context.register(CommonDbFeature.class);
     context.register(new ApiToSqlApiBinder());
     context.register(new ComplexUpdateMigrations());
     context.register(new MRPublishModule());

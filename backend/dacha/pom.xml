@@ -57,6 +57,12 @@
 
     <dependency>
       <groupId>io.featurehub.mr</groupId>
+      <artifactId>dacha-api</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.featurehub.mr</groupId>
       <artifactId>mr-publish-api</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>

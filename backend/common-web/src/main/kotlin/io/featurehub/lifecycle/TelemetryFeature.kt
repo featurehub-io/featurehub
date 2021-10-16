@@ -154,13 +154,13 @@ class TelemetryApplicationEventListener @Inject constructor(
         .setSpanKind(SpanKind.SERVER)
         .startSpan()
 
-      val baggage = Baggage.fromContext(Context.current())
+//      val baggage = Baggage.fromContext(Context.current())
 
-      if (baggage.size() > 0) {
-        baggage.forEach({ k, v -> log.info("baggage `{}`:`{}", k, v.value) } )
-      } else {
-        log.info("baggage is empty")
-      }
+//      if (baggage.size() > 0) {
+//        baggage.forEach({ k, v -> log.info("baggage `{}`:`{}", k, v.value) } )
+//      } else {
+//        log.info("baggage is empty")
+//      }
 
       span!!.setAttribute("HTTP_METHOD", request.method)
       span!!.setAttribute("HTTP_SCHEME", request.requestUri.scheme)

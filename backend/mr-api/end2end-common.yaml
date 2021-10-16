@@ -1,6 +1,7 @@
 components:
   schemas:
     FeatureValueType:
+      x-package: io.featurehub.mr.model
       type: string
       enum:
         - BOOLEAN
@@ -8,6 +9,7 @@ components:
         - NUMBER
         - JSON
     RoleType:
+      x-package: io.featurehub.mr.model
       type: string
       enum:
         - READ
@@ -15,6 +17,7 @@ components:
         - UNLOCK
         - CHANGE_VALUE
     RolloutStrategy:
+      x-package: io.featurehub.mr.model
       description: "if the feature in an environment is different from its default, this will be the reason for it.
                     a rollout strategy is defined at the Application level and then applied to a specific feature value.
                     When they are copied to the cache layer they are cloned and the feature value for that strategy
@@ -51,6 +54,7 @@ components:
           items:
             $ref: "#/components/schemas/RolloutStrategyAttribute"
     RolloutStrategyAttribute:
+      x-package: io.featurehub.mr.model
       # although they are required,  they aren't here because we need to validate against them
 #      required:
 #        - conditional
@@ -72,8 +76,10 @@ components:
         type:
           $ref: "#/components/schemas/RolloutStrategyFieldType"
     RolloutStrategyArrayType:
+      x-package: io.featurehub.mr.model
       description: "values depend on the field type"
     RolloutStrategyFieldType:
+      x-package: io.featurehub.mr.model
       type: string
       enum:
         - STRING
@@ -84,6 +90,7 @@ components:
         - BOOLEAN
         - IP_ADDRESS
     RolloutStrategyAttributeConditional:
+      x-package: io.featurehub.mr.model
       type: string
       enum:
         - EQUALS

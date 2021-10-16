@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
+  <parent>
+    <groupId>io.featurehub.composites</groupId>
+    <artifactId>composite-parent</artifactId>
+    <version>1.2-SNAPSHOT</version>
+    <relativePath>../composite-parent</relativePath>
+  </parent>
   <groupId>io.featurehub.mr</groupId>
   <artifactId>mr-db-sql</artifactId>
   <version>1.1-SNAPSHOT</version>
@@ -35,10 +40,6 @@
     </license>
   </licenses>
 
-  <properties>
-    <ebean.version>12.8.2</ebean.version>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>io.featurehub.mr</groupId>
@@ -46,8 +47,8 @@
       <version>1.1-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-app</artifactId>
+      <groupId>io.featurehub.common</groupId>
+      <artifactId>common-db</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
     <dependency>
@@ -56,38 +57,35 @@
       <version>1.1-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-test</artifactId>
-      <version>[1.1, 2)</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
-      <version>1.4.197</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.ebean</groupId>
-      <artifactId>ebean-test</artifactId>
-      <version>${ebean.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>io.nats</groupId>
       <artifactId>jnats</artifactId>
       <version>2.6.6</version>
     </dependency>
     <dependency>
       <groupId>io.featurehub.mr</groupId>
+      <artifactId>dacha-api</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.featurehub.mr</groupId>
       <artifactId>mr-publish-api</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
+
     <dependency>
-      <groupId>io.featurehub.mr</groupId>
-      <artifactId>mr-streaming-api</artifactId>
+      <groupId>io.featurehub.edge</groupId>
+      <artifactId>edge-feature-update-async-api</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
+
+    <dependency>
+      <groupId>io.featurehub.common</groupId>
+      <artifactId>common-db-test</artifactId>
+      <version>1.1-SNAPSHOT</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <build>

@@ -2,8 +2,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:e2e_tests/util.dart';
-import 'package:featurehub_client_sdk/featurehub_get.dart';
-import 'package:featurehub_client_sdk/featurehub_io.dart';
+import 'package:featurehub_client_sdk/featurehub.dart';
 
 class EventsCommon {
   ClientFeatureRepository? _repository;
@@ -37,7 +36,7 @@ class EventsCommon {
   Future<ClientFeatureRepository> pollRepository(String apiKey) async {
     _repository ??= ClientFeatureRepository();
 
-    final client = FeatureHubSimpleApi(_baseUrl(), [apiKey], _repository!);
+    final client = FeatureHubConfig(_baseUrl(), [apiKey], _repository!);
 
     return client.request();
   }

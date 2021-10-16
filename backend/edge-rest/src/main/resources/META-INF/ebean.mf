@@ -1,0 +1,3 @@
+entity-packages: io.featurehub.db.model
+transactional-packages: io.featurehub.edge.db.sql
+querybean-packages: io.featurehub.db

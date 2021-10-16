@@ -13,7 +13,7 @@
 
   <properties>
     <app.entrypoint>io.featurehub.party.Application</app.entrypoint>
-    <app.baseimage>docker://featurehub/base_party:1.7</app.baseimage>
+    <app.baseimage>docker://featurehub/base_party:1.8</app.baseimage>
     <app.port>8085</app.port>
     <build.version>0.0.1</build.version>
   </properties>
@@ -57,7 +57,7 @@
 
     <dependency>
       <groupId>io.featurehub.edge</groupId>
-      <artifactId>edge</artifactId>
+      <artifactId>edge-full</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
 

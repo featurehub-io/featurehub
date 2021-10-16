@@ -37,7 +37,7 @@
 
   <properties>
     <app.entrypoint>io.featurehub.Application</app.entrypoint>
-    <app.baseimage>docker://featurehub/base_mr:1.6</app.baseimage>
+    <app.baseimage>docker://featurehub/base_mr:1.7</app.baseimage>
     <app.port>8085</app.port>
     <build.version>0.0.1</build.version>
   </properties>
@@ -62,29 +62,6 @@
       <version>1.1-SNAPSHOT</version>
     </dependency>
 
-    <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
-      <version>1.4.199</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.postgresql</groupId>
-      <artifactId>postgresql</artifactId>
-      <version>42.2.19</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.mariadb.jdbc</groupId>
-      <artifactId>mariadb-java-client</artifactId>
-      <version>2.7.2</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.featurehub.mr</groupId>
-      <artifactId>mr-streaming-api</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
 
     <dependency>
       <groupId>io.featurehub.mr</groupId>
@@ -95,6 +72,12 @@
     <dependency>
       <groupId>io.featurehub.components</groupId>
       <artifactId>security-oauth</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.featurehub.composites</groupId>
+      <artifactId>composite-db-drivers</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
 

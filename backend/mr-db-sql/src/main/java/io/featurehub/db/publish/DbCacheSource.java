@@ -168,6 +168,7 @@ public class DbCacheSource implements CacheSource {
       }).collect(Collectors.toList()))
       .serviceAccounts(env.getServiceAccountEnvironments().stream().map(s ->
         new ServiceAccount()
+          .name("") // a name is required, so make it empty
           .id(s.getServiceAccount().getId())
           ).collect(Collectors.toList()))
       .count(count);
