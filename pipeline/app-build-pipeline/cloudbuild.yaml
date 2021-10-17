@@ -1,19 +1,37 @@
 timeout: 900s
+
+substitutions:
+  _GCS_CACHE_BUCKET: demohub-build-cache
+
 steps:
-  - name: 'gcr.io/cloud-builders/git'
-    entrypoint: '/bin/sh'
+  - waitFor: ['-']
+    name: 'gcr.io/cloud-builders/git'
+    entrypoint: 'bash'
     args:
-      - '-c'
-      - 'git rev-parse HEAD > current-ref'
-  - name: 'gcr.io/cloud-builders/git'
+      - -c
+      - |
+        git rev-parse HEAD > current-ref &&
+        git clone https://github.com/featurehub-io/featurehub.git &&
+        cd featurehub &&
+        git checkout -b workbranch `cat ../current-ref`
+    volumes:
+      - name: user.home
+        path: /root
+    # now we need to get the maven and jib caches
+  - waitFor: ['-']
+    name: gcr.io/cloud-builders/gsutil
+    dir: /root
+    entrypoint: bash
     args:
-      - clone
-      - 'https://github.com/featurehub-io/featurehub.git'
-  - name: 'gcr.io/cloud-builders/git'
-    entrypoint: '/bin/sh'
-    args:
-      - '-c'
-      - 'cd featurehub;git checkout -b workbranch `cat ../current-ref`'
+      - -c
+      - |
+        (
+          gsutil cp gs://${_GCS_CACHE_BUCKET}/fh-m2-cache.tar.gz /tmp/m2-cache.tar.gz &&
+          tar -xzf /tmp/m2-cache.tar.gz
+        ) || echo 'Cache not found'
+    volumes:
+      - name: user.home
+        path: /root
   - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
     entrypoint: '/bin/sh'
     env:
@@ -21,6 +39,9 @@ steps:
     args:
       - '-c'
       - 'cd featurehub/backend && mvn -s ../pipeline/m2/settings.xml --no-transfer-progress install -f pom-first.xml'
+    volumes:
+      - name: user.home
+        path: /root
 # this next section deals with the Admin front-end. This is expensive to build every time, so we need to detect if
 # it or its upstream dependencies have changed and only build it then
   - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
@@ -37,6 +58,9 @@ steps:
 #    args:
 #      - '-c'
 #      - 'cd featurehub && ls -l'
+    volumes:
+      - name: user.home
+        path: /root
   - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
     entrypoint: '/bin/sh'
     env:
@@ -45,6 +69,9 @@ steps:
     args:
       - '-c'
       - 'cd featurehub && if [ -f build-frontend ]; then mvn -s pipeline/m2/settings.xml --no-transfer-progress install -f admin-frontend/app_mr_layer/pom.xml; else true; fi'
+    volumes:
+      - name: user.home
+        path: /root
   - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/flutter-build:d9044a8a61e4d7d0afbd4fe8bad6d40762c289dd'
     # the version of flutter-build refers to the commit message. It is the base image used to build the front end. This will *only build the artifacts and
     # not generate the installable file required to build the docker images. That is not done in this pipeline (only when building the actual docker images)
@@ -52,6 +79,9 @@ steps:
     args:
       - '-c'
       - 'cd featurehub && chmod u+x admin-frontend/pipeline-build.sh && admin-frontend/pipeline-build.sh'
+    volumes:
+      - name: user.home
+        path: /root
   - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
     env:
       - MAVEN_OPTS=-Dmaven.wagon.http.retryHandler.count=3
@@ -59,6 +89,9 @@ steps:
     args:
       - '-c'
       - 'cd featurehub && if [ -f all-build ]; then mvn -s pipeline/m2/settings.xml --no-transfer-progress install -f pom.xml; else true; fi'
+    volumes:
+      - name: user.home
+        path: /root
   - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
     # run partial build if special "all-build" file is missing
     env:
@@ -67,6 +100,23 @@ steps:
     args:
       - '-c'
       - 'cd featurehub && if [ ! -f all-build ]; then mvn -s pipeline/m2/settings.xml --no-transfer-progress install -Dgib.disable=false -Dgib.referenceBranch=main -f pom.xml; else true; fi'
+    volumes:
+      - name: user.home
+        path: /root
+  # Saves the files to the GCS cache, but NEVER STORE OUR OWN
+  - name: gcr.io/cloud-builders/gsutil
+    dir: /root
+    entrypoint: bash
+    # Caches the local Maven repository.
+    args:
+      - -c
+      - |
+        rm -rf ~/.m2/repository/io/featurehub &&
+        tar -czf /tmp/m2-cache.tar.gz .m2 &&
+        gsutil cp /tmp/m2-cache.tar.gz gs://${_GCS_CACHE_BUCKET}/fh-m2-cache.tar.gz
+    volumes:
+      - name: user.home
+        path: /root
 
 
 
