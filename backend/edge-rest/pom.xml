@@ -16,6 +16,7 @@
     This artifact is an implementation of Edge but only for GET/PUT and it talks directly to the database.
   </description>
 
+  <!-- comment -->
   <url>https://featurehub.io</url>
   <developers>
     <developer>
