@@ -6,13 +6,14 @@ Feature: Testing of features around people changing their passwords
     And I can login as user "<email>" with password "<password2>"
 
   Examples:
-    | name            | email                 | password    | password2   |
-    | Irina Northwell | irina2@mailinator.com | password321 | password123 |
-    | Irina Northwell | irina2@mailinator.com | password123 | password321 |
-    | Roger Cleghorn  | roger@mailinator.com  | password999 | password123 |
-    | Roger Cleghorn  | roger@mailinator.com  | password123 | password999 |
-    | James Vowles    | james@mailinator.com  | password624 | password123 |
-    | James Vowles    | james@mailinator.com  | password123 | password624 |
+    | name            | email                   | password    | password2    |
+    | Irina Northwell | irina2@mailinator.com   | password321 | password123  |
+    | Irina Northwell | irina2@mailinator.com   | password123 | password321  |
+    | Roger Cleghorn  | roger@mailinator.com    | password999 | password123  |
+    | Roger Cleghorn  | roger@mailinator.com    | password123 | password999  |
+    | James Vowles    | james@mailinator.com    | password624 | password123  |
+    | James Vowles    | james@mailinator.com    | password123 | password624  |
+    | null            | nulluser@mailinator.com | passwordX3! | password nP# |
 
     # have to have the paswords in pairs so they run each time
 

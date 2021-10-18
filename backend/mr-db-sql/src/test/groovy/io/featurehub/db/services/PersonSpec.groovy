@@ -41,13 +41,13 @@ class PersonSpec extends BaseSpec {
       personSqlApi.get(p.id, Opts.empty()).email == email
   }
 
-  def "I can't create a person with a null name"() {
+  def "I can create a person with a null name"() {
     given: "i generate a random email"
       def email = RandomStringUtils.randomAscii(30).toLowerCase() + "@mailinator.com"
     when:
       def p = personSqlApi.create(email, null, superPerson.id.id)
     then:
-      p == null
+      p != null
   }
 
   def "No email is passed when creating a user causes a null return"() {
