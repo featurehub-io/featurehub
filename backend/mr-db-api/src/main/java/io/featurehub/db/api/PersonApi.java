@@ -3,6 +3,7 @@ package io.featurehub.db.api;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.SortOrder;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.UUID;
@@ -44,7 +45,7 @@ public interface PersonApi {
 
   Person getByToken(@NotNull String id, Opts opts);
 
-  PersonToken create(@NotNull String email, @NotNull String name, UUID createdBy) throws DuplicatePersonException;
+  PersonToken create(@NotNull String email, @Nullable String name, UUID createdBy) throws DuplicatePersonException;
 
   boolean delete(@NotNull String email);
 }

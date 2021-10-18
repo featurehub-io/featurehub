@@ -253,8 +253,8 @@ public class PersonSqlApi implements PersonApi {
   }
 
   @Override
-  public PersonToken create(String email, String name, UUID createdBy) throws DuplicatePersonException {
-    if (email == null || name == null) {
+  public PersonToken create(@NotNull String email, String name, UUID createdBy) throws DuplicatePersonException {
+    if (email == null) {
       return null;
     }
 

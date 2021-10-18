@@ -17,6 +17,7 @@ import io.featurehub.mr.model.PersonId;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,8 +84,8 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
   }
 
   @Override
-  public Person register(@NotNull String name, @NotNull String email, @NotNull String password, Opts opts) {
-    if (name == null || email == null) return null;
+  public Person register(@Nullable String name, @NotNull String email, @NotNull String password, Opts opts) {
+    if (email == null) return null;
 
     return new QDbPerson()
         .email
