@@ -565,11 +565,12 @@ class ManagementRepositoryClientBloc implements Bloc {
   }
 
   String registrationUrl(String token) {
+    var tokenizedPart = '/register-url?token=$token';
     if(Uri.base.hasPort) {
-      return Uri.base.host + ':' + Uri.base.port.toString() + '/register-url?token=$token';
+      return Uri.base.host + ':' + Uri.base.port.toString() + tokenizedPart;
     }
     else {
-      return Uri.base.host + '/register-url?token=$token';
+      return Uri.base.host + tokenizedPart;
     }
   }
 }
