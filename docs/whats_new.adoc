@@ -1,0 +1,18 @@
+= FeatureHub Release Changelog
+:favicon: favicon.ico
+ifdef::env-github,env-browser[:outfilesuffix: .adoc]
+:toc: left
+:toclevels: 4
+:toc-title: Contents
+:google-analytics-code: UA-173153929-1
+
+link:index{outfilesuffix}[Back to index]
+
+== 1.5.0
+
+This is our first major release in a while and its partly due to feedback we have received and partly our own
+requirements moving forward. This releases big announcements are:
+
+- Dacha moves to being a REST server from being a NATS server with a monitoring only REST api. It is intended to be
+an internal only facing REST service but while it consumes the NATS updates from MR, it exposes its caching for REST
+purposes and enhances the data the it returns, including the 
