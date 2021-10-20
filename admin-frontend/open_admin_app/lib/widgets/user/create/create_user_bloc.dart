@@ -11,7 +11,6 @@ enum CreateUserForm { defaultState, successState }
 class CreateUserBloc implements Bloc {
   RegistrationUrl? registrationUrl;
   String? email;
-  String? name;
   GlobalKey<FormState>? formKey;
 
   final ManagementRepositoryClientBloc client;
@@ -37,7 +36,6 @@ class CreateUserBloc implements Bloc {
         selectGroupBloc.listOfAddedPortfolioGroups;
     final cpd = CreatePersonDetails(
       email: email,
-      name: name,
       groupIds: listOfAddedPortfolioGroups
           .map((pg) => pg.group.id)
           .whereNotNull()

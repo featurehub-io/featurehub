@@ -67,7 +67,6 @@ class TopWidgetDefault extends StatefulWidget {
 
 class _TopWidgetDefaultState extends State<TopWidgetDefault> {
   final _email = TextEditingController();
-  final _name = TextEditingController();
   bool isAddButtonDisabled = true;
 
   @override
@@ -91,7 +90,7 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
               Padding(
                 padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
                 child: Text(
-                  'To create a new user please first provide their name and email address',
+                  'To create a new user please first provide their email address',
                   style: Theme.of(context).textTheme.caption,
                 ),
               ),
@@ -99,19 +98,6 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
                 constraints: const BoxConstraints(maxWidth: 300),
                 child: Column(
                   children: [
-                    TextFormField(
-                      controller: _name,
-                      decoration: FHFilledInputDecoration(
-                        labelText: 'Name',
-                      ),
-                      validator: (v) {
-                        if (v?.isEmpty == true) {
-                          return "Please enter user's name";
-                        }
-                        return null;
-                      },
-                      onSaved: (v) => bloc.name = v,
-                    ),
                     const SizedBox(height: 16.0),
                     TextFormField(
                       controller: _email,

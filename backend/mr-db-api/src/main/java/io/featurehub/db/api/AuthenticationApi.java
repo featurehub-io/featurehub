@@ -4,6 +4,7 @@ import io.featurehub.mr.model.Person;
 
 import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public interface AuthenticationApi {
   Person login(@NotNull String email, @NotNull String password);
@@ -15,7 +16,7 @@ public interface AuthenticationApi {
    * @param opts
    * @return
    */
-  Person register(@NotNull String name, @NotNull String email, @NotNull String password, Opts opts);
+  Person register(@Nullable String name, @NotNull String email, @NotNull String password, Opts opts);
 
   /**
    * in case of forgotten password admin resets the password and sets a reset token which can be used in email.

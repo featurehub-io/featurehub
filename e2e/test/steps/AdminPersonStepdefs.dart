@@ -18,7 +18,7 @@ class AdminPersonStepdefs {
     await common.initialize();
     shared.registrationUrl = await common.personService
         .createPerson(CreatePersonDetails(email: email)
-          ..name = email
+          // ..name = email
           ..groupIds = []);
   }
 
@@ -29,7 +29,7 @@ class AdminPersonStepdefs {
 
     shared.registrationUrl = await common.personService
         .createPerson(CreatePersonDetails(email: email)
-          ..name = email
+          // ..name = email
           ..groupIds = [common.superuserGroupId!]);
   }
 
@@ -38,7 +38,9 @@ class AdminPersonStepdefs {
     await common.initialize();
 
     shared.registrationUrl = await common.personService
-        .createPerson(CreatePersonDetails(email: email)..name = email);
+        .createPerson(CreatePersonDetails(email: email)
+            // ..name = email
+            );
   }
 
   @When(r'the first superuser is used for authentication')

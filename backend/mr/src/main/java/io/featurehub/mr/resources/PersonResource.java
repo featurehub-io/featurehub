@@ -58,10 +58,12 @@ public class PersonResource implements PersonServiceDelegate {
         PersonApi.PersonToken person = personApi.create(createPersonDetails.getEmail(),
           createPersonDetails.getName(), currentUser.getId().getId());
 
-        //add user to the groups
-        Optional.of(createPersonDetails.getGroupIds()).ifPresent(list -> list.forEach(id -> {
-          groupApi.addPersonToGroup(id, person.id, Opts.empty());
-        }));
+        if (createPersonDetails.getGroupIds() != null) {
+          //add user to the groups
+          Optional.of(createPersonDetails.getGroupIds()).ifPresent(list -> list.forEach(id -> {
+            groupApi.addPersonToGroup(id, person.id, Opts.empty());
+          }));
+        }
 
         if (person == null) {
           throw new BadRequestException();

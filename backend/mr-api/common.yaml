@@ -234,41 +234,38 @@ components:
               format: date-time
 
     Person:
-      allOf:
-        - $ref: "#/components/schemas/Audit"
-        - type: object
-          properties:
-            id:
-              allOf:
-                - $ref: "#/components/schemas/PersonId"
-            name:
-              type: string
-              minLength: 1
-              maxLength: 150
-            email:
-              type: string
-              format: email
-              maxLength: 100
-            other:
-              type: string
-            source:
-              type: string
-            version:
-              type: integer
-              format: int64
-            passwordRequiresReset:
-              type: boolean
-            groups:
-              type: array
-              items:
-                $ref: "#/components/schemas/Group"
-            whenArchived:
-              type: string
-              format: date-time
-            additional:
-              type: array
-              items:
-                $ref: "#/components/schemas/PersonInfo"
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/PersonId"
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          maxLength: 100
+        other:
+          type: string
+        source:
+          type: string
+        version:
+          type: integer
+          format: int64
+        passwordRequiresReset:
+          type: boolean
+        groups:
+          type: array
+          items:
+            $ref: "#/components/schemas/Group"
+        whenArchived:
+          type: string
+          format: date-time
+        additional:
+          type: array
+          items:
+            $ref: "#/components/schemas/PersonInfo"
     PersonInfo:
       type: object
       required:

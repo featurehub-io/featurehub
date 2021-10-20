@@ -75,7 +75,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                     for (SearchPersonEntry p in snapshot.data!)
                       DataRow(
                           cells: [
-                            DataCell(p.person.name == null
+                            DataCell(p.person.name == "No name"
                                 ? Text('Not yet registered',
                                     style: Theme.of(context).textTheme.caption)
                                 : Text(
@@ -84,14 +84,17 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                             DataCell(Text(p.person.email!)),
                             DataCell(Text('${p.person.groups.length}')),
                             DataCell(Row(children: <Widget>[
-                              FHIconButton(
-                                icon: Icon(Icons.info,
-                                    color:
-                                        _infoColour(p, allowedLocalIdentity)),
-                                onPressed: () => bloc.mrClient
-                                    .addOverlay((BuildContext context) {
-                                  return ListUserInfoDialog(bloc, p);
-                                }),
+                              Tooltip(
+                                message: _infoTooltip(p, allowedLocalIdentity),
+                                child: FHIconButton(
+                                  icon: Icon(Icons.info,
+                                      color:
+                                          _infoColour(p, allowedLocalIdentity)),
+                                  onPressed: () => bloc.mrClient
+                                      .addOverlay((BuildContext context) {
+                                    return ListUserInfoDialog(bloc, p);
+                                  }),
+                                ),
                               ),
                               FHIconButton(
                                   icon: const Icon(Icons.edit),
@@ -203,7 +206,17 @@ class _PersonListWidgetState extends State<PersonListWidget> {
       return Colors.red;
     }
 
-    return Colors.orange;
+    return Colors.green;
+  }
+
+  String _infoTooltip(SearchPersonEntry entry, bool allowedLocalLogin) {
+    if (!allowedLocalLogin) {
+      return "Identity provider login";
+    }
+    if (entry.registration.expired) {
+      return "Registration expired";
+    }
+    return "Local login";
   }
 }
 
@@ -261,7 +274,7 @@ class _ListUserInfo extends StatelessWidget {
             child: Text(entry.person.email!,
                 style: Theme.of(context).textTheme.bodyText1),
           ),
-          if (allowedLocalIdentity && !entry.registration.expired)
+          if (allowedLocalIdentity && !entry.registration.expired && entry.registration.token.isNotEmpty)
             Column(
               children: [
                 const SizedBox(height: 16),
@@ -270,13 +283,13 @@ class _ListUserInfo extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    'Registration Url',
+                    'Registration URL',
                     style: Theme.of(context).textTheme.caption,
                   ),
                 ),
               ],
             ),
-          if (allowedLocalIdentity && !entry.registration.expired)
+          if (allowedLocalIdentity && !entry.registration.expired && entry.registration.token.isNotEmpty)
             Row(
               children: [
                 Expanded(

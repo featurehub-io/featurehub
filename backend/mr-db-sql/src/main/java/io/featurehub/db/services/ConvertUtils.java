@@ -414,14 +414,6 @@ public class ConvertUtils implements Conversions {
             .whenArchived(toOff(dbp.getWhenArchived()))
             .id(new PersonId().id(dbp.getId()));
 
-    if (opts.contains(FillOpts.Details)) {
-      if (dbp.getWhenUpdated() != null) {
-        p.whenUpdated(toOff(dbp.getWhenUpdated()));
-      }
-
-      p.whenCreated(toOff(dbp.getWhenCreated()));
-    }
-
     if (opts.contains(FillOpts.Groups)) {
       new QDbGroup()
           .whenArchived
