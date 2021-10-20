@@ -12,18 +12,25 @@ link:index{outfilesuffix}[Back to index]
 
 There is a GitHub https://github.com/featurehub-io/featurehub-install[repository] where you can find source for all the deployment options.
 
-=== Option 1 - Evaluation Deployment
+As explained in the <<architecture.adoc#,Architecture>> section, there are a number of different combinations
+for deployment and they typically focus on where you will deploy the infrastructure.
+
+For a streaming deployment, you will need to deploy the full stack and have your own database - this
+means a combination of MR, Dacha, Edge, NATS and if you are using it, nginx (which holds the web app).
+When combined this is called the *Party Server*. This kind of deployment is more suitable for Kubernetes
+or ECS style deploys.  
+
+For a non-streaming deployment, you need to deploy (again with your database) only MR and Edge-Rest. When
+these are deployed together they are called *Party Server-_ish_*  
+
+=== Getting started with an evaluation deployment
 
 image::images/fh_deployment_option_1.svg[Option 1,500]
+NOTE: the dotted edge represents the container boundary. 
 
-This is the most basic option recommended for getting started quickly, and is the example we use in demos.
-
-It uses one Docker container for the entire stack and works with all supported databases
-baked in. The two web endpoints of interest -  the Management Server and the Edge layer that client
-SDKs talk to - are all served from the same web server.
-
-This deployment is designed with H2 in-memory database. It is not recommended for production usage,
-and aimed for demonstration and evaluation purposes.
+To get you up and going quickly, we have created an evaluation deployment container,
+and it contains everything you need to get going with your evaluation, including a 
+local (non-scalable, test focused) database. 
 
 To install, grab the latest version of FeatureHub tagged release, e.g.
 
@@ -39,17 +46,20 @@ For H2 option:
 
 `docker compose up`
 
-This will install all the necessary components including FeatureHub Admin Console. You can now load it on localhost:8085
+This will install all the necessary components including FeatureHub Admin Console. You can now load it on http://localhost:8085
 
+What makes it only an evaluation option is simply the database used, it writes to the local
+disk and is not intended to be used for a long running or concurrent system.
 
-
-=== Option 2 - Low Volume Deployment
+=== Option 1 - Low Volume Deployment
 
 image::images/fh_deployment_option_2.svg[Option 1,500]
 
-This option is similar to the H2-in memory example, however in this case a single docker image with all FeatureHub components talks to the external database. (You can choose from Postgres or MySQL). This gives you more control over external database and lets you do single Docker image cloud deployments, however it doesn't scale well for large volume applications as all Edge traffic routes to the same container as your Admin application. It is possible that excess Edge
-traffic will cause performance issues with your Admin app.
-
+This option is similar to the evaluation, however in this case a single docker image with all FeatureHub components talks to the external database. (You can choose from Postgres or MySQL,
+we can support other databases, please just ask). This gives you more control over the external database and lets you do single Docker image cloud deployments, however it doesn't scale well for large volume applications as all Edge traffic routes to the same container as your Admin application. It is possible that excess Edge
+traffic will cause performance issues with your Admin app. You can replicate this image
+in a cluster by ensuring that the *NATS* configuration is set up correctly if you wish (using the
+`nats.urls` property or `NATS_URLS` environment variable).
 
 NOTE: In this `docker compose` image, there is a sample database along with an initialization script.
 
@@ -76,7 +86,6 @@ Or for MySQL option:
 This will install all the necessary components including FeatureHub Admin Console. You can now load it on localhost:8085
 
 NOTE: H2 and Postgres are the two databases we test actively with. We are relying on our open source community to test MySQL database and report issues.
-
 
 === Option 3 - Scalable Deployment
 
