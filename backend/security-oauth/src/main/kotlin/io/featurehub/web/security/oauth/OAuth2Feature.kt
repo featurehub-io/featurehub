@@ -28,6 +28,9 @@ class OAuth2Feature : Feature {
             if (validProviderSources.contains(AzureProvider.Companion.PROVIDER_NAME)) {
                 providers.add(AzureProvider::class.java)
             }
+            if (validProviderSources.contains(KeycloakProvider.Companion.PROVIDER_NAME)) {
+                providers.add(KeycloakProvider::class.java)
+            }
             if (validProviderSources.contains(PROVIDER_NAME)) {
                 providers.add(GithubProvider::class.java)
             }
