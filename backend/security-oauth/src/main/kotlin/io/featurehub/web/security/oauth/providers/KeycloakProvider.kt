@@ -30,14 +30,14 @@ class KeycloakProvider : OAuth2Provider {
   init {
     DeclaredConfigResolver.resolve(this)
 
-    actualAuthUrl = keycloakUrl + "/auth/realms/" + keycloakRealm + "/protocol/openid-connect/auth?client_id=" + clientId +
+    actualAuthUrl = "$keycloakUrl/auth/realms/$keycloakRealm/protocol/openid-connect/auth?client_id=" + URLEncoder.encode(clientId, StandardCharsets.UTF_8) +
       "&response_type=code&scope=profile%20email&redirect_uri=" + URLEncoder.encode(redirectUrl, StandardCharsets.UTF_8)
-    tokenUrl = "https://oauth2.googleapis.com/token"
+    tokenUrl = "$keycloakUrl/auth/realms/$keycloakRealm/protocol/openid-connect/token"
   }
 
   override fun discoverProviderUser(authed: AuthClientResult): ProviderUser? {
     val idInfo = Jwt.decodeJwt(authed.accessToken) ?: return null
-    return ProviderUser.Builder().email(idInfo["email"])
+    return ProviderUser.Builder().email(idInfo["email"].toString())
       .name(idInfo["name"].toString()).build()
   }
 
