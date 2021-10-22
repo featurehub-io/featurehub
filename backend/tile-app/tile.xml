@@ -14,6 +14,7 @@
     <app.baseimage>adoptopenjdk/openjdk11@sha256:faa097729e4904c80b982ef6962803210db032564c9850d70b5b2a52f0a02200</app.baseimage>
     <app.imagename>${project.artifactId}</app.imagename>
     <docker.goal>dockerBuild</docker.goal>
+    <docker.project.prefix>featurehub</docker.project.prefix>
   </properties>
 
   <profiles>
@@ -40,8 +41,8 @@
                   <goal>babysaur</goal>
                 </goals>
                 <configuration>
-                  <fullImageName>featurehub/${app.imagename}:${build.version}</fullImageName>
-                  <baseImageName>featurehub/${app.imagename}:${build.version}</baseImageName>
+                  <fullImageName>${docker.project.prefix}/${app.imagename}:${build.version}</fullImageName>
+                  <baseImageName>${docker.project.prefix}/${app.imagename}:${build.version}</baseImageName>
                 </configuration>
               </execution>
             </executions>
@@ -68,7 +69,7 @@
                 </auth>
               </from>
               <to>
-                <image>featurehub/${app.imagename}:${build.version}</image>
+                <image>${docker.project.prefix}/${app.imagename}:${build.version}</image>
                 <auth>
                   <username>${env.REGISTRY_USERNAME}</username>
                   <password>${env.REGISTRY_PASSWORD}</password>

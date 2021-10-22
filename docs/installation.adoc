@@ -51,17 +51,24 @@ This will install all the necessary components including FeatureHub Admin Consol
 What makes it only an evaluation option is simply the database used, it writes to the local
 disk and is not intended to be used for a long running or concurrent system.
 
-=== Option 1 - Low Volume Deployment
+=== Option 1 - Low Volume Deployment (Streaming)
 
 image::images/fh_deployment_option_2.svg[Option 1,500]
 
-This option is similar to the evaluation, however in this case a single docker image with all FeatureHub components talks to the external database. (You can choose from Postgres or MySQL,
-we can support other databases, please just ask). This gives you more control over the external database and lets you do single Docker image cloud deployments, however it doesn't scale well for large volume applications as all Edge traffic routes to the same container as your Admin application. It is possible that excess Edge
-traffic will cause performance issues with your Admin app. You can replicate this image
-in a cluster by ensuring that the *NATS* configuration is set up correctly if you wish (using the
-`nats.urls` property or `NATS_URLS` environment variable).
+This option is similar to the evaluation, however in this case a _single docker image_ with _all_ FeatureHub components (+ ancillary services), 
+talking to the external database. (You can choose from Postgres or MySQL/MariaDB,
+we can support other databases, please just ask). This gives you more control over the external database and lets you do single Docker image cloud deployments, however it doesn't scale well for large volume applications as all Edge traffic routes to the same container as your Admin application.
 
-NOTE: In this `docker compose` image, there is a sample database along with an initialization script.
+This deployment essentially runs five different services (MR, Dacha, Edge, NATS and nginx) in a single docker container, treating it like a VM rather than a docker-style deploy.
+
+It is possible that excess Edge traffic will cause performance issues with your Admin app as all traffic will be coming into the one instance. If you have relatively low volumes
+of traffic (especially given the cache) this may work for you, however streaming traffic is quite resource intense and can swamp a server's available TCP connections. If you 
+are deploying your own servers using streaming, your web and/or mobile clients use GET and there aren't too many of them (<10k per second) then you should be ok with this kind of deployment.
+
+You can replicate this image in a cluster by ensuring that the *NATS* configuration is set up correctly (using the
+`nats.urls` property or `NATS_URLS` environment variable - see configuration).
+
+NOTE: In the installs folder, there is a `docker compose` setup, and it comes with a sample database along with an initialization script. There is one for Postgres and MySQL.
 
 To install, grab the latest version of FeatureHub tagged release, e.g.
 
@@ -87,7 +94,7 @@ This will install all the necessary components including FeatureHub Admin Consol
 
 NOTE: H2 and Postgres are the two databases we test actively with. We are relying on our open source community to test MySQL database and report issues.
 
-=== Option 3 - Scalable Deployment
+=== Option 2 - Scalable Deployment
 
 image::images/fh_deployment_option_3.svg[Option 2,500]
 
