@@ -4,12 +4,13 @@ import 'package:animator/animator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_card.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_green.dart';
+import 'package:open_admin_app/widgets/user/signin/signin_provider_button.dart';
 import 'package:openapi_dart_common/openapi.dart';
+
 
 class SigninWidget extends StatefulWidget {
   const SigninWidget(this.bloc, {Key? key}) : super(key: key);
@@ -219,16 +220,10 @@ class _SetupPage1ThirdPartyProviders extends StatelessWidget {
           SizedBox(
             height: 48,
             child: Padding(
-              padding: const EdgeInsets.only(top: 12.0),
-              child: SignInButton(
-                  provider == 'oauth2-google'
-                      ? Buttons.GoogleDark
-                      : provider == 'oauth2-github'
-                          ? Buttons.GitHub
-                          : Buttons.Microsoft, onPressed: () {
-                selectedExternalProviderFunc(provider);
-              }),
-            ),
+                padding: const EdgeInsets.only(top: 12.0),
+                child: SignInProviderButton(
+                    provider: provider,
+                    func: () => selectedExternalProviderFunc(provider))),
           ),
       ],
     );
