@@ -21,7 +21,7 @@ class Application {
     DeclaredConfigResolver.resolve(this)
 
     // ensure migrations do not run
-    System.setProperty("db.run-migrations", "false")
+//    System.setProperty("db.run-migrations", "false")
 
     val config = ResourceConfig(
       CorsFilter::class.java,

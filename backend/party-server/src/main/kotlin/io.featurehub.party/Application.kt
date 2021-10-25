@@ -15,7 +15,6 @@ import io.featurehub.health.MetricsHealthRegistration.Companion.registerMetrics
 import io.featurehub.jersey.FeatureHubJerseyHost
 import io.featurehub.lifecycle.TelemetryFeature
 import io.featurehub.mr.ManagementRepositoryFeature
-import io.featurehub.mr.utils.NginxUtils
 import io.featurehub.publish.ChannelConstants
 import io.featurehub.publish.NATSFeature
 import io.featurehub.web.security.oauth.OAuth2Feature
@@ -71,7 +70,6 @@ class Application {
     fun main(args: Array<String>) {
       System.setProperty("user.timezone", "UTC")
       try {
-        NginxUtils.seeIfWeNeedToRunNginx()
         Application().run()
       } catch (e: Exception) {
         log.error("failed", e)

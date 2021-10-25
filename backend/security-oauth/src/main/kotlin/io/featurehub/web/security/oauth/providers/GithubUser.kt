@@ -5,9 +5,9 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 class GithubUser {
-    @JsonProperty("name")
-    var name: String? = null
+  @JsonProperty("name")
+  var name: String? = null
 
-    @JsonProperty("email")
-    var email: String? = null
+  @JsonProperty("email")
+  var email: String? = null
 }

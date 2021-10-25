@@ -30,8 +30,15 @@ class KeycloakProvider : OAuth2Provider {
   init {
     DeclaredConfigResolver.resolve(this)
 
-    actualAuthUrl = "$keycloakUrl/auth/realms/$keycloakRealm/protocol/openid-connect/auth?client_id=" + URLEncoder.encode(clientId, StandardCharsets.UTF_8) +
-      "&response_type=code&scope=profile%20email&redirect_uri=" + URLEncoder.encode(redirectUrl, StandardCharsets.UTF_8)
+    actualAuthUrl =
+      "$keycloakUrl/auth/realms/$keycloakRealm/protocol/openid-connect/auth?client_id=" + URLEncoder.encode(
+        clientId,
+        StandardCharsets.UTF_8
+      ) +
+        "&response_type=code&scope=profile%20email&redirect_uri=" + URLEncoder.encode(
+        redirectUrl,
+        StandardCharsets.UTF_8
+      )
     tokenUrl = "$keycloakUrl/auth/realms/$keycloakRealm/protocol/openid-connect/token"
   }
 

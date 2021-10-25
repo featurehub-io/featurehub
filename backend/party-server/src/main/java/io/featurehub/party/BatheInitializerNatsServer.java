@@ -3,6 +3,7 @@ package io.featurehub.party;
 import bathe.BatheInitializer;
 import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
+import io.featurehub.utils.FallbackPropertyConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,12 +27,14 @@ public class BatheInitializerNatsServer implements BatheInitializer {
 
   @Override
   public String[] initialize(String[] args, String jumpClass) {
-    if (System.getProperty("dont-run-nats-server", System.getenv("DONT-RUN-NATS-SERVER")) != null) {
+    if (FallbackPropertyConfig.Companion.getConfig("dont-run-nats-server") != null) {
       log.info("dont-run-nats-server configured, so not running.");
     }
 
-    String natsLocation = System.getProperty("nats.executable") == null ? "/target/nats-server" : System.getProperty(
-      "nats.executable", System.getenv("NATS.EXECUTABLE"));
+    String natsLocation = FallbackPropertyConfig.Companion.getConfig("nats.executable");
+    if (natsLocation == null) {
+      natsLocation = "/target/nats-server";
+    }
 
     if (!new File(natsLocation).exists()) {
       log.info("No NATS server in /target, skipping.");

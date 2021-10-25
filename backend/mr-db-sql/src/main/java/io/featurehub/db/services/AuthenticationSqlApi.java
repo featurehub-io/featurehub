@@ -84,7 +84,7 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
   }
 
   @Override
-  public Person register(@Nullable String name, @NotNull String email, @NotNull String password, Opts opts) {
+  public Person register(@Nullable String name, @NotNull String email, @Nullable String password, Opts opts) {
     if (email == null) return null;
 
     return new QDbPerson()
@@ -97,6 +97,7 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
                 return null;
               }
 
+              // its ok password is null
               String saltedPassword = passwordSalter.saltAnyPassword(password, DbPerson.DEFAULT_PASSWORD_ALGORITHM);
 
               if (saltedPassword == null && password != null) {

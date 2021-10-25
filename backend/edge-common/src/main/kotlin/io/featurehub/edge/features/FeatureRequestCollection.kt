@@ -5,6 +5,8 @@ import io.featurehub.edge.KeyParts
 import io.featurehub.edge.strategies.ClientContext
 import io.featurehub.mr.model.DachaKeyDetailsResponse
 import io.featurehub.sse.model.Environment
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -15,10 +17,12 @@ class FeatureRequestCollection(
   private val future: CompletableFuture<List<FeatureRequestResponse>>,
   private val etags: EtagStructureHolder
 ) : FeatureRequestCompleteNotifier {
+  private val log: Logger = LoggerFactory.getLogger(FeatureRequestCollection::class.java)
   private val completed: MutableCollection<FeatureRequester> = ConcurrentLinkedQueue()
 
   // this gets called on each requester each time a response comes back. Once it matches
-  // the number that went in, we can process and complete the future
+  // the number that went in, we can process and complete the future. This is the number of
+  // API Keys we are asking for, and for most people it will be 1
   override fun complete(key: FeatureRequester) {
     completed.add(key)
 

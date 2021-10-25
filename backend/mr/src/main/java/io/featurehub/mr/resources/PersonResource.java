@@ -36,7 +36,7 @@ public class PersonResource implements PersonServiceDelegate {
   private final AuthManagerService authManager;
 
   @ConfigKey("register.url")
-  private String registrationUrl;
+  private String registrationUrl = "";
 
   @Inject
   public PersonResource(PersonApi personApi, GroupApi groupApi, AuthManagerService authManager) {

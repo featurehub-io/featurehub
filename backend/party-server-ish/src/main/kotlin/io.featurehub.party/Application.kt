@@ -10,9 +10,7 @@ import io.featurehub.health.MetricsHealthRegistration.Companion.registerMetrics
 import io.featurehub.jersey.FeatureHubJerseyHost
 import io.featurehub.lifecycle.TelemetryFeature
 import io.featurehub.mr.ManagementRepositoryFeature
-import io.featurehub.mr.utils.NginxUtils
 import io.featurehub.publish.ChannelConstants
-import io.featurehub.publish.NATSFeature
 import io.featurehub.web.security.oauth.OAuth2Feature
 import org.glassfish.jersey.server.ResourceConfig
 import org.slf4j.Logger
@@ -30,6 +28,8 @@ class Application {
 
   @Throws(Exception::class)
   private fun run() {
+    log.info("starting party-server-ish, wish me luck!")
+
     // register our resources, try and tag them as singleton as they are instantiated faster
     val config = ResourceConfig(
       CorsFilter::class.java,
@@ -58,7 +58,6 @@ class Application {
       System.clearProperty("nats.urls")
 
       try {
-        NginxUtils.seeIfWeNeedToRunNginx()
         Application().run()
       } catch (e: Exception) {
         log.error("failed", e)

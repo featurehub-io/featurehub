@@ -7,10 +7,17 @@ import cd.connect.lifecycle.LifecycleStatus
 import cd.connect.lifecycle.LifecycleTransition
 import io.featurehub.health.CommonFeatureHubFeatures
 import io.featurehub.lifecycle.ExecutorPoolDrainageSource
+import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.ws.rs.core.Configurable
+import org.glassfish.grizzly.http.server.HttpHandlerRegistration
+import org.glassfish.grizzly.http.server.HttpServer
+import org.glassfish.grizzly.http.server.NetworkListener
 import org.glassfish.grizzly.http2.Http2AddOn
+import org.glassfish.grizzly.utils.Charsets
 import org.glassfish.hk2.api.ServiceLocator
-import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory
+import org.glassfish.jersey.grizzly2.httpserver.HttpGrizzlyContainer
+import org.glassfish.jersey.internal.guava.ThreadFactoryBuilder
+import org.glassfish.jersey.process.JerseyProcessingUncaughtExceptionHandler
 import org.glassfish.jersey.server.ResourceConfig
 import org.glassfish.jersey.server.spi.Container
 import org.glassfish.jersey.server.spi.ContainerLifecycleListener
@@ -123,10 +130,34 @@ class FeatureHubJerseyHost constructor(private val config: ResourceConfig) {
 
   fun start(overridePort: Int) : FeatureHubJerseyHost {
     val BASE_URI = URI.create(String.format("http://0.0.0.0:%d/", overridePort))
-    val server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, config, false)
+//    val server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, config, false)
 
-    val listener = server.listeners.iterator().next()
+    val listener = NetworkListener("grizzly", NetworkListener.DEFAULT_NETWORK_HOST, overridePort)
+
+    listener.transport.workerThreadPoolConfig.threadFactory = ThreadFactoryBuilder()
+      .setNameFormat("grizzly-http-server-%d")
+      .setUncaughtExceptionHandler(JerseyProcessingUncaughtExceptionHandler())
+      .build()
+
     listener.registerAddOn(Http2AddOn())
+
+    val server = HttpServer()
+    server.addListener(listener)
+
+    val serverConfig = server.serverConfiguration
+
+    val resourceHandler = HttpGrizzlyContainer.makeHandler(config)
+
+//    if (FallbackPropertyConfig.getConfig("run.nginx") != null) {
+//      log.info("starting with web asset support")
+//      serverConfig.addHttpHandler(DelegatingHandler(resourceHandler, AdminAppStaticHttpHandler()))
+//    } else {
+      serverConfig.addHttpHandler(resourceHandler)
+//    }
+
+
+    serverConfig.isPassTraceRequest = true
+    serverConfig.defaultQueryEncoding = Charsets.UTF8_CHARSET
 
     ApplicationLifecycleManager.registerListener { trans: LifecycleTransition ->
       if (trans.next == LifecycleStatus.TERMINATING) {

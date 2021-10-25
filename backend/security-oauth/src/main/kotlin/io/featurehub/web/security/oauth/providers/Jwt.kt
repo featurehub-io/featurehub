@@ -7,19 +7,19 @@ import org.slf4j.LoggerFactory
 import java.util.*
 
 object Jwt {
-    private val log = LoggerFactory.getLogger(Jwt::class.java)
-    private val mapper = ObjectMapper()
-    fun decodeJwt(jwt: String?): Map<String, Object?>? {
-        val parts = jwt!!.split("\\.".toRegex()).toTypedArray()
-        if (parts.size != 3) {
-            return null
-        }
-        val body = String(Base64.getUrlDecoder().decode(parts[1]))
-        return try {
-            mapper.readValue(body, object : TypeReference<Map<String, Object?>?>() {})
-        } catch (e: JsonProcessingException) {
-            log.error("Could not parse result of OAuth2 JWT {}", jwt, e)
-            null
-        }
+  private val log = LoggerFactory.getLogger(Jwt::class.java)
+  private val mapper = ObjectMapper()
+  fun decodeJwt(jwt: String?): Map<String, Object?>? {
+    val parts = jwt!!.split("\\.".toRegex()).toTypedArray()
+    if (parts.size != 3) {
+      return null
     }
+    val body = String(Base64.getUrlDecoder().decode(parts[1]))
+    return try {
+      mapper.readValue(body, object : TypeReference<Map<String, Object?>?>() {})
+    } catch (e: JsonProcessingException) {
+      log.error("Could not parse result of OAuth2 JWT {}", jwt, e)
+      null
+    }
+  }
 }

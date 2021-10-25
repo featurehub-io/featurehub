@@ -9,7 +9,9 @@ RUN chown 999:999 /db /target /etc/app-config /etc/common-config
 
 # now for nginx
 RUN apt-get update && apt-get install -y nginx && mkdir -p /var/lib/nginx/body /var/lib/nginx/proxy /var/lib/nginx/fastcgi
-COPY default_site /etc/nginx/sites-enabled/default
+RUN ln -sf /dev/stdout /var/log/nginx/access.log && ln -sf /dev/stderr /var/log/nginx/error.log
+COPY default.conf /etc/nginx/conf.d/
+COPY nginx.conf /etc/nginx
 RUN chown -R 999:999 /etc/nginx /var/lib/nginx /var/log/nginx /var/www/html
 
 EXPOSE 8085

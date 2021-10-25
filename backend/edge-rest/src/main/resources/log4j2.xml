@@ -1,8 +1,8 @@
 <Configuration packages="cd.connect.logging" monitorInterval="30" verbose="true">
     <Appenders>
         <Console name="STDOUT" target="SYSTEM_OUT">
-<!--            <ConnectJsonLayout/>-->
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%thread] %-5level %class{36}.%M %logger{36} - %msg%n"/>
+            <ConnectJsonLayout/>
+<!--            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%thread] %-5level %class{36}.%M %logger{36} - %msg%n"/>-->
         </Console>
     </Appenders>
 
@@ -19,7 +19,7 @@
 
         <AsyncLogger name="jersey-logging" level="trace" />
 
-        <AsyncRoot level="info">
+        <AsyncRoot level="debug">
             <AppenderRef ref="STDOUT"/>
         </AsyncRoot>
     </Loggers>
