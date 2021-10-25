@@ -51,48 +51,28 @@ This will install all the necessary components including FeatureHub Admin Consol
 What makes it only an evaluation option is simply the database used, it writes to the local
 disk and is not intended to be used for a long running or concurrent system.
 
-=== Option 1 - Low Volume Deployment (Streaming)
+=== Option 1b - Low Volume Deployment (Non-streaming)
 
-image::images/fh_deployment_option_2.svg[Option 1,500]
+image::images/fh_deployment_option_1b.svg[Option 1b,500]
 
-This option is similar to the evaluation, however in this case a _single docker image_ with _all_ FeatureHub components (+ ancillary services), 
-talking to the external database. (You can choose from Postgres or MySQL/MariaDB,
-we can support other databases, please just ask). This gives you more control over the external database and lets you do single Docker image cloud deployments, however it doesn't scale well for large volume applications as all Edge traffic routes to the same container as your Admin application.
+In this case, this deployment, known as `party-server-ish` is different from the evaluation image, and deploys only the Management
+Repository and a version of Edge that talks to the database. The `party-server-ish` container holds an nginx server to serve the website, the and the MR and Edge applications
+running inside a single process. There is no NATS or Dacha, and no SSE based
+streaming capability available.
 
-This deployment essentially runs five different services (MR, Dacha, Edge, NATS and nginx) in a single docker container, treating it like a VM rather than a docker-style deploy.
+This kind of option is suitable if you are only using GET requests  (being
+able to use the test API to update features remains available), such as for
+mobile or Web applications.
 
-It is possible that excess Edge traffic will cause performance issues with your Admin app as all traffic will be coming into the one instance. If you have relatively low volumes
-of traffic (especially given the cache) this may work for you, however streaming traffic is quite resource intense and can swamp a server's available TCP connections. If you 
-are deploying your own servers using streaming, your web and/or mobile clients use GET and there aren't too many of them (<10k per second) then you should be ok with this kind of deployment.
+As with all deploys, you can configure a read replica for each container, and
+Edge requests will hit the replica by default.
 
-You can replicate this image in a cluster by ensuring that the *NATS* configuration is set up correctly (using the
-`nats.urls` property or `NATS_URLS` environment variable - see configuration).
+This kind of deployment is suitable for a scaling container like deployment.
 
-NOTE: In the installs folder, there is a `docker compose` setup, and it comes with a sample database along with an initialization script. There is one for Postgres and MySQL.
-
-To install, grab the latest version of FeatureHub tagged release, e.g.
-
-`curl -L https://github.com/featurehub-io/featurehub-install/archive/refs/tags/featurehub-1.4.1.tar.gz | tar xv`
-
-You can check for the latest versions https://github.com/featurehub-io/featurehub-install/releases[here]
-
-Make sure you have your docker running, and run the following commands from the folder where you saved the FeatureHub executable:
-
-For Postgres option:
-
-`cd featurehub-install-featurehub-1.4.1/docker-compose-options/all-in-one-postgres`
-
-`docker compose up`
-
-Or for MySQL option:
-
-`cd featurehub-install-featurehub-1.4.1/docker-compose-options/all-in-one-mysql`
-
-`docker compose up`
-
-This will install all the necessary components including FeatureHub Admin Console. You can now load it on localhost:8085
-
-NOTE: H2 and Postgres are the two databases we test actively with. We are relying on our open source community to test MySQL database and report issues.
+You can deploy this configuration in separate pieces however, with
+just the Management Repository (the Admin app) in one container talking
+to the database, and the Edge REST container also talking directly
+to the database under a different configuration.
 
 === Option 2 - Scalable Deployment
 
@@ -133,14 +113,42 @@ for configuration.
 
 By this we mean the properties you can set to control the behaviour of different servers.
 
-==== Management Repository
+==== Database configuration
 
-The following properties can be set:
+All subsystems that talk to the database take these parameters. Even if 
+you are using environment variables, we recommend using lower case 
+so the database connections are correctly configured. All `db.` prefixes
+can also use `db-replica` prefixes to configure a read replica,
+where it is and how it should be connected to.
 
 - `db.url` - the jdbc url of the database server.
 - `db.username` -  the username used to log in.
 - `db.password` - the password for the user
-- `nats.urls` - a comma separated list of NATs servers. If null it simply won't publish.
+- `db.minConnections` - the minimum number of connections to hold open
+- `db.maxConnections` - the maximum connections to open to the db
+- `db.pstmtCacheSize` - the prepared statement cache size
+
+The library we use - ebean - supports a number of other configuration
+parameters
+
+=== NATS
+
+If you are using the Streaming version of FeatureHub, then you may
+need to configure your NATS urls. If you have only once instance of a 
+party-server, you can leave it as the default.  If you have deployed
+Option 2, or you have multiple servers with Option 1a, you will need to make sure  your NATS
+servers are configured correctly.
+
+- `nats.urls` - a comma separated list of NATs servers. 
+
+NATS works by having the clients tell the servers where each other
+are, so the NATS servers need to be routable but do not need to 
+be explicitly told about each other.
+
+==== Management Repository
+
+The following properties can be set:
+
 - `passwordsalt.iterations` (1000) - how many iterations it will use to salt passwords
 - `cache.pool-size` (10) - how many threads it will allocate to publishing changes to Dacha and SSE
 - `feature-update.listener.enable` (true) - whether this MR should listen to the same topic as the Dacha's and respond if they are empty
@@ -163,12 +171,14 @@ The following properties can be set (that are meaningful):
 - `cache.complete-timeout` - how long it will wait after another cache has negotiated master before it expects to see data (in ms, default = 15000)
 - `cache.pool-size` - the number of threads in pool for doing "work" - defaults to 10
 
-==== SSE-Edge Config
-
+=== Edge (all) Config
 - `jersey.cors.headers` - a list of CORS headers that will be allowed, specifically for browser support
-- `nats.urls` - a comma separated list of NATs servers
 - `update.pool-size` (10) - how many threads to allocate to processing incoming updates from NATs. These are responses to feature
 requests and feature updates coming from the server.
+
+==== Edge (Streaming) Config
+
+- `nats.urls` - a comma separated list of NATs servers
 - `listen.pool-size` (10) - how many threads to allocate to processing incoming requests to listen. This just takes the request,
 decodes it and sends it down via NATs and releases.
 - `maxSlots` (30) - how many seconds a client is allowed to listen for before being kicked off. Used to ensure connections
@@ -178,9 +188,19 @@ need to tell Edge where Dacha is located. The default cache is called `default, 
 sample docker-compose where they are split, the hostname for Dacha is `dacha`, so this is `dacha.url.default=http://localhost:8094`. This isn't
 required for the Party Server because communication is internal.
 
+==== Edge (REST only) Config
+
+Edge REST uses the database, so it also needs the database config. Edge-REST
+is bundled as a separate container, so it can be run and exposed directly
+instead of being exposed along with the Admin site.
+
 ==== Party Server
 
 The party server honours all values set by the Management Repository, Dacha and the SSE-Edge.
+
+==== Party-Server-ish
+
+The `party-server-ish` honours all the values set by the Management Repository  and Edge REST.
 
 ==== Common to all servers
 
@@ -227,6 +247,107 @@ listening. The urls are:
 
 - `/health/liveness`
 - `/health/readyness`
+
+== Deployment Options
+
+=== Google Cloud Run
+
+Google Cloud Run lets you spin up a container instance and multiplex requests to it, making it directly available as 
+soon as you have configured it. These are basic instructions on how to do this.
+
+==== Create your Cloud SQL Instance
+Follow the https://cloud.google.com/sql/docs/postgres/quickstart[Cloud SQL Postgres] instructions on creating a database
+based on the size that you think you need to start with. You can upsize later if you need to. For both Postgres and MySQL
+we provide the Google Socket Factories so you should not require username/password authentication when connecting. However
+you will need a master password for postgres, so set this and keep track of it.
+
+In this example we use the instance of Postgres 13 of the smallest possible size and deploy a 2 cpu, 512Mb Cloud
+Run instance that scales from 0 to 3, allowing up to 400 incoming requests concurrently per instance. Each CPU
+for incoming Edge requests is capable of supporting around 200 concurrent requests. The CPU of the database
+affects the speed at which the instances respond - for example we were only able to sustain around 50 requests per
+second (with around a 650ms time per request) with a 0.6 CPU database.
+
+----
+export GCP_REGION=us-east1
+export GCP_ZONE=us-east1-b
+gcloud config set project featurehub-saas
+gcloud config set compute/zone $ZONE
+----
+ 
+choose a root password, very small instance, zonal, no daily backup, connectivity via public IP but SSL - https://cloud.google.com/sql/pricing. Obviously you can choose a larger one, but this initial deployment will probably be
+throwaway as it is quite easy. _This step takes a while_
+
+----
+export FH_DB_NAME=featurehub-db
+export FH_DB_PASSWORD=FeatureHub17#
+export FH_DB_SCHEMA=featurehub
+
+gcloud sql instances create $FH_DB_NAME --database-version=POSTGRES_13 --zone=$GCP_ZONE --tier=db-f1-micro "--root-password=$FH_DB_PASSWORD" --assign-ip --require-ssl --storage-type=SSD
+----
+
+this should just show you a database called postgres
+----
+gcloud sql databases list --instance=$FH_DB_NAME
+----
+Now create the featurehub database schema
+----
+gcloud sql databases create $FH_DB_SCHEMA --instance $FH_DB_NAME
+----
+now get the connection name - it is the `connectionName` parameter from this:
+----
+gcloud sql instances describe $FH_DB_NAME
+----
+
+You need it in the custom properties below. In my case this was
+
+----
+backendType: SECOND_GEN
+connectionName: featurehub-saas:us-central1:featurehub-db
+databaseVersion: POSTGRES_13
+...
+----
+
+this becomes the name you pass to the container
+
+----
+export FH_DB_CONN_NAME=featurehub-saas:us-central1:featurehub-db
+----
+
+==== Create your Cloud Run deployment
+Now you are going to have to do this step twice, because you don't know the URL it will give you and you will
+need to specify a registration url if you aren't using OAuth2 (which we recommend). So for the first
+deploy we will set it to a fake url. 
+
+----
+export FH_CR_NAME=featurehub
+export FH_IMAGE=us-central1-docker.pkg.dev/featurehub-saas/saas-images/party-server-ish:1.5.0-RC1
+export HOST_URL=http://localhost
+gcloud run deploy $FH_CR_NAME --image=$FH_IMAGE --min-instances=0 --max-instances=3 --cpu=2 --memory=512Mi --port=8085 --concurrency=400 "--set-env-vars=db.url=jdbc:postgresql:///$FH_DB_SCHEMA,db.username=postgres,db.password=$FH_DB_PASSWORD,db.minConnections=3,db.maxConnections=100,monitor.port=8701,db.customProperties=cloudSqlInstance=$FH_DB_CONN_NAME;socketFactory=com.google.cloud.sql.postgres.SocketFactory,register.url=$HOST_URL/register-url?token%3D%s" --set-cloudsql-instances=$FH_DB_NAME --platform=managed --region=$GCP_REGION --allow-unauthenticated
+----
+
+Once it deploys, you will get the service url it gives you back and add it as the registration url and redeploy.
+
+It gave me this for example, `https://featurehub-ixscqgruca-uc.a.run.app` and so now I need to set the registration
+url to `register.url=https://featurehub-ixscqgruca-uc.a.run.app/register-url?token=%s` by adding an extra
+environment variable to the list passed above. So this would change my command to this:
+
+----
+export HOST_URL=https://featurehub-ixscqgruca-ue.a.run.app
+----
+
+now run the previous gcloud deploy command again.
+
+If you are using OAuth2, then you will need to set those properties, and we recommend setting your oath2.disable-login to true.
+
+Use the example Cloud Shell to ensure you can connect to it, but it can take a while to create. During this process, 
+create a database called `featurehub` - the server never creates a database, it always expects one to exist and be passed
+in the database connection string. 
+
+==== Cloud Run Observations
+
+- We are putting the password straight into the environment variable which isn't recommended, but _#yolo_.
+- You should create a service account with minimal permissions for your Cloud Run instances and use that
+
 
 == Build
 
