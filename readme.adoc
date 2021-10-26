@@ -111,6 +111,10 @@ update install repository with the latest images and issue tags on that reposito
 
 For more details please refer to https://github.com/featurehub-io/featurehub/issues?q=is%3Aissue+is%3Aopen+label%3Aroadmap[Roadmap tickets]
 
+== Are you using FeatureHub already?
+
+We are looking for companies that have successfully adopted FeatureHub to help us understand our customer base. Feel free to let us know by adding your company logo below (please raise a PR).
+
 == Contributing
 
 FeatureHub is an open source project, and we love to receive contributions from our community!
