@@ -117,6 +117,10 @@
                     <from>${project.basedir}/target/admin-ui</from>
                     <into>/var/www/html</into>
                   </path>
+                  <path>
+                    <from>${project.basedir}/src/main/resources/deploy-defaults</from>
+                    <into>/etc/common-config</into>
+                  </path>
                 </paths>
               </extraDirectories>
               <container>
@@ -124,6 +128,7 @@
                 <jvmFlags>
                   <jvmFlag>--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED</jvmFlag>
                   <jvmFlag>--add-opens=java.base/java.nio=ALL-UNNAMED</jvmFlag>
+                  <jvmFlag>-Dlog4j.configurationFile=/etc/common-config/log4j2.xml</jvmFlag>
                   <jvmFlag>-XX:+UseContainerSupport</jvmFlag>
                   <jvmFlag>-XX:MaxRAMPercentage=80</jvmFlag>
                 </jvmFlags>

@@ -140,7 +140,7 @@ public class AuthResource implements AuthServiceDelegate {
       throw new NotFoundException("Person already registered using token");
     }
 
-    if (!person.getEmail().toLowerCase().equals(personRegistrationDetails.getEmail().toLowerCase())) {
+    if (person.getEmail() == null || !person.getEmail().equalsIgnoreCase(personRegistrationDetails.getEmail().toLowerCase())) {
       log.info("db user email `{}` does not match passed email `{}`", person.getEmail(), personRegistrationDetails.getEmail());
       //registration token doesn't belong to provided email
       throw new BadRequestException();

@@ -43,10 +43,6 @@ class FeatureHubJerseyHost constructor(private val config: ResourceConfig) {
       CommonFeatureHubFeatures::class.java,
     ).register(object: ContainerLifecycleListener {
       override fun onStartup(container: Container) {
-        if (!ApplicationLifecycleManager.isReady()) {
-          ApplicationLifecycleManager.updateStatus(LifecycleStatus.STARTED)
-        }
-
         // access the ServiceLocator here
         val injector = container
           .applicationHandler
@@ -148,12 +144,12 @@ class FeatureHubJerseyHost constructor(private val config: ResourceConfig) {
 
     val resourceHandler = HttpGrizzlyContainer.makeHandler(config)
 
-//    if (FallbackPropertyConfig.getConfig("run.nginx") != null) {
-//      log.info("starting with web asset support")
-//      serverConfig.addHttpHandler(DelegatingHandler(resourceHandler, AdminAppStaticHttpHandler()))
-//    } else {
+    if (FallbackPropertyConfig.getConfig("run.nginx") != null) {
+      log.info("starting with web asset support")
+      serverConfig.addHttpHandler(DelegatingHandler(resourceHandler, AdminAppStaticHttpHandler()))
+    } else {
       serverConfig.addHttpHandler(resourceHandler)
-//    }
+    }
 
 
     serverConfig.isPassTraceRequest = true

@@ -95,7 +95,7 @@ public class PersonResource implements PersonServiceDelegate {
     UUID personId;
     if ("self".equals(id)) {
       personId = currentUser.getId().getId();
-      log.info("User requested their own details: {}", id);
+      log.debug("User requested their own details: {}", id);
     } else {
       personId = Conversions.checkUuid(id);
     }

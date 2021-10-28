@@ -17,6 +17,13 @@ class DelegatingHandler constructor(private val jerseyHandler: GrizzlyHttpContai
     }
   }
 
+  override fun start() {
+    super.start()
+
+    jerseyHandler.start()
+    staticHttpHandler.start()
+  }
+
   override fun service(request: Request, response: Response) {
     val uriRef = request.request.requestURIRef
     uriRef.defaultURIEncoding = requestURIEncoding

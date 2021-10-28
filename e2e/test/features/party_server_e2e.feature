@@ -31,12 +31,12 @@ Feature: This set of scenarios tests the connection when running the party serve
     And I create a feature flag "FEATURE_PARTY"
     And We create a service account "PARTY_ACCOUNT" with the permission READ
     And I wait for 2 seconds
-    Then we do an OPTIONS check on the API to ensure we have CORS access
-      | header                           | valueContains                                                                                         |
-      | Access-Control-Allow-Credentials | true                                                                                                  |
-      | Access-Control-Allow-Methods     | GET, POST, PUT, DELETE, OPTIONS, HEAD |
-      | Access-Control-Allow-Headers     | X-Requested-With,Authorization,Content-type,Accept-Version,Content-MD5,CSRF-Token,x-ijt,cache-control,x-featurehub,Baggage |
-      | Access-Control-Allow-Origin      | *                                                                                                     |
+#    Then we do an OPTIONS check on the API to ensure we have CORS access
+#      | header                           | valueContains                                                                                         |
+#      | Access-Control-Allow-Credentials | true                                                                                                  |
+#      | Access-Control-Allow-Methods     | GET, POST, PUT, DELETE, OPTIONS, HEAD |
+#      | Access-Control-Allow-Headers     | X-Requested-With,Authorization,Content-type,Accept-Version,Content-MD5,CSRF-Token,x-ijt,cache-control,x-featurehub,Baggage |
+#      | Access-Control-Allow-Origin      | *                                                                                                     |
     And we poll the current service account to full the repository
     And the feature repository reports the following:
       | feature       | valueBoolean |

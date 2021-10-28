@@ -44,8 +44,6 @@ class Application {
     FeatureHubJerseyHost(config).start()
     log.info("Party-Server-ish Launched - (HTTP/2 payloads enabled!)")
 
-    // tell the App we are ready
-    ApplicationLifecycleManager.updateStatus(LifecycleStatus.STARTED)
     Thread.currentThread().join()
   }
 
