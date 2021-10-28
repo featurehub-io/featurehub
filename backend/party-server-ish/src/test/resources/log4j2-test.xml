@@ -1,0 +1,33 @@
+<Configuration packages="cd.connect.logging" monitorInterval="30" verbose="true">
+  <Appenders>
+    <Console name="STDOUT" target="SYSTEM_OUT">
+<!--      <ConnectJsonLayout/>-->
+      <PatternLayout pattern="%d{HH:mm:ss.SSS} [%thread] %-5level %class{36}.%M %logger{36} - %msg%n"/>
+    </Console>
+  </Appenders>
+
+  <Loggers>
+
+    <AsyncLogger name="io.featurehub" level="debug"/>
+    <AsyncLogger name="io.ebean.SQL" level="trace"/>
+    <AsyncLogger name="io.ebean.TXN" level="trace"/>
+    <AsyncLogger name="io.ebean.SUM" level="trace"/>
+    <AsyncLogger name="io.ebean.DDL" level="trace"/>
+    <AsyncLogger name="io.ebean.cache.QUERY" level="trace"/>
+    <AsyncLogger name="io.ebean.cache.BEAN" level="trace"/>
+    <AsyncLogger name="io.ebean.cache.COLL" level="trace"/>
+    <AsyncLogger name="io.ebean.cache.NATKEY" level="trace"/>
+    <AsyncLogger name="io.featurehub.edge.stats" level="trace"/>
+
+    <AsyncLogger name="jersey-logging" level="trace"/>
+
+    <AsyncLogger name="io.featurehub.edge.features" level="debug"/>
+    <AsyncLogger name="net.stickycode" level="warn"/>
+    <AsyncLogger name="org.glassfish.jersey.server.wadl" level="error"/>
+    <AsyncLogger name="io.avaje.config"  level="warn"/>
+    <AsyncLogger name="org.hibernate" level="error"/>
+    <AsyncRoot level="info">
+      <AppenderRef ref="STDOUT"/>
+    </AsyncRoot>
+  </Loggers>
+</Configuration>

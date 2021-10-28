@@ -1,5 +1,7 @@
 package io.featurehub.jersey.config;
 
+import cd.connect.lifecycle.ApplicationLifecycleManager;
+import cd.connect.lifecycle.LifecycleStatus;
 import com.fasterxml.classmate.ResolvedType;
 import com.fasterxml.classmate.TypeResolver;
 import org.glassfish.jersey.server.model.Resource;
@@ -42,6 +44,14 @@ public class EndpointLoggingListener implements ApplicationEventListener {
           logDetails.addEndpointLogLines(getLinesFromResource(resource));
         });
         logDetails.log();
+      } else if (event.getType() == ApplicationEvent.Type.INITIALIZATION_FINISHED) {
+        if (!ApplicationLifecycleManager.isReady()) {
+          ApplicationLifecycleManager.updateStatus(LifecycleStatus.STARTED);
+        }
+      } else if (event.getType() == ApplicationEvent.Type.DESTROY_FINISHED) {
+        if (ApplicationLifecycleManager.getStatus() != LifecycleStatus.TERMINATED) {
+          ApplicationLifecycleManager.updateStatus(LifecycleStatus.TERMINATED);
+        }
       }
     }
   }

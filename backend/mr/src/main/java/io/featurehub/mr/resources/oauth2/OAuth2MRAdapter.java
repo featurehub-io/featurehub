@@ -59,7 +59,7 @@ public class OAuth2MRAdapter implements OAuthAdapter {
     if (p == null) {
       // if the user must be created in the database before they are allowed to sign in, redirect to failure.
       if (userMustBeCreatedFirst) {
-        log.info("User {} attempted to login and they aren't in the database and they need to be.", email);
+        log.warn("User {} attempted to login and they aren't in the database and they need to be.", email);
         return Response.ok().location(URI.create(failureUrl)).build();
       }
 
@@ -82,6 +82,8 @@ public class OAuth2MRAdapter implements OAuthAdapter {
     // determine if they were the first user, and if so, complete setup
     boolean firstUser = personApi.noUsersExist();
 
+    // first we create them, this will give them a token and so forth, we are playing with existing functionality
+    // here
     try {
       personApi.create(email, username,null);
     } catch (PersonApi.DuplicatePersonException e) {
@@ -89,9 +91,9 @@ public class OAuth2MRAdapter implements OAuthAdapter {
       return null;
     }
 
-    // now register them
-    Person person = authenticationApi.register(username, email,
-      null, null);
+    // now "register" them. We can provide a null password OK, it just ignores it, but this removes
+    // any registration token required
+    Person person = authenticationApi.register(username, email, null, null);
 
     if (firstUser) {
       Organization organization = organizationApi.get();

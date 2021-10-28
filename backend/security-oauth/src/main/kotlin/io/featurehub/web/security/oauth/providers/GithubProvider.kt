@@ -71,7 +71,7 @@ class GithubProvider @Inject constructor(val client: Client) : OAuth2Provider {
       .header("Authorization", "Bearer " + authed.accessToken).get()
 
     if (response.statusInfo.family == Response.Status.Family.SUCCESSFUL) {
-      val emails = response.readEntity(object: GenericType<List<GithubEmail>>(){})
+      val emails = response.readEntity(object : GenericType<List<GithubEmail>>() {})
       if (emails.isNotEmpty()) {
         return emails[0].email
       }

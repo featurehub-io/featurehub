@@ -16,7 +16,7 @@ public interface AuthenticationApi {
    * @param opts
    * @return
    */
-  Person register(@Nullable String name, @NotNull String email, @NotNull String password, Opts opts);
+  Person register(@Nullable String name, @NotNull String email, @Nullable String password, Opts opts);
 
   /**
    * in case of forgotten password admin resets the password and sets a reset token which can be used in email.

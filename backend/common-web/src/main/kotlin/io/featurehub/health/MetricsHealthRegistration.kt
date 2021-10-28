@@ -2,6 +2,7 @@ package io.featurehub.health
 
 import cd.connect.jersey.common.JerseyPrometheusResource
 import io.featurehub.jersey.FeatureHubJerseyHost
+import io.featurehub.utils.FallbackPropertyConfig
 import io.prometheus.client.hotspot.DefaultExports
 import org.glassfish.hk2.api.ServiceLocator
 import org.glassfish.jersey.internal.inject.AbstractBinder
@@ -29,7 +30,7 @@ class MetricsHealthRegistration {
       // turn on all jvm prometheus metrics
       DefaultExports.initialize()
 
-      if (System.getProperty(monitorPortName, System.getenv("MONITOR.PORT")) == null) {
+      if (FallbackPropertyConfig.getConfig(monitorPortName) == null) {
         config.register(JerseyPrometheusResource::class.java)
         config.register(HealthFeature::class.java)
       } else {
@@ -55,7 +56,7 @@ class MetricsHealthRegistration {
               }
             })
 
-            val port = System.getProperty(monitorPortName, System.getenv("MONITOR.PORT")).toInt()
+            val port = FallbackPropertyConfig.getConfig(monitorPortName)!!.toInt()
             FeatureHubJerseyHost(resourceConfig).start(port)
 
             log.info("metric/health endpoint now active on port {}", port)

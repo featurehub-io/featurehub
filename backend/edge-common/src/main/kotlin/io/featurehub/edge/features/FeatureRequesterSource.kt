@@ -36,6 +36,8 @@ class FeatureRequesterSource(private val api: DachaApiKeyService, override val k
 
         submitter.requestForKeyComplete(key)
 
+        log.debug("concentrated {} requests", notifyListener.size)
+
         notifyListener.forEach { nl -> nl.complete(this) }
         notifyListener.clear()
       }

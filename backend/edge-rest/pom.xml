@@ -42,8 +42,9 @@
   </licenses>
 
   <properties>
-    <app.port>8553</app.port>
+    <app.port>8064</app.port>
     <app.entrypoint>io.featurehub.edge.Application</app.entrypoint>
+    <log4j.config>-Dlog4j.configurationFile=/app/resources/log4j2.xml</log4j.config>
   </properties>
 
   <dependencies>

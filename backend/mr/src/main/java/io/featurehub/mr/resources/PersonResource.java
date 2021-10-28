@@ -36,7 +36,7 @@ public class PersonResource implements PersonServiceDelegate {
   private final AuthManagerService authManager;
 
   @ConfigKey("register.url")
-  private String registrationUrl;
+  private String registrationUrl = "";
 
   @Inject
   public PersonResource(PersonApi personApi, GroupApi groupApi, AuthManagerService authManager) {
@@ -95,7 +95,7 @@ public class PersonResource implements PersonServiceDelegate {
     UUID personId;
     if ("self".equals(id)) {
       personId = currentUser.getId().getId();
-      log.info("User requested their own details: {}", id);
+      log.debug("User requested their own details: {}", id);
     } else {
       personId = Conversions.checkUuid(id);
     }

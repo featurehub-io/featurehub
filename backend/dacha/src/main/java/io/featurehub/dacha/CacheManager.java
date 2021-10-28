@@ -12,6 +12,7 @@ import io.featurehub.mr.model.CacheRequestType;
 import io.featurehub.mr.model.CacheState;
 import io.featurehub.publish.ChannelNames;
 import io.featurehub.publish.NATSSource;
+import io.featurehub.utils.FallbackPropertyConfig;
 import io.nats.client.Dispatcher;
 import io.nats.client.Message;
 import io.nats.client.MessageHandler;
@@ -59,8 +60,8 @@ public class CacheManager implements MessageHandler, HealthSource {
 
     DeclaredConfigResolver.resolve(this);
 
-    if (System.getProperty("cache.mit", System.getenv("CACHE.MIT")) != null) {
-      mit = Long.parseLong(System.getProperty("cache.mit", System.getenv("CACHE.MIT")));
+    if (FallbackPropertyConfig.Companion.getConfig("cache.mit")  != null) {
+      mit = Long.parseLong(FallbackPropertyConfig.Companion.getConfig("cache.mit"));
     } else {
       mit = (long)(Math.random() * Long.MAX_VALUE);
       if (mit == 1) {

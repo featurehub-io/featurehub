@@ -11,6 +11,7 @@ import io.ebean.migration.DbPlatformNames
 import io.ebean.migration.MigrationConfig
 import io.ebean.migration.MigrationRunner
 import io.featurehub.health.HealthSource
+import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
@@ -122,7 +123,7 @@ open class CommonDbFeature : Feature {
 
     dsMasterConfig.dsConfig.maxConnections = 3
 
-    val dsReplicaConfig = if (System.getProperty("db-replica.url", System.getenv("DB_REPLICA_URL")) == null)
+    val dsReplicaConfig = if (FallbackPropertyConfig.getConfig("db-replica.url") == null)
       null
     else
       configureDataSource("db-replica")

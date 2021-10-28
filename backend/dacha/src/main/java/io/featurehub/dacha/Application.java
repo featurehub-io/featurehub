@@ -32,8 +32,6 @@ public class Application {
   public static void main(String[] args) {
     try {
       initializeCommonJerseyLayer();
-      ApplicationLifecycleManager.updateStatus(LifecycleStatus.STARTED);
-
       log.info("Cache has started");
 
       Thread.currentThread().join();

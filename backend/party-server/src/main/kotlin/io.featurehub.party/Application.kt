@@ -15,11 +15,13 @@ import io.featurehub.health.MetricsHealthRegistration.Companion.registerMetrics
 import io.featurehub.jersey.FeatureHubJerseyHost
 import io.featurehub.lifecycle.TelemetryFeature
 import io.featurehub.mr.ManagementRepositoryFeature
-import io.featurehub.mr.utils.NginxUtils
 import io.featurehub.publish.ChannelConstants
 import io.featurehub.publish.NATSFeature
 import io.featurehub.web.security.oauth.OAuth2Feature
+import org.glassfish.hk2.api.ServiceLocator
 import org.glassfish.jersey.server.ResourceConfig
+import org.glassfish.jersey.server.spi.Container
+import org.glassfish.jersey.server.spi.ContainerLifecycleListener
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -59,8 +61,6 @@ class Application {
     FeatureHubJerseyHost(config).start()
     log.info("MR Launched - (HTTP/2 payloads enabled!)")
 
-    // tell the App we are ready
-    ApplicationLifecycleManager.updateStatus(LifecycleStatus.STARTED)
     Thread.currentThread().join()
   }
 
@@ -71,7 +71,6 @@ class Application {
     fun main(args: Array<String>) {
       System.setProperty("user.timezone", "UTC")
       try {
-        NginxUtils.seeIfWeNeedToRunNginx()
         Application().run()
       } catch (e: Exception) {
         log.error("failed", e)

@@ -21,6 +21,7 @@ import io.featurehub.mr.model.SetupResponse;
 import io.featurehub.mr.model.SetupSiteAdmin;
 import io.featurehub.mr.model.TokenizedPerson;
 import io.featurehub.mr.utils.PortfolioUtils;
+import io.featurehub.utils.FallbackPropertyConfig;
 import io.featurehub.web.security.oauth.AuthProvider;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
@@ -112,6 +113,16 @@ public class SetupResource implements SetupServiceDelegate {
     }
 
     if (setupSiteAdmin.getEmailAddress() == null) {
+      if (setupSiteAdmin.getAuthProvider() == null) {
+        if (authProviders.size() != 2) { // blank + oauth2
+          log.error("No auth provider was provided (so assuming default) but we have more than one auth provider, so we" +
+            " don't know which one to use");
+          throw new BadRequestException();
+        }
+
+        setupSiteAdmin.setAuthProvider(FallbackPropertyConfig.Companion.getConfig("oauth2.providers").trim());
+      }
+
       AuthProvider ap =
         authProviders.stream().filter(p -> p.getProviders().contains(setupSiteAdmin.getAuthProvider())).findFirst().orElse(null);
 

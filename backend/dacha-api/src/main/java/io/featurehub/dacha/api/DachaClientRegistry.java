@@ -8,6 +8,7 @@ import io.featurehub.dacha.api.impl.DachaApiKeyServiceServiceImpl;
 import io.featurehub.dacha.api.impl.DachaEnvironmentServiceServiceImpl;
 import io.featurehub.jersey.config.CommonConfiguration;
 import io.featurehub.lifecycle.ClientTelemetryFeature;
+import io.featurehub.utils.FallbackPropertyConfig;
 import io.prometheus.client.Counter;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
@@ -46,7 +47,7 @@ public class DachaClientRegistry implements DachaClientServiceRegistry {
   }
 
   private String url(String cache) {
-    return System.getProperty("dacha.url." + cache, System.getenv("DACHA.URL." + cache.toUpperCase()));
+    return FallbackPropertyConfig.Companion.getConfig("dacha.url." + cache);
   }
 
   public DachaApiKeyService getApiKeyService(String cache) {

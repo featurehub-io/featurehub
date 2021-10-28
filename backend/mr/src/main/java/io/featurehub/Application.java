@@ -6,7 +6,6 @@ import io.featurehub.health.MetricsHealthRegistration;
 import io.featurehub.jersey.FeatureHubJerseyHost;
 import io.featurehub.lifecycle.TelemetryFeature;
 import io.featurehub.mr.ManagementRepositoryFeature;
-import io.featurehub.mr.utils.NginxUtils;
 import io.featurehub.publish.NATSFeature;
 import io.featurehub.web.security.oauth.OAuth2Feature;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -19,9 +18,8 @@ public class Application {
 
   public static void main(String[] args) {
     System.setProperty("user.timezone", "UTC");
+
     try {
-      // in case we are running in the docker image
-      NginxUtils.seeIfWeNeedToRunNginx();
       new Application().run();
     } catch (Exception e) {
       log.error("failed", e);
