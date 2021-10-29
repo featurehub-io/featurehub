@@ -9,24 +9,27 @@ ifdef::env-github,env-browser[:outfilesuffix: .adoc]
 link:index{outfilesuffix}[Back to index]
 
 == Overview
-FeatureHub's original and primary architecture reflects its focus on it being a *streaming update platform*, 
-one where updates to feature values are streamed out to listening clients in near-realtime. 
+FeatureHub's original and primary architecture reflects its focus on it being a *streaming update platform*,
+one where updates to feature values are streamed out to listening clients in near-realtime.
 
 Since its release, other patterns for use
 have emerged and we are, with the 1.5.0 release, making a few additions and alterations to match these expectations.
 
-FeatureHub remains a streaming platform, but it is now also available as a non-streaming platform. It is available
+[#_streaming]
+=== Streaming
+FeatureHub remains a streaming platform, but it is now also available as a non-streaming platform.It is available
 as a bundle (for streaming this is the Party Server, for non-streaming its the Party-Server-Ish) or as individual
 pieces for better scalability and isolation of your Administration side from your applications that require their
 features.
 
 We go into this in more detail below but suffice to say, the streaming deployment is designed to scale to millions,
-even billions of requests. Deployed, conceptually it looks like this:
+even billions of requests.Deployed, conceptually it looks like this:
 
 image::images/fh_architecture_streaming.svg[Architecture,600]
 NOTE: This image refers to 1.5.0 and onwards with respect to the communication between Edge and Dacha being REST.
 Prior to 1.5.0 it was over NATs.
 
+=== Non-Streaming
 The non-streaming platform is designed to scale to less - tens of thousands, possibly
 more if you have a limited number of environments, or a larger number of read replicas.   
 But the non-streaming platform is designed to also be much
@@ -41,6 +44,8 @@ as and when needed.
 
 We discuss the main deployment options of FeatureHub in the <<installation.adoc#,installation section>> 
 and what each part is for.
+
+== Platform Components
 
 === the Management Repository (MR, the FeatureHub Server)
 

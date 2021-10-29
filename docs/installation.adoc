@@ -8,56 +8,43 @@ ifdef::env-github,env-browser[:outfilesuffix: .adoc]
 
 link:index{outfilesuffix}[Back to index]
 
-== Deployment options
+== Overview
 
-There is a GitHub https://github.com/featurehub-io/featurehub-install[repository] where you can find source for all the deployment options.
+As explained in the link:architecture.adoc[Architecture] section, there are a number of different combinations
+for deployment of FeatureHub and they typically focus on _where_ you will deploy the infrastructure, _how_ you want
+your clients to use it and _how much_  use it will get. FeatureHub as of 1.5.0 is designed to support 
+very low use cases of only hundreds of requests a day up to tens of millions of requests a day or more.
 
-As explained in the <<architecture.adoc#,Architecture>> section, there are a number of different combinations
-for deployment and they typically focus on where you will deploy the infrastructure.
+For a link:architecture.adoc#_streaming[streaming deployment], you will need to deploy the full stack and have your own database - this
+means a combination of MR, Dacha, Edge, NATS and if you are using it, nginx (which holds the web app). As a separate
+deployment, this is easily done with Kubernetes and our Helm charts.
 
-For a streaming deployment, you will need to deploy the full stack and have your own database - this
-means a combination of MR, Dacha, Edge, NATS and if you are using it, nginx (which holds the web app).
-When combined this is called the *Party Server*. This kind of deployment is more suitable for Kubernetes
+When these services are combined into one this is called the *Party Server*. This kind of deployment is more 
+suitable for docker-compose on a Cloud Server
 or ECS style deploys.  
 
-For a non-streaming deployment, you need to deploy (again with your database) only MR and Edge-Rest. When
-these are deployed together they are called *Party Server-_ish_*  
+For a link:architecture.adoc#_non_streaming[non-streaming deployment], you need to deploy (again with your database) 
+only MR and Edge-Rest (a new service as per 1.5.0). When
+these are deployed together they are called *Party Server-_ish_*, but they can be deployed separately.
 
-=== Getting started with an evaluation deployment
+We go into these options in more detail below along with the configuration options that make them work.
 
-image::images/fh_deployment_option_1.svg[Option 1,500]
-NOTE: the dotted edge represents the container boundary. 
-
-To get you up and going quickly, we have created an evaluation deployment container,
-and it contains everything you need to get going with your evaluation, including a 
-local (non-scalable, test focused) database. 
-
-To install, grab the latest version of FeatureHub tagged release, e.g.
-
-`curl -L https://github.com/featurehub-io/featurehub-install/archive/refs/tags/featurehub-1.4.1.tar.gz | tar xv`
-
-You can check for the latest versions https://github.com/featurehub-io/featurehub-install/releases[here]
-
-Make sure you have your docker running, and run the following commands from the folder where you saved the FeatureHub executable:
-
-For H2 option:
-
-`cd featurehub-install-featurehub-1.4.1/docker-compose-options/all-in-one-h2`
-
-`docker compose up`
-
-This will install all the necessary components including FeatureHub Admin Console. You can now load it on http://localhost:8085
-
-What makes it only an evaluation option is simply the database used, it writes to the local
-disk and is not intended to be used for a long running or concurrent system.
+[options="header"]
+|===================================
+|Streaming|How Much Use|Recommendation
+|Yes|Low|Suits a simple container deployment platform like ECS, Compute Engine with a single Docker instance and using Party Server
+|Yes|Mid-High|Suits a Kubernetes deployment like GKS,EKS,AKS or a more complex ECS based deploy and using Edge/Dacha deployed separately from Admin App
+|No|Low|Suits a Party-Server-_ish_ deployment with a single database on Cloud Run or Azure Container Instances. Could also deploy to platform like ECS or Compute Engine but less cost-effective.
+|No|Mid|Suits a MR deployment with a single master and one or more read replicas, with Edge-Rest pointed at the read replicas. 
+|===================================
 
 === Option 1b - Low Volume Deployment (Non-streaming)
 
-image::images/fh_deployment_option_1b.svg[Option 1b,500]
+image::images/fh_architecture_non_streaming.svg[Architecture,600]
 
 In this case, this deployment, known as `party-server-ish` is different from the evaluation image, and deploys only the Management
-Repository and a version of Edge that talks to the database. The `party-server-ish` container holds an nginx server to serve the website, the and the MR and Edge applications
-running inside a single process. There is no NATS or Dacha, and no SSE based
+Repository and a version of Edge that talks to the database. The `party-server-ish` serves the website, Admin App and Edge applications
+running inside a single process. There is no nginx, NATS or Dacha, and no SSE based
 streaming capability available.
 
 This kind of option is suitable if you are only using GET requests  (being
@@ -250,17 +237,57 @@ listening. The urls are:
 
 == Deployment Options
 
+=== Docker-Compose / Docker-Stack
+
+To get you up and going quickly, we have created a number of different Docker options using Docker-Compose.
+
+You can check for the latest versions https://github.com/featurehub-io/featurehub-install/releases[here]
+
+`curl -L https://github.com/featurehub-io/featurehub-install/archive/refs/tags/featurehub-1.4.1.tar.gz | tar xv`
+
+Make sure you have your docker server running and docker-compose installed if you are using it (or your swarm
+set up if you are using docker stack). These example stacks are great for experimenting on to understand what the
+different capabilities of the FeatureHub stack are - for example read replica databases, OAuth2 configuration for your
+provider, multiple NATs servers and so forth. 
+
+There are a number of different options:
+
+- https://github.com/featurehub-io/featurehub-install/tree/master/docker-compose-options/all-in-one-h2[*Easy Evaluation*] - this refers to
+the same evaluation deployment but where the database is mounted in a Docker volume. It reduces the commands you need to type
+to get the external file based database evaluation deployment running, but otherwise isn't that
+- https://github.com/featurehub-io/featurehub-install/tree/master/docker-compose-options/all-in-one-postgres[*All-In-One Postgres*] - this refers to
+the Party Server, documented above, with full streaming services but using an external Postgres database. It is intended to be
+documentation for how you can configure and use your Postgres database with FeatureHub, the necessary init scripts and configuration.
+- https://github.com/featurehub-io/featurehub-install/tree/master/docker-compose-options/all-in-one-mysql[*All-In-One MySQL*] - this refers to
+the same deployment as the Party Server for Postgres, but for MySQL and MariaDB.
+- https://github.com/featurehub-io/featurehub-install/tree/master/docker-compose-options/all-separate-postgres[*All Separate Postgres*] - this shows how each of the pieces of a FeatureHub with Streaming Support can be set up. It brings up the Admin App (MR), the cache (Dacha), the
+Edge server, the distributed bus (NATs) and the database all as separate services. Edge runs on a different port to the Admin App and shows
+how you can use a different URL to serve traffic for feature consumers from your Admin App. 
+- https://github.com/featurehub-io/featurehub-install/tree/master/helm[*All Separate Kubernetes*] - this is the same as the All Separate
+Postgres above, but is the full Helm chart recommended for Kubernetes. It doesn't include a Postgres or NATs server as generally your cloud
+provider will have a managed Postgres service, and NATs have their own Kubernetes Helm charts for scalable, reliable deploys. 
+
+We are hoping for community contributions for ECS deployments.
+
+For example, for the _Easy Evaluation_ option you would do something like this:
+
+`cd featurehub-install-featurehub-1.4.1/docker-compose-options/all-in-one-h2`
+
+`docker compose up`
+
+This will install all the necessary components including FeatureHub Admin Console. You can now load it on http://localhost:8085
+
+What makes it only an evaluation option is simply the database used, it writes to the local
+disk and is not intended to be used for a long running or highly performant, concurrent system.
+
+=== Kubernetes
+
 === Google Cloud Run
 
 Google Cloud Run lets you spin up a container instance and multiplex requests to it, making it directly available as 
 soon as you have configured it. These are basic instructions on how to do this.
 
 ==== Create your Cloud SQL Instance
-Follow the https://cloud.google.com/sql/docs/postgres/quickstart[Cloud SQL Postgres] instructions on creating a database
-based on the size that you think you need to start with. You can upsize later if you need to. For both Postgres and MySQL
-we provide the Google Socket Factories so you should not require username/password authentication when connecting. However
-you will need a master password for postgres, so set this and keep track of it.
-
 In this example we use the instance of Postgres 13 of the smallest possible size and deploy a 2 cpu, 512Mb Cloud
 Run instance that scales from 0 to 3, allowing up to 400 incoming requests concurrently per instance. Each CPU
 for incoming Edge requests is capable of supporting around 200 concurrent requests. The CPU of the database
@@ -273,8 +300,9 @@ export GCP_ZONE=us-east1-b
 gcloud config set project featurehub-saas
 gcloud config set compute/zone $ZONE
 ----
- 
-choose a root password, very small instance, zonal, no daily backup, connectivity via public IP but SSL - https://cloud.google.com/sql/pricing. Obviously you can choose a larger one, but this initial deployment will probably be
+
+We are now going to create a Cloud SQL database, so you need to 
+choose a root password, a database name and a schema name. We will create a very small instance that is zonal only, has no daily backup, and connectivity via public IP but SSL - https://cloud.google.com/sql/pricing[Cloud SQL pricing] give you more details on how much this will cost. Obviously you can choose a larger one, but this initial deployment will probably be
 throwaway as it is quite easy. _This step takes a while_
 
 ----
@@ -285,15 +313,15 @@ export FH_DB_SCHEMA=featurehub
 gcloud sql instances create $FH_DB_NAME --database-version=POSTGRES_13 --zone=$GCP_ZONE --tier=db-f1-micro "--root-password=$FH_DB_PASSWORD" --assign-ip --require-ssl --storage-type=SSD
 ----
 
-this should just show you a database called postgres
+this should just show you a database schema called postgres
 ----
 gcloud sql databases list --instance=$FH_DB_NAME
 ----
-Now create the featurehub database schema
+Now create the new featurehub database schema
 ----
 gcloud sql databases create $FH_DB_SCHEMA --instance $FH_DB_NAME
 ----
-now get the connection name - it is the `connectionName` parameter from this:
+now get the "connection name" - it is the `connectionName` parameter from this:
 ----
 gcloud sql instances describe $FH_DB_NAME
 ----
@@ -302,7 +330,7 @@ You need it in the custom properties below. In my case this was
 
 ----
 backendType: SECOND_GEN
-connectionName: featurehub-saas:us-central1:featurehub-db
+connectionName: featurehub-example:us-central1:featurehub-db
 databaseVersion: POSTGRES_13
 ...
 ----
@@ -310,17 +338,18 @@ databaseVersion: POSTGRES_13
 this becomes the name you pass to the container
 
 ----
-export FH_DB_CONN_NAME=featurehub-saas:us-central1:featurehub-db
+export FH_DB_CONN_NAME=featurehub-example:us-central1:featurehub-db
 ----
 
 ==== Create your Cloud Run deployment
 Now you are going to have to do this step twice, because you don't know the URL it will give you and you will
-need to specify a registration url if you aren't using OAuth2 (which we recommend). So for the first
-deploy we will set it to a fake url. 
+need to specify a _registration url_ if you aren't using OAuth2 (which we recommend). So for the first
+deploy we will set the registration url to a fake url (`HOST_URL`).
 
+<TODO:replace with public docker image>
 ----
 export FH_CR_NAME=featurehub
-export FH_IMAGE=us-central1-docker.pkg.dev/featurehub-saas/saas-images/party-server-ish:1.5.0-RC1
+export FH_IMAGE=us-central1-docker.pkg.dev/featurehub-saas/saas-images/party-server-ish:1.5.0-RC1 
 export HOST_URL=http://localhost
 gcloud run deploy $FH_CR_NAME --image=$FH_IMAGE --min-instances=0 --max-instances=3 --cpu=2 --memory=512Mi --port=8085 --concurrency=400 "--set-env-vars=db.url=jdbc:postgresql:///$FH_DB_SCHEMA,db.username=postgres,db.password=$FH_DB_PASSWORD,db.minConnections=3,db.maxConnections=100,monitor.port=8701,db.customProperties=cloudSqlInstance=$FH_DB_CONN_NAME;socketFactory=com.google.cloud.sql.postgres.SocketFactory,register.url=$HOST_URL/register-url?token%3D%s" --set-cloudsql-instances=$FH_DB_NAME --platform=managed --region=$GCP_REGION --allow-unauthenticated
 ----
@@ -337,7 +366,8 @@ export HOST_URL=https://featurehub-ixscqgruca-ue.a.run.app
 
 now run the previous gcloud deploy command again.
 
-If you are using OAuth2, then you will need to set those properties, and we recommend setting your oath2.disable-login to true.
+If you are using OAuth2, then you will need to set those properties, and we recommend setting your `oath2.disable-login` to true to 
+prevent being able to login without an OAuth2 connection.
 
 Use the example Cloud Shell to ensure you can connect to it, but it can take a while to create. During this process, 
 create a database called `featurehub` - the server never creates a database, it always expects one to exist and be passed
@@ -347,7 +377,6 @@ in the database connection string.
 
 - We are putting the password straight into the environment variable which isn't recommended, but _#yolo_.
 - You should create a service account with minimal permissions for your Cloud Run instances and use that
-
 
 == Build
 
