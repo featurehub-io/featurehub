@@ -342,29 +342,33 @@ export FH_DB_CONN_NAME=featurehub-example:us-central1:featurehub-db
 ----
 
 ==== Create your Cloud Run deployment
-Now you are going to have to do this step twice, because you don't know the URL it will give you and you will
+
+----
+export FH_CR_NAME=featurehub
+export FH_IMAGE=us-central1-docker.pkg.dev/featurehub-saas/saas-images/party-server-ish:1.5.0-RC1 
+----
+
+Now you are going to have to run the deploy command twice, because you don't know the Service URL it will give you and you will
 need to specify a _registration url_ if you aren't using OAuth2 (which we recommend). So for the first
 deploy we will set the registration url to a fake url (`HOST_URL`).
 
 <TODO:replace with public docker image>
 ----
-export FH_CR_NAME=featurehub
-export FH_IMAGE=us-central1-docker.pkg.dev/featurehub-saas/saas-images/party-server-ish:1.5.0-RC1 
 export HOST_URL=http://localhost
 gcloud run deploy $FH_CR_NAME --image=$FH_IMAGE --min-instances=0 --max-instances=3 --cpu=2 --memory=512Mi --port=8085 --concurrency=400 "--set-env-vars=db.url=jdbc:postgresql:///$FH_DB_SCHEMA,db.username=postgres,db.password=$FH_DB_PASSWORD,db.minConnections=3,db.maxConnections=100,monitor.port=8701,db.customProperties=cloudSqlInstance=$FH_DB_CONN_NAME;socketFactory=com.google.cloud.sql.postgres.SocketFactory,register.url=$HOST_URL/register-url?token%3D%s" --set-cloudsql-instances=$FH_DB_NAME --platform=managed --region=$GCP_REGION --allow-unauthenticated
 ----
 
-Once it deploys, you will get the service url it gives you back and add it as the registration url and redeploy.
+Once it deploys, you will get the service url it gives you back and you need to set this URL as the registration url and redeploy.
 
-It gave me this for example, `https://featurehub-ixscqgruca-uc.a.run.app` and so now I need to set the registration
-url to `register.url=https://featurehub-ixscqgruca-uc.a.run.app/register-url?token=%s` by adding an extra
-environment variable to the list passed above. So this would change my command to this:
+It gave me this for example, `https://featurehub-ixscqgruca-uc.a.run.app` and so now I need to set the HOST_URL environment variable so the 
+registration url would be set to `register.url=https://featurehub-ixscqgruca-uc.a.run.app/register-url?token=%s` when the deploy command is run again.
 
+Run the previous gcloud deploy command again after setting the HOST_URL:
 ----
 export HOST_URL=https://featurehub-ixscqgruca-ue.a.run.app
-----
+gcloud run deploy $FH_CR_NAME --image=$FH_IMAGE --min-instances=0 --max-instances=3 --cpu=2 --memory=512Mi --port=8085 --concurrency=400 "--set-env-vars=db.url=jdbc:postgresql:///$FH_DB_SCHEMA,db.username=postgres,db.password=$FH_DB_PASSWORD,db.minConnections=3,db.maxConnections=100,monitor.port=8701,db.customProperties=cloudSqlInstance=$FH_DB_CONN_NAME;socketFactory=com.google.cloud.sql.postgres.SocketFactory,register.url=$HOST_URL/register-url?token%3D%s" --set-cloudsql-instances=$FH_DB_NAME --platform=managed --region=$GCP_REGION --allow-unauthenticated
 
-now run the previous gcloud deploy command again.
+----
 
 If you are using OAuth2, then you will need to set those properties, and we recommend setting your `oath2.disable-login` to true to 
 prevent being able to login without an OAuth2 connection.
