@@ -352,6 +352,8 @@ Now you are going to have to run the deploy command twice, because you don't kno
 need to specify a _registration url_ if you aren't using OAuth2 (which we recommend). So for the first
 deploy we will set the registration url to a fake url (`HOST_URL`).
 
+Note that you need to be a Project Owner or Cloud Run Admin to allow unauthenticated traffic.
+
 <TODO:replace with public docker image>
 ----
 export HOST_URL=http://localhost
@@ -370,12 +372,10 @@ gcloud run deploy $FH_CR_NAME --image=$FH_IMAGE --min-instances=0 --max-instance
 
 ----
 
-If you are using OAuth2, then you will need to set those properties, and we recommend setting your `oath2.disable-login` to true to 
+If you are using OAuth2, then you will need to set those properties, and we recommend setting your `oauth2.disable-login` to true to 
 prevent being able to login without an OAuth2 connection.
 
-Use the example Cloud Shell to ensure you can connect to it, but it can take a while to create. During this process, 
-create a database called `featurehub` - the server never creates a database, it always expects one to exist and be passed
-in the database connection string. 
+Use the example Cloud Shell to ensure you can connect to it, but it can take a while to create.
 
 ==== Cloud Run Observations
 
