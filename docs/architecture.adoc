@@ -16,23 +16,22 @@ Since its release, other patterns for use
 have emerged and we are, with the 1.5.0 release, making a few additions and alterations to match these expectations.
 
 [#_streaming]
-=== Streaming
-FeatureHub remains a streaming platform, but it is now also available as a non-streaming platform.It is available
-as a bundle (for streaming this is the Party Server, for non-streaming its the Party-Server-Ish) or as individual
+=== Streaming - Party Server
+FeatureHub is available as a bundle (for streaming this is the Party Server, ) or as individual
 pieces for better scalability and isolation of your Administration side from your applications that require their
 features.
 
 We go into this in more detail below but suffice to say, the streaming deployment is designed to scale to millions,
-even billions of requests.Deployed, conceptually it looks like this:
+even billions of requests. Deployed, conceptually it looks like this:
 
 image::images/fh_architecture_streaming.svg[Architecture,600]
-NOTE: This image refers to 1.5.0 and onwards with respect to the communication between Edge and Dacha being REST.
+NOTE: This image refers to 1.5.0 and onwards with respect to the communication between Edge and Dacha(Cache) being REST.
 Prior to 1.5.0 it was over NATs.
 
-=== Non-Streaming
-The non-streaming platform is designed to scale to less - tens of thousands, possibly
+=== Non-Streaming - Party-Server-Ish
+The non-streaming platform (Party-Server-Ish) is designed to scale to less - tens of thousands, possibly
 more if you have a limited number of environments, or a larger number of read replicas.   
-But the non-streaming platform is designed to also be much
+It is also designed to be much
 _simpler and cheaper_ to deploy on environments like Google Cloud Run or Azure Container Instances. 
 Deployed, conceptually it looks like this:
 
@@ -47,17 +46,16 @@ and what each part is for.
 
 == Platform Components
 
-=== the Management Repository (MR, the FeatureHub Server)
+=== The Management Repository (MR, the FeatureHub Server)
 
 This is the main admin server and is the source of truth for the application. All users login here, all portfolios,
 applications, environments, groups, features, etc are all controlled via this. This is always bundled with a UI
 and backend server and is configured to talk to some external database. 
 
-This can go down without affecting the operation of end-user clients, all their data is in the cache (or in
-the database if you use party-server-_ish_ or _edge-rest_). It is only if
-you are running tests and those tests are updating features that not having a running MR will cause issues.
+If MR server goes down, it won't affect the operation of end-user clients, all their data is in the cache (or in
+the database if you use _party-server-ish_ or _edge-rest_).
 
-=== the Management Repository API
+=== The Management Repository API
 
 The "Admin" API is defined in an OpenAPI schema and can be generated for a wide variety of platforms. We currently
 include generated clients for Dart, Typescript, C# and Java, but it is not limited to these.
@@ -65,7 +63,7 @@ include generated clients for Dart, Typescript, C# and Java, but it is not limit
 === https://nats.io/[NATS] 
 
 NATS is the Cloud Native Open Source messaging platform that has been around for a very long time, is very fast
-and is very adept at scaling to huge volume in a hugely distributed fashion. Anyways Labs use it for FeatureHub
+and is very adept at scaling to huge volume in a hugely distributed fashion. We use it for FeatureHub
 to transfer environments, features and service accounts around the network to feed Dacha and Edge.
 
 === Dacha
@@ -81,7 +79,7 @@ features.
 It is expected you will always run at least two of these in any production environment. They are always listening to
 the same topic from MR, so they do not suffer split brain.
 
-=== Edge-Full
+=== Edge (Streaming+REST)
 
 Edge is intended to be where the communication with the SDKs live. It is intended to be high volume endpoint but retain
 little data - only who is connected to it and which environment they are listening to for feature updates. Access to
@@ -93,7 +91,7 @@ It does not currently attempt to retain the active feature list for each Service
 
 It is expected that you will normally run at least two of these in any kind of environment.
 
-=== Edge-REST
+=== Edge (REST)
 
 Edge-REST provides only GET and PUT (for updating features for tests) API options. It allows the
 SDK to poll for updates but not get realtime updates, and will talk directly to the database. It
