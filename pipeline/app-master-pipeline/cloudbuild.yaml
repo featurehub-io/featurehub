@@ -2,7 +2,7 @@ timeout: 900s
 
 substitutions:
   _GCS_CACHE_BUCKET: demohub-build-cache
-  RC_BUILD_NO: 1.5.0-RC1
+  RC_BUILD_NO: "1.5.0-RC1"
 
 steps:
   - waitFor: ['-']
