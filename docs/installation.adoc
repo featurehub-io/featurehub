@@ -31,20 +31,44 @@ We go into these options in more detail below along with the configuration optio
 
 [options="header"]
 |===================================
-|Streaming|How Much Use|Recommendation
-|Yes|Low|Suits a simple container deployment platform like ECS, Compute Engine with a single Docker instance and using Party Server
-|Yes|Mid-High|Suits a Kubernetes deployment like GKS,EKS,AKS or a more complex ECS based deploy and using Edge/Dacha deployed separately from Admin App
-|No|Low|Suits a Party-Server-_ish_ deployment with a single database on Cloud Run or Azure Container Instances. Could also deploy to platform like ECS or Compute Engine but less cost-effective.
-|No|Mid|Suits a MR deployment with a single master and one or more read replicas, with Edge-Rest pointed at the read replicas. 
+|Streaming|How Much Use|Option|Recommendation
+|Yes|Low|1a|Suits a simple container deployment platform like ECS, Compute Engine with a single Docker instance and using Party Server
+|Yes|Mid-High|2a|Suits a Kubernetes deployment like GKS,EKS,AKS or a more complex ECS based deploy and using Edge/Dacha deployed separately from Admin App
+|No|Low|1b|Suits a Party-Server-_ish_ deployment with a single database on Cloud Run or Azure Container Instances. Could also deploy to platform like ECS or Compute Engine but less cost-effective.
+|No|Mid|2b|Suits a MR deployment with a single master and one or more read replicas, with Edge-Rest pointed at the read replicas. 
 |===================================
+
+=== Option 1a - Low Volume Deployment (Streaming)
+
+image::images/fh_deployment_option_1a.svg[Architecture,600]
+
+With Option 1a, the Party Server, all of the services are deployed in a single running container. Internally this is packaged as a single
+Java server running four different services (a static web server serving the Admin App, the Management Repository server,
+the cache and the Edge service), and also the NATs service bus to provide cache and streaming services. This allows you to
+run only one of these (for instance) and support a full streaming service talking to an external database. 
+
+The image is the same
+as the basic evaluation image with the difference being the database (which we recommend Postgres).
+
+Because the single
+container is responsible for handling all incoming requests (including requests for features), this will mean it should be able to
+handle around 150-200 concurrent requests per CPU, but streaming requests will further limit that capacity. As such, it causes 
+Edge traffic to compete with Admin traffic. 
+
+You can run up multiple Party Servers, but the `nats.urls` configuration (see below) must
+be set correctly for discovery (along with allowing network traffic between  them). If you start doing this, it is likely a better
+choice to split them into multiple parts - with Admin on one server and Edge/Dacha on others. If you think your usage will grow, we
+encourage you to use different DNS hosts pointing to the same server for features vs the Admin app.
+
+See the docker-compose section below for examples on how to configure this server.
 
 === Option 1b - Low Volume Deployment (Non-streaming)
 
 image::images/fh_architecture_non_streaming.svg[Architecture,600]
 
 In this case, this deployment, known as `party-server-ish` is different from the evaluation image, and deploys only the Management
-Repository and a version of Edge that talks to the database. The `party-server-ish` serves the website, Admin App and Edge applications
-running inside a single process. There is no nginx, NATS or Dacha, and no SSE based
+Repository and a version of Edge that talks to the database. The `party-server-ish` serves the website, Admin App and Edge-Rest applications
+running inside a single process. There is no NATS or Dacha, and no SSE based
 streaming capability available.
 
 This kind of option is suitable if you are only using GET requests  (being
@@ -52,71 +76,68 @@ able to use the test API to update features remains available), such as for
 mobile or Web applications.
 
 As with all deploys, you can configure a read replica for each container, and
-Edge requests will hit the replica by default.
+Edge requests will hit the replica by default (as they are read only).
 
-This kind of deployment is suitable for a scaling container like deployment.
+=== Option 2a - Streaming Scalable Deployment
 
-You can deploy this configuration in separate pieces however, with
-just the Management Repository (the Admin app) in one container talking
-to the database, and the Edge REST container also talking directly
-to the database under a different configuration.
-
-=== Option 2 - Scalable Deployment
-
-image::images/fh_deployment_option_3.svg[Option 2,500]
+image::images/fh_deployment_option_2a.svg[Option 2a,600]
 
 This option is best if you want to run FeatureHub in production at scale. Running separate instances of Edge, Cache, NATS and
-FeatureHub Server, means you can deploy these components independently for scalability and redundancy.
-
-In order to scale FeatureHub Server, you need to have first configured a separate database. We provide an installation option for this with Postgres database:
-
-`cd featurehub-install-featurehub-1.4.1/docker-compose-options/all-separate-postgres`
-
-`docker compose up`
-
-There is also a helm chart available for production Kubernetes deployment. Please follow documentation link:https://github.com/featurehub-io/featurehub-install/tree/master/helm[here]
-
-In this deployment, all components (MR, Dacha, NATS, Edge) are split into separate Docker containers, but
-`docker compose` runs them all in the same server. This example is intended to show you how you can
-split and separate the configuration for each of these pieces.
+FeatureHub Server, means you can deploy these components independently for scalability and redundancy, and Docker images
+are provided for each of these services (see our docker-compose section below).
 
 Because they are deployed in separate containers, you have considerably greater control over what
-network traffic gains access to each of these pieces, and they do not all sit under the same Web server. However,
-because they run in a single Docker-Compose, they must run on different ports, which means you will need further
-configuration to expose them in a normal organisation. This type of deployment is recommended for low volume traffic.
+network traffic gains access to each of these pieces, and they do not all sit under the same Web server. This kind of
+deployment is intended for situations where you want streaming support, or where you want much greater volume or response
+than the 2b solution can provide you. The Dacha servers are able to support massive horizontal scaling of features and
+feature updates, further scaling up and not creating a load on the database as necessary by the use of the NATS cluster.
+
+=== Option 2b - Non-Streaming Scalable Deployment
+
+image::images/fh_deployment_option_2b.svg[Option 2b,600]
+
+This option is limited only by the number of read replicas you can support and the method you have over balancing access
+to these replicas. This deployment uses the separation of `mr` (the Admin App and its backend) from `edge-rest` instead of bundling
+them together and configuring a read replica for `edge-rest` (the only time we recommend doing this). As many cloud providers
+allow you to configure multiple active read replicas, potentially across different zones of the world, this allows you to scale
+your connectivity across those replicas. See the documentation below on Database Read Replicas for how to configure this.
 
 == Configuration
 
-In the https://github.com/featurehub-io/featurehub-install/tree/master/docker-compose-options[deployment options]  configurations you will see that each server has
-a set of possible external configurations. If you wish to build and rebundle the images yourself you can easily do this,
-the base images, exposed ports and so forth are all configurable as part of the build.
-
-NOTE: As of 1.4.1, all properties that are configured using `properties` files below can also be specified using environment
-variables - but use the exact upper case variant. E.g. `db.url` becomes `DB.URL`, `passwordsalt.iterations` becomes
-`PASSWORDSALT.ITERATIONS`. If you are running your FeatureHub on AWS ECS you will need to use environment variables
-for configuration.
 
 === Run configuration
 
-By this we mean the properties you can set to control the behaviour of different servers.
+By this we mean the properties you can set to control the behaviour of different servers. As of 1.5.0 all 
+FeatureHub controller properties are available as environment variables using the same case. If you have been using
+the mechanism introduced in 1.4.1 this still works but isn't recommended going forward. 
+
+If you are using a system like
+Kubernetes, you can mount these properties in `/etc/app-config/application.properties` and 
+`/etc/app-config/secrets.properties`.
 
 ==== Database configuration
 
 All subsystems that talk to the database take these parameters. Even if 
 you are using environment variables, we recommend using lower case 
-so the database connections are correctly configured. All `db.` prefixes
-can also use `db-replica` prefixes to configure a read replica,
-where it is and how it should be connected to.
+so the database connections are correctly configured. 
 
 - `db.url` - the jdbc url of the database server.
 - `db.username` -  the username used to log in.
 - `db.password` - the password for the user
-- `db.minConnections` - the minimum number of connections to hold open
-- `db.maxConnections` - the maximum connections to open to the db
-- `db.pstmtCacheSize` - the prepared statement cache size
+- `db.minConnections` - the minimum number of connections to hold open (default 3)
+- `db.maxConnections` - the maximum connections to open to the db (default 100)
+- `db.pstmtCacheSize` - the prepared statement cache size (no default)
 
 The library we use - ebean - supports a number of other configuration
 parameters
+
+===== Database Read Replicas
+We also support Read Replicas which are useful for deployments of `edge-rest`. We do not
+recommend them for `mr`, `party-server` or `party-server-ish` deployments as read replicas have to behave
+like being up to a couple of seconds out is ok. This is fine for `edge-rest` as it's major functionality
+is reading via a GET. To use a read replica `db.` prefixes  use `db-replica` prefixes to configure a read replica,
+where it is and how it should be connected to. Typically an `edge-rest` deployment will configure both of these (`db`
+and `db-replica` parameters) but the corresponding `mr` will not.
 
 === NATS
 
@@ -129,7 +150,7 @@ servers are configured correctly.
 - `nats.urls` - a comma separated list of NATs servers. 
 
 NATS works by having the clients tell the servers where each other
-are, so the NATS servers need to be routable but do not need to 
+are, so the NATS servers need to be routable (i.e. they must be able to talk to each other) but do not need to 
 be explicitly told about each other.
 
 ==== Management Repository
@@ -237,7 +258,7 @@ listening. The urls are:
 
 == Deployment Options
 
-=== Docker-Compose / Docker-Stack
+=== Docker-Compose / Docker-Stack / Kubernetes
 
 To get you up and going quickly, we have created a number of different Docker options using Docker-Compose.
 
@@ -280,7 +301,6 @@ This will install all the necessary components including FeatureHub Admin Consol
 What makes it only an evaluation option is simply the database used, it writes to the local
 disk and is not intended to be used for a long running or highly performant, concurrent system.
 
-=== Kubernetes
 
 === Google Cloud Run
 
@@ -298,7 +318,7 @@ second (with around a 650ms time per request) with a 0.6 CPU database.
 export GCP_REGION=us-east1
 export GCP_ZONE=us-east1-b
 gcloud config set project featurehub-saas
-gcloud config set compute/zone $ZONE
+gcloud config set compute/zone $GCP_ZONE
 ----
 
 We are now going to create a Cloud SQL database, so you need to 
