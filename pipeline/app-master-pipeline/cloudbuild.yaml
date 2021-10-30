@@ -2,6 +2,7 @@ timeout: 900s
 
 substitutions:
   _GCS_CACHE_BUCKET: demohub-build-cache
+  RC_BUILD_NO: 1.5.0-RC1
 
 steps:
   - waitFor: ['-']
@@ -37,6 +38,17 @@ steps:
     volumes:
       - name: user.home
         path: /root
+  - name: 'us-central1-docker.pkg.dev/demohub-283022/demohub/build-images/maven:3.6.3-jdk-11'
+    entrypoint: '/bin/sh'
+    args:
+      - '-c'
+      - 'cd backend && mvn -s pipeline/m2/settings.xml --no-transfer-progress -Dmaven.wagon.http.retryHandler.count=3 -DaltDeploymentRepository=artifact-registry::default::artifactregistry://us-central1-maven.pkg.dev/demohub-283022/fh-build-repo -Ddocker.goal=build -f pom-packages.xml -DskipTests -Ddocker-cloud-build=true -Dbuild.version=$RC_BUILD_NO clean install'
+    waitFor:
+      - tile-install
+    volumes:
+      - name: user.home
+        path: /root
+
   # Saves the files to the GCS cache, but NEVER STORE OUR OWN
   - name: gcr.io/cloud-builders/gsutil
     dir: /root
@@ -51,5 +63,11 @@ steps:
     volumes:
       - name: user.home
         path: /root
+availableSecrets:
+  secretManager:
+    - versionName: projects/676228694437/secrets/DOCKER_USER_NAME/versions/latest
+      env: 'REGISTRY_USERNAME'
+    - versionName: projects/676228694437/secrets/DOCKER_PASSWORD/versions/latest
+      env: 'REGISTRY_PASSWORD'
 
 

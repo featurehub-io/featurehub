@@ -110,6 +110,10 @@
               </from>
               <to>
                 <image>featurehub/${project.artifactId}:${build.version}</image>
+                <auth>
+                  <username>${env.REGISTRY_USERNAME}</username>
+                  <password>${env.REGISTRY_PASSWORD}</password>
+                </auth>
               </to>
               <extraDirectories>
                 <paths>
@@ -137,6 +141,7 @@
                   <arg>-R${app.entrypoint}</arg>
                   <arg>-P/etc/common-config/common.properties</arg>
                   <arg>-P/etc/app-config/application.properties</arg>
+                  <arg>-P/etc/app-config/secrets.properties</arg>
                 </args>
                 <ports>
                   <port>${app.port}</port>

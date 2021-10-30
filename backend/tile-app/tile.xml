@@ -62,6 +62,10 @@
               <allowInsecureRegistries>false</allowInsecureRegistries>
               <from>
                 <image>${app.baseimage}</image>
+                <auth>
+                  <username>${env.REGISTRY_USERNAME}</username>
+                  <password>${env.REGISTRY_PASSWORD}</password>
+                </auth>
               </from>
               <to>
                 <image>featurehub/${app.imagename}:${build.version}</image>
@@ -80,6 +84,7 @@
                   <arg>-R${app.entrypoint}</arg>
                   <arg>-P/etc/common-config/common.properties</arg>
                   <arg>-P/etc/app-config/application.properties</arg>
+                  <arg>-P/etc/app-config/secrets.properties</arg>
                 </args>
                 <ports>
                   <port>${app.port}</port>
