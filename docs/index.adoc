@@ -50,10 +50,9 @@ There is a GitHub https://github.com/featurehub-io/featurehub-install[repository
 
 All of the deployment options mount the database volume separately from the main set of containers, allowing you to upgrade your database and versions of FeatureHub without destroying your database.
 
-NOTE: As FeatureHub is an open source project, we provide test on only a limited number of databases, primarily Postgres.
+NOTE: As FeatureHub is an open source project, we test on only a limited number of databases, primarily Postgres.
 
-We provide and maintain database migrations scripts for MySQL/MariaDB, MS SQL Server, but we do not
-actively test on them. 
+We provide and maintain database migrations scripts for MySQL/MariaDB, MS SQL Server. 
 
 There is also a MariaDB example docker-compose install, and the MariaDB and MySQL drivers are installed in all
 server runtimes. Further we include support for Google's Cloud SQL libraries in the base images if you need to
@@ -92,15 +91,14 @@ image::images/fh_eval.svg[Option 1,500]
 NOTE: the dotted edge represents the container boundary.
 
 With the database embedded inside the container, yet storing its files on your local disk, this is very
-much an evaluation style of deployment. Again, please see how installation documentation on the implications
-of this setup, and how you can turn it into a production deployment.
+much an evaluation style of deployment.
 
 This will start FeatureHub Admin Console on port 8085 and you can now register as Super Admin, 
 then create Portfolios, Applications, Features etc.
 
 Once you have done this, you can then simply run the example app that comes in its own docker container, 
 so you don't have to create sample app and add SDK code yourself.
-The example project consists of a back-end service (node) and a front-end sample app (React) with some sample features already in place.
+The example project consists of a back-end service (Node) and a front-end sample app (React) with some sample features already in place.
 
 ==== Running the example
 
