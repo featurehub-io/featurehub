@@ -43,7 +43,7 @@ steps:
     secretEnv: ['REGISTRY_USERNAME', 'REGISTRY_PASSWORD']
     args:
       - '-c'
-      - 'cd backend && mvn -s pipeline/m2/settings.xml --no-transfer-progress -Dmaven.wagon.http.retryHandler.count=3 -DaltDeploymentRepository=artifact-registry::default::artifactregistry://us-central1-maven.pkg.dev/demohub-283022/fh-build-repo -Ddocker.goal=build -f pom-packages.xml -DskipTests -Ddocker-cloud-build=true -Dbuild.version=$_RC_BUILD_NO clean install'
+      - 'cd backend && mvn -s ../pipeline/m2/settings.xml --no-transfer-progress -Dmaven.wagon.http.retryHandler.count=3 -DaltDeploymentRepository=artifact-registry::default::artifactregistry://us-central1-maven.pkg.dev/demohub-283022/fh-build-repo -Ddocker.goal=build -f pom-packages.xml -DskipTests -Ddocker-cloud-build=true -Dbuild.version=$_RC_BUILD_NO clean install'
     waitFor:
       - tile-install
     volumes:
