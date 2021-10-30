@@ -66,9 +66,9 @@ steps:
         path: /root
 availableSecrets:
   secretManager:
-    - versionName: projects/676228694437/secrets/DOCKER_USER_NAME/versions/latest
+    - versionName: projects/676228694437/secrets/DOCKERHUB_USER_NAME/versions/latest
       env: 'REGISTRY_USERNAME'
-    - versionName: projects/676228694437/secrets/DOCKER_PASSWORD/versions/latest
+    - versionName: projects/676228694437/secrets/DOCKERHUB_PASSWORD/versions/latest
       env: 'REGISTRY_PASSWORD'
 
 
