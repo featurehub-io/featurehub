@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:open_admin_app/api/client_api.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/api/client_api.dart';
 import 'package:rxdart/rxdart.dart';
 
 enum RegisterUrlForm {
@@ -63,8 +63,11 @@ class RegisterBloc implements Bloc {
       registrationToken: token,
     ))
         .then((data) async {
+      if (!_formStateStream.isClosed) {
+        _formStateStream.add(RegisterUrlForm.successState);
+      }
+
       await mrClient.hasToken(data);
-      _formStateStream.add(RegisterUrlForm.successState);
     }).catchError((e, s) {
       mrClient.dialogError(e, s);
     });
