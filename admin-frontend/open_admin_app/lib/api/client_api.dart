@@ -436,15 +436,20 @@ class ManagementRepositoryClientBloc implements Bloc {
     _log.severe('Failed', e, s);
   }
 
-  Future<void> login(String email, String password) async {
-    await authServiceApi
-        .login(UserCredentials(
+  Future<TokenizedPerson> login(String email, String password) async {
+    final tp = await authServiceApi.login(UserCredentials(
       email: email,
       password: password,
-    ))
-        .then((tp) {
+    ));
+
+    if (tp.person?.passwordRequiresReset != true) {
       hasToken(tp);
-    });
+    } else {
+      // we need to set this because it enables us to reset the password
+      setBearerToken(tp.accessToken);
+    }
+
+    return tp;
   }
 
   Future hasToken(TokenizedPerson tp) async {
@@ -469,15 +474,15 @@ class ManagementRepositoryClientBloc implements Bloc {
     routeSlot(RouteSlot.portfolio);
   }
 
-  Future<void> replaceTempPassword(String password) {
+  Future<void> replaceTempPassword(String id, String password) {
     return authServiceApi
         .replaceTempPassword(
-            person.id!.id,
+            id,
             PasswordReset(
               password: password,
             ))
         .then((tp) {
-      setBearerToken(tp.accessToken);
+      hasToken(tp);
     });
   }
 
@@ -566,10 +571,9 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   String registrationUrl(String token) {
     var tokenizedPart = '/register-url?token=$token';
-    if(Uri.base.hasPort) {
+    if (Uri.base.hasPort) {
       return Uri.base.host + ':' + Uri.base.port.toString() + tokenizedPart;
-    }
-    else {
+    } else {
       return Uri.base.host + tokenizedPart;
     }
   }

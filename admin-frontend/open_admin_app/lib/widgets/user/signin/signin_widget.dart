@@ -9,8 +9,8 @@ import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_card.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_green.dart';
 import 'package:open_admin_app/widgets/user/signin/signin_provider_button.dart';
+import 'package:open_admin_app/widgets/user/update/password_reset_widget.dart';
 import 'package:openapi_dart_common/openapi.dart';
-
 
 class SigninWidget extends StatefulWidget {
   const SigninWidget(this.bloc, {Key? key}) : super(key: key);
@@ -28,6 +28,7 @@ class _SigninState extends State<SigninWidget> {
   final _password = TextEditingController();
   final _formKey = GlobalKey<FormState>(debugLabel: 'signin_widget');
   bool displayError = false;
+  String? personIdForResetWidget;
   bool loggingIn = false;
 
   @override
@@ -61,10 +62,26 @@ class _SigninState extends State<SigninWidget> {
     setState(() {
       loggingIn = true;
     });
-    widget.bloc.login(_email.text, _password.text).then((_) {
-      setState(() {
-        loggingIn = false;
-      });
+
+    // when logging in, we could have received a temporary password and
+    // thus need to reset the password before being allowed to login.
+    // this all has to happen under the facade of the login process, we can't
+    // "let them out" of this route (login) and we can't expose it as a route
+    // as that makes no sense (to navigate to the reset password route)
+
+    widget.bloc.login(_email.text, _password.text).then((tp) {
+      if (tp.person?.passwordRequiresReset == true) {
+        setState(() {
+          personIdForResetWidget = tp.person?.id?.id;
+          loggingIn = false;
+        });
+      } else if (tp.accessToken != null) {
+        // we shouldn't even get here
+        setState(() {
+          loggingIn = false;
+          personIdForResetWidget = null;
+        });
+      }
     }).catchError((e, s) {
       if (e is ApiException && e.code == 404) {
         setState(() {
@@ -79,6 +96,10 @@ class _SigninState extends State<SigninWidget> {
 
   @override
   Widget build(BuildContext context) {
+    if (personIdForResetWidget != null) {
+      return ResetPasswordWidget(personIdForResetWidget!);
+    }
+
     return Form(
       key: _formKey,
       child: FHCardWidget(

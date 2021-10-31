@@ -5,7 +5,9 @@ import 'package:open_admin_app/widgets/common/FHFlatButton.dart';
 import 'package:open_admin_app/widgets/common/fh_card.dart';
 
 class ResetPasswordWidget extends StatefulWidget {
-  const ResetPasswordWidget({Key? key}) : super(key: key);
+  final String personId;
+
+  const ResetPasswordWidget(this.personId, {Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -84,7 +86,8 @@ class _ResetPasswordState extends State<ResetPasswordWidget> {
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
                             try {
-                              await bloc.replaceTempPassword(_password.text);
+                              await bloc.replaceTempPassword(
+                                  widget.personId, _password.text);
                             } catch (e, s) {
                               await bloc.dialogError(e, s);
                             }
