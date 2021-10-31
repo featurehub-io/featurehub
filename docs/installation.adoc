@@ -143,6 +143,108 @@ them together and configuring a read replica for `edge-rest` (the only time we r
 allow you to configure multiple active read replicas, potentially across different zones of the world, this allows you to scale
 your connectivity across those replicas. See the documentation below on Database Read Replicas for how to configure this.
 
+== Cloud Deployments
+
+=== Deploying FeatureHub (non-streaming) on Google Cloud Run
+
+Google Cloud Run lets you spin up a container instance and multiplex requests to it, making it directly available as 
+soon as you have configured it. These are basic instructions on how to do this.
+
+==== Create your Cloud SQL Instance
+In this example we use the instance of Postgres 13 of the smallest possible size and deploy a 2 cpu, 512Mb Cloud
+Run instance that scales from 0 to 3, allowing up to 400 incoming requests concurrently per instance. Each CPU
+for incoming Edge requests is capable of supporting around 200 concurrent requests. The CPU of the database
+affects the speed at which the instances respond - for example we were only able to sustain around 50 requests per
+second (with around a 650ms time per request) with a 0.6 CPU database.
+
+----
+export GCP_REGION=us-east1
+export GCP_ZONE=us-east1-b
+gcloud config set project featurehub-saas
+gcloud config set compute/zone $GCP_ZONE
+----
+
+We are now going to create a Cloud SQL database, so you need to 
+choose a root password, a database name and a schema name. We will create a very small instance that is zonal only, has no daily backup, and connectivity via public IP but SSL - https://cloud.google.com/sql/pricing[Cloud SQL pricing] give you more details on how much this will cost. Obviously you can choose a larger one, but this initial deployment will probably be
+throwaway as it is quite easy. _This step takes a while_
+
+----
+export FH_DB_NAME=featurehub-db
+export FH_DB_PASSWORD=FeatureHub17#
+export FH_DB_SCHEMA=featurehub
+
+gcloud sql instances create $FH_DB_NAME --database-version=POSTGRES_13 --zone=$GCP_ZONE --tier=db-f1-micro "--root-password=$FH_DB_PASSWORD" --assign-ip --require-ssl --storage-type=SSD
+----
+
+this should just show you a database schema called postgres
+----
+gcloud sql databases list --instance=$FH_DB_NAME
+----
+Now create the new featurehub database schema
+----
+gcloud sql databases create $FH_DB_SCHEMA --instance $FH_DB_NAME
+----
+now get the "connection name" - it is the `connectionName` parameter from this:
+----
+gcloud sql instances describe $FH_DB_NAME
+----
+
+You need it in the custom properties below. In my case this was
+
+----
+backendType: SECOND_GEN
+connectionName: featurehub-example:us-central1:featurehub-db
+databaseVersion: POSTGRES_13
+...
+----
+
+this becomes the name you pass to the container
+
+----
+export FH_DB_CONN_NAME=featurehub-example:us-central1:featurehub-db
+----
+
+==== Create your Cloud Run deployment
+
+----
+export FH_CR_NAME=featurehub
+export FH_IMAGE=us-central1-docker.pkg.dev/featurehub-saas/saas-images/party-server-ish:1.5.0-RC1 
+----
+
+Now you are going to have to run the deploy command twice, because you don't know the Service URL it will give you and you will
+need to specify a _registration url_ if you aren't using OAuth2 (which we recommend). So for the first
+deploy we will set the registration url to a fake url (`HOST_URL`).
+
+Note that you need to be a Project Owner or Cloud Run Admin to allow unauthenticated traffic.
+
+<TODO:replace with public docker image>
+----
+export HOST_URL=http://localhost
+gcloud run deploy $FH_CR_NAME --image=$FH_IMAGE --min-instances=0 --max-instances=3 --cpu=2 --memory=512Mi --port=8085 --concurrency=400 "--set-env-vars=db.url=jdbc:postgresql:///$FH_DB_SCHEMA,db.username=postgres,db.password=$FH_DB_PASSWORD,db.minConnections=3,db.maxConnections=100,monitor.port=8701,db.customProperties=cloudSqlInstance=$FH_DB_CONN_NAME;socketFactory=com.google.cloud.sql.postgres.SocketFactory,register.url=$HOST_URL/register-url?token%3D%s" --set-cloudsql-instances=$FH_DB_NAME --platform=managed --region=$GCP_REGION --allow-unauthenticated
+----
+
+Once it deploys, you will get the service url it gives you back and you need to set this URL as the registration url and redeploy.
+
+It gave me this for example, `https://featurehub-ixscqgruca-uc.a.run.app` and so now I need to set the HOST_URL environment variable so the 
+registration url would be set to `register.url=https://featurehub-ixscqgruca-uc.a.run.app/register-url?token=%s` when the deploy command is run again.
+
+Run the previous gcloud deploy command again after setting the HOST_URL:
+----
+export HOST_URL=https://featurehub-ixscqgruca-ue.a.run.app
+gcloud run deploy $FH_CR_NAME --image=$FH_IMAGE --min-instances=0 --max-instances=3 --cpu=2 --memory=512Mi --port=8085 --concurrency=400 "--set-env-vars=db.url=jdbc:postgresql:///$FH_DB_SCHEMA,db.username=postgres,db.password=$FH_DB_PASSWORD,db.minConnections=3,db.maxConnections=100,monitor.port=8701,db.customProperties=cloudSqlInstance=$FH_DB_CONN_NAME;socketFactory=com.google.cloud.sql.postgres.SocketFactory,register.url=$HOST_URL/register-url?token%3D%s" --set-cloudsql-instances=$FH_DB_NAME --platform=managed --region=$GCP_REGION --allow-unauthenticated
+
+----
+
+If you are using OAuth2, then you will need to set those properties, and we recommend setting your `oauth2.disable-login` to true to 
+prevent being able to login without an OAuth2 connection.
+
+Use the example Cloud Shell to ensure you can connect to it, but it can take a while to create.
+
+==== Cloud Run Observations
+
+- We are putting the password straight into the environment variable which you may do in a more secure way.
+- You should create a service account with minimal permissions for your Cloud Run instances
+
 == Configuration
 
 
@@ -296,138 +398,3 @@ listening. The urls are:
 
 - `/health/liveness`
 - `/health/readyness`
-
-== Cloud Deployments
-
-=== Deploying FeatureHub (non-streaming) on Google Cloud Run
-
-Google Cloud Run lets you spin up a container instance and multiplex requests to it, making it directly available as 
-soon as you have configured it. These are basic instructions on how to do this.
-
-==== Create your Cloud SQL Instance
-In this example we use the instance of Postgres 13 of the smallest possible size and deploy a 2 cpu, 512Mb Cloud
-Run instance that scales from 0 to 3, allowing up to 400 incoming requests concurrently per instance. Each CPU
-for incoming Edge requests is capable of supporting around 200 concurrent requests. The CPU of the database
-affects the speed at which the instances respond - for example we were only able to sustain around 50 requests per
-second (with around a 650ms time per request) with a 0.6 CPU database.
-
-----
-export GCP_REGION=us-east1
-export GCP_ZONE=us-east1-b
-gcloud config set project featurehub-saas
-gcloud config set compute/zone $GCP_ZONE
-----
-
-We are now going to create a Cloud SQL database, so you need to 
-choose a root password, a database name and a schema name. We will create a very small instance that is zonal only, has no daily backup, and connectivity via public IP but SSL - https://cloud.google.com/sql/pricing[Cloud SQL pricing] give you more details on how much this will cost. Obviously you can choose a larger one, but this initial deployment will probably be
-throwaway as it is quite easy. _This step takes a while_
-
-----
-export FH_DB_NAME=featurehub-db
-export FH_DB_PASSWORD=FeatureHub17#
-export FH_DB_SCHEMA=featurehub
-
-gcloud sql instances create $FH_DB_NAME --database-version=POSTGRES_13 --zone=$GCP_ZONE --tier=db-f1-micro "--root-password=$FH_DB_PASSWORD" --assign-ip --require-ssl --storage-type=SSD
-----
-
-this should just show you a database schema called postgres
-----
-gcloud sql databases list --instance=$FH_DB_NAME
-----
-Now create the new featurehub database schema
-----
-gcloud sql databases create $FH_DB_SCHEMA --instance $FH_DB_NAME
-----
-now get the "connection name" - it is the `connectionName` parameter from this:
-----
-gcloud sql instances describe $FH_DB_NAME
-----
-
-You need it in the custom properties below. In my case this was
-
-----
-backendType: SECOND_GEN
-connectionName: featurehub-example:us-central1:featurehub-db
-databaseVersion: POSTGRES_13
-...
-----
-
-this becomes the name you pass to the container
-
-----
-export FH_DB_CONN_NAME=featurehub-example:us-central1:featurehub-db
-----
-
-==== Create your Cloud Run deployment
-
-----
-export FH_CR_NAME=featurehub
-export FH_IMAGE=us-central1-docker.pkg.dev/featurehub-saas/saas-images/party-server-ish:1.5.0-RC1 
-----
-
-Now you are going to have to run the deploy command twice, because you don't know the Service URL it will give you and you will
-need to specify a _registration url_ if you aren't using OAuth2 (which we recommend). So for the first
-deploy we will set the registration url to a fake url (`HOST_URL`).
-
-Note that you need to be a Project Owner or Cloud Run Admin to allow unauthenticated traffic.
-
-<TODO:replace with public docker image>
-----
-export HOST_URL=http://localhost
-gcloud run deploy $FH_CR_NAME --image=$FH_IMAGE --min-instances=0 --max-instances=3 --cpu=2 --memory=512Mi --port=8085 --concurrency=400 "--set-env-vars=db.url=jdbc:postgresql:///$FH_DB_SCHEMA,db.username=postgres,db.password=$FH_DB_PASSWORD,db.minConnections=3,db.maxConnections=100,monitor.port=8701,db.customProperties=cloudSqlInstance=$FH_DB_CONN_NAME;socketFactory=com.google.cloud.sql.postgres.SocketFactory,register.url=$HOST_URL/register-url?token%3D%s" --set-cloudsql-instances=$FH_DB_NAME --platform=managed --region=$GCP_REGION --allow-unauthenticated
-----
-
-Once it deploys, you will get the service url it gives you back and you need to set this URL as the registration url and redeploy.
-
-It gave me this for example, `https://featurehub-ixscqgruca-uc.a.run.app` and so now I need to set the HOST_URL environment variable so the 
-registration url would be set to `register.url=https://featurehub-ixscqgruca-uc.a.run.app/register-url?token=%s` when the deploy command is run again.
-
-Run the previous gcloud deploy command again after setting the HOST_URL:
-----
-export HOST_URL=https://featurehub-ixscqgruca-ue.a.run.app
-gcloud run deploy $FH_CR_NAME --image=$FH_IMAGE --min-instances=0 --max-instances=3 --cpu=2 --memory=512Mi --port=8085 --concurrency=400 "--set-env-vars=db.url=jdbc:postgresql:///$FH_DB_SCHEMA,db.username=postgres,db.password=$FH_DB_PASSWORD,db.minConnections=3,db.maxConnections=100,monitor.port=8701,db.customProperties=cloudSqlInstance=$FH_DB_CONN_NAME;socketFactory=com.google.cloud.sql.postgres.SocketFactory,register.url=$HOST_URL/register-url?token%3D%s" --set-cloudsql-instances=$FH_DB_NAME --platform=managed --region=$GCP_REGION --allow-unauthenticated
-
-----
-
-If you are using OAuth2, then you will need to set those properties, and we recommend setting your `oauth2.disable-login` to true to 
-prevent being able to login without an OAuth2 connection.
-
-Use the example Cloud Shell to ensure you can connect to it, but it can take a while to create.
-
-==== Cloud Run Observations
-
-- We are putting the password straight into the environment variable which isn't recommended, but _#yolo_.
-- You should create a service account with minimal permissions for your Cloud Run instances and use that
-
-== Build
-
-Each of the different options, SSE-Edge, Dacha, the Management Repository and the Party Server build docker images
-when called from Maven with a cloud image profile.
-
-Make sure the developer build has been completed with:
-
-----
-cd backend && mvn -f pom-first.xml clean install && cd .. &&  mvn -T4C clean install
-----
-
-If you wish to do individual builds, which we recommend if you are overriding base images and so forth, cd into
-those folders. First you will need to make sure the front end builds - it normally builds and installs as part of the
-whole build process. Go into the `admin-frontend` folder and type:
-
-----
-mvn -Ddocker-cloud-build=true clean install
-----
-
-This is a docker build using a Flutter image of the front-end.
-
-Then jump into your chosen folder and your command is:
-
-----
-mvn -Ddocker-cloud-build=true -Dapp.baseimage=docker://featurehub/base_mr:1.7 -Dapp.port=8085 -Dbuild.version=0.0.1 clean package
-----
-
-Where the `app.baseimage`, `app.port` and `build.version` are the versions you specify. The `docker://` prefix just means
-it will pull it from Docker. It is using `jib` from Google, so you may wish to further play around with those settings.
-
-
-
