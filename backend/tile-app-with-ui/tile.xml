@@ -116,6 +116,10 @@
               <allowInsecureRegistries>false</allowInsecureRegistries>
               <from>
                 <image>${app.baseimage}</image>
+                <auth>
+                  <username>${env.REGISTRY_USERNAME}</username>
+                  <password>${env.REGISTRY_PASSWORD}</password>
+                </auth>
               </from>
               <to>
                 <image>featurehub/${project.artifactId}:${build.version}</image>

@@ -69,6 +69,10 @@
               </from>
               <to>
                 <image>featurehub/${app.imagename}:${build.version}</image>
+                <auth>
+                  <username>${env.REGISTRY_USERNAME}</username>
+                  <password>${env.REGISTRY_PASSWORD}</password>
+                </auth>
               </to>
               <container>
                 <user>999:999</user>
