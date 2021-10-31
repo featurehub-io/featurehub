@@ -77,6 +77,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
               FHHeader(
                 title: 'Edit user',
                 children: <Widget>[
+                  if (bloc.mrClient.identityProviders.hasLocal)
                   FHFlatButtonTransparent(
                     onPressed: () => bloc.mrClient.addOverlay(
                         (BuildContext context) =>
@@ -88,6 +89,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
               ),
             ],
           ),
+          const SizedBox(height: 8.0),
           Container(
             constraints: const BoxConstraints(maxWidth: 400),
             child: Column(
