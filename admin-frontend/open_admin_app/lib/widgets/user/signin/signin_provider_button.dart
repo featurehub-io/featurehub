@@ -14,23 +14,15 @@ class SignInProviderButton extends StatelessWidget {
   Widget build(BuildContext context) {
     switch (provider) {
       case 'oauth2-google':
-        return SignInButton(Buttons.GoogleDark, onPressed: () {
-          func;
-        });
+        return SignInButton(Buttons.GoogleDark, onPressed: func);
       case 'oauth2-github':
-        return SignInButton(Buttons.GitHub, onPressed: () {
-          func;
-        });
+        return SignInButton(Buttons.GitHub, onPressed: func);
       case 'oauth2-azure':
-        return SignInButton(Buttons.Microsoft, onPressed: () {
-          func;
-        });
+        return SignInButton(Buttons.Microsoft, onPressed: func);
       case 'oauth2-keycloak':
         return SignInButtonBuilder(
           backgroundColor: Colors.blue,
-          onPressed: () {
-            func;
-          },
+          onPressed: func,
           text: 'Sign in with Keycloak',
           padding: const EdgeInsets.symmetric(vertical: 16),
           icon: FontAwesome.key,
