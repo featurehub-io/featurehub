@@ -64,7 +64,7 @@ public class InMemoryCache implements InternalCache {
       return Stream.of(new EnvironmentCacheItem().action(PublishAction.EMPTY));
     }
 
-    return environments.values().stream().peek(sa -> sa.setCount(size));
+    return environments.values().stream().peek(env -> env.setCount(size));
   }
 
   @Override
@@ -216,7 +216,7 @@ public class InMemoryCache implements InternalCache {
     final UUID envId = e.getEnvironment().getId();
     EnvironmentCacheItem existing = environments.get(envId);
 
-    if (e.getAction() == PublishAction.CREATE || e.getAction() == PublishAction.UPDATE) {
+    if ((e.getAction() == PublishAction.CREATE || e.getAction() == PublishAction.UPDATE) && e.getEnvironment() != null) {
       if (existing == null || e.getEnvironment().getVersion() >= existing.getEnvironment().getVersion()) {
         removeServiceAccountsFromEnvironment(e, environments.get(envId));
         environments.put(envId, e);

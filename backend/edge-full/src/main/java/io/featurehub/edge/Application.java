@@ -5,10 +5,12 @@ import cd.connect.jersey.common.CorsFilter;
 import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
 import io.featurehub.dacha.api.DachaClientFeature;
+import io.featurehub.dacha.api.DachaClientServiceRegistry;
 import io.featurehub.health.MetricsHealthRegistration;
 import io.featurehub.jersey.FeatureHubJerseyHost;
 import io.featurehub.lifecycle.TelemetryFeature;
 import io.featurehub.publish.NATSFeature;
+import io.featurehub.utils.FallbackPropertyConfig;
 import org.glassfish.jersey.server.ResourceConfig;
 
 public class Application {
@@ -30,6 +32,17 @@ public class Application {
 
     // check if we should list on a different port
     MetricsHealthRegistration.Companion.registerMetrics(config);
+
+    if (FallbackPropertyConfig.Companion.getConfig("cache.name") != null) {
+      FeatureHubJerseyHost.Companion.withInjector(config, injector -> {
+        DachaClientServiceRegistry registry = injector.getService(DachaClientServiceRegistry.class);
+        if (registry.getApiKeyService(FallbackPropertyConfig.Companion.getConfig("cache.name")) == null) {
+          log.error("You must configure the URL indicating where dacha is located. dacha.url.{} is missing", FallbackPropertyConfig.Companion.getConfig("cache.name"));
+          throw new RuntimeException("Cannot find dacha url, see error log");
+        }
+        return null;
+      });
+    }
 
     // this has a default grace period of 10 seconds
     new FeatureHubJerseyHost(config).start();
