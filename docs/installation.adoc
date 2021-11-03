@@ -160,7 +160,7 @@ second (with around a 650ms time per request) with a 0.6 CPU database.
 ----
 export GCP_REGION=us-east1
 export GCP_ZONE=us-east1-b
-gcloud config set project featurehub-saas
+gcloud config set project your-project
 gcloud config set compute/zone $GCP_ZONE
 ----
 
@@ -208,7 +208,7 @@ export FH_DB_CONN_NAME=featurehub-example:us-central1:featurehub-db
 
 ----
 export FH_CR_NAME=featurehub
-export FH_IMAGE=us-central1-docker.pkg.dev/featurehub-saas/saas-images/party-server-ish:1.5.0-RC1 
+export FH_IMAGE=featurehub/party-server-ish:1.5.0-RC1 
 ----
 
 Now you are going to have to run the deploy command twice, because you don't know the Service URL it will give you and you will
