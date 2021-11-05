@@ -17,6 +17,7 @@ class GoogleProvider : OAuth2Provider {
 
   @ConfigKey("oauth2.redirectUrl")
   protected var redirectUrl: String? = null
+
   private val actualAuthUrl: String
   private val tokenUrl: String
   override fun discoverProviderUser(authed: AuthClientResult): ProviderUser? {
