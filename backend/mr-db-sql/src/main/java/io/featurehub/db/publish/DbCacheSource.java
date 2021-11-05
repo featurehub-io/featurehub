@@ -125,7 +125,7 @@ public class DbCacheSource implements CacheSource {
 
     if (count == 0) {
       log.info("database has no environments, publishing empty environments indicator.");
-      cacheBroadcast.publishEnvironment(new EnvironmentCacheItem().action(PublishAction.EMPTY));
+      cacheBroadcast.publishEnvironment(new EnvironmentCacheItem().action(PublishAction.EMPTY).count(0));
     } else {
       log.info("publishing {} environments to cache {}", count, cacheName);
 
