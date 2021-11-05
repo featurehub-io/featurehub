@@ -96,7 +96,8 @@ public class InMemoryCache implements InternalCache {
     ServiceAccountCacheItem existing = serviceAccounts.get(sa.getServiceAccount().getId());
 
     if (sa.getAction() == PublishAction.CREATE || sa.getAction() == PublishAction.UPDATE) {
-      if (existing == null || sa.getServiceAccount().getVersion() >= existing.getServiceAccount().getVersion()) {
+      if (existing == null || sa.getServiceAccount().getVersion() != null || existing.getServiceAccount().getVersion() != null
+          || sa.getServiceAccount().getVersion() >= existing.getServiceAccount().getVersion()) {
         updateServiceAccountEnvironmentCache(sa.getServiceAccount(), serviceAccounts.get(sa.getServiceAccount().getId()));
         serviceAccounts.put(sa.getServiceAccount().getId(), sa);
 
@@ -104,7 +105,7 @@ public class InMemoryCache implements InternalCache {
           sa.getServiceAccount().getApiKeyClientSide(),
           sa.getServiceAccount().getApiKeyServerSide(),
           sa.getServiceAccount().getName(), sa.getServiceAccount().getId());
-        if (!wasServiceAccountComplete && sa.getCount() == serviceAccounts.size()) {
+        if (!wasServiceAccountComplete && sa.getCount() != null && sa.getCount() == serviceAccounts.size()) {
           wasServiceAccountComplete = true;
 
           if (wasEnvironmentComplete && notify != null) {
@@ -230,7 +231,7 @@ public class InMemoryCache implements InternalCache {
 
         log.debug("have env {} of {} name {} : /default/{}/ {}", environments.size(), e.getCount(), e.getEnvironment().getName(), envId, sAccounts(e));
 
-        if (!wasEnvironmentComplete && e.getCount() == environments.size()) {
+        if (!wasEnvironmentComplete && e.getCount() != null && e.getCount() == environments.size()) {
           wasEnvironmentComplete = true;
 
           if (wasServiceAccountComplete && notify != null) {
