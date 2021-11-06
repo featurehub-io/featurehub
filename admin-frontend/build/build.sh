@@ -1,6 +1,7 @@
-cd .#!/bin/sh
+#!/bin/sh
 cd /opt/app
-tar xf *.tar
+#tar xf *.tar
+ls -l
 echo flutter home is $FLUTTER
 #echo "1.21.0-8.0.pre.110" > $FLUTTER_ROOT/version
 #ls -la $FLUTTER

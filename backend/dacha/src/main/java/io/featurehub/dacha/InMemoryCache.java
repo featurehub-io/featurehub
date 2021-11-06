@@ -289,11 +289,19 @@ public class InMemoryCache implements InternalCache {
     }
 
     ServiceAccountPermission sa = serviceAccountPlusEnvIdToEnvIdMap.get(serviceAccountIdPlusEnvId(serviceAccountId, environmentId));
+
     if (sa != null && !sa.getPermissions().isEmpty()) {  // any permission is good enough to read
       final EnvironmentCacheItem eci = environments.get(environmentId);
 
-      return new FeatureCollection(environmentFeatures.get(environmentId), sa, eci.getOrganizationId(),
-        eci.getPortfolioId(), eci.getApplicationId(), serviceAccountId);
+      if (eci != null) {
+        return new FeatureCollection(
+            environmentFeatures.get(environmentId),
+            sa,
+            eci.getOrganizationId(),
+            eci.getPortfolioId(),
+            eci.getApplicationId(),
+            serviceAccountId);
+      }
     }
 
     log.warn("No data for valid apiKey  `{}`", apiKey);
