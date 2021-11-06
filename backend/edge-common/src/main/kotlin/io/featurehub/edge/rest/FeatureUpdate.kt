@@ -133,7 +133,7 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
       val upd = StreamedFeatureUpdate()
         .apiKey(apiKey)
         .environmentId(envId)
-        .updatingValue(featureStateUpdate.updateValue!!)
+        .updatingValue(featureStateUpdate.updateValue ?: false)
         .lock(featureStateUpdate.lock)
         .featureKey(featureKey)
 
