@@ -196,20 +196,31 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
           }
         }
       }
+
       if (valueNotActuallyChanging && !lockChanging) {
         statRecorder?.recordHit(key, EdgeHitResultType.UPDATE_NO_CHANGE, EdgeHitSourceType.TESTSDK)
         response.resume(Response.status(Response.Status.ACCEPTED).build())
         return
       }
+
       if (valueNotActuallyChanging) {
         upd.updatingValue(false)
         upd.valueBoolean(null)
         upd.valueNumber(null)
         upd.valueString(null)
       }
+
       log.debug("publishing update on {} for {}", namedCache, upd)
+
+      upd.applicationId = perms.applicationId
+      upd.organizationId = perms.organizationId
+      upd.serviceKeyId = perms.serviceKeyId
+      upd.portfolioId = perms.portfolioId
+
       featureUpdatePublisher.publishFeatureChangeRequest(upd, namedCache)
+
       statRecorder?.recordHit(key, EdgeHitResultType.SUCCESS, EdgeHitSourceType.TESTSDK)
+
       response.resume(Response.ok().build())
     } catch (e: Exception) {
       log.error("Failed to process request: {}/{}/{}/{} : {}", namedCache, envId, apiKey, featureKey,
