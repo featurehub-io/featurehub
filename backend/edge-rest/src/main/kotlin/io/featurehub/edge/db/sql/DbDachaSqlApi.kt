@@ -31,12 +31,12 @@ class DbDachaSqlApi : DachaApiKeyService {
       QDbApplicationFeature.Alias.id,
       QDbApplicationFeature.Alias.valueType,
     )
-    .environment.environmentFeatures.fetch(
-      QDbFeatureValue.Alias.locked,
-      QDbFeatureValue.Alias.version,
-      QDbFeatureValue.Alias.rolloutStrategies,
-      QDbFeatureValue.Alias.defaultValue,
-    )
+      .environment.environmentFeatures.fetch(
+        QDbFeatureValue.Alias.locked,
+        QDbFeatureValue.Alias.version,
+        QDbFeatureValue.Alias.rolloutStrategies,
+        QDbFeatureValue.Alias.defaultValue,
+      )
       .findOne()
 
     return if (saEnv != null) {
@@ -73,11 +73,15 @@ class DbDachaSqlApi : DachaApiKeyService {
     }
   }
 
-  private fun toFeatureValueCacheItem(envId: UUID, feature: DbApplicationFeature, fv: DbFeatureValue?) : FeatureValueCacheItem =
+  private fun toFeatureValueCacheItem(
+    envId: UUID,
+    feature: DbApplicationFeature,
+    fv: DbFeatureValue?
+  ): FeatureValueCacheItem =
     FeatureValueCacheItem()
       .environmentId(envId)
       .feature(Feature().key(feature.key).id(feature.id).valueType(feature.valueType))
-      .value(if (fv == null) toEmptyFeatureValue(feature) else toFeatureValue(fv) )
+      .value(if (fv == null) toEmptyFeatureValue(feature) else toFeatureValue(fv))
 
 
   private fun toEmptyFeatureValue(feature: DbApplicationFeature): FeatureValue =
@@ -109,6 +113,7 @@ class DbDachaSqlApi : DachaApiKeyService {
     return fv
   }
 
+
   private fun calculateEtag(details: DachaKeyDetailsResponse): String {
     val det =
       details
@@ -124,6 +129,7 @@ class DbDachaSqlApi : DachaApiKeyService {
     serviceAccountKey: String,
     featureKey: String
   ): DachaPermissionResponse? {
+    // we need to find the api key and its permissions first and foremost
     val sa = QDbServiceAccountEnvironment()
       .select(
         QDbServiceAccountEnvironment.Alias.serviceAccount.id,
@@ -137,35 +143,40 @@ class DbDachaSqlApi : DachaApiKeyService {
       sa.serviceAccount.apiKeyServerEval.eq(serviceAccountKey)
     }.findOne() ?: return null
 
-    val q = QDbFeatureValue()
+    val applicationFeature = QDbApplicationFeature()
       .select(
+        QDbApplicationFeature.Alias.key,
+        QDbApplicationFeature.Alias.id,
+        QDbApplicationFeature.Alias.valueType,
+        QDbApplicationFeature.Alias.parentApplication.id,
+      )
+      .parentApplication.environments.id.eq(eId)
+      .key.eq(featureKey)
+      .environmentFeatures.fetch(
         QDbFeatureValue.Alias.locked,
         QDbFeatureValue.Alias.version,
         QDbFeatureValue.Alias.rolloutStrategies,
         QDbFeatureValue.Alias.defaultValue,
+        QDbFeatureValue.Alias.environment.id
       )
-      .environment.id.eq(eId).feature.key.eq(featureKey).feature.fetch(
-        QDbApplicationFeature.Alias.key,
-        QDbApplicationFeature.Alias.id,
-        QDbApplicationFeature.Alias.valueType,
-        )
 
-    val found = if (serviceAccountKey.contains("*")) {
-      q.environment.serviceAccountEnvironments.eq(serviceAccount)
-    } else {
-      q.environment.serviceAccountEnvironments.eq(serviceAccount)
-    }.findOne() ?: return null
+    val feature =
+      applicationFeature.parentApplication.environments.serviceAccountEnvironments.eq(serviceAccount).findOne() ?: return null
+
+    val foundFeatureValue = feature.environmentFeatures.find { it.environment.id == eId }
+    val featureValue = if (foundFeatureValue == null) toEmptyFeatureValue(feature).id(null) else toFeatureValue(foundFeatureValue)
 
     // it wants roles, valueType, key, locked, the feature value
     return DachaPermissionResponse()
       .feature(
         DachaFeatureValueItem()
-          .feature(toFeature(found))
-          .value(toFeatureValue(found))
+          .feature(Feature().key(featureKey).id(feature.id).valueType(feature.valueType))
+          .value(featureValue)
       )
-      .roles(serviceAccount.permissions?.split(",")?.filterNot { it.isEmpty() }?.map { RoleType.valueOf(it) } ?: listOf())
+      .roles(serviceAccount.permissions?.split(",")?.filterNot { it.isEmpty() }?.map { RoleType.valueOf(it) }
+        ?: listOf())
       .serviceKeyId(serviceAccount.serviceAccount.id)
-      .applicationId(fakeApplicationId)
+      .applicationId(feature.parentApplication.id)
       .portfolioId(fakePortfolioId)
       .organizationId(fakeOrganisationId)
   }
