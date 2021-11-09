@@ -124,4 +124,24 @@ oauth2.providers.azure.secret=[client-secret - what Azure calls a "value"]
 into the config under "[client-secret]". This is the last tiem you will see it as soon as you navigate away from that page, Azure
 will hide it from you.
 
-You are now done.
+You are now done setting up Azure.
+
+=== Keycloak Config
+
+Keycloak is new in 1.5.0. You need to select the realm the new client will be in, and then set up your new client. As part
+of that you will need to ensure:
+
+- it uses the openid-connect setup for your _Client Protocol_
+- the valid redirect URIs include the link to your Management Repository (e.g. `http://localhost:8085/oauth/auth` when using our
+example setups).
+
+[source,properties]
+----
+oauth2.providers=oauth2-keycloak
+oauth2.providers.keycloak.secret=[insert-client-secret]
+oauth2.providers.keycloak.url=[the main url for your keycloak server, e.g. http://localhost:8080]
+oauth2.providers.keycloak.realm=[your realm name]
+oauth2.providers.keycloak.id=[the name of the client you created]
+----
+
+This will enable Keycloak to be used as your authentication provider, so users can login using that method.
