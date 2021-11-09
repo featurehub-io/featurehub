@@ -270,7 +270,7 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
           if (account.sdkUrlClientEval == null)
             const Tooltip(
               message:
-                  'SDK URL is unavailable because your current permissions for this environment are lower level',
+                  'API Key is unavailable because your current permissions for this environment are lower level',
               child: Icon(
                 Feather.alert_circle,
                 size: 24.0,
@@ -280,7 +280,7 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
           if (account.sdkUrlServerEval == null)
             const Tooltip(
               message:
-                  'SDK URL is unavailable because your current permissions for this environment are lower level',
+                  'API Key is unavailable because your current permissions for this environment are lower level',
               child: Icon(
                 Feather.alert_circle,
                 size: 24.0,
