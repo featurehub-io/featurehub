@@ -40,6 +40,8 @@ We have deprecated [FeatureHub Eventsource Javascript SDK](https://www.npmjs.com
 Angular & Vue to use this library. 
 
 ### featurehub-javascript-node-sdk
+#### 1.0.9
+- Enabled e-tag support
 #### 1.0.8
 - Decrease sdk size by replacing ip6addr.ts with netmask package.
 #### 1.0.7
