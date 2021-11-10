@@ -1,6 +1,6 @@
 {
   "name": "featurehub-javascript-node-sdk",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "featurehub sdk intended for use by nodejs.",
   "author": "info@featurehub.io",
   "main": "dist/index.js",
@@ -63,7 +63,7 @@
   },
   "dependencies": {
     "eventsource": "^1.1.0",
-    "featurehub-javascript-client-sdk": "^1.0.8"
+    "featurehub-javascript-client-sdk": "^1.0.9"
   },
   "engines": {
     "node": ">=12.12.0"
