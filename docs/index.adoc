@@ -44,44 +44,61 @@ image::images/fh_learn_build_measure.svg[Learn,Build,Measure]
 
 == Installation
 
-There are link:installation{outfilesuffix}[3 main deployment options] for running FeatureHub. As FeatureHub is packaged as a _Cloud Native_ bundle, all parts are Docker images and are intended to be used with that technology (i.e. Docker or Kubernetes).
+There are link:installation{outfilesuffix}[two main deployment options] for running FeatureHub. As FeatureHub is packaged as a _Cloud Native_ bundle, all parts are Docker images and are intended to be used with that technology (i.e. Docker/OCI or Kubernetes).
 
-There is a GitHub https://github.com/featurehub-io/featurehub-install[repository] where you can find all the deployment options.
+There is a GitHub https://github.com/featurehub-io/featurehub-install[repository] where you can find sample docker-compose style deployment options.
 
 All of the deployment options mount the database volume separately from the main set of containers, allowing you to upgrade your database and versions of FeatureHub without destroying your database.
 
-NOTE: As FeatureHub is an open source project, we provide Tier 1 support for Postgres, as that is the platform we primarily
-run and test on.
+NOTE: As FeatureHub is an open source project, we test on only a limited number of databases, primarily Postgres.
 
-We provide and maintain database migrations scripts for MySQL/MariaDB, MS SQL Server, and Oracle as well, but we do not
-actively test on them. There is also a MariaDB example docker-compose install, and the MariaDB driver is installed in all
-server runtimes.
+We provide and maintain database migrations scripts for MySQL/MariaDB, MS SQL Server. 
+
+There is also a MariaDB example docker-compose install, and the MariaDB and MySQL drivers are installed in all
+server runtimes. Further we include support for Google's Cloud SQL libraries in the base images if you need to
+use their secure tunnelling capability.
 
 Other databases can potentially be added, please feel free to lodge a ticket on our Github Issues register, particularly if
 you are willing to test it out.
 
-=== Starting small
+=== Evaluating FeatureHub
 
-If you are just curious to see how FeatureHub works and would like to play with it before deciding which of the 3 installation options are right for you, you can also try it just by running several commands and without cloning this repository.
-You can watch the video with some instructions https://youtu.be/DRVqXJmbvTk[here] or follow the instructions below.
+If you are just curious to see how FeatureHub works and would like to play with it before deciding which of the  
+installation options are right for you, start with running this simple line:
 
-Start with running this simple line:
+on Mac or Windows: 
 
 ----
-docker run -p 8085:8085 --user 999:999 -v ~/tmp/party:/db featurehub/party-server:latest
+docker run -p 8085:8085 --user 999:999 -v $HOME/party:/db featurehub/party-server:latest
 ----
 
 on Linux:
 
 ----
-docker run --network host -p 8085:8085 -v $HOME/party:/db featurehub/party-server:latest
+docker run --network host --user 999:999 -p 8085:8085 -v $HOME/party:/db featurehub/party-server:latest
 ----
 
-where `~/tmp` is where you wish to store the database (h2).
-This will start FeatureHub Admin Console on port 8085 and you can now register as Super Admin, create Portfolio, Application, Feature etc.
+NOTE: `$HOME/tmp` is where you wish to store the database (h2).
 
-Once you have done this, you can then simply run the example app that comes with this docker container, so you don't have to create sample app and add SDK code yourself.
-The example project consists of a back-end service (node) and a front-end sample app (React) with some sample features already in place.
+An alternative is to use the link:installation{outfilesuffix}#_docker_compose_docker_stack[Docker Compose] based
+evaluation example if you are familiar with that tool.
+
+You can watch the video with some instructions https://youtu.be/DRVqXJmbvTk[here] or follow the instructions below.
+
+This is what will be running:
+
+image::images/fh_eval.svg[Option 1,500]
+NOTE: the dotted edge represents the container boundary.
+
+With the database embedded inside the container, yet storing its files on your local disk, this is very
+much an evaluation style of deployment.
+
+This will start FeatureHub Admin Console on port 8085 and you can now register as Super Admin, 
+then create Portfolios, Applications, Features etc.
+
+Once you have done this, you can then simply run the example app that comes in its own docker container, 
+so you don't have to create sample app and add SDK code yourself.
+The example project consists of a back-end service (Node) and a front-end sample app (React) with some sample features already in place.
 
 ==== Running the example
 

@@ -1,0 +1,1743 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="1271"
+   height="600"
+   version="1.1"
+   id="svg2216"
+   sodipodi:docname="fh_architecture_non_streaming.svg"
+   inkscape:version="1.1.1 (c3084ef, 2021-09-22)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:lucid="lucid">
+  <metadata
+     id="metadata2222">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs2220">
+    <pattern
+       inkscape:collect="always"
+       xlink:href="#D"
+       id="pattern594"
+       patternTransform="translate(-365.74988,1.2364198)" />
+  </defs>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1586"
+     inkscape:window-height="1074"
+     id="namedview2218"
+     showgrid="false"
+     inkscape:zoom="1.6553895"
+     inkscape:cx="381.48123"
+     inkscape:cy="367.28517"
+     inkscape:window-x="204"
+     inkscape:window-y="290"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="g2214"
+     inkscape:document-rotation="0"
+     inkscape:pagecheckerboard="0" />
+  <g
+     transform="translate(-160 0)"
+     lucid:page-tab-id="7a0T8kbP2wGz"
+     id="g2214">
+    <path
+       d="M 9.6653992,73.698669 H 1880.0654 V 1396.8987 H 9.6653992 Z"
+       fill="#ffffff"
+       id="path1413" />
+    <path
+       d="M 499.88877,179.88877 H 1043.6996 V 580.11123 H 499.88877 Z"
+       stroke="#50b5e8"
+       fill="#87d2f0"
+       fill-opacity="0.13"
+       id="path1415"
+       style="stroke-width:0.777541" />
+    <use
+       xlink:href="#a"
+       transform="matrix(1,0,0,1,505,184.99999999999994) translate(0 14.4)"
+       id="use1417" />
+    <path
+       d="M180 180h240v400H180z"
+       stroke="#666"
+       fill="#e5e5e5"
+       fill-opacity=".43"
+       id="path1419" />
+    <use
+       xlink:href="#b"
+       transform="matrix(1,0,0,1,185,184.99999999999994) translate(0 14.4)"
+       id="use1421" />
+    <use
+       xlink:href="#c"
+       transform="matrix(1,0,0,1,185,184.99999999999994) translate(41.300000000000004 14.4)"
+       id="use1423" />
+    <path
+       d="M540 260h120v300H540z"
+       stroke="#fff"
+       stroke-opacity=".25"
+       stroke-width="2"
+       fill="#87d2f0"
+       id="path1425" />
+    <use
+       xlink:href="#d"
+       transform="matrix(1,0,0,1,544.9999999999999,265) translate(24.049382716049386 135.59027777777777)"
+       id="use1427" />
+    <use
+       xlink:href="#e"
+       transform="matrix(1,0,0,1,544.9999999999999,265) translate(37.01234567901234 162.25694444444443)"
+       id="use1429" />
+    <path
+       d="M200 260h120v80H200z"
+       stroke="#fff"
+       stroke-opacity=".25"
+       stroke-width="2"
+       fill="#ccc"
+       id="path1435" />
+    <use
+       xlink:href="#g"
+       transform="matrix(1,0,0,1,205,265) translate(36.7 27.525)"
+       id="use1437" />
+    <use
+       xlink:href="#c"
+       transform="matrix(1,0,0,1,205,265) translate(11.074999999999996 49.125)"
+       id="use1439" />
+    <path
+       d="m 320,260 h 80 v 280 h -80 z"
+       stroke="#ffffff"
+       stroke-opacity="0.25"
+       stroke-width="2"
+       fill="#87d2f0"
+       id="path1441" />
+    <use
+       xlink:href="#h"
+       transform="matrix(1,0,0,1,325,265) translate(16.525 88.775)"
+       id="use1443" />
+    <path
+       d="m 835.25012,401.23642 h 179.99998 v 80 H 835.25012 Z"
+       stroke="#ffffff"
+       stroke-opacity="0.25"
+       stroke-width="2"
+       fill="#50b5e8"
+       id="path1445" />
+    <use
+       xlink:href="#i"
+       transform="translate(845.15753,432.7642)"
+       id="use1447"
+       x="0"
+       y="0"
+       width="100%"
+       height="100%" />
+    <use
+       xlink:href="#j"
+       transform="translate(899.35506,432.7642)"
+       id="use1449"
+       x="0"
+       y="0"
+       width="100%"
+       height="100%" />
+    <use
+       xlink:href="#k"
+       transform="translate(892.5958,459.43086)"
+       id="use1451"
+       x="0"
+       y="0"
+       width="100%"
+       height="100%" />
+    <path
+       d="m 834.25012,299.23642 h 179.99998 v 80 H 834.25012 Z"
+       stroke="#ffffff"
+       stroke-opacity="0.25"
+       stroke-width="2"
+       fill="#87d2f0"
+       id="path1453" />
+    <use
+       xlink:href="#i"
+       transform="translate(844.15753,330.7642)"
+       id="use1455"
+       x="0"
+       y="0"
+       width="100%"
+       height="100%" />
+    <use
+       xlink:href="#j"
+       transform="translate(898.35506,330.7642)"
+       id="use1457"
+       x="0"
+       y="0"
+       width="100%"
+       height="100%" />
+    <use
+       xlink:href="#l"
+       transform="translate(906.34889,357.43086)"
+       id="use1459"
+       x="0"
+       y="0"
+       width="100%"
+       height="100%" />
+    <path
+       d="m 834.25012,201.23642 h 179.99998 v 80 H 834.25012 Z"
+       stroke="#ffffff"
+       stroke-opacity="0.25"
+       stroke-width="2"
+       fill="#87d2f0"
+       id="path1461" />
+    <use
+       xlink:href="#m"
+       transform="translate(865.70074,232.7642)"
+       id="use1463"
+       x="0"
+       y="0"
+       width="100%"
+       height="100%" />
+    <use
+       xlink:href="#n"
+       transform="translate(878.81802,259.43086)"
+       id="use1465"
+       x="0"
+       y="0"
+       width="100%"
+       height="100%" />
+    <use
+       xlink:href="#o"
+       transform="translate(930.17605,259.43086)"
+       id="use1467"
+       x="0"
+       y="0"
+       width="100%"
+       height="100%" />
+    <path
+       d="M1064 494.8c-8.84 0-16-16.74-16-37.4s7.16-37.4 16-37.4"
+       stroke="#fff"
+       stroke-opacity=".25"
+       stroke-width="2"
+       fill="none"
+       id="path1471" />
+    <path
+       d="M200 360h120v80H200z"
+       stroke="#fff"
+       stroke-opacity=".25"
+       stroke-width="2"
+       fill="#ccc"
+       id="path1485" />
+    <use
+       xlink:href="#u"
+       transform="matrix(1,0,0,1,205,365) translate(20 27.525)"
+       id="use1487" />
+    <use
+       xlink:href="#c"
+       transform="matrix(1,0,0,1,205,365) translate(11.074999999999996 49.125)"
+       id="use1489" />
+    <path
+       d="M200 460h120v80H200z"
+       stroke="#fff"
+       stroke-opacity=".25"
+       stroke-width="2"
+       fill="#ccc"
+       id="path1491" />
+    <use
+       xlink:href="#v"
+       transform="matrix(1,0,0,1,205,465) translate(28.574999999999996 27.525)"
+       id="use1493" />
+    <use
+       xlink:href="#w"
+       transform="matrix(1,0,0,1,205,465) translate(11.074999999999996 49.125)"
+       id="use1495" />
+    <path
+       d="M451.52 296.5H401.5v-1h50.02zm71.1 0h-34.14v-1h34.14zM401.5 296.5h-.5v-1h.5zM537.38 296l-14.26 4.64v-9.28z"
+       fill="#333"
+       id="path1503" />
+    <path
+       d="M539 296l-16.38 5.32v-10.64zm-15.38 3.95l12.14-3.95-12.14-3.95z"
+       fill="#333"
+       id="path1505" />
+    <use
+       xlink:href="#y"
+       transform="translate(451.525,300.4)"
+       id="use1509"
+       x="0"
+       y="0"
+       width="100%"
+       height="100%" />
+    <path
+       d="m 1014.2501,555.23642 c 0,3.3 -40.29998,6 -89.99998,6 -49.7,0 -90,-2.7 -90,-6 v -48 c 0,-3.3 40.3,-6 90,-6 49.7,0 89.99998,2.7 89.99998,6 z"
+       stroke="#ffffff"
+       stroke-opacity="0.25"
+       stroke-width="2"
+       fill="#50b5e8"
+       id="path1511" />
+    <path
+       d="m 1014.2501,507.23642 c 0,3.3 -40.29998,6 -89.99998,6 -49.7,0 -90,-2.7 -90,-6"
+       stroke="#ffffff"
+       stroke-opacity="0.25"
+       stroke-width="2"
+       fill="none"
+       id="path1513" />
+    <use
+       xlink:href="#z"
+       transform="translate(876.75012,540.7642)"
+       id="use1515"
+       x="0"
+       y="0"
+       width="100%"
+       height="100%" />
+    <path
+       d="M446.05 500.5h-28.67v-1h28.67zm76.57 0h-28.67v-1h28.67zM416.88 504.64L402.62 500l14.26-4.64z"
+       fill="#333"
+       id="path1517" />
+    <path
+       d="M417.38 505.32L401 500l16.38-5.32zM404.24 500l12.14 3.95v-7.9zM537.38 500l-14.26 4.64v-9.28z"
+       fill="#333"
+       id="path1519" />
+    <path
+       d="M539 500l-16.38 5.32v-10.64zm-15.38 3.95l12.14-3.95-12.14-3.95z"
+       fill="#333"
+       id="path1521" />
+    <path
+       d="M 665.12452,535.33776 H 807.06201"
+       stroke="#333333"
+       fill="none"
+       id="path1525"
+       style="stroke-width:2.5924" />
+    <path
+       d="m 665.12452,535.33776 h -0.5 v -1 h 0.5 z"
+       fill="#333333"
+       id="path1527" />
+    <path
+       d="m 820.82201,534.96776 -14.26,4.64 v -9.27 z"
+       stroke="#333333"
+       fill="#333333"
+       id="path1529" />
+    <path
+       d="M699 396.3h-.5v-1h.5z"
+       fill="#333"
+       id="path1533" />
+    <path
+       d="M919.03 456.9l-.03.5.02.5h-.55l.03-1z"
+       fill="#333"
+       id="path1539" />
+    <path
+       d="m 860.25012,21.23642 h 128 v 128 h -128 z"
+       fill="url(#D)"
+       id="path1553"
+       style="fill:url(#pattern594)" />
+    <path
+       d="M660 20h128v128H660z"
+       fill="url(#E)"
+       id="path1555" />
+    <path
+       d="M1064 325.36c-8.84 0-16-16.74-16-37.4 0-20.65 7.16-37.4 16-37.4"
+       stroke="#fff"
+       stroke-opacity=".25"
+       stroke-width="2"
+       fill="none"
+       id="path1559" />
+    <path
+       d="M841.5 288.46h-.5v-1h.5z"
+       fill="#333"
+       id="path1569" />
+    <path
+       d="M919 457.4l.02.5h-.53l-.03-1h.56z"
+       fill="#333"
+       id="path1575" />
+    <path
+       d="m 805.25012,105.23642 h 239.99998 v 60 H 805.25012 Z"
+       stroke="#000000"
+       stroke-opacity="0"
+       stroke-width="2"
+       fill="#ffffff"
+       fill-opacity="0"
+       id="path1579" />
+    <use
+       xlink:href="#J"
+       transform="translate(880.32512,140.26142)"
+       id="use1581"
+       x="0"
+       y="0"
+       width="100%"
+       height="100%" />
+    <use
+       xlink:href="#K"
+       transform="translate(917.27512,140.26142)"
+       id="use1583"
+       x="0"
+       y="0"
+       width="100%"
+       height="100%" />
+    <path
+       d="M604 120h240v60H604z"
+       stroke="#000"
+       stroke-opacity="0"
+       stroke-width="2"
+       fill="#fff"
+       fill-opacity="0"
+       id="path1585" />
+    <g
+       id="g1591">
+      <use
+         xlink:href="#L"
+         transform="matrix(1,0,0,1,609,125) translate(79.05 17.525)"
+         id="use1587" />
+      <use
+         xlink:href="#M"
+         transform="matrix(1,0,0,1,609,125) translate(69.07499999999999 39.125)"
+         id="use1589" />
+    </g>
+    <path
+       d="m 833.25012,338.73642 v 1 h -0.52 l 0.02,-1 z"
+       fill="#333333"
+       id="path1613" />
+    <path
+       d="M390.47 171.47l-3.64 4.8-3.37 4.84-3.1 4.9-2.88 4.98-2.63 5.04-2.4 5.1-2.2 5.2-1.97 5.3-1.75 5.4-1.54 5.52-1.33 5.65-1.1 5.8-.9 5.95-.63 6.14-.4 6.33-.13 6.08h-1l.14-6.1.4-6.4.65-6.18.87-6 1.12-5.84 1.32-5.7 1.55-5.54 1.77-5.44 1.98-5.34 2.2-5.23 2.43-5.16 2.65-5.07 2.9-5 3.13-4.95 3.4-4.88 3.4-4.47h1.26zM543.62 101l-.86.04-11.32.95-11.1 1.4-10.82 1.82-10.46 2.22-10.08 2.6h-.03V109l9.88-2.53 10.5-2.23 10.86-1.84 11.14-1.4 11.36-.96.88-.04z"
+       fill="#333"
+       id="path1617" />
+    <path
+       d="M360.5 258.5v.5h-1v-.53zM558.36 100.05l-14.12 5.07-.28-9.26z"
+       fill="#333"
+       id="path1619" />
+    <path
+       d="M559.97 100l-16.2 5.83-.34-10.65zm-15.25 4.42l12.02-4.32-12.26-3.57z"
+       fill="#333"
+       id="path1621" />
+    <g
+       id="g1631">
+      <use
+         xlink:href="#L"
+         transform="matrix(1,0,0,1,361.1521751838508,106.39627993318186) translate(27.955000000000005 14.4)"
+         id="use1623" />
+      <use
+         xlink:href="#P"
+         transform="matrix(1,0,0,1,361.1521751838508,106.39627993318186) translate(23.430000000000007 36)"
+         id="use1625" />
+      <use
+         xlink:href="#Q"
+         transform="matrix(1,0,0,1,361.1521751838508,106.39627993318186) translate(83.43 36)"
+         id="use1627" />
+      <use
+         xlink:href="#R"
+         transform="matrix(1,0,0,1,361.1521751838508,106.39627993318186) translate(0.005000000000002558 57.6)"
+         id="use1629" />
+    </g>
+    <path
+       d="M559.97 60h80.06v80h-80.06z"
+       fill="url(#S)"
+       id="path1633" />
+    <g
+       id="g1637"
+       transform="translate(-365.74988,1.2364198)">
+      <path
+         d="m 1298.33,153 v 31 h 8.34 l -16.67,15 -16.67,-15 h 8.34 v -31 z"
+         stroke="#000000"
+         stroke-opacity="0"
+         stroke-width="2"
+         fill="#50b5e8"
+         id="path1635" />
+    </g>
+    <defs
+       id="defs2212">
+      <image
+         width="1"
+         height="1"
+         id="aU"
+         xlink:href="data:image/png;base64,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"
+         preserveAspectRatio="none" />
+      <image
+         width="1"
+         height="1"
+         id="aO"
+         xlink:href="data:image/png;base64,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"
+         preserveAspectRatio="none" />
+      <path
+         d="M63-220v92h138v28H63V0H30v-248h175v28H63"
+         id="T" />
+      <path
+         d="M100-194c63 0 86 42 84 106H49c0 40 14 67 53 68 26 1 43-12 49-29l28 8c-11 28-37 45-77 45C44 4 14-33 15-96c1-61 26-98 85-98zm52 81c6-60-76-77-97-28-3 7-6 17-6 28h103"
+         id="U" />
+      <path
+         d="M141-36C126-15 110 5 73 4 37 3 15-17 15-53c-1-64 63-63 125-63 3-35-9-54-41-54-24 1-41 7-42 31l-33-3c5-37 33-52 76-52 45 0 72 20 72 64v82c-1 20 7 32 28 27v20c-31 9-61-2-59-35zM48-53c0 20 12 33 32 33 41-3 63-29 60-74-43 2-92-5-92 41"
+         id="V" />
+      <path
+         d="M59-47c-2 24 18 29 38 22v24C64 9 27 4 27-40v-127H5v-23h24l9-43h21v43h35v23H59v120"
+         id="W" />
+      <path
+         d="M84 4C-5 8 30-112 23-190h32v120c0 31 7 50 39 49 72-2 45-101 50-169h31l1 190h-30c-1-10 1-25-2-33-11 22-28 36-60 37"
+         id="X" />
+      <path
+         d="M114-163C36-179 61-72 57 0H25l-1-190h30c1 12-1 29 2 39 6-27 23-49 58-41v29"
+         id="Y" />
+      <path
+         d="M197 0v-115H63V0H30v-248h33v105h134v-105h34V0h-34"
+         id="Z" />
+      <path
+         d="M115-194c53 0 69 39 70 98 0 66-23 100-70 100C84 3 66-7 56-30L54 0H23l1-261h32v101c10-23 28-34 59-34zm-8 174c40 0 45-34 45-75 0-40-5-75-45-74-42 0-51 32-51 76 0 43 10 73 51 73"
+         id="aa" />
+      <g
+         id="a">
+        <use
+           transform="matrix(0.05,0,0,0.05,0,0)"
+           xlink:href="#T"
+           id="use1649" />
+        <use
+           transform="matrix(0.05,0,0,0.05,10.950000000000001,0)"
+           xlink:href="#U"
+           id="use1651" />
+        <use
+           transform="matrix(0.05,0,0,0.05,20.950000000000003,0)"
+           xlink:href="#V"
+           id="use1653" />
+        <use
+           transform="matrix(0.05,0,0,0.05,30.950000000000003,0)"
+           xlink:href="#W"
+           id="use1655" />
+        <use
+           transform="matrix(0.05,0,0,0.05,35.95,0)"
+           xlink:href="#X"
+           id="use1657" />
+        <use
+           transform="matrix(0.05,0,0,0.05,45.95,0)"
+           xlink:href="#Y"
+           id="use1659" />
+        <use
+           transform="matrix(0.05,0,0,0.05,51.900000000000006,0)"
+           xlink:href="#U"
+           id="use1661" />
+        <use
+           transform="matrix(0.05,0,0,0.05,61.900000000000006,0)"
+           xlink:href="#Z"
+           id="use1663" />
+        <use
+           transform="matrix(0.05,0,0,0.05,74.85000000000001,0)"
+           xlink:href="#X"
+           id="use1665" />
+        <use
+           transform="matrix(0.05,0,0,0.05,84.85000000000001,0)"
+           xlink:href="#aa"
+           id="use1667" />
+      </g>
+      <path
+         d="M137-103V0h-34v-103L8-248h37l75 118 75-118h37"
+         id="ab" />
+      <path
+         d="M100-194c62-1 85 37 85 99 1 63-27 99-86 99S16-35 15-95c0-66 28-99 85-99zM99-20c44 1 53-31 53-75 0-43-8-75-51-75s-53 32-53 75 10 74 51 75"
+         id="ac" />
+      <g
+         id="b">
+        <use
+           transform="matrix(0.05,0,0,0.05,0,0)"
+           xlink:href="#ab"
+           id="use1672" />
+        <use
+           transform="matrix(0.05,0,0,0.05,10.35,0)"
+           xlink:href="#ac"
+           id="use1674" />
+        <use
+           transform="matrix(0.05,0,0,0.05,20.35,0)"
+           xlink:href="#X"
+           id="use1676" />
+        <use
+           transform="matrix(0.05,0,0,0.05,30.35,0)"
+           xlink:href="#Y"
+           id="use1678" />
+      </g>
+      <path
+         d="M205 0l-28-72H64L36 0H1l101-248h38L239 0h-34zm-38-99l-47-123c-12 45-31 82-46 123h93"
+         id="ad" />
+      <path
+         d="M115-194c55 1 70 41 70 98S169 2 115 4C84 4 66-9 55-30l1 105H24l-1-265h31l2 30c10-21 28-34 59-34zm-8 174c40 0 45-34 45-75s-6-73-45-74c-42 0-51 32-51 76 0 43 10 73 51 73"
+         id="ae" />
+      <path
+         d="M24 0v-261h32V0H24"
+         id="af" />
+      <path
+         d="M24-231v-30h32v30H24zM24 0v-190h32V0H24"
+         id="ag" />
+      <path
+         d="M96-169c-40 0-48 33-48 73s9 75 48 75c24 0 41-14 43-38l32 2c-6 37-31 61-74 61-59 0-76-41-82-99-10-93 101-131 147-64 4 7 5 14 7 22l-32 3c-4-21-16-35-41-35"
+         id="ah" />
+      <path
+         d="M117-194c89-4 53 116 60 194h-32v-121c0-31-8-49-39-48C34-167 62-67 57 0H25l-1-190h30c1 10-1 24 2 32 11-22 29-35 61-36"
+         id="ai" />
+      <g
+         id="c">
+        <use
+           transform="matrix(0.05,0,0,0.05,0,0)"
+           xlink:href="#ad"
+           id="use1687" />
+        <use
+           transform="matrix(0.05,0,0,0.05,12,0)"
+           xlink:href="#ae"
+           id="use1689" />
+        <use
+           transform="matrix(0.05,0,0,0.05,22,0)"
+           xlink:href="#ae"
+           id="use1691" />
+        <use
+           transform="matrix(0.05,0,0,0.05,32,0)"
+           xlink:href="#af"
+           id="use1693" />
+        <use
+           transform="matrix(0.05,0,0,0.05,35.95,0)"
+           xlink:href="#ag"
+           id="use1695" />
+        <use
+           transform="matrix(0.05,0,0,0.05,39.900000000000006,0)"
+           xlink:href="#ah"
+           id="use1697" />
+        <use
+           transform="matrix(0.05,0,0,0.05,48.900000000000006,0)"
+           xlink:href="#V"
+           id="use1699" />
+        <use
+           transform="matrix(0.05,0,0,0.05,58.900000000000006,0)"
+           xlink:href="#W"
+           id="use1701" />
+        <use
+           transform="matrix(0.05,0,0,0.05,63.900000000000006,0)"
+           xlink:href="#ag"
+           id="use1703" />
+        <use
+           transform="matrix(0.05,0,0,0.05,67.85000000000001,0)"
+           xlink:href="#ac"
+           id="use1705" />
+        <use
+           transform="matrix(0.05,0,0,0.05,77.85000000000001,0)"
+           xlink:href="#ai"
+           id="use1707" />
+      </g>
+      <path
+         d="M24 0v-248h195v40H76v63h132v40H76v65h150V0H24"
+         id="aj" />
+      <path
+         d="M24-248c120-7 223 5 221 122C244-46 201 0 124 0H24v-248zM76-40c74 7 117-18 117-86 0-67-45-88-117-82v168"
+         id="ak" />
+      <path
+         d="M67-125c0 54 23 88 75 88 28 0 53-7 68-21v-34h-60v-39h108v91C232-14 192 4 140 4 58 4 20-42 15-125 8-236 126-280 215-234c19 10 29 26 37 47l-47 15c-11-23-29-39-63-39-53 1-75 33-75 86"
+         id="al" />
+      <g
+         id="d">
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,0,0)"
+           xlink:href="#aj"
+           id="use1713" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,14.814814814814813,0)"
+           xlink:href="#ak"
+           id="use1715" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,30.80246913580247,0)"
+           xlink:href="#al"
+           id="use1717" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,48.08641975308642,0)"
+           xlink:href="#aj"
+           id="use1719" />
+      </g>
+      <path
+         d="M199 0l-22-63H83L61 0H9l90-248h61L250 0h-51zm-33-102l-36-108c-10 38-24 72-36 108h72"
+         id="am" />
+      <path
+         d="M24-248c93 1 206-16 204 79-1 75-69 88-152 82V0H24v-248zm52 121c47 0 100 7 100-41 0-47-54-39-100-39v80"
+         id="an" />
+      <path
+         d="M24 0v-248h52V0H24"
+         id="ao" />
+      <g
+         id="e">
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,0,0)"
+           xlink:href="#am"
+           id="use1725" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,15.987654320987653,0)"
+           xlink:href="#an"
+           id="use1727" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,30.80246913580247,0)"
+           xlink:href="#ao"
+           id="use1729" />
+      </g>
+      <path
+         d="M175 0L67-191c6 58 2 128 3 191H24v-248h59L193-55c-6-58-2-129-3-193h46V0h-61"
+         id="ap" />
+      <path
+         d="M136-208V0H84v-208H4v-40h212v40h-80"
+         id="aq" />
+      <path
+         d="M169-182c-1-43-94-46-97-3 18 66 151 10 154 114 3 95-165 93-204 36-6-8-10-19-12-30l50-8c3 46 112 56 116 5-17-69-150-10-154-114-4-87 153-88 188-35 5 8 8 18 10 28"
+         id="ar" />
+      <g
+         id="f">
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,0,0)"
+           xlink:href="#ap"
+           id="use1735" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,15.987654320987653,0)"
+           xlink:href="#am"
+           id="use1737" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,30.30864197530864,0)"
+           xlink:href="#aq"
+           id="use1739" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,43.82716049382716,0)"
+           xlink:href="#ar"
+           id="use1741" />
+      </g>
+      <path
+         d="M266 0h-40l-56-210L115 0H75L2-248h35L96-30l15-64 43-154h32l59 218 59-218h35"
+         id="as" />
+      <g
+         id="g">
+        <use
+           transform="matrix(0.05,0,0,0.05,0,0)"
+           xlink:href="#as"
+           id="use1745" />
+        <use
+           transform="matrix(0.05,0,0,0.05,16.599999999999998,0)"
+           xlink:href="#U"
+           id="use1747" />
+        <use
+           transform="matrix(0.05,0,0,0.05,26.599999999999994,0)"
+           xlink:href="#aa"
+           id="use1749" />
+      </g>
+      <path
+         d="M185-189c-5-48-123-54-124 2 14 75 158 14 163 119 3 78-121 87-175 55-17-10-28-26-33-46l33-7c5 56 141 63 141-1 0-78-155-14-162-118-5-82 145-84 179-34 5 7 8 16 11 25"
+         id="at" />
+      <path
+         d="M30-248c118-7 216 8 213 122C240-48 200 0 122 0H30v-248zM63-27c89 8 146-16 146-99s-60-101-146-95v194"
+         id="au" />
+      <path
+         d="M194 0L95-120 63-95V0H30v-248h33v124l119-124h40L117-140 236 0h-42"
+         id="av" />
+      <g
+         id="h">
+        <use
+           transform="matrix(0.05,0,0,0.05,0,0)"
+           xlink:href="#at"
+           id="use1755" />
+        <use
+           transform="matrix(0.05,0,0,0.05,12,0)"
+           xlink:href="#au"
+           id="use1757" />
+        <use
+           transform="matrix(0.05,0,0,0.05,24.950000000000003,0)"
+           xlink:href="#av"
+           id="use1759" />
+      </g>
+      <path
+         d="M240 0l2-218c-23 76-54 145-80 218h-23L58-218 59 0H30v-248h44l77 211c21-75 51-140 76-211h43V0h-30"
+         id="aw" />
+      <g
+         id="i">
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,0,0)"
+           xlink:href="#aw"
+           id="use1763" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,18.456790123456788,0)"
+           xlink:href="#V"
+           id="use1765" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,30.80246913580247,0)"
+           xlink:href="#ag"
+           id="use1767" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,35.67901234567901,0)"
+           xlink:href="#ai"
+           id="use1769" />
+      </g>
+      <path
+         d="M233-177c-1 41-23 64-60 70L243 0h-38l-65-103H63V0H30v-248c88 3 205-21 203 71zM63-129c60-2 137 13 137-47 0-61-80-42-137-45v92"
+         id="ax" />
+      <path
+         d="M135-143c-3-34-86-38-87 0 15 53 115 12 119 90S17 21 10-45l28-5c4 36 97 45 98 0-10-56-113-15-118-90-4-57 82-63 122-42 12 7 21 19 24 35"
+         id="ay" />
+      <path
+         d="M179-190L93 31C79 59 56 82 12 73V49c39 6 53-20 64-50L1-190h34L92-34l54-156h33"
+         id="az" />
+      <g
+         id="j">
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,0,0)"
+           xlink:href="#ax"
+           id="use1775" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,15.987654320987653,0)"
+           xlink:href="#U"
+           id="use1777" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,28.333333333333332,0)"
+           xlink:href="#ae"
+           id="use1779" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,40.67901234567901,0)"
+           xlink:href="#ac"
+           id="use1781" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,53.02469135802469,0)"
+           xlink:href="#ay"
+           id="use1783" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,64.1358024691358,0)"
+           xlink:href="#ag"
+           id="use1785" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,69.01234567901234,0)"
+           xlink:href="#W"
+           id="use1787" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,75.18518518518518,0)"
+           xlink:href="#ac"
+           id="use1789" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,87.53086419753086,0)"
+           xlink:href="#Y"
+           id="use1791" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,94.87654320987654,0)"
+           xlink:href="#az"
+           id="use1793" />
+      </g>
+      <path
+         d="M108 0H70L1-190h34L89-25l56-165h34"
+         id="aA" />
+      <g
+         id="k">
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,0,0)"
+           xlink:href="#at"
+           id="use1797" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,14.814814814814813,0)"
+           xlink:href="#U"
+           id="use1799" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,27.160493827160494,0)"
+           xlink:href="#Y"
+           id="use1801" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,34.50617283950617,0)"
+           xlink:href="#aA"
+           id="use1803" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,45.61728395061728,0)"
+           xlink:href="#U"
+           id="use1805" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,57.962962962962955,0)"
+           xlink:href="#Y"
+           id="use1807" />
+      </g>
+      <path
+         d="M30-248c87 1 191-15 191 75 0 78-77 80-158 76V0H30v-248zm33 125c57 0 124 11 124-50 0-59-68-47-124-48v98"
+         id="aB" />
+      <path
+         d="M33 0v-248h34V0H33"
+         id="aC" />
+      <g
+         id="l">
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,0,0)"
+           xlink:href="#ad"
+           id="use1812" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,14.814814814814813,0)"
+           xlink:href="#aB"
+           id="use1814" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,29.629629629629626,0)"
+           xlink:href="#aC"
+           id="use1816" />
+      </g>
+      <g
+         id="m">
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,0,0)"
+           xlink:href="#T"
+           id="use1819" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,13.518518518518517,0)"
+           xlink:href="#U"
+           id="use1821" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,25.864197530864196,0)"
+           xlink:href="#V"
+           id="use1823" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,38.20987654320987,0)"
+           xlink:href="#W"
+           id="use1825" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,44.382716049382715,0)"
+           xlink:href="#X"
+           id="use1827" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,56.72839506172839,0)"
+           xlink:href="#Y"
+           id="use1829" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,64.07407407407408,0)"
+           xlink:href="#U"
+           id="use1831" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,76.41975308641976,0)"
+           xlink:href="#Z"
+           id="use1833" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,92.40740740740742,0)"
+           xlink:href="#X"
+           id="use1835" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,104.7530864197531,0)"
+           xlink:href="#aa"
+           id="use1837" />
+      </g>
+      <g
+         id="n">
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,0,0)"
+           xlink:href="#as"
+           id="use1840" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,20.493827160493826,0)"
+           xlink:href="#U"
+           id="use1842" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,32.839506172839506,0)"
+           xlink:href="#aa"
+           id="use1844" />
+      </g>
+      <g
+         id="o">
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,0,0)"
+           xlink:href="#ad"
+           id="use1847" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,14.814814814814813,0)"
+           xlink:href="#ae"
+           id="use1849" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,27.160493827160494,0)"
+           xlink:href="#ae"
+           id="use1851" />
+      </g>
+      <linearGradient
+         gradientUnits="userSpaceOnUse"
+         id="p"
+         x1="920"
+         y1="420"
+         x2="920"
+         y2="494.8">
+        <stop
+           offset="0%"
+           stop-color="#87d2f0"
+           id="stop1854" />
+        <stop
+           offset="50.75%"
+           stop-color="#50b5e8"
+           id="stop1856" />
+        <stop
+           offset="100%"
+           stop-color="#50b5e8"
+           id="stop1858" />
+      </linearGradient>
+      <g
+         id="q">
+        <use
+           transform="matrix(0.05,0,0,0.05,0,0)"
+           xlink:href="#T"
+           id="use1861" />
+        <use
+           transform="matrix(0.05,0,0,0.05,10.950000000000001,0)"
+           xlink:href="#U"
+           id="use1863" />
+        <use
+           transform="matrix(0.05,0,0,0.05,20.950000000000003,0)"
+           xlink:href="#V"
+           id="use1865" />
+        <use
+           transform="matrix(0.05,0,0,0.05,30.950000000000003,0)"
+           xlink:href="#W"
+           id="use1867" />
+        <use
+           transform="matrix(0.05,0,0,0.05,35.95,0)"
+           xlink:href="#X"
+           id="use1869" />
+        <use
+           transform="matrix(0.05,0,0,0.05,45.95,0)"
+           xlink:href="#Y"
+           id="use1871" />
+        <use
+           transform="matrix(0.05,0,0,0.05,51.900000000000006,0)"
+           xlink:href="#U"
+           id="use1873" />
+      </g>
+      <path
+         d="M137 0h-34L2-248h35l83 218 83-218h36"
+         id="aD" />
+      <g
+         id="r">
+        <use
+           transform="matrix(0.05,0,0,0.05,0,0)"
+           xlink:href="#aD"
+           id="use1877" />
+        <use
+           transform="matrix(0.05,0,0,0.05,10.65,0)"
+           xlink:href="#V"
+           id="use1879" />
+        <use
+           transform="matrix(0.05,0,0,0.05,20.65,0)"
+           xlink:href="#af"
+           id="use1881" />
+        <use
+           transform="matrix(0.05,0,0,0.05,24.599999999999998,0)"
+           xlink:href="#X"
+           id="use1883" />
+        <use
+           transform="matrix(0.05,0,0,0.05,34.599999999999994,0)"
+           xlink:href="#U"
+           id="use1885" />
+      </g>
+      <path
+         d="M127-220V0H93v-220H8v-28h204v28h-85"
+         id="aE" />
+      <path
+         d="M140-251c81 0 123 46 123 126C263-46 219 4 140 4 59 4 17-45 17-125s42-126 123-126zm0 227c63 0 89-41 89-101s-29-99-89-99c-61 0-89 39-89 99S79-25 140-24"
+         id="aF" />
+      <path
+         d="M212-179c-10-28-35-45-73-45-59 0-87 40-87 99 0 60 29 101 89 101 43 0 62-24 78-52l27 14C228-24 195 4 139 4 59 4 22-46 18-125c-6-104 99-153 187-111 19 9 31 26 39 46"
+         id="aG" />
+      <g
+         id="s">
+        <use
+           transform="matrix(0.05,0,0,0.05,0,0)"
+           xlink:href="#aE"
+           id="use1891" />
+        <use
+           transform="matrix(0.05,0,0,0.05,10.600000000000001,0)"
+           xlink:href="#aF"
+           id="use1893" />
+        <use
+           transform="matrix(0.05,0,0,0.05,24.6,0)"
+           xlink:href="#aB"
+           id="use1895" />
+        <use
+           transform="matrix(0.05,0,0,0.05,36.6,0)"
+           xlink:href="#aC"
+           id="use1897" />
+        <use
+           transform="matrix(0.05,0,0,0.05,41.6,0)"
+           xlink:href="#aG"
+           id="use1899" />
+      </g>
+      <path
+         d="M30 0v-248h187v28H63v79h144v27H63v87h162V0H30"
+         id="aH" />
+      <g
+         id="t">
+        <use
+           transform="matrix(0.05,0,0,0.05,0,0)"
+           xlink:href="#at"
+           id="use1903" />
+        <use
+           transform="matrix(0.05,0,0,0.05,12,0)"
+           xlink:href="#at"
+           id="use1905" />
+        <use
+           transform="matrix(0.05,0,0,0.05,24,0)"
+           xlink:href="#aH"
+           id="use1907" />
+      </g>
+      <path
+         d="M160-131c35 5 61 23 61 61C221 17 115-2 30 0v-248c76 3 177-17 177 60 0 33-19 50-47 57zm-97-11c50-1 110 9 110-42 0-47-63-36-110-37v79zm0 115c55-2 124 14 124-45 0-56-70-42-124-44v89"
+         id="aI" />
+      <path
+         d="M143 0L79-87 56-68V0H24v-261h32v163l83-92h37l-77 82L181 0h-38"
+         id="aJ" />
+      <path
+         d="M85-194c31 0 48 13 60 33l-1-100h32l1 261h-30c-2-10 0-23-3-31C134-8 116 4 85 4 32 4 16-35 15-94c0-66 23-100 70-100zm9 24c-40 0-46 34-46 75 0 40 6 74 45 74 42 0 51-32 51-76 0-42-9-74-50-73"
+         id="aK" />
+      <g
+         id="u">
+        <use
+           transform="matrix(0.05,0,0,0.05,0,0)"
+           xlink:href="#aI"
+           id="use1913" />
+        <use
+           transform="matrix(0.05,0,0,0.05,12,0)"
+           xlink:href="#V"
+           id="use1915" />
+        <use
+           transform="matrix(0.05,0,0,0.05,22,0)"
+           xlink:href="#ah"
+           id="use1917" />
+        <use
+           transform="matrix(0.05,0,0,0.05,31,0)"
+           xlink:href="#aJ"
+           id="use1919" />
+        <use
+           transform="matrix(0.05,0,0,0.05,40,0)"
+           xlink:href="#U"
+           id="use1921" />
+        <use
+           transform="matrix(0.05,0,0,0.05,50,0)"
+           xlink:href="#ai"
+           id="use1923" />
+        <use
+           transform="matrix(0.05,0,0,0.05,60,0)"
+           xlink:href="#aK"
+           id="use1925" />
+      </g>
+      <g
+         id="v">
+        <use
+           transform="matrix(0.05,0,0,0.05,0,0)"
+           xlink:href="#aw"
+           id="use1928" />
+        <use
+           transform="matrix(0.05,0,0,0.05,14.950000000000001,0)"
+           xlink:href="#ac"
+           id="use1930" />
+        <use
+           transform="matrix(0.05,0,0,0.05,24.950000000000003,0)"
+           xlink:href="#aa"
+           id="use1932" />
+        <use
+           transform="matrix(0.05,0,0,0.05,34.95,0)"
+           xlink:href="#ag"
+           id="use1934" />
+        <use
+           transform="matrix(0.05,0,0,0.05,38.900000000000006,0)"
+           xlink:href="#af"
+           id="use1936" />
+        <use
+           transform="matrix(0.05,0,0,0.05,42.85000000000001,0)"
+           xlink:href="#U"
+           id="use1938" />
+      </g>
+      <g
+         id="w">
+        <use
+           transform="matrix(0.05,0,0,0.05,0,0)"
+           xlink:href="#ad"
+           id="use1941" />
+        <use
+           transform="matrix(0.05,0,0,0.05,12,0)"
+           xlink:href="#ae"
+           id="use1943" />
+        <use
+           transform="matrix(0.05,0,0,0.05,22,0)"
+           xlink:href="#ae"
+           id="use1945" />
+        <use
+           transform="matrix(0.05,0,0,0.05,32,0)"
+           xlink:href="#af"
+           id="use1947" />
+        <use
+           transform="matrix(0.05,0,0,0.05,35.95,0)"
+           xlink:href="#ag"
+           id="use1949" />
+        <use
+           transform="matrix(0.05,0,0,0.05,39.900000000000006,0)"
+           xlink:href="#ah"
+           id="use1951" />
+        <use
+           transform="matrix(0.05,0,0,0.05,48.900000000000006,0)"
+           xlink:href="#V"
+           id="use1953" />
+        <use
+           transform="matrix(0.05,0,0,0.05,58.900000000000006,0)"
+           xlink:href="#W"
+           id="use1955" />
+        <use
+           transform="matrix(0.05,0,0,0.05,63.900000000000006,0)"
+           xlink:href="#ag"
+           id="use1957" />
+        <use
+           transform="matrix(0.05,0,0,0.05,67.85000000000001,0)"
+           xlink:href="#ac"
+           id="use1959" />
+        <use
+           transform="matrix(0.05,0,0,0.05,77.85000000000001,0)"
+           xlink:href="#ai"
+           id="use1961" />
+      </g>
+      <g
+         id="x">
+        <use
+           transform="matrix(0.05,0,0,0.05,0,0)"
+           xlink:href="#at"
+           id="use1964" />
+        <use
+           transform="matrix(0.05,0,0,0.05,12,0)"
+           xlink:href="#at"
+           id="use1966" />
+        <use
+           transform="matrix(0.05,0,0,0.05,24,0)"
+           xlink:href="#aH"
+           id="use1968" />
+      </g>
+      <path
+         d="M143 4C61 4 22-44 18-125c-5-107 100-154 193-111 17 8 29 25 37 43l-32 9c-13-25-37-40-76-40-61 0-88 39-88 99 0 61 29 100 91 101 35 0 62-11 79-27v-45h-74v-28h105v86C228-13 192 4 143 4"
+         id="aL" />
+      <g
+         id="y">
+        <use
+           transform="matrix(0.05,0,0,0.05,0,0)"
+           xlink:href="#aL"
+           id="use1972" />
+        <use
+           transform="matrix(0.05,0,0,0.05,14,0)"
+           xlink:href="#aH"
+           id="use1974" />
+        <use
+           transform="matrix(0.05,0,0,0.05,26,0)"
+           xlink:href="#aE"
+           id="use1976" />
+      </g>
+      <g
+         id="z">
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,0,0)"
+           xlink:href="#au"
+           id="use1979" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,15.987654320987653,0)"
+           xlink:href="#V"
+           id="use1981" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,28.333333333333332,0)"
+           xlink:href="#W"
+           id="use1983" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,34.50617283950617,0)"
+           xlink:href="#V"
+           id="use1985" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,46.85185185185185,0)"
+           xlink:href="#aa"
+           id="use1987" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,59.197530864197525,0)"
+           xlink:href="#V"
+           id="use1989" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,71.5432098765432,0)"
+           xlink:href="#ay"
+           id="use1991" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,82.65432098765432,0)"
+           xlink:href="#U"
+           id="use1993" />
+      </g>
+      <g
+         id="A">
+        <use
+           transform="matrix(0.05,0,0,0.05,0,0)"
+           xlink:href="#ax"
+           id="use1996" />
+        <use
+           transform="matrix(0.05,0,0,0.05,12.950000000000001,0)"
+           xlink:href="#aH"
+           id="use1998" />
+        <use
+           transform="matrix(0.05,0,0,0.05,24.950000000000003,0)"
+           xlink:href="#at"
+           id="use2000" />
+        <use
+           transform="matrix(0.05,0,0,0.05,36.95,0)"
+           xlink:href="#aE"
+           id="use2002" />
+      </g>
+      <path
+         d="M106-169C34-169 62-67 57 0H25v-261h32l-1 103c12-21 28-36 61-36 89 0 53 116 60 194h-32v-121c2-32-8-49-39-48"
+         id="aM" />
+      <path
+         d="M177-190C167-65 218 103 67 71c-23-6-38-20-44-43l32-5c15 47 100 32 89-28v-30C133-14 115 1 83 1 29 1 15-40 15-95c0-56 16-97 71-98 29-1 48 16 59 35 1-10 0-23 2-32h30zM94-22c36 0 50-32 50-73 0-42-14-75-50-75-39 0-46 34-46 75s6 73 46 73"
+         id="aN" />
+      <g
+         id="B">
+        <use
+           transform="matrix(0.05,0,0,0.05,0,0)"
+           xlink:href="#aG"
+           id="use2007" />
+        <use
+           transform="matrix(0.05,0,0,0.05,12.950000000000001,0)"
+           xlink:href="#aM"
+           id="use2009" />
+        <use
+           transform="matrix(0.05,0,0,0.05,22.950000000000003,0)"
+           xlink:href="#V"
+           id="use2011" />
+        <use
+           transform="matrix(0.05,0,0,0.05,32.95,0)"
+           xlink:href="#ai"
+           id="use2013" />
+        <use
+           transform="matrix(0.05,0,0,0.05,42.95,0)"
+           xlink:href="#aN"
+           id="use2015" />
+        <use
+           transform="matrix(0.05,0,0,0.05,52.95,0)"
+           xlink:href="#U"
+           id="use2017" />
+      </g>
+      <g
+         id="C">
+        <use
+           transform="matrix(0.05,0,0,0.05,0,0)"
+           xlink:href="#aD"
+           id="use2020" />
+        <use
+           transform="matrix(0.05,0,0,0.05,10.65,0)"
+           xlink:href="#V"
+           id="use2022" />
+        <use
+           transform="matrix(0.05,0,0,0.05,20.65,0)"
+           xlink:href="#af"
+           id="use2024" />
+        <use
+           transform="matrix(0.05,0,0,0.05,24.599999999999998,0)"
+           xlink:href="#X"
+           id="use2026" />
+        <use
+           transform="matrix(0.05,0,0,0.05,34.599999999999994,0)"
+           xlink:href="#U"
+           id="use2028" />
+      </g>
+      <pattern
+         id="D"
+         patternUnits="userSpaceOnUse"
+         x="1226"
+         y="20"
+         width="128"
+         height="128">
+        <use
+           xlink:href="#aO"
+           transform="translate(0, 0) scale(128,128)"
+           id="use2031" />
+      </pattern>
+      <pattern
+         id="E"
+         patternUnits="userSpaceOnUse"
+         x="660"
+         y="20"
+         width="128"
+         height="128">
+        <use
+           xlink:href="#aO"
+           transform="translate(0, 0) scale(128,128)"
+           id="use2034" />
+      </pattern>
+      <linearGradient
+         gradientUnits="userSpaceOnUse"
+         id="F"
+         x1="920"
+         y1="250.56"
+         x2="920"
+         y2="325.36">
+        <stop
+           offset="0%"
+           stop-color="#87d2f0"
+           id="stop2037" />
+        <stop
+           offset="50.75%"
+           stop-color="#50b5e8"
+           id="stop2039" />
+        <stop
+           offset="100%"
+           stop-color="#50b5e8"
+           id="stop2041" />
+      </linearGradient>
+      <g
+         id="G">
+        <use
+           transform="matrix(0.05,0,0,0.05,0,0)"
+           xlink:href="#ad"
+           id="use2044" />
+        <use
+           transform="matrix(0.05,0,0,0.05,12,0)"
+           xlink:href="#af"
+           id="use2046" />
+        <use
+           transform="matrix(0.05,0,0,0.05,15.949999999999998,0)"
+           xlink:href="#af"
+           id="use2048" />
+      </g>
+      <g
+         id="H">
+        <use
+           transform="matrix(0.05,0,0,0.05,0,0)"
+           xlink:href="#aD"
+           id="use2051" />
+        <use
+           transform="matrix(0.05,0,0,0.05,10.65,0)"
+           xlink:href="#V"
+           id="use2053" />
+        <use
+           transform="matrix(0.05,0,0,0.05,20.65,0)"
+           xlink:href="#af"
+           id="use2055" />
+        <use
+           transform="matrix(0.05,0,0,0.05,24.599999999999998,0)"
+           xlink:href="#X"
+           id="use2057" />
+        <use
+           transform="matrix(0.05,0,0,0.05,34.599999999999994,0)"
+           xlink:href="#U"
+           id="use2059" />
+        <use
+           transform="matrix(0.05,0,0,0.05,44.599999999999994,0)"
+           xlink:href="#ay"
+           id="use2061" />
+      </g>
+      <g
+         id="I">
+        <use
+           transform="matrix(0.05,0,0,0.05,0,0)"
+           xlink:href="#aE"
+           id="use2064" />
+        <use
+           transform="matrix(0.05,0,0,0.05,10.600000000000001,0)"
+           xlink:href="#aF"
+           id="use2066" />
+        <use
+           transform="matrix(0.05,0,0,0.05,24.6,0)"
+           xlink:href="#aB"
+           id="use2068" />
+        <use
+           transform="matrix(0.05,0,0,0.05,36.6,0)"
+           xlink:href="#aC"
+           id="use2070" />
+        <use
+           transform="matrix(0.05,0,0,0.05,41.6,0)"
+           xlink:href="#aG"
+           id="use2072" />
+      </g>
+      <g
+         id="J">
+        <use
+           transform="matrix(0.05,0,0,0.05,0,0)"
+           xlink:href="#au"
+           id="use2075" />
+        <use
+           transform="matrix(0.05,0,0,0.05,12.950000000000001,0)"
+           xlink:href="#U"
+           id="use2077" />
+        <use
+           transform="matrix(0.05,0,0,0.05,22.950000000000003,0)"
+           xlink:href="#aA"
+           id="use2079" />
+      </g>
+      <path
+         d="M210-169c-67 3-38 105-44 169h-31v-121c0-29-5-50-35-48C34-165 62-65 56 0H25l-1-190h30c1 10-1 24 2 32 10-44 99-50 107 0 11-21 27-35 58-36 85-2 47 119 55 194h-31v-121c0-29-5-49-35-48"
+         id="aP" />
+      <g
+         id="K">
+        <use
+           transform="matrix(0.05,0,0,0.05,0,0)"
+           xlink:href="#aE"
+           id="use2083" />
+        <use
+           transform="matrix(0.05,0,0,0.05,8.950000000000001,0)"
+           xlink:href="#U"
+           id="use2085" />
+        <use
+           transform="matrix(0.05,0,0,0.05,18.950000000000003,0)"
+           xlink:href="#V"
+           id="use2087" />
+        <use
+           transform="matrix(0.05,0,0,0.05,28.950000000000003,0)"
+           xlink:href="#aP"
+           id="use2089" />
+        <use
+           transform="matrix(0.05,0,0,0.05,43.900000000000006,0)"
+           xlink:href="#ay"
+           id="use2091" />
+      </g>
+      <g
+         id="L">
+        <use
+           transform="matrix(0.05,0,0,0.05,0,0)"
+           xlink:href="#ad"
+           id="use2094" />
+        <use
+           transform="matrix(0.05,0,0,0.05,12,0)"
+           xlink:href="#ai"
+           id="use2096" />
+        <use
+           transform="matrix(0.05,0,0,0.05,22,0)"
+           xlink:href="#V"
+           id="use2098" />
+        <use
+           transform="matrix(0.05,0,0,0.05,32,0)"
+           xlink:href="#af"
+           id="use2100" />
+        <use
+           transform="matrix(0.05,0,0,0.05,35.95,0)"
+           xlink:href="#az"
+           id="use2102" />
+        <use
+           transform="matrix(0.05,0,0,0.05,44.95,0)"
+           xlink:href="#W"
+           id="use2104" />
+        <use
+           transform="matrix(0.05,0,0,0.05,49.95,0)"
+           xlink:href="#ag"
+           id="use2106" />
+        <use
+           transform="matrix(0.05,0,0,0.05,53.900000000000006,0)"
+           xlink:href="#ah"
+           id="use2108" />
+        <use
+           transform="matrix(0.05,0,0,0.05,62.900000000000006,0)"
+           xlink:href="#ay"
+           id="use2110" />
+      </g>
+      <g
+         id="M">
+        <use
+           transform="matrix(0.05,0,0,0.05,0,0)"
+           xlink:href="#aG"
+           id="use2113" />
+        <use
+           transform="matrix(0.05,0,0,0.05,12.950000000000001,0)"
+           xlink:href="#ac"
+           id="use2115" />
+        <use
+           transform="matrix(0.05,0,0,0.05,22.950000000000003,0)"
+           xlink:href="#ai"
+           id="use2117" />
+        <use
+           transform="matrix(0.05,0,0,0.05,32.95,0)"
+           xlink:href="#ay"
+           id="use2119" />
+        <use
+           transform="matrix(0.05,0,0,0.05,41.95,0)"
+           xlink:href="#X"
+           id="use2121" />
+        <use
+           transform="matrix(0.05,0,0,0.05,51.95,0)"
+           xlink:href="#aP"
+           id="use2123" />
+        <use
+           transform="matrix(0.05,0,0,0.05,66.9,0)"
+           xlink:href="#U"
+           id="use2125" />
+        <use
+           transform="matrix(0.05,0,0,0.05,76.9,0)"
+           xlink:href="#Y"
+           id="use2127" />
+        <use
+           transform="matrix(0.05,0,0,0.05,82.85000000000001,0)"
+           xlink:href="#ay"
+           id="use2129" />
+      </g>
+      <path
+         d="M67-125c0 53 21 87 73 88 37 1 54-22 65-47l45 17C233-25 199 4 140 4 58 4 20-42 15-125 8-235 124-281 211-232c18 10 29 29 36 50l-46 12c-8-25-30-41-62-41-52 0-71 34-72 86"
+         id="aQ" />
+      <path
+         d="M186 0v-106H76V0H24v-248h52v99h110v-99h50V0h-50"
+         id="aR" />
+      <g
+         id="N">
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,0,0)"
+           xlink:href="#aQ"
+           id="use2134" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,15.987654320987653,0)"
+           xlink:href="#am"
+           id="use2136" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,31.975308641975307,0)"
+           xlink:href="#aQ"
+           id="use2138" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,47.96296296296296,0)"
+           xlink:href="#aR"
+           id="use2140" />
+        <use
+           transform="matrix(0.06172839506172839,0,0,0.06172839506172839,63.95061728395061,0)"
+           xlink:href="#aj"
+           id="use2142" />
+      </g>
+      <g
+         id="O">
+        <use
+           transform="matrix(0.05,0,0,0.05,0,0)"
+           xlink:href="#aG"
+           id="use2145" />
+        <use
+           transform="matrix(0.05,0,0,0.05,12.950000000000001,0)"
+           xlink:href="#V"
+           id="use2147" />
+        <use
+           transform="matrix(0.05,0,0,0.05,22.950000000000003,0)"
+           xlink:href="#ah"
+           id="use2149" />
+        <use
+           transform="matrix(0.05,0,0,0.05,31.950000000000003,0)"
+           xlink:href="#aM"
+           id="use2151" />
+        <use
+           transform="matrix(0.05,0,0,0.05,41.95,0)"
+           xlink:href="#U"
+           id="use2153" />
+      </g>
+      <g
+         id="P">
+        <use
+           transform="matrix(0.05,0,0,0.05,0,0)"
+           xlink:href="#aH"
+           id="use2156" />
+        <use
+           transform="matrix(0.05,0,0,0.05,12,0)"
+           xlink:href="#aA"
+           id="use2158" />
+        <use
+           transform="matrix(0.05,0,0,0.05,21,0)"
+           xlink:href="#U"
+           id="use2160" />
+        <use
+           transform="matrix(0.05,0,0,0.05,31,0)"
+           xlink:href="#ai"
+           id="use2162" />
+        <use
+           transform="matrix(0.05,0,0,0.05,41,0)"
+           xlink:href="#W"
+           id="use2164" />
+        <use
+           transform="matrix(0.05,0,0,0.05,46,0)"
+           xlink:href="#ay"
+           id="use2166" />
+      </g>
+      <path
+         d="M101-234c-31-9-42 10-38 44h38v23H63V0H32v-167H5v-23h27c-7-52 17-82 69-68v24"
+         id="aS" />
+      <g
+         id="Q">
+        <use
+           transform="matrix(0.05,0,0,0.05,0,0)"
+           xlink:href="#aS"
+           id="use2170" />
+        <use
+           transform="matrix(0.05,0,0,0.05,5,0)"
+           xlink:href="#ac"
+           id="use2172" />
+        <use
+           transform="matrix(0.05,0,0,0.05,15,0)"
+           xlink:href="#Y"
+           id="use2174" />
+      </g>
+      <path
+         d="M141 0L90-78 38 0H4l68-98-65-92h35l48 74 47-74h35l-64 92 68 98h-35"
+         id="aT" />
+      <g
+         id="R">
+        <use
+           transform="matrix(0.05,0,0,0.05,0,0)"
+           xlink:href="#U"
+           id="use2178" />
+        <use
+           transform="matrix(0.05,0,0,0.05,10,0)"
+           xlink:href="#aT"
+           id="use2180" />
+        <use
+           transform="matrix(0.05,0,0,0.05,19,0)"
+           xlink:href="#ae"
+           id="use2182" />
+        <use
+           transform="matrix(0.05,0,0,0.05,29,0)"
+           xlink:href="#U"
+           id="use2184" />
+        <use
+           transform="matrix(0.05,0,0,0.05,39,0)"
+           xlink:href="#Y"
+           id="use2186" />
+        <use
+           transform="matrix(0.05,0,0,0.05,44.95,0)"
+           xlink:href="#ag"
+           id="use2188" />
+        <use
+           transform="matrix(0.05,0,0,0.05,48.900000000000006,0)"
+           xlink:href="#aP"
+           id="use2190" />
+        <use
+           transform="matrix(0.05,0,0,0.05,63.85,0)"
+           xlink:href="#U"
+           id="use2192" />
+        <use
+           transform="matrix(0.05,0,0,0.05,73.85000000000001,0)"
+           xlink:href="#ai"
+           id="use2194" />
+        <use
+           transform="matrix(0.05,0,0,0.05,83.85000000000001,0)"
+           xlink:href="#W"
+           id="use2196" />
+        <use
+           transform="matrix(0.05,0,0,0.05,88.85000000000001,0)"
+           xlink:href="#V"
+           id="use2198" />
+        <use
+           transform="matrix(0.05,0,0,0.05,98.85000000000001,0)"
+           xlink:href="#W"
+           id="use2200" />
+        <use
+           transform="matrix(0.05,0,0,0.05,103.85000000000001,0)"
+           xlink:href="#ag"
+           id="use2202" />
+        <use
+           transform="matrix(0.05,0,0,0.05,107.80000000000001,0)"
+           xlink:href="#ac"
+           id="use2204" />
+        <use
+           transform="matrix(0.05,0,0,0.05,117.80000000000001,0)"
+           xlink:href="#ai"
+           id="use2206" />
+      </g>
+      <pattern
+         id="S"
+         patternUnits="userSpaceOnUse"
+         x="559.97"
+         y="60"
+         width="80.05"
+         height="80">
+        <use
+           xlink:href="#aU"
+           transform="translate(0, 0) scale(80.05003126954341,79.99999999999996)"
+           id="use2209" />
+      </pattern>
+    </defs>
+    <text
+       xml:space="preserve"
+       style="font-size:18.6667px;line-height:1.25;font-family:Arial;-inkscape-font-specification:Arial"
+       x="448.04999"
+       y="507.5"
+       id="text4431"><tspan
+         sodipodi:role="line"
+         id="tspan4429"
+         x="448.04999"
+         y="507.5">PUT</tspan></text>
+  </g>
+</svg>

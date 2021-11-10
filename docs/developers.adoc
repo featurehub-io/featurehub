@@ -72,6 +72,27 @@ If you just want to install the apis and ensure they are consistent, use:
 
 `mvn -f pom-api.xml clean install`
 
+=== Front-end
+
+If you wish to do individual builds, which we recommend if you are overriding base images and so forth, cd into
+those folders. First you will need to make sure the front end builds - it normally builds and installs as part of the
+whole build process. Go into the `admin-frontend` folder and type:
+
+----
+mvn -Ddocker-cloud-build=true clean install
+----
+
+This is a docker build using a Flutter image of the front-end.
+
+Then jump into your chosen folder and your command is:
+
+----
+mvn -Ddocker-cloud-build=true -Dapp.baseimage=docker://featurehub/base_mr:1.7 -Dapp.port=8085 -Dbuild.version=0.0.1 clean package
+----
+
+Where the `app.baseimage`, `app.port` and `build.version` are the versions you specify. The `docker://` prefix just means
+it will pull it from Docker. It is using `jib` from Google, so you may wish to further play around with those settings.
+
 === Running NATS
 
 ----
