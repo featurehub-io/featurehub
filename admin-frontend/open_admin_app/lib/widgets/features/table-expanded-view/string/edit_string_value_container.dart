@@ -5,13 +5,13 @@ import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';
 class EditStringValueContainer extends StatefulWidget {
   const EditStringValueContainer({
     Key? key,
-    required this.enabled,
+    required this.unlocked,
     required this.canEdit,
     this.rolloutStrategy,
     required this.strBloc,
   }) : super(key: key);
 
-  final bool enabled;
+  final bool unlocked;
   final bool canEdit;
   final RolloutStrategy? rolloutStrategy;
   final CustomStrategyBloc strBloc;
@@ -41,21 +41,22 @@ class _EditStringValueContainerState extends State<EditStringValueContainer> {
         height: 30,
         child: TextField(
           style: Theme.of(context).textTheme.bodyText1,
-          enabled: widget.enabled,
+          enabled: widget.unlocked && widget.canEdit,
           controller: tec,
           decoration: InputDecoration(
               contentPadding:
                   const EdgeInsets.only(left: 4.0, right: 4.0, bottom: 8.0),
               enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                color: Theme.of(context).buttonColor,
+                color: Theme.of(context).colorScheme.primary,
               )),
               disabledBorder: const OutlineInputBorder(
                   borderSide: BorderSide(
                 color: Colors.grey,
               )),
               hintText:
-                  widget.canEdit ? 'Enter string value' : 'No editing rights',
+                widget.canEdit ?
+                widget.unlocked ? 'Enter number value' : 'Unlock to edit' : 'No editing rights',
               hintStyle: Theme.of(context).textTheme.caption),
           onChanged: (value) {
             final replacementValue = value.isEmpty ? null : tec.text.trim();

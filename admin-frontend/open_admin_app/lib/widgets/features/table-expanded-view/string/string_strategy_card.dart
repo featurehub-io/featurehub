@@ -19,17 +19,16 @@ class StringStrategyCard extends StatelessWidget {
             strBloc.environmentFeatureValue.environmentId!),
         builder: (ctx, snap) {
           if (snap.hasData) {
-            final canChangeValue = strBloc.environmentFeatureValue.roles
+            final editable = strBloc.environmentFeatureValue.roles
                 .contains(RoleType.CHANGE_VALUE);
-            var editable = !snap.data! && canChangeValue;
-            final enabled = editable && !snap.data!;
+            final unlocked = !snap.data!;
             return StrategyCardWidget(
               editable: editable,
               strBloc: strBloc,
               rolloutStrategy: rolloutStrategy,
               editableHolderWidget: EditStringValueContainer(
                 canEdit: editable,
-                enabled: enabled,
+                unlocked: unlocked,
                 rolloutStrategy: rolloutStrategy,
                 strBloc: strBloc,
               ),

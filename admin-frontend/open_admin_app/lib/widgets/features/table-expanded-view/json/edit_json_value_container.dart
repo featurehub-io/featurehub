@@ -12,13 +12,13 @@ import 'package:open_admin_app/widgets/features/table-expanded-view/json/json_vi
 class EditJsonValueContainer extends StatefulWidget {
   const EditJsonValueContainer({
     Key? key,
-    required this.enabled,
+    required this.unlocked,
     required this.canEdit,
     this.rolloutStrategy,
     required this.strBloc,
   }) : super(key: key);
 
-  final bool enabled;
+  final bool unlocked;
   final bool canEdit;
   final RolloutStrategy? rolloutStrategy;
   final CustomStrategyBloc strBloc;
@@ -46,7 +46,7 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
       return BoxDecoration(
         border: Border.all(
           width: 1.0,
-          color: Theme.of(context).buttonColor,
+          color: Theme.of(context).colorScheme.primary,
         ),
         borderRadius: const BorderRadius.all(
           Radius.circular(6.0), //         <--- border radius here
@@ -64,14 +64,14 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
           borderRadius: BorderRadius.all(Radius.circular(6.0)),
         ),
         hoverColor: Colors.black12,
-        onTap: () => _viewJsonEditor(context, widget.enabled),
+        onTap: () => _viewJsonEditor(context, widget.canEdit),
         child: Container(
             padding: const EdgeInsets.all(4.0),
             decoration: myBoxDecoration(),
             child: Align(
               alignment: Alignment.centerLeft,
               child: ConfigurationViewerField(
-                  text: tec.text, canEdit: widget.canEdit),
+                  text: tec.text, canEdit: widget.canEdit, unlocked: widget.unlocked),
             )),
       ),
     );

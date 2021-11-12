@@ -7,13 +7,13 @@ import 'package:open_admin_app/widgets/features/custom_strategy_bloc.dart';
 class EditNumberValueContainer extends StatefulWidget {
   const EditNumberValueContainer({
     Key? key,
-    required this.enabled,
+    required this.unlocked,
     required this.canEdit,
     this.rolloutStrategy,
     required this.strBloc,
   }) : super(key: key);
 
-  final bool enabled;
+  final bool unlocked;
   final bool canEdit;
   final RolloutStrategy? rolloutStrategy;
   final CustomStrategyBloc strBloc;
@@ -43,21 +43,22 @@ class _EditNumberValueContainerState extends State<EditNumberValueContainer> {
         height: 30,
         child: TextField(
           style: Theme.of(context).textTheme.bodyText1,
-          enabled: widget.enabled,
+          enabled: widget.canEdit && widget.unlocked,
           controller: tec,
           decoration: InputDecoration(
             contentPadding:
                 const EdgeInsets.only(left: 4.0, top: 4.0, bottom: 8.0),
             enabledBorder: OutlineInputBorder(
                 borderSide: BorderSide(
-              color: Theme.of(context).buttonColor,
+              color: Theme.of(context).colorScheme.primary,
             )),
             disabledBorder: const OutlineInputBorder(
                 borderSide: BorderSide(
               color: Colors.grey,
             )),
             hintText:
-                widget.canEdit ? 'Enter number value' : 'No editing rights',
+                widget.canEdit ?
+                widget.unlocked ? 'Enter number value' : 'Unlock to edit' : 'No editing rights',
             hintStyle: Theme.of(context).textTheme.caption,
             errorText:
                 validateNumber(tec.text) != null ? 'Not a valid number' : null,
