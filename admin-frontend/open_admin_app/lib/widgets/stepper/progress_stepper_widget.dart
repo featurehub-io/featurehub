@@ -6,8 +6,8 @@ import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/config/route_names.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_circle_icon_button.dart';
-import 'package:open_admin_app/widgets/stepper/FHStepper.dart';
 import 'package:open_admin_app/widgets/stepper/custom_stepper.dart';
+import 'package:open_admin_app/widgets/stepper/fh_stepper.dart';
 import 'package:open_admin_app/widgets/stepper/progress_stepper_bloc.dart';
 
 import '../common/fh_flat_button_transparent.dart';

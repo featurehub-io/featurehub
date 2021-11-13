@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 
-import 'FHFlatButton.dart';
 import 'fh_alert_dialog.dart';
 import 'fh_flat_button_transparent.dart';
 

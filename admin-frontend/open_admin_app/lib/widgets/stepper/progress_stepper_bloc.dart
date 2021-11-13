@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/widgets/stepper/fh_stepper.dart';
 import 'package:rxdart/rxdart.dart';
 
-import 'FHStepper.dart';
 
 class StepperBloc implements Bloc {
   final ManagementRepositoryClientBloc mrClient;
