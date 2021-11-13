@@ -146,10 +146,11 @@ class _FeatureTabsBodyHolder extends StatelessWidget {
 }
 
 class _FeatureTabsHeader extends StatelessWidget {
-  final ScrollController controller = ScrollController();
 
   @override
   Widget build(BuildContext context) {
+    final ScrollController controller = ScrollController();
+
     return ScrollConfiguration(
       behavior: CustomScrollBehavior(),
       child: SingleChildScrollView(
