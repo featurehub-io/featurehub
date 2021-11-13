@@ -69,7 +69,7 @@ class EditUserBloc implements Bloc {
   }
 
   Future<List<Portfolio>> _findPortfolios() async {
-    var portfolios;
+    List<Portfolio> portfolios = [];
     try {
       portfolios = await mrClient.portfolioServiceApi
           .findPortfolios(includeGroups: true);
