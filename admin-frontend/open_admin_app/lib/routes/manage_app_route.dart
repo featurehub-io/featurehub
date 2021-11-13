@@ -159,6 +159,7 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
         SizedBox(
           height: MediaQuery.of(context).size.height - 265,
           child: TabBarView(
+            physics: const NeverScrollableScrollPhysics(),
             controller: _controller,
             children: [
               //Environments
