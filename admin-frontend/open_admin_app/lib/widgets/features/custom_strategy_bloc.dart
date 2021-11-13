@@ -24,15 +24,16 @@ class CustomStrategyBloc extends Bloc {
   CustomStrategyBloc(this.environmentFeatureValue, this.feature, this.fvBloc)
       : featureValue = fvBloc
             .featureValueByEnvironment(environmentFeatureValue.environmentId!) {
-    featureValue.rolloutStrategies.forEach((rs) {
+    for (var rs in featureValue.rolloutStrategies) {
       if (rs.id != null && rs.id!.length < 30) {
         rs.id = _strategyBlocUUidGenerator.v4();
       }
       if (rs.attributes.isNotEmpty == true) {
-        rs.attributes
-            .forEach((rsa) => rsa.id = _strategyBlocUUidGenerator.v4());
+        for (var rsa in rs.attributes) {
+          rsa.id = _strategyBlocUUidGenerator.v4();
+        }
       }
-    });
+    }
 
     _strategySource.add(featureValue.rolloutStrategies);
   }
@@ -92,18 +93,18 @@ class CustomStrategyBloc extends Bloc {
 
     final strategiesById = <String, RolloutStrategy>{};
 
-    strategies.forEach((s) {
+    for (var s in strategies) {
       if (s.id != null) {
         strategiesById[s.id!] = s;
       }
-    });
+    }
 
-    strategies.forEach((s) {
+    for (var s in strategies) {
       if (s.id == null) {
         s.id = _strategyBlocUUidGenerator.v4();
         strategiesById[s.id!] = s;
       }
-    });
+    }
   }
 
   Future<RolloutStrategyValidationResponse> validationCheck(

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/third_party/chips_input.dart';
-import 'package:open_admin_app/widgets/common/FHFlatButton.dart';
+import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
@@ -353,10 +353,10 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
         return const <Person>[];
       },
       onChanged: (data) {
-        data.forEach((person) {
+        for (var person in data) {
           person = person as Person;
           membersToAdd.add(person);
-        });
+        }
       },
       // when we need to build a chip because it has been selected, this is what is used
       // it can include an image, so we should perhaps consider this?

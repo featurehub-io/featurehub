@@ -18,9 +18,9 @@ class FeatureStatusFeatures {
         .map((e) => e.environmentId!)
         .toList();
 
-    applicationFeatureValues.environments.forEach((e) {
+    for (var e in applicationFeatureValues.environments) {
       applicationEnvironments[e.environmentId!] = e;
-    });
+    }
   }
 }
 

@@ -4,6 +4,7 @@ import 'package:flutter/rendering.dart';
 import 'package:logging/logging.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
+import 'package:open_admin_app/utils/custom_scroll_behavior.dart';
 import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
 import 'package:open_admin_app/widgets/features/environments_features_list_view.dart';
 import 'package:open_admin_app/widgets/features/feature_names_left_panel.dart';
@@ -34,8 +35,8 @@ class FeaturesOverviewTableWidget extends StatelessWidget {
                 snapshot.data!.sortedByNameEnvironmentIds.isEmpty) {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const NoEnvironmentMessage(),
+                children: const <Widget>[
+                  NoEnvironmentMessage(),
                 ],
               );
             }
@@ -145,30 +146,37 @@ class _FeatureTabsBodyHolder extends StatelessWidget {
 }
 
 class _FeatureTabsHeader extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: const [
-          _FeatureTab(
-              text: 'Feature Flags',
-              icon: Icons.flag,
-              state: TabsState.FLAGS,
-              color: Colors.green),
-          _FeatureTab(
-              text: 'Feature Values',
-              icon: Icons.code,
-              state: TabsState.VALUES,
-              color: Colors.blue),
-          _FeatureTab(
-              text: 'Configurations',
-              icon: Icons.device_hub,
-              state: TabsState.CONFIGURATIONS,
-              color: Colors.orange),
-        ],
+    final ScrollController controller = ScrollController();
+
+    return ScrollConfiguration(
+      behavior: CustomScrollBehavior(),
+      child: SingleChildScrollView(
+        controller: controller,
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            _FeatureTab(
+                text: 'Feature Flags',
+                icon: Icons.flag,
+                state: TabsState.featureFlags,
+                color: Colors.green),
+            _FeatureTab(
+                text: 'Feature Values',
+                icon: Icons.code,
+                state: TabsState.featureValues,
+                color: Colors.blue),
+            _FeatureTab(
+                text: 'Configurations',
+                icon: Icons.device_hub,
+                state: TabsState.configurations,
+                color: Colors.orange),
+          ],
+        ),
       ),
     );
   }
@@ -179,7 +187,7 @@ class _FeatureTab extends StatelessWidget {
   final IconData icon;
   final TabsState state;
 
-  final color;
+  final Color color;
 
   const _FeatureTab(
       {Key? key,

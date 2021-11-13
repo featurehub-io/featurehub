@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 // putting an inputDecoration on a dropdown forces us to set a width,
 // this can create more problems than it solves,
 // only use this where you need to fix the width
-InputDecoration FHFilledInputDecoration(
+InputDecoration fhFilledInputDecoration(
     {required String labelText, bool filled = true}) {
   return InputDecoration(
       contentPadding:

@@ -1,7 +1,7 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:open_admin_app/api/client_api.dart';
-import 'package:open_admin_app/widgets/common/FHFlatButton.dart';
+import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_card.dart';
 import 'package:open_admin_app/widgets/user/register/register_url_bloc.dart';
 import 'package:openapi_dart_common/openapi.dart';
@@ -18,7 +18,7 @@ class RegisterURLRoute extends StatefulWidget {
   }
 }
 
-const _PASSWORD_SCORE_THRESHOLD = 1;
+const _passwordScoreThreshold = 1;
 
 class RegisterURLState extends State<RegisterURLRoute> {
   final _formKey = GlobalKey<FormState>(debugLabel: 'registration url');
@@ -181,7 +181,7 @@ class RegisterURLState extends State<RegisterURLRoute> {
       state = 'Strong';
     }
     Color stateColor =
-        (result.score == null || result.score! < _PASSWORD_SCORE_THRESHOLD)
+        (result.score == null || result.score! < _passwordScoreThreshold)
             ? Colors.red
             : Colors.green;
 

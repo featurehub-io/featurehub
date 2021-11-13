@@ -177,7 +177,7 @@ class PerFeatureStateTrackingBloc implements Bloc {
     _environmentServiceApi = EnvironmentServiceApi(mrClient.apiClient);
     // lets get this party started
 
-    featureValuesThisFeature.forEach((fv) {
+    for (var fv in featureValuesThisFeature) {
       // make a copy so our changes don't leak back into the main list
       _newFeatureValues[fv.environmentId!] = fv.copyWith();
       _originalFeatureValues[fv.environmentId!] = fv.copyWith();
@@ -185,16 +185,18 @@ class PerFeatureStateTrackingBloc implements Bloc {
         ..value = fv
         ..customStrategies = fv.rolloutStrategies
         ..sharedStrategies = fv.rolloutStrategyInstances;
-    });
+    }
   }
 
   @override
   void dispose() {
-    _fvLockedUpdates.values.forEach((element) {
+    for (var element in _fvLockedUpdates.values) {
       element.close();
-    });
+    }
 
-    _customStrategyBlocs.values.forEach((b) => b.dispose());
+    for (var b in _customStrategyBlocs.values) {
+      b.dispose();
+    }
   }
 
   bool hasValue(FeatureEnvironment fe) {
@@ -294,7 +296,7 @@ class PerFeatureStateTrackingBloc implements Bloc {
     });
 
     // anything else in the new values list is stuff we didn't have originally
-    featureValuesWeAreCheckingForUpdates.values.forEach((newFv) {
+    for (var newFv in featureValuesWeAreCheckingForUpdates.values) {
       final roles = applicationFeatureValues.environments
           .firstWhere((e) => e.environmentId == newFv.environmentId)
           .roles;
@@ -308,7 +310,7 @@ class PerFeatureStateTrackingBloc implements Bloc {
           updates.add(newFv);
         }
       }
-    });
+    }
 
     // TODO: catching of error, reporting of dialog
     if (updates.isNotEmpty) {

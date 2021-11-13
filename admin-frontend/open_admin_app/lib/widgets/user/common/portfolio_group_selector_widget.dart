@@ -99,7 +99,7 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
             child: Container(
               constraints: const BoxConstraints(maxWidth: 300),
               child: InputDecorator(
-                decoration: FHFilledInputDecoration(labelText: 'Group'),
+                decoration: fhFilledInputDecoration(labelText: 'Group'),
                 child: InkWell(
                   mouseCursor: SystemMouseCursors.click,
                   child: DropdownButton(
@@ -152,7 +152,7 @@ class _PortfolioGroupSelectorState extends State<PortfolioGroupSelector> {
               child: Container(
                 constraints: const BoxConstraints(maxWidth: 300),
                 child: InputDecorator(
-                  decoration: FHFilledInputDecoration(labelText: 'Portfolio'),
+                  decoration: fhFilledInputDecoration(labelText: 'Portfolio'),
                   child: InkWell(
                     mouseCursor: SystemMouseCursors.click,
                     child: DropdownButton<String?>(

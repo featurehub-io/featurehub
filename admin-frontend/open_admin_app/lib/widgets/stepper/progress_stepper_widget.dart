@@ -4,10 +4,11 @@ import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/config/route_names.dart';
+import 'package:open_admin_app/utils/custom_scroll_behavior.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_circle_icon_button.dart';
-import 'package:open_admin_app/widgets/stepper/FHStepper.dart';
 import 'package:open_admin_app/widgets/stepper/custom_stepper.dart';
+import 'package:open_admin_app/widgets/stepper/fh_stepper.dart';
 import 'package:open_admin_app/widgets/stepper/progress_stepper_bloc.dart';
 
 import '../common/fh_flat_button_transparent.dart';
@@ -48,6 +49,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
       const FHPageDivider(),
     ]);
 
+    final ScrollController controller = ScrollController();
     return Padding(
       padding: const EdgeInsets.only(left: 20.0),
       child: Material(
@@ -57,253 +59,257 @@ class _StepperState extends State<FHSetupProgressStepper> {
             height: MediaQuery.of(context).size.height - kToolbarHeight,
             padding:
                 const EdgeInsets.only(bottom: 16.0, right: 16.0, left: 16.0),
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  cardWidgetTextPart,
-                  StreamBuilder<FHStepper>(
-                      stream: bloc.stepper,
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          return CustomStepper(
-                              physics: const ClampingScrollPhysics(),
-                              steps: [
-                                CustomStep(
-                                    title: const Text('Create application'),
-                                    state: snapshot.data!.application == true
-                                        ? CustomStepState.complete
-                                        : CustomStepState.indexed,
-                                    content: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        ApplicationDropDown(bloc),
-                                        FHFlatButtonTransparent(
-                                          title: 'Create application',
-                                          keepCase: true,
-                                          onPressed: () => {
-                                            ManagementRepositoryClientBloc
-                                                .router
-                                                .navigateTo(
-                                              context,
-                                              '/applications',
-                                            )
-                                          },
-                                        ),
-                                      ],
-                                    )),
-                                CustomStep(
-                                    title: const Text('Create team group'),
+            child: ScrollConfiguration(
+              behavior: CustomScrollBehavior(),
+              child: SingleChildScrollView(
+                controller: controller,
+                child: Column(
+                  children: [
+                    cardWidgetTextPart,
+                    StreamBuilder<FHStepper>(
+                        stream: bloc.stepper,
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            return CustomStepper(
+                                physics: const ClampingScrollPhysics(),
+                                steps: [
+                                  CustomStep(
+                                      title: const Text('Create application'),
+                                      state: snapshot.data!.application == true
+                                          ? CustomStepState.complete
+                                          : CustomStepState.indexed,
+                                      content: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          applicationDropDown(bloc),
+                                          FHFlatButtonTransparent(
+                                            title: 'Create application',
+                                            keepCase: true,
+                                            onPressed: () => {
+                                              ManagementRepositoryClientBloc
+                                                  .router
+                                                  .navigateTo(
+                                                context,
+                                                '/applications',
+                                              )
+                                            },
+                                          ),
+                                        ],
+                                      )),
+                                  CustomStep(
+                                      title: const Text('Create team group'),
 //                            isActive: _index == 1,
-                                    state: snapshot.data!.group == true
-                                        ? CustomStepState.complete
-                                        : CustomStepState.indexed,
-                                    content: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        Text(
-                                          'Groups are portfolio-wide, we recommend creating application specific groups eg “MyApp developers”',
-                                          style: captionStyle,
-                                        ),
-                                        FHFlatButtonTransparent(
-                                          title: 'Create group',
-                                          keepCase: true,
-                                          onPressed: () => {
-                                            ManagementRepositoryClientBloc
-                                                .router
-                                                .navigateTo(
-                                              context,
-                                              '/groups',
-                                            )
-                                          },
-                                        ),
-                                      ],
-                                    )),
-                                CustomStep(
-                                    title: const Text('Create service account'),
-                                    state: snapshot.data!.serviceAccount == true
-                                        ? CustomStepState.complete
-                                        : CustomStepState.indexed,
-                                    content: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        Text(
-                                          'Service accounts are portfolio-wide, we recommend creating service accounts specific to an application, e.g. “SA-MyApp”',
-                                          style: captionStyle,
-                                        ),
-                                        FHFlatButtonTransparent(
-                                          title: 'Create service account',
-                                          keepCase: true,
-                                          onPressed: () => {
-                                            ManagementRepositoryClientBloc
-                                                .router
-                                                .navigateTo(
-                                              context,
-                                              '/service-accounts',
-                                            )
-                                          },
-                                        ),
-                                      ],
-                                    )),
-                                CustomStep(
-                                    title: const Text('Create environment'),
-                                    state: snapshot.data!.application
-                                        ? (snapshot.data!.environment == true
-                                            ? CustomStepState.complete
-                                            : CustomStepState.indexed)
-                                        : CustomStepState.disabled,
-                                    content: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        Text(
-                                          'Create an environment for selected application, e.g. "test", "dev", "prod"',
-                                          style: captionStyle,
-                                        ),
-                                        FHFlatButtonTransparent(
-                                          title: 'Create environment',
-                                          keepCase: true,
-                                          onPressed: () => {
-                                            ManagementRepositoryClientBloc
-                                                .router
-                                                .navigateTo(
-                                              context,
-                                              '/app-settings',
-                                              params: {
-                                                'id': [bloc.applicationId!],
-                                                'tab': ['environments']
-                                              },
-                                            )
-                                          },
-                                        ),
-                                      ],
-                                    )),
-                                CustomStep(
-                                    title: const Text('Give access to groups'),
-                                    state: snapshot.data!.environment
-                                        ? (snapshot.data!.groupPermission ==
-                                                true
-                                            ? CustomStepState.complete
-                                            : CustomStepState.indexed)
-                                        : CustomStepState.disabled,
-                                    content: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        Text(
-                                          'Assign an application environment level permissions to a group of users',
-                                          style: captionStyle,
-                                        ),
-                                        FHFlatButtonTransparent(
-                                          title: 'Set permissions',
-                                          keepCase: true,
-                                          onPressed: () => {
-                                            ManagementRepositoryClientBloc
-                                                .router
-                                                .navigateTo(
-                                              context,
-                                              '/app-settings',
-                                              params: {
-                                                'id': [bloc.applicationId!],
-                                                'tab': ['group-permissions']
-                                              },
-                                            )
-                                          },
-                                        ),
-                                      ],
-                                    )),
-                                CustomStep(
-                                    title: const Text(
-                                        ' Give access to service\n account'),
-                                    state: snapshot.data!.environment &&
-                                            snapshot.data!.serviceAccount
-                                        ? (snapshot.data!
-                                                    .serviceAccountPermission ==
-                                                true
-                                            ? CustomStepState.complete
-                                            : CustomStepState.indexed)
-                                        : CustomStepState.disabled,
-                                    content: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        Text(
-                                          'Assign an application environment level permissions to a service account',
-                                          style: captionStyle,
-                                        ),
-                                        FHFlatButtonTransparent(
-                                          title:
-                                              'Set service account permissions',
-                                          keepCase: true,
-                                          onPressed: () => {
-                                            ManagementRepositoryClientBloc
-                                                .router
-                                                .navigateTo(
-                                              context,
-                                              '/app-settings',
-                                              params: {
-                                                'id': [bloc.applicationId!],
-                                                'tab': ['service-accounts']
-                                              },
-                                            )
-                                          },
-                                        ),
-                                      ],
-                                    )),
-                                CustomStep(
-                                    title: const Text('Create a feature'),
-                                    state: snapshot.data!.application
-                                        ? (snapshot.data!.feature == true
-                                            ? CustomStepState.complete
-                                            : CustomStepState.indexed)
-                                        : CustomStepState.disabled,
-                                    content: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        Text(
-                                          'Create a feature for an application',
-                                          style: captionStyle,
-                                        ),
-                                        FHFlatButtonTransparent(
-                                          title: 'Create feature',
-                                          keepCase: true,
-                                          onPressed: () => {
-                                            ManagementRepositoryClientBloc
-                                                .router
-                                                .navigateTo(
-                                              context,
-                                              routeNameFeatureDashboard,
-                                            )
-                                          },
-                                        ),
-                                      ],
-                                    )),
-                              ],
-                              controlsBuilder: (BuildContext context,
-                                      {VoidCallback? onStepContinue,
-                                      VoidCallback? onStepCancel}) =>
-                                  Container(),
-                              currentStep: _index,
-                              onStepTapped: (index) {
-                                setState(() {
-                                  _index = index;
+                                      state: snapshot.data!.group == true
+                                          ? CustomStepState.complete
+                                          : CustomStepState.indexed,
+                                      content: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Text(
+                                            'Groups are portfolio-wide, we recommend creating application specific groups eg “MyApp developers”',
+                                            style: captionStyle,
+                                          ),
+                                          FHFlatButtonTransparent(
+                                            title: 'Create group',
+                                            keepCase: true,
+                                            onPressed: () => {
+                                              ManagementRepositoryClientBloc
+                                                  .router
+                                                  .navigateTo(
+                                                context,
+                                                '/groups',
+                                              )
+                                            },
+                                          ),
+                                        ],
+                                      )),
+                                  CustomStep(
+                                      title: const Text('Create service account'),
+                                      state: snapshot.data!.serviceAccount == true
+                                          ? CustomStepState.complete
+                                          : CustomStepState.indexed,
+                                      content: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Text(
+                                            'Service accounts are portfolio-wide, we recommend creating service accounts specific to an application, e.g. “SA-MyApp”',
+                                            style: captionStyle,
+                                          ),
+                                          FHFlatButtonTransparent(
+                                            title: 'Create service account',
+                                            keepCase: true,
+                                            onPressed: () => {
+                                              ManagementRepositoryClientBloc
+                                                  .router
+                                                  .navigateTo(
+                                                context,
+                                                '/service-accounts',
+                                              )
+                                            },
+                                          ),
+                                        ],
+                                      )),
+                                  CustomStep(
+                                      title: const Text('Create environment'),
+                                      state: snapshot.data!.application
+                                          ? (snapshot.data!.environment == true
+                                              ? CustomStepState.complete
+                                              : CustomStepState.indexed)
+                                          : CustomStepState.disabled,
+                                      content: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Text(
+                                            'Create an environment for selected application, e.g. "test", "dev", "prod"',
+                                            style: captionStyle,
+                                          ),
+                                          FHFlatButtonTransparent(
+                                            title: 'Create environment',
+                                            keepCase: true,
+                                            onPressed: () => {
+                                              ManagementRepositoryClientBloc
+                                                  .router
+                                                  .navigateTo(
+                                                context,
+                                                '/app-settings',
+                                                params: {
+                                                  'id': [bloc.applicationId!],
+                                                  'tab': ['environments']
+                                                },
+                                              )
+                                            },
+                                          ),
+                                        ],
+                                      )),
+                                  CustomStep(
+                                      title: const Text('Give access to groups'),
+                                      state: snapshot.data!.environment
+                                          ? (snapshot.data!.groupPermission ==
+                                                  true
+                                              ? CustomStepState.complete
+                                              : CustomStepState.indexed)
+                                          : CustomStepState.disabled,
+                                      content: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Text(
+                                            'Assign an application environment level permissions to a group of users',
+                                            style: captionStyle,
+                                          ),
+                                          FHFlatButtonTransparent(
+                                            title: 'Set permissions',
+                                            keepCase: true,
+                                            onPressed: () => {
+                                              ManagementRepositoryClientBloc
+                                                  .router
+                                                  .navigateTo(
+                                                context,
+                                                '/app-settings',
+                                                params: {
+                                                  'id': [bloc.applicationId!],
+                                                  'tab': ['group-permissions']
+                                                },
+                                              )
+                                            },
+                                          ),
+                                        ],
+                                      )),
+                                  CustomStep(
+                                      title: const Text(
+                                          ' Give access to service\n account'),
+                                      state: snapshot.data!.environment &&
+                                              snapshot.data!.serviceAccount
+                                          ? (snapshot.data!
+                                                      .serviceAccountPermission ==
+                                                  true
+                                              ? CustomStepState.complete
+                                              : CustomStepState.indexed)
+                                          : CustomStepState.disabled,
+                                      content: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Text(
+                                            'Assign an application environment level permissions to a service account',
+                                            style: captionStyle,
+                                          ),
+                                          FHFlatButtonTransparent(
+                                            title:
+                                                'Set service account permissions',
+                                            keepCase: true,
+                                            onPressed: () => {
+                                              ManagementRepositoryClientBloc
+                                                  .router
+                                                  .navigateTo(
+                                                context,
+                                                '/app-settings',
+                                                params: {
+                                                  'id': [bloc.applicationId!],
+                                                  'tab': ['service-accounts']
+                                                },
+                                              )
+                                            },
+                                          ),
+                                        ],
+                                      )),
+                                  CustomStep(
+                                      title: const Text('Create a feature'),
+                                      state: snapshot.data!.application
+                                          ? (snapshot.data!.feature == true
+                                              ? CustomStepState.complete
+                                              : CustomStepState.indexed)
+                                          : CustomStepState.disabled,
+                                      content: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Text(
+                                            'Create a feature for an application',
+                                            style: captionStyle,
+                                          ),
+                                          FHFlatButtonTransparent(
+                                            title: 'Create feature',
+                                            keepCase: true,
+                                            onPressed: () => {
+                                              ManagementRepositoryClientBloc
+                                                  .router
+                                                  .navigateTo(
+                                                context,
+                                                routeNameFeatureDashboard,
+                                              )
+                                            },
+                                          ),
+                                        ],
+                                      )),
+                                ],
+                                controlsBuilder: (BuildContext context,
+                                        {VoidCallback? onStepContinue,
+                                        VoidCallback? onStepCancel}) =>
+                                    Container(),
+                                currentStep: _index,
+                                onStepTapped: (index) {
+                                  setState(() {
+                                    _index = index;
+                                  });
                                 });
-                              });
-                        } else {
-                          return Container();
-                        }
-                      })
-                ],
+                          } else {
+                            return Container();
+                          }
+                        })
+                  ],
+                ),
               ),
             )),
       ),
     );
   }
 
-  Widget ApplicationDropDown(StepperBloc bloc) {
+  Widget applicationDropDown(StepperBloc bloc) {
     return StreamBuilder<List<Application>>(
         stream: bloc.appsList,
         builder: (context, snapshot) {

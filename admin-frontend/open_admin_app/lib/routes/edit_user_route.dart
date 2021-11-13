@@ -2,7 +2,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
-import 'package:open_admin_app/widgets/common/FHFlatButton.dart';
+import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_card.dart';
 import 'package:open_admin_app/widgets/common/fh_filled_input_decoration.dart';
@@ -97,7 +97,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
               children: <Widget>[
                 TextFormField(
                   controller: _email,
-                  decoration: FHFilledInputDecoration(labelText: 'Email'),
+                  decoration: fhFilledInputDecoration(labelText: 'Email'),
                   //initialValue: bloc.person != null ? bloc.person.email : '',
                   validator: (v) =>
                       (v?.isEmpty == true) ? 'Edit email address' : null,
@@ -106,7 +106,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
                   padding: const EdgeInsets.only(top: 30),
                   child: TextFormField(
                     controller: _name,
-                    decoration: FHFilledInputDecoration(labelText: 'Name'),
+                    decoration: fhFilledInputDecoration(labelText: 'Name'),
                     //  initialValue: bloc.person !=null ? bloc.person.name : '',
                     validator: (v) =>
                         (v?.isEmpty == true) ? 'Edit names' : null,

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/router.dart';
+import 'package:open_admin_app/utils/custom_scroll_behavior.dart';
 import 'package:open_admin_app/widgets/apps/group_permissions_widget.dart';
 import 'package:open_admin_app/widgets/apps/manage_app_bloc.dart';
 import 'package:open_admin_app/widgets/apps/service_account_permissions_widget.dart';
@@ -139,6 +140,7 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<ManageAppBloc>(context);
     this.bloc = bloc.mrClient;
+    final ScrollController controller = ScrollController();
 
     // maybe should be a Column?
     return Column(
@@ -160,31 +162,43 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
             controller: _controller,
             children: [
               //Environments
-              SingleChildScrollView(
-                child: Column(
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.only(top: 12.0),
-                      child: AddEnvWidget(context, bloc),
-                    ),
-                    const EnvListWidget()
-                  ],
+              ScrollConfiguration(
+                behavior: CustomScrollBehavior(),
+                child: SingleChildScrollView(
+                  controller: controller,
+                  child: Column(
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12.0),
+                        child: addEnvWidget(context, bloc),
+                      ),
+                      const EnvListWidget()
+                    ],
+                  ),
                 ),
               ),
               // Groups permissions
-              SingleChildScrollView(
-                child: Column(
-                  children: const <Widget>[
-                    GroupPermissionsWidget(),
-                  ],
+              ScrollConfiguration(
+                behavior: CustomScrollBehavior(),
+                child: SingleChildScrollView(
+                  controller: controller,
+                  child: Column(
+                    children: const <Widget>[
+                      GroupPermissionsWidget(),
+                    ],
+                  ),
                 ),
               ),
               // Service accounts
-              SingleChildScrollView(
-                child: Column(
-                  children: const <Widget>[
-                    ServiceAccountPermissionsWidget(),
-                  ],
+              ScrollConfiguration(
+                behavior: CustomScrollBehavior(),
+                child: SingleChildScrollView(
+                  controller: controller,
+                  child: Column(
+                    children: const <Widget>[
+                      ServiceAccountPermissionsWidget(),
+                    ],
+                  ),
                 ),
               ),
             ],

@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/widgets/stepper/fh_stepper.dart';
 import 'package:rxdart/rxdart.dart';
 
-import 'FHStepper.dart';
 
 class StepperBloc implements Bloc {
   final ManagementRepositoryClientBloc mrClient;
@@ -19,8 +19,8 @@ class StepperBloc implements Bloc {
   final _appsBS = BehaviorSubject<List<Application>>();
   Stream<List<Application>> get appsList => _appsBS.stream;
 
-  final _FHStepperBS = BehaviorSubject<FHStepper>();
-  Stream<FHStepper> get stepper => _FHStepperBS.stream;
+  final _fhStepperBS = BehaviorSubject<FHStepper>();
+  Stream<FHStepper> get stepper => _fhStepperBS.stream;
 
   late StreamSubscription<String?> _currentAppIdSubscriber;
   late StreamSubscription<List<Group>> _currentPortfolioGroupsSubscriber;
@@ -68,7 +68,7 @@ class StepperBloc implements Bloc {
     } else {
       fhStepper.application = false;
     }
-    _FHStepperBS.add(fhStepper);
+    _fhStepperBS.add(fhStepper);
     applicationId = id;
   }
 
@@ -78,12 +78,12 @@ class StepperBloc implements Bloc {
 
   void _getPortfolioGroups(List<Group> groups) {
     fhStepper.group = groups.isNotEmpty;
-    _FHStepperBS.add(fhStepper);
+    _fhStepperBS.add(fhStepper);
   }
 
   void _getPortfolioServiceAccounts(List<ServiceAccount> accounts) {
     fhStepper.serviceAccount = accounts.isNotEmpty;
-    _FHStepperBS.add(fhStepper);
+    _fhStepperBS.add(fhStepper);
   }
 
   void _getApplicationEnvironments(List<Environment> envList) {
@@ -94,14 +94,14 @@ class StepperBloc implements Bloc {
         fhStepper.groupPermission =
             envList.any((env) => env.groupRoles.isNotEmpty);
       }
-      _FHStepperBS.add(fhStepper);
+      _fhStepperBS.add(fhStepper);
     }
   }
 
   void _getApplicationFeatures(List<Feature> featureList) {
     if (applicationId != null) {
       fhStepper.feature = featureList.isNotEmpty;
-      _FHStepperBS.add(fhStepper);
+      _fhStepperBS.add(fhStepper);
     }
   }
 
@@ -114,14 +114,14 @@ class StepperBloc implements Bloc {
       fhStepper.serviceAccountPermission = false;
     }
 
-    _FHStepperBS.add(fhStepper);
+    _fhStepperBS.add(fhStepper);
   }
 
   @override
   void dispose() {
     _portfoliosBS.close();
     _appsBS.close();
-    _FHStepperBS.close();
+    _fhStepperBS.close();
     _currentAppIdSubscriber.cancel();
     _currentPortfolioServiceAccountsSubscriber.cancel();
     _currentPortfolioGroupsSubscriber.cancel();
