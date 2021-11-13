@@ -140,21 +140,26 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<ManageAppBloc>(context);
     this.bloc = bloc.mrClient;
-    final ScrollController controller = ScrollController();
+    final ScrollController controllerTab1 = ScrollController();
+    final ScrollController controllerTab2 = ScrollController();
+    final ScrollController controllerTab3 = ScrollController();
 
     // maybe should be a Column?
     return Column(
       children: <Widget>[
-        TabBar(
-          controller: _controller,
-          labelStyle: Theme.of(context).textTheme.bodyText1,
-          labelColor: Theme.of(context).textTheme.subtitle2!.color,
-          unselectedLabelColor: Theme.of(context).textTheme.bodyText2!.color,
-          tabs: const [
-            Tab(text: 'Environments'),
-            Tab(text: 'Group permissions'),
-            Tab(text: 'Service account permissions'),
-          ],
+        ScrollConfiguration(
+          behavior: CustomScrollBehavior(),
+          child: TabBar(
+            controller: _controller,
+            labelStyle: Theme.of(context).textTheme.bodyText1,
+            labelColor: Theme.of(context).textTheme.subtitle2!.color,
+            unselectedLabelColor: Theme.of(context).textTheme.bodyText2!.color,
+            tabs: const [
+              Tab(text: 'Environments'),
+              Tab(text: 'Group permissions'),
+              Tab(text: 'Service account permissions'),
+            ],
+          ),
         ),
         SizedBox(
           height: MediaQuery.of(context).size.height - 265,
@@ -166,7 +171,7 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
               ScrollConfiguration(
                 behavior: CustomScrollBehavior(),
                 child: SingleChildScrollView(
-                  controller: controller,
+                  controller: controllerTab1,
                   child: Column(
                     children: <Widget>[
                       Padding(
@@ -182,7 +187,7 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
               ScrollConfiguration(
                 behavior: CustomScrollBehavior(),
                 child: SingleChildScrollView(
-                  controller: controller,
+                  controller: controllerTab2,
                   child: Column(
                     children: const <Widget>[
                       GroupPermissionsWidget(),
@@ -194,7 +199,7 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
               ScrollConfiguration(
                 behavior: CustomScrollBehavior(),
                 child: SingleChildScrollView(
-                  controller: controller,
+                  controller: controllerTab3,
                   child: Column(
                     children: const <Widget>[
                       ServiceAccountPermissionsWidget(),
