@@ -651,7 +651,6 @@ class _CustomStepperState extends State<CustomStepper>
               AnimatedSize(
                 curve: Curves.fastOutSlowIn,
                 duration: kThemeAnimationDuration,
-                vsync: this,
                 child: widget.steps[widget.currentStep].content,
               ),
               _buildVerticalControls(),

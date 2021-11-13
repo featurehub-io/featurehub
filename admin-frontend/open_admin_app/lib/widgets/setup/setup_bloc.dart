@@ -1,3 +1,4 @@
+// ignore: avoid_web_libraries_in_flutter
 import 'dart:html';
 
 import 'package:open_admin_app/api/client_api.dart';
