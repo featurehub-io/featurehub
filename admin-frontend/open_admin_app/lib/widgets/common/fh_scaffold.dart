@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
+import 'package:open_admin_app/utils/custom_scroll_behavior.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/common/fh_appbar.dart';
 import 'package:open_admin_app/widgets/stepper/stepper_container.dart';
@@ -112,6 +113,7 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
   }
 
   Widget _mainContent(BuildContext context) {
+    final ScrollController controller = ScrollController();
     var mrBloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
     return Expanded(
       child: Row(
@@ -135,23 +137,31 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Column(children: [
                       Expanded(
-                          child: SingleChildScrollView(
-                              child: Column(
+                          child: ScrollConfiguration(
+                            behavior: CustomScrollBehavior(),
+                            child: SingleChildScrollView(
+                                controller: controller,
+                                child: Column(
                         children: <Widget>[child],
-                      ))),
+                      )),
+                          )),
                     ]));
               }
-              return SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Container(
-                      height:
-                          MediaQuery.of(context).size.height - kToolbarHeight,
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-                      width: scrollAtWidth.toDouble(),
-                      child: ListView(
-                        shrinkWrap: true,
-                        children: <Widget>[child],
-                      )));
+              return ScrollConfiguration(
+                behavior: CustomScrollBehavior(),
+                child: SingleChildScrollView(
+                    controller: controller,
+                    scrollDirection: Axis.horizontal,
+                    child: Container(
+                        height:
+                            MediaQuery.of(context).size.height - kToolbarHeight,
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                        width: scrollAtWidth.toDouble(),
+                        child: ListView(
+                          shrinkWrap: true,
+                          children: <Widget>[child],
+                        ))),
+              );
             }),
           ),
           StreamBuilder<ReleasedPortfolio?>(

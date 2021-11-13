@@ -8,6 +8,7 @@ import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/router.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:open_admin_app/config/route_names.dart';
+import 'package:open_admin_app/utils/custom_scroll_behavior.dart';
 import 'package:open_admin_app/widget_creator.dart';
 import 'package:open_admin_app/widgets/common/fh_portfolio_selector.dart';
 
@@ -45,8 +46,9 @@ class _DrawerViewWidgetState extends State<DrawerViewWidget> {
 
 class _MenuContainer extends StatelessWidget {
   final ManagementRepositoryClientBloc mrBloc;
+  final ScrollController controller = ScrollController();
 
-  const _MenuContainer({Key? key, required this.mrBloc}) : super(key: key);
+  _MenuContainer({Key? key, required this.mrBloc}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -54,81 +56,85 @@ class _MenuContainer extends StatelessWidget {
       width: 260,
       height: MediaQuery.of(context).size.height - kToolbarHeight,
       child: Drawer(
-        child: SingleChildScrollView(
-          child: StreamBuilder<Person>(
-              stream: mrBloc.personState.personStream,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData || !mrBloc.personState.isLoggedIn) {
-                  return const SizedBox.shrink();
-                }
+        child: ScrollConfiguration(
+          behavior: CustomScrollBehavior(),
+          child: SingleChildScrollView(
+            controller: controller,
+            child: StreamBuilder<Person>(
+                stream: mrBloc.personState.personStream,
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData || !mrBloc.personState.isLoggedIn) {
+                    return const SizedBox.shrink();
+                  }
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const PortfolioSelectorWidget(),
-                    const SizedBox(height: 16),
-                    const _MenuFeaturesOptionsWidget(),
-                    StreamBuilder<ReleasedPortfolio?>(
-                        stream:
-                            mrBloc.personState.isCurrentPortfolioOrSuperAdmin,
-                        builder: (context, snapshot) {
-                          if (snapshot.data == null ||
-                              !snapshot.data!.currentPortfolioOrSuperAdmin) {
-                            return const SizedBox.shrink();
-                          }
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const PortfolioSelectorWidget(),
+                      const SizedBox(height: 16),
+                      const _MenuFeaturesOptionsWidget(),
+                      StreamBuilder<ReleasedPortfolio?>(
+                          stream:
+                              mrBloc.personState.isCurrentPortfolioOrSuperAdmin,
+                          builder: (context, snapshot) {
+                            if (snapshot.data == null ||
+                                !snapshot.data!.currentPortfolioOrSuperAdmin) {
+                              return const SizedBox.shrink();
+                            }
 
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 16.0, top: 32.0, bottom: 8.0),
-                                child: Text(
-                                  'Application Settings',
-                                  style: Theme.of(context).textTheme.caption,
-                                ),
-                              ),
-                              _ApplicationSettings(),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 16.0, top: 32.0, bottom: 8.0),
-                                    child: Text(
-                                      'Portfolio Settings',
-                                      style:
-                                          Theme.of(context).textTheme.caption,
-                                    ),
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 16.0, top: 32.0, bottom: 8.0),
+                                  child: Text(
+                                    'Application Settings',
+                                    style: Theme.of(context).textTheme.caption,
                                   ),
-                                  _MenuPortfolioAdminOptionsWidget(),
-                                  _MenuDivider(),
-                                ],
-                              ),
-                            ],
-                          );
-                        }),
-                    mrBloc.userIsSuperAdmin
-                        ? Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Container(
-                                padding: const EdgeInsets.only(
-                                    left: 16.0, top: 32.0, bottom: 8.0),
-                                child: Text(
-                                  'Global Settings',
-                                  style: Theme.of(context).textTheme.caption,
                                 ),
-                              ),
-                              _SiteAdminOptionsWidget(),
-                              _MenuDivider(),
-                            ],
-                          )
-                        : Container(),
-                  ],
-                );
-              }),
+                                _ApplicationSettings(),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 16.0, top: 32.0, bottom: 8.0),
+                                      child: Text(
+                                        'Portfolio Settings',
+                                        style:
+                                            Theme.of(context).textTheme.caption,
+                                      ),
+                                    ),
+                                    _MenuPortfolioAdminOptionsWidget(),
+                                    _MenuDivider(),
+                                  ],
+                                ),
+                              ],
+                            );
+                          }),
+                      mrBloc.userIsSuperAdmin
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Container(
+                                  padding: const EdgeInsets.only(
+                                      left: 16.0, top: 32.0, bottom: 8.0),
+                                  child: Text(
+                                    'Global Settings',
+                                    style: Theme.of(context).textTheme.caption,
+                                  ),
+                                ),
+                                _SiteAdminOptionsWidget(),
+                                _MenuDivider(),
+                              ],
+                            )
+                          : Container(),
+                    ],
+                  );
+                }),
+          ),
         ),
       ),
     );

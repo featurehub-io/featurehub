@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
+import 'package:open_admin_app/utils/custom_scroll_behavior.dart';
 
 // Examples can assume:
 // class MyDataObject { }
@@ -563,21 +564,24 @@ class _ReorderableListContentState extends State<_ReorderableListContent>
           );
           break;
       }
-      return SingleChildScrollView(
-        scrollDirection: widget.scrollDirection,
-        padding: widget.padding,
-        controller: _scrollController,
-        reverse: widget.reverse,
-        child: _buildContainerForScrollDirection(
-          children: <Widget>[
-            if (widget.reverse)
-              _wrap(finalDropArea, widget.children.length, constraints),
-            widget.header,
-            for (int i = 0; i < widget.children.length; i += 1)
-              _wrap(widget.children[i], i, constraints),
-            if (!widget.reverse)
-              _wrap(finalDropArea, widget.children.length, constraints),
-          ],
+      return ScrollConfiguration(
+        behavior: CustomScrollBehavior(),
+        child: SingleChildScrollView(
+          scrollDirection: widget.scrollDirection,
+          padding: widget.padding,
+          controller: _scrollController,
+          reverse: widget.reverse,
+          child: _buildContainerForScrollDirection(
+            children: <Widget>[
+              if (widget.reverse)
+                _wrap(finalDropArea, widget.children.length, constraints),
+              widget.header,
+              for (int i = 0; i < widget.children.length; i += 1)
+                _wrap(widget.children[i], i, constraints),
+              if (!widget.reverse)
+                _wrap(finalDropArea, widget.children.length, constraints),
+            ],
+          ),
         ),
       );
     });
