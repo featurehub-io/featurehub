@@ -353,10 +353,10 @@ class _AddMembersDialogWidgetState extends State<AddMembersDialogWidget> {
         return const <Person>[];
       },
       onChanged: (data) {
-        data.forEach((person) {
+        for (var person in data) {
           person = person as Person;
           membersToAdd.add(person);
-        });
+        }
       },
       // when we need to build a chip because it has been selected, this is what is used
       // it can include an image, so we should perhaps consider this?

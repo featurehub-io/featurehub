@@ -97,7 +97,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
               children: <Widget>[
                 TextFormField(
                   controller: _email,
-                  decoration: FHFilledInputDecoration(labelText: 'Email'),
+                  decoration: fhFilledInputDecoration(labelText: 'Email'),
                   //initialValue: bloc.person != null ? bloc.person.email : '',
                   validator: (v) =>
                       (v?.isEmpty == true) ? 'Edit email address' : null,
@@ -106,7 +106,7 @@ class _EditUserFormState extends State<EditUserFormWidget> {
                   padding: const EdgeInsets.only(top: 30),
                   child: TextFormField(
                     controller: _name,
-                    decoration: FHFilledInputDecoration(labelText: 'Name'),
+                    decoration: fhFilledInputDecoration(labelText: 'Name'),
                     //  initialValue: bloc.person !=null ? bloc.person.name : '',
                     validator: (v) =>
                         (v?.isEmpty == true) ? 'Edit names' : null,

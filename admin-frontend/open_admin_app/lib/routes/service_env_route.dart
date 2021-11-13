@@ -140,8 +140,8 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
                               .copyWith(
                                   color: Theme.of(context).brightness ==
                                           Brightness.light
-                                      ? Theme.of(context).buttonColor
-                                      : Theme.of(context).accentColor)),
+                                      ? Theme.of(context).buttonTheme.colorScheme?.primary
+                                      : Theme.of(context).colorScheme.secondary)),
                     ),
                     Expanded(
                         flex: 6,

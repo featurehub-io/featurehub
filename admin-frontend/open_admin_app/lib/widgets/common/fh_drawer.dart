@@ -143,13 +143,13 @@ class _SiteAdminOptionsWidget extends StatelessWidget {
         stream: client.streamValley.currentPortfolioIdStream,
         builder: (context, snapshot) {
           List<Widget> menus = [
-            MenuItem(
+            const MenuItem(
                 name: 'Portfolios',
                 iconData: MaterialCommunityIcons.briefcase_plus_outline,
                 path: '/portfolios',
                 permissionType: PermissionType.portfolioadmin,
                 params: {}),
-            MenuItem(
+            const MenuItem(
                 name: 'Users',
                 permissionType: PermissionType.portfolioadmin,
                 iconData: AntDesign.addusergroup,
@@ -303,7 +303,7 @@ class MenuItem extends StatelessWidget {
     var light = Theme.of(context).brightness == Brightness.light;
 
     if (!menuOkForThisUser) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
 
     return InkWell(
@@ -311,7 +311,7 @@ class MenuItem extends StatelessWidget {
       mouseCursor: SystemMouseCursors.click,
       hoverColor: light
           ? Theme.of(context).selectedRowColor
-          : Theme.of(context).accentColor.withOpacity(0.2),
+          : Theme.of(context).colorScheme.secondary.withOpacity(0.2),
       onTap: () {
         if (menuOkForThisUser) {
           ManagementRepositoryClientBloc.router
@@ -323,7 +323,7 @@ class MenuItem extends StatelessWidget {
               .routeCurrentStream,
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
-              return SizedBox.shrink();
+              return const SizedBox.shrink();
             }
 
             final selected = snapshot.data!.route == path &&
@@ -333,13 +333,12 @@ class MenuItem extends StatelessWidget {
               color: selected
                   ? (light
                       ? Theme.of(context).primaryColorLight
-                      : Theme.of(context).accentColor)
+                      : Theme.of(context).colorScheme.secondary)
                   : null,
               child: Row(
                 children: <Widget>[
                   Icon(
                     iconData,
-                    color: Theme.of(context).buttonColor,
                     size: iconSize ?? 20.0,
                   ),
                   Padding(

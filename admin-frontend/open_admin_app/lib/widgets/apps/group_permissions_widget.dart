@@ -341,7 +341,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
   Map<String, EnvironmentGroupRole> createMap(
       List<Environment> environments, Group group) {
     final retMap = <String, EnvironmentGroupRole>{};
-    environments.forEach((environment) {
+    for (var environment in environments) {
       var egr = group.environmentRoles.firstWhereOrNull(
           (environmentRole) => environmentRole.environmentId == environment.id);
 
@@ -354,7 +354,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
       }
 
       retMap[environment.id!] = egr;
-    });
+    }
     return retMap;
   }
 }

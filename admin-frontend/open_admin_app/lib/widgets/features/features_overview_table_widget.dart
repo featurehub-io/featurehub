@@ -34,8 +34,8 @@ class FeaturesOverviewTableWidget extends StatelessWidget {
                 snapshot.data!.sortedByNameEnvironmentIds.isEmpty) {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const NoEnvironmentMessage(),
+                children: const <Widget>[
+                  NoEnvironmentMessage(),
                 ],
               );
             }
@@ -156,17 +156,17 @@ class _FeatureTabsHeader extends StatelessWidget {
           _FeatureTab(
               text: 'Feature Flags',
               icon: Icons.flag,
-              state: TabsState.FLAGS,
+              state: TabsState.featureFlags,
               color: Colors.green),
           _FeatureTab(
               text: 'Feature Values',
               icon: Icons.code,
-              state: TabsState.VALUES,
+              state: TabsState.featureValues,
               color: Colors.blue),
           _FeatureTab(
               text: 'Configurations',
               icon: Icons.device_hub,
-              state: TabsState.CONFIGURATIONS,
+              state: TabsState.configurations,
               color: Colors.orange),
         ],
       ),
@@ -179,7 +179,7 @@ class _FeatureTab extends StatelessWidget {
   final IconData icon;
   final TabsState state;
 
-  final color;
+  final Color color;
 
   const _FeatureTab(
       {Key? key,

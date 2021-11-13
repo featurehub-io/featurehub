@@ -84,14 +84,16 @@ class EditUserBloc implements Bloc {
       final portfoliosList = await _findPortfolios();
 
       final listOfExistingGroups = <PortfolioGroup>[];
-      person!.groups.forEach((group) => {
+      for (var group in person!.groups) {
+        {
             listOfExistingGroups.add(PortfolioGroup(
                 portfoliosList.firstWhereOrNull((p) =>
                     p.id ==
                     group
                         .portfolioId), // null is set for Portfolio for super admin group which doesn't belong to any portfolio
-                group))
-          });
+                group));
+          }
+      }
       selectGroupBloc.pushExistingGroupToStream(listOfExistingGroups);
     }
   }

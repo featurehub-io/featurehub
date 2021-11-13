@@ -33,7 +33,7 @@ class FeatureValueUpdatedByCell extends StatelessWidget {
                     style: Theme.of(context)
                         .textTheme
                         .caption!
-                        .copyWith(color: Theme.of(context).buttonColor)),
+                        .copyWith(color: Theme.of(context).colorScheme.primary)),
                 Text(whoUpdated, style: Theme.of(context).textTheme.bodyText1),
               ],
             ),

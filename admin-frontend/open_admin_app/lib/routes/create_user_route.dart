@@ -101,7 +101,7 @@ class _TopWidgetDefaultState extends State<TopWidgetDefault> {
                     const SizedBox(height: 16.0),
                     TextFormField(
                       controller: _email,
-                      decoration: FHFilledInputDecoration(
+                      decoration: fhFilledInputDecoration(
                         labelText: 'Email',
                       ),
                       validator: (v) {

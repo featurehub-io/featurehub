@@ -77,7 +77,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: <Widget>[
-                                        ApplicationDropDown(bloc),
+                                        applicationDropDown(bloc),
                                         FHFlatButtonTransparent(
                                           title: 'Create application',
                                           keepCase: true,
@@ -303,7 +303,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
     );
   }
 
-  Widget ApplicationDropDown(StepperBloc bloc) {
+  Widget applicationDropDown(StepperBloc bloc) {
     return StreamBuilder<List<Application>>(
         stream: bloc.appsList,
         builder: (context, snapshot) {

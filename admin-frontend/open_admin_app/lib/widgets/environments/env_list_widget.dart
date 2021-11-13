@@ -55,7 +55,7 @@ class _EnvListState extends State<EnvListWidget> {
   List<Environment> _sortEnvironments(List<Environment> originalList,
       {String parentId = '', List<Environment>? passedSortedList}) {
     final sortedList = passedSortedList ?? <Environment>[];
-    originalList.forEach((env) {
+    for (var env in originalList) {
       if (env.priorEnvironmentId == null && parentId == '') {
         sortedList.insert(0, env);
         _sortEnvironments(originalList,
@@ -65,7 +65,7 @@ class _EnvListState extends State<EnvListWidget> {
         _sortEnvironments(originalList,
             parentId: env.id!, passedSortedList: sortedList);
       }
-    });
+    }
     return sortedList;
   }
 
@@ -107,12 +107,12 @@ class _EnvListState extends State<EnvListWidget> {
 
   List<Environment> swapPreviousIds(oldPid, newPid) {
     final updatedEnvs = <Environment>[];
-    _environments!.forEach((env) {
+    for (var env in _environments!) {
       if (env.priorEnvironmentId == oldPid) {
         env.priorEnvironmentId = newPid;
         updatedEnvs.add(env);
       }
-    });
+    }
     return updatedEnvs;
   }
 }
@@ -360,7 +360,7 @@ class _EnvUpdateDialogWidgetState extends State<EnvUpdateDialogWidget> {
   }
 }
 
-Widget AddEnvWidget(BuildContext context, ManageAppBloc bloc) {
+Widget addEnvWidget(BuildContext context, ManageAppBloc bloc) {
   return Column(children: <Widget>[
     Container(
         padding: const EdgeInsets.fromLTRB(0, 10, 30, 10),

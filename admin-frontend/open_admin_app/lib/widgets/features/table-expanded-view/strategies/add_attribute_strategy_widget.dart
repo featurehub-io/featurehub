@@ -109,16 +109,16 @@ class _EditAttributeStrategyWidgetState
         _nameFieldMap[_wellKnown!]!,
         style: Theme.of(context).textTheme.subtitle2!.copyWith(
             color: Theme.of(context).brightness == Brightness.light
-                ? Theme.of(context).buttonColor
-                : Theme.of(context).accentColor),
-      );
+                ? Theme.of(context).buttonTheme.colorScheme?.primary
+                : Theme.of(context).colorScheme.secondary,
+      ));
     } else {
       return TextFormField(
           controller: _fieldName,
           decoration: InputDecoration(
               labelText: 'Custom rule name',
               labelStyle: Theme.of(context).textTheme.bodyText1!.copyWith(
-                  fontSize: 12.0, color: Theme.of(context).buttonColor)),
+                  fontSize: 12.0, color: Theme.of(context).buttonTheme.colorScheme?.primary)),
           style: const TextStyle(fontSize: 14.0),
           autofocus: true,
           textInputAction: TextInputAction.next,
@@ -438,7 +438,7 @@ class _EditAttributeStrategyWidgetState
                           .bodyText1!
                           .copyWith(
                               fontSize: 12.0,
-                              color: Theme.of(context).buttonColor)),
+                              color: Theme.of(context).primaryColor)),
                   // readOnly: !widget.widget.editable,
                   autofocus: true,
                   onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
@@ -505,11 +505,12 @@ class _EditAttributeStrategyWidgetState
   }
 }
 
-final _countryNameReverseMapper = (val) =>
-    (val is String) ? StrategyAttributeCountryNameExtension.fromJson(val) : val;
+_countryNameReverseMapper (val) {
+  return (val is String) ? StrategyAttributeCountryNameExtension.fromJson(val) : val;
+}
 
-final _countryNameMapper = (dynamic val) =>
-    ((val is StrategyAttributeCountryName)
+String _countryNameMapper (dynamic val) {
+  return ((val is StrategyAttributeCountryName)
             ? val.toJson().toString()
             : val.toString())
         .toString()
@@ -518,19 +519,26 @@ final _countryNameMapper = (dynamic val) =>
         .replaceAll('of', '')
         .trim()
         .capitalizeFirstofEach;
+}
 
-final _deviceNameMapper = (dynamic val) => (val is StrategyAttributeDeviceName)
+String _deviceNameMapper(dynamic val) {
+  return (val is StrategyAttributeDeviceName)
     ? val.toJson().toString()
     : val.toString();
+}
 
-final _deviceNameReverseMapper = (val) =>
-    (val is String) ? StrategyAttributeDeviceNameExtension.fromJson(val) : val;
+_deviceNameReverseMapper(val) {
+  return (val is String) ? StrategyAttributeDeviceNameExtension.fromJson(val) : val;
+}
 
-final _platformNameReverseMapper = (val) => (val is String)
+_platformNameReverseMapper (val) {
+  return (val is String)
     ? StrategyAttributePlatformNameExtension.fromJson(val)
     : val;
+}
 
-final _platformNameMapper = (dynamic val) =>
-    (val is StrategyAttributePlatformName)
+String _platformNameMapper(dynamic val) {
+  return (val is StrategyAttributePlatformName)
         ? val.toJson().toString()
         : val.toString();
+}

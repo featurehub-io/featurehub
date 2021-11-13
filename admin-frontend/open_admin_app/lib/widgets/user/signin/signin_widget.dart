@@ -111,7 +111,7 @@ class _SigninState extends State<SigninWidget> {
               padding: const EdgeInsets.only(bottom: 26.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[const RotatingLogoWidget()],
+                children: const <Widget>[RotatingLogoWidget()],
               ),
             ),
             SizedBox(

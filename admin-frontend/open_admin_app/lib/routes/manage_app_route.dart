@@ -165,7 +165,7 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
                   children: <Widget>[
                     Padding(
                       padding: const EdgeInsets.only(top: 12.0),
-                      child: AddEnvWidget(context, bloc),
+                      child: addEnvWidget(context, bloc),
                     ),
                     const EnvListWidget()
                   ],

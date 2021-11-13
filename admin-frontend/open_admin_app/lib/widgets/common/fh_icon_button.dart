@@ -21,7 +21,7 @@ class FHIconButton extends StatelessWidget {
       child: IconButton(
         splashRadius: 20.0,
         icon: icon,
-        color: Theme.of(context).buttonColor,
+        color: Theme.of(context).colorScheme.primary,
         tooltip: tooltip,
         iconSize: 20,
         onPressed: onPressed,

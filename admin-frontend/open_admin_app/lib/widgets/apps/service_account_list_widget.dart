@@ -226,7 +226,7 @@ class _ServiceAccountDescription extends StatelessWidget {
             style: Theme.of(context).textTheme.subtitle1!.copyWith(
                 color: light
                     ? Theme.of(context).primaryColor
-                    : Theme.of(context).accentColor)),
+                    : Theme.of(context).colorScheme.secondary)),
         Text(
           serviceAccount.description ?? '',
           style: Theme.of(context).textTheme.caption,

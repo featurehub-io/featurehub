@@ -114,7 +114,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                                     .addOverlay((BuildContext context) {
                                   return bloc.mrClient.person.id!.id ==
                                           p.person.id!.id
-                                      ? CantDeleteDialog(bloc)
+                                      ? cantDeleteYourselfDialog(bloc)
                                       : DeleteDialogWidget(
                                           person: p.person,
                                           bloc: bloc,
@@ -180,7 +180,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
     });
   }
 
-  Widget CantDeleteDialog(ListUsersBloc bloc) {
+  Widget cantDeleteYourselfDialog(ListUsersBloc bloc) {
     return FHAlertDialog(
       title: const Text("You can't delete yourself!"),
       content: const Text(
@@ -199,7 +199,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
 
   Color _infoColour(SearchPersonEntry entry, bool allowedLocalLogin) {
     if (!allowedLocalLogin) {
-      return Theme.of(context).buttonColor;
+      return Theme.of(context).colorScheme.primary;
     }
 
     if (entry.registration.expired) {

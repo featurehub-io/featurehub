@@ -11,7 +11,7 @@ import 'package:rxdart/rxdart.dart';
 
 import 'per_application_features_bloc.dart';
 
-enum TabsState { FLAGS, VALUES, CONFIGURATIONS }
+enum TabsState { featureFlags, featureValues, configurations }
 
 class FeatureStrategyCountOverride {
   final Feature feature;
@@ -30,7 +30,7 @@ class FeatureStrategyCountOverride {
 class FeaturesOnThisTabTrackerBloc implements Bloc {
   final String applicationId;
   FeatureStatusFeatures featureStatus;
-  final _stateSource = BehaviorSubject<TabsState>.seeded(TabsState.FLAGS);
+  final _stateSource = BehaviorSubject<TabsState>.seeded(TabsState.featureFlags);
   List<Feature> _featuresForTabs = [];
   final _currentlyEditingFeatureKeys = <String>{};
   final _featureCurrentlyEditingSource = BehaviorSubject<Set<String>?>();
@@ -83,16 +83,16 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
         featureStatusBloc.publishNewFeatureStream.listen((feature) {
       switch (feature.valueType!) {
         case FeatureValueType.BOOLEAN:
-          _stateSource.add(TabsState.FLAGS);
+          _stateSource.add(TabsState.featureFlags);
           break;
         case FeatureValueType.STRING:
-          _stateSource.add(TabsState.VALUES);
+          _stateSource.add(TabsState.featureValues);
           break;
         case FeatureValueType.NUMBER:
-          _stateSource.add(TabsState.VALUES);
+          _stateSource.add(TabsState.featureValues);
           break;
         case FeatureValueType.JSON:
-          _stateSource.add(TabsState.CONFIGURATIONS);
+          _stateSource.add(TabsState.configurations);
           break;
       }
 
@@ -241,20 +241,20 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
 
   // turns them into a map for easy access
   void _refixFeaturesByKey() {
-    featureStatus.applicationFeatureValues.features.forEach((f) {
+    for (var f in featureStatus.applicationFeatureValues.features) {
       _allFeaturesByKey[f.key!] = f;
-    });
+    }
   }
 
   void _fixFeaturesForTabs(TabsState tab) {
     _featuresForTabs =
         featureStatus.applicationFeatureValues.features.where((f) {
-      return ((tab == TabsState.FLAGS) &&
+      return ((tab == TabsState.featureFlags) &&
               f.valueType == FeatureValueType.BOOLEAN) ||
-          ((tab == TabsState.VALUES) &&
+          ((tab == TabsState.featureValues) &&
               (f.valueType == FeatureValueType.NUMBER ||
                   f.valueType == FeatureValueType.STRING)) ||
-          ((tab == TabsState.CONFIGURATIONS) &&
+          ((tab == TabsState.configurations) &&
               (f.valueType == FeatureValueType.JSON));
     }).toList();
   }
@@ -275,7 +275,9 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
   @override
   void dispose() {
     // clean up any outstanding value blocs
-    featureValueBlocs.values.forEach((element) => element.dispose());
+    for (var element in featureValueBlocs.values) {
+      element.dispose();
+    }
     _featureStream.cancel();
     _newFeatureStream.cancel();
     _shownEnvironmentsStream.cancel();
@@ -338,11 +340,11 @@ class FeaturesOnThisTabTrackerBloc implements Bloc {
 
     // now make sure all features are there as
     // when we create one we can add it to the list and it not have a bloc
-    removeMissing.forEach((key) {
+    for (var key in removeMissing) {
       if (featureValueBlocs[key] == null) {
         _createFeatureValueBlocForFeature(_allFeaturesByKey[key]!);
       }
-    });
+    }
 
     // trigger a rebuild
     _featureCurrentlyEditingSource.add(removeMissing);

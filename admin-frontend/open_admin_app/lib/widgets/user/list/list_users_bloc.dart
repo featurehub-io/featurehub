@@ -70,7 +70,7 @@ class ListUsersBloc implements Bloc {
     final hasLocal = mrClient.identityProviders.hasLocal;
     final emptyReg = OutstandingRegistration(expired: false, id: '', token: '');
 
-    data.people.forEach((person) {
+    for (var person in data.people) {
       final spr = SearchPersonEntry(
           person,
           hasLocal
@@ -80,7 +80,7 @@ class ListUsersBloc implements Bloc {
               : emptyReg);
 
       results.add(spr);
-    });
+    }
 
     // publish it out...
     _personSearchResultSource.add(results);

@@ -57,7 +57,9 @@ class SelectPortfolioGroupBloc implements Bloc {
   }
 
   void pushExistingGroupToStream(List<PortfolioGroup> groupList) {
-    groupList.forEach((group) => {listOfAddedPortfolioGroups.add(group)});
+    for (var group in groupList) {
+      {listOfAddedPortfolioGroups.add(group);}
+    }
     _addedGroupsStream.add(listOfAddedPortfolioGroups);
   }
 

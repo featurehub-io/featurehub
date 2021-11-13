@@ -17,7 +17,7 @@ class FHFlatButtonAccent extends StatelessWidget {
     return TextButton(
       onPressed: () => onPressed.call(),
       style:
-          TextButton.styleFrom(backgroundColor: Theme.of(context).accentColor),
+          TextButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.secondary),
       child: Text(
         keepCase ? title : title.toUpperCase(),
         style: TextStyle(

@@ -29,7 +29,7 @@ class FHLinkWidget extends StatelessWidget {
               style: Theme.of(context)
                   .textTheme
                   .button!
-                  .merge(TextStyle(color: Theme.of(context).buttonColor))),
+                  .merge(TextStyle(color: Theme.of(context).primaryColor))),
         ),
       ),
     );

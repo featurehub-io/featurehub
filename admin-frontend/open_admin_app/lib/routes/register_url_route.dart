@@ -18,7 +18,7 @@ class RegisterURLRoute extends StatefulWidget {
   }
 }
 
-const _PASSWORD_SCORE_THRESHOLD = 1;
+const _passwordScoreThreshold = 1;
 
 class RegisterURLState extends State<RegisterURLRoute> {
   final _formKey = GlobalKey<FormState>(debugLabel: 'registration url');
@@ -181,7 +181,7 @@ class RegisterURLState extends State<RegisterURLRoute> {
       state = 'Strong';
     }
     Color stateColor =
-        (result.score == null || result.score! < _PASSWORD_SCORE_THRESHOLD)
+        (result.score == null || result.score! < _passwordScoreThreshold)
             ? Colors.red
             : Colors.green;
 

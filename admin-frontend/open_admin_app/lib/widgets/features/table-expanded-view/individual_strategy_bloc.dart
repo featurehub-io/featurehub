@@ -30,9 +30,9 @@ class IndividualStrategyBloc extends Bloc {
             BehaviorSubject<List<RolloutStrategyAttribute>>.seeded(
                 rolloutStrategy.attributes) {
     // ensure all attributes have a unique id
-    rolloutStrategy.attributes.forEach((a) {
+    for (var a in rolloutStrategy.attributes) {
       a.id = _individualBlocUUidGenerator.v4();
-    });
+    }
   }
 
   bool get isUnsavedStrategy =>
