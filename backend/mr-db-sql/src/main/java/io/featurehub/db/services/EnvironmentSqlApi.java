@@ -286,32 +286,7 @@ public class EnvironmentSqlApi implements EnvironmentApi {
   }
 
   void promotionSortedEnvironments(List<DbEnvironment> environments) {
-    Map<UUID, DbEnvironment> environmentOrderingMap = environments.stream().collect(Collectors.toMap(DbEnvironment::getId, e -> e));
-
-    environments.sort((o1, o2) -> {
-      final DbEnvironment env1 = environmentOrderingMap.get(o1.getId());
-      final DbEnvironment env2 = environmentOrderingMap.get(o2.getId());
-
-      Integer w = EnvironmentUtils.walkAndCompare(env1, env2);
-      if (w == null) {
-        w = EnvironmentUtils.walkAndCompare(env2, env1);
-        if (w == null) {
-          if (env1.getPriorEnvironment() == null && env2.getPriorEnvironment() == null) {
-            return 0;
-          }
-          if (env1.getPriorEnvironment() != null && env2.getPriorEnvironment() == null) {
-            return 1;
-          }
-          return -1;
-        } else {
-          return w * -1;
-        }
-      }
-
-      return w;
-    });
-
-    environments.forEach(e -> log.info("ENVIRONMENT: {}", e.getName()));
+    EnvironmentUtils.sortEnvironments(environments);
   }
 
   @Transactional
