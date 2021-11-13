@@ -644,29 +644,21 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
         });
       }
 
-      List<EnvironmentFeatureValues> finalValues = new ArrayList<>(envs.values());
+      // we have to get all of them and sort them into order because this person may not have access
+      // to all of them, so we will lose the sort order if we try and order them
+      // so we get them all, sort them, and then pick them out of the map one by one
+      final List<DbEnvironment> sortingEnvironments =
+        new ArrayList<>(new QDbEnvironment().select(QDbEnvironment.Alias.id).parentApplication.id.eq(appId).findList());
 
-      finalValues.sort((o1, o2) -> {
-          final DbEnvironment env1 = environmentOrderingMap.get(o1.getEnvironmentId());
-          final DbEnvironment env2 = environmentOrderingMap.get(o2.getEnvironmentId());
+      EnvironmentUtils.sortEnvironments(sortingEnvironments);
 
-        Integer w = EnvironmentUtils.walkAndCompare(env1, env2);
-        if (w == null) {
-          w = EnvironmentUtils.walkAndCompare(env2, env1);
-          if (w == null) {
-            if (env1.getPriorEnvironment() == null && env2.getPriorEnvironment() == null) {
-              return 0;
-            }
-            if (env1.getPriorEnvironment() != null && env2.getPriorEnvironment() == null) {
-              return 1;
-            }
-            return -1;
-          } else {
-            return w * -1;
-          }
+      List<EnvironmentFeatureValues> finalValues = new ArrayList<>();
+
+      sortingEnvironments.forEach(e -> {
+        final EnvironmentFeatureValues efv = envs.get(e.getId());
+        if (efv != null) {
+          finalValues.add(efv);
         }
-
-        return w;
       });
 
       return
