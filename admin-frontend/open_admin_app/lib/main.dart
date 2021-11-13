@@ -1,4 +1,5 @@
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:open_admin_app/routes/fh_navigator.dart';
@@ -61,8 +62,19 @@ class FeatureHubApp extends StatelessWidget {
               debugShowCheckedModeBanner: false,
               title: 'FeatureHub',
               theme: theme,
+              scrollBehavior: MyCustomScrollBehavior(),
               routeInformationParser: navBloc.routeInfoParser,
               routerDelegate: navBloc.routeDelegate);
         });
   }
+}
+
+class MyCustomScrollBehavior extends MaterialScrollBehavior {
+  // Override behavior methods and getters like dragDevices
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+    PointerDeviceKind.mouse,
+    PointerDeviceKind.touch
+    // etc.
+  };
 }
