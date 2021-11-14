@@ -144,20 +144,73 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
     final ScrollController controllerTab2 = ScrollController();
     final ScrollController controllerTab3 = ScrollController();
 
-    // maybe should be a Column?
     return Column(
       children: <Widget>[
         ScrollConfiguration(
           behavior: CustomScrollBehavior(),
           child: TabBar(
+            // indicatorPadding: const EdgeInsets.all(5),
+            indicatorSize: TabBarIndicatorSize.label,
+            indicator: BoxDecoration(
+              shape: BoxShape.rectangle,
+              border: Border.all(
+                  color:
+                      Theme.of(context).colorScheme.secondary.withOpacity(0.2),
+                  width: 2),
+              borderRadius: BorderRadius.circular(50),
+              color: Theme.of(context).colorScheme.secondary.withOpacity(0.2),
+            ),
             controller: _controller,
             labelStyle: Theme.of(context).textTheme.bodyText1,
             labelColor: Theme.of(context).textTheme.subtitle2!.color,
-            unselectedLabelColor: Theme.of(context).textTheme.bodyText2!.color,
-            tabs: const [
-              Tab(text: 'Environments'),
-              Tab(text: 'Group permissions'),
-              Tab(text: 'Service account permissions'),
+            unselectedLabelColor: Theme.of(context).colorScheme.secondary,
+            overlayColor:
+                MaterialStateColor.resolveWith((Set<MaterialState> states) {
+              if (states.contains(MaterialState.pressed)) {
+                return Theme.of(context).colorScheme.secondary;
+              }
+              if (states.contains(MaterialState.focused)) {
+                return Theme.of(context).colorScheme.secondaryVariant;
+              } else if (states.contains(MaterialState.hovered)) {
+                return Theme.of(context).cardColor;
+              }
+
+              return Colors.transparent;
+            }),
+            tabs: [
+              Tab(
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                  child: const Align(
+                    alignment: Alignment.center,
+                    child: Text("ENVIRONMENTS"),
+                  ),
+                ),
+              ),
+              Tab(
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                  child: const Align(
+                    alignment: Alignment.center,
+                    child: Text("GROUP PERMISSIONS"),
+                  ),
+                ),
+              ),
+              Tab(
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                  child: const Align(
+                    alignment: Alignment.center,
+                    child: Text("SERVICE ACCOUNT PERMISSIONS"),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
