@@ -5,6 +5,8 @@ import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/version.dart';
+import 'package:open_admin_app/widget_creator.dart';
+import 'package:open_admin_app/widgets/common/fh_person_avatar.dart';
 import 'package:open_admin_app/widgets/dynamic-theme/fh_dynamic_theme.dart';
 import 'package:open_admin_app/widgets/stepper/stepper_container.dart';
 
@@ -55,6 +57,7 @@ class FHappBar extends StatelessWidget {
         ],
       ),
       actions: <Widget>[
+        widgetCreator.orgNameContainer(mrBloc),
         StreamBuilder<Person>(
             stream: mrBloc.personStream,
             builder: (BuildContext context, AsyncSnapshot<Person> snapshot) {
@@ -65,10 +68,7 @@ class FHappBar extends StatelessWidget {
                   padding: const EdgeInsets.all(8.0),
                   child: Row(
                     children: [
-                      Text(
-                          //here the name should be returned from a current user
-                          'Hi, ${person.name}',
-                          style: Theme.of(context).primaryTextTheme.bodyText2),
+                      PersonAvatar(person: person),
                       const SizedBox(
                         width: 32.0,
                       ),

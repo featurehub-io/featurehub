@@ -1,43 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
-import 'package:open_admin_app/api/client_api.dart';
 
 class PersonAvatar extends StatelessWidget {
-  final ManagementRepositoryClientBloc mrBloc;
+  final Person person;
 
-  const PersonAvatar({Key? key, required this.mrBloc}) : super(key: key);
+  const PersonAvatar({Key? key, required this.person}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<Person>(
-        stream: mrBloc.personStream,
-        builder: (BuildContext context, AsyncSnapshot<Person> snapshot) {
-          if (snapshot.hasData && mrBloc.isLoggedIn) {
-            final person = snapshot.data!;
-            return Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  children: [
-                    CircleAvatar(
-                      backgroundColor: const Color(0xffA6F2DE),
-                      child: Text(
-                          //here the name should be returned from a current user
-                          person.name!.substring(0, 1),
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyText2!
-                              .copyWith(color: Theme.of(context).primaryColor)),
-                    ),
-                    const SizedBox(height: 4.0),
-                    Text(
-                        //here the name should be returned from a current user
-                        person.name!,
-                        style: Theme.of(context).textTheme.bodyText2),
-                  ],
-                ));
-          } else {
-            return Container();
+            return Column(
+              children: [
+                CircleAvatar(
+                  backgroundColor: const Color(0xffA6F2DE),
+                  child: Text(
+                      //here the name should be returned from a current user
+                      person.name!.substring(0, 1),
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyText2!
+                          .copyWith(color: Theme.of(context).primaryColor)
+                          )),
+              ],
+            );
           }
-        });
-  }
-}
+        }
