@@ -196,7 +196,7 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
                   ),
                   child: const Align(
                     alignment: Alignment.center,
-                    child: Text("GROUPS PERMISSION"),
+                    child: Text("GROUP PERMISSIONS"),
                   ),
                 ),
               ),
@@ -207,7 +207,7 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
                   ),
                   child: const Align(
                     alignment: Alignment.center,
-                    child: Text("SERVICE ACCOUNT PERMISSION"),
+                    child: Text("SERVICE ACCOUNT PERMISSIONS"),
                   ),
                 ),
               ),
