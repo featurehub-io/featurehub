@@ -17,7 +17,7 @@ class PersonAvatar extends StatelessWidget {
                       person.name!.substring(0, 1),
                       style: Theme.of(context)
                           .textTheme
-                          .bodyText2!
+                          .subtitle1!
                           .copyWith(color: Theme.of(context).primaryColor)
                           )),
               ],

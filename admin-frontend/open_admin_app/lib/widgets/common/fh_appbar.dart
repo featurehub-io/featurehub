@@ -58,6 +58,7 @@ class FHappBar extends StatelessWidget {
       ),
       actions: <Widget>[
         widgetCreator.orgNameContainer(mrBloc),
+        const SizedBox(width: 8.0),
         StreamBuilder<Person>(
             stream: mrBloc.personStream,
             builder: (BuildContext context, AsyncSnapshot<Person> snapshot) {
