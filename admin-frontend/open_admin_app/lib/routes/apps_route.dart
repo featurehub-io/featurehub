@@ -111,26 +111,25 @@ class _ApplicationCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Card(
+        elevation: 4.0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8.0),
         ),
-        elevation: 5.0,
+        color: Theme.of(context).brightness == Brightness.light ?
+        Theme.of(context).backgroundColor
+            : null,
         child: InkWell(
           mouseCursor: SystemMouseCursors.click,
           borderRadius: BorderRadius.circular(8.0),
           onTap: () {
             bloc.mrClient
-                .setCurrentAid(application.id); //is it the right function?
-
-            // Router.of(context).
-            // Navigator.of(context).pushNamed('/features');
+                .setCurrentAid(application.id);
             ManagementRepositoryClientBloc.router.navigateTo(
               context,
               routeNameFeatureDashboard,
             );
           },
-          child: Container(
-            color: Theme.of(context).backgroundColor,
+          child: SizedBox(
             width: 240,
             height: 150,
             child: Padding(
@@ -158,7 +157,8 @@ class _ApplicationCard extends StatelessWidget {
                                         color: Theme.of(context).brightness ==
                                                 Brightness.light
                                             ? Theme.of(context).primaryColor
-                                            : null)),
+                                            : null)
+                            ),
                             const SizedBox(height: 4.0),
                             Text(application.description!,
                                 maxLines: 2,

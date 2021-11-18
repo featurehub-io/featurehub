@@ -165,8 +165,9 @@ class _ServiceAccountEnvironment extends StatelessWidget {
     // are any app env ids in the perm envs?
     final found = appEnvs.any((appEnvId) => permEnvs.contains(appEnvId));
     return Card(
-      child: Container(
-        color: Theme.of(context).backgroundColor,
+      color: Theme.of(context).backgroundColor,
+      elevation: 4.0,
+      child: SizedBox(
         width: 240,
         height: 130,
         child: Padding(

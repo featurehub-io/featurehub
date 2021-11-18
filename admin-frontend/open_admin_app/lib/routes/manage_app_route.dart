@@ -167,7 +167,7 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
             overlayColor:
                 MaterialStateColor.resolveWith((Set<MaterialState> states) {
               if (states.contains(MaterialState.pressed)) {
-                return Theme.of(context).colorScheme.secondary;
+                return Theme.of(context).colorScheme.secondaryVariant;
               }
               if (states.contains(MaterialState.focused)) {
                 return Theme.of(context).colorScheme.secondaryVariant;
