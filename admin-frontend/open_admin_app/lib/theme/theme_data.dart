@@ -14,6 +14,7 @@ final ThemeData myTheme = ThemeData(
   scaffoldBackgroundColor: const Color(0xfffafafa),
   bottomAppBarColor: const Color(0xffffffff),
   cardColor: const Color(0xffffffff),
+  applyElevationOverlayColor: false,
   dividerColor: const Color(0x1f000000),
   highlightColor: const Color(0x66bcbcbc),
   splashColor: const Color(0x66c8c8c8),
@@ -23,7 +24,7 @@ final ThemeData myTheme = ThemeData(
   // buttonColor: const Color(0xff473e8f),
   toggleableActiveColor: const Color(0xff678de5),
   secondaryHeaderColor: const Color(0xfff6f6f6),
-  backgroundColor: const Color(0x226DD3F4),
+  backgroundColor: const Color(0xffECF9FE),
   dialogBackgroundColor: const Color(0xffffffff),
   indicatorColor: const Color(0xff051d94),
   hintColor: const Color(0x8a000000),
@@ -33,6 +34,7 @@ final ThemeData myTheme = ThemeData(
     cursorColor: Color(0xff4285f4),
     selectionHandleColor: Color(0xff6b83fa),
   ),
+
   textButtonTheme: TextButtonThemeData(
       // style: TextButton.styleFrom(primary: Color(0xff473e8f)),
       style: TextButton.styleFrom(
@@ -51,7 +53,7 @@ final ThemeData myTheme = ThemeData(
     primary: Color(0xff03125d),
     primaryVariant: Color(0xff051d94),
     secondary: Color(0xff0830f7),
-    secondaryVariant: Color(0xff051d94),
+    secondaryVariant: Color(0xffCED6FD),
     surface: Color(0xffffffff),
     background: Color(0xff9cacfc),
     error: Color(0xffd32f2f),
@@ -229,11 +231,6 @@ final ThemeData myTheme = ThemeData(
       fontStyle: FontStyle.normal,
     ),
   ),
-  tabBarTheme: const TabBarTheme(
-    indicatorSize: TabBarIndicatorSize.tab,
-    labelColor: Color(0xffffffff),
-    unselectedLabelColor: Color(0xb2ffffff),
-  ),
   chipTheme: const ChipThemeData(
     backgroundColor: Color(0x3d03125d),
     brightness: Brightness.light,
@@ -262,17 +259,9 @@ final ThemeData myTheme = ThemeData(
       style: BorderStyle.none,
     )),
   ),
-  dialogTheme: const DialogTheme(
-      shape: RoundedRectangleBorder(
-    side: BorderSide(
-      color: Color(0xff000000),
-      width: 0,
-      style: BorderStyle.none,
-    ),
-    borderRadius: BorderRadius.all(Radius.circular(4.0)),
-  )),
 );
 final ThemeData darkTheme = ThemeData(
+  applyElevationOverlayColor: true,
   primarySwatch: Colors.blue,
   brightness: Brightness.dark,
   fontFamily: fontFamily,
