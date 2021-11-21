@@ -55,6 +55,17 @@ class ServiceAccountEnvBloc implements Bloc, ManagementRepositoryAwareBloc {
     }
   }
 
+  Future<ServiceAccount?> resetApiKey(String id) async {
+    ServiceAccount? sa;
+    sa = await _serviceAccountServiceApi
+        .resetApiKey(id)
+        .catchError((e, s) {
+      _mrClient.dialogError(e, s);
+    });
+    return sa;
+  }
+
+
   @override
   ManagementRepositoryClientBloc get mrClient => _mrClient;
 

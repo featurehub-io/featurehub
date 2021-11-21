@@ -11,6 +11,7 @@ import 'package:open_admin_app/widgets/common/copy_to_clipboard_html.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
+import 'package:open_admin_app/widgets/service-accounts/apikay_reset_dialog_widget.dart';
 import 'package:open_admin_app/widgets/service-accounts/service_accounts_env_bloc.dart';
 
 class ServiceAccountEnvRoute extends StatelessWidget {
@@ -66,13 +67,14 @@ class ServiceAccountEnvRoute extends StatelessWidget {
                                 child: FHUnderlineButton(
                                     keepCase: true,
                                     title: 'Go to service accounts settings',
-                                    onPressed: () => {
-                                          ManagementRepositoryClientBloc.router
-                                              .navigateTo(
-                                            context,
-                                            '/service-accounts',
-                                          )
-                                        }),
+                                    onPressed: () =>
+                                    {
+                                      ManagementRepositoryClientBloc.router
+                                          .navigateTo(
+                                        context,
+                                        '/service-accounts',
+                                      )
+                                    }),
                               );
                             } else {
                               return const SizedBox.shrink();
@@ -93,11 +95,14 @@ class ServiceAccountEnvRoute extends StatelessWidget {
 
                         if (envSnapshot.data!.serviceAccounts.isEmpty) {
                           return Text('No service accounts available',
-                              style: Theme.of(context).textTheme.caption);
+                              style: Theme
+                                  .of(context)
+                                  .textTheme
+                                  .caption);
                         }
 
                         return _ServiceAccountDisplayWidget(
-                            serviceAccountEnvs: envSnapshot.data!);
+                            serviceAccountEnvs: envSnapshot.data!, bloc: bloc);
                       }),
                 ],
               ),
@@ -107,9 +112,10 @@ class ServiceAccountEnvRoute extends StatelessWidget {
 
 class _ServiceAccountDisplayWidget extends StatelessWidget {
   final ServiceAccountEnvironments serviceAccountEnvs;
+  final ServiceAccountEnvBloc bloc;
 
   const _ServiceAccountDisplayWidget(
-      {Key? key, required this.serviceAccountEnvs})
+      {Key? key, required this.serviceAccountEnvs, required this.bloc})
       : super(key: key);
 
   @override
@@ -125,7 +131,9 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
           if (!serviceAccount.permissions
               .every((element) => element.permissions.isEmpty)) {
             return Card(
-              color: Theme.of(context).cardColor,
+              color: Theme
+                  .of(context)
+                  .cardColor,
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Row(
@@ -134,14 +142,24 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
                       flex: 2,
                       child: Text(serviceAccount.name,
                           overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context)
+                          style: Theme
+                              .of(context)
                               .textTheme
                               .subtitle1!
                               .copyWith(
-                                  color: Theme.of(context).brightness ==
-                                          Brightness.light
-                                      ? Theme.of(context).buttonTheme.colorScheme?.primary
-                                      : Theme.of(context).colorScheme.secondary)),
+                              color: Theme
+                                  .of(context)
+                                  .brightness ==
+                                  Brightness.light
+                                  ? Theme
+                                  .of(context)
+                                  .buttonTheme
+                                  .colorScheme
+                                  ?.primary
+                                  : Theme
+                                  .of(context)
+                                  .colorScheme
+                                  .secondary)),
                     ),
                     Expanded(
                         flex: 6,
@@ -150,7 +168,8 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
                             for (var env in serviceAccountEnvs.environments)
                               if (serviceAccount.permissions
                                   .firstWhere((p) => p.environmentId == env.id,
-                                      orElse: () => ServiceAccountPermission(
+                                  orElse: () =>
+                                      ServiceAccountPermission(
                                           permissions: [],
                                           environmentId: env.id!))
                                   .permissions
@@ -162,20 +181,23 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
                                       Expanded(
                                         flex: 3,
                                         child: Text(env.name,
-                                            style: Theme.of(context)
+                                            style: Theme
+                                                .of(context)
                                                 .textTheme
                                                 .bodyText2),
                                       ),
                                       Expanded(
                                           flex: 4,
                                           child:
-                                              _ServiceAccountPermissionWidget(
-                                                  env: env,
-                                                  sa: serviceAccount)),
+                                          _ServiceAccountPermissionWidget(
+                                              env: env,
+                                              sa: serviceAccount)),
                                       Expanded(
                                           flex: 4,
                                           child: _ServiceAccountCopyWidget(
-                                              env: env, sa: serviceAccount))
+                                              env: env,
+                                              sa: serviceAccount,
+                                              bloc: bloc))
 
 //
                                     ],
@@ -205,7 +227,8 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final account = sa.permissions.firstWhere((p) => p.environmentId == env.id,
-        orElse: () => ServiceAccountPermission(
+        orElse: () =>
+            ServiceAccountPermission(
               environmentId: env.id!,
               permissions: <RoleType>[],
             ));
@@ -214,27 +237,35 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
     return Container(
         child: perms.isNotEmpty
             ? Text(perms.map((p) => p.name).join(', '),
-                style: const TextStyle(
-                    fontFamily: 'Source', fontSize: 12, letterSpacing: 1.0))
+            style: const TextStyle(
+                fontFamily: 'Source', fontSize: 12, letterSpacing: 1.0))
             : Text('No permissions defined',
-                style: Theme.of(context).textTheme.caption));
+            style: Theme
+                .of(context)
+                .textTheme
+                .caption));
   }
 }
 
 class _ServiceAccountCopyWidget extends StatelessWidget {
   final ServiceAccount sa;
   final Environment env;
+  final ServiceAccountEnvBloc bloc;
 
   const _ServiceAccountCopyWidget(
-      {Key? key, required this.sa, required this.env})
+      {Key? key, required this.sa, required this.env, required this.bloc})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final account = sa.permissions.firstWhere((p) => p.environmentId == env.id,
-        orElse: () => ServiceAccountPermission(
-            permissions: <RoleType>[], environmentId: env.id!));
-    var isScreenWide = MediaQuery.of(context).size.width >= 1450;
+        orElse: () =>
+            ServiceAccountPermission(
+                permissions: <RoleType>[], environmentId: env.id!));
+    var isScreenWide = MediaQuery
+        .of(context)
+        .size
+        .width >= 1450;
 
     return Flex(
         direction: isScreenWide ? Axis.horizontal : Axis.vertical,
@@ -245,11 +276,15 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
                 children: [
                   Text(
                     'Client eval API Key',
-                    style: Theme.of(context).textTheme.caption,
+                    style: Theme
+                        .of(context)
+                        .textTheme
+                        .caption,
                   ),
                   FHCopyToClipboard(
                       copyString: account.sdkUrlClientEval!,
                       tooltipMessage: account.sdkUrlClientEval!),
+                  _ResetApiKeyWidget(bloc: bloc, saPermission: account)
                 ],
               ),
             ),
@@ -259,18 +294,22 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
                 children: [
                   Text(
                     'Server eval API Key',
-                    style: Theme.of(context).textTheme.caption,
+                    style: Theme
+                        .of(context)
+                        .textTheme
+                        .caption,
                   ),
                   FHCopyToClipboard(
                       copyString: account.sdkUrlServerEval!,
                       tooltipMessage: account.sdkUrlServerEval!),
+                  _ResetApiKeyWidget(bloc: bloc, saPermission: account)
                 ],
               ),
             ),
           if (account.sdkUrlClientEval == null)
             const Tooltip(
               message:
-                  'API Key is unavailable because your current permissions for this environment are lower level',
+              'API Key is unavailable because your current permissions for this environment are lower level',
               child: Icon(
                 Feather.alert_circle,
                 size: 24.0,
@@ -280,7 +319,7 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
           if (account.sdkUrlServerEval == null)
             const Tooltip(
               message:
-                  'API Key is unavailable because your current permissions for this environment are lower level',
+              'API Key is unavailable because your current permissions for this environment are lower level',
               child: Icon(
                 Feather.alert_circle,
                 size: 24.0,
@@ -290,3 +329,28 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
         ]);
   }
 }
+
+class _ResetApiKeyWidget extends StatelessWidget {
+  final ServiceAccountPermission saPermission;
+  final ServiceAccountEnvBloc bloc;
+
+  const _ResetApiKeyWidget(
+      {Key? key, required this.saPermission, required this.bloc})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: () =>
+          bloc.mrClient.addOverlay((BuildContext context) {
+            return ApiKeyResetDialogWidget(
+              account: saPermission,
+              bloc: bloc,
+            );
+          }),
+      child: const Text("Reset"),
+      style: TextButton.styleFrom(primary: Colors.red),
+    );
+  }
+}
+
