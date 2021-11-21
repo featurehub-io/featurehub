@@ -50,12 +50,12 @@ class PersonSpec extends BaseSpec {
       p != null
   }
 
-  def "No email is passed when creating a user causes a null return"() {
-    when:
-      PersonApi.PersonToken p = personSqlApi.create(null, "x", UUID.randomUUID())
-    then:
-      p == null
-  }
+//  def "No email is passed when creating a user causes a null return"() {
+//    when:
+//      PersonApi.PersonToken p = personSqlApi.create(null, "x", UUID.randomUUID())
+//    then:
+//      p == null
+//  }
 
   def "Non uuid for createdBy causes a null return"() {
     when:

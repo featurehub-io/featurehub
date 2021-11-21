@@ -44,7 +44,7 @@ class BaseSpec extends Specification {
     Group adminGroup
     def createAdminGroup = (org == null)
     if (org == null) {
-      org = organizationSqlApi.save(new Organization())
+      org = organizationSqlApi.save(new Organization().name("org1"))
     }
 
     superPerson = convertUtils.toPerson(dbSuperPerson, Opts.empty())

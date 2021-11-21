@@ -8,6 +8,7 @@ import io.featurehub.db.api.ServiceAccountApi;
 import io.featurehub.mr.api.ServiceAccountServiceDelegate;
 import io.featurehub.mr.auth.AuthManagerService;
 import io.featurehub.mr.model.Person;
+import io.featurehub.mr.model.ResetApiKeyType;
 import io.featurehub.mr.model.ServiceAccount;
 import io.featurehub.mr.model.ServiceAccountPermission;
 import jakarta.inject.Inject;
@@ -94,7 +95,7 @@ public class ServiceAccountResource implements ServiceAccountServiceDelegate {
   }
 
   @Override
-  public ServiceAccount resetApiKey(UUID id, SecurityContext securityContext) {
+  public ServiceAccount resetApiKey(UUID id, ResetApiKeyHolder holder, SecurityContext securityContext) {
     Person person = authManager.from(securityContext);
 
     ServiceAccount info = serviceAccountApi.get(id,  Opts.empty());
@@ -104,7 +105,9 @@ public class ServiceAccountResource implements ServiceAccountServiceDelegate {
     }
 
     if (authManager.isPortfolioAdmin(id, person) || authManager.isOrgAdmin(person)) {
-      ServiceAccount sa = serviceAccountApi.resetApiKey(id);
+      ServiceAccount sa = serviceAccountApi.resetApiKey(id,
+        holder.whichApiKey != ResetApiKeyType.SERVER_EVAL_ONLY,
+        holder.whichApiKey != ResetApiKeyType.CLIENT_EVAL_ONLY);
 
       if (sa == null) {
         throw new NotFoundException();

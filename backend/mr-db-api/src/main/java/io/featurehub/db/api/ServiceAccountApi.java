@@ -18,7 +18,7 @@ public interface ServiceAccountApi {
    */
   List<ServiceAccount> search(UUID portfolioId, String filter, UUID applicationId, Person currentPerson, Opts opts);
 
-  ServiceAccount resetApiKey(UUID id);
+  ServiceAccount resetApiKey(UUID id, boolean resetClientEvalApiKey, boolean resetServerEvalApiKey);
 
   class DuplicateServiceAccountException extends Exception {}
 
