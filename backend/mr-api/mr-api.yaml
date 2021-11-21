@@ -2139,8 +2139,8 @@ paths:
           schema:
             type: string
             format: uuid
-        - name: whichApiKey
-          description: "Allow the replacement of just one of the keys"
+        - name: apiKeyType
+          description: "Type of the API key"
           in: query
           required: false
           schema:
