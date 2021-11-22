@@ -5,12 +5,13 @@ import 'package:open_admin_app/widgets/service-accounts/service_accounts_env_blo
 
 
 class ApiKeyResetDialogWidget extends StatelessWidget {
-  final ServiceAccountPermission account;
+  final ServiceAccountPermission saPermission;
+  final ServiceAccount sa;
   final ServiceAccountEnvBloc bloc;
   final bool isClientKey;
 
   const ApiKeyResetDialogWidget(
-      {Key? key, required this.bloc, required this.account, required this.isClientKey})
+      {Key? key, required this.bloc, required this.saPermission, required this.isClientKey, required this.sa})
       : super(key: key);
 
   @override
@@ -20,15 +21,15 @@ class ApiKeyResetDialogWidget extends StatelessWidget {
       wholeWarning: "Are you sure you want to reset this API Key?",
       isResetThing: true,
       deleteSelected: () async {
-        final sa = await bloc.resetApiKey(account.id.toString(), isClientKey ? ResetApiKeyType.clientEvalOnly : ResetApiKeyType.serverEvalOnly);
-        if (sa != null) {
+        final updatedSA = await bloc.resetApiKey(sa.id.toString(), isClientKey ? ResetApiKeyType.clientEvalOnly : ResetApiKeyType.serverEvalOnly);
+        if (updatedSA != null) {
           bloc.mrClient
-              .addSnackbar(Text("'${account.sdkUrlClientEval !=null ? 'Client' : 'Server'}' eval API Key has been reset!"));
+              .addSnackbar(Text("'${isClientKey ? 'Client' : 'Server'}' eval API Key has been reset!"));
         } else {
           bloc.mrClient.customError(
               messageTitle: "Couldn't reset API Key");
         }
-        return sa!=null;
+        return updatedSA!=null;
       },
     );
   }

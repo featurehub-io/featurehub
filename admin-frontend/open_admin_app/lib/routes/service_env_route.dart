@@ -193,7 +193,7 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
                                               env: env,
                                               sa: serviceAccount)),
                                       Expanded(
-                                          flex: 4,
+                                          flex: 6,
                                           child: _ServiceAccountCopyWidget(
                                               env: env,
                                               sa: serviceAccount,
@@ -258,37 +258,39 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final account = sa.permissions.firstWhere((p) => p.environmentId == env.id,
+    final saPermission = sa.permissions.firstWhere((p) => p.environmentId == env.id,
         orElse: () =>
             ServiceAccountPermission(
                 permissions: <RoleType>[], environmentId: env.id!));
     var isScreenWide = MediaQuery
         .of(context)
         .size
-        .width >= 1450;
+        .width >= 1650;
 
     return Flex(
         direction: isScreenWide ? Axis.horizontal : Axis.vertical,
         children: [
-          if (account.sdkUrlClientEval != null)
+          if (saPermission.sdkUrlClientEval != null)
             FittedBox(
               child: Row(
                 children: [
                   Text(
-                    'Client eval API Key',
+                    'Client eval API Key ',
                     style: Theme
                         .of(context)
                         .textTheme
                         .caption,
                   ),
                   FHCopyToClipboard(
-                      copyString: account.sdkUrlClientEval!,
-                      tooltipMessage: account.sdkUrlClientEval!),
-                  _ResetApiKeyWidget(bloc: bloc, saPermission: account, isClientKey: true)
+                      copyString: saPermission.sdkUrlClientEval!,
+                      tooltipMessage: saPermission.sdkUrlClientEval!),
+                  if(bloc.mrClient.userIsCurrentPortfolioAdmin)
+                  _ResetApiKeyWidget(bloc: bloc, sa: sa, isClientKey: true, saPermission: saPermission,)
                 ],
               ),
             ),
-          if (account.sdkUrlServerEval != null)
+          if (saPermission.sdkUrlServerEval != null)
+            const SizedBox(width: 16.0),
             FittedBox(
               child: Row(
                 children: [
@@ -300,13 +302,14 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
                         .caption,
                   ),
                   FHCopyToClipboard(
-                      copyString: account.sdkUrlServerEval!,
-                      tooltipMessage: account.sdkUrlServerEval!),
-                  _ResetApiKeyWidget(bloc: bloc, saPermission: account, isClientKey: false)
+                      copyString: saPermission.sdkUrlServerEval!,
+                      tooltipMessage: saPermission.sdkUrlServerEval!),
+                  if(bloc.mrClient.userIsCurrentPortfolioAdmin)
+                  _ResetApiKeyWidget(bloc: bloc, saPermission: saPermission, isClientKey: false, sa: sa,)
                 ],
               ),
             ),
-          if (account.sdkUrlClientEval == null)
+          if (saPermission.sdkUrlClientEval == null)
             const Tooltip(
               message:
               'API Key is unavailable because your current permissions for this environment are lower level',
@@ -316,7 +319,7 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
                 color: Colors.red,
               ),
             ),
-          if (account.sdkUrlServerEval == null)
+          if (saPermission.sdkUrlServerEval == null)
             const Tooltip(
               message:
               'API Key is unavailable because your current permissions for this environment are lower level',
@@ -332,12 +335,12 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
 
 class _ResetApiKeyWidget extends StatelessWidget {
   final ServiceAccountPermission saPermission;
+  final ServiceAccount sa;
   final ServiceAccountEnvBloc bloc;
-
   final bool isClientKey;
 
   const _ResetApiKeyWidget(
-      {Key? key, required this.saPermission, required this.bloc, required this.isClientKey})
+      {Key? key, required this.sa, required this.bloc, required this.isClientKey, required this.saPermission})
       : super(key: key);
 
   @override
@@ -346,9 +349,10 @@ class _ResetApiKeyWidget extends StatelessWidget {
       onPressed: () =>
           bloc.mrClient.addOverlay((BuildContext context) {
             return ApiKeyResetDialogWidget(
-              account: saPermission,
+              sa: sa,
               bloc: bloc,
-              isClientKey: isClientKey
+              isClientKey: isClientKey,
+              saPermission: saPermission
             );
           }),
       child: const Text("Reset"),
