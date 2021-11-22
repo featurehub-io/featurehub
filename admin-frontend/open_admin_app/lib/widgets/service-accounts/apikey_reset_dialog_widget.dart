@@ -7,9 +7,10 @@ import 'package:open_admin_app/widgets/service-accounts/service_accounts_env_blo
 class ApiKeyResetDialogWidget extends StatelessWidget {
   final ServiceAccountPermission account;
   final ServiceAccountEnvBloc bloc;
+  final bool isClientKey;
 
   const ApiKeyResetDialogWidget(
-      {Key? key, required this.bloc, required this.account})
+      {Key? key, required this.bloc, required this.account, required this.isClientKey})
       : super(key: key);
 
   @override
@@ -19,7 +20,7 @@ class ApiKeyResetDialogWidget extends StatelessWidget {
       wholeWarning: "Are you sure you want to reset this API Key?",
       isResetThing: true,
       deleteSelected: () async {
-        final sa = await bloc.resetApiKey(account.id.toString());
+        final sa = await bloc.resetApiKey(account.id.toString(), isClientKey ? ResetApiKeyType.clientEvalOnly : ResetApiKeyType.serverEvalOnly);
         if (sa != null) {
           bloc.mrClient
               .addSnackbar(Text("'${account.sdkUrlClientEval !=null ? 'Client' : 'Server'}' eval API Key has been reset!"));

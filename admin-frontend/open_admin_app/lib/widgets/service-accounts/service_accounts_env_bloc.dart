@@ -55,10 +55,10 @@ class ServiceAccountEnvBloc implements Bloc, ManagementRepositoryAwareBloc {
     }
   }
 
-  Future<ServiceAccount?> resetApiKey(String id) async {
+  Future<ServiceAccount?> resetApiKey(String id, ResetApiKeyType keyType) async {
     ServiceAccount? sa;
     sa = await _serviceAccountServiceApi
-        .resetApiKey(id)
+        .resetApiKey(id, apiKeyType: keyType)
         .catchError((e, s) {
       _mrClient.dialogError(e, s);
     });

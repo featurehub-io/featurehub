@@ -11,7 +11,7 @@ import 'package:open_admin_app/widgets/common/copy_to_clipboard_html.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
-import 'package:open_admin_app/widgets/service-accounts/apikay_reset_dialog_widget.dart';
+import 'package:open_admin_app/widgets/service-accounts/apikey_reset_dialog_widget.dart';
 import 'package:open_admin_app/widgets/service-accounts/service_accounts_env_bloc.dart';
 
 class ServiceAccountEnvRoute extends StatelessWidget {
@@ -284,7 +284,7 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
                   FHCopyToClipboard(
                       copyString: account.sdkUrlClientEval!,
                       tooltipMessage: account.sdkUrlClientEval!),
-                  _ResetApiKeyWidget(bloc: bloc, saPermission: account)
+                  _ResetApiKeyWidget(bloc: bloc, saPermission: account, isClientKey: true)
                 ],
               ),
             ),
@@ -302,7 +302,7 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
                   FHCopyToClipboard(
                       copyString: account.sdkUrlServerEval!,
                       tooltipMessage: account.sdkUrlServerEval!),
-                  _ResetApiKeyWidget(bloc: bloc, saPermission: account)
+                  _ResetApiKeyWidget(bloc: bloc, saPermission: account, isClientKey: false)
                 ],
               ),
             ),
@@ -334,8 +334,10 @@ class _ResetApiKeyWidget extends StatelessWidget {
   final ServiceAccountPermission saPermission;
   final ServiceAccountEnvBloc bloc;
 
+  final bool isClientKey;
+
   const _ResetApiKeyWidget(
-      {Key? key, required this.saPermission, required this.bloc})
+      {Key? key, required this.saPermission, required this.bloc, required this.isClientKey})
       : super(key: key);
 
   @override
@@ -346,6 +348,7 @@ class _ResetApiKeyWidget extends StatelessWidget {
             return ApiKeyResetDialogWidget(
               account: saPermission,
               bloc: bloc,
+              isClientKey: isClientKey
             );
           }),
       child: const Text("Reset"),

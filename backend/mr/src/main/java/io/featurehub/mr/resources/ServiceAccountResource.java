@@ -106,8 +106,8 @@ public class ServiceAccountResource implements ServiceAccountServiceDelegate {
 
     if (authManager.isPortfolioAdmin(id, person) || authManager.isOrgAdmin(person)) {
       ServiceAccount sa = serviceAccountApi.resetApiKey(id,
-        holder.whichApiKey != ResetApiKeyType.SERVER_EVAL_ONLY,
-        holder.whichApiKey != ResetApiKeyType.CLIENT_EVAL_ONLY);
+        holder.apiKeyType != ResetApiKeyType.SERVER_EVAL_ONLY,
+        holder.apiKeyType != ResetApiKeyType.CLIENT_EVAL_ONLY);
 
       if (sa == null) {
         throw new NotFoundException();
