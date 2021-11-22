@@ -100,6 +100,10 @@ public class ServiceAccountResource implements ServiceAccountServiceDelegate {
 
     ServiceAccount info = serviceAccountApi.get(id,  Opts.empty());
 
+    if (info == null) {
+      throw new NotFoundException();
+    }
+
     if (!authManager.isPortfolioAdmin(info.getPortfolioId(), person)) {
       throw new ForbiddenException();
     }
