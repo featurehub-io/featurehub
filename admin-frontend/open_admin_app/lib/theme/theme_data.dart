@@ -261,7 +261,7 @@ final ThemeData myTheme = ThemeData(
   ),
 );
 final ThemeData darkTheme = ThemeData(
-  applyElevationOverlayColor: true,
+  applyElevationOverlayColor: false,
   primarySwatch: Colors.blue,
   brightness: Brightness.dark,
   fontFamily: fontFamily,
