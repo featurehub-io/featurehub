@@ -54,8 +54,39 @@ Feature: This should test the loading of new service accounts
       | Platform    | The Morlocks   | SA008           | platform_business_users | platform_product-owners@mailinator.com | READ            | SER fun      | prod        |
 
 
+  Scenario Outline: I can reset api keys for a service account as a super user
 
+   # superuser has to create the portfolio and create the user
+    Given I ensure a portfolio named "<portfolio>" with description "<portfolio_desc>" exists
+    And I have a fully registered person "<name>" with email "<email>" and password "password123"
+    # previous step swapped to that user, so swap back to superuser
+    And the first superuser is used for authentication
+    And I ensure the "<email>" user is added to the portfolio admin group for "<portfolio>"
+    When I ensure a portfolio "<portfolio>" has created application called "<app>" and environment "<environment>" and service account called "<service_account>" and permission type "<permission_type>"
+    Then portfolio "<portfolio>" has service account "<service_account>" and the permission "<permission_type>" for this "<app>" and "<environment>"
+    Then I should be able to reset client keys for service account "<service_account>" for portfolio "<portfolio>" for application "<app>" for environment "<environment>"
+    Then I should be able to reset server keys for service account "<service_account>" for portfolio "<portfolio>" for application "<app>" for environment "<environment>"
 
+    Examples:
+      | portfolio   | portfolio_desc | service_account | name                    | email                                  | permission_type | app          | environment |
+      | Marketing   | The Fluffers   | SA001           | Marketing Admin         | marketing-admin@mailinator.com         | READ            | My App 1     | dev         |
 
+  Scenario Outline: I can reset api keys for a service account as a portfolio admin
+
+   # superuser has to create the portfolio and create the user
+    Given I ensure a portfolio named "<portfolio>" with description "<portfolio_desc>" exists
+    And I have a fully registered person "<name>" with email "<email>" and password "password123"
+    # previous step swapped to that user, so swap back to superuser
+    And the first superuser is used for authentication
+    And I ensure the "<email>" user is added to the portfolio admin group for "<portfolio>"
+    When I ensure a portfolio "<portfolio>" has created application called "<app>" and environment "<environment>" and service account called "<service_account>" and permission type "<permission_type>"
+    Then portfolio "<portfolio>" has service account "<service_account>" and the permission "<permission_type>" for this "<app>" and "<environment>"
+    When I can login as user "<email>" with password "password123"
+    Then I should be able to reset client keys for service account "<service_account>" for portfolio "<portfolio>" for application "<app>" for environment "<environment>"
+    Then I should be able to reset server keys for service account "<service_account>" for portfolio "<portfolio>" for application "<app>" for environment "<environment>"
+
+    Examples:
+      | portfolio   | portfolio_desc | service_account | name                    | email                                  | permission_type | app          | environment |
+      | Marketing   | The Fluffers   | SA001           | Marketing Admin         | marketing-admin@mailinator.com         | READ            | My App 1     | dev         |
 
 

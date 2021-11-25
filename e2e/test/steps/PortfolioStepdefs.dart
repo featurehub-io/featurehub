@@ -255,4 +255,28 @@ class PortfolioStepdefs {
     assert(sap != null, 'Failed to find service account permissions');
     assert(sap!.permissions.contains(permissionType));
   }
+
+  @Then(
+      r'^I should be able to reset (client|server) keys for service account "(.*)" for portfolio "(.*)" for application "(.*)" for environment "(.*)"$')
+  void iShouldBeAbleToResetClientKeysForServiceAccount(
+      String keysType, String serviceAccountName, String portfolioName, String appName, String envName) async {
+    Portfolio? p = await userCommon.findExactPortfolio(portfolioName);
+    assert(p != null, 'Could not find portfolio group called $portfolioName');
+    var app = await userCommon.findExactApplication(appName, p!.id);
+    assert(app != null, 'Failed to find application');
+
+    var environment = await userCommon.findExactEnvironment(envName, app!.id);
+    assert(environment != null, 'Failed to find environment');
+    ServiceAccount? sa = await userCommon.findExactServiceAccount(
+        serviceAccountName, p.id,
+        applicationId: environment!.applicationId);
+    assert(sa != null, 'Failed to find service account');
+    var apiKey = keysType == "client" ? sa!.apiKeyClientSide : sa!.apiKeyServerSide;
+    ServiceAccount updatedSa = await userCommon.serviceAccountService.resetApiKey(
+        sa.id!, apiKeyType: keysType == "client" ? ResetApiKeyType.clientEvalOnly : ResetApiKeyType.serverEvalOnly
+    );
+    assert(apiKey != (keysType == "client" ? updatedSa.apiKeyClientSide : updatedSa.apiKeyServerSide));
+  }
+
+
 }
