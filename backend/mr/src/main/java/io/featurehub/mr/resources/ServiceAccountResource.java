@@ -104,23 +104,19 @@ public class ServiceAccountResource implements ServiceAccountServiceDelegate {
       throw new NotFoundException();
     }
 
-    if (!authManager.isPortfolioAdmin(info.getPortfolioId(), person)) {
+    if (!authManager.isPortfolioAdmin(info.getPortfolioId(), person) && !authManager.isOrgAdmin(person)) {
       throw new ForbiddenException();
     }
 
-    if (authManager.isPortfolioAdmin(id, person) || authManager.isOrgAdmin(person)) {
-      ServiceAccount sa = serviceAccountApi.resetApiKey(id,
-        holder.apiKeyType != ResetApiKeyType.SERVER_EVAL_ONLY,
-        holder.apiKeyType != ResetApiKeyType.CLIENT_EVAL_ONLY);
+    ServiceAccount sa = serviceAccountApi.resetApiKey(id,
+      holder.apiKeyType != ResetApiKeyType.SERVER_EVAL_ONLY,
+      holder.apiKeyType != ResetApiKeyType.CLIENT_EVAL_ONLY);
 
-      if (sa == null) {
-        throw new NotFoundException();
-      }
-
-      return sa;
+    if (sa == null) {
+      throw new NotFoundException();
     }
 
-    throw new ForbiddenException();
+    return sa;
   }
 
   @Override
