@@ -22,15 +22,15 @@ class ApiKeyResetDialogWidget extends StatelessWidget {
 This will affect the keys across all environments for a given service account!""",
       isResetThing: true,
       deleteSelected: () async {
-        final updatedSA = await bloc.resetApiKey(sa.id.toString(), isClientKey ? ResetApiKeyType.clientEvalOnly : ResetApiKeyType.serverEvalOnly);
-        if (updatedSA != null) {
+        var success = await bloc.resetApiKey(sa.id.toString(), isClientKey ? ResetApiKeyType.clientEvalOnly : ResetApiKeyType.serverEvalOnly);
+        if (success) {
           bloc.mrClient
               .addSnackbar(Text("'${isClientKey ? 'Client' : 'Server'}' eval API Key has been reset!"));
         } else {
           bloc.mrClient.customError(
-              messageTitle: "Couldn't reset API Key");
+              messageTitle: "Unable to reset API Key");
         }
-        return updatedSA!=null;
+        return success;
       },
     );
   }

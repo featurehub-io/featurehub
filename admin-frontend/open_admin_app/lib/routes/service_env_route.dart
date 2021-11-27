@@ -87,7 +87,7 @@ class ServiceAccountEnvRoute extends StatelessWidget {
                     height: 16.0,
                   ),
                   StreamBuilder<ServiceAccountEnvironments>(
-                      stream: bloc.serviceAccountStream,
+                      stream: bloc.serviceAccountEnvironmentsStream,
                       builder: (context, envSnapshot) {
                         if (!envSnapshot.hasData) {
                           return const SizedBox.shrink();
@@ -118,6 +118,7 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // filter out SA that don't have any permissions
+
 
     return ListView.builder(
         shrinkWrap: true,
