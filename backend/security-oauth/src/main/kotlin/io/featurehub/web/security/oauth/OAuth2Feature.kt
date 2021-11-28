@@ -4,6 +4,7 @@ import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
 import cd.connect.jersey.common.LoggingConfiguration
 import io.featurehub.jersey.config.CommonConfiguration
+import io.featurehub.lifecycle.ClientTelemetryFeature
 import io.featurehub.web.security.oauth.providers.*
 import io.featurehub.web.security.oauth.providers.GithubProvider.Companion.PROVIDER_NAME
 import jakarta.inject.Singleton
@@ -52,9 +53,8 @@ class OAuth2Feature : Feature {
           bind(OAuth2ProviderManager::class.java).to(OAuth2ProviderDiscovery::class.java).to(
             AuthProvider::class.java
           ).`in`(Singleton::class.java)
-          bind(buildClient()).to(Client::class.java).`in`(Singleton::class.java)
 
-          // now the outbound http request to validte authorization flow
+          // now the outbound http request to validate authorization flow
           bind(OAuth2JerseyClient::class.java).to(OAuth2Client::class.java).`in`(Singleton::class.java)
         }
       })
@@ -62,12 +62,6 @@ class OAuth2Feature : Feature {
       log.info("No oauth2 providers in config, skipping oauth2.")
     }
     return true
-  }
-
-  protected fun buildClient(): Client {
-    return ClientBuilder.newClient()
-      .register(CommonConfiguration::class.java)
-      .register(LoggingConfiguration::class.java)
   }
 
   companion object {
