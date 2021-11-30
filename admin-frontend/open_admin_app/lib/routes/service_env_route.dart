@@ -119,7 +119,6 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     // filter out SA that don't have any permissions
 
-
     return ListView.builder(
         shrinkWrap: true,
         itemCount: serviceAccountEnvs.serviceAccounts.length,
@@ -147,15 +146,15 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: [
                                 _ResetApiKeyWidget(
-                                    bloc: bloc,
-                                    isClientKey: true,
-                                    sa: serviceAccount,
-                                    ),
+                                  bloc: bloc,
+                                  isClientKey: true,
+                                  sa: serviceAccount,
+                                ),
                                 _ResetApiKeyWidget(
-                                    bloc: bloc,
-                                    isClientKey: false,
-                                    sa: serviceAccount,
-                                    ),
+                                  bloc: bloc,
+                                  isClientKey: false,
+                                  sa: serviceAccount,
+                                ),
                               ],
                             )
                         ],
@@ -277,19 +276,20 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
             ),
           if (saPermission.sdkUrlServerEval != null)
             const SizedBox(width: 16.0),
-          FittedBox(
-            child: Row(
-              children: [
-                Text(
-                  'Server eval API Key',
-                  style: Theme.of(context).textTheme.caption,
-                ),
-                FHCopyToClipboard(
-                    copyString: saPermission.sdkUrlServerEval!,
-                    tooltipMessage: saPermission.sdkUrlServerEval!),
-              ],
+          if (saPermission.sdkUrlServerEval != null)
+            FittedBox(
+              child: Row(
+                children: [
+                  Text(
+                    'Server eval API Key',
+                    style: Theme.of(context).textTheme.caption,
+                  ),
+                  FHCopyToClipboard(
+                      copyString: saPermission.sdkUrlServerEval!,
+                      tooltipMessage: saPermission.sdkUrlServerEval!),
+                ],
+              ),
             ),
-          ),
           if (saPermission.sdkUrlClientEval == null)
             const Tooltip(
               message:
