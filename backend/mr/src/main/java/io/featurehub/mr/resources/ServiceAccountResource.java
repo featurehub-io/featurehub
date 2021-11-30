@@ -126,7 +126,9 @@ public class ServiceAccountResource implements ServiceAccountServiceDelegate {
 
     List<ServiceAccount> serviceAccounts = serviceAccountApi.search(id, holder.filter, holder.applicationId,
           person,
-          new Opts().add(FillOpts.Permissions, holder.includePermissions).add(FillOpts.SdkURL, holder.includeSdkUrls));
+          new Opts().add(FillOpts.ServiceAccountPermissionFilter)
+            .add(FillOpts.Permissions, holder.includePermissions)
+            .add(FillOpts.SdkURL, holder.includeSdkUrls));
 
     if (serviceAccounts == null) {
       return new ArrayList<>();
