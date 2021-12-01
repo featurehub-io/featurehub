@@ -138,9 +138,24 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(serviceAccount.name,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.subtitle1),
+                          Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 2.0),
+                                child: Icon(Ionicons.ios_settings,
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodyText2
+                                        ?.color
+                                        ?.withOpacity(0.5)),
+                              ),
+                              const SizedBox(width: 4.0),
+                              Expanded(
+                                child: Text(serviceAccount.name,
+                                    overflow: TextOverflow.ellipsis),
+                              ),
+                            ],
+                          ),
                           if (bloc.mrClient.userIsCurrentPortfolioAdmin)
                             Row(
                               mainAxisAlignment: MainAxisAlignment.start,
@@ -177,14 +192,14 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
                                   child: Row(
                                     children: [
                                       Expanded(
-                                        flex: 3,
+                                        flex: 2,
                                         child: Text(env.name,
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .bodyText2),
                                       ),
                                       Expanded(
-                                          flex: 4,
+                                          flex: 3,
                                           child:
                                               _ServiceAccountPermissionWidget(
                                                   env: env,
@@ -195,8 +210,6 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
                                               env: env,
                                               sa: serviceAccount,
                                               bloc: bloc))
-
-//
                                     ],
                                   ),
                                 )
@@ -255,7 +268,7 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
         (p) => p.environmentId == env.id,
         orElse: () => ServiceAccountPermission(
             permissions: <RoleType>[], environmentId: env.id!));
-    var isScreenWide = MediaQuery.of(context).size.width >= 1650;
+    var isScreenWide = MediaQuery.of(context).size.width >= 1350;
 
     return Flex(
         direction: isScreenWide ? Axis.horizontal : Axis.vertical,
@@ -333,7 +346,9 @@ class _ResetApiKeyWidget extends StatelessWidget {
         Icons.refresh,
         color: Colors.red,
       ),
-      tooltip: isClientKey ? "Reset client eval key" : "Reset server eval key",
+      tooltip: isClientKey
+          ? "Reset client eval API keys"
+          : "Reset server eval API keys",
       onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
         return ApiKeyResetDialogWidget(
           sa: sa,

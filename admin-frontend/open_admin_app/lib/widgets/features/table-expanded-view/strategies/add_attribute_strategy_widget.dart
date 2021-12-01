@@ -436,9 +436,7 @@ class _EditAttributeStrategyWidgetState
                       labelStyle: Theme.of(context)
                           .textTheme
                           .bodyText1!
-                          .copyWith(
-                              fontSize: 12.0,
-                              color: Theme.of(context).primaryColor)),
+                  ),
                   // readOnly: !widget.widget.editable,
                   autofocus: true,
                   onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),

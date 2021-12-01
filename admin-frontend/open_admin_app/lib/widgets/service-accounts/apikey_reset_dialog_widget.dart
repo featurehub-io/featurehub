@@ -18,7 +18,7 @@ class ApiKeyResetDialogWidget extends StatelessWidget {
     return FHDeleteThingWarningWidget(
       bloc: bloc.mrClient,
       wholeWarning:
-      """Are you sure you want to reset all ${isClientKey ? 'client' : 'server'} eval API keys for this service account?
+      """Are you sure you want to reset ALL ${isClientKey ? 'client' : 'server'} eval API keys for this service account?
 This will affect the keys across all environments for a given service account!""",
       isResetThing: true,
       deleteSelected: () async {
