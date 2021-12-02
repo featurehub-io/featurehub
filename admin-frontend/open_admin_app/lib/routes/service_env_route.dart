@@ -6,6 +6,7 @@ import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
+import 'package:open_admin_app/widgets/apps/manage_service_accounts_bloc.dart';
 import 'package:open_admin_app/widgets/common/application_drop_down.dart';
 import 'package:open_admin_app/widgets/common/copy_to_clipboard_html.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
@@ -156,22 +157,6 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
                               ),
                             ],
                           ),
-                          if (bloc.mrClient.userIsCurrentPortfolioAdmin)
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                _ResetApiKeyWidget(
-                                  bloc: bloc,
-                                  isClientKey: true,
-                                  sa: serviceAccount,
-                                ),
-                                _ResetApiKeyWidget(
-                                  bloc: bloc,
-                                  isClientKey: false,
-                                  sa: serviceAccount,
-                                ),
-                              ],
-                            )
                         ],
                       ),
                     ),
@@ -324,40 +309,5 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
               ),
             )
         ]);
-  }
-}
-
-class _ResetApiKeyWidget extends StatelessWidget {
-  final ServiceAccount sa;
-  final ServiceAccountEnvBloc bloc;
-  final bool isClientKey;
-
-  const _ResetApiKeyWidget({
-    Key? key,
-    required this.sa,
-    required this.bloc,
-    required this.isClientKey,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return FHIconButton(
-      icon: const Icon(
-        Icons.refresh,
-        color: Colors.red,
-      ),
-      tooltip: isClientKey
-          ? "Reset client eval API keys"
-          : "Reset server eval API keys",
-      onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
-        return ApiKeyResetDialogWidget(
-          sa: sa,
-          bloc: bloc,
-          isClientKey: isClientKey,
-        );
-      }),
-      // child: Text(text),
-      // style: TextButton.styleFrom(primary: Colors.red),
-    );
   }
 }

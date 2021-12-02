@@ -224,6 +224,7 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
               ScrollConfiguration(
                 behavior: CustomScrollBehavior(),
                 child: SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
                   controller: controllerTab1,
                   child: Column(
                     children: <Widget>[
@@ -240,6 +241,7 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
               ScrollConfiguration(
                 behavior: CustomScrollBehavior(),
                 child: SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
                   controller: controllerTab2,
                   child: Column(
                     children: const <Widget>[
@@ -252,6 +254,7 @@ class _ManageAppWidgetState extends State<ManageAppWidget>
               ScrollConfiguration(
                 behavior: CustomScrollBehavior(),
                 child: SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
                   controller: controllerTab3,
                   child: Column(
                     children: const <Widget>[

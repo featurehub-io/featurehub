@@ -1,12 +1,12 @@
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/widgets/apps/manage_service_accounts_bloc.dart';
 import 'package:open_admin_app/widgets/common/fh_delete_thing.dart';
 import 'package:flutter/material.dart';
-import 'package:open_admin_app/widgets/service-accounts/service_accounts_env_bloc.dart';
 
 
 class ApiKeyResetDialogWidget extends StatelessWidget {
   final ServiceAccount sa;
-  final ServiceAccountEnvBloc bloc;
+  final ManageServiceAccountsBloc bloc;
   final bool isClientKey;
 
   const ApiKeyResetDialogWidget(
@@ -19,7 +19,7 @@ class ApiKeyResetDialogWidget extends StatelessWidget {
       bloc: bloc.mrClient,
       wholeWarning:
       """Are you sure you want to reset ALL ${isClientKey ? 'client' : 'server'} eval API keys for this service account?
-This will affect the keys across all environments for a given service account!""",
+This will affect the keys across all environments and all applications for a given service account!""",
       isResetThing: true,
       deleteSelected: () async {
         var success = await bloc.resetApiKey(sa.id.toString(), isClientKey ? ResetApiKeyType.clientEvalOnly : ResetApiKeyType.serverEvalOnly);
