@@ -144,24 +144,24 @@ public class InMemoryCache implements InternalCache {
           // remove them from the service account + env id map
           serviceAccountPlusEnvIdToEnvIdMap.remove(serviceAccountIdPlusEnvId(serviceAccount.getId(),
             perm.getEnvironmentId()));
-
           // remove them from the apikey -> serviceid map
-          apiKeyToServiceAccountKeyMap.remove(serviceAccount.getApiKeyClientSide());
-          apiKeyToServiceAccountKeyMap.remove(serviceAccount.getApiKeyServerSide());
         }
       );
+
+      apiKeyToServiceAccountKeyMap.remove(oldServiceAccount.getServiceAccount().getApiKeyClientSide());
+      apiKeyToServiceAccountKeyMap.remove(oldServiceAccount.getServiceAccount().getApiKeyServerSide());
     }
 
     if (serviceAccount != null) {
       serviceAccount.getPermissions().forEach(perm -> {
-        log.debug("update cache, adding {}:{}", serviceAccount.getApiKeyClientSide(), perm);
+        log.trace("update cache, adding {}:{}", serviceAccount.getApiKeyClientSide(), perm);
         serviceAccountPlusEnvIdToEnvIdMap.put(serviceAccountIdPlusEnvId(serviceAccount.getId(),
           perm.getEnvironmentId()), perm);
-
-        apiKeyToServiceAccountKeyMap.put(serviceAccount.getApiKeyClientSide(), serviceAccount.getId());
-        apiKeyToServiceAccountKeyMap.put(serviceAccount.getApiKeyServerSide(), serviceAccount.getId());
         }
       );
+
+      apiKeyToServiceAccountKeyMap.put(serviceAccount.getApiKeyClientSide(), serviceAccount.getId());
+      apiKeyToServiceAccountKeyMap.put(serviceAccount.getApiKeyServerSide(), serviceAccount.getId());
     }
   }
 

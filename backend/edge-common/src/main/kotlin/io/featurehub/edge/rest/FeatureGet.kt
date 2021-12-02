@@ -84,6 +84,8 @@ class FeatureGetProcessor @Inject constructor(private val getOrchestrator: Dacha
 
     if (environments[0].success === FeatureRequestSuccess.NO_CHANGE) {
       response.resume(Response.status(304).header("etag", etagHeader).build())
+    } else if (environments.all { it.success == FeatureRequestSuccess.FAILED }) {
+      response.resume(Response.status(404).build())
     } else {
       response.resume(
         Response.status(200)
