@@ -69,6 +69,7 @@ class FeatureHubJerseyHost constructor(private val config: ResourceConfig) {
   }
 
   companion object {
+    private val log: Logger = LoggerFactory.getLogger(FeatureHubJerseyHost::class.java)
     /**
      * This is a convenient way of making sure certain services exist. Because it creates an abstract object
      * you can create as many of these as you like. If you use a common class and register it multiple times, it
@@ -83,7 +84,18 @@ class FeatureHubJerseyHost constructor(private val config: ResourceConfig) {
             .injectionManager
             .getInstance(ServiceLocator::class.java)
 
-          postStartupLoadServices.forEach { injector.getService(it) }
+          var failedToFindServices = false
+
+          for (it in postStartupLoadServices) {
+            if (injector.getService(it) == null) {
+              log.error("Unable to find service with class {}", it.name)
+              failedToFindServices = true
+            }
+          }
+
+          if (failedToFindServices) {
+            throw RuntimeException("Incomplete wiring due to inability to find services, please check errors")
+          }
         }
 
         override fun onReload(container: Container) {

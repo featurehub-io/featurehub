@@ -27,7 +27,8 @@ steps:
       - |
         (
           gsutil cp gs://${_GCS_CACHE_BUCKET}/fh-m2-cache.tar.gz /tmp/m2-cache.tar.gz &&
-          tar -xzf /tmp/m2-cache.tar.gz
+          tar -xzf /tmp/m2-cache.tar.gz &&
+          rm -rf /root/.m2/repository/io/featurehub
         ) || echo 'Cache not found'
     volumes:
       - name: user.home
