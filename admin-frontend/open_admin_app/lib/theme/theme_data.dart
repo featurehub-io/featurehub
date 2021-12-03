@@ -48,7 +48,6 @@ final ThemeData myTheme = ThemeData(
       style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.all(16),
           textStyle: const TextStyle(wordSpacing: 0.8, letterSpacing: 0.8))),
-  // iconTheme: IconThemeData(size: 16.0),
   colorScheme: const ColorScheme(
     primary: Color(0xff03125d),
     primaryVariant: Color(0xff051d94),
@@ -98,7 +97,7 @@ final ThemeData myTheme = ThemeData(
       brightness: Brightness.light,
     ),
   ),
-  fontFamily: GoogleFonts.roboto().fontFamily,
+  fontFamily: fontFamily,
 
   inputDecorationTheme: const InputDecorationTheme(
     labelStyle: TextStyle(
@@ -107,96 +106,7 @@ final ThemeData myTheme = ThemeData(
       fontWeight: FontWeight.w400,
       fontStyle: FontStyle.normal,
     ),
-    helperStyle: TextStyle(
-      color: Color(0xff4a4a4a),
-      fontSize: 12,
-      fontWeight: FontWeight.w400,
-      fontStyle: FontStyle.normal,
-    ),
-    hintStyle: TextStyle(
-      color: Color(0xff4a4a4a),
-      fontSize: 12,
-      fontWeight: FontWeight.w400,
-      fontStyle: FontStyle.normal,
-    ),
-    errorStyle: TextStyle(
-      color: Color(0xffd32f2f),
-      fontSize: 12,
-      fontWeight: FontWeight.w400,
-      fontStyle: FontStyle.normal,
-    ),
-    errorMaxLines: null,
     isDense: false,
-    contentPadding: EdgeInsets.only(top: 12, bottom: 12, left: 0, right: 0),
-    isCollapsed: false,
-    prefixStyle: TextStyle(
-      color: Color(0xdd000000),
-      fontSize: 16,
-      fontWeight: FontWeight.w400,
-      fontStyle: FontStyle.normal,
-    ),
-    suffixStyle: TextStyle(
-      color: Color(0xdd000000),
-      fontSize: 16,
-      fontWeight: FontWeight.w400,
-      fontStyle: FontStyle.normal,
-    ),
-    counterStyle: TextStyle(
-      color: Color(0xdd000000),
-      fontSize: 16,
-      fontWeight: FontWeight.w400,
-      fontStyle: FontStyle.normal,
-    ),
-    filled: false,
-    fillColor: Color(0xffF5F5F5),
-    errorBorder: UnderlineInputBorder(
-      borderSide: BorderSide(
-        color: Color(0xffd32f2f),
-        width: 1,
-        style: BorderStyle.solid,
-      ),
-      borderRadius: BorderRadius.all(Radius.circular(4.0)),
-    ),
-    focusedBorder: UnderlineInputBorder(
-      borderSide: BorderSide(
-        color: Color(0xff473e8f),
-        width: 1,
-        style: BorderStyle.solid,
-      ),
-    ),
-    focusedErrorBorder: UnderlineInputBorder(
-      borderSide: BorderSide(
-        color: Color(0xffd32f2f),
-        width: 2,
-        style: BorderStyle.solid,
-      ),
-    ),
-    disabledBorder: UnderlineInputBorder(
-      borderSide: BorderSide(
-        color: Color(0xff000000),
-        width: 1,
-        style: BorderStyle.solid,
-      ),
-      borderRadius: BorderRadius.all(Radius.circular(4.0)),
-    ),
-    enabledBorder: UnderlineInputBorder(
-      borderSide: BorderSide(
-        color: Color(0xff000000),
-        width: 1,
-        style: BorderStyle.solid,
-      ),
-      borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(4.0), topRight: Radius.circular(4.0)),
-    ),
-    border: UnderlineInputBorder(
-      borderSide: BorderSide(
-        color: Color(0xff000000),
-        width: 1,
-        style: BorderStyle.solid,
-      ),
-      borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(4.0), topRight: Radius.circular(4.0)),
-    ),
   ),
   iconTheme: const IconThemeData(
     color: Color(0xff473e8f),
@@ -261,7 +171,7 @@ final ThemeData myTheme = ThemeData(
   ),
 );
 final ThemeData darkTheme = ThemeData(
-  applyElevationOverlayColor: true,
+  applyElevationOverlayColor: false,
   primarySwatch: Colors.blue,
   brightness: Brightness.dark,
   fontFamily: fontFamily,

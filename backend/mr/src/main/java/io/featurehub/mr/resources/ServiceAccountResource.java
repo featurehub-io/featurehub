@@ -8,6 +8,7 @@ import io.featurehub.db.api.ServiceAccountApi;
 import io.featurehub.mr.api.ServiceAccountServiceDelegate;
 import io.featurehub.mr.auth.AuthManagerService;
 import io.featurehub.mr.model.Person;
+import io.featurehub.mr.model.ResetApiKeyType;
 import io.featurehub.mr.model.ServiceAccount;
 import io.featurehub.mr.model.ServiceAccountPermission;
 import jakarta.inject.Inject;
@@ -94,26 +95,28 @@ public class ServiceAccountResource implements ServiceAccountServiceDelegate {
   }
 
   @Override
-  public ServiceAccount resetApiKey(UUID id, SecurityContext securityContext) {
+  public ServiceAccount resetApiKey(UUID id, ResetApiKeyHolder holder, SecurityContext securityContext) {
     Person person = authManager.from(securityContext);
 
     ServiceAccount info = serviceAccountApi.get(id,  Opts.empty());
 
-    if (!authManager.isPortfolioAdmin(info.getPortfolioId(), person)) {
+    if (info == null) {
+      throw new NotFoundException();
+    }
+
+    if (!authManager.isPortfolioAdmin(info.getPortfolioId(), person) && !authManager.isOrgAdmin(person)) {
       throw new ForbiddenException();
     }
 
-    if (authManager.isPortfolioAdmin(id, person) || authManager.isOrgAdmin(person)) {
-      ServiceAccount sa = serviceAccountApi.resetApiKey(id);
+    ServiceAccount sa = serviceAccountApi.resetApiKey(id,
+      holder.apiKeyType != ResetApiKeyType.SERVER_EVAL_ONLY,
+      holder.apiKeyType != ResetApiKeyType.CLIENT_EVAL_ONLY);
 
-      if (sa == null) {
-        throw new NotFoundException();
-      }
-
-      return sa;
+    if (sa == null) {
+      throw new NotFoundException();
     }
 
-    throw new ForbiddenException();
+    return sa;
   }
 
   @Override
@@ -123,7 +126,9 @@ public class ServiceAccountResource implements ServiceAccountServiceDelegate {
 
     List<ServiceAccount> serviceAccounts = serviceAccountApi.search(id, holder.filter, holder.applicationId,
           person,
-          new Opts().add(FillOpts.Permissions, holder.includePermissions).add(FillOpts.SdkURL, holder.includeSdkUrls));
+          new Opts().add(FillOpts.ServiceAccountPermissionFilter)
+            .add(FillOpts.Permissions, holder.includePermissions)
+            .add(FillOpts.SdkURL, holder.includeSdkUrls));
 
     if (serviceAccounts == null) {
       return new ArrayList<>();

@@ -15,7 +15,7 @@ class ServiceAccountEnvironments {
 
 class ServiceAccountEnvBloc implements Bloc, ManagementRepositoryAwareBloc {
   final ManagementRepositoryClientBloc _mrClient;
-  final _serviceAccountSource = BehaviorSubject<ServiceAccountEnvironments>();
+  final _serviceAccountEnvironmentsSource = BehaviorSubject<ServiceAccountEnvironments>();
   late ServiceAccountServiceApi _serviceAccountServiceApi;
   late StreamSubscription<List<Environment>> envListener;
   bool firstCall = true;
@@ -38,7 +38,7 @@ class ServiceAccountEnvBloc implements Bloc, ManagementRepositoryAwareBloc {
           _mrClient.streamValley.getCurrentApplicationEnvironments();
         }
       }
-      _serviceAccountSource
+      _serviceAccountEnvironmentsSource
           .add(ServiceAccountEnvironments(<Environment>[], <ServiceAccount>[]));
     } else {
       final serviceAccounts = await _serviceAccountServiceApi
@@ -50,16 +50,30 @@ class ServiceAccountEnvBloc implements Bloc, ManagementRepositoryAwareBloc {
         _mrClient.dialogError(e, s);
       });
 
-      _serviceAccountSource
+      _serviceAccountEnvironmentsSource
           .add(ServiceAccountEnvironments(envs, serviceAccounts));
     }
   }
 
+  Future<bool> resetApiKey(String id, ResetApiKeyType keyType) {
+    return _serviceAccountServiceApi
+        .resetApiKey(id, apiKeyType: keyType)
+        .then((sa) {
+      _envUpdate(_serviceAccountEnvironmentsSource.value!.environments);
+      return true;
+    })
+        .catchError((e, s) {
+      return false;
+    });
+  }
+
+
   @override
   ManagementRepositoryClientBloc get mrClient => _mrClient;
 
-  Stream<ServiceAccountEnvironments> get serviceAccountStream =>
-      _serviceAccountSource.stream;
+  Stream<ServiceAccountEnvironments> get serviceAccountEnvironmentsStream =>
+      _serviceAccountEnvironmentsSource.stream;
+
 
   @override
   void dispose() {

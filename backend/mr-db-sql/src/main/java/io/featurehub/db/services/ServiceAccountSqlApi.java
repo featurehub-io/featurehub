@@ -233,14 +233,20 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
   }
 
   @Override
-  public ServiceAccount resetApiKey(UUID id) {
+  public ServiceAccount resetApiKey(UUID id, boolean resetClientEvalApiKey, boolean resetServerEvalApiKey) {
     Conversions.nonNullServiceAccountId(id);
 
     DbServiceAccount sa = new QDbServiceAccount().id.eq(id).whenArchived.isNull().findOne();
     if (sa == null) return null;
 
-    sa.setApiKeyServerEval(newServerEvalKey());
-    sa.setApiKeyClientEval(newClientEvalKey());
+    if (resetServerEvalApiKey) {
+      sa.setApiKeyServerEval(newServerEvalKey());
+    }
+
+    if (resetClientEvalApiKey) {
+      sa.setApiKeyClientEval(newClientEvalKey());
+    }
+
     updateOnlyServiceAccount(sa);
     asyncUpdateCache(sa, null);
     return convertUtils.toServiceAccount(sa, Opts.empty());

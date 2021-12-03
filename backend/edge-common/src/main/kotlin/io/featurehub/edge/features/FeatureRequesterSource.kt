@@ -31,7 +31,7 @@ class FeatureRequesterSource(private val api: DachaApiKeyService, override val k
           if (details != null)
             copyKeyDetails(key, details!!)
         } catch (e : Exception) {
-          log.error("failed to request details for key {}", key, e)
+          log.trace("failed to request details for key {}", key, e)
         }
 
         submitter.requestForKeyComplete(key)

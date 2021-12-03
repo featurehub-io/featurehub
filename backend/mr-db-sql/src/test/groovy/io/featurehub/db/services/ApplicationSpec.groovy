@@ -150,7 +150,7 @@ class ApplicationSpec extends BaseSpec {
       appApi.createApplication(portfolio1.id, new Application().name("ghost2").description("some desc"), superPerson)
       appApi.createApplication(portfolio2.id, new Application().name("ghost2").description("some desc"), superPerson)
     then:
-      appApi.findApplications(portfolio1.id, "ghost2", null, Opts.empty(), null, true)
+      appApi.findApplications(portfolio1.id, "ghost2", null, Opts.empty(), superPerson, true)
   }
 
   // based on this article: https://en.wikipedia.org/wiki/Ukrainian_surnames#Cossack_names

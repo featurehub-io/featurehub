@@ -2139,6 +2139,12 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: apiKeyType
+          description: "Type of the API key"
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/ResetApiKeyType"
       responses:
         200:
           description: "Details of service account"
@@ -2490,3 +2496,8 @@ components:
       type: string
       enum:
         - percentage_adds_over_100_percent
+    ResetApiKeyType:
+      type: string
+      enum:
+        - client_eval_only
+        - server_eval_only

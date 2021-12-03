@@ -8,6 +8,7 @@ import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_delete_thing.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
+import 'package:open_admin_app/widgets/service-accounts/apikey_reset_dialog_widget.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
 import 'manage_service_accounts_bloc.dart';
@@ -104,7 +105,7 @@ class _ServiceAccountWidget extends StatelessWidget {
           onPressed: () => bloc.mrClient.addOverlay((BuildContext context) =>
               ServiceAccountUpdateDialogWidget(
                   bloc: bloc, serviceAccount: serviceAccount))),
-      FHIconButton(
+        FHIconButton(
           icon: const Icon(Icons.delete),
           onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
                 return ServiceAccountDeleteDialogWidget(
@@ -112,6 +113,16 @@ class _ServiceAccountWidget extends StatelessWidget {
                   bloc: bloc,
                 );
               })),
+        _ResetApiKeyWidget(
+          bloc: bloc,
+          isClientKey: true,
+          sa: serviceAccount,
+        ),
+      _ResetApiKeyWidget(
+          bloc: bloc,
+          isClientKey: false,
+          sa: serviceAccount,
+        ),
     ]);
   }
 }
@@ -394,6 +405,41 @@ class _ServiceAccountUpdateDialogWidgetState
               }))
         ],
       ),
+    );
+  }
+}
+
+class _ResetApiKeyWidget extends StatelessWidget {
+  final ServiceAccount sa;
+  final ManageServiceAccountsBloc bloc;
+  final bool isClientKey;
+
+  const _ResetApiKeyWidget({
+    Key? key,
+    required this.sa,
+    required this.bloc,
+    required this.isClientKey,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return FHIconButton(
+      icon: const Icon(
+        Icons.refresh,
+        color: Colors.red,
+      ),
+      tooltip: isClientKey
+          ? "Reset client eval API keys"
+          : "Reset server eval API keys",
+      onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
+        return ApiKeyResetDialogWidget(
+          sa: sa,
+          bloc: bloc,
+          isClientKey: isClientKey,
+        );
+      }),
+      // child: Text(text),
+      // style: TextButton.styleFrom(primary: Colors.red),
     );
   }
 }

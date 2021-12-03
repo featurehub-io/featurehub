@@ -91,6 +91,17 @@ class ManageServiceAccountsBloc implements Bloc {
     }
   }
 
+  Future<bool> resetApiKey(String id, ResetApiKeyType keyType) {
+    return _serviceAccountServiceApi
+        .resetApiKey(id, apiKeyType: keyType)
+        .then((sa) {
+      return true;
+    })
+        .catchError((e, s) {
+      return false;
+    });
+  }
+
   @override
   void dispose() {
     _serviceAccountSearchResultSource.close();

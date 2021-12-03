@@ -59,6 +59,7 @@ class _MenuContainer extends StatelessWidget {
         child: ScrollConfiguration(
           behavior: CustomScrollBehavior(),
           child: SingleChildScrollView(
+            physics: const ClampingScrollPhysics(),
             controller: controller,
             child: StreamBuilder<Person>(
                 stream: mrBloc.personState.personStream,

@@ -262,7 +262,7 @@ public class ConvertUtils implements Conversions {
       sap.getPermissions().add(RoleType.READ);
     }
 
-    if (opt.contains(FillOpts.ServiceAccounts) || opt.contains(FillOpts.SdkURL)) {
+    if (opt.contains(FillOpts.ServiceAccounts) || (opt.contains(FillOpts.SdkURL) && !opt.contains(FillOpts.ServiceAccountPermissionFilter)) ) {
       sap.serviceAccount(
           toServiceAccount(
               sae.getServiceAccount(), opt.minus(FillOpts.Permissions, FillOpts.SdkURL)));
@@ -277,11 +277,11 @@ public class ConvertUtils implements Conversions {
         sap.sdkUrlClientEval(
             String.format(
                 "%s/%s/%s",
-                cacheName, sap.getEnvironmentId(), sap.getServiceAccount().getApiKeyClientSide()));
+                cacheName, sap.getEnvironmentId(), sae.getServiceAccount().getApiKeyClientEval()));
         sap.sdkUrlServerEval(
             String.format(
                 "%s/%s/%s",
-                cacheName, sap.getEnvironmentId(), sap.getServiceAccount().getApiKeyServerSide()));
+                cacheName, sap.getEnvironmentId(), sae.getServiceAccount().getApiKeyServerEval()));
       }
     }
 
@@ -820,8 +820,10 @@ public class ConvertUtils implements Conversions {
             .description(sa.getDescription());
 
     if (opts != null) {
-      account.apiKeyServerSide(sa.getApiKeyServerEval());
-      account.apiKeyClientSide(sa.getApiKeyClientEval());
+      if (!opts.contains(FillOpts.ServiceAccountPermissionFilter)) {
+        account.apiKeyServerSide(sa.getApiKeyServerEval());
+        account.apiKeyClientSide(sa.getApiKeyClientEval());
+      }
 
       if (opts.contains(FillOpts.Permissions) || opts.contains(FillOpts.SdkURL)) {
         // envId, acl
@@ -834,11 +836,11 @@ public class ConvertUtils implements Conversions {
               acl -> {
                 Set<RoleType> e = envs.get(acl.getEnvironment().getId());
                 if (e != null) {
-                  e.addAll(splitEnvironmentRoles(acl.getRoles()));
+                  e.addAll(includeImplicitRead(splitEnvironmentRoles(acl.getRoles())));
                 } else {
                   envs.put(
                       acl.getEnvironment().getId(),
-                      new HashSet<>(splitEnvironmentRoles(acl.getRoles())));
+                      new HashSet<>(includeImplicitRead(splitEnvironmentRoles(acl.getRoles()))));
                 }
               });
         }
@@ -865,6 +867,14 @@ public class ConvertUtils implements Conversions {
     }
 
     return account;
+  }
+
+  private List<RoleType> includeImplicitRead(List<RoleType> splitEnvironmentRoles) {
+    List<RoleType> roles = new ArrayList<>(splitEnvironmentRoles);
+    if (!splitEnvironmentRoles.isEmpty() && !splitEnvironmentRoles.contains(RoleType.READ)) {
+      roles.add(RoleType.READ);
+    }
+    return roles;
   }
 
   @Override

@@ -88,10 +88,14 @@ class StreamValley {
   }
 
   void _refreshApplicationIdChanged() {
-    if (_isCurrentPortfolioAdminOrSuperAdmin &&
-        _currentAppIdSource.value != null) {
-      getCurrentApplicationFeatures();
-      getCurrentApplicationEnvironments();
+    if (_currentAppIdSource.value != null) {
+      if (_currentApplicationFeaturesSource.hasListener) {
+        getCurrentApplicationFeatures();
+      }
+
+      if (_currentApplicationEnvironmentsSource.hasListener) {
+        getCurrentApplicationEnvironments();
+      }
     }
   }
 

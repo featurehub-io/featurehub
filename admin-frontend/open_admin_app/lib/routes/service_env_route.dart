@@ -6,11 +6,14 @@ import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
+import 'package:open_admin_app/widgets/apps/manage_service_accounts_bloc.dart';
 import 'package:open_admin_app/widgets/common/application_drop_down.dart';
 import 'package:open_admin_app/widgets/common/copy_to_clipboard_html.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
+import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
 import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
+import 'package:open_admin_app/widgets/service-accounts/apikey_reset_dialog_widget.dart';
 import 'package:open_admin_app/widgets/service-accounts/service_accounts_env_bloc.dart';
 
 class ServiceAccountEnvRoute extends StatelessWidget {
@@ -85,7 +88,7 @@ class ServiceAccountEnvRoute extends StatelessWidget {
                     height: 16.0,
                   ),
                   StreamBuilder<ServiceAccountEnvironments>(
-                      stream: bloc.serviceAccountStream,
+                      stream: bloc.serviceAccountEnvironmentsStream,
                       builder: (context, envSnapshot) {
                         if (!envSnapshot.hasData) {
                           return const SizedBox.shrink();
@@ -97,7 +100,7 @@ class ServiceAccountEnvRoute extends StatelessWidget {
                         }
 
                         return _ServiceAccountDisplayWidget(
-                            serviceAccountEnvs: envSnapshot.data!);
+                            serviceAccountEnvs: envSnapshot.data!, bloc: bloc);
                       }),
                 ],
               ),
@@ -107,9 +110,10 @@ class ServiceAccountEnvRoute extends StatelessWidget {
 
 class _ServiceAccountDisplayWidget extends StatelessWidget {
   final ServiceAccountEnvironments serviceAccountEnvs;
+  final ServiceAccountEnvBloc bloc;
 
   const _ServiceAccountDisplayWidget(
-      {Key? key, required this.serviceAccountEnvs})
+      {Key? key, required this.serviceAccountEnvs, required this.bloc})
       : super(key: key);
 
   @override
@@ -132,16 +136,29 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
                   children: [
                     Expanded(
                       flex: 2,
-                      child: Text(serviceAccount.name,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context)
-                              .textTheme
-                              .subtitle1!
-                              .copyWith(
-                                  color: Theme.of(context).brightness ==
-                                          Brightness.light
-                                      ? Theme.of(context).buttonTheme.colorScheme?.primary
-                                      : Theme.of(context).colorScheme.secondary)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 2.0),
+                                child: Icon(Ionicons.ios_settings,
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodyText2
+                                        ?.color
+                                        ?.withOpacity(0.5)),
+                              ),
+                              const SizedBox(width: 4.0),
+                              Expanded(
+                                child: Text(serviceAccount.name,
+                                    overflow: TextOverflow.ellipsis),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                     Expanded(
                         flex: 6,
@@ -160,14 +177,14 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
                                   child: Row(
                                     children: [
                                       Expanded(
-                                        flex: 3,
+                                        flex: 2,
                                         child: Text(env.name,
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .bodyText2),
                                       ),
                                       Expanded(
-                                          flex: 4,
+                                          flex: 3,
                                           child:
                                               _ServiceAccountPermissionWidget(
                                                   env: env,
@@ -175,9 +192,9 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
                                       Expanded(
                                           flex: 4,
                                           child: _ServiceAccountCopyWidget(
-                                              env: env, sa: serviceAccount))
-
-//
+                                              env: env,
+                                              sa: serviceAccount,
+                                              bloc: bloc))
                                     ],
                                   ),
                                 )
@@ -224,36 +241,40 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
 class _ServiceAccountCopyWidget extends StatelessWidget {
   final ServiceAccount sa;
   final Environment env;
+  final ServiceAccountEnvBloc bloc;
 
   const _ServiceAccountCopyWidget(
-      {Key? key, required this.sa, required this.env})
+      {Key? key, required this.sa, required this.env, required this.bloc})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final account = sa.permissions.firstWhere((p) => p.environmentId == env.id,
+    final saPermission = sa.permissions.firstWhere(
+        (p) => p.environmentId == env.id,
         orElse: () => ServiceAccountPermission(
             permissions: <RoleType>[], environmentId: env.id!));
-    var isScreenWide = MediaQuery.of(context).size.width >= 1450;
+    var isScreenWide = MediaQuery.of(context).size.width >= 1350;
 
     return Flex(
         direction: isScreenWide ? Axis.horizontal : Axis.vertical,
         children: [
-          if (account.sdkUrlClientEval != null)
+          if (saPermission.sdkUrlClientEval != null)
             FittedBox(
               child: Row(
                 children: [
                   Text(
-                    'Client eval API Key',
+                    'Client eval API Key ',
                     style: Theme.of(context).textTheme.caption,
                   ),
                   FHCopyToClipboard(
-                      copyString: account.sdkUrlClientEval!,
-                      tooltipMessage: account.sdkUrlClientEval!),
+                      copyString: saPermission.sdkUrlClientEval!,
+                      tooltipMessage: saPermission.sdkUrlClientEval!),
                 ],
               ),
             ),
-          if (account.sdkUrlServerEval != null)
+          if (saPermission.sdkUrlServerEval != null)
+            const SizedBox(width: 16.0),
+          if (saPermission.sdkUrlServerEval != null)
             FittedBox(
               child: Row(
                 children: [
@@ -262,12 +283,12 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
                     style: Theme.of(context).textTheme.caption,
                   ),
                   FHCopyToClipboard(
-                      copyString: account.sdkUrlServerEval!,
-                      tooltipMessage: account.sdkUrlServerEval!),
+                      copyString: saPermission.sdkUrlServerEval!,
+                      tooltipMessage: saPermission.sdkUrlServerEval!),
                 ],
               ),
             ),
-          if (account.sdkUrlClientEval == null)
+          if (saPermission.sdkUrlClientEval == null)
             const Tooltip(
               message:
                   'API Key is unavailable because your current permissions for this environment are lower level',
@@ -277,7 +298,7 @@ class _ServiceAccountCopyWidget extends StatelessWidget {
                 color: Colors.red,
               ),
             ),
-          if (account.sdkUrlServerEval == null)
+          if (saPermission.sdkUrlServerEval == null)
             const Tooltip(
               message:
                   'API Key is unavailable because your current permissions for this environment are lower level',

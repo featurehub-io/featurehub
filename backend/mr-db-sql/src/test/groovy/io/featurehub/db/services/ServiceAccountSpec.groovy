@@ -119,7 +119,7 @@ class ServiceAccountSpec extends BaseSpec {
     when: "i save it"
       def created = sapi.create(portfolio1Id, superPerson, sa, Opts.empty())
     and: "i reset the key"
-      sapi.resetApiKey(created.id)
+      sapi.resetApiKey(created.id, true, true)
     and: "i find the updated api"
       def search = sapi.search(portfolio1Id, "sa-reset", application1.id, superPerson,
         Opts.opts(FillOpts.Permissions, FillOpts.SdkURL))

@@ -140,6 +140,7 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
                           child: ScrollConfiguration(
                             behavior: CustomScrollBehavior(),
                             child: SingleChildScrollView(
+                              physics: const ClampingScrollPhysics(),
                                 controller: controller,
                                 child: Column(
                         children: <Widget>[child],
