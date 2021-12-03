@@ -19,7 +19,7 @@ class ApiKeyResetDialogWidget extends StatelessWidget {
       bloc: bloc.mrClient,
       wholeWarning:
       """Are you sure you want to reset ALL ${isClientKey ? 'client' : 'server'} eval API keys for this service account?
-This will affect the keys across all environments and all applications for a given service account!""",
+This will affect the keys across all environments and all applications that this service account has access to!""",
       isResetThing: true,
       deleteSelected: () async {
         var success = await bloc.resetApiKey(sa.id.toString(), isClientKey ? ResetApiKeyType.clientEvalOnly : ResetApiKeyType.serverEvalOnly);
