@@ -315,9 +315,9 @@ public class ConvertUtils implements Conversions {
 
   @Override
   public @NotNull List<RoleType> splitEnvironmentRoles(String roles) {
-    List<RoleType> roleTypes = new ArrayList<>();
+    Set<RoleType> roleTypes = new HashSet<>();
     if (roles == null || roles.length() == 0) {
-      return roleTypes;
+      return new ArrayList<>(roleTypes);
     }
 
     for (String n : roles.split(",")) {
@@ -327,12 +327,12 @@ public class ConvertUtils implements Conversions {
       }
     }
 
-    return roleTypes;
+    return new ArrayList<>(roleTypes);
   }
 
   @Override
   public List<ApplicationRoleType> splitApplicationRoles(String roles) {
-    List<ApplicationRoleType> roleTypes = new ArrayList<>();
+    Set<ApplicationRoleType> roleTypes = new HashSet<>();
 
     if (roles != null) {
       for (String n : roles.split(",")) {
@@ -344,7 +344,7 @@ public class ConvertUtils implements Conversions {
       }
     }
 
-    return roleTypes;
+    return new ArrayList<>(roleTypes);
   }
 
   @Override

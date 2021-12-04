@@ -5,5 +5,6 @@ if [ $# -eq 0 ]
     echo "No arguments supplied"
     exit -1
 fi
-mvn -f pom-packages.xml -DskipTests $BUILD_PARAMS -Ddocker-cloud-build=true -Dbuild.version=$1 clean install
+DOCKER_PREFIX="${OVERRIDE_DOCKER_PREFIX:-featurehub}"
+mvn -f pom-packages.xml -DskipTests $BUILD_PARAMS -Ddocker.project.prefix=$DOCKER_PREFIX -Ddocker-cloud-build=true -Dbuild.version=$1 clean install
 

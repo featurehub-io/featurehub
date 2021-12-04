@@ -356,7 +356,7 @@ class FeatureSpec extends BaseSpec {
       afv.environments.find({it.environmentName == 'app2-production-f1'}).features.size() == 1
       afv.environments.find({it.environmentName == 'app2-production-f1'}).roles == Arrays.asList(RoleType.values()) // because superuser, otherwise would have no access
       afvAverageJoe.environments.size() == 4
-      afvAverageJoe.environments.find({it.environmentName == 'app2-dev-f1'}).roles == [RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK]
+      !afvAverageJoe.environments.find({it.environmentName == 'app2-dev-f1'}).roles.disjoint([RoleType.CHANGE_VALUE, RoleType.LOCK, RoleType.UNLOCK])
       afvAverageJoe.environments.find({it.environmentName == 'app2-production-f1'}).roles.isEmpty()
     // portfolio admin can read in every environment
       afvPortfolioAdminOfPortfolio1.environments.size() == 4

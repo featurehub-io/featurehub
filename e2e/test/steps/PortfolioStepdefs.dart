@@ -110,7 +110,8 @@ class PortfolioStepdefs {
     }
   }
 
-  @Then(r'portfolio {string} has service account {string}')
+  @Then(
+      r'portfolio {string} has service account {string} with attached API keys')
   void portfolioHasServiceAccount(
       String portfolioName, String serviceAccountName) async {
     Portfolio? p = await userCommon.findExactPortfolio(portfolioName);
@@ -118,10 +119,14 @@ class PortfolioStepdefs {
         await userCommon.findExactServiceAccount(serviceAccountName, p!.id);
     assert(sa != null,
         "I couldn't find the service account " + serviceAccountName);
-    assert(sa!.apiKeyServerSide != null,
-        'API key for Service account $serviceAccountName not set.');
-    assert(sa!.apiKeyClientSide != null,
-        'API key for Service account $serviceAccountName not set.');
+
+    assert(sa!.permissions.isNotEmpty,
+        'There are no permissions, there should be at least prod');
+
+    assert(sa!.permissions[0].sdkUrlClientEval != null,
+        'Client API Key for $serviceAccountName not available to portfolio admin');
+    assert(sa!.permissions[0].sdkUrlServerEval != null,
+        'Server API Key for $serviceAccountName not available to portfolio admin');
   }
 
   @When(
@@ -259,7 +264,11 @@ class PortfolioStepdefs {
   @Then(
       r'^I should be able to reset (client|server) keys for service account "(.*)" for portfolio "(.*)" for application "(.*)" for environment "(.*)"$')
   void iShouldBeAbleToResetClientKeysForServiceAccount(
-      String keysType, String serviceAccountName, String portfolioName, String appName, String envName) async {
+      String keysType,
+      String serviceAccountName,
+      String portfolioName,
+      String appName,
+      String envName) async {
     Portfolio? p = await userCommon.findExactPortfolio(portfolioName);
     assert(p != null, 'Could not find portfolio group called $portfolioName');
     var app = await userCommon.findExactApplication(appName, p!.id);
@@ -271,12 +280,16 @@ class PortfolioStepdefs {
         serviceAccountName, p.id,
         applicationId: environment!.applicationId);
     assert(sa != null, 'Failed to find service account');
-    var apiKey = keysType == "client" ? sa!.apiKeyClientSide : sa!.apiKeyServerSide;
-    ServiceAccount updatedSa = await userCommon.serviceAccountService.resetApiKey(
-        sa.id!, apiKeyType: keysType == "client" ? ResetApiKeyType.clientEvalOnly : ResetApiKeyType.serverEvalOnly
-    );
-    assert(apiKey != (keysType == "client" ? updatedSa.apiKeyClientSide : updatedSa.apiKeyServerSide));
+    var apiKey =
+        keysType == "client" ? sa!.apiKeyClientSide : sa!.apiKeyServerSide;
+    ServiceAccount updatedSa = await userCommon.serviceAccountService
+        .resetApiKey(sa.id!,
+            apiKeyType: keysType == "client"
+                ? ResetApiKeyType.clientEvalOnly
+                : ResetApiKeyType.serverEvalOnly);
+    assert(apiKey !=
+        (keysType == "client"
+            ? updatedSa.apiKeyClientSide
+            : updatedSa.apiKeyServerSide));
   }
-
-
 }

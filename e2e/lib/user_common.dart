@@ -84,7 +84,7 @@ class UserCommon {
     var uriParse = Uri.parse(registrationUrl);
     String token = uriParse.queryParameters['token'] ?? '';
 
-    assert(token.isNotEmpty, 'token is empty or null $token');
+    assert(token.isNotEmpty, 'token is empty or null $registrationUrl');
 
     var person = await authService.personByToken(token);
 
@@ -158,6 +158,7 @@ class UserCommon {
     var serviceAccounts = await _saService.searchServiceAccountsInPortfolio(
         portfolioId!,
         applicationId: applicationId,
+        includeSdkUrls: true,
         includePermissions: true);
     return serviceAccounts.firstWhereOrNull((sa) => sa.name == serviceAccount);
   }
