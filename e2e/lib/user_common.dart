@@ -158,6 +158,7 @@ class UserCommon {
     var serviceAccounts = await _saService.searchServiceAccountsInPortfolio(
         portfolioId!,
         applicationId: applicationId,
+        includeSdkUrls: true,
         includePermissions: true);
     return serviceAccounts.firstWhereOrNull((sa) => sa.name == serviceAccount);
   }
