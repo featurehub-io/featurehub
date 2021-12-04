@@ -110,7 +110,8 @@ class PortfolioStepdefs {
     }
   }
 
-  @Then(r'portfolio {string} has service account {string}')
+  @Then(
+      r'portfolio {string} has service account {string} with attached API keys')
   void portfolioHasServiceAccount(
       String portfolioName, String serviceAccountName) async {
     Portfolio? p = await userCommon.findExactPortfolio(portfolioName);

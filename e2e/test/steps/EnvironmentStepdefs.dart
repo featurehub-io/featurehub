@@ -60,6 +60,8 @@ class EnvironmentStepdefs {
     var env = await common.findExactEnvironment(name, app.id);
 
     assert(env != null, 'Could not find environment $name');
+
+    shared.environment = env!;
   }
 
   @And(r'I cannot find environment {string} in the application')

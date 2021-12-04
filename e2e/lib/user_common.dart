@@ -84,7 +84,7 @@ class UserCommon {
     var uriParse = Uri.parse(registrationUrl);
     String token = uriParse.queryParameters['token'] ?? '';
 
-    assert(token.isNotEmpty, 'token is empty or null $token');
+    assert(token.isNotEmpty, 'token is empty or null $registrationUrl');
 
     var person = await authService.personByToken(token);
 

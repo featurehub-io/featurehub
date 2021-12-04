@@ -4,6 +4,7 @@ import 'package:e2e_tests/user_common.dart';
 import 'package:mrapi/api.dart' as api;
 import 'package:mrapi/api.dart';
 import 'package:ogurets/ogurets.dart';
+import 'package:openapi_dart_common/openapi.dart';
 
 class ApplicationStepdefs {
   final UserCommon userCommon;
@@ -279,8 +280,20 @@ class ApplicationStepdefs {
 
   @Given(r'I create an application with the name {string}')
   void iCreateAnApplicationWithTheName(String appName) async {
-    shared.application = await userCommon.applicationService.createApplication(
-        shared.portfolio.id!,
-        api.Application(name: appName, description: appName));
+    try {
+      shared.application = await userCommon.applicationService
+          .createApplication(shared.portfolio.id!,
+              api.Application(name: appName, description: appName));
+    } catch (e) {
+      if (e is ApiException) {
+        if (e.code == 409) {
+          shared.application = (await userCommon.findExactApplication(
+              appName, shared.portfolio.id))!;
+          return;
+        }
+      }
+
+      throw e;
+    }
   }
 }

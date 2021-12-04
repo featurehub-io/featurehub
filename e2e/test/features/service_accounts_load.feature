@@ -10,8 +10,10 @@ Feature: This should test the loading of new service accounts
     And I ensure the "<email>" user is added to the portfolio admin group for "<portfolio>"
     # lets swap to the newly created user and do the rest as them
     When I can login as user "<email>" with password "password123"
-    When I ensure a portfolio "<portfolio>" has created a service account called "<service_account>"
-    Then portfolio "<portfolio>" has service account "<service_account>"
+    And I create an application with the name "Jujitsu for Frogs"
+    And I can find environment "production" in the application
+    When We create a service account "<service_account>" with the permission READ
+    Then portfolio "<portfolio>" has service account "<service_account>" with attached API keys
 
     Examples:
       | portfolio   | portfolio_desc | service_account | name                    | email                                  |
