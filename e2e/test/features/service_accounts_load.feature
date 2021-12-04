@@ -16,13 +16,13 @@ Feature: This should test the loading of new service accounts
     Examples:
       | portfolio   | portfolio_desc | service_account | name                    | email                                  |
       | Marketing   | The Fluffers   | SA001           | Marketing Admin         | marketing-admin@mailinator.com         |
-#      | Marketing   | The Fluffers   | SA002           | Marketing Admin         | marketing-admin@mailinator.com         |
-#      | Engineering | The Eloi       | SA003           | Engineering Admin       | engineering-admin@mailinator.com       |
-#      | Engineering | The Eloi       | SA004           | Engineering Admin       | engineering-admin@mailinator.com       |
-#      | Engineering | The Eloi       | SA005           | Engineering Admin       | engineering-admin@mailinator.com       |
-#      | Platform    | The Morlocks   | SA006           | Platform Admin          | platform-admin@mailinator.com          |
-#      | Platform    | The Morlocks   | SA007           | platform testers        | platform_testers-admin@mailinator.com  |
-#      | Platform    | The Morlocks   | SA008           | platform_business_users | platform_product-owners@mailinator.com |
+      | Marketing   | The Fluffers   | SA002           | Marketing Admin         | marketing-admin@mailinator.com         |
+      | Engineering | The Eloi       | SA003           | Engineering Admin       | engineering-admin@mailinator.com       |
+      | Engineering | The Eloi       | SA004           | Engineering Admin       | engineering-admin@mailinator.com       |
+      | Engineering | The Eloi       | SA005           | Engineering Admin       | engineering-admin@mailinator.com       |
+      | Platform    | The Morlocks   | SA006           | Platform Admin          | platform-admin@mailinator.com          |
+      | Platform    | The Morlocks   | SA007           | platform testers        | platform_testers-admin@mailinator.com  |
+      | Platform    | The Morlocks   | SA008           | platform_business_users | platform_product-owners@mailinator.com |
 
 
   Scenario Outline: I can create a new portfolio and service account and add permissions
