@@ -9,7 +9,6 @@ import io.featurehub.health.CommonFeatureHubFeatures
 import io.featurehub.lifecycle.ExecutorPoolDrainageSource
 import io.featurehub.utils.FallbackPropertyConfig
 import jakarta.ws.rs.core.Configurable
-import org.glassfish.grizzly.http.server.HttpHandlerRegistration
 import org.glassfish.grizzly.http.server.HttpServer
 import org.glassfish.grizzly.http.server.NetworkListener
 import org.glassfish.grizzly.http2.Http2AddOn
@@ -26,6 +25,39 @@ import org.slf4j.LoggerFactory
 import java.net.URI
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
+
+internal class PostRegistration(private vararg val postStartupLoadServices: Class<*>) : ContainerLifecycleListener {
+  private val log: Logger = LoggerFactory.getLogger(PostRegistration::class.java)
+
+  override fun onStartup(container: Container) {
+    // access the ServiceLocator here
+    val injector = container
+      .applicationHandler
+      .injectionManager
+      .getInstance(ServiceLocator::class.java)
+
+    var failedToFindServices = false
+
+    for (it in postStartupLoadServices) {
+      log.info("preloading class {}", it.name)
+      if (injector.getService(it) == null) {
+        log.error("Unable to find service with class {}", it.name)
+        failedToFindServices = true
+      }
+    }
+
+    if (failedToFindServices) {
+      throw RuntimeException("Incomplete wiring due to inability to find services, please check errors")
+    }
+  }
+
+  override fun onReload(container: Container) {
+  }
+
+  override fun onShutdown(container: Container) {
+  }
+
+}
 
 class FeatureHubJerseyHost constructor(private val config: ResourceConfig) {
   private val log: Logger = LoggerFactory.getLogger(FeatureHubJerseyHost::class.java)
@@ -69,42 +101,13 @@ class FeatureHubJerseyHost constructor(private val config: ResourceConfig) {
   }
 
   companion object {
-    private val log: Logger = LoggerFactory.getLogger(FeatureHubJerseyHost::class.java)
     /**
      * This is a convenient way of making sure certain services exist. Because it creates an abstract object
      * you can create as many of these as you like. If you use a common class and register it multiple times, it
      * will only create the first instance.
      */
     fun registerServiceToLoadOnStart(config: Configurable<*>, vararg postStartupLoadServices: Class<*>) {
-      config.register(object: ContainerLifecycleListener {
-        override fun onStartup(container: Container) {
-          // access the ServiceLocator here
-          val injector = container
-            .applicationHandler
-            .injectionManager
-            .getInstance(ServiceLocator::class.java)
-
-          var failedToFindServices = false
-
-          for (it in postStartupLoadServices) {
-            if (injector.getService(it) == null) {
-              log.error("Unable to find service with class {}", it.name)
-              failedToFindServices = true
-            }
-          }
-
-          if (failedToFindServices) {
-            throw RuntimeException("Incomplete wiring due to inability to find services, please check errors")
-          }
-        }
-
-        override fun onReload(container: Container) {
-        }
-
-        override fun onShutdown(container: Container) {
-        }
-
-      })
+      config.register(PostRegistration(*postStartupLoadServices))
     }
 
     /**
