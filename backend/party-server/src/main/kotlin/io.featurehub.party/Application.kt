@@ -50,11 +50,19 @@ class Application {
       TelemetryFeature::class.java
     )
 
-    FeatureHubJerseyHost.withInjector(config) { injector ->
-      // make sure Edge talks directly to Dacha for the current cache
-      val dachaServiceRegistry = injector.getService(DachaClientServiceRegistry::class.java)
-      dachaServiceRegistry.registerApiKeyService(name, injector.getService(DachaApiKeyResource::class.java) )
-    }
+    config.register(object: ContainerLifecycleListener {
+      override fun onStartup(container: Container) {
+        FeatureHubJerseyHost.withServiceLocator(container) { injector ->
+          // make sure Edge talks directly to Dacha for the current cache
+          val dachaServiceRegistry = injector.getService(DachaClientServiceRegistry::class.java)
+          dachaServiceRegistry.registerApiKeyService(name, injector.getService(DachaApiKeyResource::class.java) )
+        }
+      }
+
+      override fun onReload(container: Container?) {}
+
+      override fun onShutdown(container: Container?) {}
+    })
 
       // check if we should list on a different port
     registerMetrics(config)

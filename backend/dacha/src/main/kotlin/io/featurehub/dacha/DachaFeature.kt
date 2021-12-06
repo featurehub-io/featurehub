@@ -7,6 +7,7 @@ import io.featurehub.jersey.FeatureHubJerseyHost
 import jakarta.inject.Singleton
 import jakarta.ws.rs.core.Feature
 import jakarta.ws.rs.core.FeatureContext
+import org.glassfish.hk2.api.Immediate
 import org.glassfish.jersey.internal.inject.AbstractBinder
 
 class DachaFeature : Feature {
@@ -19,11 +20,9 @@ class DachaFeature : Feature {
       override fun configure() {
         bind(InMemoryCache::class.java).to(InternalCache::class.java).`in`(Singleton::class.java)
         bind(ServerConfig::class.java).to(ServerConfig::class.java).`in`(Singleton::class.java)
-        bind(CacheManager::class.java).to(CacheManager::class.java).to(HealthSource::class.java).`in`(Singleton::class.java)
+        bind(CacheManager::class.java).to(CacheManager::class.java).to(HealthSource::class.java).`in`(Immediate::class.java)
       }
     })
-
-    FeatureHubJerseyHost.registerServiceToLoadOnStart(context, CacheManager::class.java)
 
     return true
   }
