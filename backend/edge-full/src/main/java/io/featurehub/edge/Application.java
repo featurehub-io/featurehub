@@ -12,6 +12,8 @@ import io.featurehub.lifecycle.TelemetryFeature;
 import io.featurehub.publish.NATSFeature;
 import io.featurehub.utils.FallbackPropertyConfig;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.spi.Container;
+import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
 
 public class Application {
   private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(Application.class);
@@ -34,13 +36,25 @@ public class Application {
     MetricsHealthRegistration.Companion.registerMetrics(config);
 
     if (FallbackPropertyConfig.Companion.getConfig("cache.name") != null) {
-      FeatureHubJerseyHost.Companion.withInjector(config, injector -> {
-        DachaClientServiceRegistry registry = injector.getService(DachaClientServiceRegistry.class);
-        if (registry.getApiKeyService(FallbackPropertyConfig.Companion.getConfig("cache.name")) == null) {
-          log.error("You must configure the URL indicating where dacha is located. dacha.url.{} is missing", FallbackPropertyConfig.Companion.getConfig("cache.name"));
-          throw new RuntimeException("Cannot find dacha url, see error log");
+      config.register(new ContainerLifecycleListener() {
+        @Override
+        public void onStartup(Container container) {
+          FeatureHubJerseyHost.Companion.withServiceLocator(container, (serviceLocator) -> {
+            DachaClientServiceRegistry registry = serviceLocator.getService(DachaClientServiceRegistry.class);
+            if (registry.getApiKeyService(FallbackPropertyConfig.Companion.getConfig("cache.name")) == null) {
+              log.error("You must configure the URL indicating where dacha is located. dacha.url.{} is missing", FallbackPropertyConfig.Companion.getConfig("cache.name"));
+              throw new RuntimeException("Cannot find dacha url, see error log");
+            }
+
+            return null;
+          });
         }
-        return null;
+
+        @Override
+        public void onReload(Container container) {}
+
+        @Override
+        public void onShutdown(Container container) {}
       });
     }
 

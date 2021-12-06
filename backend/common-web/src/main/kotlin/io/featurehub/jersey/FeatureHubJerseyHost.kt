@@ -26,39 +26,6 @@ import java.net.URI
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 
-internal class PostRegistration(private vararg val postStartupLoadServices: Class<*>) : ContainerLifecycleListener {
-  private val log: Logger = LoggerFactory.getLogger(PostRegistration::class.java)
-
-  override fun onStartup(container: Container) {
-    // access the ServiceLocator here
-    val injector = container
-      .applicationHandler
-      .injectionManager
-      .getInstance(ServiceLocator::class.java)
-
-    var failedToFindServices = false
-
-    for (it in postStartupLoadServices) {
-      log.info("preloading class {}", it.name)
-      if (injector.getService(it) == null) {
-        log.error("Unable to find service with class {}", it.name)
-        failedToFindServices = true
-      }
-    }
-
-    if (failedToFindServices) {
-      throw RuntimeException("Incomplete wiring due to inability to find services, please check errors")
-    }
-  }
-
-  override fun onReload(container: Container) {
-  }
-
-  override fun onShutdown(container: Container) {
-  }
-
-}
-
 class FeatureHubJerseyHost constructor(private val config: ResourceConfig) {
   private val log: Logger = LoggerFactory.getLogger(FeatureHubJerseyHost::class.java)
 
@@ -102,37 +69,19 @@ class FeatureHubJerseyHost constructor(private val config: ResourceConfig) {
 
   companion object {
     /**
-     * This is a convenient way of making sure certain services exist. Because it creates an abstract object
-     * you can create as many of these as you like. If you use a common class and register it multiple times, it
-     * will only create the first instance.
+     * We cannot use ContainerLifecycleListener as a generic callback as we don't know what container stuff is going
+     * into so we can't glob them together and you cannot register the same classname > 1 time with the process. Always
+     * use the ContainerLifecycleListener in-situ and use this function if you want the service locator. If you want services
+     * to be available at startup, use @Immediate
      */
-    fun registerServiceToLoadOnStart(config: Configurable<*>, vararg postStartupLoadServices: Class<*>) {
-      config.register(PostRegistration(*postStartupLoadServices))
+    fun withServiceLocator(container: Container, locate: (serviceLocator: ServiceLocator) -> Unit) {
+      val serviceLocator = container
+        .applicationHandler
+        .injectionManager
+        .getInstance(ServiceLocator::class.java)
+
+      locate(serviceLocator)
     }
-
-    /**
-     * This is a convenient method of grabbing the Injection Context and doing things with it
-     * once the container has started
-     */
-    fun withInjector(config: Configurable<*>, withInjectionContext: (injector: ServiceLocator) -> Unit ) {
-     config.register(object: ContainerLifecycleListener {
-       override fun onStartup(container: Container) {
-         // access the ServiceLocator here
-         val injector = container
-           .applicationHandler
-           .injectionManager
-           .getInstance(ServiceLocator::class.java)
-
-         withInjectionContext(injector)
-       }
-
-       override fun onReload(container: Container) {
-       }
-
-       override fun onShutdown(container: Container) {
-       }
-     })
-   }
   }
 
   fun start() : FeatureHubJerseyHost {
