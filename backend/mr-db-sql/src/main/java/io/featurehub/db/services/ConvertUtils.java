@@ -847,7 +847,10 @@ public class ConvertUtils implements Conversions {
 
         UUID appIdFilter = opts.id(FilterOptType.Application);
         QDbServiceAccountEnvironment permQuery =
-            new QDbServiceAccountEnvironment().serviceAccount.eq(sa);
+            new QDbServiceAccountEnvironment()
+              .serviceAccount.eq(sa)
+              .environment.whenArchived.isNull()
+              .environment.whenUnpublished.isNull();
         if (appIdFilter != null) {
           permQuery = permQuery.environment.parentApplication.id.eq(appIdFilter);
         }

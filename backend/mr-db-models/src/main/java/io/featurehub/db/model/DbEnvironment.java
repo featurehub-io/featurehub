@@ -10,6 +10,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -71,6 +72,21 @@ public class DbEnvironment extends DbVersionedBase {
 
   @Column(name = "when_archived")
   private LocalDateTime whenArchived;
+
+  /**
+   * Indicates this environment is removed from the publishing list for some reason, usually because the organisation
+   * expired. This is different from archiving because archiving is an action taken by the customer, whereas
+   * unpublishing is a system action.
+   */
+  private Instant whenUnpublished;
+
+  public Instant getWhenUnpublished() {
+    return whenUnpublished;
+  }
+
+  public void setWhenUnpublished(Instant whenUnpublished) {
+    this.whenUnpublished = whenUnpublished;
+  }
 
   public DbEnvironment getPriorEnvironment() {
     return priorEnvironment;
