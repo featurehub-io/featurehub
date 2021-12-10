@@ -50,7 +50,7 @@
   </scm>
 
   <properties>
-    <slfj4.version>1.7.25</slfj4.version>
+    <slfj4.version>1.7.32</slfj4.version>
   </properties>
 
   <dependencies>
