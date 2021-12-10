@@ -50,7 +50,7 @@
   </scm>
 
   <properties>
-    <log4j.version>2.14.1</log4j.version>
+    <log4j.version>2.15.0</log4j.version>
     <lmax.disruptor>3.4.4</lmax.disruptor>
   </properties>
 
@@ -122,6 +122,10 @@
       <artifactId>connect-java-logging</artifactId>
       <version>2.2</version>
       <exclusions>
+        <exclusion>
+          <groupId>cd.connect.composites.java</groupId>
+          <artifactId>connect-composite-logging</artifactId>
+        </exclusion>
         <exclusion>
           <groupId>cd.connect.composites.java</groupId>
           <artifactId>connect-composite-jackson</artifactId>
