@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
@@ -71,7 +70,9 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
             child: Align(
               alignment: Alignment.centerLeft,
               child: ConfigurationViewerField(
-                  text: tec.text, canEdit: widget.canEdit, unlocked: widget.unlocked),
+                  text: tec.text,
+                  canEdit: widget.canEdit,
+                  unlocked: widget.unlocked),
             )),
       ),
     );

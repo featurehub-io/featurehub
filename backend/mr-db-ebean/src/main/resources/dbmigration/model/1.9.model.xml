@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <addColumn tableName="fh_environment">
+            <column name="when_unpublished" type="timestamp"/>
+        </addColumn>
+        <addColumn tableName="fh_service_account">
+            <column name="when_unpublished" type="timestamp"/>
+        </addColumn>
+    </changeSet>
+</migration>

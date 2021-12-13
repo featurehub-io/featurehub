@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:open_admin_app/utils/translate_on_hover.dart';
 
 class FHUnderlineButton extends StatelessWidget {
@@ -27,9 +26,13 @@ class FHUnderlineButton extends StatelessWidget {
         padding: const EdgeInsets.all(2.0),
         alignment: Alignment.centerLeft,
         child: TranslateOnHover(
-          child: Text(title,
-              style: Theme.of(context).textTheme.button?.copyWith(color: Colors.blue),
-                  ),
+          child: Text(
+            title,
+            style: Theme.of(context)
+                .textTheme
+                .button
+                ?.copyWith(color: Colors.blue),
+          ),
         ),
       ),
     );

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:open_admin_app/utils/utils.dart';
-import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_card.dart';
+import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/setup/setup_bloc.dart';
 import 'package:open_admin_app/widgets/user/signin/signin_provider_button.dart';
 import 'package:zxcvbn/zxcvbn.dart';
@@ -43,22 +42,32 @@ class _SetupPage1State extends State<SetupPage1Widget> {
   }
 
   void setPasswordStrength() {
-    final result = Zxcvbn().evaluate(_pw1.text);
-    var state = 'Weak';
-    if (result.score == 1) {
-      state = 'Below average';
-    } else if (result.score == 2) {
-      state = 'Good';
-    } else if (result.score == 3) {
-      state = 'Strong';
+    String state;
+    Color stateColor;
+
+    if (_pw1.text.isEmpty) {
+      state = '';
+      stateColor = Colors.white;
+    } else {
+      state = 'Weak';
+      final result = Zxcvbn().evaluate(_pw1.text);
+      if (result.score == 1) {
+        state = 'Below average';
+      } else if (result.score == 2) {
+        state = 'Good';
+      } else if (result.score == 3) {
+        state = 'Strong';
+      }
+
+      stateColor =
+          (result.score == null || result.score! < _passwordScoreThreshold)
+              ? Colors.red
+              : Colors.green;
+      if (result.score == 1) {
+        stateColor = Colors.orange;
+      }
     }
-    Color stateColor =
-        (result.score == null || result.score! < _passwordScoreThreshold)
-            ? Colors.red
-            : Colors.green;
-    if (result.score == 1) {
-      stateColor = Colors.orange;
-    }
+
     final stateText = Text(state,
         style:
             Theme.of(context).textTheme.caption!.copyWith(color: stateColor));
@@ -260,9 +269,8 @@ class _SetupPage1ThirdPartyProviders extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.only(top: 12.0),
               child: SignInProviderButton(
-                provider: provider,
-                func: () => selectedExternalProviderFunc(provider)
-              ),
+                  provider: provider,
+                  func: () => selectedExternalProviderFunc(provider)),
             ),
           ),
       ],

@@ -1,6 +1,5 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:logging/logging.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
@@ -146,7 +145,6 @@ class _FeatureTabsBodyHolder extends StatelessWidget {
 }
 
 class _FeatureTabsHeader extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     final ScrollController controller = ScrollController();

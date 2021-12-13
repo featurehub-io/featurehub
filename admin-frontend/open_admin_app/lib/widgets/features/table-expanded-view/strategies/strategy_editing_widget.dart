@@ -1,11 +1,10 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/utils/custom_scroll_behavior.dart';
-import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
+import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_outline_button.dart';
 import 'package:open_admin_app/widgets/common/input_fields_validators/input_field_number_formatter.dart';
@@ -74,7 +73,6 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
     final focusNode = FocusScope.of(context);
     final ScrollController controller = ScrollController();
 
-
     return FHAlertDialog(
       title: Text(
           widget.editable ? 'Edit split targeting' : 'View split targeting'),
@@ -95,8 +93,9 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                     decoration: BoxDecoration(
                         borderRadius:
                             const BorderRadius.all(Radius.circular(6.0)),
-                        color:
-                            Theme.of(context).primaryColorLight.withOpacity(0.3)),
+                        color: Theme.of(context)
+                            .primaryColorLight
+                            .withOpacity(0.3)),
                     child: TextFormField(
                         controller: _strategyName,
                         decoration: const InputDecoration(
@@ -178,7 +177,8 @@ class _StrategyEditingWidgetState extends State<StrategyEditingWidget> {
                                         setState(() {
                                           _strategyPercentage.text = '';
                                           individualStrategyBloc!
-                                              .rolloutStrategy.percentage = null;
+                                              .rolloutStrategy
+                                              .percentage = null;
                                           showPercentageField = false;
                                           widget.bloc.updateStrategy();
                                         });
