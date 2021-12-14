@@ -287,7 +287,7 @@ class EnvironmentSqlApi @Inject constructor(
       envQ = envQ.id.`in`(environments)
     }
 
-    envQ.findList().forEach { env ->
+    envQ.select(QDbEnvironment.Alias.id).findList().forEach { env ->
       cacheSource.deleteEnvironment(env.id)
     }
 
