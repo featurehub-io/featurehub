@@ -148,6 +148,8 @@ public class DbCacheSource implements CacheSource {
           QDbFeatureValue.Alias.rolloutStrategies, QDbFeatureValue.Alias.version,
           QDbFeatureValue.Alias.defaultValue)
         .feature.whenArchived.isNull()
+        .environment.whenArchived.isNull()
+        .environment.whenUnpublished.isNull()
         .environment.eq(env).findStream()
         .collect(Collectors.toMap(f -> f.getFeature().getId(), Function.identity()));
     final Opts empty = Opts.empty();

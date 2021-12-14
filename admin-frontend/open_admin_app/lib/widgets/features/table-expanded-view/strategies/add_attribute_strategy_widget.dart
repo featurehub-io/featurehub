@@ -1,6 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
@@ -105,20 +103,20 @@ class _EditAttributeStrategyWidgetState
 
   Widget _nameField() {
     if (_wellKnown != null) {
-      return Text(
-        _nameFieldMap[_wellKnown!]!,
-        style: Theme.of(context).textTheme.subtitle2!.copyWith(
-            color: Theme.of(context).brightness == Brightness.light
-                ? Theme.of(context).buttonTheme.colorScheme?.primary
-                : Theme.of(context).colorScheme.secondary,
-      ));
+      return Text(_nameFieldMap[_wellKnown!]!,
+          style: Theme.of(context).textTheme.subtitle2!.copyWith(
+                color: Theme.of(context).brightness == Brightness.light
+                    ? Theme.of(context).buttonTheme.colorScheme?.primary
+                    : Theme.of(context).colorScheme.secondary,
+              ));
     } else {
       return TextFormField(
           controller: _fieldName,
           decoration: InputDecoration(
               labelText: 'Custom rule name',
               labelStyle: Theme.of(context).textTheme.bodyText1!.copyWith(
-                  fontSize: 12.0, color: Theme.of(context).buttonTheme.colorScheme?.primary)),
+                  fontSize: 12.0,
+                  color: Theme.of(context).buttonTheme.colorScheme?.primary)),
           style: const TextStyle(fontSize: 14.0),
           autofocus: true,
           textInputAction: TextInputAction.next,
@@ -433,10 +431,7 @@ class _EditAttributeStrategyWidgetState
                       border: const OutlineInputBorder(),
                       labelText: labelText,
                       helperText: helperText,
-                      labelStyle: Theme.of(context)
-                          .textTheme
-                          .bodyText1!
-                  ),
+                      labelStyle: Theme.of(context).textTheme.bodyText1!),
                   // readOnly: !widget.widget.editable,
                   autofocus: true,
                   onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
@@ -503,40 +498,44 @@ class _EditAttributeStrategyWidgetState
   }
 }
 
-_countryNameReverseMapper (val) {
-  return (val is String) ? StrategyAttributeCountryNameExtension.fromJson(val) : val;
+_countryNameReverseMapper(val) {
+  return (val is String)
+      ? StrategyAttributeCountryNameExtension.fromJson(val)
+      : val;
 }
 
-String _countryNameMapper (dynamic val) {
+String _countryNameMapper(dynamic val) {
   return ((val is StrategyAttributeCountryName)
-            ? val.toJson().toString()
-            : val.toString())
-        .toString()
-        .replaceAll('_', ' ')
-        .replaceAll('of the', '')
-        .replaceAll('of', '')
-        .trim()
-        .capitalizeFirstofEach;
+          ? val.toJson().toString()
+          : val.toString())
+      .toString()
+      .replaceAll('_', ' ')
+      .replaceAll('of the', '')
+      .replaceAll('of', '')
+      .trim()
+      .capitalizeFirstofEach;
 }
 
 String _deviceNameMapper(dynamic val) {
   return (val is StrategyAttributeDeviceName)
-    ? val.toJson().toString()
-    : val.toString();
+      ? val.toJson().toString()
+      : val.toString();
 }
 
 _deviceNameReverseMapper(val) {
-  return (val is String) ? StrategyAttributeDeviceNameExtension.fromJson(val) : val;
+  return (val is String)
+      ? StrategyAttributeDeviceNameExtension.fromJson(val)
+      : val;
 }
 
-_platformNameReverseMapper (val) {
+_platformNameReverseMapper(val) {
   return (val is String)
-    ? StrategyAttributePlatformNameExtension.fromJson(val)
-    : val;
+      ? StrategyAttributePlatformNameExtension.fromJson(val)
+      : val;
 }
 
 String _platformNameMapper(dynamic val) {
   return (val is StrategyAttributePlatformName)
-        ? val.toJson().toString()
-        : val.toString();
+      ? val.toJson().toString()
+      : val.toString();
 }

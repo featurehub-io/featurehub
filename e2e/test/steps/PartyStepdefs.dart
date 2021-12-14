@@ -1,10 +1,7 @@
 import 'package:e2e_tests/events_common.dart';
 import 'package:e2e_tests/shared.dart';
 import 'package:featurehub_client_sdk/featurehub.dart';
-import 'package:logging/logging.dart';
 import 'package:ogurets/ogurets.dart';
-
-final _log = Logger('PartyStepdefs');
 
 class PartyStepdefs {
   final EventsCommon eventsCommon;

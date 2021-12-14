@@ -8,7 +8,6 @@
 //   * stepper feedback in the case of high-latency interactions
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 
 /// The state of a [CustomStep] which is used to control the style of the circle and
 /// text.
@@ -394,9 +393,13 @@ class _CustomStepperState extends State<CustomStepper>
 
   Widget _buildVerticalControls() {
     if (widget.controlsBuilder != null) {
-      return widget.controlsBuilder!(context,
-          onStepContinue: widget.onStepContinue,
-          onStepCancel: widget.onStepCancel);
+      return widget.controlsBuilder!(
+          context,
+          ControlsDetails(
+              onStepContinue: widget.onStepContinue,
+              onStepCancel: widget.onStepCancel,
+              stepIndex: 0,
+              currentStep: 0));
     }
 
     final localizations = MaterialLocalizations.of(context);

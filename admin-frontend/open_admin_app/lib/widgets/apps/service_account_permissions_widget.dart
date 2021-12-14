@@ -1,8 +1,5 @@
-import 'dart:ui';
-
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:logging/logging.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
@@ -11,6 +8,7 @@ import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_footer_button_bar.dart';
 import 'package:open_admin_app/widgets/common/fh_info_card.dart';
 import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
+
 import 'manage_app_bloc.dart';
 
 final _log = Logger('ServiceAccountPermissionsWidget');
@@ -60,14 +58,13 @@ class _ServiceAccountPermissionState
                         Container(
                           padding: const EdgeInsets.only(top: 20, bottom: 20),
                           child: FHUnderlineButton(
-                              title: 'Go to service accounts settings', onPressed: () => {
-                            ManagementRepositoryClientBloc
-                                .router
-                                .navigateTo(
-                              context,
-                              '/service-accounts',
-                            )
-                          },
+                            title: 'Go to service accounts settings',
+                            onPressed: () => {
+                              ManagementRepositoryClientBloc.router.navigateTo(
+                                context,
+                                '/service-accounts',
+                              )
+                            },
                           ),
                         )
                       ],

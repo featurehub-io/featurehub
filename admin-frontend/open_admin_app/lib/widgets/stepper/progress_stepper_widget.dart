@@ -1,6 +1,5 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/config/route_names.dart';
@@ -126,10 +125,12 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                         ],
                                       )),
                                   CustomStep(
-                                      title: const Text('Create service account'),
-                                      state: snapshot.data!.serviceAccount == true
-                                          ? CustomStepState.complete
-                                          : CustomStepState.indexed,
+                                      title:
+                                          const Text('Create service account'),
+                                      state:
+                                          snapshot.data!.serviceAccount == true
+                                              ? CustomStepState.complete
+                                              : CustomStepState.indexed,
                                       content: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
@@ -186,7 +187,8 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                         ],
                                       )),
                                   CustomStep(
-                                      title: const Text('Give access to groups'),
+                                      title:
+                                          const Text('Give access to groups'),
                                       state: snapshot.data!.environment
                                           ? (snapshot.data!.groupPermission ==
                                                   true
@@ -287,10 +289,9 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                         ],
                                       )),
                                 ],
-                                controlsBuilder: (BuildContext context,
-                                        {VoidCallback? onStepContinue,
-                                        VoidCallback? onStepCancel}) =>
-                                    Container(),
+                                controlsBuilder:
+                                    (BuildContext context, controlDetails) =>
+                                        Container(),
                                 currentStep: _index,
                                 onStepTapped: (index) {
                                   setState(() {

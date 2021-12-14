@@ -214,16 +214,12 @@ public class ServiceAccountSqlApi implements ServiceAccountApi {
         && (opts.contains(FillOpts.Permissions) || opts.contains(FillOpts.SdkURL))) {
       environmentPermissions.addAll(
           new QDbAcl()
-              .roles
-              .notEqualTo("")
-              .environment
-              .parentApplication
-              .eq(application)
-              .group
-              .peopleInGroup
-              .eq(person)
-              .environment
-              .fetch(QDbEnvironment.Alias.id)
+              .roles.notEqualTo("")
+              .environment.parentApplication.eq(application)
+              .environment.whenUnpublished.isNull()
+              .environment.whenArchived.isNull()
+              .group.peopleInGroup.eq(person)
+              .environment.fetch(QDbEnvironment.Alias.id)
               .findList());
     }
 

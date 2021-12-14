@@ -1,6 +1,5 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
@@ -115,15 +114,14 @@ class _ApplicationCard extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8.0),
         ),
-        color: Theme.of(context).brightness == Brightness.light ?
-        Theme.of(context).backgroundColor
+        color: Theme.of(context).brightness == Brightness.light
+            ? Theme.of(context).backgroundColor
             : null,
         child: InkWell(
           mouseCursor: SystemMouseCursors.click,
           borderRadius: BorderRadius.circular(8.0),
           onTap: () {
-            bloc.mrClient
-                .setCurrentAid(application.id);
+            bloc.mrClient.setCurrentAid(application.id);
             ManagementRepositoryClientBloc.router.navigateTo(
               context,
               routeNameFeatureDashboard,
@@ -157,8 +155,7 @@ class _ApplicationCard extends StatelessWidget {
                                         color: Theme.of(context).brightness ==
                                                 Brightness.light
                                             ? Theme.of(context).primaryColor
-                                            : null)
-                            ),
+                                            : null)),
                             const SizedBox(height: 4.0),
                             Text(application.description!,
                                 maxLines: 2,

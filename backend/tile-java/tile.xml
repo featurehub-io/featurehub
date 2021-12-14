@@ -124,25 +124,6 @@
           </execution>
         </executions>
       </plugin>
-      <!-- ensure no old code sneaks in -->
-      <plugin>
-        <groupId>org.gaul</groupId>
-        <artifactId>modernizer-maven-plugin</artifactId>
-        <version>1.8.0</version>
-        <configuration>
-          <failOnViolations>true</failOnViolations>
-          <javaVersion>1.8</javaVersion>
-        </configuration>
-        <executions>
-          <execution>
-            <id>modernizer</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>modernizer</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <groupId>org.codehaus.gmavenplus</groupId>
         <artifactId>gmavenplus-plugin</artifactId>

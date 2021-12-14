@@ -25,11 +25,12 @@ ARG cachebust=1
 # Install Flutter.
 ENV FLUTTER_ROOT="/opt/flutter"
 ENV FLUTTER="/opt/flutter"
-RUN git clone https://github.com/flutter/flutter "${FLUTTER_ROOT}"
+ARG FLUTTER_VERSION=2.8.0
+RUN git clone --depth=1 --branch $FLUTTER_VERSION https://github.com/flutter/flutter "${FLUTTER_ROOT}"
 ENV PATH="${FLUTTER_ROOT}/bin:${PATH}"
 
 # reset to known point as docker image is always 0.0, this is a stable version for us. Disable analytics and crash reporting on the builder.
-RUN cd $FLUTTER && flutter channel stable
+RUN cd $FLUTTER && flutter precache
 RUN flutter config  --no-analytics --enable-web
 
 # Perform an artifact precache so that no extra assets need to be downloaded on demand.

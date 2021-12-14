@@ -1,13 +1,14 @@
 package io.featurehub.db.services
 
-
+import groovy.transform.CompileStatic
 import io.featurehub.db.api.EnvironmentApi
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
-import io.featurehub.db.model.DbApplication
+import io.featurehub.db.model.DbEnvironment
 import io.featurehub.db.model.DbOrganization
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.DbPortfolio
+import io.featurehub.db.model.query.QDbEnvironment
 import io.featurehub.db.publish.CacheSource
 import io.featurehub.mr.model.Application
 import io.featurehub.mr.model.ApplicationRoleType
@@ -16,33 +17,33 @@ import io.featurehub.mr.model.EnvironmentGroupRole
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.RoleType
 import io.featurehub.mr.model.SortOrder
-import spock.lang.Shared
+import org.jetbrains.annotations.Nullable
 
-class EnvironmentSpec extends BaseSpec {
-  @Shared PersonSqlApi personSqlApi
-  @Shared DbPortfolio portfolio1
-  @Shared DbPortfolio portfolio2
-  @Shared ApplicationSqlApi appApi
-  @Shared EnvironmentSqlApi envApi
-  @Shared Application app1
-  @Shared Application app2
-  @Shared Application appTreeEnvs
-  @Shared Group groupInPortfolio1
+class Environment2Spec extends Base2Spec {
+  PersonSqlApi personSqlApi
+  DbPortfolio portfolio1
+  DbPortfolio portfolio2
+  ApplicationSqlApi appApi
+  EnvironmentSqlApi envApi
+  Application app1
+  Application app2
+  Application appTreeEnvs
+  Group groupInPortfolio1
+  CacheSource cacheSource
 
+  def setup() {
+    personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy)
+    cacheSource = Mock(CacheSource)
 
-  def setupSpec() {
-    baseSetupSpec()
-    personSqlApi = new PersonSqlApi(database, convertUtils, archiveStrategy)
-
-    appApi = new ApplicationSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
-    envApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
+    appApi = new ApplicationSqlApi(db, convertUtils, cacheSource, archiveStrategy)
+    envApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
 
     // now set up the environments we need
     DbOrganization organization = Finder.findDbOrganization()
     portfolio1 = new DbPortfolio.Builder().name("p1-app-1-env1").whoCreated(dbSuperPerson).organization(organization).build()
-    database.save(portfolio1)
+    db.save(portfolio1)
     portfolio2 = new DbPortfolio.Builder().name("p1-app-2-env1").whoCreated(dbSuperPerson).organization(organization).build()
-    database.save(portfolio2)
+    db.save(portfolio2)
 
     // create the portfolio group
     groupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("p1-app-1-env1-portfolio-group").admin(true), superPerson)
@@ -54,10 +55,6 @@ class EnvironmentSpec extends BaseSpec {
     assert app2 != null
     appTreeEnvs = appApi.createApplication(portfolio2.id, new Application().name('app-tree-env'), superPerson)
     assert appTreeEnvs != null
-  }
-
-  def setup() {
-    database.find(DbApplication, appTreeEnvs.id).environments.each({e -> database.delete(e)})
   }
 
   def "i can create, find and then update an existing environment"() {
@@ -108,6 +105,42 @@ class EnvironmentSpec extends BaseSpec {
       envApi.get(e.id, Opts.empty(), superPerson) != null
       envApi.get(e2.id, Opts.empty(), superPerson) != null
   }
+
+  @CompileStatic
+  @Nullable DbEnvironment environment(UUID id) {
+    def env = new QDbEnvironment().id.eq(id).findOne()
+    if (env != null) {
+      env.refresh()
+    }
+    return env
+  }
+
+  def "I create two environments and they both get unpublished when I asked them to be"() {
+    given: "I create two environments"
+      def e1 = envApi.create(new Environment().name("env-1").description("env 1"), app1, superPerson)
+      def e2 = envApi.create(new Environment().name("env-2").description("env 1"), app1, superPerson)
+    when: "I unpublished them"
+      envApi.unpublishEnvironments(app1.id,  null)
+    then:
+      1 * cacheSource.deleteEnvironment({ UUID id -> id == e1.id })
+      1 * cacheSource.deleteEnvironment({ UUID id -> id == e2.id })
+      environment(e1.id).whenUnpublished != null
+      environment(e2.id).whenUnpublished != null
+  }
+
+  def "I create two environments and I unpublish only one of them"() {
+    given: "I create two environments"
+      def e1 = envApi.create(new Environment().name("env-1").description("env 1"), app1, superPerson)
+      def e2 = envApi.create(new Environment().name("env-2").description("env 1"), app1, superPerson)
+    when: "I unpublished them"
+      envApi.unpublishEnvironments(app1.id,  [e1.id])
+    then:
+      1 * cacheSource.deleteEnvironment({ UUID id -> id == e1.id })
+      0 * cacheSource.deleteEnvironment({ UUID id -> id == e2.id })
+      environment(e1.id).whenUnpublished != null
+      environment(e2.id).whenUnpublished == null
+  }
+
 
   def "i cannot create two differently named environments and then update them to have the same name"() {
     when: "i create a new environment"
@@ -177,7 +210,7 @@ class EnvironmentSpec extends BaseSpec {
   def "a new person in a new group that is not attached to environments has no roles, changing to reflects the new roles, admin always has all roles"() {
     given: "i have an average joe"
       def averageJoe = new DbPerson.Builder().email("averagejoe-env-1@featurehub.io").name("Average Joe").build()
-      database.save(averageJoe)
+      db.save(averageJoe)
       def averageJoeMemberOfPortfolio1 = convertUtils.toPerson(averageJoe)
     and: "i create a general portfolio group"
       groupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("envspec-p1-plain-portfolio-group"), superPerson)
@@ -204,5 +237,4 @@ class EnvironmentSpec extends BaseSpec {
       permsWhenNonAdmin.applicationRoles.containsAll(ApplicationRoleType.values() as List)
       permsWhenNonAdmin.environmentRoles.containsAll(RoleType.values() as List)
   }
-
 }
