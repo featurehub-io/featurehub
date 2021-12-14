@@ -37,17 +37,15 @@ class EnvironmentSqlApi @Inject constructor(
         ).exists()
       ) {
         return EnvironmentRoles.Builder()
-          .applicationRoles(HashSet(Arrays.asList(*ApplicationRoleType.values())))
-          .environmentRoles(HashSet(Arrays.asList(*RoleType.values()))).build()
+          .applicationRoles(HashSet(listOf(*ApplicationRoleType.values())))
+          .environmentRoles(HashSet(listOf(*RoleType.values()))).build()
       }
       QDbAcl().environment.eq(environment).group.peopleInGroup.eq(p).findList().forEach { fe: DbAcl ->
         val splitRoles = convertUtils.splitEnvironmentRoles(fe.roles)
-        if (splitRoles != null) {
-          roles.addAll(splitRoles)
-          // as roles can have roles that are no READ and it makes no sense not to contain READ.
-          if (!roles.isEmpty() && !roles.contains(RoleType.READ)) {
-            roles.add(RoleType.READ)
-          }
+        roles.addAll(splitRoles)
+        // as roles can have roles that are no READ and it makes no sense not to contain READ.
+        if (roles.isNotEmpty() && !roles.contains(RoleType.READ)) {
+          roles.add(RoleType.READ)
         }
       }
       QDbAcl().application.eq(environment.parentApplication).group.peopleInGroup.eq(p).findList().forEach { fe: DbAcl ->
@@ -69,12 +67,12 @@ class EnvironmentSqlApi @Inject constructor(
     return env != null
   }
 
-  override fun get(envId: UUID?, opts: Opts?, current: Person?): Environment? {
-    Conversions.nonNullEnvironmentId(envId)
+  override fun get(id: UUID, opts: Opts?, current: Person?): Environment? {
+    Conversions.nonNullEnvironmentId(id)
     Conversions.nonNullPerson(current)
     val currentPerson = convertUtils.byPerson(current)
     if (currentPerson != null) {
-      var env = QDbEnvironment().id.eq(envId)
+      var env = QDbEnvironment().id.eq(id)
       if (convertUtils.personIsNotSuperAdmin(currentPerson)) {
         env = env.parentApplication.portfolio.groups.peopleInGroup.id.eq(currentPerson.id)
       }
@@ -145,7 +143,7 @@ class EnvironmentSqlApi @Inject constructor(
 
   @Throws(EnvironmentApi.DuplicateEnvironmentException::class)
   private fun dupeEnvironmentNameCheck(env: Environment?, dbEnv: DbEnvironment) {
-    if (env!!.name != null) {
+    if (env?.name != null) {
       env.name = env.name.trim { it <= ' ' }
       if (dbEnv.name != env.name) {
         val dupe = QDbEnvironment().and().name.eq(
@@ -178,7 +176,7 @@ class EnvironmentSqlApi @Inject constructor(
       // so we don't have an environment so lets order them and put this one before the 1st one
       if (priorEnvironment == null) {
         val environments = QDbEnvironment().parentApplication.eq(application).whenArchived.isNull.findList()
-        if (!environments.isEmpty()) {
+        if (environments.isNotEmpty()) {
           promotionSortedEnvironments(environments)
           priorEnvironment = environments[environments.size - 1]
         }
@@ -227,7 +225,7 @@ class EnvironmentSqlApi @Inject constructor(
     newFeatures.forEach { bean: DbFeatureValue? -> database.save(bean) }
   }
 
-  fun promotionSortedEnvironments(environments: List<DbEnvironment>?) {
+  private fun promotionSortedEnvironments(environments: List<DbEnvironment>?) {
     EnvironmentUtils.sortEnvironments(environments)
   }
 
@@ -273,10 +271,10 @@ class EnvironmentSqlApi @Inject constructor(
     return ArrayList()
   }
 
-  override fun findPortfolio(eId: UUID?): Portfolio? {
-    return if (eId != null) {
+  override fun findPortfolio(envId: UUID?): Portfolio? {
+    return if (envId != null) {
       convertUtils.toPortfolio(
-        QDbPortfolio().applications.environments.id.eq(eId).findOne(), Opts.empty()
+        QDbPortfolio().applications.environments.id.eq(envId).findOne(), Opts.empty()
       )
     } else null
   }
@@ -297,16 +295,16 @@ class EnvironmentSqlApi @Inject constructor(
   }
 
   private fun fetchEnvironmentOpts(opts: Opts?, eq: QDbEnvironment): QDbEnvironment {
-    var eq = eq
+    var query = eq
     if (opts!!.contains(FillOpts.Acls)) {
-      eq = eq.groupRolesAcl.fetch()
+      query = query.groupRolesAcl.fetch()
     }
-    return eq
+    return query
   }
 
   override fun setOrdering(app: Application, environments: List<Environment>): List<Environment>? {
     val dbApp = convertUtils.byApplication(app.id)
-    val envs = dbApp.environments.map { it.id to it }.toMap()
+    val envs = dbApp.environments.associateBy { it.id }
     for (e in environments) {
       val dbEnv = envs[e.id]
       if (dbEnv == null) {
@@ -330,10 +328,10 @@ class EnvironmentSqlApi @Inject constructor(
     )
     for (e in environments) {
       // create a slot for each environment
-      val spot = environments.stream()
-        .collect(Collectors.toMap({ obj: Environment -> obj.id }) { e1: Environment? -> 0 })
+      val spot: MutableMap<UUID, Int> = environments.map { e -> e.id!! to 0 }.toMap() as MutableMap<UUID, Int>
+
       // set our one to "visited"
-      spot[e.id] = 1
+      spot[e.id!!] = 1
       // now walk backwards until we either hit the end or see "visited"
       var currentId = e.priorEnvironmentId
       while (currentId != null && spot[currentId] == 0) {

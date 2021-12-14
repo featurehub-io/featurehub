@@ -10,7 +10,7 @@ interface EnvironmentApi {
     class InvalidEnvironmentChangeException : Exception()
 
     fun delete(id: UUID?): Boolean
-    operator fun get(id: UUID?, opts: Opts?, current: Person?): Environment?
+    operator fun get(id: UUID, opts: Opts?, current: Person?): Environment?
 
     @Throws(
         OptimisticLockingException::class,
