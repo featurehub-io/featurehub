@@ -36,22 +36,22 @@ public class EndpointLoggingListener implements ApplicationEventListener {
 
   @Override
   public void onEvent(ApplicationEvent event) {
-    if (log.isDebugEnabled()) {
-      if (event.getType() == ApplicationEvent.Type.INITIALIZATION_APP_FINISHED) {
+    if (event.getType() == ApplicationEvent.Type.INITIALIZATION_APP_FINISHED) {
+      if (log.isDebugEnabled()) {
         final ResourceModel resourceModel = event.getResourceModel();
         final ResourceLogDetails logDetails = new ResourceLogDetails();
         resourceModel.getResources().stream().forEach((resource) -> {
           logDetails.addEndpointLogLines(getLinesFromResource(resource));
         });
         logDetails.log();
-      } else if (event.getType() == ApplicationEvent.Type.INITIALIZATION_FINISHED) {
-        if (!ApplicationLifecycleManager.isReady()) {
-          ApplicationLifecycleManager.updateStatus(LifecycleStatus.STARTED);
-        }
-      } else if (event.getType() == ApplicationEvent.Type.DESTROY_FINISHED) {
-        if (ApplicationLifecycleManager.getStatus() != LifecycleStatus.TERMINATED) {
-          ApplicationLifecycleManager.updateStatus(LifecycleStatus.TERMINATED);
-        }
+      }
+    } else if (event.getType() == ApplicationEvent.Type.INITIALIZATION_FINISHED) {
+      if (!ApplicationLifecycleManager.isReady()) {
+        ApplicationLifecycleManager.updateStatus(LifecycleStatus.STARTED);
+      }
+    } else if (event.getType() == ApplicationEvent.Type.DESTROY_FINISHED) {
+      if (ApplicationLifecycleManager.getStatus() != LifecycleStatus.TERMINATED) {
+        ApplicationLifecycleManager.updateStatus(LifecycleStatus.TERMINATED);
       }
     }
   }
