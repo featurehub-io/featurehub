@@ -87,7 +87,7 @@ class FeatureValueCell extends StatelessWidget {
 
           return SizedBox(
               height: extra +
-                  (amSelected ? selectedRowHeight : unselectedRowHeight),
+                  (amSelected ? selectedRowHeight-1 : unselectedRowHeight-1),
               child: cellWidget);
         });
   }
