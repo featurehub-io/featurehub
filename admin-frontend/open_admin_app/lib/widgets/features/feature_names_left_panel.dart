@@ -61,8 +61,7 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                 ),
                 padding: const EdgeInsets.only(top: 8.0, left: 8.0),
                 height: tabsBloc.featureExtraCellHeight(feature) +
-                    (amSelected ? selectedRowHeight : unselectedRowHeight) +
-                    0.5,
+                    (amSelected ? selectedRowHeight : unselectedRowHeight),
                 width: MediaQuery.of(context).size.width > 600 ? 260.0 : 130,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

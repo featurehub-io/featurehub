@@ -349,7 +349,7 @@ class MenuItem extends StatelessWidget {
                   ),
                   Padding(
                     padding:
-                        EdgeInsets.only(left: iconSize != null ? 18.0 : 24.0),
+                        EdgeInsets.only(left: iconSize != null ? 14.0 : 16.0),
                     child: Text(' $name',
                         style: Theme.of(context).textTheme.bodyText2!.copyWith(
                             fontWeight:

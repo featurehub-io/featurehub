@@ -490,7 +490,7 @@ class _CustomStepperState extends State<CustomStepper>
 
   Widget _buildVerticalHeader(int index) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24.0),
+      margin: const EdgeInsets.symmetric(horizontal: 0.0),
       child: Row(
         children: <Widget>[
           Column(
@@ -515,7 +515,7 @@ class _CustomStepperState extends State<CustomStepper>
     return Stack(
       children: <Widget>[
         PositionedDirectional(
-          start: 24.0,
+          start: 0.0,
           top: 0.0,
           bottom: 0.0,
           child: SizedBox(
@@ -534,7 +534,7 @@ class _CustomStepperState extends State<CustomStepper>
           firstChild: Container(height: 0.0),
           secondChild: Container(
             margin: const EdgeInsetsDirectional.only(
-              start: 60.0,
+              start: 24.0,
               end: 12.0,
               bottom: 4.0,
             ),
