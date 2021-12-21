@@ -21,14 +21,13 @@ echo FLUTTER: building deploy_main
 #  exit 1
 #fi
 flutter build web --target=lib/deploy_main.dart
-# Downloads WASM locally and use local fonts
+# Downloads WASM locally
 # Temporary solution until https://github.com/flutter/flutter/issues/70101 and 77580 provide a better way
-wasmLocation=$(grep canvaskit-wasm build/web/main.dart.js | sed -e '' 's/.*https/https/' -e 's/\\/bin.*/\\/bin/' | uniq)
+wasmLocation=$(grep canvaskit-wasm build/web/main.dart.js | cut -d'"' -f2)
 echo "Downloading WASM from $wasmLocation"
 curl -o build/web/canvaskit.js "$wasmLocation/canvaskit.js"
 curl -o build/web/canvaskit.wasm "$wasmLocation/canvaskit.wasm"
-  build/web/main.dart.js
-
+flutter build web --dart-define=FLUTTER_WEB_CANVASKIT_URL=/ --target=lib/deploy_main.dart
 cd build/web
 MAIN_DATE=`date +"%s"`
 MAIN="main.dart-$MAIN_DATE.js"
