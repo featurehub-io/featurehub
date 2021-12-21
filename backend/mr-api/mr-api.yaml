@@ -3005,6 +3005,10 @@ components:
             - conditional
             - fieldName
             - type
+          properties:
+            id:
+              type: string
+              description: "A temporary id used only when validating. Saving strips these out as they are not otherwise necessary"
     RolloutStrategy:
       allOf:
         - $ref: "#/components/schemas/BaseRolloutStrategy"

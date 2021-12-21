@@ -43,13 +43,16 @@ components:
       x-package: io.featurehub.dacha.model
       description: "This is the model for the rollout strategy as required by Dacha and Edge"
       allOf:
-        - $ref: "#/components/schemas/RolloutStrategy"
+        - $ref: "#/components/schemas/BaseRolloutStrategy"
         - type: object
           required:
             - id
-            - percentage
-            - value
             - attributes
+          properties:
+            attributes:
+              type: array
+              items:
+                $ref: "#/components/schemas/CacheRolloutStrategyAttribute"
     BaseRolloutStrategyAttribute:
       x-package: io.featurehub.mr.model
       # although they are required,  they aren't here because we need to validate against them
@@ -58,9 +61,6 @@ components:
 #        - fieldName
 #        - type
       properties:
-        id:
-          type: string
-          description: "A temporary id used only when validating. Saving strips these out as they are not otherwise necessary"
         conditional:
           $ref: "#/components/schemas/RolloutStrategyAttributeConditional"
         fieldName:
@@ -72,6 +72,14 @@ components:
             $ref: "#/components/schemas/RolloutStrategyArrayType"
         type:
           $ref: "#/components/schemas/RolloutStrategyFieldType"
+    CacheRolloutStrategyAttribute:
+      allOf:
+        - $ref: "#/components/schemas/BaseRolloutStrategyAttribute"
+        - type: object
+          required:
+            - conditional
+            - fieldName
+            - type
     RolloutStrategyArrayType:
       x-package: io.featurehub.mr.model
       description: "values depend on the field type"
