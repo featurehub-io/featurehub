@@ -57,7 +57,6 @@ class _NotFoundRouteState extends State<NotFoundRoute>
                       fontSize: 50,
                       letterSpacing: 2,
                       color: Color(0xff2f3640),
-                      fontFamily: 'Anton',
                       fontWeight: FontWeight.bold),
                 ),
                 Text(

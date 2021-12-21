@@ -25,7 +25,7 @@ This will affect the keys across all environments and all applications that this
         var success = await bloc.resetApiKey(sa.id.toString(), isClientKey ? ResetApiKeyType.clientEvalOnly : ResetApiKeyType.serverEvalOnly);
         if (success) {
           bloc.mrClient
-              .addSnackbar(Text("'${isClientKey ? 'Client' : 'Server'}' eval API Key has been reset!"));
+              .addSnackbar(Text("'${isClientKey ? 'Client' : 'Server'}' eval API Keys have been reset!"));
         } else {
           bloc.mrClient.customError(
               messageTitle: "Unable to reset API Key");
