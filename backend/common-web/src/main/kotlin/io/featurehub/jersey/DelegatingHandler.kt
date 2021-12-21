@@ -36,13 +36,13 @@ class DelegatingHandler constructor(private val jerseyHandler: GrizzlyHttpContai
       return jerseyHandler.service(request, response)
     }
 
-    if (url.isEmpty() || url == "/" || url.endsWith(".html") || url.endsWith(".js") || url.startsWith("/assets")) {
+    if (url.isEmpty() || url == "/" || url.endsWith(".html") || url.endsWith(".js") || url.startsWith("/assets") || url.endsWith(".wasm")) {
       return staticHttpHandler.service(request, response)
     }
 
     // do the html5 think and redirect everything else to index.html
     if (jerseyPrefixes.none { url.startsWith(it)} ) {
-      staticHttpHandler.handle("/index.html", request, response)
+      staticHttpHandler.handle( request.requestURI, request, response)
 
       return
     }
