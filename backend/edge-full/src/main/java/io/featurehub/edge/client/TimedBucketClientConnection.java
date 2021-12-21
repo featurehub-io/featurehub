@@ -1,5 +1,6 @@
 package io.featurehub.edge.client;
 
+import io.featurehub.dacha.model.PublishFeatureValue;
 import io.featurehub.edge.FeatureTransformer;
 import io.featurehub.edge.KeyParts;
 import io.featurehub.edge.features.ETagSplitter;
@@ -9,7 +10,6 @@ import io.featurehub.edge.features.FeatureRequestSuccess;
 import io.featurehub.edge.stats.StatRecorder;
 import io.featurehub.edge.strategies.ClientContext;
 import io.featurehub.jersey.config.CacheJsonMapper;
-import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.mr.model.PublishAction;
 import io.featurehub.sse.model.SSEResultState;
 import io.featurehub.sse.stats.model.EdgeHitResultType;
@@ -32,7 +32,7 @@ public class TimedBucketClientConnection implements ClientConnection {
   private final EventOutput output;
   private final KeyParts apiKey;
   private final List<EjectHandler> handlers = new ArrayList<>();
-  private List<FeatureValueCacheItem> heldFeatureUpdates = new ArrayList<>();
+  private List<PublishFeatureValue> heldFeatureUpdates = new ArrayList<>();
   private final FeatureTransformer featureTransformer;
   private final ClientContext attributesForStrategy;
   private final StatRecorder statRecorder;
@@ -188,7 +188,7 @@ public class TimedBucketClientConnection implements ClientConnection {
 
           statRecorder.recordHit(apiKey, EdgeHitResultType.SUCCESS, EdgeHitSourceType.EVENTSOURCE);
 
-          List<FeatureValueCacheItem> heldUpdates = heldFeatureUpdates;
+          List<PublishFeatureValue> heldUpdates = heldFeatureUpdates;
 
           heldFeatureUpdates = null;
 
@@ -209,14 +209,14 @@ public class TimedBucketClientConnection implements ClientConnection {
 
   // notify the client of a new feature (if they have received their features)
   @Override
-  public void notifyFeature(FeatureValueCacheItem rf) {
+  public void notifyFeature(PublishFeatureValue rf) {
     if (heldFeatureUpdates != null) {
       heldFeatureUpdates.add(rf);
     } else {
       try {
         String data =
             CacheJsonMapper.mapper.writeValueAsString(
-                featureTransformer.transform(rf, attributesForStrategy));
+                featureTransformer.transform(rf.getFeature(), attributesForStrategy));
         if (rf.getAction() == PublishAction.DELETE) {
           writeMessage(SSEResultState.DELETE_FEATURE, data);
         } else {

@@ -81,7 +81,7 @@
               <files>
                 <file>${project.basedir}/../mr-api/end2end-common.yaml</file>
                 <file>${project.basedir}/../mr-api/strategy-enums.yaml</file>
-                <file>${project.basedir}/src/main/resources/sse-api.yaml</file>
+                <file>${project.basedir}/sse-api.yaml</file>
               </files>
               <finalYaml>${project.basedir}/target/final.yaml</finalYaml>
             </configuration>

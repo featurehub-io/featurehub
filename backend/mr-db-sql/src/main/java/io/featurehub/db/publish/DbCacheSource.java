@@ -2,9 +2,17 @@ package io.featurehub.db.publish;
 
 import cd.connect.app.config.ConfigKey;
 import cd.connect.app.config.DeclaredConfigResolver;
+import io.featurehub.dacha.model.CacheEnvironment;
+import io.featurehub.dacha.model.CacheEnvironmentFeature;
+import io.featurehub.dacha.model.CacheFeature;
+import io.featurehub.dacha.model.CacheServiceAccount;
+import io.featurehub.dacha.model.PublishAction;
+import io.featurehub.dacha.model.PublishEnvironment;
+import io.featurehub.dacha.model.PublishServiceAccount;
 import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.Opts;
 import io.featurehub.db.model.DbApplicationFeature;
+import io.featurehub.db.model.DbBase;
 import io.featurehub.db.model.DbEnvironment;
 import io.featurehub.db.model.DbFeatureValue;
 import io.featurehub.db.model.DbNamedCache;
@@ -22,15 +30,11 @@ import io.featurehub.db.model.query.QDbServiceAccount;
 import io.featurehub.db.model.query.QDbStrategyForFeatureValue;
 import io.featurehub.db.services.Conversions;
 import io.featurehub.mr.model.Environment;
-import io.featurehub.mr.model.EnvironmentCacheItem;
 import io.featurehub.mr.model.Feature;
 import io.featurehub.mr.model.FeatureValue;
-import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.mr.model.FeatureValueType;
-import io.featurehub.mr.model.PublishAction;
 import io.featurehub.mr.model.RolloutStrategy;
 import io.featurehub.mr.model.ServiceAccount;
-import io.featurehub.mr.model.ServiceAccountCacheItem;
 import io.opentelemetry.context.Context;
 import jakarta.inject.Inject;
 import org.slf4j.Logger;
@@ -38,10 +42,10 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -93,12 +97,14 @@ public class DbCacheSource implements CacheSource {
 
     if (count == 0) {
       log.info("database has no service accounts, publishing empty cache indicator.");
-      cacheBroadcast.publishServiceAccount(new ServiceAccountCacheItem().action(PublishAction.EMPTY));
+      cacheBroadcast.publishServiceAccount(new PublishServiceAccount().action(PublishAction.EMPTY).count(0));
     } else {
       log.info("publishing {} service accounts to cache {}", count, cacheName);
 
+
+
       saFinder.findEach(sa -> {
-        ServiceAccountCacheItem saci = new ServiceAccountCacheItem()
+        PublishServiceAccount saci = new PublishServiceAccount()
           .action(PublishAction.CREATE)
           .serviceAccount(fillServiceAccount(sa))
           .count(count);
@@ -108,7 +114,13 @@ public class DbCacheSource implements CacheSource {
     }
   }
 
-  private ServiceAccount fillServiceAccount(DbServiceAccount sa) {
+  private CacheServiceAccount fillServiceAccount(DbServiceAccount sa) {
+    return new CacheServiceAccount()
+      .id(sa.getId())
+      .version(sa.getVersion())
+      .apiKeyClientSide(sa.getApiKeyClientEval())
+      .apiKeyServerSide(sa.getApiKeyServerEval())
+      .permissions(QDbSe)
     return convertUtils.toServiceAccount(sa, Opts.opts(FillOpts.Permissions, FillOpts.IgnoreEmptyPermissions));
   }
 
@@ -125,13 +137,13 @@ public class DbCacheSource implements CacheSource {
 
     if (count == 0) {
       log.info("database has no environments, publishing empty environments indicator.");
-      cacheBroadcast.publishEnvironment(new EnvironmentCacheItem().action(PublishAction.EMPTY).count(0));
+      cacheBroadcast.publishEnvironment(new PublishEnvironment().action(PublishAction.EMPTY).count(0));
     } else {
       log.info("publishing {} environments to cache {}", count, cacheName);
 
       envFinder.findEach(env -> {
         executor.submit(() -> {
-          EnvironmentCacheItem eci = fillEnvironmentCacheItem(count, env, PublishAction.CREATE);
+          PublishEnvironment eci = fillEnvironmentCacheItem(count, env, PublishAction.CREATE);
 
           cacheBroadcast.publishEnvironment(eci);
         });
@@ -139,28 +151,45 @@ public class DbCacheSource implements CacheSource {
     }
   }
 
-  private EnvironmentCacheItem fillEnvironmentCacheItem(int count, DbEnvironment env, PublishAction publishAction) {
-    final Set<DbApplicationFeature> features =
-      new QDbApplicationFeature().parentApplication.eq(env.getParentApplication()).whenArchived.isNull().findSet();
-    Map<UUID, DbFeatureValue> envFeatures =
-      new QDbFeatureValue()
-        .select(QDbFeatureValue.Alias.id, QDbFeatureValue.Alias.locked, QDbFeatureValue.Alias.feature.id,
-          QDbFeatureValue.Alias.rolloutStrategies, QDbFeatureValue.Alias.version,
-          QDbFeatureValue.Alias.defaultValue)
-        .feature.whenArchived.isNull()
-        .environment.whenArchived.isNull()
-        .environment.whenUnpublished.isNull()
-        .environment.eq(env).findStream()
-        .collect(Collectors.toMap(f -> f.getFeature().getId(), Function.identity()));
+  private PublishEnvironment fillEnvironmentCacheItem(int count, DbEnvironment env, PublishAction publishAction) {
+    // these represent the entirity
+    final Map<UUID, DbApplicationFeature> features = new QDbApplicationFeature().whenArchived.isNull()
+      .environmentFeatures.environment.id.eq(env.getId()).select(QDbApplicationFeature.Alias.id,
+        QDbApplicationFeature.Alias.key,
+        QDbApplicationFeature.Alias.valueType,
+        QDbApplicationFeature.Alias.version).findList().stream().collect(Collectors.toMap(DbBase::getId,
+        Function.identity()));
+
+    final Collection<DbApplicationFeature> featureCollection = features.values();
+
+    final QDbFeatureValue fvFinder = new QDbFeatureValue()
+      .select(
+        QDbFeatureValue.Alias.id,
+        QDbFeatureValue.Alias.locked,
+        QDbFeatureValue.Alias.feature.id,
+        QDbFeatureValue.Alias.rolloutStrategies,
+        QDbFeatureValue.Alias.version,
+        QDbFeatureValue.Alias.defaultValue)
+      .feature.whenArchived.isNull()
+      .feature.fetch(
+        QDbApplicationFeature.Alias.id)
+      .environment.whenArchived.isNull()
+      .environment.whenUnpublished.isNull()
+      .environment.eq(env);
+
+    final QDbServiceAccount serviceAccountFinder =
+      new QDbServiceAccount().whenArchived.isNull().whenUnpublished.isNull().serviceAccountEnvironments.environment.id.eq(env.getId());
+
     final Opts empty = Opts.empty();
-    final EnvironmentCacheItem eci = new EnvironmentCacheItem()
+    final PublishEnvironment eci = new PublishEnvironment()
       .action(publishAction)
-      .environment(toEnvironment(env, features))
+      .environment(toEnvironment(env, featureCollection))
       .organizationId(env.getParentApplication().getPortfolio().getOrganization().getId())
       .portfolioId(env.getParentApplication().getPortfolio().getId())
       .applicationId(env.getParentApplication().getId())
       .featureValues(features.stream().map(f -> {
         final DbFeatureValue featureV = envFeatures.get(f.getId());
+        return toCacheEnvironmentFeature(featureV);
         final FeatureValue featureValue = convertUtils.toFeatureValue(f, featureV, empty);
         if (featureV != null) {
           featureValue.setRolloutStrategies(collectCombinedRolloutStrategies(featureV, f.getValueType()));
@@ -178,15 +207,26 @@ public class DbCacheSource implements CacheSource {
     return eci;
   }
 
-  private Environment toEnvironment(DbEnvironment env, Set<DbApplicationFeature> features) {
+  private CacheEnvironmentFeature toCacheEnvironmentFeature(DbFeatureValue dfv) {
+
+  }
+
+  private CacheEnvironment toEnvironment(DbEnvironment env, Collection<DbApplicationFeature> features) {
     // match these fields with the finder environmentsByCacheName so you don't get fields you don't need
-    return new Environment()
-      .version(env.getVersion())
+    return new CacheEnvironment()
       .id(env.getId())
-      .name(env.getName())
+      .version(env.getVersion())
       .features(features.stream()
-        .map(ef -> convertUtils.toApplicationFeature(ef, Opts.empty()))
+        .map(this::toCacheFeature)
         .collect(Collectors.toList()));
+  }
+
+  private CacheFeature toCacheFeature(DbApplicationFeature feature) {
+    return new CacheFeature()
+      .id(feature.getId())
+      .key(feature.getKey())
+      .version(feature.getVersion())
+      .valueType(feature.getValueType());
   }
 
   private QDbEnvironment environmentsByCacheName(String cacheName) {

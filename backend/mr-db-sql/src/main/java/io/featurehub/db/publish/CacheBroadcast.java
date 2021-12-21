@@ -1,13 +1,13 @@
 package io.featurehub.db.publish;
 
-import io.featurehub.mr.model.EnvironmentCacheItem;
-import io.featurehub.mr.model.FeatureValueCacheItem;
-import io.featurehub.mr.model.ServiceAccountCacheItem;
+import io.featurehub.dacha.model.PublishEnvironment;
+import io.featurehub.dacha.model.PublishFeatureValue;
+import io.featurehub.dacha.model.PublishServiceAccount;
 
 public interface CacheBroadcast {
-  void publishEnvironment(EnvironmentCacheItem eci);
+  void publishEnvironment(PublishEnvironment eci);
 
-  void publishServiceAccount(ServiceAccountCacheItem saci);
+  void publishServiceAccount(PublishServiceAccount saci);
 
-  void publishFeature(FeatureValueCacheItem feature);
+  void publishFeature(PublishFeatureValue feature);
 }

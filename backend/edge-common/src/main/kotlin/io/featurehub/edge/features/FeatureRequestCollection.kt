@@ -1,9 +1,9 @@
 package io.featurehub.edge.features
 
+import io.featurehub.dacha.model.DachaKeyDetailsResponse
 import io.featurehub.edge.FeatureTransformer
 import io.featurehub.edge.KeyParts
 import io.featurehub.edge.strategies.ClientContext
-import io.featurehub.mr.model.DachaKeyDetailsResponse
 import io.featurehub.sse.model.Environment
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

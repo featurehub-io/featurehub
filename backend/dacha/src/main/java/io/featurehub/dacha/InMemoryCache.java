@@ -1,13 +1,16 @@
 package io.featurehub.dacha;
 
-import io.featurehub.mr.model.EnvironmentCacheItem;
-import io.featurehub.mr.model.Feature;
-import io.featurehub.mr.model.FeatureValue;
-import io.featurehub.mr.model.FeatureValueCacheItem;
-import io.featurehub.mr.model.PublishAction;
-import io.featurehub.mr.model.ServiceAccount;
-import io.featurehub.mr.model.ServiceAccountCacheItem;
-import io.featurehub.mr.model.ServiceAccountPermission;
+import io.featurehub.dacha.model.CacheEnvironmentFeature;
+import io.featurehub.dacha.model.CacheFeature;
+import io.featurehub.dacha.model.CacheFeatureValue;
+import io.featurehub.dacha.model.CacheServiceAccount;
+import io.featurehub.dacha.model.CacheServiceAccountPermission;
+import io.featurehub.dacha.model.PublishAction;
+import io.featurehub.dacha.model.PublishEnvironment;
+import io.featurehub.dacha.model.PublishFeatureValue;
+import io.featurehub.dacha.model.PublishServiceAccount;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -24,16 +26,16 @@ public class InMemoryCache implements InternalCache {
   private static final Logger log = LoggerFactory.getLogger(InMemoryCache.class);
   private boolean wasServiceAccountComplete;
   private boolean wasEnvironmentComplete;
-  private final Map<UUID, EnvironmentCacheItem> environments = new ConcurrentHashMap<>();
+  private final Map<UUID, PublishEnvironment> environments = new ConcurrentHashMap<>();
   // <environment id, <feature id, fv cache>>
   private final Map<UUID, EnvironmentFeatures> environmentFeatures = new ConcurrentHashMap<>();
-  private final Map<UUID, ServiceAccountCacheItem> serviceAccounts = new ConcurrentHashMap<>();
+  private final Map<UUID, PublishServiceAccount> serviceAccounts = new ConcurrentHashMap<>();
   // <service account UUID id + / + environment UUID id ==> ServiceAccount. if null, none maps, otherwise you can do
   // something with it
-  private final Map<String, ServiceAccountPermission> serviceAccountPlusEnvIdToEnvIdMap = new ConcurrentHashMap<>();
+  private final Map<String, CacheServiceAccountPermission> serviceAccountPlusEnvIdToEnvIdMap = new ConcurrentHashMap<>();
   // Map<apiKey (client and server), serviceAccountId UUID>
   private final Map<String, UUID> apiKeyToServiceAccountKeyMap = new ConcurrentHashMap<>();
-  private final Map<UUID, List<FeatureValueCacheItem>> valuesForUnpublishedEnvironments = new ConcurrentHashMap<>();
+  private final Map<UUID, List<PublishFeatureValue>> valuesForUnpublishedEnvironments = new ConcurrentHashMap<>();
   private Runnable notify;
 
   @Override
@@ -56,31 +58,31 @@ public class InMemoryCache implements InternalCache {
   }
 
   @Override
-  public Stream<EnvironmentCacheItem> environments() {
+  public Stream<PublishEnvironment> environments() {
     // make sure we update how many we have
     int size = environments.size();
 
     if (size == 0) {
-      return Stream.of(new EnvironmentCacheItem().action(PublishAction.EMPTY));
+      return Stream.of(new PublishEnvironment().action(PublishAction.EMPTY));
     }
 
     return environments.values().stream().peek(env -> env.setCount(size));
   }
 
   @Override
-  public Stream<ServiceAccountCacheItem> serviceAccounts() {
+  public Stream<PublishServiceAccount> serviceAccounts() {
     // make sure we update how many we have
     int size = serviceAccounts.size();
 
     if (size == 0) {
-      return Stream.of(new ServiceAccountCacheItem().action(PublishAction.EMPTY));
+      return Stream.of(new PublishServiceAccount().action(PublishAction.EMPTY));
     }
 
     return serviceAccounts.values().stream().peek(sa -> sa.setCount(size));
   }
 
   @Override
-  public void serviceAccount(ServiceAccountCacheItem sa) {
+  public void updateServiceAccount(PublishServiceAccount sa) {
     if (sa.getAction() == PublishAction.EMPTY) {
       if (!wasServiceAccountComplete) {
         wasServiceAccountComplete = true;
@@ -93,19 +95,20 @@ public class InMemoryCache implements InternalCache {
       return;
     }
 
-    ServiceAccountCacheItem existing = serviceAccounts.get(sa.getServiceAccount().getId());
+    PublishServiceAccount existing = serviceAccounts.get(sa.getServiceAccount().getId());
 
     if (sa.getAction() == PublishAction.CREATE || sa.getAction() == PublishAction.UPDATE) {
-      if (existing == null || sa.getServiceAccount().getVersion() != null || existing.getServiceAccount().getVersion() != null
-          || sa.getServiceAccount().getVersion() >= existing.getServiceAccount().getVersion()) {
+      if (existing == null
+          || (existing.getServiceAccount() != null &&
+        sa.getServiceAccount().getVersion() >= existing.getServiceAccount().getVersion())) {
         updateServiceAccountEnvironmentCache(sa.getServiceAccount(), serviceAccounts.get(sa.getServiceAccount().getId()));
         serviceAccounts.put(sa.getServiceAccount().getId(), sa);
 
-        log.trace("have sa {} / {} : {} + {} -> {} : {}", serviceAccounts.size(), sa.getCount(),
+        log.trace("have sa {} / {} : {} + {} -> {}", serviceAccounts.size(), sa.getCount(),
           sa.getServiceAccount().getApiKeyClientSide(),
           sa.getServiceAccount().getApiKeyServerSide(),
-          sa.getServiceAccount().getName(), sa.getServiceAccount().getId());
-        if (!wasServiceAccountComplete && sa.getCount() != null && sa.getCount() == serviceAccounts.size()) {
+          sa.getServiceAccount().getId());
+        if (!wasServiceAccountComplete && sa.getCount() == serviceAccounts.size()) {
           wasServiceAccountComplete = true;
 
           if (wasEnvironmentComplete && notify != null) {
@@ -117,7 +120,7 @@ public class InMemoryCache implements InternalCache {
     }
 
     if (sa.getAction() == PublishAction.DELETE && existing != null) {
-      ServiceAccountCacheItem removeAccount = serviceAccounts.remove(sa.getServiceAccount().getId());
+      PublishServiceAccount removeAccount = serviceAccounts.remove(sa.getServiceAccount().getId());
 
       if (removeAccount != null) { // make sure we remove it from the api key list as well
         updateServiceAccountEnvironmentCache(null, removeAccount);
@@ -133,8 +136,8 @@ public class InMemoryCache implements InternalCache {
    * This is crucial to keep up to date as it keeps a map of the sdkKey + env id against the permission in that
    * environment. It is the only thing that we check when getting asked for data.
    */
-  private void updateServiceAccountEnvironmentCache(ServiceAccount serviceAccount, ServiceAccountCacheItem oldServiceAccount) {
-    if (oldServiceAccount != null) {
+  private void updateServiceAccountEnvironmentCache(CacheServiceAccount serviceAccount, PublishServiceAccount oldServiceAccount) {
+    if (oldServiceAccount != null && oldServiceAccount.getServiceAccount() != null) {
       oldServiceAccount.getServiceAccount().getPermissions().forEach(perm -> {
           log.trace("update cache, removing {} :{} - {}",
             serviceAccount.getId(),
@@ -166,19 +169,19 @@ public class InMemoryCache implements InternalCache {
   }
 
   // we can only _delete_ items here, when service accounts are removed from environments, as permissions are not passed down
-  private void removeServiceAccountsFromEnvironment(EnvironmentCacheItem newItem, EnvironmentCacheItem oldCacheItem) {
+  private void removeServiceAccountsFromEnvironment(PublishEnvironment newItem, PublishEnvironment oldCacheItem) {
     if (oldCacheItem != null) {
 
       final UUID envId = oldCacheItem.getEnvironment().getId();
       if (newItem != null) {
         Map<String, Boolean> existing = oldCacheItem.getServiceAccounts().stream()
-          .collect(Collectors.toMap(s -> serviceAccountIdPlusEnvId(s.getId(), envId), s -> Boolean.TRUE));
+          .collect(Collectors.toMap(s -> serviceAccountIdPlusEnvId(s, envId), s -> Boolean.TRUE));
 
         // take out from existing all the ones that exist in the new item
         newItem
             .getServiceAccounts()
             .forEach(
-                sa -> existing.remove(serviceAccountIdPlusEnvId(sa.getId(), newItem.getEnvironment().getId())));
+                sa -> existing.remove(serviceAccountIdPlusEnvId(sa, newItem.getEnvironment().getId())));
 
         // ones that are left we have to delete
         existing.keySet().forEach(k -> {
@@ -187,8 +190,8 @@ public class InMemoryCache implements InternalCache {
         });
       } else {
         oldCacheItem.getServiceAccounts().forEach(s -> {
-          log.debug("Environment update, API keys removed from acceptable map {}:{}", s.getApiKeyClientSide(), envId);
-          serviceAccountPlusEnvIdToEnvIdMap.remove(serviceAccountIdPlusEnvId(s.getId(), envId));
+          log.debug("Environment update, API keys removed from acceptable map {}:{}", s, envId);
+          serviceAccountPlusEnvIdToEnvIdMap.remove(serviceAccountIdPlusEnvId(s, envId));
         });
       }
     }
@@ -201,7 +204,7 @@ public class InMemoryCache implements InternalCache {
   }
 
   @Override
-  public void environment(EnvironmentCacheItem e) {
+  public void updateEnvironment(PublishEnvironment e) {
     if (e.getAction() == PublishAction.EMPTY) {
       if (!wasEnvironmentComplete) {
         wasEnvironmentComplete = true;
@@ -215,21 +218,21 @@ public class InMemoryCache implements InternalCache {
     }
 
     final UUID envId = e.getEnvironment().getId();
-    EnvironmentCacheItem existing = environments.get(envId);
+    PublishEnvironment existing = environments.get(envId);
 
-    if ((e.getAction() == PublishAction.CREATE || e.getAction() == PublishAction.UPDATE) && e.getEnvironment() != null) {
+    if ((e.getAction() == PublishAction.CREATE || e.getAction() == PublishAction.UPDATE)) {
       if (existing == null || e.getEnvironment().getVersion() >= existing.getEnvironment().getVersion()) {
         removeServiceAccountsFromEnvironment(e, environments.get(envId));
         environments.put(envId, e);
 
         replaceEnvironmentFeatures(e);
 
-        List<FeatureValueCacheItem> unpublishedEnvironmentItems = valuesForUnpublishedEnvironments.remove(envId);
+        List<PublishFeatureValue> unpublishedEnvironmentItems = valuesForUnpublishedEnvironments.remove(envId);
         if (unpublishedEnvironmentItems != null) {
           unpublishedEnvironmentItems.forEach(this::updateFeatureValue);
         }
 
-        log.debug("have env {} of {} name {} : /default/{}/ {}", environments.size(), e.getCount(), e.getEnvironment().getName(), envId, sAccounts(e));
+        log.debug("have env {} of {} : /default/{}/ {}", environments.size(), e.getCount(), envId, sAccounts(e));
 
         if (!wasEnvironmentComplete && e.getCount() != null && e.getCount() == environments.size()) {
           wasEnvironmentComplete = true;
@@ -248,12 +251,12 @@ public class InMemoryCache implements InternalCache {
     }
   }
 
-  private String sAccounts(EnvironmentCacheItem e) {
-    if (e.getServiceAccounts() == null || e.getServiceAccounts().size() == 0) {
+  private String sAccounts(PublishEnvironment e) {
+    if (e.getServiceAccounts().isEmpty()) {
       return "none";
     }
 
-    return e.getServiceAccounts().stream().map(ServiceAccount::getId).map(Object::toString).collect(Collectors.joining());
+    return e.getServiceAccounts().stream().map(Object::toString).collect(Collectors.joining());
   }
 
   /**
@@ -261,20 +264,8 @@ public class InMemoryCache implements InternalCache {
    *
    * @param e - the environment
    */
-  private void replaceEnvironmentFeatures(EnvironmentCacheItem e) {
-    // get all of the values together
-    Map<String, FeatureValue> values = e.getFeatureValues().stream()
-      .collect(Collectors.toMap(FeatureValue::getKey, Function.identity()));
-
-    // now create a map of featureId -> feature + feature-value that clients can consume easily.
-    environmentFeatures.put(e.getEnvironment().getId(),
-      new EnvironmentFeatures(e.getEnvironment().getFeatures().stream()
-        .collect(Collectors.toMap(Feature::getId, f -> {
-          final FeatureValue value = values.get(f.getKey());
-          final FeatureValueCacheItem fvci = new FeatureValueCacheItem().feature(f).value(value).strategies(value.getRolloutStrategies());
-          value.setRolloutStrategies(null);
-          return fvci;
-        }))));
+  private void replaceEnvironmentFeatures(PublishEnvironment e) {
+    environmentFeatures.put(e.getEnvironment().getId(), new EnvironmentFeatures(e));
   }
 
   @Override
@@ -288,19 +279,15 @@ public class InMemoryCache implements InternalCache {
       return null;
     }
 
-    ServiceAccountPermission sa = serviceAccountPlusEnvIdToEnvIdMap.get(serviceAccountIdPlusEnvId(serviceAccountId, environmentId));
+    CacheServiceAccountPermission perm = serviceAccountPlusEnvIdToEnvIdMap.get(serviceAccountIdPlusEnvId(serviceAccountId, environmentId));
 
-    if (sa != null && !sa.getPermissions().isEmpty()) {  // any permission is good enough to read
-      final EnvironmentCacheItem eci = environments.get(environmentId);
+    if (perm != null && !perm.getPermissions().isEmpty()) {  // any permission is good enough to read
+      final EnvironmentFeatures features = environmentFeatures.get(environmentId);
 
-      if (eci != null) {
+      if (features != null) {
         return new FeatureCollection(
-            environmentFeatures.get(environmentId),
-            sa,
-            eci.getOrganizationId(),
-            eci.getPortfolioId(),
-            eci.getApplicationId(),
-            serviceAccountId);
+          features,
+            perm, serviceAccountId);
       }
     }
 
@@ -309,72 +296,81 @@ public class InMemoryCache implements InternalCache {
   }
 
   @Override
-  public void updateFeatureValue(FeatureValueCacheItem fv) {
-//    log.debug("received update {}", fv);
+  public void updateFeatureValue(PublishFeatureValue fv) {
+    log.debug("received update {}", fv);
 
-    EnvironmentCacheItem eci = environments.get(fv.getEnvironmentId());
+    PublishEnvironment eci = environments.get(fv.getEnvironmentId());
+
     if (eci == null) {
       log.debug("received feature for unknown environment: `{}`: {}", fv.getEnvironmentId(), fv);
-      List<FeatureValueCacheItem> fvs = valuesForUnpublishedEnvironments.computeIfAbsent(fv.getEnvironmentId(), key -> new ArrayList<>());
+      List<PublishFeatureValue> fvs = valuesForUnpublishedEnvironments.computeIfAbsent(fv.getEnvironmentId(), key -> new ArrayList<>());
       fvs.add(fv);
-    } else {
-      EnvironmentFeatures featureMap = environmentFeatures.get(fv.getEnvironmentId());
 
-      if (featureMap != null) {
-        FeatureValueCacheItem feature = featureMap.get(fv.getFeature().getId());
+      return;
+    }
 
-        if (feature == null) {
-          if (fv.getAction() == PublishAction.CREATE) {
-            log.info("received brand new feature `{}` for environment `{}`", fv.getFeature().getKey(), fv.getEnvironmentId());
-            featureMap.put(fv.getFeature().getId(), fv);
-          } else {
-            log.error("received a feature value update for feature key `{}` in environment `{}` where the feature does not exist.", fv.getFeature().getKey(), fv.getEnvironmentId());
-          }
 
+    EnvironmentFeatures envFeatureBundle = environmentFeatures.get(fv.getEnvironmentId());
+
+    // this environment we have received a feature for doesn't exist
+    if (envFeatureBundle == null) {
+      log.error("We have an environment but no features for that environment, which is not possible.");
+      return;
+    }
+
+    CacheEnvironmentFeature existingCachedFeature = envFeatureBundle.get(fv.getFeature().getFeature().getId());
+
+    if (existingCachedFeature == null) {
+      receivedNewFeatureForExistingEnvironmentFeatureCache(fv, envFeatureBundle);
+      return;
+    }
+
+    // we know at this point, we have an existing feature map of this environment, we _don't_ know if this
+    // feature exists in this environment however
+
+    @NotNull CacheFeature existingFeature = existingCachedFeature.getFeature();
+    @Nullable CacheFeatureValue existingValue = existingCachedFeature.getValue();
+    @NotNull CacheFeature newFeature = fv.getFeature().getFeature();
+    @Nullable CacheFeatureValue newValue = fv.getFeature().getValue();
+
+    if (fv.getAction() == PublishAction.CREATE || fv.getAction() == PublishAction.UPDATE) {
+      // if the feature itself changed, thats enough, change the contents
+      if (existingFeature.getVersion() < newFeature.getVersion()) {
+        envFeatureBundle.set(fv.getFeature());
+        return;
+      }
+
+      if (newValue != null) {
+        if (existingValue == null || existingValue.getVersion() < newValue.getVersion()) {
+          envFeatureBundle.set(fv.getFeature());
           return;
         }
-
-        boolean featureMapChanged = false;
-        if (fv.getAction() == PublishAction.CREATE || fv.getAction() == PublishAction.UPDATE) {
-          boolean featureChanged = feature.getFeature().getVersion() < fv.getFeature().getVersion();
-          if (featureChanged) {
-            feature.feature(fv.getFeature()); // replace the feature it has changed
-            featureMapChanged = true;
-          }
-          // now we know the feature + feature-value
-          //log.info("feature new  {} vs old {}", fv, feature);
-          if (fv.getValue().getVersion() != null) {
-            if (feature.getValue() == null) {
-              feature.value(fv.getValue());
-              feature.strategies(fv.getStrategies());
-              featureMapChanged = true;
-            } else if (feature.getValue().getVersion() == null || (fv.getValue().getVersion() != null && feature.getValue().getVersion() < fv.getValue().getVersion())) {
-              feature.value(fv.getValue());
-              feature.strategies(fv.getStrategies());
-              log.trace("replacing with {}: {} / {}", fv.getFeature(), fv.getValue(), fv.getStrategies());
-              featureMapChanged = true;
-            } else if (!featureChanged) {
-              log.warn("attempted to remove/update envId:key {}:{} that is older than existing version, ignoring", fv.getEnvironmentId(), fv.getFeature().getKey());
-            }
-          } else {
-            log.trace("received feature update with no version {}", fv);
-          }
-        } else if (fv.getAction() == PublishAction.DELETE) {
-          log.debug("removing feature value from feature key `{}` in environment `{}`", fv.getFeature().getKey(), fv.getEnvironmentId());
-          featureMap.remove(fv.getFeature().getId());
-          featureMapChanged = true;
-        }
-        if (featureMapChanged) {
-          featureMap.calculateEtag();
-        }
-      } else {
-        log.warn("received update for non existent environment `{}`", fv.getEnvironmentId());
       }
+
+      log.warn("attempted to remove/update envId:key {}:{} that is older than existing version, ignoring",
+        fv.getEnvironmentId(), newFeature.getKey());
+    } else if (fv.getAction() == PublishAction.DELETE) {
+      log.debug("removing feature value from feature key `{}` in environment `{}`", newFeature.getKey(),
+        fv.getEnvironmentId());
+
+      envFeatureBundle.remove(newFeature.getId());
+    }
+  }
+
+  private void receivedNewFeatureForExistingEnvironmentFeatureCache(PublishFeatureValue fv, EnvironmentFeatures featureMap) {
+    if (fv.getAction() == PublishAction.CREATE) {
+      log.info("received brand new feature `{}` for a new environment `{}`",
+        fv.getFeature().getFeature().getKey(),
+        fv.getEnvironmentId());
+      featureMap.put(fv.getEnvironmentId(), fv.getFeature());
+    } else {
+      log.error("received a feature value update for feature key `{}` in environment `{}` where the feature does " +
+        "not exist.", fv.getFeature().getFeature().getKey(), fv.getEnvironmentId());
     }
   }
 
   @Override
-  public EnvironmentCacheItem findEnvironment(UUID environmentId) {
+  public PublishEnvironment findEnvironment(UUID environmentId) {
     return environments.get(environmentId);
   }
 }

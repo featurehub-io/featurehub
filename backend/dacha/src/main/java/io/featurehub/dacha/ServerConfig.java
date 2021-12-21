@@ -5,10 +5,10 @@ import cd.connect.app.config.DeclaredConfigResolver;
 import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.featurehub.dacha.model.PublishEnvironment;
+import io.featurehub.dacha.model.PublishFeatureValue;
+import io.featurehub.dacha.model.PublishServiceAccount;
 import io.featurehub.jersey.config.CacheJsonMapper;
-import io.featurehub.mr.model.EnvironmentCacheItem;
-import io.featurehub.mr.model.FeatureValueCacheItem;
-import io.featurehub.mr.model.ServiceAccountCacheItem;
 import io.featurehub.publish.ChannelConstants;
 import io.featurehub.publish.ChannelNames;
 import io.featurehub.publish.NATSSource;
@@ -64,8 +64,8 @@ public class ServerConfig {
   private void listenForServiceAccounts() {
     listen(message -> {
       try {
-        ServiceAccountCacheItem sa = CacheJsonMapper.readFromZipBytes(message.getData(), ServiceAccountCacheItem.class);
-        cache.serviceAccount(sa);
+        PublishServiceAccount sa = CacheJsonMapper.readFromZipBytes(message.getData(), PublishServiceAccount.class);
+        cache.updateServiceAccount(sa);
 //        log.debug("cache received {}", sa);
       } catch (Exception e) {
         log.error("Unable to read message on SA channel", e);
@@ -76,7 +76,7 @@ public class ServerConfig {
   private void listenForFeatureValues() {
     listen(message -> {
       try {
-        FeatureValueCacheItem fv = CacheJsonMapper.readFromZipBytes(message.getData(), FeatureValueCacheItem.class);
+        PublishFeatureValue fv = CacheJsonMapper.readFromZipBytes(message.getData(), PublishFeatureValue.class);
         cache.updateFeatureValue(fv);
       } catch (Exception e) {
         log.error("Failure to decode featue value message", e);
@@ -87,8 +87,8 @@ public class ServerConfig {
   private void listenForEnvironments() {
     listen(message -> {
       try {
-        EnvironmentCacheItem e = CacheJsonMapper.readFromZipBytes(message.getData(), EnvironmentCacheItem.class);
-        cache.environment(e);
+        PublishEnvironment e = CacheJsonMapper.readFromZipBytes(message.getData(), PublishEnvironment.class);
+        cache.updateEnvironment(e);
 //        log.debug("cache received {}", e);
       } catch (Exception ex) {
         log.error("unable to decode message on environment channel", ex);

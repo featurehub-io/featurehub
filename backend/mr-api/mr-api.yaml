@@ -2501,3 +2501,532 @@ components:
       enum:
         - client_eval_only
         - server_eval_only
+    FeatureEnvironment:
+      properties:
+        environment:
+          $ref: "#/components/schemas/Environment"
+        roles:
+          description: "the roles of this person in this environment"
+          type: array
+          items:
+            $ref: "#/components/schemas/RoleType"
+        featureValue:
+          $ref: "#/components/schemas/FeatureValue"
+        serviceAccounts:
+          type: array
+          items:
+            $ref: "#/components/schemas/ServiceAccount"
+    ApplicationFeatureValues:
+      properties:
+        applicationId:
+          type: string
+          format: uuid
+        features:
+          type: array
+          items:
+            $ref: "#/components/schemas/Feature"
+        environments:
+          type: array
+          items:
+            $ref: "#/components/schemas/EnvironmentFeatureValues"
+    EnvironmentFeatureValues:
+      properties:
+        environmentId:
+          type: string
+          format: uuid
+        environmentName:
+          type: string
+        priorEnvironmentId:
+          type: string
+          format: uuid
+        features:
+          description: "the values of the features depending on access"
+          type: array
+          items:
+            $ref: "#/components/schemas/FeatureValue"
+        roles:
+          description: "the roles of this person in this environment"
+          type: array
+          items:
+            $ref: "#/components/schemas/RoleType"
+    Feature:
+      description: "exists simply to hold the name of the feature as it exists across all environments"
+      required:
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+        key:
+          type: string
+          description: "Unique within this application"
+        alias:
+          type: string
+          description: "use this in code, as then people cannot guess your new features from their names"
+        link:
+          type: string
+        name:
+          type: string
+          description: "description if any"
+        valueType:
+          $ref: "#/components/schemas/FeatureValueType"
+        version:
+          description: "used for optimistic locking when renaming a feature"
+          type: integer
+          format: int64
+        whenArchived:
+          type: string
+          format: date-time
+        secret:
+          type: boolean
+          description: "should the config remain invisible to users without secret permission"
+    FeatureValue:
+      required:
+        - key
+        - locked
+      properties:
+        id:
+          type: string
+          format: uuid
+        key:
+          type: string
+        locked:
+          type: boolean
+        valueString:
+          description: "default value if no strategy matches. interpreted by type in parent"
+          type: string
+        valueNumber:
+          type: number
+        valueBoolean:
+          type: boolean
+        valueJson:
+          type: string
+        rolloutStrategyInstances:
+          type: array
+          items:
+            $ref: "#/components/schemas/RolloutStrategyInstance"
+        rolloutStrategies:
+          description: "These are custom rollout strategies that only apply to this feature value."
+          type: array
+          items:
+            $ref: "#/components/schemas/RolloutStrategy"
+        sharedRolloutStrategies:
+          description: "This is list is either provided empty (when publishing) or anemic so the MR will client will understand which shared strategies are attached without having to back-call. If provided
+                        then it will mirror rolloutStrategyInstances and only enabled ones will be passed back. The value from the rolloutStrategyInstance will be embedded. This field will
+                        _always_ be ignored when being sent back to the server, only rolloutStrategyInstances is used."
+          type: array
+          items:
+            $ref: "#/components/schemas/RolloutStrategy"
+        environmentId:
+          type: string
+          format: uuid
+        version:
+          description: "used for optimistic locking"
+          type: integer
+          format: int64
+        whoUpdated:
+          $ref: "#/components/schemas/Person"
+        whenUpdated:
+          type: string
+          format: date-time
+        whatUpdated:
+          type: string
+    RolloutStrategyInstance:
+      properties:
+        name:
+          description: "This is copied from the shared rollout strategy on return, it is read only from the client perspective"
+          type: string
+        strategyId:
+          type: string
+          format: uuid
+        value:
+          description: "the value for this rollout strategy for this feature value"
+        disabled:
+          type: boolean
+    Audit:
+      properties:
+        createdBy:
+          allOf:
+            - $ref: "#/components/schemas/Person"
+        updatedBy:
+          allOf:
+            - $ref: "#/components/schemas/Person"
+        whenCreated:
+          type: string
+          format: date-time
+        whenUpdated:
+          type: string
+          format: date-time
+    SortOrder:
+      type: string
+      enum:
+        - ASC
+        - DESC
+    Portfolio:
+      allOf:
+        - $ref: "#/components/schemas/Audit"
+        - type: object
+          required:
+            - name
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+              minLength: 1
+              maxLength: 200
+            description:
+              type: string
+              maxLength: 400
+            version:
+              type: integer
+              format: int64
+            organizationId:
+              type: string
+              format: uuid
+            groups:
+              type: array
+              items:
+                $ref: "#/components/schemas/Group"
+            applications:
+              type: array
+              items:
+                $ref: "#/components/schemas/Application"
+            whenArchived:
+              type: string
+              format: date-time
+    Application:
+      allOf:
+        - $ref: "#/components/schemas/Audit"
+        - type: object
+          required:
+            - name
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+              maxLength: 100
+            description:
+              type: string
+              maxLength: 400
+            portfolioId:
+              type: string
+              format: uuid
+            version:
+              type: integer
+              format: int64
+            groups:
+              type: array
+              items:
+                $ref: "#/components/schemas/Group"
+            features:
+              type: array
+              items:
+                $ref: "#/components/schemas/Feature"
+            environments:
+              type: array
+              items:
+                $ref: "#/components/schemas/Environment"
+            whenArchived:
+              type: string
+              format: date-time
+
+    Person:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/PersonId"
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          maxLength: 100
+        other:
+          type: string
+        source:
+          type: string
+        version:
+          type: integer
+          format: int64
+        passwordRequiresReset:
+          type: boolean
+        groups:
+          type: array
+          items:
+            $ref: "#/components/schemas/Group"
+        whenArchived:
+          type: string
+          format: date-time
+        additional:
+          type: array
+          items:
+            $ref: "#/components/schemas/PersonInfo"
+    PersonInfo:
+      type: object
+      required:
+        - key
+        - value
+      properties:
+        key:
+          type: string
+        value:
+          type: string
+    PersonId:
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          format: uuid
+    Environment:
+      allOf:
+        - $ref: "#/components/schemas/Audit"
+        - type: object
+          required:
+            - name
+          properties:
+            id:
+              type: string
+              format: uuid
+            applicationId:
+              type: string
+              format: uuid
+            name:
+              type: string
+              minLength: 1
+              maxLength: 150
+            priorEnvironmentId:
+              type: string
+              format: uuid
+            version:
+              type: integer
+              format: int64
+            description:
+              type: string
+              maxLength: 400
+            production:
+              description: "is this a production environment?"
+              type: boolean
+            groupRoles:
+              type: array
+              items:
+                $ref: "#/components/schemas/EnvironmentGroupRole"
+            features:
+              type: array
+              items:
+                $ref: "#/components/schemas/Feature"
+            serviceAccountPermission:
+              type: array
+              items:
+                $ref: "#/components/schemas/ServiceAccountPermission"
+            whenArchived:
+              type: string
+              format: date-time
+
+    ServiceAccount:
+      required:
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 70
+        portfolioId:
+          type: string
+          format: uuid
+        description:
+          type: string
+          maxLength: 400
+        version:
+          type: integer
+          format: int64
+        apiKeyClientSide:
+          type: string
+          description: "this is a read only field, it denotes an api key where the eval is done client side"
+          maxLength: 400
+        apiKeyServerSide:
+          type: string
+          description: "this is a read only field, it denotes an api key where the eval is done server side"
+          maxLength: 400
+        permissions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ServiceAccountPermission"
+        whenArchived:
+          type: string
+          format: date-time
+    ServiceAccountPermission:
+      required:
+        - permissions
+        - environmentId
+      properties:
+        id:
+          type: string
+          format: uuid
+        permissions:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoleType"
+        serviceAccount:
+          description: "The service account associated with this permission. Only filled in when coming from Environment"
+          $ref: "#/components/schemas/ServiceAccount"
+        environmentId:
+          type: string
+          format: uuid
+        sdkUrlClientEval:
+          description: "Optional if they have chosen includeSdkUrl"
+          type: string
+        sdkUrlServerEval:
+          description: "Optional if they have chosen includeSdkUrl"
+          type: string
+    Group:
+      allOf:
+        - $ref: "#/components/schemas/Audit"
+        - type: object
+          required:
+            - name
+          properties:
+            id:
+              type: string
+              format: uuid
+            admin:
+              description: "is this an admin group?"
+              type: boolean
+            portfolioId:
+              type: string
+              format: uuid
+            organizationId:
+              description: "this will be the organisation this group belongs to at the top level, or if a portfolio group, the organisation of the portfolio"
+              type: string
+              format: uuid
+            version:
+              type: integer
+              format: int64
+            name:
+              type: string
+              minLength: 1
+              maxLength: 255
+            members:
+              type: array
+              items:
+                $ref: "#/components/schemas/Person"
+            applicationRoles:
+              type: array
+              items:
+                $ref: "#/components/schemas/ApplicationGroupRole"
+            environmentRoles:
+              type: array
+              items:
+                $ref: "#/components/schemas/EnvironmentGroupRole"
+            whenArchived:
+              type: string
+              format: date-time
+    ApplicationGroupRole:
+      required:
+        - applicationId
+        - groupId
+        - roles
+      properties:
+        applicationId:
+          type: string
+          format: uuid
+        groupId:
+          type: string
+          format: uuid
+        roles:
+          type: array
+          items:
+            $ref: "#/components/schemas/ApplicationRoleType"
+    ApplicationRoleType:
+      type: string
+      enum:
+        - FEATURE_EDIT
+    EnvironmentGroupRole:
+      required:
+        - environmentId
+        - groupId
+        - roles
+      properties:
+        environmentId:
+          type: string
+          format: uuid
+        groupId:
+          type: string
+          format: uuid
+        roles:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoleType"
+    Organization:
+      allOf:
+        - $ref: "#/components/schemas/Audit"
+        - type: object
+          required:
+            - name
+          properties:
+            id:
+              type: string
+              format: uuid
+            version:
+              type: integer
+              format: int64
+            name:
+              type: string
+              minLength: 1
+              maxLength: 255
+            admin:
+              type: boolean
+            authorizationUrl:
+              description: "If provided, the browser should redirect to this URL to authenticate"
+              type: string
+            orgGroup:
+              $ref: "#/components/schemas/Group"
+            portfolios:
+              type: array
+              items:
+                $ref: "#/components/schemas/Portfolio"
+            whenArchived:
+              type: string
+              format: date-time
+    RolloutStrategyAttribute:
+      allOf:
+        - $ref: "#/components/schemas/BaseRolloutStrategyAttribute"
+        - type: object
+          required:
+            - conditional
+            - fieldName
+            - type
+    RolloutStrategy:
+      allOf:
+        - $ref: "#/components/schemas/BaseRolloutStrategy"
+        - type: object
+          required:
+            - name
+          properties:
+            name:
+              description: "names are unique in a case insensitive fashion"
+              type: string
+              # validator is checking this
+            #          maxLength: 100
+            colouring:
+              description: "the colour used to display the strategy in the UI. indexed table of background/foreground combos."
+              type: integer
+            avatar:
+              type: string
+              description: "url to avatar (if any). Not sent to SDK. Preferably a unicorn."
+              maxLength: 200
+            attributes:
+              type: array
+              items:
+                $ref: "#/components/schemas/RolloutStrategyAttribute"
+
+

@@ -1,12 +1,13 @@
 package io.featurehub.dacha;
 
-import io.featurehub.mr.model.Environment;
-import io.featurehub.mr.model.EnvironmentCacheItem;
-import io.featurehub.mr.model.FeatureValueCacheItem;
-import io.featurehub.mr.model.PublishAction;
-import io.featurehub.mr.model.ServiceAccount;
-import io.featurehub.mr.model.ServiceAccountCacheItem;
+import io.featurehub.dacha.model.CacheEnvironment;
+import io.featurehub.dacha.model.CacheServiceAccount;
+import io.featurehub.dacha.model.PublishEnvironment;
+import io.featurehub.dacha.model.PublishFeatureValue;
+import io.featurehub.dacha.model.PublishServiceAccount;
+import io.featurehub.dacha.model.PublishAction;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,22 +17,26 @@ import java.util.stream.Stream;
  *
  */
 public class MrInMemoryCache implements InternalCache {
-  private Map<UUID, EnvironmentCacheItem> environments = new ConcurrentHashMap<>();
-  private Map<UUID, ServiceAccountCacheItem> serviceAccounts = new ConcurrentHashMap<>();
+  private Map<UUID, PublishEnvironment> environments = new ConcurrentHashMap<>();
+  private Map<UUID, PublishServiceAccount> serviceAccounts = new ConcurrentHashMap<>();
 
   public MrInMemoryCache() {
     UUID envId = UUID.randomUUID();
     environments.put(envId,
-      new EnvironmentCacheItem()
-      .environment(new Environment().id(envId).version(1L))
+      new PublishEnvironment()
+      .environment(new CacheEnvironment().id(envId).version(1L).features(new ArrayList<>()))
+        .serviceAccounts(new ArrayList<>())
+        .applicationId(envId)
+        .organizationId(envId)
+        .portfolioId(envId)
       .action(PublishAction.CREATE)
       .count(1)
     );
     UUID svcId = UUID.randomUUID();
     serviceAccounts.put(svcId,
-      new ServiceAccountCacheItem()
-        .serviceAccount(new ServiceAccount().id(svcId).version(1L).apiKeyServerSide("apikey")
-          .apiKeyClientSide("apikey2#2"))
+      new PublishServiceAccount()
+        .serviceAccount(new CacheServiceAccount().id(svcId).version(1L).apiKeyServerSide("apikey")
+          .apiKeyClientSide("apikey2#2").permissions(new ArrayList<>()))
         .count(1)
         .action(PublishAction.CREATE)
       );
@@ -51,22 +56,22 @@ public class MrInMemoryCache implements InternalCache {
   }
 
   @Override
-  public Stream<EnvironmentCacheItem> environments() {
+  public Stream<PublishEnvironment> environments() {
     return environments.values().stream();
   }
 
   @Override
-  public Stream<ServiceAccountCacheItem> serviceAccounts() {
+  public Stream<PublishServiceAccount> serviceAccounts() {
     return serviceAccounts.values().stream();
   }
 
   @Override
-  public void serviceAccount(ServiceAccountCacheItem sa) {
+  public void updateServiceAccount(PublishServiceAccount sa) {
     serviceAccounts.put(sa.getServiceAccount().getId(), sa);
   }
 
   @Override
-  public void environment(EnvironmentCacheItem e) {
+  public void updateEnvironment(PublishEnvironment e) {
     environments.put(e.getEnvironment().getId(), e);
   }
 
@@ -77,11 +82,11 @@ public class MrInMemoryCache implements InternalCache {
 
 
   @Override
-  public void updateFeatureValue(FeatureValueCacheItem fv) {
+  public void updateFeatureValue(PublishFeatureValue fv) {
   }
 
   @Override
-  public EnvironmentCacheItem findEnvironment(UUID environmentId) {
+  public PublishEnvironment findEnvironment(UUID environmentId) {
     return environments.get(environmentId);
   }
 }

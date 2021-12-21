@@ -16,22 +16,15 @@ components:
         - LOCK
         - UNLOCK
         - CHANGE_VALUE
-    RolloutStrategy:
+    BaseRolloutStrategy:
       x-package: io.featurehub.mr.model
       description: "if the feature in an environment is different from its default, this will be the reason for it.
                     a rollout strategy is defined at the Application level and then applied to a specific feature value.
                     When they are copied to the cache layer they are cloned and the feature value for that strategy
                     is inserted into the clone and those are published."
-      required:
-        - name
       properties:
         id:
           type: string
-        name:
-          description: "names are unique in a case insensitive fashion"
-          type: string
-          # validator is checking this
-#          maxLength: 100
         percentage:
           description: "value between 0 and 1000000 - for four decimal places"
           type: integer
@@ -40,20 +33,24 @@ components:
           description: "if you don't wish to apply percentage based on user id, you can use one or more attributes defined here"
           items:
             type: string
-        colouring:
-          description: "the colour used to display the strategy in the UI. indexed table of background/foreground combos."
-          type: integer
-        avatar:
-          type: string
-          description: "url to avatar (if any). Not sent to SDK. Preferably a unicorn."
-          maxLength: 200
         value:
           description: "when we attach the RolloutStrategy for Dacha or SSE this lets us push the value out. Only visible in SDK and SSE Edge."
         attributes:
           type: array
           items:
-            $ref: "#/components/schemas/RolloutStrategyAttribute"
-    RolloutStrategyAttribute:
+            $ref: "#/components/schemas/BaseRolloutStrategyAttribute"
+    CacheRolloutStrategy:
+      x-package: io.featurehub.dacha.model
+      description: "This is the model for the rollout strategy as required by Dacha and Edge"
+      allOf:
+        - $ref: "#/components/schemas/RolloutStrategy"
+        - type: object
+          required:
+            - id
+            - percentage
+            - value
+            - attributes
+    BaseRolloutStrategyAttribute:
       x-package: io.featurehub.mr.model
       # although they are required,  they aren't here because we need to validate against them
 #      required:

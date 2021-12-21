@@ -4,11 +4,11 @@ import cd.connect.app.config.ConfigKey;
 import cd.connect.app.config.DeclaredConfigResolver;
 import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
+import io.featurehub.dacha.model.PublishFeatureValue;
 import io.featurehub.edge.client.ClientConnection;
 import io.featurehub.edge.features.DachaFeatureRequestSubmitter;
 import io.featurehub.edge.features.FeatureRequestResponse;
 import io.featurehub.jersey.config.CacheJsonMapper;
-import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.publish.ChannelNames;
 import io.featurehub.publish.NATSSource;
 import io.nats.client.Dispatcher;
@@ -117,8 +117,8 @@ public class StreamingFeatureSource implements StreamingFeatureController {
    */
   private void updateFeature(Message msg) {
     try {
-      FeatureValueCacheItem fv =
-          CacheJsonMapper.readFromZipBytes(msg.getData(), FeatureValueCacheItem.class);
+      PublishFeatureValue fv =
+          CacheJsonMapper.readFromZipBytes(msg.getData(), PublishFeatureValue.class);
 
       final Collection<ClientConnection> tbc = notifyOnIncomingFeatureUpdate.get(fv.getEnvironmentId());
       if (tbc != null) {
@@ -174,14 +174,13 @@ public class StreamingFeatureSource implements StreamingFeatureController {
   // responsible for removing a client connection once it has been closed
   // from the list of clients we are notifying about feature changes
   public void clientRemoved(ClientConnection client) {
-    Collection<ClientConnection> conns = null;
     boolean removed = false;
     boolean environmentListenerPoolShrunk = false;
 
     // we have to do this in one operation as it is cleaning up this map which can otherwise
     // get filled with useless data
     synchronized (notifyOnIncomingFeatureUpdate) {
-      conns = notifyOnIncomingFeatureUpdate.get(client.getEnvironmentId());
+      Collection<ClientConnection> conns = notifyOnIncomingFeatureUpdate.get(client.getEnvironmentId());
 
       // we are about to remove it, so clean it up
       if (conns != null) {

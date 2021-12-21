@@ -1,5 +1,7 @@
 package io.featurehub.edge;
 
+import io.featurehub.dacha.model.CacheEnvironmentFeature;
+import io.featurehub.dacha.model.CacheFeatureValue;
 import io.featurehub.edge.strategies.Applied;
 import io.featurehub.edge.strategies.ApplyFeature;
 import io.featurehub.edge.strategies.ClientContext;
@@ -19,7 +21,7 @@ public class FeatureTransformerUtils implements FeatureTransformer {
   private static final Logger log = LoggerFactory.getLogger(FeatureTransformerUtils.class);
   private final ApplyFeature applyFeature = new ApplyFeature(new PercentageMumurCalculator(), new MatcherRegistry());
 
-  public List<FeatureState> transform(List<FeatureValueCacheItem> features, ClientContext clientAttributes) {
+  public List<FeatureState> transform(List<CacheEnvironmentFeature> features, ClientContext clientAttributes) {
     try {
       return features.stream().map(f -> transform(f, clientAttributes)).collect(Collectors.toList());
     } catch (Exception e) {
@@ -28,7 +30,7 @@ public class FeatureTransformerUtils implements FeatureTransformer {
     }
   }
 
-  public FeatureState transform(FeatureValueCacheItem rf, ClientContext clientAttributes) {
+  public FeatureState transform(CacheEnvironmentFeature rf, ClientContext clientAttributes) {
     FeatureState fs = new FeatureState()
 //      .key(rf.getFeature().getAlias() != null ? rf.getFeature().getAlias() : rf.getFeature().getKey())
       .key(rf.getFeature().getKey())
@@ -36,50 +38,23 @@ public class FeatureTransformerUtils implements FeatureTransformer {
       .id(rf.getFeature().getId())
       .l(rf.getValue().getLocked());
 
-    if (rf.getValue() == null || rf.getValue().getVersion() == null) {
+    if (rf.getValue() == null) {
       fs.setVersion(0L);
     } else {
       fs.setVersion(rf.getValue().getVersion());
     }
 
     if (clientAttributes != null) {
-      if (clientAttributes.isClientEvaluation) {
-        fs.strategies(rf.getStrategies());
-        fs.value(valueAsObject(rf));
+      if (clientAttributes.isClientEvaluation && rf.getValue() != null ) {
+        fs.strategies(rf.getValue().getRolloutStrategies());
+        fs.value(rf.getValue().getValue());
       } else {
         Applied applied = applyFeature.applyFeature(rf.getStrategies(), rf.getFeature().getKey(), rf.getValue().getId().toString()
           , clientAttributes);
-        fs.value(applied.isMatched() ? applied.getValue() : valueAsObject(rf));
+        fs.value(applied.isMatched() ? applied.getValue() : (rf.getValue() == null ? null : rf.getValue().getValue()));
       }
     }
 
     return fs;
   }
-
-  private Object valueAsObject(FeatureValueCacheItem rf) {
-    if (rf.getValue() == null)
-      return null;
-
-    final FeatureValueType valueType = rf.getFeature().getValueType();
-    if (FeatureValueType.BOOLEAN.equals(valueType)) {
-      return rf.getValue().getValueBoolean();
-    }
-
-    if (FeatureValueType.JSON.equals(valueType)) {
-      return rf.getValue().getValueJson();
-    }
-
-    if ( FeatureValueType.STRING.equals(valueType)) {
-      return rf.getValue().getValueString();
-    }
-
-    if (FeatureValueType.NUMBER.equals(valueType)) {
-      return rf.getValue().getValueNumber();
-    }
-
-    log.error("unknown feature value type, sending null: {}: {}", rf.getFeature().getId(), valueType);
-
-    return null;
-  }
-
 }

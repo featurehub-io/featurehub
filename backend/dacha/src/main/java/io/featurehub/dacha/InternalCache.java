@@ -1,9 +1,10 @@
 package io.featurehub.dacha;
 
-import io.featurehub.mr.model.EnvironmentCacheItem;
-import io.featurehub.mr.model.FeatureValueCacheItem;
-import io.featurehub.mr.model.ServiceAccountCacheItem;
-import io.featurehub.mr.model.ServiceAccountPermission;
+import io.featurehub.dacha.model.CacheEnvironmentFeature;
+import io.featurehub.dacha.model.CacheServiceAccountPermission;
+import io.featurehub.dacha.model.PublishEnvironment;
+import io.featurehub.dacha.model.PublishFeatureValue;
+import io.featurehub.dacha.model.PublishServiceAccount;
 
 import java.util.Collection;
 import java.util.UUID;
@@ -11,25 +12,19 @@ import java.util.stream.Stream;
 
 public interface InternalCache {
   interface FeatureValues {
-    Collection<FeatureValueCacheItem> getFeatures();
+    Collection<CacheEnvironmentFeature> getFeatures();
+    PublishEnvironment getEnvironment();
     String getEtag();
   }
 
   class FeatureCollection {
-    public FeatureValues features;
-    public ServiceAccountPermission perms;
-    public UUID organizationId;
-    public UUID portfolioId;
-    public UUID applicationId;
-    public UUID serviceAccountId;
+    public final FeatureValues features;
+    public final CacheServiceAccountPermission perms;
+    public final UUID serviceAccountId;
 
-    public FeatureCollection(FeatureValues features, ServiceAccountPermission perms,
-                             UUID organizationId, UUID portfolioId, UUID applicationId, UUID serviceAccountId) {
+    public FeatureCollection(FeatureValues features, CacheServiceAccountPermission perms, UUID serviceAccountId) {
       this.features = features;
       this.perms = perms;
-      this.organizationId = organizationId;
-      this.portfolioId = portfolioId;
-      this.applicationId = applicationId;
       this.serviceAccountId = serviceAccountId;
     }
   }
@@ -46,16 +41,16 @@ public interface InternalCache {
 
   void clear();
 
-  Stream<EnvironmentCacheItem> environments();
-  Stream<ServiceAccountCacheItem> serviceAccounts();
+  Stream<PublishEnvironment> environments();
+  Stream<PublishServiceAccount> serviceAccounts();
 
-  void serviceAccount(ServiceAccountCacheItem sa);
+  void updateServiceAccount(PublishServiceAccount sa);
 
-  void environment(EnvironmentCacheItem e);
+  void updateEnvironment(PublishEnvironment e);
 
   FeatureCollection getFeaturesByEnvironmentAndServiceAccount(UUID environmentId, String apiKey);
 
-  void updateFeatureValue(FeatureValueCacheItem fv);
+  void updateFeatureValue(PublishFeatureValue fv);
 
-  EnvironmentCacheItem findEnvironment(UUID environmentId);
+  PublishEnvironment findEnvironment(UUID environmentId);
 }
