@@ -55,6 +55,7 @@ flutter build web --dart-define=FLUTTER_WEB_CANVASKIT_URL=/ --target=lib/deploy_
 rename_main_dart
 
 mv build/web build_original/web/intranet
+rm -rf build
 mv build_original build
 echo FLUTTER: finished building, cleaning
 exit 0
