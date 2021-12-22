@@ -1,8 +1,8 @@
 package io.featurehub.strategies.matchers;
 
 
-import io.featurehub.mr.model.RolloutStrategyAttribute;
+import io.featurehub.sse.model.FeatureRolloutStrategyAttribute;
 
 public interface MatcherRepository {
-  StrategyMatcher findMatcher(RolloutStrategyAttribute attr);
+  StrategyMatcher findMatcher(FeatureRolloutStrategyAttribute attr);
 }

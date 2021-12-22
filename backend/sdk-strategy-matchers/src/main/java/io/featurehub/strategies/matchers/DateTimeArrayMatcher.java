@@ -1,6 +1,6 @@
 package io.featurehub.strategies.matchers;
 
-import io.featurehub.mr.model.RolloutStrategyAttribute;
+import io.featurehub.sse.model.FeatureRolloutStrategyAttribute;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -10,7 +10,7 @@ public class DateTimeArrayMatcher implements StrategyMatcher {
   private OffsetDateTime supplied = null;
 
   @Override
-  public boolean match(String suppliedValue, RolloutStrategyAttribute attr) {
+  public boolean match(String suppliedValue, FeatureRolloutStrategyAttribute attr) {
     DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
 
     try {

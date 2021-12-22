@@ -1,10 +1,10 @@
 package io.featurehub.strategies.matchers;
 
-import io.featurehub.mr.model.RolloutStrategyAttribute;
+import io.featurehub.sse.model.FeatureRolloutStrategyAttribute;
 
 public class MatcherRegistry implements MatcherRepository {
   @Override
-  public StrategyMatcher findMatcher(RolloutStrategyAttribute attr) {
+  public StrategyMatcher findMatcher(FeatureRolloutStrategyAttribute attr) {
     switch (attr.getType()) {
       case STRING:
         return new StringArrayMatcher();
@@ -27,7 +27,7 @@ public class MatcherRegistry implements MatcherRepository {
 
   static class FallthroughMatcher implements StrategyMatcher {
     @Override
-    public boolean match(String suppliedValue, RolloutStrategyAttribute attr) {
+    public boolean match(String suppliedValue, FeatureRolloutStrategyAttribute attr) {
       return false;
     }
   }

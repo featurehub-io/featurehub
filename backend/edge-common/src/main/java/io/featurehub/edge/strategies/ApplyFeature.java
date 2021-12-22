@@ -2,6 +2,8 @@ package io.featurehub.edge.strategies;
 
 import io.featurehub.mr.model.RolloutStrategyAttributeConditional;
 import io.featurehub.mr.model.RolloutStrategyFieldType;
+import io.featurehub.sse.model.FeatureRolloutStrategy;
+import io.featurehub.sse.model.FeatureRolloutStrategyAttribute;
 import io.featurehub.strategies.matchers.MatcherRepository;
 import io.featurehub.strategies.percentage.PercentageCalculator;
 import jakarta.inject.Inject;
@@ -26,7 +28,7 @@ public class ApplyFeature {
     this.matcherRepository = matcherRepository;
   }
 
-  public Applied applyFeature(List<RolloutStrategy> strategies, String key, String featureValueId,
+  public Applied applyFeature(List<FeatureRolloutStrategy> strategies, String key, String featureValueId,
                               ClientContext cac) {
     if (cac != null & strategies != null && !strategies.isEmpty()) {
       Integer percentage = null;
@@ -34,8 +36,8 @@ public class ApplyFeature {
       Map<String, Integer> basePercentage = new HashMap<>();
       String defaultPercentageKey = cac.defaultPercentageKey();
 
-      for(RolloutStrategy rsi : strategies ) {
-        if (rsi.getPercentage() != null && (defaultPercentageKey != null || !rsi.getPercentageAttributes().isEmpty())) {
+      for(FeatureRolloutStrategy rsi : strategies ) {
+        if (rsi.getPercentage() != null && (defaultPercentageKey != null || (rsi.getPercentageAttributes() != null && !rsi.getPercentageAttributes().isEmpty()))) {
           // determine what the percentage key is
           String newPercentageKey = determinePercentageKey(cac, rsi.getPercentageAttributes());
 
@@ -51,11 +53,11 @@ public class ApplyFeature {
           }
 
           log.info("comparing actual {} vs required: {}", percentage, rsi.getPercentage());
-          int useBasePercentage = rsi.getAttributes() == null || rsi.getAttributes().isEmpty() ? basePercentageVal : 0;
+          int useBasePercentage = rsi.getAttributes().isEmpty() ? basePercentageVal : 0;
             // if the percentage is lower than the user's key +
             // id of feature value then apply it
           if (percentage <= (useBasePercentage + rsi.getPercentage())) {
-            if (rsi.getAttributes() != null && !rsi.getAttributes().isEmpty()) {
+            if (!rsi.getAttributes().isEmpty()) {
               if (matchAttributes(cac, rsi)) {
                 return new Applied(true, rsi.getValue());
               }
@@ -65,13 +67,13 @@ public class ApplyFeature {
           }
 
           // this was only a percentage and had no other attributes
-          if (rsi.getAttributes() == null || rsi.getAttributes().isEmpty()) {
+          if (rsi.getAttributes().isEmpty()) {
             basePercentage.put(percentageKey, basePercentage.get(percentageKey) + rsi.getPercentage());
           }
         }
 
         if ((rsi.getPercentage() == null || rsi.getPercentage() == 0) &&
-          rsi.getAttributes() != null && !rsi.getAttributes().isEmpty()) {
+          !rsi.getAttributes().isEmpty()) {
           if (matchAttributes(cac, rsi)) {
             return new Applied(true, rsi.getValue());
           }
@@ -83,8 +85,8 @@ public class ApplyFeature {
   }
 
   // This applies the rules as an AND. If at any point it fails it jumps out.
-  private boolean matchAttributes(ClientContext cac, RolloutStrategy rsi) {
-    for(RolloutStrategyAttribute attr : rsi.getAttributes()) {
+  private boolean matchAttributes(ClientContext cac, FeatureRolloutStrategy rsi) {
+    for(FeatureRolloutStrategyAttribute attr : rsi.getAttributes()) {
       String suppliedValue = cac.get(attr.getFieldName(), null);
 
       // "now" for dates and date-times are not passed by the client, so we create them in-situ
@@ -122,7 +124,7 @@ public class ApplyFeature {
   }
 
   private String determinePercentageKey(ClientContext cac, List<String> percentageAttributes) {
-    if (percentageAttributes.isEmpty()) {
+    if (percentageAttributes == null || percentageAttributes.isEmpty()) {
       return cac.defaultPercentageKey();
     }
 

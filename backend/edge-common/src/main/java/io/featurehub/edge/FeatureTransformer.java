@@ -1,9 +1,7 @@
 package io.featurehub.edge;
 
 import io.featurehub.dacha.model.CacheEnvironmentFeature;
-import io.featurehub.dacha.model.CacheFeatureValue;
 import io.featurehub.edge.strategies.ClientContext;
-import io.featurehub.mr.model.FeatureValueCacheItem;
 import io.featurehub.sse.model.FeatureState;
 
 import java.util.List;

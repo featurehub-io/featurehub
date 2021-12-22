@@ -1,13 +1,13 @@
 package io.featurehub.strategies.matchers;
 
-import io.featurehub.mr.model.RolloutStrategyAttribute;
+import io.featurehub.sse.model.FeatureRolloutStrategyAttribute;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class StringArrayMatcher implements StrategyMatcher {
   @Override
-  public boolean match(String suppliedValue, RolloutStrategyAttribute attr) {
+  public boolean match(String suppliedValue, FeatureRolloutStrategyAttribute attr) {
     List<String> vals = attr.getValues().stream()
       .map(Object::toString).collect(Collectors.toList());
 

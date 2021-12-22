@@ -1,14 +1,11 @@
 package io.featurehub.edge;
 
 import io.featurehub.dacha.model.CacheEnvironmentFeature;
-import io.featurehub.dacha.model.CacheFeatureValue;
 import io.featurehub.dacha.model.CacheRolloutStrategy;
 import io.featurehub.dacha.model.CacheRolloutStrategyAttribute;
 import io.featurehub.edge.strategies.Applied;
 import io.featurehub.edge.strategies.ApplyFeature;
 import io.featurehub.edge.strategies.ClientContext;
-import io.featurehub.mr.model.FeatureValueCacheItem;
-import io.featurehub.mr.model.FeatureValueType;
 import io.featurehub.sse.model.FeatureRolloutStrategy;
 import io.featurehub.sse.model.FeatureRolloutStrategyAttribute;
 import io.featurehub.sse.model.FeatureState;
@@ -49,13 +46,16 @@ public class FeatureTransformerUtils implements FeatureTransformer {
     }
 
     if (clientAttributes != null) {
+      final List<FeatureRolloutStrategy> fsStrategies =
+       (rf.getValue().getRolloutStrategies() != null) ?
+
+          rf.getValue().getRolloutStrategies().stream().map(this::toFeatureRolloutStrategy).collect(Collectors.toList()) : new ArrayList<>();
+
       if (clientAttributes.isClientEvaluation && rf.getValue() != null ) {
-        if (rf.getValue().getRolloutStrategies() != null) {
-          fs.strategies(rf.getValue().getRolloutStrategies().stream().map(this::toFeatureRolloutStrategy).collect(Collectors.toList()));
-        }
+        fs.strategies(fsStrategies);
         fs.value(rf.getValue().getValue());
       } else {
-        Applied applied = applyFeature.applyFeature(rf.getStrategies(), rf.getFeature().getKey(), rf.getValue().getId().toString()
+        Applied applied = applyFeature.applyFeature(fsStrategies, rf.getFeature().getKey(), rf.getValue().getId().toString()
           , clientAttributes);
         fs.value(applied.isMatched() ? applied.getValue() : (rf.getValue() == null ? null : rf.getValue().getValue()));
       }
