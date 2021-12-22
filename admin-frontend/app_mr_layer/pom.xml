@@ -60,7 +60,6 @@
             <phase>initialize</phase>
             <configuration>
               <files>
-                <file>${project.basedir}/../../backend/mr-api/common.yaml</file>
                 <file>${project.basedir}/../../backend/mr-api/user.yaml</file>
                 <file>${project.basedir}/../../backend/mr-api/strategy-enums.yaml</file>
                 <file>${project.basedir}/../../backend/mr-api/end2end-common.yaml</file>

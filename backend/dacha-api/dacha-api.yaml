@@ -402,3 +402,25 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/CacheEnvironmentFeature"
+    CacheRolloutStrategy:
+      x-package: io.featurehub.dacha.model
+      description: "This is the model for the rollout strategy as required by Dacha and Edge"
+      allOf:
+        - $ref: "#/components/schemas/BaseRolloutStrategy"
+        - type: object
+          required:
+            - id
+            - attributes
+          properties:
+            attributes:
+              type: array
+              items:
+                $ref: "#/components/schemas/CacheRolloutStrategyAttribute"
+    CacheRolloutStrategyAttribute:
+      allOf:
+        - $ref: "#/components/schemas/BaseRolloutStrategyAttribute"
+        - type: object
+          required:
+            - conditional
+            - fieldName
+            - type

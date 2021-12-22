@@ -13,7 +13,6 @@ import io.featurehub.mr.model.RolloutStrategyAttribute
 import io.opentelemetry.context.Context
 import jakarta.inject.Inject
 import org.slf4j.LoggerFactory
-import java.lang.Boolean
 import java.math.BigDecimal
 import java.util.*
 import java.util.concurrent.ExecutorService
@@ -23,9 +22,8 @@ import kotlin.Any
 import kotlin.Exception
 import kotlin.Int
 import kotlin.Long
+import kotlin.Pair
 import kotlin.String
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 import kotlin.collections.set
 import kotlin.let
 import kotlin.to
@@ -209,13 +207,14 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
   private fun featureValueAsObject(value: String?, valueType: FeatureValueType): Any? {
     if (value == null) return null
     if (FeatureValueType.BOOLEAN == valueType) {
-      return Boolean.parseBoolean(value)
+      return value.toBoolean()
     }
     if (FeatureValueType.JSON == valueType || FeatureValueType.STRING == valueType) {
       return value
     }
+
     return if (FeatureValueType.NUMBER == valueType) {
-      BigDecimal(value)
+      value.toBigDecimal()
     } else null
   }
 
@@ -246,7 +245,7 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
     }
   }
 
-  fun innerPublishFeatureValueChange(featureValue: DbFeatureValue, cacheBroadcast: CacheBroadcast) {
+  private fun innerPublishFeatureValueChange(featureValue: DbFeatureValue, cacheBroadcast: CacheBroadcast) {
     cacheBroadcast.publishFeature(
       PublishFeatureValue()
         .feature(toCacheEnvironmentFeature(featureValue, mutableMapOf(Pair(featureValue.feature.id, featureValue.feature))))
@@ -402,22 +401,20 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
   }
 
   override fun deleteEnvironment(id: UUID) {
-    if (id != null) {
-      val cacheName =
-        QDbNamedCache().organizations.portfolios.applications.environments.id.eq(id).findOneOrEmpty()
-          .map { obj: DbNamedCache -> obj.cacheName }
-          .orElse(null)
-      if (cacheName != null) {
-        val cacheBroadcast = cacheBroadcasters[cacheName]
-        if (cacheBroadcast != null) {
-          log.debug("deleting environment: `{}`", id)
-          cacheBroadcast.publishEnvironment(
-            PublishEnvironment()
-              .count(environmentsByCacheName(cacheName).findCount() - 1)
-              .environment(CacheEnvironment().id(id).version(Long.MAX_VALUE))
-              .action(PublishAction.DELETE)
-          )
-        }
+    val cacheName =
+      QDbNamedCache().organizations.portfolios.applications.environments.id.eq(id).findOneOrEmpty()
+        .map { obj: DbNamedCache -> obj.cacheName }
+        .orElse(null)
+    if (cacheName != null) {
+      val cacheBroadcast = cacheBroadcasters[cacheName]
+      if (cacheBroadcast != null) {
+        log.debug("deleting environment: `{}`", id)
+        cacheBroadcast.publishEnvironment(
+          PublishEnvironment()
+            .count(environmentsByCacheName(cacheName).findCount() - 1)
+            .environment(CacheEnvironment().id(id).version(Long.MAX_VALUE))
+            .action(PublishAction.DELETE)
+        )
       }
     }
   }

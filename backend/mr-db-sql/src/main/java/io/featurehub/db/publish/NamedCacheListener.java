@@ -1,13 +1,13 @@
 package io.featurehub.db.publish;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.featurehub.dacha.model.CacheManagementMessage;
+import io.featurehub.dacha.model.CacheRequestType;
+import io.featurehub.dacha.model.CacheState;
+import io.featurehub.dacha.model.PublishEnvironment;
+import io.featurehub.dacha.model.PublishFeatureValue;
+import io.featurehub.dacha.model.PublishServiceAccount;
 import io.featurehub.jersey.config.CacheJsonMapper;
-import io.featurehub.mr.model.CacheManagementMessage;
-import io.featurehub.mr.model.CacheRequestType;
-import io.featurehub.mr.model.CacheState;
-import io.featurehub.mr.model.EnvironmentCacheItem;
-import io.featurehub.mr.model.FeatureValueCacheItem;
-import io.featurehub.mr.model.ServiceAccountCacheItem;
 import io.featurehub.publish.ChannelNames;
 import io.nats.client.Connection;
 import io.nats.client.Dispatcher;
@@ -60,7 +60,7 @@ public class NamedCacheListener implements MessageHandler, CacheBroadcast {
   }
 
   @Override
-  public void onMessage(Message message) throws InterruptedException {
+  public void onMessage(Message message) {
     try {
       CacheManagementMessage cmm = CacheJsonMapper.mapper.readValue(message.getData(), CacheManagementMessage.class);
 
@@ -93,7 +93,7 @@ public class NamedCacheListener implements MessageHandler, CacheBroadcast {
   }
 
   @Override
-  public void publishEnvironment(EnvironmentCacheItem eci) {
+  public void publishEnvironment(PublishEnvironment eci) {
     try {
       if (log.isTraceEnabled())
         log.trace("eci: {}", CacheJsonMapper.mapper.writeValueAsString(eci));
@@ -106,7 +106,7 @@ public class NamedCacheListener implements MessageHandler, CacheBroadcast {
   }
 
   @Override
-  public void publishServiceAccount(ServiceAccountCacheItem saci) {
+  public void publishServiceAccount(PublishServiceAccount saci) {
     try {
       if (log.isTraceEnabled())
         log.trace("saci: {}", CacheJsonMapper.mapper.writeValueAsString(saci));
@@ -118,7 +118,7 @@ public class NamedCacheListener implements MessageHandler, CacheBroadcast {
   }
 
   @Override
-  public void publishFeature(FeatureValueCacheItem feature) {
+  public void publishFeature(PublishFeatureValue feature) {
     try {
       log.trace("publishing feature {}", feature);
 //      connection.publish(featureSubject, CacheJsonMapper.writeAsZipBytes(feature));
