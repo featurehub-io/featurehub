@@ -1,7 +1,8 @@
 package io.featurehub.strategies.matchers
 
-import io.featurehub.mr.model.RolloutStrategyAttribute
+
 import io.featurehub.mr.model.RolloutStrategyAttributeConditional
+import io.featurehub.sse.model.FeatureRolloutStrategyAttribute
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -15,7 +16,7 @@ class BooleanArrayMatcherSpec extends Specification {
   @Unroll
   def "all the support variants work as expected"() {
     given: "I create a RolloutStrategyAttribute representing this"
-      def rsa = new RolloutStrategyAttribute().values([val]).conditional(conditional)
+      def rsa = new FeatureRolloutStrategyAttribute().values([val]).conditional(conditional)
     when:
       def theresult = matcher.match(suppliedValue, rsa)
     then:

@@ -106,6 +106,7 @@ class FeatureGetProcessor @Inject constructor(private val getOrchestrator: Dacha
       FeatureRequestSuccess.NO_SUCH_KEY_IN_CACHE -> EdgeHitResultType.MISSED
       FeatureRequestSuccess.SUCCESS -> EdgeHitResultType.SUCCESS
       FeatureRequestSuccess.NO_CHANGE -> EdgeHitResultType.NO_CHANGE
+      FeatureRequestSuccess.DACHA_NOT_READY -> EdgeHitResultType.MISSED
     }
   }
 
