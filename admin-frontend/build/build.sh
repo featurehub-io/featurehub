@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 cd /opt/app
 #tar xf *.tar
 ls -l
@@ -14,7 +14,7 @@ cd app_mr_layer && flutter pub get
 echo "Flutter App will be version: ${BUILD_VERSION}"
 cd ../open_admin_app && echo "final appVersion = '${BUILD_VERSION}';" > lib/version.dart && flutter clean && flutter pub get
 
-function rename_main_dart() {
+rename_main_dart() {
   cd build/web
   MAIN_DATE=`date +"%s"`
   MAIN="main.dart-$MAIN_DATE.js"
@@ -39,18 +39,13 @@ echo FLUTTER: building deploy_main
 #  exit 1
 #fi
 flutter build web --target=lib/deploy_main.dart
-# Downloads WASM locally
-# Temporary solution until https://github.com/flutter/flutter/issues/70101 and 77580 provide a better way
-wasmLocation=$(grep canvaskit-wasm build/web/main.dart.js | cut -d'"' -f2)
 
 rename_main_dart
 mv build build_original
-mkdir -p build/web
+mkdir -p build/web/assets
 
-echo "Downloading WASM from $wasmLocation"
-curl -o build/web/canvaskit.js "$wasmLocation/canvaskit.js"
-curl -o build/web/canvaskit.wasm "$wasmLocation/canvaskit.wasm"
-flutter build web --dart-define=FLUTTER_WEB_CANVASKIT_URL=/ --target=lib/deploy_main.dart
+# Flutter already downloads Canvaskit, this just lets us use what it has already downloaded
+flutter build web --dart-define=FLUTTER_WEB_CANVASKIT_URL=/canvaskit/ --target=lib/deploy_main.dart
 
 rename_main_dart
 
