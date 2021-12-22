@@ -1,8 +1,8 @@
 package io.featurehub.edge.features
 
 import io.featurehub.dacha.api.DachaApiKeyService
+import io.featurehub.dacha.model.DachaKeyDetailsResponse
 import io.featurehub.edge.KeyParts
-import io.featurehub.mr.model.DachaKeyDetailsResponse
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentLinkedQueue

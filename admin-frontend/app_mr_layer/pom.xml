@@ -61,7 +61,6 @@
             <configuration>
               <files>
                 <file>${project.basedir}/../../backend/mr-api/user.yaml</file>
-                <file>${project.basedir}/../../backend/mr-api/strategy-enums.yaml</file>
                 <file>${project.basedir}/../../backend/mr-api/end2end-common.yaml</file>
                 <file>${project.basedir}/../../backend/mr-api/mr-api.yaml</file>
               </files>

@@ -1,7 +1,5 @@
 package io.featurehub.edge.strategies;
 
-import io.featurehub.mr.model.RolloutStrategy;
-import io.featurehub.mr.model.RolloutStrategyAttribute;
 import io.featurehub.mr.model.RolloutStrategyAttributeConditional;
 import io.featurehub.mr.model.RolloutStrategyFieldType;
 import io.featurehub.strategies.matchers.MatcherRepository;

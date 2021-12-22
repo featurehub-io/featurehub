@@ -4,7 +4,7 @@ import io.featurehub.dacha.model.DachaKeyDetailsResponse
 import io.featurehub.edge.FeatureTransformer
 import io.featurehub.edge.KeyParts
 import io.featurehub.edge.strategies.ClientContext
-import io.featurehub.sse.model.Environment
+import io.featurehub.sse.model.FeatureEnvironmentCollection
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
@@ -17,7 +17,6 @@ class FeatureRequestCollection(
   private val future: CompletableFuture<List<FeatureRequestResponse>>,
   private val etags: EtagStructureHolder
 ) : FeatureRequestCompleteNotifier {
-  private val log: Logger = LoggerFactory.getLogger(FeatureRequestCollection::class.java)
   private val completed: MutableCollection<FeatureRequester> = ConcurrentLinkedQueue()
 
   // this gets called on each requester each time a response comes back. Once it matches
@@ -34,10 +33,10 @@ class FeatureRequestCollection(
   }
 
   private fun transformFeatures(details: DachaKeyDetailsResponse?, key: KeyParts, sendFullResults: Boolean): FeatureRequestResponse {
-    val env = Environment().id(key.environmentId)
+    val env = FeatureEnvironmentCollection().id(key.environmentId)
 
     if (details == null) {
-      return FeatureRequestResponse(env, FeatureRequestSuccess.FAILED, key, "0")
+      return FeatureRequestResponse(env, FeatureRequestSuccess.NO_SUCH_KEY_IN_CACHE, key, "0")
     }
 
     if (!sendFullResults) {

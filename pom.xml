@@ -62,8 +62,8 @@
     <module>backend/composite-logging-api</module>
     <module>backend/composite-prometheus</module>
     <module>backend/composite-test</module>
-<!--    <module>backend/edge-api</module>-->
-<!--    <module>backend/edge-common</module>-->
+    <module>backend/edge-api</module>
+    <module>backend/edge-common</module>
 <!--    <module>backend/edge-full</module>-->
 <!--    <module>backend/edge-rest</module>-->
 <!--    <module>backend/edge-stats-api</module>-->
