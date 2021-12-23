@@ -1,5 +1,6 @@
 package io.featurehub.edge.client;
 
+import io.featurehub.dacha.model.PublishAction;
 import io.featurehub.dacha.model.PublishFeatureValue;
 import io.featurehub.edge.FeatureTransformer;
 import io.featurehub.edge.KeyParts;
@@ -10,7 +11,6 @@ import io.featurehub.edge.features.FeatureRequestSuccess;
 import io.featurehub.edge.stats.StatRecorder;
 import io.featurehub.edge.strategies.ClientContext;
 import io.featurehub.jersey.config.CacheJsonMapper;
-import io.featurehub.mr.model.PublishAction;
 import io.featurehub.sse.model.SSEResultState;
 import io.featurehub.sse.stats.model.EdgeHitResultType;
 import io.featurehub.sse.stats.model.EdgeHitSourceType;
@@ -176,7 +176,7 @@ public class TimedBucketClientConnection implements ClientConnection {
   public void initResponse(FeatureRequestResponse edgeResponse) {
     try {
       try {
-        if (edgeResponse.getSuccess() != FeatureRequestSuccess.FAILED) {
+        if (edgeResponse.getSuccess() != FeatureRequestSuccess.NO_SUCH_KEY_IN_CACHE) {
           if (edgeResponse.getSuccess() == FeatureRequestSuccess.SUCCESS) {
             writeMessage(
                 SSEResultState.FEATURES,

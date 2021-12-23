@@ -5,7 +5,7 @@ import io.featurehub.dacha.api.DachaClientServiceRegistry
 import io.featurehub.edge.FeatureTransformer
 import io.featurehub.edge.KeyParts
 import io.featurehub.edge.strategies.ClientContext
-import io.featurehub.sse.model.Environment
+import io.featurehub.sse.model.FeatureEnvironmentCollection
 import org.jetbrains.annotations.NotNull
 import spock.lang.Specification
 
@@ -33,7 +33,7 @@ class FeatureRequesterSpec extends Specification {
 
   def "when i pass 3 keys, i get 3 environments back"() {
     given: "I have 3 environments"
-       def envs = [new Environment().id(UUID.randomUUID()), new Environment().id(UUID.randomUUID()), new Environment().id(UUID.randomUUID())]
+       def envs = [new FeatureEnvironmentCollection().id(UUID.randomUUID()), new FeatureEnvironmentCollection().id(UUID.randomUUID()), new FeatureEnvironmentCollection().id(UUID.randomUUID())]
     and: "a mock notifier"
       def notifier = Mock(FeatureRequestCompleteNotifier)
     and: "a mock dacha registry"
@@ -50,7 +50,7 @@ class FeatureRequesterSpec extends Specification {
         @Override
         protected FeatureRequestCompleteNotifier getRequestCollector(@NotNull List<? extends FeatureRequester> getters,
                                                                      @NotNull ClientContext context,
-                                                                     @NotNull CompletableFuture<List<Environment>> future,
+                                                                     @NotNull CompletableFuture<List<FeatureEnvironmentCollection>> future,
         @NotNull EtagStructureHolder etags) {
           future.complete(envs)
           return notifier

@@ -3,7 +3,7 @@ package io.featurehub.edge.features
 import io.featurehub.edge.FeatureTransformer
 import io.featurehub.edge.KeyParts
 import io.featurehub.edge.strategies.ClientContext
-import io.featurehub.mr.model.DachaKeyDetailsResponse
+import io.featurehub.dacha.model.DachaKeyDetailsResponse
 import spock.lang.Specification
 
 import java.util.concurrent.CompletableFuture
@@ -42,8 +42,8 @@ class FeatureRequestCollectionSpec extends Specification {
       def responses = future.get()
     then:
       responses.size() == 2
-      responses[0].success == FeatureRequestSuccess.FAILED
-      responses[1].success == FeatureRequestSuccess.FAILED
+      responses[0].success == FeatureRequestSuccess.NO_SUCH_KEY_IN_CACHE
+      responses[1].success == FeatureRequestSuccess.NO_SUCH_KEY_IN_CACHE
   }
 
   def "if all requests complete and have the same etags, we will get a NO_CHANGE response"() {
@@ -117,7 +117,7 @@ class FeatureRequestCollectionSpec extends Specification {
       def responses = future.get()
     then:
       responses.size() == 2
-      responses[0].success == FeatureRequestSuccess.FAILED
+      responses[0].success == FeatureRequestSuccess.NO_SUCH_KEY_IN_CACHE
       responses[0].etag == '0'
       responses[1].success == FeatureRequestSuccess.SUCCESS
       responses[1].etag == 'z'

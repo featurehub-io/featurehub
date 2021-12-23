@@ -6,6 +6,8 @@ import io.featurehub.sse.stats.model.EdgeStatsBundle
 import io.nats.client.Connection
 import spock.lang.Specification
 
+import java.time.OffsetDateTime
+
 class NATSStatPublisherSpec extends Specification {
   def "when we pass in a bundle, it gets published"() {
     given: "we have a NATS Source"
@@ -15,7 +17,7 @@ class NATSStatPublisherSpec extends Specification {
     and: "a publisher"
       def pub = new NATSStatPublisher(nSource)
     when: "i publish a bundle"
-      pub.publish("sausage", new EdgeStatsBundle())
+      pub.publish("sausage", new EdgeStatsBundle().misses(0).timestamp(OffsetDateTime.now()))
     then:
       1 * nConn.publish(ChannelNames.edgeStatsChannel("sausage"), _)
   }

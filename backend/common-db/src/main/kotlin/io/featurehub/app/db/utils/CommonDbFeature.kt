@@ -125,8 +125,6 @@ open class CommonDbFeature : Feature {
   override fun configure(context: FeatureContext): Boolean {
     val dsMasterConfig = configureDataSource("db")
 
-    dsMasterConfig.dsConfig.maxConnections = 3
-
     val dsReplicaConfig = if (FallbackPropertyConfig.getConfig("db-replica.url") == null)
       null
     else

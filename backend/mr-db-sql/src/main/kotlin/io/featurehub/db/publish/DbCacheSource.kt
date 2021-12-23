@@ -22,7 +22,7 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
   private val executor: ExecutorService
 
   @ConfigKey("cache.pool-size")
-  private val cachePoolSize = 10
+  private val cachePoolSize: Int? = 10
   private val cacheBroadcasters: MutableMap<String, CacheBroadcast> = HashMap()
 
   init {
@@ -31,7 +31,7 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
   }
 
   protected fun executorService() : ExecutorService {
-    return Context.taskWrapping(Executors.newFixedThreadPool(cachePoolSize))
+    return Context.taskWrapping(Executors.newFixedThreadPool(cachePoolSize!!))
   }
 
   override fun publishToCache(cacheName: String) {
@@ -94,7 +94,15 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
     val count = envFinder.findCount()
     if (count == 0) {
       log.info("database has no environments, publishing empty environments indicator.")
-      cacheBroadcast.publishEnvironment(PublishEnvironment().action(PublishAction.EMPTY).count(0))
+      val empty = UUID.randomUUID()
+      cacheBroadcast.publishEnvironment(PublishEnvironment()
+        .environment(CacheEnvironment().id(empty).version(Long.MAX_VALUE))
+        .organizationId(empty)
+        .applicationId(empty)
+        .portfolioId(empty)
+
+        .action(PublishAction.EMPTY)
+        .count(0))
     } else {
       log.info("publishing {} environments to cache {}", count, cacheName)
       envFinder.findEach { env: DbEnvironment ->
@@ -111,8 +119,10 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
     env: DbEnvironment,
     publishAction: PublishAction
   ): PublishEnvironment {
-    // these represent the entirity
-    val features = QDbApplicationFeature().whenArchived.isNull.environmentFeatures.environment.id.eq(env.id).select(
+    // all the features for this environment in this application regardless of values
+    val features = QDbApplicationFeature().whenArchived.isNull
+          .parentApplication.environments.id.eq(env.id)
+          .select(
       QDbApplicationFeature.Alias.id,
       QDbApplicationFeature.Alias.key,
       QDbApplicationFeature.Alias.valueType,

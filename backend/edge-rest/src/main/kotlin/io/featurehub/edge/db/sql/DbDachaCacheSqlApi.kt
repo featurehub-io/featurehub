@@ -3,7 +3,7 @@ package io.featurehub.edge.db.sql
 import io.featurehub.dacha.api.DachaApiKeyService
 import io.featurehub.dacha.api.DachaClientServiceRegistry
 import io.featurehub.dacha.api.DachaEnvironmentService
-import io.featurehub.mr.model.DachaStructureResponse
+import io.featurehub.dacha.model.DachaStructureResponse
 import java.util.*
 
 class DbDachaCacheSqlApi : DachaClientServiceRegistry {

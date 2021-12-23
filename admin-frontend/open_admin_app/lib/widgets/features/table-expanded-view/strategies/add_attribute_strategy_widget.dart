@@ -36,7 +36,6 @@ class _EditAttributeStrategyWidgetState
   final TextEditingController _value = TextEditingController();
 
   RolloutStrategyAttributeConditional? _dropDownCustomAttributeMatchingCriteria;
-  RolloutStrategyAttribute _attribute = RolloutStrategyAttribute();
   StrategyAttributeWellKnownNames? _wellKnown;
   RolloutStrategyFieldType? _attributeType;
 
@@ -60,28 +59,26 @@ class _EditAttributeStrategyWidgetState
   }
 
   void _didChange() {
-    _attribute = widget.attribute;
-
-    if (_attribute.fieldName != null) {
-      _fieldName.text = _attribute.fieldName!;
+    if (widget.attribute.fieldName != null) {
+      _fieldName.text = widget.attribute.fieldName!;
     }
 
-    _attributeType = _attribute.type; // which could be null
+    _attributeType = widget.attribute.type; // which could be null
 
-    _wellKnown =
-        StrategyAttributeWellKnownNamesExtension.fromJson(_attribute.fieldName);
+    _wellKnown = StrategyAttributeWellKnownNamesExtension.fromJson(
+        widget.attribute.fieldName);
 
     _value.text = '';
 
     if (_wellKnown == StrategyAttributeWellKnownNames.platform) {
-      _attribute.values =
-          _attribute.values.map(_platformNameReverseMapper).toList();
+      widget.attribute.values =
+          widget.attribute.values.map(_platformNameReverseMapper).toList();
     } else if (_wellKnown == StrategyAttributeWellKnownNames.device) {
-      _attribute.values =
-          _attribute.values.map(_deviceNameReverseMapper).toList();
+      widget.attribute.values =
+          widget.attribute.values.map(_deviceNameReverseMapper).toList();
     } else if (_wellKnown == StrategyAttributeWellKnownNames.country) {
-      _attribute.values =
-          _attribute.values.map(_countryNameReverseMapper).toList();
+      widget.attribute.values =
+          widget.attribute.values.map(_countryNameReverseMapper).toList();
     }
 
     _matchers = defineMatchers(_attributeType, _wellKnown);
@@ -164,7 +161,7 @@ class _EditAttributeStrategyWidgetState
                         hoverColor: Theme.of(context).primaryColorLight,
                         splashRadius: 20,
                         onPressed: () =>
-                            widget.bloc.deleteAttribute(_attribute))),
+                            widget.bloc.deleteAttribute(widget.attribute))),
               ],
             ),
           )
@@ -212,10 +209,10 @@ class _EditAttributeStrategyWidgetState
                           style: Theme.of(context).textTheme.subtitle2),
                       onChanged: (RolloutStrategyAttributeConditional? value) {
                         var readOnly = false; //TODO parametrise this if needed
-                        if (!readOnly) {
+                        if (!readOnly && value != null) {
                           setState(() {
                             _dropDownCustomAttributeMatchingCriteria = value;
-                            _attribute.conditional = value;
+                            widget.attribute.conditional = value;
                           });
                         }
                       },
@@ -233,7 +230,7 @@ class _EditAttributeStrategyWidgetState
         Expanded(
             flex: 4,
             child: MultiSelectDropdown(
-                _attribute.values,
+                widget.attribute.values,
                 StrategyAttributeCountryName.values,
                 _countryNameMapper,
                 'Select Country'))
@@ -241,7 +238,7 @@ class _EditAttributeStrategyWidgetState
         Expanded(
             flex: 4,
             child: MultiSelectDropdown(
-                _attribute.values,
+                widget.attribute.values,
                 StrategyAttributeDeviceName.values,
                 _deviceNameMapper,
                 'Select Device'))
@@ -249,7 +246,7 @@ class _EditAttributeStrategyWidgetState
         Expanded(
             flex: 4,
             child: MultiSelectDropdown(
-                _attribute.values,
+                widget.attribute.values,
                 StrategyAttributePlatformName.values,
                 _platformNameMapper,
                 'Select Platform'))
@@ -268,7 +265,7 @@ class _EditAttributeStrategyWidgetState
       });
     }
 
-    _attribute.fieldName = _fieldName.text;
+    widget.attribute.fieldName = _fieldName.text;
   }
 
   Widget _customFieldType() {
@@ -300,12 +297,14 @@ class _EditAttributeStrategyWidgetState
             hint: Text('Select value type',
                 style: Theme.of(context).textTheme.subtitle2),
             onChanged: (RolloutStrategyFieldType? value) {
-              setState(() {
-                _attributeType = value;
-                _attribute.type = value;
-                _matchers = defineMatchers(_attributeType, _wellKnown);
-                _dropDownCustomAttributeMatchingCriteria = null;
-              });
+              if (value != null) {
+                setState(() {
+                  _attributeType = value;
+                  widget.attribute.type = value;
+                  _matchers = defineMatchers(_attributeType, _wellKnown);
+                  _dropDownCustomAttributeMatchingCriteria = null;
+                });
+              }
             },
             value: _attributeType,
           ),
@@ -452,12 +451,12 @@ class _EditAttributeStrategyWidgetState
           Wrap(
             spacing: 4.0,
             children: [
-              for (dynamic val in _attribute.values)
+              for (dynamic val in widget.attribute.values)
                 AttributeValueChipWidget(
                   label: val.toString(),
                   value: val,
                   onSelected: (e) =>
-                      setState(() => _attribute.values.remove(e)),
+                      setState(() => widget.attribute.values.remove(e)),
                 )
             ],
           )
@@ -479,18 +478,18 @@ class _EditAttributeStrategyWidgetState
     } else if (_attributeType == RolloutStrategyFieldType.NUMBER) {
       try {
         final num = double.parse(val);
-        if (!_attribute.values.contains(num)) {
+        if (!widget.attribute.values.contains(num)) {
           setState(() {
-            _attribute.values.add(num);
+            widget.attribute.values.add(num);
             _value.text = '';
           });
         }
         // ignore: empty_catches
       } catch (e) {}
     } else {
-      if (!_attribute.values.contains(val)) {
+      if (!widget.attribute.values.contains(val)) {
         setState(() {
-          _attribute.values.add(val);
+          widget.attribute.values.add(val);
           _value.text = '';
         });
       }

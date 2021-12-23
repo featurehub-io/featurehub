@@ -3001,10 +3001,10 @@ components:
       allOf:
         - $ref: "#/components/schemas/BaseRolloutStrategyAttribute"
         - type: object
-          required:
-            - conditional
-            - fieldName
-            - type
+#          required:
+#            - conditional
+#            - fieldName
+#            - type
           properties:
             id:
               type: string
