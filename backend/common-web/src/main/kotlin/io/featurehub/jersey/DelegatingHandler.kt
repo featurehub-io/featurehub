@@ -20,6 +20,7 @@ class DelegatingHandler constructor(private val jerseyHandler: GrizzlyHttpContai
   override fun start() {
     super.start()
 
+    staticHttpHandler.isFileCacheEnabled = false
     jerseyHandler.start()
     staticHttpHandler.start()
   }
@@ -36,12 +37,14 @@ class DelegatingHandler constructor(private val jerseyHandler: GrizzlyHttpContai
       return jerseyHandler.service(request, response)
     }
 
-    if (url.isEmpty() || url == "/" || url.endsWith(".html") || url.endsWith(".js") || url.startsWith("/assets")) {
+    if (url.isEmpty() || url == "/" || url.endsWith(".html") || url.endsWith(".js") || url.startsWith("/assets") || url.startsWith("/canvaskit")) {
       return staticHttpHandler.service(request, response)
     }
 
-    // do the html5 think and redirect everything else to index.html
+    // do the html5 thing and redirect everything else to index.html.
     if (jerseyPrefixes.none { url.startsWith(it)} ) {
+      // this MUST be index.html, as all those random html5 urls are not actual files, e.g. /setup and /dashboard. if we let the
+      // actual request pass through, it will never find the file and so if a user refreshes their page they will get nothing.
       staticHttpHandler.handle("/index.html", request, response)
 
       return

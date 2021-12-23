@@ -49,7 +49,7 @@ class _FHJsonEditorState extends State<FHJsonEditorWidget> {
                 padding: const EdgeInsets.all(10),
                 color: Theme.of(context).scaffoldBackgroundColor,
                 child: TextFormField(
-                  style: const TextStyle(fontFamily: 'source', fontSize: 14),
+                  style: const TextStyle(fontFamily: 'SourceCodePro', fontSize: 14),
                   maxLines: 20,
                   controller: widget.controller,
                   validator: validateJson,

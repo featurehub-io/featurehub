@@ -116,7 +116,7 @@ class FeatureNamesLeftPanel extends StatelessWidget {
                                                   overflow:
                                                       TextOverflow.ellipsis,
                                                   style: const TextStyle(
-                                                      fontFamily: 'Source',
+                                                      fontFamily: 'SourceCodePro',
                                                       fontSize: 10,
                                                       letterSpacing: 1.0)),
                                             ],

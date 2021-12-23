@@ -312,6 +312,7 @@ be `register.url=https://some.domain.info/register-url?token=%s`
 - `portfolio.admin.group.suffix` ("Administrators") - the suffix added to a portfolio group when a portfolio is created
 for the first time, it needs an Admin group. So a portfolio called "Marketing" would get an admin group called "Marketing Administrators"
 created.
+- `web.asset.location=/var/www/html/intranet` - can be set optionally if you are intending to serve the Admin web app on the intranet without public internet access. We supply this application build already preloaded with all necessary assets. Available in FeatureHub v1.5.4 and higher.
 
 ==== Dacha Config
 

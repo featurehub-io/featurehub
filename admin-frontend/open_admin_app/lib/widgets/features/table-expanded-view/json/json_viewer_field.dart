@@ -22,7 +22,7 @@ class ConfigurationViewerField extends StatelessWidget {
             flex: 4,
             child: Text(
               text.replaceAll('\n', ''),
-              style: const TextStyle(fontFamily: 'source', fontSize: 12),
+              style: const TextStyle(fontFamily: 'SourceCodePro', fontSize: 12),
               overflow: TextOverflow.ellipsis,
             ),
           ),

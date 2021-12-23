@@ -107,7 +107,7 @@ class _FHErrorState extends State<FHErrorWidget> {
               controller: controller,
               child: Text(
                 '${error.exception.toString()}+\n\n${error.stackTrace.toString()}',
-                style: const TextStyle(fontFamily: 'Source', fontSize: 12),
+                style: const TextStyle(fontFamily: 'SourceCodePro', fontSize: 12),
               ),
             ),
           ),

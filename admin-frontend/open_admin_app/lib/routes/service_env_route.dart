@@ -227,7 +227,7 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
         child: perms.isNotEmpty
             ? Text(perms.map((p) => p.name).join(', '),
                 style: const TextStyle(
-                    fontFamily: 'Source', fontSize: 12, letterSpacing: 1.0))
+                    fontFamily: 'SourceCodePro', fontSize: 12, letterSpacing: 1.0))
             : Text('No permissions defined',
                 style: Theme.of(context).textTheme.caption));
   }

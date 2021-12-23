@@ -59,11 +59,11 @@ class _PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
                                       value: portfolio.id,
                                       child: Text(
                                         portfolio.name,
-                                        style: GoogleFonts.poppins(
-                                            textStyle: Theme.of(context)
-                                                .textTheme
-                                                .bodyText2,
-                                            fontWeight: FontWeight.w600),
+                                        // style: GoogleFonts.poppins(
+                                        //     textStyle: Theme.of(context)
+                                        //         .textTheme
+                                        //         .bodyText2,
+                                        //     fontWeight: FontWeight.w600),
                                         overflow: TextOverflow.ellipsis,
                                       ));
                                 }).toList(),
