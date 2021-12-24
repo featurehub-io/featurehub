@@ -9,6 +9,7 @@ import io.featurehub.dacha.model.PublishEnvironment;
 import io.featurehub.dacha.model.PublishFeatureValue;
 import io.featurehub.dacha.model.PublishServiceAccount;
 import io.featurehub.jersey.config.CacheJsonMapper;
+import io.featurehub.mr.model.DachaNATSRequest;
 import io.featurehub.publish.ChannelConstants;
 import io.featurehub.publish.ChannelNames;
 import io.featurehub.publish.NATSSource;
@@ -94,6 +95,13 @@ public class ServerConfig {
         log.error("unable to decode message on environment channel", ex);
       }
     }, ChannelNames.environmentChannel(name));
+  }
+
+  private void listenForFeatureRequests() {
+    listen(message -> {
+      DachaNATSRequest req = CacheJsonMapper.readFromZipBytes(message.getData(), DachaNATSRequest.class);
+
+    }, ChannelNames.cache(name, ChannelConstants.EDGE_CACHE_CHANNEL));
   }
 
   private byte[] encode(Object o) throws JsonProcessingException {

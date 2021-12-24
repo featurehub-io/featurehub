@@ -84,6 +84,48 @@ paths:
           description: "No such environment/account combo has read access"
 components:
   schemas:
+    DachaNATSRequest:
+      type: object
+      properties:
+        featuresRequest:
+          $ref: "#/components/schemas/DachaKeyDetailsRequest"
+        permissionRequest:
+          $ref: "#/components/schemas/DachaPermissionRequest"
+    DachaNATSResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: integer
+          format: int32
+        featuresResponse:
+          $ref: "#/components/schemas/DachaKeyDetailsResponse"
+        permissionResponse:
+          $ref: "#/components/schemas/DachaPermissionResponse"
+    DachaKeyDetailsRequest:
+      description: "Used when communication is via NATS for getApiKeyDetails request"
+      required:
+        - eId
+        - serviceAccountKey
+      properties:
+        eId:
+          type: string
+          format: uuid
+        serviceAccountKey:
+          type: string
+    DachaPermissionRequest:
+      description: "Used for permission request when communication is via NATS from Edge for getApiKeyPermissions"
+      allOf:
+        - $ref: "#/components/schemas/DachaKeyDetailsRequest"
+        - type: object
+          required:
+            - featureKey
+            - eId
+            - serviceAccountKey
+          properties:
+            featureKey:
+              type: string
     CacheManagementMessage:
       x-package: io.featurehub.dacha.model
       required:
