@@ -43,6 +43,7 @@ class FeatureRequesterSpec extends Specification {
       def orch = new DachaRequestOrchestrator(Mock(FeatureTransformer), dacha, Mock(EdgeConcurrentRequestPool)) {
         @Override
         protected FeatureRequester createInflightRequest(@NotNull KeyParts key) {
+          dacha.getApiKeyService(key.cacheName)
           inflightRequestCounter ++
           return inflightRequest
         }

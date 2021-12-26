@@ -28,7 +28,7 @@ class NATSStatPublisherSpec extends Specification {
     and: "a publisher"
       def pub = new NATSStatPublisher(nSource)
     when: "i publish a bundle"
-      pub.publish("sausage", new EdgeStatsBundle())
+      pub.publish("sausage", new EdgeStatsBundle().misses(0).timestamp(OffsetDateTime.now()))
     then:
       1 == 1
   }
