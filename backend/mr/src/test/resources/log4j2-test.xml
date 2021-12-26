@@ -20,7 +20,7 @@
     <AsyncLogger name="io.featurehub.edge.stats" level="trace"/>
 
     <AsyncLogger name="jersey-logging" level="trace"/>
-
+    <AsyncLogger name="io.featurehub.db.publish" level="trace"/>
     <AsyncLogger name="io.featurehub.edge.features" level="debug"/>
     <AsyncLogger name="net.stickycode" level="warn"/>
     <AsyncLogger name="org.glassfish.jersey.server.wadl" level="error"/>

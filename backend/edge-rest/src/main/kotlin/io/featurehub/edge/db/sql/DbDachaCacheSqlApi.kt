@@ -9,14 +9,14 @@ import java.util.*
 class DbDachaCacheSqlApi : DachaClientServiceRegistry {
   private val apiKeyService = DbDachaSqlApi()
 
-  override fun getEnvironmentService(cache: String?): DachaEnvironmentService {
+  override fun getEnvironmentService(cache: String): DachaEnvironmentService {
     return FakeDachaEnvironmentService() // is never called anyway
   }
 
   override fun getApiKeyService(cache: String): DachaApiKeyService =
     apiKeyService
 
-  override fun registerApiKeyService(cache: String?, apiKeyService: DachaApiKeyService?) {
+  override fun registerApiKeyService(cache: String, apiKeyService: DachaApiKeyService) {
   }
 
   internal class FakeDachaEnvironmentService : DachaEnvironmentService {

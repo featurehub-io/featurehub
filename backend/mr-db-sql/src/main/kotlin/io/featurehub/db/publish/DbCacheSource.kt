@@ -2,6 +2,8 @@ package io.featurehub.db.publish
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
+import io.ebean.Database
+import io.ebean.datasource.DataSourceConfig
 import io.featurehub.dacha.model.*
 import io.featurehub.db.model.*
 import io.featurehub.db.model.query.*
@@ -18,15 +20,17 @@ import java.util.concurrent.Executors
 import java.util.stream.Collectors
 import kotlin.collections.set
 
-open class DbCacheSource @Inject constructor(private val convertUtils: Conversions) : CacheSource {
+open class DbCacheSource @Inject constructor(private val convertUtils: Conversions, private val dsConfig: DataSourceConfig) : CacheSource {
   private val executor: ExecutorService
 
   @ConfigKey("cache.pool-size")
-  private val cachePoolSize: Int? = 10
+  private var cachePoolSize: Int?
   private val cacheBroadcasters: MutableMap<String, CacheBroadcast> = HashMap()
 
   init {
+    cachePoolSize = dsConfig.maxConnections / 2
     DeclaredConfigResolver.resolve(this)
+    log.info("Using maximum of {} connections to service request from Dacha", cachePoolSize)
     executor = executorService()
   }
 
@@ -35,6 +39,8 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
   }
 
   override fun publishToCache(cacheName: String) {
+    val db: Database
+
     val cacheBroadcast = cacheBroadcasters[cacheName]
     if (cacheBroadcast != null) {
       val saFuture = executor.submit { publishToCacheServiceAccounts(cacheName, cacheBroadcast) }
@@ -119,6 +125,7 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
     env: DbEnvironment,
     publishAction: PublishAction
   ): PublishEnvironment {
+    log.trace("env: {} / {} - application features", env.name, env.id)
     // all the features for this environment in this application regardless of values
     val features = QDbApplicationFeature().whenArchived.isNull
           .parentApplication.environments.id.eq(env.id)
@@ -128,7 +135,10 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
       QDbApplicationFeature.Alias.valueType,
       QDbApplicationFeature.Alias.version
     ).findList().associate { it.id!! to it!! }.toMutableMap()
+
     val featureCollection: Collection<DbApplicationFeature> = features.values
+
+    log.trace("env: {} / {} - features values", env.name, env.id)
     val fvFinder = QDbFeatureValue()
       .select(
         QDbFeatureValue.Alias.id,
@@ -167,6 +177,7 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
     dfv: DbFeatureValue,
     features: MutableMap<UUID, DbApplicationFeature>
   ): CacheEnvironmentFeature {
+    log.trace("cache-environment-feature")
     val feature = features[dfv.feature.id]
     features.remove(dfv.feature.id)
     return CacheEnvironmentFeature()
@@ -219,6 +230,7 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
   }
 
   private fun environmentsByCacheName(cacheName: String): QDbEnvironment {
+    log.trace("environment by cache-name: {}", cacheName)
     return QDbEnvironment()
       .select(
         QDbEnvironment.Alias.id,
@@ -256,10 +268,10 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
 
   private fun fromRolloutStrategyAttribute(rsa: RolloutStrategyAttribute): CacheRolloutStrategyAttribute {
     return CacheRolloutStrategyAttribute()
-      .conditional(rsa.conditional)
+      .conditional(rsa.conditional!!)
       .values(rsa.values)
-      .fieldName(rsa.fieldName)
-      .type(rsa.type)
+      .fieldName(rsa.fieldName!!)
+      .type(rsa.type!!)
   }
 
   private fun fromRolloutStrategy(rs: RolloutStrategy): CacheRolloutStrategy {
@@ -275,18 +287,25 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
 
   // combines the custom and shared rollout strategies
   private fun collectCombinedRolloutStrategies(featureValue: DbFeatureValue): List<CacheRolloutStrategy> {
+    log.trace("cache combine strategies")
     val activeSharedStrategies =
-      QDbStrategyForFeatureValue().enabled.isTrue.featureValue.eq(featureValue).rolloutStrategy.whenArchived.isNull.rolloutStrategy.fetch()
+      QDbRolloutStrategy()
+        .sharedRolloutStrategies.featureValue.id.eq(featureValue.id)
+        .select(QDbRolloutStrategy.Alias.strategy)
+        .sharedRolloutStrategies.enabled.isTrue
         .findList()
+
     val allStrategies: MutableList<CacheRolloutStrategy> = ArrayList()
     if (featureValue.rolloutStrategies != null) {
       allStrategies.addAll(
         featureValue.rolloutStrategies.stream().map { rs: RolloutStrategy -> fromRolloutStrategy(rs) }
           .collect(Collectors.toList()))
     }
+
     allStrategies.addAll(activeSharedStrategies.stream()
-      .map { shared: DbStrategyForFeatureValue -> fromRolloutStrategy(shared.rolloutStrategy.strategy) }
+      .map { shared -> fromRolloutStrategy(shared.strategy) }
       .collect(Collectors.toList()))
+
     return allStrategies
   }
 

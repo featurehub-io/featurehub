@@ -76,10 +76,9 @@ public class NamedCacheListener implements MessageHandler, CacheBroadcast {
       } else if (id.equals(cmm.getDestId()) && cmm.getRequestType() == CacheRequestType.SEEKING_REFRESH) {
         cacheSource.publishToCache(name);
       }
-    } catch (IOException e) {
+    } catch (Exception e) {
       log.error("Malformed cache management message", e);
     }
-
   }
 
   private void sayHelloToNewNamedCache() {

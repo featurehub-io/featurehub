@@ -15,6 +15,7 @@ import io.featurehub.sse.stats.model.EdgeHitResultType
 import io.featurehub.sse.stats.model.EdgeHitSourceType
 import io.prometheus.client.Histogram
 import jakarta.inject.Inject
+import jakarta.ws.rs.WebApplicationException
 import jakarta.ws.rs.container.AsyncResponse
 import jakarta.ws.rs.core.Response
 import org.slf4j.Logger
@@ -57,11 +58,14 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
   }
 
   private fun requestPermission(key: KeyParts, featureKey: String): DachaPermissionResponse? {
-    val apiKeyService: DachaApiKeyService = dachaClientRegistry.getApiKeyService(key.cacheName) ?: return null
+    val apiKeyService: DachaApiKeyService = dachaClientRegistry.getApiKeyService(key.cacheName)
+
     return try {
       apiKeyService.getApiKeyPermissions(
         key.environmentId, key.serviceKey, featureKey
       )
+    } catch (wae: WebApplicationException) {
+      throw wae
     } catch (ignored: Exception) {
       null
     }

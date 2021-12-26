@@ -2,13 +2,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>io.featurehub.edge</groupId>
-  <artifactId>edge-common</artifactId>
+  <groupId>io.featurehub.mr</groupId>
+  <artifactId>dacha-client</artifactId>
   <version>1.1-SNAPSHOT</version>
-  <name>edge-common</name>
+  <name>dacha-client</name>
 
   <description>
-    This artifact is an implementation of Edge but only for GET/PUT and it talks directly to the database.
+    The client for the caching layer - where features go for a holiday.
   </description>
 
   <url>https://featurehub.io</url>
@@ -35,51 +35,39 @@
     </license>
   </licenses>
 
-  <properties>
-    <app.port>8553</app.port>
-    <app.entrypoint>io.featurehub.edge.Application</app.entrypoint>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>io.featurehub.common</groupId>
       <artifactId>common-web</artifactId>
       <version>1.1-SNAPSHOT</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>io.featurehub.edge</groupId>
-      <artifactId>edge-api</artifactId>
-      <version>[1.1, 2)</version>
+      <groupId>io.featurehub.composites</groupId>
+      <artifactId>composite-prometheus</artifactId>
+      <version>1.1-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>io.featurehub.strategies</groupId>
-      <artifactId>strategy-matcher</artifactId>
-      <version>[2.1-SNAPSHOT, 3)</version>
+      <groupId>io.featurehub.composites</groupId>
+      <artifactId>composite-logging</artifactId>
+      <version>[1.3-SNAPSHOT, 2)</version>
     </dependency>
     <dependency>
       <groupId>io.featurehub.mr</groupId>
-      <artifactId>dacha-client</artifactId>
+      <artifactId>dacha-api</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
-
-    <!-- this makes reusability feasible for the test api -->
+    <!-- we need this because these two generate the same code and it can clash if dacha-api isn't built -->
     <dependency>
-      <groupId>io.featurehub.edge</groupId>
-      <artifactId>edge-stats-api</artifactId>
+      <groupId>io.featurehub.mr</groupId>
+      <artifactId>mr-api-java-server</artifactId>
       <version>1.1-SNAPSHOT</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>io.featurehub.edge</groupId>
-      <artifactId>edge-feature-update-async-api</artifactId>
+      <groupId>io.featurehub.mr</groupId>
+      <artifactId>mr-publish-api</artifactId>
       <version>1.1-SNAPSHOT</version>
-    </dependency>
-
-
-    <dependency>
-      <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-test</artifactId>
-      <version>[1.1, 2)</version>
-      <scope>test</scope>
     </dependency>
   </dependencies>
 

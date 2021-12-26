@@ -8,7 +8,6 @@ import io.featurehub.dacha.api.DachaClientFeature;
 import io.featurehub.dacha.api.DachaClientServiceRegistry;
 import io.featurehub.health.MetricsHealthRegistration;
 import io.featurehub.jersey.FeatureHubJerseyHost;
-import io.featurehub.lifecycle.TelemetryFeature;
 import io.featurehub.publish.NATSFeature;
 import io.featurehub.utils.FallbackPropertyConfig;
 import org.glassfish.jersey.server.ResourceConfig;

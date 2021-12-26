@@ -3,6 +3,7 @@ package io.featurehub.db.publish;
 import cd.connect.app.config.ConfigKey;
 import cd.connect.app.config.DeclaredConfigResolver;
 import jakarta.inject.Singleton;
+import org.glassfish.hk2.api.Immediate;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 
 public class MRPublishModule  extends AbstractBinder {
@@ -18,7 +19,7 @@ public class MRPublishModule  extends AbstractBinder {
     if (natsServer.length() == 0) {
       bind(DummyPublisher.class).to(PublishManager.class).to(CacheSource.class).in(Singleton.class);
     } else {
-      bind(NATSPublisher.class).to(PublishManager.class).in(Singleton.class);
+      bind(NATSPublisher.class).to(PublishManager.class).in(Immediate.class);
       bind(DbCacheSource.class).to(CacheSource.class).in(Singleton.class);
     }
   }

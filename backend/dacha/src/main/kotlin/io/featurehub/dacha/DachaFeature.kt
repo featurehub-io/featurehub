@@ -1,7 +1,10 @@
 package io.featurehub.dacha
 
+import io.featurehub.dacha.api.DachaApiKeyService
 import io.featurehub.dacha.resource.DachaApiKeyResource
+import io.featurehub.dacha.resource.DachaEdgeNATSAdapter
 import io.featurehub.dacha.resource.DachaEnvironmentResource
+import io.featurehub.dacha.resource.DacheEdgeNATSAdapterService
 import io.featurehub.health.HealthSource
 import io.featurehub.jersey.FeatureHubJerseyHost
 import jakarta.inject.Singleton
@@ -21,6 +24,9 @@ class DachaFeature : Feature {
         bind(InMemoryCache::class.java).to(InternalCache::class.java).`in`(Singleton::class.java)
         bind(ServerConfig::class.java).to(ServerConfig::class.java).`in`(Singleton::class.java)
         bind(CacheManager::class.java).to(CacheManager::class.java).to(HealthSource::class.java).`in`(Immediate::class.java)
+        bind(DacheEdgeNATSAdapterService::class.java).to(DachaEdgeNATSAdapter::class.java).`in`(Singleton::class.java)
+        // we need it internally as well as exposing it
+        bind(DachaApiKeyResource::class.java).to(DachaApiKeyService::class.java).`in`(Singleton::class.java)
       }
     })
 
