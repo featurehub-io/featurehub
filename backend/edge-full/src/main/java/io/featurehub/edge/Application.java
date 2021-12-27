@@ -58,7 +58,7 @@ public class Application {
     }
 
     // this has a default grace period of 10 seconds
-    new FeatureHubJerseyHost(config).start();
+    new FeatureHubJerseyHost(config).disallowWebHosting().start();
 
     log.info("FeatureHub SSE-Edge Has Started.");
 

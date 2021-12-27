@@ -24,7 +24,7 @@ public class Application {
     // check if we should list on a different port
     MetricsHealthRegistration.Companion.registerMetrics(config);
 
-    new FeatureHubJerseyHost(config).start();
+    new FeatureHubJerseyHost(config).disallowWebHosting().start();
 
     log.info("Dacha Launched - (HTTP/2 payloads enabled!)");
   }

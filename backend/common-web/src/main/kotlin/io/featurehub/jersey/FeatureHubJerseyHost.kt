@@ -35,6 +35,8 @@ class FeatureHubJerseyHost constructor(private val config: ResourceConfig) {
   @ConfigKey("server.gracePeriodInSeconds")
   var gracePeriod: Int? = 10
 
+  var allowedWebHosting = true
+
   init {
     DeclaredConfigResolver.resolve(this)
 
@@ -84,6 +86,11 @@ class FeatureHubJerseyHost constructor(private val config: ResourceConfig) {
     }
   }
 
+  fun disallowWebHosting() : FeatureHubJerseyHost {
+    allowedWebHosting = false
+    return this
+  }
+
   fun start() : FeatureHubJerseyHost {
     return start(port!!)
   }
@@ -108,7 +115,7 @@ class FeatureHubJerseyHost constructor(private val config: ResourceConfig) {
 
     val resourceHandler = HttpGrizzlyContainer.makeHandler(config)
 
-    if (FallbackPropertyConfig.getConfig("run.nginx") != null) {
+    if (allowedWebHosting && FallbackPropertyConfig.getConfig("run.nginx") != null) {
       log.info("starting with web asset support")
       serverConfig.addHttpHandler(DelegatingHandler(resourceHandler, AdminAppStaticHttpHandler()))
     } else {
