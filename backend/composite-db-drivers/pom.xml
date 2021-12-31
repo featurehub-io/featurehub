@@ -72,6 +72,12 @@
       <version>8.0.26</version>
     </dependency>
 
+    <dependency>
+      <groupId>com.oracle.database.jdbc</groupId>
+      <artifactId>ojdbc11</artifactId>
+      <version>21.4.0.0.1</version>
+    </dependency>
+
     <!-- gcloud support -->
     <dependency>
       <groupId>com.google.cloud.sql</groupId>

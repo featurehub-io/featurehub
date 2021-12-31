@@ -10,6 +10,7 @@ public class GenerateDbMigration {
     dbMigration.addPlatform(Platform.POSTGRES, "postgres");
     dbMigration.addPlatform(Platform.MYSQL, "mysql");
     dbMigration.addPlatform(Platform.H2, "h2");
+    dbMigration.addPlatform(Platform.ORACLE, "oracle");
 
     dbMigration.setMigrationPath("/dbmigration");
     dbMigration.setStrictMode(false);
