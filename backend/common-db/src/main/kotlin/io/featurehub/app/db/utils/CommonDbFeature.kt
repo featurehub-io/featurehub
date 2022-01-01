@@ -105,6 +105,10 @@ open class CommonDbFeature : Feature {
       migrationConfig.migrationPath = "classpath:/dbmigration/mssql"
       migrationConfig.platformName = DbPlatformNames.SQLSERVER
       defaultDriver = "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+    } else if (databaseUrl.contains("oracle")) {
+      migrationConfig.migrationPath = "classpath:/dbmigration/oracle"
+      migrationConfig.platformName = DbPlatformNames.ORACLE
+      defaultDriver = "oracle.jdbc.OracleDriver"
     } else {
       migrationConfig.migrationPath = "classpath:/dbmigration/h2"
       migrationConfig.platformName = DbPlatformNames.H2
