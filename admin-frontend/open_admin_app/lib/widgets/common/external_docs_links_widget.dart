@@ -1,6 +1,5 @@
 import 'dart:html';
 import 'package:flutter_icons/flutter_icons.dart';
-
 import 'package:flutter/material.dart';
 
 class ExternalDocsLinksWidget extends StatelessWidget {
@@ -15,8 +14,7 @@ class ExternalDocsLinksWidget extends StatelessWidget {
             icon: Icon(Feather.external_link,
                 color: Theme.of(context).colorScheme.onPrimary),
             onPressed: () {
-              window.open(
-                  'https://docs.featurehub.io', 'new tab');
+              window.open('https://docs.featurehub.io', 'new tab');
             },
             label: Text(
               'Docs',
@@ -32,8 +30,7 @@ class ExternalDocsLinksWidget extends StatelessWidget {
                 color: Theme.of(context).colorScheme.onPrimary),
             onPressed: () {
               window.open(
-                  'https://github.com/featurehub-io/featurehub',
-                  'new tab');
+                  'https://github.com/featurehub-io/featurehub', 'new tab');
             },
             label: Text(
               'GitHub',
