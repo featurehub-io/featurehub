@@ -5,7 +5,6 @@ import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/version.dart';
 import 'package:open_admin_app/widget_creator.dart';
-import 'dart:html';
 import 'package:open_admin_app/widgets/common/fh_person_avatar.dart';
 import 'package:open_admin_app/widgets/dynamic-theme/fh_dynamic_theme.dart';
 import 'package:open_admin_app/widgets/stepper/stepper_container.dart';
@@ -80,46 +79,7 @@ class FHappBar extends StatelessWidget {
                       const SizedBox(
                         width: 16.0,
                       ),
-                      Tooltip(
-                        message: 'Documentation',
-                        child: TextButton.icon(
-                            icon: Icon(Feather.external_link,
-                                color: Theme.of(context).colorScheme.onPrimary),
-                            onPressed: () {
-                              window.open(
-                                  'https://docs.featurehub.io', 'new tab');
-                            },
-                            label: Text(
-                              'Docs',
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.onPrimary,
-                              ),
-                            )),
-                      ),
-                      Tooltip(
-                        message: 'GitHub',
-                        child: TextButton.icon(
-                            icon: Icon(AntDesign.github,
-                                color: Theme.of(context).colorScheme.onPrimary),
-                            onPressed: () {
-                              window.open(
-                                  'https://github.com/featurehub-io/featurehub',
-                                  'new tab');
-                            },
-                            label: Text(
-                              'GitHub',
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.onPrimary,
-                              ),
-                            )),
-                      ),
-                      const SizedBox(
-                        width: 8.0,
-                      ),
-                      VerticalDivider(
-                        width: 1.0,
-                        color: Theme.of(context).cardColor,
-                      ),
+                      widgetCreator.externalDocsLinksWidget(),
                       const SizedBox(
                         width: 16.0,
                       ),
