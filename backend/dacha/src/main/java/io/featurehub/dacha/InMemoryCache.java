@@ -362,7 +362,7 @@ public class InMemoryCache implements InternalCache {
       log.info("received brand new feature `{}` for a new environment `{}`",
         fv.getFeature().getFeature().getKey(),
         fv.getEnvironmentId());
-      featureMap.put(fv.getEnvironmentId(), fv.getFeature());
+      featureMap.set(fv.getFeature());
     } else {
       log.error("received a feature value update for feature key `{}` in environment `{}` where the feature does " +
         "not exist.", fv.getFeature().getFeature().getKey(), fv.getEnvironmentId());

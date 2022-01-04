@@ -298,7 +298,8 @@ class ServiceAccountSqlApi @Inject constructor(
       log.warn("Duplicate service account {}", sa.name, dke)
       throw ServiceAccountApi.DuplicateServiceAccountException()
     }
-    return convertUtils.toServiceAccount(sa, opts)
+
+    return convertUtils.toServiceAccount(sa, if (opts.contains(FillOpts.Permissions)) opts.add(FillOpts.SdkURL) else opts)
   }
 
   private fun environmentMap(serviceAccount: ServiceAccount?): Map<UUID, DbEnvironment> {

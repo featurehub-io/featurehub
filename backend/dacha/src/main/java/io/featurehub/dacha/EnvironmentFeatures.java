@@ -34,13 +34,9 @@ public class EnvironmentFeatures implements InternalCache.FeatureValues {
         Integer.toHexString(val.hashCode());
   }
 
+  // the UUID is the FEATURE's UUID NOT the feature value's one
   public CacheEnvironmentFeature get(UUID id) {
     return features.get(id);
-  }
-
-  public void put(UUID id, CacheEnvironmentFeature feature) {
-    features.put(id, feature);
-    calculateEtag();
   }
 
   public void set(CacheEnvironmentFeature feature) {
