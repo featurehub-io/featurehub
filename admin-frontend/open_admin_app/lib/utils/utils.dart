@@ -105,8 +105,8 @@ class FHError {
 
   factory FHError.createError(dynamic e, StackTrace? s,
       {bool showDetails = true}) {
-    var message = 'An unexpected error occured!';
-    var errorMessage = 'Contact your FeatureHub administrator';
+    var message = 'An unexpected error occurred!';
+    var errorMessage = '';
 
     if (_is5XX(e)) {
       message = 'There is an issue with FeatureHub';
