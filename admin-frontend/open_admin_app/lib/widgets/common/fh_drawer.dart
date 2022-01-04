@@ -114,8 +114,8 @@ class _MenuContainer extends StatelessWidget {
                               ],
                             );
                           }),
-                      mrBloc.userIsSuperAdmin
-                          ? Column(
+                      if(mrBloc.userIsSuperAdmin)
+                          Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
                                 Container(
@@ -130,7 +130,6 @@ class _MenuContainer extends StatelessWidget {
                                 _MenuDivider(),
                               ],
                             )
-                          : Container(),
                     ],
                   );
                 }),
