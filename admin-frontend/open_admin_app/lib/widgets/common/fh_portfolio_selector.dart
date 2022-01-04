@@ -1,6 +1,5 @@
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 
@@ -59,11 +58,6 @@ class _PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
                                       value: portfolio.id,
                                       child: Text(
                                         portfolio.name,
-                                        // style: GoogleFonts.poppins(
-                                        //     textStyle: Theme.of(context)
-                                        //         .textTheme
-                                        //         .bodyText2,
-                                        //     fontWeight: FontWeight.w600),
                                         overflow: TextOverflow.ellipsis,
                                       ));
                                 }).toList(),

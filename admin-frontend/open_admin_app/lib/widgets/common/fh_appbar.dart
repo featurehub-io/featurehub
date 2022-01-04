@@ -79,6 +79,10 @@ class FHappBar extends StatelessWidget {
                       const SizedBox(
                         width: 16.0,
                       ),
+                      widgetCreator.externalDocsLinksWidget(),
+                      const SizedBox(
+                        width: 16.0,
+                      ),
                       IconButton(
                           tooltip: light ? 'Dark mode' : 'Light mode',
                           icon: Icon(light
