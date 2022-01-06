@@ -87,7 +87,8 @@ class FeatureGetProcessor @Inject constructor(private val getOrchestrator: Dacha
     } else if (environments.all { it.success == FeatureRequestSuccess.NO_SUCH_KEY_IN_CACHE }) {
       response.resume(Response.status(404).build())
     } else if (environments.all { it.success == FeatureRequestSuccess.DACHA_NOT_READY }) {
-      response.resume(Response.status(400).entity("cache layer not ready, try again shortly").build())
+      // all the SDKs fail on a 400 level error and just stop.
+      response.resume(Response.status(503).entity("cache layer not ready, try again shortly").build())
     } else {
       response.resume(
         Response.status(200)
