@@ -51,7 +51,7 @@
     <dependency>
       <groupId>io.ebean</groupId>
       <artifactId>ebean-migration</artifactId>
-      <version>${ebean.version}</version>
+      <version>12.13.0</version>
     </dependency>
     <dependency>
       <groupId>io.ebean</groupId>

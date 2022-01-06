@@ -26,16 +26,16 @@ class NATSDachaApiKeyService constructor(private val nats: NATSSource, val cache
   override fun getApiKeyDetails(eId: UUID, serviceAccountKey: String): DachaKeyDetailsResponse {
     try {
       val msg = nats.connection.request(
-        subjectName,
-        CacheJsonMapper.writeAsZipBytes(
-          DachaNATSRequest().featuresRequest(
-            DachaKeyDetailsRequest().serviceAccountKey(
-              serviceAccountKey
-            ).eId(eId)
-          )
-        ),
-        Duration.of(connectionTimeout, ChronoUnit.MILLIS)
-      )
+          subjectName,
+          CacheJsonMapper.writeAsZipBytes(
+            DachaNATSRequest().featuresRequest(
+              DachaKeyDetailsRequest().serviceAccountKey(
+                serviceAccountKey
+              ).eId(eId)
+            )
+          ),
+          Duration.of(connectionTimeout, ChronoUnit.MILLIS)
+      ) ?: throw WebApplicationException(Response.status(412).entity("Dacha not ready").build())
 
       val response = CacheJsonMapper.readFromZipBytes(msg.data, DachaNATSResponse::class.java)
 
@@ -44,6 +44,8 @@ class NATSDachaApiKeyService constructor(private val nats: NATSSource, val cache
       }
 
       return response.featuresResponse!!
+    } catch (we: WebApplicationException) {
+      throw we
     } catch (e : Exception) {
       log.error("Unable to request key {} : {}", eId, serviceAccountKey, e)
       throw InternalServerErrorException()

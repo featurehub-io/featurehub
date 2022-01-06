@@ -51,7 +51,6 @@
 
 
   <properties>
-    <prometheus.version>0.6.0</prometheus.version>
   </properties>
 
   <dependencies>

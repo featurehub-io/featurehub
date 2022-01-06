@@ -46,7 +46,7 @@ export class SdkWorld extends World {
     super(props);
 
     this.adminUrl = process.env.FEATUREHUB_HOST || 'http://localhost:8903';
-    this.featureUrl = process.env.FEATUREHUB_SDK_HOST || 'http://localhost:8903';
+    this.featureUrl = process.env.FEATUREHUB_SDK_HOST || 'http://localhost:8064';
 
     this.adminApiConfig = new Configuration({ basePath: this.adminUrl, apiKey: apiKey });
     this.portfolioApi = new PortfolioServiceApi(this.adminApiConfig);

@@ -5,8 +5,6 @@ import io.featurehub.edge.FeatureTransformer
 import io.featurehub.edge.KeyParts
 import io.featurehub.edge.strategies.ClientContext
 import io.featurehub.sse.model.FeatureEnvironmentCollection
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -28,12 +26,21 @@ class FeatureRequestCollection(
     if (completed.size == requestCount) {
       // determine first if any of the environments failed its etag match
       val sendFullResults = !etags.validEtag || completed.find { !etags.environmentTags[it.key].equals(it.details?.etag) } != null
-      future.complete(completed.map { req -> transformFeatures(req.details, req.key, sendFullResults) }.toList())
+      future.complete(completed.map { req -> transformFeatures(req.details, req.key, sendFullResults, req.failure) }.toList())
     }
   }
 
-  private fun transformFeatures(details: DachaKeyDetailsResponse?, key: KeyParts, sendFullResults: Boolean): FeatureRequestResponse {
+  private fun transformFeatures(
+    details: DachaKeyDetailsResponse?,
+    key: KeyParts,
+    sendFullResults: Boolean,
+    failure: Exception?
+  ): FeatureRequestResponse {
     val env = FeatureEnvironmentCollection().id(key.environmentId)
+
+    if (failure != null) {
+      return FeatureRequestResponse(env, FeatureRequestSuccess.DACHA_NOT_READY, key, "")
+    }
 
     if (details == null) {
       return FeatureRequestResponse(env, FeatureRequestSuccess.NO_SUCH_KEY_IN_CACHE, key, "0")

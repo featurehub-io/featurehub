@@ -5,6 +5,7 @@ import io.featurehub.edge.KeyParts
 
 interface FeatureRequester {
   val details: DachaKeyDetailsResponse?
+  val failure: Exception?
   val key: KeyParts
 
   fun add(notifier: FeatureRequestCompleteNotifier)

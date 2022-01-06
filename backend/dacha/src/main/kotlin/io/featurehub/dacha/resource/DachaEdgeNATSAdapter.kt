@@ -20,7 +20,7 @@ class DacheEdgeNATSAdapterService @Inject constructor(private val apiKeyResource
       } catch (e: WebApplicationException) {
         return DachaNATSResponse().status(e.response.status)
       } catch (e: Exception) {
-        return DachaNATSResponse().status(500)
+        return DachaNATSResponse().status(412)
       }
     } else if (request.permissionRequest != null) {
       try {
@@ -31,9 +31,8 @@ class DacheEdgeNATSAdapterService @Inject constructor(private val apiKeyResource
       } catch (e: WebApplicationException) {
         return DachaNATSResponse().status(e.response.status)
       } catch (e: Exception) {
-        return DachaNATSResponse().status(500)
+        return DachaNATSResponse().status(412)
       }
-
     }
 
     return DachaNATSResponse().status(400) // no idea what was asked for

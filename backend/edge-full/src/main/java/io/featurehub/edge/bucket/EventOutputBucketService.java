@@ -13,18 +13,22 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * this service manages the allocation of incoming connections to a timeslot and the regular
- * kicking off of connections across that time period. It defaults to cycle clients every 30 seconds
- * but this can be configured in system properties.
+ * this service manages the allocation of incoming connections to a timeslot and the regular kicking
+ * off of connections across that time period. It defaults to cycle clients every 30 seconds but
+ * this can be configured in system properties.
  */
 @Singleton
-public class EventOutputBucketService {
+public class EventOutputBucketService implements BucketService {
   private static final Logger log = LoggerFactory.getLogger(EventOutputBucketService.class);
   private final Map<Integer, TimedBucket> discardTimerBuckets = new ConcurrentHashMap<>();
   private int timerSlice;
 
   @ConfigKey("maxSlots")
   protected Integer maxSlots = 30;
+
+  @ConfigKey("edge.dacha.delay-slots")
+  protected Integer delaySlots = 10;
+
   @ConfigKey("edge.dacha.response-timeout")
   protected Integer namedCacheTimeout = 2000; // milliseconds to wait for dacha to responsd
 
@@ -32,8 +36,9 @@ public class EventOutputBucketService {
     DeclaredConfigResolver.resolve(this);
 
     if (namedCacheTimeout / 1000 > maxSlots) {
-      throw new RuntimeException("You cannot wait for longer than the connection will be open. Please increase your " +
-        "maxSlots or decrease your Dacha timeout.");
+      throw new RuntimeException(
+          "You cannot wait for longer than the connection will be open. Please increase your "
+              + "maxSlots or decrease your Dacha timeout.");
     }
 
     timerSlice = maxSlots - 1;
@@ -42,17 +47,20 @@ public class EventOutputBucketService {
 
   protected void startTimer() {
     Timer secondTimer = new Timer("countdown-to-kickoff");
-    secondTimer.scheduleAtFixedRate(new TimerTask() {
-      @Override
-      public void run() {
-        kickout();
-      }
-    }, 0, 1000);
+    secondTimer.scheduleAtFixedRate(
+        new TimerTask() {
+          @Override
+          public void run() {
+            kickout();
+          }
+        },
+        0,
+        1000);
   }
 
   // every second, we clear out the buckets going down the list
   void kickout() {
-    timerSlice --;
+    timerSlice--;
 
     if (timerSlice < 0) {
       timerSlice = maxSlots - 1;
@@ -61,12 +69,30 @@ public class EventOutputBucketService {
     TimedBucket timedBucketClientConnections = discardTimerBuckets.remove(timerSlice);
 
     if (timedBucketClientConnections != null) {
+      log.debug("Expiring slice {}", timerSlice);
       timedBucketClientConnections.expireConnections();
     }
   }
 
   // adds the new connection to the bucket
   public void putInBucket(ClientConnection b) {
-    discardTimerBuckets.computeIfAbsent(timerSlice, k -> new TimedBucket(timerSlice)).addConnection(b);
+    discardTimerBuckets
+        .computeIfAbsent(timerSlice, k -> new TimedBucket(timerSlice))
+        .addConnection(b);
+  }
+
+  public void shuftyBucketsBecauseDachaIsUnavailable(ClientConnection b) {
+    int newSlot = (timerSlice - 10 - (int) (Math.random() * delaySlots));
+
+    if (newSlot < 0) {
+      newSlot = maxSlots - newSlot;
+    }
+
+    log.debug("shifting into bucket {}", newSlot);
+
+    int finalNewSlot = newSlot;
+    b.getTimedBucketSlot()
+        .swapConnection(
+            b, discardTimerBuckets.computeIfAbsent(newSlot, k -> new TimedBucket(finalNewSlot)));
   }
 }

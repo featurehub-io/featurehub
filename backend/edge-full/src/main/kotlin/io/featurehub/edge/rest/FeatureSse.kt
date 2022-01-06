@@ -42,25 +42,25 @@ class FeatureSseProcessor @Inject constructor(
   ): EventOutput {
     val o = EventOutput()
 
-    val key = KeyParts(namedCache, envId, apiKey)
+    val apiKey = KeyParts(namedCache, envId, apiKey)
 
     try {
-      val b = TimedBucketClientConnection.Builder()
-        .featureTransformer(featureTransformer)
-        .statRecorder(statRecorder)
-        .apiKey(key)
-        .etag(etag)
-        .featureHubAttributes(browserHubAttrs?.let { listOf(it) } ?: featureHubAttrs)
-        .output(o)
-        .build()
+      val b = TimedBucketClientConnection(
+        o,
+        apiKey,
+        featureTransformer,
+        statRecorder,
+        browserHubAttrs?.let { listOf(it) } ?: featureHubAttrs,
+        etag,
+        bucketService)
       if (b.discovery()) {
         serverConfig.requestFeatures(b)
         bucketService.putInBucket(b)
       } else {
-        statRecorder.recordHit(key, EdgeHitResultType.FAILED_TO_WRITE_ON_INIT, EdgeHitSourceType.EVENTSOURCE)
+        statRecorder.recordHit(apiKey, EdgeHitResultType.FAILED_TO_WRITE_ON_INIT, EdgeHitSourceType.EVENTSOURCE)
       }
     } catch (e: Exception) {
-      statRecorder.recordHit(key, EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.EVENTSOURCE)
+      statRecorder.recordHit(apiKey, EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.EVENTSOURCE)
       log.error("failed to write feature states")
       throw InternalServerErrorException(e)
     }
