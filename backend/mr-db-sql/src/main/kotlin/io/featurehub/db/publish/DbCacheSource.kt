@@ -125,52 +125,56 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
     env: DbEnvironment,
     publishAction: PublishAction
   ): PublishEnvironment {
-    log.trace("env: {} / {} - application features", env.name, env.id)
-    // all the features for this environment in this application regardless of values
-    val features = QDbApplicationFeature().whenArchived.isNull
-          .parentApplication.environments.id.eq(env.id)
-          .select(
-      QDbApplicationFeature.Alias.id,
-      QDbApplicationFeature.Alias.key,
-      QDbApplicationFeature.Alias.valueType,
-      QDbApplicationFeature.Alias.version
-    ).findList().associate { it.id!! to it!! }.toMutableMap()
+    try {
+      log.trace("env: {} / {} - application features", env.name, env.id)
+      // all the features for this environment in this application regardless of values
+      val features = QDbApplicationFeature().whenArchived.isNull
+        .parentApplication.environments.id.eq(env.id)
+        .select(
+          QDbApplicationFeature.Alias.id,
+          QDbApplicationFeature.Alias.key,
+          QDbApplicationFeature.Alias.valueType,
+          QDbApplicationFeature.Alias.version
+        ).findList().associate { it.id!! to it!! }.toMutableMap()
 
-    val featureCollection: Collection<DbApplicationFeature> = features.values
+      val featureCollection: Collection<DbApplicationFeature> = features.values
 
-    log.trace("env: {} / {} - features values", env.name, env.id)
-    val fvFinder = QDbFeatureValue()
-      .select(
-        QDbFeatureValue.Alias.id,
-        QDbFeatureValue.Alias.locked,
-        QDbFeatureValue.Alias.feature.id,
-        QDbFeatureValue.Alias.rolloutStrategies,
-        QDbFeatureValue.Alias.version,
-        QDbFeatureValue.Alias.defaultValue
-      ).feature.whenArchived.isNull.feature.fetch(
-        QDbApplicationFeature.Alias.id
-      ).environment.whenArchived.isNull.environment.whenUnpublished.isNull.environment.eq(env)
-    val eci = PublishEnvironment()
-      .action(publishAction)
-      .environment(toEnvironment(env, featureCollection))
-      .organizationId(env.parentApplication.portfolio.organization.id)
-      .portfolioId(env.parentApplication.portfolio.id)
-      .applicationId(env.parentApplication.id)
-      .featureValues(fvFinder.findStream().map { fv: DbFeatureValue -> toCacheEnvironmentFeature(fv, features) }
-        .collect(Collectors.toList()))
-      .serviceAccounts(
-        QDbServiceAccount().select(QDbServiceAccount.Alias.id).serviceAccountEnvironments.environment.id.eq(env.id)
-          .findStream().map { obj: DbServiceAccount -> obj.id }.collect(Collectors.toList())
-      )
-      .count(count)
+      log.trace("env: {} / {} - features values", env.name, env.id)
+      val fvFinder = QDbFeatureValue()
+        .select(
+          QDbFeatureValue.Alias.id,
+          QDbFeatureValue.Alias.locked,
+          QDbFeatureValue.Alias.feature.id,
+          QDbFeatureValue.Alias.rolloutStrategies,
+          QDbFeatureValue.Alias.version,
+          QDbFeatureValue.Alias.defaultValue
+        ).feature.whenArchived.isNull.feature.fetch(
+          QDbApplicationFeature.Alias.id
+        ).environment.whenArchived.isNull.environment.whenUnpublished.isNull.environment.eq(env)
+      val eci = PublishEnvironment()
+        .action(publishAction)
+        .environment(toEnvironment(env, featureCollection))
+        .organizationId(env.parentApplication.portfolio.organization.id)
+        .portfolioId(env.parentApplication.portfolio.id)
+        .applicationId(env.parentApplication.id)
+        .featureValues(fvFinder.findList().map { fv: DbFeatureValue -> toCacheEnvironmentFeature(fv, features) })
+        .serviceAccounts(
+          QDbServiceAccount().select(QDbServiceAccount.Alias.id).serviceAccountEnvironments.environment.id.eq(env.id)
+            .findStream().map { obj: DbServiceAccount -> obj.id }.collect(Collectors.toList())
+        )
+        .count(count)
 
-    // now add in the remaining features with empty values
-    features.values.forEach{ feature: DbApplicationFeature ->
-      eci.addFeatureValuesItem(
-        CacheEnvironmentFeature().feature(toCacheFeature(feature))
-      )
+      // now add in the remaining features with empty values
+      features.values.forEach { feature: DbApplicationFeature ->
+        eci.addFeatureValuesItem(
+          CacheEnvironmentFeature().feature(toCacheFeature(feature))
+        )
+      }
+      return eci
+    } catch (e: Exception) {
+      log.error("failed to publish", e)
+      throw e
     }
-    return eci
   }
 
   private fun toCacheEnvironmentFeature(
@@ -276,7 +280,7 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
 
   private fun fromRolloutStrategy(rs: RolloutStrategy): CacheRolloutStrategy {
     return CacheRolloutStrategy()
-      .id(rs.id!!)
+      .id(rs.id ?: "rs-id")
       .percentage(rs.percentage)
       .percentageAttributes(rs.percentageAttributes)
       .value(rs.value)

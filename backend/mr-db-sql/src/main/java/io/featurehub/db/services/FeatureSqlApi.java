@@ -194,6 +194,14 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
         strategy.setDefaultValue(featureValue.getValueBoolean() == null ? Boolean.FALSE.toString() : featureValue.getValueBoolean().toString());
       }
 
+      if (featureValue.getRolloutStrategies() != null) {
+        featureValue.getRolloutStrategies().forEach(rs -> {
+          if (rs.getId() == null) {
+            rs.setId(UUID.randomUUID().toString());
+          }
+        });
+      }
+
       strategy.setRolloutStrategies(featureValue.getRolloutStrategies());
 
       strategyDiffer.createDiff(featureValue, strategy);
