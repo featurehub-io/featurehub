@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <renameColumn tableName="fh_strat_for_feature" oldName="value" newName="fv_value"/>
+        <renameColumn tableName="fh_strat_for_feature" oldName="enabled" newName="fv_enabled"/>
+    </changeSet>
+</migration>

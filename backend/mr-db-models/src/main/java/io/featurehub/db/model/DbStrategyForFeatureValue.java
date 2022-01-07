@@ -28,10 +28,11 @@ public class DbStrategyForFeatureValue {
   @Column(nullable = false, name = "fk_rs_id")
   private DbRolloutStrategy rolloutStrategy;
 
-  @Column(nullable = false)
+  @Column(nullable = false, name = "fv_enabled")
   private boolean enabled;
 
   @Lob
+  @Column(name = "fv_value")
   private String value;
 
   private DbStrategyForFeatureValue(Builder builder) {
