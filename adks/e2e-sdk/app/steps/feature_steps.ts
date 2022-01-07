@@ -118,8 +118,12 @@ Then(/^I set the context to$/, function (table) {
   });
 });
 
-Then(/^I clear the context$/, function (table) {
+Then(/^I clear the context$/, function () {
   this.resetContext();
+  console.log('context cleared');
+});
+
+Given(/^I connect to the Edge server using (sse-client-eval|poll-client-eval|poll-server-eval)$/, function() {
 
 });
 

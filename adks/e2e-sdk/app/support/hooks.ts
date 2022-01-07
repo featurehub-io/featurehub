@@ -60,6 +60,8 @@ Before(async function () {
 
 After(function () {
   if (this.edgeServer) {
+    console.log('shutting down edge connection');
     this.edgeServer.close();
+    console.log('edge connection closed');
   }
 });

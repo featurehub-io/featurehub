@@ -2,5 +2,10 @@ The purpose of the SDK/ADK tests in this folder are to ensure that the more adva
 by the FeatureHub SDK (such as strategies and attributes) are fully working as expected. 
 
 What we are testing is the _flow_ - is data flowing properly from MR to Dacha to Edge - we are less interested in the 
-behaviour of the SDK itself as that would require testing each SDK for the entire flow. 
+behaviour of the SDK itself as that would require testing each SDK for the entire flow.
 
+== Running in IDEA
+
+Create a nodejs run config, this folder as the working directory, application
+parameters should be `--require-module ts-node/register --require "app/**/*.ts"`
+and Javascript file is `node_modules/.bin/cucumber-js`
