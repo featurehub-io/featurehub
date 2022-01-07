@@ -6,7 +6,7 @@ import io.ebean.dbmigration.DbMigration;
 public class GenerateDbMigration {
   public static void main(String[] args) throws Exception {
     DbMigration dbMigration = DbMigration.create();
-    dbMigration.addPlatform(Platform.SQLSERVER17, "mssql");
+//    dbMigration.addPlatform(Platform.SQLSERVER17, "mssql");
     dbMigration.addPlatform(Platform.POSTGRES, "postgres");
     dbMigration.addPlatform(Platform.MYSQL, "mysql");
     dbMigration.addPlatform(Platform.H2, "h2");
@@ -14,8 +14,12 @@ public class GenerateDbMigration {
 
     dbMigration.setMigrationPath("/dbmigration");
     dbMigration.setStrictMode(false);
-//    dbMigration.setGeneratePendingDrop("1.3");
+
+//    dbMigration.setGeneratePendingDrop("1.10");
     // generate the migration ddl and xml
     dbMigration.generateMigration();
+    // use this if you wish to introduce another database - it will generate it under dbinit/database with the
+    // id of the latest migration.
+//    dbMigration.generateInitMigration();
   }
 }

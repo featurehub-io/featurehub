@@ -182,7 +182,7 @@ create table fh_service_account (
   when_created                  timestamp not null,
   version                       number(19) not null,
   constraint uq_fh_service_account_api_key unique (api_key),
-  constraint uq_fh_service_account_api_key_client_eval unique (api_key_client_eval),
+  constraint uq_fh_srvc_ccnt_p_ky_clnt_vl unique (api_key_client_eval),
   constraint idx_service_name unique (fk_portfolio_id,name),
   constraint pk_fh_service_account primary key (id)
 );
@@ -202,8 +202,8 @@ create table fh_strat_for_feature (
   id                            varchar2(40) not null,
   fk_fv_id                      varchar2(40) not null,
   fk_rs_id                      varchar2(40) not null,
-  enabled                       number(1) default 0 not null,
-  value                         clob,
+  fv_enabled                    number(1) default 0 not null,
+  fv_value                      clob,
   constraint idx_feature_strat unique (fk_fv_id,fk_rs_id),
   constraint pk_fh_strat_for_feature primary key (id)
 );
@@ -248,11 +248,11 @@ alter table fh_environment add constraint fk_fh_nvrnmnt_fk_prr_nv_d foreign key 
 create index ix_fh_environment_fk_app_id on fh_environment (fk_app_id);
 alter table fh_environment add constraint fk_fh_environment_fk_app_id foreign key (fk_app_id) references fh_application (id);
 
-create index ix_fh_nv_ftr_strtgy_fk_wh_pdtd on fh_env_feature_strategy (fk_who_updated);
-alter table fh_env_feature_strategy add constraint fk_fh_nv_ftr_strtgy_fk_wh_pdtd foreign key (fk_who_updated) references fh_person (id) on delete set null;
+create index ix_fh_nv_ftr_strtgy_fk_wh_p_1 on fh_env_feature_strategy (fk_who_updated);
+alter table fh_env_feature_strategy add constraint fk_fh_nv_ftr_strtgy_fk_wh_p_1 foreign key (fk_who_updated) references fh_person (id) on delete set null;
 
-create index ix_fh_nv_ftr_strtgy_fk__54bk1p on fh_env_feature_strategy (fk_environment_id);
-alter table fh_env_feature_strategy add constraint fk_fh_nv_ftr_strtgy_fk__ad6btf foreign key (fk_environment_id) references fh_environment (id);
+create index ix_fh_nv_ftr_strtgy_fk_nvrn_2 on fh_env_feature_strategy (fk_environment_id);
+alter table fh_env_feature_strategy add constraint fk_fh_nv_ftr_strtgy_fk_nvrn_2 foreign key (fk_environment_id) references fh_environment (id);
 
 create index ix_fh_nv_ftr_strtgy_fk_ftr_d on fh_env_feature_strategy (fk_feature_id);
 alter table fh_env_feature_strategy add constraint fk_fh_nv_ftr_strtgy_fk_ftr_d foreign key (fk_feature_id) references fh_app_feature (id);
@@ -263,8 +263,8 @@ alter table fh_group add constraint fk_fh_grp_fk_prsn_wh_crtd foreign key (fk_pe
 create index ix_fh_group_fk_portfolio_id on fh_group (fk_portfolio_id);
 alter table fh_group add constraint fk_fh_group_fk_portfolio_id foreign key (fk_portfolio_id) references fh_portfolio (id);
 
-create index ix_fh_group_fk_organization_id on fh_group (fk_organization_id);
-alter table fh_group add constraint fk_fh_group_fk_organization_id foreign key (fk_organization_id) references fh_organization (id);
+create index ix_fh_grp_fk_rgnztn_d on fh_group (fk_organization_id);
+alter table fh_group add constraint fk_fh_grp_fk_rgnztn_d foreign key (fk_organization_id) references fh_organization (id);
 
 create index ix_fh_login_person_id on fh_login (person_id);
 alter table fh_login add constraint fk_fh_login_person_id foreign key (person_id) references fh_person (id);
@@ -295,20 +295,20 @@ alter table fh_portfolio add constraint fk_fh_portfolio_fk_org_id foreign key (f
 create index ix_fh_app_strategy_fk_app_id on fh_app_strategy (fk_app_id);
 alter table fh_app_strategy add constraint fk_fh_app_strategy_fk_app_id foreign key (fk_app_id) references fh_application (id);
 
-create index ix_fh_pp_strtgy_fk_prsn_ge2q3m on fh_app_strategy (fk_person_who_changed);
-alter table fh_app_strategy add constraint fk_fh_pp_strtgy_fk_prsn_6qgu0 foreign key (fk_person_who_changed) references fh_person (id);
+create index ix_fh_pp_strtgy_fk_prsn_wh__2 on fh_app_strategy (fk_person_who_changed);
+alter table fh_app_strategy add constraint fk_fh_pp_strtgy_fk_prsn_wh__2 foreign key (fk_person_who_changed) references fh_person (id);
 
-create index ix_fh_srvc_ccnt_fk_prsn_e5sani on fh_service_account (fk_person_who_created);
-alter table fh_service_account add constraint fk_fh_srvc_ccnt_fk_prsn_9qwie0 foreign key (fk_person_who_created) references fh_person (id);
+create index ix_fh_srvc_ccnt_fk_prsn_wh__1 on fh_service_account (fk_person_who_created);
+alter table fh_service_account add constraint fk_fh_srvc_ccnt_fk_prsn_wh__1 foreign key (fk_person_who_created) references fh_person (id);
 
 create index ix_fh_srvc_ccnt_fk_prtfl_d on fh_service_account (fk_portfolio_id);
 alter table fh_service_account add constraint fk_fh_srvc_ccnt_fk_prtfl_d foreign key (fk_portfolio_id) references fh_portfolio (id);
 
-create index ix_fh_srvc_ccnt_nv_fk_n_hy25ba on fh_service_account_env (fk_environment_id);
-alter table fh_service_account_env add constraint fk_fh_srvc_ccnt_nv_fk_n_dj6d1s foreign key (fk_environment_id) references fh_environment (id);
+create index ix_fh_srvc_ccnt_nv_fk_nvrnm_1 on fh_service_account_env (fk_environment_id);
+alter table fh_service_account_env add constraint fk_fh_srvc_ccnt_nv_fk_nvrnm_1 foreign key (fk_environment_id) references fh_environment (id);
 
-create index ix_fh_srvc_ccnt_nv_fk_s_bhb1w6 on fh_service_account_env (fk_service_account_id);
-alter table fh_service_account_env add constraint fk_fh_srvc_ccnt_nv_fk_s_q1ou4g foreign key (fk_service_account_id) references fh_service_account (id);
+create index ix_fh_srvc_ccnt_nv_fk_srvc__2 on fh_service_account_env (fk_service_account_id);
+alter table fh_service_account_env add constraint fk_fh_srvc_ccnt_nv_fk_srvc__2 foreign key (fk_service_account_id) references fh_service_account (id);
 
 create index ix_fh_strt_fr_ftr_fk_fv_d on fh_strat_for_feature (fk_fv_id);
 alter table fh_strat_for_feature add constraint fk_fh_strt_fr_ftr_fk_fv_d foreign key (fk_fv_id) references fh_env_feature_strategy (id);
