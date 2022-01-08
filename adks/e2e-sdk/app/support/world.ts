@@ -3,25 +3,31 @@ import {
   Application,
   ApplicationServiceApi,
   AuthServiceApi,
-  Configuration, EnvironmentFeatureServiceApi,
-  EnvironmentServiceApi, Feature,
-  FeatureServiceApi, FeatureValue, Portfolio,
-  PortfolioServiceApi, ServiceAccountPermission, ServiceAccountServiceApi,
+  Configuration,
+  EnvironmentFeatureServiceApi,
+  EnvironmentServiceApi,
+  Feature,
+  FeatureServiceApi,
+  FeatureValue,
+  Portfolio,
+  PortfolioServiceApi,
+  ServiceAccountPermission,
+  ServiceAccountServiceApi,
   TokenizedPerson
 } from 'featurehub-javascript-admin-sdk';
 import { axiosLoggingAttachment, logger } from './logging';
 import globalAxios from 'axios';
 import {
   ClientContext,
-  ClientEvalFeatureContext,
   EdgeFeatureHubConfig,
-  FeatureHubRepository, FeatureState, FeatureStateHolder
+  FeatureHubRepository,
+  FeatureStateHolder
 } from 'featurehub-javascript-node-sdk';
 import { expect } from 'chai';
 
 let apiKey: string;
 
-axiosLoggingAttachment([globalAxios]);
+axiosLoggingAttachment([ globalAxios ]);
 
 export class SdkWorld extends World {
   private _portfolio: Portfolio;
@@ -30,7 +36,7 @@ export class SdkWorld extends World {
   public serviceAccountPermission: ServiceAccountPermission;
   public edgeServer: EdgeFeatureHubConfig;
   private _repository: FeatureHubRepository;
-  public readonly  adminUrl: string;
+  public readonly adminUrl: string;
   public readonly featureUrl: string;
   public readonly adminApiConfig: Configuration;
   public readonly portfolioApi: PortfolioServiceApi;
@@ -45,8 +51,8 @@ export class SdkWorld extends World {
   constructor(props) {
     super(props);
 
-    this.adminUrl = process.env.FEATUREHUB_HOST || 'http://localhost:8085';
-    this.featureUrl = process.env.FEATUREHUB_SDK_HOST || 'http://localhost:8085';
+    this.adminUrl = process.env.FEATUREHUB_HOST || 'http://localhost:8903';
+    this.featureUrl = process.env.FEATUREHUB_SDK_HOST || 'http://localhost:8903';
 
     this.adminApiConfig = new Configuration({ basePath: this.adminUrl, apiKey: apiKey });
     this.portfolioApi = new PortfolioServiceApi(this.adminApiConfig);
@@ -109,9 +115,16 @@ export class SdkWorld extends World {
   }
 
   async getFeature(): Promise<FeatureValue> {
-    const fValueResult = await this.featureValueApi.getFeatureForEnvironment(this.serviceAccountPermission.environmentId, this.feature.key);
-    expect(fValueResult.status).to.eq(200);
-    return fValueResult.data;
+    try {
+      const fValueResult = await this.featureValueApi.getFeatureForEnvironment(this.serviceAccountPermission.environmentId, this.feature.key);
+      return fValueResult.data;
+    } catch (e) {
+      expect(e.response.status).to.eq(404); // null value
+
+      if (e.response.status === 404) {
+        return new FeatureValue({key: this.feature.key});
+      }
+    }
   }
 
   async updateFeature(fValue: FeatureValue) {

@@ -1,4 +1,4 @@
-Feature: A basic portfolio works as expected
+Feature: All flag based functionality works as expected
 
   Background:
     Given I create a new portfolio
@@ -6,6 +6,7 @@ Feature: A basic portfolio works as expected
     And I create a service account and full permissions based on the application environments
     And I connect to the feature server
 
+    @flags
   Scenario: A new portfolio with a boolean feature
 #    Given I connect to the Edge server using <ConnectionType>
     Given There is a new feature flag

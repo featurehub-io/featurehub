@@ -5,6 +5,7 @@ import io.featurehub.edge.FeatureTransformer
 import io.featurehub.edge.KeyParts
 import io.featurehub.edge.strategies.ClientContext
 import io.featurehub.sse.model.FeatureEnvironmentCollection
+import jakarta.ws.rs.WebApplicationException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -38,8 +39,12 @@ class FeatureRequestCollection(
   ): FeatureRequestResponse {
     val env = FeatureEnvironmentCollection().id(key.environmentId)
 
-    if (failure != null) {
-      return FeatureRequestResponse(env, FeatureRequestSuccess.DACHA_NOT_READY, key, "")
+    if (failure != null && failure is WebApplicationException) {
+      if (failure.response == null || failure.response.status == 412) {
+        return FeatureRequestResponse(env, FeatureRequestSuccess.DACHA_NOT_READY, key, "")
+      } else if (failure.response.status == 404) {
+        return FeatureRequestResponse(env, FeatureRequestSuccess.NO_SUCH_KEY_IN_CACHE, key, "")
+      }
     }
 
     if (details == null) {
