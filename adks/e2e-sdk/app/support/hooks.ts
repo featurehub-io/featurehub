@@ -14,6 +14,10 @@ import { makeid } from './random';
 import { expect } from 'chai';
 import { SdkWorld } from './world';
 
+// const superuserEmailAddress = 'irina@i.com';
+const superuserEmailAddress = 'superuser@mailinator.com';
+const superuserPassword = 'password123';
+
 async function ensureLoggedIn(world: SdkWorld) {
   const portfolioService: PortfolioServiceApi = world.portfolioApi;
 
@@ -25,8 +29,8 @@ async function ensureLoggedIn(world: SdkWorld) {
 
       try {
         const loginResult = await loginApi.login(new UserCredentials({
-          email: 'superuser@mailinator.com',
-          password: 'password123'
+          password: superuserPassword,
+          email: superuserEmailAddress,
         }));
 
         console.log('logged in', loginResult.data);
@@ -38,8 +42,8 @@ async function ensureLoggedIn(world: SdkWorld) {
           const setupResult = await setupApi.setupSiteAdmin({
             portfolio: 'First Portfolio',
             organizationName: 'SampleOrg',
-            emailAddress: 'superuser@mailinator.com',
-            password: 'password123',
+            emailAddress: superuserEmailAddress,
+            password: superuserPassword,
             name: 'Superuser'
           });
 

@@ -292,12 +292,6 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
   // combines the custom and shared rollout strategies
   private fun collectCombinedRolloutStrategies(featureValue: DbFeatureValue): List<CacheRolloutStrategy> {
     log.trace("cache combine strategies")
-    val activeSharedStrategies =
-      QDbRolloutStrategy()
-        .sharedRolloutStrategies.featureValue.id.eq(featureValue.id)
-        .select(QDbRolloutStrategy.Alias.strategy)
-        .sharedRolloutStrategies.enabled.isTrue
-        .findList()
 
     val allStrategies: MutableList<CacheRolloutStrategy> = ArrayList()
     if (featureValue.rolloutStrategies != null) {
@@ -306,8 +300,19 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
           .collect(Collectors.toList()))
     }
 
+    val activeSharedStrategies = QDbStrategyForFeatureValue()
+      .select(QDbStrategyForFeatureValue.Alias.value)
+      .featureValue.id.eq(featureValue.id)
+      .enabled.isTrue
+      .rolloutStrategy.fetch(QDbRolloutStrategy.Alias.strategy)
+      .findList()
+
     allStrategies.addAll(activeSharedStrategies.stream()
-      .map { shared -> fromRolloutStrategy(shared.strategy) }
+      .map { shared ->
+        val rs = fromRolloutStrategy(shared.rolloutStrategy.strategy)
+        rs.value = shared.value // the value associated with the shared strategy is set here not in the strategy itself
+        rs
+      }
       .collect(Collectors.toList()))
 
     return allStrategies

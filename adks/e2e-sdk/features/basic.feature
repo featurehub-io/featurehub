@@ -6,8 +6,8 @@ Feature: A basic portfolio works as expected
     And I create a service account and full permissions based on the application environments
     And I connect to the feature server
 
-  Scenario Outline: A new portfolio with a boolean feature
-    Given I connect to the Edge server using <ConnectionType>
+  Scenario: A new portfolio with a boolean feature
+#    Given I connect to the Edge server using <ConnectionType>
     Given There is a new feature flag
     Then the feature flag is locked and off
     When I unlock the feature
@@ -31,8 +31,8 @@ Feature: A basic portfolio works as expected
       | userkey | user2@mailinator.com |
     And the feature flag is unlocked and off
     And I clear the context
-    Examples:
-      | ConnectionType   |
-      | sse-client-eval  |
-      | poll-client-eval |
-      | poll-server-eval |
+#    Examples:
+#      | ConnectionType   |
+#      | sse-client-eval  |
+#      | poll-client-eval |
+#      | poll-server-eval |
