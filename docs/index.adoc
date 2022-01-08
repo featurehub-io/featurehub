@@ -44,7 +44,7 @@ image::images/fh_learn_build_measure.svg[Learn,Build,Measure]
 
 == Installation
 
-There are link:installation{outfilesuffix}[two main deployment options] for running FeatureHub. As FeatureHub is packaged as a _Cloud Native_ bundle, all parts are Docker images and are intended to be used with that technology (i.e. Docker/OCI or Kubernetes).
+There are link:installation{outfilesuffix}[several deployment options] for running FeatureHub. As FeatureHub is packaged as a _Cloud Native_ bundle, all parts are Docker images and are intended to be used with that technology (i.e. Docker/OCI or Kubernetes).
 
 There is a GitHub https://github.com/featurehub-io/featurehub-install[repository] where you can find sample docker-compose style deployment options.
 

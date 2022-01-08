@@ -56,15 +56,30 @@ You can configure feature interceptors to not be allowed to override locked feat
 
 === Client and server API Keys
 
-FeatureHub supports two types of keys that can be used in the FeatureHub SDKs: *Client Evaluated API Keys* and *Server Evaluated API Keys.* 
+FeatureHub supports two types of keys that can be used in the FeatureHub SDKs: *Client Evaluated API Keys* and *Server Evaluated API Keys.*
 
-Starting from the version 2.0 of
-the SDKs introduce a _Context first API_. This means you define information about who is using the features (including anonymous users), and the SDK will evaluate the feature values based on that information. 
+The table below highlights the differences between the two key options.
 
-You can see what kind of data is being sent back for a given key by typing:
+[options="header"]
+|===================================
+||Server evaluated key|Client evaluated key
+|Use cases|Browser apps, mobile apps|Server apps
+|Default feature values returned when requesting features|Yes|Yes
+|Rollout strategies returned when requesting features|No|Yes
+|Context change requires server request|Yes|No
+|API Key should be treated as "secret"  |No*|Yes
+
+
+|===================================
+
+* when request is made to get features from FH server, it can, for example, be visible from the client's browser Dev tools, including the request url, that consists of environment id and API Key. As Server evaluated key doesn't return any sensitive information, it doesn't need to be treated as "secret". On contrary, Client evaluated keys should be kept "secret" because they return the data that contains all the features and rollout strategy information which can be sensitive (e.g. user id's, emails, etc.)
+
+FeatureHub SDKs use a _Context first API_. This means you define information about who is using the features (including anonymous users), and the SDK will evaluate the feature values based on that information.
+
+You can see what kind of data is being sent back for a given key by sending the request:
 
 ----
-curl -v http://YOUR-HOST/features/YOUR-API-KEY
+curl -v "http://YOUR-HOST/features/YOUR-API-KEY"
 ----
 
 ==== Client Evaluated API Keys
@@ -105,7 +120,7 @@ For Server Evaluated Keys, going through the Context to get your features means 
 request can hold on until the update has occured and then present you with an updated set of features.
 
 
-=== Test automation support 
+=== Test automation support
 
 Test Client / Feature Updater is designed to allow tests to change the values of features in their environments while they are running.
 
