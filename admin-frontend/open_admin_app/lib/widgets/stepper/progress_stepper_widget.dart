@@ -133,7 +133,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                           CrossAxisAlignment.start,
                                       children: <Widget>[
                                         Text(
-                                          'Service accounts are portfolio-wide, we recommend creating service accounts specific to an application, e.g. “SA-MyApp”',
+                                          'Service accounts are portfolio-wide, we recommend creating two service accounts specific to an application, e.g. “SA-MyApp-Prod” and "SA-MyApp-Non-Prod"',
                                           style: captionStyle,
                                         ),
                                         FHFlatButtonTransparent(
