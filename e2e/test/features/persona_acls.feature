@@ -6,7 +6,7 @@ Feature: Create some personas with different feature access data
     Given I ensure a portfolio named "<portfolio>" with description "persona test" exists
     And the first superuser is used for authentication
     When I ensure a portfolio "<portfolio>" has created a group called "<group>"
-    When I add the user "superuser@mailinator.com" to the group "<adminGroup>" in the portfolio "<portfolio>"
+    When I add the user "irina@i.com" to the group "<adminGroup>" in the portfolio "<portfolio>"
     Given I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
     And I ensure that an environment "<envName>" with description "<envDesc>" exists in the app "<appName>" in the portfolio "<portfolio>"
     And I ensure that an environment "<envName2>" with description "<envDesc2>" exists in the app "<appName>" in the portfolio "<portfolio>"
@@ -57,7 +57,7 @@ Feature: Create some personas with different feature access data
     Given I ensure a portfolio named "<portfolio>" with description "persona test" exists
     And the first superuser is used for authentication
     When I ensure a portfolio "<portfolio>" has created a group called "<group>"
-    When I add the user "superuser@mailinator.com" to the group "<adminGroup>" in the portfolio "<portfolio>"
+    When I add the user "irina@i.com" to the group "<adminGroup>" in the portfolio "<portfolio>"
     Given I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
     And I ensure that an environment "<envName>" with description "<envDesc>" exists in the app "<appName>" in the portfolio "<portfolio>"
     And I ensure that an environment "<envName2>" with description "<envDesc2>" exists in the app "<appName>" in the portfolio "<portfolio>"
@@ -91,7 +91,7 @@ Feature: Create some personas with different feature access data
     And the first superuser is used for authentication
     When I ensure a portfolio "<portfolio>" has created a group called "<groupA>"
     When I ensure a portfolio "<portfolio>" has created a group called "<groupB>"
-    When I add the user "superuser@mailinator.com" to the group "<adminGroup>" in the portfolio "<portfolio>"
+    When I add the user "irina@i.com" to the group "<adminGroup>" in the portfolio "<portfolio>"
     Given I ensure an application with the name "<appName>" with description "<appDesc>" in the portfolio "<portfolio>" exists
     And I ensure that an environment "<envName>" with description "<envDesc>" exists in the app "<appName>" in the portfolio "<portfolio>"
     And I ensure that the feature with the key "<featureKey>" has been removed
@@ -126,7 +126,7 @@ Feature: Create some personas with different feature access data
     And I ensure that the feature with the key "<featureKey>" has been removed
     When I create the feature with a key "<featureKey>" and alias "<alias>" and name "<featureName>" and link "<link>" and type "boolean"
     And I can find the feature with a key "<featureKey>"
-    When I add the user "superuser@mailinator.com" to the group "<group1>" in the portfolio "<portfolio>"
+    When I add the user "irina@i.com" to the group "<group1>" in the portfolio "<portfolio>"
     And I unlock the feature value for environment "<envName>" for feature "<featureKey>"
     And I unlock the feature value for environment "<envName2>" for feature "<featureKey>"
     And I set the boolean feature value as "true" for environment "<envName>" for feature "<featureKey>"

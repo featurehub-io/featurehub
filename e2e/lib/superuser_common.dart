@@ -34,7 +34,8 @@ class SuperuserCommon {
   PortfolioServiceApi get portfolioService => _portfolioServiceApi;
   ApplicationServiceApi get applicationService => _applicationServiceApi;
 
-  String get initUser => "superuser@mailinator.com";
+  // String get initUser => "irina@i.com";
+  String get initUser => "irina@i.com";
   String get initPassword => "password123";
   String? get superuserGroupId => _superuser?.groups
       .firstWhere((g) => g.admin == true && g.portfolioId == null)
