@@ -2,6 +2,7 @@ package io.featurehub.edge.db.sql
 
 import io.ebean.annotation.Transactional
 import io.featurehub.dacha.api.DachaApiKeyService
+import io.featurehub.dacha.model.*
 import io.featurehub.db.model.DbApplicationFeature
 import io.featurehub.db.model.DbFeatureValue
 import io.featurehub.db.model.query.QDbApplicationFeature
@@ -10,7 +11,6 @@ import io.featurehub.db.model.query.QDbServiceAccountEnvironment
 import io.featurehub.mr.model.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.math.BigDecimal
 import java.util.*
 
 class DbDachaSqlApi : DachaApiKeyService {
@@ -47,7 +47,7 @@ class DbDachaSqlApi : DachaApiKeyService {
         .applicationId(fakeApplicationId)
         .portfolioId(fakePortfolioId)
         .organizationId(fakeOrganisationId)
-        .features(features.map { toFeatureValueCacheItem(eId, it, featureValues[it.key]) })
+        .features(features.map { toFeatureValueCacheItem(it, featureValues[it.key]) })
 
       response.etag = calculateEtag(response)
       log.trace("etag is {}", response.etag)
@@ -74,28 +74,23 @@ class DbDachaSqlApi : DachaApiKeyService {
   }
 
   private fun toFeatureValueCacheItem(
-    envId: UUID,
     feature: DbApplicationFeature,
     fv: DbFeatureValue?
-  ): FeatureValueCacheItem =
-    FeatureValueCacheItem()
-      .environmentId(envId)
-      .feature(Feature().key(feature.key).id(feature.id).valueType(feature.valueType))
+  ): CacheEnvironmentFeature =
+    CacheEnvironmentFeature()
+      .feature(CacheFeature().key(feature.key).id(feature.id).valueType(feature.valueType))
       .value(if (fv == null) toEmptyFeatureValue(feature) else toFeatureValue(fv))
 
 
-  private fun toEmptyFeatureValue(feature: DbApplicationFeature): FeatureValue =
-    FeatureValue()
+  private fun toEmptyFeatureValue(feature: DbApplicationFeature): CacheFeatureValue =
+    CacheFeatureValue()
       .key(feature.key)
       .id(feature.id)
       .version(0)
       .locked(false)
 
-  private fun toFeature(dbFeature: DbFeatureValue) =
-    Feature().key(dbFeature.feature.key).id(dbFeature.feature.id).valueType(dbFeature.feature.valueType)
-
-  private fun toFeatureValue(dbFeature: DbFeatureValue): FeatureValue {
-    val fv = FeatureValue()
+  private fun toFeatureValue(dbFeature: DbFeatureValue): CacheFeatureValue {
+    val fv = CacheFeatureValue()
       .key(dbFeature.feature.key)
       .locked(dbFeature.isLocked)
       .version(dbFeature.version)
@@ -103,11 +98,10 @@ class DbDachaSqlApi : DachaApiKeyService {
 
     // we haven't implemented shared rollout strategies so don't both to include those
     when (dbFeature.feature.valueType) {
-      FeatureValueType.BOOLEAN -> fv.valueBoolean(dbFeature.defaultValue == "true")
-      FeatureValueType.STRING -> fv.valueString(dbFeature.defaultValue)
-      FeatureValueType.NUMBER -> if (dbFeature.defaultValue != null) fv.valueNumber(BigDecimal(dbFeature.defaultValue))
-      FeatureValueType.JSON -> fv.valueJson(dbFeature.defaultValue)
-      else -> fv.valueString(null)
+      FeatureValueType.BOOLEAN -> fv.value(dbFeature.defaultValue?.toBoolean())
+      FeatureValueType.STRING, FeatureValueType.JSON -> fv.value(dbFeature.defaultValue)
+      FeatureValueType.NUMBER -> fv.value(dbFeature.defaultValue?.toBigDecimal())
+      else -> fv.value(null)
     }
 
     return fv
@@ -117,7 +111,7 @@ class DbDachaSqlApi : DachaApiKeyService {
   private fun calculateEtag(details: DachaKeyDetailsResponse): String {
     val det =
       details
-        .features!!.map { fvci -> fvci.feature.id.toString() + "-" + fvci.value.version }
+        .features!!.map { fvci -> fvci.feature.id.toString() + "-" + (fvci.value?.version ?: "0000") }
         .joinToString("-")
     return Integer.toHexString(det.hashCode())
   }
@@ -164,13 +158,13 @@ class DbDachaSqlApi : DachaApiKeyService {
       applicationFeature.parentApplication.environments.serviceAccountEnvironments.eq(serviceAccount).findOne() ?: return null
 
     val foundFeatureValue = feature.environmentFeatures.find { it.environment.id == eId }
-    val featureValue = if (foundFeatureValue == null) toEmptyFeatureValue(feature).id(null) else toFeatureValue(foundFeatureValue)
+    val featureValue = if (foundFeatureValue == null) toEmptyFeatureValue(feature).id(feature.id) else toFeatureValue(foundFeatureValue)
 
     // it wants roles, valueType, key, locked, the feature value
     return DachaPermissionResponse()
       .feature(
-        DachaFeatureValueItem()
-          .feature(Feature().key(featureKey).id(feature.id).valueType(feature.valueType))
+        CacheEnvironmentFeature()
+          .feature(CacheFeature().key(featureKey).id(feature.id).valueType(feature.valueType))
           .value(featureValue)
       )
       .roles(serviceAccount.permissions?.split(",")?.filterNot { it.isEmpty() }?.map { RoleType.valueOf(it) }

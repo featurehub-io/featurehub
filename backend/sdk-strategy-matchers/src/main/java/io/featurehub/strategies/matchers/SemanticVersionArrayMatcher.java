@@ -1,10 +1,10 @@
 package io.featurehub.strategies.matchers;
 
-import io.featurehub.mr.model.RolloutStrategyAttribute;
+import io.featurehub.sse.model.FeatureRolloutStrategyAttribute;
 
 public class SemanticVersionArrayMatcher implements StrategyMatcher {
   @Override
-  public boolean match(String suppliedValue, RolloutStrategyAttribute attr) {
+  public boolean match(String suppliedValue, FeatureRolloutStrategyAttribute attr) {
     final SemanticVersionComparable suppliedVersion = new SemanticVersionComparable(suppliedValue);
 
     switch (attr.getConditional()) {

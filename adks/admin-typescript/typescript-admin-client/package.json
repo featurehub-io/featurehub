@@ -51,14 +51,13 @@
     "@types/mocha": "^8.0.2",
     "@types/node": "^12.20.12",
     "chai": "^4.2.0",
-    "mocha": "^8.4.0",
     "ts-node": "8.10.2",
     "tslint": "6.1.1",
     "tslint-microsoft-contrib": "6.2.0",
     "typescript": "3.9.7"
   },
   "dependencies": {
-    "axios": "^0.21.1"
+    "axios": "^0.21.4"
   },
   "engines": {
     "node": ">=12.12.0"

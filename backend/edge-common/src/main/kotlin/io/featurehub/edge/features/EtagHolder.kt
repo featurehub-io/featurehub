@@ -11,7 +11,7 @@ class ETagSplitter {
 
       val environmentTagVsContextTag = etag.trim().split("//").toTypedArray()
 
-      var contextTags: String = ""
+      var contextTags: String
 
       if (environmentTagVsContextTag.size == 2) {
         contextTags = environmentTagVsContextTag[1].trim()

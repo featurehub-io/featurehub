@@ -84,8 +84,11 @@ class FeatureGetProcessor @Inject constructor(private val getOrchestrator: Dacha
 
     if (environments[0].success === FeatureRequestSuccess.NO_CHANGE) {
       response.resume(Response.status(304).header("etag", etagHeader).build())
-    } else if (environments.all { it.success == FeatureRequestSuccess.FAILED }) {
+    } else if (environments.all { it.success == FeatureRequestSuccess.NO_SUCH_KEY_IN_CACHE }) {
       response.resume(Response.status(404).build())
+    } else if (environments.all { it.success == FeatureRequestSuccess.DACHA_NOT_READY }) {
+      // all the SDKs fail on a 400 level error and just stop.
+      response.resume(Response.status(503).entity("cache layer not ready, try again shortly").build())
     } else {
       response.resume(
         Response.status(200)
@@ -103,9 +106,10 @@ class FeatureGetProcessor @Inject constructor(private val getOrchestrator: Dacha
 
   private fun mapSuccess(success: FeatureRequestSuccess): EdgeHitResultType {
     return when (success) {
-      FeatureRequestSuccess.FAILED -> EdgeHitResultType.MISSED
+      FeatureRequestSuccess.NO_SUCH_KEY_IN_CACHE -> EdgeHitResultType.MISSED
       FeatureRequestSuccess.SUCCESS -> EdgeHitResultType.SUCCESS
       FeatureRequestSuccess.NO_CHANGE -> EdgeHitResultType.NO_CHANGE
+      FeatureRequestSuccess.DACHA_NOT_READY -> EdgeHitResultType.MISSED
     }
   }
 

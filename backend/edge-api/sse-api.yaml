@@ -22,18 +22,24 @@ paths:
       responses:
         "200":
           description: feature request successful, all environments you have permission to or that were found are returned
+          headers:
+            x-fh-version:
+              required: false
+              schema:
+                type: string
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Environment"
+                  $ref: "#/components/schemas/FeatureEnvironmentCollection"
         "400":
           description: you didn't ask for any environments
-          content:
-            application/json:
+          headers:
+            x-fh-version:
+              required: false
               schema:
-                {}
+                type: string
   /features/{sdkUrl}/{featureKey}:
     put:
       tags:
@@ -62,47 +68,28 @@ paths:
       responses:
         "200":
           description: update was accepted but not actioned because feature is already in that state
-          content:
-            application/json:
+          headers:
+            x-fh-version:
+              required: false
               schema:
-                {}
+                type: string
         "201":
           description: update was accepted and actioned
-          content:
-            application/json:
+          headers:
+            x-fh-version:
+              required: false
               schema:
-                {}
+                type: string
         "202":
           description: Neither lock or value was changing
-          content:
-            application/json:
-              schema:
-                {}
         "400":
           description: you have made a request that doesn't make sense. e.g. it has no data
-          content:
-            application/json:
-              schema:
-                {}
         "403":
           description: update was not accepted, attempted change is outside the permissions of this user
-          content:
-            application/json:
-              schema:
-                {}
         "404":
           description: something about the presented data isn't right and we couldn't find it, could be the service key, the environment or the feature
-          content:
-            application/json:
-              schema:
-                {}
         "412":
           description: you have made a request that isn't possible. e.g. changing a value without unlocking it.
-          content:
-            application/json:
-              schema:
-                {}
-
 components:
   schemas:
     FeatureStateUpdate:
@@ -125,7 +112,11 @@ components:
         - features
         - feature
         - delete_feature
-    Environment:
+    FeatureEnvironmentCollection:
+      description: "This represents a collection of features as per a request from a GET api. GET's can request multiple API Keys at the same time."
+      x-renamed-from: Environment
+      required:
+        - id
       properties:
         id:
           type: string
@@ -136,7 +127,8 @@ components:
             $ref: "#/components/schemas/FeatureState"
     FeatureState:
       required:
-        - name
+        - key
+        - id
       properties:
         id:
           type: string
@@ -162,6 +154,27 @@ components:
         strategies:
           type: array
           items:
-            $ref: "#/components/schemas/RolloutStrategy"
+            $ref: "#/components/schemas/FeatureRolloutStrategy"
+    FeatureRolloutStrategy:
+      description: "This is the model for the rollout strategy as required by Dacha and Edge"
+      allOf:
+        - $ref: "#/components/schemas/BaseRolloutStrategy"
+        - type: object
+          required:
+            - id
+            - attributes
+          properties:
+            attributes:
+              type: array
+              items:
+                $ref: "#/components/schemas/FeatureRolloutStrategyAttribute"
+    FeatureRolloutStrategyAttribute:
+      allOf:
+        - $ref: "#/components/schemas/BaseRolloutStrategyAttribute"
+        - type: object
+          required:
+            - conditional
+            - fieldName
+            - type
 
 

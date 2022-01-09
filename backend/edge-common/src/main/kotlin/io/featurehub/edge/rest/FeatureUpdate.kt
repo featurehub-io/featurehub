@@ -7,7 +7,7 @@ import io.featurehub.edge.KeyParts
 import io.featurehub.edge.stats.StatRecorder
 import io.featurehub.edge.utils.UpdateMapper
 import io.featurehub.mr.messaging.StreamedFeatureUpdate
-import io.featurehub.mr.model.DachaPermissionResponse
+import io.featurehub.dacha.model.DachaPermissionResponse
 import io.featurehub.mr.model.FeatureValueType
 import io.featurehub.mr.model.RoleType
 import io.featurehub.sse.model.FeatureStateUpdate
@@ -15,6 +15,7 @@ import io.featurehub.sse.stats.model.EdgeHitResultType
 import io.featurehub.sse.stats.model.EdgeHitSourceType
 import io.prometheus.client.Histogram
 import jakarta.inject.Inject
+import jakarta.ws.rs.WebApplicationException
 import jakarta.ws.rs.container.AsyncResponse
 import jakarta.ws.rs.core.Response
 import org.slf4j.Logger
@@ -57,11 +58,14 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
   }
 
   private fun requestPermission(key: KeyParts, featureKey: String): DachaPermissionResponse? {
-    val apiKeyService: DachaApiKeyService = dachaClientRegistry.getApiKeyService(key.cacheName) ?: return null
+    val apiKeyService: DachaApiKeyService = dachaClientRegistry.getApiKeyService(key.cacheName)
+
     return try {
       apiKeyService.getApiKeyPermissions(
         key.environmentId, key.serviceKey, featureKey
       )
+    } catch (wae: WebApplicationException) {
+      throw wae
     } catch (ignored: Exception) {
       null
     }
@@ -122,7 +126,7 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
           statRecorder?.recordHit(key, EdgeHitResultType.FORBIDDEN, EdgeHitSourceType.TESTSDK)
           response.resume(Response.status(Response.Status.FORBIDDEN).build())
           return
-        } else if (true == perms.feature.value.locked && false != featureStateUpdate.lock) {
+        } else if (true == perms.feature.value?.locked && false != featureStateUpdate.lock) {
           // its locked, and you are trying to change its value and not unlocking it at the same time, that makes no
           // sense
           statRecorder?.recordHit(key, EdgeHitResultType.UPDATE_NONSENSE, EdgeHitSourceType.TESTSDK)
@@ -140,13 +144,13 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
       // now update our internal value we will be sending, and also check
       // if aren't actually changing anything
       val value = perms.feature.value
-      val lockChanging = upd.lock != null && upd.lock != value.locked
+      val lockChanging = upd.lock != null && upd.lock != value?.locked
       var valueNotActuallyChanging = false
 
       if (true == featureStateUpdate.updateValue) {
         valueNotActuallyChanging = if (featureStateUpdate.value != null) {
           val newValue = featureStateUpdate.value.toString()
-          when (perms.feature.feature.valueType!!) {
+          when (perms.feature.feature.valueType) {
             FeatureValueType.BOOLEAN -> {
               // must be true or false in some case
               if (!newValue.equals("true", ignoreCase = true) && !newValue.equals("false", ignoreCase = true)) {
@@ -156,11 +160,11 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
               }
 
               upd.valueBoolean(newValue.toBoolean())
-              upd.valueBoolean == value.valueBoolean
+              upd.valueBoolean == value?.value
             }
             FeatureValueType.STRING -> {
               upd.valueString(newValue)
-              upd.valueString == value.valueString
+              upd.valueString == value?.value
             }
             FeatureValueType.JSON -> {
               try {
@@ -171,28 +175,31 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
                 return
               }
               upd.valueString(newValue)
-              upd.valueString == value.valueJson
+              upd.valueString == value?.value
             }
             FeatureValueType.NUMBER -> try {
               upd.valueNumber(BigDecimal(newValue))
-              upd.valueNumber == value.valueNumber
+              upd.valueNumber == value?.value
             } catch (e: Exception) {
               statRecorder?.recordHit(key, EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.TESTSDK)
               response.resume(Response.status(Response.Status.BAD_REQUEST).build())
               return
             }
+            else -> {
+              response.resume(Response.status(Response.Status.BAD_REQUEST).build())
+              return
+            }
           }
         } else {
-          when (perms.feature.feature.valueType!!) {
+          when (perms.feature.feature.valueType) {
             FeatureValueType.BOOLEAN -> {
               // a null boolean is not valid
               statRecorder?.recordHit(key, EdgeHitResultType.UPDATE_NONSENSE, EdgeHitSourceType.TESTSDK)
               response.resume(Response.status(Response.Status.PRECONDITION_FAILED).build())
               return
             }
-            FeatureValueType.STRING -> value.valueString == null
-            FeatureValueType.NUMBER -> value.valueNumber == null
-            FeatureValueType.JSON -> value.valueJson == null
+            FeatureValueType.STRING, FeatureValueType.NUMBER, FeatureValueType.JSON -> value?.value == null
+            else -> value?.value == null
           }
         }
       }

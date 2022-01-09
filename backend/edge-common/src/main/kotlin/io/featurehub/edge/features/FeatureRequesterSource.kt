@@ -1,8 +1,8 @@
 package io.featurehub.edge.features
 
 import io.featurehub.dacha.api.DachaApiKeyService
+import io.featurehub.dacha.model.DachaKeyDetailsResponse
 import io.featurehub.edge.KeyParts
-import io.featurehub.mr.model.DachaKeyDetailsResponse
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -12,7 +12,9 @@ class FeatureRequesterSource(private val api: DachaApiKeyService, override val k
   private val log: Logger = LoggerFactory.getLogger(FeatureRequesterSource::class.java)
 
   val notifyListener: MutableCollection<FeatureRequestCompleteNotifier> = ConcurrentLinkedQueue()
+
   override var details: DachaKeyDetailsResponse? = null
+  override var failure: Exception? = null
 
   override fun add(notifier: FeatureRequestCompleteNotifier) {
     var size: Int?
@@ -31,6 +33,7 @@ class FeatureRequesterSource(private val api: DachaApiKeyService, override val k
           if (details != null)
             copyKeyDetails(key, details!!)
         } catch (e : Exception) {
+          failure = e
           log.trace("failed to request details for key {}", key, e)
         }
 

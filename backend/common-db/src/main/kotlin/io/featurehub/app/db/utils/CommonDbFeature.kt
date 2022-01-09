@@ -41,7 +41,7 @@ open class CommonDbFeature : Feature {
       DeclaredConfigResolver.resolve(this)
   }
 
-  internal class FeatureHubDatabaseSource constructor(val dsConfig: DataSourceConfig, val migrationConfig: MigrationConfig);
+  internal class FeatureHubDatabaseSource constructor(val dsConfig: DataSourceConfig, val migrationConfig: MigrationConfig)
 
   private fun supportHome(dbUrl: String): String =
     dbUrl.replace("\$home", System.getProperty("user.home"))
@@ -50,7 +50,7 @@ open class CommonDbFeature : Feature {
   private fun configureDataSource(prefix: String): FeatureHubDatabaseSource {
 
     val p = Properties()
-    val propertyPrefix = prefix + ".";
+    val propertyPrefix = prefix + "."
     System.getProperties().forEach { k: Any?, v: Any? ->
       if (k is String && k.startsWith(propertyPrefix)) {
         p["datasource.$k"] = v
@@ -58,7 +58,7 @@ open class CommonDbFeature : Feature {
     }
 
     val sysEnvPrefix = prefix.uppercase() + "_"
-    System.getenv().forEach { k, v ->
+    System.getenv().forEach { (k, v) ->
       if (k.startsWith(sysEnvPrefix)) {
         p["datasource." + k.lowercase().replace("_", ".")] = v
       } else if (k.startsWith(propertyPrefix)) {
@@ -119,13 +119,16 @@ open class CommonDbFeature : Feature {
       dsConfig.driver = defaultDriver
     }
 
+    if (dsConfig.maxConnections < 5 && dsConfig.waitTimeoutMillis < 4000) {
+      log.warn("Max database connections < 5, increasing wait timeout to 4s")
+      dsConfig.waitTimeoutMillis = 4000
+    }
+
     return FeatureHubDatabaseSource(dsConfig, migrationConfig)
   }
 
   override fun configure(context: FeatureContext): Boolean {
     val dsMasterConfig = configureDataSource("db")
-
-    dsMasterConfig.dsConfig.maxConnections = 3
 
     val dsReplicaConfig = if (FallbackPropertyConfig.getConfig("db-replica.url") == null)
       null
@@ -163,6 +166,7 @@ open class CommonDbFeature : Feature {
     context.register(object: AbstractBinder() {
       override fun configure() {
         bind(database).to(Database::class.java).`in`(Singleton::class.java)
+        bind(dsMasterConfig.dsConfig).to(DataSourceConfig::class.java).`in`(Singleton::class.java)
         bind(DatabaseHealthSource::class.java).to(HealthSource::class.java)
       }
     })
@@ -180,7 +184,7 @@ open class CommonDbFeature : Feature {
         } catch (ignored: Exception) {
         }
       }
-    });
+    })
 
     return true
   }

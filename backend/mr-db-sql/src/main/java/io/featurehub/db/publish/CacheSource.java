@@ -5,7 +5,7 @@ import io.featurehub.db.model.DbEnvironment;
 import io.featurehub.db.model.DbFeatureValue;
 import io.featurehub.db.model.DbRolloutStrategy;
 import io.featurehub.db.model.DbServiceAccount;
-import io.featurehub.mr.model.PublishAction;
+import io.featurehub.dacha.model.PublishAction;
 
 import java.util.UUID;
 

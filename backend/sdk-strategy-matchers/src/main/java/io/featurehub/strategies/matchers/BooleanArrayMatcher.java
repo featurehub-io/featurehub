@@ -1,11 +1,11 @@
 package io.featurehub.strategies.matchers;
 
-import io.featurehub.mr.model.RolloutStrategyAttribute;
 import io.featurehub.mr.model.RolloutStrategyAttributeConditional;
+import io.featurehub.sse.model.FeatureRolloutStrategyAttribute;
 
 public class BooleanArrayMatcher implements StrategyMatcher {
   @Override
-  public boolean match(String suppliedValue, RolloutStrategyAttribute attr) {
+  public boolean match(String suppliedValue, FeatureRolloutStrategyAttribute attr) {
     boolean val = "true".equals(suppliedValue);
 
     if (attr.getConditional() == RolloutStrategyAttributeConditional.EQUALS) {

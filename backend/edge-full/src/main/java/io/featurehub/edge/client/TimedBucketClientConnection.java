@@ -1,16 +1,18 @@
 package io.featurehub.edge.client;
 
+import io.featurehub.dacha.model.PublishAction;
+import io.featurehub.dacha.model.PublishFeatureValue;
 import io.featurehub.edge.FeatureTransformer;
 import io.featurehub.edge.KeyParts;
+import io.featurehub.edge.bucket.BucketService;
+import io.featurehub.edge.bucket.TimedBucket;
+import io.featurehub.edge.bucket.TimedBucketSlot;
 import io.featurehub.edge.features.ETagSplitter;
 import io.featurehub.edge.features.EtagStructureHolder;
 import io.featurehub.edge.features.FeatureRequestResponse;
-import io.featurehub.edge.features.FeatureRequestSuccess;
 import io.featurehub.edge.stats.StatRecorder;
 import io.featurehub.edge.strategies.ClientContext;
 import io.featurehub.jersey.config.CacheJsonMapper;
-import io.featurehub.mr.model.FeatureValueCacheItem;
-import io.featurehub.mr.model.PublishAction;
 import io.featurehub.sse.model.SSEResultState;
 import io.featurehub.sse.stats.model.EdgeHitResultType;
 import io.featurehub.sse.stats.model.EdgeHitSourceType;
@@ -18,43 +20,68 @@ import io.prometheus.client.Histogram;
 import jakarta.ws.rs.core.MediaType;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.jersey.media.sse.OutboundEvent;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class TimedBucketClientConnection implements ClientConnection {
   private static final Logger log = LoggerFactory.getLogger(TimedBucketClientConnection.class);
-  private final EventOutput output;
-  private final KeyParts apiKey;
-  private final List<EjectHandler> handlers = new ArrayList<>();
-  private List<FeatureValueCacheItem> heldFeatureUpdates = new ArrayList<>();
-  private final FeatureTransformer featureTransformer;
-  private final ClientContext attributesForStrategy;
-  private final StatRecorder statRecorder;
-  private final EtagStructureHolder etags;
+  @NotNull private final EventOutput output;
+  @NotNull private final KeyParts apiKey;
+  private final Map<UUID, EjectHandler> handlers = new HashMap<>();
+  @NotNull private final BucketService bucketService;
+  private List<PublishFeatureValue> heldFeatureUpdates = new ArrayList<>();
+  @NotNull private final FeatureTransformer featureTransformer;
+  @NotNull private final ClientContext attributesForStrategy;
+  @NotNull private final StatRecorder statRecorder;
+  @NotNull private final EtagStructureHolder etags;
+  @NotNull private final UUID id;
 
-  private static final Histogram connectionLengthHistogram = Histogram.build("edge_conn_length_sse", "The length of " +
-    "time that the connection is open for SSE clients").register();
+  private static final Histogram connectionLengthHistogram =
+      Histogram.build(
+              "edge_conn_length_sse",
+              "The length of time that the connection is open for SSE clients")
+          .register();
 
   private final Histogram.Timer timer;
+  private TimedBucket timedBucketSlot;
 
-  private TimedBucketClientConnection(Builder builder) {
-    output = builder.output;
-    apiKey = builder.apiKey;
-    statRecorder = builder.statRecorder;
-    featureTransformer = builder.featureTransformer;
+  public TimedBucketClientConnection(
+      @NotNull EventOutput output,
+      @NotNull KeyParts apiKey,
+      @NotNull FeatureTransformer featureTransformer,
+      @NotNull StatRecorder statRecorder,
+      List<String> featureHubAttributes,
+      String etag,
+      @NotNull BucketService bucketService) {
+    this.bucketService = bucketService;
+    id = UUID.randomUUID();
+
+    this.output = output;
+    this.apiKey = apiKey;
+    this.featureTransformer = featureTransformer;
+    this.statRecorder = statRecorder;
 
     attributesForStrategy =
-        ClientContext.decode(builder.featureHubAttributes, Collections.singletonList(apiKey));
+        ClientContext.decode(featureHubAttributes, Collections.singletonList(apiKey));
 
-    etags = ETagSplitter.Companion.splitTag(builder.etag, List.of(apiKey), attributesForStrategy.makeEtag());
+    etags =
+        ETagSplitter.Companion.splitTag(etag, List.of(apiKey), attributesForStrategy.makeEtag());
 
     timer = connectionLengthHistogram.startTimer();
+  }
+
+  @Override
+  public UUID connectionId() {
+    return id;
   }
 
   @Override
@@ -119,15 +146,22 @@ public class TimedBucketClientConnection implements ClientConnection {
     if (!notifiedClosed) {
       notifiedClosed = true;
 
-      handlers.parallelStream().forEach(e -> e.eject(this));
+      handlers.values().parallelStream().forEach(e -> e.eject(this));
 
       timer.observeDuration();
     }
   }
 
   @Override
-  public void registerEjection(EjectHandler handler) {
-    this.handlers.add(handler);
+  public UUID registerEjection(EjectHandler handler) {
+    UUID id = UUID.randomUUID();
+    this.handlers.put(id, handler);
+    return id;
+  }
+
+  @Override
+  public void deregisterEjection(UUID id) {
+    this.handlers.remove(id);
   }
 
   @Override
@@ -164,7 +198,8 @@ public class TimedBucketClientConnection implements ClientConnection {
   public void failed(String reason) {
     try {
       writeMessage(SSEResultState.FAILURE, SSEStatusMessage.status(reason));
-      statRecorder.recordHit(apiKey, EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.EVENTSOURCE);
+      statRecorder.recordHit(
+          apiKey, EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.EVENTSOURCE);
       close(false);
     } catch (IOException e) {
       log.warn("Failed to fail client connection", e);
@@ -176,47 +211,65 @@ public class TimedBucketClientConnection implements ClientConnection {
   public void initResponse(FeatureRequestResponse edgeResponse) {
     try {
       try {
-        if (edgeResponse.getSuccess() != FeatureRequestSuccess.FAILED) {
-          if (edgeResponse.getSuccess() == FeatureRequestSuccess.SUCCESS) {
+        switch (edgeResponse.getSuccess()) {
+          case NO_SUCH_KEY_IN_CACHE:
+            failed("Unrecognized API key. Please stop requesting.");
+            break;
+          case SUCCESS:
             writeMessage(
                 SSEResultState.FEATURES,
                 ETagSplitter.Companion.makeEtags(
                     etags, Collections.singletonList(edgeResponse.getEtag())),
                 CacheJsonMapper.mapper.writeValueAsString(
                     edgeResponse.getEnvironment().getFeatures()));
-          }
 
-          statRecorder.recordHit(apiKey, EdgeHitResultType.SUCCESS, EdgeHitSourceType.EVENTSOURCE);
+            statRecorder.recordHit(
+                apiKey, EdgeHitResultType.SUCCESS, EdgeHitSourceType.EVENTSOURCE);
 
-          List<FeatureValueCacheItem> heldUpdates = heldFeatureUpdates;
+            writeHeldFeatureChanges();
+            break;
+          case NO_CHANGE:
+            statRecorder.recordHit(
+                apiKey, EdgeHitResultType.SUCCESS, EdgeHitSourceType.EVENTSOURCE);
 
-          heldFeatureUpdates = null;
+            writeHeldFeatureChanges();
+            break;
+          case DACHA_NOT_READY:
+            statRecorder.recordHit(apiKey, EdgeHitResultType.MISSED, EdgeHitSourceType.EVENTSOURCE);
 
-          if (heldUpdates != null) {
-            heldUpdates.forEach(this::notifyFeature);
-          }
-        } else {
-          failed("Unrecognized API Key");
+            // move it to a random number of buckets ahead to get a kick-out
+            bucketService.shuftyBucketsBecauseDachaIsUnavailable(this);
+            break;
         }
       } catch (IOException iex) {
         statRecorder.recordHit(
-          apiKey, EdgeHitResultType.FAILED_TO_WRITE_ON_INIT, EdgeHitSourceType.EVENTSOURCE);
+            apiKey, EdgeHitResultType.FAILED_TO_WRITE_ON_INIT, EdgeHitSourceType.EVENTSOURCE);
       }
     } catch (Exception e) {
       failed("Could not write initial features");
     }
   }
 
+  private void writeHeldFeatureChanges() {
+    List<PublishFeatureValue> heldUpdates = heldFeatureUpdates;
+
+    heldFeatureUpdates = null;
+
+    if (heldUpdates != null) {
+      heldUpdates.forEach(this::notifyFeature);
+    }
+  }
+
   // notify the client of a new feature (if they have received their features)
   @Override
-  public void notifyFeature(FeatureValueCacheItem rf) {
+  public void notifyFeature(PublishFeatureValue rf) {
     if (heldFeatureUpdates != null) {
       heldFeatureUpdates.add(rf);
     } else {
       try {
         String data =
             CacheJsonMapper.mapper.writeValueAsString(
-                featureTransformer.transform(rf, attributesForStrategy));
+                featureTransformer.transform(rf.getFeature(), attributesForStrategy));
         if (rf.getAction() == PublishAction.DELETE) {
           writeMessage(SSEResultState.DELETE_FEATURE, data);
         } else {
@@ -234,48 +287,13 @@ public class TimedBucketClientConnection implements ClientConnection {
     return etags;
   }
 
-  public static final class Builder {
-    private EventOutput output;
-    private KeyParts apiKey;
-    private List<String> featureHubAttributes;
-    private FeatureTransformer featureTransformer;
-    private StatRecorder statRecorder;
-    private String etag;
+  @Override
+  public void setTimedBucketSlot(TimedBucket timedBucket) {
+    this.timedBucketSlot = timedBucket;
+  }
 
-    public Builder() {}
-
-    public Builder statRecorder(StatRecorder val) {
-      statRecorder = val;
-      return this;
-    }
-
-    public Builder output(EventOutput val) {
-      output = val;
-      return this;
-    }
-
-    public Builder apiKey(KeyParts val) {
-      apiKey = val;
-      return this;
-    }
-
-    public Builder featureTransformer(FeatureTransformer val) {
-      featureTransformer = val;
-      return this;
-    }
-
-    public Builder featureHubAttributes(List<String> val) {
-      featureHubAttributes = val;
-      return this;
-    }
-
-    public ClientConnection build() {
-      return new TimedBucketClientConnection(this);
-    }
-
-    public Builder etag(String etag) {
-      this.etag = etag;
-      return this;
-    }
+  @Override
+  public TimedBucketSlot getTimedBucketSlot() {
+    return this.timedBucketSlot;
   }
 }

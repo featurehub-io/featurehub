@@ -3,6 +3,7 @@ package io.featurehub.db.services
 import io.ebean.Database
 import io.ebean.DuplicateKeyException
 import io.ebean.annotation.Transactional
+import io.featurehub.dacha.model.PublishAction
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.OptimisticLockingException
 import io.featurehub.db.api.Opts
@@ -297,7 +298,8 @@ class ServiceAccountSqlApi @Inject constructor(
       log.warn("Duplicate service account {}", sa.name, dke)
       throw ServiceAccountApi.DuplicateServiceAccountException()
     }
-    return convertUtils.toServiceAccount(sa, opts)
+
+    return convertUtils.toServiceAccount(sa, if (opts.contains(FillOpts.Permissions)) opts.add(FillOpts.SdkURL) else opts)
   }
 
   private fun environmentMap(serviceAccount: ServiceAccount?): Map<UUID, DbEnvironment> {

@@ -1,7 +1,8 @@
 package io.featurehub.strategies.matchers
 
-import io.featurehub.mr.model.RolloutStrategyAttribute
+
 import io.featurehub.mr.model.RolloutStrategyAttributeConditional
+import io.featurehub.sse.model.FeatureRolloutStrategyAttribute
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -15,7 +16,7 @@ class StringArrayMatcherSpec extends Specification {
   @Unroll
   def 'number array matcher works as expected'() {
     given: 'i create a rollout strategy'
-      def rsi = new RolloutStrategyAttribute().conditional(conditional).values(val)
+      def rsi = new FeatureRolloutStrategyAttribute().conditional(conditional).values(val)
     when:
       def theResult = matcher.match(suppliedValue.toString(), rsi)
     then:

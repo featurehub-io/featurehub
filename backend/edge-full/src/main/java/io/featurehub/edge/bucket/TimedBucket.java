@@ -4,17 +4,24 @@ import io.featurehub.edge.client.ClientConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.Time;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A segment of a time sequence that gathers all of the clients that connected in that time
  * sequence together. This allows them to all be kicked off at the same time as well.
  */
-public class TimedBucket {
+public class TimedBucket implements TimedBucketSlot {
   private static final Logger log = LoggerFactory.getLogger(TimedBucket.class);
-  private List<ClientConnection> timedConnections = Collections.synchronizedList(new ArrayList<>());
+  private Map<UUID, ClientConnection> timedConnections = new ConcurrentHashMap<>();
+  // connection id, ejection handler id
+  private Map<UUID, UUID> ejectionHandlers = new ConcurrentHashMap<>();
   private boolean expiring = false;
   private final int timerSlice;
 
@@ -23,13 +30,24 @@ public class TimedBucket {
   }
 
   public void addConnection(ClientConnection conn) {
-    timedConnections.add(conn);
+    timedConnections.put(conn.connectionId(), conn);
+
     // make sure we don't try and reclose a closed connection, helps release memory
-    conn.registerEjection(client -> {
+    UUID ejectionId = conn.registerEjection(client -> {
       if (!expiring) {
         timedConnections.remove(client);
       }
     });
+
+    conn.setTimedBucketSlot(this);
+
+    ejectionHandlers.put(conn.connectionId(), ejectionId);
+  }
+
+  public void swapConnection(ClientConnection conn, TimedBucket newBucket) {
+    timedConnections.remove(conn.connectionId());
+    conn.deregisterEjection(ejectionHandlers.get(conn.connectionId()));
+    newBucket.addConnection(conn);
   }
 
   /**
@@ -40,20 +58,18 @@ public class TimedBucket {
     if (!timedConnections.isEmpty()) {
       log.debug("kickout: {}: {}", timerSlice, timedConnections.size());
 
-      final List<ClientConnection> conns = this.timedConnections;
+      final Map<UUID, ClientConnection> conns = this.timedConnections;
 
-      this.timedConnections = new ArrayList<>();
+      this.timedConnections = new ConcurrentHashMap<>();
 
       expiring = true;
 
-      conns.parallelStream().forEach((c) -> {
-//        if (c != null) {
+      conns.values().parallelStream().forEach((c) -> {
           try {
             c.close();
           } catch (Exception e) {
             log.error("Failed to kick out connections", e);
           }
-//        }
       });
 
       expiring = false;

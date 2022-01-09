@@ -5,11 +5,11 @@ import cd.connect.app.config.DeclaredConfigResolver;
 import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
 import io.featurehub.dacha.api.CacheAction;
+import io.featurehub.dacha.model.CacheManagementMessage;
+import io.featurehub.dacha.model.CacheRequestType;
+import io.featurehub.dacha.model.CacheState;
 import io.featurehub.health.HealthSource;
 import io.featurehub.jersey.config.CacheJsonMapper;
-import io.featurehub.mr.model.CacheManagementMessage;
-import io.featurehub.mr.model.CacheRequestType;
-import io.featurehub.mr.model.CacheState;
 import io.featurehub.publish.ChannelNames;
 import io.featurehub.publish.NATSSource;
 import io.featurehub.utils.FallbackPropertyConfig;
@@ -384,7 +384,7 @@ public class CacheManager implements MessageHandler, HealthSource {
   private void publishCache(CacheManagementMessage resp) {
     log.info("We ({}:{}) are publishing cache to everyone (requested by {})", id, mit, resp.getId());
     executor.submit((Runnable) this::publishToCacheServiceAccounts);
-    executor.submit(this::publishCacheEnvironments);
+    executor.submit(this::PublishEnvironments);
   }
 
   private void publishToCacheServiceAccounts() {
@@ -393,7 +393,7 @@ public class CacheManager implements MessageHandler, HealthSource {
     });
   }
 
-  private void publishCacheEnvironments() {
+  private void PublishEnvironments() {
     internalCache.environments().forEach(env -> {
       config.publish(ChannelNames.environmentChannel(config.name), env, "unable to publish environment");
     });

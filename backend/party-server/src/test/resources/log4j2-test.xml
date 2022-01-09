@@ -25,6 +25,7 @@
     <AsyncLogger name="org.glassfish.jersey.server.wadl" level="error"/>
     <AsyncLogger name="io.avaje.config"  level="warn"/>
     <AsyncLogger name="org.hibernate" level="error"/>
+    <AsyncLogger name="io.featurehub.db.publish" level="trace"/>
     <AsyncRoot level="debug">
       <AppenderRef ref="STDOUT"/>
     </AsyncRoot>

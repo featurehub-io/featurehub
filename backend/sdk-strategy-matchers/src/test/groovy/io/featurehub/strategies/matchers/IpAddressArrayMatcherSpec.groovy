@@ -1,7 +1,8 @@
 package io.featurehub.strategies.matchers
 
-import io.featurehub.mr.model.RolloutStrategyAttribute
+
 import io.featurehub.mr.model.RolloutStrategyAttributeConditional
+import io.featurehub.sse.model.FeatureRolloutStrategyAttribute
 import spock.lang.Specification
 
 class IpAddressArrayMatcherSpec extends Specification {
@@ -13,7 +14,7 @@ class IpAddressArrayMatcherSpec extends Specification {
 
   def "ip address array match returns expected results"() {
     given: 'i create a rollout strategy'
-      def rsi = new RolloutStrategyAttribute().conditional(conditional).values(val)
+      def rsi = new FeatureRolloutStrategyAttribute().conditional(conditional).values(val)
     when:
       def theResult = matcher.match(suppliedValue, rsi)
     then:

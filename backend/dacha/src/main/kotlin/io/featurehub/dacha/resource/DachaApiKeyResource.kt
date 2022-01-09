@@ -1,24 +1,41 @@
 package io.featurehub.dacha.resource
 
+import cd.connect.app.config.ConfigKey
+import cd.connect.app.config.DeclaredConfigResolver
 import io.featurehub.dacha.InternalCache
 import io.featurehub.dacha.api.DachaApiKeyService
-import io.featurehub.mr.model.DachaFeatureValueItem
-import io.featurehub.mr.model.DachaKeyDetailsResponse
-import io.featurehub.mr.model.DachaPermissionResponse
+import io.featurehub.dacha.model.DachaKeyDetailsResponse
+import io.featurehub.dacha.model.DachaPermissionResponse
 import jakarta.inject.Inject
+import jakarta.ws.rs.InternalServerErrorException
 import jakarta.ws.rs.NotFoundException
+import jakarta.ws.rs.core.Response
 import org.glassfish.hk2.api.Immediate
 import java.util.*
 
 @Immediate
 class DachaApiKeyResource @Inject constructor(private val cache: InternalCache) : DachaApiKeyService {
+  @ConfigKey("dacha.busy-timeout")
+  var retryAfter = "5"
+
+  init {
+    DeclaredConfigResolver.resolve(this)
+  }
+
   override fun getApiKeyDetails(eId: UUID, serviceAccountKey: String): DachaKeyDetailsResponse {
+    // in a proper load balance solution, this won't happen, it can happen in Party Server so we need to show the correct error
+
+    if (!cache.cacheComplete()) {
+      throw InternalServerErrorException(Response.status(503).header("Retry-After", retryAfter).entity("The server is not ready yet").build())
+    }
+
     val collection = cache.getFeaturesByEnvironmentAndServiceAccount(eId, serviceAccountKey) ?: throw NotFoundException()
 
+    val environment = collection.features.environment
     return DachaKeyDetailsResponse()
-      .organizationId(collection.organizationId)
-      .portfolioId(collection.portfolioId)
-      .applicationId(collection.applicationId)
+      .organizationId(environment.organizationId)
+      .portfolioId(environment.portfolioId)
+      .applicationId(environment.applicationId)
       .serviceKeyId(collection.serviceAccountId)
       .etag(collection.features.etag)
       .features(collection.features.features.toMutableList())
@@ -27,16 +44,15 @@ class DachaApiKeyResource @Inject constructor(private val cache: InternalCache) 
   override fun getApiKeyPermissions(eId: UUID, serviceAccountKey: String, featureKey: String): DachaPermissionResponse {
     val collection = cache.getFeaturesByEnvironmentAndServiceAccount(eId, serviceAccountKey) ?: throw NotFoundException()
 
-    val feature = collection.features.features.find { fv -> fv.feature?.key?.equals(featureKey) == true } ?: throw NotFoundException()
+    val feature = collection.features.features.find { fv -> fv.feature.key == featureKey } ?: throw NotFoundException()
 
+    val environment = collection.features.environment
     return DachaPermissionResponse()
-      .organizationId(collection.organizationId)
-      .portfolioId(collection.portfolioId)
-      .applicationId(collection.applicationId)
+      .organizationId(environment.organizationId)
+      .portfolioId(environment.portfolioId)
+      .applicationId(environment.applicationId)
       .serviceKeyId(collection.serviceAccountId)
       .roles(collection.perms.permissions)
-      .feature(DachaFeatureValueItem()
-        .feature(feature.feature)
-        .value(feature.value))
+      .feature(feature)
   }
 }

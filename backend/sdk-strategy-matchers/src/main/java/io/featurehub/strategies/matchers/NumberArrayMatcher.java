@@ -1,6 +1,6 @@
 package io.featurehub.strategies.matchers;
 
-import io.featurehub.mr.model.RolloutStrategyAttribute;
+import io.featurehub.sse.model.FeatureRolloutStrategyAttribute;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -13,7 +13,7 @@ public class NumberArrayMatcher implements StrategyMatcher {
   private BigDecimal supplied = null;
 
   @Override
-  public boolean match(String suppliedValue, RolloutStrategyAttribute attr) {
+  public boolean match(String suppliedValue, FeatureRolloutStrategyAttribute attr) {
     try {
       Supplier<BigDecimal> bd = () -> {
         if (supplied == null) {

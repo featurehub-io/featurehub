@@ -2,6 +2,7 @@ package io.featurehub.db.services;
 
 import io.ebean.Database;
 import io.ebean.annotation.Transactional;
+import io.featurehub.dacha.model.PublishAction;
 import io.featurehub.db.model.DbApplication;
 import io.featurehub.db.model.DbApplicationFeature;
 import io.featurehub.db.model.DbEnvironment;
@@ -12,7 +13,6 @@ import io.featurehub.db.model.DbPortfolio;
 import io.featurehub.db.model.DbServiceAccount;
 import io.featurehub.db.model.query.QDbEnvironment;
 import io.featurehub.db.publish.CacheSource;
-import io.featurehub.mr.model.PublishAction;
 import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

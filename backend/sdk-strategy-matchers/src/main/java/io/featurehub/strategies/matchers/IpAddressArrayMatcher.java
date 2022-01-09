@@ -1,13 +1,13 @@
 package io.featurehub.strategies.matchers;
 
 
-import io.featurehub.mr.model.RolloutStrategyAttribute;
+import io.featurehub.sse.model.FeatureRolloutStrategyAttribute;
 
 import java.net.InetAddress;
 
 public class IpAddressArrayMatcher implements StrategyMatcher {
   @Override
-  public boolean match(String suppliedValue, RolloutStrategyAttribute attr) {
+  public boolean match(String suppliedValue, FeatureRolloutStrategyAttribute attr) {
     try {
       InetAddress suppliedAddress = CIDRMatch.suppliedAddress(suppliedValue);
 

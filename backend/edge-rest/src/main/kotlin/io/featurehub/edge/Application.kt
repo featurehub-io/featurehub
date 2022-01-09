@@ -33,7 +33,7 @@ class Application {
     // recommended this is on a different port
     registerMetrics(config)
 
-    FeatureHubJerseyHost(config).start()
+    FeatureHubJerseyHost(config).disallowWebHosting().start()
 
     log.info("FeatureHub GET-Edge Has Started.")
 

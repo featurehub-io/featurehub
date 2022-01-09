@@ -2,7 +2,7 @@ package io.featurehub.dacha.resource
 
 import io.featurehub.dacha.InternalCache
 import io.featurehub.dacha.api.DachaEnvironmentService
-import io.featurehub.mr.model.DachaStructureResponse
+import io.featurehub.dacha.model.DachaStructureResponse
 import jakarta.inject.Inject
 import jakarta.ws.rs.NotFoundException
 import org.glassfish.hk2.api.Immediate
@@ -15,8 +15,8 @@ class DachaEnvironmentResource @Inject constructor(private val cache: InternalCa
     val env = cache.findEnvironment(eId) ?: throw NotFoundException()
 
     return DachaStructureResponse()
-      .organizationId(env.organizationId!!)
-      .portfolioId(env.portfolioId!!)
-      .applicationId(env.applicationId!!)
+      .organizationId(env.organizationId)
+      .portfolioId(env.portfolioId)
+      .applicationId(env.applicationId)
   }
 }

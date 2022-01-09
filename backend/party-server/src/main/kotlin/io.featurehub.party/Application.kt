@@ -3,8 +3,6 @@ package io.featurehub.party
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
 import cd.connect.jersey.common.CorsFilter
-import cd.connect.lifecycle.ApplicationLifecycleManager
-import cd.connect.lifecycle.LifecycleStatus
 import io.featurehub.dacha.DachaFeature
 import io.featurehub.dacha.api.DachaClientFeature
 import io.featurehub.dacha.api.DachaClientServiceRegistry
@@ -18,7 +16,6 @@ import io.featurehub.mr.ManagementRepositoryFeature
 import io.featurehub.publish.ChannelConstants
 import io.featurehub.publish.NATSFeature
 import io.featurehub.web.security.oauth.OAuth2Feature
-import org.glassfish.hk2.api.ServiceLocator
 import org.glassfish.jersey.server.ResourceConfig
 import org.glassfish.jersey.server.spi.Container
 import org.glassfish.jersey.server.spi.ContainerLifecycleListener

@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 public class Application {
   private static final Logger log = LoggerFactory.getLogger(Application.class);
 
-  private static void initializeCommonJerseyLayer() throws Exception {
+  private static void initializeCommonJerseyLayer() {
     // register our resources, try and tag them as singleton as they are instantiated faster
     ResourceConfig config =
         new ResourceConfig(
@@ -24,7 +24,7 @@ public class Application {
     // check if we should list on a different port
     MetricsHealthRegistration.Companion.registerMetrics(config);
 
-    new FeatureHubJerseyHost(config).start();
+    new FeatureHubJerseyHost(config).disallowWebHosting().start();
 
     log.info("Dacha Launched - (HTTP/2 payloads enabled!)");
   }

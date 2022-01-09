@@ -1,10 +1,11 @@
 package io.featurehub.edge.features
 
+import io.featurehub.dacha.model.DachaKeyDetailsResponse
 import io.featurehub.edge.KeyParts
-import io.featurehub.mr.model.DachaKeyDetailsResponse
 
 interface FeatureRequester {
   val details: DachaKeyDetailsResponse?
+  val failure: Exception?
   val key: KeyParts
 
   fun add(notifier: FeatureRequestCompleteNotifier)

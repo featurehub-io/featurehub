@@ -1,9 +1,9 @@
 package io.featurehub.edge.strategies
 
-import io.featurehub.mr.model.RolloutStrategy
-import io.featurehub.mr.model.RolloutStrategyAttribute
 import io.featurehub.mr.model.RolloutStrategyAttributeConditional
 import io.featurehub.mr.model.RolloutStrategyFieldType
+import io.featurehub.sse.model.FeatureRolloutStrategy
+import io.featurehub.sse.model.FeatureRolloutStrategyAttribute
 import io.featurehub.strategies.matchers.MatcherRegistry
 import io.featurehub.strategies.percentage.PercentageCalculator
 import spock.lang.Specification
@@ -26,7 +26,7 @@ class ApplyFeatureSpec extends Specification {
   def "if the user's percent is calculated x% and we have a rollout strategy at 20%"() {
     given: "we have rollout strategies set"
       def rollout = [
-        new RolloutStrategy()
+        new FeatureRolloutStrategy()
           .percentage(underPercent)
           .value("blue")
       ]
@@ -49,7 +49,7 @@ class ApplyFeatureSpec extends Specification {
   @Unroll
   def "if the user's percent is calculated x% and we have no rollout strategies"() {
     given: "we have rollout strategies set"
-      def rollout = new ArrayList<RolloutStrategy>()
+      def rollout = new ArrayList<FeatureRolloutStrategy>()
     and:
       def cac = new ClientContext(false)
       cac.attributes.put(ClientContext.USERKEY, ['mary@mary.com'])
@@ -69,7 +69,7 @@ class ApplyFeatureSpec extends Specification {
   def "We have rollout strategies but no user key"() {
     given: "we have rollout strategies set"
       def rollout = [
-        new RolloutStrategy()
+        new FeatureRolloutStrategy()
           .percentage(20)
           .value("blue")
       ]
@@ -90,7 +90,7 @@ class ApplyFeatureSpec extends Specification {
   def "a null ClientAttributeConnection generates the default value"() {
     given: "we have rollout strategies set"
       def rollout = [
-        new RolloutStrategy()
+        new FeatureRolloutStrategy()
           .percentage(20)
           .value("blue")
       ]
@@ -107,10 +107,10 @@ class ApplyFeatureSpec extends Specification {
   def "we have a CAC with no percentage data at all but a match via attributes"() {
     given: "we have a strategy set"
       def rollout = [
-        new RolloutStrategy().value("sausage")
+        new FeatureRolloutStrategy().value("sausage")
           .percentage(0)
           .attributes([
-            new RolloutStrategyAttribute()
+            new FeatureRolloutStrategyAttribute()
               .fieldName("warehouseId")
               .conditional(RolloutStrategyAttributeConditional.EQUALS)
               .values(['ponsonby'])

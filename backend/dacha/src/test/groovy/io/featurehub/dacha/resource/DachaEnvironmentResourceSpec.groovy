@@ -1,7 +1,7 @@
 package io.featurehub.dacha.resource
 
 import io.featurehub.dacha.InternalCache
-import io.featurehub.mr.model.EnvironmentCacheItem
+import io.featurehub.dacha.model.PublishEnvironment
 import jakarta.ws.rs.NotFoundException
 import spock.lang.Specification
 
@@ -29,7 +29,7 @@ class DachaEnvironmentResourceSpec extends Specification {
       def portId = UUID.randomUUID()
       def appId = UUID.randomUUID()
 
-      cache.findEnvironment(_) >> new EnvironmentCacheItem()
+      cache.findEnvironment(_) >> new PublishEnvironment()
           .organizationId(orgId).applicationId(appId).portfolioId(portId)
     when: "we ask for the environment"
       def details = resource.getEnvironmentStructure(UUID.randomUUID())

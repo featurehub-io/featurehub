@@ -2,6 +2,7 @@ package io.featurehub.db.services
 
 import io.ebean.Database
 import io.ebean.annotation.Transactional
+import io.featurehub.dacha.model.PublishAction
 import io.featurehub.db.api.*
 import io.featurehub.db.model.*
 import io.featurehub.db.model.query.*
@@ -328,7 +329,7 @@ class EnvironmentSqlApi @Inject constructor(
     )
     for (e in environments) {
       // create a slot for each environment
-      val spot: MutableMap<UUID, Int> = environments.map { e -> e.id!! to 0 }.toMap() as MutableMap<UUID, Int>
+      val spot: MutableMap<UUID, Int> = environments.map { env -> env.id!! to 0 }.toMap() as MutableMap<UUID, Int>
 
       // set our one to "visited"
       spot[e.id!!] = 1

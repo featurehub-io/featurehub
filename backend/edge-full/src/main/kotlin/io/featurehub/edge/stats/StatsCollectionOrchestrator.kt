@@ -9,6 +9,7 @@ import io.prometheus.client.Histogram
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.time.OffsetDateTime
 
 /**
  * This combines a timer and a stats squasher that then asks a StatsPublisher to publish the bundles in
@@ -47,7 +48,7 @@ class StatsCollectionOrchestrator @Inject constructor(private val publisher: Sta
       try {
         for (stat in stats) {
           val bundle = perCachePublish.computeIfAbsent(stat.key.cacheName
-          ) { EdgeStatsBundle() }
+          ) { EdgeStatsBundle().timestamp(OffsetDateTime.now()).misses(0) }
 
           bundle.apiKeys.add(stat.value.squash())
 

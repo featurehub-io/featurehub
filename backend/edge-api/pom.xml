@@ -80,8 +80,7 @@
             <configuration>
               <files>
                 <file>${project.basedir}/../mr-api/end2end-common.yaml</file>
-                <file>${project.basedir}/../mr-api/strategy-enums.yaml</file>
-                <file>${project.basedir}/src/main/resources/sse-api.yaml</file>
+                <file>${project.basedir}/sse-api.yaml</file>
               </files>
               <finalYaml>${project.basedir}/target/final.yaml</finalYaml>
             </configuration>
@@ -96,7 +95,7 @@
           <dependency>
             <groupId>cd.connect.openapi</groupId>
             <artifactId>connect-openapi-jersey3</artifactId>
-            <version>7.9</version>
+            <version>7.10</version>
           </dependency>
         </dependencies>
         <executions>

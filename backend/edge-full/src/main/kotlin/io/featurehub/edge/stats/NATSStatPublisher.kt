@@ -16,8 +16,10 @@ import java.util.concurrent.ConcurrentHashMap
 class NATSStatPublisher @Inject constructor(private val nats : NATSSource) : StatPublisher {
   private val log: Logger = LoggerFactory.getLogger(NATSStatPublisher::class.java)
 
-  private val prometheusPublishSuccessCounter = ConcurrentHashMap<String, Counter>()
-  private val prometheusPublishFailedCounter = ConcurrentHashMap<String, Counter>()
+  companion object {
+    private val prometheusPublishSuccessCounter = ConcurrentHashMap<String, Counter>()
+    private val prometheusPublishFailedCounter = ConcurrentHashMap<String, Counter>()
+  }
 
   override fun publish(cacheName: String, bundle: EdgeStatsBundle) {
     val channelName = ChannelNames.edgeStatsChannel(cacheName)
@@ -46,7 +48,7 @@ class NATSStatPublisher @Inject constructor(private val nats : NATSSource) : Sta
         ).register()
       }.inc()
 
-      log.error("Failed to publish to channel {}", channelName)
+      log.error("Failed to publish to channel {}", channelName, e)
     }
   }
 }
