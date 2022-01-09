@@ -49,10 +49,10 @@ public class ApplyFeature {
 
             percentage = percentageCalculator.determineClientPercentage(percentageKey,
               featureValueId);
-            log.info("percentage for {} on {} calculated at {}", defaultPercentageKey, key, percentage);
+            log.trace("percentage for {} on {} calculated at {}", defaultPercentageKey, key, percentage);
           }
 
-          log.info("comparing actual {} vs required: {}", percentage, rsi.getPercentage());
+          log.trace("comparing actual {} vs required: {}", percentage, rsi.getPercentage());
           int useBasePercentage = rsi.getAttributes().isEmpty() ? basePercentageVal : 0;
             // if the percentage is lower than the user's key +
             // id of feature value then apply it
