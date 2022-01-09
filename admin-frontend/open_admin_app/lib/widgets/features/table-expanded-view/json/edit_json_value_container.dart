@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/utils/utils.dart';
@@ -36,7 +38,7 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
     final valueSource = widget.rolloutStrategy != null
         ? widget.rolloutStrategy!.value
         : widget.strBloc.featureValue.valueJson;
-    tec.text = (valueSource ?? '').toString();
+    tec.text = (const JsonEncoder.withIndent('  ').convert(json.decode(valueSource)) ?? '').toString();
   }
 
   @override
@@ -125,7 +127,7 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
   }
 
   void _valueChanged() {
-    final replacementValue = tec.text.isEmpty ? null : tec.text.trim();
+    final replacementValue = tec.text.isEmpty ? null : json.encode(json.decode(tec.text.trim())).toString();
     if (widget.rolloutStrategy != null) {
       widget.rolloutStrategy!.value = replacementValue;
       widget.strBloc.updateStrategy();
