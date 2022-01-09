@@ -38,7 +38,17 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
     final valueSource = widget.rolloutStrategy != null
         ? widget.rolloutStrategy!.value
         : widget.strBloc.featureValue.valueJson;
-    tec.text = (const JsonEncoder.withIndent('  ').convert(json.decode(valueSource)) ?? '').toString();
+    if (valueSource != null) {
+      try {
+        tec.text = const JsonEncoder.withIndent('  ')
+            .convert(json.decode(valueSource))
+            .toString();
+      } catch (e) {
+        tec.text = valueSource.toString();
+      }
+    } else {
+      tec.text = '';
+    }
   }
 
   @override
@@ -127,7 +137,9 @@ class _EditJsonValueContainerState extends State<EditJsonValueContainer> {
   }
 
   void _valueChanged() {
-    final replacementValue = tec.text.isEmpty ? null : json.encode(json.decode(tec.text.trim())).toString();
+    final replacementValue = tec.text.isEmpty
+        ? null
+        : json.encode(json.decode(tec.text.trim())).toString();
     if (widget.rolloutStrategy != null) {
       widget.rolloutStrategy!.value = replacementValue;
       widget.strBloc.updateStrategy();
