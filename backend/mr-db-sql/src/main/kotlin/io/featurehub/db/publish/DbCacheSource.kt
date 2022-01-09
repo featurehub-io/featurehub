@@ -29,6 +29,9 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
 
   init {
     cachePoolSize = dsConfig.maxConnections / 2
+    if (cachePoolSize!! < 1) {
+      cachePoolSize = 1
+    }
     DeclaredConfigResolver.resolve(this)
     log.info("Using maximum of {} connections to service request from Dacha", cachePoolSize)
     executor = executorService()
