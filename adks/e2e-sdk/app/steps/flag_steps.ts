@@ -26,7 +26,7 @@ Then(/^the feature flag is (locked|unlocked) and (off|on)$/, async function (loc
     // logger.info('the feature %s is value %s and locked status %s', this.feature.key, f.valueBoolean, f.locked);
     expect(f.getBoolean()).to.eq(value === 'on');
     expect(f.isLocked()).to.eq(lockedStatus === 'locked');
-  }, 2000, 200);
+  }, 4000, 500);
 });
 
 When(/^I (unlock|lock) the feature$/, async function (lockUnlock) {

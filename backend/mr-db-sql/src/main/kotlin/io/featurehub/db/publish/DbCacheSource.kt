@@ -419,7 +419,7 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
       if (cacheName != null) {
         val cacheBroadcast = cacheBroadcasters[cacheName]
         if (cacheBroadcast != null) {
-          log.debug("publishing environment {} ({})", environment.name, environment.id)
+          log.trace("publishing environment {} ({})", environment.name, environment.id)
           val environmentCacheItem = fillEnvironmentCacheItem(
             environmentsByCacheName(cacheName).findCount(),
             environment,

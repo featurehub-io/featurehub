@@ -129,6 +129,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
         updateFeatureValue(featureValue, person, dbFeatureValue);
 
         save(dbFeatureValue);
+        publish(dbFeatureValue);
 
         return convertUtils.toFeatureValue(dbFeatureValue);
       } else {
@@ -143,7 +144,10 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
   @Transactional
   private void save(DbFeatureValue featureValue) {
     database.save(featureValue);
+  }
 
+  private void publish(DbFeatureValue featureValue) {
+    log.trace("publishing update for {}", featureValue);
     cacheSource.publishFeatureChange(featureValue);
   }
 
@@ -176,6 +180,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
     updateFeatureValue(featureValue, person, strategy);
 
     save(strategy);
+    publish(strategy);
 
     return convertUtils.toFeatureValue(strategy);
   }
@@ -366,6 +371,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
 
     // API can never change strategies
     save(fv);
+    publish(fv);
   }
 
   static class EnvironmentsAndStrategies {

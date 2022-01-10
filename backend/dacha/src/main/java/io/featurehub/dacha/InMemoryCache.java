@@ -359,7 +359,7 @@ public class InMemoryCache implements InternalCache {
 
   private void receivedNewFeatureForExistingEnvironmentFeatureCache(PublishFeatureValue fv, EnvironmentFeatures featureMap) {
     if (fv.getAction() == PublishAction.CREATE) {
-      log.debug("received brand new feature `{}` for a new environment `{}`",
+      log.trace("received brand new feature `{}` for a new environment `{}`",
         fv.getFeature().getFeature().getKey(),
         fv.getEnvironmentId());
       featureMap.set(fv.getFeature());
