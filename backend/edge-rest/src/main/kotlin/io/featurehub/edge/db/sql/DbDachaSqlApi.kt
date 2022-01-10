@@ -12,6 +12,7 @@ import io.featurehub.mr.model.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
+import java.util.stream.Collectors
 
 class DbDachaSqlApi : DachaApiKeyService {
   private val log: Logger = LoggerFactory.getLogger(DbDachaSqlApi::class.java)
@@ -104,9 +105,34 @@ class DbDachaSqlApi : DachaApiKeyService {
       else -> fv.value(null)
     }
 
+    if (dbFeature.rolloutStrategies != null) {
+      fv.rolloutStrategies(dbFeature.rolloutStrategies.map { fromRolloutStrategy(it) })
+    } else {
+      fv.rolloutStrategies(listOf())
+    }
+
+
     return fv
   }
 
+  private fun fromRolloutStrategy(rs: RolloutStrategy): CacheRolloutStrategy {
+    return CacheRolloutStrategy()
+      .id(rs.id ?: "rs-id")
+      .percentage(rs.percentage)
+      .percentageAttributes(rs.percentageAttributes)
+      .value(rs.value)
+      .attributes(if (rs.attributes == null) ArrayList() else rs.attributes!!
+        .stream().map { rsa: RolloutStrategyAttribute -> fromRolloutStrategyAttribute(rsa) }
+        .collect(Collectors.toList()))
+  }
+
+  private fun fromRolloutStrategyAttribute(rsa: RolloutStrategyAttribute): CacheRolloutStrategyAttribute {
+    return CacheRolloutStrategyAttribute()
+      .conditional(rsa.conditional!!)
+      .values(rsa.values)
+      .fieldName(rsa.fieldName!!)
+      .type(rsa.type!!)
+  }
 
   private fun calculateEtag(details: DachaKeyDetailsResponse): String {
     val det =

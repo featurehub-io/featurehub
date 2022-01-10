@@ -15,7 +15,7 @@ Feature: Create feature values
     When I create the feature with a key "<featureKey>" and alias "<alias>" and name "<featureName>" and link "<link>" and type "boolean"
     And I can find the feature with a key "<featureKey>"
 #    add superuser and regular user to the group to they have feature permissions
-    When I add the user "superuser@mailinator.com" to the group "<adminGroup>" in the portfolio "<portfolio>"
+    When I add the user "irina@i.com" to the group "<adminGroup>" in the portfolio "<portfolio>"
     When I add the user "seb@mailinator.com" to the group "<adminGroup>" in the portfolio "<portfolio>"
     When I can login as user "seb@mailinator.com" with password "password123"
     And I unlock the feature value for environment "<envName>" for feature "<featureKey>"
@@ -92,7 +92,7 @@ Feature: Create feature values
     And I ensure that the feature with the key "<featureKey>" has been removed
     When I create the feature with a key "<featureKey>" and alias "<alias>" and name "<featureName>" and link "<link>" and type "boolean"
     And I can find the feature with a key "<featureKey>"
-    When I add the user "superuser@mailinator.com" to the group "<adminGroup>" in the portfolio "<portfolio>"
+    When I add the user "irina@i.com" to the group "<adminGroup>" in the portfolio "<portfolio>"
     And I unlock the feature value for environment "<envName>" for feature "<featureKey>"
     And I unlock the feature value for environment "<envName2>" for feature "<featureKey>"
     And I set the boolean feature value as "true" for environment "<envName>" for feature "<featureKey>"

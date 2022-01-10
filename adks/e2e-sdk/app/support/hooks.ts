@@ -14,8 +14,8 @@ import { makeid } from './random';
 import { expect } from 'chai';
 import { SdkWorld } from './world';
 
-// const superuserEmailAddress = 'irina@i.com';
-const superuserEmailAddress = 'superuser@mailinator.com';
+const superuserEmailAddress = 'irina@i.com';
+// const superuserEmailAddress = 'superuser@mailinator.com';
 const superuserPassword = 'password123';
 
 async function ensureLoggedIn(world: SdkWorld) {
