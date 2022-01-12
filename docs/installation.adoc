@@ -365,6 +365,11 @@ endpoints on a different port.
 
 - `monitor.port` (undefined) - if not defined, it will expose the metrics and health on the server port.
 If not, it will expose them on this port (and not on the server port).
+- `featurehub.url-path` - this allows you to not host the FeatureHub site on / and is useful if you are not allocating a full url to FeatureHub because
+of restrictions in your company domain setup. This will set the <base> href in the index.html of the website and the
+front-end will also know how to make calls. If you have extracted the front-end and put it on a CDN, you will need to make
+that change yourself. Note, this is an offset, not a full domain name, e.g. `featurehub.url-path=/my-group/featurehub`
+
 
 All servers expose quite extensive metrics for Prometheus.
 
