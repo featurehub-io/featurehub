@@ -14,6 +14,8 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.spi.Container;
 import org.glassfish.jersey.server.spi.ContainerLifecycleListener;
 
+import static io.featurehub.rest.Info.APPLICATION_NAME_PROPERTY;
+
 public class Application {
   private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(Application.class);
 
@@ -66,6 +68,9 @@ public class Application {
   }
 
   public static void main(String[] args) {
+    System.setProperty("user.timezone", "UTC");
+    System.setProperty(APPLICATION_NAME_PROPERTY, "edge-full");
+
     try {
       new Application().run();
     } catch (Exception e) {

@@ -1,0 +1,30 @@
+openapi: 3.0.1
+info:
+  x-version-api: fragment of version API
+paths:
+  /info/version:
+    get:
+      description: Gets information as to what this server is.
+      operationId: getInfoVersion
+      tags:
+        - InfoService
+      responses:
+        200:
+          description: The basic  information on this server
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationVersionInfo"
+components:
+  schemas:
+    ApplicationVersionInfo:
+      type: object
+      required:
+        - name
+        - version
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+

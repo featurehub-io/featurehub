@@ -1,4 +1,4 @@
-import { After, AfterAll, Before } from '@cucumber/cucumber';
+import { After, AfterAll, Before, BeforeAll } from '@cucumber/cucumber';
 import {
   Application,
   AuthServiceApi,
@@ -13,6 +13,7 @@ import {
 import { makeid } from './random';
 import { expect } from 'chai';
 import { SdkWorld } from './world';
+import { discover } from './discovery';
 
 const superuserEmailAddress = 'irina@i.com';
 // const superuserEmailAddress = 'superuser@mailinator.com';
@@ -68,4 +69,8 @@ After(function () {
     this.edgeServer.close();
     console.log('edge connection closed');
   }
+});
+
+BeforeAll(async function() {
+  await discover();
 });

@@ -3,14 +3,13 @@ package io.featurehub.party
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
 import cd.connect.jersey.common.CorsFilter
-import cd.connect.lifecycle.ApplicationLifecycleManager
-import cd.connect.lifecycle.LifecycleStatus
 import io.featurehub.edge.EdgeGetFeature
 import io.featurehub.health.MetricsHealthRegistration.Companion.registerMetrics
 import io.featurehub.jersey.FeatureHubJerseyHost
 import io.featurehub.lifecycle.TelemetryFeature
 import io.featurehub.mr.ManagementRepositoryFeature
 import io.featurehub.publish.ChannelConstants
+import io.featurehub.rest.Info
 import io.featurehub.web.security.oauth.OAuth2Feature
 import org.glassfish.jersey.server.ResourceConfig
 import org.slf4j.Logger
@@ -53,6 +52,8 @@ class Application {
     @JvmStatic
     fun main(args: Array<String>) {
       System.setProperty("user.timezone", "UTC")
+      System.setProperty(Info.APPLICATION_NAME_PROPERTY, "party-server-ish")
+
       System.clearProperty("nats.urls")
 
       try {

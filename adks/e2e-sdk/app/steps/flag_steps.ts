@@ -1,5 +1,5 @@
 import { Given, Then, When } from '@cucumber/cucumber';
-import { Feature, FeatureValueType, RolloutStrategy, RolloutStrategyAttribute } from 'featurehub-javascript-admin-sdk';
+import { Feature, FeatureValueType } from 'featurehub-javascript-admin-sdk';
 import { makeid } from '../support/random';
 import { expect } from 'chai';
 import waitForExpect from 'wait-for-expect';
