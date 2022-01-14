@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:html';
 
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
@@ -570,11 +571,10 @@ class ManagementRepositoryClientBloc implements Bloc {
   }
 
   String registrationUrl(String token) {
-    var tokenizedPart = '/register-url?token=$token';
-    if (Uri.base.hasPort) {
-      return Uri.base.host + ':' + Uri.base.port.toString() + tokenizedPart;
-    } else {
-      return Uri.base.host + tokenizedPart;
-    }
+    var tokenizedPart = 'register-url?token=$token';
+    final url =
+        document.baseUri != null ? Uri.parse(document.baseUri!) : Uri.base;
+    final path = url.toString() + tokenizedPart;
+    return path;
   }
 }

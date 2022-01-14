@@ -306,7 +306,7 @@ The following properties can be set:
 -  `environment.production.name` (production) - the name given to the automatically created production environment. It will
 be tagged "production".
 - `environment.production.desc` (production) - the description field for same.
-- `register.url` - the url used for registration. The front-end should strip the prefix off this and add its own relative one. The format has to
+- `register.url` [[register-url, Register URL]] - the url used for registration. The front-end should strip the prefix off this and add its own relative one. The format has to
 be `register.url=http://localhost:8085/register-url?token=%s` - if your site is `https://some.domain.info` for example, it would
 be `register.url=https://some.domain.info/register-url?token=%s`
 - `portfolio.admin.group.suffix` ("Administrators") - the suffix added to a portfolio group when a portfolio is created
@@ -368,10 +368,9 @@ If not, it will expose them on this port (and not on the server port).
 - `featurehub.url-path` - this allows you to not host the FeatureHub site on / and is useful if you are not allocating a full url to FeatureHub because
 of restrictions in your company domain setup. This will set the <base> href in the index.html of the website and the
 front-end will also know how to make calls. If you have extracted the front-end and put it on a CDN, you will need to make
-that change yourself. Note, this is an offset, not a full domain name, e.g. `featurehub.url-path=/my-group/featurehub`
+that change yourself. Note, this is an offset, not a full domain name, e.g. `featurehub.url-path=/my-group/featurehub`. This will affect your
+<<register-url,registration url>> in the Management Repository, so you will need to make sure you change that as well.
 
-
-All servers expose quite extensive metrics for Prometheus.
 
 ==== Common to Party, SSE Edge and Management Repository
 
@@ -394,7 +393,9 @@ wish to include login urls.
 
 === Prometheus
 
-The Prometheus endpoint is on /metrics for each of the servers. It is exposed on the Party and MR Servers by default.
+The Prometheus endpoint is on /metrics for each of the servers. Extensive metrics are exposed on all services by
+default. It is recommended that for public facing sites, you separate the monitoring port from the server port, so you
+don't expose your health check or metrics endpoints to the public.
 
 === Health and Liveness checks
 
