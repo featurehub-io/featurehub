@@ -75,6 +75,8 @@
                   <password>${env.REGISTRY_PASSWORD}</password>
                 </auth>
               </to>
+              <!-- we need this to get the version of the app in the MANIFEST.MF file -->
+              <containerizingMode>packaged</containerizingMode>
               <extraDirectories>
                 <paths>
                   <path>

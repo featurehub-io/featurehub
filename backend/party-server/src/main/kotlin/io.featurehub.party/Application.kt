@@ -15,6 +15,7 @@ import io.featurehub.lifecycle.TelemetryFeature
 import io.featurehub.mr.ManagementRepositoryFeature
 import io.featurehub.publish.ChannelConstants
 import io.featurehub.publish.NATSFeature
+import io.featurehub.rest.Info.Companion.APPLICATION_NAME_PROPERTY
 import io.featurehub.web.security.oauth.OAuth2Feature
 import org.glassfish.jersey.server.ResourceConfig
 import org.glassfish.jersey.server.spi.Container
@@ -75,6 +76,7 @@ class Application {
     @JvmStatic
     fun main(args: Array<String>) {
       System.setProperty("user.timezone", "UTC")
+      System.setProperty(APPLICATION_NAME_PROPERTY, "party-server")
       try {
         Application().run()
       } catch (e: Exception) {

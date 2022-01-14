@@ -80,6 +80,7 @@
             <configuration>
               <files>
                 <file>${project.basedir}/../mr-api/end2end-common.yaml</file>
+                <file>${project.basedir}/../mr-api/info.yaml</file>
                 <file>${project.basedir}/sse-api.yaml</file>
               </files>
               <finalYaml>${project.basedir}/target/final.yaml</finalYaml>

@@ -24,6 +24,7 @@ import {
   FeatureStateHolder
 } from 'featurehub-javascript-node-sdk';
 import { expect } from 'chai';
+import { edgeHost, mrHost } from './discovery';
 
 let apiKey: string;
 
@@ -51,8 +52,8 @@ export class SdkWorld extends World {
   constructor(props) {
     super(props);
 
-    this.adminUrl = process.env.FEATUREHUB_HOST || 'http://localhost:8085';
-    this.featureUrl = process.env.FEATUREHUB_SDK_HOST || 'http://localhost:8085';
+    this.adminUrl = mrHost();
+    this.featureUrl = edgeHost();
 
     this.adminApiConfig = new Configuration({ basePath: this.adminUrl, apiKey: apiKey });
     this.portfolioApi = new PortfolioServiceApi(this.adminApiConfig);

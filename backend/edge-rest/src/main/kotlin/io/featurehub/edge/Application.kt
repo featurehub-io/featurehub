@@ -8,6 +8,7 @@ import io.featurehub.app.db.utils.CommonDbFeature
 import io.featurehub.health.MetricsHealthRegistration.Companion.registerMetrics
 import io.featurehub.jersey.FeatureHubJerseyHost
 import io.featurehub.lifecycle.TelemetryFeature
+import io.featurehub.rest.Info
 import org.glassfish.jersey.server.ResourceConfig
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -44,6 +45,9 @@ class Application {
     private val log: Logger = LoggerFactory.getLogger(Application::class.java)
     @JvmStatic
     fun main(args: Array<String>) {
+      System.setProperty("user.timezone", "UTC")
+      System.setProperty(Info.APPLICATION_NAME_PROPERTY, "edge-rest")
+
       try {
         val app = Application()
         app.run()

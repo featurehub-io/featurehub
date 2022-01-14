@@ -7,7 +7,7 @@ import org.glassfish.grizzly.http.server.Response
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpContainer
 
 class DelegatingHandler constructor(private val jerseyHandler: GrizzlyHttpContainer, private val staticHttpHandler: AdminAppStaticHttpHandler) : HttpHandler() {
-  private var jerseyPrefixes = listOf("/mr-api/", "/oauth/", "/features", "/health/", "/metrics")
+  private var jerseyPrefixes = listOf("/mr-api/", "/oauth/", "/features", "/health/", "/metrics", "/info")
 
   init {
     var prefixes = FallbackPropertyConfig.getConfig("jersey.prefixes")

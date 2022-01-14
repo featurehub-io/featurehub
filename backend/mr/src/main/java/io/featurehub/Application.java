@@ -12,12 +12,15 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static io.featurehub.rest.Info.APPLICATION_NAME_PROPERTY;
+
 public class Application {
   private static final Logger log = LoggerFactory.getLogger(Application.class);
 
 
   public static void main(String[] args) {
     System.setProperty("user.timezone", "UTC");
+    System.setProperty(APPLICATION_NAME_PROPERTY, "management-repository");
 
     try {
       new Application().run();
