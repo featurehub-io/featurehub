@@ -71,6 +71,8 @@ Given(/^I connect to the feature server$/, function () {
     expect(found).to.be.true;
     logger.info('Successfully completed poll');
     const edge = new EdgeFeatureHubConfig(world.featureUrl, serviceAccountPerm.sdkUrlClientEval);
+    this.sdkUrlClientEval = serviceAccountPerm.sdkUrlClientEval;
+    this.sdkUrlServerEval = serviceAccountPerm.sdkUrlServerEval;
     //edge.edgeServiceProvider((repo, config) => new FeatureHubPollingClient(repo, config, 200));
     edge.init();
     world.edgeServer = edge;

@@ -18,6 +18,19 @@ Given(/^There is a new feature flag$/, async function () {
   this.feature = fCreate.data[0];
 });
 
+Given(/^There is a feature flag with the key (.*)$/, async function (key: string) {
+  const fCreate = await this.featureApi.createFeaturesForApplication(this.application.id, new Feature({
+    name: key,
+    key: key,
+    valueType: FeatureValueType.Boolean
+  }));
+  expect(fCreate.status).to.eq(200);
+  const feature = fCreate.data.find(f => f.key == key);
+  expect(feature).to.not.be.undefined;
+
+  this.feature = feature;
+});
+
 Then(/^the feature flag is (locked|unlocked) and (off|on)$/, async function (lockedStatus, value) {
   await waitForExpect(() => {
     expect(this.repository.readyness).to.eq(Readyness.Ready);
