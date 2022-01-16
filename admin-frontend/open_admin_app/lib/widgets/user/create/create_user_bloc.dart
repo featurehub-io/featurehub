@@ -46,8 +46,6 @@ class CreateUserBloc implements Bloc {
       registrationUrl = data;
 
       if (registrationUrl != null) {
-        registrationUrl!.registrationUrl =
-            client.rewriteUrl(registrationUrl!.registrationUrl);
 
         _formStateStream.add(CreateUserForm.successState);
 

@@ -308,19 +308,19 @@ class _ListUserInfo extends StatelessWidget {
             const Padding(
               padding: EdgeInsets.only(top: 12.0, bottom: 4.0),
               child: Text(
-                'Registration Expired',
+                'Registration expired',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
           if (allowedLocalIdentity && entry.registration.expired)
             FHCopyToClipboardFlatButton(
-              caption: 'Renew registration and copy to clipboard',
+              caption: 'Renew registration URL and copy to clipboard',
               textProvider: () async {
                 try {
                   final token = await bloc.mrClient.authServiceApi
                       .resetExpiredToken(entry.person.email!);
                   bloc.mrClient.addSnackbar(const Text(
-                      'Registration renewed and copyied to clipboard'));
+                      'Registration URL renewed and copied to clipboard'));
                   return bloc.mrClient.registrationUrl(token.registrationUrl);
                 } catch (e, s) {
                   bloc.mrClient.addError(FHError.createError(e, s));

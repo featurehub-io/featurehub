@@ -158,7 +158,7 @@ class TopWidgetSuccess extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text('Registration Url',
+                  Text('Registration URL',
                       style: Theme.of(context).textTheme.subtitle2),
                   Text(
                     bloc.registrationUrl!.registrationUrl,

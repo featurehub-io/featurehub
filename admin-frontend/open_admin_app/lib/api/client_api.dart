@@ -554,22 +554,6 @@ class ManagementRepositoryClientBloc implements Bloc {
     await sharedPreferences!.saveString('lastUsername', lastUsername);
   }
 
-  // if a url comes back from the backend with a back-end url, we need to rewrite it to our
-  // own "window api" front end url
-  String rewriteUrl(String url) {
-    final uri = Uri.parse(url);
-
-    if (uri.host == _basePath.host && uri.port == _basePath.port) {
-      return uri
-          .replace(
-              host: webInterface.originUri!.host,
-              port: webInterface.originUri!.port)
-          .toString();
-    }
-
-    return url;
-  }
-
   String registrationUrl(String token) {
     var tokenizedPart = 'register-url?token=$token';
     final url =
