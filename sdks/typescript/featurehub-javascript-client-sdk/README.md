@@ -15,6 +15,8 @@ We have deprecated [FeatureHub Eventsource Javascript SDK](https://www.npmjs.com
 ## Changelog
 
 ### featurehub-javascript-client-sdk
+#### 1.0.10
+- Fix a bug related to Catch & Release mode [GitHub issue](https://github.com/featurehub-io/featurehub/issues/648)
 #### 1.0.9
 - Enabled e-tag support 
 #### 1.0.8
@@ -40,6 +42,8 @@ We have deprecated [FeatureHub Eventsource Javascript SDK](https://www.npmjs.com
 Angular & Vue to use this library. 
 
 ### featurehub-javascript-node-sdk
+#### 1.0.10
+- Fix a bug related to Catch & Release mode [GitHub issue](https://github.com/featurehub-io/featurehub/issues/648)
 #### 1.0.9
 - Enabled e-tag support
 #### 1.0.8
