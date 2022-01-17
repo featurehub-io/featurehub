@@ -6,7 +6,10 @@ import org.glassfish.grizzly.http.server.Request
 import org.glassfish.grizzly.http.server.Response
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpContainer
 
-class DelegatingHandler constructor(private val jerseyHandler: GrizzlyHttpContainer, private val staticHttpHandler: AdminAppStaticHttpHandler) : HttpHandler() {
+class DelegatingHandler(
+  private val jerseyHandler: GrizzlyHttpContainer,
+  private val staticHttpHandler: AdminAppStaticHttpHandler
+) : HttpHandler() {
   private var jerseyPrefixes = listOf("/mr-api/", "/oauth/", "/features", "/health/", "/metrics", "/info")
 
   init {
@@ -25,14 +28,34 @@ class DelegatingHandler constructor(private val jerseyHandler: GrizzlyHttpContai
     staticHttpHandler.start()
   }
 
+  @Throws(Exception::class)
+  fun getRelativeURI(request: Request): String? {
+    var uri = request.decodedRequestURI
+    return if (uri.contains("..")) {
+      null
+    } else {
+      val resourcesContextPath = request.contextPath
+      if (resourcesContextPath != null && !resourcesContextPath.isEmpty()) {
+        if (!uri.startsWith(resourcesContextPath)) {
+          return null
+        }
+        uri = uri.substring(resourcesContextPath.length)
+      }
+      uri
+    }
+  }
+
   override fun service(request: Request, response: Response) {
     val uriRef = request.request.requestURIRef
     uriRef.defaultURIEncoding = requestURIEncoding
 
-    val decodedURI = uriRef.getDecodedRequestURIBC(isAllowEncodedSlash)
-    val url = decodedURI.toString()
+    val url = getRelativeURI(request)
 
-    //
+    if (url == null) {   // root url request
+      staticHttpHandler.handle("/index.html", request, response)
+      return
+    }
+
     if (url.startsWith("/features")) {
       return jerseyHandler.service(request, response)
     }

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:html';
 
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
@@ -553,28 +554,11 @@ class ManagementRepositoryClientBloc implements Bloc {
     await sharedPreferences!.saveString('lastUsername', lastUsername);
   }
 
-  // if a url comes back from the backend with a back-end url, we need to rewrite it to our
-  // own "window api" front end url
-  String rewriteUrl(String url) {
-    final uri = Uri.parse(url);
-
-    if (uri.host == _basePath.host && uri.port == _basePath.port) {
-      return uri
-          .replace(
-              host: webInterface.originUri!.host,
-              port: webInterface.originUri!.port)
-          .toString();
-    }
-
-    return url;
-  }
-
   String registrationUrl(String token) {
-    var tokenizedPart = '/register-url?token=$token';
-    if (Uri.base.hasPort) {
-      return Uri.base.host + ':' + Uri.base.port.toString() + tokenizedPart;
-    } else {
-      return Uri.base.host + tokenizedPart;
-    }
+    var tokenizedPart = 'register-url?token=$token';
+    final url =
+        document.baseUri != null ? Uri.parse(document.baseUri!) : Uri.base;
+    final path = url.toString() + tokenizedPart;
+    return path;
   }
 }

@@ -8,7 +8,7 @@ import cd.connect.lifecycle.LifecycleTransition
 import io.featurehub.health.CommonFeatureHubFeatures
 import io.featurehub.lifecycle.ExecutorPoolDrainageSource
 import io.featurehub.utils.FallbackPropertyConfig
-import jakarta.ws.rs.core.Configurable
+import org.glassfish.grizzly.http.server.HttpHandlerRegistration
 import org.glassfish.grizzly.http.server.HttpServer
 import org.glassfish.grizzly.http.server.NetworkListener
 import org.glassfish.grizzly.http2.Http2AddOn
@@ -42,7 +42,7 @@ class FeatureHubJerseyHost constructor(private val config: ResourceConfig) {
 
     config.register(
       CommonFeatureHubFeatures::class.java,
-    ).register(object: ContainerLifecycleListener {
+    ).register(object : ContainerLifecycleListener {
       override fun onStartup(container: Container) {
         // access the ServiceLocator here
         val injector = container
@@ -86,17 +86,18 @@ class FeatureHubJerseyHost constructor(private val config: ResourceConfig) {
     }
   }
 
-  fun disallowWebHosting() : FeatureHubJerseyHost {
+  fun disallowWebHosting(): FeatureHubJerseyHost {
     allowedWebHosting = false
     return this
   }
 
-  fun start() : FeatureHubJerseyHost {
+  fun start(): FeatureHubJerseyHost {
     return start(port!!)
   }
 
-  fun start(overridePort: Int) : FeatureHubJerseyHost {
-    val BASE_URI = URI.create(String.format("http://0.0.0.0:%d/", overridePort))
+  fun start(overridePort: Int): FeatureHubJerseyHost {
+    val offsetPath = FallbackPropertyConfig.getConfig("featurehub.url-path", "/")
+    val BASE_URI = URI.create(String.format("http://0.0.0.0:%d%s", overridePort, offsetPath))
 //    val server = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, config, false)
 
     val listener = NetworkListener("grizzly", NetworkListener.DEFAULT_NETWORK_HOST, overridePort)
@@ -115,11 +116,19 @@ class FeatureHubJerseyHost constructor(private val config: ResourceConfig) {
 
     val resourceHandler = HttpGrizzlyContainer.makeHandler(config)
 
+    val contextPath: String =
+      if (offsetPath.endsWith("/")) offsetPath.substring(0, offsetPath.length - 1) else offsetPath
     if (allowedWebHosting && FallbackPropertyConfig.getConfig("run.nginx") != null) {
       log.info("starting with web asset support")
-      serverConfig.addHttpHandler(DelegatingHandler(resourceHandler, AdminAppStaticHttpHandler()))
+      serverConfig.addHttpHandler(
+        DelegatingHandler(resourceHandler, AdminAppStaticHttpHandler(offsetPath)),
+        HttpHandlerRegistration.Builder().contextPath(contextPath).urlPattern("").build()
+      )
     } else {
-      serverConfig.addHttpHandler(resourceHandler)
+      serverConfig.addHttpHandler(
+        resourceHandler,
+        HttpHandlerRegistration.Builder().contextPath(contextPath).urlPattern("").build()
+      );
     }
 
 

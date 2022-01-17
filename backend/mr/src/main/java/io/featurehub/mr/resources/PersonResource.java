@@ -36,7 +36,7 @@ public class PersonResource implements PersonServiceDelegate {
   private final AuthManagerService authManager;
 
   @ConfigKey("register.url")
-  private String registrationUrl = "";
+  private String registrationUrl = "http://localhost:register-url?token=%s";
 
   @Inject
   public PersonResource(PersonApi personApi, GroupApi groupApi, AuthManagerService authManager) {
@@ -71,7 +71,9 @@ public class PersonResource implements PersonServiceDelegate {
 
         //return registration url
         RegistrationUrl regUrl = new RegistrationUrl();
+        // hard code the return value, it will be ignored by the client from now on
         regUrl.setRegistrationUrl(String.format(registrationUrl, person.token));
+        regUrl.setToken(person.token);
         return regUrl;
       } catch (PersonApi.DuplicatePersonException e) {
         throw new WebApplicationException(Response.status(Response.Status.CONFLICT).build());

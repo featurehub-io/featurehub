@@ -2,10 +2,10 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/utils/utils.dart';
-import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/copy_to_clipboard_html.dart';
 import 'package:open_admin_app/widgets/common/fh_card.dart';
 import 'package:open_admin_app/widgets/common/fh_filled_input_decoration.dart';
+import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_footer_button_bar.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
@@ -140,68 +140,66 @@ class TopWidgetSuccess extends StatelessWidget {
     final hasLocal =
         bloc.client.identityProviders.hasLocal && bloc.registrationUrl != null;
 
-    return Column(
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
+        Widget>[
+      Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Column(
+          Text('User created! \n',
+              style: Theme.of(context).textTheme.headline6),
+          Text(bloc.email ?? '', style: Theme.of(context).textTheme.bodyText1),
+        ],
+      ),
+      if (hasLocal)
+        Padding(
+          padding: const EdgeInsets.only(top: 20.0),
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text('User created! \n',
-                  style: Theme.of(context).textTheme.headline6),
-              Text(bloc.email ?? '',
-                  style: Theme.of(context).textTheme.bodyText1),
+              Text('Registration URL',
+                  style: Theme.of(context).textTheme.subtitle2),
+              Text(
+                bloc.client.registrationUrl(bloc.registrationUrl!.token),
+                style: Theme.of(context).textTheme.caption,
+              ),
             ],
           ),
-          if (hasLocal)
-            Padding(
-              padding: const EdgeInsets.only(top: 20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text('Registration Url',
-                      style: Theme.of(context).textTheme.subtitle2),
-                  Text(
-                    bloc.registrationUrl!.registrationUrl,
-                    style: Theme.of(context).textTheme.caption,
-                  ),
-                ],
-              ),
+        ),
+      if (hasLocal)
+        Row(
+          children: <Widget>[
+            FHCopyToClipboardFlatButton(
+              text: bloc.client.registrationUrl(bloc.registrationUrl!.token),
+              caption: ' Copy URL to clipboard',
             ),
-          if (hasLocal)
-            Row(
-              children: <Widget>[
-                FHCopyToClipboardFlatButton(
-                  text: bloc.registrationUrl!.registrationUrl,
-                  caption: ' Copy URL to clipboard',
-                ),
-              ],
-            ),
-          if (hasLocal)
-            Text(
-              'You will need to email this URL to the new user, so they can complete their registration and set their password.',
-              style: Theme.of(context).textTheme.caption,
-            ),
-          if (!hasLocal)
-            Text(
-              'The user now needs to sign in with your external identity provider and they will be able to access the system.',
-              style: Theme.of(context).textTheme.caption,
-            ),
-          FHButtonBar(children: [
-            FHFlatButtonTransparent(
-                onPressed: () {
-                  bloc.backToDefault();
-                  ManagementRepositoryClientBloc.router
-                      .navigateTo(context, '/users');
-                },
-                title: 'Close'),
-            FHFlatButton(
-                onPressed: () {
-                  bloc.backToDefault();
-                },
-                title: 'Create another user',
-                keepCase: true),
-          ])
-        ]);
+          ],
+        ),
+      if (hasLocal)
+        Text(
+          'You will need to email this URL to the new user, so they can complete their registration and set their password.',
+          style: Theme.of(context).textTheme.caption,
+        ),
+      if (!hasLocal)
+        Text(
+          'The user now needs to sign in with your external identity provider and they will be able to access the system.',
+          style: Theme.of(context).textTheme.caption,
+        ),
+      FHButtonBar(children: [
+        FHFlatButtonTransparent(
+            onPressed: () {
+              bloc.backToDefault();
+              ManagementRepositoryClientBloc.router
+                  .navigateTo(context, '/users');
+            },
+            title: 'Close'),
+        FHFlatButton(
+            onPressed: () {
+              bloc.backToDefault();
+            },
+            title: 'Create another user',
+            keepCase: true),
+      ])
+    ]);
   }
 }
 

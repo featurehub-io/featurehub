@@ -2321,9 +2321,11 @@ components:
           $ref: "#/components/schemas/Person"
     RegistrationUrl:
       required:
-        - registrationUrl
+        - token
       properties:
         registrationUrl:
+          type: string
+        token:
           type: string
     PersonRegistrationDetails:
       required:
