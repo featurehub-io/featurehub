@@ -12,7 +12,7 @@ link:index{outfilesuffix}[Back to index]
 
 As explained in the link:architecture.adoc[Architecture] section, there are a number of different combinations
 for deployment of FeatureHub and they typically focus on _where_ you will deploy the infrastructure, _how_ you want
-your clients to use it and _how much_  use it will get. FeatureHub as of 1.5.0 is designed to support 
+your clients to use it and _how much_  use it will get. FeatureHub as of 1.5.0 is designed to support
 very low use cases of only hundreds of requests a day up to tens of millions of requests a day or more.
 
 To get you up and going quickly, we have created a number of different Docker options using Docker-Compose.
@@ -26,7 +26,7 @@ To install, grab the latest version of FeatureHub tagged release, e.g:
 Make sure you have your docker server running and docker-compose installed if you are using it (or your swarm
 set up if you are using docker stack). These example stacks are great for experimenting or to understand what the
 different capabilities of the FeatureHub stack are - for example read replica databases, OAuth2 configuration for your
-provider, multiple NATs servers and so forth. 
+provider, multiple NATs servers and so forth.
 
 == Evaluation Deployment
 
@@ -49,7 +49,7 @@ disk and is not intended to be used for a long running or highly performant, con
 |Yes|Low|1a|Suits a simple container deployment platform like ECS, Compute Engine with a single Docker instance and using Party Server
 |Yes|Mid-High|2a|Suits a Kubernetes deployment like GKS,EKS,AKS or a more complex ECS based deploy and using Edge/Dacha deployed separately from Admin App
 |No|Low|1b|Suits a Party-Server-_ish_ deployment with a single database on Cloud Run or Azure Container Instances. Could also deploy to platform like ECS or Compute Engine but less cost-effective.
-|No|Mid|2b|Suits a MR deployment with a single master and one or more read replicas, with Edge-Rest pointed at the read replicas. 
+|No|Mid|2b|Suits a MR deployment with a single master and one or more read replicas, with Edge-Rest pointed at the read replicas.
 |===================================
 
 === Option 1a - Low Volume Deployment (Streaming)
@@ -59,22 +59,22 @@ image::images/fh_deployment_option_1a.svg[Architecture,600]
 With Option 1a, the Party Server, all of the services are deployed in a single running container. Internally this is packaged as a single
 Java server running four different services (a static web server serving the Admin App, the Management Repository server,
 the cache and the Edge service), and also the NATs service bus to provide cache and streaming services. This allows you to
-run only one of these (for instance) and support a full streaming service talking to an external database. 
+run only one of these (for instance) and support a full streaming service talking to an external database.
 
 The image is the same
 as the basic evaluation image with the difference being the database (we recommend Postgres).
 
 Because the single
 container is responsible for handling all incoming requests (including requests for features), this will mean it should be able to
-handle around 150-200 concurrent requests per CPU, but streaming requests will further limit that capacity. As such, it causes 
-Edge traffic to compete with Admin traffic. 
+handle around 150-200 concurrent requests per CPU, but streaming requests will further limit that capacity. As such, it causes
+Edge traffic to compete with Admin traffic.
 
 You can run up multiple Party Servers, in this case the `nats.urls` configuration (see below) must
 be set correctly for discovery (along with allowing network traffic between  them). If you start doing this, it is likely a better
 choice to split them into multiple parts - with Admin on one server and Edge/Dacha on others. If you think your usage will grow, we
 encourage you to use different DNS hosts pointing to the same server for features vs the Admin app.
 
-==== Setup Instructions 
+==== Setup Instructions
 
 For Postgres option:
 
@@ -122,7 +122,7 @@ feature updates, further scaling up and not creating a load on the database as n
 
 We provide an installation option with Postgres database. It brings up the Admin App (MR), the cache (Dacha), the
 Edge server, the distributed bus (NATS) and the database all as separate services. Edge runs on a different port to the Admin App and shows
-how you can use a different URL to serve traffic for feature consumers from your Admin App. 
+how you can use a different URL to serve traffic for feature consumers from your Admin App.
 
 ==== Setup Instructions
 
@@ -131,7 +131,7 @@ how you can use a different URL to serve traffic for feature consumers from your
 `docker compose up`
 
 There is also a helm chart available for production Kubernetes deployment for this option. Please follow documentation link:https://github.com/featurehub-io/featurehub-install/tree/master/helm[here]. It doesn't include a Postgres or NATs server as generally your cloud
-provider will have a managed Postgres service, and NATs have their own Kubernetes Helm charts for scalable, reliable deploys.  
+provider will have a managed Postgres service, and NATs have their own Kubernetes Helm charts for scalable, reliable deploys.
 
 === Option 2b - Non-Streaming Scalable Deployment
 
@@ -147,7 +147,7 @@ your connectivity across those replicas. See the documentation below on Database
 
 === Deploying FeatureHub (non-streaming) on Google Cloud Run
 
-Google Cloud Run lets you spin up a container instance and multiplex requests to it, making it directly available as 
+Google Cloud Run lets you spin up a container instance and multiplex requests to it, making it directly available as
 soon as you have configured it. These are basic instructions on how to do this.
 
 ==== Create your Cloud SQL Instance
@@ -164,7 +164,7 @@ gcloud config set project your-project
 gcloud config set compute/zone $GCP_ZONE
 ----
 
-We are now going to create a Cloud SQL database, so you need to 
+We are now going to create a Cloud SQL database, so you need to
 choose a root password, a database name and a schema name. We will create a very small instance that is zonal only, has no daily backup, and connectivity via public IP but SSL - https://cloud.google.com/sql/pricing[Cloud SQL pricing] give you more details on how much this will cost. Obviously you can choose a larger one, but this initial deployment will probably be
 throwaway as it is quite easy. _This step takes a while_
 
@@ -208,7 +208,7 @@ export FH_DB_CONN_NAME=featurehub-example:us-central1:featurehub-db
 
 ----
 export FH_CR_NAME=featurehub
-export FH_IMAGE=featurehub/party-server-ish:1.5.4 
+export FH_IMAGE=featurehub/party-server-ish:1.5.4
 ----
 
 Note that you need to be a Project Owner or Cloud Run Admin to allow unauthenticated traffic.
@@ -218,7 +218,7 @@ export HOST_URL=http://localhost
 gcloud run deploy $FH_CR_NAME --image=$FH_IMAGE --min-instances=0 --max-instances=3 --cpu=2 --memory=512Mi --port=8085 --concurrency=400 "--set-env-vars=db.url=jdbc:postgresql:///$FH_DB_SCHEMA,db.username=postgres,db.password=$FH_DB_PASSWORD,db.minConnections=3,db.maxConnections=100,monitor.port=8701,db.customProperties=cloudSqlInstance=$FH_DB_CONN_NAME;socketFactory=com.google.cloud.sql.postgres.SocketFactory" --set-cloudsql-instances=$FH_DB_NAME --platform=managed --region=$GCP_REGION --allow-unauthenticated
 ----
 
-If you are using OAuth2, then you will need to set those properties, and we recommend setting your `oauth2.disable-login` to true to 
+If you are using OAuth2, then you will need to set those properties, and we recommend setting your `oauth2.disable-login` to true to
 prevent being able to login without an OAuth2 connection.
 
 Use the example Cloud Shell to ensure you can connect to it, but it can take a while to create.
@@ -232,19 +232,19 @@ Use the example Cloud Shell to ensure you can connect to it, but it can take a w
 
 === Run configuration
 
-By this we mean the properties you can set to control the behaviour of different servers. As of 1.5.0 all 
+By this we mean the properties you can set to control the behaviour of different servers. As of 1.5.0 all
 FeatureHub controller properties are available as environment variables using the same case. If you have been using
-the mechanism introduced in 1.4.1 this still works but isn't recommended going forward. 
+the mechanism introduced in 1.4.1 this still works but isn't recommended going forward.
 
 If you are using a system like
-Kubernetes, you can mount these properties in `/etc/app-config/application.properties` and 
+Kubernetes, you can mount these properties in `/etc/app-config/application.properties` and
 `/etc/app-config/secrets.properties`.
 
 ==== Database configuration
 
-All subsystems that talk to the database take these parameters. Even if 
-you are using environment variables, we recommend using lower case 
-so the database connections are correctly configured. 
+All subsystems that talk to the database take these parameters. Even if
+you are using environment variables, we recommend using lower case
+so the database connections are correctly configured.
 
 - `db.url` - the jdbc url of the database server.
 - `db.username` -  the username used to log in.
@@ -267,15 +267,15 @@ and `db-replica` parameters) but the corresponding `mr` will not.
 === NATS
 
 If you are using the Streaming version of FeatureHub, then you may
-need to configure your NATS urls. If you have only once instance of a 
+need to configure your NATS urls. If you have only once instance of a
 party-server, you can leave it as the default.  If you have deployed
 Option 2, or you have multiple servers with Option 1a, you will need to make sure  your NATS
 servers are configured correctly.
 
-- `nats.urls` - a comma separated list of NATs servers. 
+- `nats.urls` - a comma separated list of NATs servers.
 
 NATS works by having the clients tell the servers where each other
-are, so the NATS servers need to be routable (i.e. they must be able to talk to each other) but do not need to 
+are, so the NATS servers need to be routable (i.e. they must be able to talk to each other) but do not need to
 be explicitly told about each other.
 
 ==== Management Repository
@@ -290,7 +290,7 @@ be tagged "production".
 - `environment.production.desc` (production) - the description field for same.
 - `register.url` [[register-url, Register URL]] [*deprecated*] - the url used for registration. The front-end should strip the prefix off this and add its own relative one. The format has to
 be `register.url=http://localhost:8085/register-url?token=%s` - if your site is `https://some.domain.info` for example, it would
-be `register.url=https://some.domain.info/register-url?token=%s`. _This is honoured but no longer required and it is recommended you remove it._
+be `register.url=https://some.domain.info/register-url?token=%s`. _This is honoured but no longer required and it is recommended to be removed._
 - `portfolio.admin.group.suffix` ("Administrators") - the suffix added to a portfolio group when a portfolio is created
 for the first time, it needs an Admin group. So a portfolio called "Marketing" would get an admin group called "Marketing Administrators"
 created.
@@ -347,10 +347,8 @@ endpoints on a different port.
 
 - `monitor.port` (undefined) - if not defined, it will expose the metrics and health on the server port.
 If not, it will expose them on this port (and not on the server port).
-- `featurehub.url-path` - this allows you to not host the FeatureHub site on / and is useful if you are not allocating a full url to FeatureHub because
-of restrictions in your company domain setup. This will set the <base> href in the index.html of the website and the
-front-end will also know how to make calls. If you have extracted the front-end and put it on a CDN, you will need to make
-that change yourself. Note, this is an offset, not a full domain name, e.g. `featurehub.url-path=/my-group/featurehub`.
+- `featurehub.url-path` - allows  to configure base path (context root) other than "/". This will set the base path in the index.html of the FeatureHub web app and the backend. Note, this is an offset, not a full domain name, e.g. `featurehub.url-path=/foo/featurehub`.
+In case if the front-end is decoupled on a CDN, the base bath needs to be configured directly in index.html by setting: `<base href="/foo/featurehub/">` (note the trailing slash).
 
 
 ==== Common to Party, SSE Edge and Management Repository
