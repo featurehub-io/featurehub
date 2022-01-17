@@ -208,31 +208,14 @@ export FH_DB_CONN_NAME=featurehub-example:us-central1:featurehub-db
 
 ----
 export FH_CR_NAME=featurehub
-export FH_IMAGE=featurehub/party-server-ish:1.5.0-RC1 
+export FH_IMAGE=featurehub/party-server-ish:1.5.4 
 ----
-
-Now you are going to have to run the deploy command twice, because you don't know the Service URL it will give you and you will
-need to specify a _registration url_ if you aren't using OAuth2 (which we recommend). So for the first
-deploy we will set the registration url to a fake url (`HOST_URL`).
 
 Note that you need to be a Project Owner or Cloud Run Admin to allow unauthenticated traffic.
 
-<TODO:replace with public docker image>
 ----
 export HOST_URL=http://localhost
-gcloud run deploy $FH_CR_NAME --image=$FH_IMAGE --min-instances=0 --max-instances=3 --cpu=2 --memory=512Mi --port=8085 --concurrency=400 "--set-env-vars=db.url=jdbc:postgresql:///$FH_DB_SCHEMA,db.username=postgres,db.password=$FH_DB_PASSWORD,db.minConnections=3,db.maxConnections=100,monitor.port=8701,db.customProperties=cloudSqlInstance=$FH_DB_CONN_NAME;socketFactory=com.google.cloud.sql.postgres.SocketFactory,register.url=$HOST_URL/register-url?token%3D%s" --set-cloudsql-instances=$FH_DB_NAME --platform=managed --region=$GCP_REGION --allow-unauthenticated
-----
-
-Once it deploys, you will get the service url it gives you back and you need to set this URL as the registration url and redeploy.
-
-It gave me this for example, `https://featurehub-ixscqgruca-uc.a.run.app` and so now I need to set the HOST_URL environment variable so the 
-registration url would be set to `register.url=https://featurehub-ixscqgruca-uc.a.run.app/register-url?token=%s` when the deploy command is run again.
-
-Run the previous gcloud deploy command again after setting the HOST_URL:
-----
-export HOST_URL=https://featurehub-ixscqgruca-ue.a.run.app
-gcloud run deploy $FH_CR_NAME --image=$FH_IMAGE --min-instances=0 --max-instances=3 --cpu=2 --memory=512Mi --port=8085 --concurrency=400 "--set-env-vars=db.url=jdbc:postgresql:///$FH_DB_SCHEMA,db.username=postgres,db.password=$FH_DB_PASSWORD,db.minConnections=3,db.maxConnections=100,monitor.port=8701,db.customProperties=cloudSqlInstance=$FH_DB_CONN_NAME;socketFactory=com.google.cloud.sql.postgres.SocketFactory,register.url=$HOST_URL/register-url?token%3D%s" --set-cloudsql-instances=$FH_DB_NAME --platform=managed --region=$GCP_REGION --allow-unauthenticated
-
+gcloud run deploy $FH_CR_NAME --image=$FH_IMAGE --min-instances=0 --max-instances=3 --cpu=2 --memory=512Mi --port=8085 --concurrency=400 "--set-env-vars=db.url=jdbc:postgresql:///$FH_DB_SCHEMA,db.username=postgres,db.password=$FH_DB_PASSWORD,db.minConnections=3,db.maxConnections=100,monitor.port=8701,db.customProperties=cloudSqlInstance=$FH_DB_CONN_NAME;socketFactory=com.google.cloud.sql.postgres.SocketFactory" --set-cloudsql-instances=$FH_DB_NAME --platform=managed --region=$GCP_REGION --allow-unauthenticated
 ----
 
 If you are using OAuth2, then you will need to set those properties, and we recommend setting your `oauth2.disable-login` to true to 
@@ -246,7 +229,6 @@ Use the example Cloud Shell to ensure you can connect to it, but it can take a w
 - You should create a service account with minimal permissions for your Cloud Run instances
 
 == Configuration
-
 
 === Run configuration
 
@@ -306,9 +288,9 @@ The following properties can be set:
 -  `environment.production.name` (production) - the name given to the automatically created production environment. It will
 be tagged "production".
 - `environment.production.desc` (production) - the description field for same.
-- `register.url` [[register-url, Register URL]] - the url used for registration. The front-end should strip the prefix off this and add its own relative one. The format has to
+- `register.url` [[register-url, Register URL]] [*deprecated*] - the url used for registration. The front-end should strip the prefix off this and add its own relative one. The format has to
 be `register.url=http://localhost:8085/register-url?token=%s` - if your site is `https://some.domain.info` for example, it would
-be `register.url=https://some.domain.info/register-url?token=%s`
+be `register.url=https://some.domain.info/register-url?token=%s`. _This is honoured but no longer required and it is recommended you remove it._
 - `portfolio.admin.group.suffix` ("Administrators") - the suffix added to a portfolio group when a portfolio is created
 for the first time, it needs an Admin group. So a portfolio called "Marketing" would get an admin group called "Marketing Administrators"
 created.
@@ -368,8 +350,7 @@ If not, it will expose them on this port (and not on the server port).
 - `featurehub.url-path` - this allows you to not host the FeatureHub site on / and is useful if you are not allocating a full url to FeatureHub because
 of restrictions in your company domain setup. This will set the <base> href in the index.html of the website and the
 front-end will also know how to make calls. If you have extracted the front-end and put it on a CDN, you will need to make
-that change yourself. Note, this is an offset, not a full domain name, e.g. `featurehub.url-path=/my-group/featurehub`. This will affect your
-<<register-url,registration url>> in the Management Repository, so you will need to make sure you change that as well.
+that change yourself. Note, this is an offset, not a full domain name, e.g. `featurehub.url-path=/my-group/featurehub`.
 
 
 ==== Common to Party, SSE Edge and Management Repository

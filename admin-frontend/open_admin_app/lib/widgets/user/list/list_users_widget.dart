@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/utils/utils.dart';
-import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/copy_to_clipboard_html.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_delete_thing.dart';
+import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
 import 'package:open_admin_app/widgets/user/list/list_users_bloc.dart';
 
@@ -274,7 +274,9 @@ class _ListUserInfo extends StatelessWidget {
             child: Text(entry.person.email!,
                 style: Theme.of(context).textTheme.bodyText1),
           ),
-          if (allowedLocalIdentity && !entry.registration.expired && entry.registration.token.isNotEmpty)
+          if (allowedLocalIdentity &&
+              !entry.registration.expired &&
+              entry.registration.token.isNotEmpty)
             Column(
               children: [
                 const SizedBox(height: 16),
@@ -289,7 +291,9 @@ class _ListUserInfo extends StatelessWidget {
                 ),
               ],
             ),
-          if (allowedLocalIdentity && !entry.registration.expired && entry.registration.token.isNotEmpty)
+          if (allowedLocalIdentity &&
+              !entry.registration.expired &&
+              entry.registration.token.isNotEmpty)
             Row(
               children: [
                 Expanded(
@@ -321,7 +325,7 @@ class _ListUserInfo extends StatelessWidget {
                       .resetExpiredToken(entry.person.email!);
                   bloc.mrClient.addSnackbar(const Text(
                       'Registration URL renewed and copied to clipboard'));
-                  return bloc.mrClient.registrationUrl(token.registrationUrl);
+                  return bloc.mrClient.registrationUrl(token.token);
                 } catch (e, s) {
                   bloc.mrClient.addError(FHError.createError(e, s));
                 }
