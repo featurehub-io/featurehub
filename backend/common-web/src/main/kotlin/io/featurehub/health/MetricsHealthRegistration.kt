@@ -57,7 +57,7 @@ class MetricsHealthRegistration {
             })
 
             val port = FallbackPropertyConfig.getConfig(monitorPortName)!!.toInt()
-            FeatureHubJerseyHost(resourceConfig).start(port)
+            FeatureHubJerseyHost(resourceConfig).disallowWebHosting().start(port)
 
             log.info("metric/health endpoint now active on port {}", port)
           }
