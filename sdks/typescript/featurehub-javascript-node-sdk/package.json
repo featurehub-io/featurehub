@@ -63,7 +63,7 @@
   },
   "dependencies": {
     "eventsource": "^1.1.0",
-    "featurehub-javascript-client-sdk": "^1.0.9"
+    "featurehub-javascript-client-sdk": "^1.0.10"
   },
   "engines": {
     "node": ">=12.12.0"
