@@ -32,8 +32,9 @@ class AdminAppStaticHttpHandler constructor(private val offsetBaseUrl: String) :
   }
 
   private fun loadIndexHtml(resource: File): String {
+    val url = if (offsetBaseUrl.endsWith("/")) offsetBaseUrl.substring(0, offsetBaseUrl.length-1) else offsetBaseUrl
     return resource.readText(Charsets.UTF_8).replace("<base href=\"/\">",
-      "<base href=\"${offsetBaseUrl}/\">")
+      "<base href=\"${url}/\">")
   }
 
   private fun preloadIndexHtml(): File {

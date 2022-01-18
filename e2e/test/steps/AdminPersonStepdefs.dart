@@ -69,7 +69,7 @@ class AdminPersonStepdefs {
     }
 
     await userCommon.completeRegistration(
-        name, password, email, shared.registrationUrl!.registrationUrl);
+        name, password, email, shared.registrationUrl!.token);
 
     shared.tokenizedPerson = await common.authService
         .login(UserCredentials(password: password, email: email));
@@ -102,7 +102,7 @@ class AdminPersonStepdefs {
       }
 
       await userCommon.completeRegistration(
-          name, password, email, shared.registrationUrl!.registrationUrl);
+          name, password, email, shared.registrationUrl!.token);
     } else {
       final person = spr.people[0];
       await common.authService.resetPassword(person.id!.id,

@@ -20,7 +20,7 @@ class PersonStepdefs {
   void completeTheirRegistration(
       String name, String password, String email) async {
     await userCommon.completeRegistration(
-        name, password, email, registrationUrl!.registrationUrl);
+        name, password, email, registrationUrl!.token);
   }
 
   /// run in user space
