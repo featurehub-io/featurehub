@@ -9,3 +9,10 @@ behaviour of the SDK itself as that would require testing each SDK for the entir
 Create a nodejs run config, this folder as the working directory, application
 parameters should be `--require-module ts-node/register --require "app/**/*.ts"`
 and Javascript file is `node_modules/.bin/cucumber-js`
+
+== Setting up for the FeatureHub-Examples project
+
+Running the `create-demo.sh` file will cause only those tests to run against the system that are necessary to
+create the right features and then output the configuration necessary to stdout. These environment variables
+can be copied into the appropriate run.sh files in the example directories.
+

@@ -48,6 +48,9 @@ export class SdkWorld extends World {
   public readonly serviceAccountApi: ServiceAccountServiceApi;
   public readonly featureValueApi: EnvironmentFeatureServiceApi;
   private _clientContext: ClientContext;
+  public sdkUrlClientEval: string;
+  public sdkUrlServerEval: string;
+
 
   constructor(props) {
     super(props);

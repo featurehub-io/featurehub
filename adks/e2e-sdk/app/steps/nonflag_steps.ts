@@ -4,9 +4,9 @@ import { Feature, FeatureValueType } from 'featurehub-javascript-admin-sdk';
 import { expect } from 'chai';
 import waitForExpect from 'wait-for-expect';
 import { FeatureStateHolder, Readyness } from 'featurehub-javascript-node-sdk';
+import { SdkWorld } from '../support/world';
 
-Given(/^There is a new (string|json|number) feature$/, async function (featureType: string) {
-  const name = makeid(5).toUpperCase();
+async function newFeature(world: SdkWorld, featureType: string, name: string) {
   let vt = FeatureValueType.String;
 
   if (featureType === 'number') {
@@ -14,16 +14,26 @@ Given(/^There is a new (string|json|number) feature$/, async function (featureTy
   } else if (featureType === 'json') {
     vt = FeatureValueType.Json;
   }
-  const fCreate = await this.featureApi.createFeaturesForApplication(this.application.id, new Feature({
+  const fCreate = await world.featureApi.createFeaturesForApplication(world.application.id, new Feature({
     name: name,
     key: name,
     valueType: vt
   }));
 
   expect(fCreate.status).to.eq(200);
-  expect(fCreate.data.length).to.eq(1);
+  const feature = fCreate.data.find(f => f.key == name);
+  expect(feature).to.not.be.undefined;
 
-  this.feature = fCreate.data[0];
+  world.feature = feature;
+}
+
+Given(/^There is a new (string|json|number) feature$/, async function (featureType: string) {
+  const name = makeid(5).toUpperCase();
+  await newFeature(this as SdkWorld, featureType, name);
+});
+
+Given(/^There is a (string|json|number) feature named (.*)$/, async function (featureType: string, name: string) {
+  await newFeature(this as SdkWorld, featureType, name);
 });
 
 Then(/^the (string|json|number) feature is (locked|unlocked) and (.*)$/, async function (featureType: string, lockedStatus: string, value: string) {

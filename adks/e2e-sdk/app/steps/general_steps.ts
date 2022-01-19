@@ -1,10 +1,8 @@
 import { Given, Then, When } from '@cucumber/cucumber';
-import { Feature, FeatureValueType, RolloutStrategy, RolloutStrategyAttribute } from 'featurehub-javascript-admin-sdk';
-import { makeid } from '../support/random';
-import { expect } from 'chai';
-import waitForExpect from 'wait-for-expect';
-import { ClientContext, FeatureHubRepository, FeatureStateHolder, Readyness } from 'featurehub-javascript-node-sdk';
+import { FeatureValueType, RolloutStrategy, RolloutStrategyAttribute } from 'featurehub-javascript-admin-sdk';
+import { ClientContext } from 'featurehub-javascript-node-sdk';
 import DataTable from '@cucumber/cucumber/lib/models/data_table';
+import * as fs from 'fs';
 
 Then(/^I add a strategy (.*) with (.*) percentage and value (.*)$/, async function (strategyName, percentage, value, table: DataTable) {
   const fValue = await this.getFeature();
@@ -68,4 +66,10 @@ Then(/^I clear the context$/, function () {
 
 Given(/^I connect to the Edge server using (sse-client-eval|poll-client-eval|poll-server-eval)$/, function() {
 
+});
+
+Then('I write out a feature-examples config file', function() {
+  const buf = `#!/bin/sh\nexport FEATUREHUB_CLIENT_API_KEY=${this.sdkUrlClientEval}\nexport FEATUREHUB_EDGE_URL=${this.featureUrl}\n`;
+
+  fs.writeFileSync('./example-test.sh', buf);
 });
