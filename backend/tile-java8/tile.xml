@@ -5,6 +5,12 @@
 
   <properties>
     <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <java.release>11</java.release>
+    <kotlin.version>1.6.10</kotlin.version>
+    <kotlin.apiVersion>1.6</kotlin.apiVersion>
+    <kotlin.jvmTarget>11</kotlin.jvmTarget>
+    <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
   </properties>
 
   <build>
@@ -29,7 +35,11 @@
       <plugin>
         <groupId>org.jetbrains.kotlin</groupId>
         <artifactId>kotlin-maven-plugin</artifactId>
-        <version>1.5.31</version>
+        <version>${kotlin.version}</version>
+        <configuration>
+          <apiVersion>${kotlin.apiVersion}</apiVersion>
+          <jvmTarget>${kotlin.jvmTarget}</jvmTarget>
+        </configuration>
         <executions>
           <execution>
             <id>compile</id>
@@ -41,7 +51,7 @@
                 <sourceDir>${project.basedir}/src/main/kotlin</sourceDir>
                 <sourceDir>${project.basedir}/src/main/java</sourceDir>
               </sourceDirs>
-              <jvmTarget>1.8</jvmTarget>
+              <jvmTarget>${kotlin.jvmTarget}</jvmTarget>
             </configuration>
           </execution>
           <execution>
@@ -51,7 +61,7 @@
               <sourceDirs>
                 <sourceDir>${project.basedir}/src/test/kotlin</sourceDir>
                 <sourceDir>${project.basedir}/src/test/java</sourceDir>
-                <jvmTarget>1.8</jvmTarget>
+                <jvmTarget>${kotlin.jvmTarget}</jvmTarget>
               </sourceDirs>
             </configuration>
           </execution>
@@ -59,10 +69,10 @@
       </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
+        <version>${maven-compiler-plugin.version}</version>
         <configuration>
-          <source>8</source>
-          <target>8</target>
+          <source>${java.release}</source>
+          <target>${java.release}</target>
           <useIncrementalCompilation>false</useIncrementalCompilation>
         </configuration>
         <executions>
@@ -118,25 +128,6 @@
             <id>licences</id>
             <goals>
               <goal>add-third-party</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <!-- ensure no old code sneaks in -->
-      <plugin>
-        <groupId>org.gaul</groupId>
-        <artifactId>modernizer-maven-plugin</artifactId>
-        <version>1.8.0</version>
-        <configuration>
-          <failOnViolations>true</failOnViolations>
-          <javaVersion>1.8</javaVersion>
-        </configuration>
-        <executions>
-          <execution>
-            <id>modernizer</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>modernizer</goal>
             </goals>
           </execution>
         </executions>
