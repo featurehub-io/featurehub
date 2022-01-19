@@ -5,10 +5,10 @@ Feature: This tests a persons interaction with groups
     And I ensure a portfolio named "Testing Groups" with description "Testing Groups" exists
     # this creates the user and logs them on, which we don't want
     And I have a fully registered person "Mr Archibald Plate McFarlane Toadstool" with email "hamish@mailinator.com" and password "password123"
-    And the first superuser is used for authentication
-    And I ensure a portfolio "Testing Groups" has created a group called "Developer Group"
-    When I add the user "hamish@mailinator.com" to the group "Developer Group" in the portfolio "Testing Groups"
-    Then Searching for user should include the group
+#    And the first superuser is used for authentication
+#    And I ensure a portfolio "Testing Groups" has created a group called "Developer Group"
+#    When I add the user "hamish@mailinator.com" to the group "Developer Group" in the portfolio "Testing Groups"
+#    Then Searching for user should include the group
 
 
   Scenario Outline: Ensure that the person search returns groups after roles have been assigned to their group

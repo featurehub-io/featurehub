@@ -77,14 +77,11 @@ class UserCommon {
     _token = null;
   }
 
-  Future<void> completeRegistration(String name, String password, String email,
-      String registrationUrl) async {
+  Future<void> completeRegistration(
+      String name, String password, String email, String token) async {
     clearAuth();
 
-    var uriParse = Uri.parse(registrationUrl);
-    String token = uriParse.queryParameters['token'] ?? '';
-
-    assert(token.isNotEmpty, 'token is empty or null $registrationUrl');
+    assert(token.isNotEmpty, 'token is empty or null $token');
 
     var person = await authService.personByToken(token);
 
