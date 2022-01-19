@@ -1,4 +1,5 @@
 app/apis
 logs
 node_modules
-./example-test.sh
+
+/example-test.sh
