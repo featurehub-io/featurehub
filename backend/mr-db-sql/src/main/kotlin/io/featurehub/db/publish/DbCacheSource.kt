@@ -440,8 +440,12 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
       val cacheBroadcast = cacheBroadcasters[cacheName]
       if (cacheBroadcast != null) {
         log.debug("deleting environment: `{}`", id)
+        val randomUUID = UUID.randomUUID() // we use this to fill in not-nullable fields
         cacheBroadcast.publishEnvironment(
           PublishEnvironment()
+            .organizationId(randomUUID)
+            .portfolioId(randomUUID)
+            .applicationId(randomUUID)
             .count(environmentsByCacheName(cacheName).findCount() - 1)
             .environment(CacheEnvironment().id(id).version(Long.MAX_VALUE))
             .action(PublishAction.DELETE)

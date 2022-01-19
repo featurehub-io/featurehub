@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import { Given } from '@cucumber/cucumber';
 import {
   Application,
+  Environment,
   Portfolio,
   PortfolioServiceApi,
   RoleType,
@@ -12,7 +13,6 @@ import { makeid, sleep } from '../support/random';
 import { EdgeFeatureHubConfig, FeatureHubPollingClient } from 'featurehub-javascript-node-sdk';
 import waitForExpect from 'wait-for-expect';
 import { logger } from '../support/logging';
-import { SdkWorld } from '../support/world';
 
 Given(/^I create a new portfolio$/, async function () {
   const portfolioService: PortfolioServiceApi = this.portfolioApi;
@@ -33,24 +33,85 @@ Given(/^I create an application$/, async function () {
   // 1 environment, production
   expect(aCreate.data.environments.length).to.eq(1);
   this.application = aCreate.data;
+  this.environment = aCreate.data.environments[0];
+});
+
+Given(/^I create a new environment$/, async function () {
+  // now create the app & environment
+  const aCreate = await this.environmentApi.createEnvironment(this.application.id, new Environment({
+    name: this.portfolio.name,
+    description: this.portfolio.name
+  }));
+  expect(aCreate.status).to.eq(200);
+  this.environment = aCreate.data;
+});
+
+Given(/^I delete the environment$/, async function () {
+  // now create the app & environment
+  const aCreate = await this.environmentApi.deleteEnvironment(this.environment.id, false, false);
+  expect(aCreate.status).to.eq(200);
+  expect(aCreate.data).to.be.true;
 });
 
 Given(/^I create a service account and full permissions based on the application environments$/, async function () {
-  const serviceAccountCreate = await this.serviceAccountApi.createServiceAccountInPortfolio(this.portfolio.id, new ServiceAccount({
-    name: this.portfolio.name, description: this.portfolio.name, permissions:
-      [ new ServiceAccountPermission({
-        environmentId: this.application.environments[0].id,
+  const permissions: ServiceAccountPermission[] = [
+    new ServiceAccountPermission({
+      environmentId: this.application.environments[0].id,
+      permissions: [ RoleType.Read, RoleType.Unlock, RoleType.Lock, RoleType.ChangeValue ]
+    })
+  ];
+
+  if (this.environment.id !== this.application.environments[0].id) {
+    permissions.push(new ServiceAccountPermission({
+        environmentId: this.environment.id,
         permissions: [ RoleType.Read, RoleType.Unlock, RoleType.Lock, RoleType.ChangeValue ]
-      }) ]
+      })
+    );
+  }
+
+  const serviceAccountCreate = await this.serviceAccountApi.createServiceAccountInPortfolio(this.portfolio.id, new ServiceAccount({
+    name: this.portfolio.name, description: this.portfolio.name, permissions: permissions
   }), true);
   expect(serviceAccountCreate.status).to.eq(200);
-  expect(serviceAccountCreate.data.permissions.length).to.eq(1);
-  const perm = serviceAccountCreate.data.permissions[0];
+  expect(serviceAccountCreate.data.permissions.length).to.eq(permissions.length);
+
+  let perm: ServiceAccountPermission;
+
+  for (const p of serviceAccountCreate.data.permissions) {
+    if (p.environmentId === this.environment.id) {
+      perm = p;
+      break;
+    }
+  }
+
+  expect(perm).to.not.be.undefined;
+
   this.serviceAccountPermission = perm;
   expect(perm.permissions.length).to.eq(4);
   expect(perm.sdkUrlClientEval).to.not.be.undefined;
   expect(perm.sdkUrlServerEval).to.not.be.undefined;
   expect(perm.environmentId).to.not.be.undefined;
+});
+
+Given('the edge connection is no longer available', async function () {
+  const world = this;
+
+  waitForExpect(async () => {
+    const url = `${world.featureUrl}/features?apiKey=${this.serviceAccountPermission.sdkUrlClientEval}`;
+
+    logger.info('Waiting for failed connection to feature server at `%s`', url);
+
+    let found = false;
+    try {
+      await (FeatureHubPollingClient.pollingClientProvider({}, url, 0, (data) => {
+        found = true;
+        console.log('initial data is ', data);
+      }).poll());
+    } catch (ignored) {
+    }
+
+    expect(found).to.be.false;
+  });
 });
 
 Given(/^I connect to the feature server$/, function () {
