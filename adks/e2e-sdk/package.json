@@ -12,7 +12,7 @@
   "author": "FeatureHub.io",
   "dependencies": {
     "@cucumber/cucumber": "^7.3.1",
-    "@google-cloud/pubsub": "^2.18.3",
+    "@google-cloud/pubsub": "^2.18.4",
     "@types/node": "^14.14.31",
     "axios": "^0.24.0",
     "chai": "^4.3.4",
