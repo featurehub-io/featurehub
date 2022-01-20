@@ -46,7 +46,9 @@ describe('middleware decodes and provides face to repository', () => {
     expect(nextCalled).to.be.true;
     const repo: InternalFeatureRepository = req.featureHub;
     expect(repo.feature('FEATURE_STRING').getString()).to.eq('blah*&=blah');
+    expect(repo.feature('FEATURE_STRING').str).to.eq('blah*&=blah');
     expect(repo.feature('FEATURE_BOOLEAN').getBoolean()).to.eq(true);
+    expect(repo.feature('FEATURE_BOOLEAN').flag).to.eq(true);
   });
 
   it('features that are locked cannot be overridden', () => {

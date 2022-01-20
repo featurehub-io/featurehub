@@ -6,18 +6,13 @@ import io.featurehub.db.model.DbFeatureValue;
 import io.featurehub.db.model.DbRolloutStrategy;
 import io.featurehub.db.model.DbServiceAccount;
 import io.featurehub.dacha.model.PublishAction;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
 public interface CacheSource {
   void registerCache(String cacheName, CacheBroadcast cacheBroadcast);
   void publishToCache(String cacheName);
-
-  /**
-   * Whenever a feature value changes in any way, publish it out.
-   *
-   */
-  void publishFeatureChange(DbFeatureValue strategy);
 
   void deleteFeatureChange(DbApplicationFeature feature, UUID environmentId);
 
@@ -37,7 +32,18 @@ public interface CacheSource {
 
   void deleteEnvironment(UUID id);
 
-  void publishFeatureChange(DbApplicationFeature appFeature, PublishAction update);
+  void publishFeatureChange(@NotNull DbApplicationFeature appFeature, @NotNull PublishAction update);
+
+  /*
+   * This one is used by the Archive to preserve the original feature key
+   */
+  void publishFeatureChange(@NotNull DbApplicationFeature appFeature, @NotNull PublishAction update,
+                            @NotNull String featureKey);
+  /**
+   * Whenever a feature value changes in any way, publish it out.
+   */
+  void publishFeatureChange(@NotNull DbFeatureValue strategy);
+
 
   void publishRolloutStrategyChange(DbRolloutStrategy rs);
 }

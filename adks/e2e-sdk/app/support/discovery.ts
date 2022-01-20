@@ -60,11 +60,17 @@ export abstract class BackendDiscovery {
         this._isRESTEdge = true;
       } else if (versionInfo.data.name === 'management-repository') {
         this._mrPort = port;
-        // now lets try and find the features repo
-        if (!await this.edgePortCheck(8064)) {
-          if (!await this.edgePortCheck(8553)) {
-            if (!await this.edgePortCheck(8702)) {
-              throw new Error(`Cannot find edge! But we found MR on port ${port}`);
+        if (port === 80) { // its k8s, all god
+          this._discovered = true;
+          this._featuresPort = port;
+          this._isRESTEdge = true;
+        } else {
+          // now lets try and find the features repo
+          if (!await this.edgePortCheck(8064)) {
+            if (!await this.edgePortCheck(8553)) {
+              if (!await this.edgePortCheck(8702)) {
+                throw new Error(`Cannot find edge! But we found MR on port ${port}`);
+              }
             }
           }
         }

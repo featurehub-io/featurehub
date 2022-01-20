@@ -285,9 +285,11 @@ public class ApplicationSqlApi implements ApplicationApi {
               .valueType(feature.getValueType())
               .build();
 
-      saveAppicationFeature(appFeature);
+      saveApplicationFeature(appFeature);
 
-      cacheSource.publishFeatureChange(appFeature, PublishAction.CREATE);
+      if (appFeature.getValueType() != FeatureValueType.BOOLEAN) {
+        cacheSource.publishFeatureChange(appFeature, PublishAction.CREATE);
+      }
 
       // if this is a boolean feature, create this feature with a default value of false in all
       // environments we currently
@@ -321,9 +323,7 @@ public class ApplicationSqlApi implements ApplicationApi {
 
     saveAllFeatures(newFeatures);
 
-    for (DbFeatureValue nf : newFeatures) {
-      cacheSource.publishFeatureChange(nf);
-    }
+    cacheSource.publishFeatureChange(appFeature, PublishAction.CREATE);
   }
 
   @Transactional
@@ -399,7 +399,7 @@ public class ApplicationSqlApi implements ApplicationApi {
   }
 
   @Transactional
-  private void saveAppicationFeature(DbApplicationFeature f) {
+  private void saveApplicationFeature(DbApplicationFeature f) {
     database.save(f);
   }
 

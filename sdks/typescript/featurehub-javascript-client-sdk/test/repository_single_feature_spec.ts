@@ -21,23 +21,29 @@ describe('repository reacts to single feature changes as expected', () => {
     repo.notify(SSEResultState.Feature, { id: '1', key: 'pear', version: 1, type: FeatureValueType.String, value: 'now-set' });
 
     expect(repo.feature('pear').getVersion()).to.eq(1);
+    expect(repo.feature('pear').version).to.eq(1);
     expect(repo.feature('pear').getString()).to.eq('now-set');
+    expect(repo.feature('pear').str).to.eq('now-set');
   });
 
   it('should specify undefined for unknown feature values', () => {
     // tslint:disable-next-line:no-unused-expression
     expect(repo.getFeatureState('bool').getBoolean()).to.be.undefined;
+    expect(repo.getFeatureState('bool').flag).to.be.undefined;
     // tslint:disable-next-line:no-unused-expression
     expect(repo.getFeatureState('num').getNumber()).to.be.undefined;
+    expect(repo.getFeatureState('num').num).to.be.undefined;
     // tslint:disable-next-line:no-unused-expression
     expect(repo.getFeatureState('str').getString()).to.be.undefined;
+    expect(repo.getFeatureState('str').str).to.be.undefined;
     // tslint:disable-next-line:no-unused-expression
     expect(repo.getFeatureState('str').getRawJson()).to.be.undefined;
+    expect(repo.getFeatureState('str').rawJson).to.be.undefined;
 
     const ctx = Substitute.for<ClientContext>();
     const feat = repo.getFeatureState('bool').withContext(ctx);
     // tslint:disable-next-line:no-unused-expression
-    expect(feat.getBoolean()).to.be.undefined;
+    expect(feat.flag).to.be.undefined;
   });
 
   it('should be able to deal with pure json data', () => {
@@ -129,5 +135,6 @@ describe('repository reacts to single feature changes as expected', () => {
       type: FeatureValueType.Number, value: 12.9 })));
     // expect(triggerApricot).to.eq(2);
     expect(repo.feature('apricot').getNumber()).to.eq(12.9);
+    expect(repo.feature('apricot').num).to.eq(12.9);
   });
 });

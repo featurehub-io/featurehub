@@ -440,8 +440,12 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
       val cacheBroadcast = cacheBroadcasters[cacheName]
       if (cacheBroadcast != null) {
         log.debug("deleting environment: `{}`", id)
+        val randomUUID = UUID.randomUUID() // we use this to fill in not-nullable fields
         cacheBroadcast.publishEnvironment(
           PublishEnvironment()
+            .organizationId(randomUUID)
+            .portfolioId(randomUUID)
+            .applicationId(randomUUID)
             .count(environmentsByCacheName(cacheName).findCount() - 1)
             .environment(CacheEnvironment().id(id).version(Long.MAX_VALUE))
             .action(PublishAction.DELETE)
@@ -454,7 +458,7 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
    * unlike pushing out feature values one by one as they change, this can represent the deletion of a feature value
    * across the board.
    */
-  private fun publishAppLevelFeatureChange(appFeature: DbApplicationFeature, action: PublishAction) {
+  private fun publishAppLevelFeatureChange(appFeature: DbApplicationFeature, action: PublishAction, originalKey: String?) {
     val cacheName =
       QDbNamedCache().organizations.portfolios.applications.eq(appFeature.parentApplication).findOneOrEmpty()
         .map { obj: DbNamedCache -> obj.cacheName }
@@ -469,14 +473,28 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
             appFeature.parentApplication
           ).feature.eq(appFeature).findEach { fe: DbFeatureValue -> featureValues[fe.environment.id] = fe }
         }
-        QDbEnvironment().parentApplication.eq(appFeature.parentApplication).whenArchived.isNull.findList()
+        val cacheFeature = toCacheFeature(appFeature)
+
+        // deletes cause the key to change, so this restores it, SDKs should be using the ID in any case
+        if (originalKey != null) {
+          cacheFeature.key = originalKey
+        }
+
+        QDbEnvironment().parentApplication.eq(appFeature.parentApplication)
+          .whenArchived.isNull
+          .whenUnpublished.isNull.findList()
           .forEach { env: DbEnvironment ->
-              cacheBroadcast.publishFeature(
+            val toCacheFeatureValue = toCacheFeatureValue(featureValues[env.id], appFeature)
+            // deletes cause the key to change, so this restores it, SDKs should be using the ID in any case
+            if (originalKey != null && toCacheFeatureValue != null) {
+              toCacheFeatureValue.key = originalKey
+            }
+            cacheBroadcast.publishFeature(
                 PublishFeatureValue()
                   .feature(
                     CacheEnvironmentFeature()
-                      .feature(toCacheFeature(appFeature))
-                      .value(toCacheFeatureValue(featureValues[env.id], appFeature))
+                      .feature(cacheFeature)
+                      .value(toCacheFeatureValue)
                   )
                   .environmentId(env.id).action(action)
               )
@@ -486,7 +504,11 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
   }
 
   override fun publishFeatureChange(appFeature: DbApplicationFeature, action: PublishAction) {
-    executor.submit { publishAppLevelFeatureChange(appFeature, action) } // background as not going away
+    executor.submit { publishAppLevelFeatureChange(appFeature, action, null) } // background as not going away
+  }
+
+  override fun publishFeatureChange(appFeature: DbApplicationFeature, update: PublishAction, featureKey: String) {
+    executor.submit { publishAppLevelFeatureChange(appFeature, update, featureKey) } // background as not going away
   }
 
   /**

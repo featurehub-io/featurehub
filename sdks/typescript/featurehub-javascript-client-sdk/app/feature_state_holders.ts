@@ -4,7 +4,7 @@ import { ClientContext } from './client_context';
 import { InternalFeatureRepository } from './internal_feature_repository';
 
 export class FeatureStateBaseHolder implements FeatureStateHolder {
-  protected internalFeatureState: FeatureState;
+  protected internalFeatureState: FeatureState | undefined;
   protected _key: string;
   protected listeners: Array<FeatureListener> = [];
   protected _repo: InternalFeatureRepository;
@@ -18,6 +18,46 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
 
     this._repo = repository;
     this._key = key;
+  }
+
+  get key(): string {
+    return this.getKey();
+  }
+
+  get str(): string {
+    return this.getString();
+  }
+
+  get flag(): boolean {
+    return this.getFlag();
+  }
+
+  get num(): number {
+    return this.getNumber();
+  }
+
+  get rawJson(): string {
+    return this.getRawJson();
+  }
+
+  get exists(): boolean {
+    return this.internalFeatureState !== undefined;
+  }
+
+  get locked(): boolean {
+    return this.isLocked();
+  }
+
+  get enabled(): boolean {
+    return this.isEnabled();
+  }
+
+  get version(): number {
+    return this.getVersion();
+  }
+
+  get type(): FeatureValueType {
+    return this.getType();
   }
 
   public withContext(param: ClientContext): FeatureStateHolder {
@@ -73,7 +113,7 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
 
   /// returns true if the value changed, _only_ the repository should call this
   /// as it is dereferenced via the parentHolder
-  setFeatureState(fs: FeatureState): boolean {
+  setFeatureState(fs: FeatureState | undefined): boolean {
     const existingValue = this._getValue();
     const existingLocked = this.featureState()?.l;
 
@@ -131,7 +171,7 @@ export class FeatureStateBaseHolder implements FeatureStateHolder {
     return bh;
   }
 
-  private featureState(): FeatureState {
+  private featureState(): FeatureState | undefined {
     if (this.internalFeatureState !== undefined) {
       return this.internalFeatureState;
     }

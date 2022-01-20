@@ -3,7 +3,7 @@ import {
   Application,
   ApplicationServiceApi,
   AuthServiceApi,
-  Configuration,
+  Configuration, Environment,
   EnvironmentFeatureServiceApi,
   EnvironmentServiceApi,
   Feature,
@@ -34,6 +34,7 @@ export class SdkWorld extends World {
   private _portfolio: Portfolio;
   private _application: Application;
   public feature: Feature;
+  public environment: Environment;
   public serviceAccountPermission: ServiceAccountPermission;
   public edgeServer: EdgeFeatureHubConfig;
   private _repository: FeatureHubRepository;
