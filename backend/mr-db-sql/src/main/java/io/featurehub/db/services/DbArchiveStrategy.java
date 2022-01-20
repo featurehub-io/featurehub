@@ -106,9 +106,10 @@ public class DbArchiveStrategy implements ArchiveStrategy {
   public void archiveApplicationFeature(DbApplicationFeature feature) {
     feature.setWhenArchived(LocalDateTime.now());
     // key is unique
+    String originalKey = feature.getKey();
     feature.setKey(feature.getKey() + archivePrefix + isoDate.format(feature.getWhenArchived()));
     database.save(feature);
-    cacheSource.publishFeatureChange(feature, PublishAction.DELETE);
+    cacheSource.publishFeatureChange(feature, PublishAction.DELETE, originalKey);
   }
 
   @Override

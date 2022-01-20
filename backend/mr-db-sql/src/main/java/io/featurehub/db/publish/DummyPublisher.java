@@ -60,6 +60,11 @@ public class DummyPublisher implements PublishManager, CacheSource {
   }
 
   @Override
+  public void publishFeatureChange(DbApplicationFeature appFeature, PublishAction update, String featureKey) {
+
+  }
+
+  @Override
   public void publishRolloutStrategyChange(DbRolloutStrategy rs) {
 
   }

@@ -122,12 +122,16 @@ public class StreamingFeatureSource implements StreamingFeatureController {
 
       final Collection<ClientConnection> tbc = notifyOnIncomingFeatureUpdate.get(fv.getEnvironmentId());
       if (tbc != null) {
+        log.debug("edge received streamed feature update {}, notifying {} listeners", fv, tbc.size());
+
         for (ClientConnection b : tbc) {
           updateExecutor.submit(() -> b.notifyFeature(fv));
         }
+      } else {
+        log.debug("edge received streamed feature update {} but no listeners", fv);
       }
     } catch (IOException e) {
-      log.warn("unable process incoming feature change.");
+      log.error("unable process incoming feature change.");
     }
   }
 

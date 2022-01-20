@@ -12,12 +12,12 @@
   "author": "FeatureHub.io",
   "dependencies": {
     "@cucumber/cucumber": "^7.3.1",
-    "@google-cloud/pubsub": "^2.18.3",
     "@types/node": "^14.14.31",
     "axios": "^0.24.0",
     "chai": "^4.3.4",
     "featurehub-javascript-admin-sdk": "file:../admin-typescript/typescript-admin-client",
     "featurehub-javascript-node-sdk": "^1.0.9",
+    "featurehub-javascript-client-sdk": "^1.0.9",
     "nats": "^2.4.0",
     "wait-for-expect": "^3.0.2",
     "winston": "^3.3.3"

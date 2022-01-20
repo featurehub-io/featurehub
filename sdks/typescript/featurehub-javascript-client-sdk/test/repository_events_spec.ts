@@ -235,7 +235,9 @@ describe('Feature repository reacts to incoming event lists as expected', () => 
     expect(triggerPear).to.eq(1);
     expect(triggerPeach).to.eq(1);
     expect(repo.getFeatureState('banana').getString()).to.eq('7.2');
+    expect(repo.feature('banana').str).to.eq('7.2');
     expect(repo.getFeatureState('pear').getString()).to.eq('15');
+    expect(repo.feature('pear').str).to.eq('15');
     expect(repo.getFeatureState('peach').getString()).to.eq('56534.23');
 
     const features2 = [

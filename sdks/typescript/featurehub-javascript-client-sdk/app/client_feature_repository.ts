@@ -139,20 +139,20 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
     const vals = new Map<string, string | undefined>();
 
     this.features.forEach((value, key) => {
-      if (value.getKey()) { // only include value features
+      if (value.exists) { // only include valid features
         let val: any;
         switch (value.getType()) {// we need to pick up any overrides
           case FeatureValueType.Boolean:
-            val = value.getBoolean() ? 'true' : 'false';
+            val = value.flag ? 'true' : 'false';
             break;
           case FeatureValueType.String:
-            val = value.getString();
+            val = value.str;
             break;
           case FeatureValueType.Number:
-            val = value.getNumber();
+            val = value.num;
             break;
           case FeatureValueType.Json:
-            val = value.getRawJson();
+            val = value.rawJson;
             break;
           default:
             val = undefined;
@@ -307,12 +307,10 @@ export class ClientFeatureRepository implements InternalFeatureRepository {
   }
 
   private deleteFeature(featureState: FeatureState) {
-    featureState.value = undefined;
-
     const holder = this.features.get(featureState.key);
 
     if (holder) {
-      holder.setFeatureState(featureState);
+      holder.setFeatureState(undefined);
     }
   }
 }

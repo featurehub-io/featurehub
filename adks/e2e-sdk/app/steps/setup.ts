@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { Given } from '@cucumber/cucumber';
+import { Given, Then } from '@cucumber/cucumber';
 import {
   Application,
   Environment,
@@ -53,11 +53,13 @@ Given(/^I delete the environment$/, async function () {
   expect(aCreate.data).to.be.true;
 });
 
-Given(/^I create a service account and full permissions based on the application environments$/, async function () {
+Given(/^I create a service account and (full|read) permissions based on the application environments$/, async function (roleTypes) {
+  const roles = roleTypes === 'full' ? [RoleType.Read, RoleType.Unlock, RoleType.Lock, RoleType.ChangeValue] : [RoleType.Read];
+
   const permissions: ServiceAccountPermission[] = [
     new ServiceAccountPermission({
       environmentId: this.application.environments[0].id,
-      permissions: [ RoleType.Read, RoleType.Unlock, RoleType.Lock, RoleType.ChangeValue ]
+      permissions: roles
     })
   ];
 
@@ -141,4 +143,8 @@ Given(/^I connect to the feature server$/, function () {
     sleep(200);
     world.repository = edge.repository();
   }, 4000, 200);
+});
+
+Then(/^I sleep for (\d+) seconds$/, async function (seconds) {
+  await sleep(parseInt(seconds) * 1000);
 });

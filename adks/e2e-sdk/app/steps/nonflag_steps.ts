@@ -70,6 +70,9 @@ Then(/^the (string|json|number) feature is (locked|unlocked) and (.*)$/, async f
 
 Then(/^I set the (string|json|number) feature value to (.*)$/, async function (featureType: string, value: string) {
   const fValue = await this.getFeature();
+
+  expect(fValue).to.not.be.undefined;
+
   if (featureType === 'number') {
     fValue.valueNumber = parseFloat(value);
   } else if (featureType === 'string') {
@@ -78,6 +81,10 @@ Then(/^I set the (string|json|number) feature value to (.*)$/, async function (f
     fValue.valueJson = value;
   } else {
     expect(false).to.be.true; // this is a big fail
+  }
+
+  if (fValue.locked === undefined) {
+    fValue.locked = false;
   }
 
   fValue.whenUpdated = undefined;

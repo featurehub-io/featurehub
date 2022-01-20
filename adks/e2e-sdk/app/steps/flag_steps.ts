@@ -14,8 +14,9 @@ Given(/^There is a new feature flag$/, async function () {
     valueType: FeatureValueType.Boolean
   }));
   expect(fCreate.status).to.eq(200);
-  expect(fCreate.data.length).to.eq(1);
-  this.feature = fCreate.data[0];
+  const feat = fCreate.data.find(f => f.key == name);
+  expect(feat).to.not.be.undefined;
+  this.feature = feat;
 });
 
 Given(/^There is a feature flag with the key (.*)$/, async function (key: string) {

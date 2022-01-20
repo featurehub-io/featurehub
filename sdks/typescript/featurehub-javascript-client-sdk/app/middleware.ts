@@ -101,6 +101,46 @@ class BaggageHolder implements FeatureStateHolder {
   triggerListeners(feature: FeatureStateHolder): void {
     this.existing.triggerListeners(feature);
   }
+
+  get enabled(): boolean {
+    return this.isEnabled();
+  }
+
+  get exists(): boolean {
+    return this.existing.exists;
+  }
+
+  get flag(): boolean | undefined {
+    return this.getBoolean();
+  }
+
+  get key(): string | undefined {
+    return this.getKey();
+  }
+
+  get locked(): boolean | undefined {
+    return this.isLocked();
+  }
+
+  get num(): number | undefined {
+    return this.getNumber();
+  }
+
+  get rawJson(): string | undefined {
+    return this.getRawJson();
+  }
+
+  get str(): string | undefined {
+    return this.getString();
+  }
+
+  get type(): FeatureValueType | undefined {
+    return this.getType();
+  }
+
+  get version(): number | undefined {
+    return this.getVersion();
+  }
 }
 
 class BaggageRepository implements InternalFeatureRepository {

@@ -125,7 +125,7 @@ public class TimedBucketClientConnection implements ClientConnection {
   public void writeMessage(SSEResultState name, String etags, String data) throws IOException {
     if (!output.isClosed()) {
       final OutboundEvent.Builder eventBuilder = new OutboundEvent.Builder();
-      log.debug("data is  etag `{}`: data `{}`", etags, data);
+      log.debug("data is  etag `{}`: name: `{}` data `{}`", etags, name, data);
       eventBuilder.name(name.toString());
       eventBuilder.mediaType(MediaType.TEXT_PLAIN_TYPE);
       if (etags != null) {
@@ -264,6 +264,7 @@ public class TimedBucketClientConnection implements ClientConnection {
   @Override
   public void notifyFeature(PublishFeatureValue rf) {
     if (heldFeatureUpdates != null) {
+      log.debug("holding feature update for client");
       heldFeatureUpdates.add(rf);
     } else {
       try {
