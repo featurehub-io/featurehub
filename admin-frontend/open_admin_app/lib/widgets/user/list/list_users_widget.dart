@@ -434,9 +434,9 @@ class DeleteDialogWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FHDeleteThingWarningWidget(
-      thing: "user '${person.name ?? person.email}",
+      thing: "user '${person.name ?? person.email}'",
       content:
-          'This users will be removed from all groups and delete from the system. \n\nThis cannot be undone!',
+          'This user will be removed from all groups and deleted from the system. \n\nThis cannot be undone!',
       bloc: bloc.mrClient,
       deleteSelected: () async {
         try {
