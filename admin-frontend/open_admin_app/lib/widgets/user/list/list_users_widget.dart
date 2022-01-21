@@ -69,6 +69,12 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                         onSortColumn(snapshot.data!, columnIndex, ascending);
                       },
                     ),
+                    DataColumn(
+                      label: const Text('Last logged in'),
+                      onSort: (columnIndex, ascending) {
+                        onSortColumn(snapshot.data!, columnIndex, ascending);
+                      },
+                    ),
                     DataColumn(label: const Text(''), onSort: (i, a) => {}),
                   ],
                   rows: [
@@ -83,6 +89,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                                   )),
                             DataCell(Text(p.person.email!)),
                             DataCell(Text('${p.person.groups.length}')),
+                            DataCell(Text('${p.person.whenLastAuthenticated?.toLocal() ?? ""}')),
                             DataCell(Row(children: <Widget>[
                               Tooltip(
                                 message: _infoTooltip(p, allowedLocalIdentity),
