@@ -1,13 +1,13 @@
 package io.featurehub.edge
 
 import cd.connect.app.config.DeclaredConfigResolver
-import cd.connect.jersey.common.CorsFilter
 import cd.connect.lifecycle.ApplicationLifecycleManager
 import cd.connect.lifecycle.LifecycleStatus
 import io.featurehub.app.db.utils.CommonDbFeature
 import io.featurehub.health.MetricsHealthRegistration.Companion.registerMetrics
 import io.featurehub.jersey.FeatureHubJerseyHost
 import io.featurehub.lifecycle.TelemetryFeature
+import io.featurehub.rest.CorsFilter
 import io.featurehub.rest.Info
 import org.glassfish.jersey.server.ResourceConfig
 import org.slf4j.Logger

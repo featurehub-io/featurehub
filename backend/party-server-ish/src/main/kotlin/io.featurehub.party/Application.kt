@@ -2,13 +2,13 @@ package io.featurehub.party
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
-import cd.connect.jersey.common.CorsFilter
 import io.featurehub.edge.EdgeGetFeature
 import io.featurehub.health.MetricsHealthRegistration.Companion.registerMetrics
 import io.featurehub.jersey.FeatureHubJerseyHost
 import io.featurehub.lifecycle.TelemetryFeature
 import io.featurehub.mr.ManagementRepositoryFeature
 import io.featurehub.publish.ChannelConstants
+import io.featurehub.rest.CorsFilter
 import io.featurehub.rest.Info
 import io.featurehub.web.security.oauth.OAuth2Feature
 import org.glassfish.jersey.server.ResourceConfig
