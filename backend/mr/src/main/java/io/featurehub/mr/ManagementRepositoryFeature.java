@@ -1,6 +1,5 @@
 package io.featurehub.mr;
 
-import cd.connect.jersey.common.CorsFilter;
 import io.featurehub.app.db.utils.CommonDbFeature;
 import io.featurehub.db.publish.CacheSource;
 import io.featurehub.db.publish.MRPublishModule;
@@ -51,6 +50,7 @@ import io.featurehub.mr.resources.UserStateResource;
 import io.featurehub.mr.resources.oauth2.OAuth2MRAdapter;
 import io.featurehub.mr.utils.ApplicationUtils;
 import io.featurehub.mr.utils.PortfolioUtils;
+import io.featurehub.rest.CorsFilter;
 import io.featurehub.web.security.oauth.AuthProvider;
 import io.featurehub.web.security.oauth.BlankProvider;
 import io.featurehub.web.security.oauth.OAuthAdapter;

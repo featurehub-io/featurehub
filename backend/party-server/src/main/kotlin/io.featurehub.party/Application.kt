@@ -2,7 +2,6 @@ package io.featurehub.party
 
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
-import cd.connect.jersey.common.CorsFilter
 import io.featurehub.dacha.DachaFeature
 import io.featurehub.dacha.api.DachaClientFeature
 import io.featurehub.dacha.api.DachaClientServiceRegistry
@@ -15,6 +14,7 @@ import io.featurehub.lifecycle.TelemetryFeature
 import io.featurehub.mr.ManagementRepositoryFeature
 import io.featurehub.publish.ChannelConstants
 import io.featurehub.publish.NATSFeature
+import io.featurehub.rest.CorsFilter
 import io.featurehub.rest.Info.Companion.APPLICATION_NAME_PROPERTY
 import io.featurehub.web.security.oauth.OAuth2Feature
 import org.glassfish.jersey.server.ResourceConfig

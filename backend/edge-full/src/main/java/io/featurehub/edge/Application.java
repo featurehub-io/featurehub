@@ -1,7 +1,6 @@
 package io.featurehub.edge;
 
 import cd.connect.app.config.DeclaredConfigResolver;
-import cd.connect.jersey.common.CorsFilter;
 import cd.connect.lifecycle.ApplicationLifecycleManager;
 import cd.connect.lifecycle.LifecycleStatus;
 import io.featurehub.dacha.api.DachaClientFeature;
@@ -9,6 +8,7 @@ import io.featurehub.dacha.api.DachaClientServiceRegistry;
 import io.featurehub.health.MetricsHealthRegistration;
 import io.featurehub.jersey.FeatureHubJerseyHost;
 import io.featurehub.publish.NATSFeature;
+import io.featurehub.rest.CorsFilter;
 import io.featurehub.utils.FallbackPropertyConfig;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.spi.Container;

@@ -9,6 +9,7 @@ import io.featurehub.dacha.model.DachaPermissionResponse
 import jakarta.inject.Inject
 import jakarta.ws.rs.InternalServerErrorException
 import jakarta.ws.rs.NotFoundException
+import jakarta.ws.rs.WebApplicationException
 import jakarta.ws.rs.core.Response
 import org.glassfish.hk2.api.Immediate
 import java.util.*
@@ -26,7 +27,7 @@ class DachaApiKeyResource @Inject constructor(private val cache: InternalCache) 
     // in a proper load balance solution, this won't happen, it can happen in Party Server so we need to show the correct error
 
     if (!cache.cacheComplete()) {
-      throw InternalServerErrorException(Response.status(503).header("Retry-After", retryAfter).entity("The server is not ready yet").build())
+      throw WebApplicationException(Response.status(503).header("Retry-After", retryAfter).entity("The server is not ready yet").build())
     }
 
     val collection = cache.getFeaturesByEnvironmentAndServiceAccount(eId, serviceAccountKey) ?: throw NotFoundException()
