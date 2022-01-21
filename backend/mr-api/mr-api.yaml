@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: ManagementResourceApi
   description: This describes the API clients use for accessing features
-  version: "1.1.3"
+  version: "1.1.4"
 #  CRUD for portfolios, environments, features, service account, people, and groups (edited)
 #  roles are fixed
 #  then people<->group association
@@ -407,6 +407,11 @@ paths:
           description: "How many results to return"
           schema:
             type: integer
+        - name: includeLastLoggedIn
+          in: query
+          description: "Include last logged in timestamp"
+          schema:
+            type: boolean
       responses:
         200:
           description: "Gets all persons, alphabetically sorted"
@@ -2763,6 +2768,14 @@ components:
           items:
             $ref: "#/components/schemas/Group"
         whenArchived:
+          type: string
+          format: date-time
+        whenLastAuthenticated:
+          description: "This is the timestamp in UTC when they last logged into the system"
+          type: string
+          format: date-time
+        whenLastSeen:
+          description: "This is the timestamp in UTC when they last made a request to the system on their most recent login. If it is null it means they have no current token or have never logged in."
           type: string
           format: date-time
         additional:

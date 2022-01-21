@@ -52,14 +52,17 @@ class ListUsersBloc implements Bloc {
     if (search != null && search!.length > 1) {
       // wait for global error handling to wrap this in try/catch
       var data = await _personServiceApi.findPeople(
-          order: SortOrder.ASC, filter: search, includeGroups: true);
+          order: SortOrder.ASC,
+          filter: search,
+          includeGroups: true,
+          includeLastLoggedIn: true);
 
       // publish it out...
       _transformPeople(data);
     } else if (search == null || search!.isEmpty) {
       // this should paginate one presumes
       var data = await _personServiceApi.findPeople(
-          order: SortOrder.ASC, includeGroups: true);
+          order: SortOrder.ASC, includeGroups: true, includeLastLoggedIn: true);
       _transformPeople(data);
     }
   }

@@ -142,7 +142,7 @@ public class PersonResource implements PersonServiceDelegate {
       int page = holder.pageSize == null ? 20 : holder.pageSize;
 
       PersonApi.PersonPagination pp = personApi.search(holder.filter, holder.order, start, page,
-        new Opts().add(FillOpts.Groups, holder.includeGroups));
+        new Opts().add(FillOpts.Groups, holder.includeGroups).add(FillOpts.PersonLastLoggedIn, holder.includeLastLoggedIn));
 
       return new SearchPersonResult()
         .people(pp.people)

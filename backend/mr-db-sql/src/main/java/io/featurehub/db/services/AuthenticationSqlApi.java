@@ -52,7 +52,7 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
         .map(
             p -> {
               if (passwordSalter.validatePassword(password, p.getPassword(), p.getPasswordAlgorithm())) {
-                updateLastAuthenticated(p);
+                updateLastAuthenticated(p, LocalDateTime.now());
 
                 // update the password algorithm for their password if it is "old" now we know their password
                 if (!p.getPasswordAlgorithm().equals(DbPerson.DEFAULT_PASSWORD_ALGORITHM)) {
@@ -74,13 +74,9 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
   }
 
   @Transactional
-  private void updateLastAuthenticated(DbPerson p) {
-    database
-        .update(DbPerson.class)
-        .set("whenLastAuthenticated", LocalDateTime.now())
-        .where()
-        .idEq(p.getId())
-        .update();
+  public void updateLastAuthenticated(DbPerson p, LocalDateTime whenLastAuthenticated) {
+    p.setWhenLastAuthenticated(whenLastAuthenticated);
+    p.save();
   }
 
   @Override
