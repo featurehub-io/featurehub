@@ -6,6 +6,7 @@ import io.featurehub.db.model.DbLogin
 import io.featurehub.db.model.DbPerson
 import io.featurehub.mr.model.SortOrder
 
+import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
@@ -35,7 +36,7 @@ class ConvertUtilsSpec extends Base2Spec {
       def person = new DbPerson.Builder().email("new-person1@me.com").name("limited1").build()
       db.save(person)
       db.commitTransaction()
-      def whenLastAuthenticated = LocalDateTime.now()
+      def whenLastAuthenticated = Instant.now()
       authenticationSqlApi.updateLastAuthenticated(person, whenLastAuthenticated)
     when: "i find the person"
       def people = personSqlApi.search("limited1", SortOrder.ASC, 0, 0, Opts.opts(FillOpts.PersonLastLoggedIn))
@@ -53,11 +54,11 @@ class ConvertUtilsSpec extends Base2Spec {
   def "a person who has a dblogin will have a last seen"() {
     given: "i have a new person"
       def person = new DbPerson.Builder().email("new-person2@me.com").name("limited2").build()
-      def whenLastAuthenticated = LocalDateTime.now()
+      def whenLastAuthenticated = Instant.now()
       person.whenLastAuthenticated = whenLastAuthenticated
       db.save(person)
     and: "they have a login"
-      def whenLastSeen = whenLastAuthenticated.plusMinutes(2)
+      def whenLastSeen = whenLastAuthenticated.plusMillis(2000)
       def login = new DbLogin.Builder().person(person).lastSeen(whenLastSeen).token("xxxx").build()
       db.save(login)
     and: "we commit the transaction"

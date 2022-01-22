@@ -11,6 +11,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -26,7 +27,7 @@ public class DbPerson extends DbVersionedBase {
 
   public DbPerson() {}
 
-  private LocalDateTime whenLastAuthenticated;
+  private Instant whenLastAuthenticated;
 
   @Column(name = "name", length = 100)
   private String name;
@@ -64,11 +65,11 @@ public class DbPerson extends DbVersionedBase {
     this.passwordAlgorithm = passwordAlgorithm;
   }
 
-  public LocalDateTime getWhenLastAuthenticated() {
+  public Instant getWhenLastAuthenticated() {
     return whenLastAuthenticated;
   }
 
-  public void setWhenLastAuthenticated(LocalDateTime whenLastAuthenticated) {
+  public void setWhenLastAuthenticated(Instant whenLastAuthenticated) {
     this.whenLastAuthenticated = whenLastAuthenticated;
   }
 

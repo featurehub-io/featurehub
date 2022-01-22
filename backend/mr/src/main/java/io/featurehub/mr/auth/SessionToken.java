@@ -2,11 +2,11 @@ package io.featurehub.mr.auth;
 
 import io.featurehub.mr.model.Person;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public class SessionToken {
   public Person person;
-  public LocalDateTime lastSeen;
+  public Instant lastSeen;
   public String sessionToken;
 
   private SessionToken(Builder builder) {
@@ -17,7 +17,7 @@ public class SessionToken {
 
   public static final class Builder {
     private Person person;
-    private LocalDateTime lastSeen;
+    private Instant lastSeen;
     private String sessionToken;
 
     public Builder() {
@@ -28,7 +28,7 @@ public class SessionToken {
       return this;
     }
 
-    public Builder lastSeen(LocalDateTime val) {
+    public Builder lastSeen(Instant val) {
       lastSeen = val;
       return this;
     }
