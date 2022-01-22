@@ -92,7 +92,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                                   )),
                             DataCell(Text(p.person.email!)),
                             DataCell(Text('${p.person.groups.length}')),
-                            DataCell(Text('${p.person.whenLastAuthenticated ?? ""}')),
+                            DataCell(Text('${p.person.whenLastAuthenticated?.toLocal() ?? ""}')),
                             DataCell(Row(children: <Widget>[
                               Tooltip(
                                 message: _infoTooltip(p, allowedLocalIdentity),
