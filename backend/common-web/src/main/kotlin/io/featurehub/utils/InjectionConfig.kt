@@ -6,28 +6,38 @@ import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Constructor
 
 
+/**
+ * You should only use this field where the value is required to be provided.
+ */
 @Target(AnnotationTarget.FIELD, AnnotationTarget.VALUE_PARAMETER)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class FeatureHubConfig(val source: String)
 
 class ConfigInjectionResolver : InjectionResolver<FeatureHubConfig> {
   override fun resolve(injectee: Injectee): Any? {
-    // should be able to handle almost anything
-    if (String::class.java == injectee.requiredType) {
-      val elem: AnnotatedElement = injectee.parent
+    val elem: AnnotatedElement = injectee.parent
 
-      return if (elem is Constructor<*>) {
-        val ctor: Constructor<*> = elem
-        val config: FeatureHubConfig = ctor.parameterAnnotations[injectee.position][0] as FeatureHubConfig
-        val prop = FallbackPropertyConfig.getConfig(config.source)
+    return if (elem is Constructor<*>) {
+      val ctor: Constructor<*> = elem
+      val config: FeatureHubConfig = ctor.parameterAnnotations[injectee.position][0] as FeatureHubConfig
+      val prop = FallbackPropertyConfig.getConfig(config.source)
 
+      if (prop == null) {
+        return null
+      } else if (String::class.java == injectee.requiredType) {
         return prop
+      } else if (Boolean::class.java == injectee.requiredType) {
+        return java.lang.Boolean.parseBoolean(prop)
+      } else if (Integer::class.java == injectee.requiredType) {
+        return Integer.parseInt(prop)
+      } else if (Double::class.java == injectee.requiredType) {
+        return java.lang.Double.parseDouble(prop)
       } else {
-        throw RuntimeException("You should not be using this outside config injection")
+        throw RuntimeException("Don't know how to parse string to " + injectee.requiredType.typeName)
       }
+    } else {
+      throw RuntimeException("You should not be using this outside config injection")
     }
-
-    return null
   }
 
   override fun isConstructorParameterIndicator(): Boolean = true

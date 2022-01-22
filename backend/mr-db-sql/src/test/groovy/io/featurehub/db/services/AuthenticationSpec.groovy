@@ -1,6 +1,6 @@
 package io.featurehub.db.services
 
-
+import io.featurehub.db.api.DBLoginSession
 import io.featurehub.db.api.Opts
 import io.featurehub.db.publish.CacheSource
 import io.featurehub.mr.model.Application
@@ -8,8 +8,12 @@ import io.featurehub.mr.model.ApplicationGroupRole
 import io.featurehub.mr.model.ApplicationRoleType
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Person
+import io.featurehub.mr.model.PersonId
 import io.featurehub.mr.model.Portfolio
 import spock.lang.Shared
+
+import java.time.Instant
+import java.time.LocalDateTime
 
 class AuthenticationSpec extends BaseSpec {
   @Shared AuthenticationSqlApi auth
@@ -216,4 +220,71 @@ class AuthenticationSpec extends BaseSpec {
     then: "i have the application role permission to the portfolio"
       user.groups.find({it.applicationRoles.find({ar -> ar.roles.contains(ApplicationRoleType.FEATURE_EDIT) && ar.applicationId == app1.id})})
   }
+
+  def "We can create a session for a person and then find their session by token"() {
+    given: "i register"
+      def email = 'portman27@mailinator.com'
+      personApi.create(email, "Portman27",superuser)
+      Person p2 = auth.register("william", email, "hooray", null)
+    and: 'a defined session'
+      def originalSession = new DBLoginSession(p2, "token", Instant.now())
+    when: 'i create the session'
+      def session = auth.createSession(originalSession)
+    and: "then find the session"
+      def foundSession = auth.findSession(originalSession.token)
+    and: "then invalidate the session"
+      auth.invalidateSession("token")
+      def invalidSession = auth.findSession(originalSession.token)
+    then:
+      session == originalSession
+      foundSession.token == originalSession.token
+      foundSession.lastSeen == originalSession.lastSeen
+      foundSession.person.id.id == p2.id.id
+      foundSession.person.email == p2.email
+      invalidSession == null
+  }
+
+  def "I can't create a session with missing person details"() {
+    when: 'i create a session with no token'
+      auth.createSession(new DBLoginSession(new Person(id: new PersonId(id: null)), "tok", Instant.now()))
+    then:
+      thrown IllegalArgumentException
+  }
+
+  def "an invalid person will create a null session"() {
+    when: 'i create a session with no token'
+      def session = auth.createSession(new DBLoginSession(new Person(id: new PersonId(id: UUID.randomUUID())), "tok", Instant.now()))
+    then:
+      session == null
+  }
+
+  def "when i try and reset an expired token that has no token i get no result"() {
+    given: "i register"
+      def email = 'portman28@mailinator.com'
+      personApi.create(email, "Portman28",superuser)
+    and: "i register them so their token goes away"
+      Person p2 = auth.register("william", email, "hooray", null)
+    when: "i try and reset the token"
+      def reset = auth.resetExpiredRegistrationToken(email)
+    then:
+      reset == null
+  }
+
+  def "when i try and reset an expired token that has a token we get a new token"() {
+    given: "i register"
+      def email = 'portman29@mailinator.com'
+      def token = personApi.create(email, "Portman29",superuser)
+    when: "i try and reset the token"
+      def reset = auth.resetExpiredRegistrationToken(email)
+    then:
+      reset != token.token
+  }
+
+  def "when i try and reset an expired token for someone that doesn't exist, i get no result"() {
+    when: 'i try and reset the token'
+      def reset = auth.resetExpiredRegistrationToken('fred@choppa-chip.com')
+    then:
+      reset == null
+  }
+
 }

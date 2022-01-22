@@ -350,6 +350,43 @@ If not, it will expose them on this port (and not on the server port).
 - `featurehub.url-path` - allows  to configure base path (context root) other than "/". This will set the base path in the index.html of the FeatureHub web app and the backend. Note, this is an offset, not a full domain name, e.g. `featurehub.url-path=/foo/featurehub`.
 In case if the front-end is decoupled on a CDN, the base bath needs to be configured directly in index.html by setting: `<base href="/foo/featurehub/">` (note the trailing slash).
 
+- `connect.logging.environment` - this is a comma separated value list that lets you pick up values from environment variables that get added directly to your logs. It is typically used in Kubernetes deploys to allow you to extract information from the k8s deploy and put it in environment variables and have them logged. The format is `<ENV-VAR>=<log-key>`. You can use `.` notation to split it into objects. 
+
+.Config
+----
+connect.logging.environment=MY_KUBERNETES_NODE=kubernetes.node,MY_KUBERNETES_ZONE=kubernetes.zone
+----
+
+.Generated Logs
+----
+{"@timestamp":"2022-01-22T18:12:56.767+1300","message":"1 * Server has received a request on thread grizzly-http-server-0\n1 > GET http://localhost:8903/info/version\n1 > accept: */*\n1 > host: localhost:8903\n1 > user-agent: curl/7.77.0\n","priority":"TRACE","path":"jersey-logging","thread":"grizzly-http-server-0","kubernetes":{"node":"peabody","zone":"amelia"},"host":"thepolishedbrasstack.lan","connect.rest.method":"received: GET - http://localhost:8903/info/version"}
+----
+
+- `audit.logging.web.header-fields` - a comma separated list of fields that will be extracted out of each web request and put into a field
+in the JSON logs output by the server. All headers are grouped into an object called `http-headers`. Headers by definition are case insensitive. Available from *1.5.5*. An example:
+
+.Config
+----
+audit.logging.web.header-fields=user-agent,origin,Sec-fetch-Mode
+----
+.Generated Logs
+----
+{"@timestamp":"2022-01-22T14:46:19.374+1300","message":"txn[1106] Begin","priority":"TRACE","path":"io.ebean.TXN","thread":"grizzly-http-server-0","host":"my-computer","http-headers":{"user-agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36","origin":"http://localhost:53000","Sec-fetch-Mode":"cors"}}
+----
+- `audit.logging.user` - if this is set to true (it is false by default) then the user's ID and email will be logged against each of their requests
+where it is known. It appears in a `user` object with `id` and `email` as components. Available from *1.5.5*. An example
+
+.Config
+----
+audit.logging.user=true
+----
+
+.Generated Logs
+----
+{"@timestamp":"2022-01-22T14:58:15.854+1300","message":"txn[1109] select t0.id, t0.when_archived, t0.feature_key, t0.alias, t0.name, t0.secret, t0.link, t0.value_type, t0.when_updated, t0.when_created, t0.version, t0.fk_app_id from fh_app_feature t0 where t0.id = ?; --bind(2b86605b-1a81-4fc7-80b7-17edc5e3206e, ) --micros(697)","priority":"DEBUG","path":"io.ebean.SQL","thread":"grizzly-http-server-1","host":"my-computer","user":{"id":"68c09a3d-6e44-4379-bfc1-3e75af59af38","email":"irina@i.com"}}
+
+----
+
 
 ==== Common to Party, SSE Edge and Management Repository
 

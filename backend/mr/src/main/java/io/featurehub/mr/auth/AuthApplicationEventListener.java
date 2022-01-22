@@ -1,5 +1,8 @@
 package io.featurehub.mr.auth;
 
+import cd.connect.app.config.ConfigKey;
+import cd.connect.app.config.DeclaredConfigResolver;
+import cd.connect.context.ConnectContext;
 import io.featurehub.mr.api.AllowedDuringPasswordReset;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.HttpHeaders;
@@ -27,11 +30,17 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class AuthApplicationEventListener implements ApplicationEventListener {
   private static final Logger log = LoggerFactory.getLogger(AuthApplicationEventListener.class);
+  private static final String USER = "user";
   private final AuthenticationRepository authRepo;
+
+  @ConfigKey("audit.logging.user")
+  protected Boolean addUserToLoggingContext = Boolean.FALSE;
 
   @Inject
   public AuthApplicationEventListener(AuthenticationRepository authRepo) {
     this.authRepo = authRepo;
+
+    DeclaredConfigResolver.resolve(this);
   }
 
   @Override
@@ -45,6 +54,10 @@ public class AuthApplicationEventListener implements ApplicationEventListener {
     if (requestEvent.getUriInfo().getPath() != null &&
         !requestEvent.getUriInfo().getPath().startsWith("/features")
     ) return new AuthRequestListener();
+
+    if (requestEvent.getType() == RequestEvent.Type.FINISHED) {
+      ConnectContext.remove(USER);
+    }
 
     return null;
   }
@@ -91,6 +104,9 @@ public class AuthApplicationEventListener implements ApplicationEventListener {
 
           // if they have logged in and either this API is ok during password reset or the person doesn't require it
           if (value != null && (requiresAuth.isAllowedDuringPasswordReset || !Boolean.TRUE.equals(value.person.getPasswordRequiresReset()) )) {
+            if (addUserToLoggingContext) {
+              ConnectContext.set(USER, Map.of("id", value.person.getId().getId(), "email", value.person.getEmail()));
+            }
             event.getContainerRequest().setSecurityContext(new AuthHolder(value));
           } else {
             abort(event, unauthorized());

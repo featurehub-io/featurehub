@@ -128,21 +128,7 @@
     <dependency>
       <groupId>cd.connect.common</groupId>
       <artifactId>connect-env-logging</artifactId>
-      <version>1.1</version>
-      <exclusions>
-        <exclusion>
-          <groupId>cd.connect.common</groupId>
-          <artifactId>connect-java-logging</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>cd.connect.composites.java</groupId>
-          <artifactId>connect-composite-jackson</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>cd.connect.composites.java</groupId>
-          <artifactId>connect-composite-test</artifactId>
-        </exclusion>
-      </exclusions>
+      <version>1.2</version>
     </dependency>
 
     <dependency>
