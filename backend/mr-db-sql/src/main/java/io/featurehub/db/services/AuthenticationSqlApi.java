@@ -44,8 +44,6 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
 
   @Override
   public Person login(@NotNull String email, @NotNull String password) {
-    if (email == null || password == null) return null;
-
     return new QDbPerson()
         .email
         .eq(email.toLowerCase())
@@ -226,7 +224,7 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
             .token
             .eq(token)
             .person
-            .fetch(QDbPerson.Alias.id, QDbPerson.Alias.passwordRequiresReset)
+            .fetch(QDbPerson.Alias.id, QDbPerson.Alias.passwordRequiresReset, QDbPerson.Alias.email)
             .findOne();
 
     if (login != null) {
@@ -237,6 +235,7 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
       return new DBLoginSession(
           new Person()
               .passwordRequiresReset(login.getPerson().isPasswordRequiresReset())
+              .email(login.getPerson().getEmail())
               .id(new PersonId().id(login.getPerson().getId())),
           token,
           lastSeen);
@@ -247,10 +246,6 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
   @Override
   public DBLoginSession createSession(DBLoginSession session) {
     Conversions.nonNullPerson(session.getPerson());
-
-    if (session.getToken() == null) {
-      throw new IllegalArgumentException("Session token cannot be null");
-    }
 
     final DbLogin login =
         new DbLogin.Builder()
