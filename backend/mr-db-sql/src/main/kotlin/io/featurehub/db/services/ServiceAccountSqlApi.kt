@@ -14,8 +14,10 @@ import io.featurehub.db.model.query.QDbEnvironment
 import io.featurehub.db.model.query.QDbServiceAccount
 import io.featurehub.db.model.query.QDbServiceAccountEnvironment
 import io.featurehub.db.publish.CacheSource
-import io.featurehub.mr.model.*
+import io.featurehub.mr.model.Person
 import io.featurehub.mr.model.RoleType
+import io.featurehub.mr.model.ServiceAccount
+import io.featurehub.mr.model.ServiceAccountPermission
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.apache.commons.lang3.RandomStringUtils

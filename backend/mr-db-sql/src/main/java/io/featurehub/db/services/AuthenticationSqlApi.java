@@ -21,6 +21,7 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -48,11 +49,12 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
     return new QDbPerson()
         .email
         .eq(email.toLowerCase())
+        .whenArchived.isNull()
         .findOneOrEmpty()
         .map(
             p -> {
               if (passwordSalter.validatePassword(password, p.getPassword(), p.getPasswordAlgorithm())) {
-                updateLastAuthenticated(p);
+                updateLastAuthenticated(p, Instant.now());
 
                 // update the password algorithm for their password if it is "old" now we know their password
                 if (!p.getPasswordAlgorithm().equals(DbPerson.DEFAULT_PASSWORD_ALGORITHM)) {
@@ -74,13 +76,9 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
   }
 
   @Transactional
-  private void updateLastAuthenticated(DbPerson p) {
-    database
-        .update(DbPerson.class)
-        .set("whenLastAuthenticated", LocalDateTime.now())
-        .where()
-        .idEq(p.getId())
-        .update();
+  public void updateLastAuthenticated(DbPerson p, Instant whenLastAuthenticated) {
+    p.setWhenLastAuthenticated(whenLastAuthenticated);
+    p.save();
   }
 
   @Override
@@ -232,8 +230,8 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
             .findOne();
 
     if (login != null) {
-      LocalDateTime lastSeen = login.getLastSeen();
-      login.setLastSeen(LocalDateTime.now());
+      Instant lastSeen = login.getLastSeen();
+      login.setLastSeen(Instant.now());
       database.save(login);
 
       return new DBLoginSession(

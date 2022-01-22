@@ -21,6 +21,7 @@ import io.featurehub.db.model.query.QDbApplication;
 import io.featurehub.db.model.query.QDbApplicationFeature;
 import io.featurehub.db.model.query.QDbEnvironment;
 import io.featurehub.db.model.query.QDbGroup;
+import io.featurehub.db.model.query.QDbLogin;
 import io.featurehub.db.model.query.QDbNamedCache;
 import io.featurehub.db.model.query.QDbOrganization;
 import io.featurehub.db.model.query.QDbPerson;
@@ -413,6 +414,16 @@ public class ConvertUtils implements Conversions {
             .passwordRequiresReset(dbp.isPasswordRequiresReset())
             .whenArchived(toOff(dbp.getWhenArchived()))
             .id(new PersonId().id(dbp.getId()));
+
+    if (opts.contains(FillOpts.PersonLastLoggedIn)) {
+      if (dbp.getWhenLastAuthenticated() != null) {
+        p.whenLastAuthenticated(dbp.getWhenLastAuthenticated().atOffset(ZoneOffset.UTC));
+      }
+
+      new QDbLogin().person.id.eq(dbp.getId()).orderBy().lastSeen.desc().setMaxRows(1).findList().forEach(login -> {
+        p.whenLastSeen(login.getLastSeen().atOffset(ZoneOffset.UTC));
+      });
+    }
 
     if (opts.contains(FillOpts.Groups)) {
       new QDbGroup()

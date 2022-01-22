@@ -19,6 +19,7 @@ import io.featurehub.mr.model.SortOrder;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -253,6 +254,7 @@ public class PersonSqlApi implements PersonApi {
   }
 
   @Override
+  @Nullable
   public PersonToken create(@NotNull String email, String name, UUID createdBy) throws DuplicatePersonException {
     if (email == null) {
       return null;

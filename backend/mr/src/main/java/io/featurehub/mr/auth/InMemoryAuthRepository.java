@@ -5,7 +5,7 @@ import jakarta.inject.Singleton;
 import jakarta.ws.rs.core.SecurityContext;
 import org.apache.commons.lang3.RandomStringUtils;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -21,7 +21,7 @@ public class InMemoryAuthRepository implements AuthenticationRepository {
   @Override
   public String put(Person person) {
     String token = RandomStringUtils.randomAlphanumeric(36);
-    SessionToken sessionToken = new SessionToken.Builder().lastSeen(LocalDateTime.now()).person(person).sessionToken(token).build();
+    SessionToken sessionToken = new SessionToken.Builder().lastSeen(Instant.now()).person(person).sessionToken(token).build();
     tokens.put(token, sessionToken);
     return token;
   }

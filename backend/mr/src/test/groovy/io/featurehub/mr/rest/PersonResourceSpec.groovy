@@ -57,7 +57,7 @@ class PersonResourceSpec extends Specification {
   def "can create a person who has no groups to add"() {
     given: "i have a new person"
       CreatePersonDetails cpd = new CreatePersonDetails().email("torvill@f.com").name("name")
-      PersonApi.PersonToken token = new PersonApi.PersonToken("fred", null)
+      PersonApi.PersonToken token = new PersonApi.PersonToken("fred", UUID.randomUUID())
       personApi.create(cpd.getEmail(), "name", _) >> token
     and: "i am an admin"
       authManager.isAnyAdmin(_) >> true

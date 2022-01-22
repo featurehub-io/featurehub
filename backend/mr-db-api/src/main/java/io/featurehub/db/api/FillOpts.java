@@ -4,6 +4,7 @@ public enum FillOpts {
   Environments,
   People,
   SimplePeople,
+  PersonLastLoggedIn,
   Applications,
   ApplicationIds,
   Portfolios,

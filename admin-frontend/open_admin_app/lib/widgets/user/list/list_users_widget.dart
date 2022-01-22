@@ -69,7 +69,16 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                         onSortColumn(snapshot.data!, columnIndex, ascending);
                       },
                     ),
-                    DataColumn(label: const Text(''), onSort: (i, a) => {}),
+                    DataColumn(
+                      label: const Text('Last logged in'),
+                      onSort: (columnIndex, ascending) {
+                        onSortColumn(snapshot.data!, columnIndex, ascending);
+                      },
+                    ),
+                    DataColumn(label: const Padding(
+                      padding: EdgeInsets.only(left:12.0),
+                      child: Text('Actions'),
+                    ), onSort: (i, a) => {}),
                   ],
                   rows: [
                     for (SearchPersonEntry p in snapshot.data!)
@@ -83,6 +92,7 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                                   )),
                             DataCell(Text(p.person.email!)),
                             DataCell(Text('${p.person.groups.length}')),
+                            DataCell(Text('${p.person.whenLastAuthenticated?.toLocal() ?? ""}')),
                             DataCell(Row(children: <Widget>[
                               Tooltip(
                                 message: _infoTooltip(p, allowedLocalIdentity),
@@ -105,9 +115,9 @@ class _PersonListWidgetState extends State<PersonListWidget> {
                                               'id': [p.person.id!.id]
                                             })
                                       }),
-                              const SizedBox(
-                                width: 20.0,
-                              ),
+                              // const SizedBox(
+                              //   width: 8.0,
+                              // ),
                               FHIconButton(
                                 icon: const Icon(Icons.delete),
                                 onPressed: () => bloc.mrClient
@@ -171,6 +181,26 @@ class _PersonListWidgetState extends State<PersonListWidget> {
         } else {
           people.sort((a, b) =>
               b.person.groups.length.compareTo(a.person.groups.length));
+        }
+      }
+      if (columnIndex == 3) {
+        if (ascending) {
+          people.sort((a, b) {
+            if(a.person.whenLastAuthenticated != null && b.person.whenLastAuthenticated != null) {
+              return a.person.whenLastAuthenticated!.compareTo(
+                  b.person.whenLastAuthenticated!);
+            }
+            return ascending ? 1 : -1;
+          }
+          );
+        } else {
+          people.sort((a, b) {
+            if(a.person.whenLastAuthenticated != null && b.person.whenLastAuthenticated != null) {
+              return b.person.whenLastAuthenticated!.compareTo(
+                  a.person.whenLastAuthenticated!);
+            }
+            return ascending ? -1 : 1;
+          });
         }
       }
       if (sortColumnIndex == columnIndex) {
@@ -404,9 +434,9 @@ class DeleteDialogWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FHDeleteThingWarningWidget(
-      thing: "user '${person.name ?? person.email}",
+      thing: "user '${person.name ?? person.email}'",
       content:
-          'This users will be removed from all groups and delete from the system. \n\nThis cannot be undone!',
+          'This user will be removed from all groups and deleted from the system. \n\nThis cannot be undone!',
       bloc: bloc.mrClient,
       deleteSelected: () async {
         try {

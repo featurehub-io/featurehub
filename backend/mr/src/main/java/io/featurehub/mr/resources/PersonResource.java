@@ -58,15 +58,15 @@ public class PersonResource implements PersonServiceDelegate {
         PersonApi.PersonToken person = personApi.create(createPersonDetails.getEmail(),
           createPersonDetails.getName(), currentUser.getId().getId());
 
+        if (person == null || person.id == null) {
+          throw new BadRequestException();
+        }
+
         if (createPersonDetails.getGroupIds() != null) {
           //add user to the groups
           Optional.of(createPersonDetails.getGroupIds()).ifPresent(list -> list.forEach(id -> {
             groupApi.addPersonToGroup(id, person.id, Opts.empty());
           }));
-        }
-
-        if (person == null) {
-          throw new BadRequestException();
         }
 
         //return registration url
@@ -142,7 +142,7 @@ public class PersonResource implements PersonServiceDelegate {
       int page = holder.pageSize == null ? 20 : holder.pageSize;
 
       PersonApi.PersonPagination pp = personApi.search(holder.filter, holder.order, start, page,
-        new Opts().add(FillOpts.Groups, holder.includeGroups));
+        new Opts().add(FillOpts.Groups, holder.includeGroups).add(FillOpts.PersonLastLoggedIn, holder.includeLastLoggedIn));
 
       return new SearchPersonResult()
         .people(pp.people)

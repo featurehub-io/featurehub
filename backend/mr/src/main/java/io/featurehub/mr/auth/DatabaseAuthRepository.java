@@ -7,7 +7,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.core.SecurityContext;
 import org.apache.commons.lang3.RandomStringUtils;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public class DatabaseAuthRepository implements AuthenticationRepository {
   private final SessionApi sessionApi;
@@ -36,7 +36,7 @@ public class DatabaseAuthRepository implements AuthenticationRepository {
   public String put(Person person) {
     String token = RandomStringUtils.randomAlphanumeric(36);
 
-    sessionApi.createSession(new DBLoginSession(person, token, LocalDateTime.now()));
+    sessionApi.createSession(new DBLoginSession(person, token, Instant.now()));
 
     return token;
   }
