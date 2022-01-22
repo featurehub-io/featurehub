@@ -12,6 +12,7 @@ import io.featurehub.mr.model.PersonId
 import io.featurehub.mr.model.Portfolio
 import spock.lang.Shared
 
+import java.time.Instant
 import java.time.LocalDateTime
 
 class AuthenticationSpec extends BaseSpec {
@@ -226,7 +227,7 @@ class AuthenticationSpec extends BaseSpec {
       personApi.create(email, "Portman27",superuser)
       Person p2 = auth.register("william", email, "hooray", null)
     and: 'a defined session'
-      def originalSession = new DBLoginSession(p2, "token", LocalDateTime.now())
+      def originalSession = new DBLoginSession(p2, "token", Instant.now())
     when: 'i create the session'
       def session = auth.createSession(originalSession)
     and: "then find the session"
@@ -245,14 +246,14 @@ class AuthenticationSpec extends BaseSpec {
 
   def "I can't create a session with missing person details"() {
     when: 'i create a session with no token'
-      auth.createSession(new DBLoginSession(new Person(id: new PersonId(id: null)), "tok", LocalDateTime.now()))
+      auth.createSession(new DBLoginSession(new Person(id: new PersonId(id: null)), "tok", Instant.now()))
     then:
       thrown IllegalArgumentException
   }
 
   def "an invalid person will create a null session"() {
     when: 'i create a session with no token'
-      def session = auth.createSession(new DBLoginSession(new Person(id: new PersonId(id: UUID.randomUUID())), "tok", LocalDateTime.now()))
+      def session = auth.createSession(new DBLoginSession(new Person(id: new PersonId(id: UUID.randomUUID())), "tok", Instant.now()))
     then:
       session == null
   }
@@ -271,8 +272,8 @@ class AuthenticationSpec extends BaseSpec {
 
   def "when i try and reset an expired token that has a token we get a new token"() {
     given: "i register"
-      def email = 'portman28@mailinator.com'
-      def token = personApi.create(email, "Portman28",superuser)
+      def email = 'portman29@mailinator.com'
+      def token = personApi.create(email, "Portman29",superuser)
     when: "i try and reset the token"
       def reset = auth.resetExpiredRegistrationToken(email)
     then:

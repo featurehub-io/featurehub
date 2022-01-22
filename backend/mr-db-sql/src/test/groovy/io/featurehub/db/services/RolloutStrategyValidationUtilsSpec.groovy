@@ -43,39 +43,6 @@ class RolloutStrategyValidationUtilsSpec extends Specification {
       validations.customStrategyViolations[fv[0]]*.violation.contains(RolloutStrategyViolationType.NEGATIVE_PERCENTAGE)
   }
 
-//  def "updating all environment features in an application by a specific feature will fail if we have attributes update with no attributes"() {
-//    given: "i have a feature value with no valid percentage configs"
-//      def fv = [new RolloutStrategy().name('empty')]
-//    when: "i attempt to update"
-//      def validations = validator.validateStrategies(fv, [])
-//    then:
-//      validations.isInvalid()
-//      !validations.customStrategyViolations.isEmpty()
-//      validations.customStrategyViolations[fv[0]]*.violation.contains(RolloutStrategyViolationType.EMPTY_MATCH_CRITERIA)
-//  }
-
-  def 'updating features and having a strategy with no name causes a failure'() {
-    given: "i have a feature value with no valid configs"
-      def fv =
-        [new RolloutStrategy().percentage(3456).value(true)]
-    when: "i attempt to update"
-      def validations = validator.validateStrategies(fv, [])
-    then:
-      validations.isInvalid()
-      !validations.customStrategyViolations.isEmpty()
-      validations.customStrategyViolations[fv[0]]*.violation.contains(RolloutStrategyViolationType.NO_NAME)
-  }
-
-//  def "we specify an array but the values aren't in the array"() {
-//    when: " rollout an array which is empty"
-//      def fv = [new RolloutStrategy().name("fred").attributes([new RolloutStrategyAttribute()])]
-//      def validations = validator.validateStrategies(fv, [])
-//    then:
-//      validations.isInvalid()
-//      !validations.customStrategyViolations.isEmpty()
-//      validations.customStrategyViolations[fv[0]]*.violation.contains(RolloutStrategyViolationType.ARRAY_ATTRIBUTE_NO_VALUES)
-//  }
-
   def "when we specify all attributes is ok"() {
     when: "attr has everything field"
       def validations = validator.validateStrategies([new RolloutStrategy().name("fred").attributes([

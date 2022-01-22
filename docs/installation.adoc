@@ -349,6 +349,19 @@ endpoints on a different port.
 If not, it will expose them on this port (and not on the server port).
 - `featurehub.url-path` - allows  to configure base path (context root) other than "/". This will set the base path in the index.html of the FeatureHub web app and the backend. Note, this is an offset, not a full domain name, e.g. `featurehub.url-path=/foo/featurehub`.
 In case if the front-end is decoupled on a CDN, the base bath needs to be configured directly in index.html by setting: `<base href="/foo/featurehub/">` (note the trailing slash).
+
+- `connect.logging.environment` - this is a comma separated value list that lets you pick up values from environment variables that get added directly to your logs. It is typically used in Kubernetes deploys to allow you to extract information from the k8s deploy and put it in environment variables and have them logged. The format is `<ENV-VAR>=<log-key>`. You can use `.` notation to split it into objects. 
+
+.Config
+----
+connect.logging.environment=MY_KUBERNETES_NODE=kubernetes.node,MY_KUBERNETES_ZONE=kubernetes.zone
+----
+
+.Generated Logs
+----
+{"@timestamp":"2022-01-22T18:12:56.767+1300","message":"1 * Server has received a request on thread grizzly-http-server-0\n1 > GET http://localhost:8903/info/version\n1 > accept: */*\n1 > host: localhost:8903\n1 > user-agent: curl/7.77.0\n","priority":"TRACE","path":"jersey-logging","thread":"grizzly-http-server-0","kubernetes":{"node":"peabody","zone":"amelia"},"host":"thepolishedbrasstack.lan","connect.rest.method":"received: GET - http://localhost:8903/info/version"}
+----
+
 - `audit.logging.web.header-fields` - a comma separated list of fields that will be extracted out of each web request and put into a field
 in the JSON logs output by the server. All headers are grouped into an object called `http-headers`. Headers by definition are case insensitive. Available from *1.5.5*. An example:
 
