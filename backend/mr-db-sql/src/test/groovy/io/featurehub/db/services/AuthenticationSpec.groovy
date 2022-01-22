@@ -37,6 +37,21 @@ class AuthenticationSpec extends BaseSpec {
       !person.passwordRequiresReset
   }
 
+  def "I should be able to invalidate a user and not log in as them again"() {
+    given: "i register"
+      def email = "seth@featurehub.io"
+      personApi.create(email, email, null)
+      Person person = auth.register(email, email, "yacht", null)
+    and:
+      def l = auth.login(email, "yacht")
+    when:
+      def couldDelete = personApi.delete(email)
+    then:
+      l != null
+      couldDelete
+      auth.login(email, "yacht") == null
+  }
+
   def "I cannot register twice"() {
     when: "i register"
       personApi.create('william-double-reg@featurehub.io', "William", null)

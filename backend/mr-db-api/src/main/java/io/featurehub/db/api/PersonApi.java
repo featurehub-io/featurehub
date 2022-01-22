@@ -45,7 +45,7 @@ public interface PersonApi {
 
   Person getByToken(@NotNull String id, Opts opts);
 
-  PersonToken create(@NotNull String email, @Nullable String name, UUID createdBy) throws DuplicatePersonException;
+  @Nullable PersonToken create(@NotNull String email, @Nullable String name, UUID createdBy) throws DuplicatePersonException;
 
   boolean delete(@NotNull String email);
 }

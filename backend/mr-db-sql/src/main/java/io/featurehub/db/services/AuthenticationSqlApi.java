@@ -49,6 +49,7 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
     return new QDbPerson()
         .email
         .eq(email.toLowerCase())
+        .whenArchived.isNull()
         .findOneOrEmpty()
         .map(
             p -> {
