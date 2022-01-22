@@ -21,10 +21,12 @@ class ConvertUtilsSpec extends Base2Spec {
 
   def "a new person who has never authenticated will not appear to have whenLastAuthenticated set"() {
     given: "i have a new person"
-      db.save(new DbPerson.Builder().email("new-person0@me.com").name("limited0").build())
+      def email = 'new-person0@me.com'
+      def person = new DbPerson.Builder().email(email).name(email).build()
+      db.save(new DbPerson.Builder().email(email).name(email).build())
       db.commitTransaction()  // have to do this otherwise we can't find them
     when: "i find the person"
-      def people = personSqlApi.search("limited0", SortOrder.ASC, 0, 0, Opts.opts(FillOpts.PersonLastLoggedIn))
+      def people = personSqlApi.search(email, SortOrder.ASC, 0, 0, Opts.opts(FillOpts.PersonLastLoggedIn))
     then:
       people.people.size() == 1
       people.people[0].whenLastAuthenticated == null
@@ -33,15 +35,16 @@ class ConvertUtilsSpec extends Base2Spec {
 
   def "a person who has logged in will appear to have whenLastAuthenticatedSet"() {
     given: "i have a new person"
-      def person = new DbPerson.Builder().email("new-person1@me.com").name("limited1").build()
+      def email = 'new-person1@me.com'
+      def person = new DbPerson.Builder().email(email).name(email).build()
       db.save(person)
       db.commitTransaction()
       def whenLastAuthenticated = Instant.now()
       authenticationSqlApi.updateLastAuthenticated(person, whenLastAuthenticated)
     when: "i find the person"
-      def people = personSqlApi.search("limited1", SortOrder.ASC, 0, 0, Opts.opts(FillOpts.PersonLastLoggedIn))
+      def people = personSqlApi.search(email, SortOrder.ASC, 0, 0, Opts.opts(FillOpts.PersonLastLoggedIn))
     and: "i find without the logged in option"
-      def peopleClean = personSqlApi.search("limited1", SortOrder.ASC, 0, 0, Opts.empty())
+      def peopleClean = personSqlApi.search(email, SortOrder.ASC, 0, 0, Opts.empty())
     then:
       people.people.size() == 1
       people.people[0].whenLastAuthenticated == whenLastAuthenticated.atOffset(ZoneOffset.UTC)
@@ -53,7 +56,8 @@ class ConvertUtilsSpec extends Base2Spec {
 
   def "a person who has a dblogin will have a last seen"() {
     given: "i have a new person"
-      def person = new DbPerson.Builder().email("new-person2@me.com").name("limited2").build()
+      def email = 'new-person2@me.com'
+      def person = new DbPerson.Builder().email(email).name(email).build()
       def whenLastAuthenticated = Instant.now()
       person.whenLastAuthenticated = whenLastAuthenticated
       db.save(person)
@@ -64,9 +68,9 @@ class ConvertUtilsSpec extends Base2Spec {
     and: "we commit the transaction"
       db.commitTransaction()
     when: "i find the person"
-      def people = personSqlApi.search("limited2", SortOrder.ASC, 0, 0, Opts.opts(FillOpts.PersonLastLoggedIn))
+      def people = personSqlApi.search(email, SortOrder.ASC, 0, 0, Opts.opts(FillOpts.PersonLastLoggedIn))
     and: "i find them again without the fill opts"
-      def peopleClean = personSqlApi.search("limited2", SortOrder.ASC, 0, 0, Opts.empty())
+      def peopleClean = personSqlApi.search(email, SortOrder.ASC, 0, 0, Opts.empty())
     then:
       people.people.size() == 1
       people.people[0].whenLastAuthenticated == whenLastAuthenticated.atOffset(ZoneOffset.UTC)

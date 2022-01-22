@@ -57,7 +57,7 @@ class RolloutStrategyValidationUtilsSpec extends Specification {
   def 'updating features and having a strategy with no name causes a failure'() {
     given: "i have a feature value with no valid configs"
       def fv =
-        [new RolloutStrategy().name("fred").percentage(3456).value(true)]
+        [new RolloutStrategy().percentage(3456).value(true)]
     when: "i attempt to update"
       def validations = validator.validateStrategies(fv, [])
     then:
