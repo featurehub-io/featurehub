@@ -1,5 +1,6 @@
 package io.featurehub.db.model;
 
+import io.ebean.annotation.ChangeLog;
 import io.ebean.annotation.ConstraintMode;
 import io.ebean.annotation.DbForeignKey;
 
@@ -17,6 +18,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "fh_organization")
+@ChangeLog
 public class DbOrganization extends DbVersionedBase {
 
   public DbOrganization() {}

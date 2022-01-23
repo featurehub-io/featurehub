@@ -37,6 +37,9 @@ open class CommonDbFeature : Feature {
   @ConfigKey("db.run-migrations")
   var runMigrations: Boolean? = true
 
+  @ConfigKey("db.enable-change-sets")
+  var enableChangesets: Boolean? = false
+
   init {
       DeclaredConfigResolver.resolve(this)
   }
@@ -136,6 +139,12 @@ open class CommonDbFeature : Feature {
       configureDataSource("db-replica")
 
     val dbConfig = DatabaseConfig()
+
+    if (enableChangesets!!) {
+      dbConfig.changeLogPrepare = FeatureHubChangeLog()
+      dbConfig.isChangeLogIncludeInserts = true
+      dbConfig.isChangeLogAsync = true
+    }
 
     dbConfig.databasePlatformName = dsMasterConfig.migrationConfig.platformName
 

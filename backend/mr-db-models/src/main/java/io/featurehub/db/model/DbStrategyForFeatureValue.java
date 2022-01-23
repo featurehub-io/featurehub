@@ -1,5 +1,6 @@
 package io.featurehub.db.model;
 
+import io.ebean.annotation.ChangeLog;
 import io.ebean.annotation.Index;
 
 import javax.persistence.Column;
@@ -14,6 +15,7 @@ import java.util.UUID;
 @Index(unique = true, columnNames = {"fk_fv_id", "fk_rs_id"}, name = "idx_feature_strat")
 @Entity
 @Table(name = "fh_strat_for_feature")
+@ChangeLog
 public class DbStrategyForFeatureValue {
   @Id
   private UUID id;

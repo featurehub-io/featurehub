@@ -1,5 +1,6 @@
 package io.featurehub.db.model;
 
+import io.ebean.annotation.ChangeLog;
 import io.ebean.annotation.Index;
 
 import javax.persistence.CascadeType;
@@ -16,6 +17,7 @@ import java.util.Set;
 @Index(unique = true, name = "idx_service_name", columnNames = {"fk_portfolio_id", "name"})
 @Entity
 @Table(name = "fh_service_account")
+@ChangeLog
 public class DbServiceAccount extends DbVersionedBase {
   @Column(length = 100)
   private String name;

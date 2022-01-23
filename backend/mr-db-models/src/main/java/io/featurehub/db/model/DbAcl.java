@@ -1,5 +1,7 @@
 package io.featurehub.db.model;
 
+import io.ebean.annotation.ChangeLog;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -8,6 +10,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "fh_acl")
+@ChangeLog
 public class DbAcl extends DbVersionedBase {
   private DbAcl(Builder builder) {
     setEnvironment(builder.environment);

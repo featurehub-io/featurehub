@@ -1,5 +1,6 @@
 package io.featurehub.db.model;
 
+import io.ebean.annotation.ChangeLog;
 import io.ebean.annotation.Index;
 
 import javax.persistence.Column;
@@ -14,6 +15,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "fh_userstate")
 @Index(unique = true, name = "idx_user_state", columnNames = {"fk_person", "fk_portfolio_id", "fk_app_id", "fk_env_id"})
+@ChangeLog
 public class DbUserState extends DbVersionedBase {
   @ManyToOne(optional = false)
   @JoinColumn(name = "fk_person")
