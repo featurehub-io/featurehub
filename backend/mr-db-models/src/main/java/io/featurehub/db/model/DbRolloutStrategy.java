@@ -1,5 +1,6 @@
 package io.featurehub.db.model;
 
+import io.ebean.annotation.ChangeLog;
 import io.ebean.annotation.DbJson;
 import io.ebean.annotation.Index;
 import io.featurehub.mr.model.RolloutStrategy;
@@ -17,6 +18,7 @@ import java.util.List;
 @Index(unique = true, name = "idx_app_strategies", columnNames = {"fk_app_id", "strategy_name"})
 @Entity
 @Table(name = "fh_app_strategy")
+@ChangeLog
 public class DbRolloutStrategy extends DbVersionedBase {
   private DbRolloutStrategy(Builder builder) {
     setApplication(builder.application);

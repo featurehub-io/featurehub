@@ -1,5 +1,7 @@
 package io.featurehub.db.model;
 
+import io.ebean.annotation.ChangeLog;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -9,6 +11,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "fh_service_account_env")
+@ChangeLog
 public class DbServiceAccountEnvironment extends DbVersionedBase {
   @ManyToOne(optional = false)
   @JoinColumn(name = "fk_environment_id")

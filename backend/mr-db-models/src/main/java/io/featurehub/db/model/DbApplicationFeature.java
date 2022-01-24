@@ -1,5 +1,6 @@
 package io.featurehub.db.model;
 
+import io.ebean.annotation.ChangeLog;
 import io.ebean.annotation.Index;
 import io.featurehub.mr.model.FeatureValueType;
 
@@ -18,6 +19,7 @@ import java.util.Set;
 @Index(unique = true, name = "idx_app_features", columnNames = {"fk_app_id", "feature_key"})
 @Entity
 @Table(name = "fh_app_feature")
+@ChangeLog
 public class DbApplicationFeature extends DbVersionedBase {
   private DbApplicationFeature(Builder builder) {
     setParentApplication(builder.parentApplication);

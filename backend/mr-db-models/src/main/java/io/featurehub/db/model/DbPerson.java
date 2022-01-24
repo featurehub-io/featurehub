@@ -1,5 +1,6 @@
 package io.featurehub.db.model;
 
+import io.ebean.annotation.ChangeLog;
 import io.ebean.annotation.DbDefault;
 import io.ebean.annotation.Index;
 
@@ -18,6 +19,7 @@ import java.util.Set;
 @Index(unique = true, name = "idx_person_email", columnNames = {"email"})
 @Entity
 @Table(name = "fh_person")
+@ChangeLog
 public class DbPerson extends DbVersionedBase {
   public static final String DEFAULT_PASSWORD_ALGORITHM = "PBKDF2WithHmacSHA512";
 

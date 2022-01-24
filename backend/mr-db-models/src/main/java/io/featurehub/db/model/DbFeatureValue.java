@@ -1,5 +1,6 @@
 package io.featurehub.db.model;
 
+import io.ebean.annotation.ChangeLog;
 import io.ebean.annotation.ConstraintMode;
 import io.ebean.annotation.DbForeignKey;
 import io.ebean.annotation.DbJson;
@@ -19,6 +20,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "fh_env_feature_strategy")
+@ChangeLog
 public class DbFeatureValue extends DbVersionedBase {
   private DbFeatureValue(Builder builder) {
     setWhoUpdated(builder.whoUpdated);

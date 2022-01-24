@@ -1,5 +1,6 @@
 package io.featurehub.db.model;
 
+import io.ebean.annotation.ChangeLog;
 import io.ebean.annotation.ConstraintMode;
 import io.ebean.annotation.DbForeignKey;
 
@@ -16,6 +17,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "fh_environment")
+@ChangeLog
 public class DbEnvironment extends DbVersionedBase {
   public DbEnvironment() {
   }

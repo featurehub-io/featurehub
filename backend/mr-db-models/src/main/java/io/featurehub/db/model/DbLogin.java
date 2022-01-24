@@ -1,5 +1,7 @@
 package io.featurehub.db.model;
 
+import io.ebean.annotation.ChangeLog;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -10,6 +12,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "fh_login")
+@ChangeLog
 public class DbLogin {
   @Id
   private String token;

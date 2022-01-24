@@ -1,5 +1,6 @@
 package io.featurehub.db.model;
 
+import io.ebean.annotation.ChangeLog;
 import io.ebean.annotation.Index;
 
 import javax.persistence.CascadeType;
@@ -16,6 +17,7 @@ import java.util.Set;
 @Index(unique = true, name = "idx_group_names", columnNames = {"fk_portfolio_id", "group_name"})
 @Entity
 @Table(name = "fh_group")
+@ChangeLog
 public class DbGroup extends DbVersionedBase {
   @Column(name = "when_archived")
   private LocalDateTime whenArchived;
