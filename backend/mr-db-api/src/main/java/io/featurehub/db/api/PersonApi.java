@@ -10,7 +10,8 @@ import java.util.UUID;
 
 public interface PersonApi {
 
-  Person update(UUID id, Person person, Opts opts, UUID updatedBy) throws OptimisticLockingException;
+  @Nullable
+  Person update(@NotNull UUID id, @NotNull Person person, @NotNull Opts opts, @NotNull UUID updatedBy) throws OptimisticLockingException;
 
   // used to determine if the database has no user, which is possible if using external auth
   boolean noUsersExist();
@@ -38,14 +39,15 @@ public interface PersonApi {
     }
   }
 
-  PersonPagination search(String filter, @NotNull SortOrder sortOrder, int offset, int max, Opts opts);
+  @NotNull PersonPagination search(@Nullable String filter, @Nullable SortOrder sortOrder, int offset, int max,
+                                   Opts opts);
 
-  Person get(@NotNull UUID id, Opts opts);
-  Person get(@NotNull String email, Opts opts);
+  @Nullable Person get(@NotNull UUID id, Opts opts);
+  @Nullable Person get(@NotNull String email, Opts opts);
 
-  Person getByToken(@NotNull String id, Opts opts);
+  @Nullable Person getByToken(@NotNull String id, Opts opts);
 
-  @Nullable PersonToken create(@NotNull String email, @Nullable String name, UUID createdBy) throws DuplicatePersonException;
+  @Nullable PersonToken create(@NotNull String email, @Nullable String name, @Nullable UUID createdBy) throws DuplicatePersonException;
 
   boolean delete(@NotNull String email);
 }
