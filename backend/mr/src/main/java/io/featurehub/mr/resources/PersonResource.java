@@ -126,7 +126,9 @@ public class PersonResource implements PersonServiceDelegate {
     if (authManager.isOrgAdmin(authManager.from(securityContext))) {
       Person p = getPerson(id, false, false, securityContext);
 
-      return personApi.delete(p.getEmail());
+      if (p.getEmail() != null) {
+        return personApi.delete(p.getEmail());
+      }
     }
 
     throw new ForbiddenException("No permission");
