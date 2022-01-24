@@ -15,6 +15,8 @@ We have deprecated [FeatureHub Eventsource Javascript SDK](https://www.npmjs.com
 ## Changelog
 
 ### featurehub-javascript-client-sdk
+#### 1.0.11
+- Added convenience short form getter methods for features to make the SDK easier to use. 
 #### 1.0.10
 - Fix a bug related to Catch & Release mode [GitHub issue](https://github.com/featurehub-io/featurehub/issues/648)
 #### 1.0.9
@@ -228,7 +230,7 @@ async initializeFeatureHub() {
     if (!initialized) {
       if (readyness === Readyness.Ready) {
         initialized = true;
-        const value = fhContext.getString('FEATURE_KEY');
+        const value = fhContext.feature('FEATURE_KEY').str;
         console.log('Value is ', value);
       }
     }
@@ -242,7 +244,7 @@ async initializeFeatureHub() {
   // react to incoming feature changes in real-time. Don't use this in nodejs as it will
   // cause a memory leak unless you use it on a global context you are using and keeping around.
   fhClient.feature('FEATURE_KEY').addListener(fs => {
-    console.log('Value is ', fs.getString());
+    console.log('Value is ', fs.str);
   });
 }
  
@@ -254,16 +256,46 @@ this.initializeFeatureHub();
 
 
 #### Supported feature state requests
+   
+  It is recommended if you want the raw feature (without any user context), you use the `feature` method of the 
+  repository. The repository is the in memory location where the contents of the FeatureHub server are deposited and
+  that your code interacts with. Each request for features does _not_ go back to the FeatureHub server, the repository
+  is kept up to date either by polling periodically (see polling) or via the near-realtime SSE connector.
 
-   * Get a raw feature value through "Get" methods (imperative way)
-        - `getFlag('FEATURE_KEY') | getBoolean('FEATURE_KEY')` returns a boolean feature (by key) or _undefined_ if the feature does not exist
-        - `getNumber('FEATURE_KEY')` | `getString('FEATURE_KEY')` | `getJson('FEATURE_KEY')` returns the value or _undefined_ if the feature is empty or does not exist
-  * Use a convenience function
-    - `isEnabled('FEATURE_KEY')` - always returns a _true_ or _false_, _true_
-    only if the feature is a boolean and is _true_, otherwise _false_.
-    - `isSet('FEATURE_KEY')` - in case a feature value is not set (_null_) (this can only happen for strings, numbers and json types), this check returns _false_.
-  If a feature doesn't exist - returns _false_. Otherwise, returns _true_. 
+  To get the repository, you ask the FeatureHub config that you created. When it is ready, it will hold the features.
+  You can ask for features before it is ready (i.e. before a connection to the FeatureHub server has succeeded) but 
+  the results of the output will always be "undefined". You would do this if you wish to add listeners to the features,
+  so your code is told when feature state comes in for the first time and when it changes subsequently (add `addListener`
+  below).
 
+  e.g.
+
+```typescript
+const repository = fhConfig.repository();
+const feature = repository.feature('FEATURE_KEY');
+```
+
+  If you wish to access the feature's value, there are the following methods on a feature that relate to its value:
+                                                            
+- `flag` - when the feature is a flag, returns true or false (otherwise undefined). `enabled` is an alternative form.
+- `enabled` - this returns true if the feature is a flag and its value is true, otherwise it will return false. Use this if true/false is important.
+- `str` - when the feature is a string, returns the value (otherwise undefined)
+- `num` - when the feature is a number, returns the value (otherwise undefined)
+- `rawJson` - when the feature is JSON, returns the raw unevaluated text of the JSON
+
+  The following properties relate to information about the feature itself:
+- `exists` - returns true if the flag is represented by a flag from FeatureHub. If you have requested a flag that has not been created
+  yet, this will be `false`.
+- `locked` - is the feature locked and prevented from modification?
+- `version` - every change on the feature causes its version to update. If you wish to know it, use this value.
+- `type` - this indicates what type of feature this is
+
+You can get the list of features from the repository by calling the `simpleFeatures()` method on the `repository` itself
+and it will give you a list of all the features that it has from the FeatureHub server.
+
+  The following methods also exist on the feature:
+- `isSet()` - in case a feature value is not set (_null_) (this can only happen for strings, numbers and json types), this check returns _false_.
+- `addListener` - see _Feature updates listener_ below.
       
 
 ## Rollout Strategies and Client Context
@@ -278,7 +310,7 @@ For more details on rollout strategies, targeting rules and feature experiments 
 const fhClient = await fhConfig.newContext().userKey('user.email@host.com').country(StrategyAttributeCountryName.NewZealand)
  	.build();
 
-    if (fhClient.isEnabled('FEATURE_KEY')) {
+    if (fhClient.feature('FEATURE_KEY').enabled) {
         //do something
     };
 ```
@@ -457,7 +489,7 @@ fhConfig.addReadynessListener(async (readyness: Readyness): void => {
     startServer();
     fhInitialized = true;
     const fhClient = await fhConfig.newContext().build();
-    if (fhClient.getFlag('FEATURE_KEY')) {
+    if (fhClient.feature('FEATURE_KEY').flag) {
       // do something
     }
   } else if (readyness === Readyness.Failed && failCounter > 5) {
@@ -485,7 +517,7 @@ fhConfig.addReadynessListener(async (ready) => {
       console.log("Features are available, starting server...");
       initialized = true;
       const fhClient = await fhConfig.newContext().build();
-      if(fhClient.getFlag('FEATURE_KEY')) { 
+      if(fhClient.feature('FEATURE_KEY').flag) { 
           // do something
       }
       else {
@@ -778,7 +810,7 @@ this means when you are processing your request it will attempt to use the bagga
 fall back onto the rules in your featurehub repository. Your code still looks the same inside your nodejs code. 
 
 ```typescript
-if (req.ctx.feature('FEATURE_TITLE_TO_UPPERCASE').getBoolean()) {
+if (req.ctx.feature('FEATURE_TITLE_TO_UPPERCASE').flag) {
 }
 ```
                       
