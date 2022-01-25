@@ -16,7 +16,7 @@ We have deprecated [FeatureHub Eventsource Javascript SDK](https://www.npmjs.com
 
 ### featurehub-javascript-client-sdk
 #### 1.0.11
-- Added convenience short form getter methods for features to make the SDK easier to use. 
+- Provided additional getters to get feature values and properties [GitHub PR](https://github.com/featurehub-io/featurehub/pull/656/)
 #### 1.0.10
 - Fix a bug related to Catch & Release mode [GitHub issue](https://github.com/featurehub-io/featurehub/issues/648)
 #### 1.0.9
@@ -44,6 +44,8 @@ We have deprecated [FeatureHub Eventsource Javascript SDK](https://www.npmjs.com
 Angular & Vue to use this library. 
 
 ### featurehub-javascript-node-sdk
+#### 1.0.11
+- Provided additional getters to get feature values and properties [GitHub PR](https://github.com/featurehub-io/featurehub/pull/656/)
 #### 1.0.10
 - Fix a bug related to Catch & Release mode [GitHub issue](https://github.com/featurehub-io/featurehub/issues/648)
 #### 1.0.9
@@ -145,7 +147,8 @@ fhConfig.edgeServiceProvider((repo, config) => new FeatureHubPollingClient(repo,
 in this case it is configured for requesting an update every 5 seconds.
 
 
-#### 3. Check FeatureHub Repository readyness and request feature state
+
+#### 3. Check FeatureHub Repository readiness and request feature state
 
 Feature flag rollout strategies and user targeting are all determined by the active _user context_. If you are not intending to use rollout strategies, you can pass empty context to the SDK.
 
@@ -230,7 +233,7 @@ async initializeFeatureHub() {
     if (!initialized) {
       if (readyness === Readyness.Ready) {
         initialized = true;
-        const value = fhContext.feature('FEATURE_KEY').str;
+        const value = fhClient.feature('FEATURE_KEY').str;
         console.log('Value is ', value);
       }
     }
@@ -256,47 +259,24 @@ this.initializeFeatureHub();
 
 
 #### Supported feature state requests
-   
-  It is recommended if you want the raw feature (without any user context), you use the `feature` method of the 
-  repository. The repository is the in memory location where the contents of the FeatureHub server are deposited and
-  that your code interacts with. Each request for features does _not_ go back to the FeatureHub server, the repository
-  is kept up to date either by polling periodically (see polling) or via the near-realtime SSE connector.
 
-  To get the repository, you ask the FeatureHub config that you created. When it is ready, it will hold the features.
-  You can ask for features before it is ready (i.e. before a connection to the FeatureHub server has succeeded) but 
-  the results of the output will always be "undefined". You would do this if you wish to add listeners to the features,
-  so your code is told when feature state comes in for the first time and when it changes subsequently (add `addListener`
-  below).
+* Get a raw feature value through the following methods:
+  - `getFlag('FEATURE_KEY') | getBoolean('FEATURE_KEY')` returns a boolean feature (by key) or _undefined_ if the feature does not exist. Alternatively use `feature('FEATURE_KEY').flag`
+  
+  - `getNumber('FEATURE_KEY')` | `getString('FEATURE_KEY')` | `getJson('FEATURE_KEY')` returns the value or _undefined_ if the feature is empty or does not exist. Alternatively use `feature('FEATURE_KEY').num`, `feature('FEATURE_KEY').str`, `feature('FEATURE_KEY').rawJson`
+* Use convenience functions:
+  - `isEnabled('FEATURE_KEY')` - always returns a _true_ or _false_, _true_
+    only if the feature is a boolean and is _true_, otherwise _false_. Alternatively use `feature('FEATURE_KEY').enabled`
+  - `isSet('FEATURE_KEY')` - in case a feature value is not set (_null_) (this can only happen for strings, numbers and json types), this check returns _false_.
+    If a feature doesn't exist - returns _false_. Otherwise, returns _true_.
 
-  e.g.
-
-```typescript
-const repository = fhConfig.repository();
-const feature = repository.feature('FEATURE_KEY');
-```
-
-  If you wish to access the feature's value, there are the following methods on a feature that relate to its value:
-                                                            
-- `flag` - when the feature is a flag, returns true or false (otherwise undefined). `enabled` is an alternative form.
-- `enabled` - this returns true if the feature is a flag and its value is true, otherwise it will return false. Use this if true/false is important.
-- `str` - when the feature is a string, returns the value (otherwise undefined)
-- `num` - when the feature is a number, returns the value (otherwise undefined)
-- `rawJson` - when the feature is JSON, returns the raw unevaluated text of the JSON
-
-  The following properties relate to information about the feature itself:
-- `exists` - returns true if the flag is represented by a flag from FeatureHub. If you have requested a flag that has not been created
-  yet, this will be `false`.
-- `locked` - is the feature locked and prevented from modification?
-- `version` - every change on the feature causes its version to update. If you wish to know it, use this value.
-- `type` - this indicates what type of feature this is
-
-You can get the list of features from the repository by calling the `simpleFeatures()` method on the `repository` itself
-and it will give you a list of all the features that it has from the FeatureHub server.
-
-  The following methods also exist on the feature:
-- `isSet()` - in case a feature value is not set (_null_) (this can only happen for strings, numbers and json types), this check returns _false_.
-- `addListener` - see _Feature updates listener_ below.
-      
+  - `feature('FEATURE_KEY').exists` - returns _true_ if the flag is represented by a flag from FeatureHub. If a flag is requested that has not been created
+    yet, this will be `false`.
+  - `feature('FEATURE_KEY').locked` - returns _true_ if feature is locked, otherwise _false_
+  - `feature('FEATURE_KEY').version` - returns feature update version number (every change on the feature causes its version to update).
+  - `feature('FEATURE_KEY').type` - returns type of feature (boolean, string, number or json)
+  - `feature('FEATURE_KEY').addListener` - see _Feature updates listener_ below.
+  
 
 ## Rollout Strategies and Client Context
 
