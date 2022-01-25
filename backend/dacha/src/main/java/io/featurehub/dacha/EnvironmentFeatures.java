@@ -1,7 +1,6 @@
 package io.featurehub.dacha;
 
 import io.featurehub.dacha.model.CacheEnvironmentFeature;
-import io.featurehub.dacha.model.CacheFeatureValue;
 import io.featurehub.dacha.model.PublishEnvironment;
 
 import java.util.Collection;
@@ -62,5 +61,13 @@ public class EnvironmentFeatures implements InternalCache.FeatureValues {
   @Override
   public String getEtag() {
     return etag;
+  }
+
+  @Override
+  public String toString() {
+    final List<String> collect =
+      features.values().stream().map(CacheEnvironmentFeature::toString).collect(Collectors.toList());
+    return String.format("etag: %s, features %s", etag == null ? "null" : etag, String.join(",",
+      collect));
   }
 }

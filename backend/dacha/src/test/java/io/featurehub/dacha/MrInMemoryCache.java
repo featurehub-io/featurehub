@@ -24,7 +24,7 @@ public class MrInMemoryCache implements InternalCache {
     UUID envId = UUID.randomUUID();
     environments.put(envId,
       new PublishEnvironment()
-      .environment(new CacheEnvironment().id(envId).version(1L).features(new ArrayList<>()))
+      .environment(new CacheEnvironment().id(envId).version(1L))
         .serviceAccounts(new ArrayList<>())
         .applicationId(envId)
         .organizationId(envId)
@@ -32,6 +32,7 @@ public class MrInMemoryCache implements InternalCache {
       .action(PublishAction.CREATE)
       .count(1)
     );
+
     UUID svcId = UUID.randomUUID();
     serviceAccounts.put(svcId,
       new PublishServiceAccount()

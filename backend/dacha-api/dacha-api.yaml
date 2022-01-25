@@ -246,7 +246,7 @@ components:
       required:
         - id
         - version
-        - features
+#        - features
       properties:
         id:
           type: string
@@ -254,10 +254,10 @@ components:
         version:
           type: integer
           format: int64
-        features:
-          type: array
-          items:
-            $ref: "#/components/schemas/CacheFeature"
+#        features:
+#          type: array
+#          items:
+#            $ref: "#/components/schemas/CacheFeature"
     CacheEnvironmentFeature:
       x-package: io.featurehub.dacha.model
       type: object
