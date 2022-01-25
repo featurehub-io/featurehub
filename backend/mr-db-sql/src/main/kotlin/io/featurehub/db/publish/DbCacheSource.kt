@@ -197,9 +197,6 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
     return CacheEnvironment()
       .id(env.id)
       .version(env.version)
-      .features(features.stream()
-        .map { feature: DbApplicationFeature -> toCacheFeature(feature) }
-        .collect(Collectors.toList()))
   }
 
   private fun toCacheFeature(feature: DbApplicationFeature): CacheFeature {

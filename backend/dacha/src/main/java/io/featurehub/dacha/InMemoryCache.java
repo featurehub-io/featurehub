@@ -100,7 +100,7 @@ public class InMemoryCache implements InternalCache {
     if (sa.getAction() == PublishAction.CREATE || sa.getAction() == PublishAction.UPDATE) {
       if (existing == null
           || (existing.getServiceAccount() != null &&
-        sa.getServiceAccount().getVersion() >= existing.getServiceAccount().getVersion())) {
+        sa.getServiceAccount().getVersion() > existing.getServiceAccount().getVersion())) {
         updateServiceAccountEnvironmentCache(sa.getServiceAccount(), serviceAccounts.get(sa.getServiceAccount().getId()));
         serviceAccounts.put(sa.getServiceAccount().getId(), sa);
 
@@ -221,7 +221,7 @@ public class InMemoryCache implements InternalCache {
     PublishEnvironment existing = environments.get(envId);
 
     if ((e.getAction() == PublishAction.CREATE || e.getAction() == PublishAction.UPDATE)) {
-      if (existing == null || e.getEnvironment().getVersion() >= existing.getEnvironment().getVersion()) {
+      if (existing == null || e.getEnvironment().getVersion() > existing.getEnvironment().getVersion()) {
         removeServiceAccountsFromEnvironment(e, environments.get(envId));
         environments.put(envId, e);
 
@@ -302,14 +302,17 @@ public class InMemoryCache implements InternalCache {
     PublishEnvironment eci = environments.get(fv.getEnvironmentId());
 
     if (eci == null) {
-      log.debug("received feature for unknown environment: `{}`: {}", fv.getEnvironmentId(), fv);
+      log.debug("received feature for unknown environment: `{}`: {}, holding", fv.getEnvironmentId(), fv);
       List<PublishFeatureValue> fvs = valuesForUnpublishedEnvironments.computeIfAbsent(fv.getEnvironmentId(), key -> new ArrayList<>());
       fvs.add(fv);
 
       return;
     }
 
+    updateEdgeCache(eci, fv);
+  }
 
+  private void updateEdgeCache(PublishEnvironment eci, PublishFeatureValue fv) {
     EnvironmentFeatures envFeatureBundle = environmentFeatures.get(fv.getEnvironmentId());
 
     // this environment we have received a feature for doesn't exist
@@ -318,10 +321,30 @@ public class InMemoryCache implements InternalCache {
       return;
     }
 
-    CacheEnvironmentFeature existingCachedFeature = envFeatureBundle.get(fv.getFeature().getFeature().getId());
+    @NotNull CacheFeature newFeature = fv.getFeature().getFeature();
+    @Nullable CacheFeatureValue newValue = fv.getFeature().getValue();
+
+    CacheEnvironmentFeature existingCachedFeature = envFeatureBundle.get(newFeature.getId());
+
+    // yuk
+    int indexOfExistingPublishedCacheEnvironmentFeature = -1;
+    int pos = 0;
+    for(CacheEnvironmentFeature cef : eci.getFeatureValues()) {
+      if (cef.getFeature().getId().equals(newFeature.getId())) {
+        indexOfExistingPublishedCacheEnvironmentFeature = pos;
+        break;
+      }
+
+      pos ++;
+    }
+
+    if (indexOfExistingPublishedCacheEnvironmentFeature == -1) {
+      log.debug("received new feature {}, adding to the environment", fv );
+    }
 
     if (existingCachedFeature == null) {
       receivedNewFeatureForExistingEnvironmentFeatureCache(fv, envFeatureBundle);
+      eci.getFeatureValues().add(fv.getFeature());
       return;
     }
 
@@ -330,19 +353,21 @@ public class InMemoryCache implements InternalCache {
 
     @NotNull CacheFeature existingFeature = existingCachedFeature.getFeature();
     @Nullable CacheFeatureValue existingValue = existingCachedFeature.getValue();
-    @NotNull CacheFeature newFeature = fv.getFeature().getFeature();
-    @Nullable CacheFeatureValue newValue = fv.getFeature().getValue();
 
     if (fv.getAction() == PublishAction.CREATE || fv.getAction() == PublishAction.UPDATE) {
       // if the feature itself changed, thats enough, change the contents
       if (existingFeature.getVersion() < newFeature.getVersion()) {
         envFeatureBundle.set(fv.getFeature());
+        eci.getFeatureValues().remove(indexOfExistingPublishedCacheEnvironmentFeature);
+        eci.getFeatureValues().add(fv.getFeature());
         return;
       }
 
       if (newValue != null) {
         if (existingValue == null || existingValue.getVersion() < newValue.getVersion()) {
           envFeatureBundle.set(fv.getFeature());
+          eci.getFeatureValues().remove(indexOfExistingPublishedCacheEnvironmentFeature);
+          eci.getFeatureValues().add(fv.getFeature());
           return;
         }
       }
@@ -354,11 +379,16 @@ public class InMemoryCache implements InternalCache {
         fv.getEnvironmentId());
 
       envFeatureBundle.remove(newFeature.getId());
+      eci.getFeatureValues().remove(indexOfExistingPublishedCacheEnvironmentFeature);
     }
   }
 
   private void receivedNewFeatureForExistingEnvironmentFeatureCache(PublishFeatureValue fv, EnvironmentFeatures featureMap) {
-    if (fv.getAction() == PublishAction.CREATE) {
+    if (fv.getAction() == PublishAction.CREATE || fv.getAction() == PublishAction.UPDATE) {
+      if (fv.getAction() == PublishAction.UPDATE) {
+        log.warn("We have received a feature `{}` as an UPDATE that we never received a CREATE for in environment " +
+          "`{}`", fv, featureMap);
+      }
       log.trace("received brand new feature `{}` for a new environment `{}`",
         fv.getFeature().getFeature().getKey(),
         fv.getEnvironmentId());
