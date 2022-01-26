@@ -1,0 +1,3 @@
+name: api-bucket
+runtime: nodejs
+description: Pulumi for FeatureHub OpenAPI docs

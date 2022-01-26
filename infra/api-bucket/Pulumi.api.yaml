@@ -1,0 +1,7 @@
+secretsprovider: gcpkms://projects/demohub-283022/locations/us-east1/keyRings/pulumi/cryptoKeys/pulumi-key
+encryptedkey: CiQAjJd/X6U58p0gaYi75U8ENwtXEIzrWNfuaESQHk0ELf0q8nESSQAto/ow4239O3aesVHEnGKsn5uM2odrX+Hs9R0thXfRcV99VHomj9xRbHEiStbF25klBzqPg4gQEOl3G5XJOxSajDubbD1aZdI=
+config:
+  api-bucket:bucketCName: api.dev.featurehub.io
+  api-bucket:bucketDestroy: "true"
+  api-bucket:bucketRegion: US-EAST1
+  gcp:project: demohub-283022
