@@ -365,9 +365,7 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
       }
     }
 
-    if (newValue.getLocked() != null) {
-      fv.setLocked(newValue.getLocked());
-    }
+    fv.setLocked(newValue.getLocked());
 
     // API can never change strategies
     save(fv);

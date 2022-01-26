@@ -4,6 +4,7 @@ import io.ebean.annotation.ChangeLog;
 import io.ebean.annotation.ConstraintMode;
 import io.ebean.annotation.DbForeignKey;
 import io.ebean.annotation.DbJson;
+import io.ebean.annotation.Index;
 import io.featurehub.mr.model.RolloutStrategy;
 
 import javax.persistence.CascadeType;
@@ -20,6 +21,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "fh_env_feature_strategy")
+@Index(name = "idx_fv_unique", unique = true, columnNames = {"fk_environment_id", "fk_feature_id"})
 @ChangeLog
 public class DbFeatureValue extends DbVersionedBase {
   private DbFeatureValue(Builder builder) {

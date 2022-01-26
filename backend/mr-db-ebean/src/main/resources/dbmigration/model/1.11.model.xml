@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <addUniqueConstraint constraintName="idx_fv_unique" tableName="fh_env_feature_strategy" columnNames="fk_environment_id,fk_feature_id" oneToOne="false" nullableColumns=""/>
+    </changeSet>
+</migration>

@@ -27,7 +27,7 @@ public class FeatureUpdateListener implements EdgeUpdateListener, MessageHandler
 
     log.info("Listening for updates on {}", subject);
 
-    dispatcher.subscribe(subject);
+    dispatcher.subscribe(subject, "feature-updates");
   }
 
   @Override
@@ -41,36 +41,43 @@ public class FeatureUpdateListener implements EdgeUpdateListener, MessageHandler
 
   @Override
   public void onMessage(Message msg) throws InterruptedException {
+
     try {
       final StreamedFeatureUpdate update = CacheJsonMapper.readFromZipBytes(msg.getData(), StreamedFeatureUpdate.class);
-      log.debug("received update {}", update);
-      featureUpdateBySDKApi.updateFeature(update.getApiKey(), update.getEnvironmentId(), update.getFeatureKey(), Boolean.TRUE.equals(update.getUpdatingValue()),
-        (valueType) -> {
-          FeatureValue fv = new FeatureValue()
+
+      try {
+        log.debug("received update {}", update);
+        featureUpdateBySDKApi.updateFeature(update.getApiKey(), update.getEnvironmentId(), update.getFeatureKey(), Boolean.TRUE.equals(update.getUpdatingValue()),
+          (valueType) -> {
+            FeatureValue fv = new FeatureValue()
               .key(update.getFeatureKey())
-              .locked(update.getLock());
+              .locked(update.getLock() != null && update.getLock());
 
-          switch (valueType) {
-            case BOOLEAN:
-              fv.valueBoolean(update.getValueBoolean());
-              break;
-            case STRING:
-              fv.valueString(update.getValueString());
-              break;
-            case NUMBER:
-              fv.setValueNumber(update.getValueNumber());
-              break;
-            case JSON:
-              fv.valueJson(update.getValueString());
-              break;
-          }
+            switch (valueType) {
+              case BOOLEAN:
+                fv.valueBoolean(update.getValueBoolean());
+                break;
+              case STRING:
+                fv.valueString(update.getValueString());
+                break;
+              case NUMBER:
+                fv.setValueNumber(update.getValueNumber());
+                break;
+              case JSON:
+                fv.valueJson(update.getValueString());
+                break;
+            }
 
-          return fv;
-        });
-    } catch (IOException e) {
-      log.error("Unable to decompose incoming message to update feature.", e);
-    } catch (RolloutStrategyValidator.InvalidStrategyCombination ignoreEx) {
-      // ignore
+            return fv;
+          });
+      } catch (RolloutStrategyValidator.InvalidStrategyCombination ignoreEx) {
+        // ignore
+      } catch (Exception failed) {
+        log.error("Failed to update {}", update, failed);
+      }
+    } catch (Exception e) {
+      log.error("Unable to parse incoming request for update", e);
     }
+
   }
 }
