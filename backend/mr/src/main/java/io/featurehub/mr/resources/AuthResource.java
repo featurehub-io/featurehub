@@ -16,18 +16,16 @@ import io.featurehub.mr.model.ProviderRedirect;
 import io.featurehub.mr.model.RegistrationUrl;
 import io.featurehub.mr.model.TokenizedPerson;
 import io.featurehub.mr.model.UserCredentials;
-import io.featurehub.web.security.oauth.AuthProvider;
+import io.featurehub.web.security.oauth.AuthProviderCollection;
+import io.featurehub.web.security.oauth.AuthProviderSource;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.SecurityContext;
-import org.glassfish.hk2.api.IterableProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 public class AuthResource implements AuthServiceDelegate {
@@ -36,7 +34,7 @@ public class AuthResource implements AuthServiceDelegate {
   private final AuthManagerService authManager;
   private final PersonApi personApi;
   private final AuthenticationRepository authRepository;
-  private final List<AuthProvider> authProviders = new ArrayList<>();
+  private final AuthProviderCollection authProviderCollection;
 
   @ConfigKey("auth.disable-login")
   protected Boolean loginDisabled = Boolean.FALSE;
@@ -44,14 +42,12 @@ public class AuthResource implements AuthServiceDelegate {
   @Inject
   public AuthResource(AuthenticationApi authenticationApi, AuthManagerService authManager,
                       PersonApi personApi, AuthenticationRepository authRepository,
-                      IterableProvider<AuthProvider> authProviders) {
+                      AuthProviderCollection authProviderCollection) {
     this.authenticationApi = authenticationApi;
     this.authManager = authManager;
     this.personApi = personApi;
     this.authRepository = authRepository;
-    if (authProviders != null) {
-      authProviders.forEach(this.authProviders::add);
-    }
+    this.authProviderCollection = authProviderCollection;
   }
 
   @Override
@@ -82,10 +78,10 @@ public class AuthResource implements AuthServiceDelegate {
    */
   @Override
   public ProviderRedirect getLoginUrlForProvider(String provider) {
-    for(AuthProvider ap : authProviders) {
-      if (ap.getProviders().contains(provider)) {
-        return  new ProviderRedirect().redirectUrl(ap.requestRedirectUrl(provider));
-      }
+    final AuthProviderSource authProviderSource = authProviderCollection.find(provider);
+
+    if (authProviderSource != null) {
+      return new ProviderRedirect().redirectUrl(authProviderSource.getRedirectUrl());
     }
 
     throw new NotFoundException();

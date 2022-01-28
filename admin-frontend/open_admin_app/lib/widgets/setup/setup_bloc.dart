@@ -1,9 +1,9 @@
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:html';
 
-import 'package:open_admin_app/api/client_api.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/api/client_api.dart';
 import 'package:rxdart/rxdart.dart' as rxdart;
 
 enum SetupPage { page1, page2, page3 }
@@ -36,6 +36,9 @@ class SetupBloc implements Bloc {
   bool get has3rdParty => mrClient.identityProviders.has3rdParty;
   List<String> get externalProviders =>
       mrClient.identityProviders.externalProviders;
+  IdentityProviderInfo? identityInfo(String provider) {
+    return mrClient.identityProviders.identityInfo[provider];
+  }
 
   SetupBloc(this.mrClient) {
     // go to page 1 if local or # of providers is > 2

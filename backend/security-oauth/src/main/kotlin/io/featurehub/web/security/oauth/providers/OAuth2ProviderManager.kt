@@ -1,11 +1,14 @@
 package io.featurehub.web.security.oauth.providers
 
+import io.featurehub.web.security.oauth.AuthProviderInfo
 import jakarta.inject.Inject
 import org.glassfish.hk2.api.IterableProvider
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.*
 import java.util.function.Consumer
+
+class OAuth2ProviderInfo(override val code: String, override val icon: OAuth2ProviderCustomisation?) : AuthProviderInfo
 
 class OAuth2ProviderManager @Inject constructor(oAuth2Providers: IterableProvider<OAuth2Provider>) :
   OAuth2ProviderDiscovery {
@@ -21,8 +24,8 @@ class OAuth2ProviderManager @Inject constructor(oAuth2Providers: IterableProvide
     } else null
   }
 
-  override val providers: Collection<String>
-    get() = providerMap.keys
+  override val providers: Collection<AuthProviderInfo>
+    get() = providerMap.map { p -> OAuth2ProviderInfo(p.key, p.value.providerIcon()) }
 
   override fun requestRedirectUrl(provider: String): String {
     // TODO: store state to ensure valid callback and XSRF attacks
