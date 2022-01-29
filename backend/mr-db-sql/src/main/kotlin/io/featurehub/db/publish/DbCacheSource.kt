@@ -76,7 +76,7 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
   }
 
   private fun fillServiceAccount(sa: DbServiceAccount): CacheServiceAccount {
-    return CacheServiceAccount()
+    val serviceAccount = CacheServiceAccount()
       .id(sa.id)
       .version(sa.version)
       .apiKeyClientSide(sa.apiKeyClientEval)
@@ -92,6 +92,10 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
               .environmentId(sap.environment.id)
           }.collect(Collectors.toList())
       )
+
+    log.trace("service account publishing: {}", serviceAccount)
+
+    return serviceAccount
   }
 
   private fun serviceAccountsByCacheName(cacheName: String): QDbServiceAccount {
@@ -129,7 +133,7 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
     publishAction: PublishAction
   ): PublishEnvironment {
     try {
-      log.trace("env: {} / {} - application features", env.name, env.id)
+      log.trace("starting env: {} / {} - application features", env.name, env.id)
       // all the features for this environment in this application regardless of values
       val features = QDbApplicationFeature().whenArchived.isNull
         .parentApplication.environments.id.eq(env.id)
@@ -142,7 +146,6 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
 
       val featureCollection: Collection<DbApplicationFeature> = features.values
 
-      log.trace("env: {} / {} - features values", env.name, env.id)
       val fvFinder = QDbFeatureValue()
         .select(
           QDbFeatureValue.Alias.id,
@@ -173,6 +176,9 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
           CacheEnvironmentFeature().feature(toCacheFeature(feature))
         )
       }
+
+      log.trace("publishing env: {} / {} - full body {}", env.name, env.id, eci)
+
       return eci
     } catch (e: Exception) {
       log.error("failed to publish", e)
