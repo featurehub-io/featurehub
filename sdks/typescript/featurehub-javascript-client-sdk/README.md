@@ -107,7 +107,7 @@ There are 2 ways to request for feature updates via this SDK:
 There are 3 steps to connecting:
 1) Copy FeatureHub API Key from the FeatureHub Admin Console
 2) Create FeatureHub config
-3) Check FeatureHub Repository readyness and request feature state
+3) Check FeatureHub Repository readiness and request feature state
 
 #### 1. API Key from the FeatureHub Admin Console
 Find and copy your API Key from the FeatureHub Admin Console on the API Keys page - 
@@ -244,8 +244,8 @@ async initializeFeatureHub() {
       .country(StrategyAttributeCountryName.Australia)
       .build();
 
-  // react to incoming feature changes in real-time. Don't use this in nodejs as it will
-  // cause a memory leak unless you use it on a global context you are using and keeping around.
+  // react to incoming feature changes in real-time. With NodeJS apps it is recommended to 
+  // use it as a global variable to avoid a memory leak
   fhClient.feature('FEATURE_KEY').addListener(fs => {
     console.log('Value is ', fs.str);
   });
@@ -454,9 +454,9 @@ It also sends events out in certain circumstances.
 
 ### SSE connectivity 
 
-SSE kills your connection regularly to ensure stale connections are removed. For this reason you will see the connection being dropped and then reconnected again every 30-60 seconds. This is expected and in the below snippet you can see how you can potentially deal with the server readyness check. If you would like to change the reconnection interval, you have an option of changing maxSlots in the Edge server.
+SSE kills your connection regularly to ensure stale connections are removed. For this reason you will see the connection being dropped and then reconnected again every 30-60 seconds. This is expected and in the below snippet you can see how you can potentially deal with the server readiness check. If you would like to change the reconnection interval, you have an option of changing maxSlots in the Edge server.
 
-Check FeatureHub Repository readyness and request feature state:
+Check FeatureHub Repository readiness and request feature state:
 
 ```typescript
 fhConfig.init();
@@ -483,7 +483,7 @@ fhConfig.addReadynessListener(async (readyness: Readyness): void => {
 });
 ```
 
- If it is important to your server instances that the connection to the feature server exists as a critical service, then the snippet above will ensure it will try and connect (say five times) and then kill the server process alerting you to a failure. If connection to the feature service is only important for initial starting of your server, then you can simply listen for the first readyness and start your server and ignore all subsequent notifications:
+ If it is important to your server instances that the connection to the feature server exists as a critical service, then the snippet above will ensure it will try and connect (say five times) and then kill the server process alerting you to a failure. If connection to the feature service is only important for initial starting of your server, then you can simply listen for the first readiness and start your server and ignore all subsequent notifications:
 
 
 ```typescript
@@ -511,11 +511,11 @@ fhConfig.addReadynessListener(async (ready) => {
 
 ### Meta-Events from the repository
 
-There are two "meta events" from the FeatureHub repository, readyness and "new feature available". 
+There are two "meta events" from the FeatureHub repository, readiness and "new feature available". 
 
-#### Readyness 
+#### Readiness 
 
-Readyness is triggered when your repository first receives a list of features or it fails on a subsequent update. In a
+Readiness is triggered when your repository first receives a list of features or it fails on a subsequent update. In a
 UI application this would indicate that you had all the state necessary to show the application. In a nodejs server,
 this would indicate when you could start serving requests.
 
@@ -599,7 +599,7 @@ won't know which ones changed, but this can be a more efficient state update tha
 ## Failure
 
 If for some reason the connection to the FeatureHub server fails - either initially or for some reason during
-the process, you will get a readyness state callback to indicate that it has now failed.
+the process, you will get a readiness state callback to indicate that it has now failed.
 
 ```javascript
 export enum Readyness {
