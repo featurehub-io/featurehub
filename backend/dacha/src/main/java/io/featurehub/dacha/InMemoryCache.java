@@ -98,9 +98,15 @@ public class InMemoryCache implements InternalCache {
     PublishServiceAccount existing = serviceAccounts.get(sa.getServiceAccount().getId());
 
     if (sa.getAction() == PublishAction.CREATE || sa.getAction() == PublishAction.UPDATE) {
+      // the version check needs to be >= because the fields INSIDE the service account don't cause a service account's
+      // version to change, e.g. the permissions - ONLY the service account object itself. This will however had the
+      // side
+      // effect that when a new Dacha comes online, all the existing Dachas will update their caches from the one who
+      // responds with its contents.
+
       if (existing == null
           || (existing.getServiceAccount() != null &&
-        sa.getServiceAccount().getVersion() > existing.getServiceAccount().getVersion())) {
+        sa.getServiceAccount().getVersion() >= existing.getServiceAccount().getVersion())) {
         updateServiceAccountEnvironmentCache(sa.getServiceAccount(), serviceAccounts.get(sa.getServiceAccount().getId()));
         serviceAccounts.put(sa.getServiceAccount().getId(), sa);
 
@@ -221,7 +227,11 @@ public class InMemoryCache implements InternalCache {
     PublishEnvironment existing = environments.get(envId);
 
     if ((e.getAction() == PublishAction.CREATE || e.getAction() == PublishAction.UPDATE)) {
-      if (existing == null || e.getEnvironment().getVersion() > existing.getEnvironment().getVersion()) {
+      // the version check needs to be >= because the fields INSIDE the environment don't cause an environment's
+      // version to change, e.g. the features - ONLY the environment object itself. This will however had the side
+      // effect that when a new Dacha comes online, all the existing Dachas will update their caches from the one who
+      // responds with its contents.
+      if (existing == null || e.getEnvironment().getVersion() >= existing.getEnvironment().getVersion()) {
         removeServiceAccountsFromEnvironment(e, environments.get(envId));
         environments.put(envId, e);
 

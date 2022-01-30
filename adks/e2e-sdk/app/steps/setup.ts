@@ -7,7 +7,7 @@ import {
   PortfolioServiceApi,
   RoleType,
   ServiceAccount,
-  ServiceAccountPermission
+  ServiceAccountPermission, ServiceAccountServiceApi
 } from 'featurehub-javascript-admin-sdk';
 import { makeid, sleep } from '../support/random';
 import { EdgeFeatureHubConfig, FeatureHubPollingClient } from 'featurehub-javascript-node-sdk';
@@ -63,19 +63,36 @@ Given(/^I create a service account and (full|read) permissions based on the appl
     })
   ];
 
-  if (this.environment.id !== this.application.environments[0].id) {
-    permissions.push(new ServiceAccountPermission({
-        environmentId: this.environment.id,
-        permissions: [ RoleType.Read, RoleType.Unlock, RoleType.Lock, RoleType.ChangeValue ]
-      })
-    );
-  }
-
-  const serviceAccountCreate = await this.serviceAccountApi.createServiceAccountInPortfolio(this.portfolio.id, new ServiceAccount({
+  const serviceAccountApi: ServiceAccountServiceApi = this.serviceAccountApi;
+  const serviceAccountCreate = await serviceAccountApi.createServiceAccountInPortfolio(this.portfolio.id, new ServiceAccount({
     name: this.portfolio.name, description: this.portfolio.name, permissions: permissions
   }), true);
   expect(serviceAccountCreate.status).to.eq(200);
   expect(serviceAccountCreate.data.permissions.length).to.eq(permissions.length);
+
+  // this adds a new permission based on the environment we are actually in
+  if (this.environment.id !== this.application.environments[0].id) {
+    const updatedAccount = serviceAccountCreate.data;
+    const newPerm = new ServiceAccountPermission({
+      environmentId: this.environment.id,
+      permissions: roles
+    });
+
+    updatedAccount.permissions.push(newPerm);
+    permissions.push(newPerm);
+
+    const saUpdate = await serviceAccountApi.updateServiceAccount(updatedAccount.id, updatedAccount, true);
+
+    expect(saUpdate.status).to.eq(200);
+    expect(saUpdate.data.permissions.length).to.eq(permissions.length);
+
+    const accounts = await serviceAccountApi.searchServiceAccountsInPortfolio(this.portfolio.id, true,
+      saUpdate.data.name, this.application.id, true);
+
+    const sa = accounts.data.find(sa => sa.id == saUpdate.data.id);
+
+    serviceAccountCreate.data.permissions = sa.permissions;
+  }
 
   let perm: ServiceAccountPermission;
 
@@ -89,7 +106,7 @@ Given(/^I create a service account and (full|read) permissions based on the appl
   expect(perm).to.not.be.undefined;
 
   this.serviceAccountPermission = perm;
-  expect(perm.permissions.length).to.eq(4);
+  expect(perm.permissions.length).to.eq(roles.length);
   expect(perm.sdkUrlClientEval).to.not.be.undefined;
   expect(perm.sdkUrlServerEval).to.not.be.undefined;
   expect(perm.environmentId).to.not.be.undefined;
