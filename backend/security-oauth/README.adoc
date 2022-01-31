@@ -43,6 +43,9 @@ should look like this:
 
 [source,properties]
 ----
+oauth2.adminUiUrlSuccess=http://localhost:8085/#
+oauth2.adminUiUrlFailure=http://localhost:8085/#oauth2-failure
+oauth2.providers=oauth2-generic
 oauth2.providers.generic.secret=cf58f851-ae24-4fad-a017-8f08118b46fc
 oauth2.providers.generic.auth-url=http://localhost:8900/auth/realms/myrealm/protocol/openid-connect/auth
 oauth2.providers.generic.id=myclient
