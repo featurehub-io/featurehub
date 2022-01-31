@@ -33,6 +33,7 @@ import jakarta.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +73,7 @@ public class SetupResource implements SetupServiceDelegate {
   @Override
   public SetupResponse isInstalled() {
 
-    final List<String> providerCodes = authProviderCollection.getCodes();
+    final List<String> providerCodes = new ArrayList<>(authProviderCollection.getCodes());
 
     if (!loginDisabled) {
       providerCodes.add("local");

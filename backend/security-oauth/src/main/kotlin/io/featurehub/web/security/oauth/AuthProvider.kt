@@ -29,6 +29,18 @@ interface AuthProviderCollection {
   fun find(code: String): AuthProviderSource?
 }
 
+class NoAuthProviders : AuthProviderCollection {
+  override val providers: List<AuthProviderSource>
+    get() = listOf()
+
+  override val codes: List<String>
+    get() = listOf()
+
+  override fun find(code: String): AuthProviderSource? {
+   return null
+  }
+}
+
 class AuthProviders @Inject constructor(authProviders: IterableProvider<AuthProvider>
 ) : AuthProviderCollection {
   inner class InternalAuthProviderSource(override val authInfo: AuthProviderInfo, private val authProvider: AuthProvider) : AuthProviderSource {

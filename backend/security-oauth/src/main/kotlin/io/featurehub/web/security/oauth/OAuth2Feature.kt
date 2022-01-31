@@ -65,6 +65,11 @@ class OAuth2Feature : Feature {
       })
     } else {
       log.info("No oauth2 providers in config, skipping oauth2.")
+      context.register(object: AbstractBinder() {
+        override fun configure() {
+          bind(NoAuthProviders::class.java).to(AuthProviderCollection::class.java).`in`(Singleton::class.java)
+        }
+      })
     }
     return true
   }
