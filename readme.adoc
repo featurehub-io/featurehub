@@ -5,7 +5,7 @@ image::https://github.com/featurehub-io/featurehub/actions/workflows/codeql-anal
 :icons: font
 image::docs/images/fh_primary_navy.png[Feature Hub,500]
 
-FeatureHub is a Cloud Native platform to help software teams manage their features, from feature flags (also known as feature toggles) to A/B experiments and remote or centralised configuration. 
+FeatureHub is a Cloud Native platform to help software teams manage their features, from feature flags (also known as feature toggles) to A/B experiments and remote or centralised configuration.
 This is the primary source code repository for FeatureHub.
 
 https://demo.featurehub.io[Try FeatureHub demo now]
@@ -16,24 +16,18 @@ https://demo.featurehub.io[Try FeatureHub demo now]
 $ docker run -p 8085:8085 --user 999:999 -v $HOME/party:/db featurehub/party-server:latest
 ```
 
-Once installed, head to http://localhost:8085 to see FeatureHub Admin Console in action 
+Once installed, head to http://localhost:8085 to see FeatureHub Admin Console in action
 
 image::docs/images/fh-features-console-dark.png[FeatureHub console demo,800]
 
+== FeatureHub Users
 
-**New in version 1.3 - Client evaluated rollout strategies support for better performance! **
+image::docs/images/Ruby_NewLogo_Vertical.png[link="https://www.rubyplaynet.com/", 100]
 
-Improvements to server evaluated flags - avoid leaking information about your users to the clients when evaluating flags with rollout strategies that contain user context. 
 
-You can now choose from two types of keys: Client eval API Key and Server eval API Key
+== Are you also using FeatureHub?
 
-image::docs/images/api-keys.png[FeatureHub API Keys,800]
-
-If you are already using FeatureHub SDKs, please follow this guide to migrate to version 2.0 SDKs, 
-
-https://github.com/featurehub-io/featurehub/wiki/Migration-notes[SDKs migration notes (v 1.0 -> v 2.0)]
-
-API Keys (former SDK URLs) explained https://docs.featurehub.io/#_client_and_server_api_keys[here]  
+We are looking for companies that have successfully adopted FeatureHub to help us understand our customer base. Feel free to let us know by adding your company logo above (please raise a PR or contact us through our website).
 
 
 == Why FeatureHub?
@@ -64,7 +58,7 @@ API Keys (former SDK URLs) explained https://docs.featurehub.io/#_client_and_ser
 === Enterprise ready
 
 * Run on your own infrastructure (self-hosted)
-* SSO login support - Google, Microsoft, GitHub
+* SSO login support - Google, Microsoft, GitHub, Keycloak
 * Access control levels to allow different teams/groups permissions.
 * Multiple portfolios (department) support
 
@@ -107,13 +101,9 @@ update install repository with the latest images and issue tags on that reposito
 * Feature auditing
 * SDK's : Python, Ruby
 * Yaml remote configuration support
-* More deployment options, Cloud-vendor specific support
 
 For more details please refer to https://github.com/featurehub-io/featurehub/issues?q=is%3Aissue+is%3Aopen+label%3Aroadmap[Roadmap tickets]
 
-== Are you using FeatureHub already?
-
-We are looking for companies that have successfully adopted FeatureHub to help us understand our customer base. Feel free to let us know by adding your company logo below (please raise a PR).
 
 == Contributing
 
@@ -128,7 +118,7 @@ documentation you will notice there are several components. FeatureHub is design
 to scale from a single application option to large organisations serving billions
 of requests for features per day.
 
-==== The Backend Servers 
+==== The Backend Servers
 
 The Management Repository, Dacha (the Cache layer) and Edge (where all clients connect
 via their service accounts) are all written in _Java_. This allows us to build fully scalable
@@ -153,7 +143,7 @@ to contribute to the Admin Console - we would love you to join us!
 If you are planning on helping us by building an SDK in a language we don't yet support, please refer to this https://docs.featurehub.io/sdks-development.html[documentation]. We are happy to get contributions that slowly add full
 functionality for a new language.
 
-== Where to get help? 
+== Where to get help?
 
 If you cannot find an answer in our documentation please join our Slack community link:https://join.slack.com/t/anyways-labs/shared_invite/zt-frxdx34x-ODs_XmLh6BCvqiNeBRx0hA[Anyways Labs]
 
