@@ -24,5 +24,7 @@ interface OAuth2Provider {
   val clientId: String?
   val clientSecret: String?
 
+  fun isSecretInHeader(): Boolean = false
+
   fun providerIcon(): OAuth2ProviderCustomisation? = null
 }

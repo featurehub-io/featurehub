@@ -165,3 +165,10 @@ oauth2.providers.generic.icon.url=[required, full icon url, including https]
 oauth2.providers.generic.icon.background-color=[required, background colour in 0x format, e.g. 0xFFF44336 is a redish colour] 
 oauth2.providers.generic.icon.text=[required,text to appear on button]
 ----
+
+If your IdP needs the client secret to be Base64 encoded in the header,
+add this  configuration:
+
+----
+oauth2.providers.generic.secret-in-header=true
+----

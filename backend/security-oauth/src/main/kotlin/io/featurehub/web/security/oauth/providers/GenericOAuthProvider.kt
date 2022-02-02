@@ -59,6 +59,9 @@ class GenericOAuthProvider : OAuth2Provider {
   override var clientId: String? = null
     protected set
 
+  @ConfigKey("oauth2.providers.generic.secret-in-header")
+  var secretInHeader: Boolean? = false
+
   @ConfigKey("oauth2.providers.generic.scope")
   var scope: String? = "profile email"
 
@@ -138,6 +141,10 @@ class GenericOAuthProvider : OAuth2Provider {
 
   override fun providerIcon(): OAuth2ProviderCustomisation {
     return OAuth2ProviderCustomisation(iconUrl!!, iconBackgroundColor!!, iconText!!)
+  }
+
+  override fun isSecretInHeader(): Boolean {
+    return secretInHeader!!
   }
 
   companion object {

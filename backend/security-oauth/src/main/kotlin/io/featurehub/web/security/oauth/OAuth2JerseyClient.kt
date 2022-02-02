@@ -10,6 +10,7 @@ import jakarta.ws.rs.core.Form
 import jakarta.ws.rs.core.MediaType
 import jakarta.ws.rs.core.Response
 import org.slf4j.LoggerFactory
+import java.util.*
 
 class OAuth2JerseyClient @Inject constructor(protected val client: Client) : OAuth2Client {
   // the url we pass to the POST to confirm we are who we say we are
@@ -19,11 +20,22 @@ class OAuth2JerseyClient @Inject constructor(protected val client: Client) : OAu
     val form = Form()
     form.param("grant_type", "authorization_code")
     form.param("client_id", provider.clientId)
-    form.param("client_secret", provider.clientSecret)
+
+    if (!provider.isSecretInHeader()) {
+      form.param("client_secret", provider.clientSecret)
+    }
+
     form.param("redirect_uri", redirectUrl)
     form.param("code", code)
     val entity = Entity.entity(form, MediaType.APPLICATION_FORM_URLENCODED_TYPE)
-    val response = client.target(provider.requestTokenUrl()).request()
+    var request = client.target(provider.requestTokenUrl()).request()
+
+    if (provider.isSecretInHeader()) {
+      request = request.header("Authorization",
+        "Basic " + Base64.getEncoder().encodeToString(provider.clientSecret!!.toByteArray()))
+    }
+
+    val response = request
       .accept(MediaType.APPLICATION_JSON)
       .post(entity)
     return if (response.statusInfo.family == Response.Status.Family.SUCCESSFUL) {
