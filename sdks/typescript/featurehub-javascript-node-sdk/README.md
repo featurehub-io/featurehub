@@ -1,1 +1,0 @@
-../featurehub-javascript-client-sdk/README.md
