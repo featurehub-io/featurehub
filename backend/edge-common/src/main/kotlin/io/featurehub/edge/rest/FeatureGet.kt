@@ -10,6 +10,7 @@ import io.featurehub.edge.stats.StatRecorder
 import io.featurehub.edge.strategies.ClientContext
 import io.featurehub.sse.stats.model.EdgeHitResultType
 import io.featurehub.sse.stats.model.EdgeHitSourceType
+import io.featurehub.utils.FeatureHubConfig
 import io.prometheus.client.Gauge
 import io.prometheus.client.Histogram
 import jakarta.inject.Inject
@@ -31,7 +32,12 @@ interface FeatureGet {
   )
 }
 
-class FeatureGetProcessor @Inject constructor(private val getOrchestrator: DachaFeatureRequestSubmitter) : FeatureGet {
+class FeatureGetProcessor @Inject constructor(
+  private val getOrchestrator: DachaFeatureRequestSubmitter,
+  @FeatureHubConfig("edge.cache-control.header")
+  private val cacheControlHeader: String?
+  ) : FeatureGet {
+
   override fun processGet(
     response: AsyncResponse,
     sdkUrls: List<String>?,
@@ -83,7 +89,7 @@ class FeatureGetProcessor @Inject constructor(private val getOrchestrator: Dacha
     inout.dec()
 
     if (environments[0].success === FeatureRequestSuccess.NO_CHANGE) {
-      response.resume(Response.status(304).header("etag", etagHeader).build())
+      response.resume(wrapCacheControl(Response.status(304).header("etag", etagHeader)).build())
     } else if (environments.all { it.success == FeatureRequestSuccess.NO_SUCH_KEY_IN_CACHE }) {
       response.resume(Response.status(404).build())
     } else if (environments.all { it.success == FeatureRequestSuccess.DACHA_NOT_READY }) {
@@ -91,6 +97,7 @@ class FeatureGetProcessor @Inject constructor(private val getOrchestrator: Dacha
       response.resume(Response.status(503).entity("cache layer not ready, try again shortly").build())
     } else {
       response.resume(
+        wrapCacheControl(
         Response.status(200)
           .header(
             "etag", makeEtags(
@@ -99,9 +106,18 @@ class FeatureGetProcessor @Inject constructor(private val getOrchestrator: Dacha
             )
           )
           .entity(environments.stream().map(FeatureRequestResponse::environment).collect(Collectors.toList()))
+        )
           .build()
       )
     }
+  }
+
+  private fun wrapCacheControl(builder: Response.ResponseBuilder): Response.ResponseBuilder {
+    if (cacheControlHeader?.isNotEmpty() == true) {
+      return builder.header("Cache-Control", cacheControlHeader)
+    }
+
+    return builder
   }
 
   private fun mapSuccess(success: FeatureRequestSuccess): EdgeHitResultType {
