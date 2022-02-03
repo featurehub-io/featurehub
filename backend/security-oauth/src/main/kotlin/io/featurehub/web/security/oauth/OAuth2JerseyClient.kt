@@ -31,8 +31,9 @@ class OAuth2JerseyClient @Inject constructor(protected val client: Client) : OAu
     var request = client.target(provider.requestTokenUrl()).request()
 
     if (provider.isSecretInHeader()) {
+      val code = "${provider.clientId}:${provider.clientSecret}"
       request = request.header("Authorization",
-        "Basic " + Base64.getEncoder().encodeToString(provider.clientSecret!!.toByteArray()))
+        "Basic " + Base64.getEncoder().encodeToString(code.toByteArray()))
     }
 
     val response = request
