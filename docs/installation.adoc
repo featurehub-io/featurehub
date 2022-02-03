@@ -309,6 +309,10 @@ The following properties can be set (that are meaningful):
 - `jersey.cors.headers` - a list of CORS headers that will be allowed, specifically for browser support
 - `update.pool-size` (10) - how many threads to allocate to processing incoming updates from NATs. These are responses to feature
 requests and feature updates coming from the server.
+- `edge.cache-control.header` - specifically for the GET (polling) API, this lets your infrastructure limit
+how often the clients can actually poll back. It would allow an infrastructure team to override individual
+development teams on how often they wish polling to take place. It is generally not recommended to do this, but
+there may be situations where it makes sense. 
 
 ==== Edge (Streaming) Config
 
