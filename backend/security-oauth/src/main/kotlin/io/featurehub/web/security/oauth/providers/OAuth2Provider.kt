@@ -2,6 +2,8 @@ package io.featurehub.web.security.oauth.providers
 
 import io.featurehub.web.security.oauth.AuthClientResult
 
+data class OAuth2ProviderCustomisation(val icon: String, val buttonBackgroundColor: String, val buttonText: String)
+
 interface OAuth2Provider {
     // 3: convert AuthClientResult to an actual user we can use
   fun discoverProviderUser(authed: AuthClientResult): ProviderUser?
@@ -21,4 +23,8 @@ interface OAuth2Provider {
 
   val clientId: String?
   val clientSecret: String?
+
+  fun isSecretInHeader(): Boolean = false
+
+  fun providerIcon(): OAuth2ProviderCustomisation? = null
 }

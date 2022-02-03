@@ -236,14 +236,12 @@ class _SetupPage1ThirdPartyProviders extends StatelessWidget {
     return Column(
       children: [
         for (dynamic provider in bloc.identityProviders.externalProviders)
-          SizedBox(
-            height: 48,
-            child: Padding(
-                padding: const EdgeInsets.only(top: 12.0),
-                child: SignInProviderButton(
-                    provider: provider,
-                    func: () => selectedExternalProviderFunc(provider))),
-          ),
+          Padding(
+              padding: const EdgeInsets.only(top: 12.0),
+              child: SignInProviderButton(
+                  provider: provider,
+                  providedIcon: bloc.identityProviders.identityInfo[provider],
+                  func: () => selectedExternalProviderFunc(provider))),
       ],
     );
   }

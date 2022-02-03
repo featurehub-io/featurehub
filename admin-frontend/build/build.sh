@@ -18,7 +18,7 @@ rename_main_dart() {
   cd build/web
   MAIN_DATE=`date +"%s"`
   MAIN="main.dart-$MAIN_DATE.js"
-  if [[ $OSTYPE == 'darwin'* ]]; then
+  if [[ "$OSTYPE" == 'darwin'* ]]; then
     sed s/main.dart.js/$MAIN/ index.html > index2.html
     mv index.html index-old.html
     mv index2.html index.html

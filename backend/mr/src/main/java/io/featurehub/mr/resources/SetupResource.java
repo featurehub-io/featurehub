@@ -13,6 +13,7 @@ import io.featurehub.db.api.SetupApi;
 import io.featurehub.mr.api.SetupServiceDelegate;
 import io.featurehub.mr.auth.AuthenticationRepository;
 import io.featurehub.mr.model.Group;
+import io.featurehub.mr.model.IdentityProviderInfo;
 import io.featurehub.mr.model.Organization;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.Portfolio;
@@ -22,17 +23,20 @@ import io.featurehub.mr.model.SetupSiteAdmin;
 import io.featurehub.mr.model.TokenizedPerson;
 import io.featurehub.mr.utils.PortfolioUtils;
 import io.featurehub.utils.FallbackPropertyConfig;
-import io.featurehub.web.security.oauth.AuthProvider;
+import io.featurehub.web.security.oauth.AuthProviderCollection;
+import io.featurehub.web.security.oauth.AuthProviderSource;
+import io.featurehub.web.security.oauth.providers.OAuth2ProviderCustomisation;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
-import org.glassfish.hk2.api.IterableProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SetupResource implements SetupServiceDelegate {
   private static final Logger log = LoggerFactory.getLogger(SetupResource.class);
@@ -44,7 +48,7 @@ public class SetupResource implements SetupServiceDelegate {
   private final AuthenticationRepository authRepository;
   private final PersonApi personApi;
   private final PortfolioUtils portfolioUtils;
-  private final List<AuthProvider> authProviders;
+  private final AuthProviderCollection authProviderCollection;
 
   @ConfigKey("auth.disable-login")
   protected Boolean loginDisabled = Boolean.FALSE;
@@ -52,7 +56,7 @@ public class SetupResource implements SetupServiceDelegate {
   @Inject
   public SetupResource(SetupApi setupApi, AuthenticationApi authenticationApi, OrganizationApi organizationApi,
                        PortfolioApi portfolioApi, GroupApi groupApi, AuthenticationRepository authRepository,
-                       PersonApi personApi, PortfolioUtils portfolioUtils, IterableProvider<AuthProvider> authProviders) {
+                       PersonApi personApi, PortfolioUtils portfolioUtils, AuthProviderCollection authProviderCollection) {
     this.setupApi = setupApi;
     this.authenticationApi = authenticationApi;
     this.organizationApi = organizationApi;
@@ -61,39 +65,60 @@ public class SetupResource implements SetupServiceDelegate {
     this.authRepository = authRepository;
     this.personApi = personApi;
     this.portfolioUtils = portfolioUtils;
-    this.authProviders = new ArrayList<AuthProvider>();
-    authProviders.forEach(this.authProviders::add);
+    this.authProviderCollection = authProviderCollection;
 
     DeclaredConfigResolver.resolve(this);
   }
 
   @Override
   public SetupResponse isInstalled() {
+
+    final List<String> providerCodes = new ArrayList<>(authProviderCollection.getCodes());
+
+    if (!loginDisabled) {
+      providerCodes.add("local");
+    }
+
     if (setupApi.initialized()) {
       SetupResponse sr = new SetupResponse();
       sr.organization(organizationApi.get());
 
-      // indicate back to login dialog what authentication providers are allowed
+      sr.providers(providerCodes).providerInfo(fillProviderInfo());
 
-      authProviders.forEach(ap -> ap.getProviders().forEach(sr::addProvidersItem));
-      boolean oneExternal = sr.getProviders().size() == 1;
-      if (!loginDisabled) {
-        sr.addProvidersItem("local");
-      } else if (oneExternal) { // only 1 external one
-        String providerName = sr.getProviders().get(0);
-        authProviders.stream().filter(p -> p.getProviders().contains(providerName)).findFirst().ifPresent(ap ->
-          sr.redirectUrl(ap.requestRedirectUrl(providerName)));
+      if (authProviderCollection.getProviders().size() == 1 && loginDisabled) { // only 1 external one
+        final AuthProviderSource provider = authProviderCollection.getProviders().get(0);
+
+        sr.redirectUrl(provider.getRedirectUrl());
       }
+
       return sr;
     }
 
-    final SetupMissingResponse setupMissingResponse = new SetupMissingResponse();
-    authProviders.forEach(ap -> ap.getProviders().forEach(setupMissingResponse::addProvidersItem));
-    if (!loginDisabled) {
-      setupMissingResponse.addProvidersItem("local");
-    }
+    final SetupMissingResponse setupMissingResponse =
+      new SetupMissingResponse()
+        .providers(providerCodes)
+        .providerInfo(fillProviderInfo());
+
 
     throw new WebApplicationException(Response.status(Response.Status.NOT_FOUND).entity(setupMissingResponse).build());
+  }
+
+  private Map<String, IdentityProviderInfo> fillProviderInfo() {
+    Map<String, IdentityProviderInfo> identityMap = new HashMap<>();
+
+    authProviderCollection.getProviders()
+      .forEach(am -> {
+      if (am.getAuthInfo().getIcon() != null) {
+        final OAuth2ProviderCustomisation icon = am.getAuthInfo().getIcon();
+        identityMap.put(am.getCode(),
+          new IdentityProviderInfo()
+            .buttonIcon(icon.getIcon())
+            .buttonBackgroundColor(icon.getButtonBackgroundColor())
+            .buttonText(icon.getButtonText()));
+      }
+    });
+
+    return identityMap;
   }
 
   @Override
@@ -114,23 +139,19 @@ public class SetupResource implements SetupServiceDelegate {
 
     if (setupSiteAdmin.getEmailAddress() == null) {
       if (setupSiteAdmin.getAuthProvider() == null) {
-        if (authProviders.size() != 2) { // blank + oauth2
-          log.error("No auth provider was provided (so assuming default) but we have more than one auth provider, so we" +
-            " don't know which one to use");
-          throw new BadRequestException();
+        final String oauth2Providers = FallbackPropertyConfig.Companion.getConfig("oauth2.providers");
+        if (oauth2Providers != null) {
+          setupSiteAdmin.setAuthProvider(oauth2Providers.trim());
         }
-
-        setupSiteAdmin.setAuthProvider(FallbackPropertyConfig.Companion.getConfig("oauth2.providers").trim());
       }
 
-      AuthProvider ap =
-        authProviders.stream().filter(p -> p.getProviders().contains(setupSiteAdmin.getAuthProvider())).findFirst().orElse(null);
+      AuthProviderSource ap = authProviderCollection.find(setupSiteAdmin.getAuthProvider());
 
       // they are using an external provider, so we can create the org and portfolio, but that is all.
       if (ap != null) {
         createPortfolio(setupSiteAdmin, createOrganization(setupSiteAdmin), null);
 
-        return new TokenizedPerson().redirectUrl(ap.requestRedirectUrl(setupSiteAdmin.getAuthProvider()));
+        return new TokenizedPerson().redirectUrl(ap.getRedirectUrl());
       } else {
         throw new BadRequestException(); // invalid attempt to set up
       }

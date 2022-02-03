@@ -275,6 +275,9 @@ class ManagementRepositoryClientBloc implements Bloc {
       final bearerToken = getBearerCookie();
       organization = setupResponse.organization;
       identityProviders.identityProviders = setupResponse.providers;
+      if (setupResponse.providerInfo != null) {
+        identityProviders.identityInfo = setupResponse.providerInfo!;
+      }
 
       // yes its initialised, we may not have logged in yet
       if (bearerToken != null) {
@@ -294,6 +297,9 @@ class ManagementRepositoryClientBloc implements Bloc {
                   jsonDecode(e.message!), 'SetupMissingResponse')
               as SetupMissingResponse;
           identityProviders.identityProviders = smr.providers;
+          if (smr.providerInfo != null) {
+            identityProviders.identityInfo = smr.providerInfo!;
+          }
           _siteInitialisedSource.add(RouteSlot.setup);
         } else {
           dialogError(e, s);

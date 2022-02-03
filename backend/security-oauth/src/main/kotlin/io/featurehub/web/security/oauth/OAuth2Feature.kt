@@ -36,6 +36,9 @@ class OAuth2Feature : Feature {
       if (validProviderSources.contains(PROVIDER_NAME)) {
         providers.add(GithubProvider::class.java)
       }
+      if (validProviderSources.contains(GenericOAuthProvider.Companion.PROVIDER_NAME)) {
+        providers.add(GenericOAuthProvider::class.java)
+      }
       if (providers.isEmpty()) {
         throw RuntimeException("oauth2.providers list is not empty and contains unsupported oauth2 providers.")
       }
@@ -54,12 +57,19 @@ class OAuth2Feature : Feature {
             AuthProvider::class.java
           ).`in`(Singleton::class.java)
 
+          bind(AuthProviders::class.java).to(AuthProviderCollection::class.java).`in`(Singleton::class.java)
+
           // now the outbound http request to validate authorization flow
           bind(OAuth2JerseyClient::class.java).to(OAuth2Client::class.java).`in`(Singleton::class.java)
         }
       })
     } else {
       log.info("No oauth2 providers in config, skipping oauth2.")
+      context.register(object: AbstractBinder() {
+        override fun configure() {
+          bind(NoAuthProviders::class.java).to(AuthProviderCollection::class.java).`in`(Singleton::class.java)
+        }
+      })
     }
     return true
   }

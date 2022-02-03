@@ -145,3 +145,30 @@ oauth2.providers.keycloak.id=[the name of the client you created]
 ----
 
 This will enable Keycloak to be used as your authentication provider, so users can login using that method.
+
+=== Generic OAuth2 Provider
+
+If you have an IdP that isn't listed above, you can still likely use it, its just a bit
+more configuration. This option requires you to provide your own icon, background colour and login text. Remember, any and all of these can be environment variables.
+
+[source,properties]
+----
+oauth2.providers=oauth2-generic
+oauth2.providers.generic.auth-url=[full auth url, including https]
+oauth2.providers.generic.token-url=[full token url, including https]
+oauth2.providers.generic.id=[required, client-id]
+oauth2.providers.generic.secret=[required, client-id]
+oauth2.providers.generic.scope=[defaults to "profile email"]
+oauth2.providers.generic.name-fields=[optional, field to find inside JWT for the user's name, defaults to "name"]
+oauth2.providers.generic.email-field[optional, field to find inside JWT for user's email, defaults to "email"]
+oauth2.providers.generic.icon.url=[required, full icon url, including https]
+oauth2.providers.generic.icon.background-color=[required, background colour in 0x format, e.g. 0xFFF44336 is a redish colour] 
+oauth2.providers.generic.icon.text=[required,text to appear on button]
+----
+
+If your IdP needs the client secret to be Base64 encoded in the header,
+add this  configuration:
+
+----
+oauth2.providers.generic.secret-in-header=true
+----

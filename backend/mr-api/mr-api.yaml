@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: ManagementResourceApi
   description: This describes the API clients use for accessing features
-  version: "1.1.4"
+  version: "1.1.5"
 #  CRUD for portfolios, environments, features, service account, people, and groups (edited)
 #  roles are fixed
 #  then people<->group association
@@ -2299,8 +2299,25 @@ components:
           type: array
           items:
             type: string
+        providerInfo:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/IdentityProviderInfo"
         redirectUrl:
           description: "Set if there is only one external provider and no local. Allows immediate redirect to provider. It assumes it will be used immediate (e.g. state in oauth2 url)"
+          type: string
+    IdentityProviderInfo:
+      type: object
+      required:
+        - buttonBackgroundColor
+        - buttonIcon
+        - buttonText
+      properties:
+        buttonIcon:
+          type: string
+        buttonBackgroundColor:
+          type: string
+        buttonText:
           type: string
     SetupMissingResponse:
       type: object
@@ -2309,6 +2326,10 @@ components:
           type: array
           items:
             type: string
+        providerInfo:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/IdentityProviderInfo"
     ProviderRedirect:
       type: object
       properties:

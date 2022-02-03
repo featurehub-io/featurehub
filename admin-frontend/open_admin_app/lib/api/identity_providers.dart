@@ -1,12 +1,13 @@
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:html';
 
-import 'package:open_admin_app/api/client_api.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/api/client_api.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
 class IdentityProviders {
   List<String> _identityProviders = <String>['local'];
+  Map<String, IdentityProviderInfo> identityInfo = {};
 
   set identityProviders(List<String> val) => _identityProviders = val;
 
