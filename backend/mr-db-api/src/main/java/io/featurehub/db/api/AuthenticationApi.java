@@ -2,6 +2,7 @@ package io.featurehub.db.api;
 
 import io.featurehub.mr.model.Person;
 
+import java.time.Instant;
 import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -9,13 +10,6 @@ import org.jetbrains.annotations.Nullable;
 public interface AuthenticationApi {
   Person login(@NotNull String email, @NotNull String password);
 
-  /**
-   * @param name
-   * @param email
-   * @param password
-   * @param opts
-   * @return
-   */
   Person register(@Nullable String name, @NotNull String email, @Nullable String password, Opts opts);
 
   /**

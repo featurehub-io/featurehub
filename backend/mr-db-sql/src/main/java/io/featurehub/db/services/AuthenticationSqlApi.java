@@ -105,6 +105,7 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
               person.setPasswordAlgorithm(DbPerson.DEFAULT_PASSWORD_ALGORITHM);
               person.setToken(null);
               person.setTokenExpiry(null);
+              person.setWhenLastAuthenticated(Instant.now());
               updateUser(person);
 
               return convertUtils.toPerson(person, opts == null ?  Opts.opts(FillOpts.Groups, FillOpts.Acls) : opts );
@@ -132,6 +133,7 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
                   person.setPasswordRequiresReset(true);
                   person.setPasswordAlgorithm(DbPerson.DEFAULT_PASSWORD_ALGORITHM);
                   person.setWhoChanged(whoChanged);
+                  person.setWhenLastAuthenticated(Instant.now());
 
                   if (reactivate) {
                     person.setWhenArchived(null);
