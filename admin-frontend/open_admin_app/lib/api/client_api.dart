@@ -263,7 +263,7 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   Future isInitialized() async {
     if (personState.isLoggedIn) {
-      _siteInitialisedSource.add(RouteSlot.portfolio);
+      routeSlot(RouteSlot.portfolio);
       return;
     }
 
@@ -288,7 +288,7 @@ class ManagementRepositoryClientBloc implements Bloc {
         webInterface.authenticateViaProvider(setupResponse.redirectUrl!);
       } else {
         // we have to login
-        _siteInitialisedSource.add(RouteSlot.login);
+        routeSlot(RouteSlot.login);
       }
     }).catchError((e, s) {
       if (e is ApiException) {
@@ -300,7 +300,7 @@ class ManagementRepositoryClientBloc implements Bloc {
           if (smr.providerInfo != null) {
             identityProviders.identityInfo = smr.providerInfo!;
           }
-          _siteInitialisedSource.add(RouteSlot.setup);
+          routeSlot(RouteSlot.setup);
         } else {
           dialogError(e, s);
         }

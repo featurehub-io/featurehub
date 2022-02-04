@@ -14,6 +14,7 @@ import 'package:open_admin_app/routes/manage_portfolios_route.dart';
 import 'package:open_admin_app/routes/manage_service_accounts_route.dart';
 import 'package:open_admin_app/routes/manage_users_route.dart';
 import 'package:open_admin_app/routes/not_found_route.dart';
+import 'package:open_admin_app/routes/oauth2_fail_route.dart';
 import 'package:open_admin_app/routes/register_url_route.dart';
 import 'package:open_admin_app/routes/service_env_route.dart';
 import 'package:open_admin_app/routes/setup_route.dart';
@@ -60,6 +61,10 @@ class RouteCreator {
   Widget setup(mrBloc, {params}) {
     return const SetupWrapperWidget();
     // return LandingRoute(title: 'FeatureHub');
+  }
+
+  Widget oauth2Fail(mrBloc, {params}) {
+    return const Oauth2FailRoute();
   }
 
   Widget portfolios(mrBloc, {params}) {
