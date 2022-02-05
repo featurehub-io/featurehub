@@ -28,6 +28,7 @@ import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.SortOrder;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -503,10 +504,10 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
     database.save(group);
   }
 
-  static class SuperuserChanges {
-    DbOrganization organization;
-    List<DbPerson> removedSuperusers = new ArrayList<>();
-    List<DbPerson> addedSuperusers = new ArrayList<>();
+  public static class SuperuserChanges {
+    public DbOrganization organization;
+    public List<DbPerson> removedSuperusers = new ArrayList<>();
+    public List<DbPerson> addedSuperusers = new ArrayList<>();
 
     public SuperuserChanges(DbOrganization organization) {
       this.organization = organization;
@@ -567,8 +568,8 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
 
   // now we have to walk all the way down and remove these people from all admin portfolio groups
   @Transactional
-  private void updateSuperusersFromPortfolioGroups(
-      SuperuserChanges superuserChanges) {
+  protected void updateSuperusersFromPortfolioGroups(
+      @NotNull SuperuserChanges superuserChanges) {
     for (DbGroup pGroups :
         new QDbGroup()
             .adminGroup
