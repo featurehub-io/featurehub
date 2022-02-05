@@ -49,6 +49,7 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
   final ManagementRepositoryClientBloc bloc;
   FHRoutePath _path;
   RouteSlot _currentSlot = RouteSlot.loading;
+  FHRoutePath? _stashedRoutePath;
   late StreamSubscription<RouteChange?> _routeChangeSubscription;
   late StreamSubscription<RouteSlot> _siteInitialisedSubscription;
 
@@ -110,7 +111,13 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
     // which currently exists all over the code base.
     _routeChangeSubscription = bloc.routeChangedStream.listen((r) {
       if (_currentSlot == RouteSlot.nowhere ||
-          _currentSlot == RouteSlot.loading) return;
+          _currentSlot == RouteSlot.loading) {
+        if (_stashedRoutePath == null && r != null) {
+          _stashedRoutePath = FHRoutePath(r.route, params: r.params);
+        }
+
+        return;
+      }
 
       if (r != null) {
         if (r.route == '/') {
@@ -136,10 +143,10 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
           return;
         }
 
-        if (_path.routeName == '/') {
-          _path = FHRoutePath(routeSlotMappings[_currentSlot]!.initialRoute);
-          bloc.swapRoutes(RouteChange(_path.routeName));
-        } else if ((_currentSlot == RouteSlot.personal ||
+        bool swapped = false;
+        if ((_currentSlot == RouteSlot.personal ||
+                _currentSlot == RouteSlot.login ||
+                _currentSlot == RouteSlot.nowhere ||
                 _currentSlot == RouteSlot.portfolio) &&
             _stashedRoutePath != null) {
           // if they have logged in now and have a held route, lets check if they are allowed to access it, and if so
@@ -149,25 +156,37 @@ class FHRouteDelegate extends RouterDelegate<FHRoutePath>
             bloc.swapRoutes(RouteChange(_stashedRoutePath!.routeName,
                 params: _stashedRoutePath!.params));
             _stashedRoutePath = null;
-            return;
-          } else {
+            swapped = true;
+          } else if (_currentSlot != RouteSlot.login &&
+              _currentSlot != RouteSlot.nowhere) {
+            // only if we have logged in and we have no permission to that slot should we wipe it
             _stashedRoutePath = null;
             _path = FHRoutePath(routeSlotMappings[_currentSlot]!.initialRoute);
             bloc.swapRoutes(RouteChange(_path.routeName));
+            swapped = true;
           }
-        } else if (!ManagementRepositoryClientBloc.router.canUseRoute(
-            _path.routeName,
-            autoFailPermissions: [PermissionType.any])) {
-          _path = FHRoutePath(routeSlotMappings[_currentSlot]!.initialRoute);
-          bloc.swapRoutes(RouteChange(_path.routeName));
         }
 
-        notifyListeners();
+        if (!swapped && _path.routeName == '/') {
+          _path = FHRoutePath(routeSlotMappings[_currentSlot]!.initialRoute);
+          bloc.swapRoutes(RouteChange(_path.routeName));
+          swapped = true;
+        }
+
+        if (!swapped &&
+            !ManagementRepositoryClientBloc.router.canUseRoute(_path.routeName,
+                autoFailPermissions: [PermissionType.any])) {
+          _path = FHRoutePath(routeSlotMappings[_currentSlot]!.initialRoute);
+          bloc.swapRoutes(RouteChange(_path.routeName));
+          swapped = true;
+        }
+
+        if (swapped) {
+          notifyListeners();
+        }
       }
     });
   }
-
-  FHRoutePath? _stashedRoutePath;
 
   @override
   Future<void> setNewRoutePath(FHRoutePath configuration) async {

@@ -11,6 +11,7 @@ final _log = Logger('Routes');
 
 class Routes {
   static FHRouter configureRoutes(ManagementRepositoryClientBloc mrBloc) {
+    // no particular permission of any kind is required for this, but if you use NONE it is a no-where slot
     routeSlotMappings[RouteSlot.nowhere] = RouteSlotMapping(
         routePermission: RouteSlot.nowhere,
         acceptablePermissionTypes: [PermissionType.none],
@@ -57,7 +58,7 @@ class Routes {
 
     router.define('/404',
         handler: handleRouteChangeRequest(routeCreator.notFound),
-        permissionType: PermissionType.none,
+        permissionType: PermissionType.any,
         wrapInScaffold: false);
     // Public routes (public URL's also need ot be added to array above)
     router.define('/forgot-password',
@@ -71,6 +72,10 @@ class Routes {
     router.define('/setup',
         handler: handleRouteChangeRequest(routeCreator.setup),
         permissionType: PermissionType.setup,
+        wrapInScaffold: false);
+    router.define("/oauth2-failure",
+        handler: handleRouteChangeRequest(routeCreator.oauth2Fail),
+        permissionType: PermissionType.any,
         wrapInScaffold: false);
     router.define('/login',
         handler: handleRouteChangeRequest(routeCreator.login),

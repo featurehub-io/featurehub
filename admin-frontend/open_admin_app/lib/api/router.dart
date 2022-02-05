@@ -48,8 +48,8 @@ enum PermissionType {
   portfolioadmin,
   regular,
   personal,
-  any,
-  none,
+  any, // RouteSlot.loading
+  none, // RouteSlot.nowhere
   login,
   setup,
   extra1,
