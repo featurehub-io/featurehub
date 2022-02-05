@@ -73,7 +73,7 @@ class Routes {
         handler: handleRouteChangeRequest(routeCreator.setup),
         permissionType: PermissionType.setup,
         wrapInScaffold: false);
-    router.define("/oauth2-failed",
+    router.define("/oauth2-failure",
         handler: handleRouteChangeRequest(routeCreator.oauth2Fail),
         permissionType: PermissionType.any,
         wrapInScaffold: false);

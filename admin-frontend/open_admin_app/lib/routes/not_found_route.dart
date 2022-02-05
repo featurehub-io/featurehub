@@ -56,7 +56,6 @@ class _NotFoundRouteState extends State<NotFoundRoute>
                   style: TextStyle(
                       fontSize: 50,
                       letterSpacing: 2,
-                      color: Color(0xff2f3640),
                       fontWeight: FontWeight.bold),
                 ),
                 Text(
@@ -64,7 +63,6 @@ class _NotFoundRouteState extends State<NotFoundRoute>
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 30,
-                    color: Color(0xff2f3640),
                   ),
                 ),
               ],
