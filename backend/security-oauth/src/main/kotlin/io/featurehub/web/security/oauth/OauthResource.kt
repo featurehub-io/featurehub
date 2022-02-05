@@ -44,21 +44,21 @@ class OauthResource @Inject constructor(
     @QueryParam("error") error: String?
   ): Response? {
     if (error != null) {
-      return Response.ok().location(URI.create(failureUrl)).build()
+      return Response.status(302).location(URI.create(failureUrl)).build()
     }
 
     // not initialized!
     if (!oAuthAdapter.initialAppSetupComplete()) {
-      return Response.ok().location(URI.create(failureUrl)).build()
+      return Response.status(302).location(URI.create(failureUrl)).build()
     }
 
     // decode the ProviderUser
     val providerFromState = discovery.getProviderFromState(state)
-      ?: return Response.ok().location(URI.create(failureUrl)).build()
+      ?: return Response.status(302).location(URI.create(failureUrl)).build()
     val authed = oAuth2Client.requestAccess(code, providerFromState)
-      ?: return Response.ok().location(URI.create(failureUrl)).build()
+      ?: return Response.status(302).location(URI.create(failureUrl)).build()
     val providerUser = providerFromState.discoverProviderUser(authed)
-      ?: return Response.ok().location(URI.create(failureUrl)).build()
+      ?: return Response.status(302).location(URI.create(failureUrl)).build()
     return oAuthAdapter.successfulCompletion(
       providerUser.email,
       providerUser.name,

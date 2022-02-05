@@ -60,7 +60,7 @@ public class OAuth2MRAdapter implements OAuthAdapter {
       // if the user must be created in the database before they are allowed to sign in, redirect to failure.
       if (userMustBeCreatedFirst) {
         log.warn("User {} attempted to login and they aren't in the database and they need to be.", email);
-        return Response.ok().location(URI.create(failureUrl)).build();
+        return Response.status(302).location(URI.create(failureUrl)).build();
       }
 
       p = createUser(email, username);
