@@ -296,9 +296,51 @@ This series of APIs allows you to create features. Features exist at the applica
 
 Features once deleted don't actually go away, they are archived and their key is changed so you can recreate a new feature with the same key, but you won't lose their audit history.
 
+====
+.Java use
+[source,java]
+----
+FeatureServiceApi featureService = new FeatureServiceApi();
+----
+====
+
+
+==== Creating a new feature
+
+====
+.Java Definition
+[source,java]
+----
+List<Feature> createFeaturesForApplication(UUID id, Feature feature)
+----
+
+.Java use
+[source,java]
+----
+List<Feature> allFeatures = featureService.createFeaturesForApplication(appId, 
+   new Feature().name("Feature's Name").key("FEATURE_KEY").valueType(FeatureValueType.BOOLEAN))
+----
+====
+
+It takes a Feature, where the three fields you must specify are:
+
+- `name` - the name given to the feature as it will appear in the admin console
+- `key` - the key, unique among the applications
+- `valueType` - the type of the feature: boolean (flag), number, string or json
+
 === Managing Feature Values
 
 Feature Values exist on a specific feature in a specific environment. Flag features must have a value (true or false), whereas all other feature values can be null. All feature values must also be locked or unlocked.
+
+====
+.Java use
+[source,java]
+----
+EnvironmentFeatureServiceApi featureValueService = new EnvironmentFeatureServiceApi();
+----
+====
+
+
 
 == Using the OpenAPI Files directly
 
