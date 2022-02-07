@@ -1,0 +1,279 @@
+= The Admin SDK (ADK)          
+:favicon: favicon.ico
+ifdef::env-github,env-browser[:outfilesuffix: .adoc]
+:toc: left
+:toclevels: 4
+:toc-title: Contents
+
+++++
+<!-- google -->
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-173153929-1', 'auto');
+ga('send', 'pageview');
+</script>
+++++
+
+link:index{outfilesuffix}[Back to index]
+
+== Overview
+The Admin SDK is designed to provide you easy access to the Management Repository API. It is an OpenAPI driven API, there is no functionality in the API that is not documented in our published OpenAPI.
+
+== The API
+
+The API is broken up into a number of services representing different facets of the Management Repository, e.g.
+Portfolios, Applications, Environments, Features, Service Accounts, Authentication and so forth.
+
+=== Installing the ADK in your project
+
+We currently have only Java 8 and Java 11 released. Typescript and DotNet will follow soon.
+
+.Maven - Java 8
+[source,xml]
+----
+<dependency>
+  <groupId>io.featurehub.mr.sdk</groupId>
+  <artifactId>java8-admin-client</artifactId>
+  <version>[1.1, 2)</version>
+</dependency>
+----
+
+.Maven - Java 11
+[source,xml]
+----
+<dependency>
+  <groupId>io.featurehub.mr.sdk</groupId>
+  <artifactId>java11-admin-client</artifactId>
+  <version>[1.1, 2)</version>
+</dependency>
+----
+
+.Gradle - Java 8
+[source,groovy]
+----
+implementation 'io.featurehub.mr.sdk:java8-admin-client:[1.1,2)'
+----
+.Gradle - Java 11
+[source,groovy]
+----
+implementation 'io.featurehub.mr.sdk:java11-admin-client:[1.1,2)'
+----
+
+NOTE: dotnet to come
+
+=== Using the ADK
+
+As we release new Admin tool kits, we will add code examples in different languages. 
+
+NOTE: for Java, because it doesn't have optional parameters, all parameters must be specified, even if null.
+
+NOTE: when in doubt, the OpenAPI document is the source of truth and this document can become out of date.
+
+=== Creating the API Client to enable you to talk to the server
+
+In all ADKs, there is an API client that you need to specify where the server is located. Once you have logged in,
+its on this API client that you also set your *Bearer Token*.
+
+NOTE: FeatureHub as yet does not support Personal Access Tokens. Once those arrive, you can use those to provide 
+access to the API.
+
+.Java 8
+[source,java]
+----
+import io.featurehub.admin.ApiClient;
+import io.featurehub.admin.Configuration;
+
+ApiClient api = new ApiClient();
+// wherever your host is located
+api.setBasePath("http://localhost:8085");
+
+// if you are running a single authenticated client, you can now do this:
+Configuration.setDefaultApiClient(api);
+// and you won't have to pass the api around
+----
+
+.Java 11
+[source,java]
+----
+import io.featurehub.admin.ApiClient;
+
+ApiClient api = new ApiClient();
+// wherever your host is located
+api.setHost("localhost").setPort(8085)
+// if you are running a single authenticated client, you can now do this:
+Configuration.setDefaultApiClient(api);
+// and you won't have to pass the api around
+----
+
+NOTE: If you do not set the global default API client, then you will keep to keep track of the client and
+pass it as the parameter when you construct the various apis. E.g. `new AuthServiceApi()` becomes `new AuthServiceApi(api)` 
+
+==== Logging in
+
+Once you have created you Api client, you can then pass it to the Authentication system and log in.
+
+.Java
+[source,java]
+----
+// create the Auth Service
+AuthServiceApi authApi = new AuthServiceApi();
+
+// get back the token
+TokenizedPerson tp = authApi.login(new UserCredentials().email("test@mailinator.com").password("password123"))
+----
+
+The differences between 8 and 11 are in how to specify the token to the APIClient.
+
+.Java 8
+[source,java]
+----
+api.setBearerToken(tp.accessToken)
+----
+
+.Java 11
+[source,java]
+----
+// tell the API that it should add the bearer token onto the outgoing requests
+api.setRequestInterceptor(builder -> {
+builder.header("Authorization", "Bearer " + tp.accessToken)
+} );
+----
+
+One you are authenticated, you can now use the SDK and there are no differences between Java 8 and 11.
+
+==== Creating and managing Portfolios
+
+The API lets you, presuming you have permission, manage Portfolios. The core functionality is in `PortfolioServiceApi`.
+Always examine the generated code for details on what error codes and status codes can be returned.
+
+.Java 
+[source,java]
+----
+PortfolioServiceApi portfolioService = new PortfolioServiceApi();
+----
+
+===== Create Portfolio
+
+This creates a portfolio, and indicates whether you want to return any created groups and applications inside the portfolio. 
+Currently the API does not allow you to create groups and applications when creating portfolios.
+
+.Java Definition
+[source,java]
+----
+Portfolio createPortfolio(Portfolio portfolio, Boolean includeGroups, Boolean includeApplications)
+----
+
+.Java use
+[source,java]
+----
+Portfolio portfolio = portfolioService.createPortfolio(new Portfolio().name("name").description("description"), null, null)
+----
+===== Delete Portfolio
+
+This will delete the portfolio and everything inside it. This is a final operation so be careful with it. It returns
+true if successful, false if not.
+
+.Java Definition
+[source,java]
+----
+Boolean deletePortfolio(UUID id, Boolean includeGroups, Boolean includeApplications, Boolean includeEnvironments)
+----
+
+.Java use
+[source,java]
+----
+Portfolio portfolio = portfolioService.createPortfolio(id, null, null, null)
+----
+
+===== Searching for Portfolios
+
+This allows you to search through your portfolios by name
+
+
+.Java Definition
+[source,java]
+----
+List<Portfolio> findPortfolios(Boolean includeGroups, Boolean includeApplications, SortOrder order, String filter, String parentPortfolioId)
+----
+
+- `includeGroups`: if true, will fill in the groups available to each portfolio
+- `includeApplications`: if true, will fill in the applications available to each portfolio
+- `order`: if null, then whatever order they are in the database, otherwise specify ascending or descending
+- `filter`: a partial string to search for - it operates like a database `like`. All comparisons are case insignificant.
+- `parentPortfolioId`: _obsolete_
+
+.Java use
+[source,java]
+----
+List<Portfolio> portfolios = portfolioService.findPortfolios(true, true, SortOrder.ASC, null, null)
+----
+
+This will return all portfolios in ascending order.
+
+===== Get A Portfolio
+
+This allows you to get the details of a portfolio if you have its ID. If you need to refresh the portfolio details for
+example.
+
+.Java Definition
+[source,java]
+----
+Portfolio getPortfolio(UUID id, Boolean includeGroups, Boolean includeApplications, Boolean includeEnvironments)
+----
+
+- `id`: the portfolio's id
+- `includeGroups`: if true, will fill in the groups available to each portfolio
+- `includeApplications`: if true, will fill in the applications available to each portfolio
+- `includeEnvironments`: if true, all applications will have their environments listed
+
+.Java use
+[source,java]
+----
+Portfolio portfolio = portfolioService.getPortfolio(id, true, true, true)
+----
+
+This would get the portfolio and all of its groups, applications and within those applications, their environments.
+
+===== Update a Portfolio
+
+This allows you to update a portfolio's name and description.
+
+.Java Definition
+[source,java]
+----
+Portfolio updatePortfolio(UUID id, Portfolio portfolio, Boolean includeGroups, Boolean includeApplications, Boolean includeEnvironments)
+----
+
+- `id`: the portfolio's id
+- `portfolio`: the updated portfolio details. 
+- `includeGroups`: if true, will fill in the groups available to each portfolio
+- `includeApplications`: if true, will fill in the applications available to each portfolio
+- `includeEnvironments`: if true, all applications will have their environments listed
+
+.Java use
+[source,java]
+----
+Portfolio portfolio = portfolioService.updatePortfolio(id, new Portfolio().name("newName").description("new description"), true, true, true)
+----
+
+
+
+=== Using the OpenAPI Files directly
+
+If you use a language we don't provide an artifact for or use an OpenAPI generator that is different from the one we
+are using, the information on the API is always located at http://api.dev.featurehub.io/mrapi/releases.json.  
+
+It will typically look like this:
+
+.releases.json
+[source,json]
+----
+{
+  "latest": "1.1.5",
+  "versions": ["1.1.5"]
+}
+----
+
