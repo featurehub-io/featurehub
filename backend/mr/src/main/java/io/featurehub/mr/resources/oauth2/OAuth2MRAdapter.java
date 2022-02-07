@@ -66,6 +66,11 @@ public class OAuth2MRAdapter implements OAuthAdapter {
       p = createUser(email, username);
     }
 
+    if (p != null && p.getWhenArchived() != null) {
+      log.warn("User {} attempted to login and have been deleted.", email);
+      return Response.status(302).location(URI.create(failureUrl)).build();
+    }
+
     // store user in session with bearer token
     String token = authRepository.put(p);
 
