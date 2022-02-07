@@ -1,0 +1,15 @@
+{
+  "latest": "1.5.6",
+
+  "versions": [
+    {
+      "version": "1.5.6",
+      "critical": "1.5.5",
+      "releaseNotes": "Please upgrade from 1.5.5 due to regression."
+    },
+    {
+      "version": "1.5.6",
+      "requiresUpgrading": true
+    }
+  ]
+}

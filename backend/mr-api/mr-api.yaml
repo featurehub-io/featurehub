@@ -1592,6 +1592,13 @@ paths:
         - bearerAuth: [ ]
       tags:
         - EnvironmentFeatureService
+      parameters:
+        - name: filter
+          description: "Filter the feature names by this filter."
+          in: query
+          schema:
+            type: string
+          required: false
       description: "Get all features for this environment"
       operationId: getFeaturesForEnvironment
       responses:

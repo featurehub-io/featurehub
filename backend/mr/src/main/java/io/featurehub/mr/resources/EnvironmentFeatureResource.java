@@ -94,7 +94,8 @@ public class EnvironmentFeatureResource implements EnvironmentFeatureServiceDele
   }
 
   @Override
-  public EnvironmentFeaturesResult getFeaturesForEnvironment(UUID eid, SecurityContext securityContext) {
+  public EnvironmentFeaturesResult getFeaturesForEnvironment(UUID eid, GetFeaturesForEnvironmentHolder holder,
+                                                             SecurityContext securityContext) {
     if (requireRoleCheck(eid, securityContext).hasNoRoles()) {
       throw new ForbiddenException();
     }
