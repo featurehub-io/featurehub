@@ -282,4 +282,11 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
 
     return null;
   }
+
+  @Override
+  public void updateLastAuthenticated(@NotNull UUID id) {
+    final DbPerson person = new QDbPerson().id.eq(id).findOne();
+
+    updateLastAuthenticated(person, Instant.now());
+  }
 }

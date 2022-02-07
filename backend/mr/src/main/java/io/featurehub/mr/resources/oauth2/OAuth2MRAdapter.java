@@ -56,6 +56,11 @@ public class OAuth2MRAdapter implements OAuthAdapter {
     // discover if they are a user and if not, add them
     Person p = personApi.get(email, Opts.empty());
 
+    if (p != null && p.getWhenArchived() != null) {
+      log.warn("User {} attempted to login and have been deleted.", email);
+      return Response.status(302).location(URI.create(failureUrl)).build();
+    }
+
     if (p == null) {
       // if the user must be created in the database before they are allowed to sign in, redirect to failure.
       if (userMustBeCreatedFirst) {
@@ -64,11 +69,8 @@ public class OAuth2MRAdapter implements OAuthAdapter {
       }
 
       p = createUser(email, username);
-    }
-
-    if (p != null && p.getWhenArchived() != null) {
-      log.warn("User {} attempted to login and have been deleted.", email);
-      return Response.status(302).location(URI.create(failureUrl)).build();
+    } else {
+      authenticationApi.updateLastAuthenticated(p.getId().getId());
     }
 
     // store user in session with bearer token

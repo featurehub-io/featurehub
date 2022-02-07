@@ -49,4 +49,11 @@ public interface AuthenticationApi {
    * @return - the token or null if the user does not exist or has no token.
    */
   String resetExpiredRegistrationToken(String email);
+
+  /**
+   * Update when the user was last authenticated to now
+   *
+   * @param id - a person id
+   */
+  void updateLastAuthenticated(@NotNull UUID id);
 }
