@@ -31,6 +31,7 @@ Portfolios, Applications, Environments, Features, Service Accounts, Authenticati
 
 We currently have only Java 8 and Java 11 released. Typescript and DotNet will follow soon.
 
+====
 .Maven - Java 8
 [source,xml]
 ----
@@ -61,6 +62,7 @@ implementation 'io.featurehub.mr.sdk:java8-admin-client:[1.1,2)'
 ----
 implementation 'io.featurehub.mr.sdk:java11-admin-client:[1.1,2)'
 ----
+====
 
 NOTE: dotnet to come
 
@@ -80,6 +82,7 @@ its on this API client that you also set your *Bearer Token*.
 NOTE: FeatureHub as yet does not support Personal Access Tokens. Once those arrive, you can use those to provide 
 access to the API.
 
+====
 .Java 8
 [source,java]
 ----
@@ -107,6 +110,7 @@ api.setHost("localhost").setPort(8085)
 Configuration.setDefaultApiClient(api);
 // and you won't have to pass the api around
 ----
+====
 
 NOTE: If you do not set the global default API client, then you will keep to keep track of the client and
 pass it as the parameter when you construct the various apis. E.g. `new AuthServiceApi()` becomes `new AuthServiceApi(api)` 
@@ -115,6 +119,7 @@ pass it as the parameter when you construct the various apis. E.g. `new AuthServ
 
 Once you have created you Api client, you can then pass it to the Authentication system and log in.
 
+====
 .Java
 [source,java]
 ----
@@ -124,9 +129,11 @@ AuthServiceApi authApi = new AuthServiceApi();
 // get back the token
 TokenizedPerson tp = authApi.login(new UserCredentials().email("test@mailinator.com").password("password123"))
 ----
+====
 
 The differences between 8 and 11 are in how to specify the token to the APIClient.
 
+====
 .Java 8
 [source,java]
 ----
@@ -141,6 +148,7 @@ api.setRequestInterceptor(builder -> {
 builder.header("Authorization", "Bearer " + tp.accessToken)
 } );
 ----
+====
 
 One you are authenticated, you can now use the SDK and there are no differences between Java 8 and 11.
 
@@ -149,33 +157,38 @@ One you are authenticated, you can now use the SDK and there are no differences 
 The API lets you, presuming you have permission, manage Portfolios. The core functionality is in `PortfolioServiceApi`.
 Always examine the generated code for details on what error codes and status codes can be returned.
 
+====
 .Java 
 [source,java]
 ----
 PortfolioServiceApi portfolioService = new PortfolioServiceApi();
 ----
+====
 
 ===== Create Portfolio
 
 This creates a portfolio, and indicates whether you want to return any created groups and applications inside the portfolio. 
 Currently the API does not allow you to create groups and applications when creating portfolios.
 
+====
 .Java Definition
 [source,java]
 ----
 Portfolio createPortfolio(Portfolio portfolio, Boolean includeGroups, Boolean includeApplications)
 ----
-
 .Java use
 [source,java]
 ----
 Portfolio portfolio = portfolioService.createPortfolio(new Portfolio().name("name").description("description"), null, null)
 ----
+====
+
 ===== Delete Portfolio
 
 This will delete the portfolio and everything inside it. This is a final operation so be careful with it. It returns
 true if successful, false if not.
 
+====
 .Java Definition
 [source,java]
 ----
@@ -187,17 +200,24 @@ Boolean deletePortfolio(UUID id, Boolean includeGroups, Boolean includeApplicati
 ----
 Portfolio portfolio = portfolioService.createPortfolio(id, null, null, null)
 ----
+====
 
 ===== Searching for Portfolios
 
 This allows you to search through your portfolios by name
 
-
+====
 .Java Definition
 [source,java]
 ----
 List<Portfolio> findPortfolios(Boolean includeGroups, Boolean includeApplications, SortOrder order, String filter, String parentPortfolioId)
 ----
+.Java use
+[source,java]
+----
+List<Portfolio> portfolios = portfolioService.findPortfolios(true, true, SortOrder.ASC, null, null)
+----
+====
 
 - `includeGroups`: if true, will fill in the groups available to each portfolio
 - `includeApplications`: if true, will fill in the applications available to each portfolio
@@ -205,11 +225,6 @@ List<Portfolio> findPortfolios(Boolean includeGroups, Boolean includeApplication
 - `filter`: a partial string to search for - it operates like a database `like`. All comparisons are case insignificant.
 - `parentPortfolioId`: _obsolete_
 
-.Java use
-[source,java]
-----
-List<Portfolio> portfolios = portfolioService.findPortfolios(true, true, SortOrder.ASC, null, null)
-----
 
 This will return all portfolios in ascending order.
 
@@ -218,22 +233,25 @@ This will return all portfolios in ascending order.
 This allows you to get the details of a portfolio if you have its ID. If you need to refresh the portfolio details for
 example.
 
+====
 .Java Definition
 [source,java]
 ----
 Portfolio getPortfolio(UUID id, Boolean includeGroups, Boolean includeApplications, Boolean includeEnvironments)
 ----
 
-- `id`: the portfolio's id
-- `includeGroups`: if true, will fill in the groups available to each portfolio
-- `includeApplications`: if true, will fill in the applications available to each portfolio
-- `includeEnvironments`: if true, all applications will have their environments listed
-
 .Java use
 [source,java]
 ----
 Portfolio portfolio = portfolioService.getPortfolio(id, true, true, true)
 ----
+====
+
+- `id`: the portfolio's id
+- `includeGroups`: if true, will fill in the groups available to each portfolio
+- `includeApplications`: if true, will fill in the applications available to each portfolio
+- `includeEnvironments`: if true, all applications will have their environments listed
+
 
 This would get the portfolio and all of its groups, applications and within those applications, their environments.
 
@@ -241,23 +259,25 @@ This would get the portfolio and all of its groups, applications and within thos
 
 This allows you to update a portfolio's name and description.
 
+====
 .Java Definition
 [source,java]
 ----
 Portfolio updatePortfolio(UUID id, Portfolio portfolio, Boolean includeGroups, Boolean includeApplications, Boolean includeEnvironments)
 ----
 
-- `id`: the portfolio's id
-- `portfolio`: the updated portfolio details. 
-- `includeGroups`: if true, will fill in the groups available to each portfolio
-- `includeApplications`: if true, will fill in the applications available to each portfolio
-- `includeEnvironments`: if true, all applications will have their environments listed
-
 .Java use
 [source,java]
 ----
 Portfolio portfolio = portfolioService.updatePortfolio(id, new Portfolio().name("newName").description("new description"), true, true, true)
 ----
+====
+
+- `id`: the portfolio's id
+- `portfolio`: the updated portfolio details.
+- `includeGroups`: if true, will fill in the groups available to each portfolio
+- `includeApplications`: if true, will fill in the applications available to each portfolio
+- `includeEnvironments`: if true, all applications will have their environments listed
 
 
 
