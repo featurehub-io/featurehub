@@ -11,18 +11,14 @@ tmp
 .yalc
 yalc.lock
 @rerun*
-dist
 final.yaml
 node
 target
-lib
 .nyc_output
 index.js
 models/.openapi-generator
 models/.openapi-generator-ignore
 models/git_push.sh
 models/.npmignore
-app/*
-package-lock.json
 
 
