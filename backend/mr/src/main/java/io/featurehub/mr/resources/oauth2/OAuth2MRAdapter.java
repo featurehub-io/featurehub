@@ -2,6 +2,7 @@ package io.featurehub.mr.resources.oauth2;
 
 import io.featurehub.db.api.AuthenticationApi;
 import io.featurehub.db.api.GroupApi;
+import io.featurehub.db.api.OptimisticLockingException;
 import io.featurehub.db.api.Opts;
 import io.featurehub.db.api.OrganizationApi;
 import io.featurehub.db.api.PersonApi;
@@ -70,6 +71,14 @@ public class OAuth2MRAdapter implements OAuthAdapter {
 
       p = createUser(email, username);
     } else {
+      p.setName(username);
+
+      try {
+        p.setGroups(null); // don't update groups.
+        personApi.update(p.getId().getId(), p, Opts.empty(), p.getId().getId());
+      } catch (OptimisticLockingException ignored) {
+      }
+
       authenticationApi.updateLastAuthenticated(p.getId().getId());
     }
 
