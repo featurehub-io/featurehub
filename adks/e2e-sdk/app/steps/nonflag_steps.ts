@@ -1,4 +1,4 @@
-import { Given, Then } from '@cucumber/cucumber';
+import { Given, Then, When } from '@cucumber/cucumber';
 import { makeid } from '../support/random';
 import { Feature, FeatureValueType } from 'featurehub-javascript-admin-sdk';
 import { expect } from 'chai';
@@ -89,5 +89,11 @@ Then(/^I set the (string|json|number) feature value to (.*)$/, async function (f
 
   fValue.whenUpdated = undefined;
   fValue.whoUpdated = undefined;
+  await this.updateFeature(fValue);
+});
+
+When(/^I retire the feature flag$/, async function () {
+  const fValue = await this.getFeature();
+  fValue.retired = true;
   await this.updateFeature(fValue);
 });

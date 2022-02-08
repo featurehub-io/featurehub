@@ -12,7 +12,8 @@
   },
   "files": [
     "dist/**/*",
-    "lib/**/*"
+    "lib/**/*",
+    "app/**/*"
   ],
   "homepage": "https://featurehub.io",
   "keywords": [

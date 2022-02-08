@@ -6,17 +6,12 @@ Feature: All flag based functionality works as expected
     And I create a service account and full permissions based on the application environments
     And I connect to the feature server
 
+    @retired
   Scenario: A new portfolio with a boolean feature is retired and no longer exists
     Given There is a new feature flag
     Then the feature flag is locked and off
     When I retire the feature flag
-    Then there is no feature flag
-
-  Scenario: A new portfolio with a boolean feature is then deleted and it no longer exists
-    Given There is a new feature flag
-    Then the feature flag is locked and off
-    When I delete the feature
-    Then there is no feature flag
+    Then there are 0 features
 
     @flags
   Scenario: A new portfolio with a boolean feature

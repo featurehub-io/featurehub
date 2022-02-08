@@ -1973,6 +1973,7 @@ components:
         valueNumber: {type: number}
         valueBoolean: {type: boolean}
         valueJson: {type: string}
+        retired: {type: boolean, description: 'if false or null, this feature will visible on edge. if true, it will not be passed to the client'}
         rolloutStrategyInstances:
           type: array
           items: {$ref: '#/components/schemas/RolloutStrategyInstance'}

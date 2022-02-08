@@ -2638,7 +2638,7 @@ components:
           type: string
         retired:
           type: boolean
-          description: "if true or null, this feature will visible on edge. if false, it will not be passed to the client"
+          description: "if false or null, this feature will visible on edge. if true, it will not be passed to the client"
         rolloutStrategyInstances:
           type: array
           items:
