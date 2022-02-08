@@ -68,7 +68,9 @@ class FHappBar extends StatelessWidget {
                   padding: const EdgeInsets.all(8.0),
                   child: Row(
                     children: [
-                      PersonAvatar(person: person),
+                      Tooltip(
+                          message: person.name,
+                          child: PersonAvatar(person: person)),
                       const SizedBox(
                         width: 32.0,
                       ),
