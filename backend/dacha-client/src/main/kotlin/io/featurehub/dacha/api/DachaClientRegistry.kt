@@ -22,7 +22,7 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 class NoSuchCacheDachaClient : DachaApiKeyService {
-  override fun getApiKeyDetails(eId: UUID, serviceAccountKey: String): DachaKeyDetailsResponse {
+  override fun getApiKeyDetails(eId: UUID, serviceAccountKey: String, excludeRetired: Boolean?): DachaKeyDetailsResponse {
     throw NotFoundException()
   }
 

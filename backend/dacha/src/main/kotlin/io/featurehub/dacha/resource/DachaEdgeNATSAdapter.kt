@@ -14,7 +14,8 @@ class DacheEdgeNATSAdapterService @Inject constructor(private val apiKeyResource
   override fun edgeRequest(request: DachaNATSRequest): DachaNATSResponse {
     if (request.featuresRequest != null) {
       try {
-        val response = apiKeyResource.getApiKeyDetails(request.featuresRequest!!.geteId(), request.featuresRequest!!.serviceAccountKey)
+        val featuresRequest = request.featuresRequest!!
+        val response = apiKeyResource.getApiKeyDetails(featuresRequest.geteId(), featuresRequest.serviceAccountKey, featuresRequest.excludeRetired)
 
         return DachaNATSResponse().status(200).featuresResponse(response)
       } catch (e: WebApplicationException) {

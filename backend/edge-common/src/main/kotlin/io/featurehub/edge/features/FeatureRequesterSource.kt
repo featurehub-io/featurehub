@@ -28,7 +28,7 @@ class FeatureRequesterSource(private val api: DachaApiKeyService, override val k
     if (size == 1) {
       executor.execute {
         try {
-          details = api.getApiKeyDetails(key.environmentId, key.serviceKey)
+          details = api.getApiKeyDetails(key.environmentId, key.serviceKey, true)
 
           if (details != null)
             copyKeyDetails(key, details!!)

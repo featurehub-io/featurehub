@@ -35,6 +35,7 @@ class DbDachaSqlApi : DachaApiKeyService {
       .environment.environmentFeatures.fetch(
         QDbFeatureValue.Alias.locked,
         QDbFeatureValue.Alias.version,
+        QDbFeatureValue.Alias.retired,
         QDbFeatureValue.Alias.rolloutStrategies,
         QDbFeatureValue.Alias.defaultValue,
       )
@@ -48,7 +49,7 @@ class DbDachaSqlApi : DachaApiKeyService {
         .applicationId(fakeApplicationId)
         .portfolioId(fakePortfolioId)
         .organizationId(fakeOrganisationId)
-        .features(features.map { toFeatureValueCacheItem(it, featureValues[it.key]) })
+        .features(features.map { toFeatureValueCacheItem(it, featureValues[it.key]) }.filterNotNull())
 
       response.etag = calculateEtag(response)
       log.trace("etag is {}", response.etag)
@@ -77,10 +78,15 @@ class DbDachaSqlApi : DachaApiKeyService {
   private fun toFeatureValueCacheItem(
     feature: DbApplicationFeature,
     fv: DbFeatureValue?
-  ): CacheEnvironmentFeature =
-    CacheEnvironmentFeature()
-      .feature(CacheFeature().key(feature.key).id(feature.id).valueType(feature.valueType))
-      .value(if (fv == null) toEmptyFeatureValue(feature) else toFeatureValue(fv))
+  ): CacheEnvironmentFeature? {
+    if (fv == null || fv.retired != true) {
+      return CacheEnvironmentFeature()
+        .feature(CacheFeature().key(feature.key).id(feature.id).valueType(feature.valueType))
+        .value(if (fv == null) toEmptyFeatureValue(feature) else toFeatureValue(fv))
+    } else {
+      return null
+    }
+  }
 
 
   private fun toEmptyFeatureValue(feature: DbApplicationFeature): CacheFeatureValue =

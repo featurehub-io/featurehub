@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <addColumn tableName="fh_env_feature_strategy">
+            <column name="retired" type="boolean"/>
+        </addColumn>
+    </changeSet>
+</migration>

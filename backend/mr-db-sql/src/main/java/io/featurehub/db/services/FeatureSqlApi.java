@@ -185,18 +185,18 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
     return convertUtils.toFeatureValue(strategy);
   }
 
-  private void updateFeatureValue(FeatureValue featureValue, PersonFeaturePermission person, DbFeatureValue strategy) throws NoAppropriateRole {
-    final DbApplicationFeature feature = strategy.getFeature();
+  private void updateFeatureValue(FeatureValue featureValue, PersonFeaturePermission person, DbFeatureValue dbFeatureValue) throws NoAppropriateRole {
+    final DbApplicationFeature feature = dbFeatureValue.getFeature();
 
-    if (person.hasChangeValueRole() && ( !strategy.isLocked() || (Boolean.FALSE.equals(featureValue.getLocked()) && person.hasUnlockRole()) )) {
+    if (person.hasChangeValueRole() && ( !dbFeatureValue.isLocked() || (Boolean.FALSE.equals(featureValue.getLocked()) && person.hasUnlockRole()) )) {
       if (feature.getValueType() == FeatureValueType.NUMBER) {
-        strategy.setDefaultValue(featureValue.getValueNumber() == null ? null : featureValue.getValueNumber().toString());
+        dbFeatureValue.setDefaultValue(featureValue.getValueNumber() == null ? null : featureValue.getValueNumber().toString());
       } else if (feature.getValueType() == FeatureValueType.STRING) {
-        strategy.setDefaultValue(featureValue.getValueString());
+        dbFeatureValue.setDefaultValue(featureValue.getValueString());
       } else if (feature.getValueType() == FeatureValueType.JSON) {
-        strategy.setDefaultValue(featureValue.getValueJson());
+        dbFeatureValue.setDefaultValue(featureValue.getValueJson());
       } else if (feature.getValueType() == FeatureValueType.BOOLEAN) {
-        strategy.setDefaultValue(featureValue.getValueBoolean() == null ? Boolean.FALSE.toString() : featureValue.getValueBoolean().toString());
+        dbFeatureValue.setDefaultValue(featureValue.getValueBoolean() == null ? Boolean.FALSE.toString() : featureValue.getValueBoolean().toString());
       }
 
       if (featureValue.getRolloutStrategies() != null) {
@@ -207,27 +207,29 @@ public class FeatureSqlApi implements FeatureApi, FeatureUpdateBySDKApi {
         });
       }
 
-      strategy.setRolloutStrategies(featureValue.getRolloutStrategies());
+      dbFeatureValue.setRolloutStrategies(featureValue.getRolloutStrategies());
 
-      strategyDiffer.createDiff(featureValue, strategy);
+      strategyDiffer.createDiff(featureValue, dbFeatureValue);
     }
 
     // change locked before changing value, as may not be able to change value if locked
     boolean newValue = featureValue.getLocked() != null && featureValue.getLocked();
-    if (newValue != strategy.isLocked()) {
+    if (newValue != dbFeatureValue.isLocked()) {
       if (!newValue && person.hasUnlockRole()) {
-        strategy.setLocked(false);
+        dbFeatureValue.setLocked(false);
       } else if (newValue && person.hasLockRole()) {
-        strategy.setLocked(true);
+        dbFeatureValue.setLocked(true);
       } else {
         throw new NoAppropriateRole();
       }
     }
 
-    strategy.setWhoUpdated(convertUtils.byPerson(person.person));
-    if (strategy.getWhoUpdated() == null) {
-      log.error("Unable to set who updated on strategy {}", person.person);
+    dbFeatureValue.setWhoUpdated(convertUtils.byPerson(person.person));
+    if (dbFeatureValue.getWhoUpdated() == null) {
+      log.error("Unable to set who updated on dbFeatureValue {}", person.person);
     }
+
+    dbFeatureValue.setRetired(featureValue.getRetired());
   }
 
   @Override

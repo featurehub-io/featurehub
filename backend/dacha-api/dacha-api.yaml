@@ -12,11 +12,19 @@ paths:
         schema:
           type: string
           format: uuid
+        required: true
       - name: serviceAccountKey
         description: "serviceAccountKey of service account"
         in: path
         schema:
           type: string
+        required: true
+      - name: excludeRetired
+        description: "exclude retired features"
+        in: query
+        schema:
+          type: boolean
+        required: false
     get:
       operationId: getApiKeyDetails
       tags:
@@ -114,6 +122,8 @@ components:
           format: uuid
         serviceAccountKey:
           type: string
+        excludeRetired:
+          type: boolean
     DachaPermissionRequest:
       description: "Used for permission request when communication is via NATS from Edge for getApiKeyPermissions"
       allOf:
@@ -316,6 +326,9 @@ components:
           description: "used for optimistic locking"
           type: integer
           format: int64
+        retired:
+          type: boolean
+          description: "if true or null, this feature will visible on edge. if false, it will not be passed to the client"
     PublishServiceAccount:
       x-package: io.featurehub.dacha.model
       required:

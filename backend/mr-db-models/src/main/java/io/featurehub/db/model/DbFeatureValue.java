@@ -33,6 +33,7 @@ public class DbFeatureValue extends DbVersionedBase {
     setDefaultValue(builder.defaultValue);
     setLocked(builder.locked);
     setRolloutStrategies(builder.rolloutStrategies);
+    setRetired(builder.retired);
     sharedRolloutStrategies = builder.sharedRolloutStrategies;
   }
 
@@ -74,6 +75,12 @@ public class DbFeatureValue extends DbVersionedBase {
   @Column(nullable = false)
   private boolean locked;
 
+  /**
+   * When null or false, it is not retired, when true it is retired and Edge won't see it.
+   */
+  @Column
+  private Boolean retired;
+
   // a user can have multiple strategies here that are specific to this feature value
   // these are usually percentage only ones, but that may change in the future
   @DbJson
@@ -93,6 +100,14 @@ public class DbFeatureValue extends DbVersionedBase {
 
   public void setSharedRolloutStrategies(List<DbStrategyForFeatureValue> sharedRolloutStrategies) {
     this.sharedRolloutStrategies = sharedRolloutStrategies;
+  }
+
+  public Boolean getRetired() {
+    return retired;
+  }
+
+  public void setRetired(Boolean retired) {
+    this.retired = retired;
   }
 
   public DbPerson getWhoUpdated() {
@@ -159,10 +174,16 @@ public class DbFeatureValue extends DbVersionedBase {
     private FeatureState featureState;
     private String defaultValue;
     private boolean locked;
+    private Boolean retired; // null == true
     private List<RolloutStrategy> rolloutStrategies;
     private List<DbStrategyForFeatureValue> sharedRolloutStrategies;
 
     public Builder() {
+    }
+
+    public Builder retired(Boolean retired) {
+      this.retired = retired;
+      return this;
     }
 
     public Builder whoUpdated(DbPerson val) {
@@ -214,4 +235,6 @@ public class DbFeatureValue extends DbVersionedBase {
       return new DbFeatureValue(this);
     }
   }
+
+
 }
