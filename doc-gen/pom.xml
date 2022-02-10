@@ -8,7 +8,7 @@
   <packaging>pom</packaging>
 
   <properties>
-    <asciidoctor.maven.plugin.version>2.1.0</asciidoctor.maven.plugin.version>
+    <asciidoctor.maven.plugin.version>2.2.2</asciidoctor.maven.plugin.version>
     <jruby.version>9.2.13.0</jruby.version>
     <asciidoctorj.version>2.4.1</asciidoctorj.version>
   </properties>
@@ -22,18 +22,18 @@
         <version>${asciidoctor.maven.plugin.version}</version>
         <dependencies>
           <!-- Comment this section to use the default jruby artifact provided by the plugin -->
-          <dependency>
-            <groupId>org.jruby</groupId>
-            <artifactId>jruby-complete</artifactId>
-            <version>${jruby.version}</version>
-          </dependency>
+<!--          <dependency>-->
+<!--            <groupId>org.jruby</groupId>-->
+<!--            <artifactId>jruby-complete</artifactId>-->
+<!--            <version>${jruby.version}</version>-->
+<!--          </dependency>-->
           <!-- Comment this section to use the default AsciidoctorJ artifact provided by the plugin -->
-          <dependency>
-            <groupId>org.asciidoctor</groupId>
-            <artifactId>asciidoctorj</artifactId>
-            <version>${asciidoctorj.version}</version>
-          </dependency>
-          
+<!--          <dependency>-->
+<!--            <groupId>org.asciidoctor</groupId>-->
+<!--            <artifactId>asciidoctorj</artifactId>-->
+<!--            <version>${asciidoctorj.version}</version>-->
+<!--          </dependency>-->
+
         </dependencies>
         <configuration>
           <sourceDirectory>${project.basedir}/../docs</sourceDirectory>
