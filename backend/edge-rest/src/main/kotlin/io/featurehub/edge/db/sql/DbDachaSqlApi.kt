@@ -23,7 +23,7 @@ class DbDachaSqlApi : DachaApiKeyService {
   private val fakeOrganisationId = UUID.randomUUID()
 
   @Transactional(readOnly = true)
-  override fun getApiKeyDetails(eId: UUID, serviceAccountKey: String): DachaKeyDetailsResponse? {
+  override fun getApiKeyDetails(eId: UUID, serviceAccountKey: String, excludeRetired: Boolean?): DachaKeyDetailsResponse? {
     val saEnv = findMatch(
       eId,
       serviceAccountKey
@@ -147,7 +147,6 @@ class DbDachaSqlApi : DachaApiKeyService {
         .joinToString("-")
     return Integer.toHexString(det.hashCode())
   }
-
 
   @Transactional(readOnly = true)
   override fun getApiKeyPermissions(
