@@ -115,7 +115,7 @@ pass it as the parameter when you construct the various apis. E.g. `new AuthServ
 
 ==== Logging in
 
-Once you have created you Api client, you can then pass it to the Authentication system and log in.
+Once the Api client is created, you can then pass it to the Authentication system and log in. Make sure authenticated user has been created in the FeatureHub Admin app prior to that and has enough access rights to perform ADK operations that you are planning to do. 
 
 ====
 .Java
