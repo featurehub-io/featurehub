@@ -20,7 +20,7 @@ ga('send', 'pageview');
 link:index{outfilesuffix}[Back to index]
 
 == Overview
-The Admin SDK is designed to provide access to the Management Repository API. It is an OpenAPI driven API, there is no functionality in the API that is not documented in our published OpenAPI.
+The Admin SDK is designed to provide access to the Management Repository API. It is an OpenAPI driven API, based on the MR OpenAPI file that can be located https://github.com/featurehub-io/featurehub/tree/main/infra/api-bucket/files/mrapi[here]
 
 == The API
 
@@ -341,20 +341,10 @@ EnvironmentFeatureServiceApi featureValueService = new EnvironmentFeatureService
 == Using the OpenAPI Files directly
 
 If you use a language we don't provide an artifact for or use an OpenAPI generator that is different from the one we
-are using, the information on the latest API is located at 
+are using, the information on the latest API is located at: 
 https://github.com/featurehub-io/featurehub/tree/main/infra/api-bucket/files/mrapi  
 
 Or can be served from:
 http://api.dev.featurehub.io/mrapi/1.1.5.yaml
 
-
-
-.releases.json
-[source,json]
-----
-{
-  "latest": "1.1.5",
-  "versions": ["1.1.5"]
-}
-----
 
