@@ -4,6 +4,7 @@ import 'package:open_admin_app/widgets/features/per_feature_state_tracking_bloc.
 import 'package:open_admin_app/widgets/features/table-expanded-view/boolean/boolean_strategy_card.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/feature_value_updated_by.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/lock_unlock_switch.dart';
+import 'package:open_admin_app/widgets/features/table-expanded-view/retire_feature_value_checkbox_widget.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/strategies/split_rollout_button.dart';
 
 // represents the editing of the states of a single boolean flag on a single environment
@@ -54,6 +55,8 @@ class BooleanCellHolder extends StatelessWidget {
                       return Container();
                     }
                   }),
+              RetireFeatureValueCheckboxWidget(environmentFeatureValue: environmentFeatureValue,
+                fvBloc: fvBloc,),
               FeatureValueUpdatedByCell(
                 strBloc: strategyBloc,
               ),

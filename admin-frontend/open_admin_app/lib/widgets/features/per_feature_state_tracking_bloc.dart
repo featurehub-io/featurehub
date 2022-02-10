@@ -36,6 +36,7 @@ class PerFeatureStateTrackingBloc implements Bloc {
   final _originalFeatureValues = <String, FeatureValue>{};
   final _fvUpdates = <String, FeatureValue>{};
   final _fvLockedUpdates = <String, BehaviorSubject<bool>>{};
+  final _fvRetiredUpdates = <String, BehaviorSubject<bool>>{};
   final ApplicationFeatureValues applicationFeatureValues;
   final PerApplicationFeaturesBloc _featureStatusBloc;
   final FeaturesOnThisTabTrackerBloc featuresOnTabBloc;
@@ -84,10 +85,21 @@ class PerFeatureStateTrackingBloc implements Bloc {
     });
   }
 
+  BehaviorSubject<bool> _isFeatureValueRetired(String envId) {
+    return _fvRetiredUpdates.putIfAbsent(envId, () {
+      final fv = featureValueByEnvironment(envId);
+      return BehaviorSubject<bool>.seeded(fv.retired!);
+    });
+  }
+
   // the cells control their own state, but they are affected by whether they become locked or unlocked while they
   // exist
   Stream<bool> environmentIsLocked(String envId) {
     return _environmentIsLocked(envId);
+  }
+
+  Stream<bool> isFeatureValueRetired(String envId) {
+    return _isFeatureValueRetired(envId);
   }
 
   void dirtyLock(String envId, bool newLock) {
@@ -102,6 +114,22 @@ class PerFeatureStateTrackingBloc implements Bloc {
     if (newDirty != _dirtyLock[envId]) {
       _dirtyLock[envId] = newDirty;
       _environmentIsLocked(envId).add(newLock);
+      _dirtyCheck();
+    }
+  }
+
+  void dirtyRetired(String envId, bool newRetired) {
+    final original = _originalFeatureValues[envId];
+    final newValue = featureValueByEnvironment(envId);
+    newValue.locked = newRetired;
+
+    // is the old and new value different?
+    final newDirty = newValue.locked != (original?.locked ?? false);
+
+    // is the new changed value different from the old changed value?
+    if (newDirty != _dirtyLock[envId]) {
+      _dirtyLock[envId] = newDirty;
+      _isFeatureValueRetired(envId).add(newRetired);
       _dirtyCheck();
     }
   }
@@ -191,6 +219,10 @@ class PerFeatureStateTrackingBloc implements Bloc {
   @override
   void dispose() {
     for (var element in _fvLockedUpdates.values) {
+      element.close();
+    }
+
+    for (var element in _fvRetiredUpdates.values) {
       element.close();
     }
 
