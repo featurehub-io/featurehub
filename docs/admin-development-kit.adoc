@@ -20,7 +20,7 @@ ga('send', 'pageview');
 link:index{outfilesuffix}[Back to index]
 
 == Overview
-The Admin SDK is designed to provide you easy access to the Management Repository API. It is an OpenAPI driven API, there is no functionality in the API that is not documented in our published OpenAPI.
+The Admin SDK is designed to provide access to the Management Repository API. It is an OpenAPI driven API, there is no functionality in the API that is not documented in our published OpenAPI.
 
 == The API
 
@@ -29,7 +29,7 @@ Portfolios, Applications, Environments, Features, Service Accounts, Authenticati
 
 === Installing the ADK in your project
 
-We currently have only Java 8 and Java 11 released. Typescript and DotNet will follow soon.
+We currently have Java 8 and Java 11 ADKs released. Typescript and DotNet ADKs will follow soon.
 
 ====
 .Maven - Java 8
@@ -64,7 +64,6 @@ implementation 'io.featurehub.mr.sdk:java11-admin-client:[1.1,2)'
 ----
 ====
 
-NOTE: dotnet to come
 
 === Using the ADK
 
@@ -79,8 +78,7 @@ NOTE: when in doubt, the OpenAPI document is the source of truth and this docume
 In all ADKs, there is an API client that you need to specify where the server is located. Once you have logged in,
 its on this API client that you also set your *Bearer Token*.
 
-NOTE: FeatureHub as yet does not support Personal Access Tokens. Once those arrive, you can use those to provide 
-access to the API.
+NOTE: FeatureHub as yet does not support Personal Access Tokens. 
 
 ====
 .Java 8
@@ -112,7 +110,7 @@ Configuration.setDefaultApiClient(api);
 ----
 ====
 
-NOTE: If you do not set the global default API client, then you will keep to keep track of the client and
+NOTE: If you do not set the global default API client, then you will have to keep track of the client and
 pass it as the parameter when you construct the various apis. E.g. `new AuthServiceApi()` becomes `new AuthServiceApi(api)` 
 
 ==== Logging in
@@ -150,17 +148,16 @@ builder.header("Authorization", "Bearer " + tp.accessToken)
 ----
 ====
 
-One you are authenticated, you can now use the SDK and there are no differences between Java 8 and 11.
+Once authenticated, you can now use the SDK and there are no differences between Java 8 and 11.
 
 == Core Apis
 
 === Managing Portfolios
 
-The API lets you, presuming you have permission, manage Portfolios. The core functionality is in `PortfolioServiceApi`.
+This operation lets you, presuming authenticated user has permission, manage Portfolios. The core functionality is in `PortfolioServiceApi`.
 Always examine the generated code for details on what error codes and status codes can be returned.
 
-A portfolio consists of Applications and Groups. Once you have a portfolio, you can perform operations on those two
-things.
+A portfolio consists of Applications and Groups entities. Once you have a portfolio, you can perform operations on those entities.
 
 ====
 .Java 
@@ -172,7 +169,7 @@ PortfolioServiceApi portfolioService = new PortfolioServiceApi();
 
 ==== Create Portfolio
 
-This creates a portfolio, and indicates whether you want to return any created groups and applications inside the portfolio. 
+This operation creates a portfolio, and indicates whether you want to return any created groups and applications inside the portfolio. 
 Currently the API does not allow you to create groups and applications when creating portfolios.
 
 ====
@@ -190,7 +187,7 @@ Portfolio portfolio = portfolioService.createPortfolio(new Portfolio().name("nam
 
 ==== Delete Portfolio
 
-This will delete the portfolio and everything inside it. This is a final operation so be careful with it. It returns
+This operation will delete the portfolio and everything inside it. This is a final operation so be careful with it. It returns
 true if successful, false if not.
 
 ====
@@ -209,7 +206,7 @@ Portfolio portfolio = portfolioService.createPortfolio(id, null, null, null)
 
 ==== Searching for Portfolios
 
-This allows you to search through your portfolios by name
+This operation allows to search through portfolios by name
 
 ====
 .Java Definition
@@ -235,8 +232,7 @@ This will return all portfolios in ascending order.
 
 ==== Get A Portfolio
 
-This allows you to get the details of a portfolio if you have its ID. If you need to refresh the portfolio details for
-example.
+This operation allows to get the details of a portfolio by ID. 
 
 ====
 .Java Definition
@@ -262,7 +258,7 @@ This would get the portfolio and all of its groups, applications and within thos
 
 ==== Update a Portfolio
 
-This allows you to update a portfolio's name and description.
+This operation allows to update a portfolio's name and description.
 
 ====
 .Java Definition
@@ -322,7 +318,7 @@ List<Feature> allFeatures = featureService.createFeaturesForApplication(appId,
 ----
 ====
 
-It takes a Feature, where the three fields you must specify are:
+Required fields are:
 
 - `name` - the name given to the feature as it will appear in the admin console
 - `key` - the key, unique among the applications
@@ -330,7 +326,7 @@ It takes a Feature, where the three fields you must specify are:
 
 === Managing Feature Values
 
-Feature Values exist on a specific feature in a specific environment. Flag features must have a value (true or false), whereas all other feature values can be null. All feature values must also be locked or unlocked.
+Feature Values exist on a specific feature in a specific environment. Flag features must have a value (true or false), whereas all other feature types (String, Number, Json) can have feature value set as null. All feature values must also have "locked" property set to true or false.
 
 ====
 .Java use
@@ -345,9 +341,13 @@ EnvironmentFeatureServiceApi featureValueService = new EnvironmentFeatureService
 == Using the OpenAPI Files directly
 
 If you use a language we don't provide an artifact for or use an OpenAPI generator that is different from the one we
-are using, the information on the API is always located at http://api.dev.featurehub.io/mrapi/releases.json.  
+are using, the information on the latest API is located at 
+https://github.com/featurehub-io/featurehub/tree/main/infra/api-bucket/files/mrapi  
 
-It will typically look like this:
+Or can be served from:
+http://api.dev.featurehub.io/mrapi/1.1.5.yaml
+
+
 
 .releases.json
 [source,json]
