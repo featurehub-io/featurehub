@@ -1,4 +1,4 @@
-= The Admin SDK (ADK)          
+== The Admin SDK (ADK)          
 :favicon: favicon.ico
 ifdef::env-github,env-browser[:outfilesuffix: .adoc]
 :toc: left
@@ -19,10 +19,8 @@ ga('send', 'pageview');
 
 link:index{outfilesuffix}[Back to index]
 
-== Overview
+=== Overview
 The Admin SDK is designed to provide access to the Management Repository API. It is an OpenAPI driven API, based on the MR OpenAPI file that can be located https://github.com/featurehub-io/featurehub/tree/main/infra/api-bucket/files/mrapi[here]
-
-== The API
 
 The API is broken up into a number of services representing different facets of the Management Repository, e.g.
 Portfolios, Applications, Environments, Features, Service Accounts, Authentication and so forth.
@@ -150,9 +148,9 @@ builder.header("Authorization", "Bearer " + tp.accessToken)
 
 Once authenticated, you can now use the SDK and there are no differences between Java 8 and 11.
 
-== Core Apis
+=== APIs 
 
-=== Managing Portfolios
+==== Managing Portfolios
 
 This operation lets you, presuming authenticated user has permission, manage Portfolios. The core functionality is in `PortfolioServiceApi`.
 Always examine the generated code for details on what error codes and status codes can be returned.
@@ -230,7 +228,7 @@ List<Portfolio> portfolios = portfolioService.findPortfolios(true, true, SortOrd
 
 This will return all portfolios in ascending order.
 
-==== Get A Portfolio
+==== Get a Portfolio
 
 This operation allows to get the details of a portfolio by ID. 
 
@@ -280,13 +278,13 @@ Portfolio portfolio = portfolioService.updatePortfolio(id, new Portfolio().name(
 - `includeApplications`: if true, will fill in the applications available to each portfolio
 - `includeEnvironments`: if true, all applications will have their environments listed
 
-=== Managing Applications
+==== Managing Applications
 
-=== Managing Groups
+==== Managing Groups
 
-=== Managing Environments
+==== Managing Environments
 
-=== Managing Features
+==== Managing Features
 
 This series of APIs allows you to create features. Features exist at the application level, so once they have been created, they will exist in all environments.
 
@@ -324,7 +322,7 @@ Required fields are:
 - `key` - the key, unique among the applications
 - `valueType` - the type of the feature: boolean (flag), number, string or json
 
-=== Managing Feature Values
+==== Managing Feature Values
 
 Feature Values exist on a specific feature in a specific environment. Flag features must have a value (true or false), whereas all other feature types (String, Number, Json) can have feature value set as null. All feature values must also have "locked" property set to true or false.
 
@@ -338,7 +336,7 @@ EnvironmentFeatureServiceApi featureValueService = new EnvironmentFeatureService
 
 
 
-== Using the OpenAPI Files directly
+=== OpenAPI Files
 
 If you use a language we don't provide an artifact for or use an OpenAPI generator that is different from the one we
 are using, the information on the latest API is located at: 
