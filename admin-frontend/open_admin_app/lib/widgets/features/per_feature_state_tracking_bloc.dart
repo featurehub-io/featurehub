@@ -45,6 +45,7 @@ class PerFeatureStateTrackingBloc implements Bloc {
   // environmentId, true/false (if dirty)
   final _dirty = <String, bool>{};
   final _dirtyLock = <String, bool>{};
+  final _dirtyRetired = <String, bool>{};
   final _dirtyValues = <String, FeatureValueDirtyHolder>{};
 
   CustomStrategyBloc matchingCustomStrategyBloc(EnvironmentFeatureValues efv) {
@@ -121,14 +122,14 @@ class PerFeatureStateTrackingBloc implements Bloc {
   void dirtyRetired(String envId, bool newRetired) {
     final original = _originalFeatureValues[envId];
     final newValue = featureValueByEnvironment(envId);
-    newValue.locked = newRetired;
+    newValue.retired = newRetired;
 
     // is the old and new value different?
-    final newDirty = newValue.locked != (original?.locked ?? false);
+    final newDirty = newValue.retired != (original?.retired ?? false);
 
     // is the new changed value different from the old changed value?
-    if (newDirty != _dirtyLock[envId]) {
-      _dirtyLock[envId] = newDirty;
+    if (newDirty != _dirtyRetired[envId]) {
+      _dirtyRetired[envId] = newDirty;
       _isFeatureValueRetired(envId).add(newRetired);
       _dirtyCheck();
     }
@@ -136,7 +137,8 @@ class PerFeatureStateTrackingBloc implements Bloc {
 
   void _dirtyCheck() {
     _dirtyBS.add(_dirty.values.any((d) => d == true) ||
-        _dirtyLock.values.any((d) => d == true));
+        _dirtyLock.values.any((d) => d == true) ||
+        _dirtyRetired.values.any((d) => d == true));
   }
 
   bool dirty(String envId, DirtyFeatureHolderCallback dirtyValueCallback) {
@@ -264,13 +266,21 @@ class PerFeatureStateTrackingBloc implements Bloc {
     _dirty.clear();
     _dirtyValues.clear();
     _dirtyLock.clear();
+    _dirtyRetired.clear();
     _dirtyBS.add(false);
   }
 
-  void _updateNewFeature(
+  // this takes the changes we are caching in our: dirtyValues, dirty lock, dirty retired
+  // and put them into the new feature value. Each item that has a UI element is kept track
+  // of separately.
+  void _updateNewFeatureValueWithDirtyChanges(
       FeatureValue newValue, FeatureValue? value, String envId) {
     if (_dirtyLock[envId] == true) {
       newValue.locked = !(value?.locked ?? false);
+    }
+    if (_dirtyRetired[envId] == true) {
+      newValue.retired = !(value?.retired ??
+          false); // if the original was true and its dirty, it has to be false and vs versa
     }
 
     if (_dirty[envId] == true) {
@@ -312,7 +322,9 @@ class PerFeatureStateTrackingBloc implements Bloc {
       newValue.whoUpdated = null;
       value.whoUpdated = null;
 
-      if (_dirty[envId] == true || _dirtyLock[envId] == true) {
+      if (_dirty[envId] == true ||
+          _dirtyLock[envId] == true ||
+          _dirtyRetired[envId] == true) {
         final roles = applicationFeatureValues.environments
             .firstWhere((e) => e.environmentId == envId)
             .roles;
@@ -320,7 +332,7 @@ class PerFeatureStateTrackingBloc implements Bloc {
         if ((roles.contains(RoleType.CHANGE_VALUE) ||
             roles.contains(RoleType.LOCK) ||
             roles.contains(RoleType.UNLOCK))) {
-          _updateNewFeature(newValue, value, envId);
+          _updateNewFeatureValueWithDirtyChanges(newValue, value, envId);
 
           updates.add(newValue);
         }
@@ -337,8 +349,10 @@ class PerFeatureStateTrackingBloc implements Bloc {
           roles.contains(RoleType.UNLOCK)) {
         // only add the ones where we set locked away from its default (false) or set a value
         if (_dirty[newFv.environmentId] == true ||
-            _dirtyLock[newFv.environmentId] == true) {
-          _updateNewFeature(newFv, null, newFv.environmentId!);
+            _dirtyLock[newFv.environmentId] == true ||
+            _dirtyRetired[newFv.environmentId] == true) {
+          _updateNewFeatureValueWithDirtyChanges(
+              newFv, null, newFv.environmentId!);
           updates.add(newFv);
         }
       }
