@@ -128,6 +128,9 @@ Now in the FeatureHub Admin Console, if you create a feature of type "String" ca
 
 include::sdks.adoc[]
 
+include::admin-development-kit.adoc[]
+
+
 == Architecture
 
 Please read link:architecture{outfilesuffix}[for information about the architecture of FeatureHub].
