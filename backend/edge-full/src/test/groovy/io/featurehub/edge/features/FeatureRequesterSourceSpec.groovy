@@ -67,7 +67,7 @@ class FeatureRequesterSourceSpec extends Specification {
       1 * executor.execute({ Runnable task ->
         task.run()
       })
-      1 * api.getApiKeyDetails(key.environmentId, key.serviceKey) >>
+      1 * api.getApiKeyDetails(key.environmentId, key.serviceKey, _) >>
         new DachaKeyDetailsResponse().portfolioId(port).organizationId(org).applicationId(app).serviceKeyId(sid)
       1 * submitter.requestForKeyComplete(key)
       1 * notifier.complete(service)
@@ -90,7 +90,7 @@ class FeatureRequesterSourceSpec extends Specification {
       1 * executor.execute({ Runnable task ->
         task.run()
       })
-      1 * api.getApiKeyDetails(key.environmentId, key.serviceKey) >>
+      1 * api.getApiKeyDetails(key.environmentId, key.serviceKey, _) >>
         { -> throw new RuntimeException() }
       1 * submitter.requestForKeyComplete(key)
       1 * notifier.complete(service)

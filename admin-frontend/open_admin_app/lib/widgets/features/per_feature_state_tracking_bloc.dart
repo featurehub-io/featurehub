@@ -88,7 +88,7 @@ class PerFeatureStateTrackingBloc implements Bloc {
   BehaviorSubject<bool> _isFeatureValueRetired(String envId) {
     return _fvRetiredUpdates.putIfAbsent(envId, () {
       final fv = featureValueByEnvironment(envId);
-      return BehaviorSubject<bool>.seeded(fv.retired!);
+      return BehaviorSubject<bool>.seeded(fv.retired == true);
     });
   }
 
