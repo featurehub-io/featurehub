@@ -26,7 +26,7 @@ class EnvironmentsAndFeatureValuesListView extends StatelessWidget {
                 final unselHeight = bloc.unselectedFeatureCountForHeight;
                 final selHeight = bloc.selectedFeatureCountForHeight;
                 return SizedBox(
-                  height: unselHeight + selHeight + headerHeight + 2 + 35,
+                  height: unselHeight + selHeight + headerHeight,
                   child: ScrollConfiguration(
                     behavior: CustomScrollBehavior(),
                     child: Scrollbar(
