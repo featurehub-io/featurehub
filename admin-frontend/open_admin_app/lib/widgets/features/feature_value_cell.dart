@@ -7,6 +7,7 @@ import 'package:open_admin_app/widgets/features/table-expanded-view/boolean/bool
 import 'package:open_admin_app/widgets/features/table-expanded-view/json/json_cell_holder.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/number/number_cell_holder.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/string/string_cell_holder.dart';
+import 'package:open_admin_app/widgets/features/table-expanded-view/value_cell_holder.dart';
 import 'package:open_admin_app/widgets/features/tabs_bloc.dart';
 
 class FeatureValueCell extends StatelessWidget {
@@ -61,20 +62,24 @@ class FeatureValueCell extends StatelessWidget {
 
             switch (feature.valueType!) {
               case FeatureValueType.BOOLEAN:
-                cellWidget = BooleanCellHolder(
-                    environmentFeatureValue: efv, fvBloc: fvBloc);
+                cellWidget = ValueCellHolder(
+                  environmentFeatureValue: efv, fvBloc: fvBloc,
+                  strategyCard: BooleanCellHolder(environmentFeatureValue: efv, fvBloc: fvBloc,), );
                 break;
               case FeatureValueType.STRING:
-                cellWidget = StringCellHolder(
-                    environmentFeatureValue: efv, fvBloc: fvBloc);
+                cellWidget = ValueCellHolder(
+                    environmentFeatureValue: efv, fvBloc: fvBloc,
+                    strategyCard: StringCellHolder(environmentFeatureValue: efv, fvBloc: fvBloc,));
                 break;
               case FeatureValueType.NUMBER:
-                cellWidget = NumberCellHolder(
-                    environmentFeatureValue: efv, fvBloc: fvBloc);
+                cellWidget = ValueCellHolder(
+                    environmentFeatureValue: efv, fvBloc: fvBloc,
+                    strategyCard: NumberCellHolder(environmentFeatureValue: efv, fvBloc: fvBloc,));
                 break;
               case FeatureValueType.JSON:
-                cellWidget = JsonCellHolder(
-                    environmentFeatureValue: efv, fvBloc: fvBloc);
+                cellWidget = ValueCellHolder(
+                    environmentFeatureValue: efv, fvBloc: fvBloc,
+                    strategyCard: JsonCellHolder(environmentFeatureValue: efv, fvBloc: fvBloc,));
                 break;
             }
           }

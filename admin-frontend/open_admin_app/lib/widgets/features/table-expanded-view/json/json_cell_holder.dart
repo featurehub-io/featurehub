@@ -24,10 +24,6 @@ class JsonCellHolder extends StatelessWidget {
           return Column(
             mainAxisSize: MainAxisSize.max,
             children: [
-              LockUnlockSwitch(
-                environmentFeatureValue: environmentFeatureValue,
-                fvBloc: fvBloc,
-              ),
               JsonStrategyCard(
                 strBloc: strategyBloc,
               ),
@@ -37,23 +33,6 @@ class JsonCellHolder extends StatelessWidget {
                     strBloc: strategyBloc,
                     rolloutStrategy: strategy,
                   ),
-              StreamBuilder<bool>(
-                  stream: fvBloc.environmentIsLocked(
-                      environmentFeatureValue.environmentId!),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      final canChangeValue = environmentFeatureValue.roles
-                          .contains(RoleType.CHANGE_VALUE);
-                      var editable = !snapshot.data! && canChangeValue;
-                      return AddStrategyButton(
-                          bloc: strategyBloc, editable: editable);
-                    } else {
-                      return Container();
-                    }
-                  }),
-              FeatureValueUpdatedByCell(
-                strBloc: strategyBloc,
-              ),
             ],
           );
         });

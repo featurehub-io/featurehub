@@ -28,10 +28,6 @@ class BooleanCellHolder extends StatelessWidget {
           return Column(
             mainAxisSize: MainAxisSize.max,
             children: [
-              LockUnlockSwitch(
-                environmentFeatureValue: environmentFeatureValue,
-                fvBloc: fvBloc,
-              ),
               BooleanStrategyCard(
                 strBloc: strategyBloc,
               ),
@@ -41,33 +37,6 @@ class BooleanCellHolder extends StatelessWidget {
                     strBloc: strategyBloc,
                     rolloutStrategy: strategy,
                   ),
-              StreamBuilder<bool>(
-                  stream: fvBloc.environmentIsLocked(
-                      environmentFeatureValue.environmentId!),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      final canChangeValue = environmentFeatureValue.roles
-                          .contains(RoleType.CHANGE_VALUE);
-                      var editable = !snapshot.data! && canChangeValue;
-                      return Column(
-                        children: [
-                          AddStrategyButton(
-                              bloc: strategyBloc, editable: editable),
-                          RetireFeatureValueCheckboxWidget(
-                              environmentFeatureValue: environmentFeatureValue,
-                              fvBloc: fvBloc,
-                              editable: editable,
-                              retired: fvBloc.isRetired(environmentFeatureValue.environmentId!)),
-                          //this is where we need to pass retired from the actual value
-                        ],
-                      );
-                    } else {
-                      return Container();
-                    }
-                  }),
-              FeatureValueUpdatedByCell(
-                strBloc: strategyBloc,
-              ),
             ],
           );
         });
