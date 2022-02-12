@@ -3,10 +3,6 @@ import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart';
 import 'package:open_admin_app/widgets/features/feature_value_status_tags.dart';
 import 'package:open_admin_app/widgets/features/table-collapsed-view/value_cell.dart';
-import 'package:open_admin_app/widgets/features/table-expanded-view/boolean/boolean_cell_holder.dart';
-import 'package:open_admin_app/widgets/features/table-expanded-view/json/json_cell_holder.dart';
-import 'package:open_admin_app/widgets/features/table-expanded-view/number/number_cell_holder.dart';
-import 'package:open_admin_app/widgets/features/table-expanded-view/string/string_cell_holder.dart';
 import 'package:open_admin_app/widgets/features/table-expanded-view/value_cell_holder.dart';
 import 'package:open_admin_app/widgets/features/tabs_bloc.dart';
 
@@ -63,23 +59,28 @@ class FeatureValueCell extends StatelessWidget {
             switch (feature.valueType!) {
               case FeatureValueType.BOOLEAN:
                 cellWidget = ValueCellHolder(
-                  environmentFeatureValue: efv, fvBloc: fvBloc,
-                  strategyCard: BooleanCellHolder(environmentFeatureValue: efv, fvBloc: fvBloc,), );
+                  environmentFeatureValue: efv,
+                  fvBloc: fvBloc,
+                  featureValueType: FeatureValueType.BOOLEAN,
+                );
                 break;
               case FeatureValueType.STRING:
                 cellWidget = ValueCellHolder(
-                    environmentFeatureValue: efv, fvBloc: fvBloc,
-                    strategyCard: StringCellHolder(environmentFeatureValue: efv, fvBloc: fvBloc,));
+                    environmentFeatureValue: efv,
+                    fvBloc: fvBloc,
+                    featureValueType: FeatureValueType.STRING);
                 break;
               case FeatureValueType.NUMBER:
                 cellWidget = ValueCellHolder(
-                    environmentFeatureValue: efv, fvBloc: fvBloc,
-                    strategyCard: NumberCellHolder(environmentFeatureValue: efv, fvBloc: fvBloc,));
+                    environmentFeatureValue: efv,
+                    fvBloc: fvBloc,
+                    featureValueType: FeatureValueType.NUMBER);
                 break;
               case FeatureValueType.JSON:
                 cellWidget = ValueCellHolder(
-                    environmentFeatureValue: efv, fvBloc: fvBloc,
-                    strategyCard: JsonCellHolder(environmentFeatureValue: efv, fvBloc: fvBloc,));
+                    environmentFeatureValue: efv,
+                    fvBloc: fvBloc,
+                    featureValueType: FeatureValueType.JSON);
                 break;
             }
           }
@@ -92,7 +93,9 @@ class FeatureValueCell extends StatelessWidget {
 
           return SizedBox(
               height: extra +
-                  (amSelected ? selectedRowHeight-1 : unselectedRowHeight-1),
+                  (amSelected
+                      ? selectedRowHeight - 1
+                      : unselectedRowHeight - 1),
               child: cellWidget);
         });
   }
