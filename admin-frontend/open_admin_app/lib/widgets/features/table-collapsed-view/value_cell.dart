@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/widgets/features/feature_dashboard_constants.dart';
 import 'package:open_admin_app/widgets/features/feature_value_status_tags.dart';
@@ -39,7 +40,7 @@ class _ValueContainer extends StatelessWidget {
       alignment: AlignmentDirectional.center,
       children: [
         Column(
-          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             if (fv != null) _ValueCard(feature: feature, fv: fv!),
@@ -48,7 +49,15 @@ class _ValueContainer extends StatelessWidget {
               _StrategiesList(feature: feature, fv: fv!)
           ],
         ),
-        if (fv != null && fv!.locked) const LockedIndicator()
+        Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              if (fv != null && fv!.locked) const LockedIndicator(),
+              if (fv != null && (fv?.retired != null && fv?.retired == false))
+                const RetiredIndicator()
+              // if (fv != null && (fv?.retired == null)) const RetiredIndicator()
+            ])
       ],
     );
   }
@@ -68,7 +77,30 @@ class LockedIndicator extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(8.0),
 //          color: Colors.black.withOpacity(0.1),
-          child: const Icon(Icons.lock_outline, size: 16.0, color: Colors.red),
+          child: const Tooltip(
+              message: "Locked",
+              child: Icon(Icons.lock_outline, size: 16.0, color: Colors.red)),
+        ),
+      ),
+    );
+  }
+}
+
+class RetiredIndicator extends StatelessWidget {
+  const RetiredIndicator({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: cellWidth - 1,
+      child: Align(
+        alignment: Alignment.topLeft,
+        child: Container(
+          padding: const EdgeInsets.all(8.0),
+          child: const Tooltip(
+              message: "Retired",
+              child: Icon(FontAwesome.minus_square_o,
+                  size: 16.0, color: Colors.deepOrangeAccent)),
         ),
       ),
     );

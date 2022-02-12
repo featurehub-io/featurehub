@@ -49,14 +49,22 @@ class BooleanCellHolder extends StatelessWidget {
                       final canChangeValue = environmentFeatureValue.roles
                           .contains(RoleType.CHANGE_VALUE);
                       var editable = !snapshot.data! && canChangeValue;
-                      return AddStrategyButton(
-                          bloc: strategyBloc, editable: editable);
+                      return Column(
+                        children: [
+                          AddStrategyButton(
+                              bloc: strategyBloc, editable: editable),
+                          RetireFeatureValueCheckboxWidget(
+                              environmentFeatureValue: environmentFeatureValue,
+                              fvBloc: fvBloc,
+                              editable: editable,
+                              retired: true),
+                          //this is where we need to pass retired from the actual value
+                        ],
+                      );
                     } else {
                       return Container();
                     }
                   }),
-              RetireFeatureValueCheckboxWidget(environmentFeatureValue: environmentFeatureValue,
-                fvBloc: fvBloc,),
               FeatureValueUpdatedByCell(
                 strBloc: strategyBloc,
               ),
