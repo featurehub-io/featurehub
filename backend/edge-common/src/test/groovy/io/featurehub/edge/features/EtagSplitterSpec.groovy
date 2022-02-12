@@ -6,7 +6,7 @@ import spock.lang.Specification
 class EtagSplitterSpec extends Specification {
   def "when i have tags and a context tag it gets broken up properly"() {
     given: "i have tags"
-      def etag = "1;2//other"
+      def etag = '"1;2//other"'
     and: "i have two keypairs"
       def k1 = new KeyParts("1", UUID.randomUUID(), "s1")
       def k2 = new KeyParts("1", UUID.randomUUID(), "s2")

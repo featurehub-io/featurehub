@@ -7,14 +7,20 @@ import jakarta.ws.rs.core.Response
 import jakarta.ws.rs.ext.Provider
 import java.io.IOException
 import java.util.*
+import kotlin.collections.HashSet
 
 @Provider
 @PreMatching
 class CorsFilter : ContainerRequestFilter, ContainerResponseFilter {
   @ConfigKey("jersey.cors.headers")
   var allowedHeaders: List<String> = listOf()
+  @ConfigKey("jersey.cors.expose-headers")
+  var configExposeHeaders: List<String> = listOf()
+  @ConfigKey("jersey.cors.timeout")
+  var headerTimeout: Int? = 86400
 
-  private var headers: String? = null
+  private val headers: String
+  private val exposeHeaders: String
 
   init {
     DeclaredConfigResolver.resolve(this)
@@ -23,7 +29,13 @@ class CorsFilter : ContainerRequestFilter, ContainerResponseFilter {
       .plus("authorization").plus("content-type").plus("accept-version").plus("content-md5")
       .plus("csrf-token").plus("x-ijt").plus("cache-control").plus("x-featurehub")
 
-    headers = java.lang.String.join(",", actualHeaders)
+//    headers = java.lang.String.join(",", actualHeaders)
+    headers = actualHeaders.joinToString(separator = ",")
+
+    val actualExposeHeaders: Set<String> = HashSet(configExposeHeaders.map { it.lowercase() })
+      .plus("etag").plus("cache-control")
+
+    exposeHeaders = actualExposeHeaders.joinToString(separator = ",")
   }
 
   /**
@@ -69,6 +81,7 @@ class CorsFilter : ContainerRequestFilter, ContainerResponseFilter {
         "Access-Control-Allow-Methods",
         "GET, POST, PUT, DELETE, OPTIONS, HEAD"
       )
+      response.headers.add("Access-Control-Max-Age", "${headerTimeout}")
       response.headers.addAll("Access-Control-Allow-Headers", headers)
     }
 
@@ -76,7 +89,7 @@ class CorsFilter : ContainerRequestFilter, ContainerResponseFilter {
     // or preflight request. We need to add this header
     // to both type of requests. Only preflight requests
     // need the previously added headers.
-    response.headers.add("Access-Control-Expose-Headers", "etag")
+    response.headers.add("Access-Control-Expose-Headers", exposeHeaders)
     response.headers.add("Access-Control-Allow-Origin", "*")
   }
 }

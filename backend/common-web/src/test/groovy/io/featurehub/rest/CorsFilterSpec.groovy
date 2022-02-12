@@ -54,7 +54,7 @@ class CorsFilterSpec extends Specification {
       2 * request.getHeaderString("Origin") >> "Origin"
       1 * request.getMethod() >> null
       2 * response.headers >> headers
-      1 * headers.add("Access-Control-Expose-Headers", "etag")
+      1 * headers.add("Access-Control-Expose-Headers", "etag,cache-control")
       1 * headers.add("Access-Control-Allow-Origin", "*")
       0 * _
   }
@@ -68,9 +68,10 @@ class CorsFilterSpec extends Specification {
     then:
       2 * request.getHeaderString("Origin") >> "Origin"
       1 * request.getMethod() >> "OPTIONS"
-      5 * response.headers >> headers
-      1 * headers.add("Access-Control-Expose-Headers", "etag")
+      6 * response.headers >> headers
+      1 * headers.add("Access-Control-Expose-Headers", "etag,cache-control")
       1 * headers.add("Access-Control-Allow-Origin", "*")
+      1 * headers.add('Access-Control-Max-Age', '86400')
       1 * headers.add("Access-Control-Allow-Credentials", "true")
       1 * headers.add("Access-Control-Allow-Methods",
         "GET, POST, PUT, DELETE, OPTIONS, HEAD")
