@@ -31,6 +31,7 @@ class PerFeatureStateTrackingBloc implements Bloc {
   final String applicationId;
   final ManagementRepositoryClientBloc mrClient;
   late EnvironmentServiceApi _environmentServiceApi;
+
   // environment id, FeatureValue - there may be values in here that are not used, we honour `_dirty` to determine if we use them
   final _newFeatureValues = <String, FeatureValue>{};
   final _originalFeatureValues = <String, FeatureValue>{};
@@ -59,6 +60,7 @@ class PerFeatureStateTrackingBloc implements Bloc {
 
   // if any of the values are updated, this stream shows true, it can flick on and off during its lifetime
   final _dirtyBS = BehaviorSubject<bool>();
+
   Stream<bool> get anyDirty => _dirtyBS.stream;
 
   PerApplicationFeaturesBloc get perApplicationFeaturesBloc =>
@@ -99,9 +101,15 @@ class PerFeatureStateTrackingBloc implements Bloc {
     return _environmentIsLocked(envId);
   }
 
-  Stream<bool> isFeatureValueRetired(String envId) {
-    return _isFeatureValueRetired(envId);
+  bool isRetired(String envId) {
+    final fv = featureValueByEnvironment(envId);
+    if (fv.retired == null || fv.retired == false) {
+      return false;
+    } else {
+      return true;
+    }
   }
+
 
   void dirtyLock(String envId, bool newLock) {
     final original = _originalFeatureValues[envId];

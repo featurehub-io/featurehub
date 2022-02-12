@@ -40,7 +40,6 @@ class _ValueContainer extends StatelessWidget {
       alignment: AlignmentDirectional.center,
       children: [
         Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             if (fv != null) _ValueCard(feature: feature, fv: fv!),
@@ -50,11 +49,9 @@ class _ValueContainer extends StatelessWidget {
           ],
         ),
         Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               if (fv != null && fv!.locked) const LockedIndicator(),
-              if (fv != null && (fv?.retired != null && fv?.retired == false))
+              if (fv != null && (fv?.retired != null && fv?.retired == true))
                 const RetiredIndicator()
               // if (fv != null && (fv?.retired == null)) const RetiredIndicator()
             ])
@@ -100,7 +97,7 @@ class RetiredIndicator extends StatelessWidget {
           child: const Tooltip(
               message: "Retired",
               child: Icon(FontAwesome.minus_square_o,
-                  size: 16.0, color: Colors.deepOrangeAccent)),
+                  size: 16.0, color: Colors.orange)),
         ),
       ),
     );

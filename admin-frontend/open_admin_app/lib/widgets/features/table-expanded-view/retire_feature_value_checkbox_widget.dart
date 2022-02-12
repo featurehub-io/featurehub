@@ -33,24 +33,19 @@ class _RetireFeatureValueCheckboxWidgetState
 
   @override
   Widget build(BuildContext context) {
-    VoidCallback? pressed;
-    if (widget.editable) {
-      pressed = () {
-        widget.fvBloc.dirtyRetired(
-            widget.environmentFeatureValue.environmentId!, retired);
-      };
-    }
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Checkbox(
           value: retired,
+          activeColor: Colors.orange,
           onChanged: (bool? value) {
             if (widget.editable) {
               setState(() {
                 retired = value!;
               });
-              pressed;
+              widget.fvBloc.dirtyRetired(
+                  widget.environmentFeatureValue.environmentId!, retired);
             } else {
               null;
             }

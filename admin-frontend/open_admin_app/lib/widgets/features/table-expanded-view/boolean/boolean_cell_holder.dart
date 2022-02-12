@@ -57,7 +57,7 @@ class BooleanCellHolder extends StatelessWidget {
                               environmentFeatureValue: environmentFeatureValue,
                               fvBloc: fvBloc,
                               editable: editable,
-                              retired: true),
+                              retired: fvBloc.isRetired(environmentFeatureValue.environmentId!)),
                           //this is where we need to pass retired from the actual value
                         ],
                       );
