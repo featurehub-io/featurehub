@@ -38,7 +38,7 @@ class _RetireFeatureValueCheckboxWidgetState
       children: [
         Checkbox(
           value: retired,
-          activeColor: Colors.orange,
+          activeColor: Colors.red,
           onChanged: (bool? value) {
             if (widget.editable) {
               setState(() {

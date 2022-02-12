@@ -48,13 +48,11 @@ class _ValueContainer extends StatelessWidget {
               _StrategiesList(feature: feature, fv: fv!)
           ],
         ),
-        Column(
-            children: [
-              if (fv != null && fv!.locked) const LockedIndicator(),
-              if (fv != null && (fv?.retired != null && fv?.retired == true))
-                const RetiredIndicator()
-              // if (fv != null && (fv?.retired == null)) const RetiredIndicator()
-            ])
+        Column(children: [
+          if (fv != null && (fv?.retired != null && fv?.retired == true))
+            const RetiredIndicator(),
+          if (fv != null && fv!.locked) const LockedIndicator()
+        ])
       ],
     );
   }
@@ -76,7 +74,7 @@ class LockedIndicator extends StatelessWidget {
 //          color: Colors.black.withOpacity(0.1),
           child: const Tooltip(
               message: "Locked",
-              child: Icon(Icons.lock_outline, size: 16.0, color: Colors.red)),
+              child: Icon(Icons.lock_outline, size: 16.0, color: Colors.orange)),
         ),
       ),
     );
@@ -96,8 +94,8 @@ class RetiredIndicator extends StatelessWidget {
           padding: const EdgeInsets.all(8.0),
           child: const Tooltip(
               message: "Retired",
-              child: Icon(FontAwesome.minus_square_o,
-                  size: 16.0, color: Colors.orange)),
+              child: Icon(MaterialIcons.do_not_disturb,
+                  size: 16.0, color: Colors.red)),
         ),
       ),
     );
