@@ -92,8 +92,8 @@ Then(/^I set the (string|json|number) feature value to (.*)$/, async function (f
   await this.updateFeature(fValue);
 });
 
-When(/^I retire the feature flag$/, async function () {
+When(/^I (retire|unretire) the feature flag$/, async function (status) {
   const fValue = await this.getFeature();
-  fValue.retired = true;
+  fValue.retired = status === 'retire';
   await this.updateFeature(fValue);
 });

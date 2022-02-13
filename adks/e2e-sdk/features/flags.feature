@@ -12,6 +12,11 @@ Feature: All flag based functionality works as expected
     Then the feature flag is locked and off
     When I retire the feature flag
     Then there are 0 features
+    And I set the feature flag to on and unlocked
+    Then there are 0 features
+    When I unretire the feature flag
+    Then there are 1 features
+    Then the feature flag is unlocked and on
 
     @flags
   Scenario: A new portfolio with a boolean feature
