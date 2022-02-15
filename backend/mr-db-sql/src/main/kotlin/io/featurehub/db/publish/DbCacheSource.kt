@@ -153,6 +153,7 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
           QDbFeatureValue.Alias.feature.id,
           QDbFeatureValue.Alias.rolloutStrategies,
           QDbFeatureValue.Alias.version,
+          QDbFeatureValue.Alias.retired,
           QDbFeatureValue.Alias.defaultValue
         ).feature.whenArchived.isNull.feature.fetch(
           QDbApplicationFeature.Alias.id
@@ -223,6 +224,7 @@ open class DbCacheSource @Inject constructor(private val convertUtils: Conversio
       .locked(dfv.isLocked)
       .rolloutStrategies(collectCombinedRolloutStrategies(dfv))
       .key(feature.key)
+      .retired(dfv.retired)
   }
 
   private fun featureValueAsObject(value: String?, valueType: FeatureValueType): Any? {

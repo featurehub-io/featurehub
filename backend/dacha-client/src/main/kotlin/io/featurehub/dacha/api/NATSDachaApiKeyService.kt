@@ -23,7 +23,7 @@ class NATSDachaApiKeyService constructor(private val nats: NATSSource, val cache
   private val log: Logger = LoggerFactory.getLogger(NATSDachaApiKeyService::class.java)
   private val subjectName: String = ChannelNames.cache(cacheName, ChannelConstants.EDGE_CACHE_CHANNEL)
 
-  override fun getApiKeyDetails(eId: UUID, serviceAccountKey: String): DachaKeyDetailsResponse {
+  override fun getApiKeyDetails(eId: UUID, serviceAccountKey: String, excludeRetired: Boolean?): DachaKeyDetailsResponse {
     try {
       val msg = nats.connection.request(
           subjectName,
@@ -31,7 +31,7 @@ class NATSDachaApiKeyService constructor(private val nats: NATSSource, val cache
             DachaNATSRequest().featuresRequest(
               DachaKeyDetailsRequest().serviceAccountKey(
                 serviceAccountKey
-              ).eId(eId)
+              ).eId(eId).excludeRetired(excludeRetired)
             )
           ),
           Duration.of(connectionTimeout, ChronoUnit.MILLIS)

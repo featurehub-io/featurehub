@@ -584,6 +584,7 @@ public class ConvertUtils implements Conversions {
             .key(stripArchived(appFeature.getKey(), appFeature.getWhenArchived()))
             .locked(fs.isLocked())
             .id(fs.getId())
+            .retired(fs.getRetired())
             .version(fs.getVersion());
 
     if (appFeature.getValueType() == FeatureValueType.BOOLEAN) {

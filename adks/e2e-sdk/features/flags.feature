@@ -6,6 +6,18 @@ Feature: All flag based functionality works as expected
     And I create a service account and full permissions based on the application environments
     And I connect to the feature server
 
+    @retired
+  Scenario: A new portfolio with a boolean feature is retired and no longer exists
+    Given There is a new feature flag
+    Then the feature flag is locked and off
+    When I retire the feature flag
+    Then there are 0 features
+    And I set the feature flag to on and unlocked
+    Then there are 0 features
+    When I unretire the feature flag
+    Then there are 1 features
+    Then the feature flag is unlocked and on
+
     @flags
   Scenario: A new portfolio with a boolean feature
 #    Given I connect to the Edge server using <ConnectionType>

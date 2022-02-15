@@ -7,7 +7,6 @@ import io.featurehub.dacha.api.DachaApiKeyService
 import io.featurehub.dacha.model.DachaKeyDetailsResponse
 import io.featurehub.dacha.model.DachaPermissionResponse
 import jakarta.inject.Inject
-import jakarta.ws.rs.InternalServerErrorException
 import jakarta.ws.rs.NotFoundException
 import jakarta.ws.rs.WebApplicationException
 import jakarta.ws.rs.core.Response
@@ -23,7 +22,7 @@ class DachaApiKeyResource @Inject constructor(private val cache: InternalCache) 
     DeclaredConfigResolver.resolve(this)
   }
 
-  override fun getApiKeyDetails(eId: UUID, serviceAccountKey: String): DachaKeyDetailsResponse {
+  override fun getApiKeyDetails(eId: UUID, serviceAccountKey: String, excludeRetired: Boolean?): DachaKeyDetailsResponse {
     // in a proper load balance solution, this won't happen, it can happen in Party Server so we need to show the correct error
 
     if (!cache.cacheComplete()) {
@@ -33,13 +32,15 @@ class DachaApiKeyResource @Inject constructor(private val cache: InternalCache) 
     val collection = cache.getFeaturesByEnvironmentAndServiceAccount(eId, serviceAccountKey) ?: throw NotFoundException()
 
     val environment = collection.features.environment
+    val pureFeatureList = collection.features.features.toMutableList()
+    val filteredList = if (excludeRetired == true) pureFeatureList.filter { it.value?.retired != true } else pureFeatureList
     return DachaKeyDetailsResponse()
       .organizationId(environment.organizationId)
       .portfolioId(environment.portfolioId)
       .applicationId(environment.applicationId)
       .serviceKeyId(collection.serviceAccountId)
       .etag(collection.features.etag)
-      .features(collection.features.features.toMutableList())
+      .features(filteredList)
   }
 
   override fun getApiKeyPermissions(eId: UUID, serviceAccountKey: String, featureKey: String): DachaPermissionResponse {

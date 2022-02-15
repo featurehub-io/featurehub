@@ -271,7 +271,8 @@ public class TimedBucketClientConnection implements ClientConnection {
         String data =
             CacheJsonMapper.mapper.writeValueAsString(
                 featureTransformer.transform(rf.getFeature(), attributesForStrategy));
-        if (rf.getAction() == PublishAction.DELETE) {
+        // if it was a DELETE or it was being triggered as a retired feature
+        if (rf.getAction() == PublishAction.DELETE || (rf.getFeature().getValue() != null && rf.getFeature().getValue().getRetired() == Boolean.TRUE)) {
           writeMessage(SSEResultState.DELETE_FEATURE, data);
         } else {
           writeMessage(SSEResultState.FEATURE, data);

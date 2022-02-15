@@ -85,7 +85,7 @@ class _LockUnlockIconButton extends StatelessWidget {
                       : 'Lock feature value')
                   : null,
               icon: Icon(lock ? Icons.lock_outline : Icons.lock_open,
-                  size: 20, color: lock ? Colors.red : Colors.green),
+                  size: 20, color: lock ? Colors.orange : Colors.green),
               onPressed: onPressed),
         ),
         Text(
