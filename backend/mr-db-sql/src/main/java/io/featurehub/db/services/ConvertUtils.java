@@ -525,6 +525,17 @@ public class ConvertUtils implements Conversions {
               .whenArchived.isNull().parentApplication.eq(app).findList().stream()
                   .map(env -> toEnvironment(env, opts))
                   .collect(Collectors.toList()));
+
+      Map<UUID, UUID> envIds =
+        application.getEnvironments().stream().collect(Collectors.toMap(Environment::getId,
+          Environment::getId));
+
+      // TODO: Remove in 1.6.0
+      application.getEnvironments().stream().forEach(e -> {
+        if (!envIds.containsKey(e.getPriorEnvironmentId())) {
+          e.setPriorEnvironmentId(null);
+        }
+      });
     }
 
     if (opts.contains(FillOpts.Features)) {
