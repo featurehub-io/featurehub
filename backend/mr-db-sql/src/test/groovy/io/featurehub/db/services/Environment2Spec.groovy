@@ -188,6 +188,70 @@ class Environment2Spec extends Base2Spec {
       result == null
   }
 
+  def "if i have only one environment, ordering is ignored"() {
+    given: "i create a single environment"
+      List<Environment> envs = []
+      envs.add(envApi.create(new Environment().name("env-single-prior-0").description("1"), appTreeEnvs, superPerson))
+    when:
+      def result = envApi.setOrdering(appTreeEnvs, envs)
+    then:
+      result == envs
+  }
+
+  def "if have two environments, with the 2nd pointing at 1st, and then delete 1st, 2nd should no longer point to 1st"() {
+    given: "i create five new environments in a tree"
+      List<Environment> envs = []
+      def original = envApi.create(new Environment().name("env-1-prior-7").description("1"), appTreeEnvs, superPerson)
+      envs.add(envApi.create(new Environment().name("env-2-prior-7").description("2").priorEnvironmentId(original.id), appTreeEnvs, superPerson))
+    when: "i delete the original"
+      envApi.delete(original.id)
+    then:
+      envApi.get(envs[0].id, Opts.empty(), superPerson).priorEnvironmentId == null
+  }
+
+  def "if i have 3 environments in order and delete the one in the middle, the last one now points to the 1st one"() {
+    given: "i have 3 environments"
+      List<Environment> envs = []
+      envs.add(envApi.create(new Environment().name("env-1-prior-7").description("1"), appTreeEnvs, superPerson))
+      envs.add(envApi.create(new Environment().name("env-2-prior-7").description("2").priorEnvironmentId(envs[0].id), appTreeEnvs, superPerson))
+      envs.add(envApi.create(new Environment().name("env-3-prior-7").description("3").priorEnvironmentId(envs[1].id), appTreeEnvs, superPerson))
+    when: "i delete environment 2"
+      envApi.delete(envs[1].id)
+    then:
+      envApi.get(envs[2].id, Opts.empty(), superPerson).priorEnvironmentId == envs[0].id
+  }
+
+
+  def "if have one environments and one deleted environment, i cannot reorder a deleted environment"() {
+    given: "i create five new environments in a tree"
+      List<Environment> envs = []
+      envs.add(envApi.create(new Environment().name("env-1-prior-7").description("1"), appTreeEnvs, superPerson))
+      envs.add(envApi.create(new Environment().name("env-2-prior-7").description("2").priorEnvironmentId(envs[0].id), appTreeEnvs, superPerson))
+      envApi.delete(envs[1].id)
+      envs[1] = envApi.get(envs[1].id, Opts.empty(), superPerson)  // update the version no.
+    when: "i set the environments to point correctly"
+      envs[0].priorEnvironmentId = null
+      envs[1].priorEnvironmentId = envs[0].id
+      def result = envApi.setOrdering(appTreeEnvs, envs);
+    then:
+      result == null
+  }
+
+  def "i have one deleted environment, and two envs which i try and reorder, the result should be 2 environments"() {
+    given: "i create five new environments in a tree"
+      List<Environment> envs = []
+      envs.add(envApi.create(new Environment().name("env-1-prior-7").description("1"), appTreeEnvs, superPerson))
+      envs.add(envApi.create(new Environment().name("env-2-prior-7").description("2").priorEnvironmentId(envs[0].id), appTreeEnvs, superPerson))
+      def delEnv = envApi.create(new Environment().name("env-3-prior-7").description("2").priorEnvironmentId(envs[1].id), appTreeEnvs, superPerson)
+      envApi.delete(delEnv.id)
+    when: "i set the environments to point correctly"
+      envs[0].priorEnvironmentId = null
+      envs[1].priorEnvironmentId = envs[0].id
+      def result = envApi.setOrdering(appTreeEnvs, envs);
+    then:
+      result.size() == 2
+  }
+
   def "i can create three environments and use set order and then reset them to empty"() {
     given: "i create five new environments in a tree"
       List<Environment> envs = []

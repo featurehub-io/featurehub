@@ -64,6 +64,11 @@ class EnvironmentSqlApi @Inject constructor(
     val env = convertUtils.byEnvironment(id)
     if (env != null) {
       archiveStrategy.archiveEnvironment(env)
+
+      QDbEnvironment().parentApplication.id.eq(env.parentApplication.id).priorEnvironment.id.eq(id).whenArchived.isNull.findList().forEach { e ->
+        e.priorEnvironment = env.priorEnvironment
+        e.save()
+      }
     }
     return env != null
   }
@@ -304,8 +309,9 @@ class EnvironmentSqlApi @Inject constructor(
   }
 
   override fun setOrdering(app: Application, environments: List<Environment>): List<Environment>? {
-    val dbApp = convertUtils.byApplication(app.id)
-    val envs = dbApp.environments.associateBy { it.id }
+    val envFinder = QDbEnvironment().parentApplication.id.eq(app.id).whenArchived.isNull
+    val envs = envFinder.findList().associateBy { it.id }
+
     for (e in environments) {
       val dbEnv = envs[e.id]
       if (dbEnv == null) {
@@ -321,36 +327,37 @@ class EnvironmentSqlApi @Inject constructor(
         return null
       }
     }
-    val destinations = environments.stream().collect(
-      Collectors.toMap(
-        { obj: Environment -> obj.id },
-        java.util.function.Function.identity()
+    if (environments.size > 1) {
+      val destinations = environments.stream().collect(
+        Collectors.toMap(
+          { obj: Environment -> obj.id },
+          java.util.function.Function.identity()
+        )
       )
-    )
-    for (e in environments) {
-      // create a slot for each environment
-      val spot: MutableMap<UUID, Int> = environments.map { env -> env.id!! to 0 }.toMap() as MutableMap<UUID, Int>
+      for (e in environments) {
+        // create a slot for each environment
+        val spot: MutableMap<UUID, Int> = environments.map { env -> env.id!! to 0 }.toMap() as MutableMap<UUID, Int>
 
-      // set our one to "visited"
-      spot[e.id!!] = 1
-      // now walk backwards until we either hit the end or see "visited"
-      var currentId = e.priorEnvironmentId
-      while (currentId != null && spot[currentId] == 0) {
-        spot[currentId] = 1
-        currentId = destinations[currentId]!!.priorEnvironmentId
+        // set our one to "visited"
+        spot[e.id!!] = 1
+        // now walk backwards until we either hit the end or see "visited"
+        var currentId = e.priorEnvironmentId
+        while (currentId != null && spot[currentId] == 0) {
+          spot[currentId] = 1
+          currentId = destinations[currentId]!!.priorEnvironmentId
+        }
+        if (currentId != null) {
+          log.error("circular environment in {}", currentId)
+          return null
+        }
       }
-      if (currentId != null) {
-        log.error("circular environment in {}", currentId)
-        return null
-      }
+
+      // ok they all seem to be ok
+      updatePriorEnvironmentIds(envs, environments)
     }
 
-    // ok they all seem to be ok
-    updatePriorEnvironmentIds(envs, environments)
     val emptyOpts = Opts.opts()
-    return QDbEnvironment().parentApplication.id.eq(dbApp.id).findList().stream()
-      .map { e: DbEnvironment? -> convertUtils.toEnvironment(e, emptyOpts) }
-      .collect(Collectors.toList())
+    return envFinder.findList().map { e: DbEnvironment? -> convertUtils.toEnvironment(e, emptyOpts) }
   }
 
   @Transactional
