@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: FeatureServiceApi
   description: This describes the API clients use for accessing features
-  version: "1.1.2"
+  version: "1.1.3"
 paths:
   /features/:
     get:
@@ -105,6 +105,7 @@ components:
           type: boolean
     SSEResultState:
       type: string
+      description: "error is an inherint state"
       enum:
         - ack
         - bye
@@ -112,6 +113,8 @@ components:
         - features
         - feature
         - delete_feature
+        - config
+        - error
     FeatureEnvironmentCollection:
       description: "This represents a collection of features as per a request from a GET api. GET's can request multiple API Keys at the same time."
       x-renamed-from: Environment

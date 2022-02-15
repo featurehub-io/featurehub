@@ -1,5 +1,7 @@
 package io.featurehub.edge.rest
 
+import cd.connect.app.config.ConfigKey
+import cd.connect.app.config.DeclaredConfigResolver
 import io.featurehub.edge.KeyParts
 import io.featurehub.edge.features.DachaFeatureRequestSubmitter
 import io.featurehub.edge.features.ETagSplitter.Companion.makeEtags
@@ -18,6 +20,12 @@ import jakarta.ws.rs.BadRequestException
 import jakarta.ws.rs.NotFoundException
 import jakarta.ws.rs.container.AsyncResponse
 import jakarta.ws.rs.core.Response
+import java.text.DateFormat
+import java.time.Instant
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.util.*
 import java.util.function.Consumer
 import java.util.stream.Collectors
 
@@ -96,15 +104,14 @@ class FeatureGetProcessor @Inject constructor(
       // all the SDKs fail on a 400 level error and just stop.
       response.resume(Response.status(503).entity("cache layer not ready, try again shortly").build())
     } else {
+      val newEtags = makeEtags(
+        etags,
+        environments.stream().map(FeatureRequestResponse::etag).collect(Collectors.toList()))
+
       response.resume(
         wrapCacheControl(
         Response.status(200)
-          .header(
-            "etag", makeEtags(
-              etags,
-              environments.stream().map(FeatureRequestResponse::etag).collect(Collectors.toList())
-            )
-          )
+          .header("etag", "\"${newEtags}\"")
           .entity(environments.stream().map(FeatureRequestResponse::environment).collect(Collectors.toList()))
         )
           .build()
