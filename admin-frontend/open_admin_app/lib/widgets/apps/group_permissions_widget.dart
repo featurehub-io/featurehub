@@ -288,7 +288,7 @@ class _GroupPermissionDetailState extends State<_GroupPermissionDetailWidget> {
           )),
           Center(
               child: Text(
-            'Change value',
+            'Change value / Retire',
             style: Theme.of(context).textTheme.subtitle2,
           )),
         ]);

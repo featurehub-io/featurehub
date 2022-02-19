@@ -305,7 +305,7 @@ class _ServiceAccountPermissionDetailState
           )),
           Center(
               child: Text(
-            'Change value',
+            'Change value / Retire',
             style: Theme.of(context).textTheme.subtitle2,
           )),
         ]);
