@@ -263,7 +263,8 @@ public class ApplicationSqlApi implements ApplicationApi {
   }
 
   @Override
-  public List<Feature> createApplicationFeature(@NotNull UUID applicationId, Feature feature, Person person)
+  public List<Feature> createApplicationFeature(@NotNull UUID applicationId, Feature feature, Person person,
+                                                @NotNull Opts opts)
       throws DuplicateFeatureException {
     Conversions.nonNullApplicationId(applicationId);
 
@@ -300,7 +301,7 @@ public class ApplicationSqlApi implements ApplicationApi {
         createDefaultBooleanFeatureValuesForAllEnvironments(appFeature, app, person);
       }
 
-      return getAppFeatures(app);
+      return getAppFeatures(app, opts);
     }
 
     return new ArrayList<>();
@@ -333,15 +334,15 @@ public class ApplicationSqlApi implements ApplicationApi {
     newFeatures.forEach(database::save);
   }
 
-  private List<Feature> getAppFeatures(DbApplication app) {
+  private List<Feature> getAppFeatures(DbApplication app, @NotNull Opts opts) {
     return app.getFeatures().stream()
         .filter(af -> af.getWhenArchived() == null)
-        .map(af -> convertUtils.toApplicationFeature(af, Opts.empty()))
+        .map(af -> convertUtils.toApplicationFeature(af, opts))
         .collect(Collectors.toList());
   }
 
   @Override
-  public List<Feature> updateApplicationFeature(UUID appId, String key, Feature feature)
+  public List<Feature> updateApplicationFeature(UUID appId, String key, Feature feature, @NotNull Opts opts)
       throws DuplicateFeatureException, OptimisticLockingException {
     Conversions.nonNullApplicationId(appId);
 
@@ -412,7 +413,7 @@ public class ApplicationSqlApi implements ApplicationApi {
         cacheSource.publishFeatureChange(appFeature, PublishAction.UPDATE);
       }
 
-      return getAppFeatures(app);
+      return getAppFeatures(app, opts);
     }
 
     return new ArrayList<>();
@@ -429,13 +430,13 @@ public class ApplicationSqlApi implements ApplicationApi {
   }
 
   @Override
-  public List<Feature> getApplicationFeatures(UUID appId) {
+  public List<Feature> getApplicationFeatures(@NotNull UUID appId, @NotNull Opts opts) {
     Conversions.nonNullApplicationId(appId);
 
     DbApplication app = convertUtils.byApplication(appId);
 
     if (app != null) {
-      return getAppFeatures(app);
+      return getAppFeatures(app, opts);
     }
 
     return new ArrayList<>();
@@ -500,11 +501,11 @@ public class ApplicationSqlApi implements ApplicationApi {
       archiveStrategy.archiveApplicationFeature(appFeature.appFeature);
     }
 
-    return getAppFeatures(appFeature.app);
+    return getAppFeatures(appFeature.app, Opts.empty());
   }
 
   @Override
-  public Feature getApplicationFeatureByKey(UUID appId, String key) {
+  public Feature getApplicationFeatureByKey(UUID appId, @NotNull String key, @NotNull Opts opts) {
     Conversions.nonNullApplicationId(appId);
 
     AppFeature af = findAppFeature(appId, key);
@@ -513,7 +514,7 @@ public class ApplicationSqlApi implements ApplicationApi {
       return null;
     }
 
-    return convertUtils.toApplicationFeature(af.appFeature, Opts.empty());
+    return convertUtils.toApplicationFeature(af.appFeature, opts);
   }
 
   // finds all of the groups attached to this application  that have application roles

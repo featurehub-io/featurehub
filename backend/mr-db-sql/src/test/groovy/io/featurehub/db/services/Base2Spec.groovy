@@ -1,13 +1,15 @@
 package io.featurehub.db.services
 
+import groovy.transform.CompileStatic
 import io.featurehub.db.api.Opts
+import io.featurehub.db.model.DbOrganization
 import io.featurehub.db.model.DbPerson
+import io.featurehub.db.model.query.QDbOrganization
 import io.featurehub.db.publish.CacheSource
 import io.featurehub.db.test.DbSpecification
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Organization
 import io.featurehub.mr.model.Person
-import spock.lang.Shared
 
 class Base2Spec extends DbSpecification {
   ConvertUtils convertUtils
@@ -17,6 +19,7 @@ class Base2Spec extends DbSpecification {
   UUID superuser
   DbArchiveStrategy archiveStrategy
   Organization org
+
 
   def setup() {
     convertUtils = new ConvertUtils()
@@ -51,5 +54,10 @@ class Base2Spec extends DbSpecification {
     }
 
     groupSqlApi.addPersonToGroup(adminGroup.id, superuser, Opts.empty())
+  }
+
+  @CompileStatic
+  DbOrganization findOrganization() {
+    return new QDbOrganization().id.eq(org.id).findOne()
   }
 }

@@ -1,8 +1,9 @@
 package io.featurehub.db.services
 
-
+import io.ebean.DB
 import io.featurehub.db.api.ApplicationApi
 import io.featurehub.db.api.FeatureApi
+import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.OptimisticLockingException
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonFeaturePermission
@@ -31,60 +32,57 @@ import io.featurehub.mr.model.RolloutStrategyAttributeConditional
 import io.featurehub.mr.model.RolloutStrategyFieldType
 import io.featurehub.mr.model.ServiceAccount
 import io.featurehub.mr.model.ServiceAccountPermission
-import spock.lang.Shared
 
-class FeatureSpec extends BaseSpec {
-  @Shared PersonSqlApi personSqlApi
-  @Shared DbPortfolio portfolio1
-  @Shared DbApplication app1
-  @Shared DbApplication app2
-  @Shared ApplicationSqlApi appApi
-  @Shared FeatureSqlApi featureSqlApi
-  @Shared EnvironmentSqlApi environmentSqlApi
-  @Shared ServiceAccountSqlApi serviceAccountSqlApi
-  @Shared UUID envIdApp1
-  @Shared UUID appId
-  @Shared UUID app2Id
-  @Shared Person averageJoeMemberOfPortfolio1
-  @Shared Person portfolioAdminOfPortfolio1
-  @Shared Group groupInPortfolio1
-  @Shared Group adminGroupInPortfolio1
+class FeatureSpec extends Base2Spec {
+  PersonSqlApi personSqlApi
+  DbPortfolio portfolio1
+  DbApplication app1
+  DbApplication app2
+  ApplicationSqlApi appApi
+  FeatureSqlApi featureSqlApi
+  EnvironmentSqlApi environmentSqlApi
+  ServiceAccountSqlApi serviceAccountSqlApi
+  UUID envIdApp1
+  UUID appId
+  UUID app2Id
+  Person averageJoeMemberOfPortfolio1
+  Person portfolioAdminOfPortfolio1
+  Group groupInPortfolio1
+  Group adminGroupInPortfolio1
 
-  def setupSpec() {
-    baseSetupSpec()
+  def setup() {
+    personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy)
+    serviceAccountSqlApi = new ServiceAccountSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy)
 
-    personSqlApi = new PersonSqlApi(database, convertUtils, archiveStrategy)
-    serviceAccountSqlApi = new ServiceAccountSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
-
-    appApi = new ApplicationSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
+    appApi = new ApplicationSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy)
 
 
     // now set up the environments we need
     portfolio1 = new DbPortfolio.Builder().name("p1-app-feature").whoCreated(dbSuperPerson).organization(new QDbOrganization().findOne()).build()
-    database.save(portfolio1)
+    db.save(portfolio1)
     app1 = new DbApplication.Builder().whoCreated(dbSuperPerson).portfolio(portfolio1).name("feature-app-1").build()
-    database.save(app1)
+    db.save(app1)
     appId = app1.id
     app2 = new DbApplication.Builder().whoCreated(dbSuperPerson).portfolio(portfolio1).name("feature-app-2").build()
-    database.save(app2)
+    db.save(app2)
     app2Id = app2.id
 
-    environmentSqlApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
+    environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy)
     envIdApp1 = environmentSqlApi.create(new Environment().name("feature-app-1-env-1"), new Application().id(appId), superPerson).id
 
     def rsv = Mock(RolloutStrategyValidator)
     rsv.validateStrategies(_, _) >> new RolloutStrategyValidator.ValidationFailure()
 
-    featureSqlApi = new FeatureSqlApi(database, convertUtils, Mock(CacheSource), rsv, Mock(StrategyDiffer))
+    featureSqlApi = new FeatureSqlApi(db, convertUtils, Mock(CacheSource), rsv, Mock(StrategyDiffer))
 
     def averageJoe = new DbPerson.Builder().email("averagejoe-fvs@featurehub.io").name("Average Joe").build()
-    database.save(averageJoe)
+    db.save(averageJoe)
     averageJoeMemberOfPortfolio1 = convertUtils.toPerson(averageJoe)
     groupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().name("fsspec-1-p1"), superPerson)
     groupSqlApi.addPersonToGroup(groupInPortfolio1.id, averageJoeMemberOfPortfolio1.id.id, Opts.empty())
 
     def portfolioAdmin = new DbPerson.Builder().email("pee-admin-fvs@featurehub.io").name("Portfolio Admin p1 fvs").build()
-    database.save(portfolioAdmin)
+    db.save(portfolioAdmin)
     portfolioAdminOfPortfolio1 = convertUtils.toPerson(portfolioAdmin)
 
     adminGroupInPortfolio1 = groupSqlApi.createPortfolioGroup(portfolio1.id, new Group().admin(true).name("fsspec-admin-1-p1"), superPerson)
@@ -93,9 +91,9 @@ class FeatureSpec extends BaseSpec {
 
   def "when i save a new feature in an application i receive it back as part of the list"() {
     given: "i create a new feature"
-      def features = appApi.createApplicationFeature(appId, new Feature().key("FEATURE_ONE").name("The neo feature"), superPerson)
+      def features = appApi.createApplicationFeature(appId, new Feature().key("FEATURE_ONE").name("The neo feature"), superPerson, Opts.empty())
     when:
-      def foundFeatures = appApi.getApplicationFeatures(appId)
+      def foundFeatures = appApi.getApplicationFeatures(appId, Opts.empty())
     then:
       features.find({ it -> it.key == 'FEATURE_ONE'}) != null
       foundFeatures.find({ it -> it.key == 'FEATURE_ONE'}) != null
@@ -103,16 +101,16 @@ class FeatureSpec extends BaseSpec {
 
   def "i can't create an application feature with the same name in the same application"() {
     when:
-      appApi.createApplicationFeature(appId, new Feature().key("FEATURE_TWO").name("The duo feature"), superPerson)
-      appApi.createApplicationFeature(appId, new Feature().key("FEATURE_TWO").name("The duo feature"), superPerson)
+      appApi.createApplicationFeature(appId, new Feature().key("FEATURE_TWO").name("The duo feature"), superPerson, Opts.empty())
+      appApi.createApplicationFeature(appId, new Feature().key("FEATURE_TWO").name("The duo feature"), superPerson, Opts.empty())
     then:
       thrown ApplicationApi.DuplicateFeatureException
   }
 
   def "i can create the same named feature toggle in two different applications"() {
     when:
-      def app1Features = appApi.createApplicationFeature(appId, new Feature().name("x").key("FEATURE_THREE"), superPerson)
-      def app2Features = appApi.createApplicationFeature(app2Id, new Feature().name("y").key("FEATURE_THREE"), superPerson)
+      def app1Features = appApi.createApplicationFeature(appId, new Feature().name("x").key("FEATURE_THREE"), superPerson, Opts.empty())
+      def app2Features = appApi.createApplicationFeature(app2Id, new Feature().name("y").key("FEATURE_THREE"), superPerson, Opts.empty())
     then:
       app1Features.find({it -> it.key == 'FEATURE_THREE'}) != null
       app2Features.find({it -> it.key == 'FEATURE_THREE'}) != null
@@ -120,33 +118,24 @@ class FeatureSpec extends BaseSpec {
 
   def "if i try and update without passing the version i am updating, i will get a optimistic locking exception"() {
     when:
-      appApi.createApplicationFeature(appId, new Feature().name('x').key("FEATURE_UPD_LOCKX"), superPerson)
-      appApi.updateApplicationFeature(appId, "FEATURE_UPD_LOCKX", new Feature().key("FEATURE_UPD_LOCKX"))
+      appApi.createApplicationFeature(appId, new Feature().name('x').key("FEATURE_UPD_LOCKX"), superPerson, Opts.empty())
+      appApi.updateApplicationFeature(appId, "FEATURE_UPD_LOCKX", new Feature().key("FEATURE_UPD_LOCKX"), Opts.empty())
     then:
       thrown OptimisticLockingException
   }
 
   def "i can update an existing feature toggle to a new name"() {
     when:
-      def app1Features = appApi.createApplicationFeature(appId, new Feature().name("x").key("FEATURE_UPD1"), superPerson)
+      def app1Features = appApi.createApplicationFeature(appId, new Feature().name("x").key("FEATURE_UPD1"), superPerson, Opts.empty())
       def feature = app1Features.find({it -> it.key == 'FEATURE_UPD1'}).copy()
       def updatedFeatures = appApi.updateApplicationFeature(appId, "FEATURE_UPD1",
-        feature.name("Drunks trying to be Quiet").alias("ssssshhhh"))
+        feature.name("Drunks trying to be Quiet").alias("ssssshhhh"), Opts.empty())
     then:
       app1Features.find({it -> it.key == 'FEATURE_UPD1'}).alias == null
       updatedFeatures.find({it -> it.key == 'FEATURE_UPD1'}).alias == 'ssssshhhh'
       updatedFeatures.find({it -> it.key == 'FEATURE_UPD1'}).name == 'Drunks trying to be Quiet'
   }
 
-  def "i cannot overwrite another feature with the same name when i update"() {
-    given: "i have two features"
-      appApi.createApplicationFeature(appId, new Feature().name("x").key("FEATURE_UPD2"), superPerson)
-      Feature f2 = appApi.createApplicationFeature(appId, new Feature().name('FEATURE_UPD3').key("FEATURE_UPD3"), superPerson).find({ it -> it.key == 'FEATURE_UPD3'})
-    when: "i update the second to the same name as the first"
-      appApi.updateApplicationFeature(appId, 'FEATURE_UPD3', f2.key('FEATURE_UPD2'))
-    then:
-      thrown ApplicationApi.DuplicateFeatureException
-  }
 
   def "i cannot delete a non existent feature"() {
     when: "i try and delete a feature that doesn't exist"
@@ -157,21 +146,37 @@ class FeatureSpec extends BaseSpec {
 
   def "i can delete an existing feature"() {
     given: "i have a feature"
-      def features = appApi.createApplicationFeature(appId, new Feature().name("x").key("FEATURE_DELUROLO"), superPerson)
+      def features = appApi.createApplicationFeature(appId, new Feature().name("x").key("FEATURE_DELUROLO"), superPerson, Opts.empty())
     when: "i delete it"
       def deletedList = appApi.deleteApplicationFeature(appId, 'FEATURE_DELUROLO')
-      def getList = appApi.getApplicationFeatures(appId)
+      def getList = appApi.getApplicationFeatures(appId, Opts.empty())
     then:
       features.find({it.key  == 'FEATURE_DELUROLO'}) != null
       deletedList == getList
       getList.find({it.key  == 'FEATURE_DELUROLO'}) == null
+  }
 
+  def "i can set and retrieve meta-data on a feature"() {
+    when: "i create the feature with meta-data"
+      def features = appApi.createApplicationFeature(appId, new Feature().name("m-people").key("m-people").metaData("yaml:"), superPerson,
+          Opts.opts(FillOpts.MetaData))
+    then:
+      features[0].metaData == 'yaml:'
+      appApi.getApplicationFeatures(appId, Opts.opts(FillOpts.MetaData))[0].metaData == "yaml:"
+  }
+
+  def "i can set and retrieve a description on a feature"() {
+    when: "i create the feature with meta-data"
+      def features = appApi.createApplicationFeature(appId, new Feature().name("m-people").key("m-people").description("the voice"), superPerson, Opts.empty())
+    then:
+      features[0].description == 'the voice'
+      appApi.getApplicationFeatures(appId, Opts.empty())[0].description == 'the voice'
   }
 
   def "i can use basic crud for feature values for an application"() {
     given: "i have a feature"
       String k = "FEATURE_FV1"
-      def features = appApi.createApplicationFeature(appId, new Feature().name("x").key(k).valueType(FeatureValueType.BOOLEAN), superPerson)
+      def features = appApi.createApplicationFeature(appId, new Feature().name("x").key(k).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
       def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
     when: "i set the feature value"
       def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k);
@@ -201,7 +206,7 @@ class FeatureSpec extends BaseSpec {
   def "if i only have unlock permission i cannot lock or change a feature value"() {
     given: "i have a feature"
       String k = "FEATURE_FV_UNLOCK1"
-      def features = appApi.createApplicationFeature(appId, new Feature().name("x").key(k).valueType(FeatureValueType.BOOLEAN), superPerson)
+      def features = appApi.createApplicationFeature(appId, new Feature().name("x").key(k).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
       def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
     when: "i set the feature value"
       def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k);
@@ -222,7 +227,7 @@ class FeatureSpec extends BaseSpec {
   def "if i only have unlock permission i get an exception if i try and lock"() {
     given: "i have a feature"
       String k = "FEATURE_FV_UNLOCK2"
-      def features = appApi.createApplicationFeature(appId, new Feature().name("x").key(k).valueType(FeatureValueType.BOOLEAN), superPerson)
+      def features = appApi.createApplicationFeature(appId, new Feature().name("x").key(k).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
       def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
     when: "i set the feature value"
       def f = featureSqlApi.getFeatureValueForEnvironment(envIdApp1, k);
@@ -239,7 +244,7 @@ class FeatureSpec extends BaseSpec {
   def 'boolean features cannot be removed when a update all feature values for environment happens'() {
     given: "i have a list of features"
       String[] names = ['FEATURE_FBU_1', 'FEATURE_FBU_2', 'FEATURE_FBU_3', 'FEATURE_FBU_4', 'FEATURE_FBU_5']
-      names.each { k -> appApi.createApplicationFeature(appId, new Feature().name(k).key(k).valueType(FeatureValueType.BOOLEAN), superPerson) }
+      names.each { k -> appApi.createApplicationFeature(appId, new Feature().name(k).key(k).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty()) }
       def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
     when: "i get all the features"
       List<FeatureValue> found = featureSqlApi.getAllFeatureValuesForEnvironment(envIdApp1).featureValues.findAll({ fv -> fv.key.startsWith('FEATURE_FBU')})
@@ -253,7 +258,7 @@ class FeatureSpec extends BaseSpec {
   def "i can block update a bunch of features for an environment"() {
     given: "i have a list of features"
       String[] names = ['FEATURE_FVU_1', 'FEATURE_FVU_2', 'FEATURE_FVU_3', 'FEATURE_FVU_4', 'FEATURE_FVU_5']
-      names.each { k -> appApi.createApplicationFeature(appId, new Feature().name(k).key(k).valueType(FeatureValueType.STRING), superPerson) }
+      names.each { k -> appApi.createApplicationFeature(appId, new Feature().name(k).key(k).valueType(FeatureValueType.STRING), superPerson, Opts.empty()) }
       def pers = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
     when: "i set two of those values"
       def updatesForCreate = [new FeatureValue().key('FEATURE_FVU_1').valueString('h').locked(true),
@@ -305,7 +310,7 @@ class FeatureSpec extends BaseSpec {
       groupSqlApi.updateGroup(g1.id, g1, true, true, true, Opts.empty());
     and: "i create a feature value called FEATURE_BUNCH and unlock the feature in all branches"
       String k = 'FEATURE_BUNCH'
-      appApi.createApplicationFeature(app2Id, new Feature().name(k).key(k).valueType(FeatureValueType.BOOLEAN), superPerson)
+      appApi.createApplicationFeature(app2Id, new Feature().name(k).key(k).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
       def perm = new PersonFeaturePermission.Builder().roles([RoleType.UNLOCK] as Set<RoleType>).person(superPerson).appRoles([] as Set<ApplicationRoleType>).build()
       [env1.id, env2.id, env3.id, env4.id].each { envId ->
         featureSqlApi.updateFeatureValueForEnvironment(envId, k,
@@ -370,7 +375,7 @@ class FeatureSpec extends BaseSpec {
       def env1 = environmentSqlApi.create(new Environment().name("rstrat-test-env1"), new Application().id(app2Id), superPerson)
     and: "i have a boolean feature (which will automatically create a feature value in each environment)"
       def key = 'FEATURE_MISINTERPRET'
-      appApi.createApplicationFeature(app2Id, new Feature().name(key).key(key).valueType(FeatureValueType.BOOLEAN), superPerson)
+      appApi.createApplicationFeature(app2Id, new Feature().name(key).key(key).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
     when: "i update the fv with the custom strategy"
       def fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
       def strat = new RolloutStrategy().name('freddy').percentage(20).percentageAttributes(['company'])
@@ -398,7 +403,7 @@ class FeatureSpec extends BaseSpec {
       def env1 = environmentSqlApi.create(new Environment().name("rstrat-test-env2"), new Application().id(app2Id), superPerson)
     and: "i have a boolean feature (which will automatically create a feature value in each environment)"
       def key = 'FEATURE_NOT_WHEN_LOCKED'
-      appApi.createApplicationFeature(app2Id, new Feature().name(key).key(key).valueType(FeatureValueType.BOOLEAN), superPerson)
+      appApi.createApplicationFeature(app2Id, new Feature().name(key).key(key).valueType(FeatureValueType.BOOLEAN), superPerson, Opts.empty())
     when: "i update the fv with the custom strategy"
       def fv = featureSqlApi.getFeatureValueForEnvironment(env1.id, key)
       def strat = new RolloutStrategy().name('freddy').percentage(20).percentageAttributes(['company'])
@@ -424,7 +429,7 @@ class FeatureSpec extends BaseSpec {
       def env1 = environmentSqlApi.create(new Environment().name("lock-unlock-env"), new Application().id(app2Id), superPerson)
     and: "i have a string feature (which will automatically create a feature value in each environment) - which has no feature value created"
       def key = 'FEATURE_LOCK_UNLOCK_NOT_CHANGE'
-      appApi.createApplicationFeature(app2Id, new Feature().name(key).key(key).valueType(FeatureValueType.STRING), superPerson)
+      appApi.createApplicationFeature(app2Id, new Feature().name(key).key(key).valueType(FeatureValueType.STRING), superPerson, Opts.empty())
     and: "i have a person"
       def person = personSqlApi.createPerson("lockunlock@mailinator.com", "Locky McLockface", "password123", superuser, Opts.empty())
     and: "a group in the current portfolio"

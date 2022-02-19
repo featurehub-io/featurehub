@@ -1106,6 +1106,12 @@ paths:
           type: string
           format: uuid
         required: true
+      - name: includeMetaData
+        description: "Include the metadata in the returned feature objects. Can be large."
+        in: query
+        schema:
+          type: boolean
+        required: false
     get:
       security:
         - bearerAuth: [ ]
@@ -1171,6 +1177,12 @@ paths:
         schema:
           type: string
         required: true
+      - name: includeMetaData
+        description: "Include the metadata in the returned feature objects. Can be large."
+        in: query
+        schema:
+          type: boolean
+        required: false
     get:
       security:
         - bearerAuth: [ ]

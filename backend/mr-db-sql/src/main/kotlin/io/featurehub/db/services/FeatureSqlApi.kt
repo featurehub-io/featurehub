@@ -415,7 +415,7 @@ class FeatureSqlApi @Inject constructor(
     val result = strategiesUserCanAccess(appId, key, person) ?: return emptyList()
 
     return result.environments.keys.map { e ->
-      convertUtils.toFeatureEnvironment(result.featureValues[e]!!, result.roles[e]!!,
+      convertUtils.toFeatureEnvironment(result.featureValues[e], result.roles[e]!!,
         result.environments[e]!!, Opts.opts(FillOpts.ServiceAccounts)
       )
     }
