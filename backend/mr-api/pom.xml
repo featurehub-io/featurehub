@@ -48,7 +48,7 @@
       <plugin>
         <groupId>cd.connect.maven</groupId>
         <artifactId>merge-yaml-plugin</artifactId>
-        <version>1.1</version>
+        <version>1.4</version>
         <executions>
           <execution>
             <id>combine</id>

@@ -10,6 +10,7 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -29,6 +30,8 @@ public class DbApplicationFeature extends DbVersionedBase {
     setSecret(builder.secret);
     setLink(builder.link);
     setValueType(builder.valueType);
+    setMetaData(builder.metaData);
+    setDescription(builder.description);
   }
 
   @ManyToOne(optional = false)
@@ -46,6 +49,12 @@ public class DbApplicationFeature extends DbVersionedBase {
   private boolean secret;
   @Column(length = 600)
   private String link;
+
+  @Column(length = 300)
+  private String description;
+
+  @Lob
+  private String metaData;
 
   @Enumerated(value = EnumType.STRING)
   private FeatureValueType valueType;
@@ -127,7 +136,25 @@ public class DbApplicationFeature extends DbVersionedBase {
     this.link = link;
   }
 
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public String getMetaData() {
+    return metaData;
+  }
+
+  public void setMetaData(String metaData) {
+    this.metaData = metaData;
+  }
+
   public static final class Builder {
+    public String metaData;
+    public String description;
     private DbApplication parentApplication;
     private String key;
     private String alias;
@@ -141,6 +168,16 @@ public class DbApplicationFeature extends DbVersionedBase {
 
     public Builder parentApplication(DbApplication val) {
       parentApplication = val;
+      return this;
+    }
+
+    public Builder description(String val) {
+      description = val;
+      return this;
+    }
+
+    public Builder metaData(String val) {
+      metaData = val;
       return this;
     }
 

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <addColumn tableName="fh_app_feature">
+            <column name="description" type="varchar(300)"/>
+            <column name="meta_data" type="clob"/>
+        </addColumn>
+    </changeSet>
+</migration>
