@@ -10,13 +10,13 @@ categories:
   - title: '📌 Dependencies'
     label: 'dependencies'
   - title: '🧰 Platform Improvements'
-    label: 'chore'
+    label: 'improvement'
 include-labels:
   - 'enhancement'
   - 'bug'
   - 'docs'
   - 'dependencies'
-  - 'chore'
+  - 'improvement'
 autolabeler:
   - label: 'docs'
     branch:
@@ -41,11 +41,11 @@ autolabeler:
       - '/dependencies\/.+/'
     title:
       - '/Dependency/i'
-  - label: 'chore'
+  - label: 'improvement'
     branch:
-      - '/chore\/.+/'
+      - '/improvement\/.+/'
     title:
-      - '/Chore/i'
+      - '/Improvement/i'
 change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
 change-title-escapes: '\<*_&'
 version-resolver:
