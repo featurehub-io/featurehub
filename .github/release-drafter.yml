@@ -21,9 +21,11 @@ autolabeler:
   - label: 'docs'
     branch:
       - '/docs\/.+/'
-    files:
-      - '*.md'
-      - '*.adoc'
+#     files:
+#       - '*.md'
+#       - '*.adoc'
+    title:
+      - '/Docs/i'  
   - label: 'bug'
     branch:
       - '/fix\/.+/'
@@ -39,8 +41,10 @@ autolabeler:
   - label: 'dependencies'
     branch:
       - '/dependencies\/.+/'
+      - '/dependency\/.+/'
     title:
       - '/Dependency/i'
+      - '/Dependencies/i'
   - label: 'improvement'
     branch:
       - '/improvement\/.+/'
