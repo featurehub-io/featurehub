@@ -283,7 +283,12 @@ class ApplicationStepdefs {
     try {
       shared.application = await userCommon.applicationService
           .createApplication(shared.portfolio.id!,
-              api.Application(name: appName, description: appName));
+              api.Application(name: appName, description: appName),
+              includeEnvironments: true);
+
+      if (shared.application.environments.isNotEmpty) {
+        shared.environment = shared.application.environments[0];
+      }
     } catch (e) {
       if (e is ApiException) {
         if (e.code == 409) {
