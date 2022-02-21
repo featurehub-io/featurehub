@@ -24,7 +24,7 @@ features.
 We go into this in more detail below but suffice to say, the streaming deployment is designed to scale to millions,
 even billions of requests. Deployed, conceptually it looks like this:
 
-image::images/fh_architecture_streaming.svg[Architecture,600]
+image::fh_architecture_streaming.svg[Architecture,600]
 NOTE: Communication between Edge and Dacha(Cache) is shown via REST on this image, which can be configured optionally. By default it is via NATS.  
 
 === Non-Streaming - Party-Server-Ish
@@ -34,7 +34,7 @@ It is also designed to be much
 _simpler and cheaper_ to deploy on environments like Google Cloud Run or Azure Container Instances. 
 Deployed, conceptually it looks like this:
 
-image::images/fh_architecture_non_streaming.svg[Architecture,600]
+image::fh_architecture_non_streaming.svg[Architecture,600]
 
 The way that FeatureHub is architected is designed for various different implementation sizes and scales, but
 fundamentally there is a separation of concerns of all the main components, so they can be scaled independently

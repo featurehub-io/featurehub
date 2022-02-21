@@ -1,0 +1,31 @@
+site:
+  title: FeatureHub Docs
+  url: https://docs.featurehub.io
+  start_page: featurehub::index.adoc
+  robots: allow
+  keys:
+    google_analytics: UA-173153929-1
+antora:
+  extensions:
+    - require: '@antora/lunr-extension'
+      index_latest_only: true
+content:
+  sources:
+    - url: https://github.com/featurehub-io/featurehub
+      branches:
+        - main
+#      tags:
+#        - featurehub-1.3.2
+#        - featurehub-1.4.0
+#        - featurehub-1.5.0
+#        - featurehub-1.5.6
+      start_path: docs
+urls:
+  latest_version_segment: latest
+  latest_version_segment_strategy: redirect:to
+ui:
+  bundle:
+    url: https://github.com/featurehub-io/docs-ui/blob/master/build/ui-bundle.zip?raw=true
+    snapshot: true
+  supplemental_files: ./supplemental_ui
+

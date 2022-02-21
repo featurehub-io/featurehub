@@ -1,4 +1,4 @@
-== The Admin SDK (ADK)          
+= The Admin SDK (ADK)          
 :favicon: favicon.ico
 ifdef::env-github,env-browser[:outfilesuffix: .adoc]
 :toc: left

@@ -1,28 +1,9 @@
 = FeatureHub Documentation
-ifdef::env-github,env-browser[:outfilesuffix: .adoc]
 :sectlinks:
-:toc: left
-:toclevels: 2
-:toc-title: Contents
 :favicon: favicon.ico
 
-++++
-<!-- google -->
-<script>
-(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-ga('create', 'UA-173153929-1', 'auto');
-ga('send', 'pageview');
-</script>
-++++
-
-FeatureHub Team <info@featurehub.io>
-
-Visit us on https://github.com/featurehub-io/featurehub[Github]
-
-image::images/fh_primary_navy.png[Feature Hub,500]
+image::fh_primary_navy.png[Feature Hub,500]
+Welcome to FeatureHub! - from the FeatureHub Team at <info@featurehub.io>
 
 == Overview
 
@@ -40,7 +21,7 @@ It has an enterprise grade security and permission model, that's intuitive and e
 
 FeatureHub is a self-hosted platform so you can run it on your own infrastructure.
 
-image::images/fh_learn_build_measure.svg[Learn,Build,Measure]
+image::fh_learn_build_measure.svg[Learn,Build,Measure]
 
 == Installation
 
@@ -52,9 +33,9 @@ All of the deployment options mount the database volume separately from the main
 
 NOTE: As FeatureHub is an open source project, we test on only a limited number of databases, primarily Postgres.
 
-We provide and maintain database migrations scripts for MySQL/MariaDB, MS SQL Server.
+We provide and maintain database migrations scripts for Postgres, MySQL/MariaDB, and Oracle.
 
-There is also a MariaDB example docker-compose install, and the MariaDB and MySQL drivers are installed in all
+There is also a MariaDB and Oracle example docker-compose install, and the MariaDB and MySQL drivers are installed in all
 server runtimes. Further we include support for Google's Cloud SQL libraries in the base images if you need to
 use their secure tunnelling capability.
 
@@ -87,7 +68,7 @@ You can watch the video with some instructions https://youtu.be/DRVqXJmbvTk[here
 
 This is what will be running:
 
-image::images/fh_eval.svg[Option 1,500]
+image::fh_eval.svg[Option 1,500]
 NOTE: the dotted edge represents the container boundary.
 
 With the database embedded inside the container, yet storing its files on your local disk, this is very
@@ -126,15 +107,6 @@ If you create a feature flag in the FeatureHub Admin Console called `FEATURE_TIT
 
 Now in the FeatureHub Admin Console, if you create a feature of type "String" called `SUBMIT_COLOR_BUTTON` and set its value to  `cyan`, you will see the "Add" button will swap to cyan colour in near real-time.
 
-include::sdks.adoc[]
-
-include::admin-development-kit.adoc[]
-
-
-== Architecture
-
-Please read link:architecture{outfilesuffix}[for information about the architecture of FeatureHub].
-
 == Key concepts
 
 === Portfolios
@@ -144,7 +116,7 @@ Typically, portfolios are named to match areas of your business where groups of 
 Once created these portfolios can be managed by "Portfolio admins".
 There is no limit to the number of portfolios you can have.
 
-image::images/fh_overview.svg[Overview,500]
+image::fh_overview.svg[Overview,500]
 
 ==== Portfolio groups
 You can create one or more groups of people, these groups can be used to set various permissions
@@ -203,11 +175,6 @@ When you add a feature flag, this will also automatically create a feature value
 
 NOTE: See <<Feature Permissions>> for details on the various permission states a feature can have.
 
-==== Deleting and retiring a feature
-
-When feature flag is not needed any longer in your application, and you are ready to remove it, you can first "retire" this feature in a single environment to test how your application behaves, by setting it to the "Retired" state. This means that the feature won't be visible by the SDKs, imitating the "deleted" state. You can always "un-retire" a feature if you change your mind as this operation is reversible. Once you retire feature values across all the environments and test that your application behaves as expected, you can delete your entire feature. Deleting a feature means it is completely deleted from the system for all environments. This operation is not reversible. To retire a feature you will need environment specific "CHANGE_VALUE" permission. To delete a feature, you require an application specific permission to create, edit and delete features.
-
-Note: Retiring a feature is available from v1.5.7
 
 
 == Rollout strategies and targeting rules
@@ -367,19 +334,4 @@ NOTE: Because API Keys are based on a service account ID, it is not possible to 
 There is also an option to either reset Client evaluated API keys or Server evaluated API keys. Warning is provided before the reset.
 The option to reset the keys will only be available to Portfolio admins, since service accounts settings can only be viewed by them. Only Portfolio and Super admins always have full permissions to see in which apps and environments a service account is used.
 
-== External Identity
 
-FeatureHub supports external link:identity{outfilesuffix}[identity providers].
-
-
-== Analytics
-
-Please read the following link:analytics{outfilesuffix}[for information about Analytics]
-
-== Contributors Documentation
-=== SDK Contributors
-Please read link:sdks-development{outfilesuffix}[for information about Developer Setup]
-
-=== FeatureHub Backend Services Setup
-
-Please read link:developers{outfilesuffix}[for information about Developer Setup]

@@ -73,12 +73,12 @@ Here you should see the Event Category "FeatureHub Events" drilling in on this y
 
 You can now analyse which features (and their associated value) made the most impact on your event.  To do this, you need to isolate the features, this can be done by adding a filter, click the  "Advanced"  link just below the graph.
 
-image::images/analytics_simple_report.png[Simple report]
+image::analytics_simple_report.png[Simple report]
 Enter the feature name in the Event Label.
 
 You will now see all the events and feature values exposed to your application for this feature only.  You can check the values and plot them on the graph.
 
-image::images/analytics_simple_report_2.png[Simple report]
+image::analytics_simple_report_2.png[Simple report]
 
 === Advanced experiment reporting
 For more advanced reporting you can take a similar approach and create custom segments for each feature value variation.
@@ -86,7 +86,7 @@ For more advanced reporting you can take a similar approach and create custom se
 ==== Create custom segments
 Create segments for each potential value of a feature
 
-image::images/analytics_custom_segments.png[Custom segments]
+image::analytics_custom_segments.png[Custom segments]
 
 Set the filter with
 
@@ -95,10 +95,10 @@ Set the filter with
 * Event Label <contains> "<your feature name> : <your feature value>
 * Event Value <contains> "Number value" (usually $ value of the event)
 
-image::images/analytics_segment_filters.png[Custom filters]
+image::analytics_segment_filters.png[Custom filters]
 
 ==== Consume the custom segments in your standard reports
 Once you’ve created the custom segments for each experiment and feature with its value variants,
 you can use this segment in any of your reports, eg this ecommerce report.
 
-image::images/analytics_advanced_report.png[Advanced Report]
+image::analytics_advanced_report.png[Advanced Report]

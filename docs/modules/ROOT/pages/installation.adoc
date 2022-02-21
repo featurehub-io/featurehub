@@ -54,7 +54,7 @@ disk and is not intended to be used for a long running or highly performant, con
 
 === Option 1a - Low Volume Deployment (Streaming)
 
-image::images/fh_deployment_option_1a.svg[Architecture,600]
+image::fh_deployment_option_1a.svg[Architecture,600]
 
 With Option 1a, the Party Server, all of the services are deployed in a single running container. Internally this is packaged as a single
 Java server running four different services (a static web server serving the Admin App, the Management Repository server,
@@ -92,7 +92,7 @@ This will install all the necessary components including FeatureHub Admin Consol
 
 === Option 1b - Low Volume Deployment (Non-streaming)
 
-image::images/fh_architecture_non_streaming.svg[Architecture,600]
+image::fh_architecture_non_streaming.svg[Architecture,600]
 
 In this case, this deployment, known as `party-server-ish` is different from the evaluation image, and deploys only the Management
 Repository and a version of Edge that talks to the database. The `party-server-ish` serves the website, Admin App and Edge-Rest applications
@@ -108,7 +108,7 @@ Edge requests will hit the replica by default (as they are read only).
 
 === Option 2a - Streaming Scalable Deployment
 
-image::images/fh_deployment_option_2a.svg[Option 2a,600]
+image::fh_deployment_option_2a.svg[Option 2a,600]
 
 This option is best if you want to run FeatureHub in production at scale. Running separate instances of Edge, Cache, NATS and
 FeatureHub MR Server, means you can deploy these components independently for scalability and redundancy, and Docker images
@@ -135,7 +135,7 @@ provider will have a managed Postgres service, and NATs have their own Kubernete
 
 === Option 2b - Non-Streaming Scalable Deployment
 
-image::images/fh_deployment_option_2b.svg[Option 2b,600]
+image::fh_deployment_option_2b.svg[Option 2b,600]
 
 This option is limited only by the number of read replicas you can support and the method you have over balancing access
 to these replicas. This deployment uses the separation of `mr` (the Admin App and its backend) from `edge-rest` instead of bundling

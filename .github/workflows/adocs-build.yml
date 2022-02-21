@@ -13,16 +13,20 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Get build container
-        id: adocbuild
-        uses: ./doc-gen
+      - name: "Generate site using antora site action"
+        uses: bfranske/antora-site-action@master
+        with:
+          antora_playbook: antora-playbook.yml
+          site_sources_path: docs
+          antora_generator: 'antora-site-generator-lunr'
+          antora_docsearch_enabled: 'true'
       - name: Print execution time
         run: echo "Time ${{ steps.adocbuild.outputs.timestamp }}"
       - name: Deploy docs to ghpages
         uses: peaceiris/actions-gh-pages@v3
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-          publish_dir: ./doc-gen/target/generated-docs
+          publish_dir: ./docs/build/site
           external_repository: featurehub-io/featurehub-io
           publish_branch: master
           cname: docs.featurehub.io
