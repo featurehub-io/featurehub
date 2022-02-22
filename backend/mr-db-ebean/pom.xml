@@ -70,12 +70,6 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.postgresql</groupId>
-      <artifactId>postgresql</artifactId>
-      <version>42.2.25</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>io.ebean</groupId>
       <artifactId>ebean-ddl-generator</artifactId>
       <version>${ebean.version}</version>
