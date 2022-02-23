@@ -22,7 +22,7 @@ image::docs/images/fh-features-console-dark.png[FeatureHub console demo,800]
 
 == FeatureHub Users
 
-image::docs/images/Ruby_NewLogo_Vertical.png[link="https://www.rubyplaynet.com/", 100]
+image:docs/images/Ruby_NewLogo_Vertical.png[link="https://www.rubyplaynet.com/", 80] image:docs/images/lovebonito_logo.png[link="https://www.lovebonito.com/",100] image:docs/images/Whistic_Logo.png[link="https://www.whistic.com/",200]
 
 
 == Are you also using FeatureHub?
