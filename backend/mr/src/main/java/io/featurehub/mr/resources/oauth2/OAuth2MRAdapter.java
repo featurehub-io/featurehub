@@ -1,5 +1,7 @@
 package io.featurehub.mr.resources.oauth2;
 
+import cd.connect.app.config.ConfigKey;
+import cd.connect.app.config.DeclaredConfigResolver;
 import io.featurehub.db.api.AuthenticationApi;
 import io.featurehub.db.api.GroupApi;
 import io.featurehub.db.api.OptimisticLockingException;
@@ -39,6 +41,9 @@ public class OAuth2MRAdapter implements OAuthAdapter {
   private final PortfolioUtils portfolioUtils;
   private final OrganizationApi organizationApi;
 
+  @ConfigKey("oauth2.cookie-domain")
+  String cookieDomain = "";
+
   @Inject
   public OAuth2MRAdapter(PersonApi personApi, AuthenticationApi authenticationApi, PortfolioApi portfolioApi,
                          GroupApi groupApi, AuthenticationRepository authRepository, PortfolioUtils portfolioUtils, OrganizationApi organizationApi) {
@@ -49,6 +54,8 @@ public class OAuth2MRAdapter implements OAuthAdapter {
     this.authRepository = authRepository;
     this.portfolioUtils = portfolioUtils;
     this.organizationApi = organizationApi;
+
+    DeclaredConfigResolver.resolve(this);
   }
 
   @Override
