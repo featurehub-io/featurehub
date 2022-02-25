@@ -64,10 +64,16 @@ public class ServerConfig {
   }
 
   private void listen(MessageHandler handler, String subject) {
-    final Dispatcher dispatcher = natsServer.getConnection().createDispatcher(handler);
-    final Dispatcher subscribe = dispatcher.subscribe(subject);
-    shutdownSubscriptionRunners.add(
-        () -> subscribe.unsubscribe(subject));
+    try {
+      log.info("listening to subject {}", subject);
+      final Dispatcher dispatcher = natsServer.getConnection().createDispatcher(handler);
+      final Dispatcher subscribe = dispatcher.subscribe(subject);
+      shutdownSubscriptionRunners.add(
+          () -> subscribe.unsubscribe(subject));
+    } catch (Exception e) {
+      log.error("Failed to subscribe to subject {}", subject, e);
+      System.exit(-1);
+    }
   }
 
   private void listenForServiceAccounts() {
@@ -76,8 +82,8 @@ public class ServerConfig {
           try {
             PublishServiceAccount sa =
                 CacheJsonMapper.readFromZipBytes(message.getData(), PublishServiceAccount.class);
+            log.trace("service account received {}", sa);
             cache.updateServiceAccount(sa);
-            //        log.debug("cache received {}", sa);
           } catch (Exception e) {
             log.error("Unable to read message on SA channel", e);
           }
@@ -91,6 +97,7 @@ public class ServerConfig {
           try {
             PublishFeatureValue fv =
                 CacheJsonMapper.readFromZipBytes(message.getData(), PublishFeatureValue.class);
+            log.trace("feature value received {}", fv);
             cache.updateFeatureValue(fv);
           } catch (Exception e) {
             log.error("Failure to decode featue value message", e);
@@ -105,8 +112,8 @@ public class ServerConfig {
           try {
             PublishEnvironment e =
                 CacheJsonMapper.readFromZipBytes(message.getData(), PublishEnvironment.class);
+            log.trace("environment received {}", e);
             cache.updateEnvironment(e);
-            //        log.debug("cache received {}", e);
           } catch (Exception ex) {
             log.error("unable to decode message on environment channel", ex);
           }
@@ -122,9 +129,9 @@ public class ServerConfig {
               try {
                 DachaNATSRequest req =
                     CacheJsonMapper.readFromZipBytes(msg.getData(), DachaNATSRequest.class);
-
+                log.trace("received NATs Edge request {}", req);
                 final DachaNATSResponse response = edgeNatsAdapter.edgeRequest(req);
-
+                log.trace("responded with NATs Edge request {}", response);
                 connection.publish(msg.getReplyTo(), CacheJsonMapper.writeAsZipBytes(response));
               } catch (Exception e) {
                 log.error("Unable to write response to feature request", e);

@@ -6,6 +6,12 @@ if [ $# -eq 0 ]
 else
   VERSION=$1
 fi
+if [[ $VERSION != *"RC"* ]]; then
+  echo "Is RC, not also tagging latest"
+else
+  echo "Is not RC, tagging latest"
+  BUILD_PARAMS="$BUILD_PARAMS -Djib.to.tags=latest"
+fi
 DOCKER_PREFIX="${OVERRIDE_DOCKER_PREFIX:-featurehub}"
 mvn -f pom-packages.xml -DskipTests $BUILD_PARAMS -Ddocker.project.prefix=$DOCKER_PREFIX -Ddocker-cloud-build=true -Dbuild.version=$VERSION clean install
 
