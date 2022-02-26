@@ -41,8 +41,11 @@ public class OAuth2MRAdapter implements OAuthAdapter {
   private final PortfolioUtils portfolioUtils;
   private final OrganizationApi organizationApi;
 
-  @ConfigKey("oauth2.cookie-domain")
+  @ConfigKey("oauth2.cookie.domain")
   String cookieDomain = "";
+
+  @ConfigKey("oauth2.cookie.https-only")
+  Boolean cookieSecure = Boolean.FALSE;
 
   @Inject
   public OAuth2MRAdapter(PersonApi personApi, AuthenticationApi authenticationApi, PortfolioApi portfolioApi,
@@ -96,9 +99,9 @@ public class OAuth2MRAdapter implements OAuthAdapter {
     // add cookie
     return Response.status(Response.Status.FOUND).cookie(
       new NewCookie("bearer-token", token, "/",
-        null, DEFAULT_VERSION, null, DEFAULT_MAX_AGE, null, false, false))
+        cookieDomain.isEmpty() ? null : cookieDomain, DEFAULT_VERSION, null, DEFAULT_MAX_AGE, null, cookieSecure,
+        false))
       .location(uri).build();
-
   }
 
   private Person createUser(String email, String username) {
