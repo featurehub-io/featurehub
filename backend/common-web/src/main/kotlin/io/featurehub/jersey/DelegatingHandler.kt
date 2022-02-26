@@ -16,7 +16,7 @@ class DelegatingHandler(
     var prefixes = FallbackPropertyConfig.getConfig("jersey.prefixes")
 
     if (prefixes != null) {
-      jerseyPrefixes = prefixes.split(",").map { it.trim() }.filter { it.isEmpty() }.toList()
+      jerseyPrefixes = prefixes.split(",").map { it.trim() }.filter { it.isNotEmpty() }.toList()
     }
   }
 
