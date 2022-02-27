@@ -75,11 +75,12 @@ class RouteSlotMapping {
 Map<RouteSlot, RouteSlotMapping> routeSlotMappings = {};
 
 class RouterRoute {
+  String route;
   Handler handler;
   PermissionType permissionType;
   bool wrapInScaffold;
 
-  RouterRoute(this.handler,
+  RouterRoute(this.route, this.handler,
       {this.permissionType = PermissionType.regular,
       this.wrapInScaffold = true});
 }
@@ -94,6 +95,7 @@ class FHRouter {
   final Handler notFoundHandler;
   final ManagementRepositoryClientBloc mrBloc;
   final Map<String, RouterRoute> handlers = {};
+  final Map<RouteSlot, List<RouterRoute>> validRoutesForSlot = {};
 
   FHRouter({required this.mrBloc, required this.notFoundHandler}) {
     permissionCheckHandler = _hasRoutePermissions;
@@ -101,20 +103,46 @@ class FHRouter {
 
   void define(String route,
       {required Handler handler,
+      required List<RouteSlot> routeSlots,
       bool wrapInScaffold = true,
       TransitionType transitionType = TransitionType.material,
       PermissionType permissionType = PermissionType.regular}) {
-    handlers[route] = RouterRoute(handler,
+    final newRoute = RouterRoute(route, handler,
         permissionType: permissionType, wrapInScaffold: wrapInScaffold);
+    handlers[route] = newRoute;
+    routeSlots.forEach((slot) {
+      final routes = validRoutesForSlot[slot] ?? [];
+      routes.add(newRoute);
+      validRoutesForSlot[slot] = routes;
+    });
+  }
+
+  // this specifically matches the SLOTS (i.e. sections of the apps) to their collection of routes
+  // e.g. /applications is in the portfolio slot, login is in the login slot. If we are in a route that
+  // doesn't belong to the slot we are in, we should change to the "initial" route of that slot.
+  bool isRouteInSlot(String route, RouteSlot slot) {
+    final sRoute = standardizeRoute(route);
+
+    // its a valid route if it is a route in this slot or in the "no-where" slot
+    return (validRoutesForSlot[slot] ?? [])
+            .any((router) => router.route == sRoute) ||
+        (validRoutesForSlot[RouteSlot.nowhere] ?? [])
+            .any((router) => router.route == sRoute);
   }
 
   HandlerFunc getRoute(String route) {
-    if (route == '/') {
-      route = '/feature-dashboard';
-    }
+    route = standardizeRoute(route);
     final f = handlers[route];
 
     return (f == null) ? notFoundHandler.handlerFunc : f.handler.handlerFunc;
+  }
+
+  String standardizeRoute(String route) {
+    if (route == '/') {
+      route = '/feature-dashboard';
+    }
+
+    return route;
   }
 
   // we don't want to store this as it may change, so always ask the route

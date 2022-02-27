@@ -58,66 +58,85 @@ class Routes {
 
     router.define('/404',
         handler: handleRouteChangeRequest(routeCreator.notFound),
+        routeSlots: [RouteSlot.nowhere],
         permissionType: PermissionType.any,
         wrapInScaffold: false);
     // Public routes (public URL's also need ot be added to array above)
     router.define('/forgot-password',
         handler: handleRouteChangeRequest(routeCreator.forgotPassword),
+        routeSlots: [RouteSlot.login],
         permissionType: PermissionType.login,
         wrapInScaffold: false);
     router.define('/register-url',
         handler: handleRouteChangeRequest(routeCreator.registerUrl),
+        routeSlots: [RouteSlot.login],
         permissionType: PermissionType.login,
         wrapInScaffold: false);
     router.define('/setup',
         handler: handleRouteChangeRequest(routeCreator.setup),
+        routeSlots: [RouteSlot.setup],
         permissionType: PermissionType.setup,
         wrapInScaffold: false);
     router.define("/oauth2-failure",
         handler: handleRouteChangeRequest(routeCreator.oauth2Fail),
+        routeSlots: [RouteSlot.login],
         permissionType: PermissionType.any,
         wrapInScaffold: false);
     router.define('/login',
         handler: handleRouteChangeRequest(routeCreator.login),
+        routeSlots: [RouteSlot.login],
         permissionType: PermissionType.login,
         wrapInScaffold: false);
     // main app routes
     router.define('/',
+        routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.root),
         wrapInScaffold: false);
     router.define('',
+        routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.root),
         wrapInScaffold: false);
     router.define('/applications',
+        routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.apps));
     // NEVER EVER use /features as that is reserved for use by the Edge app
     router.define(routeNameFeatureDashboard,
+        routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.featureStatus));
     router.define('/feature-values',
+        routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.featureValues));
 
     router.define('/api-keys',
+        routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.serviceEnvsHandler));
 
     //Admin routes
     router.define('/create-user',
+        routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.createUser),
         permissionType: PermissionType.portfolioadmin);
     router.define('/portfolios',
+        routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.portfolios));
     router.define('/app-settings',
+        routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.manageApp),
         permissionType: PermissionType.portfolioadmin);
     router.define('/groups',
+        routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.group),
         permissionType: PermissionType.portfolioadmin);
     router.define('/service-accounts',
+        routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.serviceAccount),
         permissionType: PermissionType.portfolioadmin);
     router.define('/manage-user',
+        routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.manageUser),
         permissionType: PermissionType.portfolioadmin);
     router.define('/users',
+        routeSlots: [RouteSlot.portfolio],
         handler: handleRouteChangeRequest(routeCreator.users),
         permissionType: PermissionType.portfolioadmin);
 

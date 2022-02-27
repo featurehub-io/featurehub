@@ -11,7 +11,9 @@ We are going to run KeyCloak as it is an OAuth2 provider, and we have saved a da
 all set up for basic authentication.
 
 To run Keycloak, so it is already setup and ready to go for a KeyCloak test
-for OAuth2, you can use the `./keycloak.sh` script. 
+for OAuth2, you can use the KeyCloak script.
+
+ $ ./keycloak.sh
 
 The default user is `myuser@mailinator.com` and the password is `password123`
 
@@ -37,6 +39,8 @@ If you are using the *Generic* oauth2 provider, your provider gets more complica
 you need to serve an icon that is allowed access via CORS (as it will be hosted on a different URL
 to FeatureHub itself). So you will need to also run the nginx container, and it runs up locally
 on port 8097.
+
+ $ ./nginx.sh
 
 should look like this:
 

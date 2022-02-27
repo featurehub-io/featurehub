@@ -50,7 +50,6 @@ class CustomStrategyBloc extends Bloc {
     strategies.add(rs);
     markDirty();
     _strategySource.add(strategies);
-    // print('added strategy is $rs');
   }
 
   void updateStrategy() {

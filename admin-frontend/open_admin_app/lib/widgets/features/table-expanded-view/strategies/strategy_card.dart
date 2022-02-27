@@ -21,7 +21,6 @@ class StrategyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print(strBloc != null);
     return StreamBuilder<bool>(
         stream: strBloc.fvBloc.environmentIsLocked(
             strBloc.environmentFeatureValue.environmentId!),
