@@ -44,7 +44,7 @@ class MetricsHealthRegistration {
             // into our health repository
             val healthSources = injector.getAllServices(HealthSource::class.java);
 
-            val resourceConfig = ResourceConfig(JerseyPrometheusResource::class.java, HealthFeature::class.java)
+            val resourceConfig = ResourceConfig(JerseyPrometheusResource::class.java, HealthFeature::class.java, LoadBalancerFeature::class.java)
 
             resourceConfig.register(object: AbstractBinder() {
               override fun configure() {

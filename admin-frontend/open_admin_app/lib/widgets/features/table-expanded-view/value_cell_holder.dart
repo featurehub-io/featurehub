@@ -25,7 +25,6 @@ class ValueCellHolder extends StatelessWidget {
   Widget build(BuildContext context) {
     final strategyBloc =
         fvBloc.matchingCustomStrategyBloc(environmentFeatureValue);
-    print(strategyBloc);
 
     return StreamBuilder<List<RolloutStrategy>>(
         stream: strategyBloc.strategies,
