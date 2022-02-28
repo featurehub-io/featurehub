@@ -29,7 +29,7 @@ dependencies:
   url_launcher: ^6.0.3
   intl: ^0.17.0
   timeago: ^3.0.2
-  google_fonts: ^2.0.0
+  google_fonts: 2.2.0
   # do not change this version of animator
   animator: ^3.0.0
   shared_preferences: ^2.0.5
