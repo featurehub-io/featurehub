@@ -399,11 +399,11 @@ public class ApplicationSqlApi implements ApplicationApi {
 
       appFeature.setSecret(feature.getSecret() != null && feature.getSecret());
 
-      if (appFeature.getMetaData() != null) {
+      if (feature.getMetaData() != null) {
         appFeature.setMetaData(feature.getMetaData());
       }
 
-      if (appFeature.getDescription() != null) {
+      if (feature.getDescription() != null) {
         appFeature.setDescription(feature.getDescription());
       }
 

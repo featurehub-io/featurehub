@@ -173,6 +173,20 @@ class FeatureSpec extends Base2Spec {
       appApi.getApplicationFeatures(appId, Opts.empty())[0].description == 'the voice'
   }
 
+  def "if a description on a feature is null, i can update it"() {
+    when: "i create the feature without description"
+      def features = appApi.createApplicationFeature(appId, new Feature().name("m-people").key("m-people"), superPerson, Opts.empty())
+    then:
+      appApi.updateApplicationFeature(appId, features[0].key, features[0].description("new desc"), Opts.empty())[0].description == 'new desc'
+  }
+
+  def "if a metadata on a feature is null, i can update it"() {
+    when: "i create the feature without meta-data"
+      def features = appApi.createApplicationFeature(appId, new Feature().name("m-people").key("m-people"), superPerson, Opts.empty())
+    then:
+      appApi.updateApplicationFeature(appId, features[0].key, features[0].metaData("new data"), Opts.opts(FillOpts.MetaData))[0].metaData == 'new data'
+  }
+
   def "i can use basic crud for feature values for an application"() {
     given: "i have a feature"
       String k = "FEATURE_FV1"
