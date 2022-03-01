@@ -227,7 +227,8 @@ public interface Conversions {
   }
 
   FeatureEnvironment toFeatureEnvironment(
-      DbFeatureValue s, List<RoleType> roles, DbEnvironment dbEnvironment, Opts opts);
+      @Nullable DbFeatureValue featureValue, @NotNull List<RoleType> roles, @NotNull DbEnvironment dbEnvironment,
+      @NotNull Opts opts);
 
   FeatureValue toFeatureValue(DbApplicationFeature feature, DbFeatureValue value);
 

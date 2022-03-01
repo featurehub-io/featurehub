@@ -59,7 +59,7 @@ class StrategyDifferUtilsSpec extends BaseSpec {
   def "i can track a series of expected changed from the creation of a boolean feature value adding, updating and removing shared strategies and full removal"() {
     given: "i have a feature"
       def key = 'FV_SPRING_IS_HERE'
-      def feature = appApi.createApplicationFeature(app1.id, new Feature().name(key).valueType(FeatureValueType.BOOLEAN).key(key), superPerson)
+      def feature = appApi.createApplicationFeature(app1.id, new Feature().name(key).valueType(FeatureValueType.BOOLEAN).key(key), superPerson, io.featurehub.db.api.Opts.empty())
     and: "a feature value in an environment"
       def perms = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
       def fvLocked = featureSqlApi.getFeatureValueForEnvironment(envId, key)
@@ -99,7 +99,7 @@ class StrategyDifferUtilsSpec extends BaseSpec {
   def "i can track a series of expected changed from the creation of a string feature value adding, updating and removing shared strategies and full removal"() {
     given: "i have a feature"
       def key = 'FV_SEPT_IS_HERE'
-      def feature = appApi.createApplicationFeature(app1.id, new Feature().name(key).valueType(FeatureValueType.STRING).key(key), superPerson)
+      def feature = appApi.createApplicationFeature(app1.id, new Feature().name(key).valueType(FeatureValueType.STRING).key(key), superPerson, io.featurehub.db.api.Opts.empty())
     and: "a feature value in an environment"
       def perms = new PersonFeaturePermission(superPerson, [RoleType.CHANGE_VALUE, RoleType.UNLOCK, RoleType.LOCK] as Set<RoleType>)
     and: "i add two shared rollout strategies"

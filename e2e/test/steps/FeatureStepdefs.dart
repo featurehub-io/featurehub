@@ -286,4 +286,55 @@ class FeatureStepdefs {
 
     shared.featureValue = fv;
   }
+
+  @When(
+      r'I create a feature flag {string} with a description {string} and meta-data {string}')
+  void iCreateAFeatureFlagWithADescriptionAndMetaData(
+      String flagName, String desc, String metaData) async {
+    await userCommon.featureService.createFeaturesForApplication(
+        shared.application.id!,
+        Feature(
+          name: flagName,
+          key: flagName,
+          description: desc,
+          metaData: metaData,
+          valueType: FeatureValueType.BOOLEAN,
+        ));
+  }
+
+  @Then(r'the feature {string} has the description {string}')
+  void theFeatureHasTheDescription(
+      String featureName, String description) async {
+    final feature = await userCommon.featureService
+        .getFeatureByKey(shared.application.id!, featureName);
+
+    assert(feature.description == description,
+        "Feature description ${feature.description} and $description are not the same");
+  }
+
+  @Then(r'the feature {string} has the metadata {string}')
+  void theFeatureHasTheMetadata(String featureName, String metaData) async {
+    final feature = await userCommon.featureService.getFeatureByKey(
+        shared.application.id!, featureName,
+        includeMetaData: true);
+
+    assert(feature.metaData == metaData,
+        "Feature description ${feature.metaData} and $metaData are not the same");
+  }
+
+  @And(r'I set the feature (.*) (metadata|description) to "(.*)"')
+  void iSetTheFeatureFEATURE_MARYMetadataTo(
+      String featureName, String field, String val) async {
+    final feature = await userCommon.featureService
+        .getFeatureByKey(shared.application.id!, featureName);
+
+    if (field == 'metadata') {
+      feature.metaData = val;
+    } else {
+      feature.description = val;
+    }
+
+    await userCommon.featureService.updateFeatureForApplication(
+        shared.application.id!, feature.key!, feature);
+  }
 }

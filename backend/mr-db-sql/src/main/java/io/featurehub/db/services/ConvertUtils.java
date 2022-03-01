@@ -49,6 +49,7 @@ import io.featurehub.mr.model.ServiceAccount;
 import io.featurehub.mr.model.ServiceAccountPermission;
 import jakarta.inject.Singleton;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -551,16 +552,23 @@ public class ConvertUtils implements Conversions {
 
   @Override
   public Feature toApplicationFeature(DbApplicationFeature af, Opts opts) {
-    return new Feature()
-        .key(stripArchived(af.getKey(), af.getWhenArchived()))
-        .name(af.getName())
-        .alias(af.getAlias())
-        .link(af.getLink())
-        .version(af.getVersion())
-        .secret(af.isSecret())
-        .whenArchived(toOff(af.getWhenArchived()))
-        .valueType(af.getValueType())
-        .id(af.getId());
+    final Feature feat = new Feature()
+      .key(stripArchived(af.getKey(), af.getWhenArchived()))
+      .name(af.getName())
+      .alias(af.getAlias())
+      .link(af.getLink())
+      .version(af.getVersion())
+      .secret(af.isSecret())
+      .whenArchived(toOff(af.getWhenArchived()))
+      .valueType(af.getValueType())
+      .description(af.getDescription())
+      .id(af.getId());
+
+    if (opts.contains(FillOpts.MetaData)) {
+      feat.metaData(af.getMetaData());
+    }
+
+    return feat;
   }
 
   @Override
@@ -583,7 +591,7 @@ public class ConvertUtils implements Conversions {
   }
 
   protected FeatureValue featureValue(
-      DbApplicationFeature actFeature, DbFeatureValue fs, Opts opts) {
+    @Nullable DbApplicationFeature actFeature, @Nullable DbFeatureValue fs, @NotNull Opts opts) {
     if (fs == null) {
       return null;
     }
@@ -664,7 +672,7 @@ public class ConvertUtils implements Conversions {
   }
 
   @Override
-  public FeatureValue toFeatureValue(DbFeatureValue fs) {
+  public FeatureValue toFeatureValue(@Nullable DbFeatureValue fs) {
     return featureValue(null, fs, Opts.opts(FillOpts.People, FillOpts.RolloutStrategies));
   }
 
@@ -905,12 +913,12 @@ public class ConvertUtils implements Conversions {
 
   @Override
   public FeatureEnvironment toFeatureEnvironment(
-      DbFeatureValue s, List<RoleType> roles, DbEnvironment dbEnvironment, Opts opts) {
+    DbFeatureValue featureValue, @NotNull List<RoleType> roles, @NotNull DbEnvironment dbEnvironment, @NotNull Opts opts) {
     final FeatureEnvironment featureEnvironment =
         new FeatureEnvironment()
             .environment(toEnvironment(dbEnvironment, Opts.empty()))
             .roles(roles)
-            .featureValue(toFeatureValue(s));
+            .featureValue(toFeatureValue(featureValue));
 
     if (opts.contains(FillOpts.ServiceAccounts)) {
       featureEnvironment.serviceAccounts(

@@ -3,7 +3,9 @@ package io.featurehub.mr.resources;
 import io.featurehub.db.api.ApplicationApi;
 import io.featurehub.db.api.EnvironmentApi;
 import io.featurehub.db.api.FeatureApi;
+import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.OptimisticLockingException;
+import io.featurehub.db.api.Opts;
 import io.featurehub.db.api.RolloutStrategyValidator;
 import io.featurehub.mr.api.FeatureServiceDelegate;
 import io.featurehub.mr.auth.AuthManagerService;
@@ -43,23 +45,25 @@ public class FeatureResource implements FeatureServiceDelegate {
   }
 
   @Override
-  public List<Feature> createFeaturesForApplication(UUID id, Feature feature, SecurityContext securityContext) {
+  public List<Feature> createFeaturesForApplication(UUID id, Feature feature,
+                                                    CreateFeaturesForApplicationHolder holder,
+                                                    SecurityContext securityContext) {
     // here we are only calling it to ensure the security check happens
     final ApplicationPermissionCheck appFeaturePermCheck = applicationUtils.featureAdminCheck(securityContext, id);
 
     try {
-      return applicationApi.createApplicationFeature(id, feature, appFeaturePermCheck.getCurrent());
+      return applicationApi.createApplicationFeature(id, feature, appFeaturePermCheck.getCurrent(), Opts.empty().add(FillOpts.MetaData, holder.includeMetaData));
     } catch (ApplicationApi.DuplicateFeatureException e) {
       throw new WebApplicationException(409);
     }
   }
 
   @Override
-  public List<Feature> deleteFeatureForApplication(UUID id, String featureKey, SecurityContext securityContext) {
+  public List<Feature> deleteFeatureForApplication(UUID id, String key, DeleteFeatureForApplicationHolder holder, SecurityContext securityContext) {
     // here we are only calling it to ensure the security check happens
     applicationUtils.featureAdminCheck(securityContext, id);
 
-    List<Feature> features = applicationApi.deleteApplicationFeature(id, featureKey);
+    List<Feature> features = applicationApi.deleteApplicationFeature(id, key);
     if (features == null) {
       throw new NotFoundException();
     }
@@ -94,21 +98,22 @@ public class FeatureResource implements FeatureServiceDelegate {
   }
 
   @Override
-  public List<Feature> getAllFeaturesForApplication(UUID id, SecurityContext securityContext) {
-    applicationUtils.featureReadCheck(securityContext, id);
-    return applicationApi.getApplicationFeatures(id);
-  }
-
-  @Override
-  public Feature getFeatureByKey(UUID id, String key, SecurityContext securityContext) {
+  public Feature getFeatureByKey(UUID id, String key, GetFeatureByKeyHolder holder, SecurityContext securityContext) {
     // TODO: permission to read the features
-    Feature feature = applicationApi.getApplicationFeatureByKey(id, key);
+    Feature feature = applicationApi.getApplicationFeatureByKey(id, key, Opts.empty().add(FillOpts.MetaData, holder.includeMetaData));
 
     if (feature == null) {
       throw new NotFoundException();
     }
 
     return feature;
+  }
+
+  @Override
+  public List<Feature> getAllFeaturesForApplication(UUID id, GetAllFeaturesForApplicationHolder holder,
+                                                    SecurityContext securityContext) {
+    applicationUtils.featureReadCheck(securityContext, id);
+    return applicationApi.getApplicationFeatures(id, Opts.empty().add(FillOpts.MetaData, holder.includeMetaData));
   }
 
   @Override
@@ -139,11 +144,10 @@ public class FeatureResource implements FeatureServiceDelegate {
   }
 
   @Override
-  public List<Feature> updateFeatureForApplication(UUID id, String key, Feature feature,
-                                                   SecurityContext securityContext) {
+  public List<Feature> updateFeatureForApplication(UUID id, String key, Feature feature, UpdateFeatureForApplicationHolder holder, SecurityContext securityContext) {
     applicationUtils.check(securityContext, id);
     try {
-      List<Feature> features = applicationApi.updateApplicationFeature(id, key, feature);
+      List<Feature> features = applicationApi.updateApplicationFeature(id, key, feature, Opts.empty().add(FillOpts.MetaData, holder.includeMetaData));
 
       if (features == null) {
         throw new NotFoundException("no such feature name");

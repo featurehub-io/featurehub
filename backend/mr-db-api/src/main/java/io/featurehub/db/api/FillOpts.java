@@ -19,6 +19,7 @@ public enum FillOpts {
   IgnoreEmptyPermissions,
   ServiceAccountPermissionFilter,
   RolloutStrategies,
+  MetaData, // include meta-data for features and feature values
   Archived, // include archived records
   Details // full details of the current object type (e.g. if people, all details about people)
 }

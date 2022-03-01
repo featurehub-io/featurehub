@@ -200,7 +200,7 @@ public class ApplicationSqlApi implements ApplicationApi {
   }
 
   @Override
-  public boolean deleteApplication(UUID portfolioId, UUID applicationId) {
+  public boolean deleteApplication(@NotNull UUID portfolioId, UUID applicationId) {
     Conversions.nonNullPortfolioId(portfolioId);
     Conversions.nonNullApplicationId(applicationId);
 
@@ -220,7 +220,7 @@ public class ApplicationSqlApi implements ApplicationApi {
   }
 
   @Override
-  public Application getApplication(UUID appId, Opts opts) {
+  public Application getApplication(@NotNull UUID appId, @NotNull Opts opts) {
     Conversions.nonNullApplicationId(appId);
 
     return convertUtils.toApplication(
@@ -228,7 +228,7 @@ public class ApplicationSqlApi implements ApplicationApi {
   }
 
   @Override
-  public Application updateApplication(UUID applicationId, Application application, Opts opts)
+  public Application updateApplication(@NotNull UUID applicationId, @NotNull Application application, @NotNull Opts opts)
       throws DuplicateApplicationException, OptimisticLockingException {
     Conversions.nonNullApplicationId(applicationId);
 
@@ -263,7 +263,8 @@ public class ApplicationSqlApi implements ApplicationApi {
   }
 
   @Override
-  public List<Feature> createApplicationFeature(UUID applicationId, Feature feature, Person person)
+  public List<Feature> createApplicationFeature(@NotNull UUID applicationId, Feature feature, Person person,
+                                                @NotNull Opts opts)
       throws DuplicateFeatureException {
     Conversions.nonNullApplicationId(applicationId);
 
@@ -283,6 +284,8 @@ public class ApplicationSqlApi implements ApplicationApi {
               .link(feature.getLink())
               .secret(feature.getSecret() != null && feature.getSecret())
               .valueType(feature.getValueType())
+              .metaData(feature.getMetaData())
+              .description(feature.getDescription())
               .build();
 
       saveApplicationFeature(appFeature);
@@ -298,7 +301,7 @@ public class ApplicationSqlApi implements ApplicationApi {
         createDefaultBooleanFeatureValuesForAllEnvironments(appFeature, app, person);
       }
 
-      return getAppFeatures(app);
+      return getAppFeatures(app, opts);
     }
 
     return new ArrayList<>();
@@ -331,17 +334,18 @@ public class ApplicationSqlApi implements ApplicationApi {
     newFeatures.forEach(database::save);
   }
 
-  private List<Feature> getAppFeatures(DbApplication app) {
+  private List<Feature> getAppFeatures(DbApplication app, @NotNull Opts opts) {
     return app.getFeatures().stream()
         .filter(af -> af.getWhenArchived() == null)
-        .map(af -> convertUtils.toApplicationFeature(af, Opts.empty()))
+        .map(af -> convertUtils.toApplicationFeature(af, opts))
         .collect(Collectors.toList());
   }
 
   @Override
-  public List<Feature> updateApplicationFeature(UUID appId, String key, Feature feature)
+  public List<Feature> updateApplicationFeature(UUID appId, String key, Feature feature, @NotNull Opts opts)
       throws DuplicateFeatureException, OptimisticLockingException {
     Conversions.nonNullApplicationId(appId);
+
     DbApplication app = convertUtils.byApplication(appId);
 
     if (app != null) {
@@ -375,21 +379,43 @@ public class ApplicationSqlApi implements ApplicationApi {
         }
       }
 
+      boolean changed =
+        (feature.getKey() != null && !feature.getKey().equals(appFeature.getKey())) || feature.getValueType() != appFeature.getValueType();
+
       appFeature.setName(feature.getName());
       appFeature.setAlias(feature.getAlias());
-      appFeature.setKey(feature.getKey());
-      appFeature.setLink(feature.getLink());
-      appFeature.setValueType(feature.getValueType());
+
+      if (feature.getKey() != null) {
+        appFeature.setKey(feature.getKey());
+      }
+
+      if (feature.getLink() != null) {
+        appFeature.setLink(feature.getLink());
+      }
+
+      if (feature.getValueType() != null) {
+        appFeature.setValueType(feature.getValueType());
+      }
+
       appFeature.setSecret(feature.getSecret() != null && feature.getSecret());
+
+      if (feature.getMetaData() != null) {
+        appFeature.setMetaData(feature.getMetaData());
+      }
+
+      if (feature.getDescription() != null) {
+        appFeature.setDescription(feature.getDescription());
+      }
 
       updateApplicationFeature(appFeature);
 
-      if (appFeature.getWhenArchived() == null) {
+      if (appFeature.getWhenArchived() == null && changed) {
         cacheSource.publishFeatureChange(appFeature, PublishAction.UPDATE);
       }
 
-      return getAppFeatures(app);
+      return getAppFeatures(app, opts);
     }
+
     return new ArrayList<>();
   }
 
@@ -404,13 +430,13 @@ public class ApplicationSqlApi implements ApplicationApi {
   }
 
   @Override
-  public List<Feature> getApplicationFeatures(UUID appId) {
+  public List<Feature> getApplicationFeatures(@NotNull UUID appId, @NotNull Opts opts) {
     Conversions.nonNullApplicationId(appId);
 
     DbApplication app = convertUtils.byApplication(appId);
 
     if (app != null) {
-      return getAppFeatures(app);
+      return getAppFeatures(app, opts);
     }
 
     return new ArrayList<>();
@@ -475,11 +501,11 @@ public class ApplicationSqlApi implements ApplicationApi {
       archiveStrategy.archiveApplicationFeature(appFeature.appFeature);
     }
 
-    return getAppFeatures(appFeature.app);
+    return getAppFeatures(appFeature.app, Opts.empty());
   }
 
   @Override
-  public Feature getApplicationFeatureByKey(UUID appId, String key) {
+  public Feature getApplicationFeatureByKey(UUID appId, @NotNull String key, @NotNull Opts opts) {
     Conversions.nonNullApplicationId(appId);
 
     AppFeature af = findAppFeature(appId, key);
@@ -488,7 +514,7 @@ public class ApplicationSqlApi implements ApplicationApi {
       return null;
     }
 
-    return convertUtils.toApplicationFeature(af.appFeature, Opts.empty());
+    return convertUtils.toApplicationFeature(af.appFeature, opts);
   }
 
   // finds all of the groups attached to this application  that have application roles

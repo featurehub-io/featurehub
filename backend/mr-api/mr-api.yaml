@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: ManagementResourceApi
-  description: This describes the API clients use for accessing features
+  description: This describes the API clients use for accessing features. This reflects the API from 1.5.7 onwards.
   version: "1.1.5"
 #  CRUD for portfolios, environments, features, service account, people, and groups (edited)
 #  roles are fixed
@@ -1106,6 +1106,12 @@ paths:
           type: string
           format: uuid
         required: true
+      - name: includeMetaData
+        description: "Include the metadata in the returned feature objects. Can be large."
+        in: query
+        schema:
+          type: boolean
+        required: false
     get:
       security:
         - bearerAuth: [ ]
@@ -1171,6 +1177,12 @@ paths:
         schema:
           type: string
         required: true
+      - name: includeMetaData
+        description: "Include the metadata in the returned feature objects. Can be large."
+        in: query
+        schema:
+          type: boolean
+        required: false
     get:
       security:
         - bearerAuth: [ ]
@@ -2615,6 +2627,12 @@ components:
         secret:
           type: boolean
           description: "should the config remain invisible to users without secret permission"
+        description:
+          type: string
+          maxLength: 300
+        metaData:
+          type: string
+          description: Metadata that may need to be stored. Intended for ADK use. No data limit (stored as CLOB)
     FeatureValue:
       required:
         - key
