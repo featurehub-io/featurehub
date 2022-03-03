@@ -13,7 +13,7 @@
 
   <properties>
     <app.entrypoint>io.featurehub.party.Application</app.entrypoint>
-    <app.baseimage>docker://featurehub/base_party:1.10</app.baseimage>
+    <app.baseimage>featurehub/base_party:1.11</app.baseimage>
     <app.port>8085</app.port>
     <build.version>0.0.1</build.version>
   </properties>

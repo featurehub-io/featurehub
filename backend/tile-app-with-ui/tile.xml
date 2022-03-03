@@ -7,13 +7,16 @@
     <app.entrypoint>io.featurehub.Application</app.entrypoint>
     <app.port>8903</app.port>
     <build.version>0.0.1</build.version>
-    <app.baseimage>adoptopenjdk/openjdk11@sha256:faa097729e4904c80b982ef6962803210db032564c9850d70b5b2a52f0a02200</app.baseimage>
+    <app.baseimage.prefix></app.baseimage.prefix>
+    <!-- debian base image is a multi-arch fat manifest, we cannot pin against a sha for multi-arch builds -->
+    <app.baseimage>${app.baseimage.prefix}adoptopenjdk/openjdk11:debian</app.baseimage>
     <app.imagename>${project.artifactId}</app.imagename>
     <docker.goal>dockerBuild</docker.goal>
     <docker.project.prefix>featurehub</docker.project.prefix>
   </properties>
 
   <profiles>
+    <!-- this build ONLY goes to the local docker server -->
     <profile>
       <id>docker-cloud-build</id>
       <!-- otherwise don't active in tiles -->
@@ -55,23 +58,138 @@
               </includeOnlyProperties>
             </configuration>
           </plugin>
+          <!-- grab the latest admin-ui and unzip into  the target folder -->
           <plugin>
-            <groupId>cd.connect.pipeline</groupId>
-            <artifactId>docker-manifest-collectosaur-plugin</artifactId>
-            <version>1.2</version>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
             <executions>
               <execution>
-                <id>mamasaur</id>
-                <phase>compile</phase>
+                <id>unpack admin-ui</id>
+                <phase>initialize</phase>
                 <goals>
-                  <goal>babysaur</goal>
+                  <goal>unpack</goal>
                 </goals>
                 <configuration>
-                  <fullImageName>${docker.project.prefix}/${project.artifactId}:${build.version}</fullImageName>
-                  <baseImageName>${docker.project.prefix}/${project.artifactId}:${build.version}</baseImageName>
+                  <artifactItems>
+                    <artifactItem>
+                      <groupId>io.featurehub.admin_ui</groupId>
+                      <artifactId>admin-frontend</artifactId>
+                      <version>1.1-SNAPSHOT</version>
+                      <type>zip</type>
+                      <outputDirectory>${project.basedir}/target/admin-ui</outputDirectory>
+                    </artifactItem>
+                  </artifactItems>
+                  <overWriteReleases>true</overWriteReleases>
+                  <overWriteSnapshots>true</overWriteSnapshots>
                 </configuration>
               </execution>
             </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>com.google.cloud.tools</groupId>
+            <artifactId>jib-maven-plugin</artifactId>
+            <version>3.2.0</version>
+            <executions>
+              <execution>
+                <phase>package</phase>
+                <goals>
+                  <goal>${docker.goal}</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <allowInsecureRegistries>false</allowInsecureRegistries>
+              <from>
+                <image>${app.baseimage}</image>
+              </from>
+              <to>
+                <image>${docker.project.prefix}/${project.artifactId}:${build.version}</image>
+              </to>
+              <!-- we need this to get the version of the app in the MANIFEST.MF file -->
+              <containerizingMode>packaged</containerizingMode>
+              <extraDirectories>
+                <paths>
+                  <path>
+                    <from>${project.basedir}/target/admin-ui</from>
+                    <into>/var/www/html</into>
+                  </path>
+                  <path>
+                    <from>${project.basedir}/src/main/resources/deploy-defaults</from>
+                    <into>/etc/common-config</into>
+                  </path>
+                </paths>
+              </extraDirectories>
+              <container>
+                <mainClass>bathe.BatheBooter</mainClass>
+                <jvmFlags>
+                  <jvmFlag>--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED</jvmFlag>
+                  <jvmFlag>--add-opens=java.base/java.nio=ALL-UNNAMED</jvmFlag>
+                  <jvmFlag>-Dlog4j.configurationFile=/etc/common-config/log4j2.xml</jvmFlag>
+                  <jvmFlag>-XX:+UseContainerSupport</jvmFlag>
+                  <jvmFlag>-XX:MaxRAMPercentage=80</jvmFlag>
+                </jvmFlags>
+                <filesModificationTime>${git.commit.time}</filesModificationTime>
+                <args>
+                  <arg>-R${app.entrypoint}</arg>
+                  <arg>-P/etc/common-config/common.properties</arg>
+                  <arg>-P/etc/app-config/application.properties</arg>
+                  <arg>-P/etc/app-config/secrets.properties</arg>
+                </args>
+                <ports>
+                  <port>${app.port}</port>
+                </ports>
+              </container>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <!--
+    ** we have a cloud build which is used to perform multi-architecture builds. These builds have to go
+    ** directly to the destination Docker host, so they are only performed on integration test builds and final "main" builds.
+    ** They are only different in that the default build is always "build" and they are multi-platform.
+    -->
+    <profile>
+      <id>cloud-build</id>
+      <!-- otherwise don't active in tiles -->
+      <activation>
+        <property>
+          <name>cloud-build</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <dependencies>
+        <!-- this is only here to ensure build order for the docker image -->
+        <dependency>
+          <groupId>io.featurehub.admin_ui</groupId>
+          <artifactId>admin-frontend</artifactId>
+          <version>1.1-SNAPSHOT</version>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>pl.project13.maven</groupId>
+            <artifactId>git-commit-id-plugin</artifactId>
+            <version>4.0.0</version>
+            <executions>
+              <execution>
+                <id>get-info</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>revision</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <generateGitPropertiesFile>false</generateGitPropertiesFile>
+              <verbose>true</verbose>
+              <dateFormat>yyyy-MM-dd'T'HH:mm:ss'Z'</dateFormat>
+              <includeOnlyProperties>
+                <includeOnlyProperty>git.commit.time</includeOnlyProperty>
+              </includeOnlyProperties>
+            </configuration>
           </plugin>
           <!-- grab the latest admin-ui and unzip into  the target folder -->
           <plugin>
@@ -104,12 +222,12 @@
           <plugin>
             <groupId>com.google.cloud.tools</groupId>
             <artifactId>jib-maven-plugin</artifactId>
-            <version>3.1.4</version>
+            <version>3.2.0</version>
             <executions>
               <execution>
                 <phase>package</phase>
                 <goals>
-                  <goal>${docker.goal}</goal>
+                  <goal>build</goal>
                 </goals>
               </execution>
             </executions>
@@ -118,15 +236,25 @@
               <from>
                 <image>${app.baseimage}</image>
                 <auth>
-                  <username>${env.REGISTRY_USERNAME}</username>
-                  <password>${env.REGISTRY_PASSWORD}</password>
+                  <username>${env.SOURCE_REGISTRY_USERNAME}</username>
+                  <password>${env.SOURCE_REGISTRY_PASSWORD}</password>
                 </auth>
+                <platforms>
+                  <platform>
+                    <architecture>amd64</architecture>
+                    <os>linux</os>
+                  </platform>
+                  <platform>
+                    <architecture>arm64</architecture>
+                    <os>linux</os>
+                  </platform>
+                </platforms>
               </from>
               <to>
                 <image>${docker.project.prefix}/${project.artifactId}:${build.version}</image>
                 <auth>
-                  <username>${env.REGISTRY_USERNAME}</username>
-                  <password>${env.REGISTRY_PASSWORD}</password>
+                  <username>${env.DEST_REGISTRY_USERNAME}</username>
+                  <password>${env.DEST_REGISTRY_PASSWORD}</password>
                 </auth>
               </to>
               <!-- we need this to get the version of the app in the MANIFEST.MF file -->
