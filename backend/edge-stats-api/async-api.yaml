@@ -2,6 +2,7 @@ components:
   schemas:
     EdgeStatsBundle:
       type: object
+      x-package: io.featurehub.sse.stats.model
       required:
         - misses
         - apiKeys
@@ -19,6 +20,7 @@ components:
             $ref: "#/components/schemas/EdgeStatApiKey"
     EdgeStatApiKey:
       type: object
+      x-package: io.featurehub.sse.stats.model
       required:
         - svcKey
         - envId
@@ -53,6 +55,7 @@ components:
           format: uuid
     EdgeApiStat:
       type: object
+      x-package: io.featurehub.sse.stats.model
       required:
         - count
         - resultType
@@ -66,6 +69,7 @@ components:
         hitType:
           $ref: "#/components/schemas/EdgeHitSourceType"
     EdgeHitResultType:
+      x-package: io.featurehub.sse.stats.model
       type: string
       enum:
         - success_until_kicked_off
@@ -78,6 +82,7 @@ components:
         - update_nonsense
         - update_no_change
     EdgeHitSourceType:
+      x-package: io.featurehub.sse.stats.model
       type: string
       enum:
         - eventsource
