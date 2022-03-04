@@ -4,5 +4,5 @@ import io.featurehub.edge.client.ClientConnection;
 
 public interface BucketService {
   void putInBucket(ClientConnection b);
-  void shuftyBucketsBecauseDachaIsUnavailable(ClientConnection b);
+  void dachaIsUnavailable(ClientConnection b);
 }
