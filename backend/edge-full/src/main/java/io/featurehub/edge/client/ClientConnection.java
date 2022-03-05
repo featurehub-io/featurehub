@@ -23,6 +23,8 @@ public interface ClientConnection {
 
   KeyParts getKey();
 
+  void heartbeat();
+
   ClientContext getClientContext();
 
   void writeMessage(SSEResultState name, String data) throws IOException;

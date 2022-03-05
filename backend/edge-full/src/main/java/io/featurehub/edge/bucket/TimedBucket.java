@@ -4,11 +4,7 @@ import io.featurehub.edge.client.ClientConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Time;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,11 +17,13 @@ public class TimedBucket implements TimedBucketSlot {
   private static final Logger log = LoggerFactory.getLogger(TimedBucket.class);
   private Map<UUID, ClientConnection> timedConnections = new ConcurrentHashMap<>();
   // connection id, ejection handler id
-  private Map<UUID, UUID> ejectionHandlers = new ConcurrentHashMap<>();
+  private final Map<UUID, UUID> ejectionHandlers = new ConcurrentHashMap<>();
   private boolean expiring = false;
+  private final TimerBucketPurpose timerBucketPurpose;
   private final int timerSlice;
 
-  public TimedBucket(int timerSlice) {
+  public TimedBucket(TimerBucketPurpose timerBucketPurpose, int timerSlice) {
+    this.timerBucketPurpose = timerBucketPurpose;
     this.timerSlice = timerSlice;
   }
 
@@ -35,7 +33,9 @@ public class TimedBucket implements TimedBucketSlot {
     // make sure we don't try and reclose a closed connection, helps release memory
     UUID ejectionId = conn.registerEjection(client -> {
       if (!expiring) {
-        timedConnections.remove(client);
+        int count = timedConnections.size();
+        timedConnections.remove(client.connectionId());
+        log.trace("removed connection {} was {} now {}", timerBucketPurpose, count, timedConnections.size());
       }
     });
 
@@ -50,13 +50,18 @@ public class TimedBucket implements TimedBucketSlot {
     newBucket.addConnection(conn);
   }
 
+  @Override
+  public Object numConnections() {
+    return timedConnections.size();
+  }
+
   /**
    * expire the connections as quickly as possible, allowing for clocking over quickly as well
    * but poshing the expiry list off elsewhere and replacing the current list.
    */
   public void expireConnections() {
     if (!timedConnections.isEmpty()) {
-      log.debug("kickout: {}: {}", timerSlice, timedConnections.size());
+      log.trace("kickout: {}: {}", timerSlice, timedConnections.size());
 
       final Map<UUID, ClientConnection> conns = this.timedConnections;
 
@@ -68,11 +73,28 @@ public class TimedBucket implements TimedBucketSlot {
           try {
             c.close();
           } catch (Exception e) {
-            log.error("Failed to kick out connections", e);
+            log.trace("Failed to kick out connection", e);
           }
       });
 
       expiring = false;
     }
+  }
+
+  public void ensureConnectionsInBucketAreActive() {
+    if (!timedConnections.isEmpty()) {
+      log.trace("heartbeat checking -> position {}, number of connections {}", timerSlice, timedConnections.size());
+
+      final Map<UUID, ClientConnection> conns = new HashMap<>(this.timedConnections);
+
+      conns.values().parallelStream().forEach((c) -> {
+        try {
+          c.heartbeat();
+        } catch (Exception e) {
+          log.trace("heartbeat failed", e);
+        }
+      });
+    }
+
   }
 }

@@ -6,4 +6,6 @@ public interface TimedBucketSlot {
   void addConnection(ClientConnection conn);
 
   void swapConnection(ClientConnection conn, TimedBucket newBucket);
+
+  Object numConnections();
 }

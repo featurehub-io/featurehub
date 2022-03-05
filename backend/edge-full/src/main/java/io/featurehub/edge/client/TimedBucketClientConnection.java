@@ -113,6 +113,16 @@ public class TimedBucketClientConnection implements ClientConnection {
   }
 
   @Override
+  public void heartbeat() {
+    try {
+      writeMessage(SSEResultState.ACK, "\"❤️\"");
+    } catch (IOException ignored) {
+      log.trace("connection dropped when attempting heartbeat");
+      close(false);
+    }
+  }
+
+  @Override
   public ClientContext getClientContext() {
     return attributesForStrategy;
   }
@@ -238,7 +248,7 @@ public class TimedBucketClientConnection implements ClientConnection {
             statRecorder.recordHit(apiKey, EdgeHitResultType.MISSED, EdgeHitSourceType.EVENTSOURCE);
 
             // move it to a random number of buckets ahead to get a kick-out
-            bucketService.shuftyBucketsBecauseDachaIsUnavailable(this);
+            bucketService.dachaIsUnavailable(this);
             break;
         }
       } catch (IOException iex) {
