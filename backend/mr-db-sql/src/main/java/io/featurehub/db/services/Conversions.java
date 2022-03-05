@@ -150,6 +150,8 @@ public interface Conversions {
 
   boolean personIsSuperAdmin(DbPerson person);
 
+  boolean isPersonMemberOfPortfolioGroup(@NotNull UUID portfolioId, @NotNull UUID personId);
+
   Group getSuperuserGroup(Opts opts);
 
   String limitLength(String s, int len);

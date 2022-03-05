@@ -62,7 +62,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
     Conversions.nonNullPortfolioId(portfolioId);
     Conversions.nonNullPersonId(personId);
 
-    return new QDbGroup().owningPortfolio.id.eq(portfolioId).peopleInGroup.id.eq(personId).exists();
+    return convertUtils.isPersonMemberOfPortfolioGroup(portfolioId, personId);
   }
 
   private boolean isPersonMemberOfPortfolioAdminGroup(DbPortfolio portfolio, UUID personId) {

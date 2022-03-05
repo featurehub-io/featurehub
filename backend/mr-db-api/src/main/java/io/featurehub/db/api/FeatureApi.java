@@ -19,8 +19,9 @@ public interface FeatureApi {
     throws OptimisticLockingException, NoAppropriateRole,
     RolloutStrategyValidator.InvalidStrategyCombination;
 
-  @Nullable ApplicationFeatureValues findAllFeatureAndFeatureValuesForEnvironmentsByApplication(UUID appId,
-                                                                                             Person current);
+  @Nullable ApplicationFeatureValues findAllFeatureAndFeatureValuesForEnvironmentsByApplication(@NotNull UUID appId,
+                                                                                                @NotNull Person current,
+                                                                                                @Nullable String filter);
 
   class NoAppropriateRole extends Exception {
   }

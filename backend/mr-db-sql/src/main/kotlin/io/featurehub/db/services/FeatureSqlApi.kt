@@ -480,13 +480,14 @@ class FeatureSqlApi @Inject constructor(
     }
   }
 
-  private fun environmentToFeatureValues(acl: DbAcl, personIsAdmin: Boolean): EnvironmentFeatureValues? {
+  private fun environmentToFeatureValues(acl: DbAcl, personIsAdmin: Boolean, filter: String?): EnvironmentFeatureValues? {
     val roles: List<RoleType> = if (personIsAdmin) {
         listOf(*RoleType.values())
     } else {
       convertUtils.splitEnvironmentRoles(acl.roles)
     }
 
+    // we are never called where the environment is archived
     return if (roles.isEmpty()) {
       null
     } else EnvironmentFeatureValues()
@@ -494,39 +495,66 @@ class FeatureSqlApi @Inject constructor(
       .environmentName(acl.environment.name)
       .priorEnvironmentId(if (acl.environment.priorEnvironment == null) null else acl.environment.priorEnvironment.id)
       .roles(roles)
-      .features(
-        QDbFeatureValue().environment.eq(acl.environment).environment.whenArchived.isNull.feature.whenArchived.isNull
-          .findList().stream().map { fs: DbFeatureValue? -> convertUtils.toFeatureValue(fs) }
-          .collect(Collectors.toList()))
+      .features(featuresForEnvironment(acl.environment, filter))
   }
 
+  private fun featuresForEnvironment(environment: DbEnvironment, filter: String?): List<FeatureValue> {
+    var featureValueFinder = QDbFeatureValue()
+      .environment.eq(environment)
+      .feature.whenArchived.isNull
+
+    if (filter != null)
+      featureValueFinder = featureValueFinder.or().feature.description.icontains(filter).feature.key.icontains(filter).endOr()
+
+    return featureValueFinder.findList().map { fs: DbFeatureValue? -> convertUtils.toFeatureValue(fs) }
+  }
+
+  /*
+   * This is the main call that the "features" page users to get data back
+   */
   override fun findAllFeatureAndFeatureValuesForEnvironmentsByApplication(
       appId: UUID,
-      person: Person
+      person: Person,
+      filter: String?
   ): ApplicationFeatureValues? {
       Conversions.nonNullApplicationId(appId)
       Conversions.nonNullPerson(person)
     val dbPerson = convertUtils.byPerson(person)
     val app = convertUtils.byApplication(appId)
     if (app != null && dbPerson != null && app.whenArchived == null && dbPerson.whenArchived == null) {
+      // they don't have permission, so deny them.
+      if (!convertUtils.isPersonMemberOfPortfolioGroup(app.portfolio.id, dbPerson.id)) {
+        return null
+      }
+
       val empty = Opts.empty()
       val personAdmin = convertUtils.isPersonApplicationAdmin(dbPerson, app)
       val environmentOrderingMap: MutableMap<UUID, DbEnvironment> = HashMap()
-      // the requirement is that we only send back environments they have at least READ access to
+
+      // the requirement is that we only send back environments they have at least READ access to, so
+      // this finds the environments their group has access to
       val permEnvs =
-        QDbAcl().environment.whenArchived.isNull.environment.parentApplication.eq(app).environment.parentApplication.whenArchived.isNull.environment.parentApplication.groupRolesAcl.fetch().group.whenArchived.isNull.group.peopleInGroup.eq(
+        QDbAcl()
+          .environment.whenArchived.isNull
+          .environment.parentApplication.eq(app)
+          .environment.parentApplication.whenArchived.isNull
+          .environment.parentApplication.groupRolesAcl.fetch()
+          .group.whenArchived.isNull
+          .group.peopleInGroup.eq(
           dbPerson
         ).findList()
-          .stream()
-          .peek { acl: DbAcl -> environmentOrderingMap[acl.environment.id] = acl.environment }
-          .map { acl: DbAcl -> environmentToFeatureValues(acl, personAdmin) }
+          .onEach { acl: DbAcl -> environmentOrderingMap[acl.environment.id] = acl.environment }
+          .map { acl: DbAcl -> environmentToFeatureValues(acl, personAdmin, filter) }
           .filter { obj: EnvironmentFeatureValues? -> Objects.nonNull(obj) }
           .filter { efv: EnvironmentFeatureValues? ->
             efv!!.roles!!.isNotEmpty()
           }
-          .collect(Collectors.toList())
 
-//      Set<String> envs = permEnvs.stream().map(EnvironmentFeatureValues::getEnvironmentId).distinct().collect(Collectors.toSet());
+      // the user has no permission to any environments and they aren't an admin, they shouldn't see anything
+      if (permEnvs.isEmpty() && !personAdmin) {
+        return null
+      }
+
       val envs: MutableMap<UUID?, EnvironmentFeatureValues?> = HashMap()
 
       // merge any duplicates, this occurs because the database query can return duplicate lines
@@ -570,13 +598,7 @@ class FeatureSqlApi @Inject constructor(
               .priorEnvironmentId(if (e.priorEnvironment == null) null else e.priorEnvironment.id)
               .environmentId(e.id)
               .roles(roles) // all access (as admin)
-              .features(if (!personAdmin) ArrayList() else QDbFeatureValue().feature.whenArchived.isNull.environment.eq(
-                e
-              )
-                .findList().stream()
-                .map { fs: DbFeatureValue? -> convertUtils.toFeatureValue(fs) }
-                .collect(Collectors.toList())
-              )
+              .features(if (!personAdmin) ArrayList() else featuresForEnvironment(e, filter))
             envs[e1.environmentId] = e1
           }
         }
@@ -595,13 +617,20 @@ class FeatureSqlApi @Inject constructor(
           finalValues.add(efv)
         }
       }
+
+      var appFeatureQuery = QDbApplicationFeature().whenArchived.isNull.parentApplication.eq(app)
+
+      if (filter != null) {
+        appFeatureQuery = appFeatureQuery.or().description.icontains(filter).key.icontains(filter).endOr()
+      }
+
       return ApplicationFeatureValues()
         .applicationId(appId)
         .features(
-          QDbApplicationFeature().whenArchived.isNull.parentApplication.eq(app)
-            .findList().stream()
+          appFeatureQuery
+            .findList()
             .map { f: DbApplicationFeature? -> convertUtils.toApplicationFeature(f, empty) }
-            .collect(Collectors.toList()))
+            )
         .environments(finalValues)
     }
     return null
