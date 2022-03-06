@@ -78,7 +78,7 @@ public class FeatureResource implements FeatureServiceDelegate {
     Person current = authManager.from(securityContext);
 
     final ApplicationFeatureValues allFeatureAndFeatureValuesForEnvironmentsByApplication =
-      featureApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(id, current, holder.filter);
+      featureApi.findAllFeatureAndFeatureValuesForEnvironmentsByApplication(id, current, holder.filter, null, null, null, null);
 
     if (allFeatureAndFeatureValuesForEnvironmentsByApplication == null) {
       throw new NotFoundException();

@@ -1353,6 +1353,30 @@ paths:
         schema:
           type: string
         required: false
+      - name: max
+        description: "The maximum number of features to get for this page"
+        in: query
+        schema:
+          type: integer
+        required: false
+      - name: page
+        description: "The page number of the results. 0 indexed."
+        in: query
+        schema:
+          type: integer
+        required: false
+      - name: featureTypes
+        in: query
+        schema:
+          type: array
+          items:
+            $ref: "#/components/schemas/FeatureValueType"
+        required: false
+      - name: sortOrder
+        in: query
+        schema:
+          $ref: "#/components/schemas/SortOrder"
+        required: false
     get:
       security:
         - bearerAuth: [ ]
