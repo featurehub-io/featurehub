@@ -7,22 +7,27 @@ import 'package:open_admin_app/widgets/common/fh_header.dart';
 
 /// Every user has access to portfolios, they can only see the ones they have access to
 /// and their access will be limited based on whether they are a super admin.
-class ManageServiceAccountsRoute extends StatelessWidget {
-  const ManageServiceAccountsRoute({Key? key}) : super(key: key);
+class ManageServiceAccountsRoute extends StatefulWidget {
+  bool createServiceAccount;
 
-  @override
-  Widget build(BuildContext context) {
-    return _ServiceAccountSearchWidget();
-  }
-}
+  ManageServiceAccountsRoute({Key? key, required bool createServiceAccount})
+      : this.createServiceAccount = createServiceAccount,
+        super(key: key);
 
-class _ServiceAccountSearchWidget extends StatefulWidget {
   @override
   _ServiceAccountSearchState createState() => _ServiceAccountSearchState();
 }
 
-class _ServiceAccountSearchState extends State<_ServiceAccountSearchWidget> {
+class _ServiceAccountSearchState extends State<ManageServiceAccountsRoute> {
   String? selectedPortfolio;
+  ManageServiceAccountsBloc? bloc;
+
+  @override
+  void initState() {
+    super.initState();
+
+    bloc = BlocProvider.of<ManageServiceAccountsBloc>(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,12 +70,7 @@ class _ServiceAccountSearchState extends State<_ServiceAccountSearchWidget> {
                       TextButton.icon(
                         icon: const Icon(Icons.add),
                         label: const Text('Create new service account'),
-                        onPressed: () =>
-                            bloc.mrClient.addOverlay((BuildContext context) {
-                          return ServiceAccountUpdateDialogWidget(
-                            bloc: bloc,
-                          );
-                        }),
+                        onPressed: () => _createServiceAccount(bloc),
                       ),
                     ],
                   );
@@ -81,5 +81,35 @@ class _ServiceAccountSearchState extends State<_ServiceAccountSearchWidget> {
         ),
       ],
     );
+  }
+
+  @override
+  void didUpdateWidget(ManageServiceAccountsRoute oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _createServiceAccountCheck();
+  }
+
+  void _createServiceAccountCheck() {
+    if (widget.createServiceAccount && bloc != null) {
+      widget.createServiceAccount = false;
+
+      WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+        _createServiceAccount(bloc!);
+      });
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _createServiceAccountCheck();
+  }
+
+  _createServiceAccount(ManageServiceAccountsBloc bloc) {
+    bloc.mrClient.addOverlay((BuildContext context) {
+      return ServiceAccountUpdateDialogWidget(
+        bloc: bloc,
+      );
+    });
   }
 }

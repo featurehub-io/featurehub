@@ -239,6 +239,11 @@ class StreamValley {
           currentAppId = null;
         }
       }
+
+      if (currentAppId != null) {
+        final app = appList.firstWhere((app) => app.id == currentAppId);
+        currentApplicationEnvironments = app.environments;
+      }
     } else {
       currentPortfolioApplications = [];
     }

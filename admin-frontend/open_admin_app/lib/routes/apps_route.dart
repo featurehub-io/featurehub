@@ -12,13 +12,26 @@ import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 
 class AppsRoute extends StatefulWidget {
-  const AppsRoute({Key? key}) : super(key: key);
+  bool createApp;
+
+  AppsRoute({Key? key, required bool createApp})
+      : this.createApp = createApp,
+        super(key: key);
 
   @override
   _AppsRouteState createState() => _AppsRouteState();
 }
 
 class _AppsRouteState extends State<AppsRoute> {
+  AppsBloc? bloc;
+
+  @override
+  void initState() {
+    super.initState();
+
+    bloc = BlocProvider.of<AppsBloc>(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<AppsBloc>(context);
@@ -47,12 +60,7 @@ class _AppsRouteState extends State<AppsRoute> {
                           child: TextButton.icon(
                             icon: const Icon(Icons.add),
                             label: const Text('Create new application'),
-                            onPressed: () => bloc.mrClient
-                                .addOverlay((BuildContext context) {
-                              return AppUpdateDialogWidget(
-                                bloc: bloc,
-                              );
-                            }),
+                            onPressed: () => _createApp(bloc),
                           ),
                         );
                       } else {
@@ -68,6 +76,36 @@ class _AppsRouteState extends State<AppsRoute> {
             )
           ],
         ));
+  }
+
+  @override
+  void didUpdateWidget(AppsRoute oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _createAppCheck();
+  }
+
+  void _createAppCheck() {
+    if (widget.createApp && bloc != null) {
+      widget.createApp = false;
+
+      WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+        _createApp(bloc!);
+      });
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _createAppCheck();
+  }
+
+  _createApp(AppsBloc bloc) {
+    bloc.mrClient.addOverlay((BuildContext context) {
+      return AppUpdateDialogWidget(
+        bloc: bloc,
+      );
+    });
   }
 }
 

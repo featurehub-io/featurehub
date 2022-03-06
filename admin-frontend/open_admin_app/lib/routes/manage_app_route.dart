@@ -17,13 +17,23 @@ import 'package:open_admin_app/widgets/common/link_to_applications_page.dart';
 import 'package:open_admin_app/widgets/environments/env_list_widget.dart';
 
 class ManageAppRoute extends StatefulWidget {
-  const ManageAppRoute({Key? key}) : super(key: key);
+  bool createEnvironment;
+  ManageAppRoute(this.createEnvironment, {Key? key}) : super(key: key);
 
   @override
   _ManageAppRouteState createState() => _ManageAppRouteState();
 }
 
 class _ManageAppRouteState extends State<ManageAppRoute> {
+  ManageAppBloc? bloc;
+
+  @override
+  void initState() {
+    super.initState();
+
+    bloc = BlocProvider.of<ManageAppBloc>(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<ManageAppBloc>(context);
@@ -83,6 +93,36 @@ class _ManageAppRouteState extends State<ManageAppRoute> {
                 }),
           ],
         ));
+  }
+
+  @override
+  void didUpdateWidget(ManageAppRoute oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _createEnvironmentCheck();
+  }
+
+  void _createEnvironmentCheck() {
+    if (widget.createEnvironment && bloc != null) {
+      widget.createEnvironment = false;
+
+      WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+        _createEnvironment(bloc!);
+      });
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _createEnvironmentCheck();
+  }
+
+  _createEnvironment(ManageAppBloc bloc) {
+    bloc.mrClient.addOverlay((BuildContext context) {
+      return EnvUpdateDialogWidget(
+        bloc: bloc,
+      );
+    });
   }
 }
 

@@ -35,73 +35,80 @@ import 'package:open_admin_app/widgets/user/register/register_url_bloc.dart';
 
 Handler handleRouteChangeRequest(builder) {
   return Handler(
-      handlerFunc: (BuildContext context, Map<String, dynamic> params) {
+      handlerFunc: (BuildContext context, Map<String, List<String?>> params) {
     final mrBloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
     return builder(mrBloc, params: params);
   });
 }
 
 class RouteCreator {
-  Widget loading(mrBloc, {params}) {
+  Widget loading(mrBloc, {Map<String, List<String?>> params = const {}}) {
     return const LoadingRoute();
   }
 
-  Widget notFound(mrBloc, {params}) {
+  Widget notFound(mrBloc, {Map<String, List<String?>> params = const {}}) {
     return const NotFoundRoute();
   }
 
-  Widget root(mrBloc, {params}) {
+  Widget root(mrBloc, {Map<String, List<String?>> params = const {}}) {
     return const HomeRoute(title: 'FeatureHub');
   }
 
-  Widget login(mrBloc, {params}) {
+  Widget login(mrBloc, {Map<String, List<String?>> params = const {}}) {
     return const SigninWrapperWidget();
   }
 
-  Widget setup(mrBloc, {params}) {
+  Widget setup(mrBloc, {Map<String, List<String?>> params = const {}}) {
     return const SetupWrapperWidget();
     // return LandingRoute(title: 'FeatureHub');
   }
 
-  Widget oauth2Fail(mrBloc, {params}) {
+  Widget oauth2Fail(mrBloc, {Map<String, List<String?>> params = const {}}) {
     return const Oauth2FailRoute();
   }
 
-  Widget portfolios(mrBloc, {params}) {
+  Widget portfolios(mrBloc, {Map<String, List<String?>> params = const {}}) {
     return BlocProvider<PortfolioBloc>(
         creator: (_context, _bag) =>
             PortfolioBloc(params['search']?.elementAt(0), mrBloc),
         child: const PortfolioRoute());
   }
 
-  Widget users(mrBloc, {params}) {
+  Widget users(mrBloc, {Map<String, List<String?>> params = const {}}) {
     return BlocProvider<ListUsersBloc>(
         creator: (_context, _bag) =>
             ListUsersBloc(params['search']?.elementAt(0), mrBloc),
         child: const ManageUsersRoute());
   }
 
-  Widget group(mrBloc, {params}) {
+  Widget group(mrBloc, {Map<String, List<String?>> params = const {}}) {
     return BlocProvider<GroupBloc>(
         creator: (_context, _bag) =>
             GroupBloc(params['id']?.elementAt(0), mrBloc),
-        child: const ManageGroupRoute());
+        child: ManageGroupRoute(
+          createGroup: _actionCreate(params),
+        ));
   }
 
-  Widget forgotPassword(mrBloc, {params}) {
+  Widget forgotPassword(mrBloc,
+      {Map<String, List<String?>> params = const {}}) {
     return const SimpleWidget(
       message: 'forgot-password, contact you system administrator.',
     );
   }
 
-  Widget registerUrl(mrBloc, {params}) {
+  Widget registerUrl(mrBloc, {Map<String, List<String?>> params = const {}}) {
+    if (params['token'] == null || params['token']![0] == null) {
+      return notFound(mrBloc);
+    }
+
     return BlocProvider<RegisterBloc>(
         creator: (_context, _bag) =>
-            RegisterBloc(mrBloc)..getDetails(params['token']?.elementAt(0)),
-        child: RegisterURLRoute(params['token']?.elementAt(0)));
+            RegisterBloc(mrBloc)..getDetails(params['token']![0]!),
+        child: RegisterURLRoute(params['token']![0]!));
   }
 
-  Widget createUser(mrBloc, {params}) {
+  Widget createUser(mrBloc, {Map<String, List<String?>> params = const {}}) {
     // TODO: fix this construction, bloc should not be created outside of provider
     final select = SelectPortfolioGroupBloc(mrBloc);
     return BlocProvider<SelectPortfolioGroupBloc>(
@@ -112,7 +119,7 @@ class RouteCreator {
             child: const CreateUserRoute(title: 'Create User')));
   }
 
-  Widget manageUser(mrBloc, {params}) {
+  Widget manageUser(mrBloc, {Map<String, List<String?>> params = const {}}) {
     final select = SelectPortfolioGroupBloc(mrBloc);
     return BlocProvider<SelectPortfolioGroupBloc>(
         creator: (_context, _bag) => select,
@@ -123,23 +130,44 @@ class RouteCreator {
             child: const EditUserRoute()));
   }
 
-  Widget serviceAccount(mrBloc, {params}) {
+  Widget serviceAccount(mrBloc,
+      {Map<String, List<String?>> params = const {}}) {
     return BlocProvider<ManageServiceAccountsBloc>(
         creator: (_context, _bag) =>
             ManageServiceAccountsBloc(params['pid']?.elementAt(0), mrBloc),
-        child: const ManageServiceAccountsRoute());
+        child: ManageServiceAccountsRoute(
+            createServiceAccount: _actionCreate(params)));
   }
 
-  Widget featureStatus(ManagementRepositoryClientBloc mrBloc, {params}) {
+  Widget featureStatus(ManagementRepositoryClientBloc mrBloc,
+      {Map<String, List<String?>> params = const {}}) {
     return BlocProvider<PerApplicationFeaturesBloc>(
         creator: (_c, _b) => PerApplicationFeaturesBloc(mrBloc),
-        child: Builder(builder: (context) => const FeatureStatusRoute()));
+        child: Builder(
+            builder: (context) => FeatureStatusRoute(
+                  createFeature: _actionCreate(params),
+                )));
   }
 
-  Widget apps(mrBloc, {params}) {
+  bool _actionCreate(Map<String, List<String?>> params) {
+    return _paramEquals(params, 'action', 'create');
+  }
+
+  bool _paramEquals(
+      Map<String, List<String?>> params, String field, String value) {
+    final action = params[field];
+
+    if (action != null) {
+      return action.isNotEmpty && action[0] == value;
+    }
+
+    return false;
+  }
+
+  Widget apps(mrBloc, {Map<String, List<String?>> params = const {}}) {
     return BlocProvider<AppsBloc>(
         creator: (_context, _bag) => AppsBloc(mrBloc),
-        child: const AppsRoute());
+        child: AppsRoute(createApp: _actionCreate(params)));
   }
 
   Widget serviceEnvsHandler(ManagementRepositoryClientBloc mrBloc,
@@ -150,13 +178,14 @@ class RouteCreator {
     );
   }
 
-  Widget manageApp(mrBloc, {params}) {
+  Widget manageApp(mrBloc, {Map<String, List<String?>> params = const {}}) {
     return BlocProvider<ManageAppBloc>(
         creator: (_context, _bag) => ManageAppBloc(mrBloc),
-        child: const ManageAppRoute());
+        child: ManageAppRoute(_actionCreate(params) &&
+            _paramEquals(params, 'tab', 'environments')));
   }
 
-  Widget featureValues(mrBloc, {params}) {
+  Widget featureValues(mrBloc, {Map<String, List<String?>> params = const {}}) {
     return Container();
   }
 }
