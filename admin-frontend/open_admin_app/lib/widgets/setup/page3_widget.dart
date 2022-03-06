@@ -58,7 +58,12 @@ class _FinalSetupPageOverlayWidget extends StatelessWidget {
           },
         ),
         actions: <Widget>[
-          FHFlatButton(title: 'Next', onPressed: () => bloc.reinitialize())
+          FHFlatButton(
+              title: 'Next',
+              onPressed: () {
+                bloc.mrClient.removeOverlay();
+                bloc.reinitialize();
+              })
         ]);
   }
 

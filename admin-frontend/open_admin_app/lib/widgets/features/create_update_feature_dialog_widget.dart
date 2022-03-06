@@ -71,7 +71,6 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                   decoration: const InputDecoration(labelText: 'Feature name'),
                   readOnly: isReadOnly,
                   autofocus: true,
-                  maxLength: 200,
                   onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
                   validator: ((v) {
                     if (v == null || v.isEmpty) {
@@ -90,7 +89,6 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                       hintText: 'To be used in the code with FeatureHub SDK',
                       hintStyle: Theme.of(context).textTheme.caption),
                   onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
-                  maxLength: 200,
                   validator: ((v) {
                     if (v == null || v.isEmpty) {
                       return 'Please enter feature key';
@@ -121,7 +119,6 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                 controller: _featureDesc,
                 onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
                 maxLines: 3,
-                maxLength: 300,
                 decoration: InputDecoration(
                     labelText: 'Description (optional)',
                     hintText: 'Some information about feature',
@@ -131,7 +128,6 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                 readOnly: isReadOnly,
                 controller: _featureLink,
                 onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
-                maxLength: 600,
                 decoration: InputDecoration(
                     labelText: 'Reference link (optional)',
                     hintText:

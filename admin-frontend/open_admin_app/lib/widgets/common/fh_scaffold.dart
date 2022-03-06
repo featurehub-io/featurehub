@@ -71,7 +71,7 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
 //              mainAxisSize: MainAxisSize.max,
               children: [
-                _mainContent(context),
+                _excludeFocusOnMainContent(mrBloc),
               ]),
           StreamBuilder<Widget?>(
               stream: mrBloc.snackbarStream,
@@ -112,6 +112,25 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
         ]));
   }
 
+  Widget _excludeFocusOnMainContent(ManagementRepositoryClientBloc mrBloc) {
+    return StreamBuilder<WidgetBuilder?>(
+        stream: mrBloc.overlayStream,
+        builder:
+            (BuildContext context, AsyncSnapshot<WidgetBuilder?> snapshot) {
+          if (snapshot.hasData) {
+            return ExcludeFocus(
+              child: _mainContent(context),
+              excluding: true,
+            );
+          }
+
+          return ExcludeFocus(
+            child: _mainContent(context),
+            excluding: false,
+          );
+        });
+  }
+
   Widget _mainContent(BuildContext context) {
     final ScrollController controller = ScrollController();
     var mrBloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
@@ -138,14 +157,14 @@ class _InternalFHScaffoldWidgetWidgetState extends StatelessWidget {
                     child: Column(children: [
                       Expanded(
                           child: ScrollConfiguration(
-                            behavior: CustomScrollBehavior(),
-                            child: SingleChildScrollView(
-                              physics: const ClampingScrollPhysics(),
-                                controller: controller,
-                                child: Column(
-                        children: <Widget>[child],
+                        behavior: CustomScrollBehavior(),
+                        child: SingleChildScrollView(
+                            physics: const ClampingScrollPhysics(),
+                            controller: controller,
+                            child: Column(
+                              children: <Widget>[child],
+                            )),
                       )),
-                          )),
                     ]));
               }
               return ScrollConfiguration(

@@ -87,8 +87,17 @@ class ManagementRepositoryClientBloc implements Bloc {
   BehaviorSubject<bool> get stepperOpened => _stepperOpened;
 
   set stepperOpened(value) {
+    bool oldVal = _stepperOpened.value == true;
+
+    if (!oldVal && value) {
+      // Rocket needs the full story
+      streamValley.getCurrentApplicationEnvironments();
+    }
+
     _stepperOpened.add(value);
   }
+
+  get rocketOpened => stepperOpened.value;
 
   BehaviorSubject<bool> get menuOpened => _menuOpened;
 
@@ -403,6 +412,7 @@ class ManagementRepositoryClientBloc implements Bloc {
   }
 
   void addOverlay(WidgetBuilder builder) {
+    print("adding overlay");
     _overlaySource.add(builder);
   }
 
