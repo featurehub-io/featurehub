@@ -30,6 +30,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
   final TextEditingController _featureKey = TextEditingController();
   final TextEditingController _featureAlias = TextEditingController();
   final TextEditingController _featureLink = TextEditingController();
+  final TextEditingController _featureDesc = TextEditingController();
 
   bool isUpdate = false;
   bool isError = false;
@@ -43,6 +44,7 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
       _featureKey.text = widget.feature!.key ?? '';
       _featureAlias.text = widget.feature!.alias ?? '';
       _featureLink.text = widget.feature!.link ?? '';
+      _featureDesc.text = widget.feature!.description ?? '';
       _dropDownFeatureTypeValue = widget.feature!.valueType!;
       isUpdate = true;
     }
@@ -112,6 +114,16 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
 //                    }
 //                    return null;
 //                  })),
+              TextFormField(
+                readOnly: isReadOnly,
+                controller: _featureDesc,
+                onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+                maxLines: 3,
+                decoration: InputDecoration(
+                    labelText: 'Description (optional)',
+                    hintText: 'Some information about feature',
+                    hintStyle: Theme.of(context).textTheme.caption),
+              ),
               TextFormField(
                 readOnly: isReadOnly,
                 controller: _featureLink,

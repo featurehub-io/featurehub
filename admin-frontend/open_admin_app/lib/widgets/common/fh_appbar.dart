@@ -64,46 +64,49 @@ class FHappBar extends StatelessWidget {
               if (snapshot.hasData && mrBloc.isLoggedIn) {
                 final person = snapshot.data!;
                 var light = Theme.of(context).brightness == Brightness.light;
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    children: [
-                      Tooltip(
-                          message: person.name,
-                          child: PersonAvatar(person: person)),
-                      const SizedBox(
-                        width: 32.0,
-                      ),
-                      VerticalDivider(
-                        width: 1.0,
-                        color: Theme.of(context).cardColor,
-                      ),
-                      const SizedBox(
-                        width: 16.0,
-                      ),
-                      widgetCreator.externalDocsLinksWidget(),
-                      const SizedBox(
-                        width: 16.0,
-                      ),
-                      IconButton(
-                          tooltip: light ? 'Dark mode' : 'Light mode',
-                          icon: Icon(light
-                              ? MaterialCommunityIcons.weather_night
-                              : Feather.sun),
-                          onPressed: () {
-                            DynamicTheme.of(context).setBrightness(
-                                light ? Brightness.dark : Brightness.light);
-                          }),
-                      StepperRocketButton(mrBloc: mrBloc),
-                      IconButton(
-                          onPressed: () async {
-                            await mrBloc.logout();
-                            ManagementRepositoryClientBloc.router
-                                .navigateTo(context, '/');
-                          },
-                          icon: const Icon(Icons.exit_to_app),
-                          tooltip: 'Sign out'),
-                    ],
+                return ExcludeFocus(
+                  excluding: true, // prevent tabbing to the app bar
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      children: [
+                        Tooltip(
+                            message: person.name,
+                            child: PersonAvatar(person: person)),
+                        const SizedBox(
+                          width: 32.0,
+                        ),
+                        VerticalDivider(
+                          width: 1.0,
+                          color: Theme.of(context).cardColor,
+                        ),
+                        const SizedBox(
+                          width: 16.0,
+                        ),
+                        widgetCreator.externalDocsLinksWidget(),
+                        const SizedBox(
+                          width: 16.0,
+                        ),
+                        IconButton(
+                            tooltip: light ? 'Dark mode' : 'Light mode',
+                            icon: Icon(light
+                                ? MaterialCommunityIcons.weather_night
+                                : Feather.sun),
+                            onPressed: () {
+                              DynamicTheme.of(context).setBrightness(
+                                  light ? Brightness.dark : Brightness.light);
+                            }),
+                        StepperRocketButton(mrBloc: mrBloc),
+                        IconButton(
+                            onPressed: () async {
+                              await mrBloc.logout();
+                              ManagementRepositoryClientBloc.router
+                                  .navigateTo(context, '/');
+                            },
+                            icon: const Icon(Icons.exit_to_app),
+                            tooltip: 'Sign out'),
+                      ],
+                    ),
                   ),
                 );
               } else {

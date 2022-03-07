@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/common/stream_valley.dart';
-import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_delete_thing.dart';
+import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
 import 'package:open_admin_app/widgets/service-accounts/apikey_reset_dialog_widget.dart';
@@ -105,7 +105,7 @@ class _ServiceAccountWidget extends StatelessWidget {
           onPressed: () => bloc.mrClient.addOverlay((BuildContext context) =>
               ServiceAccountUpdateDialogWidget(
                   bloc: bloc, serviceAccount: serviceAccount))),
-        FHIconButton(
+      FHIconButton(
           icon: const Icon(Icons.delete),
           onPressed: () => bloc.mrClient.addOverlay((BuildContext context) {
                 return ServiceAccountDeleteDialogWidget(
@@ -113,16 +113,16 @@ class _ServiceAccountWidget extends StatelessWidget {
                   bloc: bloc,
                 );
               })),
-        _ResetApiKeyWidget(
-          bloc: bloc,
-          isClientKey: true,
-          sa: serviceAccount,
-        ),
       _ResetApiKeyWidget(
-          bloc: bloc,
-          isClientKey: false,
-          sa: serviceAccount,
-        ),
+        bloc: bloc,
+        isClientKey: true,
+        sa: serviceAccount,
+      ),
+      _ResetApiKeyWidget(
+        bloc: bloc,
+        isClientKey: false,
+        sa: serviceAccount,
+      ),
     ]);
   }
 }
@@ -337,6 +337,7 @@ class _ServiceAccountUpdateDialogWidgetState
                     )
                   : TextFormField(
                       controller: _name,
+                      autofocus: true,
                       decoration: const InputDecoration(
                           labelText: 'Service account name'),
                       validator: ((v) {

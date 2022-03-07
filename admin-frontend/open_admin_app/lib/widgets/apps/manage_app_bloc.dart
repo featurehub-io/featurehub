@@ -276,6 +276,12 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
         .catchError((e, s) {
       _mrClient.dialogError(e, s);
     });
+
+    // we need to do this to ensure the list of environments has the right set of ACLs
+    if (_mrClient.rocketOpened) {
+      await _mrClient.streamValley.getCurrentApplicationEnvironments();
+    }
+
     return updatedGroup;
   }
 

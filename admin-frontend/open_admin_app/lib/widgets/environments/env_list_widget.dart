@@ -291,6 +291,7 @@ class _EnvUpdateDialogWidgetState extends State<EnvUpdateDialogWidget> {
             children: <Widget>[
               TextFormField(
                   controller: _envName,
+                  autofocus: true,
                   decoration:
                       const InputDecoration(labelText: 'Environment name'),
                   validator: ((v) {

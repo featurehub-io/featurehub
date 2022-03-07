@@ -239,6 +239,16 @@ class StreamValley {
           currentAppId = null;
         }
       }
+
+      if (currentAppId != null) {
+        if (mrClient.rocketOpened) {
+          // we need more info
+          await getCurrentApplicationEnvironments();
+        } else {
+          final app = appList.firstWhere((app) => app.id == currentAppId);
+          currentApplicationEnvironments = app.environments;
+        }
+      }
     } else {
       currentPortfolioApplications = [];
     }

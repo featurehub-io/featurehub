@@ -14,7 +14,10 @@ import 'package:open_admin_app/widgets/group/group_update_widget.dart';
 /// Every user has access to portfolios, they can only see the ones they have access to
 /// and their access will be limited based on whether they are a site admin.
 class ManageGroupRoute extends StatefulWidget {
-  const ManageGroupRoute({Key? key}) : super(key: key);
+  bool createGroup;
+  ManageGroupRoute({Key? key, required bool createGroup})
+      : this.createGroup = createGroup,
+        super(key: key);
 
   @override
   _ManageGroupRouteState createState() => _ManageGroupRouteState();
@@ -75,12 +78,7 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
                             child: TextButton.icon(
                               icon: const Icon(Icons.add),
                               label: const Text('Create new group'),
-                              onPressed: () => bloc.mrClient
-                                  .addOverlay((BuildContext context) {
-                                return GroupUpdateDialogWidget(
-                                  bloc: bloc,
-                                );
-                              }),
+                              onPressed: () => _createGroup(bloc),
                             ),
                           ),
                         ],
@@ -228,6 +226,36 @@ class _ManageGroupRouteState extends State<ManageGroupRoute> {
         ],
       ),
     );
+  }
+
+  @override
+  void didUpdateWidget(ManageGroupRoute oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _createGroupCheck();
+  }
+
+  void _createGroupCheck() {
+    if (widget.createGroup && bloc != null) {
+      widget.createGroup = false;
+
+      WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+        _createGroup(bloc!);
+      });
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _createGroupCheck();
+  }
+
+  _createGroup(GroupBloc bloc) {
+    bloc.mrClient.addOverlay((BuildContext context) {
+      return GroupUpdateDialogWidget(
+        bloc: bloc,
+      );
+    });
   }
 }
 

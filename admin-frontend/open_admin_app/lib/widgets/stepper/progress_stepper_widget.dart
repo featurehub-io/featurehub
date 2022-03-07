@@ -53,8 +53,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
       child: Container(
           constraints: const BoxConstraints(maxWidth: 260),
           height: MediaQuery.of(context).size.height - kToolbarHeight,
-          padding:
-              const EdgeInsets.only(bottom: 16.0, right: 16.0, left: 16.0),
+          padding: const EdgeInsets.only(bottom: 16.0, right: 16.0, left: 16.0),
           child: ScrollConfiguration(
             behavior: CustomScrollBehavior(),
             child: SingleChildScrollView(
@@ -86,9 +85,10 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                             ManagementRepositoryClientBloc
                                                 .router
                                                 .navigateTo(
-                                              context,
-                                              '/applications',
-                                            )
+                                                    context, '/applications',
+                                                    params: {
+                                                  'action': ['create']
+                                                })
                                           },
                                         ),
                                       ],
@@ -113,21 +113,19 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                           onPressed: () => {
                                             ManagementRepositoryClientBloc
                                                 .router
-                                                .navigateTo(
-                                              context,
-                                              '/groups',
-                                            )
+                                                .navigateTo(context, '/groups',
+                                                    params: {
+                                                  'action': ['create']
+                                                })
                                           },
                                         ),
                                       ],
                                     )),
                                 CustomStep(
-                                    title:
-                                        const Text('Create service account'),
-                                    state:
-                                        snapshot.data!.serviceAccount == true
-                                            ? CustomStepState.complete
-                                            : CustomStepState.indexed,
+                                    title: const Text('Create service account'),
+                                    state: snapshot.data!.serviceAccount == true
+                                        ? CustomStepState.complete
+                                        : CustomStepState.indexed,
                                     content: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
@@ -142,10 +140,11 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                           onPressed: () => {
                                             ManagementRepositoryClientBloc
                                                 .router
-                                                .navigateTo(
-                                              context,
-                                              '/service-accounts',
-                                            )
+                                                .navigateTo(context,
+                                                    '/service-accounts',
+                                                    params: {
+                                                  'action': ['create']
+                                                })
                                           },
                                         ),
                                       ],
@@ -176,7 +175,8 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                               '/app-settings',
                                               params: {
                                                 'id': [bloc.applicationId!],
-                                                'tab': ['environments']
+                                                'tab': ['environments'],
+                                                'action': ['create']
                                               },
                                             )
                                           },
@@ -184,8 +184,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                       ],
                                     )),
                                 CustomStep(
-                                    title:
-                                        const Text('Give access to groups'),
+                                    title: const Text('Give access to groups'),
                                     state: snapshot.data!.environment
                                         ? (snapshot.data!.groupPermission ==
                                                 true
@@ -277,10 +276,11 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                           onPressed: () => {
                                             ManagementRepositoryClientBloc
                                                 .router
-                                                .navigateTo(
-                                              context,
-                                              routeNameFeatureDashboard,
-                                            )
+                                                .navigateTo(context,
+                                                    routeNameFeatureDashboard,
+                                                    params: {
+                                                  'action': ['create']
+                                                })
                                           },
                                         ),
                                       ],

@@ -11,21 +11,27 @@ import 'package:open_admin_app/widgets/features/create_update_feature_dialog_wid
 import 'package:open_admin_app/widgets/features/features_overview_table_widget.dart';
 import 'package:open_admin_app/widgets/features/per_application_features_bloc.dart';
 
-class FeatureStatusRoute extends StatelessWidget {
-  const FeatureStatusRoute({Key? key}) : super(key: key);
+class FeatureStatusRoute extends StatefulWidget {
+  bool createFeature;
 
-  @override
-  Widget build(BuildContext context) {
-    return _FeatureStatusWidget();
-  }
-}
+  FeatureStatusRoute({Key? key, required bool createFeature})
+      : this.createFeature = createFeature,
+        super(key: key);
 
-class _FeatureStatusWidget extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _FeatureStatusState();
 }
 
-class _FeatureStatusState extends State<_FeatureStatusWidget> {
+class _FeatureStatusState extends State<FeatureStatusRoute> {
+  PerApplicationFeaturesBloc? bloc;
+
+  @override
+  void initState() {
+    super.initState();
+
+    bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     final bloc = BlocProvider.of<PerApplicationFeaturesBloc>(context);
@@ -104,6 +110,37 @@ class _FeatureStatusState extends State<_FeatureStatusWidget> {
         ),
       ],
     );
+  }
+
+  @override
+  void didUpdateWidget(FeatureStatusRoute oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _createFeatureCheck();
+  }
+
+  void _createFeatureCheck() {
+    if (widget.createFeature && bloc != null) {
+      widget.createFeature = false;
+
+      WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+        _createFeature(bloc!);
+      });
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _createFeatureCheck();
+  }
+
+  _createFeature(PerApplicationFeaturesBloc bloc) {
+    bloc.mrClient.addOverlay((BuildContext context) {
+      //return null;
+      return CreateFeatureDialogWidget(
+        bloc: bloc,
+      );
+    });
   }
 }
 
