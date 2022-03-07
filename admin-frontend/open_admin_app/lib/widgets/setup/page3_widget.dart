@@ -41,21 +41,25 @@ class _FinalSetupPageOverlayWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return FHAlertDialog(
         title: title(context),
-        content: StreamBuilder<bool>(
-          stream: bloc.setupState,
-          builder: (BuildContext context, AsyncSnapshot<bool> snap) {
-            if (snap.hasError) {
-              bloc.mrClient.dialogError(snap.error, null);
-            } else if (snap.hasData && snap.data!) {
-              return Padding(
-                padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
-                child: Text(
-                    'Ok, next step is to create your first application, an environment and add some features. You can follow the progress stepper by clicking the "rocket" icon on the right of the app bar.',
-                    style: Theme.of(context).textTheme.bodyText1),
-              );
-            }
-            return Container();
-          },
+        content: SizedBox(
+          width: 200,
+          height: 100,
+          child: StreamBuilder<bool>(
+            stream: bloc.setupState,
+            builder: (BuildContext context, AsyncSnapshot<bool> snap) {
+              if (snap.hasError) {
+                bloc.mrClient.dialogError(snap.error, null);
+              } else if (snap.hasData && snap.data!) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                  child: Text(
+                      'Ok, next step is to create your first application, an environment and add some features. You can follow the progress stepper by clicking the "rocket" icon on the right of the app bar.',
+                      style: Theme.of(context).textTheme.bodyText1),
+                );
+              }
+              return Container();
+            },
+          ),
         ),
         actions: <Widget>[
           FHFlatButton(
@@ -74,7 +78,7 @@ class _FinalSetupPageOverlayWidget extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         Padding(
-          padding: const EdgeInsets.only(bottom: 26.0),
+          padding: const EdgeInsets.only(right: 26.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
