@@ -312,8 +312,13 @@ there may be situations where it makes sense.
 - `listen.pool-size` (10) - how many threads to allocate to processing incoming requests to listen. This just takes the request,
 decodes it and sends it down via NATs and releases.
 - `edge.sse.drop-after-seconds` (30) - how many seconds a client is allowed to listen for before being kicked off. Used to ensure connections
-don't go stale.
-- `edge.dacha.delay-slots` (10) - 
+don't go stale. This was previously named `maxSlots` and a valid in that field is recognized.
+- `edge.dacha.delay-slots` (10) - if Dacha is unavailable because it does not have a full cache, it will reject the request. For SSE, this creates a sliding window of a random delay in seconds, meaning a connection will be dropped in 1-10 seconds (by default). This is designed
+to prevent reconnect storms as infrastructure is restarted.
+- `edge.sse.heartbeat-period` (0) - if defined, Edge will attempt to send heartbeat signals down the SSE connection for the duration of the
+connection while it is alive. If you set `edge.sse.drop-after-seconds` to 0, then the SSE connection will stay open, sending heartbeat
+signals until the remote system drops the connection. This allows the heartbeat to be used as well as or instead of kicking SSE connections
+off to ensure ghost connections.
 - `dacha.url.<cache-name>` = url - this is only relevant if you are running split servers - so Dacha and Edge run in their own containers. You
 need to tell Edge where Dacha is located. The default cache is called `default, so it will expect one called `dacha.url.default` and the url. In the
 sample docker-compose where they are split, the hostname for Dacha is `dacha`, so this is `dacha.url.default=http://localhost:8094`. This isn't
@@ -336,8 +341,11 @@ The `party-server-ish` honours all the values set by the Management Repository  
 ==== Common to all servers
 
 All servers expose metrics and health checks. The metrics are for Prometheus and are on `/metrics`,
-liveness is on `/health/liveness` and readyness on `/health/readyness`. Each different server has a collection
-of what things are important to indicate aliveness. The `server.port` setting will expose these endpoints,
+liveness is on `/health/liveness` and readyness on `/health/readyness`. Furthermore, every listening port responds with a 200 on
+a request to `/` so that load balancers that aren't configured to listen to the proper readiness checks will function. 
+
+Each different server has a collection of what things are important to indicate aliveness. 
+The `server.port` setting will expose these endpoints,
 which means they are available to all of your normal API endpoints as well. In a cloud-native environment,
 which FeatureHub is aimed at, this is rarely what you want. So FeatureHub has the ability to list these
 endpoints on a different port.
