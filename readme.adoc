@@ -3,7 +3,7 @@ image::https://github.com/featurehub-io/featurehub/actions/workflows/codeql-anal
 
 
 :icons: font
-image::docs/images/fh_primary_navy.png[Feature Hub,500]
+image::docs/modules/ROOT/images/fh_primary_navy.png[Feature Hub,500]
 
 FeatureHub is a Cloud Native platform to help software teams manage their features, from feature flags (also known as feature toggles) to A/B experiments and remote or centralised configuration.
 This is the primary source code repository for FeatureHub.
@@ -72,11 +72,11 @@ We are looking for companies that have successfully adopted FeatureHub to help u
 
 === Supported SDKs
 
-image:https://docs.featurehub.io//images/languages.png[Featurehub SDK Languages,1000]
+image:docs/images/languages.png[Featurehub SDK Languages,1000]
 
-https://docs.featurehub.io/#_sdk_usage[SDKs documentation and examples table]
+https://docs.featurehub.io/featurehub/latest/sdks.html#_sdk_usage[SDKs documentation and examples table]
 
-https://docs.featurehub.io/#_sdk_capabilities_overview[SDKs capabilities table]
+https://docs.featurehub.io/featurehub/latest/sdks.html#_sdk_capabilities_overview[SDKs capabilities table]
 
 
 == Documentation
@@ -86,7 +86,7 @@ Full documentation can be found at https://docs.featurehub.io[docs.featurehub.io
 === Getting started
 
 If you are just curious to see how FeatureHub works and would like to play with it there is a simple way of doing it,
-please follow instructions https://docs.featurehub.io/#_starting_small[here].
+please follow instructions https://docs.featurehub.io/featurehub/latest/index.html#_evaluating_featurehub[here].
 
 Once you have decided to start using FeatureHub in your team, there are also several installation options
 depending on your use case, please read about these options https://docs.featurehub.io/#_installation[here].
@@ -113,7 +113,7 @@ There are many ways to contribute, from writing tutorials or blog posts, improvi
 
 === Further information for contributors
 
-If you have reviewed the https://docs.featurehub.io/architecture.html[Architecture section] of the FeatureHub
+If you have reviewed the https://docs.featurehub.io/featurehub/latest/architecture.html[Architecture section] of the FeatureHub
 documentation you will notice there are several components. FeatureHub is designed this way to allow
 to scale from a single application option to large organisations serving billions
 of requests for features per day.
@@ -140,7 +140,7 @@ to contribute to the Admin Console - we would love you to join us!
 
 ==== The SDKs
 
-If you are planning on helping us by building an SDK in a language we don't yet support, please refer to this https://docs.featurehub.io/sdks-development.html[documentation]. We are happy to get contributions that slowly add full
+If you are planning on helping us by building an SDK in a language we don't yet support, please refer to this https://docs.featurehub.io/featurehub/latest/sdks-development.html[documentation]. We are happy to get contributions that slowly add full
 functionality for a new language.
 
 == Where to get help?
