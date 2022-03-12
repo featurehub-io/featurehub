@@ -1,8 +1,4 @@
 = SDK Contributors Documentation
-:favicon: favicon.ico
-:toc: left
-:toclevels: 4
-:toc-title: Contents
 
 ++++
 <!-- google -->

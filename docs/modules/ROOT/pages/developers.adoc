@@ -1,8 +1,4 @@
 = Contributors Documentation
-:favicon: favicon.ico
-:toc: left
-:toclevels: 4
-:toc-title: Contents
 
 ++++
 <!-- google -->
@@ -15,8 +11,6 @@ ga('create', 'UA-173153929-1', 'auto');
 ga('send', 'pageview');
 </script>
 ++++
-
-link:index{outfilesuffix}[Back to index]
 
 == Building from scratch
 

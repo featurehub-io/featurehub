@@ -1,6 +1,4 @@
 = FeatureHub Documentation
-:sectlinks:
-:favicon: favicon.ico
 
 image::fh_primary_navy.png[Feature Hub,500]
 Welcome to FeatureHub! - from the FeatureHub Team at <info@featurehub.io>

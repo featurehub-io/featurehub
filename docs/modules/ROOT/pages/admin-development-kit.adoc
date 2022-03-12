@@ -1,8 +1,4 @@
 = The Admin SDK (ADK)          
-:favicon: favicon.ico
-:toc: left
-:toclevels: 4
-:toc-title: Contents
 
 ++++
 <!-- google -->
@@ -16,15 +12,13 @@ ga('send', 'pageview');
 </script>
 ++++
 
-link:index{outfilesuffix}[Back to index]
-
-=== Overview
+== Overview
 The Admin SDK is designed to provide access to the Management Repository API. It is an OpenAPI driven API, based on the MR OpenAPI file that can be located https://github.com/featurehub-io/featurehub/tree/main/infra/api-bucket/files/mrapi[here]
 
 The API is broken up into a number of services representing different facets of the Management Repository, e.g.
 Portfolios, Applications, Environments, Features, Service Accounts, Authentication and so forth.
 
-=== Installing the ADK in your project
+== Installing the ADK in your project
 
 We currently have Java 8 and Java 11 ADKs released. Typescript and DotNet ADKs will follow soon.
 

@@ -1,8 +1,5 @@
 = FeatureHub Identity
-:favicon: favicon.ico
-y:toc: left
-:toclevels: 4
-:toc-title: Contents
+
 
 ++++
 <!-- google -->
