@@ -1,7 +1,7 @@
 name: featurehub
-version: 1.5.6
+version: 1.5.7
 start_page: ROOT:index.adoc
 title: FeatureHub
-#prerelease: -rc
+prerelease: -rc
 nav:
 - modules/ROOT/nav.adoc

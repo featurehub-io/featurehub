@@ -173,7 +173,9 @@ When you add a feature flag, this will also automatically create a feature value
 
 NOTE: See <<Feature Permissions>> for details on the various permission states a feature can have.
 
+==== Deleting and retiring a feature
 
+When feature flag is not needed any longer in your application, and you are ready to remove it, you can first "retire" this feature in a single environment to test how your application behaves, by setting it to the "Retired" state. This means that the feature won't be visible by the SDKs, imitating the "deleted" state. You can always "un-retire" a feature if you change your mind as this operation is reversible. Once you retire feature values across all the environments and test that your application behaves as expected, you can delete your entire feature. Deleting a feature means it is completely deleted from the system for all environments. This operation is not reversible. To retire a feature you will need environment specific "CHANGE_VALUE" permission. To delete a feature, you require an application specific permission to create, edit and delete features.
 
 == Rollout strategies and targeting rules
 
