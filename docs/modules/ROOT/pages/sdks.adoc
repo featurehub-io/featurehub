@@ -1,5 +1,4 @@
 = FeatureHub SDKs
-[#_sdks]
 
 ++++
 <!-- google -->
