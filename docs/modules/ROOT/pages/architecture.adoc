@@ -32,7 +32,7 @@ The way that FeatureHub is architected is designed for various different impleme
 fundamentally there is a separation of concerns of all the main components, so they can be scaled independently
 as and when needed.
 
-We discuss the main deployment options of FeatureHub in the <<installation.adoc#,installation section>> 
+We discuss the main deployment options of FeatureHub in the <<installation{outfilesuffix}#,installation section>> 
 and what each part is for.
 
 == Platform Components
@@ -93,4 +93,4 @@ can be deployed on its own or as part of party-server-_ish_.
 The SDKs are provided to create an idiomatic method to connection to the server-side event source of feature data from the Edge server.
 You are welcome to write your own, they are not particularly complicated to write, and we welcome them as contributions!
 
-View documentation and read more about SDK's <<index.adoc#_sdks,here>>
+View documentation and read more about SDK's <<index{outfilesuffix}#_sdks,here>>

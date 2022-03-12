@@ -2,7 +2,7 @@
 
 == Deployment Options
 
-As explained in the link:architecture.adoc[Architecture] section, there are a number of different combinations
+As explained in the link:architecture{outfilesuffix}[Architecture] section, there are a number of different combinations
 for deployment of FeatureHub and they typically focus on _where_ you will deploy the infrastructure, _how_ you want
 your clients to use it and _how much_  use it will get. FeatureHub as of 1.5.0 is designed to support
 very low use cases of only hundreds of requests a day up to tens of millions of requests a day or more.
