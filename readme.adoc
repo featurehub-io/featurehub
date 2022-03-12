@@ -89,7 +89,7 @@ If you are just curious to see how FeatureHub works and would like to play with 
 please follow instructions https://docs.featurehub.io/featurehub/latest/index.html#_evaluating_featurehub[here].
 
 Once you have decided to start using FeatureHub in your team, there are also several installation options
-depending on your use case, please read about these options https://docs.featurehub.io/#_installation[here].
+depending on your use case, please read about these options https://docs.featurehub.io/featurehub/latest/installation.html[here].
 
 Note: We have a separate https://github.com/featurehub-io/featurehub-install[install repository] with configured docker images
 
