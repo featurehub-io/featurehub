@@ -59,7 +59,7 @@ docker run --network host --user 999:999 -p 8085:8085 -v $HOME/party:/db feature
 
 NOTE: `$HOME/tmp` is where you wish to store the database (h2).
 
-An alternative is to use the link:installation{outfilesuffix}#_docker_compose_docker_stack[Docker Compose] based
+An alternative is to use the link:installation{outfilesuffix}#_evaluation_deployment[Docker Compose] based
 evaluation example if you are familiar with that tool.
 
 You can watch the video with some instructions https://youtu.be/DRVqXJmbvTk[here] or follow the instructions below.
@@ -322,7 +322,7 @@ NOTE: Groups can also separately be assigned the permission to create, edit and 
 Service accounts are used for programmatic access to the features for an application through FeatureHub SDKs.
 A service account will need a minimum of `READ` access to an environment in order to access a feature value. You can set permissions for a service account from the FeatureHub Admin Console.
 
-When a service account is given access for an environment for a selected application, it automatically creates two types of API keys that you can choose from *Client Evaluated API Key* and *Server Evaluated API Key*. Read more info on API Keys types https://docs.featurehub.io/#_client_and_server_api_keys[here]
+When a service account is given access for an environment for a selected application, it automatically creates two types of API keys that you can choose from *Client Evaluated API Key* and *Server Evaluated API Key*. Read more info on API Keys types link:sdks.adoc#_client_and_server_api_keys[here]
 
 The same service account can be used across multiple environments and applications. We recommend two service accounts be created for an application, one with access to a production environment and the other one for test environments. However, FeatureHub remains flexible to how customers could split their service accounts according to individual needs.
 

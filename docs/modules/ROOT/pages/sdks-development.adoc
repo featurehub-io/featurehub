@@ -528,7 +528,7 @@ to update" kinds of messages.
 and the server will push changes as they occur down to the client. This is _generally_ what you want to use in a server based microservice that
 is serving calls in a multi-threaded environment. Typically Go, Java, .NET or standalone Python or Ruby services can use this. Applications
 like Rails running on Passenger should generally not use them, because Rails is generally licensed single threaded. PHP cannot support this
-model as it is entirely reactive and does not have multi-threads. 
+model as it is entirely reactive and does not have multi-threads.
 - `PUT` this is the TEST API that FeatureHub provides, its intended for QA Automated tests to allow QA environments to control features. We generally
 recommend that Baggage support is built into the SDK using Open Telemetry as use of this API means that testing is not able to achieve massive parallelisation.
 
@@ -536,14 +536,14 @@ recommend that Baggage support is built into the SDK using Open Telemetry as use
 
 The GET Adapter is almost fully documented in the OpenAPI document above.
 
-General notes 
+General notes
 - For server evaluated support, the Context sends an `X-FeatureHub` header. If it can't set a header (e.g. a browser) it can pass it as a parameter instead.
-- etags are supported. When a request is made, the `etag` header is set. If that is held onto, and on the next request, it should be sent back 
-in the `if-none-matches` header. If this matches the current etag of the features, the server will reply with a 304. 
-- You will always get a 200 (list of environments and their features), 304 (no change in data, so no data), 400 (malformed request), 
-404 (the key doesn't exist, please stop asking for it), 500 (some tragic event happened on the server and woe to the 
+- etags are supported. When a request is made, the `etag` header is set. If that is held onto, and on the next request, it should be sent back
+in the `if-none-matches` header. If this matches the current etag of the features, the server will reply with a 304.
+- You will always get a 200 (list of environments and their features), 304 (no change in data, so no data), 400 (malformed request),
+404 (the key doesn't exist, please stop asking for it), 500 (some tragic event happened on the server and woe to the
 Ops person investigating it) or 503 (the server cache isn't ready and
-can't give an answer as to whether the key does or does not exist - wait for a little while and try again) back. 
+can't give an answer as to whether the key does or does not exist - wait for a little while and try again) back.
 
 == Building an SSE Adapter
 
@@ -865,4 +865,4 @@ write a matcher for each of these types, although once formatted correctly, the 
 those conditions are equals, not equals, includes, excludes, greater, lesser, greater-equals, lesser-equals
 - *values* - the value(s) you are comparing against as a match
 
-The Typescript strategy matcher is here https://github.com/featurehub-io/featurehub/blob/master/sdks/typescript/featurehub-javascript-client-sdk/app/strategy_matcher.ts[for instance]
+The Typescript strategy matcher is here https://github.com/featurehub-io/featurehub-javascript-sdk/blob/main/featurehub-javascript-client-sdk/app/strategy_matcher.ts[for instance]

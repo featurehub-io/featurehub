@@ -54,6 +54,7 @@ The Typescript, Javascript and Dart libraries all have examples of this.
 If you use catch and release, it is worthwhile considering enabling OpenTracing feature overrides in production.
 You can configure feature interceptors to not be allowed to override locked features.
 
+[#_client_and_server_api_keys]
 === Client and server API Keys
 
 FeatureHub supports two types of keys that can be used in the FeatureHub SDKs: *Client Evaluated API Keys* and *Server Evaluated API Keys.*
