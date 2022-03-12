@@ -17,13 +17,13 @@ We go into this in more detail below but suffice to say, the streaming deploymen
 even billions of requests. Deployed, conceptually it looks like this:
 
 image::fh_architecture_streaming.svg[Architecture,600]
-NOTE: Communication between Edge and Dacha(Cache) is shown via REST on this image, which can be configured optionally. By default it is via NATS.  
+NOTE: Communication between Edge and Dacha(Cache) is shown via REST on this image, which can be configured optionally. By default it is via NATS.
 
 === Non-Streaming - Party-Server-Ish
 The non-streaming platform (Party-Server-Ish) is designed to scale to less - tens of thousands, possibly
-more if you have a limited number of environments, or a larger number of read replicas.   
+more if you have a limited number of environments, or a larger number of read replicas.
 It is also designed to be much
-_simpler and cheaper_ to deploy on environments like Google Cloud Run or Azure Container Instances. 
+_simpler and cheaper_ to deploy on environments like Google Cloud Run or Azure Container Instances.
 Deployed, conceptually it looks like this:
 
 image::fh_architecture_non_streaming.svg[Architecture,600]
@@ -32,7 +32,7 @@ The way that FeatureHub is architected is designed for various different impleme
 fundamentally there is a separation of concerns of all the main components, so they can be scaled independently
 as and when needed.
 
-We discuss the main deployment options of FeatureHub in the <<installation{outfilesuffix}#,installation section>> 
+We discuss the main deployment options of FeatureHub in the link:installation{outfilesuffix}[installation section]
 and what each part is for.
 
 == Platform Components
@@ -41,7 +41,7 @@ and what each part is for.
 
 This is the main admin server and is the source of truth for the application. All users login here, all portfolios,
 applications, environments, groups, features, etc are all controlled via this. This is always bundled with a UI
-and backend server and is configured to talk to some external database. 
+and backend server and is configured to talk to some external database.
 
 If MR server goes down, it won't affect the operation of end-user clients, all their data is in the cache (or in
 the database if you use _party-server-ish_ or _edge-rest_).
@@ -51,7 +51,7 @@ the database if you use _party-server-ish_ or _edge-rest_).
 The "Admin" API is defined in an OpenAPI schema and can be generated for a wide variety of platforms. We currently
 include generated clients for Dart, Typescript, C# and Java, but it is not limited to these.
 
-=== https://nats.io/[NATS] 
+=== https://nats.io/[NATS]
 
 NATS is the Cloud Native Open Source messaging platform that has been around for a very long time, is very fast
 and is very adept at scaling to huge volume in a hugely distributed fashion. We use it for FeatureHub
@@ -86,11 +86,11 @@ It is expected that you will normally run at least two of these in any kind of e
 
 Edge-REST provides only GET and PUT (for updating features for tests) API options. It allows the
 SDK to poll for updates but not get realtime updates, and will talk directly to the database. It
-can be deployed on its own or as part of party-server-_ish_. 
+can be deployed on its own or as part of party-server-_ish_.
 
 === SDKs
 
 The SDKs are provided to create an idiomatic method to connection to the server-side event source of feature data from the Edge server.
 You are welcome to write your own, they are not particularly complicated to write, and we welcome them as contributions!
 
-View documentation and read more about SDK's <<index{outfilesuffix}#_sdks,here>>
+View documentation and read more about SDK's link:sdks{outfilesuffix}[here]
