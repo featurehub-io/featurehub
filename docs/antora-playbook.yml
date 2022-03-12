@@ -15,7 +15,6 @@ content:
       branches:
         - main
 #      tags:
-#        - featurehub-1.3.2
 #        - featurehub-1.4.0
 #        - featurehub-1.5.0
 #        - featurehub-1.5.6

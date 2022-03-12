@@ -6,6 +6,8 @@ on:
       - main
     paths:
       - 'docs/**'
+  workflow_dispatch:
+
 jobs:
   adoc_build:
     runs-on: ubuntu-18.04
