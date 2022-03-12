@@ -1,6 +1,5 @@
 = FeatureHub Architecture
 :favicon: favicon.ico
-ifdef::env-github,env-browser[:outfilesuffix: .adoc]
 :toc: left
 :toclevels: 4
 :toc-title: Contents
