@@ -18,8 +18,7 @@ jobs:
         with:
           antora_playbook: antora-playbook.yml
           site_sources_path: docs
-          antora_generator: 'antora-site-generator-lunr'
-          antora_docsearch_enabled: 'true'
+          antora_lunr_docsearch_enabled: 'true'
       - name: Print execution time
         run: echo "Time ${{ steps.adocbuild.outputs.timestamp }}"
       - name: Deploy docs to ghpages
