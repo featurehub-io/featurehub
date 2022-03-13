@@ -172,6 +172,9 @@ class AdminPortfolioStepdefs {
         DateTime.now().millisecondsSinceEpoch.toString();
 
     shared.portfolio = await common.portfolioService.createPortfolio(
-        new Portfolio(name: portfolioName, description: 'A random portfolio'));
+        new Portfolio(name: portfolioName, description: 'A random portfolio'),
+        includeGroups: true);
+
+    shared.portfolioAdminGroup = shared.portfolio.groups[0];
   }
 }
