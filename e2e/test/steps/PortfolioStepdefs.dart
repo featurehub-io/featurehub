@@ -112,11 +112,30 @@ class PortfolioStepdefs {
 
   @Then(
       r'portfolio {string} has service account {string} with attached API keys')
-  void portfolioHasServiceAccount(
+  void portfolioByNameHasServiceAccount(
       String portfolioName, String serviceAccountName) async {
     Portfolio? p = await userCommon.findExactPortfolio(portfolioName);
     ServiceAccount? sa =
         await userCommon.findExactServiceAccount(serviceAccountName, p!.id);
+    assert(sa != null,
+        "I couldn't find the service account " + serviceAccountName);
+
+    assert(sa!.permissions.isNotEmpty,
+        'There are no permissions, there should be at least prod');
+
+    assert(sa!.permissions[0].sdkUrlClientEval != null,
+        'Client API Key for $serviceAccountName not available to portfolio admin');
+    assert(sa!.permissions[0].sdkUrlServerEval != null,
+        'Server API Key for $serviceAccountName not available to portfolio admin');
+  }
+
+  @Then(r'portfolio has service account {string} with attached API keys')
+  void portfolioHasServiceAccount(String serviceAccountName) async {
+    Portfolio? p =
+        await userCommon.portfolioService.getPortfolio(shared.portfolio.id!);
+    // assert(p != null, 'The portfolio ${shared.portfolio} could not be found');
+    ServiceAccount? sa =
+        await userCommon.findExactServiceAccount(serviceAccountName, p.id);
     assert(sa != null,
         "I couldn't find the service account " + serviceAccountName);
 

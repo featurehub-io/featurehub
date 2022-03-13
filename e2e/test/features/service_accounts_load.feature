@@ -1,9 +1,9 @@
 Feature: This should test the loading of new service accounts
 
   Scenario Outline: I can create a new portfolio and groups 3
-
     # superuser has to create the portfolio and create the user
-    Given I ensure a portfolio named "<portfolio>" with description "<portfolio_desc>" exists
+    Given the first superuser is used for authentication
+    And I have a randomly named portfolio with the prefix "<portfolio>"
     And I have a fully registered person "<name>" with email "<email>" and password "password123"
     # previous step swapped to that user, so swap back to superuser
     And the first superuser is used for authentication
@@ -13,18 +13,18 @@ Feature: This should test the loading of new service accounts
     And I create an application with the name "Jujitsu for Frogs"
     And I can find environment "production" in the application
     When We create a service account "<service_account>" with the permission READ
-    Then portfolio "<portfolio>" has service account "<service_account>" with attached API keys
+    Then portfolio has service account "<service_account>" with attached API keys
 
     Examples:
-      | portfolio   | portfolio_desc | service_account | name                    | email                                  |
-      | Marketing   | The Fluffers   | SA001           | Marketing Admin         | marketing-admin@mailinator.com         |
-      | Marketing   | The Fluffers   | SA002           | Marketing Admin         | marketing-admin@mailinator.com         |
-      | Engineering | The Eloi       | SA003           | Engineering Admin       | engineering-admin@mailinator.com       |
-      | Engineering | The Eloi       | SA004           | Engineering Admin       | engineering-admin@mailinator.com       |
-      | Engineering | The Eloi       | SA005           | Engineering Admin       | engineering-admin@mailinator.com       |
-      | Platform    | The Morlocks   | SA006           | Platform Admin          | platform-admin@mailinator.com          |
-      | Platform    | The Morlocks   | SA007           | platform testers        | platform_testers-admin@mailinator.com  |
-      | Platform    | The Morlocks   | SA008           | platform_business_users | platform_product-owners@mailinator.com |
+      | portfolio   | service_account | name                    | email                                  |
+      | Marketing   | SA001           | Marketing Admin         | marketing-admin@mailinator.com         |
+      | Marketing   | SA002           | Marketing Admin         | marketing-admin@mailinator.com         |
+      | Engineering | SA003           | Engineering Admin       | engineering-admin@mailinator.com       |
+      | Engineering | SA004           | Engineering Admin       | engineering-admin@mailinator.com       |
+      | Engineering | SA005           | Engineering Admin       | engineering-admin@mailinator.com       |
+      | Platform    | SA006           | Platform Admin          | platform-admin@mailinator.com          |
+      | Platform    | SA007           | platform testers        | platform_testers-admin@mailinator.com  |
+      | Platform    | SA008           | platform_business_users | platform_product-owners@mailinator.com |
 
 
   Scenario Outline: I can create a new portfolio and service account and add permissions
