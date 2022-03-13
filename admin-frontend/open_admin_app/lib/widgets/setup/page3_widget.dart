@@ -42,7 +42,7 @@ class _FinalSetupPageOverlayWidget extends StatelessWidget {
     return FHAlertDialog(
         title: title(context),
         content: SizedBox(
-          width: 200,
+          width: 230,
           height: 100,
           child: StreamBuilder<bool>(
             stream: bloc.setupState,

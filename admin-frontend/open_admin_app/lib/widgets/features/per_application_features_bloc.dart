@@ -234,13 +234,15 @@ class PerApplicationFeaturesBloc
       String key,
       FeatureValueType featureValueType,
       String featureAlias,
-      String featureLink) async {
+      String featureLink,
+      String featureDescription) async {
     final feature = Feature(
       name: name,
       valueType: featureValueType,
       key: key,
       alias: featureAlias,
       link: featureLink,
+      description: featureDescription
     );
     await _featureServiceApi.createFeaturesForApplication(
         applicationId!, feature);
@@ -250,13 +252,14 @@ class PerApplicationFeaturesBloc
   }
 
   Future<void> updateFeature(Feature feature, String newName, String newKey,
-      String newFeatureAlias, String newFeatureLink) async {
+      String newFeatureAlias, String newFeatureLink, String newFeatureDescription) async {
     final currentFeature =
         await _featureServiceApi.getFeatureByKey(applicationId!, feature.key!);
     final newFeature = currentFeature
       ..name = newName
       ..alias = newFeatureAlias
       ..link = newFeatureLink
+      ..description = newFeatureDescription
       ..key = newKey;
     await _featureServiceApi.updateFeatureForApplication(
         applicationId!, feature.key!, newFeature);

@@ -43,7 +43,7 @@ class SignInProviderButton extends StatelessWidget {
             image: Container(
                 // height: 30,
                 // width: 48,
-                margin: EdgeInsets.fromLTRB(0.0, 0.0, 10.0, 0.0),
+                margin: const EdgeInsets.fromLTRB(0.0, 0.0, 10.0, 0.0),
                 child: ClipRRect(
                     child: Image.network(
                   providedIcon!.buttonIcon,

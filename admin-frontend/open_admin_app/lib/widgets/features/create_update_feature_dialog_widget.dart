@@ -118,7 +118,6 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                 readOnly: isReadOnly,
                 controller: _featureDesc,
                 onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
-                maxLines: 3,
                 decoration: InputDecoration(
                     labelText: 'Description (optional)',
                     hintText: 'Some information about feature',
@@ -202,7 +201,8 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                             _featureName.text,
                             _featureKey.text,
                             _featureAlias.text,
-                            _featureLink.text);
+                            _featureLink.text,
+                        _featureDesc.text);
                         widget.bloc.mrClient.removeOverlay();
                         widget.bloc.mrClient.addSnackbar(
                             Text('Feature ${_featureName.text} updated!'));
@@ -213,7 +213,8 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
                               _featureKey.text,
                               _dropDownFeatureTypeValue!,
                               _featureAlias.text,
-                              _featureLink.text);
+                              _featureLink.text,
+                              _featureDesc.text);
                           widget.bloc.mrClient.removeOverlay();
                           widget.bloc.mrClient.addSnackbar(
                               Text('Feature ${_featureName.text} created!'));
@@ -246,9 +247,9 @@ class _CreateFeatureDialogWidgetState extends State<CreateFeatureDialogWidget> {
       case FeatureValueType.NUMBER:
         return 'Number';
       case FeatureValueType.BOOLEAN:
-        return 'Feature flag';
+        return 'Standard flag (boolean)';
       case FeatureValueType.JSON:
-        return 'Configuration (JSON)';
+        return 'Remote configuration (JSON)';
     }
   }
 }

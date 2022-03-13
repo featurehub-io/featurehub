@@ -159,17 +159,20 @@ class _FeatureTabsHeader extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: const [
             _FeatureTab(
-                text: 'Feature Flags',
+                text: 'Standard Flags',
+                subtext: '(Boolean)',
                 icon: Icons.flag,
                 state: TabsState.featureFlags,
                 color: Colors.green),
             _FeatureTab(
-                text: 'Feature Values',
+                text: 'Non-binary Flags',
+                subtext: '(String / Number)',
                 icon: Icons.code,
                 state: TabsState.featureValues,
                 color: Colors.blue),
             _FeatureTab(
-                text: 'Configurations',
+                text: 'Remote Configuration',
+                subtext: '(JSON)',
                 icon: Icons.device_hub,
                 state: TabsState.configurations,
                 color: Colors.orange),
@@ -182,6 +185,7 @@ class _FeatureTabsHeader extends StatelessWidget {
 
 class _FeatureTab extends StatelessWidget {
   final String text;
+  final String subtext;
   final IconData icon;
   final TabsState state;
 
@@ -192,7 +196,8 @@ class _FeatureTab extends StatelessWidget {
       required this.text,
       required this.icon,
       required this.state,
-      required this.color})
+      required this.color,
+      required this.subtext})
       : super(key: key);
 
   @override
@@ -226,6 +231,9 @@ class _FeatureTab extends StatelessWidget {
                         const SizedBox(width: 4.0),
                         Text(text,
                             style: Theme.of(context).textTheme.subtitle1),
+                        const SizedBox(width: 2.0),
+                        Text(subtext,
+                            style: Theme.of(context).textTheme.caption),
                       ]))));
         });
   }
