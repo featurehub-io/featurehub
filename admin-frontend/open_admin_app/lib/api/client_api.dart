@@ -412,7 +412,6 @@ class ManagementRepositoryClientBloc implements Bloc {
   }
 
   void addOverlay(WidgetBuilder builder) {
-    print("adding overlay");
     _overlaySource.add(builder);
   }
 

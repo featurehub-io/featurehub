@@ -6,11 +6,11 @@ import 'package:open_admin_app/config/route_names.dart';
 import 'package:open_admin_app/utils/custom_scroll_behavior.dart';
 import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_circle_icon_button.dart';
+import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
 import 'package:open_admin_app/widgets/stepper/custom_stepper.dart';
 import 'package:open_admin_app/widgets/stepper/fh_stepper.dart';
 import 'package:open_admin_app/widgets/stepper/progress_stepper_bloc.dart';
 
-import '../common/fh_flat_button_transparent.dart';
 
 class FHSetupProgressStepper extends StatefulWidget {
   const FHSetupProgressStepper({Key? key}) : super(key: key);
@@ -78,17 +78,14 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                           CrossAxisAlignment.start,
                                       children: <Widget>[
                                         applicationDropDown(bloc),
-                                        FHFlatButtonTransparent(
-                                          title: 'Create application',
+                                        FHUnderlineButton(
+                                          title: 'Go to Applications',
                                           keepCase: true,
                                           onPressed: () => {
                                             ManagementRepositoryClientBloc
                                                 .router
                                                 .navigateTo(
-                                                    context, '/applications',
-                                                    params: {
-                                                  'action': ['create']
-                                                })
+                                                    context, '/applications')
                                           },
                                         ),
                                       ],
@@ -107,16 +104,14 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                           'Groups are portfolio-wide, we recommend creating application specific groups eg “MyApp developers”',
                                           style: captionStyle,
                                         ),
-                                        FHFlatButtonTransparent(
-                                          title: 'Create group',
+                                        const SizedBox(height: 4.0),
+                                        FHUnderlineButton(
+                                          title: 'Go to Groups',
                                           keepCase: true,
                                           onPressed: () => {
                                             ManagementRepositoryClientBloc
                                                 .router
-                                                .navigateTo(context, '/groups',
-                                                    params: {
-                                                  'action': ['create']
-                                                })
+                                                .navigateTo(context, '/groups')
                                           },
                                         ),
                                       ],
@@ -134,17 +129,15 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                           'Service accounts are portfolio-wide, we recommend creating at least two service accounts specific to an application, e.g. “SA-MyApp-Prod” and "SA-MyApp-Non-Prod"',
                                           style: captionStyle,
                                         ),
-                                        FHFlatButtonTransparent(
-                                          title: 'Create service account',
+                                        const SizedBox(height: 4.0),
+                                        FHUnderlineButton(
+                                          title: 'Go to Service Accounts',
                                           keepCase: true,
                                           onPressed: () => {
                                             ManagementRepositoryClientBloc
                                                 .router
                                                 .navigateTo(context,
-                                                    '/service-accounts',
-                                                    params: {
-                                                  'action': ['create']
-                                                })
+                                                    '/service-accounts')
                                           },
                                         ),
                                       ],
@@ -164,8 +157,9 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                           'Create an environment for selected application, e.g. "test", "dev", "prod"',
                                           style: captionStyle,
                                         ),
-                                        FHFlatButtonTransparent(
-                                          title: 'Create environment',
+                                        const SizedBox(height: 4.0),
+                                        FHUnderlineButton(
+                                          title: 'Go to Environments',
                                           keepCase: true,
                                           onPressed: () => {
                                             ManagementRepositoryClientBloc
@@ -175,8 +169,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                               '/app-settings',
                                               params: {
                                                 'id': [bloc.applicationId!],
-                                                'tab': ['environments'],
-                                                'action': ['create']
+                                                'tab': ['environments']
                                               },
                                             )
                                           },
@@ -199,8 +192,9 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                           'Assign an application environment level permissions to a group of users',
                                           style: captionStyle,
                                         ),
-                                        FHFlatButtonTransparent(
-                                          title: 'Set permissions',
+                                        const SizedBox(height: 4.0),
+                                        FHUnderlineButton(
+                                          title: 'Go to Group Permissions',
                                           keepCase: true,
                                           onPressed: () => {
                                             ManagementRepositoryClientBloc
@@ -236,9 +230,10 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                           'Assign an application environment level permissions to a service account',
                                           style: captionStyle,
                                         ),
-                                        FHFlatButtonTransparent(
+                                        const SizedBox(height: 4.0),
+                                        FHUnderlineButton(
                                           title:
-                                              'Set service account permissions',
+                                              'Go to Service Account Permissions',
                                           keepCase: true,
                                           onPressed: () => {
                                             ManagementRepositoryClientBloc
@@ -270,17 +265,16 @@ class _StepperState extends State<FHSetupProgressStepper> {
                                           'Create a feature for an application',
                                           style: captionStyle,
                                         ),
-                                        FHFlatButtonTransparent(
-                                          title: 'Create feature',
+                                        const SizedBox(height: 4.0),
+                                        FHUnderlineButton(
+                                          title: 'Go to Features',
                                           keepCase: true,
                                           onPressed: () => {
                                             ManagementRepositoryClientBloc
                                                 .router
                                                 .navigateTo(context,
                                                     routeNameFeatureDashboard,
-                                                    params: {
-                                                  'action': ['create']
-                                                })
+                                               )
                                           },
                                         ),
                                       ],
@@ -315,7 +309,7 @@ class _StepperState extends State<FHSetupProgressStepper> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  Text('Select application or create a new one',
+                  Text('Select application or create a new one by following the link below',
                       style: Theme.of(context).textTheme.caption),
                   Container(
                       constraints: const BoxConstraints(maxWidth: 200),
