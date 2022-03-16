@@ -16,6 +16,7 @@ content:
         - main
       tags:
         - docs-multi-version-support
+        - v1.5.7
       start_path: docs
 urls:
   latest_version_segment: latest
