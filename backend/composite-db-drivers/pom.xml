@@ -43,7 +43,7 @@
   </licenses>
 
   <properties>
-    <cloud-sql-version>1.4.3</cloud-sql-version>
+    <cloud-sql-version>1.4.4</cloud-sql-version>
   </properties>
 
   <dependencies>
