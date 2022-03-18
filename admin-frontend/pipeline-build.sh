@@ -29,8 +29,8 @@ if test "$?" != "0"; then
   exit 1
 fi
 cd build/web
-MAIN_DATE=`date +"%s"`
-MAIN="main.dart-$MAIN_DATE.js"
+MAIN_SHA=`sha256sum main.dart.js | awk '{print $1}'`
+MAIN="main.$MAIN_SHA.js"
 sed -i s/main.dart.js/$MAIN/ index.html
 mv main.dart.js $MAIN
 mv main.dart.js.map $MAIN.map

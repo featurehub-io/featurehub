@@ -14,6 +14,7 @@ import io.featurehub.lifecycle.TelemetryFeature
 import io.featurehub.mr.ManagementRepositoryFeature
 import io.featurehub.publish.ChannelConstants
 import io.featurehub.publish.NATSFeature
+import io.featurehub.rest.CacheControlFilter
 import io.featurehub.rest.CorsFilter
 import io.featurehub.rest.Info.Companion.APPLICATION_NAME_PROPERTY
 import io.featurehub.web.security.oauth.OAuth2Feature
@@ -45,7 +46,8 @@ class Application {
       EdgeFeature::class.java,
       DachaFeature::class.java,
       DachaClientFeature::class.java,
-      TelemetryFeature::class.java
+      TelemetryFeature::class.java,
+      CacheControlFilter::class.java
     )
 
     config.register(object: ContainerLifecycleListener {
