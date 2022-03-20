@@ -8,7 +8,6 @@ import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
 import 'package:open_admin_app/widgets/common/fh_info_card.dart';
-import 'package:open_admin_app/widgets/common/fh_reorderable_list_view.dart';
 import 'package:openapi_dart_common/openapi.dart';
 
 class EnvListWidget extends StatefulWidget {
@@ -37,15 +36,19 @@ class _EnvListState extends State<EnvListWidget> {
           return SizedBox(
             //height:(snapshot.data!.length*50).toDouble(),
             height: 500.0,
-            child: FHReorderableListView(
-              onReorder: (int oldIndex, int newIndex) {
-                _reorderEnvironments(oldIndex, newIndex, bloc);
-              },
-              children: <Widget>[
-                for (Environment env in _environments!)
-                  _EnvWidget(env: env, bloc: bloc, key: Key(env.id!))
-              ],
-            ),
+            child: ReorderableListView(
+                onReorder: (int oldIndex, int newIndex) {
+                  _reorderEnvironments(oldIndex, newIndex, bloc);
+                },
+                children: <Widget>[
+                  for (Environment env in _environments!)
+                    _EnvWidget(
+                        env: env,
+                        bloc: bloc,
+                        key: Key(env.id!),
+                        index: _environments!.indexOf(env))
+                ],
+                buildDefaultDragHandles: false),
           );
         });
   }
@@ -118,44 +121,52 @@ class _EnvListState extends State<EnvListWidget> {
 class _EnvWidget extends StatelessWidget {
   final Environment env;
   final ManageAppBloc bloc;
+  final int index;
 
-  const _EnvWidget({Key? key, required this.env, required this.bloc})
-      : super(key: key);
+  const _EnvWidget({
+    Key? key,
+    required this.env,
+    required this.bloc,
+    required this.index,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(30, 5, 30, 5),
-      decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          border: Border.all(color: Theme.of(context).dividerColor)),
-      child: SizedBox(
-        height: 50,
-        child: InkWell(
-          mouseCursor: SystemMouseCursors.grab,
-          child: Row(
-            children: <Widget>[
-              Container(
-                  padding: const EdgeInsets.only(right: 30),
-                  child: const Icon(
-                    Icons.drag_handle,
-                    size: 24.0,
-                  )),
-              Row(
-                children: <Widget>[
-                  Text(env.name),
-                  Padding(
-                      padding: const EdgeInsets.only(left: 8.0),
-                      child: (env.production == true)
-                          ? _ProductionEnvironmentIndicatorWidget()
-                          : _NonProductionEnvironmentIndicatorWidget()),
-                ],
-              ),
-              Expanded(child: Container()),
-              bloc.mrClient.isPortfolioOrSuperAdmin(bloc.portfolio?.id)
-                  ? _adminFunctions(context)
-                  : Container()
-            ],
+    return ReorderableDragStartListener(
+      index: index,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(30, 5, 30, 5),
+        decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            border: Border.all(color: Theme.of(context).dividerColor)),
+        child: SizedBox(
+          height: 50,
+          child: InkWell(
+            mouseCursor: SystemMouseCursors.grab,
+            child: Row(
+              children: <Widget>[
+                Container(
+                    padding: const EdgeInsets.only(right: 30),
+                    child: const Icon(
+                      Icons.drag_handle,
+                      size: 24.0,
+                    )),
+                Row(
+                  children: <Widget>[
+                    Text(env.name),
+                    Padding(
+                        padding: const EdgeInsets.only(left: 8.0),
+                        child: (env.production == true)
+                            ? _ProductionEnvironmentIndicatorWidget()
+                            : _NonProductionEnvironmentIndicatorWidget()),
+                  ],
+                ),
+                Expanded(child: Container()),
+                bloc.mrClient.isPortfolioOrSuperAdmin(bloc.portfolio?.id)
+                    ? _adminFunctions(context)
+                    : Container()
+              ],
+            ),
           ),
         ),
       ),
