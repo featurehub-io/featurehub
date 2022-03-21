@@ -125,6 +125,16 @@ class PersonState {
         ReleasedPortfolio(portfolio: p, currentPortfolioOrSuperAdmin: isAdmin));
   }
 
+  Group? personInSuperuserGroup() {
+    if (person != _unauthenticatedPerson) {
+      return groupList.firstWhereOrNull(
+              (group) => group.admin == true && group.portfolioId == null);
+    }
+
+    return null;
+  }
+
+
   void dispose() {
     _personSource.close();
     _isCurrentPortfolioOrSuperAdmin.close();
