@@ -8,6 +8,7 @@ import io.featurehub.dacha.api.DachaClientServiceRegistry;
 import io.featurehub.health.MetricsHealthRegistration;
 import io.featurehub.jersey.FeatureHubJerseyHost;
 import io.featurehub.publish.NATSFeature;
+import io.featurehub.rest.CacheControlFilter;
 import io.featurehub.rest.CorsFilter;
 import io.featurehub.utils.FallbackPropertyConfig;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -25,13 +26,14 @@ public class Application {
     DeclaredConfigResolver.resolve(this);
 
     // we do not want telemetry enabled on Edge
-    ResourceConfig config = new ResourceConfig(
-      NATSFeature.class,
-      DachaClientFeature.class,
-      EdgeFeature.class,
-      EdgeResourceFeature.class,
-      CorsFilter.class
-      );
+    ResourceConfig config =
+        new ResourceConfig(
+            NATSFeature.class,
+            DachaClientFeature.class,
+            EdgeFeature.class,
+            EdgeResourceFeature.class,
+            CorsFilter.class,
+            CacheControlFilter.class);
 
     // check if we should list on a different port
     MetricsHealthRegistration.Companion.registerMetrics(config);

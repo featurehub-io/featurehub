@@ -1,7 +1,10 @@
 package io.featurehub.jersey
 
+import cd.connect.app.config.ConfigKey
+import cd.connect.app.config.DeclaredConfigResolver
 import io.featurehub.utils.FallbackPropertyConfig
 import org.glassfish.grizzly.WriteHandler
+import org.glassfish.grizzly.http.Method
 import org.glassfish.grizzly.http.io.NIOOutputStream
 import org.glassfish.grizzly.http.server.Request
 import org.glassfish.grizzly.http.server.Response
@@ -21,9 +24,15 @@ class AdminAppStaticHttpHandler constructor(private val offsetBaseUrl: String) :
   private val log: Logger = LoggerFactory.getLogger(AdminAppStaticHttpHandler::class.java)
   private val indexResource: File
   private val html: String
+  @ConfigKey("cache-control.web.index")
+  var indexCacheControlHeader: String? = "no-store, max-age=0"
+  @ConfigKey("cache-control.web.other")
+  var restCacheControlHeader: String? = "max-age=864000"
 
   init {
     MimeType.add("wasm", "application/wasm")
+
+    DeclaredConfigResolver.resolve(this)
 
     indexResource = preloadIndexHtml()
     html = loadIndexHtml(indexResource)
@@ -134,12 +143,75 @@ class AdminAppStaticHttpHandler constructor(private val offsetBaseUrl: String) :
     outputStream.notifyCanWrite(NonBlockingBufferHandler(response, outputStream, html))
   }
 
-  public override fun handle(uri: String?, request: Request?, response: Response?): Boolean {
+  // ------------------------------------------------------- Protected Methods
+  @Throws(java.lang.Exception::class)
+  fun internal_handle(uri: String, request: Request, response: Response): Boolean {
+    var found = false
+    val fileFolders = docRoots.array ?: return false
+    var resource: File? = null
+    for (i in fileFolders.indices) {
+      val webDir = fileFolders[i]
+      // local file
+      resource = File(webDir, uri)
+      val exists = resource.exists()
+      val isDirectory = resource.isDirectory
+      if (exists && isDirectory) {
+        if (!isDirectorySlashOff && !uri.endsWith("/")) { // redirect to the same url, but with trailing slash
+          response.setStatus(HttpStatus.MOVED_PERMANENTLY_301)
+          response.setHeader(Header.Location, response.encodeRedirectURL("$uri/"))
+          return true
+        }
+        val f = File(resource, "/index.html")
+        if (f.exists()) {
+          resource = f
+          found = true
+          break
+        }
+      }
+      if (isDirectory || !exists) {
+        found = false
+      } else {
+        found = true
+        break
+      }
+    }
+    if (!found) {
+      if (log.isTraceEnabled) {
+        log.trace("File not found {0}", resource)
+      }
+      return false
+    }
+    assert(resource != null)
+
+    // If it's not HTTP GET - return method is not supported status
+    if (Method.GET != request.method) {
+      if (log.isTraceEnabled) {
+        log.trace("File found {0}, but HTTP method {1} is not allowed", resource, request.method)
+      }
+      response.setStatus(HttpStatus.METHOD_NOT_ALLOWED_405)
+      response.setHeader(Header.Allow, "GET")
+      return true
+    }
+
+    response.setHeader("Cache-Control", restCacheControlHeader)
+    pickupContentType(response, resource!!.path)
+    addToFileCache(request, response, resource)
+    sendFile(response, resource)
+    return true
+  }
+
+
+  public override fun handle(uri: String?, request: Request, response: Response?): Boolean {
     if (response != null && (uri == "/index.html" || uri == "index.html" || uri == null || uri == "/")) {
+      response.setHeader("Cache-Control", indexCacheControlHeader)
       sendFile(response!!)
       return true
     }
 
-    return super.handle(uri, request, response)
+    if (uri == null) {
+      return false;
+    }
+
+    return internal_handle(uri, request, response!!)
   }
 }

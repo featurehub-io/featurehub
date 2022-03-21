@@ -16,9 +16,10 @@ cd ../open_admin_app && echo "final appVersion = '${BUILD_VERSION}';" > lib/vers
 
 rename_main_dart() {
   cd build/web
-  MAIN_DATE=`date +"%s"`
-  MAIN="main.dart-$MAIN_DATE.js"
-  if [[ "$OSTYPE" == 'darwin'* ]]; then
+  MAIN_SHA=`sha256sum main.dart.js | awk '{print $1}'`
+  echo Generated SHA is $MAIN_SHA
+  MAIN="main-$MAIN_SHA.js"
+  if [ "$OSTYPE" == 'darwin'* ]; then
     sed s/main.dart.js/$MAIN/ index.html > index2.html
     mv index.html index-old.html
     mv index2.html index.html

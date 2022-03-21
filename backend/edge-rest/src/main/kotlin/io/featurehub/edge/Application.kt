@@ -7,6 +7,7 @@ import io.featurehub.app.db.utils.CommonDbFeature
 import io.featurehub.health.MetricsHealthRegistration.Companion.registerMetrics
 import io.featurehub.jersey.FeatureHubJerseyHost
 import io.featurehub.lifecycle.TelemetryFeature
+import io.featurehub.rest.CacheControlFilter
 import io.featurehub.rest.CorsFilter
 import io.featurehub.rest.Info
 import org.glassfish.jersey.server.ResourceConfig
@@ -26,6 +27,7 @@ class Application {
 
     val config = ResourceConfig(
       CorsFilter::class.java,
+      CacheControlFilter::class.java,
       TelemetryFeature::class.java,
       EdgeGetFeature::class.java,
       CommonDbFeature::class.java,

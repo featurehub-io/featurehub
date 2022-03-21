@@ -8,6 +8,7 @@ import io.featurehub.jersey.FeatureHubJerseyHost
 import io.featurehub.lifecycle.TelemetryFeature
 import io.featurehub.mr.ManagementRepositoryFeature
 import io.featurehub.publish.ChannelConstants
+import io.featurehub.rest.CacheControlFilter
 import io.featurehub.rest.CorsFilter
 import io.featurehub.rest.Info
 import io.featurehub.web.security.oauth.OAuth2Feature
@@ -36,6 +37,7 @@ class Application {
       ManagementRepositoryFeature::class.java,
       EdgeGetFeature::class.java,
       TelemetryFeature::class.java,
+      CacheControlFilter::class.java
     )
 
       // check if we should list on a different port

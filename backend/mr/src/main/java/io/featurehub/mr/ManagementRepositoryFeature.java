@@ -50,6 +50,7 @@ import io.featurehub.mr.resources.UserStateResource;
 import io.featurehub.mr.resources.oauth2.OAuth2MRAdapter;
 import io.featurehub.mr.utils.ApplicationUtils;
 import io.featurehub.mr.utils.PortfolioUtils;
+import io.featurehub.rest.CacheControlFilter;
 import io.featurehub.rest.CorsFilter;
 import io.featurehub.web.security.oauth.AuthProvider;
 import io.featurehub.web.security.oauth.BlankProvider;
@@ -82,6 +83,7 @@ public class ManagementRepositoryFeature implements Feature {
       UserStateServiceDelegator.class,
       RolloutStrategyServiceDelegator.class,
       CorsFilter.class,
+      CacheControlFilter.class,
 //      ConstraintExceptionHandler.class,
       AuthApplicationEventListener.class
       ).forEach(context::register);
