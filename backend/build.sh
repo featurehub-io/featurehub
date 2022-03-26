@@ -6,7 +6,7 @@ if [ $# -eq 0 ]
 else
   VERSION=$1
 fi
-if [[ $VERSION != *"RC"* ]]; then
+if [[ $VERSION == *"RC"* ]]; then
   echo "Is RC, not also tagging latest"
 else
   echo "Is not RC, tagging latest"
