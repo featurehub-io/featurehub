@@ -8,6 +8,7 @@ import io.nats.client.Connection;
 import io.nats.client.Dispatcher;
 import io.nats.client.Message;
 import io.nats.client.MessageHandler;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,39 +46,43 @@ public class FeatureUpdateListener implements EdgeUpdateListener, MessageHandler
     try {
       final StreamedFeatureUpdate update = CacheJsonMapper.readFromZipBytes(msg.getData(), StreamedFeatureUpdate.class);
 
-      try {
-        log.debug("received update {}", update);
-        featureUpdateBySDKApi.updateFeature(update.getApiKey(), update.getEnvironmentId(), update.getFeatureKey(), Boolean.TRUE.equals(update.getUpdatingValue()),
-          (valueType) -> {
-            FeatureValue fv = new FeatureValue()
-              .key(update.getFeatureKey())
-              .locked(update.getLock() != null && update.getLock());
-
-            switch (valueType) {
-              case BOOLEAN:
-                fv.valueBoolean(update.getValueBoolean());
-                break;
-              case STRING:
-                fv.valueString(update.getValueString());
-                break;
-              case NUMBER:
-                fv.setValueNumber(update.getValueNumber());
-                break;
-              case JSON:
-                fv.valueJson(update.getValueString());
-                break;
-            }
-
-            return fv;
-          });
-      } catch (RolloutStrategyValidator.InvalidStrategyCombination ignoreEx) {
-        // ignore
-      } catch (Exception failed) {
-        log.error("Failed to update {}", update, failed);
-      }
+      processUpdate(update);
     } catch (Exception e) {
       log.error("Unable to parse incoming request for update", e);
     }
 
+  }
+
+  protected void processUpdate(@NotNull StreamedFeatureUpdate update) {
+    try {
+      log.debug("received update {}", update);
+      featureUpdateBySDKApi.updateFeature(update.getApiKey(), update.getEnvironmentId(), update.getFeatureKey(), Boolean.TRUE.equals(update.getUpdatingValue()),
+        (valueType) -> {
+          FeatureValue fv = new FeatureValue()
+            .key(update.getFeatureKey())
+            .locked(update.getLock() != null && update.getLock());
+
+          switch (valueType) {
+            case BOOLEAN:
+              fv.valueBoolean(update.getValueBoolean());
+              break;
+            case STRING:
+              fv.valueString(update.getValueString());
+              break;
+            case NUMBER:
+              fv.setValueNumber(update.getValueNumber());
+              break;
+            case JSON:
+              fv.valueJson(update.getValueString());
+              break;
+          }
+
+          return fv;
+        });
+    } catch (RolloutStrategyValidator.InvalidStrategyCombination ignoreEx) {
+      // ignore
+    } catch (Exception failed) {
+      log.error("Failed to update {}", update, failed);
+    }
   }
 }
