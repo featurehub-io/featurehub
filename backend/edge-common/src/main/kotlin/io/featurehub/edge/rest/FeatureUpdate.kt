@@ -94,20 +94,23 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
       key.serviceKeyId = perms.serviceKeyId
 
       if (perms.roles.isEmpty() || (perms.roles.size == 1 && perms.roles[0] == RoleType.READ)) {
+        log.trace("FeatureUpdate failed: No permission to update")
         statRecorder?.recordHit(key, EdgeHitResultType.FORBIDDEN, EdgeHitSourceType.TESTSDK)
-        response.resume(Response.status(Response.Status.FORBIDDEN).build())
+        response.resume(Response.status(Response.Status.FORBIDDEN).entity("no write roles").build())
         return
       }
       if (true == featureStateUpdate.lock) {
         if (!perms.roles.contains(RoleType.LOCK)) {
+          log.trace("FeatureUpdate failed: Feature is locked")
           statRecorder?.recordHit(key, EdgeHitResultType.FORBIDDEN, EdgeHitSourceType.TESTSDK)
-          response.resume(Response.status(Response.Status.FORBIDDEN).build())
+          response.resume(Response.status(Response.Status.FORBIDDEN).entity("feature locked").build())
           return
         }
       } else if (false == featureStateUpdate.lock) {
         if (!perms.roles.contains(RoleType.UNLOCK)) {
+          log.trace("FeatureUpdate failed: feature is locked and no permission to unlock")
           statRecorder?.recordHit(key, EdgeHitResultType.FORBIDDEN, EdgeHitSourceType.TESTSDK)
-          response.resume(Response.status(Response.Status.FORBIDDEN).build())
+          response.resume(Response.status(Response.Status.FORBIDDEN).entity("feature locked, no permission to unlock").build())
           return
         }
       }
@@ -117,20 +120,23 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
 
       // nothing to do?
       if (featureStateUpdate.lock == null && (featureStateUpdate.updateValue == null || false == featureStateUpdate.updateValue)) {
+        log.trace("FeatureUpdate failed: not asking to lock or update value, so nothing to do")
         statRecorder?.recordHit(key, EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.TESTSDK)
-        response.resume(Response.status(Response.Status.BAD_REQUEST).build())
+        response.resume(Response.status(Response.Status.BAD_REQUEST).entity("lock and updateValue null, nothing to do").build())
         return
       }
       if (true == featureStateUpdate.updateValue) {
         if (!perms.roles.contains(RoleType.CHANGE_VALUE)) {
+          log.trace("FeatureUpdate failed: No permission to change value")
           statRecorder?.recordHit(key, EdgeHitResultType.FORBIDDEN, EdgeHitSourceType.TESTSDK)
-          response.resume(Response.status(Response.Status.FORBIDDEN).build())
+          response.resume(Response.status(Response.Status.FORBIDDEN).entity("API Key has no change_value permission").build())
           return
         } else if (true == perms.feature.value?.locked && false != featureStateUpdate.lock) {
           // its locked, and you are trying to change its value and not unlocking it at the same time, that makes no
           // sense
+          log.trace("FeatureUpdate failed: Attempting to change locked value without unlocking")
           statRecorder?.recordHit(key, EdgeHitResultType.UPDATE_NONSENSE, EdgeHitSourceType.TESTSDK)
-          response.resume(Response.status(Response.Status.PRECONDITION_FAILED).build())
+          response.resume(Response.status(Response.Status.PRECONDITION_FAILED).entity("it is locked, cannot change value without also unlocking").build())
           return
         }
       }
@@ -154,8 +160,9 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
             FeatureValueType.BOOLEAN -> {
               // must be true or false in some case
               if (!newValue.equals("true", ignoreCase = true) && !newValue.equals("false", ignoreCase = true)) {
+                log.trace("FeatureUpdate failed: Attempting to change flag value to non true/false")
                 statRecorder?.recordHit(key, EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.TESTSDK)
-                response.resume(Response.status(Response.Status.BAD_REQUEST).build())
+                response.resume(Response.status(Response.Status.BAD_REQUEST).entity("flag value must be true or false").build())
                 return
               }
 
@@ -170,8 +177,9 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
               try {
                 updateMapper.mapper.readTree(newValue)
               } catch (jpe: JsonProcessingException) {
+                log.trace("FeatureUpdate failed: Attempting to update JSON value to non-json")
                 statRecorder?.recordHit(key, EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.TESTSDK)
-                response.resume(Response.status(Response.Status.BAD_REQUEST).build())
+                response.resume(Response.status(Response.Status.BAD_REQUEST).entity("Attempting to update JSON value to non-json").build())
                 return
               }
               upd.valueString(newValue)
@@ -181,21 +189,24 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
               upd.valueNumber(BigDecimal(newValue))
               upd.valueNumber == value?.value
             } catch (e: Exception) {
+              log.trace("FeatureUpdate failed: Attempting to update NUMBER value with non-NUMBER")
               statRecorder?.recordHit(key, EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.TESTSDK)
-              response.resume(Response.status(Response.Status.BAD_REQUEST).build())
+              response.resume(Response.status(Response.Status.BAD_REQUEST).entity("Attempting to update NUMBER value with non-NUMBER").build())
               return
             }
             else -> {
-              response.resume(Response.status(Response.Status.BAD_REQUEST).build())
+              log.trace("FeatureUpdate failed: {} is unknown", perms.feature.feature.valueType)
+              response.resume(Response.status(Response.Status.BAD_REQUEST).entity("unknown value type").build())
               return
             }
           }
         } else {
           when (perms.feature.feature.valueType) {
             FeatureValueType.BOOLEAN -> {
+              log.trace("FeatureUpdate failed: Cannot set flag value to null")
               // a null boolean is not valid
               statRecorder?.recordHit(key, EdgeHitResultType.UPDATE_NONSENSE, EdgeHitSourceType.TESTSDK)
-              response.resume(Response.status(Response.Status.PRECONDITION_FAILED).build())
+              response.resume(Response.status(Response.Status.PRECONDITION_FAILED).entity("cannot set flag value to null").build())
               return
             }
             FeatureValueType.STRING, FeatureValueType.NUMBER, FeatureValueType.JSON -> value?.value == null
@@ -233,7 +244,7 @@ class FeatureUpdateProcessor @Inject constructor(private val updateMapper: Updat
       log.error("Failed to process request: {}/{}/{}/{} : {}", namedCache, envId, apiKey, featureKey,
         featureStateUpdate, e)
       statRecorder?.recordHit(key, EdgeHitResultType.FAILED_TO_PROCESS_REQUEST, EdgeHitSourceType.TESTSDK)
-      response.resume(Response.status(Response.Status.INTERNAL_SERVER_ERROR).build())
+      response.resume(Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("something happened, not sure what").build())
     }
   }
 

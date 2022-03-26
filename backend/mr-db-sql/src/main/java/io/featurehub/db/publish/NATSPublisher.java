@@ -31,7 +31,8 @@ public class NATSPublisher implements PublishManager {
   public Boolean enableListener = Boolean.TRUE;
 
   @Inject
-  public NATSPublisher(CacheSource cacheSource, FeatureUpdateBySDKApi featureUpdateBySDKApi, NATSSource natsServer) {
+  public NATSPublisher(CacheSource cacheSource, FeatureUpdateBySDKApi featureUpdateBySDKApi,
+                       NATSSource natsServer, EdgeUpdateListenerSource edgeUpdateListenerSource) {
     this.cacheSource = cacheSource;
 
     DeclaredConfigResolver.resolve(this);
@@ -50,7 +51,8 @@ public class NATSPublisher implements PublishManager {
 
     new QDbNamedCache().findList().forEach(nc -> {
       namedCaches.put(nc.getCacheName(), new NamedCacheListener(nc.getCacheName(), natsServer.getConnection(), id, this.cacheSource));
-      edgeFeatureUpdateListeners.put(nc.getCacheName(), new FeatureUpdateListener(nc.getCacheName(), natsServer.getConnection(), featureUpdateBySDKApi));
+      edgeFeatureUpdateListeners.put(nc.getCacheName(),
+        edgeUpdateListenerSource.createListener(nc.getCacheName(), natsServer.getConnection(), featureUpdateBySDKApi));
     });
 
     ApplicationLifecycleManager.registerListener(trans -> {

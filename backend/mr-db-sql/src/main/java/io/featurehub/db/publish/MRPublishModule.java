@@ -20,6 +20,7 @@ public class MRPublishModule  extends AbstractBinder {
       bind(DummyPublisher.class).to(PublishManager.class).to(CacheSource.class).in(Singleton.class);
     } else {
       bind(NATSPublisher.class).to(PublishManager.class).in(Immediate.class);
+      bind(EdgeUpdateListenerFactory.class).to(EdgeUpdateListenerSource.class).in(Singleton.class);
       bind(DbCacheSource.class).to(CacheSource.class).in(Singleton.class);
     }
   }
