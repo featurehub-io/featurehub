@@ -1,5 +1,5 @@
 {
-  "latest": "1.5.6",
+  "latest": "1.5.7",
 
   "versions": [
     {
@@ -10,6 +10,9 @@
     {
       "version": "1.5.6",
       "requiresUpgrading": true
+    },
+    {
+      "version": "1.5.7"
     }
   ]
 }
