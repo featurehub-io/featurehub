@@ -76,9 +76,11 @@ class SelectPortfolioGroupBloc implements Bloc {
   }
 
   void pushAdminGroupToStream() {
-    final adminGroup = mrClient.organization!.orgGroup!;
-    listOfAddedPortfolioGroups.add(PortfolioGroup(null, adminGroup));
-    _addedGroupsStream.add(listOfAddedPortfolioGroups);
+    final adminGroup =  mrClient.personState.personInSuperuserGroup();
+    if  (adminGroup != null) {
+      listOfAddedPortfolioGroups.add(PortfolioGroup(null, adminGroup));
+      _addedGroupsStream.add(listOfAddedPortfolioGroups);
+    }
   }
 
   void removeAdminGroupFromStream() {
