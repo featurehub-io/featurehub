@@ -114,22 +114,22 @@ class _MenuContainer extends StatelessWidget {
                               ],
                             );
                           }),
-                      if(mrBloc.userIsSuperAdmin)
-                          Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Container(
-                                  padding: const EdgeInsets.only(
-                                      left: 16.0, top: 32.0, bottom: 8.0),
-                                  child: Text(
-                                    'Global Settings',
-                                    style: Theme.of(context).textTheme.caption,
-                                  ),
-                                ),
-                                _SiteAdminOptionsWidget(),
-                                _MenuDivider(),
-                              ],
-                            )
+                      if (mrBloc.userIsSuperAdmin)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Container(
+                              padding: const EdgeInsets.only(
+                                  left: 16.0, top: 32.0, bottom: 8.0),
+                              child: Text(
+                                'Global Settings',
+                                style: Theme.of(context).textTheme.caption,
+                              ),
+                            ),
+                            _SiteAdminOptionsWidget(),
+                            _MenuDivider(),
+                          ],
+                        )
                     ],
                   );
                 }),

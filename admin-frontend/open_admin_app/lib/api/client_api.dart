@@ -51,7 +51,7 @@ final _log = Logger('mr_bloc');
 ///
 class ManagementRepositoryClientBloc implements Bloc {
   final ApiClient _client;
-  late PersonState personState;
+  PersonState personState = PersonState();
   FHSharedPrefs? sharedPreferences;
 
   late SetupServiceApi setupApi;
@@ -218,6 +218,7 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   ManagementRepositoryClientBloc({String? basePathUrl})
       : _client = ApiClient(basePath: basePathUrl ?? homeUrl()) {
+    streamValley = StreamValley(personState);
     _basePath = Uri.parse(_client.basePath);
     webInterface.setOrigin();
 
@@ -235,11 +236,11 @@ class ManagementRepositoryClientBloc implements Bloc {
     portfolioServiceApi = PortfolioServiceApi(client);
     serviceAccountServiceApi = ServiceAccountServiceApi(client);
     environmentServiceApi = EnvironmentServiceApi(client);
-    personState = PersonState(personServiceApi);
+    personState.personServiceApi = personServiceApi;
     featureServiceApi = FeatureServiceApi(client);
     applicationServiceApi = ApplicationServiceApi(client);
     _errorSource.add(null);
-    streamValley = StreamValley(this, personState);
+    streamValley.apiClient = this;
 
     _personPermissionInPortfolioChanged = streamValley.routeCheckPortfolioStream
         .listen((portfolio) =>
@@ -318,7 +319,8 @@ class ManagementRepositoryClientBloc implements Bloc {
   }
 
   String? getBearerCookie() {
-    return webInterface.getStoredAuthToken();
+    return 'rnVN4QABZqdq50xvE9yVPr4daEO5Iz';
+    // return webInterface.getStoredAuthToken();
   }
 
   void _setBearerCookie(String token) {
@@ -398,8 +400,10 @@ class ManagementRepositoryClientBloc implements Bloc {
   }
 
   void setPerson(Person p) {
+    print("set person");
     personState.person = p;
-    _addPortfoliosToStream();
+    print("load portfolios");
+    addPortfoliosToStream();
   }
 
   bool isPortfolioOrSuperAdminForCurrentPid() {
@@ -504,10 +508,10 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   // this can be called when a portfolio is deleted
   void refreshPortfolios() async {
-    _addPortfoliosToStream();
+    addPortfoliosToStream();
   }
 
-  void _addPortfoliosToStream() async {
+  Future<void> addPortfoliosToStream() async {
     try {
       final _portfolios = await streamValley.loadPortfolios();
 
@@ -517,6 +521,7 @@ class ManagementRepositoryClientBloc implements Bloc {
         final aid = await sharedPreferences!.getString('currentAid');
         final pid = await sharedPreferences!.getString('currentPid');
         if (streamValley.containsPid(pid)) {
+          print("found pid, updating");
           setCurrentPid(pid);
           foundValidStoredPortfolio = true;
           if (aid != null) {

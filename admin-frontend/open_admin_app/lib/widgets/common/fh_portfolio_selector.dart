@@ -2,6 +2,7 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/common/stream_valley.dart';
 
 class PortfolioSelectorWidget extends StatefulWidget {
   const PortfolioSelectorWidget({Key? key}) : super(key: key);
@@ -70,9 +71,7 @@ class _PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
                                     bloc.setCurrentAid(null);
                                   });
                                 },
-                                value: currentPortfolioSnap.hasData
-                                    ? currentPortfolioSnap.data!.id
-                                    : null,
+                                value: determinePortfolio(currentPortfolioSnap),
                               ),
                             ),
                           ),
@@ -83,5 +82,16 @@ class _PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
                 );
               });
         });
+  }
+
+  String? determinePortfolio(AsyncSnapshot<Portfolio> curSnap) {
+    if (curSnap.hasData) {
+      if (curSnap.data!.id == nullPortfolio.id) {
+        return null;
+      }
+      return curSnap.data!.id;
+    }
+
+    return null;
   }
 }

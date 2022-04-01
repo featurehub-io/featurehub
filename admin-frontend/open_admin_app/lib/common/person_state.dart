@@ -12,13 +12,15 @@ Person _unauthenticatedPerson =
     Person(id: PersonId(id: ''), name: '', email: '');
 
 class PersonState {
-  final PersonServiceApi _personServiceApi;
+  PersonServiceApi? _personServiceApi;
   //stream if person user is current portfolio or super admin user
   final BehaviorSubject<ReleasedPortfolio?> _isCurrentPortfolioOrSuperAdmin =
       BehaviorSubject<ReleasedPortfolio?>();
 
   final BehaviorSubject<Person> _personSource =
       BehaviorSubject.seeded(_unauthenticatedPerson);
+
+  set personServiceApi(PersonServiceApi value) => _personServiceApi = value;
 
   Stream<Person> get personStream => _personSource.stream;
 
@@ -48,12 +50,17 @@ class PersonState {
 
     _userIsAnyPortfolioOrSuperAdmin = isAnyPortfolioOrSuperAdmin(person.groups);
 
-    if (person == _unauthenticatedPerson) {
+    if (person == _unauthenticatedPerson ||
+        (_personSource.value != null &&
+            _personSource.value!.groups != person.groups)) {
+      print("released portfolio is null");
       _isCurrentPortfolioOrSuperAdmin.add(null);
-    } else {
+    } else if (_personSource.value != null &&
+        _personSource.value!.groups != person.groups) {
       final releasedPortfolio = _isCurrentPortfolioOrSuperAdmin.value;
 
       if (releasedPortfolio != null) {
+        print("updating released portfolio $releasedPortfolio");
         _isCurrentPortfolioOrSuperAdmin.add(ReleasedPortfolio(
             portfolio: releasedPortfolio.portfolio,
             currentPortfolioOrSuperAdmin: userIsPortfolioAdmin(
@@ -61,18 +68,24 @@ class PersonState {
       }
     }
 
+    print("person is $person");
+
     _personSource.add(person);
   }
 
   Stream<ReleasedPortfolio?> get isCurrentPortfolioOrSuperAdmin =>
       _isCurrentPortfolioOrSuperAdmin.stream;
 
-  PersonState(this._personServiceApi);
+  // PersonState(this._personServiceApi);
 
   Future<Person> _getSelfPersonWithGroups() async {
-    final person = await _personServiceApi.getPerson('self',
-        includeGroups: true, includeAcls: true);
-    return person;
+    if (_personServiceApi != null) {
+      final person = await _personServiceApi!
+          .getPerson('self', includeGroups: true, includeAcls: true);
+      return person;
+    } else {
+      return _personSource.value!;
+    }
   }
 
   Future<bool> personCanEditFeaturesForCurrentApplication(String? appId) async {
@@ -128,12 +141,11 @@ class PersonState {
   Group? personInSuperuserGroup() {
     if (person != _unauthenticatedPerson) {
       return groupList.firstWhereOrNull(
-              (group) => group.admin == true && group.portfolioId == null);
+          (group) => group.admin == true && group.portfolioId == null);
     }
 
     return null;
   }
-
 
   void dispose() {
     _personSource.close();

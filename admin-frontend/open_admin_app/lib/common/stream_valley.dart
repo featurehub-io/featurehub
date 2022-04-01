@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:logging/logging.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
@@ -22,14 +23,14 @@ final _log = Logger('stream-valley');
 final Portfolio nullPortfolio = Portfolio(name: 'null-portfolio');
 
 class StreamValley {
-  final ManagementRepositoryClientBloc mrClient;
+  late ManagementRepositoryClientBloc mrClient;
   final PersonState personState;
-  final AuthServiceApi authServiceApi;
-  final PortfolioServiceApi portfolioServiceApi;
-  final ServiceAccountServiceApi serviceAccountServiceApi;
-  final EnvironmentServiceApi environmentServiceApi;
-  final FeatureServiceApi featureServiceApi;
-  final ApplicationServiceApi applicationServiceApi;
+  late AuthServiceApi authServiceApi;
+  late PortfolioServiceApi portfolioServiceApi;
+  late ServiceAccountServiceApi serviceAccountServiceApi;
+  late EnvironmentServiceApi environmentServiceApi;
+  late FeatureServiceApi featureServiceApi;
+  late ApplicationServiceApi applicationServiceApi;
 
   late StreamSubscription<ReleasedPortfolio?>
       currentPortfolioAdminOrSuperAdminSubscription;
@@ -37,13 +38,7 @@ class StreamValley {
 
   bool _isCurrentPortfolioAdminOrSuperAdmin = false;
 
-  StreamValley(this.mrClient, this.personState)
-      : authServiceApi = AuthServiceApi(mrClient.apiClient),
-        portfolioServiceApi = PortfolioServiceApi(mrClient.apiClient),
-        serviceAccountServiceApi = ServiceAccountServiceApi(mrClient.apiClient),
-        environmentServiceApi = EnvironmentServiceApi(mrClient.apiClient),
-        featureServiceApi = FeatureServiceApi(mrClient.apiClient),
-        applicationServiceApi = ApplicationServiceApi(mrClient.apiClient) {
+  StreamValley(this.personState) {
     // release the route check portfolio into the main stream so downstream stuff can trigger as usual.
     // we  have done our permission checks on it and swapped their route if they have no access
     currentPortfolioAdminOrSuperAdminSubscription =
@@ -69,6 +64,17 @@ class StreamValley {
 
     currentPortfolioSubscription =
         _currentPortfolioSource.listen((p) => portfolioChanged());
+  }
+
+  set apiClient(ManagementRepositoryClientBloc mrClient) {
+    this.mrClient = mrClient;
+    print("reset permissions client");
+    authServiceApi = AuthServiceApi(mrClient.apiClient);
+    portfolioServiceApi = PortfolioServiceApi(mrClient.apiClient);
+    serviceAccountServiceApi = ServiceAccountServiceApi(mrClient.apiClient);
+    environmentServiceApi = EnvironmentServiceApi(mrClient.apiClient);
+    featureServiceApi = FeatureServiceApi(mrClient.apiClient);
+    applicationServiceApi = ApplicationServiceApi(mrClient.apiClient);
   }
 
   void dispose() {
@@ -135,8 +141,8 @@ class StreamValley {
           .firstWhere((element) => element.id == value));
     } else if (value == null) {
       _log.fine('Portfolio request was null, storing null.');
-      _routeCheckPortfolioSource.add(null); // no portfolio
       _currentPortfolioSource.add(nullPortfolio);
+      _routeCheckPortfolioSource.add(null); // no portfolio
     } else {
       _log.fine('Ignoring portfolio change request');
     }
@@ -260,6 +266,7 @@ class StreamValley {
         _lastPortfolioIdGroupChecked == null ||
         force) {
       _lastPortfolioIdGroupChecked = currentPortfolioId;
+      print("current portfolio id is $currentPortfolioId");
       if (currentPortfolioId != null) {
         await portfolioServiceApi
             .getPortfolio(currentPortfolioId!, includeGroups: true)
@@ -338,15 +345,23 @@ class StreamValley {
     }
   }
 
+  void clearCurrentPortfolio() {
+    currentPortfolioId = null;
+  }
+
   Future<List<Portfolio>> loadPortfolios() async {
     final portfolios = await portfolioServiceApi.findPortfolios(
         includeApplications: true, order: SortOrder.ASC);
 
-    _portfoliosSource.add(portfolios);
+    print("loaded portfolios are $portfolios");
 
-    if (portfolios.isEmpty) {
+    if (portfolios.isEmpty ||
+        portfolios.firstWhereOrNull((p) => currentPortfolio.id == p.id) ==
+            null) {
       currentPortfolioId = null;
     }
+
+    _portfoliosSource.add(portfolios);
 
     return portfolios;
   }
