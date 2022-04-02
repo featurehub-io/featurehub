@@ -1,6 +1,7 @@
 package io.featurehub.health
 
 import cd.connect.jersey.common.JerseyPrometheusResource
+import io.featurehub.jersey.ApplicationLifecycleListener
 import io.featurehub.jersey.FeatureHubJerseyHost
 import io.featurehub.utils.FallbackPropertyConfig
 import io.prometheus.client.hotspot.DefaultExports
@@ -33,6 +34,7 @@ class MetricsHealthRegistration {
       if (FallbackPropertyConfig.getConfig(monitorPortName) == null) {
         config.register(JerseyPrometheusResource::class.java)
         config.register(HealthFeature::class.java)
+        config.register(ApplicationLifecycleListener::class.java)
       } else {
         config.register(object : ContainerLifecycleListener {
           override fun onStartup(container: Container) {
@@ -44,7 +46,8 @@ class MetricsHealthRegistration {
             // into our health repository
             val healthSources = injector.getAllServices(HealthSource::class.java);
 
-            val resourceConfig = ResourceConfig(JerseyPrometheusResource::class.java, HealthFeature::class.java, LoadBalancerFeature::class.java)
+            val resourceConfig = ResourceConfig(JerseyPrometheusResource::class.java,
+              HealthFeature::class.java, LoadBalancerFeature::class.java, ApplicationLifecycleListener::class.java)
 
             resourceConfig.register(object: AbstractBinder() {
               override fun configure() {
