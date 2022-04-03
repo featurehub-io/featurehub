@@ -1,7 +1,5 @@
 package io.featurehub.jersey.config;
 
-import cd.connect.lifecycle.ApplicationLifecycleManager;
-import cd.connect.lifecycle.LifecycleStatus;
 import com.fasterxml.classmate.ResolvedType;
 import com.fasterxml.classmate.TypeResolver;
 import org.glassfish.jersey.server.model.Resource;
@@ -19,7 +17,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
-// from: https://stackoverflow.com/questions/32525699/listing-all-deployed-rest-endpoints-spring-boot-jersey
+// from:
+// https://stackoverflow.com/questions/32525699/listing-all-deployed-rest-endpoints-spring-boot-jersey
 
 public class EndpointLoggingListener implements ApplicationEventListener {
   private static final Logger log = LoggerFactory.getLogger(EndpointLoggingListener.class);
@@ -40,18 +39,12 @@ public class EndpointLoggingListener implements ApplicationEventListener {
       if (log.isDebugEnabled()) {
         final ResourceModel resourceModel = event.getResourceModel();
         final ResourceLogDetails logDetails = new ResourceLogDetails();
-        resourceModel.getResources().stream().forEach((resource) -> {
-          logDetails.addEndpointLogLines(getLinesFromResource(resource));
-        });
+        resourceModel.getResources().stream()
+            .forEach(
+                (resource) -> {
+                  logDetails.addEndpointLogLines(getLinesFromResource(resource));
+                });
         logDetails.log();
-      }
-    } else if (event.getType() == ApplicationEvent.Type.INITIALIZATION_FINISHED) {
-      if (!ApplicationLifecycleManager.isReady()) {
-        ApplicationLifecycleManager.updateStatus(LifecycleStatus.STARTED);
-      }
-    } else if (event.getType() == ApplicationEvent.Type.DESTROY_FINISHED) {
-      if (ApplicationLifecycleManager.getStatus() != LifecycleStatus.TERMINATED) {
-        ApplicationLifecycleManager.updateStatus(LifecycleStatus.TERMINATED);
       }
     }
   }
@@ -77,13 +70,16 @@ public class EndpointLoggingListener implements ApplicationEventListener {
     return logLines;
   }
 
-  private void populate(String basePath, Class<?> klass, boolean isLocator,
-                        Set<EndpointLogLine> endpointLogLines) {
+  private void populate(
+      String basePath, Class<?> klass, boolean isLocator, Set<EndpointLogLine> endpointLogLines) {
     populate(basePath, isLocator, Resource.from(klass), endpointLogLines);
   }
 
-  private void populate(String basePath, boolean isLocator, Resource resource,
-                        Set<EndpointLogLine> endpointLogLines) {
+  private void populate(
+      String basePath,
+      boolean isLocator,
+      Resource resource,
+      Set<EndpointLogLine> endpointLogLines) {
     if (!isLocator) {
       basePath = normalizePath(basePath, resource.getPath());
     }
@@ -111,11 +107,12 @@ public class EndpointLoggingListener implements ApplicationEventListener {
           endpointLogLines.add(new EndpointLogLine(method.getHttpMethod(), path, null));
         } else if (method.getType() == ResourceMethod.JaxrsType.SUB_RESOURCE_LOCATOR) {
           final String path = normalizePath(basePath, childResource.getPath());
-          final ResolvedType responseType = TYPE_RESOLVER
-            .resolve(method.getInvocable().getResponseType());
-          final Class<?> erasedType = !responseType.getTypeBindings().isEmpty()
-            ? responseType.getTypeBindings().getBoundType(0).getErasedType()
-            : responseType.getErasedType();
+          final ResolvedType responseType =
+              TYPE_RESOLVER.resolve(method.getInvocable().getResponseType());
+          final Class<?> erasedType =
+              !responseType.getTypeBindings().isEmpty()
+                  ? responseType.getTypeBindings().getBoundType(0).getErasedType()
+                  : responseType.getErasedType();
           populate(path, erasedType, true, endpointLogLines);
         }
       }
@@ -136,17 +133,19 @@ public class EndpointLoggingListener implements ApplicationEventListener {
 
     private static final Logger logger = LoggerFactory.getLogger(ResourceLogDetails.class);
 
-    private static final Comparator<EndpointLogLine> COMPARATOR
-      = Comparator.comparing((EndpointLogLine e) -> e.path)
-      .thenComparing((EndpointLogLine e) -> e.httpMethod);
+    private static final Comparator<EndpointLogLine> COMPARATOR =
+        Comparator.comparing((EndpointLogLine e) -> e.path)
+            .thenComparing((EndpointLogLine e) -> e.httpMethod);
 
     private final Set<EndpointLogLine> logLines = new TreeSet<>(COMPARATOR);
 
     private void log() {
       StringBuilder sb = new StringBuilder("\nAll endpoints for Jersey application\n");
-      logLines.stream().forEach((line) -> {
-        sb.append(line).append("\n");
-      });
+      logLines.stream()
+          .forEach(
+              (line) -> {
+                sb.append(line).append("\n");
+              });
       logger.info(sb.toString());
     }
 
