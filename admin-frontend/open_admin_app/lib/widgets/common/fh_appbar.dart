@@ -15,6 +15,7 @@ class FHappBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final mrBloc = BlocProvider.of<ManagementRepositoryClientBloc>(context);
+    bool isWide = MediaQuery.of(context).size.width > 815;
 
     return AppBar(
       leading: Builder(
@@ -40,7 +41,7 @@ class FHappBar extends StatelessWidget {
         children: [
           SizedBox(
             height: kToolbarHeight - 20,
-            child: MediaQuery.of(context).size.width > 500
+            child: isWide
                 ? Image.asset('assets/logo/FeatureHubPrimaryWhite.png')
                 : Image.asset(
                     'assets/logo/FeatureHub-icon.png',
@@ -66,47 +67,44 @@ class FHappBar extends StatelessWidget {
                 var light = Theme.of(context).brightness == Brightness.light;
                 return ExcludeFocus(
                   excluding: true, // prevent tabbing to the app bar
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      children: [
-                        Tooltip(
-                            message: person.name,
-                            child: PersonAvatar(person: person)),
-                        const SizedBox(
-                          width: 32.0,
-                        ),
-                        VerticalDivider(
-                          width: 1.0,
-                          color: Theme.of(context).cardColor,
-                        ),
-                        const SizedBox(
-                          width: 16.0,
-                        ),
-                        widgetCreator.externalDocsLinksWidget(),
-                        const SizedBox(
-                          width: 16.0,
-                        ),
-                        IconButton(
-                            tooltip: light ? 'Dark mode' : 'Light mode',
-                            icon: Icon(light
-                                ? MaterialCommunityIcons.weather_night
-                                : Feather.sun),
-                            onPressed: () {
-                              DynamicTheme.of(context).setBrightness(
-                                  light ? Brightness.dark : Brightness.light);
-                            }),
-                        StepperRocketButton(mrBloc: mrBloc),
-                        IconButton(
-                            onPressed: () async {
-                              await mrBloc.logout();
-                              ManagementRepositoryClientBloc.router
-                                  .navigateTo(context, '/');
-                            },
-                            icon: const Icon(Icons.exit_to_app),
-                            tooltip: 'Sign out'),
-                      ],
-                    ),
+                  child: Row(
+                    children: [
+                      Tooltip(
+                          message: person.name,
+                          child: PersonAvatar(person: person)),
+                      if (isWide) const SizedBox(
+                        width: 32.0,
+                      ),
+                      if (isWide) VerticalDivider(
+                        width: 1.0,
+                        color: Theme.of(context).cardColor,
+                      ),
+                      if (isWide) const SizedBox(
+                        width: 16.0,
+                      ),
+                      widgetCreator.externalDocsLinksWidget(),
+                      if (isWide) const SizedBox(
+                        width: 16.0,
+                      ),
+                      IconButton(
+                          tooltip: light ? 'Dark mode' : 'Light mode',
+                          icon: Icon(light
+                              ? MaterialCommunityIcons.weather_night
+                              : Feather.sun),
+                          onPressed: () {
+                            DynamicTheme.of(context).setBrightness(
+                                light ? Brightness.dark : Brightness.light);
+                          }),
+                      StepperRocketButton(mrBloc: mrBloc),
+                      IconButton(
+                          onPressed: () async {
+                            await mrBloc.logout();
+                            ManagementRepositoryClientBloc.router
+                                .navigateTo(context, '/');
+                          },
+                          icon: const Icon(Icons.exit_to_app),
+                          tooltip: 'Sign out'),
+                    ],
                   ),
                 );
               } else {

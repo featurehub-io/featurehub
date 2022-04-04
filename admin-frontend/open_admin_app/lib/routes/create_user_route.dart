@@ -181,7 +181,7 @@ class TopWidgetSuccess extends StatelessWidget {
         ),
       if (!hasLocal)
         Text(
-          'The user now needs to sign in with your external identity provider and they will be able to access the system.',
+          'The user can now sign in and they will be able to access the system.',
           style: Theme.of(context).textTheme.caption,
         ),
       FHButtonBar(children: [

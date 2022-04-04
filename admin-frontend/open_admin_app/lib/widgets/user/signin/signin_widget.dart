@@ -109,7 +109,8 @@ class _SigninState extends State<SigninWidget> {
               padding: const EdgeInsets.only(bottom: 26.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const <Widget>[RotatingLogoWidget()],
+                children:  [Image.asset('assets/logo/FeatureHub-icon.png',
+                    width: 40, height: 40)],
               ),
             ),
             SizedBox(
