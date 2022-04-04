@@ -23,7 +23,7 @@ class _PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
             return const SizedBox.shrink();
           }
 
-          return StreamBuilder<Portfolio>(
+          return StreamBuilder<ReleasedPortfolio>(
               stream: bloc.streamValley.currentPortfolioStream,
               builder: (context, currentPortfolioSnap) {
                 return Flexible(
@@ -84,12 +84,9 @@ class _PortfolioSelectorWidgetState extends State<PortfolioSelectorWidget> {
         });
   }
 
-  String? determinePortfolio(AsyncSnapshot<Portfolio> curSnap) {
+  String? determinePortfolio(AsyncSnapshot<ReleasedPortfolio> curSnap) {
     if (curSnap.hasData) {
-      if (curSnap.data!.id == nullPortfolio.id) {
-        return null;
-      }
-      return curSnap.data!.id;
+      return curSnap.data!.isNull() ? null : curSnap.data?.portfolio.id;
     }
 
     return null;

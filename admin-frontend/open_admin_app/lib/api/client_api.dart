@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:html';
 
 import 'package:bloc_provider/bloc_provider.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:mrapi/api.dart';
@@ -84,6 +85,10 @@ class ManagementRepositoryClientBloc implements Bloc {
   late StreamSubscription<Portfolio?> _personPermissionInPortfolioChanged;
   late IdentityProviders identityProviders;
 
+  StreamSubscription<Person>? personStreamListener;
+
+  StreamSubscription<List<Portfolio>>? portfolioListStreamListener;
+
   BehaviorSubject<bool> get stepperOpened => _stepperOpened;
 
   set stepperOpened(value) {
@@ -154,8 +159,6 @@ class ManagementRepositoryClientBloc implements Bloc {
         swapRoutes(router.defaultRoute());
       }
     }
-
-    personState.currentPortfolioOrSuperAdminUpdateState(p);
   }
 
   bool get isLoggedIn => personState.isLoggedIn;
@@ -191,7 +194,7 @@ class ManagementRepositoryClientBloc implements Bloc {
   }
 
   bool get userIsCurrentPortfolioAdmin =>
-      personState.userIsCurrentPortfolioAdmin;
+      streamValley.userIsCurrentPortfolioAdmin;
 
   bool get userIsAnyPortfolioOrSuperAdmin =>
       personState.userIsAnyPortfolioOrSuperAdmin;
@@ -205,7 +208,7 @@ class ManagementRepositoryClientBloc implements Bloc {
   set currentPid(String? pid) => setCurrentPid(pid);
 
   Portfolio? get currentPortfolio {
-    return streamValley.currentPortfolio;
+    return streamValley.currentPortfolio.portfolio;
   }
 
   late StreamValley streamValley;
@@ -225,6 +228,15 @@ class ManagementRepositoryClientBloc implements Bloc {
     _client.passErrorsAsApiResponses = true;
 
     initializeApis(_client);
+
+    personStreamListener = personState.personStream.listen((personUpdate) {
+      personUpdated(personUpdate);
+    });
+
+    portfolioListStreamListener =
+        streamValley.portfolioListStream.listen((portfolioList) async {
+      await portfolioListUpdated(portfolioList);
+    });
   }
 
   void setupFeaturehubClientApis(ApiClient client) {
@@ -236,7 +248,6 @@ class ManagementRepositoryClientBloc implements Bloc {
     portfolioServiceApi = PortfolioServiceApi(client);
     serviceAccountServiceApi = ServiceAccountServiceApi(client);
     environmentServiceApi = EnvironmentServiceApi(client);
-    personState.personServiceApi = personServiceApi;
     featureServiceApi = FeatureServiceApi(client);
     applicationServiceApi = ApplicationServiceApi(client);
     _errorSource.add(null);
@@ -319,8 +330,7 @@ class ManagementRepositoryClientBloc implements Bloc {
   }
 
   String? getBearerCookie() {
-    return 'rnVN4QABZqdq50xvE9yVPr4daEO5Iz';
-    // return webInterface.getStoredAuthToken();
+    return webInterface.getStoredAuthToken();
   }
 
   void _setBearerCookie(String token) {
@@ -400,10 +410,46 @@ class ManagementRepositoryClientBloc implements Bloc {
   }
 
   void setPerson(Person p) {
-    print("set person");
-    personState.person = p;
-    print("load portfolios");
-    addPortfoliosToStream();
+    print("set person $p and org $organization");
+    personState.updatePerson(p, organization?.id); //
+  }
+
+  // currently empty
+  void personUpdated(Person person) {}
+
+  // the portfolio list just updated - might be because we loaded the person
+  // or refreshed the person. Lets go look for suggested
+  Future<void> portfolioListUpdated(List<Portfolio> portfolios) async {
+    var foundValidStoredPortfolio = false;
+
+    if (!streamValley.hasCurrentPortfolio) {
+      if (await sharedPreferences!.getString('currentPid') != null) {
+        final aid = await sharedPreferences!.getString('currentAid');
+        final pid = await sharedPreferences!.getString('currentPid');
+        final portfolio = portfolios.firstWhereOrNull((p) => p.id == pid);
+        if (portfolio != null) {
+          print("found pid, updating");
+          setCurrentPid(pid);
+          foundValidStoredPortfolio = true;
+          if (aid != null) {
+            setCurrentAid(aid);
+          } else {
+            setCurrentAid(portfolio.applications.isEmpty
+                ? null
+                : portfolio.applications.first.id);
+          }
+        }
+      }
+
+      // if we didn't have one tucked away,
+      if (!foundValidStoredPortfolio && portfolios.isNotEmpty) {
+        var firstPortfolio = portfolios.first;
+        setCurrentPid(firstPortfolio.id.toString());
+        setCurrentAid(firstPortfolio.applications.isEmpty
+            ? null
+            : firstPortfolio.applications.first.id);
+      }
+    }
   }
 
   bool isPortfolioOrSuperAdminForCurrentPid() {
@@ -508,36 +554,7 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   // this can be called when a portfolio is deleted
   void refreshPortfolios() async {
-    addPortfoliosToStream();
-  }
-
-  Future<void> addPortfoliosToStream() async {
-    try {
-      final _portfolios = await streamValley.loadPortfolios();
-
-      var foundValidStoredPortfolio = false;
-
-      if (await sharedPreferences!.getString('currentPid') != null) {
-        final aid = await sharedPreferences!.getString('currentAid');
-        final pid = await sharedPreferences!.getString('currentPid');
-        if (streamValley.containsPid(pid)) {
-          print("found pid, updating");
-          setCurrentPid(pid);
-          foundValidStoredPortfolio = true;
-          if (aid != null) {
-            setCurrentAid(aid);
-          }
-        }
-      }
-
-      if (!foundValidStoredPortfolio && _portfolios.isNotEmpty == true) {
-        setCurrentPid(_portfolios.first.id.toString());
-        setCurrentAid(null);
-      }
-    } catch (e, s) {
-      // ignore: unawaited_futures
-      dialogError(e, s);
-    }
+    await streamValley.loadPortfolios();
   }
 
   @override
@@ -548,6 +565,8 @@ class ManagementRepositoryClientBloc implements Bloc {
     _personPermissionInPortfolioChanged.cancel();
     personState.dispose();
     streamValley.currentPortfolioAdminOrSuperAdminSubscription.cancel();
+    personStreamListener?.cancel();
+    portfolioListStreamListener?.cancel();
   }
 
   void _setPidSharedPrefs(String? pid) async {

@@ -5,6 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
 import 'package:open_admin_app/api/mr_client_aware.dart';
+import 'package:open_admin_app/common/stream_valley.dart';
 import 'package:openapi_dart_common/openapi.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -27,7 +28,7 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
   late StreamSubscription<Application?>
       _currentApplicationWithEnvironmentSubscription;
   late StreamSubscription<List<Group>> _currentPortfolioGroupsSubscription;
-  late StreamSubscription<Portfolio> _currentPortfolioSubscription;
+  late StreamSubscription<ReleasedPortfolio> _currentPortfolioSubscription;
 
   // operational fields
   String? applicationId;
@@ -127,8 +128,8 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
     }
   }
 
-  void _updatedPortfolio(Portfolio portfolio) {
-    this.portfolio = portfolio;
+  void _updatedPortfolio(ReleasedPortfolio portfolio) {
+    this.portfolio = portfolio.portfolio;
   }
 
   // the portfolio changed, so update the groups

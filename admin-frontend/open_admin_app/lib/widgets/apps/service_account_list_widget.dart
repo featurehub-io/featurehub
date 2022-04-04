@@ -77,8 +77,7 @@ class _ServiceAccountWidget extends StatelessWidget {
                 _ServiceAccountDescription(serviceAccount: serviceAccount),
                 const SizedBox(width: 24.0),
                 StreamBuilder<ReleasedPortfolio?>(
-                    stream: bloc
-                        .mrClient.personState.isCurrentPortfolioOrSuperAdmin,
+                    stream: bloc.mrClient.streamValley.currentPortfolioStream,
                     builder: (context, snapshot) {
                       if (snapshot.hasData &&
                           snapshot.data!.currentPortfolioOrSuperAdmin) {

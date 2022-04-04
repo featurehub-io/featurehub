@@ -81,8 +81,7 @@ class _FeatureStatusState extends State<FeatureStatusRoute> {
                 }
                 if (snapshot.hasData && snapshot.data!.isEmpty) {
                   return StreamBuilder<ReleasedPortfolio?>(
-                      stream: bloc
-                          .mrClient.personState.isCurrentPortfolioOrSuperAdmin,
+                      stream: bloc.mrClient.streamValley.currentPortfolioStream,
                       builder: (context, snapshot) {
                         if (snapshot.hasData &&
                             snapshot.data!.currentPortfolioOrSuperAdmin) {
@@ -170,29 +169,21 @@ class _CreateFeatureButton extends StatelessWidget {
     return StreamBuilder<String?>(
         stream: bloc.mrClient.streamValley.currentAppIdStream,
         builder: (context, snapshot) {
-          if (snapshot.hasData && snapshot.data != null) {
-            return FutureBuilder<bool>(
-                future: bloc.mrClient.personState
-                    .personCanEditFeaturesForCurrentApplication(snapshot.data),
-                builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-                  if (snapshot.data == true || bloc.mrClient.userIsSuperAdmin) {
-                    return FHFlatButtonAccent(
-                      keepCase: true,
-                      title: 'Create new feature',
-                      onPressed: () =>
-                          bloc.mrClient.addOverlay((BuildContext context) {
-                        //return null;
-                        return CreateFeatureDialogWidget(
-                          bloc: bloc,
-                        );
-                      }),
+          final canEdit = bloc.mrClient.personState
+              .personCanEditFeaturesForCurrentApplication(snapshot.data);
+          return !canEdit
+              ? SizedBox.shrink()
+              : FHFlatButtonAccent(
+                  keepCase: true,
+                  title: 'Create new feature',
+                  onPressed: () =>
+                      bloc.mrClient.addOverlay((BuildContext context) {
+                    //return null;
+                    return CreateFeatureDialogWidget(
+                      bloc: bloc,
                     );
-                  }
-
-                  return const SizedBox.shrink();
-                });
-          }
-          return const SizedBox.shrink();
+                  }),
+                );
         });
   }
 }

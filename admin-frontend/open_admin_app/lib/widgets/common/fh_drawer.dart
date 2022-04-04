@@ -75,10 +75,10 @@ class _MenuContainer extends StatelessWidget {
                       const SizedBox(height: 16),
                       const _MenuFeaturesOptionsWidget(),
                       StreamBuilder<ReleasedPortfolio?>(
-                          stream:
-                              mrBloc.personState.isCurrentPortfolioOrSuperAdmin,
+                          stream: mrBloc.streamValley.currentPortfolioStream,
                           builder: (context, snapshot) {
-                            if (snapshot.data == null ||
+                            print("new released portfolio ${snapshot.data}");
+                            if (!snapshot.hasData ||
                                 !snapshot.data!.currentPortfolioOrSuperAdmin) {
                               return const SizedBox.shrink();
                             }

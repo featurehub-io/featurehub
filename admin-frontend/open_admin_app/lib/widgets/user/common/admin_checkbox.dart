@@ -23,8 +23,7 @@ class AdminCheckboxWidgetState extends State<AdminCheckboxWidget> {
     super.initState();
     if (widget.person != null) {
       createUser = false;
-      isAdmin = bloc.mrClient.personState
-          .isSuperAdminGroupFound(widget.person!.groups);
+      isAdmin = bloc.mrClient.personState.userIsSuperAdmin;
     }
   }
 

@@ -42,7 +42,7 @@ class StepperRocketButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<ReleasedPortfolio?>(
-        stream: mrBloc.personState.isCurrentPortfolioOrSuperAdmin,
+        stream: mrBloc.streamValley.currentPortfolioStream,
         builder: (context, snapshot) {
           if (snapshot.data != null &&
               (snapshot.data!.currentPortfolioOrSuperAdmin == true)) {

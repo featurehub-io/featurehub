@@ -11,8 +11,32 @@ class ReleasedPortfolio {
   final Portfolio portfolio;
   final bool currentPortfolioOrSuperAdmin;
 
+  @override
+  String toString() {
+    return 'ReleasedPortfolio{portfolio: $portfolio, currentPortfolioOrSuperAdmin: $currentPortfolioOrSuperAdmin}';
+  }
+
+  bool isNull() {
+    return this == nullPortfolio;
+  }
+
   ReleasedPortfolio(
       {required this.portfolio, required this.currentPortfolioOrSuperAdmin});
+}
+
+class ReleasedApplication {
+  final Application application;
+
+  @override
+  String toString() {
+    return 'ReleasedApplication{application: $application}';
+  }
+
+  bool isNull() {
+    return this == nullApplication;
+  }
+
+  ReleasedApplication({required this.application});
 }
 
 typedef FindApplicationsFunc = Future<List<Application>> Function(
@@ -20,7 +44,12 @@ typedef FindApplicationsFunc = Future<List<Application>> Function(
 
 final _log = Logger('stream-valley');
 
-final Portfolio nullPortfolio = Portfolio(name: 'null-portfolio');
+final ReleasedPortfolio nullPortfolio = ReleasedPortfolio(
+    portfolio: Portfolio(name: 'null-portfolio'),
+    currentPortfolioOrSuperAdmin: false);
+
+final ReleasedApplication nullApplication =
+    ReleasedApplication(application: Application(name: 'null-app'));
 
 class StreamValley {
   late ManagementRepositoryClientBloc mrClient;
@@ -38,17 +67,59 @@ class StreamValley {
 
   bool _isCurrentPortfolioAdminOrSuperAdmin = false;
 
+  final _portfoliosSource = BehaviorSubject<List<Portfolio>>();
+  final _currentPortfolioSource =
+      BehaviorSubject<ReleasedPortfolio>.seeded(nullPortfolio);
+  final _routeCheckPortfolioSource = BehaviorSubject<Portfolio?>();
+
+  final _currentAppSource = BehaviorSubject.seeded(nullApplication);
+  String? get currentAppId => _currentAppSource.value!.application.id;
+  Stream<String?> get currentAppIdStream => _currentAppSource.stream
+      .map((app) => app.isNull() ? null : app.application.id);
+  final _currentPortfolioApplicationsSource =
+      BehaviorSubject<List<Application>>.seeded([]);
+  final _currentPortfolioGroupsStream = BehaviorSubject<List<Group>>.seeded([]);
+  final _currentApplicationEnvironmentsSource =
+      BehaviorSubject<List<Environment>>.seeded([]);
+  final _currentApplicationFeaturesSource =
+      BehaviorSubject<List<Feature>>.seeded([]);
+  final _currentEnvironmentServiceAccountSource =
+      BehaviorSubject<List<ServiceAccount>>.seeded([]);
+
+  Stream<Portfolio?> get routeCheckPortfolioStream =>
+      _routeCheckPortfolioSource;
+  Stream<List<Portfolio>> get portfolioListStream => _portfoliosSource.stream;
+  Stream<ReleasedPortfolio> get currentPortfolioStream =>
+      _currentPortfolioSource.stream;
+  ReleasedPortfolio get currentPortfolio => _currentPortfolioSource.value!;
+
+  String? get currentPortfolioId => currentPortfolio.portfolio.id;
+
   StreamValley(this.personState) {
-    // release the route check portfolio into the main stream so downstream stuff can trigger as usual.
-    // we  have done our permission checks on it and swapped their route if they have no access
-    currentPortfolioAdminOrSuperAdminSubscription =
-        personState.isCurrentPortfolioOrSuperAdmin.listen((val) {
-      if (val != null) {
-        _currentPortfolioSource.add(val.portfolio);
-        _isCurrentPortfolioAdminOrSuperAdmin = val.currentPortfolioOrSuperAdmin;
-        _refreshApplicationIdChanged();
-      } else {
-        _isCurrentPortfolioAdminOrSuperAdmin = false;
+    personState.personStream.listen((person) async {
+      print("streamvalley got $person");
+      if (personState.isLoggedIn) {
+        await loadPortfolios();
+      }
+    });
+
+    currentPortfolioStream.listen((portfolioUpdate) {
+      _isCurrentPortfolioAdminOrSuperAdmin =
+          portfolioUpdate.currentPortfolioOrSuperAdmin;
+
+      if (portfolioUpdate != nullPortfolio) {
+        getCurrentPortfolioApplications();
+
+        // the portfolio has changed and the app isn't in the portfolio
+        if (_currentAppSource.hasValue &&
+            !portfolioUpdate.portfolio.applications
+                .any((app) => app.id == currentAppId)) {
+          if (portfolioUpdate.portfolio.applications.isEmpty) {
+            currentAppId = null;
+          } else {
+            currentAppId = portfolioUpdate.portfolio.applications.first.id;
+          }
+        }
       }
 
       if (_isCurrentPortfolioAdminOrSuperAdmin) {
@@ -61,10 +132,12 @@ class StreamValley {
         _lastPortfolioIdGroupChecked = null;
       }
     });
-
-    currentPortfolioSubscription =
-        _currentPortfolioSource.listen((p) => portfolioChanged());
   }
+
+  get userIsCurrentPortfolioAdmin =>
+      personState.userIsPortfolioAdmin(currentPortfolioId);
+
+  bool get hasCurrentPortfolio => currentPortfolio != nullPortfolio;
 
   set apiClient(ManagementRepositoryClientBloc mrClient) {
     this.mrClient = mrClient;
@@ -82,19 +155,8 @@ class StreamValley {
     currentPortfolioAdminOrSuperAdminSubscription.cancel();
   }
 
-  void portfolioChanged() {
-    // now load the applications for this portfolio, which may trigger selecting one
-    getCurrentPortfolioApplications();
-
-    // if we are an admin, load the groups and service accounts
-//    if (_isCurrentPortfolioAdminOrSuperAdmin) {
-//      getCurrentPortfolioGroups();
-//      getCurrentPortfolioServiceAccounts();
-//    }
-  }
-
   void _refreshApplicationIdChanged() {
-    if (_currentAppIdSource.value != null) {
+    if (_currentAppSource.value != null) {
       if (_currentApplicationFeaturesSource.hasListener) {
         getCurrentApplicationFeatures();
       }
@@ -105,59 +167,44 @@ class StreamValley {
     }
   }
 
-  final _portfoliosSource = BehaviorSubject<List<Portfolio>>();
-  final _currentPortfolioSource =
-      BehaviorSubject<Portfolio>.seeded(nullPortfolio);
-  final _routeCheckPortfolioSource = BehaviorSubject<Portfolio?>();
-
-  final _currentAppIdSource = BehaviorSubject<String?>();
-  final _currentPortfolioApplicationsSource =
-      BehaviorSubject<List<Application>>.seeded([]);
-  final _currentPortfolioGroupsStream = BehaviorSubject<List<Group>>.seeded([]);
-  final _currentApplicationEnvironmentsSource =
-      BehaviorSubject<List<Environment>>.seeded([]);
-  final _currentApplicationFeaturesSource =
-      BehaviorSubject<List<Feature>>.seeded([]);
-  final _currentEnvironmentServiceAccountSource =
-      BehaviorSubject<List<ServiceAccount>>.seeded([]);
-
-  Stream<Portfolio?> get routeCheckPortfolioStream =>
-      _routeCheckPortfolioSource;
-  Stream<List<Portfolio>> get portfolioListStream => _portfoliosSource.stream;
-  Stream<Portfolio> get currentPortfolioStream =>
-      _currentPortfolioSource.stream;
-  Portfolio get currentPortfolio => _currentPortfolioSource.value!;
-
-  String? get currentPortfolioId => currentPortfolio.id;
-
   set currentPortfolioId(String? value) {
     _log.fine('Attempting to set portfolio at $value');
-    if (value != null && _currentPortfolioSource.value?.id != value) {
-      _log.fine('Accepted portfolio id change, triggering');
-      currentAppId = null;
-
-      // figure out which one we are
-      _routeCheckPortfolioSource.add(_portfoliosSource.value!
-          .firstWhere((element) => element.id == value));
-    } else if (value == null) {
+    if (value == null) {
       _log.fine('Portfolio request was null, storing null.');
       _currentPortfolioSource.add(nullPortfolio);
       _routeCheckPortfolioSource.add(null); // no portfolio
     } else {
-      _log.fine('Ignoring portfolio change request');
+      Portfolio? found =
+          _portfoliosSource.value?.firstWhereOrNull((p) => p.id == value);
+      if (found == null) {
+        _log.fine("attempting to swap to portfolio that doesnt exist");
+      } else if (_currentPortfolioSource.value?.portfolio.id != value) {
+        _log.fine('Accepted portfolio id change, triggering');
+        _currentPortfolioSource.add(ReleasedPortfolio(
+            portfolio: found,
+            currentPortfolioOrSuperAdmin:
+                personState.isPersonSuperUserOrPortfolioAdmin(found.id)));
+        _routeCheckPortfolioSource.add(found);
+      }
     }
   }
 
   Stream<String?> get currentPortfolioIdStream =>
-      _currentPortfolioSource.stream.map((p) => p.id);
+      _currentPortfolioSource.stream.map((p) => p.portfolio.id);
 
-  Stream<String?> get currentAppIdStream => _currentAppIdSource.stream;
+  Stream<ReleasedApplication> get currentAppStream => _currentAppSource.stream;
 
-  String? get currentAppId => _currentAppIdSource.value;
+  ReleasedApplication get currentApp => _currentAppSource.value!;
 
   set currentAppId(String? value) {
-    _currentAppIdSource.add(value);
-    _refreshApplicationIdChanged();
+    if (value != _currentAppSource.value!.application.id) {
+      applicationServiceApi
+          .getApplication(value!, includeEnvironments: true)
+          .then((app) {
+        _currentAppSource.add(ReleasedApplication(application: app));
+        _refreshApplicationIdChanged();
+      }).catchError((e, s) => mrClient.dialogError(e, s));
+    }
   }
 
   Stream<List<Application>> get currentPortfolioApplicationsStream =>
@@ -305,9 +352,9 @@ class StreamValley {
   Future<List<Environment>> getCurrentApplicationEnvironments() async {
     var envList = <Environment>[];
 
-    if (_currentAppIdSource.value != null) {
+    if (_currentAppSource.value != null) {
       envList = await environmentServiceApi
-          .findEnvironments(_currentAppIdSource.value!, includeAcls: true)
+          .findEnvironments(currentAppId!, includeAcls: true)
           .catchError((e, s) {
         mrClient.dialogError(e, s);
       });
@@ -318,9 +365,9 @@ class StreamValley {
   }
 
   Future<void> getCurrentApplicationFeatures() async {
-    if (_currentAppIdSource.value != null) {
+    if (!currentApp.isNull()) {
       final featureList = await featureServiceApi
-          .getAllFeaturesForApplication(_currentAppIdSource.value!)
+          .getAllFeaturesForApplication(currentApp.application.id!)
           .catchError((e, s) {
         mrClient.dialogError(e, s);
       });
@@ -331,11 +378,10 @@ class StreamValley {
   }
 
   Future<void> getEnvironmentServiceAccountPermissions() async {
-    if (_currentAppIdSource.value != null && currentPortfolioId != null) {
+    if (!currentApp.isNull() && !currentPortfolio.isNull()) {
       final saList = await serviceAccountServiceApi
           .searchServiceAccountsInPortfolio(currentPortfolioId!,
-              includePermissions: true,
-              applicationId: _currentAppIdSource.value)
+              includePermissions: true, applicationId: currentAppId!)
           .catchError((e, s) {
         mrClient.dialogError(e, s);
       });
@@ -345,20 +391,25 @@ class StreamValley {
     }
   }
 
-  void clearCurrentPortfolio() {
-    currentPortfolioId = null;
-  }
-
+  // this is triggered when a person is loaded (i.e. changed)
+  // or when new portfolios are created
   Future<List<Portfolio>> loadPortfolios() async {
     final portfolios = await portfolioServiceApi.findPortfolios(
         includeApplications: true, order: SortOrder.ASC);
 
     print("loaded portfolios are $portfolios");
 
-    if (portfolios.isEmpty ||
-        portfolios.firstWhereOrNull((p) => currentPortfolio.id == p.id) ==
-            null) {
+    if (portfolios.isEmpty) {
       currentPortfolioId = null;
+    } else if (!portfolios.any((p) => currentPortfolio.portfolio.id == p.id)) {
+      // current portfolio no access?
+      currentPortfolioId = portfolios.first.id;
+    } else if (_currentPortfolioSource.hasValue &&
+        !personState.userHasPortfolioPermission(currentPortfolioId)) {
+      _currentPortfolioSource.add(nullPortfolio);
+    } else if (_currentAppSource.hasValue &&
+        !personState.userHasApplicationPermission(currentAppId)) {
+      currentAppId = null;
     }
 
     _portfoliosSource.add(portfolios);
