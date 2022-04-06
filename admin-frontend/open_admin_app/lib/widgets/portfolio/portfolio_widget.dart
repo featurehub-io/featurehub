@@ -2,9 +2,9 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
-import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_delete_thing.dart';
+import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_icon_button.dart';
 import 'package:open_admin_app/widgets/portfolio/portfolio_bloc.dart';
@@ -173,6 +173,7 @@ class _PortfolioUpdateDialogWidgetState
                       controller: _portfolioName,
                       decoration:
                           const InputDecoration(labelText: 'Portfolio name'),
+                      autofocus: true,
                       validator: ((v) {
                         if (v == null || v.isEmpty) {
                           return 'Please enter a portfolio name';
@@ -213,6 +214,7 @@ class _PortfolioUpdateDialogWidgetState
                       try {
                         await _callUpdatePortfolio(
                             _portfolioName.text, _portfolioDescription.text);
+                        await widget.bloc.refreshPortfolios();
                         // force list update
                         widget.bloc.mrClient.removeOverlay();
                         widget.bloc.triggerSearch('');

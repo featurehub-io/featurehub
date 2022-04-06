@@ -187,10 +187,14 @@ class ManagementRepositoryClientBloc implements Bloc {
   bool get userIsFeatureAdminOfCurrentApplication {
     final currentAid = getCurrentAid();
 
-    return person.groups.any((g) => g.applicationRoles.any((ar) =>
-            ar.applicationId == currentAid &&
-            ar.roles.contains(ApplicationRoleType.FEATURE_EDIT))) ==
-        true;
+    final result = person.groups.any((g) => g.applicationRoles.any((ar) =>
+        ar.applicationId == currentAid &&
+        ar.roles.contains(ApplicationRoleType.FEATURE_EDIT)));
+
+    print(
+        "checking featureadmin ${currentAid} and result is ${result} from groups ${person.groups}");
+
+    return result;
   }
 
   bool get userIsCurrentPortfolioAdmin =>
@@ -343,12 +347,14 @@ class ManagementRepositoryClientBloc implements Bloc {
 
   // ask for my own details and if there are some, set the person and transition
   // to logged in, otherwise ask them to log in.
-  Future requestOwnDetails() async {
+  Future requestOwnDetails({bool routeChange: true}) async {
     return personServiceApi
         .getPerson('self', includeAcls: true, includeGroups: true)
         .then((p) {
       setPerson(p);
-      routeSlot(RouteSlot.portfolio);
+      if (routeChange) {
+        routeSlot(RouteSlot.portfolio);
+      }
     }).catchError((_) {
       setBearerToken(null);
       routeSlot(RouteSlot.login);
@@ -552,9 +558,10 @@ class ManagementRepositoryClientBloc implements Bloc {
     });
   }
 
-  // this can be called when a portfolio is deleted
-  void refreshPortfolios() async {
+  // this can be called when a portfolio is deleted or a new one created
+  Future<void> refreshPortfolios() async {
     await streamValley.loadPortfolios();
+    await requestOwnDetails(routeChange: false);
   }
 
   @override

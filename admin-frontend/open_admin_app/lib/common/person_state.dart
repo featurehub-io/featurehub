@@ -37,16 +37,11 @@ class PersonState {
   }
 
   void updatePerson(Person p, String? orgId) {
-    if (orgId != lastOrgId) {
-      lastOrgId = orgId;
-
-      print("old $lastOrgId vs new $orgId");
-      // we want to determine these _before_ we trigger the source update
-      _isUserIsSuperAdmin = _isSuperAdminGroupFound(p);
-      _userIsAnyPortfolioOrSuperAdmin = _isAnyPortfolioOrSuperAdmin(p);
-      print("adding $p to source");
-      _personSource.add(p);
-    }
+    // we want to determine these _before_ we trigger the source update
+    _isUserIsSuperAdmin = _isSuperAdminGroupFound(p);
+    _userIsAnyPortfolioOrSuperAdmin = _isAnyPortfolioOrSuperAdmin(p);
+    print("adding $p to source");
+    _personSource.add(p);
   }
 
   // set person(Person person) {
