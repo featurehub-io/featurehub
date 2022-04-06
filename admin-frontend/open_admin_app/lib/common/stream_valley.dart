@@ -156,7 +156,7 @@ class StreamValley {
   }
 
   void _refreshApplicationIdChanged() {
-    if (_currentAppSource.value != null) {
+    if (!_currentAppSource.value!.isNull()) {
       if (_currentApplicationFeaturesSource.hasListener) {
         getCurrentApplicationFeatures();
       }
@@ -202,7 +202,7 @@ class StreamValley {
         _currentAppSource.add(nullApplication);
       } else {
         applicationServiceApi
-            .getApplication(value!, includeEnvironments: true)
+            .getApplication(value, includeEnvironments: true)
             .then((app) {
           _currentAppSource.add(ReleasedApplication(application: app));
           _refreshApplicationIdChanged();
@@ -356,7 +356,7 @@ class StreamValley {
   Future<List<Environment>> getCurrentApplicationEnvironments() async {
     var envList = <Environment>[];
 
-    if (_currentAppSource.value != null) {
+    if (!_currentAppSource.value!.isNull()) {
       envList = await environmentServiceApi
           .findEnvironments(currentAppId!, includeAcls: true)
           .catchError((e, s) {
