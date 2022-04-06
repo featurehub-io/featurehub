@@ -198,12 +198,16 @@ class StreamValley {
 
   set currentAppId(String? value) {
     if (value != _currentAppSource.value!.application.id) {
-      applicationServiceApi
-          .getApplication(value!, includeEnvironments: true)
-          .then((app) {
-        _currentAppSource.add(ReleasedApplication(application: app));
-        _refreshApplicationIdChanged();
-      }).catchError((e, s) => mrClient.dialogError(e, s));
+      if (value == null) {
+        _currentAppSource.add(nullApplication);
+      } else {
+        applicationServiceApi
+            .getApplication(value!, includeEnvironments: true)
+            .then((app) {
+          _currentAppSource.add(ReleasedApplication(application: app));
+          _refreshApplicationIdChanged();
+        }).catchError((e, s) => mrClient.dialogError(e, s));
+      }
     }
   }
 
