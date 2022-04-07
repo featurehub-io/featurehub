@@ -79,7 +79,7 @@ class EditValueContainer extends StatelessWidget {
         );
       case FeatureValueType.BOOLEAN:
         return EditBooleanValueDropDownWidget(
-          // unlocked: unlocked,
+          unlocked: unlocked,
           rolloutStrategy: rolloutStrategy,
           strBloc: strBloc, editable: editable,
         );

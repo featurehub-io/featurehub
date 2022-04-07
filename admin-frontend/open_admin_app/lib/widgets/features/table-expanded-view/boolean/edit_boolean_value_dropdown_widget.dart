@@ -3,13 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 
 class EditBooleanValueDropDownWidget extends StatefulWidget {
+
   const EditBooleanValueDropDownWidget({
     Key? key,
+    required this.unlocked,
     required this.editable,
     this.rolloutStrategy,
     required this.strBloc,
   }) : super(key: key);
 
+  final bool unlocked;
   final bool editable;
   final RolloutStrategy? rolloutStrategy;
   final CustomStrategyBloc strBloc;
@@ -40,7 +43,7 @@ class _EditBooleanValueDropDownWidgetState
           );
         }).toList(),
         value: featureOn,
-        onChanged: widget.editable
+        onChanged: widget.editable && widget.unlocked
             ? (value) {
                 final replacementBoolean = (value == 'On');
 
