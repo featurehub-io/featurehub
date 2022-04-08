@@ -7,11 +7,11 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Index(unique = true, name = "idx_group_names", columnNames = {"fk_portfolio_id", "group_name"})
@@ -56,8 +56,8 @@ public class DbGroup extends DbVersionedBase {
   @JoinColumn(name = "group_id")
   private Set<DbAcl> groupRolesAcl;
 
-  @ManyToMany(cascade = CascadeType.ALL, mappedBy = "groupsPersonIn")
-  private Set<DbPerson> peopleInGroup;
+  @OneToMany(cascade = CascadeType.ALL)
+  private List<DbGroupMember> groupMembers;
 
 
   public DbGroup() {}
@@ -69,7 +69,6 @@ public class DbGroup extends DbVersionedBase {
     setOwningOrganization(builder.owningOrganization);
     setName(builder.name);
     setGroupRolesAcl(builder.groupRolesAcl);
-    setPeopleInGroup(builder.peopleInGroup);
   }
 
 
@@ -105,14 +104,6 @@ public class DbGroup extends DbVersionedBase {
     this.groupRolesAcl = groupRolesAcl;
   }
 
-  public Set<DbPerson> getPeopleInGroup() {
-    return peopleInGroup;
-  }
-
-  public void setPeopleInGroup(Set<DbPerson> peopleInGroup) {
-    this.peopleInGroup = peopleInGroup;
-  }
-
   public boolean isAdminGroup() {
     return adminGroup;
   }
@@ -137,6 +128,14 @@ public class DbGroup extends DbVersionedBase {
     }
 
     return null;
+  }
+
+  public List<DbGroupMember> getGroupMembers() {
+    return groupMembers;
+  }
+
+  public void setGroupMembers(List<DbGroupMember> groupMembers) {
+    this.groupMembers = groupMembers;
   }
 
   public static final class Builder {
@@ -205,7 +204,7 @@ public class DbGroup extends DbVersionedBase {
       ", owningOrganization=" + owningOrganization +
       ", name='" + name + '\'' +
       ", groupRolesAcl=" + groupRolesAcl +
-      ", peopleInGroup=" + peopleInGroup +
+      ", peopleInGroup=" + groupMembers +
       '}';
   }
 }

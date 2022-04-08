@@ -33,7 +33,7 @@ class EnvironmentSqlApi @Inject constructor(
     val appRoles: MutableSet<ApplicationRoleType> = HashSet()
     if (environment != null && p != null) {
       // is this person a portfolio admin? if so, they have all access to all environments in the portfolio
-      if (QDbGroup().adminGroup.isTrue.whenArchived.isNull.peopleInGroup.eq(p).owningPortfolio.applications.environments.eq(
+      if (QDbGroup().adminGroup.isTrue.whenArchived.isNull.groupMembers.person.eq(p).owningPortfolio.applications.environments.eq(
           environment
         ).exists()
       ) {
@@ -41,7 +41,7 @@ class EnvironmentSqlApi @Inject constructor(
           .applicationRoles(HashSet(listOf(*ApplicationRoleType.values())))
           .environmentRoles(HashSet(listOf(*RoleType.values()))).build()
       }
-      QDbAcl().environment.eq(environment).group.peopleInGroup.eq(p).findList().forEach { fe: DbAcl ->
+      QDbAcl().environment.eq(environment).group.groupMembers.person.eq(p).findList().forEach { fe: DbAcl ->
         val splitRoles = convertUtils.splitEnvironmentRoles(fe.roles)
         roles.addAll(splitRoles)
         // as roles can have roles that are no READ and it makes no sense not to contain READ.
@@ -49,7 +49,7 @@ class EnvironmentSqlApi @Inject constructor(
           roles.add(RoleType.READ)
         }
       }
-      QDbAcl().application.eq(environment.parentApplication).group.peopleInGroup.eq(p).findList().forEach { fe: DbAcl ->
+      QDbAcl().application.eq(environment.parentApplication).group.groupMembers.person.eq(p).findList().forEach { fe: DbAcl ->
         val splitRoles = convertUtils.splitApplicationRoles(fe.roles)
         if (splitRoles != null && splitRoles.contains(ApplicationRoleType.FEATURE_EDIT)) {
           appRoles.add(ApplicationRoleType.FEATURE_EDIT)
@@ -80,7 +80,7 @@ class EnvironmentSqlApi @Inject constructor(
     if (currentPerson != null) {
       var env = QDbEnvironment().id.eq(id)
       if (convertUtils.personIsNotSuperAdmin(currentPerson)) {
-        env = env.parentApplication.portfolio.groups.peopleInGroup.id.eq(currentPerson.id)
+        env = env.parentApplication.portfolio.groups.groupMembers.person.id.eq(currentPerson.id)
       }
       if (opts!!.contains(FillOpts.ServiceAccounts)) {
         env = env.serviceAccountEnvironments.fetch()
@@ -268,7 +268,7 @@ class EnvironmentSqlApi @Inject constructor(
           eq = eq.whenArchived.isNull
         }
         if (convertUtils.personIsNotSuperAdmin(currentPerson)) {
-          eq = eq.parentApplication.portfolio.groups.peopleInGroup.id.eq(currentPerson.id)
+          eq = eq.parentApplication.portfolio.groups.groupMembers.person.id.eq(currentPerson.id)
         }
         return eq.findList().stream().map { e: DbEnvironment? -> convertUtils.toEnvironment(e, opts) }
           .collect(Collectors.toList())

@@ -134,7 +134,7 @@ public class ConvertUtils implements Conversions {
             .isNull()
             .adminGroup
             .isTrue()
-            .peopleInGroup
+            .groupMembers.person
             .id
             .eq(person.getId())
             .exists();
@@ -147,7 +147,7 @@ public class ConvertUtils implements Conversions {
             .isNull()
             .owningPortfolio
             .isNull()
-            .peopleInGroup
+            .groupMembers.person
             .eq(person)
             .adminGroup
             .isTrue()
@@ -430,7 +430,7 @@ public class ConvertUtils implements Conversions {
       new QDbGroup()
           .whenArchived
           .isNull()
-          .peopleInGroup
+          .groupMembers.person
           .eq(dbp)
           .owningOrganization
           .id.eq(org == null ? getOrganizationId() : org.getId())
@@ -794,7 +794,7 @@ public class ConvertUtils implements Conversions {
 
     QDbGroup eq = new QDbGroup().id.eq(gid);
     if (opts.contains(FillOpts.Members)) {
-      eq = eq.peopleInGroup.fetch();
+      eq = eq.groupMembers.person.fetch();
     }
 
     return eq.findOne();
@@ -814,7 +814,7 @@ public class ConvertUtils implements Conversions {
   public boolean isPersonApplicationAdmin(DbPerson dbPerson, DbApplication app) {
     // if a person is in a null portfolio group or portfolio group
     return new QDbGroup()
-            .peopleInGroup
+            .groupMembers.person
             .eq(dbPerson)
             .owningOrganization
             .eq(app.getPortfolio().getOrganization())
@@ -948,7 +948,7 @@ public class ConvertUtils implements Conversions {
             .isTrue()
             .owningPortfolio
             .isNull()
-            .peopleInGroup
+            .groupMembers.person
             .fetch()
             .findOne();
 

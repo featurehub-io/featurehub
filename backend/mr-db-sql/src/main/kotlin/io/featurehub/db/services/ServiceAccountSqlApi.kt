@@ -157,11 +157,12 @@ class ServiceAccountSqlApi @Inject constructor(
       && application != null && (opts.contains(FillOpts.Permissions) || opts.contains(FillOpts.SdkURL))
     ) {
       environmentPermissions.addAll(
-        QDbAcl().roles.notEqualTo("").environment.parentApplication.eq(application).environment.whenUnpublished.isNull.environment.whenArchived.isNull.group.peopleInGroup.eq(
-          person
-        ).environment.fetch(
-          QDbEnvironment.Alias.id
-        )
+        QDbAcl().roles.notEqualTo("")
+          .environment.parentApplication.eq(application)
+          .environment.whenUnpublished.isNull
+          .environment.whenArchived.isNull
+          .group.groupMembers.person.eq(person)
+          .environment.fetch(QDbEnvironment.Alias.id)
           .findList()
       )
     }
