@@ -298,7 +298,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
 
   private List<DbPerson> superuserGroupMembers(DbOrganization org) {
     DbGroup superuserGroup = superuserGroup(org);
-    return new QDbPerson().whenArchived.isNull().groupsPersonIn.eq(superuserGroup).findList();
+    return new QDbPerson().whenArchived.isNull().groupMembers.group.eq(superuserGroup).findList();
   }
 
   private boolean isSuperuser(DbOrganization org, DbPerson person) {
@@ -307,28 +307,21 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
     }
 
     DbGroup superuserGroup = superuserGroup(org);
-    return new QDbPerson().groupsPersonIn.eq(superuserGroup).id.eq(person.getId()).exists();
+    return new QDbPerson().groupMembers.group.eq(superuserGroup).id.eq(person.getId()).exists();
   }
 
+  @Transactional
   private void copySuperusersToPortfolioGroup(DbGroup dbGroup) {
     superuserGroupMembers(dbGroup.getOwningPortfolio().getOrganization())
         .forEach(
             (p) -> {
               if (!new QDbGroupMember()
-                  .person
-                  .id
-                  .eq(p.getId())
-                  .group
-                  .id
-                  .eq(dbGroup.getId())
+                  .person.id.eq(p.getId())
+                  .group.id.eq(dbGroup.getId())
                   .exists()) {
-                dbGroup
-                    .getGroupMembers()
-                    .add(new DbGroupMember(new DbGroupMemberKey(p.getId(), dbGroup.getId())));
+                new DbGroupMember(new DbGroupMemberKey(p.getId(), dbGroup.getId())).save();
               }
             });
-
-    database.save(dbGroup);
   }
 
   public static String appRolesToString(List<ApplicationRoleType> roles) {
@@ -361,22 +354,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
         final DbGroup one = groupFinder.findOne();
         if (one == null) {
           // ebean ensures this is never null
-          if (!new QDbGroupMember().person.id.eq(person.getId()).group.id.eq(dbGroup.getId()).exists()) {
-            dbGroup
-                .getGroupMembers()
-                .add(new DbGroupMember(new DbGroupMemberKey(person.getId(), dbGroup.getId())));
-
-            saveGroup(dbGroup);
-          }
-
-          // they actually got added from the superusers group, so
-          // lets update the portfolios
-          if (dbGroup.isAdminGroup() && dbGroup.getOwningPortfolio() == null) {
-            SuperuserChanges sc = new SuperuserChanges(dbGroup.getOwningOrganization());
-            sc.addedSuperusers = Collections.singletonList(person);
-            sc.ignoredGroups.add(dbGroup.getId());
-            updateSuperusersFromPortfolioGroups(sc);
-          }
+          updateGroupMembership(dbGroup, person);
 
           return convertUtils.toGroup(dbGroup, opts);
         } else { // they are already in the group
@@ -386,6 +364,22 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
     }
 
     return null;
+  }
+
+  @Transactional
+  private void updateGroupMembership(DbGroup dbGroup, DbPerson person) {
+    if (!new QDbGroupMember().person.id.eq(person.getId()).group.id.eq(dbGroup.getId()).exists()) {
+      new DbGroupMember(new DbGroupMemberKey(person.getId(), dbGroup.getId())).save();
+    }
+
+    // they actually got added from the superusers group, so
+    // lets update the portfolios
+    if (dbGroup.isAdminGroup() && dbGroup.getOwningPortfolio() == null) {
+      SuperuserChanges sc = new SuperuserChanges(dbGroup.getOwningOrganization());
+      sc.addedSuperusers = Collections.singletonList(person);
+      sc.ignoredGroups.add(dbGroup.getId());
+      updateSuperusersFromPortfolioGroups(sc);
+    }
   }
 
   @Override

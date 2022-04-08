@@ -50,6 +50,8 @@ import io.featurehub.mr.model.ServiceAccountPermission;
 import jakarta.inject.Singleton;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -68,6 +70,7 @@ import java.util.stream.Collectors;
 
 @Singleton
 public class ConvertUtils implements Conversions {
+  private static final Logger log = LoggerFactory.getLogger(ConvertUtils.class);
 
   @Override
   public DbPerson byPerson(UUID personId) {
@@ -82,7 +85,7 @@ public class ConvertUtils implements Conversions {
 
     QDbPerson finder = new QDbPerson().id.eq(personId);
     if (opts.contains(FillOpts.Groups)) {
-      finder = finder.groupsPersonIn.fetch();
+      finder = finder.groupMembers.fetch();
     }
 
     return finder.findOne();
@@ -427,14 +430,18 @@ public class ConvertUtils implements Conversions {
     }
 
     if (opts.contains(FillOpts.Groups)) {
-      new QDbGroup()
-          .whenArchived
-          .isNull()
-          .groupMembers.person
-          .eq(dbp)
-          .owningOrganization
-          .id.eq(org == null ? getOrganizationId() : org.getId())
-          .findList()
+      final List<DbGroup> groupList = new QDbGroup()
+        .whenArchived
+        .isNull()
+        .groupMembers.person
+        .eq(dbp)
+        .owningOrganization
+        .id.eq(org == null ? getOrganizationId() : org.getId())
+        .findList();
+
+      log.info("groups for person {} are {}", p, groupList);
+
+      groupList
           .forEach(dbg -> p.addGroupsItem(toGroup(dbg, opts.minus(FillOpts.Groups))));
     }
 
@@ -464,7 +471,7 @@ public class ConvertUtils implements Conversions {
               : dbg.getOwningOrganization();
       group.setMembers(
           new QDbPerson()
-              .order().name.asc().whenArchived.isNull().groupsPersonIn.eq(dbg).findList().stream()
+              .order().name.asc().whenArchived.isNull().groupMembers.group.eq(dbg).findList().stream()
                   .map(
                       p ->
                           this.toPerson(

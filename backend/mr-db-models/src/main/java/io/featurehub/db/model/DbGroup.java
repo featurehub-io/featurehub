@@ -1,6 +1,8 @@
 package io.featurehub.db.model;
 
 import io.ebean.annotation.ChangeLog;
+import io.ebean.annotation.ConstraintMode;
+import io.ebean.annotation.DbForeignKey;
 import io.ebean.annotation.Index;
 
 import javax.persistence.CascadeType;
@@ -56,7 +58,8 @@ public class DbGroup extends DbVersionedBase {
   @JoinColumn(name = "group_id")
   private Set<DbAcl> groupRolesAcl;
 
-  @OneToMany(cascade = CascadeType.ALL)
+  @DbForeignKey(onDelete = ConstraintMode.CASCADE)
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   private List<DbGroupMember> groupMembers;
 
 
