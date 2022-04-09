@@ -7,7 +7,10 @@ import io.featurehub.db.api.OptimisticLockingException
 import io.featurehub.db.api.Opts
 import io.featurehub.db.api.PersonApi
 import io.featurehub.db.model.DbGroup
+import io.featurehub.db.model.DbGroupMember
+import io.featurehub.db.model.DbGroupMemberKey
 import io.featurehub.db.model.DbPerson
+import io.featurehub.db.model.query.QDbGroupMember
 import io.featurehub.db.model.query.QDbLogin
 import io.featurehub.db.model.query.QDbPerson
 import io.featurehub.db.password.PasswordSalter
@@ -58,6 +61,8 @@ open class PersonSqlApi @Inject constructor(
       p.email = person.email
     }
 
+    val newGroupMembers = mutableListOf<DbGroupMember>()
+
     if (person.groups != null) {
       // we are going to need their groups to determine what they can do
       val admin = convertUtils.toPerson(adminPerson, Opts.opts(FillOpts.Groups))
@@ -77,19 +82,20 @@ open class PersonSqlApi @Inject constructor(
         validPortfolios = listOf()
       }
 
-      val removeGroups: MutableList<DbGroup> = ArrayList()
+      val removeGroups: MutableList<UUID> = ArrayList()
 
       val replacementGroupIds = person.groups!!.stream().map { obj: Group -> obj.id }
         .collect(Collectors.toList())
 
       val foundReplacementGroupIds: MutableList<UUID?> = ArrayList() // these are the ones we found
 
-      p.groupsPersonIn.forEach { g: DbGroup ->
+      p.groupMembers.forEach { gm: DbGroupMember ->
+        val g = gm.group
         if (replacementGroupIds.contains(g.id)) { // this has been passed to us and it is staying
           foundReplacementGroupIds.add(g.id)
         } else if (adminSuperuser || g.owningPortfolio != null && validPortfolios.contains(g.owningPortfolio.id)) {
           // only if the admin is a superuser or this is a group in one of their portfolios will we honour it
-          removeGroups.add(g)
+          removeGroups.add(g.id)
         } else {
           log.warn("No permission to remove group {} from user {}", g, p.email)
         }
@@ -97,7 +103,7 @@ open class PersonSqlApi @Inject constructor(
 
       log.debug("Removing groups {} from user {}", removeGroups, p.email)
       // now remove them from these groups, we know this is valid
-      p.groupsPersonIn.removeAll(removeGroups)
+      p.groupMembers.removeIf { gm -> removeGroups.contains(gm.group.id) }
       replacementGroupIds.removeAll(foundReplacementGroupIds) // now this should be id's that we should consider adding
       log.debug("Attempting to add groups {} to user {} ", replacementGroupIds, p.email)
       // now we have to find the replacement groups and see if this user is allowed to add them
@@ -106,13 +112,15 @@ open class PersonSqlApi @Inject constructor(
         if (group != null && (adminSuperuser ||
             group.owningPortfolio != null && validPortfolios.contains(group.owningPortfolio.id))
         ) {
-          p.groupsPersonIn.add(group)
+          if (!QDbGroupMember().person.id.eq(p.id).group.id.eq(group.id).exists()) {
+            newGroupMembers.add(DbGroupMember(DbGroupMemberKey(p.id, group.id)))
+          }
         } else {
           log.warn("No permission to add group {} to user {}", group, p.email)
         }
       }
     }
-    updatePerson(p)
+    updatePerson(p, newGroupMembers)
     return convertUtils.toPerson(p, opts!!)
   }
 
@@ -183,7 +191,7 @@ open class PersonSqlApi @Inject constructor(
       if (!opts.contains(FillOpts.Archived)) {
         search = search.whenArchived.isNull
       }
-      return search.groupsPersonIn.fetch()
+      return search.groupMembers.fetch()
         .findOneOrEmpty()
         .map { p: DbPerson? -> convertUtils.toPerson(p, opts) }
         .orElse(null)
@@ -198,7 +206,7 @@ open class PersonSqlApi @Inject constructor(
     if (!opts.contains(FillOpts.Archived)) {
       search = search.whenArchived.isNull
     }
-    return search.groupsPersonIn.fetch()
+    return search.groupMembers.fetch()
       .findOneOrEmpty()
       .map { p: DbPerson? -> convertUtils.toPerson(p, opts) }
       .orElse(null)
@@ -233,7 +241,7 @@ open class PersonSqlApi @Inject constructor(
         builder.whoCreated(created)
       }
       val person = builder.build()
-      updatePerson(person)
+      updatePerson(person, null)
       personToken = PersonApi.PersonToken(person.token, person.id)
     } else if (onePerson.whenArchived != null) {
       onePerson.whenArchived = null
@@ -242,7 +250,7 @@ open class PersonSqlApi @Inject constructor(
       if (created != null) {
         onePerson.whoCreated = created
       }
-      updatePerson(onePerson)
+      updatePerson(onePerson, null)
       return null
     } else {
       throw PersonApi.DuplicatePersonException()
@@ -273,7 +281,7 @@ open class PersonSqlApi @Inject constructor(
       passwordSalter.saltPassword(password, DbPerson.DEFAULT_PASSWORD_ALGORITHM)
         .ifPresent { password: String? -> person.password = password }
       person.passwordAlgorithm = DbPerson.DEFAULT_PASSWORD_ALGORITHM
-      updatePerson(person)
+      updatePerson(person, null)
       convertUtils.toPerson(person, opts!!)
     } else {
       throw PersonApi.DuplicatePersonException()
@@ -281,8 +289,11 @@ open class PersonSqlApi @Inject constructor(
   }
 
   @Transactional
-  private fun updatePerson(p: DbPerson) {
+  private fun updatePerson(p: DbPerson, newGroupMembers: MutableList<DbGroupMember>?) {
     database.save(p)
+    if (newGroupMembers != null) {
+      database.saveAll(newGroupMembers)
+    }
   }
 
   override open fun delete(email: String): Boolean {

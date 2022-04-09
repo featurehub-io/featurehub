@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <alterColumn columnName="fk_person_id" tableName="fh_person_group_link" references="fh_person.id" foreignKeyName="fk_fh_person_group_link_fk_person_id" foreignKeyIndex="ix_fh_person_group_link_fk_person_id"/>
+        <alterColumn columnName="fk_group_id" tableName="fh_person_group_link" references="fh_group.id" foreignKeyName="fk_fh_person_group_link_fk_group_id" foreignKeyIndex="ix_fh_person_group_link_fk_group_id"/>
+        <alterForeignKey name="fk_fh_person_group_link_fh_person" columnNames="DROP FOREIGN KEY" indexName="ix_fh_person_group_link_fh_person" tableName="fh_person_group_link"/>
+        <alterForeignKey name="fk_fh_person_group_link_fh_group" columnNames="DROP FOREIGN KEY" indexName="ix_fh_person_group_link_fh_group" tableName="fh_person_group_link"/>
+    </changeSet>
+</migration>
