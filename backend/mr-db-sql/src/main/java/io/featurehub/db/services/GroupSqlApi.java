@@ -564,29 +564,7 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
         group.setName(gp.getName());
       }
 
-      SuperuserChanges superuserChanges = null;
-      if (gp.getMembers() != null && updateMembers) {
-        superuserChanges = updateMembersOfGroup(gp, group);
-      }
-
-      AclUpdates aclUpdates = null;
-      if (gp.getEnvironmentRoles() != null && updateEnvironmentGroupRoles) {
-        aclUpdates = updateEnvironmentMembersOfGroup(gp.getEnvironmentRoles(), group);
-      }
-
-      if (gp.getApplicationRoles() != null && updateApplicationGroupRoles) {
-        updateApplicationMembersOfGroup(gp.getApplicationRoles(), group);
-      }
-
-      try {
-        updateGroup(group, aclUpdates);
-      } catch (DuplicateKeyException dke) {
-        throw new DuplicateGroupException();
-      }
-
-      if (superuserChanges != null) {
-        updateSuperusersFromPortfolioGroups(superuserChanges);
-      }
+      transactionalGroupUpdate(gp, updateMembers, updateApplicationGroupRoles, updateEnvironmentGroupRoles, group);
 
       return convertUtils.toGroup(group, opts);
     }
@@ -594,8 +572,36 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
     return null;
   }
 
-  // now we have to walk all the way down and remove these people from all admin portfolio groups
+  // there are too many updates
   @Transactional
+  private void transactionalGroupUpdate(Group gp, boolean updateMembers, boolean updateApplicationGroupRoles,
+                         boolean updateEnvironmentGroupRoles, DbGroup group) throws DuplicateUsersException, DuplicateGroupException {
+    SuperuserChanges superuserChanges = null;
+    if (gp.getMembers() != null && updateMembers) {
+      superuserChanges = updateMembersOfGroup(gp, group);
+    }
+
+    AclUpdates aclUpdates = null;
+    if (gp.getEnvironmentRoles() != null && updateEnvironmentGroupRoles) {
+      aclUpdates = updateEnvironmentMembersOfGroup(gp.getEnvironmentRoles(), group);
+    }
+
+    if (gp.getApplicationRoles() != null && updateApplicationGroupRoles) {
+      updateApplicationMembersOfGroup(gp.getApplicationRoles(), group);
+    }
+
+    try {
+      updateGroup(group, aclUpdates);
+    } catch (DuplicateKeyException dke) {
+      throw new DuplicateGroupException();
+    }
+
+    if (superuserChanges != null) {
+      updateSuperusersFromPortfolioGroups(superuserChanges);
+    }
+  }
+
+  // now we have to walk all the way down and remove these people from all admin portfolio groups
   protected void updateSuperusersFromPortfolioGroups(
       @NotNull SuperuserChanges superuserChanges) {
     for (DbGroup group :
@@ -631,7 +637,6 @@ public class GroupSqlApi implements io.featurehub.db.api.GroupApi {
     }
   }
 
-  @Transactional
   private void updateGroup(DbGroup group, AclUpdates aclUpdates) {
     database.update(group);
 
