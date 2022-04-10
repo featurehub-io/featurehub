@@ -66,7 +66,7 @@ public class PortfolioSqlApi implements io.featurehub.db.api.PortfolioApi {
     }
 
     if (convertUtils.personIsNotSuperAdmin(personDoingFind)) {
-      pFinder = pFinder.groups.peopleInGroup.id.eq(personDoingFind.getId());
+      pFinder = pFinder.groups.groupMembers.person.id.eq(personDoingFind.getId());
     }
 
     pFinder = finder(pFinder, opts);
@@ -148,7 +148,7 @@ public class PortfolioSqlApi implements io.featurehub.db.api.PortfolioApi {
 
     QDbPortfolio finder = finder(new QDbPortfolio().id.eq(id), opts);
     if (convertUtils.personIsNotSuperAdmin(personDoingFind)) {
-      finder = finder.groups.peopleInGroup.id.eq(personDoingFind.getId());
+      finder = finder.groups.groupMembers.person.id.eq(personDoingFind.getId());
     }
 
     return finder.findOneOrEmpty().map(portf -> convertUtils.toPortfolio(portf, opts)).orElse(null);

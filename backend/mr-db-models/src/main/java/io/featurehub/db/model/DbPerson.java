@@ -1,7 +1,9 @@
 package io.featurehub.db.model;
 
 import io.ebean.annotation.ChangeLog;
+import io.ebean.annotation.ConstraintMode;
 import io.ebean.annotation.DbDefault;
+import io.ebean.annotation.DbForeignKey;
 import io.ebean.annotation.Index;
 
 import javax.persistence.CascadeType;
@@ -11,9 +13,11 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Index(unique = true, name = "idx_person_email", columnNames = {"email"})
@@ -53,11 +57,9 @@ public class DbPerson extends DbVersionedBase {
   @Column(name = "fk_person_who_created")
   private DbPerson whoCreated;
 
-  @ManyToMany(cascade = CascadeType.ALL)
-  @JoinTable(name = "fh_person_group_link",
-    joinColumns = @JoinColumn(name = "fk_person_id", referencedColumnName = "id"),
-    inverseJoinColumns = @JoinColumn(name = "fk_group_id", referencedColumnName = "id"))
-  private Set<DbGroup> groupsPersonIn;
+  @DbForeignKey(onDelete = ConstraintMode.CASCADE)
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<DbGroupMember> groupMembers;
 
   public String getPasswordAlgorithm() {
     return passwordAlgorithm;
@@ -123,12 +125,12 @@ public class DbPerson extends DbVersionedBase {
     this.whoCreated = whoCreated;
   }
 
-  public Set<DbGroup> getGroupsPersonIn() {
-    return groupsPersonIn;
+  public List<DbGroupMember> getGroupMembers() {
+    return groupMembers;
   }
 
-  public void setGroupsPersonIn(Set<DbGroup> groupsPersonIn) {
-    this.groupsPersonIn = groupsPersonIn;
+  public void setGroupMembers(List<DbGroupMember> groupMembers) {
+    this.groupMembers = groupMembers;
   }
 
   public String getToken() {

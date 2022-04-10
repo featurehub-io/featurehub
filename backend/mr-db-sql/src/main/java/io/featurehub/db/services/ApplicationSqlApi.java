@@ -174,8 +174,10 @@ public class ApplicationSqlApi implements ApplicationApi {
       Conversions.nonNullPerson(current);
       // we need to ascertain which apps they can actually see based on environments
       queryApplicationList =
-          queryApplicationList.environments.groupRolesAcl.group.peopleInGroup.id.eq(
-              current.getId().getId());
+          queryApplicationList
+              .environments.groupRolesAcl
+              .group.groupMembers.person.id.eq(current.getId().getId());
+
     }
 
     return queryApplicationList.findList().stream()
@@ -533,8 +535,7 @@ public class ApplicationSqlApi implements ApplicationApi {
         .whenArchived
         .isNull()
         .group
-        .peopleInGroup
-        .fetch()
+        .groupMembers.person.fetch()
         .findList()
         .forEach(
             acl -> {
@@ -542,10 +543,10 @@ public class ApplicationSqlApi implements ApplicationApi {
 
               if (agr.getRoles().contains(ApplicationRoleType.FEATURE_EDIT)) {
                 acl.getGroup()
-                    .getPeopleInGroup()
+                  .getGroupMembers()
                     .forEach(
                         p -> {
-                          featureEditors.add(p.getId());
+                          featureEditors.add(p.getPerson().getId());
                         });
               }
             });
@@ -571,15 +572,15 @@ public class ApplicationSqlApi implements ApplicationApi {
         .whenArchived
         .isNull()
         .group
-        .peopleInGroup
+        .groupMembers.person
         .fetch()
         .findList()
         .forEach(
             acl -> {
               if (acl.getApplication() != null || acl.getRoles().trim().length() > 0) {
                 acl.getGroup()
-                    .getPeopleInGroup()
-                    .forEach(p -> featureReaders.add(p.getId()));
+                    .getGroupMembers()
+                    .forEach(p -> featureReaders.add(p.getPerson().getId()));
               }
             });
 
@@ -614,7 +615,7 @@ public class ApplicationSqlApi implements ApplicationApi {
               .whenArchived
               .isNull()
               .group
-              .peopleInGroup
+              .groupMembers.person
               .eq(person)
               .findList()) {
         if (acl.getApplication() != null) {

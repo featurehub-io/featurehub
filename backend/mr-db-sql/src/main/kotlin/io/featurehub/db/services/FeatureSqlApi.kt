@@ -360,7 +360,7 @@ class FeatureSqlApi @Inject constructor(
 
     val adminRoles = listOf(*RoleType.values())
     if (!personAdmin) { // is they aren't a portfolio admin, figure out what their permissions are to each environment
-      QDbAcl().environment.parentApplication.eq(app).group.peopleInGroup.eq(dbPerson).findList().forEach { fe: DbAcl ->
+      QDbAcl().environment.parentApplication.eq(app).group.groupMembers.person.eq(dbPerson).findList().forEach { fe: DbAcl ->
           log.debug(
             "Found environment `{}`, app `{}`, group `{}`, roles `{}`",
             if (fe.environment == null) "<none>" else fe.environment.name,
@@ -397,7 +397,7 @@ class FeatureSqlApi @Inject constructor(
       }
     }
     val appRoles = QDbAcl().application.isNotNull
-      .select(QDbAcl.Alias.roles).roles.isNotNull.group.whenArchived.isNull.group.owningPortfolio.eq(app.portfolio).group.peopleInGroup.eq(
+      .select(QDbAcl.Alias.roles).roles.isNotNull.group.whenArchived.isNull.group.owningPortfolio.eq(app.portfolio).group.groupMembers.person.eq(
         dbPerson
       ).findList().stream()
       .map { appAcl: DbAcl -> convertUtils.splitApplicationRoles(appAcl.roles) }
@@ -514,7 +514,13 @@ class FeatureSqlApi @Inject constructor(
       val environmentOrderingMap: MutableMap<UUID, DbEnvironment> = HashMap()
       // the requirement is that we only send back environments they have at least READ access to
       val permEnvs =
-        QDbAcl().environment.whenArchived.isNull.environment.parentApplication.eq(app).environment.parentApplication.whenArchived.isNull.environment.parentApplication.groupRolesAcl.fetch().group.whenArchived.isNull.group.peopleInGroup.eq(
+        QDbAcl()
+          .environment.whenArchived.isNull
+          .environment.parentApplication.eq(app)
+          .environment.parentApplication.whenArchived.isNull
+          .environment.parentApplication.groupRolesAcl.fetch()
+          .group.whenArchived.isNull
+          .group.groupMembers.person.eq(
           dbPerson
         ).findList()
           .stream()

@@ -1,0 +1,6 @@
+-- drop dependencies
+-- alter table fh_person_group_link drop constraint fk_fh_prsn_grp_lnk_fh_prsn;
+-- alter table fh_person_group_link drop constraint fk_fh_prsn_grp_lnk_fh_grp;
+-- foreign keys and indices
+-- alter table fh_person_group_link add constraint fk_fh_prsn_grp_lnk_fk_prsn_d foreign key (fk_person_id) references fh_person (id);
+-- alter table fh_person_group_link add constraint fk_fh_prsn_grp_lnk_fk_grp_d foreign key (fk_group_id) references fh_group (id);
