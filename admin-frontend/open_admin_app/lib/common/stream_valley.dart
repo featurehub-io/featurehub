@@ -400,6 +400,8 @@ class StreamValley {
 
     print("loaded portfolios are $portfolios");
 
+    _portfoliosSource.add(portfolios);
+
     if (portfolios.isEmpty) {
       currentPortfolioId = null;
     } else if (!portfolios.any((p) => currentPortfolio.portfolio.id == p.id)) {
@@ -412,8 +414,6 @@ class StreamValley {
         !personState.userHasApplicationPermission(currentAppId)) {
       currentAppId = null;
     }
-
-    _portfoliosSource.add(portfolios);
 
     return portfolios;
   }
