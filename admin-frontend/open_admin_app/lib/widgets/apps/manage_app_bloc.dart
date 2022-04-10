@@ -20,10 +20,6 @@ class ApplicationGroupRoles {
 
 class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
   final ManagementRepositoryClientBloc _mrClient;
-  late ApplicationServiceApi _appServiceApi;
-  late EnvironmentServiceApi _environmentServiceApi;
-  late GroupServiceApi _groupServiceApi;
-  late ServiceAccountServiceApi _serviceAccountServiceApi;
   late StreamSubscription<String?> _currentAppIdSubscription;
   late StreamSubscription<Application?>
       _currentApplicationWithEnvironmentSubscription;
@@ -36,11 +32,14 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
   String? _selectedGroupId;
   List<Environment> environmentsList = [];
 
+  ApplicationServiceApi get _appServiceApi => _mrClient.applicationServiceApi;
+  EnvironmentServiceApi get _environmentServiceApi =>
+      _mrClient.environmentServiceApi;
+  GroupServiceApi get _groupServiceApi => _mrClient.groupServiceApi;
+  ServiceAccountServiceApi get _serviceAccountServiceApi =>
+      _mrClient.serviceAccountServiceApi;
+
   ManageAppBloc(this._mrClient) {
-    _appServiceApi = ApplicationServiceApi(_mrClient.apiClient);
-    _environmentServiceApi = EnvironmentServiceApi(_mrClient.apiClient);
-    _groupServiceApi = GroupServiceApi(_mrClient.apiClient);
-    _serviceAccountServiceApi = ServiceAccountServiceApi(_mrClient.apiClient);
     _pageStateBS.add(ManageAppPageState.loadingState);
 
     _currentPortfolioSubscription =
@@ -238,6 +237,7 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
         // so it knows when to refresh its internal state
         _groupWithRolesPS.add(ApplicationGroupRoles(group, applicationId!));
       } catch (e, s) {
+        print("this group has failed");
         await _mrClient.dialogError(e, s);
         _groupWithRolesPS.add(null);
       }

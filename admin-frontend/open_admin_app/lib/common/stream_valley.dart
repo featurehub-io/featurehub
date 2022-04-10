@@ -78,7 +78,7 @@ class StreamValley {
       .map((app) => app.isNull() ? null : app.application.id);
   final _currentPortfolioApplicationsSource =
       BehaviorSubject<List<Application>>.seeded([]);
-  final _currentPortfolioGroupsStream = BehaviorSubject<List<Group>>.seeded([]);
+  final _currentPortfolioGroupsSource = BehaviorSubject<List<Group>>.seeded([]);
   final _currentApplicationEnvironmentsSource =
       BehaviorSubject<List<Environment>>.seeded([]);
   final _currentApplicationFeaturesSource =
@@ -126,7 +126,7 @@ class StreamValley {
         getCurrentPortfolioGroups();
         getCurrentPortfolioServiceAccounts();
       } else {
-        currentPortfolioGroups = [];
+        _currentPortfolioGroupsSource.add([]);
         currentPortfolioServiceAccounts = [];
         _lastPortfolioIdServiceAccountChecked = null;
         _lastPortfolioIdGroupChecked = null;
@@ -177,7 +177,7 @@ class StreamValley {
       Portfolio? found =
           _portfoliosSource.value?.firstWhereOrNull((p) => p.id == value);
       if (found == null) {
-        _log.fine("attempting to swap to portfolio that doesnt exist");
+        _log.fine("attempting to swap to portfolio that doesnt exist $value");
       } else if (_currentPortfolioSource.value?.portfolio.id != value) {
         _log.fine('Accepted portfolio id change, triggering');
         _currentPortfolioSource.add(ReleasedPortfolio(
@@ -219,11 +219,7 @@ class StreamValley {
   }
 
   Stream<List<Group>> get currentPortfolioGroupsStream =>
-      _currentPortfolioGroupsStream.stream;
-
-  set currentPortfolioGroups(List<Group> value) {
-    _currentPortfolioGroupsStream.add(value);
-  }
+      _currentPortfolioGroupsSource.stream;
 
   final _currentPortfolioServiceAccountsSource =
       BehaviorSubject<List<ServiceAccount>>();
@@ -321,16 +317,17 @@ class StreamValley {
       if (currentPortfolioId != null) {
         await portfolioServiceApi
             .getPortfolio(currentPortfolioId!, includeGroups: true)
-            .then((portfolio) => currentPortfolioGroups = portfolio.groups)
+            .then((portfolio) =>
+                _currentPortfolioGroupsSource.add(portfolio.groups))
             .catchError((e, s) {
           mrClient.dialogError(e, s);
         });
       } else {
-        currentPortfolioGroups = [];
+        _currentPortfolioGroupsSource.add([]);
       }
     }
 
-    return _currentPortfolioGroupsStream.value!;
+    return _currentPortfolioGroupsSource.value!;
   }
 
   String? _lastPortfolioIdServiceAccountChecked;
