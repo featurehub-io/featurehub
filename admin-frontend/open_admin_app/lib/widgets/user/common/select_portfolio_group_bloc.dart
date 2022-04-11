@@ -1,7 +1,7 @@
-import 'package:open_admin_app/api/client_api.dart';
-import 'package:open_admin_app/widgets/user/common/portfolio_group.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/widgets/user/common/portfolio_group.dart';
 import 'package:rxdart/rxdart.dart' as rxdart;
 
 class SelectPortfolioGroupBloc implements Bloc {
@@ -17,9 +17,9 @@ class SelectPortfolioGroupBloc implements Bloc {
   final _currentGroupsStream = rxdart.BehaviorSubject<List<Group>?>();
   Stream<List<Group>?> get groups => _currentGroupsStream.stream;
 
-  final _addedGroupsStream = rxdart.BehaviorSubject<Set<PortfolioGroup>?>();
+  final _addedGroupsSource = rxdart.BehaviorSubject<Set<PortfolioGroup>?>();
   Stream<Set<PortfolioGroup>?> get addedGroupsStream =>
-      _addedGroupsStream.stream;
+      _addedGroupsSource.stream;
 
   SelectPortfolioGroupBloc(this.mrClient) {
     loadInitialData();
@@ -58,9 +58,11 @@ class SelectPortfolioGroupBloc implements Bloc {
 
   void pushExistingGroupToStream(List<PortfolioGroup> groupList) {
     for (var group in groupList) {
-      {listOfAddedPortfolioGroups.add(group);}
+      {
+        listOfAddedPortfolioGroups.add(group);
+      }
     }
-    _addedGroupsStream.add(listOfAddedPortfolioGroups);
+    _addedGroupsSource.add(listOfAddedPortfolioGroups);
   }
 
   void pushAddedGroupToStream(String groupID) {
@@ -71,15 +73,15 @@ class SelectPortfolioGroupBloc implements Bloc {
       listOfAddedPortfolioGroups
           .add(PortfolioGroup(currentPortfolio!, foundGroup));
       //add both current portfolio and group so we can later display selected groups in chips
-      _addedGroupsStream.add(listOfAddedPortfolioGroups);
+      _addedGroupsSource.add(listOfAddedPortfolioGroups);
     }
   }
 
   void pushAdminGroupToStream() {
-    final adminGroup =  mrClient.personState.personInSuperuserGroup();
-    if  (adminGroup != null) {
+    final adminGroup = mrClient.personState.personInSuperuserGroup();
+    if (adminGroup != null) {
       listOfAddedPortfolioGroups.add(PortfolioGroup(null, adminGroup));
-      _addedGroupsStream.add(listOfAddedPortfolioGroups);
+      _addedGroupsSource.add(listOfAddedPortfolioGroups);
     }
   }
 
@@ -90,7 +92,7 @@ class SelectPortfolioGroupBloc implements Bloc {
 
   void removeGroupFromStream(PortfolioGroup groupToBeDeleted) {
     listOfAddedPortfolioGroups.remove(groupToBeDeleted);
-    _addedGroupsStream.add(listOfAddedPortfolioGroups);
+    _addedGroupsSource.add(listOfAddedPortfolioGroups);
   }
 
   void clearAddedPortfoliosAndGroups() {
@@ -100,7 +102,7 @@ class SelectPortfolioGroupBloc implements Bloc {
 
   @override
   void dispose() {
-    _addedGroupsStream.close();
+    _addedGroupsSource.close();
     _currentGroupsStream.close();
     _currentPortfoliosStream.close();
     listOfAddedPortfolioGroups.clear();
