@@ -1,9 +1,9 @@
-import 'package:open_admin_app/api/client_api.dart';
-import 'package:open_admin_app/widgets/user/common/portfolio_group.dart';
-import 'package:open_admin_app/widgets/user/common/select_portfolio_group_bloc.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/api/client_api.dart';
+import 'package:open_admin_app/widgets/user/common/portfolio_group.dart';
+import 'package:open_admin_app/widgets/user/common/select_portfolio_group_bloc.dart';
 import 'package:rxdart/rxdart.dart' as rxdart;
 
 enum EditUserForm { loadingState, initialState, errorState, successState }
@@ -86,13 +86,13 @@ class EditUserBloc implements Bloc {
       final listOfExistingGroups = <PortfolioGroup>[];
       for (var group in person!.groups) {
         {
-            listOfExistingGroups.add(PortfolioGroup(
-                portfoliosList.firstWhereOrNull((p) =>
-                    p.id ==
-                    group
-                        .portfolioId), // null is set for Portfolio for super admin group which doesn't belong to any portfolio
-                group));
-          }
+          listOfExistingGroups.add(PortfolioGroup(
+              portfoliosList.firstWhereOrNull((p) =>
+                  p.id ==
+                  group
+                      .portfolioId), // null is set for Portfolio for super admin group which doesn't belong to any portfolio
+              group));
+        }
       }
       selectGroupBloc.pushExistingGroupToStream(listOfExistingGroups);
     }
