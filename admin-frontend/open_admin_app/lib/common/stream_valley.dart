@@ -97,7 +97,7 @@ class StreamValley {
 
   StreamValley(this.personState) {
     personState.personStream.listen((person) async {
-      print("streamvalley got $person");
+      // print("streamvalley got $person");
       if (personState.isLoggedIn) {
         await loadPortfolios();
       }
@@ -141,7 +141,7 @@ class StreamValley {
 
   set apiClient(ManagementRepositoryClientBloc mrClient) {
     this.mrClient = mrClient;
-    print("reset permissions client");
+    // print("reset permissions client");
     authServiceApi = AuthServiceApi(mrClient.apiClient);
     portfolioServiceApi = PortfolioServiceApi(mrClient.apiClient);
     serviceAccountServiceApi = ServiceAccountServiceApi(mrClient.apiClient);
@@ -313,7 +313,7 @@ class StreamValley {
         _lastPortfolioIdGroupChecked == null ||
         force) {
       _lastPortfolioIdGroupChecked = currentPortfolioId;
-      print("current portfolio id is $currentPortfolioId");
+      // print("current portfolio id is $currentPortfolioId");
       if (currentPortfolioId != null) {
         await portfolioServiceApi
             .getPortfolio(currentPortfolioId!, includeGroups: true)
@@ -398,7 +398,7 @@ class StreamValley {
     final portfolios = await portfolioServiceApi.findPortfolios(
         includeApplications: true, order: SortOrder.ASC);
 
-    print("loaded portfolios are $portfolios");
+    // print("loaded portfolios are $portfolios");
 
     _portfoliosSource.add(portfolios);
 

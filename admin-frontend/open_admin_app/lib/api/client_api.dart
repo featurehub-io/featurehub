@@ -192,8 +192,8 @@ class ManagementRepositoryClientBloc implements Bloc {
         ar.applicationId == currentAid &&
         ar.roles.contains(ApplicationRoleType.FEATURE_EDIT)));
 
-    print(
-        "checking featureadmin ${currentAid} and result is ${result} from groups ${person.groups}");
+    // print(
+    //     "checking featureadmin ${currentAid} and result is ${result} from groups ${person.groups}");
 
     return result;
   }
@@ -418,7 +418,7 @@ class ManagementRepositoryClientBloc implements Bloc {
   }
 
   void setPerson(Person p) {
-    print("set person $p and org $organization");
+    // print("set person $p and org $organization");
     personState.updatePerson(p, organization?.id); //
   }
 
@@ -436,7 +436,7 @@ class ManagementRepositoryClientBloc implements Bloc {
         final pid = await sharedPreferences!.getString('currentPid');
         final portfolio = portfolios.firstWhereOrNull((p) => p.id == pid);
         if (portfolio != null) {
-          print("found pid, updating");
+          // print("found pid, updating");
           setCurrentPid(pid);
           foundValidStoredPortfolio = true;
           if (aid != null) {

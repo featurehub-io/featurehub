@@ -237,7 +237,7 @@ class ManageAppBloc implements Bloc, ManagementRepositoryAwareBloc {
         // so it knows when to refresh its internal state
         _groupWithRolesPS.add(ApplicationGroupRoles(group, applicationId!));
       } catch (e, s) {
-        print("this group has failed");
+        // print("this group has failed");
         await _mrClient.dialogError(e, s);
         _groupWithRolesPS.add(null);
       }

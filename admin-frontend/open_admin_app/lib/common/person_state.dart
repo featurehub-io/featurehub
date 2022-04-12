@@ -40,7 +40,7 @@ class PersonState {
     // we want to determine these _before_ we trigger the source update
     _isUserIsSuperAdmin = _isSuperAdminGroupFound(p);
     _userIsAnyPortfolioOrSuperAdmin = _isAnyPortfolioOrSuperAdmin(p);
-    print("adding $p to source");
+    // print("adding $p to source");
     _personSource.add(p);
   }
 

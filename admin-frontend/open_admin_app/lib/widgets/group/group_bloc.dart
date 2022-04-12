@@ -24,7 +24,7 @@ class GroupBloc implements Bloc {
       final ourGroup = groups.firstWhereOrNull((g) => g.id == groupId);
       if (ourGroup == null) {
         if (groups.isNotEmpty) {
-          print("no matching groups, choosing first");
+          // print("no matching groups, choosing first");
           groupId = groups[0].id;
           group = groups[0];
           _groupSource.add(group);
@@ -35,7 +35,7 @@ class GroupBloc implements Bloc {
           _groupSource.add(null);
         }
       } else {
-        print("matching group");
+        // print("matching group");
         // in case something changed
         group = ourGroup;
         _groupSource.add(group);
@@ -59,7 +59,7 @@ class GroupBloc implements Bloc {
       final fetchedGroup = await _groupServiceApi
           .getGroup(groupId, includeMembers: true)
           .catchError((e, s) {
-        print("this group has failed XXXX");
+        // print("this group has failed XXXX");
         mrClient.dialogError(e, s);
       });
       // publish it out...
