@@ -11,10 +11,6 @@ Person _unauthenticatedPerson =
     Person(id: PersonId(id: ''), name: '', email: '');
 
 class PersonState {
-  //stream if person user is current portfolio or super admin user
-  // final BehaviorSubject<ReleasedPortfolio?> _isCurrentPortfolioOrSuperAdmin =
-  //     BehaviorSubject<ReleasedPortfolio?>();
-
   final BehaviorSubject<Person> _personSource =
       BehaviorSubject.seeded(_unauthenticatedPerson);
 
@@ -40,46 +36,8 @@ class PersonState {
     // we want to determine these _before_ we trigger the source update
     _isUserIsSuperAdmin = _isSuperAdminGroupFound(p);
     _userIsAnyPortfolioOrSuperAdmin = _isAnyPortfolioOrSuperAdmin(p);
-    // print("adding $p to source");
     _personSource.add(p);
   }
-
-  // set person(Person person) {
-  //   if (person != _unauthenticatedPerson) {
-  //     for (final callback in setPersonHooks) {
-  //       callback(this, person);
-  //     }
-  //   }
-  //
-  //   _isUserIsSuperAdmin = isSuperAdminGroupFound();
-  //
-  //   _userIsAnyPortfolioOrSuperAdmin = isAnyPortfolioOrSuperAdmin(person.groups);
-  //
-  //   if (person == _unauthenticatedPerson ||
-  //       (_personSource.value != null &&
-  //           _personSource.value!.groups != person.groups)) {
-  //     print("released portfolio is null");
-  //     _isCurrentPortfolioOrSuperAdmin.add(null);
-  //   } else if (_personSource.value != null &&
-  //       _personSource.value!.groups != person.groups) {
-  //     final releasedPortfolio = _isCurrentPortfolioOrSuperAdmin.value;
-  //
-  //     if (releasedPortfolio != null) {
-  //       print("updating released portfolio $releasedPortfolio");
-  //       _isCurrentPortfolioOrSuperAdmin.add(ReleasedPortfolio(
-  //           portfolio: releasedPortfolio.portfolio,
-  //           currentPortfolioOrSuperAdmin: userIsPortfolioAdmin(
-  //               releasedPortfolio.portfolio.id, person.groups)));
-  //     }
-  //   }
-  //
-  //   print("person is $person");
-  //
-  //   _personSource.add(person);
-  // }
-
-  // Stream<ReleasedPortfolio?> get isCurrentPortfolioOrSuperAdmin =>
-  //     _isCurrentPortfolioOrSuperAdmin.stream;
 
   bool personCanEditFeaturesForCurrentApplication(String? appId) {
     if (appId == null) {
@@ -132,17 +90,6 @@ class PersonState {
     return (_isSuperAdminGroupFound(p) || _isAnyPortfolioAdmin(p));
   }
 
-  // bool get userIsCurrentPortfolioAdmin =>
-  //     _isCurrentPortfolioOrSuperAdmin.value?.currentPortfolioOrSuperAdmin ??
-  //     false;
-  //
-  // void currentPortfolioOrSuperAdminUpdateState(Portfolio p) {
-  //   print("resetting portfolio for current/super admin check to $p");
-  //   final isAdmin = _isSuperAdminGroupFound() || userIsPortfolioAdmin(p.id);
-  //   _isCurrentPortfolioOrSuperAdmin.add(
-  //       ReleasedPortfolio(portfolio: p, currentPortfolioOrSuperAdmin: isAdmin));
-  // }
-
   Group? personInSuperuserGroup() {
     if (person != _unauthenticatedPerson) {
       return groupList.firstWhereOrNull(
@@ -154,7 +101,6 @@ class PersonState {
 
   void dispose() {
     _personSource.close();
-    // _isCurrentPortfolioOrSuperAdmin.close();
   }
 
   bool isPersonSuperUserOrPortfolioAdmin(String? portfolioId) {
