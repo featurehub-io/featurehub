@@ -49,8 +49,7 @@ class _AppsRouteState extends State<AppsRoute> {
                   ),
                 ),
                 StreamBuilder<ReleasedPortfolio?>(
-                    stream: bloc
-                        .mrClient.personState.isCurrentPortfolioOrSuperAdmin,
+                    stream: bloc.mrClient.streamValley.currentPortfolioStream,
                     builder: (context, snapshot) {
                       if (snapshot.data != null &&
                           (snapshot.data!.currentPortfolioOrSuperAdmin ==
@@ -203,8 +202,8 @@ class _ApplicationCard extends StatelessWidget {
                         ),
                       ),
                       StreamBuilder<ReleasedPortfolio?>(
-                          stream: bloc.mrClient.personState
-                              .isCurrentPortfolioOrSuperAdmin,
+                          stream:
+                              bloc.mrClient.streamValley.currentPortfolioStream,
                           builder: (context, snapshot) {
                             if (snapshot.data != null &&
                                 (snapshot.data!.currentPortfolioOrSuperAdmin ==

@@ -18,13 +18,13 @@ class AdminCheckboxWidgetState extends State<AdminCheckboxWidget> {
   bool isAdmin = false;
 
   @override
-  void initState() {
-    final bloc = BlocProvider.of<SelectPortfolioGroupBloc>(context);
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     if (widget.person != null) {
       createUser = false;
-      isAdmin = bloc.mrClient.personState
-          .isSuperAdminGroupFound(widget.person!.groups);
+      isAdmin = widget.person?.groups
+              .any((g) => g.admin == true && g.portfolioId == null) ==
+          true;
     }
   }
 

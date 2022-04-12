@@ -87,4 +87,8 @@ class PortfolioBloc implements Bloc {
   void dispose() {
     _portfolioSearchResultSource.close();
   }
+
+  Future refreshPortfolios() async {
+    await mrClient.refreshPortfolios();
+  }
 }

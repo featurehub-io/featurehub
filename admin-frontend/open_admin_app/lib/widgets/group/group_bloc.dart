@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:open_admin_app/api/client_api.dart';
 import 'package:bloc_provider/bloc_provider.dart';
 import 'package:collection/collection.dart';
 import 'package:mrapi/api.dart';
+import 'package:open_admin_app/api/client_api.dart';
 import 'package:rxdart/rxdart.dart';
 
 class GroupBloc implements Bloc {
@@ -12,19 +12,19 @@ class GroupBloc implements Bloc {
   String? search;
   final ManagementRepositoryClientBloc mrClient;
   StreamSubscription<List<Group>>? _groupListener;
-  late GroupServiceApi _groupServiceApi;
 
   Stream<Group?> get groupLoaded => _groupSource.stream;
   final _groupSource = BehaviorSubject<Group?>();
 
-  GroupBloc(this.groupId, this.mrClient) {
-    _groupServiceApi = GroupServiceApi(mrClient.apiClient);
+  GroupServiceApi get _groupServiceApi => mrClient.groupServiceApi;
 
+  GroupBloc(this.groupId, this.mrClient) {
     _groupListener =
         mrClient.streamValley.currentPortfolioGroupsStream.listen((groups) {
       final ourGroup = groups.firstWhereOrNull((g) => g.id == groupId);
       if (ourGroup == null) {
         if (groups.isNotEmpty) {
+          // print("no matching groups, choosing first");
           groupId = groups[0].id;
           group = groups[0];
           _groupSource.add(group);
@@ -35,6 +35,7 @@ class GroupBloc implements Bloc {
           _groupSource.add(null);
         }
       } else {
+        // print("matching group");
         // in case something changed
         group = ourGroup;
         _groupSource.add(group);
@@ -53,11 +54,12 @@ class GroupBloc implements Bloc {
     }
   }
 
-  void getGroup(String? groupId) async {
+  Future<void> getGroup(String? groupId) async {
     if (groupId != null && groupId.length > 1) {
       final fetchedGroup = await _groupServiceApi
           .getGroup(groupId, includeMembers: true)
           .catchError((e, s) {
+        // print("this group has failed XXXX");
         mrClient.dialogError(e, s);
       });
       // publish it out...

@@ -19,87 +19,84 @@ class ServiceAccountEnvRoute extends StatelessWidget {
     final bloc = BlocProvider.of<ServiceAccountEnvBloc>(context);
     return Container(
         padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
-        child: Column(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
+            Widget>[
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Wrap(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: const FHHeader(
-                          title: 'API Keys',
-                        ),
-                      ),
-                    ],
+              Wrap(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: const FHHeader(
+                      title: 'API Keys',
+                    ),
                   ),
-                  Row(
-                    children: [
-                      StreamBuilder<List<Application>>(
-                          stream: bloc.mrClient.streamValley
-                              .currentPortfolioApplicationsStream,
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                              return Container(
-                                  padding: const EdgeInsets.only(bottom: 8),
-                                  child: ApplicationDropDown(
-                                      applications: snapshot.data!,
-                                      bloc: bloc));
-                            } else {
-                              return const SizedBox.shrink();
-                            }
-                          }),
-                      StreamBuilder<ReleasedPortfolio?>(
-                          stream: bloc.mrClient.personState
-                              .isCurrentPortfolioOrSuperAdmin,
-                          builder: (context, snapshot) {
-                            if (snapshot.data != null &&
-                                (snapshot.data!.currentPortfolioOrSuperAdmin ==
-                                    true)) {
-                              return Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 8.0, bottom: 8.0),
-                                child: FHUnderlineButton(
-                                    keepCase: true,
-                                    title: 'Go to service accounts settings',
-                                    onPressed: () => {
-                                          ManagementRepositoryClientBloc.router
-                                              .navigateTo(
-                                            context,
-                                            '/service-accounts',
-                                          )
-                                        }),
-                              );
-                            } else {
-                              return const SizedBox.shrink();
-                            }
-                          }),
-                    ],
-                  ),
-                  const FHPageDivider(),
-                  const SizedBox(
-                    height: 16.0,
-                  ),
-                  StreamBuilder<ServiceAccountEnvironments>(
-                      stream: bloc.serviceAccountEnvironmentsStream,
-                      builder: (context, envSnapshot) {
-                        if (!envSnapshot.hasData) {
+                ],
+              ),
+              Row(
+                children: [
+                  StreamBuilder<List<Application>>(
+                      stream: bloc.mrClient.streamValley
+                          .currentPortfolioApplicationsStream,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                          return Container(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: ApplicationDropDown(
+                                  applications: snapshot.data!, bloc: bloc));
+                        } else {
                           return const SizedBox.shrink();
                         }
-
-                        if (envSnapshot.data!.serviceAccounts.isEmpty) {
-                          return Text('No service accounts available',
-                              style: Theme.of(context).textTheme.caption);
+                      }),
+                  StreamBuilder<ReleasedPortfolio?>(
+                      stream: bloc.mrClient.streamValley.currentPortfolioStream,
+                      builder: (context, snapshot) {
+                        if (snapshot.data != null &&
+                            (snapshot.data!.currentPortfolioOrSuperAdmin ==
+                                true)) {
+                          return Padding(
+                            padding:
+                                const EdgeInsets.only(left: 8.0, bottom: 8.0),
+                            child: FHUnderlineButton(
+                                keepCase: true,
+                                title: 'Go to service accounts settings',
+                                onPressed: () => {
+                                      ManagementRepositoryClientBloc.router
+                                          .navigateTo(
+                                        context,
+                                        '/service-accounts',
+                                      )
+                                    }),
+                          );
+                        } else {
+                          return const SizedBox.shrink();
                         }
-
-                        return _ServiceAccountDisplayWidget(
-                            serviceAccountEnvs: envSnapshot.data!, bloc: bloc);
                       }),
                 ],
               ),
-            ]));
+              const FHPageDivider(),
+              const SizedBox(
+                height: 16.0,
+              ),
+              StreamBuilder<ServiceAccountEnvironments>(
+                  stream: bloc.serviceAccountEnvironmentsStream,
+                  builder: (context, envSnapshot) {
+                    if (!envSnapshot.hasData) {
+                      return const SizedBox.shrink();
+                    }
+
+                    if (envSnapshot.data!.serviceAccounts.isEmpty) {
+                      return Text('No service accounts available',
+                          style: Theme.of(context).textTheme.caption);
+                    }
+
+                    return _ServiceAccountDisplayWidget(
+                        serviceAccountEnvs: envSnapshot.data!, bloc: bloc);
+                  }),
+            ],
+          ),
+        ]));
   }
 }
 
@@ -227,7 +224,9 @@ class _ServiceAccountPermissionWidget extends StatelessWidget {
         child: perms.isNotEmpty
             ? Text(perms.map((p) => p.name).join(', '),
                 style: const TextStyle(
-                    fontFamily: 'SourceCodePro', fontSize: 12, letterSpacing: 1.0))
+                    fontFamily: 'SourceCodePro',
+                    fontSize: 12,
+                    letterSpacing: 1.0))
             : Text('No permissions defined',
                 style: Theme.of(context).textTheme.caption));
   }

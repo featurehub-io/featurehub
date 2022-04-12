@@ -489,4 +489,19 @@ class GroupSpec extends BaseSpec {
       found1.environmentRoles.size() == 1
       found1.applicationRoles.size() == 2
   }
+
+  def "i have two superadmins and one can remove the other as a superadmin"() {
+    given: "i have another superadmin"
+      def iSuperPerson = new DbPerson.Builder().email("irushka@featurehub.io").name("Irina").build()
+      database.save(iSuperPerson)
+      def adminGroup = groupSqlApi.findOrganizationAdminGroup(org.id, Opts.empty())
+      groupSqlApi.addPersonToGroup(adminGroup.id, iSuperPerson.id, Opts.empty())
+    and: "i get the person"
+      def person = personApi.get(iSuperPerson.id, Opts.opts(FillOpts.Groups))
+    when: "i update the person to remove the superuser group"
+      person.groups.removeIf(it -> it.admin && !it.portfolioId)
+      def updatedPerson = personApi.update(person.id.id, person, Opts.opts(FillOpts.Groups), superPerson.id.id)
+    then:
+      updatedPerson.groups.find(g -> g.admin && g.portfolioId == null) == null
+  }
 }

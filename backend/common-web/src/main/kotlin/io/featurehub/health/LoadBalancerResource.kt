@@ -7,7 +7,7 @@ import jakarta.ws.rs.core.Response
 @Path("")
 class LoadBalancerResource {
   @GET
-  @Path("")
+  @Path("/")
   fun loadBalancerAck(): Response {
     return Response.ok().entity("featurehub is here").build()
   }

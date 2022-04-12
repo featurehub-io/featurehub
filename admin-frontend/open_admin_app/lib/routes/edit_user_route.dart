@@ -2,10 +2,10 @@ import 'package:bloc_provider/bloc_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:mrapi/api.dart';
 import 'package:open_admin_app/api/client_api.dart';
-import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_alert_dialog.dart';
 import 'package:open_admin_app/widgets/common/fh_card.dart';
 import 'package:open_admin_app/widgets/common/fh_filled_input_decoration.dart';
+import 'package:open_admin_app/widgets/common/fh_flat_button.dart';
 import 'package:open_admin_app/widgets/common/fh_flat_button_transparent.dart';
 import 'package:open_admin_app/widgets/common/fh_footer_button_bar.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
@@ -78,13 +78,13 @@ class _EditUserFormState extends State<EditUserFormWidget> {
                 title: 'Edit user',
                 children: <Widget>[
                   if (bloc.mrClient.identityProviders.hasLocal)
-                  FHFlatButtonTransparent(
-                    onPressed: () => bloc.mrClient.addOverlay(
-                        (BuildContext context) =>
-                            UserPasswordUpdateDialogWidget(bloc: bloc)),
-                    title: 'Reset password',
-                    keepCase: true,
-                  ),
+                    FHFlatButtonTransparent(
+                      onPressed: () => bloc.mrClient.addOverlay(
+                          (BuildContext context) =>
+                              UserPasswordUpdateDialogWidget(bloc: bloc)),
+                      title: 'Reset password',
+                      keepCase: true,
+                    ),
                 ],
               ),
             ],
@@ -123,7 +123,8 @@ class _EditUserFormState extends State<EditUserFormWidget> {
             ),
           ),
           const PortfolioGroupSelector(),
-          AdminCheckboxWidget(person: bloc.person),
+          if (bloc.mrClient.personState.userIsSuperAdmin)
+            AdminCheckboxWidget(person: bloc.person),
           FHButtonBar(children: <Widget>[
             FHFlatButtonTransparent(
                 onPressed: () {

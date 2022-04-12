@@ -61,7 +61,7 @@ class _ServiceAccountSearchState extends State<ManageServiceAccountsRoute> {
               color: Theme.of(context).cardColor,
               border: Border(bottom: bs, left: bs, right: bs, top: bs)),
           child: StreamBuilder<ReleasedPortfolio?>(
-              stream: bloc.mrClient.personState.isCurrentPortfolioOrSuperAdmin,
+              stream: bloc.mrClient.streamValley.currentPortfolioStream,
               builder: (context, snapshot) {
                 if (snapshot.hasData &&
                     snapshot.data!.currentPortfolioOrSuperAdmin) {

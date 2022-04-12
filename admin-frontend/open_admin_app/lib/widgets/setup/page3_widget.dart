@@ -39,36 +39,36 @@ class _FinalSetupPageOverlayWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FHAlertDialog(
-        title: title(context),
-        content: SizedBox(
-          width: 230,
-          height: 100,
-          child: StreamBuilder<bool>(
-            stream: bloc.setupState,
-            builder: (BuildContext context, AsyncSnapshot<bool> snap) {
-              if (snap.hasError) {
-                bloc.mrClient.dialogError(snap.error, null);
-              } else if (snap.hasData && snap.data!) {
-                return Padding(
+    return StreamBuilder<bool>(
+          stream: bloc.setupState,
+          builder: (BuildContext context, AsyncSnapshot<bool> snap) {
+            if (snap.hasError) {
+              bloc.mrClient.dialogError(snap.error, null);
+            } else if (snap.hasData && snap.data!) {
+              return FHAlertDialog(
+                title: title(context),
+                content: Padding(
                   padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
                   child: Text(
                       'Ok, next step is to create your first application, an environment and add some features. You can follow the progress stepper by clicking the "rocket" icon on the right of the app bar.',
                       style: Theme.of(context).textTheme.bodyText1),
-                );
-              }
-              return Container();
-            },
-          ),
-        ),
-        actions: <Widget>[
-          FHFlatButton(
-              title: 'Next',
-              onPressed: () {
-                bloc.mrClient.removeOverlay();
-                bloc.reinitialize();
-              })
-        ]);
+                ),
+                  actions: <Widget>[
+                    FHFlatButton(
+                        title: 'Next',
+                        onPressed: () {
+                          bloc.mrClient.removeOverlay();
+                          bloc.reinitialize();
+                        })
+                  ]
+              );
+            }
+            else if (snap.connectionState == ConnectionState.waiting) {
+            return const Center(child:CircularProgressIndicator());
+          }
+            return Container();
+          },
+        );
   }
 
   Widget title(BuildContext context) {

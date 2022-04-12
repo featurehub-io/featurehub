@@ -256,7 +256,7 @@ class NoEnvironmentMessage extends StatelessWidget {
               'Either there are no environments defined for this application or you don\'t have permissions to access any of them',
               style: Theme.of(context).textTheme.caption),
           StreamBuilder<ReleasedPortfolio?>(
-              stream: bloc.mrClient.personState.isCurrentPortfolioOrSuperAdmin,
+              stream: bloc.mrClient.streamValley.currentPortfolioStream,
               builder: (context, snapshot) {
                 if (snapshot.hasData &&
                     snapshot.data!.currentPortfolioOrSuperAdmin) {
