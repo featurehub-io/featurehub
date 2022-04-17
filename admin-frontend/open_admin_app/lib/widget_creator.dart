@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/widgets.dart';
 import 'package:open_admin_app/utils/utils.dart';
 import 'package:open_admin_app/widgets/common/external_docs_links_widget.dart';
@@ -24,6 +25,8 @@ class WidgetCreator {
   Widget errorMessageDetailsWidget({required FHError fhError}) {
     return FHErrorMessageDetailsWidget(fhError: fhError);
   }
+
+  Widget edgeUrlCopyWidget(ManagementRepositoryClientBloc mrClient) => const SizedBox.shrink();
 }
 
 WidgetCreator widgetCreator = WidgetCreator();

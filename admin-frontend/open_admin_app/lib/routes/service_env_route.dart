@@ -10,6 +10,8 @@ import 'package:open_admin_app/widgets/common/decorations/fh_page_divider.dart';
 import 'package:open_admin_app/widgets/common/fh_header.dart';
 import 'package:open_admin_app/widgets/common/fh_underline_button.dart';
 import 'package:open_admin_app/widgets/service-accounts/service_accounts_env_bloc.dart';
+import 'package:open_admin_app/widget_creator.dart';
+
 
 class ServiceAccountEnvRoute extends StatelessWidget {
   const ServiceAccountEnvRoute({Key? key}) : super(key: key);
@@ -112,94 +114,99 @@ class _ServiceAccountDisplayWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     // filter out SA that don't have any permissions
 
-    return ListView.builder(
-        shrinkWrap: true,
-        itemCount: serviceAccountEnvs.serviceAccounts.length,
-        itemBuilder: (context, index) {
-          final serviceAccount = serviceAccountEnvs.serviceAccounts[index];
+    return Column(
+      children: [
+        widgetCreator.edgeUrlCopyWidget(bloc.mrClient),
+        ListView.builder(
+            shrinkWrap: true,
+            itemCount: serviceAccountEnvs.serviceAccounts.length,
+            itemBuilder: (context, index) {
+              final serviceAccount = serviceAccountEnvs.serviceAccounts[index];
 
-          if (!serviceAccount.permissions
-              .every((element) => element.permissions.isEmpty)) {
-            return Card(
-              color: Theme.of(context).cardColor,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+              if (!serviceAccount.permissions
+                  .every((element) => element.permissions.isEmpty)) {
+                return Card(
+                  color: Theme.of(context).cardColor,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 2.0),
-                                child: Icon(Ionicons.ios_settings,
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .bodyText2
-                                        ?.color
-                                        ?.withOpacity(0.5)),
-                              ),
-                              const SizedBox(width: 4.0),
-                              Expanded(
-                                child: Text(serviceAccount.name,
-                                    overflow: TextOverflow.ellipsis),
+                              Row(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 2.0),
+                                    child: Icon(Ionicons.ios_settings,
+                                        color: Theme.of(context)
+                                            .textTheme
+                                            .bodyText2
+                                            ?.color
+                                            ?.withOpacity(0.5)),
+                                  ),
+                                  const SizedBox(width: 4.0),
+                                  Expanded(
+                                    child: Text(serviceAccount.name,
+                                        overflow: TextOverflow.ellipsis),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                        flex: 6,
-                        child: Column(
-                          children: [
-                            for (var env in serviceAccountEnvs.environments)
-                              if (serviceAccount.permissions
-                                  .firstWhere((p) => p.environmentId == env.id,
-                                      orElse: () => ServiceAccountPermission(
-                                          permissions: [],
-                                          environmentId: env.id!))
-                                  .permissions
-                                  .isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        flex: 2,
-                                        child: Text(env.name,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyText2),
-                                      ),
-                                      Expanded(
-                                          flex: 3,
-                                          child:
-                                              _ServiceAccountPermissionWidget(
+                        ),
+                        Expanded(
+                            flex: 6,
+                            child: Column(
+                              children: [
+                                for (var env in serviceAccountEnvs.environments)
+                                  if (serviceAccount.permissions
+                                      .firstWhere((p) => p.environmentId == env.id,
+                                          orElse: () => ServiceAccountPermission(
+                                              permissions: [],
+                                              environmentId: env.id!))
+                                      .permissions
+                                      .isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            flex: 2,
+                                            child: Text(env.name,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyText2),
+                                          ),
+                                          Expanded(
+                                              flex: 3,
+                                              child:
+                                                  _ServiceAccountPermissionWidget(
+                                                      env: env,
+                                                      sa: serviceAccount)),
+                                          Expanded(
+                                              flex: 4,
+                                              child: _ServiceAccountCopyWidget(
                                                   env: env,
-                                                  sa: serviceAccount)),
-                                      Expanded(
-                                          flex: 4,
-                                          child: _ServiceAccountCopyWidget(
-                                              env: env,
-                                              sa: serviceAccount,
-                                              bloc: bloc))
-                                    ],
-                                  ),
-                                )
-                          ],
-                        )),
-                  ],
-                ),
-              ),
-            );
-          } else {
-            return Container();
-          }
-        });
+                                                  sa: serviceAccount,
+                                                  bloc: bloc))
+                                        ],
+                                      ),
+                                    )
+                              ],
+                            )),
+                      ],
+                    ),
+                  ),
+                );
+              } else {
+                return Container();
+              }
+            }),
+      ],
+    );
   }
 }
 
