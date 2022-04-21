@@ -19,7 +19,7 @@ class PersonSpec extends BaseSpec {
   def setupSpec() {
     baseSetupSpec()
 
-    personSqlApi = new PersonSqlApi(database, convertUtils, archiveStrategy)
+    personSqlApi = new PersonSqlApi(database, convertUtils, archiveStrategy, groupSqlApi)
     portfolioSqlApi = new PortfolioSqlApi(database, convertUtils, archiveStrategy)
   }
 

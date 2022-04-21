@@ -24,7 +24,7 @@ class UserStateSpec extends BaseSpec {
 
   def setupSpec() {
     baseSetupSpec()
-    personSqlApi = new PersonSqlApi(database, convertUtils, archiveStrategy)
+    personSqlApi = new PersonSqlApi(database, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
 
     appApi = new ApplicationSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
     envApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)

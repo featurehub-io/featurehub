@@ -40,7 +40,7 @@ class GroupSpec extends BaseSpec {
 
     portfolioApi = new PortfolioSqlApi(database, convertUtils, archiveStrategy)
     environmentSqlApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
-    personApi = new PersonSqlApi(database, convertUtils, archiveStrategy)
+    personApi = new PersonSqlApi(database, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
 
     user = dbSuperPerson
 

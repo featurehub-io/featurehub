@@ -39,7 +39,7 @@ class ServiceAccount2Spec extends Base2Spec {
   CacheSource cacheSource
 
   def setup() {
-    personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy)
+    personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
     cacheSource = Mock(CacheSource)
     environmentSqlApi = new EnvironmentSqlApi(db, convertUtils, cacheSource, archiveStrategy)
     applicationSqlApi = new ApplicationSqlApi(db, convertUtils, cacheSource, archiveStrategy)

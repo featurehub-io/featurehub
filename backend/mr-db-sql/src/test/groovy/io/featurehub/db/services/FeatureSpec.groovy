@@ -51,7 +51,7 @@ class FeatureSpec extends Base2Spec {
   Group adminGroupInPortfolio1
 
   def setup() {
-    personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy)
+    personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
     serviceAccountSqlApi = new ServiceAccountSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy)
 
     appApi = new ApplicationSqlApi(db, convertUtils, Mock(CacheSource), archiveStrategy)
