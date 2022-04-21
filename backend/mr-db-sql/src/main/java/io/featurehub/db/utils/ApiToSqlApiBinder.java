@@ -24,6 +24,7 @@ import io.featurehub.db.services.DbArchiveStrategy;
 import io.featurehub.db.services.EnvironmentSqlApi;
 import io.featurehub.db.services.FeatureSqlApi;
 import io.featurehub.db.services.GroupSqlApi;
+import io.featurehub.db.services.InternalGroupSqlApi;
 import io.featurehub.db.services.OrganizationSqlApi;
 import io.featurehub.db.services.PersonSqlApi;
 import io.featurehub.db.services.PortfolioSqlApi;
@@ -44,7 +45,7 @@ public class ApiToSqlApiBinder extends AbstractBinder {
     bind(AuthenticationSqlApi.class).to(AuthenticationApi.class).to(SessionApi.class).in(Singleton.class);
     bind(SetupSqlApi.class).to(SetupApi.class).in(Singleton.class);
     bind(PortfolioSqlApi.class).to(PortfolioApi.class).in(Singleton.class);
-    bind(GroupSqlApi.class).to(GroupApi.class).in(Singleton.class);
+    bind(GroupSqlApi.class).to(GroupApi.class).to(InternalGroupSqlApi.class).in(Singleton.class);
     bind(ConvertUtils.class).to(Conversions.class).in(Singleton.class);
     bind(PersonSqlApi.class).to(PersonApi.class).in(Singleton.class);
     bind(ServiceAccountSqlApi.class).to(ServiceAccountApi.class).in(Singleton.class);

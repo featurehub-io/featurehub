@@ -28,7 +28,7 @@ class ApplicationSpec extends BaseSpec {
   def setupSpec() {
     baseSetupSpec()
 
-    personSqlApi = new PersonSqlApi(database, convertUtils, archiveStrategy)
+    personSqlApi = new PersonSqlApi(database, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
 
     environmentSqlApi = new EnvironmentSqlApi(database, convertUtils, Mock(CacheSource), archiveStrategy)
 

@@ -15,7 +15,7 @@ class ConvertUtilsSpec extends Base2Spec {
   AuthenticationSqlApi authenticationSqlApi
 
   def setup() {
-    personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy)
+    personSqlApi = new PersonSqlApi(db, convertUtils, archiveStrategy, Mock(InternalGroupSqlApi))
     authenticationSqlApi = new AuthenticationSqlApi(db, convertUtils)
   }
 
