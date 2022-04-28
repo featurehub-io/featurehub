@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: ManagementResourceApi
   description: This describes the API clients use for accessing features. This reflects the API from 1.5.7 onwards.
-  version: "1.1.7"
+  version: "1.1.8"
 #  CRUD for portfolios, environments, features, service account, people, and groups (edited)
 #  roles are fixed
 #  then people<->group association
@@ -371,7 +371,6 @@ paths:
           description: "no permission"
         409:
           description: "duplicate"
-
   /mr-api/person:
     parameters:
       - name: includeGroups
@@ -412,6 +411,13 @@ paths:
           description: "Include last logged in timestamp"
           schema:
             type: boolean
+        - name: personTypes
+          in: query
+          description: "Filter by person types"
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/PersonType"
       responses:
         200:
           description: "Gets all persons, alphabetically sorted"
@@ -453,7 +459,35 @@ paths:
           description: "forbidden to only admins"
         409:
           description: "person already exists"
-
+  /mr-api/person/{id}/token-reset:
+    post:
+      parameters:
+        - name: id
+          description: "The id of the person to find"
+          in: path
+          schema:
+            type: string
+            format: uuid
+          required: true
+      security:
+        - bearerAuth: [ ]
+      tags:
+        - PersonService
+      description: "Reset security token of supported person type (usually service accounts only)"
+      operationId: resetSecurityToken
+      responses:
+        200:
+          description: "New security token"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminServiceResetTokenResponse"
+        404:
+          description: "Service account not found"
+        403:
+          description: "No permission to change"
+        401:
+          description: "Not authenticated"
   /mr-api/person/{id}:
     parameters:
       - name: id
@@ -2367,9 +2401,13 @@ components:
     RegistrationUrl:
       required:
         - token
+        - personId
       properties:
         registrationUrl:
           type: string
+        personId:
+          type: string
+          format: uuid
         token:
           type: string
     PersonRegistrationDetails:
@@ -2401,15 +2439,21 @@ components:
           format: password
         registrationToken:
           type: string
-    CreatePersonDetails:
+    AdminServiceResetTokenResponse:
       required:
-        - email
+        - token
+      properties:
+        token:
+          type: string
+    CreatePersonDetails:
       properties:
         email:
           type: string
           minLength: 1
           maxLength: 100
           format: email
+        personType:
+          $ref: "#/components/schemas/PersonType"
         name:
           type: string
           minLength: 1
@@ -2789,7 +2833,6 @@ components:
             whenArchived:
               type: string
               format: date-time
-
     Person:
       type: object
       properties:
@@ -2803,6 +2846,8 @@ components:
           type: string
           format: email
           maxLength: 100
+        personType:
+          $ref: "#/components/schemas/PersonType"
         other:
           type: string
         source:
@@ -2841,6 +2886,12 @@ components:
           type: string
         value:
           type: string
+    PersonType:
+      type: string
+      default: person
+      enum:
+        - person
+        - serviceAccount
     PersonId:
       required:
         - id

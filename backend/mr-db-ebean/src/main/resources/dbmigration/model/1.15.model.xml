@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <addColumn tableName="fh_person">
+            <column name="person_type" type="varchar(100)" defaultValue="'person'" checkConstraintName="ck_fh_person_person_type"/>
+        </addColumn>
+    </changeSet>
+</migration>

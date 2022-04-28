@@ -301,4 +301,25 @@ class ApplicationStepdefs {
       throw e;
     }
   }
+
+  @And(r'I can list applications')
+  void iCanListApplications() async {
+    // we will get a 401 if we aren't allowed to
+    await userCommon.applicationService.findApplications(shared.portfolio.id!);
+  }
+
+  @And(r'I cannot list the applications')
+  void iCannotListApplications() async {
+    // we will get a 401 if we aren't allowed to
+    var failed = true;
+
+    try {
+      await userCommon.applicationService.findApplications(
+          shared.portfolio.id!);
+    } catch (e) {
+      failed = false;
+    }
+
+    assert(!failed, 'We were able to list applications and should not have been');
+  }
 }

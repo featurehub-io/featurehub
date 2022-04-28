@@ -1,11 +1,13 @@
 package io.featurehub.db.api;
 
 import io.featurehub.mr.model.Person;
+import io.featurehub.mr.model.PersonType;
 import io.featurehub.mr.model.SortOrder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public interface PersonApi {
@@ -40,6 +42,7 @@ public interface PersonApi {
   }
 
   @NotNull PersonPagination search(@Nullable String filter, @Nullable SortOrder sortOrder, int offset, int max,
+                                   @NotNull Set<PersonType> personTypes,
                                    Opts opts);
 
   @Nullable Person get(@NotNull UUID id, Opts opts);
@@ -48,6 +51,8 @@ public interface PersonApi {
   @Nullable Person getByToken(@NotNull String id, Opts opts);
 
   @Nullable PersonToken create(@NotNull String email, @Nullable String name, @Nullable UUID createdBy) throws DuplicatePersonException;
+  @Nullable CreatedServicePerson createServicePerson(@NotNull String name, @Nullable UUID createdBy);
+  @Nullable CreatedServicePerson resetServicePersonToken(@NotNull UUID serviceAccountId);
 
   boolean delete(@NotNull String email);
 }

@@ -22,6 +22,17 @@ class PortfolioStepdefs {
     await userCommon.groupService.createGroup(p!.id!, group);
   }
 
+  @Given(r'I add a group with name {string}')
+  void iAddAGroupToSharedPortfolio(String groupName) async {
+    Portfolio? p = shared.portfolio;
+
+    assert(p != null, 'The portfolio must be set');
+
+    Group group = new Group(name: groupName);
+    final createdGroup = await userCommon.groupService.createGroup(p.id!, group);
+    shared.group = createdGroup;
+  }
+
   // operates in user space
   @And(
       r'I ensure the {string} user is added to the portfolio admin group for {string}')

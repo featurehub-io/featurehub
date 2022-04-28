@@ -3,6 +3,7 @@ import 'package:mrapi/api.dart';
 class Shared {
   Map<String, Object> _data = {};
 
+  String? adminServiceAccountToken;
   RegistrationUrl? registrationUrl;
 
   Portfolio get portfolio {

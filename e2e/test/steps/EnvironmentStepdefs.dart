@@ -331,4 +331,22 @@ class EnvironmentStepdefs {
     assert(app.environments.length == count,
         'Not the right number of environments - ${app.environments.length} and should be ${count}');
   }
+
+  @And(r'I give all permissions to the environment {string}')
+  void iGiveAllPermissionsToTheEnvironment(String envName) async {
+    final group = await common.groupService.getGroup(shared.group.id!);
+    var environment =
+    await common.findExactEnvironment(envName, shared.application.id);
+    shared.environment = environment!;
+    EnvironmentGroupRole egr = EnvironmentGroupRole(
+        groupId: group.id!, environmentId: environment.id!);
+    egr.roles.add(RoleType.READ);
+    egr.roles.add(RoleType.CHANGE_VALUE);
+    egr.roles.add(RoleType.LOCK);
+    egr.roles.add(RoleType.UNLOCK);
+
+    group.environmentRoles.add(egr);
+    await common.groupService.updateGroup(group.id!, group,
+        includeGroupRoles: true, updateEnvironmentGroupRoles: true);
+  }
 }

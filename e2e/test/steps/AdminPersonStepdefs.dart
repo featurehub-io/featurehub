@@ -169,4 +169,17 @@ class AdminPersonStepdefs {
     await common.authService
         .resetPassword(user!.id!.id, PasswordReset(password: password));
   }
+
+
+  @Then(r'I delete the user')
+  void iDeleteTheUser() async {
+    await common.personService.deletePerson(shared.person.id!.id);
+    var failed = true;
+    try {
+      await common.personService.getPerson(shared.person.id!.id);
+    } catch (e) {
+      failed = false;
+    }
+    assert(!failed, 'The user still exists!');
+  }
 }

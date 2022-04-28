@@ -2,6 +2,7 @@ package io.featurehub.mr.resources;
 
 import cd.connect.app.config.ConfigKey;
 import cd.connect.app.config.DeclaredConfigResolver;
+import io.featurehub.db.api.CreatedServicePerson;
 import io.featurehub.db.api.FillOpts;
 import io.featurehub.db.api.GroupApi;
 import io.featurehub.db.api.OptimisticLockingException;
@@ -10,9 +11,11 @@ import io.featurehub.db.api.PersonApi;
 import io.featurehub.db.services.Conversions;
 import io.featurehub.mr.api.PersonServiceDelegate;
 import io.featurehub.mr.auth.AuthManagerService;
+import io.featurehub.mr.model.AdminServiceResetTokenResponse;
 import io.featurehub.mr.model.CreatePersonDetails;
 import io.featurehub.mr.model.OutstandingRegistration;
 import io.featurehub.mr.model.Person;
+import io.featurehub.mr.model.PersonType;
 import io.featurehub.mr.model.RegistrationUrl;
 import io.featurehub.mr.model.SearchPersonResult;
 import jakarta.inject.Inject;
@@ -25,7 +28,9 @@ import jakarta.ws.rs.core.SecurityContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -53,6 +58,40 @@ public class PersonResource implements PersonServiceDelegate {
     Person currentUser = authManager.from(securityContext);
 
     if (authManager.isAnyAdmin(currentUser.getId().getId())) {
+
+      if (createPersonDetails.getPersonType() == PersonType.SERVICEACCOUNT) {
+        if (createPersonDetails.getName() == null) {
+          throw new BadRequestException("Name is required parameter");
+        }
+
+        final CreatedServicePerson servicePerson = personApi.createServicePerson(createPersonDetails.getName(),
+          currentUser.getId().getId());
+
+        if (servicePerson == null) {
+          throw new BadRequestException();
+        }
+
+        final UUID servicePersonId = servicePerson.getPerson().getId().getId();
+
+        if (createPersonDetails.getGroupIds() != null) {
+          createPersonDetails.getGroupIds().forEach(id -> {
+          //add user to the groups
+            groupApi.addPersonToGroup(id, servicePersonId, Opts.empty());
+          });
+        }
+
+        // return registration url
+        RegistrationUrl regUrl =
+            new RegistrationUrl()
+                .personId(servicePersonId)
+                .token(servicePerson.getToken());
+        return regUrl;
+      }
+
+      if (createPersonDetails.getEmail() == null) {
+        throw new BadRequestException("Email is a required parameter for creating a person.");
+      }
+
       //create new user in the db
       try {
         PersonApi.PersonToken person = personApi.create(createPersonDetails.getEmail(),
@@ -70,11 +109,10 @@ public class PersonResource implements PersonServiceDelegate {
         }
 
         //return registration url
-        RegistrationUrl regUrl = new RegistrationUrl();
-        // hard code the return value, it will be ignored by the client from now on
-        regUrl.setRegistrationUrl(String.format(registrationUrl, person.token));
-        regUrl.setToken(person.token);
-        return regUrl;
+        return new RegistrationUrl()
+            .personId(person.id)
+            .registrationUrl(String.format(registrationUrl, person.token)) // hard code the return value, it will be ignored by the client from now on
+            .token(person.token);
       } catch (PersonApi.DuplicatePersonException e) {
         throw new WebApplicationException(Response.status(Response.Status.CONFLICT).build());
       }
@@ -144,6 +182,7 @@ public class PersonResource implements PersonServiceDelegate {
       int page = holder.pageSize == null ? 20 : holder.pageSize;
 
       PersonApi.PersonPagination pp = personApi.search(holder.filter, holder.order, start, page,
+        holder.personTypes == null ? Set.of(PersonType.PERSON) : new HashSet<>(holder.personTypes),
         new Opts().add(FillOpts.Groups, holder.includeGroups).add(FillOpts.PersonLastLoggedIn, holder.includeLastLoggedIn));
 
       return new SearchPersonResult()
@@ -160,6 +199,23 @@ public class PersonResource implements PersonServiceDelegate {
   @Override
   public Person getPerson(String id, GetPersonHolder holder, SecurityContext securityContext) {
     return getPerson(id, holder.includeAcls, holder.includeGroups, securityContext);
+  }
+
+  @Override
+  public AdminServiceResetTokenResponse resetSecurityToken(UUID id, SecurityContext securityContext) {
+    Person currentUser = authManager.from(securityContext);
+
+    if (authManager.isAnyAdmin(currentUser.getId().getId())) {
+      final CreatedServicePerson updatedServicePerson = personApi.resetServicePersonToken(id);
+
+      if (updatedServicePerson != null) {
+        return new AdminServiceResetTokenResponse().token(updatedServicePerson.getToken());
+      }
+
+      throw new NotFoundException();
+    }
+
+    throw new ForbiddenException();
   }
 
   @Override

@@ -3,12 +3,16 @@ package io.featurehub.db.model;
 import io.ebean.annotation.ChangeLog;
 import io.ebean.annotation.ConstraintMode;
 import io.ebean.annotation.DbDefault;
+import io.ebean.annotation.DbEnumValue;
 import io.ebean.annotation.DbForeignKey;
 import io.ebean.annotation.Index;
+import io.featurehub.mr.model.PersonType;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
@@ -19,6 +23,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @Index(unique = true, name = "idx_person_email", columnNames = {"email"})
 @Entity
@@ -44,6 +49,11 @@ public class DbPerson extends DbVersionedBase {
   private boolean passwordRequiresReset;
   private String token;
   private LocalDateTime tokenExpiry;
+
+  @Column(name = "person_type", length = 100)
+  @DbDefault("person")
+  @Enumerated(value = EnumType.STRING)
+  private PersonType personType;
 
   @Column(name = "fk_person_who_changed")
   @ManyToOne
@@ -157,14 +167,28 @@ public class DbPerson extends DbVersionedBase {
     this.whenArchived = whenArchived;
   }
 
+  public PersonType getPersonType() {
+    return personType;
+  }
+
+  public void setPersonType(PersonType personType) {
+    this.personType = personType;
+  }
+
   public static final class Builder {
     private String token;
     private LocalDateTime tokenExpiry;
     private String name;
     private String email;
     private DbPerson whoCreated;
+    private PersonType personType = PersonType.PERSON;
 
     public Builder() {
+    }
+
+    public Builder personType(PersonType val) {
+      personType = val;
+      return this;
     }
 
     public Builder name(String val) {
@@ -199,6 +223,7 @@ public class DbPerson extends DbVersionedBase {
       dbPerson.setName(name);
       dbPerson.setEmail(email);
       dbPerson.setWhoCreated(whoCreated);
+      dbPerson.setPersonType(personType);
       return dbPerson;
     }
   }

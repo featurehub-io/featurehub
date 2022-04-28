@@ -95,4 +95,13 @@ class AdminGroupStepdefs {
     }
     await userCommon.groupService.updateGroup(group.id!, group);
   }
+
+  @And(r'I add the shared person to the shared group')
+  void iAddTheSharedPersonToTheSharedGroup() async {
+    var personId = shared.person.id!.id;
+    final result = await common.groupService.addPersonToGroup(shared.group.id!, personId, includeMembers: true);
+
+    assert(result.members.any((member) => member.id!.id == personId), 'Cannot find the person in the list of members after adding them');
+  }
+
 }

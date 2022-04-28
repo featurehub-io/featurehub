@@ -44,12 +44,11 @@ class AuthenticationResourceSpec extends Specification {
       authManager.isAnyAdmin(_) >> true
     and:
       Person p = new Person()
-    and: "the reset process returns a person"
-      authApi.resetPassword(fromPerson.id.id, null, fromPerson.id.id, false) >> p
     when: "i try and reset a password"
-      Person newPerson = resource.resetPassword(fromPerson.id.id, new PasswordReset(), null)
+      Person newPerson = resource.resetPassword(fromPerson.id.id, new PasswordReset(password: 'fred'), null)
     then:
       newPerson == p
+      1 * authApi.resetPassword(fromPerson.id.id, 'fred', fromPerson.id.id, false) >> p
   }
 
   def "An admin trying to reset a password for an unknown person will get 404"() {
@@ -59,7 +58,7 @@ class AuthenticationResourceSpec extends Specification {
     and: "the reset process returns a person"
       authApi.resetPassword(pId, null, UUID.randomUUID(), false) >> null
     when: "i try and reset a password"
-      resource.resetPassword(pId, new PasswordReset(), null)
+      resource.resetPassword(pId, new PasswordReset(password: 'rrrrr'), null)
     then:
       thrown NotFoundException
   }
@@ -90,9 +89,9 @@ class AuthenticationResourceSpec extends Specification {
     and:
       SecurityContext ctx = Mock(SecurityContext)
     when:
-      def tp = resource.replaceTempPassword(fromPerson.id.id, new PasswordReset(), ctx)
+      def tp = resource.replaceTempPassword(fromPerson.id.id, new PasswordReset(password: 'ibiza'), ctx)
     then:
-      authApi.replaceTemporaryPassword(fromPerson.id.id, null) >> newPerson
+      authApi.replaceTemporaryPassword(fromPerson.id.id, 'ibiza') >> newPerson
       authRepository.invalidate(ctx)
       authRepository.put(newPerson) >> "fred"
       tp.accessToken == "fred"

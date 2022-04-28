@@ -146,7 +146,7 @@ class PortfolioResourceSpec extends Specification {
   def "renaming portfolio is allowed to portfolio admins"() {
     given: "i setup the portfolio"
       UUID pId = UUID.randomUUID()
-      Portfolio p = new Portfolio().id(pId)
+      Portfolio p = new Portfolio().id(pId).name("name")
       portfolioApi.updatePortfolio(p, (Opts)_) >> p
     and: "i am a person with admin rights"
       SecurityContext sc = Mock(SecurityContext)

@@ -7,6 +7,7 @@ import io.featurehub.db.api.PersonApi
 import io.featurehub.db.model.DbPerson
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Person
+import io.featurehub.mr.model.PersonType
 import io.featurehub.mr.model.Portfolio
 import io.featurehub.mr.model.SortOrder
 import org.apache.commons.lang3.RandomStringUtils
@@ -107,13 +108,13 @@ class PersonSpec extends BaseSpec {
         database.save(new DbPerson.Builder().email("$it-limited@me.com").name(String.format("limited %02d", it)).build())
       })
     when:
-      PersonApi.PersonPagination p1 = personSqlApi.search('limited', null, 0, 10, Opts.empty())
+      PersonApi.PersonPagination p1 = personSqlApi.search('limited', null, 0, 10, Set.of(PersonType.PERSON), Opts.empty())
     and:
-      PersonApi.PersonPagination p2 = personSqlApi.search('limited', SortOrder.ASC, 10, 10, Opts.empty())
+      PersonApi.PersonPagination p2 = personSqlApi.search('limited', SortOrder.ASC, 10, 10, Set.of(PersonType.PERSON), Opts.empty())
     and:
-      PersonApi.PersonPagination p3 = personSqlApi.search('limited', SortOrder.DESC, 20, 10, Opts.empty())
+      PersonApi.PersonPagination p3 = personSqlApi.search('limited', SortOrder.DESC, 20, 10, Set.of(PersonType.PERSON), Opts.empty())
     and:
-      PersonApi.PersonPagination p4 = personSqlApi.search('limited', null, 30, 10, Opts.empty())
+      PersonApi.PersonPagination p4 = personSqlApi.search('limited', null, 30, 10, Set.of(PersonType.PERSON), Opts.empty())
     then:
       p1.people.size() == 10
       p1.max == 30
@@ -133,7 +134,7 @@ class PersonSpec extends BaseSpec {
         database.save(new DbPerson.Builder().email("$it-filtered@me.com").name(String.format("filtered %02d", it)).build())
       })
     when:
-      PersonApi.PersonPagination p1 = personSqlApi.search('filtered 0', SortOrder.ASC, 0, 20, Opts.empty())
+      PersonApi.PersonPagination p1 = personSqlApi.search('filtered 0', SortOrder.ASC, 0, 20, Set.of(PersonType.PERSON), Opts.empty())
     then:
       p1.max == 9
       p1.people.size() == 9  // 01-09, 10, 20, 30
