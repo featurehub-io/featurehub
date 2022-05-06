@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicLong
 /**
  * This represents a single API key and its list of possible stats
  */
-class StatKeyEventCollection(val apiKey: KeyParts) {
+class StatKeyEventCollection(private val apiKey: KeyParts) {
   private val counters = ConcurrentHashMap<StatType, AtomicLong>()
 
   private class StatType(val resultType: EdgeHitResultType, val hitSourceType: EdgeHitSourceType) {
@@ -44,7 +44,7 @@ class StatKeyEventCollection(val apiKey: KeyParts) {
   }
 
   fun size(): Int {
-    return counters.size;
+    return counters.size
   }
 
   fun squash(): EdgeStatApiKey? {

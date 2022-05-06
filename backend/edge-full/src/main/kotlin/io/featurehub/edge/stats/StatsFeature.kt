@@ -30,7 +30,7 @@ class StatsFeature : Feature {
 
         bind(StatDisruptor::class.java).to(StatRecorder::class.java).`in`(Singleton::class.java)
 
-        if (whichStatsPublisherToUse.equals("nats")) {
+        if (whichStatsPublisherToUse == "nats") {
           bind(NATSStatPublisher::class.java).to(StatPublisher::class.java).`in`(Singleton::class.java)
         }
 

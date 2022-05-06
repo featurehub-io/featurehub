@@ -33,25 +33,31 @@ open class StatEventHandler @Inject constructor(private val orchestrator: StatsO
   init {
     DeclaredConfigResolver.resolve(this)
 
-    if (panicThreshold!! > 0) {
-      panicExecutor = makeExecutor()
+    panicExecutor = if (panicThreshold!! > 0) {
+      makeExecutor()
     } else {
-      panicExecutor = null
+      null
     }
   }
 
-  open protected fun makeExecutor(): Executor {
+  protected open fun makeExecutor(): Executor {
     return Executors.newSingleThreadExecutor()
   }
 
   companion object Prometheus {
-    val apiKeyCounter = Counter.build("edge_stat_api_key_counter", "Keeps track of how many api keys we have waiting in memory").register()
-    val resultTypeCounters = EdgeHitResultType.values().map { v -> v to Counter.build(String.format("edge_stat_result_%s",  v.name.lowercase()),
-        String.format("How many results of type %s there are hitting this Edge", v.name)).register() }.toMap()
-    val hitTypeCounters = EdgeHitSourceType.values().map { v -> v to Counter.build(
-      String.format("edge_stat_hitsource_%s", v.name.lowercase()),
-      String.format("Where did this traffic come from: %s", v.name)
-    ).register() }.toMap()
+    val apiKeyCounter: Counter = Counter.build("edge_stat_api_key_counter", "Keeps track of how many api keys we have waiting in memory").register()
+    val resultTypeCounters = EdgeHitResultType.values().associateWith { v ->
+      Counter.build(
+        String.format("edge_stat_result_%s", v.name.lowercase()),
+        String.format("How many results of type %s there are hitting this Edge", v.name)
+      ).register()
+    }
+    val hitTypeCounters = EdgeHitSourceType.values().associateWith { v ->
+      Counter.build(
+        String.format("edge_stat_hitsource_%s", v.name.lowercase()),
+        String.format("Where did this traffic come from: %s", v.name)
+      ).register()
+    }
   }
 
   override fun onEvent(stat: Stat, sequence: Long, endOfBatch: Boolean) {
@@ -66,9 +72,9 @@ open class StatEventHandler @Inject constructor(private val orchestrator: StatsO
     hitTypeCounters[stat.hitSourceType]?.inc()
 
     if (panicExecutor != null && panicThreshold!! <= stats.size) {
-      panicExecutor.execute({
+      panicExecutor.execute {
         orchestrator.squashAndPublish(ejectData())
-      })
+      }
     }
   }
 
@@ -79,4 +85,3 @@ open class StatEventHandler @Inject constructor(private val orchestrator: StatsO
     return oldStats
   }
 }
-

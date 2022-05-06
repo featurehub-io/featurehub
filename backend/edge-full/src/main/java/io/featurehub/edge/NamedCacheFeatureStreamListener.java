@@ -18,7 +18,7 @@ class NamedCacheFeatureStreamListener {
   private int listenerCount;
   private final String subject;
   private final String cacheName;
-  Dispatcher dispatcher;
+  private final Dispatcher dispatcher;
 
   private static final Map<String, Gauge> cacheGauge = new HashMap<>();
 

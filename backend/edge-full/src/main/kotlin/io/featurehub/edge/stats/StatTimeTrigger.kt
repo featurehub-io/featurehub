@@ -15,7 +15,7 @@ class StatTimeTrigger @Inject constructor(private val statCollector: StatCollect
   @ConfigKey("edge.stats.publish-interval-ms")
   var publishBundleInterval: Long? = 0
 
-  var timer: Timer? = null
+  private var timer: Timer? = null
 
   init {
     DeclaredConfigResolver.resolve(this)
@@ -36,7 +36,7 @@ class StatTimeTrigger @Inject constructor(private val statCollector: StatCollect
     }
   }
 
-  public fun shutdownTimer() {
+  fun shutdownTimer() {
 
   }
 }

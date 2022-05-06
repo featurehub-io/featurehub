@@ -24,9 +24,9 @@ class StatsCollectionOrchestrator @Inject constructor(private val publisher: Sta
   var maxApiKeysPerPublish: Long? = 300
 
   companion object Prometheus {
-    val publishTimeHistogram = Histogram.build("edge_publish_time", "Time taken to publish stats to NATS").register()
-    val successfulPublishing = Counter.build("edge_publish_success", "Number of successes for publishing").register()
-    val failedPublishing = Counter.build("edge_publish_failure", "Number of failures for publishing").register()
+    val publishTimeHistogram: Histogram = Histogram.build("edge_publish_time", "Time taken to publish stats to NATS").register()
+    val successfulPublishing: Counter = Counter.build("edge_publish_success", "Number of successes for publishing").register()
+    val failedPublishing: Counter = Counter.build("edge_publish_failure", "Number of failures for publishing").register()
   }
 
   init {
@@ -39,8 +39,8 @@ class StatsCollectionOrchestrator @Inject constructor(private val publisher: Sta
       return true
     }
 
-    var returnVal = true;
-    publishTimeHistogram?.time {
+    var returnVal = true
+    publishTimeHistogram.time {
       log.trace("stats: {} records to process", stats.size)
       // split by cache
       val perCachePublish = HashMap<String, EdgeStatsBundle>()
