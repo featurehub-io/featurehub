@@ -10,10 +10,10 @@ steps:
     args:
       - -c
       - |
-        git rev-parse HEAD > current-ref &&
         git clone https://github.com/featurehub-io/featurehub.git &&
         cd featurehub &&
-        git checkout -b workbranch `cat ../current-ref`
+        git remote add pr-source $_HEAD_REPO_URL && git fetch pr-source &&
+        git checkout -b pr && git merge pr-source/$_HEAD_BRANCH && (git log -10 | cat)
     volumes:
       - name: user.home
         path: /root
