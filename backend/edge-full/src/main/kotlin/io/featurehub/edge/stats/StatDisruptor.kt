@@ -40,11 +40,11 @@ open class StatDisruptor @Inject constructor(eventHandler: EventHandler<Stat>) :
     ringBuffer = disruptor.ringBuffer
   }
 
-  open protected fun getThreadFactory(): ThreadFactory {
+  protected open fun getThreadFactory(): ThreadFactory {
     return DaemonThreadFactory.INSTANCE
   }
 
-  private val TRANSLATOR: EventTranslatorThreeArg<Stat, KeyParts, EdgeHitResultType, EdgeHitSourceType> =
+  private val translator: EventTranslatorThreeArg<Stat, KeyParts, EdgeHitResultType, EdgeHitSourceType> =
     EventTranslatorThreeArg<Stat, KeyParts, EdgeHitResultType, EdgeHitSourceType> { event, _, apiKey, resultType, hitType ->
       event.apiKey = apiKey
       event.resultType = resultType
@@ -53,7 +53,7 @@ open class StatDisruptor @Inject constructor(eventHandler: EventHandler<Stat>) :
 
   override fun recordHit(apiKey: KeyParts, resultType: EdgeHitResultType, hitSourceType: EdgeHitSourceType) {
     if (resultType != EdgeHitResultType.MISSED || publishMisses == true) {
-      ringBuffer.publishEvent(TRANSLATOR, apiKey, resultType, hitSourceType)
+      ringBuffer.publishEvent(translator, apiKey, resultType, hitSourceType)
     }
   }
 }

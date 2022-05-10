@@ -6,14 +6,12 @@ import jakarta.ws.rs.container.ContainerResponseFilter;
 import jakarta.ws.rs.container.PreMatching;
 import jakarta.ws.rs.ext.Provider;
 
-import java.io.IOException;
-
 @Provider
 @PreMatching
 public class SSEHeaderFilter implements ContainerResponseFilter {
 
   @Override
-  public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
+  public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) {
     if (requestContext.getUriInfo().getPath().startsWith("features/")) {
       responseContext.getHeaders().add("X-Accel-Buffering", "no");
     }

@@ -14,7 +14,7 @@ class Stat {
   var hitSourceType: EdgeHitSourceType = EdgeHitSourceType.EVENTSOURCE
 
   companion object {
-    val DEFAULT_UUID = UUID.randomUUID() // we don't care what it is, we just want it to never be null
+    val DEFAULT_UUID: UUID = UUID.randomUUID() // we don't care what it is, we just want it to never be null
 
     fun create(apiKey: KeyParts, resultType: EdgeHitResultType, hitSourceType: EdgeHitSourceType): Stat{
       val s = Stat()

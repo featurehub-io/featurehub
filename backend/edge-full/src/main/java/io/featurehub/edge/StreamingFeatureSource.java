@@ -140,7 +140,7 @@ public class StreamingFeatureSource implements StreamingFeatureController {
   //  private Map<String, InflightSdkUrlRequest> expired
 
   public void requestFeatures(final ClientConnection client) {
-    Collection<ClientConnection> clientConnections = null;
+    Collection<ClientConnection> clientConnections;
 
     synchronized (notifyOnIncomingFeatureUpdate) {
       clientConnections =
