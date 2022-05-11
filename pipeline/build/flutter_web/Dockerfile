@@ -1,4 +1,4 @@
-FROM debian:stretch
+FROM debian:bullseye
 
 ENV FLUTTER_VERSION="master"
 
@@ -11,8 +11,8 @@ LABEL io.featurehub.flutter.name="debian linux image for Flutter web" \
 
 WORKDIR /
 
-RUN apt update -y
-RUN apt install -y \
+RUN apt-get update -y
+RUN apt-get install -y \
   git \
   wget \
   curl \
@@ -25,7 +25,7 @@ ARG cachebust=1
 # Install Flutter.
 ENV FLUTTER_ROOT="/opt/flutter"
 ENV FLUTTER="/opt/flutter"
-ARG FLUTTER_VERSION=2.8.0
+ARG FLUTTER_VERSION=2.10.5
 RUN git clone --depth=1 --branch $FLUTTER_VERSION https://github.com/flutter/flutter "${FLUTTER_ROOT}"
 ENV PATH="${FLUTTER_ROOT}/bin:${PATH}"
 
