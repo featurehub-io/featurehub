@@ -60,7 +60,7 @@ class DelegatingHandler(
       return jerseyHandler.service(request, response)
     }
 
-    if (url.isEmpty() || url == "/" || url.endsWith(".html") || url.endsWith(".js") || url.startsWith("/assets") || url.startsWith("/canvaskit")) {
+    if (url.isEmpty() || url == "/" || url.endsWith(".ico") || url.endsWith(".html") || url.endsWith(".js") || url.startsWith("/assets") || url.startsWith("/canvaskit")) {
       return staticHttpHandler.service(request, response)
     }
 
