@@ -27,8 +27,11 @@ class OAuth2JerseyClient @Inject constructor(protected val client: Client) : OAu
 
     form.param("redirect_uri", redirectUrl)
     form.param("code", code)
+    val target = client.target(provider.requestTokenUrl())
+    var request = target.request()
+
+    provider.enhanceTokenRequest(request, form)
     val entity = Entity.entity(form, MediaType.APPLICATION_FORM_URLENCODED_TYPE)
-    var request = client.target(provider.requestTokenUrl()).request()
 
     if (provider.isSecretInHeader()) {
       val code = "${provider.clientId}:${provider.clientSecret}"

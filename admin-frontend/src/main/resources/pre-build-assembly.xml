@@ -1,0 +1,29 @@
+<assembly>
+  <id>admin-ui-to-build</id>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  <formats>
+    <format>tar</format>
+  </formats>
+
+  <fileSets>
+    <fileSet>
+      <directory>open_admin_app</directory>
+      <outputDirectory>open_admin_app</outputDirectory>
+      <excludes>
+        <exclude>.dart_tool/**/*</exclude>
+        <exclude>build/**/*</exclude>
+        <exclude>pom.xml</exclude>
+      </excludes>
+    </fileSet>
+    <fileSet>
+      <directory>app_mr_layer</directory>
+      <outputDirectory>app_mr_layer</outputDirectory>
+      <excludes>
+        <exclude>.dart_tool/**/*</exclude>
+        <exclude>build/**/*</exclude>
+        <exclude>target/**/*</exclude>
+        <exclude>pom.xml</exclude>
+      </excludes>
+    </fileSet>
+  </fileSets>
+</assembly>
