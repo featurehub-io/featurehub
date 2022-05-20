@@ -160,7 +160,11 @@ oauth2.providers.generic.email-field[optional, field to find inside JWT for user
 oauth2.providers.generic.icon.url=[required, full icon url, including https]
 oauth2.providers.generic.icon.background-color=[required, background colour in 0x format, e.g. 0xFFF44336 is a redish colour] 
 oauth2.providers.generic.icon.text=[required,text to appear on button]
+oauth2.providers.generic.token-form-pairs=[optional, map-format, gets added to form body of token request]
+oauth2.providers.generic.token-header-pairs=[optional, map-format, gets added to the token request]
 ----
+
+map-format are key-value pairs separated by `=` - e.g. `auth-key=6152563,specialName=JAHSkk12C`
 
 If your IdP needs the client secret to be Base64 encoded in the header,
 add this  configuration:

@@ -3,6 +3,8 @@ package io.featurehub.web.security.oauth.providers
 import cd.connect.app.config.ConfigKey
 import cd.connect.app.config.DeclaredConfigResolver
 import io.featurehub.web.security.oauth.AuthClientResult
+import jakarta.ws.rs.client.Invocation
+import jakarta.ws.rs.core.Form
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URLEncoder
@@ -86,6 +88,12 @@ class GenericOAuthProvider : OAuth2Provider {
   @ConfigKey("oauth2.redirectUrl")
   protected var redirectUrl: String? = null
 
+  @ConfigKey("oauth2.providers.generic.token-header-pairs")
+  protected var tokenExtraHeaders: Map<String, String?>? = mapOf()
+
+  @ConfigKey("oauth2.providers.generic.token-form-pairs")
+  protected var tokenFormExtraValues: Map<String, String?>? = mapOf()
+
   private val actualAuthUrl: String
 
   init {
@@ -137,6 +145,27 @@ class GenericOAuthProvider : OAuth2Provider {
 
   override fun requestAuthorizationUrl(): String {
     return actualAuthUrl
+  }
+
+  override fun enhanceTokenRequest(request: Invocation.Builder, form: Form) {
+    loadExtraHeaders(request, tokenExtraHeaders)
+    if (tokenFormExtraValues?.isNotEmpty() == true) {
+      tokenFormExtraValues!!.forEach { k, v ->
+        if (v != null) {
+          form.param(k, v)
+        }
+      }
+    }
+  }
+
+  fun loadExtraHeaders(request: Invocation.Builder, headers: Map<String, String?>?) {
+    if (headers?.isNotEmpty() == true) {
+      headers.forEach { k, v ->
+        if (v != null) {
+          request.header(k, v)
+        }
+      }
+    }
   }
 
   override fun providerIcon(): OAuth2ProviderCustomisation {

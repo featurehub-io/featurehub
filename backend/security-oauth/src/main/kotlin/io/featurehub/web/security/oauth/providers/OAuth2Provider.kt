@@ -1,6 +1,8 @@
 package io.featurehub.web.security.oauth.providers
 
 import io.featurehub.web.security.oauth.AuthClientResult
+import jakarta.ws.rs.client.Invocation.Builder
+import jakarta.ws.rs.core.Form
 
 data class OAuth2ProviderCustomisation(val icon: String, val buttonBackgroundColor: String, val buttonText: String)
 
@@ -15,6 +17,11 @@ interface OAuth2Provider {
     // (NOT the web front end) with this token + the secret and get the details of the user. This process will result in a
     // AuthClientResult which gets resolved in discoverProviderUser
   fun requestTokenUrl(): String
+
+  /**
+   * Allows an oauth2 implementation to do "extra stuff"
+   */
+  fun enhanceTokenRequest(request: Builder, form: Form) {}
 
     // 1: if a person chooses this provider, then they get redirected to this url - completely away from our app,
     // NOT SPA. When the user has logged in, it will redirect the user back to our web host (NOT our front end)
