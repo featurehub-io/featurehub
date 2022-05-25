@@ -3,9 +3,9 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.featurehub.edge</groupId>
-  <artifactId>edge-full</artifactId>
+  <artifactId>edge-stats-emitter</artifactId>
   <version>1.1-SNAPSHOT</version>
-  <name>edge-full</name>
+  <name>edge-stats-emitter</name>
 
   <description>
     This artifact is the Edge and is responsible for talking to all clients in a scalable fashion.
@@ -43,19 +43,14 @@
 
   <dependencies>
     <dependency>
-      <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-app</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
       <groupId>io.featurehub.edge</groupId>
-      <artifactId>edge-stats-emitter</artifactId>
+      <artifactId>edge-stats-api</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
 
     <dependency>
       <groupId>io.featurehub.edge</groupId>
-      <artifactId>edge-common</artifactId>
+      <artifactId>edge-shared</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
 

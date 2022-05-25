@@ -27,8 +27,8 @@ interface FeatureSse {
 }
 
 class FeatureSseProcessor @Inject constructor(
-  private val bucketService: EventOutputBucketService, private val serverConfig: StreamingFeatureController,
-  private val statRecorder: StatRecorder, private val featureTransformer: FeatureTransformer
+    private val bucketService: EventOutputBucketService, private val serverConfig: StreamingFeatureController,
+    private val statRecorder: StatRecorder, private val featureTransformer: FeatureTransformer
 ) : FeatureSse {
   private val log: Logger = LoggerFactory.getLogger(FeatureSseProcessor::class.java)
 

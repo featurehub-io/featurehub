@@ -64,7 +64,9 @@
     <module>backend/composite-test</module>
     <module>backend/edge-api</module>
     <module>backend/edge-common</module>
+    <module>backend/edge-shared</module>
     <module>backend/edge-full</module>
+    <module>backend/edge-stats-emitter</module>
     <module>backend/edge-rest</module>
     <module>backend/edge-stats-api</module>
     <module>backend/mr</module>
