@@ -3,6 +3,7 @@ package io.featurehub.db.services
 import io.featurehub.db.api.FillOpts
 import io.featurehub.db.api.Opts
 import io.featurehub.mr.model.Group
+import io.featurehub.mr.model.PersonType
 import io.featurehub.mr.model.Portfolio
 
 class Person2Spec extends Base2Spec {
@@ -47,6 +48,6 @@ class Person2Spec extends Base2Spec {
       !withoutSuperuserGroup.groups.find({it.id == superuserGroup.id})
       !withoutSuperuserGroup.groups.find({it.id == groupPort1.id})
       !withoutSuperuserGroup.groups.find({it.id == groupPort2.id})
-
   }
+
 }

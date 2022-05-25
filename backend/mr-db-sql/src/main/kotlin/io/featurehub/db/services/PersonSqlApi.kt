@@ -2,12 +2,10 @@ package io.featurehub.db.services
 
 import io.ebean.Database
 import io.ebean.annotation.Transactional
-import io.featurehub.db.api.FillOpts
-import io.featurehub.db.api.OptimisticLockingException
-import io.featurehub.db.api.Opts
-import io.featurehub.db.api.PersonApi
+import io.featurehub.db.api.*
 import io.featurehub.db.model.DbGroupMember
 import io.featurehub.db.model.DbGroupMemberKey
+import io.featurehub.db.model.DbLogin
 import io.featurehub.db.model.DbPerson
 import io.featurehub.db.model.query.QDbGroup
 import io.featurehub.db.model.query.QDbGroupMember
@@ -16,11 +14,14 @@ import io.featurehub.db.model.query.QDbPerson
 import io.featurehub.db.password.PasswordSalter
 import io.featurehub.mr.model.Group
 import io.featurehub.mr.model.Person
+import io.featurehub.mr.model.PersonType
 import io.featurehub.mr.model.SortOrder
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import jakarta.validation.Valid
+import org.apache.commons.lang3.RandomStringUtils
 import org.slf4j.LoggerFactory
+import java.time.Instant
 import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.ExecutionException
@@ -69,7 +70,8 @@ open class PersonSqlApi @Inject constructor(
       p.name = person.name
     }
 
-    if (person.email != null) {
+    // can update the email address of a non-service account
+    if (person.email != null && p.personType != PersonType.SERVICEACCOUNT) {
       p.email = person.email
     }
 
@@ -163,6 +165,7 @@ open class PersonSqlApi @Inject constructor(
     sortOrder: SortOrder?,
     offset: Int,
     max: Int,
+    personTypes: Set<PersonType>,
     opts: Opts
   ): PersonApi.PersonPagination {
     var searchOffset = Math.max(offset, 0)
@@ -174,8 +177,15 @@ open class PersonSqlApi @Inject constructor(
 
     // set the filter if anything, make sure it is case insignificant
     if (filter != null) {
+      val fil = filter.lowercase(Locale.getDefault())
       // name is mixed case, email is always lower case
-      search = search.or().name.icontains(filter).email.contains(filter.lowercase(Locale.getDefault())).endOr()
+      search = search.or().name.icontains(fil).email.contains(fil).endOr()
+    }
+
+    if (personTypes.isNotEmpty()) {
+      search = search.personType.`in`(personTypes)
+    } else {
+      search = search.personType.eq(PersonType.PERSON)
     }
 
     if (sortOrder != null) {
@@ -290,6 +300,49 @@ open class PersonSqlApi @Inject constructor(
       throw PersonApi.DuplicatePersonException()
     }
     return personToken
+  }
+
+  @Transactional
+  override fun createServicePerson(name: String, createdBy: UUID?): CreatedServicePerson? {
+    val created = if (createdBy == null) null else convertUtils.byPerson(createdBy)
+    if (createdBy != null && created == null) {
+      return null
+    }
+
+    val servicePerson = DbPerson()
+    servicePerson.name = name
+    with(servicePerson) {
+      id = UUID.randomUUID()
+      email = "${id}@admin.sa.featurehub.io"
+      personType = PersonType.SERVICEACCOUNT
+      whoChanged = created
+      save()
+    }
+
+    val token = createAdminServiceAccountToken(servicePerson)
+
+    return CreatedServicePerson(convertUtils.toPerson(servicePerson)!!, token)
+  }
+
+  private fun createAdminServiceAccountToken(person: DbPerson): String {
+    val token = RandomStringUtils.randomAlphanumeric(48)
+    DbLogin.Builder().person(person).token(token).lastSeen(Instant.now()).build().save()
+    return token
+  }
+
+  @Transactional
+  override fun resetServicePersonToken(serviceAccountId: UUID): CreatedServicePerson? {
+    val search = QDbPerson().id.eq(serviceAccountId)
+      .personType.eq(PersonType.SERVICEACCOUNT)
+      .whenArchived.isNull.findOne()
+
+    if (search != null) {
+      QDbLogin().person.eq(search).delete()
+      val token = createAdminServiceAccountToken(search)
+      return CreatedServicePerson(convertUtils.toPerson(search)!!, token)
+    }
+
+    return null
   }
 
   /**

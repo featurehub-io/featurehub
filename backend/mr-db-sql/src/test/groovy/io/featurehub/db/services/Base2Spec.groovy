@@ -29,7 +29,7 @@ class Base2Spec extends DbSpecification {
     dbSuperPerson = Finder.findByEmail("irina@featurehub.io")
     if (dbSuperPerson == null) {
       dbSuperPerson = new DbPerson.Builder().email("irina@featurehub.io").name("Irina").build();
-      db.save(dbSuperPerson);
+      db.save(dbSuperPerson)
     }
 
     db.save(dbSuperPerson);

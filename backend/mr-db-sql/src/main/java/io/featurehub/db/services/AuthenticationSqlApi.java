@@ -14,6 +14,7 @@ import io.featurehub.db.model.query.QDbPerson;
 import io.featurehub.db.password.PasswordSalter;
 import io.featurehub.mr.model.Person;
 import io.featurehub.mr.model.PersonId;
+import io.featurehub.mr.model.PersonType;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.jetbrains.annotations.NotNull;
@@ -47,6 +48,7 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
     return new QDbPerson()
         .email
         .eq(email.toLowerCase())
+        .personType.eq(PersonType.PERSON)
         .whenArchived.isNull()
         .findOneOrEmpty()
         .map(
@@ -81,8 +83,6 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
 
   @Override
   public Person register(@Nullable String name, @NotNull String email, @Nullable String password, Opts opts) {
-    if (email == null) return null;
-
     return new QDbPerson()
         .email
         .eq(email.toLowerCase())
@@ -124,7 +124,7 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
     if (whoChanged != null) {
       DbPerson person = convertUtils.byPerson(id);
 
-      if (person != null && !person.getId().equals(whoChanged.getId())) {
+      if (person != null && !person.getId().equals(whoChanged.getId()) && person.getPersonType() == PersonType.PERSON) {
         return passwordSalter
             .saltPassword(password, DbPerson.DEFAULT_PASSWORD_ALGORITHM)
             .map(
@@ -160,11 +160,9 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
   public Person replaceTemporaryPassword(@NotNull UUID pId, @NotNull String password) {
     Conversions.nonNullPersonId(pId);
 
-    if (password == null) return null;
-
     DbPerson person = convertUtils.byPerson(pId);
 
-    if (person != null && person.isPasswordRequiresReset()) {
+    if (person != null && person.isPasswordRequiresReset() && person.getPersonType() == PersonType.PERSON) {
       return passwordSalter
           .saltPassword(password, DbPerson.DEFAULT_PASSWORD_ALGORITHM)
           .map(
@@ -188,11 +186,10 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
   public Person changePassword(@NotNull UUID id, @NotNull String oldPassword, @NotNull String newPassword) {
     Conversions.nonNullPersonId(id);
 
-    if (oldPassword == null || newPassword == null) return null;
-
     DbPerson person = convertUtils.byPerson(id);
 
     if (person != null
+        && person.getPersonType() == PersonType.PERSON
         && person.getPassword() != null
         && passwordSalter.validatePassword(
             oldPassword, person.getPassword(), person.getPasswordAlgorithm())) {
@@ -226,7 +223,7 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
             .token
             .eq(token)
             .person
-            .fetch(QDbPerson.Alias.id, QDbPerson.Alias.passwordRequiresReset, QDbPerson.Alias.email)
+            .fetch(QDbPerson.Alias.id, QDbPerson.Alias.passwordRequiresReset, QDbPerson.Alias.email, QDbPerson.Alias.personType)
             .findOne();
 
     if (login != null) {
@@ -238,6 +235,7 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
           new Person()
               .passwordRequiresReset(login.getPerson().isPasswordRequiresReset())
               .email(login.getPerson().getEmail())
+              .personType(login.getPerson().getPersonType())
               .id(new PersonId().id(login.getPerson().getId())),
           token,
           lastSeen);
@@ -248,6 +246,11 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
   @Override
   public DBLoginSession createSession(DBLoginSession session) {
     Conversions.nonNullPerson(session.getPerson());
+
+    // we cannot create sessions for non-persons
+    if (session.getPerson().getPersonType() != PersonType.PERSON) {
+      return null;
+    }
 
     final DbLogin login =
         new DbLogin.Builder()
@@ -266,12 +269,12 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
 
   @Override
   public void invalidateSession(@NotNull String token) {
-    new QDbLogin().token.eq(token).delete();
+    new QDbLogin().token.eq(token).person.personType.eq(PersonType.PERSON).delete();
   }
 
   @Override
   public String resetExpiredRegistrationToken(String email) {
-    DbPerson person = new QDbPerson().email.eq(email.toLowerCase()).findOne();
+    DbPerson person = new QDbPerson().email.eq(email.toLowerCase()).personType.eq(PersonType.PERSON).findOne();
 
     if (person != null && person.getToken() != null) {
       person.setToken(UUID.randomUUID().toString());
@@ -287,6 +290,8 @@ public class AuthenticationSqlApi implements AuthenticationApi, SessionApi {
   public void updateLastAuthenticated(@NotNull UUID id) {
     final DbPerson person = new QDbPerson().id.eq(id).findOne();
 
-    updateLastAuthenticated(person, Instant.now());
+    if (person != null) {
+      updateLastAuthenticated(person, Instant.now());
+    }
   }
 }

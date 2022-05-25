@@ -383,6 +383,7 @@ public class ConvertUtils implements Conversions {
         .version(person.getVersion())
         .passwordRequiresReset(person.isPasswordRequiresReset())
         .email(person.getEmail())
+        .personType(person.getPersonType())
         .name(personName(person))
         .groups(null);
   }
@@ -416,6 +417,7 @@ public class ConvertUtils implements Conversions {
             .name(stripArchived(personName(dbp), dbp.getWhenArchived()))
             .version(dbp.getVersion())
             .passwordRequiresReset(dbp.isPasswordRequiresReset())
+            .personType(dbp.getPersonType())
             .whenArchived(toOff(dbp.getWhenArchived()))
             .id(new PersonId().id(dbp.getId()));
 
