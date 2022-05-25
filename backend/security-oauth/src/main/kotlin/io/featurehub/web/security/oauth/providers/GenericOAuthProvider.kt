@@ -94,6 +94,9 @@ class GenericOAuthProvider : OAuth2Provider {
   @ConfigKey("oauth2.providers.generic.token-form-pairs")
   protected var tokenFormExtraValues: Map<String, String?>? = mapOf()
 
+  @ConfigKey("oauth2.providers.generic.use-access-token")
+  protected var useAccessToken: Boolean? = false
+
   private val actualAuthUrl: String
 
   init {
@@ -110,7 +113,8 @@ class GenericOAuthProvider : OAuth2Provider {
   }
 
   override fun discoverProviderUser(authed: AuthClientResult): ProviderUser? {
-    val idInfo = Jwt.decodeJwt(authed.accessToken) ?: return null
+    val jwt = if (useAccessToken == true) authed.accessToken else authed.idToken
+    val idInfo = Jwt.decodeJwt(jwt) ?: return null
     if (idInfo[email] == null) {
       log.error("Unable to discover `email` address in Payload {}", idInfo)
       return null
