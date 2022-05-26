@@ -1,7 +1,5 @@
 package io.featurehub.edge.rest
 
-import cd.connect.app.config.ConfigKey
-import cd.connect.app.config.DeclaredConfigResolver
 import io.featurehub.edge.KeyParts
 import io.featurehub.edge.features.DachaFeatureRequestSubmitter
 import io.featurehub.edge.features.ETagSplitter.Companion.makeEtags
@@ -20,12 +18,6 @@ import jakarta.ws.rs.BadRequestException
 import jakarta.ws.rs.NotFoundException
 import jakarta.ws.rs.container.AsyncResponse
 import jakarta.ws.rs.core.Response
-import java.text.DateFormat
-import java.time.Instant
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
-import java.util.*
 import java.util.function.Consumer
 import java.util.stream.Collectors
 
