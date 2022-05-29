@@ -11,7 +11,7 @@ import java.lang.reflect.Constructor
  */
 @Target(AnnotationTarget.FIELD, AnnotationTarget.VALUE_PARAMETER)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class FeatureHubConfig(val source: String)
+annotation class FeatureHubConfig(val source: String, val required: Boolean = false)
 
 class ConfigInjectionResolver : InjectionResolver<FeatureHubConfig> {
   override fun resolve(injectee: Injectee): Any? {
@@ -23,6 +23,9 @@ class ConfigInjectionResolver : InjectionResolver<FeatureHubConfig> {
       val prop = FallbackPropertyConfig.getConfig(config.source)
 
       if (prop == null) {
+        if (config.required) {
+          throw RuntimeException("Property ${config.source} does not have a value and must provide one")
+        }
         return null
       } else if (String::class.java == injectee.requiredType) {
         return prop

@@ -172,8 +172,8 @@ class GenericOAuthProvider : OAuth2Provider {
     }
   }
 
-  override fun providerIcon(): OAuth2ProviderCustomisation {
-    return OAuth2ProviderCustomisation(iconUrl!!, iconBackgroundColor!!, iconText!!)
+  override fun providerIcon(): SSOProviderCustomisation {
+    return SSOProviderCustomisation(iconUrl!!, iconBackgroundColor!!, iconText!!)
   }
 
   override fun isSecretInHeader(): Boolean {

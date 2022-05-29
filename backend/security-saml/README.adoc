@@ -1,0 +1,18 @@
+= saml
+
+this allows FeatureHub to be an SP (ServiceProvider). It expects that the NamedID is configured to be an email
+address and either the displayname is configured in Name Attribute `urn:oid:2.16.840.1.113730.3.1.241` or
+the first name is `urn:oid:2.5.4.42` and last name is `urn:oid:2.5.4.4`. When you configure your SAML provider
+you are generally able to configure extra attributes, you will need to enable FeatureHub to extract the person's name
+so it can correctly create the user. Only the email and name is required.
+
+== generate
+
+To create your own config - your own certificate and your own private key, please use the following:
+
+ $ openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -keyout privateKey.key -out certificate.crt
+
+== notes
+
+This is a FeatureHub layer that sits on top of work from https://github.com/onelogin/java-saml[Onelogin SAML] 
+

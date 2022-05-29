@@ -10,7 +10,7 @@ class DelegatingHandler(
   private val jerseyHandler: GrizzlyHttpContainer,
   private val staticHttpHandler: AdminAppStaticHttpHandler
 ) : HttpHandler() {
-  private var jerseyPrefixes = listOf("/mr-api/", "/oauth/", "/features", "/health/", "/metrics", "/info")
+  private var jerseyPrefixes = listOf("/mr-api/", "/saml/", "/oauth/", "/features", "/health/", "/metrics", "/info")
 
   init {
     var prefixes = FallbackPropertyConfig.getConfig("jersey.prefixes")

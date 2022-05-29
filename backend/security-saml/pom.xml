@@ -2,13 +2,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>io.featurehub.mr</groupId>
-  <artifactId>mr</artifactId>
+  <groupId>io.featurehub.components</groupId>
+  <artifactId>security-saml</artifactId>
   <version>1.1-SNAPSHOT</version>
-  <name>mr</name>
+  <name>security-saml</name>
 
   <description>
-    Management Registry API.
+    The OAuth Feature for implementing OAuth support in MR.
   </description>
 
   <url>https://featurehub.io</url>
@@ -35,18 +35,16 @@
     </license>
   </licenses>
 
-  <properties>
-    <app.entrypoint>io.featurehub.Application</app.entrypoint>
-    <app.baseimage>adoptopenjdk/openjdk11@sha256:faa097729e4904c80b982ef6962803210db032564c9850d70b5b2a52f0a02200</app.baseimage>
-    <app.port>8085</app.port>
-    <build.version>0.0.1</build.version>
-  </properties>
-
-
   <dependencies>
     <dependency>
       <groupId>io.featurehub.common</groupId>
       <artifactId>common-web</artifactId>
+      <version>1.1-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.featurehub.components</groupId>
+      <artifactId>security-common</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
 
@@ -62,35 +60,16 @@
       <version>1.1-SNAPSHOT</version>
     </dependency>
 
-
     <dependency>
-      <groupId>io.featurehub.mr</groupId>
-      <artifactId>mr-db-ebean</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.featurehub.components</groupId>
-      <artifactId>security-oauth</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.featurehub.components</groupId>
-      <artifactId>security-saml</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-db-drivers</artifactId>
-      <version>1.1-SNAPSHOT</version>
+      <groupId>com.onelogin</groupId>
+      <artifactId>java-saml-core</artifactId>
+      <version>2.9.0</version>
     </dependency>
 
     <dependency>
       <groupId>io.featurehub.composites</groupId>
       <artifactId>composite-test</artifactId>
-      <version>[1.1, 2)</version>
+      <version>[1.2, 2)</version>
       <scope>test</scope>
     </dependency>
 
@@ -108,7 +87,6 @@
           <filtering>false</filtering>
           <tiles>
             <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
-            <tile>io.featurehub.tiles:tile-app-with-ui:[1.1,2)</tile>
           </tiles>
         </configuration>
       </plugin>
