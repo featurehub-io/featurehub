@@ -180,7 +180,10 @@ public class AuthResource implements AuthServiceDelegate {
     if (authManager.isAnyAdmin(person)) {
       String token = authenticationApi.resetExpiredRegistrationToken(email);
 
-      return new RegistrationUrl().registrationUrl(token).token(token);
+      return new RegistrationUrl()
+          .personId(person.getId().getId())
+          .registrationUrl(token)
+          .token(token);
     }
 
     throw new ForbiddenException();
