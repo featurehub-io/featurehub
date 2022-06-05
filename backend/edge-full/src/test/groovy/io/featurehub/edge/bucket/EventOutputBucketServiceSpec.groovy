@@ -1,13 +1,20 @@
 package io.featurehub.edge.bucket
 
+import cd.connect.app.config.ThreadLocalConfigurationSource
 import spock.lang.Specification
 
 class EventOutputBucketServiceSpec extends Specification {
+  def cleanup() {
+    ThreadLocalConfigurationSource.clearContext()
+  }
+
   def "a dacha communication time that is longer than the maximum number of slots should fail to create service"() {
     given: "i have set the dacha timeout"
-      System.setProperty("edge.dacha.response-timeout", "100000") // 100 seconds
-    and: "the max slots is less"
-      System.setProperty("maxSlots", "20")
+      ThreadLocalConfigurationSource.createContext([
+        "edge.dacha.response-timeout": "100000",
+        "maxSlots": "20"
+        ]
+      )
     when: "i create the event output bucket service"
       new EventOutputBucketService()
     then:
@@ -28,10 +35,5 @@ class EventOutputBucketServiceSpec extends Specification {
       }
    then:
        timerStarted
-  }
-
-  def cleanup() {
-    System.clearProperty("edge.dacha.response-timeout");
-    System.clearProperty("maxSlots")
   }
 }
