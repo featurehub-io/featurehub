@@ -51,7 +51,7 @@ public class DbPerson extends DbVersionedBase {
   private LocalDateTime tokenExpiry;
 
   @Column(name = "person_type", length = 100)
-  @DbDefault("person")
+  @DbDefault("PERSON")
   @Enumerated(value = EnumType.STRING)
   private PersonType personType;
 

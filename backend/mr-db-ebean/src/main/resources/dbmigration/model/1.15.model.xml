@@ -2,7 +2,7 @@
 <migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
     <changeSet type="apply">
         <addColumn tableName="fh_person">
-            <column name="person_type" type="varchar(100)" defaultValue="'person'" checkConstraintName="ck_fh_person_person_type"/>
+            <column name="person_type" type="varchar(100)" defaultValue="'PERSON'" checkConstraintName="ck_fh_person_person_type"/>
         </addColumn>
     </changeSet>
 </migration>

@@ -67,10 +67,20 @@
       <version>${jersey.version}</version>
       <exclusions>
         <exclusion>
+          <groupId>org.glassfish</groupId>
+          <artifactId>jakarta.el</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>org.openjfx</groupId>
           <artifactId>javafx.base</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glassfish</groupId>
+      <artifactId>jakarta.el</artifactId>
+      <version>4.0.2</version>
     </dependency>
 
     <dependency>
