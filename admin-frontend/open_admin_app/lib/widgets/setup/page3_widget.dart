@@ -24,7 +24,7 @@ class _SetupPage3WidgetState extends State<SetupPage3Widget> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       widget.bloc.mrClient.addOverlay(
           (context) => _FinalSetupPageOverlayWidget(bloc: widget.bloc));
     });

@@ -344,6 +344,21 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
   void performPrivateCommand(String action, Map<String, dynamic> data) {
     // TODO: implement performPrivateCommand
   }
+
+  @override
+  void insertTextPlaceholder(Size size) {
+    // TODO: implement insertTextPlaceholder
+  }
+
+  @override
+  void removeTextPlaceholder() {
+    // TODO: implement removeTextPlaceholder
+  }
+
+  @override
+  void showToolbar() {
+    // TODO: implement showToolbar
+  }
 }
 
 class AlwaysDisabledFocusNode extends FocusNode {

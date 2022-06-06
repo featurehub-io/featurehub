@@ -110,11 +110,11 @@ class FHRouter {
     final newRoute = RouterRoute(route, handler,
         permissionType: permissionType, wrapInScaffold: wrapInScaffold);
     handlers[route] = newRoute;
-    routeSlots.forEach((slot) {
+    for (var slot in routeSlots) {
       final routes = validRoutesForSlot[slot] ?? [];
       routes.add(newRoute);
       validRoutesForSlot[slot] = routes;
-    });
+    }
   }
 
   // this specifically matches the SLOTS (i.e. sections of the apps) to their collection of routes
