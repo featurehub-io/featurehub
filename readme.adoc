@@ -10,7 +10,7 @@ This is the primary source code repository for FeatureHub.
 
 https://demo.featurehub.io[Try FeatureHub demo now]
 
-**Install with Docker (evaluation mode) **
+**Install with Docker (evaluation mode)**
 
 ```
 $ docker run -p 8085:8085 --user 999:999 -v $HOME/party:/db featurehub/party-server:latest
@@ -19,6 +19,37 @@ $ docker run -p 8085:8085 --user 999:999 -v $HOME/party:/db featurehub/party-ser
 Once installed, head to http://localhost:8085 to see FeatureHub Admin Console in action
 
 image::docs/images/fh-features-console-dark.png[FeatureHub console demo,800]
+
+**Connect to FeatureHub in your app via SDK**
+
+1. Create an application, an environment and a feature from the Admin Console
+
+2. Create and copy the API Key (client or server eval) from the Admin Console on the API Keys page.
+
+3. Create FeatureHub config and start using feature flags in your app (see Typescript example below). For more SDKs and examples please see https://docs.featurehub.io/featurehub/latest/sdks.html#_sdk_usage[here]
+
+```typescript
+import {
+  EdgeFeatureHubConfig,
+} from 'featurehub-javascript-client-sdk';
+
+const edgeUrl = 'http://localhost:8085/';
+const apiKey = 'default/3f7a1a34-642b-4054-a82f-1ca2d14633ed/aH0l9TDXzauYq6rKQzVUPwbzmzGRqe*oPqyYqhUlVC50RxAzSmx';
+
+const fhConfig = new EdgeFeatureHubConfig(edgeUrl, apiKey);
+
+fhConfig.init();
+const fhClient = await fhConfig.newContext().build();
+if(fhClient.getFlag('FEATURE_KEY')) {
+  // do something
+}
+else {
+  //do something else
+}
+
+```
+
+
 
 == FeatureHub Users
 
@@ -38,7 +69,7 @@ We are looking for companies that have successfully adopted FeatureHub to help u
 * Unlimited features
 * Unlimited clients requesting features
 * Unlimited Applications and Environments
-* Unlimited scalability
+* Unlimited scalability. FeatureHub is the only open source platform that can scale for large enterprises needs
 
 
 === Feature flags, A/B testing, experimentation and analytics support
@@ -58,7 +89,7 @@ We are looking for companies that have successfully adopted FeatureHub to help u
 === Enterprise ready
 
 * Run on your own infrastructure (self-hosted)
-* SSO login support - Google, Microsoft, GitHub, Keycloak
+* Social login support - Google, Microsoft, GitHub, Keycloak
 * Access control levels to allow different teams/groups permissions.
 * Multiple portfolios (department) support
 
@@ -99,7 +130,7 @@ update install repository with the latest images and issue tags on that reposito
 == Coming soon
 
 * Feature auditing
-* SDK's : Python, Ruby
+* SDK's : Ruby
 * Yaml remote configuration support
 
 For more details please refer to https://github.com/featurehub-io/featurehub/issues?q=is%3Aissue+is%3Aopen+label%3Aroadmap[Roadmap tickets]
@@ -118,30 +149,6 @@ documentation you will notice there are several components. FeatureHub is design
 to scale from a single application option to large organisations serving billions
 of requests for features per day.
 
-==== The Backend Servers
-
-The Management Repository, Dacha (the Cache layer) and Edge (where all clients connect
-via their service accounts) are all written in _Java_. This allows us to build fully scalable
-software. In our simple examples, it all deploys together in one simple
-bundle. In complex examples it can all be sliced apart, sharded and massively scaled. Apart from Java, we use a few other technologies as well which will
-help OpenAPI, JAX-RS (specifically Jersey), Maven (specifically with Maven Tiles), and Ebean for our ORM.
-
-Java was also chosen amongst the JVM stack because of its ability to allow the greatest number of people to
-contribute. The `pom.xml`  in the main repository to allow for easy loading and local installation
-of the project. It is called a _reactor_.
-
-If you want to go more advanced, we also support Prometheus, Health Checks, OpenTracing and Jaeger.
-
-==== The FeatureHub Admin Console
-
-The Admin front end is written in Flutter Web. This choice gives us a wide range
-of platforms (Web, mobile, native platforms) we can target from the same codebase. Currently, Web platform is our priority. If you want
-to contribute to the Admin Console - we would love you to join us!
-
-==== The SDKs
-
-If you are planning on helping us by building an SDK in a language we don't yet support, please refer to this https://docs.featurehub.io/featurehub/latest/sdks-development.html[documentation]. We are happy to get contributions that slowly add full
-functionality for a new language.
 
 == Where to get help?
 

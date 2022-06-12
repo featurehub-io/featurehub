@@ -12,7 +12,33 @@ ga('send', 'pageview');
 </script>
 ++++
 
-== Building from scratch
+== FeatureHub technical stack overview
+
+=== The Backend Servers
+
+The Management Repository, Dacha (the Cache layer) and Edge (where all clients connect
+via their service accounts) are all written in _Java_. This allows us to build fully scalable
+software. In our simple examples, it all deploys together in one simple
+bundle. In complex examples it can all be sliced apart, sharded and massively scaled. Apart from Java, we use a few other technologies as well which will
+help OpenAPI, JAX-RS (specifically Jersey), Maven (specifically with Maven Tiles), and Ebean for our ORM.
+
+Java was also chosen amongst the JVM stack because of its ability to allow the greatest number of people to
+contribute. The `pom.xml`  in the main repository to allow for easy loading and local installation
+of the project. It is called a _reactor_.
+
+If you want to go more advanced, we also support Prometheus, Health Checks, OpenTracing and Jaeger.
+
+=== The FeatureHub Admin Console
+
+The Admin front end is written in Flutter Web. This choice gives us a wide range
+of platforms (Web, mobile, native platforms) we can target from the same codebase. Currently, Web platform is our priority.
+
+=== The SDKs
+
+If you are planning on helping us by building an SDK in a language we don't yet support, please refer to this https://docs.featurehub.io/featurehub/latest/sdks-development.html[documentation]. We are happy to get contributions that slowly add full
+functionality for a new language.
+
+== Building FeatureHub from scratch
 
 These instructions are for advanced engineers who want to run their own instance of FeatureHub.
 
