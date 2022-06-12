@@ -13,7 +13,7 @@ steps:
         git clone https://github.com/featurehub-io/featurehub.git &&
         cd featurehub &&
         git remote add pr-source $_HEAD_REPO_URL && git fetch pr-source &&
-        git checkout -b pr && git merge pr-source/$_HEAD_BRANCH && (git log -10 | cat)
+        git checkout -b pr && git merge pr-source/$_HEAD_BRANCH -m "merge" && (git log -10 | cat)
     volumes:
       - name: user.home
         path: /root
