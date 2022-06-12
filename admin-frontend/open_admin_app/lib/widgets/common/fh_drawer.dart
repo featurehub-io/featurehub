@@ -148,13 +148,13 @@ class _SiteAdminOptionsWidget extends StatelessWidget {
         stream: client.streamValley.currentPortfolioIdStream,
         builder: (context, snapshot) {
           List<Widget> menus = [
-            const MenuItem(
+            const FHMenuItem(
                 name: 'Portfolios',
                 iconData: MaterialCommunityIcons.briefcase_plus_outline,
                 path: '/portfolios',
                 permissionType: PermissionType.portfolioadmin,
                 params: {}),
-            const MenuItem(
+            const FHMenuItem(
                 name: 'Users',
                 permissionType: PermissionType.portfolioadmin,
                 iconData: AntDesign.addusergroup,
@@ -177,13 +177,13 @@ class _MenuPortfolioAdminOptionsWidget extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return Column(children: const <Widget>[
-              MenuItem(
+              FHMenuItem(
                   name: 'Groups',
                   iconData: MaterialIcons.people_outline,
                   path: '/groups',
                   permissionType: PermissionType.portfolioadmin,
                   params: {}),
-              MenuItem(
+              FHMenuItem(
                   name: 'Service Accounts',
                   iconData: AntDesign.tool,
                   permissionType: PermissionType.portfolioadmin,
@@ -207,7 +207,7 @@ class _ApplicationSettings extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return Column(children: const <Widget>[
-              MenuItem(
+              FHMenuItem(
                   name: 'Environments',
                   iconData: AntDesign.bars,
                   path: '/app-settings',
@@ -215,7 +215,7 @@ class _ApplicationSettings extends StatelessWidget {
                   params: {
                     'tab': ['environments']
                   }),
-              MenuItem(
+              FHMenuItem(
                   name: 'Group permissions',
                   iconData: MaterialCommunityIcons.check_box_multiple_outline,
                   path: '/app-settings',
@@ -223,7 +223,7 @@ class _ApplicationSettings extends StatelessWidget {
                   params: {
                     'tab': ['group-permissions']
                   }),
-              MenuItem(
+              FHMenuItem(
                   name: 'Service account permissions',
                   iconData: MaterialCommunityIcons.cogs,
                   path: '/app-settings',
@@ -246,21 +246,21 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: const [
-        MenuItem(
+        FHMenuItem(
           name: 'Applications',
           iconData: Feather.grid,
           iconSize: 24,
           path: '/applications',
           params: {},
         ),
-        MenuItem(
+        FHMenuItem(
           name: 'Features',
           iconData: Feather.flag,
           iconSize: 24,
           path: routeNameFeatureDashboard,
           params: {},
         ),
-        MenuItem(
+        FHMenuItem(
           name: 'API Keys',
           iconData: AntDesign.key,
           iconSize: 24,
@@ -272,7 +272,7 @@ class _MenuFeaturesOptionsWidget extends StatelessWidget {
   }
 }
 
-class MenuItem extends StatelessWidget {
+class FHMenuItem extends StatelessWidget {
   final String name;
   final IconData iconData;
   final double? iconSize;
@@ -280,7 +280,7 @@ class MenuItem extends StatelessWidget {
   final Map<String, List<String>> params;
   final PermissionType permissionType;
 
-  const MenuItem(
+  const FHMenuItem(
       {Key? key,
       required this.name,
       required this.iconData,
