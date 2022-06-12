@@ -43,7 +43,7 @@
   </licenses>
 
   <properties>
-    <cloud-sql-version>1.4.4</cloud-sql-version>
+    <cloud-sql-version>1.6.0</cloud-sql-version>
   </properties>
 
   <dependencies>
@@ -54,6 +54,7 @@
       <version>${h2.version}</version>
     </dependency>
 
+    <!-- don't major update this as the new postgres driver doesn't work reliably -->
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
@@ -69,7 +70,7 @@
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
-      <version>8.0.28</version>
+      <version>8.0.29</version>
     </dependency>
 
     <dependency>
@@ -83,6 +84,18 @@
       <groupId>com.google.cloud.sql</groupId>
       <artifactId>mysql-socket-factory-connector-j-8</artifactId>
       <version>${cloud-sql-version}</version>
+      <exclusions>
+        <exclusion> <!-- remove this when the library itself updates -->
+          <groupId>com.google.oauth-client</groupId>
+          <artifactId>google-oauth-client</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.oauth-client</groupId>
+      <artifactId>google-oauth-client</artifactId>
+      <version>1.33.3</version>
     </dependency>
 
     <dependency>

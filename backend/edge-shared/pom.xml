@@ -3,12 +3,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.featurehub.edge</groupId>
-  <artifactId>edge-full</artifactId>
+  <artifactId>edge-shared</artifactId>
   <version>1.1-SNAPSHOT</version>
-  <name>edge-full</name>
+  <name>edge-shared</name>
 
   <description>
-    This artifact is the Edge and is responsible for talking to all clients in a scalable fashion.
+    Holds implementation of common intersection classes between stats and edge
   </description>
 
   <url>https://featurehub.io</url>
@@ -35,33 +35,16 @@
     </license>
   </licenses>
 
-  <properties>
-    <app.port>8553</app.port>
-    <app.entrypoint>io.featurehub.edge.Application</app.entrypoint>
-    <app.imagename>edge</app.imagename>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>io.featurehub.composites</groupId>
-      <artifactId>composite-app</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>io.featurehub.edge</groupId>
-      <artifactId>edge-stats-emitter</artifactId>
-      <version>1.1-SNAPSHOT</version>
+      <artifactId>composite-common</artifactId>
+      <version>1.2-SNAPSHOT</version>
     </dependency>
 
     <dependency>
       <groupId>io.featurehub.edge</groupId>
-      <artifactId>edge-common</artifactId>
-      <version>1.1-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.featurehub.mr</groupId>
-      <artifactId>mr-publish-api</artifactId>
+      <artifactId>edge-stats-api</artifactId>
       <version>1.1-SNAPSHOT</version>
     </dependency>
 
@@ -83,7 +66,6 @@
         <configuration>
           <filtering>false</filtering>
           <tiles>
-            <tile>io.featurehub.tiles:tile-app:[1.1,2)</tile>
             <tile>io.featurehub.tiles:tile-java:[1.1,2)</tile>
           </tiles>
         </configuration>
