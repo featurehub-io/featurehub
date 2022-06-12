@@ -34,7 +34,7 @@ If you are considering helping us by writing a new SDK for your favourite langua
 |===================================
 |Dev/Test Capability|Java|Javascript^1^|Go|Dart^2^|C#|Python
 |Test Client|Y|Y|N|Y|Y|N
-|Feature Interceptors|Y|Y|N|Y|N|N
+|Feature Interceptors|Y|Y|N|Y|N|Y
 |===================================
 
 - *(1)* Javascript and Typescript are supported via a Typescript library.
