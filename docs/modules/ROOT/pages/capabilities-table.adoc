@@ -4,18 +4,18 @@ If you are considering helping us by writing a new SDK for your favourite langua
 
 [options="header"]
 |===================================
-||Java|Javascript^1^|Go|Dart^2^|C#
-|Event Streaming|Y|Y|Y|Y|Y
-|Rollout Strategies - Server Evaluated*|Y|Y|N|Y|Y
-|Rollout Strategies - Client Evaluated*|Y|Y|Y|N|Y
-|Background Start|Y|Y|Y|Y|Y
-|Block until Start|N|N|Y|N|N
-|Readyness Listeners|Y|Y|Y|Y|Y
-|Feature Listeners|Y|Y|Y|Y|Y
-|Feature Listener Removal|N|N|Y|Y|Y
-|Analytics Support|Y|Y|Y|Y|Y
-|Google Analytics|Y|Y|Y|Y|Y
-|Feature Overrides|N|Y|N|N|N
+||Java|Javascript^1^|Go|Dart^2^|C#|Python
+|Event Streaming|Y|Y|Y|Y|Y|Y
+|Rollout Strategies - Server Evaluated*|Y|Y|N|Y|Y|Y
+|Rollout Strategies - Client Evaluated*|Y|Y|Y|N|Y|Y
+|Background Start|Y|Y|Y|Y|Y|Y
+|Block until Start|N|N|Y|N|N|N
+|Readyness Listeners|Y|Y|Y|Y|Y|N
+|Feature Listeners|Y|Y|Y|Y|Y|N
+|Feature Listener Removal|N|N|Y|Y|Y|N
+|Analytics Support|Y|Y|Y|Y|Y|N
+|Google Analytics|Y|Y|Y|Y|Y|N
+|Feature Overrides|N|Y|N|N|N|Y
 |===================================
 
 *To apply rollout strategies (targeting and percentage rules) _user context_ is required to be passed to the SDKs and can be evaluated either on the client or server
@@ -32,9 +32,9 @@ If you are considering helping us by writing a new SDK for your favourite langua
 
 [options="header"]
 |===================================
-|Dev/Test Capability|Java|Javascript^1^|Go|Dart^2^|C#
-|Test Client|Y|Y|N|Y|Y
-|Feature Interceptors|Y|Y|N|Y|N
+|Dev/Test Capability|Java|Javascript^1^|Go|Dart^2^|C#|Python
+|Test Client|Y|Y|N|Y|Y|N
+|Feature Interceptors|Y|Y|N|Y|N|N
 |===================================
 
 - *(1)* Javascript and Typescript are supported via a Typescript library.
